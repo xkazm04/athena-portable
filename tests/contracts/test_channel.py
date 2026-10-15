@@ -69,6 +69,8 @@ EVENTS: list[ChannelEvent] = [
         origin="host:inbox",
         surface="voice",
         capture_id="cap_0123456789ab",
+        tab_id=2,
+        tab_nav=5,
     ),
     DecisionResolved(id="apr_0123456789ab", choice="decline", by="user", at="2026-09-12T09:00:00Z"),
     VoiceTranscript(text="approve", final=True),
@@ -124,3 +126,18 @@ def test_the_voice_family_is_its_own_family() -> None:
     assert family_of("voice.transcript") == "voice"
     assert family_of("voice.speaking") == "voice"
     assert family_of("voice.stopped") == "voice"
+
+
+def test_a_card_from_before_the_tab_binding_reads_as_unbound() -> None:
+    """ADR 0103: a wire form with no ``tab_id``/``tab_nav`` runs where cards always did."""
+    back = event_from_json(
+        json.dumps({"kind": "decision.requested", "id": "apr_0123456789ab", "action": "host.a.b"})
+    )
+    assert isinstance(back, DecisionRequested)
+    assert back.tab_id is None and back.tab_nav is None
+
+
+def test_the_tab_binding_is_on_the_cards_wire_form() -> None:
+    card = DecisionRequested(id="apr_0123456789ab", action="host.a.b", tab_id=3, tab_nav=9)
+    wire = json.loads(card.to_json())
+    assert (wire["tab_id"], wire["tab_nav"]) == (3, 9)

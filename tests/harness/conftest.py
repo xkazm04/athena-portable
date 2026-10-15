@@ -96,6 +96,8 @@ class FakeCard:
     capture_id: str | None = None
     status: str = "pending"
     consumed: bool = False
+    tab_id: int | None = None
+    tab_nav: int | None = None
 
     def to_event(self) -> DecisionRequested:
         return DecisionRequested(
@@ -107,6 +109,8 @@ class FakeCard:
             origin=self.origin,
             surface=self.surface,
             capture_id=self.capture_id,
+            tab_id=self.tab_id,
+            tab_nav=self.tab_nav,
         )
 
     @property
@@ -138,6 +142,8 @@ class FakeApprovals:
         surface: str,
         summary: str = "",
         capture_id: str | None = None,
+        tab_id: int | None = None,
+        tab_nav: int | None = None,
     ) -> FakeCard:
         card = FakeCard(
             id=f"apr_{len(self.rows):012d}",
@@ -148,6 +154,8 @@ class FakeApprovals:
             surface=surface,
             summary=summary,
             capture_id=capture_id,
+            tab_id=tab_id,
+            tab_nav=tab_nav,
         )
         self.rows[card.id] = card
         return card

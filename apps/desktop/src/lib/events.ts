@@ -89,6 +89,12 @@ export interface DecisionRequested {
   origin: string;
   surface: string;
   capture_id: string | null;
+  /**
+   * The tab the card was proposed on and that tab's document generation (ADR 0103): an approval
+   * runs there or not at all. Absent or null on an unbound card (a connector's, core's, an old one).
+   */
+  tab_id?: number | null;
+  tab_nav?: number | null;
 }
 
 export interface DecisionResolved {

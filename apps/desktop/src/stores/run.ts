@@ -19,7 +19,7 @@
  * approval covers a call are the gate's answers; this file carries results and renders what it is
  * told. The one thing it refuses on its own is running an `execute` on a page whose origin it does
  * not belong to — a grant is for one origin, and the focused tab may have moved since the card was
- * filed.
+ * filed — or one bound to a tab that closed, reloaded or navigated since (ADR 0103).
  */
 import { create } from "zustand";
 // @ts-expect-error - gate.js is plain JavaScript with a .d.ts that does not cover this one.
@@ -41,7 +41,7 @@ import {
 import type { CardTargets } from "@/companion/model";
 import type { Wire } from "@/lib/ipc";
 import { catalogIdOf, derivedIdOf, manifestBodyOf } from "@/lib/manifest";
-import { reasonOf, refusalSentence, switchedOffSentence } from "@/companion/plain";
+import { boundTabSentence, reasonOf, refusalSentence, switchedOffSentence } from "@/companion/plain";
 import { isTerminal, type ChannelEvent, type DecisionRequested, type TurnSummary } from "@/lib/events";
 import { hasShell, type StorePage, type Tab } from "@/lib/ipc";
 import { storeList, storeSet, type ActivityRow, type OriginRow } from "@/lib/store";
@@ -128,7 +128,13 @@ export interface RunDeps {
    * published, and it is what the catalog namespaces its tools under as `host:<app_id>`. A check
    * that compared one against the other would refuse every call.
    */
-  focused: () => { tabId: number; origin: string; appId: string | null } | null;
+  focused: () => TabRef | null;
+  /**
+   * One open tab by id, read now: where an approved call bound to that tab runs (ADR 0103).
+   * Optional: without it only the focused tab can be found, so a call bound to another tab is
+   * refused rather than run somewhere else.
+   */
+  tab?: (tabId: number) => TabRef | null;
   hostState: () => Record<string, unknown>;
   /** Run one of the page's own tools on a tab, through the relay. */
   call: (
@@ -284,10 +290,11 @@ const LIVE: RunDeps = {
   },
   focused: () => {
     const tab = focusedTab();
-    if (!tab) return null;
-    const { byTab } = useTools.getState();
-    const origin = originOf(tab.url);
-    return { tabId: tab.id, origin, appId: catalogIdOf(origin, byTab[tab.id]?.appId ?? null) };
+    return tab ? tabRefOf(tab, useTools.getState().byTab) : null;
+  },
+  tab: (tabId) => {
+    const tab = useTabs.getState().tabs.find((t) => t.id === tabId);
+    return tab ? tabRefOf(tab, useTools.getState().byTab) : null;
   },
   capture: takeCapture,
   describe: describeRefs,
@@ -379,6 +386,61 @@ export interface GatedLists {
 }
 
 /**
+ * One tab as the loop addresses it: its id, its web origin, the app id its page claimed, and its
+ * document generation (`nav`, ADR 0103) when the shell reports one.
+ */
+export interface TabRef {
+  tabId: number;
+  origin: string;
+  appId: string | null;
+  nav?: number;
+}
+
+/** A shell tab as a {@link TabRef}. */
+export function tabRefOf(tab: Tab, byTab: Readonly<Record<number, TabTools>>): TabRef {
+  const origin = originOf(tab.url);
+  const ref: TabRef = { tabId: tab.id, origin, appId: catalogIdOf(origin, byTab[tab.id]?.appId ?? null) };
+  return tab.nav === undefined ? ref : { ...ref, nav: tab.nav };
+}
+
+/** What a card or an execute row says about the tab it was proposed on (ADR 0103). */
+export interface TabBinding {
+  tab_id?: number | null;
+  tab_nav?: number | null;
+}
+
+/** Why a bound call may not run on what is open now, in the closed vocabulary, or `null`. */
+export interface BindingRefusal {
+  reason: "unknown_ref";
+  /** `closed`: the tab is gone. `moved`: it reloaded or navigated since the card was filed. */
+  why: "closed" | "moved";
+  detail: string;
+}
+
+/**
+ * Does the tab a call was bound to still hold the document the card was filed on (ADR 0103)?
+ *
+ * `null` when it does, or when the row is unbound (an old card, a connector's, core's): those run
+ * where they always did. A bound tab that is gone, or whose navigation count moved, refuses with
+ * `unknown_ref` - what the card's refs and parameters pointed into no longer exists. A tab that
+ * reports no count cannot prove it is the same document, so a row that carries one is refused.
+ */
+export function bindingRefusal(bound: TabBinding, tab: TabRef | null): BindingRefusal | null {
+  if (bound.tab_id === undefined || bound.tab_id === null) return null;
+  if (!tab || tab.tabId !== bound.tab_id) {
+    return { reason: "unknown_ref", why: "closed", detail: `the tab this was proposed on (tab ${bound.tab_id}) is closed` };
+  }
+  if (bound.tab_nav !== undefined && bound.tab_nav !== null && tab.nav !== bound.tab_nav) {
+    return {
+      reason: "unknown_ref",
+      why: "moved",
+      detail: `the tab this was proposed on (tab ${bound.tab_id}) reloaded or moved to another page since the card was filed`,
+    };
+  }
+  return null;
+}
+
+/**
  * Everything one exchange reads about the focused tab, taken at one moment (ADR 0067).
  *
  * The manifest, the gate's lists and the routing of a released call all come from here, so a
@@ -387,7 +449,7 @@ export interface GatedLists {
  * the gate classified (robustness-5).
  */
 export interface Snapshot {
-  focused: { tabId: number; origin: string; appId: string | null } | null;
+  focused: TabRef | null;
   manifest: Record<string, unknown> | null;
   disabledOrigins: string[];
   gated: GatedLists;
@@ -410,7 +472,7 @@ export function snapshotOf(
   const origin = originOf(tab.url);
   const found = byTab[tab.id];
   return {
-    focused: { tabId: tab.id, origin, appId: catalogIdOf(origin, found?.appId ?? null) },
+    focused: tabRefOf(tab, byTab),
     manifest: manifestBodyOf({
       origin,
       appId: found?.appId ?? null,
@@ -628,7 +690,14 @@ export function cardFromRow(row: Record<string, unknown>): DecisionRequested | n
     origin: text(row.origin),
     surface: text(row.surface),
     capture_id: typeof row.capture_id === "string" ? row.capture_id : null,
+    tab_id: countOf(row.tab_id),
+    tab_nav: countOf(row.tab_id) === null ? null : countOf(row.tab_nav),
   };
+}
+
+/** A tab id or a navigation count off a wire row: a non-negative integer, else `null`. */
+function countOf(value: unknown): number | null {
+  return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : null;
 }
 
 /**
@@ -657,6 +726,9 @@ export function mergeCards(
       surface: card.surface || row.surface,
       expires_at: card.expires_at || row.expires_at,
       params: Object.keys(card.params).length ? card.params : row.params,
+      // The binding is the row's: a card from the stream that lacks it takes the row's.
+      tab_id: card.tab_id ?? row.tab_id,
+      tab_nav: card.tab_id != null ? card.tab_nav : row.tab_nav,
     };
   });
   const added = [...rows.values()].filter((card) => !have.has(card.id) && !skip(card.id));
@@ -817,21 +889,32 @@ export const useRun = create<RunState>((set, get) => {
   /**
    * Run one `tool.call` or `execute` row on the page.
    *
-   * Refused rather than run when the focused tab's origin is not the row's: an approval is granted
-   * for one origin, and the user may have moved tabs between the card and the answer.
+   * An `execute` bound to a tab (ADR 0103) runs on that tab, focused or not, and only while it holds
+   * the document the card was filed on; anything else runs on the focused tab, as before. Refused
+   * rather than run when the target tab's app is not the row's: an approval is granted for one
+   * origin, and the user may have moved tabs between the card and the answer.
    */
   async function onPage(row: ExecuteRow, approved = false): Promise<void> {
+    const bound = row.tab_id !== undefined && row.tab_id !== null;
     const focused = deps.focused();
-    if (!focused) {
+    const target = bound ? boundTab(row.tab_id as number, focused) : focused;
+    const refused = bindingRefusal(row, target);
+    if (refused) {
+      // Before any dispatch: a call meant for a document that is gone runs nowhere.
+      outstanding.push(resultRow(row, false, "", `${refused.reason}: ${refused.detail}`));
+      push({ id: row.call_id, kind: "tool", text: `${row.name} → not run: ${refused.detail}`, tier: row.tier ?? 1, ok: false });
+      return;
+    }
+    if (!target) {
       outstanding.push(resultRow(row, false, "", "unknown_ref: no page is open"));
       return;
     }
     // Defence in depth, and only where the surface actually knows the answer. The daemon pinned
     // the session and `POST /decisions/<id>` refuses a stated origin that is not the row's; this
     // catches the same mistake one step earlier, when the page has told us what it calls itself.
-    if (focused.appId && row.origin.startsWith("host:") && row.origin !== `host:${focused.appId}`) {
+    if (target.appId && row.origin.startsWith("host:") && row.origin !== `host:${target.appId}`) {
       outstanding.push(
-        resultRow(row, false, "", `foreign_origin: ${row.origin} is not the focused page`),
+        resultRow(row, false, "", `foreign_origin: ${row.origin} is not the ${bound ? "bound" : "focused"} page`),
       );
       return;
     }
@@ -848,15 +931,15 @@ export const useRun = create<RunState>((set, get) => {
     let answer: PageAnswer;
     try {
       answer = await deps.call(
-        focused.tabId,
+        target.tabId,
         bareName(row.name),
         row.params,
-        routingTools(snap, focused.tabId),
+        routingTools(snap, target.tabId),
       );
     } catch (error) {
       answer = { ok: false, output: "", error: error instanceof Error ? error.message : String(error) };
     }
-    const listedTools = routingTools(snap, focused.tabId) ?? useTools.getState().byTab[focused.tabId]?.tools ?? [];
+    const listedTools = routingTools(snap, target.tabId) ?? useTools.getState().byTab[target.tabId]?.tools ?? [];
     const timeout = timeoutReasonOf(answer, isReadCall(bareName(row.name), listedTools));
     let error = answer.error ?? null;
     if (timeout !== null) {
@@ -866,18 +949,18 @@ export const useRun = create<RunState>((set, get) => {
         const oldest = timedOut.keys().next().value;
         if (oldest !== undefined) timedOut.delete(oldest);
       }
-      timedOut.set(`${focused.tabId}|${bareName(row.name)}`, { row, tier: answer.tier ?? row.tier ?? 1 });
+      timedOut.set(`${target.tabId}|${bareName(row.name)}`, { row, tier: answer.tier ?? row.tier ?? 1 });
     }
-    if (timeout === "outcome_unknown") rememberUnsure({ origin: focused.origin, tool: row.name, at: now() });
+    if (timeout === "outcome_unknown") rememberUnsure({ origin: target.origin, tool: row.name, at: now() });
     outstanding.push(resultRow(row, answer.ok, answer.output, error, answer.tier));
     // The user approved this call and it ran: the contract it ran under is now the accepted one
     // (ADR 0100). A declined, refused or failed call leaves the old one in force.
     if (approved && answer.ok && deps.accept) {
-      const listed = routingTools(snap, focused.tabId) ?? useTools.getState().byTab[focused.tabId]?.tools ?? [];
+      const listed = routingTools(snap, target.tabId) ?? useTools.getState().byTab[target.tabId]?.tools ?? [];
       const tool = listed.find((t) => t.name === bareName(row.name));
       if (tool) {
         await deps
-          .accept(focused.origin, tool)
+          .accept(target.origin, tool)
           .catch((error: unknown) => console.error(`[athena] contract: ${String(error)}`));
       }
     }
@@ -984,6 +1067,10 @@ export const useRun = create<RunState>((set, get) => {
         message,
         surface: "panel",
         ...(taken.id ? { capture_id: taken.id } : {}),
+        // The tab this request runs against, and its document: a card it files is bound to both,
+        // so the approval runs there or not at all (ADR 0103). Set here, never by a model.
+        tab_id: focused.tabId,
+        ...(focused.nav !== undefined ? { tab_nav: focused.nav } : {}),
         host_state: deps.hostState(),
         tool_results: carried,
         disabled_origins: taking.disabledOrigins,
@@ -1111,21 +1198,32 @@ export const useRun = create<RunState>((set, get) => {
 
       // The card stays. A refusal says so in plain words, under the buttons, and the daemon is asked
       // again what it holds, because a refused answer leaves the decision pending there.
-      const refuse = async (reason: string) => {
+      const refuse = async (reason: string, local: string | null = null) => {
         // A card for an app the user switched off cannot be helped by focusing it.
         const off = reason === "foreign_origin" && card !== undefined && (deps.disabledOrigins?.() ?? []).includes(card.origin);
-        const sentence = off ? switchedOffSentence() : refusalSentence(reason);
+        const sentence = local ?? (off ? switchedOffSentence() : refusalSentence(reason));
         set((s) => ({
           answering: without(s.answering, id),
           refusals: { ...s.refusals, [id]: sentence },
-          // The daemon says no such decision is waiting: nothing is left to answer.
-          cards: reason === "unknown_ref" ? s.cards.filter((c) => c.id !== id) : s.cards,
+          // The daemon says no such decision is waiting: nothing is left to answer. A refusal the
+          // panel made itself (`local`) never asked the daemon, so the card is still waiting there.
+          cards: reason === "unknown_ref" && local === null ? s.cards.filter((c) => c.id !== id) : s.cards,
         }));
         note("refused", reason);
         settled?.({ ok: false, sentence });
         await get().reconcile();
       };
 
+      // A card bound to a tab (ADR 0103) is approved only while that tab holds the document it was
+      // filed on. Checked before the daemon is asked, so the grant is not spent on a call that
+      // would be refused on the page; a decline needs no tab and is never stopped here.
+      if (card && choice === "approve") {
+        const refused = bindingRefusal(card, card.tab_id != null ? boundTab(card.tab_id, deps.focused()) : null);
+        if (refused) {
+          await refuse(refused.reason, boundTabSentence(refused.why));
+          return;
+        }
+      }
       const api = deps.api();
       if (!api) {
         await refuse("not_ready");
@@ -1209,10 +1307,11 @@ export const useRun = create<RunState>((set, get) => {
 
     async describe(card) {
       const refs = refsOf(card.params);
-      const focused = deps.focused();
+      // A card's refs belong to the tab it was proposed on (ADR 0103), which need not be focused.
+      const focused = card.tab_id != null ? boundTab(card.tab_id, deps.focused()) : deps.focused();
       if (!refs.length || !deps.describe || get().targets[card.id] !== undefined) return;
       let found: CardTargets;
-      if (!focused) found = { ok: false, why: "no page is open" };
+      if (!focused) found = { ok: false, why: card.tab_id != null ? "the tab it was proposed on is closed" : "no page is open" };
       else {
         try {
           found = { ok: true, targets: await deps.describe(focused.tabId, refs) };
@@ -1338,6 +1437,13 @@ function resultRow(
 function bareName(name: string): string {
   const parts = name.split(".");
   return parts.length > 2 ? parts.slice(2).join(".") : name;
+}
+
+/** The tab a bound row names, read now; the focused tab answers for itself without `deps.tab`. */
+function boundTab(tabId: number, focused: TabRef | null): TabRef | null {
+  const found = deps.tab?.(tabId);
+  if (found !== undefined) return found;
+  return focused?.tabId === tabId ? focused : null;
 }
 
 function focusedTab() {

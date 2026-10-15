@@ -121,6 +121,8 @@ class FakeCard:
     status: str = "pending"
     consumed: bool = False
     expires_at: str = "2999-01-01T00:00:00+00:00"
+    tab_id: int | None = None
+    tab_nav: int | None = None
 
     def to_event(self) -> DecisionRequested:
         return DecisionRequested(
@@ -131,6 +133,8 @@ class FakeCard:
             options=(DecisionOption("approve"), DecisionOption("decline")),
             origin=self.origin,
             surface=self.surface,
+            tab_id=self.tab_id,
+            tab_nav=self.tab_nav,
         )
 
     @property
@@ -156,6 +160,8 @@ class FakeApprovals:
         conversation: str,
         surface: str,
         summary: str = "",
+        tab_id: int | None = None,
+        tab_nav: int | None = None,
     ) -> FakeCard:
         card = FakeCard(
             id=f"apr_{len(self.rows):012d}",
@@ -165,6 +171,8 @@ class FakeApprovals:
             conversation=conversation,
             surface=surface,
             summary=summary,
+            tab_id=tab_id,
+            tab_nav=tab_nav,
         )
         self.rows[card.id] = card
         return card

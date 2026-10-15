@@ -174,7 +174,11 @@ class DecisionOption:
 @dataclass(frozen=True)
 class DecisionRequested(ChannelEvent):
     """A card. ``capture_id`` is the screenshot the daemon minted the approval with, so the user
-    sees the page the proposal is about and not a description of it (README §3.5)."""
+    sees the page the proposal is about and not a description of it (README §3.5).
+
+    ``tab_id`` and ``tab_nav`` bind the card to the tab it was proposed on and to that tab's
+    document generation (ADR 0103): an approval runs there or not at all. ``None`` on a card with
+    no binding - a connector's, core's, or one filed before the binding existed."""
 
     kind: ClassVar[str] = "decision.requested"
     id: str = ""
@@ -187,6 +191,8 @@ class DecisionRequested(ChannelEvent):
     origin: str = "core"
     surface: str = "panel"
     capture_id: str | None = None
+    tab_id: int | None = None
+    tab_nav: int | None = None
 
 
 @dataclass(frozen=True)

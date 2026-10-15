@@ -8,6 +8,7 @@ approved card from being spent on a neighbouring call.
 
 from __future__ import annotations
 
+from athena.daemon.routes import tab_from
 from athena.daemon.server import AthenaDaemon
 
 from .conftest import (
@@ -60,6 +61,9 @@ def test_an_approval_comes_back_as_an_execute_with_the_same_action_and_params(
             "origin": f"host:{APP_ID}",
             "tier": 1,
             "approval_id": approval_id,
+            # The turn named no tab, so the card is unbound and runs where it always did.
+            "tab_id": None,
+            "tab_nav": None,
         }
     ]
     assert body["output"] == "", "a host tool is run by the page, never here"
@@ -223,3 +227,35 @@ def _episodes(daemon: AthenaDaemon, conversation: str) -> list[str]:
             ).fetchall()
         ]
     return [daemon.brain.read_body(node_id) for node_id in ids]
+
+
+# -- the tab a card was proposed on (ADR 0103) -------------------------------------------------
+
+
+def test_a_card_filed_on_a_tab_comes_back_bound_in_the_inbox_and_the_execute(
+    live: Live, daemon: AthenaDaemon
+) -> None:
+    live.register()
+    live.script(claude_round(op("host.invoices.pay", invoice="7")))
+    frames = live.run("pay it", tab_id=2, tab_nav=5).frames()
+    (card,) = [payload for kind, payload in frames if kind == "decision.requested"]
+    assert (card["tab_id"], card["tab_nav"]) == (2, 5)
+    row = daemon.approvals.describe(str(card["id"]))
+    assert (row.tab_id, row.tab_nav) == (2, 5)
+
+    (pending,) = live.request("/decisions").body["pending"]
+    assert (pending["tab_id"], pending["tab_nav"]) == (2, 5)
+
+    reply = live.request(f"/decisions/{card['id']}", method="POST", json_body={"choice": "approve"})
+    (execute,) = reply.body["execute"]
+    assert (execute["tab_id"], execute["tab_nav"]) == (2, 5)
+
+
+def test_the_tab_parse_takes_counts_and_nothing_else() -> None:
+    assert tab_from({"tab_id": 2, "tab_nav": 5}) == (2, 5)
+    assert tab_from({"tab_id": 2}) == (2, None)
+    assert tab_from({"tab_nav": 5}) == (None, None), "a generation with no tab binds nothing"
+    for raw in (-1, True, "2", 2.0, None, [2]):
+        assert tab_from({"tab_id": raw, "tab_nav": 5}) == (None, None)
+    assert tab_from({"tab_id": 2, "tab_nav": "5"}) == (2, None)
+    assert tab_from({}) == (None, None)

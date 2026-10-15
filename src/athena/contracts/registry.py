@@ -215,6 +215,12 @@ class TurnContext:
     #: The capture (``cap_…``) the surface took of the focused tab for this request, or ``None``.
     #: The gate files it on a card for a gated call on the session's own host origin (README §3.5).
     capture_id: str | None = None
+    #: The tab the surface ran this request against (``tabs_list``'s id) and that tab's document
+    #: generation (its navigation counter), or ``None``. Set by the surface, never by a model. The
+    #: gate files both on a card for a gated call on the session's own host origin, so the
+    #: approval runs on that tab and that document or not at all (ADR 0103).
+    tab_id: int | None = None
+    tab_nav: int | None = None
     extra: dict[str, Any] = field(default_factory=dict)
 
 

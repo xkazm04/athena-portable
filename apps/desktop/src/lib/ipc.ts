@@ -56,6 +56,12 @@ export interface Tab {
   url: string;
   title: string;
   focused: boolean;
+  /**
+   * How many top-level navigations the tab has started, reloads included (ADR 0103). A card is
+   * bound to the tab and this count it was proposed on; a different count is another document.
+   * Absent only from a shell that predates it.
+   */
+  nav?: number;
 }
 
 export const tabsCreate = (url: string) => call<number>("tabs_create", { url });

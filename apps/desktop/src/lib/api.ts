@@ -65,6 +65,9 @@ export interface ExecuteRow {
   params: Record<string, unknown>;
   origin: string;
   tier?: number;
+  /** The tab the card was proposed on and its document generation, off the row (ADR 0103). */
+  tab_id?: number | null;
+  tab_nav?: number | null;
 }
 
 export interface Resolution {
@@ -194,6 +197,12 @@ export interface TurnBody {
   gated_tools?: string[];
   /** The shell's capture (`cap_…`) of the focused tab, taken just before this request (ADR 0066). */
   capture_id?: string;
+  /**
+   * The tab this request ran against and its navigation count (ADR 0103). A card for a gated call
+   * on this app is bound to them, so its approval runs on that document or not at all.
+   */
+  tab_id?: number;
+  tab_nav?: number;
 }
 
 /** A refusal the daemon named. `reason` is a member of the one closed vocabulary. */

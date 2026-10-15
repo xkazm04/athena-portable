@@ -141,6 +141,10 @@ class Execute:
     params: dict[str, Any]
     origin: str
     tier: int = 0
+    #: The tab the card was proposed on and that tab's document generation, off the approval row
+    #: (ADR 0103). The surface runs the call there or refuses; ``None`` runs where it always did.
+    tab_id: int | None = None
+    tab_nav: int | None = None
 
     def to_event(self) -> ToolCall:
         return ToolCall(
@@ -340,6 +344,8 @@ class BrowserLane:
                 params=dict(grant.params),
                 origin=entry.origin,
                 tier=entry.tier,
+                tab_id=grant.tab_id,
+                tab_nav=grant.tab_nav,
             )
             return Resolution(
                 approval_id=approval_id,

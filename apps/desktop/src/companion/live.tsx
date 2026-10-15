@@ -377,6 +377,7 @@ export default function Live() {
     retryEngine: (id) => {
       if (isEngineId(id)) void useDaemon.getState().restart(id).catch(report("engine"));
     },
+    goToTab: (tabId) => void useTabs.getState().focus(tabId).catch(report("tabs_focus")),
   };
 
   const originViews: OriginView[] = known.map((o) => ({
@@ -394,6 +395,7 @@ export default function Live() {
     tools,
     held: snap.held,
     drifts,
+    tabs,
     known: originViews,
     ledger: snap.ledger,
     decisions: run.answered,

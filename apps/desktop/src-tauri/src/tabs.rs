@@ -28,6 +28,10 @@ pub struct Tab {
     pub url: String,
     pub title: String,
     pub focused: bool,
+    /// How many top-level navigations this tab's webview has started, reloads included. A card
+    /// is bound to the tab and this count it was proposed on (ADR 0103): a different count is a
+    /// different document, and an approval filed against the old one does not run on it.
+    pub nav: u32,
 }
 
 #[derive(Debug)]
@@ -35,6 +39,7 @@ struct TabRecord {
     id: u32,
     url: String,
     title: String,
+    nav: u32,
 }
 
 #[derive(Default)]
@@ -65,6 +70,7 @@ impl Tabs {
                 url: t.url.clone(),
                 title: t.title.clone(),
                 focused: state.focused == Some(t.id),
+                nav: t.nav,
             })
             .collect()
     }
@@ -107,6 +113,7 @@ impl Tabs {
             id,
             url: url.to_string(),
             title: String::new(),
+            nav: 0,
         });
         state.focused = Some(id);
         id
@@ -137,6 +144,17 @@ impl Tabs {
         let mut state = self.inner.lock().expect("tabs poisoned");
         if let Some(tab) = state.list.iter_mut().find(|t| t.id == id) {
             tab.url = url.to_string();
+        }
+    }
+
+    /// The webview started a top-level navigation, a reload included: record where it is going
+    /// and count a new document (ADR 0103). Only the webview's own navigation handler calls this,
+    /// so a `navigate` command, which the handler also sees, is counted once.
+    pub fn navigated(&self, id: u32, url: &str) {
+        let mut state = self.inner.lock().expect("tabs poisoned");
+        if let Some(tab) = state.list.iter_mut().find(|t| t.id == id) {
+            tab.url = url.to_string();
+            tab.nav = tab.nav.wrapping_add(1);
         }
     }
 
@@ -218,7 +236,7 @@ pub fn create(app: &AppHandle, url: &str) -> Result<u32, String> {
         // and not what it can reach.
         .on_new_window(|_url, _features| tauri::webview::NewWindowResponse::Allow)
         .on_navigation(move |url| {
-            app_for_nav.state::<Tabs>().set_url(id, url.as_str());
+            app_for_nav.state::<Tabs>().navigated(id, url.as_str());
             announce(&app_for_nav);
             true
         })
@@ -295,6 +313,24 @@ fn profile_dir(app: &AppHandle) -> std::path::PathBuf {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_navigation_counts_a_new_document_and_a_title_or_url_update_does_not() {
+        let tabs = Tabs::default();
+        let first = tabs.add("https://a.test/");
+        let second = tabs.add("https://a.test/");
+        assert_eq!(tabs.list()[0].nav, 0);
+
+        tabs.navigated(first, "https://a.test/");
+        tabs.navigated(first, "https://a.test/"); // a reload: same url, new document
+        tabs.set_title(first, "Ledgerbox");
+        tabs.set_url(first, "https://a.test/");
+
+        let list = tabs.list();
+        let nav_of = |id: u32| list.iter().find(|t| t.id == id).map(|t| t.nav);
+        assert_eq!(nav_of(first), Some(2));
+        assert_eq!(nav_of(second), Some(0), "another tab's count is its own");
+    }
 
     #[test]
     fn adding_focuses_the_new_tab_and_closing_falls_back_to_another() {

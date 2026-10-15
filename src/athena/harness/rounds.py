@@ -436,6 +436,8 @@ def _card(card: DecisionRequested, rationale: str) -> DecisionRequested:
         origin=card.origin,
         surface=card.surface,
         capture_id=card.capture_id,
+        tab_id=card.tab_id,
+        tab_nav=card.tab_nav,
     )
 
 

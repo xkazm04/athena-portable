@@ -523,6 +523,7 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
             gated_origins=gated_origins_from(body),
             gated_tools=gated_tools_from(body),
             capture_id=capture_id_from(body),
+            tab=tab_from(body),
         )
     except ListTooLong as exc:
         return error(400, "validator_failed", str(exc))
@@ -559,6 +560,25 @@ def capture_id_from(body: Mapping[str, Any]) -> str | None:
     if isinstance(raw, str) and ids.is_id("capture", raw.strip()):
         return raw.strip()
     return None
+
+
+def tab_from(body: Mapping[str, Any]) -> tuple[int | None, int | None]:
+    """``tab_id`` and ``tab_nav`` off a request body: the tab the surface ran it on (ADR 0103).
+
+    The shell's own tab id and that tab's navigation counter, which a card for a gated call on
+    the session's app carries so its approval runs on that document or not at all. A value that
+    is not a non-negative integer is read as none - an unbound card behaves as cards always did -
+    and a generation without a tab is dropped, because it would bind to nothing.
+    """
+
+    def count(key: str) -> int | None:
+        raw = body.get(key)
+        if isinstance(raw, int) and not isinstance(raw, bool) and raw >= 0:
+            return raw
+        return None
+
+    tab_id = count("tab_id")
+    return (tab_id, count("tab_nav") if tab_id is not None else None)
 
 
 def disabled_origins_from(body: Mapping[str, Any]) -> frozenset[str]:
@@ -618,6 +638,7 @@ def turn_context(
     gated_origins: frozenset[str] = frozenset(),
     gated_tools: frozenset[str] = frozenset(),
     capture_id: str | None = None,
+    tab: tuple[int | None, int | None] = (None, None),
 ) -> TurnContext:
     """The context one turn runs under, and the session refreshed for it.
 
@@ -640,6 +661,8 @@ def turn_context(
         gated_origins=gated_origins,
         gated_tools=gated_tools,
         capture_id=capture_id,
+        tab_id=tab[0],
+        tab_nav=tab[1],
     )
     daemon.sessions.touch(session.origin, session.app_id, tools=session.tools)
     return ctx
@@ -793,6 +816,10 @@ def _execute_row(instruction: Any) -> dict[str, Any]:
         "origin": instruction.origin,
         "tier": instruction.tier,
         "approval_id": instruction.approval_id,
+        # The tab the card was proposed on and its document generation (ADR 0103); null on an
+        # unbound row, which runs where it always did.
+        "tab_id": instruction.tab_id,
+        "tab_nav": instruction.tab_nav,
     }
 
 
@@ -885,6 +912,8 @@ def _decision_row(row: ApprovalRow) -> dict[str, Any]:
         "surface": row.surface,
         "created_at": row.created_at,
         "expires_at": row.expires_at,
+        "tab_id": row.tab_id,
+        "tab_nav": row.tab_nav,
     }
 
 

@@ -44,6 +44,17 @@ export function refusalSentence(reason: string): string {
   return `That answer was refused: ${plainReason(reason)}. Focus the app this decision is about and try again.`;
 }
 
+/**
+ * The sentence for a card bound to a tab that no longer holds what it was filed on (ADR 0103).
+ * `closed`: the tab is gone. `moved`: it reloaded or went to another page, so the card's details
+ * point into a page that no longer exists - going back cannot help, asking again can.
+ */
+export function boundTabSentence(why: "closed" | "moved"): string {
+  return why === "closed"
+    ? "Not run: the tab this was proposed on is closed. Decline it and ask again on the tab you want."
+    : "Not run: the tab this was proposed on reloaded or moved to another page since. Decline it and ask again.";
+}
+
 /** The sentence for a card whose app the user switched off: focusing the app cannot help, switching it back on can. */
 export function switchedOffSentence(): string {
   return "Athena was told not to act on that app. Switch it back on, then approve again.";

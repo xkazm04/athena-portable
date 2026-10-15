@@ -52,6 +52,12 @@ contract later differs, or that appeared after trust, is sent in `gated_tools` u
 call of it runs, and its card shows the old description beside the new one, cut with
 `(showing N of M)`.
 
+A card for the focused app is bound to the tab it was proposed on and that tab's document (the
+shell's per-tab navigation count, `nav` on `tabs_list`): it says "Proposed on tab 2 of ledger.test"
+beside the app line, an approval runs on that tab even while another is focused, and a tab that
+closed, reloaded or navigated refuses the approval with `unknown_ref` before the daemon is asked or
+anything is dispatched; "Go to that tab" focuses it (ADR 0103).
+
 ## The halo
 
 A click-through light on the edges of every monitor, painted by phase (listening, working,

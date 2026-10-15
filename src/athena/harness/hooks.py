@@ -100,6 +100,22 @@ def _capture_for(entry: ToolEntry, ctx: TurnContext) -> str | None:
     return ctx.capture_id
 
 
+def _tab_for(entry: ToolEntry, ctx: TurnContext) -> dict[str, int]:
+    """The tab binding a card carries (ADR 0103): the surface's tab, for its own host origin only.
+
+    The surface said which tab and which document generation it ran the request against. A call
+    on that page's app is bound to them, so its approval runs there or not at all; a connector's,
+    core's or another app's call is not about that tab and stays unbound. Destination binding,
+    not a class change: whether the call files a card is decided before this is read.
+    """
+    if ctx.tab_id is None or not ctx.app_id or entry.origin != f"host:{ctx.app_id}":
+        return {}
+    bound = {"tab_id": ctx.tab_id}
+    if ctx.tab_nav is not None:
+        bound["tab_nav"] = ctx.tab_nav
+    return bound
+
+
 def _may_have_run(approvals: ApprovalsPort, action: str, params: Mapping[str, Any]) -> str:
     """The card's line for a call the user approved and the gate let through in the last day.
 
@@ -157,6 +173,10 @@ class GateHook:
 
         capture = _capture_for(entry, ctx)
         notice = _may_have_run(self.approvals, entry.name, params)
+        # Only a card that has a capture names one, so a table that predates the column is asked
+        # nothing new; the same for the tab binding, so an unbound card asks nothing new either.
+        optional: dict[str, Any] = {"capture_id": capture} if capture else {}
+        optional.update(_tab_for(entry, ctx))
         card = self.approvals.create(
             entry.name,
             dict(params),
@@ -164,9 +184,7 @@ class GateHook:
             conversation=ctx.conversation_id,
             surface=ctx.surface,
             summary=f"{rationale}\n{notice}" if rationale and notice else (rationale or notice),
-            # Only a card that has a capture names one, so a table that predates the column is
-            # asked nothing new.
-            **({"capture_id": capture} if capture else {}),
+            **optional,
         )
         return GateOutcome(
             Cancel(

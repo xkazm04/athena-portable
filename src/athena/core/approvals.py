@@ -130,7 +130,9 @@ APPROVAL_SCHEMA: tuple[str, ...] = (
         created_at TEXT NOT NULL,
         expires_at TEXT NOT NULL,
         resolved_at TEXT,
-        consumed_at TEXT
+        consumed_at TEXT,
+        tab_id INTEGER,
+        tab_nav INTEGER
     )""",
     "CREATE INDEX IF NOT EXISTS idx_approval_live ON companion_approval(status, expires_at)",
     "CREATE INDEX IF NOT EXISTS idx_approval_created ON companion_approval(created_at)",
@@ -140,7 +142,11 @@ APPROVAL_SCHEMA: tuple[str, ...] = (
 #: Columns added after a brain could already hold the table, as ``(name, declaration)``. A table
 #: created before one of them existed gains it on open; ``CREATE TABLE IF NOT EXISTS`` alone would
 #: leave an old brain without it. An added column must be nullable, so old rows stay valid.
-_ADDED_COLUMNS: tuple[tuple[str, str], ...] = (("consumed_at", "TEXT"),)
+_ADDED_COLUMNS: tuple[tuple[str, str], ...] = (
+    ("consumed_at", "TEXT"),
+    ("tab_id", "INTEGER"),
+    ("tab_nav", "INTEGER"),
+)
 
 
 def _now() -> datetime:
@@ -151,6 +157,11 @@ def _iso(moment: datetime) -> str:
     """UTC, with an explicit offset — so the strings sort the way the instants do."""
     aware = moment if moment.tzinfo else moment.replace(tzinfo=UTC)
     return aware.astimezone(UTC).isoformat()
+
+
+def _is_count(value: object) -> bool:
+    """A non-negative int that is not a bool: what a tab id and a navigation counter are."""
+    return isinstance(value, int) and not isinstance(value, bool) and value >= 0
 
 
 def _canonical(params: Mapping[str, Any]) -> str:
@@ -180,6 +191,9 @@ class ApprovalGrant:
     choice: str | None = None
     consumed_at: str | None = None
     expires_at: str = ""
+    #: The tab and document generation the card was proposed on (ADR 0103), or ``None``.
+    tab_id: int | None = None
+    tab_nav: int | None = None
 
     @property
     def approved(self) -> bool:
@@ -221,6 +235,10 @@ class ApprovalRow:
     reason: str | None = None
     resolved_at: str | None = None
     consumed_at: str | None = None
+    #: The tab the card was proposed on and that tab's document generation (ADR 0103). Set by the
+    #: surface through the turn's context, never by a model; ``None`` on an unbound row.
+    tab_id: int | None = None
+    tab_nav: int | None = None
 
     @property
     def pending(self) -> bool:
@@ -238,6 +256,8 @@ class ApprovalRow:
             origin=self.origin,
             surface=self.surface,
             capture_id=self.capture_id,
+            tab_id=self.tab_id,
+            tab_nav=self.tab_nav,
         )
 
     def resolution_event(self) -> DecisionResolved:
@@ -279,7 +299,8 @@ class PendingPage:
 #: The projection :func:`_row` reads, in order. One string, so every SELECT agrees with it.
 _COLUMNS = (
     "id, action, params_json, origin, conversation_id, surface, options_json, status, "
-    "created_at, expires_at, summary, capture_id, choice, answer, reason, resolved_at, consumed_at"
+    "created_at, expires_at, summary, capture_id, choice, answer, reason, resolved_at, "
+    "consumed_at, tab_id, tab_nav"
 )
 
 
@@ -302,6 +323,8 @@ def _row(raw: Sequence[Any]) -> ApprovalRow:
         reason=None if raw[14] is None else str(raw[14]),
         resolved_at=None if raw[15] is None else str(raw[15]),
         consumed_at=None if raw[16] is None else str(raw[16]),
+        tab_id=None if raw[17] is None else int(raw[17]),
+        tab_nav=None if raw[18] is None else int(raw[18]),
     )
 
 
@@ -332,6 +355,8 @@ class Approvals:
         ttl: timedelta = DEFAULT_TTL,
         summary: str = "",
         capture_id: str | None = None,
+        tab_id: int | None = None,
+        tab_nav: int | None = None,
         now: datetime | None = None,
     ) -> ApprovalRow:
         """File a card and return the row it became.
@@ -356,6 +381,10 @@ class Approvals:
             raise ApprovalError(f"not a capture id: {capture_id!r}")
         if ttl <= timedelta(0):
             raise ApprovalError(f"an approval needs a positive ttl: {ttl!r}")
+        if tab_id is not None and not _is_count(tab_id):
+            raise ApprovalError(f"not a tab id: {tab_id!r}")
+        if tab_nav is not None and (tab_id is None or not _is_count(tab_nav)):
+            raise ApprovalError(f"a document generation needs a tab and a count: {tab_nav!r}")
 
         stored_params = _canonical(params)  # before the transaction: a refusal is not a rollback
         moment = now or _now()
@@ -372,13 +401,15 @@ class Approvals:
             expires_at=_iso(moment + ttl),
             summary=summary,
             capture_id=capture_id,
+            tab_id=tab_id,
+            tab_nav=tab_nav,
         )
         with self.brain.write_txn() as con:
             con.execute(
                 """INSERT INTO companion_approval
                    (id, action, params_json, origin, conversation_id, surface, options_json,
-                    summary, capture_id, status, created_at, expires_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    summary, capture_id, status, created_at, expires_at, tab_id, tab_nav)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
                     row.id,
                     row.action,
@@ -392,6 +423,8 @@ class Approvals:
                     str(row.status),
                     row.created_at,
                     row.expires_at,
+                    row.tab_id,
+                    row.tab_nav,
                 ),
             )
         return row
@@ -532,6 +565,8 @@ class Approvals:
             choice=row.choice,
             consumed_at=row.consumed_at,
             expires_at=row.expires_at,
+            tab_id=row.tab_id,
+            tab_nav=row.tab_nav,
         )
 
     def spent_recently(

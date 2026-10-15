@@ -25,6 +25,7 @@ import { ENGINE_IDS, engineLabel, type EngineProbe } from "@/lib/engines";
 import type { Playbook } from "@/lib/playbooks";
 import type { DecisionRequested, TurnSummary } from "@/lib/events";
 import type { ActivityRow } from "@/lib/store";
+import type { Tab } from "@/lib/ipc";
 import { clockOf, whenAgo } from "@/lib/time";
 import type {
   AnswerResult,
@@ -70,6 +71,8 @@ export interface CompanionActions {
   useEngine: (id: string) => void;
   /** Start Athena again on the engine that failed to start (the welcome's "Try again"). */
   retryEngine: (id: string) => void;
+  /** Focus a tab: the way back to the tab a card was proposed on (ADR 0103). */
+  goToTab: (tabId: number) => void;
 }
 
 export const NO_ACTIONS: CompanionActions = {
@@ -92,6 +95,7 @@ export const NO_ACTIONS: CompanionActions = {
   checkEngines: () => {},
   useEngine: () => {},
   retryEngine: () => {},
+  goToTab: () => {},
 };
 
 // -- the pieces --------------------------------------------------------------------------------
@@ -143,6 +147,8 @@ export interface CardView {
   tier: 1 | 2 | 3;
   /** The one line above the parameters: the app and whose tool this is. */
   where: string;
+  /** The tab the card was proposed on (ADR 0103), or `null` for an unbound card. */
+  bound: BoundTabView | null;
   /** A ref is shown as what the page says it names, `button - Send reminder (ref_0_3f..)`, when it said. */
   params: readonly { key: string; value: string }[];
   /** Some parameter is named by the page's own label: the card says the name is the page's claim. */
@@ -160,6 +166,46 @@ export interface CardView {
    * accepted. `null` when the contract is the accepted one or the card is not about a page tool.
    */
   drift: ContractDrift | null;
+}
+
+/** The tab a card was proposed on, as the card names it beside its app line (ADR 0103). */
+export interface BoundTabView {
+  tabId: number;
+  /** `tab 2 of ledger.test - Invoices`, or the tab's title when it is the app's only tab. */
+  label: string;
+  /** The tab is still open. */
+  open: boolean;
+  /** It is the focused tab. When open and not focused the card offers to go back to it. */
+  focused: boolean;
+  /** It reloaded or navigated since the card was filed: the approval will not run there. */
+  moved: boolean;
+}
+
+/**
+ * Which tab a card was proposed on, for a person (ADR 0103). Tabs of the same app are told apart
+ * by their place among that app's tabs, in the strip's order; one tab of an app is named by its
+ * title. `null` for an unbound card.
+ */
+export function boundTabOf(card: DecisionRequested, tabs: readonly Tab[]): BoundTabView | null {
+  const id = card.tab_id;
+  if (id === undefined || id === null) return null;
+  const tab = tabs.find((t) => t.id === id);
+  if (!tab) return { tabId: id, label: "a tab that is closed now", open: false, focused: false, moved: false };
+  const host = hostOf(tab.url) ?? tab.url;
+  const same = tabs.filter((t) => (hostOf(t.url) ?? t.url) === host);
+  const title = tab.title.trim();
+  const label =
+    same.length > 1
+      ? `tab ${same.findIndex((t) => t.id === id) + 1} of ${host}${title ? ` - ${title}` : ""}`
+      : title || host;
+  const nav = card.tab_nav;
+  return {
+    tabId: id,
+    label,
+    open: true,
+    focused: tab.focused,
+    moved: nav !== undefined && nav !== null && tab.nav !== nav,
+  };
 }
 
 /** One step on the tape: what she is doing and where. `cls` is the gate's answer, never ours. */
@@ -382,6 +428,8 @@ export interface CompanionInputs {
   held: DecisionRequested | null;
   /** Page tools whose contract is not the accepted one, by registry name (ADR 0100). */
   drifts?: Readonly<Record<string, ContractDrift>>;
+  /** The open tabs, for the tab a card was proposed on (ADR 0103). Absent reads as none. */
+  tabs?: readonly Tab[];
   known: readonly OriginView[];
   ledger: LedgerSnapshot | null;
   decisions: readonly SessionDecision[];
@@ -459,6 +507,7 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     i.tools,
     i.run.targets ?? {},
     i.drifts ?? {},
+    i.tabs ?? [],
   );
   const n = shown(m);
   const busy = i.run.phase === "running" || i.run.phase === "acting";
@@ -552,10 +601,11 @@ function cardsOf(
   tools: readonly ToolRow[],
   targets: Readonly<Record<string, CardTargets>>,
   drifts: Readonly<Record<string, ContractDrift>> = {},
+  tabs: readonly Tab[] = [],
 ): CardView[] {
   const list = m.decided && held && !cards.some((c) => c.id === held.id) ? [held, ...cards] : cards;
   return list.map((card, index) => ({
-    ...cardView(card, captureWhy[card.id] ?? null, { tools, targets: targets[card.id], drift: drifts[card.action] }),
+    ...cardView(card, captureWhy[card.id] ?? null, { tools, targets: targets[card.id], drift: drifts[card.action], tabs }),
     sending: answering[card.id] !== undefined || (index === 0 && m.decided?.sending === true),
     refusal: refusals[card.id] ?? null,
   }));
@@ -579,7 +629,7 @@ const WHOSE: Record<1 | 2 | 3, string> = {
 export function cardView(
   card: DecisionRequested,
   why: string | null = null,
-  context: { tools?: readonly ToolRow[]; targets?: CardTargets; drift?: ContractDrift } = {},
+  context: { tools?: readonly ToolRow[]; targets?: CardTargets; drift?: ContractDrift; tabs?: readonly Tab[] } = {},
 ): CardView {
   const app = appOf(card.origin) || "an unknown app";
   const tier = tierOf(card.origin, card.action, context.tools ?? []);
@@ -604,6 +654,7 @@ export function cardView(
     app,
     tier,
     where: `In ${app} - ${WHOSE[tier]}`,
+    bound: boundTabOf(card, context.tabs ?? []),
     params,
     claimed: refs.some((r) => named(r) !== null),
     targetNote,

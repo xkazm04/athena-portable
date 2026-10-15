@@ -587,3 +587,35 @@ def test_the_manifests_page_origin_is_what_the_session_is_pinned_to(tmp_path: Pa
     assert sorted(manifest_names) == ["host.invoices.chase", "host.invoices.pay"]
     assert built.ctx().app_id == APP_ID
     assert built.ctx().page_origin == PAGE_ORIGIN
+
+
+# --- the tab a card was proposed on (ADR 0103) ------------------------------------------------
+
+
+def test_an_approved_card_executes_bound_to_the_tab_and_document_it_was_proposed_on(
+    tmp_path: Path,
+) -> None:
+    built = build_lane([claude_round(op("host.invoices.pay", invoice="INV-118"))], tmp_path)
+
+    async def run() -> list[ChannelEvent]:
+        ctx = built.ctx(tab_id=2, tab_nav=5)
+        return [event async for event in built.lane.run("pay it", ctx)]
+
+    card = of(asyncio.run(run()), DecisionRequested)[0]
+    assert (card.tab_id, card.tab_nav) == (2, 5)
+
+    # The answer arrives from whatever tab is focused now; the binding comes off the row.
+    resolution = built.lane.answer_decision(card.id, "approve", built.ctx(tab_id=9, tab_nav=1))
+
+    assert resolution.execute is not None
+    assert (resolution.execute.tab_id, resolution.execute.tab_nav) == (2, 5)
+
+
+def test_an_unbound_card_executes_unbound(tmp_path: Path) -> None:
+    built = build_lane([claude_round(op("host.invoices.pay", invoice="INV-118"))], tmp_path)
+    drain(built.lane, built)
+
+    resolution = built.lane.answer_decision(built.approvals.only.id, "approve", built.ctx())
+
+    assert resolution.execute is not None
+    assert (resolution.execute.tab_id, resolution.execute.tab_nav) == (None, None)

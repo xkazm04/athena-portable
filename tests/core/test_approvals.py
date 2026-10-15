@@ -86,6 +86,10 @@ def test_the_card_offers_exactly_the_tokens_resolve_will_take(approvals: Approva
         ("surface", ""),
         ("capture_id", "cap_nonsense"),
         ("ttl", timedelta(0)),
+        ("tab_id", -1),
+        ("tab_id", True),
+        ("tab_id", "2"),
+        ("tab_nav", 3),
     ],
 )
 def test_a_row_that_could_not_be_replayed_is_refused_at_create(
@@ -418,3 +422,53 @@ def test_spent_recently_names_the_approval_of_the_same_call_spent_within_a_day(
     assert (
         approvals.spent_recently("host.invoices.fill", PARAMS, now=T0 + timedelta(hours=25)) is None
     )
+
+
+# -- the tab binding (ADR 0103) ----------------------------------------------------------------
+
+
+def test_a_row_keeps_the_tab_it_was_proposed_on_through_every_read(approvals: Approvals) -> None:
+    row = _create(approvals, tab_id=2, tab_nav=7)
+
+    assert (row.tab_id, row.tab_nav) == (2, 7)
+    stored = approvals.get(row.id)
+    assert stored is not None and (stored.tab_id, stored.tab_nav) == (2, 7)
+    grant = approvals.describe(row.id)
+    assert (grant.tab_id, grant.tab_nav) == (2, 7)
+    event = stored.to_event()
+    assert (event.tab_id, event.tab_nav) == (2, 7)
+    (pending,) = approvals.pending(10, now=T0).rows
+    assert (pending.tab_id, pending.tab_nav) == (2, 7)
+
+
+def test_a_row_with_no_binding_reads_back_unbound(approvals: Approvals) -> None:
+    row = _create(approvals)
+
+    grant = approvals.describe(row.id)
+    assert (grant.tab_id, grant.tab_nav) == (None, None)
+    assert row.to_event().tab_id is None
+
+
+def test_a_brain_from_before_the_tab_binding_gains_the_columns_on_open(tmp_path: Path) -> None:
+    """The migration: an old table keeps its rows, which read as unbound, and binds new ones."""
+    brain = Brain(tmp_path / "brain")
+    old_schema = re.sub(r",\s*tab_id INTEGER,\s*tab_nav INTEGER", "", APPROVAL_SCHEMA[0])
+    assert "tab_id" not in old_schema
+    with brain.write_txn() as con:
+        con.execute(old_schema)
+        con.execute(
+            """INSERT INTO companion_approval
+               (id, action, params_json, origin, conversation_id, surface, options_json,
+                status, created_at, expires_at)
+               VALUES ('apr_0123456789ab', 'host.invoices.fill', '{}', 'host:invoices', ?,
+                       'panel', '["approve","decline"]', 'pending', ?, ?)""",
+            (CONVERSATION, T0.isoformat(), (T0 + timedelta(days=1)).isoformat()),
+        )
+
+    approvals = Approvals(brain)
+    Approvals(brain)  # a second open adds nothing twice
+
+    old = approvals.describe("apr_0123456789ab")
+    assert (old.tab_id, old.tab_nav) == (None, None)
+    new = _create(approvals, tab_id=4, tab_nav=1)
+    assert approvals.describe(new.id).tab_id == 4

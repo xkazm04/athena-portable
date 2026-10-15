@@ -294,6 +294,19 @@ function Slip({ model, card, inline }: { model: CompanionModel; card: CardView |
       <div className="sl-scroll">
         <p className="sl-why">{card.rationale}</p>
         <p className="sl-where" data-tier={card.tier}>{card.where}</p>
+        {card.bound ? (
+          <p className="sl-tab" data-bound-tab={card.bound.tabId} data-moved={card.bound.moved ? "1" : undefined}>
+            <span>
+              Proposed on {card.bound.label}
+              {card.bound.moved ? " (it has reloaded since)" : ""}
+            </span>
+            {card.bound.open && !card.bound.focused ? (
+              <button type="button" className="aw-btn aw-btn-ghost sl-tab-go" data-act="go-to-tab" onClick={() => actions.goToTab(card.bound!.tabId)}>
+                Go to that tab
+              </button>
+            ) : null}
+          </p>
+        ) : null}
         <div className="sl-mid">
           <dl className="sl-params">
             {card.params.map((p) => (

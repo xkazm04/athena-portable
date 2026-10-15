@@ -125,6 +125,8 @@ class ApprovalsPort(Protocol):
         surface: str,
         summary: str = "",
         capture_id: str | None = None,
+        tab_id: int | None = None,
+        tab_nav: int | None = None,
     ) -> Card: ...
 
     def describe(self, approval_id: str) -> Grant: ...

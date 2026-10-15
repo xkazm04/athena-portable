@@ -399,3 +399,30 @@ test("the Speak button's accessible name contains its visible word, and says wha
   expect(out).toContain("<span>Speak</span>");
   expect(out).not.toContain('aria-label="Hold and say');
 });
+
+test("a card names the tab it was proposed on beside its app line, and offers the way back (ADR 0103)", () => {
+  const tabs = [
+    { id: 4, label: "page-4", url: "https://ledger.test/invoices", title: "Invoices", focused: false, nav: 3 },
+    { id: 7, label: "page-7", url: "https://ledger.test/clients", title: "Clients", focused: true, nav: 1 },
+  ];
+  const bound = cardView({ ...CARDS[0], tab_id: 4, tab_nav: 3 }, null, { tools: TOOLS, tabs });
+  expect(bound.bound).toEqual({ tabId: 4, label: "tab 1 of ledger.test - Invoices", open: true, focused: false, moved: false });
+
+  const model = fixtures.slip();
+  const out = renderToStaticMarkup(createElement(CompanionView, { model: { ...model, cards: [{ ...model.cards[0], ...bound }] } }));
+  expect(out).toContain('data-bound-tab="4"');
+  expect(out).toContain("Proposed on tab 1 of ledger.test - Invoices");
+  expect(out).toContain('data-act="go-to-tab"');
+
+  // One tab of the app is named by its title; the focused tab offers nothing; a reload says so.
+  const alone = cardView({ ...CARDS[0], tab_id: 7, tab_nav: 2 }, null, { tabs: [tabs[1]] });
+  expect(alone.bound).toEqual({ tabId: 7, label: "Clients", open: true, focused: true, moved: true });
+  const moved = renderToStaticMarkup(createElement(CompanionView, { model: { ...model, cards: [{ ...model.cards[0], ...alone }] } }));
+  expect(moved).toContain("Proposed on Clients (it has reloaded since)");
+  expect(moved).not.toContain('data-act="go-to-tab"');
+
+  // A closed tab is named as closed; an unbound card (old, connector, core) shows no tab line.
+  expect(cardView({ ...CARDS[0], tab_id: 9 }, null, { tabs }).bound).toMatchObject({ open: false, label: "a tab that is closed now" });
+  expect(cardView(CARDS[0], null, { tabs }).bound).toBeNull();
+  expect(html("slip")).not.toContain("data-bound-tab");
+});

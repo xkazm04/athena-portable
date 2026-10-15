@@ -14,6 +14,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { DaemonApi } from "@/lib/api";
 
 import type { BridgeTool } from "@/lib/bridge";
+import type { DecisionRequested } from "@/lib/events";
 import { setHandsForTests } from "@/lib/hands";
 import { catalogIdOf, derivedIdOf } from "@/lib/manifest";
 import type { OriginRow } from "@/lib/store";
@@ -1556,5 +1557,180 @@ describe("a call that outlives its deadline", () => {
     const row = useRun.getState().calls.find((e) => e.id === "c1");
     expect(row?.text).toBe("host.ledgerbox.send → send finished 4 s late: sent to 3");
     expect(row?.ok).toBe(true);
+  });
+});
+
+
+// -- an approval runs on the tab it was proposed on (ADR 0103, UAT uat-2) --------------------------
+
+describe("the tab a card was proposed on", () => {
+  /** Two tabs of the same app. `focus`, `reload` and `close` change what the shell would report. */
+  function twoTabs() {
+    const tabs = new Map<number, { nav: number; focused: boolean }>([
+      [1, { nav: 3, focused: true }],
+      [2, { nav: 1, focused: false }],
+    ]);
+    const ref = (tabId: number) => {
+      const t = tabs.get(tabId);
+      return t ? { tabId, origin: "https://ledgerbox.local", appId: "ledgerbox", nav: t.nav } : null;
+    };
+    const calls: Array<{ tab: number; name: string }> = [];
+    return {
+      calls,
+      on: (tab: number) => calls.filter((c) => c.tab === tab).length,
+      focus: (id: number) => tabs.forEach((t, k) => (t.focused = k === id)),
+      reload: (id: number) => (tabs.get(id)!.nav += 1),
+      close: (id: number) => tabs.delete(id),
+      deps: (daemon: ReturnType<typeof fakeDaemon>): RunDeps => ({
+        api: () => new DaemonApi({ url: "http://daemon", token: "t" }, daemon.fetchImpl),
+        focused: () => ref([...tabs].find(([, t]) => t.focused)?.[0] ?? -1),
+        tab: ref,
+        hostState: () => ({}),
+        call: async (tab: number, name: string) => {
+          calls.push({ tab, name });
+          return { ok: true, output: `${name} ran on tab ${tab}` };
+        },
+      }),
+    };
+  }
+
+  const BOUND_CARD: Event = { ...CARD, tab_id: 1, tab_nav: 3 };
+  const execute = (tab_nav = 3) => ({
+    ...APPROVED,
+    execute: [
+      {
+        call_id: "apr_0000000000a1_exec",
+        name: "host.ledgerbox.chase",
+        params: { invoice: "INV-118" },
+        origin: "host:ledgerbox",
+        tier: 1,
+        tab_id: 1,
+        tab_nav,
+      },
+    ],
+  });
+
+  it("names the focused tab and its document on the request that files the card", async () => {
+    const daemon = fakeDaemon({ runs: [[BOUND_CARD, finished()]] });
+    const shell = twoTabs();
+    setRunDeps(shell.deps(daemon));
+
+    await useRun.getState().send("chase the oldest");
+
+    const body = daemon.runs()[0].body!;
+    expect([body.tab_id, body.tab_nav]).toEqual([1, 3]);
+    expect([useRun.getState().cards[0].tab_id, useRun.getState().cards[0].tab_nav]).toEqual([1, 3]);
+  });
+
+  it("filed on tab A and approved while tab B is focused, it runs on A and B receives nothing", async () => {
+    const daemon = fakeDaemon({
+      runs: [[BOUND_CARD, finished()], [finished("Sent.")]],
+      resolutions: { apr_0000000000a1: execute() },
+    });
+    const shell = twoTabs();
+    setRunDeps(shell.deps(daemon));
+    await useRun.getState().send("chase the oldest");
+
+    shell.focus(2);
+    await useRun.getState().answer("apr_0000000000a1", "approve");
+
+    expect(shell.on(2)).toBe(0);
+    expect(shell.on(1)).toBe(1);
+    expect(shell.calls).toEqual([{ tab: 1, name: "chase" }]);
+  });
+
+  it("tab A reloaded before the approval: nothing runs anywhere, the grant is not spent, and the card says why", async () => {
+    const daemon = fakeDaemon({ runs: [[BOUND_CARD, finished()]], resolutions: { apr_0000000000a1: execute() } });
+    const shell = twoTabs();
+    setRunDeps(shell.deps(daemon));
+    await useRun.getState().send("chase the oldest");
+
+    shell.reload(1);
+    shell.focus(2);
+    await useRun.getState().answer("apr_0000000000a1", "approve");
+
+    expect(shell.calls).toEqual([]);
+    expect(daemon.count("/decisions/apr_0000000000a1")).toBe(0);
+    const state = useRun.getState();
+    expect(state.cards.map((c) => c.id)).toEqual(["apr_0000000000a1"]);
+    expect(state.refusals.apr_0000000000a1).toContain("reloaded or moved to another page");
+    expect(state.answered[0]).toMatchObject({ result: "refused", reason: "unknown_ref" });
+  });
+
+  it("a decline of a card whose tab reloaded still goes through", async () => {
+    const daemon = fakeDaemon({
+      runs: [[BOUND_CARD, finished()]],
+      resolutions: { apr_0000000000a1: { ...APPROVED, status: "declined", choice: "decline" } },
+    });
+    const shell = twoTabs();
+    setRunDeps(shell.deps(daemon));
+    await useRun.getState().send("chase the oldest");
+
+    shell.reload(1);
+    await useRun.getState().answer("apr_0000000000a1", "decline");
+
+    expect(daemon.count("/decisions/apr_0000000000a1")).toBe(1);
+    expect(useRun.getState().cards).toEqual([]);
+    expect(shell.calls).toEqual([]);
+  });
+
+  it("a closed tab refuses the approval before the daemon is asked", async () => {
+    const daemon = fakeDaemon({ runs: [[BOUND_CARD, finished()]], resolutions: { apr_0000000000a1: execute() } });
+    const shell = twoTabs();
+    setRunDeps(shell.deps(daemon));
+    await useRun.getState().send("chase the oldest");
+
+    shell.close(1);
+    shell.focus(2);
+    await useRun.getState().answer("apr_0000000000a1", "approve");
+
+    expect(shell.calls).toEqual([]);
+    expect(daemon.count("/decisions/apr_0000000000a1")).toBe(0);
+    expect(useRun.getState().refusals.apr_0000000000a1).toContain("closed");
+  });
+
+  it("the execute row's own binding is checked again before dispatch: a reload during the answer runs nothing", async () => {
+    const shell = twoTabs();
+    const daemon = fakeDaemon({
+      runs: [[finished("noted")]],
+      resolutions: {
+        apr_0000000000a1: () => {
+          shell.reload(1); // the page reloads while the daemon is answering
+          return Promise.resolve(jsonResponse(execute()));
+        },
+      },
+    });
+    setRunDeps(shell.deps(daemon));
+    useRun.setState({ cards: [BOUND_CARD as unknown as DecisionRequested] });
+
+    await useRun.getState().answer("apr_0000000000a1", "approve");
+
+    expect(shell.calls).toEqual([]);
+    const carried = daemon.runs()[0].body!.tool_results as Array<Record<string, unknown>>;
+    expect(carried).toHaveLength(1);
+    expect(carried[0]).toMatchObject({ ok: false });
+    expect(String(carried[0].error)).toMatch(/^unknown_ref: /);
+  });
+
+  it("an execute row with no binding runs on the focused tab, as before", async () => {
+    const unbound = { ...execute().execute[0], tab_id: null, tab_nav: null };
+    const daemon = fakeDaemon({
+      runs: [[finished("Sent.")]],
+      resolutions: { apr_0000000000a1: { ...APPROVED, execute: [unbound] } },
+    });
+    const shell = twoTabs();
+    setRunDeps(shell.deps(daemon));
+    shell.focus(2);
+
+    await useRun.getState().answer("apr_0000000000a1", "approve");
+
+    expect(shell.calls).toEqual([{ tab: 2, name: "chase" }]);
+  });
+
+  it("a pending row from the daemon brings its binding onto the card", () => {
+    const card = cardFromRow({ id: "apr_0000000000a1", action: "host.ledgerbox.chase", tab_id: 2, tab_nav: 4 });
+    expect([card?.tab_id, card?.tab_nav]).toEqual([2, 4]);
+    const unbound = cardFromRow({ id: "apr_0000000000a2", action: "host.ledgerbox.chase", tab_nav: 4 });
+    expect([unbound?.tab_id, unbound?.tab_nav]).toEqual([null, null]);
   });
 });
