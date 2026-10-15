@@ -178,16 +178,29 @@ class SubprocessTransport:
         proc.stdin.write(request.stdin.encode("utf-8"))
         await proc.stdin.drain()
         proc.stdin.close()
+        said = asyncio.create_task(_tail(proc.stderr)) if proc.stderr is not None else None
         try:
             while True:
                 raw = await asyncio.wait_for(proc.stdout.readline(), timeout=request.timeout_s)
                 if not raw:
                     break
                 yield raw.decode("utf-8", errors="replace").rstrip("\n")
+            # Read to the end: report how the run ended (ADR 0109). The tail is waited for only
+            # briefly, since a grandchild holding the pipe must not withhold the exit itself.
+            returncode = await proc.wait()
+            tail = ""
+            if said is not None:
+                try:
+                    tail = await asyncio.wait_for(asyncio.shield(said), timeout=STDERR_GRACE_S)
+                except TimeoutError:
+                    tail = ""
+            request.exit.report(ExitStatus(returncode=returncode, stderr_tail=tail))
         finally:
             if proc.returncode is None:
                 proc.kill()
             await proc.wait()
+            if said is not None and not said.done():
+                said.cancel()
 
 
 class ScriptedTransport:
