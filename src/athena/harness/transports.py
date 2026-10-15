@@ -8,6 +8,12 @@ red test rather than a surprise on stage (plan §13, the CLI-format risk).
 Two implementations. :class:`SubprocessTransport` spawns the real thing;
 :class:`ScriptedTransport` replays lines, one list per round, and records the requests it was
 handed so a test can assert what was sent as well as what came back.
+
+**How a run ended crosses the port beside its lines, not among them (ADR 0109).** ``run`` yields
+``str`` and nothing else, so every consumer that only wants the lines keeps reading them as it
+always did. A transport that knows its exit reports it to the request's :class:`ExitHandle` after
+the last line; one that does not leaves the handle at a clean exit, which is what it claimed
+before the handle existed.
 """
 
 from __future__ import annotations
@@ -24,8 +30,18 @@ from typing import Protocol, runtime_checkable
 #: record (a tool result or a full message is a single line); 8 MiB leaves real headroom.
 STREAM_LIMIT = 8 * 1024 * 1024
 
+#: How much of the child's stderr is kept: its last few KiB, which is where a CLI says why it
+#: stopped. Read only to classify the exit; never shown, never stored (ADR 0109).
+STDERR_TAIL = 4096
+
+#: How long the stderr tail is waited for once the child has exited. A grandchild that inherited
+#: the pipe can hold it open; the exit is reported without the tail rather than not at all.
+STDERR_GRACE_S = 5.0
+
 __all__ = [
     "CliRequest",
+    "ExitHandle",
+    "ExitStatus",
     "ScriptedTransport",
     "SubprocessTransport",
     "Transport",
@@ -62,6 +78,35 @@ class TransportError(OSError):
 
 
 @dataclass(frozen=True)
+class ExitStatus:
+    """How one run of a CLI ended: its exit code and the tail of what it wrote to stderr.
+
+    ``stderr_tail`` is for the dialect to classify and for nothing else: a CLI's error text can
+    quote the request, so it never reaches a sentence, an event or a ledger row.
+    """
+
+    returncode: int = 0
+    stderr_tail: str = ""
+
+
+class ExitHandle:
+    """Where one run reports its :class:`ExitStatus`. It starts at a clean exit.
+
+    One handle per :class:`CliRequest`, so two runs never share one. A transport that cannot tell
+    how its run ended leaves it alone, and the run reads as exit 0, which is what such a
+    transport's lines always meant.
+    """
+
+    __slots__ = ("status",)
+
+    def __init__(self) -> None:
+        self.status = ExitStatus()
+
+    def report(self, status: ExitStatus) -> None:
+        self.status = status
+
+
+@dataclass(frozen=True)
 class CliRequest:
     """One invocation of one CLI.
 
@@ -76,11 +121,17 @@ class CliRequest:
     system_prompt_file: str | None = None
     env: dict[str, str] = field(default_factory=dict)
     timeout_s: int = 25 * 60
+    #: How this run ended, reported by the transport after its last line. Not part of the
+    #: request's value: two requests that say the same thing are equal whatever became of them.
+    exit: ExitHandle = field(default_factory=ExitHandle, compare=False, repr=False)
 
 
 @runtime_checkable
 class Transport(Protocol):
-    """Yields the CLI's stdout lines, one at a time, as they arrive."""
+    """Yields the CLI's stdout lines, one at a time, as they arrive.
+
+    A transport that knows how the run ended reports it to ``request.exit`` after the last line.
+    """
 
     def run(self, request: CliRequest) -> AsyncIterator[str]: ...
 
@@ -146,10 +197,18 @@ class ScriptedTransport:
     and returning an empty stream would hide it behind an empty reply.
     """
 
-    def __init__(self, rounds: Iterable[Sequence[str]], *, fail_with: Exception | None = None):
+    def __init__(
+        self,
+        rounds: Iterable[Sequence[str]],
+        *,
+        fail_with: Exception | None = None,
+        exits: Mapping[int, ExitStatus] | None = None,
+    ):
         self.rounds: list[list[str]] = [list(lines) for lines in rounds]
         self.requests: list[CliRequest] = []
         self.fail_with = fail_with
+        #: How invocation ``i`` (from 0) ends. One that is not named exits 0.
+        self.exits: dict[int, ExitStatus] = dict(exits or {})
 
     @classmethod
     def from_transcript(cls, path: str | Path) -> ScriptedTransport:
@@ -172,6 +231,15 @@ class ScriptedTransport:
             )
         for line in self.rounds[index]:
             yield line
+        request.exit.report(self.exits.get(index, ExitStatus()))
+
+
+async def _tail(stream: asyncio.StreamReader) -> str:  # pragma: no cover - real I/O
+    """Read ``stream`` to EOF and keep its last :data:`STDERR_TAIL` bytes."""
+    kept = b""
+    while chunk := await stream.read(65536):
+        kept = (kept + chunk)[-STDERR_TAIL:]
+    return kept.decode("utf-8", errors="replace")
 
 
 def rounds_from_transcript(text: str) -> list[list[str]]:
