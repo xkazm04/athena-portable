@@ -116,10 +116,21 @@ function Placeholder({
   retry?: () => void;
 }) {
   const meta = VARIANTS.find((v) => v.slug === slug);
+  /* The Suspense fallback is the same card in the same geometry, so the swap to the variant does
+     not jump; but a chunk in flight is a wait, not an absence, and must not be announced as one. */
+  const loading = why === "loading";
   return (
     <div className="at-missing" role="status">
       <p className="at-missing-head">
-        <b>{meta?.label ?? slug}</b> &mdash; not built yet
+        {loading ? (
+          <>
+            Opening <b>{meta?.label ?? slug}</b>&hellip;
+          </>
+        ) : (
+          <>
+            <b>{meta?.label ?? slug}</b> &mdash; not built yet
+          </>
+        )}
       </p>
       <p className="at-label">{meta?.blurb}</p>
       <p className="at-cite">
