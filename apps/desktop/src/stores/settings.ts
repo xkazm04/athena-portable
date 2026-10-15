@@ -141,10 +141,12 @@ export const useSettings = create<SettingsState>((set, get) => ({
     await settingWrite(SETTING_KEYS.brainPath, path);
   },
 
+  // The row first, unlike the look: this flag closes the first act, and a refused write must leave
+  // the person on the act with the reason, not on a surface that forgets them at the next launch.
   setOnboarded: async (onboarded) => {
     if (get().onboarded === onboarded) return;
-    set({ onboarded });
     await settingWrite(SETTING_KEYS.onboarded, onboarded);
+    set({ onboarded });
   },
 }));
 

@@ -241,6 +241,7 @@ function Look({ model }: { model: SetupModel }) {
           onChange={model.actions.setTheme}
           options={THEME_CHOICES.map((choice) => ({ value: choice, label: choice, hint: THEME_HINTS[choice] }))}
         />
+        <Refused what="The theme" reason={model.refusals.theme} />
       </section>
       <section className="mind__section" aria-labelledby="mind-text">
         <h2 id="mind-text">Text size</h2>
@@ -250,6 +251,7 @@ function Look({ model }: { model: SetupModel }) {
           onChange={model.actions.setTypeScale}
           options={TYPE_SCALES.map((scale) => ({ value: scale, label: scale, hint: TYPE_SCALE_HINTS[scale] }))}
         />
+        <Refused what="The text size" reason={model.refusals.typeScale} />
       </section>
       <section className="mind__section" aria-labelledby="mind-motion">
         <h2 id="mind-motion">Motion</h2>
@@ -259,6 +261,7 @@ function Look({ model }: { model: SetupModel }) {
           onChange={model.actions.setMotion}
           options={MOTION_CHOICES.map((choice) => ({ value: choice, label: choice, hint: MOTION_HINTS[choice] }))}
         />
+        <Refused what="The motion setting" reason={model.refusals.motion} />
       </section>
       <section className="mind__section" aria-labelledby="mind-previews">
         <h2 id="mind-previews">What each one looks like</h2>
@@ -306,9 +309,16 @@ function Brain({ model }: { model: SetupModel }) {
           Use this
         </Button>
       </div>
+      <Refused what="The brain directory" reason={model.refusals.brainPath} />
       <p className="typo-caption">Memory is markdown on disk; copy the folder and her memory goes with it.</p>
     </section>
   );
+}
+
+/** A refused write, beside the control that made it: the store's words, and the stored row is back. */
+function Refused({ what, reason }: { what: string; reason: string | undefined }) {
+  if (!reason) return null;
+  return <ProblemNote title={`${what} was not stored. The stored choice is shown again.`} reason={reason} tone="error" />;
 }
 
 function Data({ model }: { model: SetupModel }) {

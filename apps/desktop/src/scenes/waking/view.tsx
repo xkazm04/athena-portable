@@ -14,6 +14,7 @@ import { useState } from "react";
 
 import Bell from "@/bell/Bell";
 import Button from "@/components/Button";
+import ProblemNote from "@/components/ProblemNote";
 import { engineLabel } from "@/lib/engines";
 import {
   engineFact,
@@ -180,15 +181,24 @@ export default function WakingView({ model, onLater, initialStep = 0 }: WakingPr
             <Button
               variant="primary"
               onClick={model.actions.finish}
-              disabledReason={ready ? undefined : notReadyBecause(model)}
+              disabledReason={
+                !ready ? notReadyBecause(model) : model.waking ? "Storing that she is awake." : undefined
+              }
             >
-              Wake her
+              {model.waking ? "Waking her…" : "Wake her"}
             </Button>
           )}
           <button type="button" className="waking__later focus-ring" onClick={onLater}>
             Later
           </button>
           {step === 2 && !ready && <p className="waking__why">{notReadyBecause(model)}</p>}
+          {step === 2 && model.refusals.wake && (
+            <ProblemNote
+              title="She is not awake yet: this could not be stored. Press Wake her to try again."
+              reason={model.refusals.wake}
+              tone="error"
+            />
+          )}
           <p className="waking__engine-now">{engineLabel(model.engine)} is the chosen engine.</p>
         </div>
       </section>
