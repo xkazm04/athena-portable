@@ -535,12 +535,22 @@ function Tape({ model }: { model: CompanionModel }) {
   return (
     <div className="tape">
       <div className="tp-line dim">
+        {model.talk.working ? <StopButton onStop={model.actions.stop} /> : null}
         {tape.prev ? <Line step={tape.prev} /> : <span className="tp-note">{tape.note}</span>}
       </div>
       <div key={`${tape.cur.app}/${tape.cur.what}`} className="tp-line on in">
         <Line step={tape.cur} />
       </div>
     </div>
+  );
+}
+
+/** Stop her, wherever she is shown working (ADR 0115). A word, so it is never an icon alone. */
+function StopButton({ onStop }: { onStop: () => void }) {
+  return (
+    <button type="button" className="aw-textbtn" data-act="stop" aria-label="Stop her working" onClick={onStop}>
+      Stop
+    </button>
   );
 }
 
@@ -771,6 +781,7 @@ function Talk({ model }: { model: CompanionModel }) {
           <div className="msg msg-athena" aria-live="polite">
             <span className="msg-who">Athena</span>
             <p>{talk.phrase}…</p>
+            <StopButton onStop={actions.stop} />
           </div>
         ) : null}
         {model.cards.length ? <Slip model={model} card={model.cards[0]} inline /> : null}

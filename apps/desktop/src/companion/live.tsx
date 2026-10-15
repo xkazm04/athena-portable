@@ -356,6 +356,7 @@ export default function Live() {
     decline: (by) => rt.dispatch({ t: "decide", kind: "decline", by }),
     esc: () => rt.dispatch({ t: "esc" }),
     send: (message) => void run.send(message).catch(report("send")),
+    stop: () => void run.stop().catch(report("stop")),
     clear: () => run.clear(),
     clearProject: () => run.setProject(null),
     pin: () => rt.dispatch({ t: "pin" }),

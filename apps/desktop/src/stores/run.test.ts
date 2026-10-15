@@ -59,6 +59,23 @@ function sse(events: Event[]): ReadableStream<Uint8Array> {
   });
 }
 
+/** An SSE body that sends `events` and then stays open, as a turn hung in its engine does, until
+ *  `signal` aborts: then the read fails the way a real `fetch` body's does. */
+function held(events: Event[], signal: AbortSignal | undefined): ReadableStream<Uint8Array> {
+  const encoder = new TextEncoder();
+  return new ReadableStream({
+    start(controller) {
+      for (const event of events) {
+        controller.enqueue(encoder.encode(`event: ${String(event.kind)}
+data: ${JSON.stringify(event)}
+
+`));
+      }
+      signal?.addEventListener("abort", () => controller.error(new DOMException("aborted", "AbortError")));
+    },
+  });
+}
+
 function jsonResponse(payload: unknown, status = 200): Response {
   return new Response(JSON.stringify(payload), {
     status,
@@ -67,7 +84,12 @@ function jsonResponse(payload: unknown, status = 200): Response {
 }
 
 interface Script {
-  runs?: Array<Event[] | { refuse: { reason: string; detail: string }; status?: number }>;
+  runs?: Array<
+    | Event[]
+    | { refuse: { reason: string; detail: string }; status?: number }
+    /** Stream these frames, then hold the stream open until the request is aborted. */
+    | { hang: Event[] }
+  >;
   resolutions?: Record<string, unknown>;
   /** `GET /decisions` rows. Mutable, so a test can change what the daemon holds. */
   pending?: Array<Record<string, unknown>>;
@@ -80,6 +102,8 @@ interface Seen {
 
 function fakeDaemon(script: Script = {}) {
   const seen: Seen[] = [];
+  /** The signal each `POST /run` was sent with, in order. */
+  const signals: Array<AbortSignal | undefined> = [];
   let turn = 0;
 
   const fetchImpl = async (url: string, init: RequestInit = {}): Promise<Response> => {
@@ -99,10 +123,18 @@ function fakeDaemon(script: Script = {}) {
       return jsonResponse(answer);
     }
     if (path === "/manifest") return jsonResponse({ ok: true });
+    if (path === "/run/stop") return jsonResponse({ ok: true, stopped: true });
     if (path === "/run") {
       const next = script.runs?.[turn];
       turn += 1;
+      signals.push(init.signal ?? undefined);
       if (!next) return jsonResponse({ reason: "unknown", detail: "the script ran out" }, 500);
+      if (!Array.isArray(next) && "hang" in next) {
+        return new Response(held(next.hang, init.signal ?? undefined), {
+          status: 200,
+          headers: { "content-type": "text/event-stream" },
+        });
+      }
       if (!Array.isArray(next)) return jsonResponse(next.refuse, next.status ?? 409);
       return new Response(sse(next), {
         status: 200,
@@ -115,6 +147,7 @@ function fakeDaemon(script: Script = {}) {
   return {
     fetchImpl,
     seen,
+    signals,
     runs: () => seen.filter((s) => s.path === "/run"),
     count: (path: string) => seen.filter((s) => s.path === path).length,
   };
@@ -1997,5 +2030,109 @@ describe("a sheet", () => {
     await useRun.getState().answerSheet(idOf(1), "approve");
     expect(useRun.getState().error?.reason).toBe("budget_exhausted");
     expect(daemon.runs()).toHaveLength(1 + MAX_CONTINUATIONS + 1);
+  });
+});
+
+// -- Stop (ADR 0115) -------------------------------------------------------------------------------
+
+/** Resolves once `check` holds, polling the microtask queue and the clock. */
+async function until(check: () => boolean): Promise<void> {
+  await vi.waitFor(() => {
+    if (!check()) throw new Error("not yet");
+  });
+}
+
+describe("Stop", () => {
+  it("in phase running aborts the request, asks the daemon to stop, goes idle with a line, and continues nothing", async () => {
+    const daemon = fakeDaemon({ runs: [{ hang: [said("Looking.")] }] });
+    wire(daemon, fakePage());
+
+    const sending = useRun.getState().send("Which invoices are late?");
+    await until(() => useRun.getState().transcript.some((e) => e.text === "Looking."));
+    expect(useRun.getState().phase).toBe("running");
+
+    await useRun.getState().stop();
+    await sending;
+
+    expect(daemon.signals[0]?.aborted).toBe(true);
+    const stops = daemon.seen.filter((s) => s.path === "/run/stop");
+    expect(stops.map((s) => s.body)).toEqual([{ origin: "https://ledgerbox.local" }]);
+    const state = useRun.getState();
+    expect(state.phase).toBe("idle");
+    expect(state.error).toBeNull();
+    expect(state.transcript.at(-1)?.text).toMatch(/stopped/i);
+    expect(daemon.runs()).toHaveLength(1);
+  });
+
+  it("keeps a page result that was pending and carries it on the next message, with no continuation", async () => {
+    // A write that already ran on the page is never dropped: the model is told and the daemon
+    // ledgers it with the next request, which is the person's, not a continuation.
+    let release: (answer: { ok: boolean; output: string }) => void = () => {};
+    const daemon = fakeDaemon({
+      runs: [
+        [hostCall("c1", "host.ledgerbox.chase"), hostCall("c2", "host.ledgerbox.mark_paid"), finished()],
+        [finished("Noted.")],
+      ],
+    });
+    const deps = wire(daemon, fakePage());
+    setRunDeps({
+      ...deps,
+      call: async (_tab, name) =>
+        name === "chase" ? { ok: true, output: "chased" } : new Promise((resolve) => (release = resolve)),
+    });
+
+    const sending = useRun.getState().send("chase and mark it paid");
+    await until(() => useRun.getState().phase === "acting" && useRun.getState().transcript.some((e) => e.id === "c1"));
+    const stopping = useRun.getState().stop();
+    release({ ok: true, output: "marked" });
+    await stopping;
+    await sending;
+
+    expect(daemon.runs()).toHaveLength(1);
+    // The daemon's turn had already finished: there was nothing there to stop.
+    expect(daemon.count("/run/stop")).toBe(0);
+    expect(useRun.getState().phase).toBe("idle");
+    expect(useRun.getState().transcript.some((e) => /stopped/i.test(e.text))).toBe(true);
+
+    await useRun.getState().send("what happened?");
+
+    const runs = daemon.runs();
+    expect(runs).toHaveLength(2);
+    expect(runs[1].body!.message).toBe("what happened?");
+    const carried = runs[1].body!.tool_results as Array<Record<string, unknown>>;
+    expect(carried.map((r) => [r.call_id, r.output])).toEqual([
+      ["c1", "chased"],
+      ["c2", "marked"],
+    ]);
+  });
+
+  it("leaves a card that arrived before it pending and answerable", async () => {
+    const daemon = fakeDaemon({
+      runs: [{ hang: [CARD] }],
+      resolutions: { apr_0000000000a1: { ...APPROVED, status: "declined", choice: "decline" } },
+      pending: [{ id: "apr_0000000000a1", action: "host.ledgerbox.chase", params: { invoice: "INV-118" } }],
+    });
+    wire(daemon, fakePage());
+
+    const sending = useRun.getState().send("chase INV-118");
+    await until(() => useRun.getState().cards.length === 1);
+    await useRun.getState().stop();
+    await sending;
+    await useRun.getState().reconcile();
+
+    expect(useRun.getState().cards.map((c) => c.id)).toEqual(["apr_0000000000a1"]);
+    await useRun.getState().answer("apr_0000000000a1", "decline");
+    expect(useRun.getState().cards).toEqual([]);
+    expect(useRun.getState().answered[0].result).toBe("user_denied");
+  });
+
+  it("does nothing when no turn is running", async () => {
+    const daemon = fakeDaemon({ runs: [] });
+    wire(daemon, fakePage());
+
+    await useRun.getState().stop();
+
+    expect(daemon.seen).toEqual([]);
+    expect(useRun.getState().transcript).toEqual([]);
   });
 });

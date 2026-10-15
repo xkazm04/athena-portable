@@ -479,3 +479,18 @@ test("a single card is still the card it always was", () => {
   expect(out).not.toContain("data-sheet");
   expect(out).not.toContain("Decline all");
 });
+
+test("Stop is offered wherever she is shown working, and nowhere else (ADR 0115)", () => {
+  expect(html("tape")).toContain('data-act="stop"');
+  expect(html("tape thinking")).toContain('data-act="stop"');
+  expect(html("tape done")).not.toContain('data-act="stop"');
+  expect(html("ledger")).not.toContain('data-act="stop"');
+  expect(html("slip")).not.toContain('data-act="stop"');
+  const ledger = fixtures.ledger();
+  const working = renderToStaticMarkup(
+    createElement(CompanionView, { model: { ...ledger, talk: { ...ledger.talk, working: true } } }),
+  );
+  expect(working).toContain('data-act="stop"');
+  // A word a screen reader can act on, not an icon alone.
+  expect(working).toMatch(/<button[^>]*data-act="stop"[^>]*>Stop<\/button>/);
+});

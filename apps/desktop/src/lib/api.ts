@@ -317,6 +317,14 @@ export class DaemonApi {
     }
   }
 
+  /**
+   * Stop the turn running for `origin` (ADR 0115). `stopped` is false when none of its turns was
+   * running. A card the turn already filed is untouched and stays answerable.
+   */
+  stop(origin: string): Promise<{ ok: boolean; stopped: boolean }> {
+    return this.json("POST", "/run/stop", { origin });
+  }
+
   private headers(): Record<string, string> {
     return { "X-Athena-Token": this.endpoint.token, "Content-Type": "application/json" };
   }

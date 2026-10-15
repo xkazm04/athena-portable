@@ -77,6 +77,9 @@ export const MAX_CONTINUATIONS = 8;
 /** The line a continuation carries: the user said nothing new, so no words are put in her mouth. */
 const CONTINUE = "(the tools you called have answered; continue)";
 
+/** What a host call the person stopped her before is told as, with the next message (ADR 0115). */
+const NOT_RUN_STOPPED = "cancelled: the person stopped her before this ran";
+
 export type RunPhase = "idle" | "running" | "acting" | "error";
 
 export interface TranscriptEntry {
@@ -339,6 +342,13 @@ export interface RunState {
   /** Set or clear it. Clear (the transcript) does not touch it: it is the person's selection. */
   setProject: (project: ActivePlaybook | null) => void;
   send: (message: string) => Promise<void>;
+  /**
+   * Stop her (ADR 0115): the request in flight is aborted, the daemon is asked to end the turn,
+   * and the exchange continues no further. A page result she has not read yet is kept and goes
+   * with the person's next message, so a write that already ran is never unrecorded. Cards are
+   * untouched. Does nothing unless she is working.
+   */
+  stop: () => Promise<void>;
   /**
    * Answer a card. The card stays until the daemon says it took the answer; `settled` is called the
    * moment it has (or has not), before any continuation turn, so the slip stamps on success only.
@@ -1021,6 +1031,7 @@ export const useRun = create<RunState>((set, get) => {
    * origin, and the user may have moved tabs between the card and the answer.
    */
   async function onPage(row: ExecuteRow, approved = false): Promise<Ran> {
+    const mine = generation;
     const bound = row.tab_id !== undefined && row.tab_id !== null;
     const focused = deps.focused();
     const target = bound ? boundTab(row.tab_id as number, focused) : focused;
@@ -1114,7 +1125,8 @@ export const useRun = create<RunState>((set, get) => {
       tier: answer.tier ?? row.tier ?? 1,
       ok: answer.ok,
     });
-    set({ phase: "running" });
+    // Stopped while the page ran it: the result is kept above, and she stays stopped.
+    if (mine === generation) set({ phase: "running" });
     return { ok: answer.ok, error: answer.ok ? null : (error ?? "failed") };
   }
 
@@ -1138,6 +1150,12 @@ export const useRun = create<RunState>((set, get) => {
 
   /** The other tabs this exchange registered with the daemon: its `open_apps` (ADR 0106). */
   let published: OtherTab[] = [];
+
+  /** Counts Stop presses. Work that began before a press checks it and goes no further (ADR 0115). */
+  let generation = 0;
+
+  /** The request in flight: what Stop aborts, and the origin it asks the daemon to stop. */
+  let inFlight: { origin: string; controller: AbortController } | null = null;
 
   async function apply(event: ChannelEvent): Promise<void> {
     switch (event.kind) {
@@ -1189,7 +1207,12 @@ export const useRun = create<RunState>((set, get) => {
       case "turn.finished": {
         const calls = [...proposed.values()];
         proposed = new Map();
-        for (const call of calls) await onPage(call);
+        const mine = generation;
+        for (const call of calls) {
+          // Stopped between two calls: the rest never run, and the model is told so (ADR 0115).
+          if (mine !== generation) outstanding.push(resultRow(call, false, "", NOT_RUN_STOPPED));
+          else await onPage(call);
+        }
         break;
       }
     }
@@ -1210,6 +1233,9 @@ export const useRun = create<RunState>((set, get) => {
     const carried = outstanding;
     outstanding = [];
     request += 1;
+    const mine = generation;
+    const flight = { origin: focused.origin, controller: new AbortController() };
+    inFlight = flight;
     // One capture of the focused tab per request. It never blocks the request and never fails it.
     const taken = await captureOf(deps.capture, focused.tabId, focused.origin);
     set({ captureNow: taken.why });
@@ -1237,13 +1263,19 @@ export const useRun = create<RunState>((set, get) => {
         // Set here from the shell's tab list, never by a model.
         ...(published.length ? { open_apps: openAppsOf(published) } : {}),
         ...activeProject(get().project),
-      })) {
+      }, flight.controller.signal)) {
+        // The daemon's turn ends at its last frame; what follows is the page's, with nothing to abort.
+        if (isTerminal(event) && inFlight === flight) inFlight = null;
         await apply(event);
         if (isTerminal(event)) break;
       }
     } catch (error) {
+      // Stopped: the abort is the person's, not a failure to show them (ADR 0115).
+      if (mine !== generation) return false;
       fail(error);
       return false;
+    } finally {
+      if (inFlight === flight) inFlight = null;
     }
     return true;
   }
@@ -1309,10 +1341,15 @@ export const useRun = create<RunState>((set, get) => {
     // calls it releases all come from it (ADR 0067).
     const taking = snapshotFrom(deps);
     snap = taking;
+    const mine = generation;
     if (!(await publish(taking))) return;
     let message = first;
     for (let step = 0; step <= MAX_CONTINUATIONS; step += 1) {
+      if (mine !== generation) return;
       if (!(await consume(message, taking))) return;
+      // Stopped while the page ran her calls: what it answered waits for the person's next
+      // message, and no continuation starts on its own (ADR 0115).
+      if (mine !== generation) return;
       if (outstanding.length === 0) {
         set({ phase: "idle" });
         return;
@@ -1473,9 +1510,43 @@ export const useRun = create<RunState>((set, get) => {
       await exchange(message);
     },
 
+    async stop() {
+      const { phase } = get();
+      if (phase !== "running" && phase !== "acting") return;
+      generation += 1;
+      const flight = inFlight;
+      inFlight = null;
+      flight?.controller.abort();
+      // A call the turn proposed and never released was not run: the turn it belonged to ended.
+      proposed = new Map();
+      const kept = outstanding.length > 0;
+      set({ phase: "idle", error: null });
+      push(
+        {
+          id: `stop${Date.now()}`,
+          kind: "tool",
+          text: kept
+            ? "stopped: you stopped her. What the page already did goes with your next message."
+            : "stopped: you stopped her. Nothing more runs until your next message.",
+          ok: false,
+        },
+        false,
+      );
+      const api = deps.api();
+      if (api && flight) {
+        await api.stop(flight.origin).catch((error: unknown) => console.error(`[athena] stop: ${String(error)}`));
+      }
+    },
+
     async answer(id, choice, settled) {
+      const mine = generation;
       const out = await answerOne(id, choice, settled, false);
       if (!out?.taken || out.result !== "approved") return;
+      if (mine !== generation) {
+        // Stopped while the approved call ran: its result rides the next message (ADR 0115).
+        set({ phase: "idle" });
+        return;
+      }
       if (outstanding.length) {
         set({ phase: "running" });
         await exchange(CONTINUE);
@@ -1500,6 +1571,7 @@ export const useRun = create<RunState>((set, get) => {
       const rows = sheet.rows;
       const n = rows.length;
       const approving = choice === "approve";
+      const mine = generation;
       const ticked = approving ? rows.filter((row) => !before.unticked[row.id]) : [];
       const declined = approving ? rows.filter((row) => before.unticked[row.id]) : rows;
       set((s) => ({ ran: without(s.ran, sheet.key) }));
@@ -1547,6 +1619,11 @@ export const useRun = create<RunState>((set, get) => {
       }
       settled?.(answered > 0 ? { ok: true, sentence: "" } : { ok: false, sentence: firstRefusal || refusalSentence("unknown") });
       await get().reconcile();
+      if (mine !== generation) {
+        // Stopped during the walk: what ran rides the next message, and nothing continues.
+        set({ phase: "idle" });
+        return;
+      }
       // One continuation for every row that ran, instead of one per row (ADR 0104).
       if (outstanding.length) {
         set({ phase: "running" });

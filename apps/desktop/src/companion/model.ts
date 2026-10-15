@@ -50,6 +50,8 @@ export interface CompanionActions {
   /** Esc: put the slip away, close the ledger, leave the welcome page. */
   esc: () => void;
   send: (message: string) => void;
+  /** Stop her: end the turn she is working on, and continue nothing (ADR 0115). */
+  stop: () => void;
   /** Stop working on the active playbook (ADR 0044). */
   clearProject: () => void;
   clear: () => void;
@@ -84,6 +86,7 @@ export const NO_ACTIONS: CompanionActions = {
   decline: () => {},
   esc: () => {},
   send: () => {},
+  stop: () => {},
   clearProject: () => {},
   clear: () => {},
   pin: () => {},
