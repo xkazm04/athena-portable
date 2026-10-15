@@ -1,0 +1,21 @@
+{"card":"desktop-client-lib/A","status":"landed","shas":["aee805d","1846563"],
+ "tests_added":[
+  "apps/desktop/src/lib/execute.test.ts::readTimeout > a timeout on a write is outcome_unknown, on a read a timeout, an ok answer neither",
+  "apps/desktop/src/lib/execute.test.ts::readTimeout > a tool no listing describes is not a read, so its timeout is outcome_unknown",
+  "apps/desktop/src/lib/execute.test.ts::readTimeout > a hand the page did not register is read from the hands' own flags",
+  "apps/desktop/src/lib/execute.test.ts::settleHostCall (3 cases)",
+  "apps/desktop/src/lib/execute.test.ts::the unsure hold (2 cases)",
+  "apps/desktop/src/stores/voice.test.ts::a spoken host call that outlives its deadline > a timed-out spoken write answers outcome_unknown and leaves the tool unsure",
+  "apps/desktop/src/stores/voice.test.ts::a spoken host call that outlives its deadline > a timed-out spoken read answers a plain timeout and holds nothing",
+  "apps/desktop/src/stores/voice.test.ts::a spoken host call that outlives its deadline > a tool a panel turn left unsure rides gated_tools on the next start and text frames",
+  "apps/desktop/src/stores/voice.test.ts::a spoken host call that outlives its deadline > a released call of an unsure tool is held: the page is never called",
+  "apps/desktop/src/stores/voice.test.ts::a spoken host call that outlives its deadline > answering a card for the tool lifts the hold for the next spoken turn",
+  "apps/desktop/src/stores/voice.test.ts::a spoken host call that outlives its deadline > a spoken answer to the tool's card lifts the hold too, so the approved call runs",
+  "apps/desktop/src/stores/voice.test.ts::a spoken host call that outlives its deadline > guard: a host call that answers ok answers the daemon and the transcript as before"
+ ],
+ "guard_cases":[6,7],
+ "cases_total":8,"cases_red_before":6,"cases_green_after":8,
+ "gates":{"apps/desktop: pnpm typecheck":0,"apps/desktop: pnpm lint":0,"apps/desktop: pnpm test (102 files, 1455 tests)":0,"apps/desktop at aee805d alone (voice files at HEAD~): typecheck/lint/test (1448 tests)":0},
+ "files_changed":7,"lines_changed":821,
+ "deviations_from_card":"(1) Two commits, not three: the ADR and CHANGELOG ride with the voice commit (brief: shared-surface edits in the final commit under the lock). (2) lib/hands.ts not touched: callOnPage already returns reason; PageAnswer moved to lib/execute.ts and run.ts re-exports it. (3) Added one behaviour the card did not list: a voice decision.resolved with by=user lifts the hold on the card's action (ADR 0113 decision 3). Without it a spoken yes to an unsure tool's card would hold its own approved execute, since the gateway sends the execute as a plain tool.call after decision.resolved; this matches the panel, where answer() forgets before running the execute. Pinned by its own test (red before). (4) withUnsure takes a local structural type rather than run.ts's GatedLists, to keep lib/ from importing stores/. (5) lines_changed 821 is just over ~800: 312 are tests and ~250 are the mechanical move (139 deleted from run.ts, re-added in execute.ts).",
+ "notes":"ADR number 0113 claimed under the lock (0112 was demo-kit's). run.ts keeps re-exports timeoutReasonOf (alias of readTimeout), isReadCall, unsureTools, withUnsure, UNSURE_CAP, Unsure, PageAnswer for harness-engines/B. voice.test.ts beforeEach now calls resetRunForTests() so the window's unsure set starts empty. No sibling reds seen on the apps/desktop gates."}

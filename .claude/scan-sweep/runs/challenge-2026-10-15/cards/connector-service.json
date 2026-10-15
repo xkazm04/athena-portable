@@ -1,0 +1,150 @@
+{
+  "host": "connector-service",
+  "cards": [
+    {
+      "context": "connector-service",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "Credential health is a verdict plus an attempt, written by every door of the vault",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "src/athena/connectors/vault.py",
+        "tests/connectors/test_vault.py",
+        "tests/connectors/test_grant.py",
+        "apps/desktop/src/lib/api.ts",
+        "apps/desktop/src/modules/connectors/model.ts",
+        "apps/desktop/src/modules/connectors/model.test.ts",
+        "apps/desktop/src/modules/connectors/fixtures.ts"
+      ],
+      "new_files": [
+        "src/athena/connectors/health.py",
+        "tests/connectors/test_health.py",
+        "docs/adr/0107-a-credential-keeps-its-last-verdict-and-a-probe-that-reached-none-is-an-attempt.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/0107-a-credential-keeps-its-last-verdict-and-a-probe-that-reached-none-is-an-attempt.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "probe on an OAuth grant whose access token is inside REFRESH_FLOOR_S, with a fake provider that answers 401 to the stale token and 200 to the refreshed one -> the probe refreshes first, record.health == 'healthy' (today: the raw sealed token is sent, 401, health 'broken')",
+        "probe on a record whose last verdict is healthy, with the transport raising VaultError('could not be reached') -> health stays 'healthy' with its old health_at; attempt_at is now and attempt_detail names 'could not reach'; nothing is 'broken'",
+        "probe answered 429 or 503 by the provider -> same as unreachable: verdict and health_at unchanged, attempt recorded with the status in its detail",
+        "probe on a Notion token answered 401 -> health 'broken' with the status in health_detail and attempt_at cleared (existing test_probe_records_a_broken_credential_with_its_time stays green)",
+        "vault.request on an OAuth grant answered 401 -> status 'needs_reauth' AND health 'broken' with its time (today: status flips, health stays 'healthy')",
+        "vault.request whose refresh hits a token endpoint 503 (RefreshFailed) -> status stays 'connected', verdict unchanged, attempt_detail names the refresh failure and its status (today: the record is untouched and the surface says connected and fine)",
+        "_admit that resets the switches (ADR 0062) puts the sentence in record.notice; a later successful probe leaves notice intact (today: probe sets health_detail '' and the reset sentence vanishes after one 'Check now')",
+        "standingOf with health 'healthy' and an attempt newer than health_at -> standing 'connected', tone 'warning', sentence 'Verified <age>; could not check since <age>: <obstacle>' and never 'broken'"
+      ],
+      "guard_cases": ["3"],
+      "premise": [
+        "README.md:239",
+        "src/athena/connectors/vault.py:813",
+        "src/athena/connectors/vault.py:819",
+        "src/athena/connectors/vault.py:828",
+        "src/athena/connectors/vault.py:830",
+        "src/athena/connectors/vault.py:653",
+        "src/athena/connectors/vault.py:206",
+        "src/athena/connectors/vault.py:520",
+        "src/athena/connectors/vault.py:592",
+        "src/athena/connectors/vault.py:609",
+        "src/athena/connectors/vault.py:696",
+        "src/athena/connectors/vault.py:821",
+        "apps/desktop/src/modules/connectors/model.ts:179",
+        "apps/desktop/src/modules/connectors/model.ts:219"
+      ],
+      "rollback": "Two commits (vault + health module + Python tests; then the desktop model + fixtures + TS tests). Revert in reverse order; the record's new fields (attempt_at, attempt_detail, notice) are additive and ignored by the old loader (vault.py:306-311 keeps only known names), so a reverted build reads a newer connections.json unchanged.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\"",
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "A connector write whose wire outcome is unknown (send_mail timeout, 5xx) returns outcome_unknown like a page write (ADR 0101 parity) instead of engine_error, so the episode says 'may have completed'",
+      "body": "## Summary\nThe vault's health is three-valued on paper (README 239) and two-valued in code: every VaultError a probe meets becomes 'broken', the probe never refreshes an OAuth token first, and the two doors that actually learn the truth during use (request, refresh) never write health at all. Make health one module, `connectors/health.py`, that classifies an answer into a verdict (healthy, broken with its kind) or an attempt that reached none (unreachable, rate limited, provider error, refresh failed), and route every door through it.\n\n## Description\nToday `Vault.probe` (vault.py:813) unseals the raw access token and probes with it; a Gmail grant idle for an hour answers 401 and is painted broken although its refresh token is fine. Any VaultError, including 'the provider could not be reached' (vault.py:206) and a 429 or 503 (vault.py:653 raises on any status >= 300), lands in the same `except` (vault.py:828) and writes 'broken'. Meanwhile a 401 during a real call flips status to needs_reauth but leaves health 'healthy' (vault.py:520), and a transient refresh failure (vault.py:592, 609) writes nothing, so the Accounts surface says 'connected' while every call fails. `health_detail` also carries ADR 0062's switch-reset sentence (vault.py:696), which the next successful probe erases (vault.py:821). Technique: credential-vault / health-probing ('could not verify is not broken'; verdict and attempt are two facts stored as two; only a verdict writes the verdict fields; the next verdict clears the attempt). This closes the registry deviation recorded against vault.py:828.\n\n## Flow\n- `health.py`: `classify(status, body, exc) -> Verdict | Attempt` over the vault's own typed signals (`refresh_is_terminal`, `is_quota_refusal`, `RateLimited`, `RefreshFailed`, transport VaultError).\n- `ConnectionRecord` gains `attempt_at`, `attempt_detail`, `notice` (additive; old files load).\n- `probe` goes through `_fresh_token`, then records verdict or attempt; `request` and `_refresh` record a verdict on 401/terminal and an attempt on transient failures, under the existing lock and generation check.\n- `_admit` writes the ADR 0062 sentence to `notice`.\n- Desktop `standingOf` renders 'verified N ago; could not check since M ago' as a warning, never as broken.\n\n## Expected impact\nAn offline laptop or a Google 503 no longer paints Gmail red; an expired-but-refreshable grant no longer looks broken after 'Check now'; a grant lost mid-turn is visible on the surface with its time; the account-switch notice survives. The class of defect 'transient failure recorded as a credential verdict' closes at one classifier.\n\n## Evaluation\nClaim: every vault door writes health through one classifier that keeps verdict and attempt apart.\nBefore: 1 of 8 acceptance cases pass (case 3, the guard)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "vault.py:813 `token = self._get(connector_id, \"token\")` then :819 `self._probe_with(spec, token)` (no _fresh_token). vault.py:653 `if status >= 300: raise VaultError(f\"{spec.label} refused the credential with {status}\")`. vault.py:828-830 `except VaultError as exc: ... rec.health, rec.health_detail = \"broken\", redact(str(exc), [token])`. vault.py:206 transport failure is `VaultError(\"the provider could not be reached: ...\")`, same except. vault.py:514-521 request 401/403 sets `rec.status = \"needs_reauth\"`, health untouched. vault.py:591-594 and 608-612 RefreshFailed raised, record untouched. vault.py:696 `rec.health, rec.health_at, rec.health_detail = \"healthy\", rec.connected_at, reset` (reset = ADR 0062 sentence); vault.py:821 `rec.health, rec.health_detail = \"healthy\", \"\"`. README.md:239 'Health is three-valued (healthy, broken, unknown)'. .ai/registry-map.json credential-vault state 'deviation': 'vault.py:828 marks a credential broken on any VaultError incl. unreachable provider/429/5xx'. model.ts:179 renders broken from health alone; model.ts:219 shows health_detail as healthNote when not broken."
+    },
+    {
+      "context": "connector-service",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Reconnect is one press: a lost Gmail grant reuses the client the vault already sealed",
+      "size": "M",
+      "effort": 5,
+      "impact": 8,
+      "risk": 4,
+      "write_set": [
+        "src/athena/connectors/vault.py",
+        "src/athena/daemon/connectors.py",
+        "tests/connectors/test_grant.py",
+        "tests/connectors/test_routes.py",
+        "apps/desktop/src/lib/api.ts",
+        "apps/desktop/src/stores/connectors.ts",
+        "apps/desktop/src/stores/connectors.test.ts",
+        "apps/desktop/src/modules/connectors/model.ts",
+        "apps/desktop/src/modules/connectors/model.test.ts",
+        "apps/desktop/src/scenes/accounts/view.tsx",
+        "apps/desktop/src/scenes/accounts/interact.test.tsx"
+      ],
+      "new_files": [
+        "docs/adr/0108-a-reconnect-reuses-the-sealed-client-and-no-client-value-crosses-the-route.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/0108-a-reconnect-reuses-the-sealed-client-and-no-client-value-crosses-the-route.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "after an admitted Gmail grant marked needs_reauth, vault.connect_oauth('gmail', client_id='', client_secret='', reuse_client=True) -> an OAuthFlow whose authorize_url carries the sealed client_id and whose exchange posts the sealed client_secret to the token endpoint (fake provider records the form)",
+        "vault.view('gmail')['client_kept'] is True while a client_id is sealed and False after disconnect; json.dumps(view) contains neither sealed client value",
+        "POST /connectors/gmail/connect {'reuse_client': true, 'open_browser': false} with a kept client -> 200 with a flow in awaiting_consent; with no kept client -> 409 validator_failed whose detail asks for the client id",
+        "a reconnect through the kept client that completes as the same account keeps writes_enabled and the allow-list (ADR 0062 unchanged)",
+        "a reconnect flow that fails or is cancelled leaves the record needs_reauth and the sealed client pair readable (nothing destroyed, nothing re-sealed)",
+        "a connect body that carries a pasted client_id uses the pasted pair even when one is kept (an explicit pair always wins)",
+        "rowOf for a needs_reauth OAuth row with client_kept -> row.reconnect true; actions.reconnect('gmail') calls connectorAct('gmail','connect',{reuse_client:true}) with no client_id or client_secret in the body",
+        "the needs-reauth Accounts panel with client_kept renders one 'Reconnect' button that starts the flow, with 'Use a different client' revealing today's two fields"
+      ],
+      "guard_cases": ["5"],
+      "premise": [
+        "src/athena/connectors/builtin/gmail.json:16",
+        "src/athena/connectors/vault.py:596",
+        "src/athena/connectors/vault.py:688",
+        "src/athena/connectors/vault.py:761",
+        "src/athena/connectors/vault.py:440",
+        "src/athena/daemon/connectors.py:88",
+        "apps/desktop/src/modules/connectors/model.ts:158",
+        "apps/desktop/src/scenes/accounts/view.tsx:277",
+        "apps/desktop/src/scenes/accounts/view.tsx:633"
+      ],
+      "rollback": "Two commits (vault + route + Python tests + ADR; then the desktop store, model and view with their tests). Reverting the desktop commit leaves an unused route flag; reverting the vault commit removes `client_kept` and `reuse_client`, both additive, and the sealed pair was already kept by today's admission so no data changes either way.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\"",
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "Refused egress becomes actionable: the vault keeps the last few recipients a write was refused for (address, tool, time; never a body) and the allow-list editor offers each with one 'Allow' instead of the user retyping what the model already asked for",
+      "body": "## Summary\nGmail's guide tells the user to register their own client in Testing mode (gmail.json:16, 'add yourself as a test user'), where Google expires refresh tokens after seven days. The refresh then answers invalid_grant and the vault marks needs_reauth (vault.py:596). To get back, the user must paste the client id and secret again (vault.py:761; daemon/connectors.py:88; view.tsx:633), although the vault sealed that exact pair at admission (vault.py:688) and keeps it through needs_reauth (only disconnect drops it, vault.py:440). Make the reconnect one press.\n\n## Description\n`connect_oauth` gains `reuse_client: bool`. When true and no pair is given, the vault unseals its own client pair and starts the flow with it; no client value crosses the route or reaches the surface (credential-vault: actions cross the boundary, values do not). `Vault.view` reports `client_kept: bool`, never the value. The admission path is unchanged: the pair is re-sealed only after the provider accepts the code, so a failed reconnect destroys nothing. The desktop's needs-reauth panel shows one 'Reconnect' button when `client_kept`, and keeps the two fields behind 'Use a different client'. Technique: credential-vault / acquisition (validation before admission; retire the failed acquisition) and token-refresh-lifecycle (a terminal refresh routes to its remedy).\n\n## Flow\n- Needs reconnecting -> press Reconnect -> the browser opens Google's consent -> done; same account keeps its switches (ADR 0062).\n- Today: find the Google Cloud console, find the client, copy the id, create or copy a secret (Google shows a new client's secret only at creation), paste both, press Connect, consent.\n\n## Expected impact\nA weekly chore of five steps in another console becomes one press, for every Gmail user on a self-registered client, which is every Gmail user this build supports. The decision 'which client did I use?' is no longer made blind: the vault already knows.\n\n## Evaluation\nClaim: a needs_reauth OAuth connector with a sealed client reconnects with one act and no client value on the wire.\nBefore: 1 of 8 acceptance cases pass (case 5, the guard: a pasted pair is used today)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "gmail.json:16 guide step 3 'OAuth consent screen: External, and add yourself as a test user' (Testing status; Google issues 7-day refresh tokens to such clients). vault.py:596-605 terminal refresh -> `_mark_reauth` -> status needs_reauth. vault.py:688-689 `self._put(spec.id, \"client_id\", client[0]); self._put(spec.id, \"client_secret\", client[1])` at admission. vault.py:440 `_drop` destroys client_id/client_secret only on disconnect. vault.py:761-762 `if not client_id.strip(): raise VaultError(\"a client id is required\")`. daemon/connectors.py:88-93 connect_oauth fed only from the body. model.ts:158 'needs reconnecting' / ':' 'let the grant go; connect again to continue.' view.tsx:277 the needs-reauth panel renders <Connect>, whose OAuth arm (view.tsx:631-634) requires a pasted client id and clears the pasted secret."
+    }
+  ],
+  "rehomed": [
+    "Connector write timeouts and 5xx as outcome_unknown (ADR 0101 parity; service.py:138 maps every VaultError on a send to engine_error): real, but service.py plus one transport distinction is effort 3-4, S; the retry card already gets the spent-recently line from harness/hooks.py:164",
+    "DPAPI with null entropy and ciphertext not bound to its handle (seal.py:154, registry encryption-at-rest deviation): bind the name as entropy with a read-old-then-reseal fallback; S, effort 3",
+    "Provider dispatch is a hand-kept if-chain per tool name (providers/gmail.py:132, notion.py:121) beside the spec's tool list; a parity test or a per-tool handler table is S, effort 2",
+    "An OAuth admission re-merges the catalog from the flow thread outside daemon.writing() (oauth.py:166 -> vault.py:699 -> wiring.py:387), unlike every other connector act (daemon/connectors.py:69); S, effort 3"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["credential-vault", "connector-catalog"],
+    "techniques": ["health-probing", "acquisition", "token-refresh-lifecycle", "brokered-egress"]
+  },
+  "files_read": 36
+}

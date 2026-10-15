@@ -62,3 +62,7 @@ Anchor examples:
 ## Strategy for this run
 
 `--stabilize`, package `ui-perfectionist` first, then visual-craft, ux-reviewer, state-coverage, accessibility-checker, copy-auditor, mobile-specialist, code-optimizer.
+
+## Skill improvement log
+
+- 2026-10-15 (--challenge): in this shared checkout, at most two builders may run the full pytest suite at once (four ran it together and one was killed for memory); the per-wave integration gate is the full run. `examples/journey` (e2e, boots dev servers on 3001+) stays out of every gate. Known timing flakes: `packages/athena-bridge` deadline test (about 1 in 10), the research-lanes cancel test.

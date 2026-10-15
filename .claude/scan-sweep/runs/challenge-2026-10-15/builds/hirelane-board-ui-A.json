@@ -1,0 +1,21 @@
+{"card":"hirelane-board-ui/A","status":"landed","shas":["5f452b5"],
+ "tests_added":[
+  "examples/hirelane/test/acts.test.ts::actsFor offers the slots Propose slots just held, first, and picks the first of them",
+  "examples/hirelane/test/acts.test.ts::the dossier's act set equals what the server actions accept, for every applicant and act",
+  "examples/hirelane/test/acts.test.ts::a refusal reason reads the same in the dossier and from the server",
+  "examples/hirelane/test/acts.test.ts::the agent's dossier read carries the same acts, and read_view counts free slots by the same predicate",
+  "examples/hirelane/test/actions.test.ts::scheduling below Interview still sends the reader to move them to Interview first",
+  "examples/hirelane/test/actions.test.ts::a slot held for one candidate cannot be re-targeted at another (existing test, serves as guard 5)",
+  "examples/hirelane/test/actions.test.ts::nextMoveFor is unchanged for all five stages"],
+ "guard_cases":[4,5,6],
+ "cases_total":7,"cases_red_before":4,"cases_green_after":7,
+ "gates":{
+  "pnpm --filter hirelane typecheck":0,
+  "pnpm --filter hirelane lint":0,
+  "pnpm --filter hirelane test":0,
+  "pnpm typecheck (root)":0,
+  "pnpm lint (root)":0,
+  "pnpm -r --filter \"!journey\" --if-present run test":0},
+ "files_changed":15,"lines_changed":670,
+ "deviations_from_card":"(1) A fourth refusal reason, 'next_is_a_decision', alongside decided/too_early/no_slot: an interview candidate's move act is shut because the next ladder stage (Offer) is a decision, and none of the card's three reasons names that; the server's existing text for it ('Offer is a decision. Use the decision controls.') became REFUSAL.not_a_move. (2) buildBoard hands down every slot with status and holder (BdBoard.slots replaces openSlots) and actsFor derives the per-candidate list (own held first, then up to 12 free), rather than a per-candidate list in buildBoard; same result, one predicate. (3) read_view's L0 payload moved into a pure boardRead(board) in tools/read.ts so node --test can assert it. (4) The move act is defined as 'forward one ladder step' (nextMoveFor); moveStage still accepts interview->screening, which is not offered as a button; documented in ADR 0107 decision 5. (5) One server message changed: scheduling a decided candidate now returns REFUSAL.decided instead of 'too early... Move X to Interview first'; ok:false is unchanged. (6) Gate's slot select marks held slots ' - held for them'; Propose slots is disabled with 'No slot is open' when nothing is free (the action already refused that). ADR is 0107.",
+ "notes":"Red-before: acts.test.ts failed at import (lib/acts missing); to prove the cases discriminate, a mutation that drops the candidate's own held slots from bookableSlots turned 3 of the 4 non-guard cases red (reverted). The guards were green before and after. No sibling reds seen; all root gates exited 0 with the siblings' work in the tree. INCIDENT: the scratchpad directory is shared with sibling builders. My draft adr.md and msg.txt there were overwritten by the connectors builder's drafts, and my sed 's/ADR NNNN/ADR 0107/' briefly rewrote their msg.txt; I restored their 'ADR NNNN' line straight away. Their ADR draft also targets the next number, and I committed 0107 under the lock, so they must take 0108 or later. My ADR and message were rewritten from context to uniquely named paths before the commit. The coordinator should check that the connectors builder's ADR number and commit message are correct. Not verified in a browser."}

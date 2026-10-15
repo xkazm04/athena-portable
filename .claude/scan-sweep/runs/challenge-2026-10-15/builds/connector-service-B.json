@@ -1,0 +1,29 @@
+{"card":"connector-service/B","status":"landed","shas":["dccddd4","9887463"],
+ "tests_added":[
+  "tests/connectors/test_grant.py::test_case_0_a_reconnect_reuses_the_sealed_client_for_consent_and_exchange",
+  "tests/connectors/test_grant.py::test_case_1_the_view_says_a_client_is_kept_and_never_carries_it",
+  "tests/connectors/test_grant.py::test_case_3_a_reconnect_as_the_same_account_keeps_the_switches",
+  "tests/connectors/test_grant.py::test_case_4_a_reconnect_that_fails_or_is_cancelled_destroys_and_reseals_nothing",
+  "tests/connectors/test_grant.py::test_a_pasted_pair_wins_over_the_kept_one_in_the_vault",
+  "tests/connectors/test_grant.py::test_a_reconnect_with_no_kept_client_asks_for_the_client_id",
+  "tests/connectors/test_routes.py::test_case_2_a_reconnect_route_starts_a_flow_and_no_client_value_crosses_it",
+  "tests/connectors/test_routes.py::test_case_5_a_pasted_pair_in_the_body_wins_over_the_kept_one",
+  "apps/desktop/src/modules/connectors/model.test.ts::case 6: a needs-reauth OAuth row whose client is kept reconnects with one press, and no other row does",
+  "apps/desktop/src/stores/connectors.test.ts::case 6: a reconnect sends only the flag, never a client value, and polls the flow it started",
+  "apps/desktop/src/scenes/accounts/interact.test.tsx::case 7: one Reconnect press starts the flow with the kept client, and the two fields wait behind 'Use a different client'",
+  "apps/desktop/src/scenes/accounts/interact.test.tsx::a needs-reauth row with no kept client shows today's two fields and no Reconnect"
+ ],
+ "guard_cases":[5],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{
+  "uv run ruff check .":0,
+  "uv run ruff format --check .":0,
+  "uv run mypy":0,
+  "uv run pytest -m \"not provider and not eval\"":0,
+  "apps/desktop: pnpm typecheck":0,
+  "apps/desktop: pnpm lint":0,
+  "apps/desktop: pnpm test":0
+ },
+ "files_changed":13,"lines_changed":580,
+ "deviations_from_card":"ADR is 0117 (0108 was taken). No new `reconnect` action: the existing `connect` action carries {reuse_client:true}, so modules/connectors/index.ts (outside the write set) needs no change; the case-6 store half is tested as connect(id,{reuse_client:true}) sending exactly that body. stores/connectors.ts needed no change (pass-through). To honour the gate that no client id crosses the route, a flow started with the kept pair (_KeptClientFlow subclass in vault.py; oauth.py untouched) leaves authorize_url empty in its view, since the URL names the client id; the daemon opens the browser and the panel shows no 'Open the consent page again' link for that flow. The view also offers 'Use the kept client' to undo 'Use a different client'. Fixtures untouched; the interact test sets reconnect on the needs-reauth row.",
+ "notes":"Case 5 (guard) is the route test: it passed before and after. The full pytest run was invoked with -p no:cacheprovider so no cache was written into the repo. No sibling reds seen. Not verified by hand in the Tauri window."}

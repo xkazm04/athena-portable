@@ -1,0 +1,80 @@
+{
+  "cohort": [
+    {
+      "name": "hirelane-board-ui",
+      "group": "Example Apps",
+      "files": 26,
+      "reason": "never challenged",
+      "riders": [
+        {
+          "name": "hirelane-design-law",
+          "files": 4
+        },
+        {
+          "name": "tidycrm-design",
+          "files": 2
+        }
+      ]
+    },
+    {
+      "name": "harness-engines",
+      "group": "Model Harness",
+      "files": 23,
+      "reason": "never challenged",
+      "riders": [
+        {
+          "name": "browser-lane",
+          "files": 8
+        }
+      ]
+    },
+    {
+      "name": "connector-service",
+      "group": "Connectors",
+      "files": 22,
+      "reason": "never challenged",
+      "riders": []
+    },
+    {
+      "name": "demo-kit-zoom-engine",
+      "group": "Page Bridge and Demo Kit",
+      "files": 22,
+      "reason": "never challenged",
+      "riders": [
+        {
+          "name": "page-bridge",
+          "files": 6
+        }
+      ]
+    },
+    {
+      "name": "desktop-client-lib",
+      "group": "Desktop Companion",
+      "files": 22,
+      "reason": "never challenged",
+      "riders": [
+        {
+          "name": "desktop-build-config",
+          "files": 9
+        },
+        {
+          "name": "desktop-connectors-panel",
+          "files": 6
+        },
+        {
+          "name": "desktop-e2e",
+          "files": 9
+        }
+      ]
+    },
+    {
+      "name": "voice-channel",
+      "group": "Daemon and Channels",
+      "files": 22,
+      "reason": "never challenged",
+      "riders": []
+    }
+  ],
+  "eligible": 52,
+  "uncovered": 64
+}

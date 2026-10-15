@@ -1,0 +1,145 @@
+{
+  "host": "voice-channel",
+  "cards": [
+    {
+      "context": "voice-channel",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "A heard utterance ends in a typed outcome that crosses the wire",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "src/athena/contracts/channel.py",
+        "src/athena/channels/voice/backends.py",
+        "src/athena/channels/voice/commands.py",
+        "src/athena/channels/voice/gateway.py",
+        "apps/desktop/src/lib/events.ts",
+        "apps/desktop/src/stores/voice.ts",
+        "apps/desktop/src/stores/voice.test.ts",
+        "tests/channels/test_voice_gateway.py",
+        "tests/channels/test_voice_openai.py",
+        "tests/channels/test_commands.py",
+        "tests/contracts/test_channel.py",
+        "docs/daemon.md",
+        "CHANGELOG.md"
+      ],
+      "new_files": [
+        "docs/adr/NNNN-a-heard-utterance-ends-in-a-named-outcome.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/daemon.md",
+        "docs/adr/NNNN-a-heard-utterance-ends-in-a-named-outcome.md (a new field on voice.transcript and a level gate before the decoder)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "BufferedTranscriber fed 1,600 bytes (0.05 s) of PCM -> finish() returns '', outcome == 'too_short', requested is False",
+        "BufferedTranscriber fed 32,000 bytes of zeros (1 s) with a transcribe spy -> finish() returns '', the spy is called 0 times, outcome == 'silent', requested is False",
+        "BufferedTranscriber fed 1 s of a 440 Hz tone at -20 dBFS whose transcribe returns '' -> outcome == 'no_words', requested is True, peak_dbfs within -21..-19",
+        "gateway, scripted utterance '   ' -> exactly one event, voice.transcript {final: true, outcome: 'no_words'}; transport.requests == []; no ledger row",
+        "gateway, 'stop' said over a playing reply -> voice.transcript final has outcome 'stop'; one ledger row; one voice.speaking",
+        "gateway, a metered listener (Meter-bearing fake) fed only zero PCM -> voice.transcript outcome 'silent'; the fake provider got 0 requests; the ledger has no speech row",
+        "voice store (vitest): phase 'thinking', then a final voice.transcript with outcome 'silent' and peak_dbfs -70 -> phase 'idle' and reason names the microphone; with outcome 'message' -> phase stays 'thinking'",
+        "gateway, 'what is overdue' -> event kinds stay [voice.transcript, text.delta, turn.summary, turn.finished, voice.speaking, voice.stopped], one ledger row, one provider request"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "src/athena/channels/voice/gateway.py:838 - the final transcript is sent before recognise() decides what it is, carrying only text and final",
+        "src/athena/channels/voice/gateway.py:843 - 'silence' and 'stop' return with no further event: the socket never says the utterance is over",
+        "apps/desktop/src/stores/voice.ts:492 - release() sets phase 'thinking'; :296 only turn.finished moves it back to idle, and :251-258 a final transcript never touches phase",
+        "apps/desktop/src/lib/halo-signal.ts:56 - voice 'thinking' paints the halo's thinking edge, so a silent press or a stop word leaves it lit until the next press",
+        "src/athena/channels/voice/backends.py:294 - the only gate before the engine is a 0.1 s length check: a muted mic's two seconds of zeros go to whisper or to the metered provider",
+        "src/athena/channels/voice/whisper.py:173 - only bracketed markers are dropped; any other words whisper makes from silence become a message and a metered turn",
+        "src/athena/channels/voice/commands.py:91 - empty is re-derived from the string length, so too short, silent and heard-but-no-words are one fact on the wire",
+        "src/athena/contracts/channel.py:131 - VoiceTranscript is text + final only"
+      ],
+      "rollback": "One feature commit: revert it. The new VoiceTranscript fields default to '' and None, so a client or a transcript written before or after the revert reads either shape; there is no stored state to undo.",
+      "gate": "contract",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\" (verifier: tests/contracts/test_channel.py)",
+        "pnpm typecheck && pnpm lint && pnpm test (root)",
+        "pnpm typecheck && pnpm lint && pnpm test (apps/desktop)"
+      ],
+      "runner_up": "Partial voice: the gateway slot holds hearing and speaking as two halves, so a missing Kokoro no longer turns off push-to-talk (config.py:266 composes all-or-nothing; gateway.py:541 refuses start).",
+      "body": "## Summary\nEvery utterance ends in a typed outcome. The stage that knows the answer sets it, it travels on the final voice.transcript, and the surface never again has to guess from an empty string. A level gate stops a silent capture before any decoder or metered provider sees it.\n\n## Description\nToday an utterance has three terminal states the client can see (a turn, a turn.error, a spoken 'Approved.') and three it cannot: a tapped key, a silent or muted microphone, and a stop word. For those three the gateway sends a final transcript (gateway.py:838) and returns (gateway.py:843). The panel's store has already set 'thinking' on release (voice.ts:492), and only turn.finished clears it (voice.ts:296). So the halo stays violet and the key reads busy until the next press. Meanwhile 'empty' is worked out from string length three times: BufferedTranscriber at backends.py:294, recognise() at commands.py:91 and the store at voice.ts:254. The voice-io stt-pipeline technique says silence, no-speech and engine failure are three different facts, classified by the stage that saw them and carried across the boundary (verdict-survives-boundary). decode-time-vocabulary-biasing adds that a level gate runs before a decoder ever sees silence.\n\nThe move:\n1. BufferedTranscriber tracks the peak of what it is fed (stdlib array('h'), one pass per frame) and records outcome = too_short | silent | no_words | words. Below a conservative peak floor (about -55 dBFS) it sends nothing: no subprocess, no provider request, no ledger row.\n2. recognise() keeps its kinds, and one pure map turns (transcriber outcome, Spoken.kind) into the wire outcome: message | answer | stop | too_short | silent | no_words.\n3. The gateway sends the final VoiceTranscript after recognise, with outcome and peak_dbfs. contracts/channel.py and lib/events.ts gain the field and one outcome vocabulary, with the parity test.\n4. The store leaves 'thinking' on every outcome except message and answer, and gives each one its own sentence: 'hold the key while you speak'; 'your microphone sounded silent (-70 dB), check the input in Voice settings'; 'I heard sound but no words, try again'. A stop word is quiet.\n\n## Flow\n- key down -> start (unchanged)\n- PCM -> feed: the peak is measured beside the bytes counted for ADR 0072\n- key up -> worker finish(): too_short / silent return at once, without the engine; otherwise the engine runs, and no_words or words\n- recognise -> outcome -> voice.transcript {final, text, outcome, peak_dbfs}\n- message -> turn as today; answer -> decide as today; anything else -> the surface goes idle and says why\n\n## Expected impact\nA silent press, a tap or a stop word no longer leaves Athena 'thinking'. A muted or misrouted microphone shows the measured level instead of nothing. Silence never becomes a metered transcription, and never becomes a turn built from words whisper invented from room tone.\n\n## Evaluation\nClaim: every utterance ends in a named, surfaced outcome, and silence reaches no decoder.\nBefore: 1 of 8 acceptance cases pass (the guard)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: contract (tests/contracts/test_channel.py plus the TS mirror in apps/desktop/src/lib/events.ts)",
+      "evidence": "gateway.py:837-847: `self.send(VoiceTranscript(text=job.text, final=True))` ... `if spoken.kind == \"silence\": return` / `if spoken.kind == \"stop\": self.interrupt(); return`. voice.ts:488-493 `release() { endListening(); ... socket?.send({ type: \"stop\" }); set({ phase: \"thinking\" }); }`. voice.ts:293-296 `case \"turn.finished\": ... if (get().phase === \"thinking\") set({ phase: \"idle\" });`, the only path back to idle after a release. voice.ts:251-258: a final transcript sets partial and heard, never phase. halo-signal.ts:56 `if (voice === \"thinking\" || ...) return \"thinking\"`. backends.py:293-297 `if len(audio) < INPUT_SAMPLE_RATE * 2 // 10: return \"\"` is the only gate before `self._transcribe(audio)`. whisper.py:173-176 drops only `_is_marker` tokens. commands.py:91-92 `if not spoken: return Spoken(\"silence\")`. contracts/channel.py:131-137 VoiceTranscript has text and final only. The registry-map's voice-io verdict (state 'deviation', evaluated 2026-10-14) names commands.py:91 for the same gap. No backlog or ADR covers it: ADR 0072/0074 bound the bytes and the queue, not the outcome."
+    },
+    {
+      "context": "voice-channel",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Her spoken reply passes one speech door: no markup, whole sentences, a budget",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 4,
+      "write_set": [
+        "src/athena/channels/voice/tts.py",
+        "src/athena/channels/voice/kokoro.py",
+        "src/athena/channels/voice/__init__.py",
+        "tests/channels/test_commands.py",
+        "tests/channels/test_voice_gateway.py",
+        "tests/channels/test_voice_engines.py",
+        "docs/daemon.md",
+        "CHANGELOG.md"
+      ],
+      "new_files": [
+        "src/athena/channels/voice/speech.py",
+        "tests/channels/test_speech_text.py",
+        "docs/adr/NNNN-what-she-says-is-written-for-the-ear.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/daemon.md (the spoken-line paragraph at :347)",
+        "docs/adr/NNNN-what-she-says-is-written-for-the-ear.md (amends ADR 0019's 'the text cut to the cap' with a spoken budget below TTS_CAP)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "spoken_line(TurnFinished(text='**Two** invoices are _late_:\\n- INV-7 (see https://ledger.example.com/inv/7)\\n- INV-9')) -> the text has no '*', '_', 'https://' or '/inv/7'; it keeps 'Two invoices are late', 'INV-7', 'INV-9' and the host 'ledger.example.com'",
+        "a reply with a fenced code block and inline `x` -> the fence becomes one short 'code on screen' phrase, and inline `x` is spoken as x with no backticks",
+        "a reply with '[the overdue list](https://a.example/x)' -> only 'the overdue list' is spoken",
+        "a 9-sentence, 1,000-character reply with no TTS line (under today's 1,200 cap) -> whole sentences only, at most SPOKEN_BUDGET characters before the footer, never cut mid-word, truncated True, ending in PromptBlock's '(showing 3 of 9)' counted in sentences",
+        "a TTS line '**Done.** See `INV-7`.' -> spoken 'Done. See INV-7.' (the door applies to the TTS line too)",
+        "split_sentences('Paid 3.5 thousand to Dr. Smith, e.g. today. Next one is due.') -> 2 sentences: no cut at '3.5', 'Dr.' or 'e.g.'",
+        "spoken_line(TurnFinished(text='Nothing is overdue.')) -> SpokenLine('Nothing is overdue.', truncated=False), byte for byte",
+        "an empty turn -> None; and every existing kokoro argv test (one leading space, narrow_safe) stays green unchanged"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "src/athena/channels/voice/tts.py:41 - with no TTS line, the visible text itself is spoken, markup and URLs included",
+        "src/athena/core/catalog.py:494 - the capability block teaches only the OP: line; no committed prompt, constitution or frame teaches a TTS: line, so the TTS branch at tts.py:34 is not taken in practice",
+        "src/athena/harness/op_grammar.py:70 - TTS_CAP = 1200: a fallback line can be about 80 s of speech before the cut",
+        "src/athena/channels/voice/tts.py:42 - the cut is text[:TTS_CAP]: mid-word, mid-URL, and the footer is spoken after the cut",
+        "src/athena/channels/voice/kokoro.py:193 - sentence ends are any [.!?] followed by space, so 'Dr.' and 'e.g.' end a sentence (later folded by length only)",
+        ".ai/registry-map.json voice-io verdict: 'tts.py:41 speaks visible reply text with no markup door, so markdown/URLs are voiced' (state deviation, 2026-10-14)"
+      ],
+      "rollback": "One feature commit: revert it. speech.py is new and pure; tts.py and kokoro.split_sentences return to the cap-and-announce path; nothing is persisted.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\""
+      ],
+      "runner_up": "A voice-surface turn frame that teaches the TTS: first line (the parser at op_grammar.py:91 reads a line no prompt asks for), which crosses core/prompt.py and FrameBuilder.",
+      "body": "## Summary\nWhat Athena says aloud passes one pure door, channels/voice/speech.py, before any engine sees it. Markup becomes speech, a link becomes its words or its host, code is mentioned rather than read, and a long reply is spoken as whole sentences up to a spoken budget, with the same (showing N of M) announcement counted in sentences.\n\n## Description\nThe model is never taught the TTS: line. The capability block (catalog.py:494) teaches OP: only, and no prompt file mentions TTS:. So in practice every spoken reply is spoken_line's fallback (tts.py:41): the reply's visible text, written for the eye, up to 1,200 characters. Kokoro (or any engine) voices that text as written: 'asterisk asterisk', 'h t t p s colon slash slash', bullet dashes, code. The 1,200-character cut lands mid-word (tts.py:42), after up to about 80 seconds of speech. The voice-io speech-ready-text technique names exactly this, and it is the registry's recorded deviation for this context: one door that turns display text into speakable text and owns the sentence-boundary rules the chunker uses.\n\nThe door:\n- speakable(text): drop heading marks, emphasis and strike markers; a list item becomes its own sentence; [label](url) becomes label; a bare URL becomes 'a link to <host>'; a fenced block becomes one 'code on screen' phrase; inline code becomes its content; a table becomes 'a table on screen'.\n- sentences(text): boundary rules for abbreviations (Dr., e.g., i.e., vs.), decimals and closing quotes. kokoro.split_sentences calls it, so the chunker and the budget cut agree.\n- spoken_line: the door runs on the TTS line and on the fallback. The fallback speaks whole sentences up to SPOKEN_BUDGET (a constant well under TTS_CAP, sized to about 20-25 s). When it cuts, it appends PromptBlock.footer() counted in sentences, so invariant 4 holds in words a listener can follow. VoiceSpeaking.text is the spoken text, so the halo caption and the panel show what was said.\n\n## Flow\n- turn.finished -> spoken_line -> speech.speakable -> sentences -> budget cut + footer -> SpokenLine\n- SpokenLine -> gateway.say (unchanged) -> backend.synthesize -> kokoro.split_sentences (now speech.sentences) -> argv via spoken_entry (unchanged, ADR 0069)\n\n## Expected impact\nEvery spoken reply, which today means every voice turn, stops reading markup and URLs aloud and stops running past a minute. A reply ends on a sentence and says how much was left on screen. This is the experience change from 'she reads the screen at me' to 'she tells me, and the screen has the rest'.\n\n## Evaluation\nClaim: what is spoken is speech-ready and bounded by sentence, with truncation still announced.\nBefore: 2 of 8 acceptance cases pass (the guards)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "tts.py:32-43: `if finished.tts and finished.tts.strip(): return SpokenLine(finished.tts.strip())` ... `if total <= TTS_CAP: return SpokenLine(text)` ... `return SpokenLine(f\"{text[:TTS_CAP]} {footer}\", truncated=True)`: no transform of markup. `git ls-files | xargs grep -l 'TTS:'` lists no file under constitution/, src/athena/core/ or src/athena/lane/. The only producer-side mention is op_grammar.py's parser, and catalog.py:494-503 teaches 'You act by writing an `OP:` line' and nothing about TTS. op_grammar.py:70 `TTS_CAP = 1200`. kokoro.py:193 `_SENTENCE_END = re.compile(r\"(?<=[.!?…])[\\\"')\\]]*\\s+\")`. tests/channels/test_voice_gateway.py:239-255 pins `(showing {TTS_CAP} of {total})` on a 2,000-character reply (the builder rewrites this assert to the sentence count). No backlog entry or ADR covers markup in speech: ADR 0069 governs argv safety only, ADR 0019 the cap only."
+    }
+  ],
+  "rehomed": [
+    "home.dry_check caches a 'broken' verdict per exe size+mtime forever, so a DLL installed beside an unchanged exe stays broken until restart (home.py:141) - S",
+    "VoiceSession.say/the typed 'text' frame path has no desktop caller (stores/voice.ts say() is unused outside tests) - S, a deletion or a read-aloud decision",
+    "Resumable, staged engine install (HTTP Range resume of the 350 MB Kokoro archive, extract to a staging dir then swap; install.py:362 writes straight into the home) - M, impact 6, under the impact floor"
+  ],
+  "riders": [],
+  "registry": {
+    "subjects": ["voice-io"],
+    "techniques": ["stt-pipeline", "decode-time-vocabulary-biasing", "speech-ready-text", "on-device-vs-cloud", "voice-ux-integration"]
+  },
+  "files_read": 41
+}

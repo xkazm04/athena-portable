@@ -1,0 +1,153 @@
+{
+  "host": "hirelane-board-ui",
+  "cards": [
+    {
+      "context": "hirelane-board-ui",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One act-availability module that both the dossier and the server actions read",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "examples/hirelane/app/actions.ts",
+        "examples/hirelane/lib/board/index.ts",
+        "examples/hirelane/components/board/model/candidates.ts",
+        "examples/hirelane/components/board/Board.tsx",
+        "examples/hirelane/components/board/Dossier.tsx",
+        "examples/hirelane/components/board/dossier/Gate.tsx",
+        "examples/hirelane/components/board/dossier/Acts.tsx",
+        "examples/hirelane/components/board/tools/read.ts",
+        "examples/hirelane/components/board/tools/BoardTools.tsx",
+        "examples/hirelane/test/actions.test.ts",
+        "examples/hirelane/DESIGN-LAW.md"
+      ],
+      "new_files": [
+        "examples/hirelane/lib/acts.ts",
+        "examples/hirelane/test/acts.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-a-dossier-act-is-offered-exactly-when-its-action-would-accept-it.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "actsFor(an interview candidate after proposeSlots held slot_211/slot_111/slot_121, with 12 other open slots) -> schedule.slots begins with those 3 held ids and the default pick is the first held one (today buildBoard().openSlots carries 0 of the 3, probe-measured)",
+        "Parity matrix on a fresh temp db: for every seeded applicant x {score, move, propose, offer, reject, schedule}, actsFor(c).<act>.enabled === (the matching server action returns ok:true) -> 0 mismatches",
+        "Refusal reasons are one vocabulary: actsFor(a rejected candidate).offer -> {enabled:false, reason:'decided'}, and decideStage(that id,'offer') refuses with the message REFUSAL.decided(...) from lib/acts.ts -> identical text",
+        "dossierRead(role, interview candidate after proposeSlots).acts.send_scheduling_email -> {enabled:true, slots:[the 3 held ids, then open ones]}; read_view at L0 reports bookable slots by the same predicate rather than board.openSlots.length",
+        "Guard: sendSchedulingEmail(an applied candidate, any slot) is still refused with 'Move <name> to Interview first'",
+        "Guard: sendSchedulingEmail(candidate B, a slot proposed for candidate A) is still refused 'held for someone else' and the slot stays proposed for A",
+        "Guard: nextMoveFor is unchanged for all five stages: applied->screening, screening->interview, interview/offer/rejected->null"
+      ],
+      "guard_cases": ["4", "5", "6"],
+      "premise": [
+        "examples/hirelane/lib/board/index.ts:184",
+        "examples/hirelane/app/actions.ts:242",
+        "examples/hirelane/test/actions.test.ts:87",
+        "examples/hirelane/components/board/dossier/Gate.tsx:22",
+        "examples/hirelane/components/board/dossier/Gate.tsx:58",
+        "examples/hirelane/components/board/dossier/Gate.tsx:185",
+        "examples/hirelane/components/board/tools/BoardTools.tsx:120",
+        "examples/hirelane/components/board/dossier/Acts.tsx:39",
+        "examples/hirelane/DESIGN-LAW.md:401"
+      ],
+      "rollback": "One feature commit (module, call-site switch, tests, DESIGN-LAW line, ADR). git revert restores the board's status='open' slot list and Gate.tsx's local predicates. No schema change, no data migration, no change to any manifest class.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (from the root; hirelane lint runs design/check-law.mjs and design/check-contrast.mjs)"
+      ],
+      "runner_up": "Lift Board.tsx's level-change decisions (echo, focus restore, highlight, settle-now, orphan-up) into a pure transition table with node tests. Board.tsx:136-149 and :297-327 record five regressions that were each fixed in an effect.",
+      "body": "## Summary\nThe dossier decides which acts it offers with its own copy of the rules, and that copy is already wrong. A candidate whose slots were just held by Propose slots cannot be booked into any of them from the dossier, although the server action accepts exactly that booking. One pure module (`lib/acts.ts`) should answer \"is this act available for this person, with which choices, and if not, why\". The dossier, the agent's read and the server actions' guards all read it.\n\n## Description\nDESIGN-LAW 7.7 only governs one direction: whatever the surface states must also be enforced by the server. Nothing governs the other direction, where the surface offers less than the server allows. Gate.tsx says it projects the server's rules (line 22), yet it recomputes them: `canScheduleFor = stage === 'interview'`, `settled = isDecisionStage(...)`, and it lists slots from `board.openSlots`. `buildBoard` filters `board.openSlots` to `status === 'open'` (lib/board/index.ts:184). `sendSchedulingEmail` accepts `status != 'booked' AND (applicant_id IS NULL OR applicant_id = ?)` (actions.ts:242), and actions.test.ts:87 calls booking a slot held for the same candidate \"the flow the guard must keep\". A probe on a fresh seed ran proposeSlots for the first interview candidate. Afterwards openSlots still had 12 entries and contained 0 of the 3 held ids, so the select defaults to a slot nobody held and leaves the held three orphaned. read_view sends the agent the same blind count (BoardTools.tsx:120). The repo already has the right pattern: `nextMoveFor` is one declaration that both the Move button and moveStage read (Acts.tsx:39). This card applies that pattern to every act. Registry: quality-gates/policy-projection (projections drift downward and understate what is possible) and hitl-approval/cosmetic-vs-enforced-threshold-invariant (two tables kept equal only by discipline).\n\n## Flow\n- `lib/acts.ts` (client-safe, pure): `actsFor(candidate, slots)` returns `{score, move, propose, offer, reject, schedule}`. Each entry is `{enabled, reason?: 'decided'|'too_early'|'no_slot', ...choices}`, plus `REFUSAL` message builders keyed by reason.\n- `app/actions.ts` guards call the same predicates and build refusals with `REFUSAL`. Their behaviour does not change.\n- `buildBoard` hands the dossier the bookable slots per candidate: their own held slots, then open ones.\n- Gate.tsx and Acts.tsx render from `actsFor` and lose their local predicates.\n- dossierRead gains `acts`, so the agent sees the same option set the person does.\n- DESIGN-LAW 7.7 gets a second sentence covering the other direction: the surface offers exactly what the action accepts.\n\n## Expected impact\nA person can book the slot they just held, which the agent could already do. Human-agent precondition drift stops being possible in either direction: the parity matrix fails on any act whose button and action disagree.\n\n## Evaluation\nClaim: the dossier's act set equals what the server would accept, for every seeded candidate and act\nBefore: 0 of 4 new acceptance cases pass (lib/acts.ts does not exist; probe: 0 of 3 held slots offered)\nAfter: 7 of 7\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "Probe (node --test with test/register.mjs, fresh temp db): {\"before\":12,\"after\":12,\"held\":[\"slot_211\",\"slot_111\",\"slot_121\"],\"heldOffered\":[]}. lib/board/index.ts:183-184 `openSlots: slots.filter((s) => s.status === \"open\")`. actions.ts:242 `WHERE id = ? AND status != 'booked' AND (applicant_id IS NULL OR applicant_id = ?)`. Gate.tsx:57 `const slotId = (pick && openSlots.some(...)) ? pick : openSlots[0]?.id`; :58 `const canScheduleFor = candidate.stage === \"interview\"`; :185 `disabled={settled || !canScheduleFor || openSlots.length === 0}`. BoardTools.tsx:120 `open_interview_slots: board.openSlots.length`. test/actions.test.ts:87 `// The same candidate booking a slot held for them is the flow the guard must keep.`"
+    },
+    {
+      "context": "hirelane-board-ui",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Every reversible act on the board gets its undo: on the toast and in the dossier",
+      "size": "M",
+      "effort": 7,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "examples/hirelane/app/actions.ts",
+        "examples/hirelane/lib/constants.ts",
+        "examples/hirelane/lib/queries.ts",
+        "examples/hirelane/lib/board/index.ts",
+        "examples/hirelane/components/board/model/candidates.ts",
+        "examples/hirelane/components/board/useRun.ts",
+        "examples/hirelane/components/board/dossier/Evidence.tsx",
+        "examples/hirelane/components/board/style/level2/l2-dossier-2.css",
+        "examples/hirelane/components/board/style/chrome/toast.css",
+        "examples/demo-kit/src/ui/Toast.tsx",
+        "examples/hirelane/test/actions.test.ts"
+      ],
+      "new_files": [
+        "examples/hirelane/components/board/history.ts",
+        "examples/hirelane/components/board/dossier/History.tsx",
+        "examples/hirelane/test/history.test.ts"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "examples/demo-kit/src/ui/Toast.tsx (optional action slot, backwards compatible for ledgerbox and tidycrm)",
+        "docs/adr/NNNN-every-reversible-act-on-the-board-offers-its-undo.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "moveStage(an applied applicant, 'screening') -> ok:true with result.undoId equal to the activity row it wrote; undoAction(result.undoId) -> ok:true and the applicant is back at applied",
+        "addNote, scoreAgainstRubric and proposeSlots on a live applicant each return an undoId that names a reversible, not-undone activity row",
+        "Guard: decideStage, sendRejection and sendSchedulingEmail return no undoId (nothing to undo, and that does not change)",
+        "toastFor({ok:true, message:'Note added.', undoId:42}) -> {text:'Note added.', tone:'success', action:{label:'Undo', id:42}}; toastFor of a result with no undoId -> no action",
+        "buildBoard() after moveStage then addNote on X -> X.meta.history newest first [add_note, move_stage], both undoable; after undoAction(move row id) the move row reads undone and is not undoable, and an 'undo' row heads the list",
+        "historyRow(a decide_stage entry) -> {undoable:false, why:'reached the person and cannot be taken back'}, so no Undo control is drawn for an irreversible act",
+        "An applicant with 12 activity rows -> meta.history holds 8 and meta.historyTotal is 12, and the band reads '(showing 8 of 12)'",
+        "moveStage(a rejected applicant, 'screening') -> the refusal says the decision is final and no longer sends the reader to 'Undo on the activity row' (decide_stage logs reversible:false, so undoActivity would refuse that remedy)",
+        "Guard: undoing propose_slots after one of its slots was booked still releases only the unbooked slots and records the partial undo (test/actions.test.ts:152 stays green)"
+      ],
+      "guard_cases": ["2", "8"],
+      "premise": [
+        "examples/hirelane/app/actions.ts:371",
+        "examples/hirelane/components/board/dossier/Acts.tsx:52",
+        "examples/hirelane/components/board/shell/Foot.tsx:99",
+        "examples/hirelane/app/actions.ts:150",
+        "examples/hirelane/app/actions.ts:184",
+        "examples/hirelane/lib/queries.ts:6",
+        "examples/hirelane/components/HostCapabilities.tsx:13",
+        "examples/hirelane/components/board/useRun.ts:44",
+        "examples/tidycrm/components/shell/HostCapabilities.tsx:376"
+      ],
+      "rollback": "One feature commit. The kit Toast's action prop is optional, so reverting the hirelane side leaves ledgerbox and tidycrm untouched. Reverting the whole commit removes the History band, the toast action and the undoId field. No schema change: the activity table and undoActivity already exist.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (from the root; covers hirelane node tests, hirelane design:check, and demo-kit consumers)"
+      ],
+      "runner_up": "Compare mode in the dossier: pin a second candidate from the bench and read both rubrics side by side with per-criterion deltas. Today the reader holds one dossier at a time and does the comparison in their head.",
+      "body": "## Summary\nThe board tells the reader \"Each of these writes an undo\" (Acts.tsx:52, Foot.tsx:99), but no undo can be reached from it. `undoAction` exists, is tested, and handles partial reversals correctly (actions.ts:304-375), yet no component calls it: the /activity route was reviewed out (queries.ts:6). The AUTO acts are the ones an agent runs without asking (HostCapabilities.tsx:13), so the person's only recourse after a wrong move is a feature they cannot reach. This card makes the undo one click: on the toast for the act just taken, and on a per-candidate history band in the dossier, which also shows acts the agent took.\n\n## Description\nThree changes, each small, all on existing machinery.\n\n(1) ActionResult carries `undoId`, the activity row id that `logActivity` already returns, for the four reversible writes. useRun's toast gains an Undo action through an optional `action` on the kit Toast.\n\n(2) The dossier gets a History band in the reading column, not the action bar, so it does not undo the chrome budget ADR 0022 won back. It lists that applicant's activity rows newest first, bounded with `(showing N of M)`. Each reversible, not-undone row has Undo; an irreversible row says why it has none.\n\n(3) The moveStage refusal and the nextMoveFor comment stop naming an unreachable remedy. They point at \"Undo on the activity row\" for a decision that decide_stage logs as reversible:false (actions.ts:150, :184), so even with an activity view that undo would be refused.\n\nThe sibling app already exposes undo (tidycrm HostCapabilities.tsx:376). Registry: quality-gates/refusal-names-a-reachable-remedy; hitl-approval/oracle-before-gate (a reversible-but-unattended act needs a visible way back).\n\n## Flow\n- An act in the dossier shows a toast: \"Ada moved to Screening\" with an Undo button. Pressing Undo calls undoAction(id), the board revalidates and Ada is back in Applied.\n- An agent moves three people while the reader is elsewhere. The reader opens one, the History band shows the move with Undo, and one click reverts it.\n- A rejection row in History reads \"reached the person and cannot be taken back\" and has no control.\n\n## Expected impact\nToday the way back from any AUTO act on this board is a server function no surface calls. Afterwards every reversible act, including the ones the agent ran unattended, can be undone in one step from where the reader already is. The claim printed twice on the surface becomes true.\n\n## Evaluation\nClaim: every reversible act on the board is undoable from the surface in one step, and irreversible ones say why they are not\nBefore: 0 of 7 non-guard cases pass (no undoId, no history, refusal names an unreachable remedy)\nAfter: 9 of 9\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "grep -rn undoAction examples/hirelane --include=*.ts --include=*.tsx -> app/actions.ts:371 (definition), test/actions.test.ts:20 and :166 only; no component calls it. grep -rn activity examples/hirelane/components -> no match. Acts.tsx:52 'Auto — reversible. Each of these writes an undo.' Foot.tsx:99 'Auto — reversible, and each writes an undo'. actions.ts:150 '...A decision is not undone with a move - use Undo on the activity row that made it.' actions.ts:184 decide_stage logs 'reversible: false'; demo-kit activity/index.ts:121 undoActivity refuses '#id (...) is not reversible'. queries.ts:6 '/scheduling and /activity routes, which were reviewed out'. useRun.ts:44 toast(result.message, ...) carries no action; demo-kit Toast.tsx:26 toast(text, tone) has no action slot."
+    }
+  ],
+  "rehomed": [
+    "Board.tsx:382-393 totals obey roleFilter but not onlyBorderline, so with the arguable filter on the masthead and crumb count applicants the columns no longer show (S)",
+    "carousel/Slide.tsx:287 `medians.size === 0 ? 0 : column.scored` is dead inside a `comparable` branch that already requires medians.size > 0 (XS)",
+    "motion.ts:72 RISE = 8 copies --hl-space-2 by comment (the registry's design-tokens deviation); read it through useTokens like the durations (S)",
+    "design/check-contrast.mjs:89 hand-copies the slide gradient's 8% stop from l1-carousel.css; promote it to a token so the model reads it (S)",
+    "proposeSlots (actions.ts:191) holds slots for decided or pre-interview candidates and re-holds three more on every call; a policy-tighten, kept out of card A so that card stays gate:none (S)"
+  ],
+  "riders": [
+    {
+      "name": "hirelane-design-law",
+      "checked": "Read build-tokens.mjs, check-contrast.mjs, check-law.mjs and hl-scales.css in full. Hypothesis: TS geometry escapes check-law, because it only scans motion keys in .ts. It does, but FACE and CARD are already single-source (TS pushed into CSS as --face/--card), and the only real copies left (RISE, the 8% surface) are S, so they were rehomed. build-tokens.mjs is self-declared NOT WIRED dead code."
+    },
+    {
+      "name": "tidycrm-design",
+      "checked": "Read build-tokens.mjs and tc-scales.css in full. The file is self-declared RETIRED and kept as the upstream of record for two vendored copies; [data-variant=scale] is mounted nowhere. A removal or consolidation card would be S and would break the four citations it documents, so no card."
+    }
+  ],
+  "registry": {
+    "subjects": ["quality-gates", "hitl-approval", "design-tokens", "invariant-placement", "motion"],
+    "techniques": ["policy-projection", "refusal-names-a-reachable-remedy", "cosmetic-vs-enforced-threshold-invariant", "oracle-before-gate"]
+  },
+  "files_read": 56
+}

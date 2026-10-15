@@ -1,0 +1,143 @@
+{
+  "host": "demo-kit-zoom-engine",
+  "cards": [
+    {
+      "context": "demo-kit-zoom-engine",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "The rig's pointer is a pure gesture machine: capture at threshold, eat the click",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "examples/demo-kit/src/zoom/useCameraRig.ts",
+        "examples/demo-kit/src/zoom/index.ts",
+        "examples/demo-kit/README.md",
+        "docs/kit-camera-contract.md",
+        "examples/atlas/components/atlas/variants/archify-lanes/Scene.tsx",
+        "examples/atlas/KIT-GAPS.md",
+        "CHANGELOG.md"
+      ],
+      "new_files": [
+        "examples/demo-kit/src/zoom/gesture.ts",
+        "examples/demo-kit/test/gesture.test.ts",
+        "docs/adr/NNNN-the-camera-captures-the-pointer-when-a-press-becomes-a-drag.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/kit-camera-contract.md",
+        "docs/adr/NNNN-the-camera-captures-the-pointer-when-a-press-becomes-a-drag.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "gesture.ts: down(id 1 at 100,100), move(102,101), up -> no capture, no drag and no swallow-click effect; state is idle (a 2.2 px sloppy press is a click; DRAG_SLOP is 4 screen px)",
+        "down(100,100), move(110,100) -> exactly one capture(1) effect on that move and one drag effect of dx 10 measured from the press origin; a further move(115,100) -> drag dx 5 and no second capture",
+        "after the drag in case 1, up -> one release(1) effect and the state swallows exactly the next click on the scene (swallowClick true once, false for the click after it), so releasing a pan over a node does not open it",
+        "mid-drag pointercancel or lostpointercapture -> release emitted at most once, moving false, pointer map empty; the next down starts a fresh press with no stale pointer",
+        "two pointers down -> pinch (both captured); up of pointer 2 -> the next move of pointer 1 at its current position yields drag dx 0 (no jump), as useCameraRig.ts does today",
+        "drag 'none' -> down, move and up produce no effects at all, as useCameraRig.ts does today",
+        "the slop is screen space: a 3 px travel at pose zoom 4 is still a click (no drag effect); the comparison happens before panDelta divides by zoom",
+        "test/camera.test.ts, test/semantic.test.ts and test/flight.test.ts pass unchanged"
+      ],
+      "guard_cases": ["4", "5", "7"],
+      "premise": [
+        "examples/demo-kit/src/zoom/useCameraRig.ts:459 - setPointerCapture on every press, before anything has moved",
+        "examples/demo-kit/src/zoom/useCameraRig.ts:501 - the first pointermove pans the scene; no movement threshold anywhere in the hook",
+        "examples/demo-kit/src/zoom/useCameraRig.ts:522 - pointercancel deletes the pointer but never releases capture, and there is no lostpointercapture path",
+        "examples/demo-kit/src/zoom/useCameraRig.ts:418 - the rig already attaches a native listener through bind.ref (wheel); a capture-phase click listener rides the same attach, so hand-exploded binds (Drawing.tsx) get it",
+        "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:560 - atlas composes rig.bind.ref and spreads the other members by hand, so a new bind member would be silently missed",
+        "examples/atlas/components/atlas/variants/archify-lanes/Scene.tsx:333 - holdPointer stops propagation on every node so its click survives the capture; a pan can no longer start on a node",
+        "examples/atlas/KIT-GAPS.md:894 - R5-A1: a captured pointer retargets the click, DOM controls in the scene stop answering the mouse",
+        "docs/layered-ui-formula.md:458 - 'the rig's pointer capture still steals click from DOM controls in the scene (fourth report)'"
+      ],
+      "rollback": "One feature commit (gesture.ts + test + hook rewire + docs) and one follow-up commit dropping atlas's holdPointer; revert the follow-up first, then the feature. No stored state, no contract type, no wire format changes.",
+      "gate": "none",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace root; runs examples/demo-kit node --test and atlas tests)"
+      ],
+      "runner_up": "rig.bind becomes a composing function (rig.bind({ ref, onKeyDown })) so a canvas that is also a focus container stops exploding the eight-member bag by hand (KIT-GAPS R4-2, R4-3).",
+      "body": "## Summary\nThe camera rig's pointer handling becomes a pure, node-tested gesture machine (`zoom/gesture.ts`): a press is a click until it travels 4 screen px, capture is taken only when it becomes a drag, the click the platform synthesises after a pan is swallowed once, and every exit path (up, cancel, lost capture) releases exactly once. `useCameraRig` becomes a thin interpreter of the machine's effects.\n\n## Description\nToday `bind.onPointerDown` captures on every press (useCameraRig.ts:459) and the first move pans (:501). A captured pointer retargets the following click to the scene, so every DOM control drawn inside a camera scene loses its mouse click. This is reported four times (KIT-GAPS R5-A1, formula round 6 carried). Atlas works around it by stopping propagation on every node (Scene.tsx:333), which costs 'you cannot start a pan on a box'. The state that decides all of this (pointers map, pinch ref, last, lastAt, moving) is spread across refs and closures in a 633-line hook with no test, while every other rule in the kit is a pure module with a `node --test` file. Technique: canvas-graph / direct-manipulation, the 'capture at the threshold on a surface whose children own clicks' and 'suppress the trailing click' rules, plus 'release in every exit path'. The registry already records this context as a deviation from that technique.\n\nShape: `gestureStep(state, input, opts) -> { state, effects }`. The inputs are down, move, up, cancel, lostcapture and click. The effects are capture, release, drag{dx,dy,dt}, pinch{factor,mid,pan}, swallowClick and moving. The file is type-imports-only, like every other pure kit module (echo-rule.ts:33). The hook stops capturing in onPointerDown. Its `attach` (useCameraRig.ts:418) adds a capture-phase `click` and a `lostpointercapture` listener beside the wheel listener, so a surface that hand-spreads `bind` still gets them through `bind.ref`. The wheel, keys, flyTo, inertia and snap are untouched.\n\n## Flow\n- press: the pointer is recorded, nothing is captured, nothing moves\n- travel > DRAG_SLOP (screen px): capture, then the catch-up delta from the origin, then moving\n- release after a drag: release capture, coast, and the next click is swallowed once\n- release without a drag: no effects, and the child's own click fires\n- cancel or lost capture: release once, idle\n- atlas drops holdPointer, and pans can start on nodes\n\n## Expected impact\nEvery DOM control inside a camera scene answers the mouse again. A pan released over a node no longer opens it. Clicking a node no longer nudges the camera by a sub-pixel. One class of 'only the mouse is broken' defects closes for all five surfaces on the rig. The hook's riskiest logic gets a test file.\n\n## Evaluation\nClaim: the rig's pointer distinguishes a click from a drag, captures only for a drag, and releases on every exit path.\nBefore: 0 of 8 acceptance cases pass (gesture.ts does not exist; the behaviour fails 0-3 and 6 in the hook)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "useCameraRig.ts:456-469 onPointerDown: `event.currentTarget.setPointerCapture?.(event.pointerId); pointers.current.set(...); ... setMoving(true);` with no threshold. :494-501 `const dx = event.clientX - last.current.x; ... dragBy(dx, dy, ...)` runs on the first move. :522-530 onPointerCancel has no releasePointerCapture. The registry-map entry for canvas-graph has state 'deviation': 'useCameraRig.ts:459 captures the pointer at press and :501 pans from the first move, with no click/drag threshold or trailing-click suppression'. Scene.tsx:327-333: 'useCameraRig's onPointerDown captures the pointer on the canvas, and a captured pointer retargets the following click ... const holdPointer = (event) => event.stopPropagation();'. Drawing.tsx:560-571 spreads bind members one by one. `git grep useCameraRig(` finds consumers in atlas Drawing.tsx:197, the template Levels.tsx:119 and tidycrm Blocks.tsx:89."
+    },
+    {
+      "context": "demo-kit-zoom-engine",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "The level is a place: Back walks up, reload lands where you stood",
+      "size": "L",
+      "effort": 7,
+      "impact": 8,
+      "risk": 6,
+      "write_set": [
+        "examples/demo-kit/src/zoom/state.ts",
+        "examples/demo-kit/src/zoom/nav.ts",
+        "examples/demo-kit/src/zoom/index.ts",
+        "examples/demo-kit/template/components/Levels.tsx",
+        "examples/atlas/components/atlas/variants/Shell.tsx",
+        "examples/demo-kit/README.md",
+        "docs/layered-ui-formula.md",
+        "CHANGELOG.md"
+      ],
+      "new_files": [
+        "examples/demo-kit/src/zoom/place.ts",
+        "examples/demo-kit/src/zoom/useNavUrl.ts",
+        "examples/demo-kit/test/place.test.ts",
+        "docs/adr/NNNN-a-level-is-a-place-and-the-url-holds-it.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/layered-ui-formula.md",
+        "docs/adr/NNNN-a-level-is-a-place-and-the-url-holds-it.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "place.ts: focusToParam({level 2, group 'ingest', item 'parser'}) -> 'ingest:parser'; L1 'ingest' -> 'ingest'; HOME -> null (param removed); focusFromParam round-trips each, including ids that contain ':' (each part URI-encoded)",
+        "focusFromParam('ghost:x', exists) where the group is unknown -> HOME; focusFromParam('ingest:ghost') with a known group and an unknown item -> L1 ingest (degrades one level, never a dead level)",
+        "historyWrite(prev, next): a nav move (open-group, open-item, up, home) that changes focus -> 'push'; a camera-driven change (semantic zoom driving) -> 'replace'; abort -> 'replace'; a change caused by popstate or restore -> 'none' or 'replace' respectively; hover and highlight (focus unchanged) -> 'none'",
+        "navActionsFor(current ingest:parser, target 'ingest') -> [{type:'up'}]; target null from L1 -> [{type:'home'}]; target 'other:x' -> [{type:'open-item', group:'other', item:'x'}]: one action per Back press, so one flight and one echo",
+        "restore on mount from '?focus=ingest:parser' -> exactly one nav action (open-item ingest parser) and a 'replace' write; SSR and the first client render stay HOME (no hydration mismatch)",
+        "navReducer records the cause: after {type:'abort'} state.move === 'abort'; after {type:'hover'} state.move is unchanged",
+        "initialNavState() with no argument is still HOME with flight 0, and useStaticNav still renders; abort.test.ts, flight.test.ts and echo.test.ts pass unchanged",
+        "writeParam(search, 'focus', v) leaves atlas's ?view= and ?variant= byte-identical (useChoice's replaceState params coexist)"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "examples/demo-kit/src/zoom/nav.ts:72 - useWorldNav() takes nothing and reads nothing: every reload starts at HOME",
+        "examples/demo-kit/src/zoom/state.ts:59 - initialNavState() is HOME; NavState records no cause for a focus change, so nothing can tell a click from an abort",
+        "examples/atlas/components/atlas/variants/useChoice.ts:41 - 'a variant or a view is not a place ... The level model owns Back's meaning', but the level never reaches history",
+        "examples/atlas/components/atlas/variants/useChoice.ts:115 - the URL-backed choice with an SSR snapshot already exists for the orthogonal axis",
+        "docs/layered-ui-formula.md:353 - 'Carried: URL sync (four rounds, still nowhere)'",
+        "docs/layered-ui-formula.md:388 - round 4: 'URL sync for the level (view is in the URL, level is not)'",
+        "examples/demo-kit/src/zoom/useSemanticZoom.ts:67 - driving 'camera' | 'nav' already distinguishes a wheel crossing from a click, which is the push/replace line",
+        "examples/demo-kit/src/webmcp/zoomTools.ts:170 - agent tools open items through nav.openItem, so an agent-opened level becomes a Back-able place for free"
+      ],
+      "rollback": "Kit commit (place.ts, useNavUrl.ts, the state.move field, tests, ADR) then one adoption commit per surface (template, atlas Shell). Revert the adoptions, then the kit commit. initialNavState and useWorldNav stay signature-compatible, so no other app changes. History entries already pushed are harmless after a revert (an unknown param is ignored).",
+      "gate": "direction",
+      "gates_to_run": [
+        "pnpm typecheck && pnpm lint && pnpm test (workspace root; examples/demo-kit node --test, atlas tests and template lint)"
+      ],
+      "runner_up": "Focus follows a level change nobody clicked: useLevelFocus(nav, flight) lands focus in the arriving level and hands it back to the node the reader left (KIT-GAPS R4-4, fourth round running).",
+      "body": "## Summary\nThe nav's focus is written to the URL (`?focus=group:item`) and read back from it. Browser Back walks up the levels a click or an agent opened. A reload carries the reader back to the item they were on in one flight. A level can be linked. The kit gains a pure `place.ts` (encode, decode, validate, the push/replace decision, popstate to actions) and a thin `useNavUrl(nav, { exists, semantic })` hook.\n\n## Description\nThe three-level model is the whole interaction of every example app, but the model never leaves memory (nav.ts:72). Reload at L2 drops the reader at L0. Browser Back leaves the app instead of stepping out of the dossier. An item cannot be linked. The formula has carried 'URL sync' for four rounds (layered-ui-formula.md:353, :388). Atlas already proves the hard half, a URL-backed value with an SSR snapshot (useChoice.ts), and states the rule this card completes: a view is not a place, the level is.\n\nDecisions the card pins:\n- **push** for a nav move (click, tool, Escape's up, home), so Back is 'undo the last place';\n- **replace** for a camera-driven band crossing (a wheel flick would otherwise flood history) and for abort ('not that one after all' is not a place);\n- **none** for a move caused by popstate, matched the way useSemanticZoom matches its own echo, and for hover and highlight.\n\nRestore happens on mount with one ordinary nav action, so the camera flies, the echo plays and SSR stays HOME. An id that no longer exists degrades one level rather than opening a dead pane. `NavState` gains a `move` field written by the reducer, so the cause is pure data rather than a guess.\n\n## Flow\n- click a group -> L1, ?focus=ingest pushed\n- an agent's open_item -> L2, ?focus=ingest:parser pushed\n- Back -> popstate -> one `up` -> L1 with the echo out; nothing is written\n- a wheel crossing a band -> the level changes, replace\n- Escape mid-flight -> abort, replace\n- reload -> HOME paint, then one open-item flight back to ingest:parser\n\n## Expected impact\nThe reader stops losing their place on reload and gets the browser's own Back as the level undo. The demo can open on a deep link. Because the URL is the tab's address, the place the reader stands is visible wherever Athena reads a tab by its URL (ADR 0105). Same-document pushState does not move the shell's `nav` counter (ADR 0103 decision 1), so pending approvals are not voided.\n\n## Evaluation\nClaim: a level is a place, held in the URL, walked by Back and restored on reload.\nBefore: 2 of 8 acceptance cases pass (the guards 6 and 7; place.ts and useNavUrl do not exist)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: direction (URL sync is not named in this context's description)",
+      "evidence": "nav.ts:72-73 `export function useWorldNav(): Nav { const [state, dispatch] = useReducer(navReducer, undefined, initialNavState);` takes no initial focus. state.ts:59 `export const initialNavState = (): NavState => ({ focus: HOME, prev: HOME, ...` has no `move` or cause field. `git grep pushState|popstate` over examples/*/components and demo-kit/src finds nothing; useChoice.ts:115 is the only history write and it is replaceState for view and variant. layered-ui-formula.md:124 and :158 say 'no URL sync anywhere' (round 1); :281 says 'URL sync (still nowhere)'; :353 says 'URL sync (four rounds, still nowhere)'; :388-389 say 'URL sync for the level (view is in the URL, level is not)'. ADR 0103 decision 1: 'Same-document changes (pushState, a fragment) do not count'."
+    }
+  ],
+  "rehomed": [
+    "design-tokens deviation: camera.ts FLY_EASE and DEFAULT_EASE retype the template's --dk-ease, and camera.ts BEZIER_RE re-parses what tokens.ts parseBezier already parses - one parser, read from the token. S, under the size floor",
+    "R4-5: rig.frame() and (pose, frame) for resolveGroup, resolveItem and poseFor - the rig already measures the frame for zoomAt. S",
+    "echo-rule.ts samePlace duplicates state.ts sameFocus; deliberate (the node ESM value-import rule), XS",
+    "page-bridge: validate call input against the published inputSchema in inject.js - the catalog already validates host params with schema_validator(tool.params_schema) at src/athena/core/catalog.py:357 before any call reaches the page, so this is defence in depth, impact under 7",
+    "page-bridge: code 'No tool named' and 'Unknown request' apart from a handler fault - needs a REFUSAL_REASONS member mirrored in contracts/harness.py (contract), S"
+  ],
+  "riders": [
+    {
+      "name": "page-bridge",
+      "checked": "Read inject.js, gate.js, bridge.d.ts, eslint.config.js and both tests in full. I traced the registry's mcp-tools deviation (no inputSchema validation at inject.js:129, uncoded unknown-tool at :98). Upstream catalog.py:357 already validates params against the schema, and coding the errors is a small contract change, so neither cleared the floors (both rehomed)."
+    }
+  ],
+  "registry": {
+    "subjects": ["canvas-graph", "design-tokens", "mcp-tools"],
+    "techniques": ["direct-manipulation", "viewport-transform", "canvas-accessibility"]
+  },
+  "files_read": 46
+}

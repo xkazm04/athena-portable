@@ -1,0 +1,31 @@
+{"card":"harness-engines/B","status":"landed","shas":["4069273","a4350fc","9fa04b0"],
+ "tests_added":[
+  "tests/harness/test_rounds_failures.py::test_a_cli_that_drips_lines_forever_is_stopped_at_the_turn_wall",
+  "tests/harness/test_rounds_failures.py::test_a_later_round_is_asked_with_what_is_left_of_the_turn_not_the_whole_wall",
+  "tests/daemon/test_stop.py::test_a_stop_ends_a_hung_turn_with_a_cancelled_frame_one_row_and_a_free_lock",
+  "tests/daemon/test_stop.py::test_a_stop_with_no_turn_running_stops_nothing",
+  "tests/daemon/test_stop.py::test_a_stop_for_another_origin_leaves_the_running_turn_to_finish",
+  "tests/daemon/test_stop.py::test_a_card_filed_before_the_stop_is_still_pending_and_answerable",
+  "tests/daemon/test_stop.py::test_the_stop_route_is_token_checked_like_every_route",
+  "tests/daemon/test_stop.py::test_a_hang_up_and_a_stop_that_race_on_one_turn_write_one_cancelled_row[between_frames]",
+  "tests/daemon/test_stop.py::test_a_hang_up_and_a_stop_that_race_on_one_turn_write_one_cancelled_row[inside_the_engine]",
+  "apps/desktop/src/stores/run.test.ts::Stop > in phase running aborts the request, asks the daemon to stop, goes idle with a line, and continues nothing",
+  "apps/desktop/src/stores/run.test.ts::Stop > keeps a page result that was pending and carries it on the next message, with no continuation",
+  "apps/desktop/src/stores/run.test.ts::Stop > leaves a card that arrived before it pending and answerable",
+  "apps/desktop/src/stores/run.test.ts::Stop > does nothing when no turn is running",
+  "apps/desktop/src/companion/views.test.tsx::Stop is offered wherever she is shown working, and nowhere else (ADR 0115)"
+ ],
+ "guard_cases":[5,6,7],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{
+  "uv run ruff check .":0,
+  "uv run ruff format --check .":0,
+  "uv run mypy":0,
+  "uv run pytest -m \"not provider and not eval\"":0,
+  "pnpm typecheck (apps/desktop)":0,
+  "pnpm lint (apps/desktop)":0,
+  "pnpm test (apps/desktop)":0
+ },
+ "files_changed":17,"lines_changed":799,
+ "deviations_from_card":"(1) The critic's REVISE is applied. stop() keeps the page results that were pending (outstanding) and sends them as tool_results with the person's next message, with no continuation. A released host call the page never reached is told as 'cancelled: the person stopped her before this ran'. Results a stopped request had already carried were recorded by the daemon when that request started, so they are not sent again. (2) The write set grew by small coupled edits. transports.py: CliRequest.timeout_s int->float (one line), needed so a remaining budget below 1 s is expressible, as case 2 requires. companion/model.ts and companion/live.tsx gain a stop action (4 lines), without which views.tsx cannot render a Stop. tests/daemon/test_routes.py lists the new route. (3) drain() now runs loop.shutdown_asyncgens() and any leftover tasks before closing the loop. The case-8 race test found a pre-existing bug: a client hang-up mid-turn through the lane wrote NO ledger row. The lane's async-for left the harness generator to a loop finaliser that never ran. (4) Three commits rather than one: harness wall, daemon route, desktop Stop with ADR and changelog. (5) Case 6 (a card stays pending) is a guard by the card's count. My tests for it go through the stop route and the store's stop(), so they were red before; case 7 is the unchanged test_run.py, green before. cases_red_before counts 7 because cases 1-6 and 8 each have at least one test that was red; case 8's card guard (test_a_stream_closed_after_its_first_event_writes_a_cancelled_row) stays green. (6) Cut rows (cancelled, wall timeout) set cost_estimated, per the card body's indeterminate-closure note.",
+ "notes":"Sibling finding, not mine: harness-engines/A (be009b4) says SubprocessTransport drains stderr and reports ExitStatus, but on the current tree SubprocessTransport.run never calls request.exit.report and the helper _tail is unused. Every real CLI run therefore reads as exit 0 with no stderr tail. A real failure with no result record classifies as 'unknown, exit code 0', and gone/poisoned reseeding cannot trigger from stderr. Also, ExitStatus has no timed_out field, despite the prompt's mention. My wall change does not read the handle: a wall-cut round returns the timeout failure before classify. No sibling reds seen; the full pytest passed twice (before and after the commits). The ADR number 0115 was claimed under the lock, and the lock was released. Not verified in the real Tauri window. Voice turns go through the same turn_events, so the route also stops a spoken turn on that origin. Voice has no Stop control yet."}

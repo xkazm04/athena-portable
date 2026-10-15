@@ -1,0 +1,37 @@
+{"card":"voice-channel/A","status":"landed","shas":["4b87320"],
+ "tests_added":[
+  "tests/channels/test_voice_openai.py::test_a_tapped_key_is_too_short_and_sends_nothing",
+  "tests/channels/test_voice_openai.py::test_a_second_of_zeros_is_silent_and_never_reaches_the_engine",
+  "tests/channels/test_voice_openai.py::test_a_tone_the_engine_hears_no_words_in_is_no_words_and_its_peak_is_measured",
+  "tests/channels/test_voice_openai.py::test_a_tone_the_engine_hears_words_in_is_words",
+  "tests/channels/test_voice_gateway.py::test_an_utterance_with_no_words_is_one_final_transcript_that_says_no_words",
+  "tests/channels/test_voice_gateway.py::test_a_stop_word_over_a_reply_ends_in_a_final_transcript_that_says_stop",
+  "tests/channels/test_voice_gateway.py::test_a_metered_listener_fed_only_silence_sends_nothing_and_says_silent",
+  "tests/channels/test_voice_gateway.py::test_a_message_utterance_keeps_its_event_kinds_one_row_and_one_request",
+  "apps/desktop/src/stores/voice.test.ts::a final transcript that says the utterance ended leaves thinking and says why; a message does not",
+  "apps/desktop/src/stores/voice.test.ts::each ended outcome has its own sentence, and a stop word is quiet",
+  "tests/channels/test_commands.py::test_one_map_names_how_every_utterance_ended",
+  "tests/contracts/test_channel.py::test_a_final_transcript_carries_its_outcome_and_peak_on_the_wire",
+  "tests/contracts/test_channel.py::test_a_transcript_from_before_the_outcome_reads_as_unsaid",
+  "tests/contracts/test_channel.py::test_the_outcome_vocabulary_is_closed_and_names_each_ending_once",
+  "tests/contracts/test_channel.py::test_the_desktop_declares_the_same_outcomes_in_the_same_order",
+  "tests/contracts/test_channel.py::test_the_desktops_voice_transcript_names_every_field_the_contract_does"
+ ],
+ "guard_cases":[7],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{
+  "uv run ruff check .":0,
+  "uv run ruff format --check .":0,
+  "uv run mypy":0,
+  "uv run pytest -m \"not provider and not eval\"":0,
+  "pnpm typecheck (root)":0,
+  "pnpm lint (root)":0,
+  "pnpm -r --filter \"!journey\" --if-present run test (root)":0,
+  "pnpm typecheck (apps/desktop)":0,
+  "pnpm lint (apps/desktop)":0,
+  "pnpm test (apps/desktop)":0
+ },
+ "files_changed":16,"lines_changed":532,
+ "deviations_from_card":"ADR is 0110 (the next free number under the lock). The write set grew by two test files outside it: tests/channels/test_voice_engines.py and tests/daemon/test_voice_routes.py. Both fed zeros as if they were speech through a real BufferedTranscriber (whisper fake), and the level gate now correctly calls that silent, so they now feed sound. Tests only, 10 lines. In test_voice_gateway.py the metered tests and the ceiling test also feed sound now, through a local _speak helper and VOICED_CHUNK; conftest.py is untouched. Case 7 (index 6, vitest) was split into two tests: the card's silent/message case, plus one sentence per ended outcome. The parity test for events.ts lives in tests/contracts/test_channel.py, which reads the TS as text, as test_adopt_parity does. VoiceTranscript.outcome is typed str on the dataclass (wire leniency, like TurnError.reason), and the vocabulary is the TranscriptOutcome Literal plus the TRANSCRIPT_OUTCOMES tuple. contracts/__init__.py does not re-export them, because that file is outside the write set; callers import them from athena.contracts.channel.",
+ "notes":"Red-before: cases 1-7 failed on the base tree (AttributeError outcome / spy called / KeyError outcome / store stayed thinking); guard case 8 passed before and after. One flaky test was seen once during a mid-build run under sibling load: tests/channels/test_voice_gateway.py::test_a_session_remembers_the_newest_cards_and_a_bare_yes_answers_the_newest. It is a pre-existing race: the client fixture's server-side VoiceSession can be constructed after the test monkeypatches __init__, so it counts two sessions. It failed 1 of 3 isolated runs, does not touch code this card changed, and passed in the final full suite. Not verified in the real Tauri window. The silent sentence is shown through the store's existing reason field, and no UI component was changed."
+}

@@ -1,0 +1,21 @@
+=== connector-service/A
+Change the Flow so probe refreshes a stale OAuth token by calling the refresh path directly (under _refresh_guard, after its own disconnected check) instead of _fresh_token, and extend guard case 4 with: a probe on a needs_reauth (or switched-off) record whose token the provider accepts still records 'healthy' and returns needs_reauth to connected (vault.py:825-826).
+
+=== demo-kit-zoom-engine/A
+Amend case 3: the swallow is cleared by the next down (or expires with the up's task), so after a drag that produced no click (touch pan) the next press-and-click on a node is NOT swallowed.
+
+=== demo-kit-zoom-engine/B
+Abort pops the entry its move pushed (historyWrite returns 'back', the resulting popstate matched as an echo) instead of 'replace'; case 3 then pins that after open-item then abort, a single Back leaves the level that was current before the click.
+
+=== harness-engines/A
+Keep Transport.run yielding str only and expose the ExitStatus through a separate optional member (e.g. a per-run exit handle that defaults to exit 0 when a transport does not provide it), so adopt/legs.py:592 and the two adopt fakes stay untouched.
+
+=== harness-engines/B
+Rewrite case 5 so stop() keeps the page results that were pending and carries them as tool_results on the next exchange's first request (they are told to the model and ledgered, never dropped), while still starting no continuation.
+
+=== hirelane-board-ui/B
+Drop the 9th case (undoing propose_slots after a booking): test/actions.test.ts:152 already pins it and runs in the gates, bringing the card to 8 cases.
+
+=== voice-channel/B
+Fix SPOKEN_BUDGET to a number in the card (e.g. 360 characters) and state case 4's reply sentence lengths so '(showing 3 of 9)' is computable before the build.
+

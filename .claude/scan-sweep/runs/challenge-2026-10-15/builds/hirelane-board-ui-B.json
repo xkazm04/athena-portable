@@ -1,0 +1,28 @@
+{"card":"hirelane-board-ui/B","status":"landed","shas":["f47128e"],
+ "tests_added":[
+  "examples/hirelane/test/actions.test.ts::moveStage hands back the undo it wrote, and that undo puts the applicant back",
+  "examples/hirelane/test/actions.test.ts::addNote, scoreAgainstRubric and proposeSlots each hand back a live, reversible undo",
+  "examples/hirelane/test/actions.test.ts::the three gated acts hand back no undo, because there is none",
+  "examples/hirelane/test/history.test.ts::toastFor puts an Undo on a result that carries one, and nothing on a result that does not",
+  "examples/hirelane/test/history.test.ts::the History band lists a person's acts newest first, and an undone act loses its Undo",
+  "examples/hirelane/test/history.test.ts::an irreversible act says why it has no Undo instead of drawing one",
+  "examples/hirelane/test/history.test.ts::the History band is bounded and says by how much",
+  "examples/hirelane/test/actions.test.ts::a refused move on a decided applicant names no remedy the board would refuse"
+ ],
+ "guard_cases":[2],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{
+  "pnpm --filter hirelane typecheck":0,
+  "pnpm --filter hirelane lint (eslint + design/check-law.mjs + design/check-contrast.mjs)":0,
+  "pnpm --filter hirelane test (65 pass)":0,
+  "pnpm --filter @athena/demo-kit typecheck (tsc + node tests)":0,
+  "pnpm --filter ledgerbox --filter tidycrm --filter hirelane typecheck":0,
+  "pnpm --filter ledgerbox --filter tidycrm lint":0,
+  "pnpm --filter ledgerbox --filter tidycrm test (34 + 84 pass)":0,
+  "pnpm -r --filter \"!journey\" --if-present run test":0,
+  "pnpm typecheck (root)":0,
+  "pnpm lint (root)":0
+ },
+ "files_changed":16,"lines_changed":592,
+ "deviations_from_card":"Critic revision applied: the 9th case (undoing propose_slots after a booking) was dropped; the existing test at actions.test.ts:152 still pins it and stays green, so 8 cases. The case-8 refusal moved to lib/acts.ts in wave 1 (REFUSAL.decided_move), so the fix went there (one sentence plus its comment), outside the declared write set. lib/constants.ts got only the nextMoveFor comment fix. The existing decided-move test asserted /Undo/ on the old wording; it now asserts /final/. Write set got smaller: chrome/toast.css was not touched, because its own comment and check-law forbid .dk-* rules there, and the kit's .dk-btn styles the toast's action. A third undoToastFor helper and an optional summary field on undoAction's result were added so the confirmation after Undo names the act it reversed. The band prints no actor, because hirelane logs actor 'user' even for acts the agent ran through the same actions. ToastAction is not re-exported from demo-kit/src/ui/index.ts, which is outside the write set; callers pass an object literal.",
+ "notes":"Before the change, guard case 3 passed by design. The pre-existing decided-move test also went red against the old wording, and its assertion was updated. The first demo-kit/ledgerbox/tidycrm typecheck was red only in examples/demo-kit/src/zoom/useCameraRig.ts (TS2304 'pointers'/'pinch'/'last'), from the sibling zoom builder's in-flight work. A re-run about a minute later was green, and every gate passed before the commit. The lock was taken for the final commit (ADR 0111 plus the CHANGELOG line) and released. The CHANGELOG working copy is CRLF and the new line was written CRLF to match. Nothing was checked by hand: no browser run, so the History band and the toast's Undo were never seen in a running app. The toast's Undo lasts the kit's 4 s TTL. The History band is the lasting way back."}

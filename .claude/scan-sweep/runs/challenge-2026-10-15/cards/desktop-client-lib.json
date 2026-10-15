@@ -1,0 +1,161 @@
+{
+  "host": "desktop-client-lib",
+  "cards": [
+    {
+      "context": "desktop-client-lib",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "One host-call executor: spoken turns get the ADR 0101 hold the panel has",
+      "size": "M",
+      "effort": 7,
+      "impact": 8,
+      "risk": 6,
+      "write_set": [
+        "apps/desktop/src/stores/run.ts",
+        "apps/desktop/src/stores/voice.ts",
+        "apps/desktop/src/stores/voice.test.ts",
+        "apps/desktop/src/stores/run.test.ts",
+        "apps/desktop/src/lib/hands.ts",
+        "CHANGELOG.md"
+      ],
+      "new_files": [
+        "apps/desktop/src/lib/execute.ts",
+        "apps/desktop/src/lib/execute.test.ts",
+        "docs/adr/NNNN-every-surface-that-runs-a-host-call-reads-its-timeout-and-holds-it.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-every-surface-that-runs-a-host-call-reads-its-timeout-and-holds-it.md (amends 0101: the hold and the timeout reading are the window's, not the panel run loop's)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "voice turn, page answers the write host.ledgerbox.pay (reversible false, side_effects external) with {ok:false, reason:'timeout'} -> the socket's tool_result error starts 'outcome_unknown:' and unsureTools() lists host.ledgerbox.pay",
+        "voice turn, page answers the read host.ledgerbox.list_overdue (reversible true, side_effects none) with a timeout -> tool_result error starts 'timeout:' and unsureTools() is empty",
+        "a panel turn left host.ledgerbox.pay unsure -> the next voice 'start' frame and 'text' frame carry gated_tools containing 'host.ledgerbox.pay' (today they carry gatedListsOf only)",
+        "voice turn.finished releases a held tool.call for an unsure tool -> the page is never called (fake page calls == []) and tool_result error starts 'outcome_unknown:' with the 'held' transcript line",
+        "lib/execute: readTimeout({ok:false,reason:'timeout'}, read=false) -> 'outcome_unknown'; read=true -> 'timeout'; {ok:true} -> null; a tool no listing describes -> 'outcome_unknown'",
+        "answering a card whose action is host.ledgerbox.pay (approve or decline) lifts the hold -> the next voice 'start' frame's gated_tools no longer lists it",
+        "guard: every existing outcome_unknown / unsure / bound-tab case in stores/run.test.ts passes unchanged against the lifted executor",
+        "guard: a voice host call that answers ok -> the same tool_result {ok:true, output, tier} and transcript line as before"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "docs/adr/0101-a-timed-out-write-is-outcome-unknown-and-a-late-answer-is-heard.md:28",
+        "docs/adr/0101-a-timed-out-write-is-outcome-unknown-and-a-late-answer-is-heard.md:33",
+        "apps/desktop/src/stores/run.ts:1151",
+        "apps/desktop/src/stores/run.ts:1185",
+        "apps/desktop/src/stores/run.ts:1196",
+        "apps/desktop/src/stores/run.ts:1342",
+        "apps/desktop/src/stores/voice.ts:322",
+        "apps/desktop/src/stores/voice.ts:346",
+        "apps/desktop/src/stores/voice.ts:467",
+        "apps/desktop/src/stores/voice.ts:520",
+        "apps/desktop/src/stores/voice.ts:263",
+        "apps/desktop/src/stores/run.ts:1242",
+        "apps/desktop/src/lib/hands.ts:183",
+        "apps/desktop/src/lib/events.ts:4"
+      ],
+      "rollback": "Three commits: (1) lib/execute.ts + tests, a pure move of timeoutReasonOf/isReadCall/the unsure registry out of stores/run.ts with run.ts re-exporting the old names (run.test.ts green, no behaviour change); (2) stores/voice.ts routes its onPage through the executor and sends withUnsure(gated) (voice.test.ts acceptance); (3) ADR + CHANGELOG. Reverting (2) alone restores today's voice path; reverting (1) is a mechanical inverse move.",
+      "gate": "policy-tighten",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "One daemon transport: DaemonApi, AdoptApi, IntakeApi and VoiceSetupApi each copy globalFetch, the token header and refusal parsing, and spell 'offline' three ways (TypeError, ApiError(0,'offline'), {reason:'daemon_offline'}) that plain.reasonOf and connectors.problemOf each patch around.",
+      "body": "## Summary\nThe rule that keeps a timed-out write from being sent twice (ADR 0101) lives inside the panel's run loop. The voice store executes the same host calls through its own copy of the loop, and that copy has none of it. Lift the host-call executor (held-call release, origin defence, timeout reading, the unsure hold) into one I/O-free module in `lib/`, and drive it from both stores.\n\n## Description\n`stores/run.ts` reads a page `timeout` on a write as `outcome_unknown`, remembers the tool, adds it to `gated_tools` on every request, and refuses locally a proposal that reaches the page before the gate heard (run.ts:1151, 1185, 1196, 1342). `stores/voice.ts` re-implements the held-call reducer (voice.ts:263, 294) and `onPage` (voice.ts:322). It calls `callOnPage` and reports the raw error, never reads a timeout, never remembers, never holds, and sends `...taking.gated` without `withUnsure` (voice.ts:467, 520). So a spoken \"pay INV-118\" whose page call times out reads as a failure, the model is invited to try again, and the gate is not told to card it. A tool the panel already holds as unsure is run unattended by the next spoken turn. That is the double send ADR 0101 exists to prevent, and it comes back through the second surface. ADR 0101 says 'the hold is per window'. In code it is per store. Registry: module-design / io-free-core (the executor takes the answer, the listing and the unsure set as values; the stores are thin drivers), and state-carrier-decides-the-lane (the unsure Map is module state in run.ts that the forked voice lane never sees).\n\n## Flow\n- Move `timeoutReasonOf`, `isReadCall`, the unsure registry (Map, localStorage mirror, `withUnsure`, `rememberUnsure`, release on answer) and a pure `settleHostCall(row, answer, listing, unsure)` into `lib/execute.ts`. `run.ts` re-exports the old names, so its 2,000-line test file does not move.\n- `voice.ts` `onPage` calls the same `heldBefore` and `settleHostCall`. Its frames send `withUnsure(taking.gated)`.\n- ADR 0103/0105/0106 stay panel-only, as those ADRs decided: voice keeps refusing `tabs_read` and filing unbound cards.\n\n## Expected impact\nA timed-out spoken write is `outcome_unknown` and held until the person answers a card, exactly like a typed one. The only implementation of the host-call policy is in a module both channels import, so the next rule added to it reaches voice by construction.\n\n## Evaluation\nClaim: every surface that runs a host call in this window applies ADR 0101.\nBefore: 0 of 6 non-guard acceptance cases pass (voice has no timeout reading, no hold, no unsure tightening; lib/execute.ts does not exist)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: policy-tighten",
+      "evidence": "run.ts:1342 `...withUnsure(taking.gated),` vs voice.ts:467 and :520 `...taking.gated,`. run.ts:1185 `const timeout = timeoutReasonOf(answer, isReadCall(...))` and :1196 `if (timeout === \"outcome_unknown\") rememberUnsure(...)` have no counterpart in voice.ts (grep 'timeout|outcome_unknown|unsure' in stores/voice.ts: only capture lines 49-517). voice.ts:346 `answer = await deps.call(...)` then reports `answer.error ?? \"failed\"`. run.ts:1151 `if (!approved && isUnsure(row.name))` hold is absent from voice.ts:322-372. grep 'outcome_unknown|timeout' stores/voice.test.ts: 0 hits. ADR 0101:33 'adds the tool to gated_tools on every request'; ADR 0103:58, 0105:58 and 0106:112 exclude voice from binding, tabs_read and open_apps, and nothing excludes it from 0101."
+    },
+    {
+      "context": "desktop-connectors-panel",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "A connector card names the account it acts as and whether it can go through",
+      "size": "M",
+      "effort": 6,
+      "impact": 8,
+      "risk": 5,
+      "write_set": [
+        "apps/desktop/src/modules/connectors/model.ts",
+        "apps/desktop/src/modules/connectors/model.test.ts",
+        "apps/desktop/src/modules/connectors/fixtures.ts",
+        "apps/desktop/src/stores/connectors.ts",
+        "apps/desktop/src/stores/connectors.test.ts",
+        "apps/desktop/src/lib/ipc.ts",
+        "apps/desktop/src/companion/model.ts",
+        "apps/desktop/src/companion/model.test.ts",
+        "apps/desktop/src/companion/live.tsx",
+        "apps/desktop/src/companion/views.tsx",
+        "apps/desktop/src/companion/fixtures.ts",
+        "apps/desktop/src/athena.tsx",
+        "CHANGELOG.md"
+      ],
+      "new_files": [
+        "docs/adr/NNNN-a-connector-card-names-the-account-it-acts-as.md"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-a-connector-card-names-the-account-it-acts-as.md (amends 0026 'who runs which store': her window gains a read-only /connectors mirror; realises 0021's 'the card names the connector as the thing that will act'; partial adoption of docs/BACKLOG.md C1)"
+      ],
+      "generated": [],
+      "acceptance": [
+        "connectorLineOf('connector:gmail', items=[gmail connected, identity 'mira@example.com', enabled, writes_enabled], loaded=true) -> {app:'Gmail', line:'Acts as mira@example.com through Gmail.', warning:null}",
+        "same with connection.status 'needs_reauth', or enabled false, or writes_enabled false -> warning names the one cause in plain words ('Gmail needs reconnecting', 'Gmail is switched off', 'Writes are off for Gmail') + ', so approving now will be refused', with action 'accounts'",
+        "loaded=false, or records_notice non-empty -> line \"Gmail's standing could not be confirmed\" and no identity is claimed",
+        "cardView(card with origin 'connector:gmail', {connectors}) -> app 'Gmail', where 'In Gmail - a connector, not a page' (today 'In connector:gmail - ...')",
+        "her window: a decision.requested with origin 'connector:gmail' arrives -> exactly one GET /connectors; a 'host:ledgerbox' card triggers none",
+        "a successful connector act (settings/connect/disconnect/probe) emits 'connectors:changed' and the other window's mirror reloads; the dead store:changed 'connectors' branch is removed (no store table of that name exists)",
+        "rowOf lists a tool with reversible null and side_effects 'internal' under writes, matching HostTool.default_class (reversible is not True -> GATED)",
+        "guard: a host-origin card's CardView is unchanged, and no connector line ever disables Approve or Decline (the gate decides at replay)"
+      ],
+      "guard_cases": ["7"],
+      "premise": [
+        "docs/adr/0021-connectors-are-data-behind-one-vault-and-enter-the-catalog-like-a-page.md:79",
+        "apps/desktop/src/companion/model.ts:872",
+        "apps/desktop/src/companion/model.ts:1131",
+        "apps/desktop/src/companion/model.ts:707",
+        "apps/desktop/src/companion/model.ts:715",
+        "apps/desktop/src/athena.tsx:7",
+        "apps/desktop/src/lib/api.ts:108",
+        "src/athena/connectors/vault.py:520",
+        "apps/desktop/src/stores/connectors.ts:228",
+        "apps/desktop/src/lib/ipc.ts:92",
+        "apps/desktop/src-tauri/src/store.rs:939",
+        "apps/desktop/src/modules/connectors/model.ts:92",
+        "src/athena/contracts/manifest.py:129",
+        "apps/desktop/src/modules/connectors/model.test.ts:77"
+      ],
+      "rollback": "Two commits. (1) Connectors model and store: connectorLineOf, the isWrite fix with its test flipped, connectors:changed in place of the dead store:changed branch. (2) The card: her window's mirror, cardView context, the view line, fixtures, ADR and CHANGELOG. Reverting (2) leaves the Accounts fixes; reverting (1) restores today's store. Neither touches the daemon or the gate.",
+      "gate": "none",
+      "gates_to_run": [
+        "cd apps/desktop && pnpm typecheck && pnpm lint && pnpm test"
+      ],
+      "runner_up": "A consent flow you can cancel: today pollFlow locks every control on the Accounts card as 'waiting for consent' for up to FLOW_TTL_S=600 s after the consent tab is closed; the daemon's OAuthFlow.cancel exists, but no route or button reaches it.",
+      "body": "## Summary\nA connector card is the one approval that acts outside every page: Gmail sends as whoever the vault is connected as. The person signs it without being told who that is, or whether the connection can carry the send. The app already holds both facts in the `/connectors` record. Put them on the card.\n\n## Description\nToday a Gmail send card reads 'In connector:gmail - a connector, not a page'. `appOf` passes the origin to `hostOf`, and `new URL('connector:gmail')` parses with an empty host, so the raw origin comes back (model.ts:872, 1131). The card has no connector context at all (model.ts:715). Her window, where cards are answered, does not run the connectors store (athena.tsx:7). The vault flips a grant to `needs_reauth` in the middle of a call (vault.py:520), and the surface never hears about it. The store's cross-window refresh listens for a `store:changed` on table 'connectors' (connectors.ts:228). No such table exists (ipc.ts:92), and Rust emits that event only for store writes (store.rs:939), so the branch is dead and its test pins a signal that never fires. On the Accounts row, the 'writes' list re-derives the class and has drifted from the catalog: a tool with `reversible` omitted is GATED by `default_class` and listed as a read (model.ts:92, manifest.py:129, pinned wrong at model.test.ts:77). Registry: mcp-tools / ambient-selection-is-not-an-argument. The account a connector call runs under is ambient vault state that the card never carries. This card makes it visible at the moment of signing. Binding it into the approval is the daemon-side next step and is not this card.\n\n## Flow\n- `modules/connectors/model.ts` gains a pure `connectorLineOf(origin, items, loaded, notice)`. `isWrite` defers to `gate.js` `classify`.\n- `stores/connectors.ts` loads on demand for a connector card, emits `connectors:changed` after an act (through `lib/ipc.ts`) and reloads on hearing it.\n- `companion/model.ts` `cardView` names the connector by its label and carries the line. `views.tsx` renders it under the 'where' line, with 'Open Accounts' (athenaOpenMain) when it warns. Approve stays enabled: the gate decides.\n\n## Expected impact\nThe person reads 'Acts as mira@example.com through Gmail' before signing a send. A card whose grant lapsed says so before the signature, so they do not get a bare 'Athena could not carry it out' after it. The Accounts row lists every tool the writes switch actually governs.\n\n## Evaluation\nClaim: a connector card and the Accounts row say, from the vault's record, what will act and whether it can.\nBefore: 1 of 8 (the guard); case 7 is pinned wrong today by model.test.ts:77\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "node: new URL('connector:gmail').host === '' -> hostOf returns the origin, so appOf('connector:gmail') === 'connector:gmail'. grep 'connector:' companion/ -> 0 hits in model, views, fixtures or tests (no connector card is exercised). athena.tsx:7 'The shell and connectors stores are Main's and are not started here.' store.rs:939-940 `fn changed(...) { ui_emit(app, \"store:changed\", {table, key}) }` is called only from store_set/store_delete; STORE_TABLES = settings, origins, projects, project_pages, project_runs, activity, captures. model.ts:93 `return tool.reversible === false || tool.side_effects === \"external\";` vs manifest.py:129 `if self.reversible is not True or self.side_effects == \"external\": return ToolClass.GATED`; model.test.ts:77 expects isWrite({reversible:null, side_effects:'internal'}) toBe(false). registry-map: desktop-connectors-panel / module-design state 'deviation' cites the same line. vault.py:520 `rec.status = \"needs_reauth\"` inside a call."
+    }
+  ],
+  "rehomed": [
+    "plain.ts has no sentence for approval_spent (falls to 'could not carry it out ... Focus the app', the wrong advice), and plain.test.ts REASONS is a hand-list not pinned to gate.js REFUSAL_REASONS - S",
+    "events.ts mirrors contracts/channel.py by hand with no parity test (ADR 0009's read-as-text pattern would pin it) - S",
+    "companion/tools.ts toolRows merges hands without withHands' tabs_read rule, so a page's own tabs_read shows as tier 1 while the manifest sends the shell's hand - S",
+    "Tauri command names live in four hand-lists (build.rs, lib.rs invoke_handler, capabilities/*.json, ipc call names) with no parity test; drift is a runtime 'Permission not found' - S/M, effort 4"
+  ],
+  "riders": [
+    {
+      "name": "desktop-build-config",
+      "checked": "Read vite.config.ts, eslint.config.js, smoke.mjs, build.rs, dev-source-loc.mjs, inspector.tsx (head) and locate.ts (head). Traced the four-place command list (build.rs:1-13) and found no parity test, but it is effort 4 and was rehomed. The packaging deviation (no installed-tree smoke) sits in tauri.conf, outside these files."
+    },
+    {
+      "name": "desktop-connectors-panel",
+      "checked": "Slot B targets it. Read model.ts, index.ts, store and the test headings. Found the dead store:changed branch (connectors.ts:228), the isWrite drift that model.test.ts:77 pins wrong, and the unused expires_at/last_used_at. The OAuth cancel is the slot B runner-up."
+    },
+    {
+      "name": "desktop-e2e",
+      "checked": "Read support/daemon, wire, page, setup, the config, and the client and run suites in full; read the connectors and voice suites by heading. They pin the wire against a real daemon. No suite drives a voice host-call timeout or a connector card. Both cards are proven at unit level, and an e2e case would need a scripted page timeout, so no card went here."
+    }
+  ],
+  "registry": {
+    "subjects": ["mcp-tools", "voice-io", "module-design"],
+    "techniques": ["io-free-core", "state-carrier-decides-the-lane", "locality-and-leverage", "ambient-selection-is-not-an-argument"]
+  },
+  "files_read": 62
+}

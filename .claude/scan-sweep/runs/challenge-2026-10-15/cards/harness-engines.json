@@ -1,0 +1,155 @@
+{
+  "host": "harness-engines",
+  "cards": [
+    {
+      "context": "harness-engines",
+      "slot": "A",
+      "lens": "architecture-challenger",
+      "title": "A CLI round ends in a typed exit, and a gone or poisoned thread reseeds once",
+      "size": "M",
+      "effort": 6,
+      "impact": 7,
+      "risk": 5,
+      "write_set": [
+        "src/athena/harness/transports.py",
+        "src/athena/harness/cli_harness.py",
+        "tests/harness/test_cli_harness.py",
+        "tests/harness/test_rounds_failures.py"
+      ],
+      "new_files": [
+        "tests/harness/test_cli_exit.py"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-a-cli-round-ends-in-a-typed-exit-and-a-gone-thread-is-reseeded-once.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "Turn 2 resumes session s1; the scripted CLI writes no stdout and exits 1 with stderr 'No conversation found with session ID: s1' -> the harness unbinds s1 and invokes once more in the same turn with --system-prompt-file, no --resume, and the whole turn history on stdin; the turn ends turn.finished with the second invocation's text; session_id(conv) is the new id; exactly one ledger row, is_error False",
+        "Turn 2 resumes s1 and the CLI answers a result record {is_error:true, result:'Prompt is too long'} -> the same unbind and one fresh retry (a poisoned thread is unbound like a gone one)",
+        "Turn 2 resumes s1 and the CLI exits 1 with stderr 'API Error: 529 Overloaded' (or a result record saying a usage limit was reached) -> no retry (one transport request), TurnError reason engine_error with a fixed sentence for that class, and turn 3 still sends --resume s1",
+        "A first (unresumed) round whose CLI writes nothing and exits 1 with stderr that matches no signature -> TurnError engine_error whose detail names exit code 1 and never says 'exited cleanly'; no stderr text appears in the detail or the ledger row",
+        "A round that streams an assistant text line and then exits 137 with no result record -> TurnError engine_error ('the CLI stopped before it finished'), no TextDelta and no turn.finished",
+        "A second gone verdict on the reseeded invocation -> TurnError engine_error after exactly 2 transport requests, never 3",
+        "The recorded claude_code_turn.ndjson and codex_turn.ndjson transcripts with exit 0 stream the same events, rows and session ids as before",
+        "A codex (non-resuming) round that exits 1 is one TurnError with no retry, because there is no thread to unbind"
+      ],
+      "guard_cases": ["6", "7"],
+      "premise": [
+        "src/athena/harness/transports.py:85 - the Transport port yields stdout lines and nothing else; an exit code cannot cross it",
+        "src/athena/harness/transports.py:118 - stderr is piped and never read",
+        "src/athena/harness/transports.py:136 - the returncode is only used to decide whether to kill; it is never reported",
+        "src/athena/harness/cli_harness.py:133 - the result record's decode keeps is_error and usage and drops the CLI's own result text and subtype",
+        "src/athena/harness/cli_harness.py:269 - every CLI error becomes one sentence, 'the CLI reported an error and stopped'",
+        "src/athena/harness/cli_harness.py:280 - a stream that ends without any result record returns its text as a success",
+        "src/athena/harness/cli_harness.py:263 - a session id is bound here and the only unbind is a changed static half at :232; no failure ever unbinds it, so a gone or poisoned thread fails every later turn of that conversation for the daemon's life",
+        "src/athena/harness/rounds.py:197 - a CLI that exited non-zero with no output is told to the user as 'the CLI exited cleanly and produced no text' (cli_harness.py:215)",
+        "tests/harness/test_cli_harness.py:430 - the only exit test asserts that sentence; nothing scripts an exit code",
+        ".ai/registry-map.json harness-engines/agent-cli-transport is already a recorded deviation (transports.py:131, :137)"
+      ],
+      "rollback": "Two commits: (1) the transport reports an ExitStatus after its lines and ScriptedTransport scripts one per round (default exit 0, so every existing fixture is unchanged); (2) the dialect classifies failures and CliHarness unbinds and reseeds. Reverting (2) alone restores today's behaviour; reverting both removes the protocol field. No stored state, schema or contract changes.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\""
+      ],
+      "runner_up": "A turn whose eighth round still executed something ends silently as a success with results no model will read; end it at the boundary as budget_exhausted, naming what went unread (boundary-applied-stop).",
+      "body": "## Summary\nThe CLI transport hands the harness stdout lines and nothing else: the exit code, stderr and the CLI's own error text are dropped. So every CLI failure reads the same, a crash after partial text counts as a success, and a stored session id is never released. A resume that fails because the thread is gone, or because the thread itself is the cause (a prompt too long), fails every later turn of that conversation until the daemon restarts. The fix is to make a round end in a typed exit and let the dialect classify it. The harness then unbinds the thread only on a definitive gone or poisoned verdict and reseeds once in the same turn.\n\n## Description\nThe technique is agent-cli-transport/thread-custody-across-resume, with output-normalization (failure is not an empty success) and dated-capability-matrix for the signatures.\n- The Transport port yields its lines and then one ExitStatus(returncode, stderr_tail, timed_out). SubprocessTransport reads stderr at exit, bounded. ScriptedTransport takes an optional exit per round and defaults to 0.\n- Decoded keeps the result record's subtype and result text. A small dated table per dialect maps a signature to a closed class: gone, poisoned, auth, limit, transient or unknown. Each class has a fixed sentence for a person. No free stderr or result text ever reaches a TurnError detail or the ledger, because a CLI's error text could quote the request.\n- CliHarness._invoke returns a failure for any non-zero exit, and for a stream that ended without a result record.\n- On gone or poisoned from a resumed round, it drops _sessions[conv] and re-issues the same round once, unresumed: the static prompt file plus the whole turn history, which is what the first round of a conversation already sends. The frame's recall (a 20-episode window with a recency tail) is the reseed that exists by construction, as rule 2 of the technique allows.\n- Every other class leaves the thread bound and fails the turn with its sentence.\n\n## Flow\n- round -> transport lines + ExitStatus -> dialect.classify -> ok | (class, sentence)\n- gone or poisoned and the round was resumed and no retry yet -> unbind -> same round, fresh session -> continue\n- else -> Failure(engine_error, sentence) -> RoundHarness writes the one row as today\n\n## Expected impact\nA conversation whose thread was pruned or overfilled recovers in the turn that found it, where today it fails until a restart. Every engine failure tells the operator which of a few things happened (sign in, wait for a limit, retry), not one generic sentence. A crash halfway through a reply is no longer streamed as a finished answer. The whole class of 'failure read as an empty success' closes at the one spawn door both CLI dialects share.\n\n## Evaluation\nClaim: a CLI round's exit is typed, and a gone or poisoned thread is unbound and reseeded once, in the same turn.\nBefore: 2 of 8 acceptance cases pass (the guards 7 and 8; cases 1 to 6 cannot be scripted because no exit crosses the port)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "transports.py:129-138 `raw = await asyncio.wait_for(proc.stdout.readline(), timeout=request.timeout_s)` ... `finally: if proc.returncode is None: proc.kill(); await proc.wait()` - stderr=asyncio.subprocess.PIPE at :118 is never read. cli_harness.py:266-269 `elif decoded.kind == \"result\": _apply_usage(result, decoded); if decoded.is_error: return \"\", (\"engine_error\", \"the CLI reported an error and stopped\")`. cli_harness.py:280 `return \"\".join(segments), None` after the loop whatever the exit. grep '_sessions.pop' src/athena/harness -> only cli_harness.py:233 (static half changed). rounds.py:196-197 `if failure is None and not result.text and not result.tool_calls: failure = (\"engine_error\", self.silent_detail)` with CliHarness.silent_detail = 'the CLI exited cleanly and produced no text'. ScriptedTransport.run (transports.py:164-174) has no exit to script. The conversation id is per app (daemon/sessions.py touch -> ids.conversation_for_app), so one claude thread is resumed for every turn on that app for the daemon's whole life."
+    },
+    {
+      "context": "harness-engines",
+      "slot": "B",
+      "lens": "ux-elevation",
+      "title": "Stop a running turn, and make the 25-minute wall the turn's, not a line's",
+      "size": "L",
+      "effort": 7,
+      "impact": 8,
+      "risk": 6,
+      "write_set": [
+        "src/athena/harness/rounds.py",
+        "src/athena/harness/cli_harness.py",
+        "src/athena/daemon/routes.py",
+        "src/athena/daemon/server.py",
+        "tests/harness/test_rounds_failures.py",
+        "apps/desktop/src/lib/api.ts",
+        "apps/desktop/src/stores/run.ts",
+        "apps/desktop/src/stores/run.test.ts",
+        "apps/desktop/src/companion/views.tsx",
+        "apps/desktop/src/companion/views.test.tsx"
+      ],
+      "new_files": [
+        "tests/daemon/test_stop.py"
+      ],
+      "shared_surfaces": [
+        "CHANGELOG.md",
+        "docs/adr/NNNN-a-running-turn-can-be-stopped-and-the-turn-wall-is-the-turns.md"
+      ],
+      "generated": [],
+      "acceptance": [
+        "RoundHarness with timeout_s=1 over a transport that yields a line every 0.3 s forever -> the stream ends in TurnError(reason='timeout') within 2 s; one ledger row with error_reason 'timeout'; the transport generator's finally ran (today the per-line timeout never fires and the turn never ends)",
+        "A turn whose first two rounds used 0.8 s of a 1 s budget -> the third CliRequest carries timeout_s <= the remaining budget, not the full 25 minutes",
+        "Daemon over a scripted engine that hangs in round 1: POST /run streams, then POST /run/stop {origin} from a second thread -> 200 {stopped:true}; the /run stream's last frame is turn.error with reason 'cancelled'; exactly one ledger row 'cancelled'; and a POST /decisions/<id> sent right after answers within 1 s (the writer lock is free)",
+        "POST /run/stop with no turn running, or naming an origin other than the running turn's -> 200 {stopped:false}, and a running turn on another origin continues to turn.finished",
+        "Panel run store in phase 'running': stop() calls api.stop(origin), aborts the run's AbortSignal, enters phase 'idle' with a transcript line saying she stopped, and starts no continuation even though page results were pending",
+        "A card that arrived before the stop stays pending in the store and in GET /decisions, and is still answerable; stop never touches the approval table",
+        "A turn that is never stopped streams the same SSE frames and writes the same row as before (tests/daemon/test_run.py unchanged)",
+        "A client hang-up and a stop that race on one turn write one 'cancelled' row, not two (test_a_stream_closed_after_its_first_event_writes_a_cancelled_row stays green)"
+      ],
+      "guard_cases": ["5", "6", "7"],
+      "premise": [
+        "src/athena/harness/rounds.py:49 - TURN_TIMEOUT_S is documented as 'a wall, not a budget' for the turn",
+        "src/athena/harness/cli_harness.py:306 - it is passed to each CliRequest unchanged",
+        "src/athena/harness/transports.py:131 - where it bounds one readline, so a CLI that writes a line every few minutes is never stopped, and eight rounds can each wait 25 minutes",
+        "src/athena/daemon/server.py:247 - one turn at a time: the writer lock is held for the whole turn",
+        "src/athena/daemon/routes.py:842 - answering a card takes the same lock, and so does registering a page's manifest (routes.py:456), so a hung engine also blocks every approval and every new tab",
+        "src/athena/daemon/server.py:405 - a client that hangs up is noticed only at the next frame write; drain (routes.py:356) is blocked in the engine's readline until then",
+        "src/athena/daemon/routes.py:776 - no route can end a running turn; grep for cancel or stop in daemon/routes.py finds none",
+        "apps/desktop/src/lib/api.ts:295 - run() already accepts an AbortSignal, and apps/desktop/src/stores/run.ts never passes one",
+        "apps/desktop/src/stores/run.ts:58 - one exchange may continue itself up to 8 times, each a turn of up to 8 rounds, with no way for the person to end it",
+        "src/athena/harness/rounds.py:183 - cancellation already writes the 'cancelled' row and re-raises, so the harness is cancel-safe and only lacks a door"
+      ],
+      "rollback": "Three commits that revert independently: (1) the turn wall in RoundHarness and the remaining-budget request timeout; (2) POST /run/stop and drain running each step as a registered task the route cancels with call_soon_threadsafe; (3) the panel's Stop. Reverting (3) leaves a route nobody calls; reverting (2) leaves (1), which is a pure tightening. No schema, contract or stored-state change.",
+      "gate": "none",
+      "gates_to_run": [
+        "uv run ruff check .",
+        "uv run ruff format --check .",
+        "uv run mypy",
+        "uv run pytest -m \"not provider and not eval\"",
+        "pnpm typecheck && pnpm lint && pnpm test (from apps/desktop)"
+      ],
+      "runner_up": "A card says why it is gated (class, first sight, pinned, text read from another tab, another tab, may have run) as typed reasons, not only the two that have a notice line today (hooks.py:220-228), so the person stops approving harmless reads blind.",
+      "body": "## Summary\nOnce a turn starts, nobody can stop it. The panel shows her working and offers no Stop. The daemon has no route that ends a turn. The 25-minute 'turn wall' is really a per-line wait, so a stalled engine holds the daemon's one writer lock until it has been silent for 25 minutes. While it waits, approvals and new tabs wait too. This card adds the missing control: Stop in the panel, POST /run/stop in the daemon, and a turn deadline in the round loop that is actually the turn's.\n\n## Description\n- RoundHarness keeps a deadline of started + timeout_s and runs each _round under asyncio.timeout(remaining). Expiry closes the turn as 'timeout' through the existing failure path. CliHarness passes the remaining budget, not the constant, as the request timeout.\n- drain runs each step as a task and registers (loop, task, origin) on the daemon while the turn runs. POST /run/stop takes no writer lock. If the origin matches, it calls loop.call_soon_threadsafe(task.cancel). The CancelledError reaches the transport's readline: its finally kills and reaps the child, rounds.py:183 writes the one 'cancelled' row, and drain yields turn.error 'cancelled' as the stream's terminal frame. A hang-up today ends with no terminal frame at all.\n- The panel's run store gains stop(). It aborts the fetch, calls the route, ends the exchange's continuation loop, and records a 'Stopped.' line. The companion view shows Stop wherever it shows that she is working.\n- Stop never touches approvals: a card already filed stays answerable (ADR 0038 spend rules unchanged).\nTechniques: session-continuation/ordered-teardown (one stop path that clears the turn lock and the continuation loop) and boundary-applied-stop. agent-runtime-assembly/indeterminate-closure-on-interruption is honoured by the row: a stopped round's usage is unknown and the row says so (cost_estimated), not zero.\n\n## Flow\n- person presses Stop -> store.stop() -> abort fetch + POST /run/stop {origin}\n- route -> running turn on that origin? -> call_soon_threadsafe(task.cancel) -> child killed and reaped -> 'cancelled' row -> turn.error frame -> lock released\n- or the turn wall expires -> 'timeout' row -> turn.error -> lock released\n\n## Expected impact\nThe person gets back control of an agent that is going the wrong way or has hung: one press, with no restart and no 25-minute wait for the lock to come back. Approvals and new tabs are never held behind a stalled engine for more than the wall. The documented 25-minute wall becomes true.\n\n## Evaluation\nClaim: a running turn can be stopped by the person, and the 25-minute wall bounds a turn.\nBefore: 3 of 8 acceptance cases pass (the guards 6, 7 and 8)\nAfter: 8 of 8\nMethod: gate - the acceptance cases\nResult: better\nGate: none",
+      "evidence": "rounds.py:49-51 '#: A turn is allowed twenty-five minutes. It is a wall, not a budget' TURN_TIMEOUT_S = 25 * 60; cli_harness.py:306 `timeout_s=self.timeout_s` in every CliRequest; transports.py:131 `raw = await asyncio.wait_for(proc.stdout.readline(), timeout=request.timeout_s)` (per line). server.py:247-248 '#: One turn at a time. Taken by :meth:`writing`' lock; routes.py:776 `with daemon.writing():` around the turn; routes.py:842 `with daemon.writing(): resolution = daemon.lane.answer_decision(...)`; routes.py:456 manifest merge under the same lock. grep -i 'cancel|stop' src/athena/daemon/routes.py: no route. api.ts:295 `async *run(body: TurnBody, signal?: AbortSignal)`; grep 'signal' apps/desktop/src/stores/run.ts: no match. run.ts:57-58 MAX_CONTINUATIONS = 8. tests/harness/test_rounds_failures.py:258-288 shows a hanging transport is cancel-safe (one 'cancelled' row) when its task is cancelled."
+    }
+  ],
+  "rehomed": [
+    "child_env strips only ANTHROPIC_API_KEY, so OPENAI_API_KEY reaches codex and can move its billing off the ChatGPT plan (transports.py:56; subscription-auth-selection) - S, a one-line strip with a per-dialect table",
+    "engines._logged_in treats a credential file's existence as signed in (engines.py:175; availability-probe says existence proves nothing) - a real zero-token auth probe depends on dated CLI flags that cannot be verified offline; S-M, impact under 7 alone",
+    "Policy.authorize and Policy.to_cedar are two hand-kept renderings of the same four rules (policy.py:148, :274) - rules as data objects would derive both, but the Cedar text is docs-only; impact under 7"
+  ],
+  "riders": [
+    {
+      "name": "browser-lane",
+      "checked": "Read browser_lane.py, ports.py, turn_frame.py, __init__.py and the lane tests' index and conftest. I traced answer_decision's replay, the FrameBuilder baseline (it is remembered only when a turn finishes) and _record_results, whose raw-output episodes are the recorded agent-memory deviation. The lane only passes the harness's events through, so both seams worth a card (the typed exit and the stop/deadline) live in the harness and the daemon. The episode-shape deviation is a recall/brain concern, not a lane card."
+    }
+  ],
+  "registry": {
+    "subjects": [
+      "agent-cli-transport",
+      "session-continuation",
+      "agent-runtime-assembly"
+    ],
+    "techniques": [
+      "thread-custody-across-resume",
+      "output-normalization",
+      "dated-capability-matrix",
+      "ordered-teardown",
+      "boundary-applied-stop",
+      "indeterminate-closure-on-interruption"
+    ]
+  },
+  "files_read": 34
+}
