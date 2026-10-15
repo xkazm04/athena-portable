@@ -518,6 +518,42 @@
           "evidence": "src/athena/lane/ports.py:156 The lane records episodes and does not run a distillation pass over them."
         }
       ]
+    },
+    "1cd39491-5acf-4229-b227-ae8068800d9b/agent-instruction-files": {
+      "context": "harness-engines",
+      "subject": "agent-instruction-files",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T02:25:41.884Z",
+      "techniques": [
+        {
+          "technique": "workspace-ancestry-isolation",
+          "verdict": "deviation",
+          "evidence": "src/athena/harness/cli_harness.py:212 CliHarness defaults cwd to '.' which executes the CLI engine inside the repository checkout, exposing it to repo instruction files."
+        },
+        {
+          "technique": "inherited-default-ownership",
+          "verdict": "conformant",
+          "evidence": "src/athena/harness/cli_harness.py:50 CliHarness pins permissive CLI defaults below the model by passing --restricted and --permission-mode dontAsk for Claude and read-only for Codex."
+        },
+        {
+          "technique": "enforcement-demotion",
+          "verdict": "conformant",
+          "evidence": "src/athena/harness/hooks.py:129 GateHook evaluates tool permissions and parameter validity programmatically via catalog without delegating decisions to a language model."
+        },
+        {
+          "technique": "context-reset-redelivery",
+          "verdict": "conformant",
+          "evidence": "src/athena/harness/cli_harness.py:232 CliHarness invalidates the stored session when static prompt text changes across turns to force re-delivery of the fresh system prompt."
+        }
+      ],
+      "withdrawn": {
+        "worker": "6f9bedeb-e721-4dc0-ae5f-623aba1fec12",
+        "state": "deviation",
+        "at": "2026-10-15T02:26:01.564566+00:00",
+        "reason": "reviewer (sonnet): The claim that CliHarness launches sub-agents in the repository root is unconfirmed: cwd='.' is only a dataclass default, engines.py:187 takes cwd as a required parameter and wiring.py:305 passes run_dir. Also, cli_harness.py:50 pins restrictive args (--restricted, dontAsk), not 'permissive' as the "
+      }
     }
   }
 }

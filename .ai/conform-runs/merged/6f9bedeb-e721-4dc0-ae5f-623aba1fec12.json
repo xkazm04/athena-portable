@@ -1,0 +1,55 @@
+{
+  "schema": "conform-run/1",
+  "worker": "6f9bedeb-e721-4dc0-ae5f-623aba1fec12",
+  "subject": "agent-instruction-files",
+  "evaluatedAt": "2026-10-15T02:25:41.884539+00:00",
+  "provider": "agy",
+  "model": "gemini-3.8-flash-high",
+  "pairs": [],
+  "declined": [
+    {
+      "subject": "agent-instruction-files",
+      "context": "contracts-seam",
+      "reason": "Precondition of agent-instruction-files does not hold for contracts-seam: package contract types, protocol definitions, and channel events define data structures and interfaces, containing no agent instruction files or harness execution logic; not-applicable is barred from this seat, so pair is declined."
+    },
+    {
+      "subject": "agent-instruction-files",
+      "context": "core-brain-memory",
+      "reason": "Precondition of agent-instruction-files does not hold for core-brain-memory: disk-backed episodic, semantic, and procedural memory stores manage Athena's persistence and recall, containing no agent instruction files or harness execution logic; not-applicable is barred from this seat, so pair is declined."
+    },
+    {
+      "subject": "agent-instruction-files",
+      "context": "browser-lane",
+      "reason": "Precondition of agent-instruction-files does not hold for browser-lane: the browser lane translates model operations into browser actions and dynamic turn frames (pertaining to prompt-assembly rather than agent-instruction-files), containing no agent instruction files; not-applicable is barred from this seat, so pair is declined."
+    },
+    {
+      "subject": "agent-instruction-files",
+      "context": "desktop-build-config",
+      "reason": "Precondition of agent-instruction-files does not hold for desktop-build-config: build, packaging, ESLint, Vite, and Tauri configurations manage the desktop app build pipeline, containing no agent instruction files or harness execution logic; not-applicable is barred from this seat, so pair is declined."
+    },
+    {
+      "subject": "agent-instruction-files",
+      "context": "harness-engines",
+      "reason": "withdrawn after review: reviewer (sonnet): The claim that CliHarness launches sub-agents in the repository root is unconfirmed: cwd='.' is only a dataclass default, engines.py:187 takes cwd as a required parameter and wiring.py:305 passes run_dir. Also, cli_harness.py:50 pins restrictive args (--restricted, dontAsk), not 'permissive' as the "
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-15T02:25:41.884539+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "agent-instruction-files"
+      ],
+      "techniques": [
+        "context-reset-redelivery",
+        "enforcement-demotion",
+        "inherited-default-ownership",
+        "workspace-ancestry-isolation"
+      ],
+      "deviations": 1,
+      "context": "harness-engines",
+      "via": "curator-multi:agy",
+      "model": "gemini-3.8-flash-high"
+    }
+  ]
+}
