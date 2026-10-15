@@ -554,6 +554,291 @@
         "at": "2026-10-15T02:26:01.564566+00:00",
         "reason": "reviewer (sonnet): The claim that CliHarness launches sub-agents in the repository root is unconfirmed: cwd='.' is only a dataclass default, engines.py:187 takes cwd as a required parameter and wiring.py:305 passes run_dir. Also, cli_harness.py:50 pins restrictive args (--restricted, dontAsk), not 'permissive' as the "
       }
+    },
+    "c2e060d5-a15b-46fc-8a10-55188c2d50d2/voice-io": {
+      "context": "desktop-client-lib",
+      "subject": "voice-io",
+      "bundle": "software-engineering",
+      "state": "conformant",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T03:02:14.554Z",
+      "worker": "13397256-4917-4176-b846-f885975aff98",
+      "techniques": [
+        {
+          "technique": "stt-pipeline",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/lib/events.ts:102 The transcript event separates a final from an in-progress utterance. companion.ts chains release onto the press promise so a fast key-up cannot leave the microphone open."
+        },
+        {
+          "technique": "tts-pipeline",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/lib/events.ts:118 The stopped event keys playback by generation and names three end reasons. This file does not own the queue or the device."
+        },
+        {
+          "technique": "voice-ux-integration",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/lib/companion.ts:173 With no voice backend, production summons her window instead of leaving the chord dead. A global mute is not in this file."
+        },
+        {
+          "technique": "bounded-playback-wait",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/events.ts:170 The client treats the turn as finished on the text events and does not wait for playback to end."
+        },
+        {
+          "technique": "speech-ready-text",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/events.ts:54 The finished turn has a slot for a spoken string. This file does not turn display markup into speech."
+        },
+        {
+          "technique": "engine-abstraction",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/engines.ts:21 The engines named here are the CLI harness dialects, not speech engines."
+        },
+        {
+          "technique": "engine-choice-on-decisive-terms",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/engines.ts:20 There is no speech-recognition bake-off in these files."
+        },
+        {
+          "technique": "on-device-vs-cloud",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/engines.ts:53 The default engine choice here is which CLI starts the daemon, not where voice audio resides."
+        },
+        {
+          "technique": "voice-setup-experience",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/store.ts:53 The only setup fact stored here is a finished-once flag, not the install and compare flow."
+        },
+        {
+          "technique": "duplex-agent-sessions",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/events.ts:113 voice.speaking carries the line as text. This module does not open a vendor session that decides the reply."
+        },
+        {
+          "technique": "unattended-caller-attribution",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/companion.ts:165 The chord is the person's key, mapped to the hosted voice store. There is no second door for an automated caller."
+        }
+      ]
+    },
+    "47d94d0e-5b94-4d54-ae48-fb5811498a38/voice-io": {
+      "context": "desktop-perf-gate",
+      "subject": "voice-io",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T03:02:14.554Z",
+      "techniques": [
+        {
+          "technique": "real-time-synthesis-budget",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/scripts/perf-budgets.mjs:10 The gate measures UI frames, not a synthesis real-time factor or time to first audio."
+        },
+        {
+          "technique": "stt-pipeline",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/scripts/perf-voice.drive.mjs:6 The voice scenario asserts a settled scene requests no frames. It does not capture or transcribe."
+        }
+      ],
+      "withdrawn": {
+        "worker": "13397256-4917-4176-b846-f885975aff98",
+        "state": "not-applicable",
+        "at": "2026-10-15T03:02:48.650444+00:00",
+        "reason": "reviewer (sonnet): The anchor (perf-voice.drive.mjs:6) is a comment describing a voice-scene perf scenario that guards the waveform and meters, so it shows the voice subject is present in this context and does not show the precondition absent; the verdict rests on a keyword grep that cannot prove 'not applicable'."
+      }
+    },
+    "82a06da0-9acf-4ef5-bfd0-0d1a761fca83/voice-io": {
+      "context": "daemon-e2e-tests",
+      "subject": "voice-io",
+      "bundle": "software-engineering",
+      "state": "conformant",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T03:02:14.554Z",
+      "worker": "13397256-4917-4176-b846-f885975aff98",
+      "techniques": [
+        {
+          "technique": "duplex-agent-sessions",
+          "verdict": "conformant",
+          "evidence": "tests/e2e/test_voice.py:3 The test treats voice as transport over the product's turn. The spoken line comes from the scripted reply's TTS field, not from a vendor that decides the answer."
+        },
+        {
+          "technique": "spoken-intent-parsing",
+          "verdict": "conformant",
+          "evidence": "tests/e2e/test_voice.py:6 Paying is a decision card; the later utterance approve resolves that card and the tool call keeps the card's invoice, which is the confirmation path for an expensive action."
+        },
+        {
+          "technique": "speech-ready-text",
+          "verdict": "conformant",
+          "evidence": "tests/e2e/test_voice.py:92 The test requires voice.speaking.text to be the TTS line, and turn.finished.text to stay the visible sentence."
+        },
+        {
+          "technique": "stt-pipeline",
+          "verdict": "conformant",
+          "evidence": "tests/e2e/test_voice.py:85 The turn is asserted on a final transcript after an explicit stop. The test does not cover metering or a denied microphone."
+        },
+        {
+          "technique": "tts-pipeline",
+          "verdict": "conformant",
+          "evidence": "tests/e2e/test_voice.py:98 Completion is a distinct reason, the stopped generation matches the speaking event, and the test requires audio frames. Barge-in is not exercised here."
+        },
+        {
+          "technique": "engine-abstraction",
+          "verdict": "conformant",
+          "evidence": "tests/e2e/serve_scripted.py:152 The scripted microphone is added to the daemon's voice-backend registry. The file says a copied composition is what drifts."
+        },
+        {
+          "technique": "transcript-normalization",
+          "verdict": "conformant",
+          "evidence": "tests/e2e/test_voice.py:84 The utterance that becomes the model turn is kept as heard. That destination is a reasoner, so a cleanup rewrite would be the loss the technique forbids."
+        },
+        {
+          "technique": "on-device-vs-cloud",
+          "verdict": "not-applicable",
+          "evidence": "tests/e2e/conftest.py:20 The suite defaults the voice backend to none and strips OPENAI_API_KEY so a test cannot open a network provider. That is isolation, not the product's residency default."
+        },
+        {
+          "technique": "bounded-playback-wait",
+          "verdict": "not-applicable",
+          "evidence": "tests/e2e/test_voice.py:46 Sixty seconds is how long the test waits for a frame kind. It is not a drain deadline derived from the audio length."
+        },
+        {
+          "technique": "render-acceptance",
+          "verdict": "not-applicable",
+          "evidence": "tests/e2e/test_voice.py:47 Audio is counted, not inspected for an internal silence gap. The backend is scripted, not a generative renderer."
+        },
+        {
+          "technique": "engine-choice-on-decisive-terms",
+          "verdict": "not-applicable",
+          "evidence": "tests/e2e/serve_scripted.py:19 The harness substitutes one scripted backend. It does not rank recognizers on decisive terms."
+        },
+        {
+          "technique": "unattended-caller-attribution",
+          "verdict": "not-applicable",
+          "evidence": "tests/e2e/test_voice.py:11 The client is the browser handshake, not an automated caller the product does not host."
+        },
+        {
+          "technique": "decode-time-vocabulary-biasing",
+          "verdict": "not-applicable",
+          "evidence": "tests/e2e/test_voice.py:28 The socket sends silence and the scripted backend returns a fixed utterance. Nothing hands a vocabulary to a decoder."
+        }
+      ]
+    },
+    "d92a466e-000a-4519-a875-0c28dbec7f12/voice-io": {
+      "context": "desktop-scenes-voice-waking",
+      "subject": "voice-io",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T03:02:14.554Z",
+      "techniques": [
+        {
+          "technique": "engine-abstraction",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/voice/studio.tsx:351 The hear card renders Whisper models or the OpenAI key by engine id, and settings hardcodes the same two listeners in a pill group instead of enumerating the registry and branching on capability."
+        },
+        {
+          "technique": "tts-pipeline",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/voice/studio.tsx:72 Unmount and blur stop a take in progress. This scene never calls stopPreview, so a preview still synthesizing or playing keeps going after the studio or settings surface is gone."
+        },
+        {
+          "technique": "voice-setup-experience",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/voice/studio.tsx:70 Local Kokoro, a labelled cloud recognizer, side-by-side takes, receipts, and a shared engine home are drawn here. Leaving does not silence the preview: the reaper this comment names is only the microphone take."
+        },
+        {
+          "technique": "stt-pipeline",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/voice/settings.tsx:216 Hold-to-talk, a level meter, and a microphone error are shown. Every successful take with empty text is rendered as heard nothing, with no separate outcome for audio that had level and produced no words."
+        },
+        {
+          "technique": "on-device-vs-cloud",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/scenes/voice/settings.tsx:31 Synthesis offers only Kokoro and says speech stays on the computer. Cloud recognition is an explicit labelled choice, not a silent fallback."
+        },
+        {
+          "technique": "voice-ux-integration",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/scenes/waking/view.tsx:157 Waking keeps typing when there is no microphone. The voice scene's gates state why setup cannot proceed, and the play control is also the stop control. No global mute is drawn in these scenes."
+        },
+        {
+          "technique": "portable-provider-package",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/scenes/voice/settings.tsx:153 Settings states one shared engine home. A listener that is not ready is muted and given its reason. The package seam itself is not in this scene."
+        },
+        {
+          "technique": "speech-ready-text",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/scenes/voice/studio.tsx:311 The pick step speaks previewLine, a greeting or the next fixed line, rather than the surrounding labels. Markup stripping is not done in this file."
+        },
+        {
+          "technique": "authored-voice-identity",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/voice/studio.tsx:278 The picker uses a voice Kokoro lists, such as af_heart. Nothing here describes or clones a voice."
+        },
+        {
+          "technique": "spoken-intent-parsing",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/voice/studio.tsx:329 The hear step compares free takes. It does not parse a transcript into a typed command."
+        },
+        {
+          "technique": "bounded-playback-wait",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/voice/studio.tsx:298 Play toggles a preview and returns. The studio does not wait until audio finishes before the next step."
+        },
+        {
+          "technique": "duplex-agent-sessions",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/voice/view.tsx:155 Ready copy is hold the chord and she answers. These scenes do not open a vendor session that decides replies."
+        },
+        {
+          "technique": "transcript-handoff-receipts",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/voice/studio.tsx:347 The transcript is drawn in the take column. Nothing pastes it into another application."
+        },
+        {
+          "technique": "transcript-normalization",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/voice/studio.tsx:349 The column shows the recognizer's text so two listeners can be compared. That text is evidence of what was heard, which this technique says not to clean."
+        },
+        {
+          "technique": "render-acceptance",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/voice/studio.tsx:306 A failed preview shows the error string. The scene does not inspect a successful buffer for internal silence."
+        },
+        {
+          "technique": "real-time-synthesis-budget",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/voice/settings.tsx:182 The only speed sentence is about Whisper model size. No synthesis real-time factor is recorded."
+        },
+        {
+          "technique": "engine-choice-on-decisive-terms",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/voice/studio.tsx:345 The person picks a recognizer from one take and its latency. There is no decisive-term recall instrument."
+        },
+        {
+          "technique": "caller-scoped-voice-binding",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/voice/settings.tsx:122 One product voice is stored. There is no per-caller binding table."
+        },
+        {
+          "technique": "unattended-caller-attribution",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/voice/studio.tsx:216 Speech in these scenes starts from the person's chord or a play button, not from a caller the product does not host."
+        },
+        {
+          "technique": "decode-time-vocabulary-biasing",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/voice/settings.tsx:200 The test take is one open utterance per listener. No phrase list or prompt is sent to the decoder."
+        }
+      ],
+      "registryProposal": "engine-abstraction forbids an engine name in surface code, while voice-setup-experience requires the person to read which engine is local and which sends audio away. Score an identity branch or a second hardcoded engine list as the defect; a label taken from the registry is the setup surface doing its job.",
+      "withdrawn": {
+        "worker": "13397256-4917-4176-b846-f885975aff98",
+        "state": "deviation",
+        "at": "2026-10-15T03:02:48.670857+00:00",
+        "reason": "reviewer (sonnet): The claim that nothing stops a preview is not confirmed: stopPreview exists in modules/voice/live.ts and is called when the step leaves pick, on finish and on reopenStudio, so the scene reaches it through the store; the line-70 anchor is a comment about stopping a microphone take on blur and does no"
+      }
     }
   }
 }

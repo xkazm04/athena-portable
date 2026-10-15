@@ -1,0 +1,265 @@
+{
+  "schema": "conform-run/1",
+  "worker": "13397256-4917-4176-b846-f885975aff98",
+  "subject": "voice-io",
+  "evaluatedAt": "2026-10-15T03:02:14.554284+00:00",
+  "provider": "grok",
+  "model": "grok-4.7",
+  "pairs": [
+    {
+      "context": "desktop-client-lib",
+      "subject": "voice-io",
+      "bundle": "software-engineering",
+      "state": "conformant",
+      "evidence": "apps/desktop/src/lib/events.ts:102 This library types the voice channel and the global push-to-talk chord; the final flag, the three playback end reasons, and the no-backend summon are in these files, and the capture and synthesis pipelines are not.",
+      "techniques": [
+        {
+          "technique": "stt-pipeline",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/lib/events.ts:102 The transcript event separates a final from an in-progress utterance. companion.ts chains release onto the press promise so a fast key-up cannot leave the microphone open."
+        },
+        {
+          "technique": "tts-pipeline",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/lib/events.ts:118 The stopped event keys playback by generation and names three end reasons. This file does not own the queue or the device."
+        },
+        {
+          "technique": "voice-ux-integration",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/lib/companion.ts:173 With no voice backend, production summons her window instead of leaving the chord dead. A global mute is not in this file."
+        },
+        {
+          "technique": "bounded-playback-wait",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/events.ts:170 The client treats the turn as finished on the text events and does not wait for playback to end."
+        },
+        {
+          "technique": "speech-ready-text",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/events.ts:54 The finished turn has a slot for a spoken string. This file does not turn display markup into speech."
+        },
+        {
+          "technique": "engine-abstraction",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/engines.ts:21 The engines named here are the CLI harness dialects, not speech engines."
+        },
+        {
+          "technique": "engine-choice-on-decisive-terms",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/engines.ts:20 There is no speech-recognition bake-off in these files."
+        },
+        {
+          "technique": "on-device-vs-cloud",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/engines.ts:53 The default engine choice here is which CLI starts the daemon, not where voice audio resides."
+        },
+        {
+          "technique": "voice-setup-experience",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/store.ts:53 The only setup fact stored here is a finished-once flag, not the install and compare flow."
+        },
+        {
+          "technique": "duplex-agent-sessions",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/events.ts:113 voice.speaking carries the line as text. This module does not open a vendor session that decides the reply."
+        },
+        {
+          "technique": "unattended-caller-attribution",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/companion.ts:165 The chord is the person's key, mapped to the hosted voice store. There is no second door for an automated caller."
+        }
+      ]
+    },
+    {
+      "context": "daemon-e2e-tests",
+      "subject": "voice-io",
+      "bundle": "software-engineering",
+      "state": "conformant",
+      "evidence": "tests/e2e/test_voice.py:3 The voice end-to-end test pins one held key to the same turn lane, a separate TTS line, a final transcript, and a spoken approve that takes the decision route, using a scripted backend added to the daemon's own registry.",
+      "techniques": [
+        {
+          "technique": "duplex-agent-sessions",
+          "verdict": "conformant",
+          "evidence": "tests/e2e/test_voice.py:3 The test treats voice as transport over the product's turn. The spoken line comes from the scripted reply's TTS field, not from a vendor that decides the answer."
+        },
+        {
+          "technique": "spoken-intent-parsing",
+          "verdict": "conformant",
+          "evidence": "tests/e2e/test_voice.py:6 Paying is a decision card; the later utterance approve resolves that card and the tool call keeps the card's invoice, which is the confirmation path for an expensive action."
+        },
+        {
+          "technique": "speech-ready-text",
+          "verdict": "conformant",
+          "evidence": "tests/e2e/test_voice.py:92 The test requires voice.speaking.text to be the TTS line, and turn.finished.text to stay the visible sentence."
+        },
+        {
+          "technique": "stt-pipeline",
+          "verdict": "conformant",
+          "evidence": "tests/e2e/test_voice.py:85 The turn is asserted on a final transcript after an explicit stop. The test does not cover metering or a denied microphone."
+        },
+        {
+          "technique": "tts-pipeline",
+          "verdict": "conformant",
+          "evidence": "tests/e2e/test_voice.py:98 Completion is a distinct reason, the stopped generation matches the speaking event, and the test requires audio frames. Barge-in is not exercised here."
+        },
+        {
+          "technique": "engine-abstraction",
+          "verdict": "conformant",
+          "evidence": "tests/e2e/serve_scripted.py:152 The scripted microphone is added to the daemon's voice-backend registry. The file says a copied composition is what drifts."
+        },
+        {
+          "technique": "transcript-normalization",
+          "verdict": "conformant",
+          "evidence": "tests/e2e/test_voice.py:84 The utterance that becomes the model turn is kept as heard. That destination is a reasoner, so a cleanup rewrite would be the loss the technique forbids."
+        },
+        {
+          "technique": "on-device-vs-cloud",
+          "verdict": "not-applicable",
+          "evidence": "tests/e2e/conftest.py:20 The suite defaults the voice backend to none and strips OPENAI_API_KEY so a test cannot open a network provider. That is isolation, not the product's residency default."
+        },
+        {
+          "technique": "bounded-playback-wait",
+          "verdict": "not-applicable",
+          "evidence": "tests/e2e/test_voice.py:46 Sixty seconds is how long the test waits for a frame kind. It is not a drain deadline derived from the audio length."
+        },
+        {
+          "technique": "render-acceptance",
+          "verdict": "not-applicable",
+          "evidence": "tests/e2e/test_voice.py:47 Audio is counted, not inspected for an internal silence gap. The backend is scripted, not a generative renderer."
+        },
+        {
+          "technique": "engine-choice-on-decisive-terms",
+          "verdict": "not-applicable",
+          "evidence": "tests/e2e/serve_scripted.py:19 The harness substitutes one scripted backend. It does not rank recognizers on decisive terms."
+        },
+        {
+          "technique": "unattended-caller-attribution",
+          "verdict": "not-applicable",
+          "evidence": "tests/e2e/test_voice.py:11 The client is the browser handshake, not an automated caller the product does not host."
+        },
+        {
+          "technique": "decode-time-vocabulary-biasing",
+          "verdict": "not-applicable",
+          "evidence": "tests/e2e/test_voice.py:28 The socket sends silence and the scripted backend returns a fixed utterance. Nothing hands a vocabulary to a decoder."
+        }
+      ]
+    }
+  ],
+  "declined": [
+    {
+      "subject": "voice-io",
+      "context": "desktop-stores",
+      "reason": "evidence leans on stores/voice.ts, which is not a tracked file"
+    },
+    {
+      "subject": "voice-io",
+      "context": "desktop-perf-gate",
+      "reason": "withdrawn after review: reviewer (sonnet): The anchor (perf-voice.drive.mjs:6) is a comment describing a voice-scene perf scenario that guards the waveform and meters, so it shows the voice subject is present in this context and does not show the precondition absent; the verdict rests on a keyword grep that cannot prove 'not applicable'."
+    },
+    {
+      "subject": "voice-io",
+      "context": "desktop-scenes-voice-waking",
+      "reason": "withdrawn after review: reviewer (sonnet): The claim that nothing stops a preview is not confirmed: stopPreview exists in modules/voice/live.ts and is called when the step leaves pick, on finish and on reopenStudio, so the scene reaches it through the store; the line-70 anchor is a comment about stopping a microphone take on blur and does no"
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-15T03:02:14.554284+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "voice-io"
+      ],
+      "techniques": [
+        "bounded-playback-wait",
+        "duplex-agent-sessions",
+        "engine-abstraction",
+        "engine-choice-on-decisive-terms",
+        "on-device-vs-cloud",
+        "speech-ready-text",
+        "stt-pipeline",
+        "tts-pipeline",
+        "unattended-caller-attribution",
+        "voice-setup-experience",
+        "voice-ux-integration"
+      ],
+      "deviations": 0,
+      "context": "desktop-client-lib",
+      "via": "curator-multi:grok",
+      "model": "grok-4.7"
+    },
+    {
+      "ts": "2026-10-15T03:02:14.554284+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "voice-io"
+      ],
+      "techniques": [
+        "real-time-synthesis-budget",
+        "stt-pipeline"
+      ],
+      "deviations": 0,
+      "context": "desktop-perf-gate",
+      "via": "curator-multi:grok",
+      "model": "grok-4.7"
+    },
+    {
+      "ts": "2026-10-15T03:02:14.554284+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "voice-io"
+      ],
+      "techniques": [
+        "bounded-playback-wait",
+        "decode-time-vocabulary-biasing",
+        "duplex-agent-sessions",
+        "engine-abstraction",
+        "engine-choice-on-decisive-terms",
+        "on-device-vs-cloud",
+        "render-acceptance",
+        "speech-ready-text",
+        "spoken-intent-parsing",
+        "stt-pipeline",
+        "transcript-normalization",
+        "tts-pipeline",
+        "unattended-caller-attribution"
+      ],
+      "deviations": 0,
+      "context": "daemon-e2e-tests",
+      "via": "curator-multi:grok",
+      "model": "grok-4.7"
+    },
+    {
+      "ts": "2026-10-15T03:02:14.554284+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "voice-io"
+      ],
+      "techniques": [
+        "authored-voice-identity",
+        "bounded-playback-wait",
+        "caller-scoped-voice-binding",
+        "decode-time-vocabulary-biasing",
+        "duplex-agent-sessions",
+        "engine-abstraction",
+        "engine-choice-on-decisive-terms",
+        "on-device-vs-cloud",
+        "portable-provider-package",
+        "real-time-synthesis-budget",
+        "render-acceptance",
+        "speech-ready-text",
+        "spoken-intent-parsing",
+        "stt-pipeline",
+        "transcript-handoff-receipts",
+        "transcript-normalization",
+        "tts-pipeline",
+        "unattended-caller-attribution",
+        "voice-setup-experience",
+        "voice-ux-integration"
+      ],
+      "deviations": 1,
+      "context": "desktop-scenes-voice-waking",
+      "via": "curator-multi:grok",
+      "model": "grok-4.7"
+    }
+  ]
+}

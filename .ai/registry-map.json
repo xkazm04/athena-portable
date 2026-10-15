@@ -2251,7 +2251,11 @@
           "revision": 20,
           "changedAt": "2026-10-12",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "conformant",
+          "evidence": "tests/e2e/test_voice.py:3 The voice end-to-end test pins one held key to the same turn lane, a separate TTS line, a final transcript, and a spoken approve that takes the decision route, using a scripted backend added to the daemon's own registry.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:fa03abeab38c89c7",
+          "evaluatedRevision": 21
         },
         {
           "subject": "prompt-assembly",
@@ -3332,7 +3336,11 @@
           "revision": 20,
           "changedAt": "2026-10-12",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "conformant",
+          "evidence": "apps/desktop/src/lib/events.ts:102 This library types the voice channel and the global push-to-talk chord; the final flag, the three playback end reasons, and the no-backend summon are in these files, and the capture and synthesis pipelines are not.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:fa03abeab38c89c7",
+          "evaluatedRevision": 21
         },
         {
           "subject": "mcp-tools",
