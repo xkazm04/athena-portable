@@ -159,6 +159,7 @@ export const INTAKE_ROUTES = {
   events: (sid: string, after: number) =>
     `/intake/${encodeURIComponent(sid)}/events?after=${after}`, // GET SSE
   answer: (sid: string) => `/intake/${encodeURIComponent(sid)}/answer`, // POST {answers, via}; question_id "" = said to no question
+  decide: (sid: string) => `/intake/${encodeURIComponent(sid)}/decide`, // POST (no body): "Just decide for me"
   session: (sid: string) => `/intake/${encodeURIComponent(sid)}`, // DELETE
 } as const;
 

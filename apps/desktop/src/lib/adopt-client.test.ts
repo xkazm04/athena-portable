@@ -42,6 +42,15 @@ describe("reading an event", () => {
     "adopt.clear": { rev: 2 },
     "adopt.showcase": { status: "running", turn: 3, total: 9, trace: [], found_usd: null, detail: "" },
     "adopt.usage": { leg: "interview", model: "claude-sonnet-5-5", effort: "low", ms: 1200, first_text_ms: 300 },
+    "adopt.verdict": {
+      fit: "template",
+      playbook_id: "travel-credit-refunds",
+      why: "It fits.",
+      differs: "Your airline.",
+      alternates: [{ playbook_id: "carrier-refunds", title: "Late-parcel refunds", why: "Close." }],
+      need: "I want my credits back.",
+      command: "",
+    },
     "adopt.error": { reason: "engine_error", detail: "boom" },
   };
 

@@ -64,6 +64,7 @@ const GRAMMAR: Readonly<
 > = {
   // A boolean says whether the sub-level takes an argument.
   apps: { items: "open", subs: { page: false, tool: true } },
+  // The id "new" is the front door (ADR 0098); the Chores scene reserves it, no chore may take it.
   chores: { items: "open", subs: { run: true, adopt: false } },
   accounts: { items: "open", subs: { allowlist: false } },
   voice: { items: ["studio", "settings"], subs: {} },

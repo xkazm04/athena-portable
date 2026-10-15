@@ -24,7 +24,7 @@ import {
 function everyPath(): Path[] {
   const out: Path[] = [SURFACE];
   for (const root of ROOTS) out.push({ root });
-  const open = ["host-1", "a/b", "web_https_sledger_dtest", "é ü", "100%"];
+  const open = ["host-1", "a/b", "web_https_sledger_dtest", "é ü", "100%", "new"]; // "new": the Chores front door
   for (const id of open) {
     out.push({ root: "apps", item: id });
     out.push({ root: "apps", item: id, sub: { kind: "page" } });
