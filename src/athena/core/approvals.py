@@ -69,6 +69,7 @@ __all__ = [
     "DEFAULT_OPTIONS",
     "DEFAULT_TTL",
     "EXPIRED_REASON",
+    "SPENT_LOOKBACK",
     "ApprovalError",
     "ApprovalGrant",
     "ApprovalRow",
@@ -87,6 +88,10 @@ DEFAULT_OPTIONS: tuple[str, ...] = ("approve", "decline")
 #: The one token that opens the gate. Fail closed: a card offering ``("send", "skip")`` can never
 #: be mistaken for consent, because neither token is this one.
 APPROVE_TOKEN = "approve"
+
+#: How far back :meth:`Approvals.spent_recently` looks for the same call already let through.
+#: A day, the life of a card: a timed-out write older than that is not news a card should carry.
+SPENT_LOOKBACK = timedelta(hours=24)
 
 #: The reason an expired row carries, a member of ``contracts.harness.ERROR_REASONS``.
 EXPIRED_REASON = "expired"
@@ -528,6 +533,36 @@ class Approvals:
             consumed_at=row.consumed_at,
             expires_at=row.expires_at,
         )
+
+    def spent_recently(
+        self,
+        action: str,
+        params: Mapping[str, Any],
+        *,
+        within: timedelta = SPENT_LOOKBACK,
+        now: datetime | None = None,
+    ) -> str | None:
+        """When the user approved this exact call, if the gate let it through within ``within``.
+
+        The newest such row's ``resolved_at`` (the moment of the yes), or ``None``. A card for a
+        call whose last run never answered (``outcome_unknown``, ADR 0101) carries this so the
+        user knows it may already have happened. It informs; nothing refuses on it. Same action
+        and canonical parameters, exactly as :meth:`ApprovalGrant.matches` compares them.
+        """
+        try:
+            canonical = _canonical(params)
+        except ApprovalError:
+            return None
+        cutoff = _iso((now or _now()) - within)
+        with closing(self.brain.read_connection()) as con:
+            raw = con.execute(
+                """SELECT resolved_at FROM companion_approval
+                   WHERE action = ? AND params_json = ? AND status = 'approved'
+                     AND consumed_at IS NOT NULL AND consumed_at >= ?
+                   ORDER BY consumed_at DESC LIMIT 1""",
+                (action, canonical, cutoff),
+            ).fetchone()
+        return None if raw is None or raw[0] is None else str(raw[0])
 
     def pending(self, limit: int = 20, *, now: datetime | None = None) -> PendingPage:
         """The live inbox, oldest first, bounded and announced.

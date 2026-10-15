@@ -395,6 +395,7 @@ fn normalised(reason: &str) -> &'static str {
         "unknown_ref" => "unknown_ref",
         "validator_failed" => "validator_failed",
         "timeout" => "timeout",
+        "outcome_unknown" => "outcome_unknown",
         "foreign_origin" => "foreign_origin",
         "foreign_token" => "foreign_token",
         "user_denied" => "user_denied",
@@ -943,5 +944,14 @@ mod tests {
             assert_eq!(result.tier, 2);
             assert!(result.capture_id.is_none());
         }
+    }
+
+    #[test]
+    fn a_call_that_may_have_run_keeps_its_reason_through_the_relay() {
+        // ADR 0101. 9b95915 reverted reasons that existed only in JavaScript, because this map
+        // folded them into `unknown`; `outcome_unknown` is a member of `ERROR_REASONS` first.
+        assert_eq!(normalised("outcome_unknown"), "outcome_unknown");
+        assert_eq!(normalised("timeout"), "timeout");
+        assert_eq!(normalised("made_up"), "unknown");
     }
 }

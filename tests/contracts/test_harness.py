@@ -37,6 +37,14 @@ def test_a_spent_approval_is_its_own_reason() -> None:
     assert ERROR_REASONS.index("approval_spent") < ERROR_REASONS.index("budget_exhausted")
 
 
+def test_a_write_whose_answer_never_came_is_its_own_reason() -> None:
+    """ADR 0101: a consequential call that outlived its deadline is not ``timeout`` (which reads as
+    "did not happen" and invites a retry) — it may have run, and the reason says so."""
+    assert normalize_reason("outcome_unknown") == "outcome_unknown"
+    assert normalize_reason("timeout") == "timeout"
+    assert ERROR_REASONS.index("outcome_unknown") < ERROR_REASONS.index("unknown")
+
+
 def test_normalize_reason_maps_anything_else_to_unknown() -> None:
     assert normalize_reason("weird") == "unknown"
     assert normalize_reason("") == "unknown"

@@ -7,7 +7,7 @@ speaks the same messages.
 
 | File | Where it runs | Job |
 |---|---|---|
-| `inject.js` | the page's main world, at document start | polyfill `document.modelContext`, answer `list` and `call`, post `toolchange` |
+| `inject.js` | the page's main world, at document start | polyfill `document.modelContext`, answer `list` and `call`, post `toolchange` and `late` |
 | `gate.js` | the surface — the panel, an extension — never the page | annotations → flags → `AUTO`/`GATED`, the refusal vocabulary, the untrusted fence, bounded output, the per-origin budget |
 
 `inject.js` decides nothing. It lists what the page registered and runs what it is told to run.
@@ -112,6 +112,26 @@ implementation's own `toolchange` event — and carries no payload: the surface 
 rebuilds the manifest. `id: null` is how a relay tells an event from a reply, since no pending
 request can match it.
 
+### Late answers
+
+The second unsolicited message is additive: the envelope, the two guards and every reply above are
+unchanged, and a relay that does not know it ignores it as an event no request matches.
+
+```js
+{ __ns: "athena-webmcp", dir: "to-ext", id: null, type: "late", call: "3:41-9f…", ok: true, output: "sent" }
+{ __ns: "athena-webmcp", dir: "to-ext", id: null, type: "late", call: "3:41-9f…", ok: false, output: "", error: "smtp down" }
+```
+
+`inject.js` keeps the promise it raced against the deadline. When a call it already answered
+`timeout` settles after all, it posts `late` once, naming the request in `call` and carrying the
+answer rendered exactly as a reply's `output`. A call that had no `id` gets none. A timeout means
+"no answer yet", not "did not happen": a write that finishes late has still happened (ADR 0101).
+
+A relay places `late` only for an id it issued to that tab and saw time out recently, either the
+page's `timeout` reply or its own timer, and only once. The desktop relay keeps up to 16 such ids
+per tab for 10 minutes and emits `bridge:late` `{ tab_id, name, ok, output, error?, late_ms }`;
+a `late` naming any other id is dropped.
+
 ## Timeouts
 
 Two, layered, so a page that never answers cannot wedge the surface:
@@ -125,7 +145,9 @@ Two, layered, so a page that never answers cannot wedge the surface:
 extend it. The abort is passed to the tool as `options.signal`, but the *race* is what guarantees
 the reply — a tool that ignores its signal and never settles must not be able to hold the surface
 open. `"timeout"` is the only refusal reason this half mints, and it is a member of the one
-vocabulary the ledger stores (`ERROR_REASONS`, `src/athena/contracts/harness.py`).
+vocabulary the ledger stores (`ERROR_REASONS`, `src/athena/contracts/harness.py`). The surface
+records a `timeout` on any call that is not a read (reversible with no side effects) as
+`outcome_unknown`, because the call may have run, and posts the tool's `late` answer if it comes.
 
 The relay's window is deliberately the longer of the two, so the page's own abort wins and produces
 a real error; the relay's timer only covers a page that is gone, frozen, or has no bridge at all.

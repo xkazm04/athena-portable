@@ -1434,3 +1434,127 @@ describe("one snapshot per exchange", () => {
     });
   });
 });
+
+// -- a call whose answer never came (ADR 0101) ---------------------------------------------------
+
+describe("a call that outlives its deadline", () => {
+  const flagged = (name: string, athena: Record<string, unknown> | null): BridgeTool => ({
+    name,
+    title: name,
+    description: `${name}.`,
+    inputSchema: {},
+    annotations: null,
+    athena,
+  });
+  const TIMED_OUT = { ok: false, output: "", error: "send did not answer within 30000 ms", reason: "timeout" };
+
+  function timingOut(runs: Event[][], tools: BridgeTool[]) {
+    const daemon = fakeDaemon({ runs, resolutions: { apr_0000000000a1: { ...APPROVED, status: "declined", execute: [] } } });
+    const calls: string[] = [];
+    const deps: RunDeps = {
+      ...wire(daemon, fakePage()),
+      snapshot: () => ({
+        focused: { tabId: 1, origin: "https://ledgerbox.local", appId: "ledgerbox" },
+        manifest: null,
+        disabledOrigins: [],
+        gated: { gated_origins: [], gated_tools: [] },
+        tools,
+      }),
+      call: async (_tab, name) => {
+        calls.push(name);
+        return TIMED_OUT;
+      },
+    };
+    setRunDeps(deps);
+    return { daemon, calls };
+  }
+
+  afterEach(() => setHandsForTests([]));
+
+  it("a write that times out is outcome_unknown, and every later request gates the tool", async () => {
+    const { daemon } = timingOut(
+      [[hostCall("c1", "host.ledgerbox.send"), finished()], [finished()], [finished()]],
+      [flagged("send", { reversible: false, side_effects: "external" })],
+    );
+
+    await useRun.getState().send("send it");
+
+    const carried = daemon.runs()[1].body!.tool_results as Array<Record<string, unknown>>;
+    expect(carried[0].ok).toBe(false);
+    expect(String(carried[0].error)).toMatch(/^outcome_unknown: send did not answer/);
+    expect(daemon.runs()[0].body!.gated_tools).toEqual([]);
+    expect(daemon.runs()[1].body!.gated_tools).toEqual(["host.ledgerbox.send"]);
+    expect(useRun.getState().transcript.find((e) => e.id === "c1")?.text).toContain("may have completed");
+
+    await useRun.getState().send("did it go?");
+    expect(daemon.runs()[2].body!.gated_tools).toEqual(["host.ledgerbox.send"]);
+  });
+
+  it("a tool nobody describes counts as a write", async () => {
+    const { daemon } = timingOut([[hostCall("c1", "host.ledgerbox.send"), finished()], [finished()]], []);
+    await useRun.getState().send("send it");
+    const carried = daemon.runs()[1].body!.tool_results as Array<Record<string, unknown>>;
+    expect(String(carried[0].error)).toMatch(/^outcome_unknown/);
+  });
+
+  it("a hung read stays a timeout and is not gated", async () => {
+    setHandsForTests([flagged("page_read", { reversible: true, side_effects: "none" })]);
+    const { daemon } = timingOut(
+      [[hostCall("c1", "host.ledgerbox.page_read"), hostCall("c2", "host.ledgerbox.list"), finished()], [finished()]],
+      [flagged("list", { reversible: true, side_effects: "none" })],
+    );
+
+    await useRun.getState().send("read it");
+
+    const carried = daemon.runs()[1].body!.tool_results as Array<Record<string, unknown>>;
+    expect(carried.map((r) => String(r.error).split(":")[0])).toEqual(["timeout", "timeout"]);
+    expect(daemon.runs()[1].body!.gated_tools).toEqual([]);
+  });
+
+  it("is not run again in the same exchange when the model proposes it before the gate heard", async () => {
+    const { daemon, calls } = timingOut(
+      [[hostCall("c1", "host.ledgerbox.send"), finished()], [hostCall("c2", "host.ledgerbox.send"), finished()], [finished()]],
+      [flagged("send", { reversible: false, side_effects: "external" })],
+    );
+
+    await useRun.getState().send("send it");
+
+    expect(calls).toEqual(["send"]);
+    const second = daemon.runs()[2].body!.tool_results as Array<Record<string, unknown>>;
+    expect(String(second[0].error)).toMatch(/^outcome_unknown: host.ledgerbox.send may already have run/);
+  });
+
+  it("answering a card for the tool clears the hold", async () => {
+    const { daemon } = timingOut(
+      [[hostCall("c1", "host.ledgerbox.send"), finished()], [finished()], [finished()]],
+      [flagged("send", { reversible: false, side_effects: "external" })],
+    );
+    await useRun.getState().send("send it");
+    expect(daemon.runs()[1].body!.gated_tools).toEqual(["host.ledgerbox.send"]);
+
+    useRun.setState({ cards: [{ ...CARD, action: "host.ledgerbox.send" } as never] });
+    await useRun.getState().answer("apr_0000000000a1", "decline");
+    await useRun.getState().send("never mind");
+
+    expect(daemon.runs()[2].body!.gated_tools).toEqual([]);
+  });
+
+  it("a late answer adds a follow-up row to the next request and amends the call's row", async () => {
+    const { daemon } = timingOut(
+      [[hostCall("c1", "host.ledgerbox.send"), finished()], [finished()], [finished()]],
+      [flagged("send", { reversible: false, side_effects: "external" })],
+    );
+    await useRun.getState().send("send it");
+
+    useRun.getState().late({ tab_id: 1, name: "send", ok: true, output: "sent to 3", late_ms: 4200 });
+    await useRun.getState().send("and?");
+
+    const carried = daemon.runs()[2].body!.tool_results as Array<Record<string, unknown>>;
+    expect(carried).toEqual([
+      expect.objectContaining({ call_id: "c1_late", name: "host.ledgerbox.send", ok: true, output: "send finished 4 s late: sent to 3", error: null }),
+    ]);
+    const row = useRun.getState().calls.find((e) => e.id === "c1");
+    expect(row?.text).toBe("host.ledgerbox.send → send finished 4 s late: sent to 3");
+    expect(row?.ok).toBe(true);
+  });
+});

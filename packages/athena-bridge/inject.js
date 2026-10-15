@@ -7,7 +7,8 @@
 //   1. polyfills `document.modelContext` when the browser has none, so a page written against
 //      WebMCP behaves the same in every build;
 //   2. answers `list` and `call` for the relay over `window.postMessage`;
-//   3. posts `toolchange` whenever the registry moves, so the surface's manifest is never stale.
+//   3. posts `toolchange` whenever the registry moves, so the surface's manifest is never stale,
+//      and `late` when a call it already answered `timeout` settles after all.
 //
 // It decides nothing. Whether a tool is AUTO or GATED is decided by gate.js in the surface and by
 // the catalog behind it (README §3.3, ADR 0004); a page cannot argue itself out of GATED and
@@ -72,7 +73,7 @@
     /**
      * One request in, one answer out. Never rejects for a reason the surface could act on: a
      * refusal is a result, so the relay's pending entry always clears.
-     * @param {{ type?: string, name?: string, input?: unknown, timeout_ms?: unknown }} request
+     * @param {{ id?: unknown, type?: string, name?: string, input?: unknown, timeout_ms?: unknown }} request
      * @returns {Promise<Record<string, unknown>>}
      */
     async function handle(request) {
@@ -80,7 +81,7 @@
         return { ok: true, page: describePage(), tools: (await toolsOf()).map(describeTool) };
       }
       if (request.type === "call") {
-        return call(String(request.name ?? ""), request.input, request.timeout_ms);
+        return call(String(request.name ?? ""), request.input, request.timeout_ms, request.id ?? null);
       }
       return { ok: false, error: `Unknown request ${String(request.type)}` };
     }
@@ -90,9 +91,10 @@
      * @param {string} name
      * @param {unknown} input
      * @param {unknown} requestedMs the relay may ask for less than the ceiling, never for more
+     * @param {unknown} requestId the relay's id, named again by a `late` event
      * @returns {Promise<Record<string, unknown>>}
      */
-    async function call(name, input, requestedMs) {
+    async function call(name, input, requestedMs, requestId) {
       const tools = await toolsOf();
       const tool = tools.find((t) => t && t.name === name);
       if (!tool) return { ok: false, error: `No tool named ${name}` };
@@ -100,6 +102,8 @@
       const budgetMs = deadline(requestedMs);
       const controller = new AbortController();
       let expired = false;
+      /** @type {Promise<unknown> | null} */
+      let running = null;
       const timer = setTimeout(() => {
         expired = true;
         controller.abort();
@@ -107,16 +111,35 @@
       try {
         // Raced, not merely aborted: a tool that ignores its signal must not be able to hold the
         // surface open past the deadline. The abort is the courtesy; the race is the guarantee.
-        const output = await Promise.race([execute(tool, input, controller.signal), aborted(controller.signal)]);
+        // The raced promise is kept: a timeout is "no answer yet", not "did not happen", and a
+        // write that finishes after the deadline must still be heard (`late`, protocol.md).
+        running = execute(tool, input, controller.signal);
+        const output = await Promise.race([running, aborted(controller.signal)]);
         return { ok: true, output: render(output) };
       } catch (error) {
         if (expired) {
+          if (running && requestId !== null) lateFrom(running, requestId);
           return { ok: false, reason: TIMEOUT, error: `${name} did not answer within ${budgetMs} ms` };
         }
         return { ok: false, error: messageOf(error) };
       } finally {
         clearTimeout(timer);
       }
+    }
+
+    /**
+     * The answer to a call this half already refused with `timeout`, posted when the tool settles
+     * after all. An event (`id: null`), not a reply: the relay's pending entry is long gone, and
+     * `call` names the request it is about. Posted at most once, and never for a call that had
+     * no id to name.
+     * @param {Promise<unknown>} running
+     * @param {unknown} requestId
+     */
+    function lateFrom(running, requestId) {
+      running.then(
+        (output) => post(null, { type: "late", call: requestId, ok: true, output: render(output) }),
+        (error) => post(null, { type: "late", call: requestId, ok: false, output: "", error: messageOf(error) }),
+      );
     }
 
     /**

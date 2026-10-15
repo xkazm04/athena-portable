@@ -21,6 +21,7 @@ const REASONS = [
   "budget_exhausted",
   "engine_error",
   "timeout",
+  "outcome_unknown",
   "parse_error",
   "cancelled",
   "not_ready",

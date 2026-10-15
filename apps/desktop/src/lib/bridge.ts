@@ -79,6 +79,22 @@ export const bridgeCall = (
 ) => call<CallReply>("bridge_call", { tab_id: tabId, name, params, timeout_ms: timeoutMs });
 
 /**
+ * A call the page already answered `timeout` finished after all (`protocol.md`, "Late answers",
+ * ADR 0101). The relay emits it only for a call it issued to that tab and saw time out recently;
+ * `name` is the page's own spelling of the tool, `late_ms` how long after the timeout it settled.
+ */
+export interface LateAnswer {
+  tab_id: number;
+  name: string;
+  ok: boolean;
+  output: string;
+  error?: string;
+  late_ms: number;
+}
+
+export const onLate = (f: (late: LateAnswer) => void) => on<LateAnswer>("bridge:late", f);
+
+/**
  * The page's registry moved. It carries no payload beyond the tab, by design: the surface re-runs
  * `list` and rebuilds, because a diff of a tool list is a bug surface nobody needs.
  */

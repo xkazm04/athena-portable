@@ -14,12 +14,19 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
+from datetime import datetime
 from typing import Any
 
 from athena.contracts.channel import DecisionRequested
 from athena.contracts.harness import PromptBlock, TurnResult, normalize_reason
 from athena.contracts.registry import ExecResult, ToolClass, ToolEntry, TurnContext
-from athena.harness.ports import ApprovalsPort, CatalogPort, FlagPort, LedgerPort
+from athena.harness.ports import (
+    ApprovalsPort,
+    CatalogPort,
+    FlagPort,
+    LedgerPort,
+    SpentLookupPort,
+)
 
 __all__ = [
     "Cancel",
@@ -93,6 +100,25 @@ def _capture_for(entry: ToolEntry, ctx: TurnContext) -> str | None:
     return ctx.capture_id
 
 
+def _may_have_run(approvals: ApprovalsPort, action: str, params: Mapping[str, Any]) -> str:
+    """The card's line for a call the user approved and the gate let through in the last day.
+
+    A write that outlived its deadline is ``outcome_unknown`` on the surface, which gates the tool
+    until a card about it is answered (ADR 0101). That card must not read like a first ask: the
+    same call may already have happened. Informs, never blocks; ``""`` when there is nothing to say.
+    """
+    if not isinstance(approvals, SpentLookupPort):
+        return ""
+    stamp = approvals.spent_recently(action, params)
+    if not stamp:
+        return ""
+    try:
+        clock = datetime.fromisoformat(stamp).astimezone().strftime("%H:%M")
+    except ValueError:
+        return ""
+    return f"You approved this exact call at {clock} and it may already have run."
+
+
 class GateHook:
     """The gate (README §3.3). Every tool call in this repository passes through here.
 
@@ -130,13 +156,14 @@ class GateHook:
             return GateOutcome(Proceed(dict(params)))
 
         capture = _capture_for(entry, ctx)
+        notice = _may_have_run(self.approvals, entry.name, params)
         card = self.approvals.create(
             entry.name,
             dict(params),
             origin=entry.origin,
             conversation=ctx.conversation_id,
             surface=ctx.surface,
-            summary=rationale,
+            summary=f"{rationale}\n{notice}" if rationale and notice else (rationale or notice),
             # Only a card that has a capture names one, so a table that predates the column is
             # asked nothing new.
             **({"capture_id": capture} if capture else {}),

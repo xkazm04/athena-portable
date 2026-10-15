@@ -22,11 +22,22 @@
  * filed.
  */
 import { create } from "zustand";
+// @ts-expect-error - gate.js is plain JavaScript with a .d.ts that does not cover this one.
+import { flagsOf } from "@athena/bridge/gate";
 
 import { ApiError, DaemonApi, type ExecuteRow, type ToolRow } from "@/lib/api";
-import type { BridgeTool } from "@/lib/bridge";
+import { onLate, type BridgeTool, type LateAnswer } from "@/lib/bridge";
 import { driftOf, type ContractDrift, type ContractTable } from "@/lib/contract";
-import { callOnPage, describeRefs, refsOf, takeCapture, tierOf, type Taken, type Target } from "@/lib/hands";
+import {
+  callOnPage,
+  describeRefs,
+  handTools,
+  refsOf,
+  takeCapture,
+  tierOf,
+  type Taken,
+  type Target,
+} from "@/lib/hands";
 import type { CardTargets } from "@/companion/model";
 import type { Wire } from "@/lib/ipc";
 import { catalogIdOf, derivedIdOf, manifestBodyOf } from "@/lib/manifest";
@@ -126,7 +137,7 @@ export interface RunDeps {
     input: Record<string, unknown>,
     /** The tool list the exchange's snapshot holds for this tab (ADR 0067); live when omitted. */
     tools?: readonly BridgeTool[],
-  ) => Promise<{ ok: boolean; output: string; error?: string | null; tier?: number }>;
+  ) => Promise<PageAnswer>;
   /**
    * Everything one exchange reads about the focused tab, read once (ADR 0067). Optional: without
    * it the loop reads `focused`, `manifest`, `disabledOrigins` and `gated` once, at the start of
@@ -175,6 +186,15 @@ export interface RunDeps {
   /** Read back what earlier windows kept. */
   earlier?: () => Promise<StorePage<ActivityRow>>;
   now?: () => Date;
+}
+
+/** What a page (or a hand) answered one call with. `reason` is the closed-set code, when it gave one. */
+export interface PageAnswer {
+  ok: boolean;
+  output: string;
+  error?: string | null;
+  reason?: string | null;
+  tier?: number;
 }
 
 /** A playbook the person handed over: her active project on every turn until cleared (ADR 0044). */
@@ -227,6 +247,11 @@ export interface RunState {
   answer: (id: string, choice: string, settled?: (result: Settled) => void) => Promise<void>;
   /** Make the cards the union of the stream and what the daemon says is pending. */
   reconcile: () => Promise<void>;
+  /**
+   * A call that timed out finished after all (`bridge:late`, ADR 0101): a follow-up result rides
+   * the next request, and the call's row in the record says how it ended.
+   */
+  late: (answer: LateAnswer) => void;
   loadEarlier: () => Promise<void>;
   /** Clears the transcript. A card the daemon is still holding is not part of it. */
   clear: () => void;
@@ -638,6 +663,116 @@ export function mergeCards(
   return added.length ? [...kept, ...added] : kept;
 }
 
+/**
+ * Is this call a read? Only a tool whose flags say reversible *and* no side effects (README 3.3).
+ * The page's own tool wins over a hand of the same name (ADR 0065); a tool nobody describes is
+ * not a read, so its timeout counts as "may have run".
+ */
+export function isReadCall(bare: string, pageTools: readonly BridgeTool[]): boolean {
+  const tool = pageTools.find((t) => t.name === bare) ?? handTools().find((t) => t.name === bare);
+  if (!tool) return false;
+  const flags = flagsOf(tool) as { reversible: boolean; side_effects: string };
+  return flags.reversible === true && flags.side_effects === "none";
+}
+
+/**
+ * The reason a call's answer carries, for the record. A `timeout` on anything but a read is
+ * `outcome_unknown`: the call was sent and never answered, so it may have run (ADR 0101). A hung
+ * read is still a plain `timeout`. `null` for an answer that is not a timeout.
+ */
+export function timeoutReasonOf(answer: PageAnswer, read: boolean): "timeout" | "outcome_unknown" | null {
+  if (answer.ok) return null;
+  const timedOut = answer.reason === "timeout" || answer.error === "timeout";
+  if (!timedOut) return null;
+  return read ? "timeout" : "outcome_unknown";
+}
+
+/** A tool whose last call never answered, by web origin and registry name (ADR 0101). */
+export interface Unsure {
+  origin: string;
+  tool: string;
+  at: string;
+}
+
+/** How many unanswered calls are remembered. Oldest goes first. */
+export const UNSURE_CAP = 32;
+const UNSURE_KEY = "athena.run.unsure";
+
+/**
+ * The tools gated again because a call of theirs may have run: kept until a card for the tool is
+ * answered. Bounded, in memory, and mirrored to `localStorage` when there is one, so a reload does
+ * not forget a send that may have gone out. A storage that throws only costs the mirror.
+ */
+const unsure = new Map<string, Unsure>(readUnsure());
+
+function readUnsure(): Array<[string, Unsure]> {
+  try {
+    const raw = globalThis.localStorage?.getItem(UNSURE_KEY);
+    const parsed: unknown = raw ? JSON.parse(raw) : [];
+    if (!Array.isArray(parsed)) return [];
+    return parsed
+      .filter(
+        (u): u is Unsure =>
+          typeof u === "object" && u !== null && typeof (u as Unsure).tool === "string" && typeof (u as Unsure).origin === "string",
+      )
+      .slice(-UNSURE_CAP)
+      .map((u) => [`${u.origin}|${u.tool}`, { origin: u.origin, tool: u.tool, at: String(u.at ?? "") }]);
+  } catch {
+    return [];
+  }
+}
+
+function writeUnsure(): void {
+  try {
+    globalThis.localStorage?.setItem(UNSURE_KEY, JSON.stringify([...unsure.values()]));
+  } catch {
+    // The mirror is a convenience; the map is the truth for this window.
+  }
+}
+
+function rememberUnsure(entry: Unsure): void {
+  const key = `${entry.origin}|${entry.tool}`;
+  unsure.delete(key);
+  unsure.set(key, entry);
+  while (unsure.size > UNSURE_CAP) {
+    const oldest = unsure.keys().next().value;
+    if (oldest === undefined) break;
+    unsure.delete(oldest);
+  }
+  writeUnsure();
+}
+
+function isUnsure(tool: string): boolean {
+  return [...unsure.values()].some((u) => u.tool === tool);
+}
+
+/** A card for the tool was answered, approved or declined: the user has had their say. */
+function forgetUnsure(tool: string): void {
+  let changed = false;
+  for (const [key, entry] of unsure) {
+    if (entry.tool === tool) {
+      unsure.delete(key);
+      changed = true;
+    }
+  }
+  if (changed) writeUnsure();
+}
+
+/** What is unsure now, oldest first. For the panel and the tests. */
+export function unsureTools(): Unsure[] {
+  return [...unsure.values()];
+}
+
+/** The gate's lists with every unsure tool added to `gated_tools`. Only ever tightens. */
+export function withUnsure(gated: GatedLists): GatedLists {
+  if (unsure.size === 0) return gated;
+  const tools = new Set([...gated.gated_tools, ...[...unsure.values()].map((u) => u.tool)]);
+  return { gated_origins: gated.gated_origins, gated_tools: [...tools].sort() };
+}
+
+/** How many timed-out calls are remembered for a `late` answer. */
+const TIMED_OUT_CAP = 32;
+
 let deps: RunDeps = LIVE;
 
 /** Swap the surface the loop runs against. The headless test's whole entry point. */
@@ -647,12 +782,17 @@ export function setRunDeps(next: RunDeps): void {
 
 export function resetRunForTests(): void {
   deps = LIVE;
+  unsure.clear();
+  writeUnsure();
   useRun.setState({ ...EMPTY });
 }
 
 export const useRun = create<RunState>((set, get) => {
   /** Host answers produced since the last request, waiting to ride the next frame. */
   let outstanding: Array<Record<string, unknown>> = [];
+
+  /** Calls that timed out, by `<tab>|<page tool name>`, so a `late` answer can find its row. */
+  const timedOut = new Map<string, { row: ExecuteRow; tier: number }>();
 
   const now = () => stampOf(deps.now?.() ?? new Date());
 
@@ -695,8 +835,17 @@ export const useRun = create<RunState>((set, get) => {
       );
       return;
     }
+    // A call whose last run never answered waits for the user's answer before it runs again
+    // (ADR 0101). The gate is told on every request; this is the same rule one step later, for a
+    // call proposed before the gate heard.
+    if (!approved && isUnsure(row.name)) {
+      const why = `outcome_unknown: ${row.name} may already have run; it waits for the user's answer before it runs again`;
+      outstanding.push(resultRow(row, false, "", why));
+      push({ id: row.call_id, kind: "tool", text: `${row.name} → held: it may already have run`, tier: row.tier ?? 1, ok: false });
+      return;
+    }
     set({ phase: "acting" });
-    let answer: { ok: boolean; output: string; error?: string | null; tier?: number };
+    let answer: PageAnswer;
     try {
       answer = await deps.call(
         focused.tabId,
@@ -707,7 +856,20 @@ export const useRun = create<RunState>((set, get) => {
     } catch (error) {
       answer = { ok: false, output: "", error: error instanceof Error ? error.message : String(error) };
     }
-    outstanding.push(resultRow(row, answer.ok, answer.output, answer.error ?? null, answer.tier));
+    const listedTools = routingTools(snap, focused.tabId) ?? useTools.getState().byTab[focused.tabId]?.tools ?? [];
+    const timeout = timeoutReasonOf(answer, isReadCall(bareName(row.name), listedTools));
+    let error = answer.error ?? null;
+    if (timeout !== null) {
+      const detail = answer.error && answer.error !== "timeout" ? answer.error : "no answer before the deadline";
+      error = `${timeout}: ${detail}`;
+      if (timedOut.size >= TIMED_OUT_CAP) {
+        const oldest = timedOut.keys().next().value;
+        if (oldest !== undefined) timedOut.delete(oldest);
+      }
+      timedOut.set(`${focused.tabId}|${bareName(row.name)}`, { row, tier: answer.tier ?? row.tier ?? 1 });
+    }
+    if (timeout === "outcome_unknown") rememberUnsure({ origin: focused.origin, tool: row.name, at: now() });
+    outstanding.push(resultRow(row, answer.ok, answer.output, error, answer.tier));
     // The user approved this call and it ran: the contract it ran under is now the accepted one
     // (ADR 0100). A declined, refused or failed call leaves the old one in force.
     if (approved && answer.ok && deps.accept) {
@@ -722,7 +884,13 @@ export const useRun = create<RunState>((set, get) => {
     push({
       id: row.call_id,
       kind: "tool",
-      text: `${row.name} → ${answer.ok ? answer.output : (answer.error ?? "failed")}`,
+      text: `${row.name} → ${
+        answer.ok
+          ? answer.output
+          : timeout === "outcome_unknown"
+            ? "may have completed: no answer before the deadline"
+            : (error ?? "failed")
+      }`,
       tier: answer.tier ?? row.tier ?? 1,
       ok: answer.ok,
     });
@@ -819,7 +987,9 @@ export const useRun = create<RunState>((set, get) => {
         host_state: deps.hostState(),
         tool_results: carried,
         disabled_origins: taking.disabledOrigins,
-        ...taking.gated,
+        // Read per request, not per exchange: a write that timed out in this exchange is gated
+        // for the rest of it. Only ever tightens the snapshot's lists (ADR 0067, 0101).
+        ...withUnsure(taking.gated),
         ...activeProject(get().project),
       })) {
         await apply(event);
@@ -976,6 +1146,9 @@ export const useRun = create<RunState>((set, get) => {
         return;
       }
       const result: AnswerResult = resolution.status === "declined" ? "user_denied" : "approved";
+      // The user answered a card about this tool: the "may have run" hold has done its job.
+      const action = card?.action ?? resolution.execute[0]?.name;
+      if (action) forgetUnsure(action);
       set((s) => ({
         cards: s.cards.filter((c) => c.id !== id),
         answering: without(s.answering, id),
@@ -1013,6 +1186,25 @@ export const useRun = create<RunState>((set, get) => {
             s.answering[id] !== undefined || s.answered.some((a) => a.id === id && a.result !== "refused"),
         ),
       }));
+    },
+
+    late(answer) {
+      const key = `${answer.tab_id}|${answer.name}`;
+      const found = timedOut.get(key);
+      timedOut.delete(key);
+      const seconds = Math.max(1, Math.round(answer.late_ms / 1000));
+      const said = answer.ok ? answer.output : (answer.error ?? "failed");
+      const line = `${answer.name} finished ${seconds} s late: ${said}`;
+      const row: ExecuteRow = found?.row ?? { call_id: `late_${answer.tab_id}_${answer.name}`, name: answer.name, params: {}, origin: "" };
+      outstanding.push({
+        ...resultRow(row, answer.ok, line, answer.ok ? null : said, found?.tier),
+        call_id: `${row.call_id}_late`,
+      });
+      // The call's row in the record says how it ended, where the person already looked.
+      const amend = (entries: TranscriptEntry[]) =>
+        entries.map((e) => (found && e.id === row.call_id && e.kind === "tool" ? { ...e, text: `${row.name} → ${line}`, ok: answer.ok } : e));
+      set((s) => ({ transcript: amend(s.transcript), calls: amend(s.calls) }));
+      if (!found) push({ id: `${row.call_id}_late`, kind: "tool", text: line, tier: 1, ok: answer.ok });
     },
 
     async describe(card) {
@@ -1104,9 +1296,14 @@ export function startRun(): () => void {
   const offRun = useRun.subscribe((s, prev) => {
     if (s.cards.length !== prev.cards.length) watch(s.cards.length);
   });
+  // A call that timed out and then finished (ADR 0101). Only a shell's relay emits it.
+  const offLate = hasShell()
+    ? onLate((answer) => useRun.getState().late(answer)).catch(() => null)
+    : Promise.resolve(null);
   stopRun = () => {
     offDaemon();
     offRun();
+    void offLate.then((off) => off?.());
     if (timer !== null) clearInterval(timer);
     stopRun = null;
   };

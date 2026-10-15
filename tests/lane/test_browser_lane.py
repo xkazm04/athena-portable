@@ -304,6 +304,31 @@ def test_a_result_from_the_surface_is_an_episode_with_its_origin_project_and_tie
     assert "returned: drafted" in body
 
 
+def test_a_write_whose_answer_never_came_is_recorded_as_may_have_completed(
+    tmp_path: Path,
+) -> None:
+    """ADR 0101: ``outcome_unknown`` is not a failure. A record that said "failed" would invite the
+    retry that sends twice; a plain timeout on a read still reads as failed."""
+    built = build_lane([claude_round("Nothing to do.")], tmp_path)
+    unsure = ToolResult(
+        name="host.invoices.send",
+        ok=False,
+        output="",
+        error="outcome_unknown: send did not answer within 30000 ms",
+        tier=1,
+    )
+    hung = ToolResult(name="host.invoices.page_read", ok=False, error="timeout: slow", tier=2)
+
+    drain(built.lane, built, tool_results=(unsure, hung))
+
+    bodies = built.brain.bodies("system")
+    sent = next(b for b in bodies if "host.invoices.send" in b)
+    assert "may have completed" in sent
+    assert "failed" not in sent
+    read = next(b for b in bodies if "host.invoices.page_read" in b)
+    assert "failed (timeout: slow)" in read
+
+
 def test_the_turn_writes_the_message_and_the_answer_with_their_markers(tmp_path: Path) -> None:
     built = build_lane([claude_round("Two are overdue.")], tmp_path)
 

@@ -208,6 +208,47 @@ test("a call past the deadline is a timeout refusal, even when the tool ignores 
   assert.match(reply.error, /hangs did not answer within 20 ms/);
 });
 
+test("a call that settles after its deadline is answered timeout, then posted as late", async () => {
+  const p = page();
+  // The write that outlives the deadline: the reply says "no answer yet", and the answer it
+  // eventually gives still reaches the relay, named by the request it belongs to.
+  register(p.window, "sends", () => new Promise((resolve) => p.window.setTimeout(() => resolve({ sent: 1 }), 80)));
+  register(p.window, "breaks", () => new Promise((_r, reject) => p.window.setTimeout(() => reject(new Error("smtp down")), 80)));
+
+  p.send({ id: "l1", type: "call", name: "sends", timeout_ms: 50 });
+  p.send({ id: "l2", type: "call", name: "breaks", timeout_ms: 50 });
+  // Polled rather than slept: a loaded machine delays both timers, never their order.
+  for (let waited = 0; p.replies.filter((r) => r.type === "late").length < 2 && waited < 2000; waited += 10) {
+    await p.settle(10);
+  }
+  assert.equal(p.replyTo("l1").reason, "timeout");
+  assert.equal(p.replyTo("l2").reason, "timeout");
+  const at = (/** @type {(r: any) => boolean} */ match) => p.replies.findIndex(match);
+  assert.ok(
+    at((r) => r.type === "late" && r.call === "l1") > at((r) => r.id === "l1"),
+    "the timeout is the reply; late comes after it",
+  );
+
+  const late = p.replies.filter((r) => r.type === "late").map((r) => JSON.parse(JSON.stringify(r)));
+  assert.deepEqual(
+    late.find((r) => r.call === "l1"),
+    { __ns: NS, dir: "to-ext", id: null, type: "late", call: "l1", ok: true, output: '{"sent":1}' },
+  );
+  const broke = late.find((r) => r.call === "l2");
+  assert.equal(broke.ok, false);
+  assert.equal(broke.error, "smtp down");
+  assert.equal(late.length, 2, "one late event per timed-out call");
+});
+
+test("a call answered in time posts no late event", async () => {
+  const p = page();
+  register(p.window, "quick", () => "ok");
+  p.send({ id: "q1", type: "call", name: "quick", timeout_ms: 50 });
+  await p.settle(100);
+  assert.equal(p.replyTo("q1").ok, true);
+  assert.equal(p.replies.some((r) => r.type === "late"), false);
+});
+
 test("the tool is handed a signal that aborts at the deadline, and 0 is not 'no deadline'", async () => {
   const p = page();
   let aborted = false;

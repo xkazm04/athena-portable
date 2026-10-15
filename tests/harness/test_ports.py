@@ -13,6 +13,7 @@ and a fixture that bypassed it would be testing a system nobody ships.
 from __future__ import annotations
 
 import asyncio
+import re
 import threading
 from collections.abc import AsyncIterator, Sequence
 from pathlib import Path
@@ -208,3 +209,39 @@ def test_model_fn_is_satisfied_by_a_scripted_stream() -> None:
         return [chunk.kind async for chunk in fn(ModelRequest(system="law", messages=()))]
 
     assert asyncio.run(drain()) == ["text", "done"]
+
+
+def test_a_card_for_a_call_already_let_through_today_says_it_may_have_run(brain: Brain) -> None:
+    """ADR 0101: a write that never answered is gated again; its card must not read as a first ask.
+
+    The line informs and never blocks: the card is filed either way, and a different parameter set
+    gets no line."""
+    catalog = _catalog(brain, [])
+    approvals = Approvals(brain)
+    gate = GateHook(catalog, approvals)
+    episode = brain.append_episode("The client has not paid since June.", role="user")
+    params = {"key": "late-payer", "value": "pays at 45 days", "sources": [episode.id]}
+    ctx = TurnContext(
+        conversation_id="conv_invoices", turn_id="turn_000000000001", lane=Lane.BROWSER
+    )
+    entry = catalog.get("core.write_fact")
+
+    first = gate.before_tool_call(entry, params, ctx, rationale="act 4")
+    assert first.card is not None
+    assert "may already have run" not in first.card.rationale
+    approval_id = first.card.id
+    approvals.resolve(approval_id, "approve")
+    assert gate.run_tool(entry, params, ctx, approval_id=approval_id).allowed
+
+    again = gate.before_tool_call(entry, params, ctx, rationale="act 4 again")
+    assert again.card is not None
+    assert isinstance(again.decision, Cancel) and again.decision.reason == "pending_approval"
+    lines = again.card.rationale.splitlines()
+    assert lines[0] == "act 4 again"
+    assert re.fullmatch(
+        r"You approved this exact call at \d\d:\d\d and it may already have run\.", lines[1]
+    )
+
+    other = gate.before_tool_call(entry, {**params, "value": "pays at 60 days"}, ctx)
+    assert other.card is not None
+    assert other.card.rationale == ""

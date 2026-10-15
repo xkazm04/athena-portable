@@ -30,10 +30,10 @@
 //! Nothing here decides anything. `AUTO` or `GATED` is `gate.js` and the catalog behind it
 //! (README section 3.3): this file carries bytes between two processes and times them out.
 
-use std::collections::HashMap;
+use std::collections::{HashMap, VecDeque};
 use std::sync::atomic::{AtomicU64, Ordering};
 use std::sync::{Mutex, MutexGuard};
-use std::time::Duration;
+use std::time::{Duration, Instant};
 
 use serde_json::{json, Value};
 use tauri::{AppHandle, Manager};
@@ -65,6 +65,14 @@ const DIR_EXT: &str = "to-ext";
 /// gone, frozen, or has no bridge at all (`protocol.md`, "Timeouts").
 const CALL_TIMEOUT: Duration = Duration::from_secs(35);
 
+/// How long a call that timed out may still be answered `late` (`protocol.md`, "Late answers").
+/// A write that finished ten minutes past its deadline is not news the panel can still act on.
+const LATE_TTL: Duration = Duration::from_secs(600);
+
+/// How many timed-out calls one tab remembers for a `late` answer. Bounded, so a page that
+/// times out on purpose cannot grow the shell's memory.
+const LATE_KEEP: usize = 16;
+
 /// The page's half of the bridge, embedded at compile time **from the package itself**. The path
 /// is relative to this file, so the bytes the shell injects are the bytes
 /// `packages/athena-bridge/inject.js` holds — there is no second copy to synchronise. `build.rs`
@@ -84,8 +92,20 @@ struct BridgeState {
     /// Request id → the caller waiting for it. An entry is removed by exactly one of two paths:
     /// the reply that matches it, or the timer that gave up on it.
     pending: HashMap<String, oneshot::Sender<Value>>,
+    /// Request id → the tool a parked `call` asked for, so a timeout can say what timed out.
+    names: HashMap<String, String>,
+    /// Tab id → the calls of that tab that timed out recently, oldest first. Only these may be
+    /// answered `late`, each once, within [`LATE_TTL`]; at most [`LATE_KEEP`] per tab.
+    expired: HashMap<u32, VecDeque<Expired>>,
     /// Tab id → the nonce its initialization scripts closed over.
     nonces: HashMap<u32, String>,
+}
+
+/// One call the relay issued whose answer was `timeout`: the page's own, or the relay's timer.
+struct Expired {
+    id: String,
+    name: String,
+    at: Instant,
 }
 
 /// What [`Bridge::settle`] did with a message the page sent. Every variant is a *result*: a reply
@@ -95,6 +115,8 @@ struct BridgeState {
 enum Settled {
     /// The unsolicited change notification. The caller emits `bridge:toolchange`.
     Toolchange,
+    /// A call this tab timed out on finished after all. The caller emits `bridge:late` with this.
+    Late(Value),
     /// Handed to the waiting request.
     Delivered,
     /// Dropped, for the reason named.
@@ -136,10 +158,29 @@ impl Bridge {
         (id, rx)
     }
 
+    /// [`Bridge::park`] for a page tool `call`, remembering which tool it was.
+    fn park_call(&self, tab: u32, name: &str) -> (String, oneshot::Receiver<Value>) {
+        let (id, rx) = self.park(tab);
+        self.lock().names.insert(id.clone(), name.to_string());
+        (id, rx)
+    }
+
     /// Forget a parked request. The timeout path's half of the id map's invariant: a request
     /// leaves the map exactly once, whether it was answered or given up on.
     fn forget(&self, id: &str) -> bool {
-        self.lock().pending.remove(id).is_some()
+        let mut state = self.lock();
+        state.names.remove(id);
+        state.pending.remove(id).is_some()
+    }
+
+    /// The relay's timer gave up on a request: forget it, and if it was a `call`, keep it where a
+    /// `late` answer can find it.
+    fn give_up(&self, id: &str) {
+        let mut state = self.lock();
+        state.pending.remove(id);
+        if let Some(name) = state.names.remove(id) {
+            remember_expired(&mut state, id, name);
+        }
     }
 
     /// Place one `to-ext` message. Pure enough to test: it reads the map, it writes the map, and
@@ -150,27 +191,95 @@ impl Bridge {
         if body.get("type").and_then(Value::as_str) == Some("toolchange") {
             return Settled::Toolchange;
         }
+        // `late` is unsolicited too, and names the request it is about in `call`.
+        if body.get("type").and_then(Value::as_str) == Some("late") {
+            return self.late(tab, &body);
+        }
         let Some(id) = body.get("id").and_then(Value::as_str) else {
             return Settled::Ignored("a reply without an id");
         };
         if !id.starts_with(&format!("{tab}:")) {
             return Settled::Ignored("an id belonging to another tab");
         }
-        let Some(tx) = self.lock().pending.remove(id) else {
+        let mut state = self.lock();
+        let Some(tx) = state.pending.remove(id) else {
             // The late reply: the timer already resolved this call and forgot the id, so there is
             // nobody to hand it to. It is the ordinary end of a slow page and not an error.
             return Settled::Ignored("an unknown or expired id");
         };
+        // The page's own deadline answered `timeout`: the tool may still finish, and its `late`
+        // event will name this id.
+        if let Some(name) = state.names.remove(id) {
+            if body.get("reason").and_then(Value::as_str) == Some("timeout") {
+                remember_expired(&mut state, id, name);
+            }
+        }
+        drop(state);
         if tx.send(body).is_err() {
             return Settled::Ignored("a caller that had already stopped waiting");
         }
         Settled::Delivered
     }
 
+    /// A `late` event: placed only when it names a call this relay issued to this tab and saw
+    /// time out within [`LATE_TTL`], and only once. Anything else is a page making things up.
+    fn late(&self, tab: u32, body: &Value) -> Settled {
+        const NOT_EXPIRED: &str = "a late event for a call that did not time out";
+        let Some(call) = body.get("call").and_then(Value::as_str) else {
+            return Settled::Ignored("a late event without a call id");
+        };
+        if !call.starts_with(&format!("{tab}:")) {
+            return Settled::Ignored("an id belonging to another tab");
+        }
+        let mut state = self.lock();
+        let Some(queue) = state.expired.get_mut(&tab) else {
+            return Settled::Ignored(NOT_EXPIRED);
+        };
+        queue.retain(|e| e.at.elapsed() < LATE_TTL);
+        let Some(found) = queue
+            .iter()
+            .position(|e| e.id == call)
+            .and_then(|at| queue.remove(at))
+        else {
+            return Settled::Ignored(NOT_EXPIRED);
+        };
+        let mut event = json!({
+            "tab_id": tab,
+            "name": found.name,
+            "ok": body.get("ok").and_then(Value::as_bool).unwrap_or(false),
+            "output": body.get("output").and_then(Value::as_str).unwrap_or(""),
+            "late_ms": u64::try_from(found.at.elapsed().as_millis()).unwrap_or(u64::MAX),
+        });
+        if let (Some(object), Some(error)) = (
+            event.as_object_mut(),
+            body.get("error").and_then(Value::as_str),
+        ) {
+            object.insert("error".to_string(), json!(error));
+        }
+        Settled::Late(event)
+    }
+
     #[cfg(test)]
     fn parked(&self) -> usize {
         self.lock().pending.len()
     }
+}
+
+/// Keep `id` where a `late` answer can find it, dropping what is too old or past the cap.
+fn remember_expired(state: &mut BridgeState, id: &str, name: String) {
+    let Some(tab) = id.split_once(':').and_then(|(t, _)| t.parse::<u32>().ok()) else {
+        return;
+    };
+    let queue = state.expired.entry(tab).or_default();
+    queue.retain(|e| e.at.elapsed() < LATE_TTL);
+    while queue.len() >= LATE_KEEP {
+        queue.pop_front();
+    }
+    queue.push_back(Expired {
+        id: id.to_string(),
+        name,
+        at: Instant::now(),
+    });
 }
 
 /// The two initialization scripts a page webview is built with, in the order they must run:
@@ -247,7 +356,16 @@ async fn ask_with(
         .ok_or_else(|| format!("no tab {tab}"))?;
 
     let bridge = app.state::<Bridge>();
-    let (id, rx) = bridge.park(tab);
+    // A page tool `call` is remembered by name, so a timeout can later be answered `late`.
+    let called = if ns == NS && body.get("type").and_then(Value::as_str) == Some("call") {
+        body.get("name").and_then(Value::as_str)
+    } else {
+        None
+    };
+    let (id, rx) = match called {
+        Some(name) => bridge.park_call(tab, name),
+        None => bridge.park(tab),
+    };
     let script = post_script(&envelope(ns, DIR_PAGE, &id, body))?;
     if let Err(e) = webview.eval(script) {
         bridge.forget(&id);
@@ -270,7 +388,7 @@ async fn awaited(
         // The sender was dropped without sending: the map was cleared out from under us.
         Ok(Err(_)) => json!({ "ok": false, "error": "the relay was dropped" }),
         Err(_) => {
-            bridge.forget(&id);
+            bridge.give_up(&id);
             json!({ "ok": false, "error": "timeout" })
         }
     }
@@ -287,6 +405,7 @@ fn reply(app: &AppHandle, tab: u32, nonce: &str, payload: Value) -> Result<(), S
     }
     match bridge.settle(tab, payload) {
         Settled::Toolchange => crate::ui_emit(app, "bridge:toolchange", json!({ "tab_id": tab })),
+        Settled::Late(event) => crate::ui_emit(app, "bridge:late", event),
         Settled::Delivered => {}
         Settled::Ignored(why) => eprintln!("[bridge] dropped a reply for tab {tab}: {why}"),
     }
@@ -578,6 +697,105 @@ mod tests {
             Settled::Ignored("an id belonging to another tab")
         );
         assert_eq!(bridge.parked(), 1, "and none of that unparked anything");
+    }
+
+    /// A call the page answered `timeout`, then finished: the `late` event is placed once, with
+    /// the tool's name, and only on the tab the call was issued to.
+    #[tokio::test]
+    async fn a_late_answer_for_a_call_that_timed_out_on_this_tab_is_emitted() {
+        let bridge = Bridge::default();
+        let (id, rx) = bridge.park_call(3, "send_invoice");
+        let timed_out =
+            json!({ "id": id.clone(), "ok": false, "reason": "timeout", "error": "slow" });
+        assert_eq!(bridge.settle(3, timed_out), Settled::Delivered);
+        let _ = awaited(&bridge, id.clone(), rx, Duration::from_secs(5)).await;
+
+        let late =
+            json!({ "id": null, "type": "late", "call": id.clone(), "ok": true, "output": "sent" });
+        assert_eq!(
+            bridge.settle(4, late.clone()),
+            Settled::Ignored("an id belonging to another tab"),
+            "another tab cannot claim it"
+        );
+        let Settled::Late(event) = bridge.settle(3, late.clone()) else {
+            panic!("a late answer for an issued, timed-out call is placed");
+        };
+        assert_eq!(event["tab_id"], json!(3));
+        assert_eq!(event["name"], json!("send_invoice"));
+        assert_eq!(event["ok"], json!(true));
+        assert_eq!(event["output"], json!("sent"));
+        assert!(event["late_ms"].is_u64());
+        assert_eq!(
+            bridge.settle(3, late),
+            Settled::Ignored("a late event for a call that did not time out"),
+            "once"
+        );
+    }
+
+    /// The relay's own timer counts as a timeout too.
+    #[tokio::test]
+    async fn a_late_answer_after_the_relays_timer_is_emitted() {
+        let bridge = Bridge::default();
+        let (id, rx) = bridge.park_call(5, "archive");
+        let _ = awaited(&bridge, id.clone(), rx, Duration::from_millis(5)).await;
+        let late = json!({ "type": "late", "call": id, "ok": false, "error": "boom" });
+        let Settled::Late(event) = bridge.settle(5, late) else {
+            panic!("placed");
+        };
+        assert_eq!(event["ok"], json!(false));
+        assert_eq!(event["error"], json!("boom"));
+    }
+
+    #[test]
+    fn a_late_answer_for_a_call_never_issued_or_answered_in_time_is_ignored() {
+        let bridge = Bridge::default();
+        // Never issued: a page cannot name an id it was never handed.
+        assert_eq!(
+            bridge.settle(1, json!({ "type": "late", "call": "1:0-beef", "ok": true })),
+            Settled::Ignored("a late event for a call that did not time out")
+        );
+        assert_eq!(
+            bridge.settle(1, json!({ "type": "late", "ok": true })),
+            Settled::Ignored("a late event without a call id")
+        );
+        // Issued and answered in time: nothing is late about it.
+        let (id, _rx) = bridge.park_call(1, "read_inbox");
+        assert_eq!(
+            bridge.settle(1, json!({ "id": id.clone(), "ok": true, "output": "12" })),
+            Settled::Delivered
+        );
+        assert_eq!(
+            bridge.settle(1, json!({ "type": "late", "call": id, "ok": true })),
+            Settled::Ignored("a late event for a call that did not time out")
+        );
+        // Issued to tab 1 and timed out there, claimed by tab 2.
+        let (other, _rx) = bridge.park_call(1, "send");
+        bridge.give_up(&other);
+        assert_eq!(
+            bridge.settle(2, json!({ "type": "late", "call": other, "ok": true })),
+            Settled::Ignored("an id belonging to another tab")
+        );
+    }
+
+    #[test]
+    fn a_tab_remembers_a_bounded_number_of_timed_out_calls() {
+        let bridge = Bridge::default();
+        let ids: Vec<String> = (0..LATE_KEEP + 4)
+            .map(|_| {
+                let (id, _rx) = bridge.park_call(6, "send");
+                bridge.give_up(&id);
+                id
+            })
+            .collect();
+        assert_eq!(bridge.lock().expired[&6].len(), LATE_KEEP);
+        let oldest = json!({ "type": "late", "call": ids[0].clone(), "ok": true });
+        assert_eq!(
+            bridge.settle(6, oldest),
+            Settled::Ignored("a late event for a call that did not time out"),
+            "the oldest fell off"
+        );
+        let newest = json!({ "type": "late", "call": ids[LATE_KEEP + 3].clone(), "ok": true });
+        assert!(matches!(bridge.settle(6, newest), Settled::Late(_)));
     }
 
     #[test]

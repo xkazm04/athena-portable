@@ -393,3 +393,28 @@ def test_decline_approved_leaves_a_spent_approval_alone(approvals: Approvals) ->
     spent = approvals.get(row.id)
     assert spent is not None and spent.status == "approved"
     assert approvals.decline_approved("apr_nope", "decline") is False
+
+
+# -- the same call, already let through (ADR 0101) ----------------------------------------------
+
+
+def test_spent_recently_names_the_approval_of_the_same_call_spent_within_a_day(
+    approvals: Approvals,
+) -> None:
+    row = _create(approvals)
+    assert approvals.spent_recently("host.invoices.fill", PARAMS, now=T0) is None, "not approved"
+    approvals.resolve(row.id, APPROVE_TOKEN, now=T0 + timedelta(minutes=2))
+    assert approvals.spent_recently("host.invoices.fill", PARAMS, now=T0) is None, "not spent"
+    assert approvals.consume(row.id, now=T0 + timedelta(minutes=3))
+
+    later = T0 + timedelta(hours=5)
+    reordered = dict(reversed(list(PARAMS.items())))
+    stamp = approvals.spent_recently("host.invoices.fill", reordered, now=later)
+    assert stamp == (T0 + timedelta(minutes=2)).isoformat(), "the moment of the yes, canonical"
+    assert (
+        approvals.spent_recently("host.invoices.fill", {**PARAMS, "note": "x"}, now=later) is None
+    )
+    assert approvals.spent_recently("host.invoices.send", PARAMS, now=later) is None
+    assert (
+        approvals.spent_recently("host.invoices.fill", PARAMS, now=T0 + timedelta(hours=25)) is None
+    )

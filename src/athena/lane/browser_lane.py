@@ -379,6 +379,10 @@ class BrowserLane:
         origin = self._origin(ctx)
         for result in results:
             verb = "returned" if result.ok else f"failed ({result.error or 'unknown'})"
+            if not result.ok and (result.error or "").startswith("outcome_unknown"):
+                # Not "failed": the call was sent and its answer never came, so it may have run
+                # (ADR 0101). A record that said "failed" would invite the retry that sends twice.
+                verb = "may have completed (no answer before the deadline; do not retry unasked)"
             self._append(
                 f"{result.name} {verb}: {result.output}".strip(),
                 "system",

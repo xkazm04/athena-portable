@@ -29,7 +29,7 @@
  */
 import { useEffect, useMemo, useRef } from "react";
 import { parametersToJsonSchema, type HostParameter, type SideEffects } from "./types";
-import { runTool } from "./door";
+import { runTool, type ToolContext } from "./door";
 import { ensureModelContext, type JsonSchemaObject, type WebMCPAnnotations } from "./modelContext";
 
 export interface WebMCPToolSpec {
@@ -40,8 +40,11 @@ export interface WebMCPToolSpec {
   reversible: boolean;
   /** `none` = UI only, `data` = writes app data, `external` = reaches the outside world. */
   sideEffects: SideEffects;
-  /** Return value is what the calling agent reads. Objects are serialised. Announce truncation. */
-  handler: (args: Record<string, unknown>) => unknown | Promise<unknown>;
+  /**
+   * Return value is what the calling agent reads. Objects are serialised. Announce truncation.
+   * `context.signal` is the caller's abort: a long handler should stop when it fires.
+   */
+  handler: (args: Record<string, unknown>, context: ToolContext) => unknown | Promise<unknown>;
   /** Re-register when these change. */
   deps?: unknown[];
 }
@@ -86,7 +89,9 @@ export function useWebMCPTool(spec: WebMCPToolSpec): void {
         annotations: annotationsFor(spec),
         // Non-standard, ignored by a native implementation, read by the polyfill and the panel.
         ...({ athena: { reversible: spec.reversible, side_effects: spec.sideEffects } } as object),
-        execute: (params) => runTool(inputSchema, params, (args) => handler.current(args)),
+        // The caller's signal reaches the handler (ADR 0101); dropping it left a call with no limit.
+        execute: (params, options) =>
+          runTool(inputSchema, params, (args, context) => handler.current(args, context), options?.signal),
       },
       { signal: controller.signal },
     );

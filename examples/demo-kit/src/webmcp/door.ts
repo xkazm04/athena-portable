@@ -79,18 +79,45 @@ export function asText(result: unknown, max = MAX_RESULT_CHARS): string {
   return `${text.slice(0, max)}\n[truncated: showing ${max} of ${text.length} characters]`;
 }
 
-/** The execute door: validate, run, catch, cap. Never throws. */
+/** What the door hands a handler beside its arguments: the caller's abort, when it sent one. */
+export interface ToolContext {
+  signal?: AbortSignal;
+}
+
+/**
+ * The execute door: validate, run, catch, cap. Never throws.
+ *
+ * The caller's `signal` is forwarded to the handler, so a handler that can stop does, and the
+ * door stops waiting when it aborts: a call the caller gave up on answers `aborted` instead of
+ * holding the page's promise open with no time limit (ADR 0101). A handler that ignores the
+ * signal may still finish; the bridge reports that as a `late` answer, not as a fresh call.
+ */
 export async function runTool(
   schema: unknown,
   params: Record<string, unknown> | undefined,
-  handler: (args: Record<string, unknown>) => unknown | Promise<unknown>,
+  handler: (args: Record<string, unknown>, context: ToolContext) => unknown | Promise<unknown>,
+  signal?: AbortSignal,
 ): Promise<string> {
   const args = params ?? {};
   const bad = validateArgs(args, schema);
   if (bad) return toolError(bad);
+  if (signal?.aborted) return toolError("aborted before it ran");
+  let stop: (() => void) | undefined;
+  const aborted = new Promise<string>((resolve) => {
+    if (!signal) return;
+    stop = () => resolve(toolError("aborted: the caller stopped waiting"));
+    signal.addEventListener("abort", stop, { once: true });
+  });
+  const ran = (async () => {
+    try {
+      return asText(await handler(args, { signal }));
+    } catch (e) {
+      return toolError(`tool failed: ${e instanceof Error ? e.message : String(e)}`);
+    }
+  })();
   try {
-    return asText(await handler(args));
-  } catch (e) {
-    return toolError(`tool failed: ${e instanceof Error ? e.message : String(e)}`);
+    return await Promise.race([ran, aborted]);
+  } finally {
+    if (stop) signal?.removeEventListener("abort", stop);
   }
 }

@@ -11,6 +11,12 @@
   fences and bounds output; keeps a per-origin budget.
 - **The relay.** The desktop forwards calls with a tab id and a nonce (`bridge_list`,
   `bridge_call`, `bridge_reply`) and holds the id map with a 35-second timer (ADR 0014).
+- **A timed-out write may have happened** (ADR 0101). `inject.js` posts an additive `late` event
+  when a call it answered `timeout` settles; the relay forwards it as `bridge:late` only for an id
+  it issued to that tab and saw time out. The panel records a timeout on a non-read call as
+  `outcome_unknown` ("may have completed"), gates the tool until a card for it is answered, adds a
+  "finished N s late" row to the next frame, and the daemon's card says when the user last approved
+  that exact call.
 - `protocol.md` is the wire contract; `test/` covers both halves.
 
 A page that registers nothing still gets tier 2: nine generic DOM hands in the shell

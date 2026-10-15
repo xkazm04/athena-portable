@@ -83,6 +83,8 @@ export function plainFailure(reason: string, engine: string): string {
       return "Open a page first. Athena works inside the app you are looking at.";
     case "timeout":
       return "That took too long, so Athena stopped it.";
+    case "outcome_unknown":
+      return "The app did not answer in time, so that may already have happened. Check the app before asking again.";
     case "budget_exhausted":
       return "Athena stopped after too many steps on one request.";
     case "parse_error":

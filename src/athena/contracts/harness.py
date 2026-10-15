@@ -134,6 +134,8 @@ ERROR_REASONS: tuple[str, ...] = (
     "timeout",
     "parse_error",
     "cancelled",
+    # the call was sent and its answer never came: it may have run (ADR 0101)
+    "outcome_unknown",
     # the catch-all; anything unrecognised collapses here rather than inventing a column value
     "unknown",
 )

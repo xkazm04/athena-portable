@@ -35,3 +35,30 @@ test("an oversize result is cut and says how much", async () => {
   assert.ok(out.length < MAX_RESULT_CHARS + 200);
   assert.match(out, new RegExp(`truncated: showing ${MAX_RESULT_CHARS} of ${MAX_RESULT_CHARS + 500}`));
 });
+
+test("the handler is handed the caller's signal, and an abort stops the wait (ADR 0101)", async () => {
+  const controller = new AbortController();
+  let seen: AbortSignal | undefined;
+  const pending = runTool(schema, { stage: "new" }, (_args, context) => {
+    seen = context.signal;
+    return new Promise(() => {});
+  }, controller.signal);
+  await Promise.resolve();
+  assert.equal(seen, controller.signal, "the handler receives the very signal the caller sent");
+  controller.abort();
+  assert.match((JSON.parse(await pending) as { error: string }).error, /^aborted/);
+});
+
+test("a call aborted before it runs never reaches the handler", async () => {
+  const controller = new AbortController();
+  controller.abort();
+  let ran = 0;
+  const out = await runTool(schema, { stage: "new" }, () => (ran++, "ran"), controller.signal);
+  assert.equal(ran, 0);
+  assert.match((JSON.parse(out) as { error: string }).error, /aborted before it ran/);
+});
+
+test("a handler that answers in time is unaffected by the signal", async () => {
+  const controller = new AbortController();
+  assert.equal(await runTool(schema, { stage: "new" }, () => "ran", controller.signal), "ran");
+});

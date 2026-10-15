@@ -45,6 +45,7 @@ __all__ = [
     "ModelMessage",
     "ModelRequest",
     "Row",
+    "SpentLookupPort",
     "stream_of",
 ]
 
@@ -129,6 +130,17 @@ class ApprovalsPort(Protocol):
     def describe(self, approval_id: str) -> Grant: ...
 
     def consume(self, approval_id: str) -> bool: ...
+
+
+@runtime_checkable
+class SpentLookupPort(Protocol):
+    """An approval table that can say when this exact call was last approved and let through.
+
+    ``athena.core.approvals.Approvals.spent_recently``. Optional on purpose: a table that cannot
+    answer files the card without the line, and a card is never refused on it (ADR 0101).
+    """
+
+    def spent_recently(self, action: str, params: Mapping[str, Any]) -> str | None: ...
 
 
 @runtime_checkable

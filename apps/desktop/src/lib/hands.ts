@@ -172,15 +172,16 @@ export async function callOnPage(
   name: string,
   input: Record<string, unknown>,
   pageTools: readonly BridgeTool[],
-): Promise<{ ok: boolean; output: string; error?: string | null; tier?: number }> {
+): Promise<{ ok: boolean; output: string; error?: string | null; reason?: string | null; tier?: number }> {
   if (isHandCall(name, pageTools)) {
     const reply = await call<HandReply>("hands_call", { tab_id: tabId, name, input: input as Args });
-    return { ok: reply.ok, output: reply.output, error: reply.error, tier: 2 };
+    return { ok: reply.ok, output: reply.output, error: reply.error, reason: reply.reason, tier: 2 };
   }
   // The gate already allowed this call, so the parameters are the row's. `Args` is the IPC's own
   // wire type and the cast is the one place a gate-approved object meets it.
   const reply: CallReply = await bridgeCall(tabId, name, input as Args);
-  return reply as { ok: boolean; output: string; error?: string | null };
+  // `reason` rides along: a `timeout` on a write is what the run loop reads as "may have run".
+  return reply as { ok: boolean; output: string; error?: string | null; reason?: string | null };
 }
 
 /** What a ref still names on its page, as the page describes it: its role and its label. */
