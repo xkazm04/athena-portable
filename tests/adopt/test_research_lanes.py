@@ -56,10 +56,10 @@ def test_lanes_run_at_the_same_time_and_harvest_in_input_order() -> None:
 
     def lane(name: str, sleep: float) -> LaneTask:
         def body() -> LaneOutcome:
-            start = time.monotonic()
+            start = time.perf_counter()
             barrier.wait()  # breaks (and the lane fails) unless all three run at once
             time.sleep(sleep)
-            spans[name] = (start, time.monotonic())
+            spans[name] = (start, time.perf_counter())
             return LaneOutcome(summary=f"{name} done")
 
         return LaneTask(name, "memory", name, body)
