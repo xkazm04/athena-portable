@@ -20,15 +20,14 @@
  *   node --experimental-transform-types --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { tempHome } from "./tmp-home";
 
 import { annotationsFor } from "@athena/demo-kit/webmcp";
 
-process.chdir(mkdtempSync(join(tmpdir(), "tidycrm-test-")));
+tempHome("tidycrm-test-");
 
 const { listActivity, undoActivity } = await import("@athena/demo-kit/activity");
 const { db, getPair, listOpenPairs } = await import("../lib/db");

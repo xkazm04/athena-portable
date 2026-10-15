@@ -6,15 +6,13 @@
  *   node --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
 import assert from "node:assert/strict";
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { test } from "node:test";
+import { tempHome } from "./tmp-home";
 
 import { REF_HINT, resolveInvoiceRef } from "../lib/invoice-ref";
 import { BOOKS_CAPABILITIES, type Capability } from "../lib/manifest";
 
-process.chdir(mkdtempSync(join(tmpdir(), "ledgerbox-ref-test-")));
+tempHome("ledgerbox-ref-test-");
 const { getInvoice, findInvoiceId } = await import("../lib/db");
 const { draftReminderAction, markPaidAction, sendReminderAction, categorizeAction, voidInvoiceAction } =
   await import("../app/actions");

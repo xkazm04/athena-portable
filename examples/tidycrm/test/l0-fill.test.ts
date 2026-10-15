@@ -27,13 +27,12 @@
  *   node --experimental-transform-types --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { tempHome } from "./tmp-home";
 
-process.chdir(mkdtempSync(join(tmpdir(), "tidycrm-fill-")));
+tempHome("tidycrm-fill-");
 
 const { buildSheet } = await import("../lib/blocks");
 const { cellsOf } = await import("../components/blocks/l0/cells");

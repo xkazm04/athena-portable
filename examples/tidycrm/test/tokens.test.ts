@@ -29,7 +29,7 @@
  */
 import assert from "node:assert/strict";
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdtempSync, readdirSync, readFileSync } from "node:fs";
+import { existsSync, mkdtempSync, readdirSync, readFileSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -114,15 +114,19 @@ test("every retired input says it is retired and names the live authority", () =
 
 test("the retired machinery still runs, which is why it is kept", () => {
   const out = mkdtempSync(join(tmpdir(), "tidycrm-tokens-"));
-  for (const input of INPUTS) {
-    const variant = input.replace(".tokens.json", "");
-    const args = [from(EMITTER), variant, join(out, `${variant}.css`)];
-    if (variant === "token") args.push("--refs");
-    const log = execFileSync(process.execPath, args, { encoding: "utf8" });
-    assert.match(log, /wrote \d+ custom properties/, `${variant} did not build`);
-    const css = readFileSync(join(out, `${variant}.css`), "utf8");
-    assert.match(css, new RegExp(`\\[data-variant="${variant}"\\]`), `${variant} lost its scope`);
-    assert.match(css, /RETIRED/, `${variant}'s output does not say it is nobody's`);
+  try {
+    for (const input of INPUTS) {
+      const variant = input.replace(".tokens.json", "");
+      const args = [from(EMITTER), variant, join(out, `${variant}.css`)];
+      if (variant === "token") args.push("--refs");
+      const log = execFileSync(process.execPath, args, { encoding: "utf8" });
+      assert.match(log, /wrote \d+ custom properties/, `${variant} did not build`);
+      const css = readFileSync(join(out, `${variant}.css`), "utf8");
+      assert.match(css, new RegExp(`\\[data-variant="${variant}"\\]`), `${variant} lost its scope`);
+      assert.match(css, /RETIRED/, `${variant}'s output does not say it is nobody's`);
+    }
+  } finally {
+    rmSync(out, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
   }
 });
 

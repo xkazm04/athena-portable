@@ -13,12 +13,10 @@
  *   node --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
 import assert from "node:assert/strict";
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { test } from "node:test";
+import { tempHome } from "./tmp-home";
 
-process.chdir(mkdtempSync(join(tmpdir(), "hirelane-roster-test-")));
+tempHome("hirelane-roster-test-");
 
 const { KESTREL_APPLICANT, companyDomain } = await import("@athena/demo-kit/seed");
 const { buildBoard } = await import("../lib/board");

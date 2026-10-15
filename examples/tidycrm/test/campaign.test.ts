@@ -15,15 +15,14 @@
  *   node --experimental-transform-types --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
 import assert from "node:assert/strict";
-import { mkdtempSync, readFileSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
+import { readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { tempHome } from "./tmp-home";
 
 import { COMPANIES, KESTREL_APPLICANT, QUIET_CLIENT, STUDIO } from "@athena/demo-kit/seed";
 
-process.chdir(mkdtempSync(join(tmpdir(), "tidycrm-test-")));
+tempHome("tidycrm-test-");
 
 const { countSegment, defectCounts, segmentRows } = await import("../lib/db");
 const { resolveCompany } = await import("../lib/mutations");

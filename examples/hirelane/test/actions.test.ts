@@ -8,14 +8,12 @@
  *   node --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
 import assert from "node:assert/strict";
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { test } from "node:test";
+import { tempHome } from "./tmp-home";
 
 // `openDb` resolves the file from `process.cwd()/data`, so a scratch cwd gives this run its own
 // seeded copy and never touches the one under `data/`.
-process.chdir(mkdtempSync(join(tmpdir(), "hirelane-test-")));
+tempHome("hirelane-test-");
 
 const { STUDIO } = await import("@athena/demo-kit/seed");
 const { db } = await import("../lib/db");

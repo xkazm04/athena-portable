@@ -15,16 +15,14 @@
  *   node --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
 import assert from "node:assert/strict";
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { test } from "node:test";
+import { tempHome } from "./tmp-home";
 
 import { PINEGROVE_ALIAS, QUIET_CLIENT, STUDIO, companyByName } from "@athena/demo-kit/seed";
 import { annotationsFor } from "@athena/demo-kit/webmcp";
 
 // Own scratch cwd, own seeded copy: `openDb` resolves the file from `process.cwd()/data`.
-process.chdir(mkdtempSync(join(tmpdir(), "ledgerbox-journey-")));
+tempHome("ledgerbox-journey-");
 
 const { getInvoice, listClients, listInvoices, unappliedCredits } = await import("../lib/db");
 const { draftReminderAction, exportSummaryAction, matchAction, sendReminderAction } =

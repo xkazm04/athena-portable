@@ -979,21 +979,31 @@ pub async fn captures_sweep(app: AppHandle, cap_bytes: Option<i64>) -> Result<Va
 mod tests {
     use super::*;
 
+    /// Removes the database file when it drops. It is a separate field, declared AFTER the store,
+    /// because fields drop in declaration order: the connection must be closed first, or Windows
+    /// refuses the delete and the file is left in the temp dir.
+    struct RemoveFile(PathBuf);
+
+    impl Drop for RemoveFile {
+        fn drop(&mut self) {
+            let _ = std::fs::remove_file(&self.0);
+        }
+    }
+
     struct Temp {
         store: Store,
         path: PathBuf,
-    }
-
-    impl Drop for Temp {
-        fn drop(&mut self) {
-            let _ = std::fs::remove_file(&self.path);
-        }
+        _remove: RemoveFile,
     }
 
     fn temp() -> Temp {
         let path = std::env::temp_dir().join(format!("{}.sqlite", mint_id("athena-store-test")));
         let store = Store::open(&path).expect("the store opens");
-        Temp { store, path }
+        Temp {
+            store,
+            _remove: RemoveFile(path.clone()),
+            path,
+        }
     }
 
     #[test]

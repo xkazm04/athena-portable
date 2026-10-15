@@ -10,12 +10,10 @@
  *   node --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
 import assert from "node:assert/strict";
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { test } from "node:test";
+import { tempHome } from "./tmp-home";
 
-process.chdir(mkdtempSync(join(tmpdir(), "hirelane-board-test-")));
+tempHome("hirelane-board-test-");
 
 const { buildBoard } = await import("../lib/board");
 const { overallScore } = await import("../lib/scoring");

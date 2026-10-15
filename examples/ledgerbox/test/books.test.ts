@@ -9,14 +9,12 @@
  *   node --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
 import assert from "node:assert/strict";
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { test } from "node:test";
+import { tempHome } from "./tmp-home";
 
 // `openDb` resolves the file from `process.cwd()/data`, so a scratch cwd gives this run its own
 // seeded copy and never touches the one committed under `data/`.
-process.chdir(mkdtempSync(join(tmpdir(), "ledgerbox-test-")));
+tempHome("ledgerbox-test-");
 
 const { COUNTED_OUT, db, getInvoice, inPeriod, listInvoices, summarize, unappliedLines } =
   await import("../lib/db");

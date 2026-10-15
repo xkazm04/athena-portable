@@ -18,12 +18,10 @@
  *   node --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
 import assert from "node:assert/strict";
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { test } from "node:test";
+import { tempHome } from "./tmp-home";
 
-process.chdir(mkdtempSync(join(tmpdir(), "hirelane-tools-test-")));
+tempHome("hirelane-tools-test-");
 
 const { annotationsFor } = await import("@athena/demo-kit/webmcp");
 const { BOARD_CAPABILITIES, CAPABILITIES, PROTECTED_ATTRIBUTES, SHIPPED_CAPABILITIES, isAuto } =

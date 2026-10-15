@@ -14,14 +14,12 @@
  *   node --experimental-transform-types --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
 import assert from "node:assert/strict";
-import { mkdtempSync } from "node:fs";
-import { tmpdir } from "node:os";
-import { join } from "node:path";
 import { test } from "node:test";
+import { tempHome } from "./tmp-home";
 
 import { COMPANIES, PINEGROVE_ALIAS } from "@athena/demo-kit/seed";
 
-process.chdir(mkdtempSync(join(tmpdir(), "tidycrm-test-")));
+tempHome("tidycrm-test-");
 
 const { listActivity, undoActivity } = await import("@athena/demo-kit/activity");
 const { db, domainContacts, domainSpellings, listConflicts, readConflicts } = await import("../lib/db");
