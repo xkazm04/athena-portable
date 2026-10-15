@@ -2,19 +2,31 @@
 // Pins the two rules scripts/coverage.mjs owns alone: the --challenge cohort
 // (references/challenge.md section 2) and that challenge lenses/snapshots never
 // inflate the stabilize coverage ledger.
-import { test } from 'node:test';
+import { test, after } from 'node:test';
 import assert from 'node:assert/strict';
-import { mkdtempSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { mkdtempSync, mkdirSync, readFileSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
 import { execFileSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 
 const SCRIPT = fileURLToPath(new URL('../scripts/coverage.mjs', import.meta.url));
+// Every fixture dir is registered here and removed once, after the last test in the file.
+const made = [];
+const scratch = () => {
+  const dir = mkdtempSync(join(tmpdir(), 'scan-sweep-cov-'));
+  made.push(dir);
+  return dir;
+};
+after(() => {
+  if (process.env.KEEP_TMP) return;
+  for (const dir of made) rmSync(dir, { recursive: true, force: true, maxRetries: 5, retryDelay: 100 });
+});
+
 const files = (n) => Array.from({ length: n }, (_, i) => `src/f${i}.ts`);
 
 function fixture(history) {
-  const dir = mkdtempSync(join(tmpdir(), 'scan-sweep-cov-'));
+  const dir = scratch();
   writeFileSync(join(dir, 'context-map.json'), JSON.stringify({
     contexts: [
       { name: 'tiny', group: 'G1', file_paths: files(4) },
@@ -41,7 +53,7 @@ test('cohort: >= 10 files, one per group, never-challenged and larger first', ()
 });
 
 test('riders: a small context rides with its group host; an all-small group is promoted', () => {
-  const dir = mkdtempSync(join(tmpdir(), 'scan-sweep-cov-'));
+  const dir = scratch();
   writeFileSync(join(dir, 'context-map.json'), JSON.stringify({
     contexts: [
       { name: 'host', group: 'G1', file_paths: files(20) },
