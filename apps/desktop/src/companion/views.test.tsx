@@ -494,3 +494,24 @@ test("Stop is offered wherever she is shown working, and nowhere else (ADR 0115)
   // A word a screen reader can act on, not an icon alone.
   expect(working).toMatch(/<button[^>]*data-act="stop"[^>]*>Stop<\/button>/);
 });
+
+test("case 4: a connector card says who it acts as under its where line, in Gmail's name (ADR 0116)", () => {
+  const out = html("slip connector");
+  expect(out).toContain("In Gmail - a connector, not a page");
+  expect(out).not.toContain("connector:gmail");
+  expect(out).toContain("Acts as mira@example.com through Gmail.");
+  expect(out).toContain("data-connector");
+  expect(out).not.toContain("data-connector-warning");
+});
+
+test("guard 7: a connector line that warns never disables Approve or Decline; it offers the way to Main", () => {
+  const out = html("slip connector reauth");
+  expect(out).toContain("Gmail needs reconnecting, so approving now will be refused.");
+  expect(out).toContain("data-connector-warning");
+  expect(out).toContain('data-act="open-main"');
+  expect(out).toMatch(/data-act="approve"/);
+  expect(out).not.toMatch(/data-act="approve"[^>]*disabled/);
+  expect(out).not.toMatch(/data-act="decline"[^>]*disabled/);
+  // A page's card carries no connector line at all.
+  expect(html("slip")).not.toContain("data-connector");
+});

@@ -8,6 +8,7 @@
 import { expect, test } from "vitest";
 
 import type { ToolRow } from "@/lib/api";
+import { connection, gmail } from "@/modules/connectors/fixtures";
 import type { TranscriptEntry } from "@/stores/run";
 
 import { CARDS, TOOLS, fixtures, machineAfter } from "./fixtures";
@@ -16,6 +17,7 @@ import {
   NO_ACTIONS,
   OFFERS_SHOWN,
   blockedBecause,
+  cardView,
   groupMessages,
   hostOf,
   ledgerFrom,
@@ -530,4 +532,45 @@ test("W: probes null with a failed daemon is a failed start, not a failed look",
     "Athena could not look for your engine.",
   );
   expect(engineView("codex", null, null, false, "codex", "failed", false, "").state).toBe("looking");
+});
+
+// -- a connector card names the account it acts as (ADR 0116) ---------------------------------------
+
+const MAIL_CARD = {
+  ...CARDS[0],
+  id: "apr_00000000m001",
+  action: "connector.gmail.send_mail",
+  params: { to: "ap@northwind.example", subject: "INV-118" },
+  origin: "connector:gmail",
+};
+
+const MIRA = gmail({
+  live: true,
+  connection: connection("gmail", { status: "connected", identity: "mira@example.com", enabled: true, writes_enabled: true }),
+});
+
+test("case 4: a connector card is named by the connector's label and carries the account it acts as", () => {
+  const view = cardView(MAIL_CARD, null, { connectors: { items: [MIRA], loaded: true, notice: "" } });
+  expect(view.app).toBe("Gmail");
+  expect(view.where).toBe("In Gmail - a connector, not a page");
+  expect(view.connector).toEqual({ app: "Gmail", line: "Acts as mira@example.com through Gmail.", warning: null });
+  // The selector hands the mirror to every waiting card.
+  const m = selectCompanion(
+    inputs({
+      machine: machineAfter({ t: "init", onboarded: true, cards: 0 }, { t: "cards", n: 1 }),
+      run: { phase: "idle", transcript: [], cards: [MAIL_CARD], summary: null, error: null },
+      connectors: { items: [MIRA], loaded: true, notice: "" },
+    }),
+  );
+  expect(m.cards[0].where).toBe("In Gmail - a connector, not a page");
+  expect(m.cards[0].connector?.line).toBe("Acts as mira@example.com through Gmail.");
+  expect(cardView(CARDS[0], null, { connectors: { items: [MIRA], loaded: true, notice: "" } }).connector).toBeNull();
+});
+
+test("guard 7: a host-origin card is unchanged by the connectors mirror, and carries no connector line", () => {
+  const context = { tools: TOOLS };
+  const plain = cardView(CARDS[0], null, context);
+  const mirrored = cardView(CARDS[0], null, { ...context, connectors: { items: [MIRA], loaded: true, notice: "" } });
+  expect(mirrored).toEqual(plain);
+  expect(plain.where).toBe("In ledgerbox - the app's own tool");
 });

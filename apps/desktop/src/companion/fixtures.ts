@@ -13,6 +13,7 @@ import { PLAYBOOKS } from "@/lib/playbooks.shipped";
 import type { EngineProbe } from "@/lib/engines";
 import type { DecisionRequested } from "@/lib/events";
 import type { Tab } from "@/lib/ipc";
+import { connection, gmail } from "@/modules/connectors/fixtures";
 import type { EarlierRecord, TranscriptEntry } from "@/stores/run";
 import { sheetKeyOf, slotFor, type SheetSlot } from "@/lib/sheet";
 
@@ -23,6 +24,7 @@ import {
   selectCompanion,
   type CardView,
   type CompanionModel,
+  type ConnectorsMirror,
   type LedgerSnapshot,
   type OriginView,
   type SessionDecision,
@@ -54,6 +56,35 @@ function card(id: string, invoice: string, to: string, why: string): DecisionReq
     origin: "host:ledgerbox",
     surface: "panel",
     capture_id: null,
+  };
+}
+
+/** A Gmail send, filed by a turn that used the connector rather than a page (ADR 0116). */
+export const MAIL_CARD: DecisionRequested = {
+  ...card("apr_0000000000m1", "INV-118", "ap@northwind.example", "The chase for INV-118 goes by mail, from the studio's own address."),
+  action: "connector.gmail.send_mail",
+  params: { to: "ap@northwind.example", subject: "INV-118 is 41 days past due", body: "Hello, a reminder that INV-118 is now 41 days past due." },
+  origin: "connector:gmail",
+};
+
+/** Her window's mirror of `/connectors`, Gmail connected as Mira; `over` changes the record. */
+function mirror(over: Partial<ReturnType<typeof connection>> = {}): ConnectorsMirror {
+  return {
+    items: [
+      gmail({
+        live: true,
+        connection: connection("gmail", {
+          status: "connected",
+          identity: "mira@example.com",
+          writes_enabled: true,
+          allowlist: ["ap@northwind.example"],
+          seal: "dpapi",
+          ...over,
+        }),
+      }),
+    ],
+    loaded: true,
+    notice: "",
   };
 }
 
@@ -224,6 +255,8 @@ interface Setup {
   tabs?: Tab[];
   unticked?: Record<string, true>;
   ran?: string;
+  /** Her window's `/connectors` mirror (ADR 0116). */
+  connectors?: ConnectorsMirror;
 }
 
 function model(setup: Setup): CompanionModel {
@@ -248,6 +281,7 @@ function model(setup: Setup): CompanionModel {
     tools: TOOLS,
     held: setup.held ?? null,
     ...(setup.tabs ? { tabs: setup.tabs } : {}),
+    ...(setup.connectors ? { connectors: setup.connectors } : {}),
     known: KNOWN,
     ledger: setup.ledger === undefined ? LEDGER : setup.ledger,
     decisions: DECISIONS,
@@ -308,6 +342,17 @@ export const fixtures: Record<string, () => CompanionModel> = {
     }),
   slip: () => model({ events: [INIT, { t: "cards", n: 1 }], cards: one, capture: true }),
   "slip many": () => model({ events: [INIT, { t: "cards", n: 3 }], cards: all, capture: true }),
+  /** A connector's card names the account it acts as (ADR 0116). */
+  "slip connector": () =>
+    model({ events: [INIT, { t: "cards", n: 1 }], cards: [MAIL_CARD], capture: true, connectors: mirror() }),
+  /** The grant lapsed mid-call: the card says approving will be refused, and the buttons stay on. */
+  "slip connector reauth": () =>
+    model({
+      events: [INIT, { t: "cards", n: 1 }],
+      cards: [MAIL_CARD],
+      capture: true,
+      connectors: mirror({ status: "needs_reauth" }),
+    }),
   /** One turn filed three reminders on one app: one sheet, one row unticked (ADR 0104). */
   "slip sheet": () =>
     model({

@@ -41,6 +41,7 @@ import { setHaloOverride } from "@/lib/halo";
 import { createRehearsal, type Rehearsal } from "@/lib/halo-rehearsal";
 import { hasShell } from "@/lib/ipc";
 import { openMicrophone } from "@/lib/voice";
+import { useConnectors } from "@/stores/connectors";
 import { endpoint, useDaemon } from "@/stores/daemon";
 import { useEngines } from "@/stores/engines";
 import { useOrigins } from "@/stores/origins";
@@ -290,6 +291,10 @@ export default function Live() {
   const probes = useEngines((s) => s.probes);
   const probing = useEngines((s) => s.checking);
   const probeProblem = useEngines((s) => s.problem);
+  // The `/connectors` mirror, read when a connector card arrives (athena.tsx, ADR 0116).
+  const connectorItems = useConnectors((s) => s.items);
+  const connectorsRead = useConnectors((s) => s.loaded && s.problem === null);
+  const connectorsNotice = useConnectors((s) => s.recordsNotice);
   // A handed-over playbook's plan is read from the shipped set, which loads when one is handed over.
   const shipped = usePlaybooks((s) => s.items);
   const handedOver = run.project !== undefined && run.project !== null;
@@ -399,6 +404,7 @@ export default function Live() {
     held: snap.held,
     drifts,
     tabs,
+    connectors: { items: connectorItems, loaded: connectorsRead, notice: connectorsNotice },
     known: originViews,
     ledger: snap.ledger,
     decisions: run.answered,

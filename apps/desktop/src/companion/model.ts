@@ -17,7 +17,7 @@
 import type { DaemonHealth } from "@/lib/daemon";
 import type { AthenaState } from "@/lib/companion";
 import type { Side, Valign } from "@/lib/companion";
-import type { ToolRow } from "@/lib/api";
+import type { ConnectorView, ToolRow } from "@/lib/api";
 import type { ContractDrift } from "@/lib/contract";
 import { refsOf, tierOf, type Target } from "@/lib/hands";
 import { hostOfDerivedId } from "@/lib/manifest";
@@ -28,6 +28,7 @@ import type { DecisionRequested, TurnSummary } from "@/lib/events";
 import type { ActivityRow } from "@/lib/store";
 import type { Tab } from "@/lib/ipc";
 import { clockOf, whenAgo } from "@/lib/time";
+import { connectorLineOf, labelOfId, type ConnectorLine } from "@/modules/connectors/model";
 import type {
   AnswerResult,
   EarlierRecord,
@@ -173,6 +174,21 @@ export interface CardView {
    * accepted. `null` when the contract is the accepted one or the card is not about a page tool.
    */
   drift: ContractDrift | null;
+  /**
+   * For a connector's card, the account it acts as and whether the record says it can go through
+   * (ADR 0116); `null` for every other card. Display only: it never turns a button off.
+   */
+  connector: ConnectorLine | null;
+}
+
+/**
+ * Her window's `/connectors` mirror, as a card reads it (ADR 0116). `loaded` is false until the list
+ * answered without a problem; `notice` is the vault's records notice, verbatim, or "".
+ */
+export interface ConnectorsMirror {
+  items: readonly ConnectorView[];
+  loaded: boolean;
+  notice: string;
 }
 
 /** One row of a sheet: the card whole, and whether its tick is on. */
@@ -473,6 +489,8 @@ export interface CompanionInputs {
   drifts?: Readonly<Record<string, ContractDrift>>;
   /** The open tabs, for the tab a card was proposed on (ADR 0103). Absent reads as none. */
   tabs?: readonly Tab[];
+  /** Her window's `/connectors` mirror, for a connector card's line (ADR 0116). Absent reads as unread. */
+  connectors?: ConnectorsMirror;
   known: readonly OriginView[];
   ledger: LedgerSnapshot | null;
   decisions: readonly SessionDecision[];
@@ -551,6 +569,7 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     i.run.targets ?? {},
     i.drifts ?? {},
     i.tabs ?? [],
+    i.connectors,
   );
   const n = shown(m);
   const busy = i.run.phase === "running" || i.run.phase === "acting";
@@ -646,10 +665,11 @@ function cardsOf(
   targets: Readonly<Record<string, CardTargets>>,
   drifts: Readonly<Record<string, ContractDrift>> = {},
   tabs: readonly Tab[] = [],
+  connectors?: ConnectorsMirror,
 ): CardView[] {
   const list = m.decided && held && !cards.some((c) => c.id === held.id) ? [held, ...cards] : cards;
   return list.map((card, index) => ({
-    ...cardView(card, captureWhy[card.id] ?? null, { tools, targets: targets[card.id], drift: drifts[card.action], tabs }),
+    ...cardView(card, captureWhy[card.id] ?? null, { tools, targets: targets[card.id], drift: drifts[card.action], tabs, connectors }),
     sending: answering[card.id] !== undefined || (index === 0 && m.decided?.sending === true),
     refusal: refusals[card.id] ?? null,
   }));
@@ -718,9 +738,17 @@ const WHOSE: Record<1 | 2 | 3, string> = {
 export function cardView(
   card: DecisionRequested,
   why: string | null = null,
-  context: { tools?: readonly ToolRow[]; targets?: CardTargets; drift?: ContractDrift; tabs?: readonly Tab[] } = {},
+  context: {
+    tools?: readonly ToolRow[];
+    targets?: CardTargets;
+    drift?: ContractDrift;
+    tabs?: readonly Tab[];
+    connectors?: ConnectorsMirror;
+  } = {},
 ): CardView {
-  const app = appOf(card.origin) || "an unknown app";
+  const mirror = context.connectors;
+  const connector = connectorLineOf(card.origin, mirror?.items ?? [], mirror?.loaded ?? false, mirror?.notice ?? "", card.action);
+  const app = connector?.app ?? (appOf(card.origin) || "an unknown app");
   const tier = tierOf(card.origin, card.action, context.tools ?? []);
   const asked = context.targets;
   const refs = refsOf(card.params);
@@ -751,6 +779,7 @@ export function cardView(
     sending: false,
     refusal: null,
     drift: context.drift ?? null,
+    connector,
   };
 }
 
@@ -869,11 +898,14 @@ export function recordOf(transcript: readonly TranscriptEntry[], tools: readonly
 
 /**
  * `host:ledgerbox` is the app `ledgerbox`; `host:web_https_sledger_dtest`, the id a page that
- * named no app is catalogued under (ADR 0065), is the host it came from, `ledger.test`; a web
+ * named no app is catalogued under (ADR 0065), is the host it came from, `ledger.test`;
+ * `connector:gmail` is `Gmail` (a card that has the list names it by its label, ADR 0116); a web
  * origin is shown as its host.
  */
 export function appOf(origin: string): string {
   if (origin.startsWith("host:")) return hostOfDerivedId(origin.slice(5)) ?? origin.slice(5);
+  // `new URL("connector:gmail")` parses with an empty host: name the connector, not the origin.
+  if (origin.startsWith("connector:")) return labelOfId(origin.slice(10));
   return hostOf(origin) ?? origin;
 }
 

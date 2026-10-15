@@ -17,6 +17,7 @@ import { Chip, Defs, Icon, Mark, Mood, Ring, Sketch, Stamp } from "./drawing";
 import { SHRINK_MS, type LedgerTab } from "./machine";
 import { readCapture, type CaptureRead } from "./capture";
 import type { ContractDrift } from "@/lib/contract";
+import type { ConnectorLine } from "@/modules/connectors/model";
 import { showingOf, type CardCapture } from "./model";
 import type {
   CardView,
@@ -262,6 +263,36 @@ function ContractChange({ drift }: { drift: ContractDrift }) {
   );
 }
 
+/**
+ * Who a connector card acts as, and the one cause the record says will stop it (ADR 0116). It sits
+ * under the where line and turns nothing off: Approve and Decline stay the person's, and the gate
+ * decides at replay. Accounts lives in Main, so the way to put it right is to bring Main forward.
+ */
+function ConnectorStanding({ line, openMain }: { line: ConnectorLine; openMain: () => void }) {
+  return (
+    <>
+      <p className="sl-tab" data-connector>
+        <span>{line.line}</span>
+      </p>
+      {line.warning ? (
+        <p className="sl-tab" data-connector-warning role="note">
+          <Icon name="warn" className="warn" />
+          <span>{line.warning.text}</span>
+          <button
+            type="button"
+            className="aw-btn aw-btn-ghost sl-tab-go"
+            data-act="open-main"
+            aria-label="Open Main, where Accounts can put this right"
+            onClick={openMain}
+          >
+            Open Main
+          </button>
+        </p>
+      ) : null}
+    </>
+  );
+}
+
 function Slip({ model, card, inline }: { model: CompanionModel; card: CardView | undefined; inline: boolean }) {
   const { actions, decision } = model;
   if (!card) {
@@ -298,6 +329,7 @@ function Slip({ model, card, inline }: { model: CompanionModel; card: CardView |
       <div className="sl-scroll">
         <p className="sl-why">{card.rationale}</p>
         <p className="sl-where" data-tier={card.tier}>{card.where}</p>
+        {card.connector ? <ConnectorStanding line={card.connector} openMain={actions.openMain} /> : null}
         {card.bound ? (
           <p className="sl-tab" data-bound-tab={card.bound.tabId} data-moved={card.bound.moved ? "1" : undefined}>
             <span>
@@ -454,6 +486,7 @@ function Sheet({
                 <code className="sl-action">{row.action}</code>
               </label>
               <p className="sl-where" data-tier={row.tier}>{row.where}</p>
+              {row.connector ? <ConnectorStanding line={row.connector} openMain={actions.openMain} /> : null}
               {row.rationale ? <p className="sh-why">{row.rationale}</p> : null}
               <dl className="sl-params">
                 {row.params.map((p) => (
