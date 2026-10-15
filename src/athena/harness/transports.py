@@ -120,7 +120,8 @@ class CliRequest:
     cwd: str
     system_prompt_file: str | None = None
     env: dict[str, str] = field(default_factory=dict)
-    timeout_s: int = 25 * 60
+    #: How long this run may wait for a line: what is left of the turn's wall (ADR 0115).
+    timeout_s: float = 25 * 60
     #: How this run ended, reported by the transport after its last line. Not part of the
     #: request's value: two requests that say the same thing are equal whatever became of them.
     exit: ExitHandle = field(default_factory=ExitHandle, compare=False, repr=False)

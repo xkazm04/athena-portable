@@ -46,8 +46,9 @@ __all__ = [
     "RoundHarness",
 ]
 
-#: A turn is allowed twenty-five minutes. It is a wall, not a budget: a turn that has not
-#: produced anything in that long is a hung engine, not a slow thought.
+#: A turn is allowed twenty-five minutes, and the wall is the turn's (ADR 0115): every round runs
+#: inside what is left of it, so an engine that writes a line every few minutes is still stopped at
+#: the wall, and eight rounds share the twenty-five minutes rather than each having its own.
 TURN_TIMEOUT_S = 25 * 60
 
 #: Model → tool → model rounds inside one turn (README §3.2 step 3).
@@ -76,9 +77,20 @@ class RoundHarness:
 
     def __post_init__(self) -> None:
         self._last: TurnResult | None = None
+        #: When the turn in progress meets its wall, on the monotonic clock; ``None`` between turns.
+        self._deadline: float | None = None
 
     async def last_result(self) -> TurnResult | None:
         return self._last
+
+    def _remaining_s(self) -> float:
+        """What is left of the turn's wall, in seconds: what one round may still wait for."""
+        if self._deadline is None:
+            return float(self.timeout_s)
+        return max(0.0, self._deadline - time.monotonic())
+
+    def _wall(self) -> Failure:
+        return ("timeout", f"the turn reached its {self.timeout_s} s wall and was stopped")
 
     # -- what an engine supplies ------------------------------------------------------------------
 
@@ -115,6 +127,7 @@ class RoundHarness:
         # Defined before anything that can raise: every exit below writes a row from these.
         turn_id = ctx.turn_id or ""
         started = time.monotonic()
+        self._deadline = started + self.timeout_s
         result = TurnResult(turn_id=turn_id, engine=self.name, model=self.model, rounds=0)
         replies: list[str] = []
         texts: list[str] = []
@@ -138,9 +151,24 @@ class RoundHarness:
 
             for _round in range(1, self.max_rounds + 1):
                 result.rounds = _round
-                round_text, round_failure = await self._round(
-                    conversation_id, static_text, history, replies, result
-                )
+                remaining = self._remaining_s()
+                if remaining <= 0:
+                    failure = self._wall()
+                    break
+                # The wall bounds the round, whatever the engine is waiting on (ADR 0115).
+                wall = asyncio.timeout(remaining)
+                try:
+                    async with wall:
+                        round_text, round_failure = await self._round(
+                            conversation_id, static_text, history, replies, result
+                        )
+                except TimeoutError:
+                    if not wall.expired():
+                        raise  # the engine's own, not the wall's: a raise like any other
+                    # The cut round's usage never arrived, so what the row says it cost is a floor.
+                    result.cost_estimated = True
+                    failure = self._wall()
+                    break
                 if round_failure is not None:
                     failure = round_failure
                     break
@@ -344,6 +372,9 @@ class RoundHarness:
         ctx: TurnContext,
     ) -> str:
         """Write the row of a turn that ended by a raise or a closed stream. Returns the reason."""
+        if reason == "cancelled":
+            # A round cut short reports no usage: the cost on the row is what arrived, not all.
+            result.cost_estimated = True
         result.duration_ms = int((time.monotonic() - started) * 1000)
         result.is_error = True
         result.error_reason = reason

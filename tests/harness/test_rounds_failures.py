@@ -8,6 +8,7 @@ from __future__ import annotations
 import asyncio
 import contextlib
 import json
+import time
 from collections.abc import AsyncIterator
 from pathlib import Path
 from typing import Any
@@ -286,3 +287,76 @@ def test_a_cancelled_task_writes_a_cancelled_row_and_propagates(
     asyncio.run(run())
 
     assert [r.error_reason for r in ledger.rows] == ["cancelled"]
+
+
+# -- the turn wall is the turn's (ADR 0115) --------------------------------------------------------
+
+
+class _DrippingTransport:
+    """A CLI that writes a line every 0.3 s and never ends: a per-line wait never fires on it."""
+
+    def __init__(self) -> None:
+        self.closed = False
+
+    async def run(self, request: CliRequest) -> AsyncIterator[str]:
+        try:
+            while True:
+                yield json.dumps({"type": "system", "session_id": "s"})
+                await asyncio.sleep(0.3)
+        finally:
+            self.closed = True
+
+
+def test_a_cli_that_drips_lines_forever_is_stopped_at_the_turn_wall(
+    catalog: FakeCatalog, ledger: FakeLedger, tmp_path: Path
+) -> None:
+    transport = _DrippingTransport()
+    harness = _harness(catalog, ledger, transport, tmp_path)
+    harness.timeout_s = 1
+
+    async def run() -> list[ChannelEvent]:
+        stream = harness.run_turn(CONVERSATION, STATIC, FRAME, [], _ctx(), "go")
+        # A wrong build never ends this turn; the outer bound turns that into a failure, not a hang.
+        return await asyncio.wait_for(_collect(stream), timeout=5)
+
+    started = time.monotonic()
+    events = asyncio.run(run())
+
+    assert time.monotonic() - started < 2
+    last = events[-1]
+    assert isinstance(last, TurnError)
+    assert last.reason == "timeout"
+    assert [r.error_reason for r in ledger.rows] == ["timeout"]
+    assert transport.closed, "the transport's finally ran: the child is killed and reaped"
+
+
+class _SlowRounds(ScriptedTransport):
+    """Rounds 1 and 2 take 0.4 s each; the rest answer at once."""
+
+    async def run(self, request: CliRequest) -> AsyncIterator[str]:
+        if len(self.requests) < 2:
+            await asyncio.sleep(0.4)
+        async for line in super().run(request):
+            yield line
+
+
+def test_a_later_round_is_asked_with_what_is_left_of_the_turn_not_the_whole_wall(
+    catalog: FakeCatalog, ledger: FakeLedger, tmp_path: Path
+) -> None:
+    # Two dropped ops are told back in the turn, so each of the first two rounds earns another.
+    transport = _SlowRounds([_round(_op("a")), _round(_op("b")), _round("Done.")])
+    harness = _harness(catalog, ledger, transport, tmp_path)
+    harness.timeout_s = 1
+
+    events = _drain(harness, [])
+
+    assert len(transport.requests) == 3, events
+    first, _, third = transport.requests
+    assert first.timeout_s <= 1
+    # 0.8 s of the 1 s wall went on rounds 1 and 2: round 3 has at most what is left.
+    assert third.timeout_s <= 0.25
+    assert third.timeout_s < first.timeout_s
+
+
+async def _collect(stream: AsyncIterator[ChannelEvent]) -> list[ChannelEvent]:
+    return [event async for event in stream]

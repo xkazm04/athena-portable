@@ -389,7 +389,10 @@ class CliHarness(RoundHarness):
                     if outcome is None or not outcome.is_error:
                         outcome = decoded
         except TimeoutError:
-            return "", ("timeout", f"the CLI produced no line for {request.timeout_s}s"), None
+            # The request waits at most what is left of the turn, so a line that never came is
+            # the turn's wall (ADR 0115). The cut run reported no usage: the row's cost is a floor.
+            result.cost_estimated = True
+            return "", self._wall(), None
         except (ValueError, asyncio.LimitOverrunError):
             # StreamReader.readline raises one of these for a line over the reader limit.
             failure = ("engine_error", "the CLI wrote a line longer than the reader's line limit")
@@ -429,7 +432,8 @@ class CliHarness(RoundHarness):
             stdin=stdin,
             cwd=self.cwd,
             system_prompt_file=prompt_file,
-            timeout_s=self.timeout_s,
+            # What is left of the turn's wall, not the wall again: eight rounds share it (ADR 0115).
+            timeout_s=self._remaining_s(),
         )
 
     def _write_prompt(self, conversation_id: str, static_text: str) -> str:
