@@ -132,6 +132,10 @@ class DpapiSeal(FileSeal):
     """Windows only: the file holds ``CryptProtectData`` output bound to this user's logon."""
 
     kind = "dpapi"
+    # Declared here because ``ctypes.windll`` exists only on Windows: elsewhere mypy skips the
+    # assignments in ``__init__`` as unreachable and could not otherwise type these two.
+    _crypt32: Any
+    _kernel32: Any
 
     def __init__(self, root: Path) -> None:
         if sys.platform != "win32":

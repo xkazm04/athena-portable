@@ -36,6 +36,11 @@ getrandom = "0.3"
 # The one image format the captures table holds (c24). Pure Rust, so no C toolchain joins the
 # build, and only the encoder is used: nothing in this crate ever reads a PNG back.
 png = "0.17"
+# The shell's own store (c21). `bundled` compiles SQLite's amalgamation into the binary rather
+# than linking whatever the machine happens to have: the store is one file in the app data
+# directory and a bundle that installs on a machine with no SQLite is the whole point of
+# freezing the daemon beside it. (It sat under the Windows-only table, so only Windows built.)
+rusqlite = { version = "0.40.2", features = ["bundled"] }
 
 [dev-dependencies]
 # `#[tokio::test]`: the relay's timer and its id map are asserted without a window.
@@ -59,11 +64,6 @@ windows-sys = { version = "0.61", features = [
     # `ShowWindow(SW_SHOWNOACTIVATE)`: a card arriving shows her without taking focus.
     "Win32_UI_WindowsAndMessaging",
 ] }
-# The shell's own store (c21). `bundled` compiles SQLite's amalgamation into the binary rather
-# than linking whatever the machine happens to have: the store is one file in the app data
-# directory and a bundle that installs on a machine with no SQLite is the whole point of
-# freezing the daemon beside it.
-rusqlite = { version = "0.40.2", features = ["bundled"] }
 
 [profile.dev]
 incremental = true
