@@ -199,6 +199,119 @@
         "at": "2026-10-15T00:19:11.953910+00:00",
         "reason": "reviewer (sonnet): world.py:98 is a per-turn sum of that turn's ledger rows. It does not aggregate across all turns, and nothing at that line (or in report.py, where I found only a header comment on cost) shows that outcome-conditioned cost deltas are absent, so the deviation anchor is incidental and the claim is unco"
       }
+    },
+    "1aff3b77-8fa5-45ac-93ae-941206f3ed16/mcp-tools": {
+      "context": "connector-service",
+      "subject": "mcp-tools",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T00:50:10.887Z",
+      "techniques": [
+        {
+          "technique": "egress-argument-gating",
+          "verdict": "deviation",
+          "evidence": "src/athena/connectors/service.py:79 Only inspects parameters named in tool.egress_params, failing to perform recursive value-shaped scans or key-shaped widening checks over unmodeled fields."
+        },
+        {
+          "technique": "write-freshness-gate",
+          "verdict": "deviation",
+          "evidence": "src/athena/connectors/providers/notion.py:140 append_to_page appends blocks to an existing page without requiring or verifying a freshness mark or content hash from a preceding read_page."
+        },
+        {
+          "technique": "untrusted-result-handling",
+          "verdict": "conformant",
+          "evidence": "src/athena/connectors/service.py:94 Caps text and wraps connector read results in nonce-delimited untrusted fences."
+        },
+        {
+          "technique": "authentication-and-scoping",
+          "verdict": "conformant",
+          "evidence": "src/athena/connectors/service.py:131 Mediates requests through vault-held credentials and never passes through caller tokens."
+        },
+        {
+          "technique": "client-integration",
+          "verdict": "conformant",
+          "evidence": "src/athena/connectors/service.py:121 Enforces an explicit client-side writes toggle before permitting any gated write tool to proceed."
+        },
+        {
+          "technique": "tool-schema-design",
+          "verdict": "conformant",
+          "evidence": "src/athena/connectors/addresses.py:33 Delivers in-band explanatory validation errors on malformed recipient fields to enable model recovery."
+        }
+      ],
+      "withdrawn": {
+        "worker": "66b4e0e6-a38c-4b54-a75e-77d0488f85d3",
+        "state": "deviation",
+        "at": "2026-10-15T00:50:43.646312+00:00",
+        "reason": "reviewer (sonnet): The bypass claim does not hold in the code I opened: service.py:79 does check only the declared egress_params, but the providers read only those same fields (gmail.py reads to/cc, notion.py reads page_id/parent_page_id), so no unlisted field reaches egress."
+      }
+    },
+    "b2b5a52a-1543-4808-bba2-6ef1fc46740b/mcp-tools": {
+      "context": "ledgerbox-model-tools",
+      "subject": "mcp-tools",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T00:50:10.887Z",
+      "worker": "66b4e0e6-a38c-4b54-a75e-77d0488f85d3",
+      "techniques": [
+        {
+          "technique": "tool-schema-design",
+          "verdict": "deviation",
+          "evidence": "examples/ledgerbox/components/lanes/tools/BooksTools.tsx:217 say discards ok: false from server action results (markPaidAction, voidInvoiceAction), returning failed operations as unflagged strings that mimic success."
+        },
+        {
+          "technique": "tool-identity-vs-tool-name",
+          "verdict": "deviation",
+          "evidence": "examples/ledgerbox/test/tools.test.ts:45 The manifest and tests key tools strictly on mutable string names without minting or publishing rename-stable identifiers on definitions or results."
+        },
+        {
+          "technique": "orchestration-to-tool-migration",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/test/journey.test.ts:12 Leaves adaptive business decisions to the agent while publishing deterministic arithmetic facts."
+        },
+        {
+          "technique": "ambient-selection-is-not-an-argument",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/tools/BooksTools.tsx:421 Resolves arguments explicitly against durable invoice records rather than relying on ambient UI selection."
+        },
+        {
+          "technique": "client-integration",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/test/tools.test.ts:64 Tests that consequential actions reaching money or external contacts are gated rather than auto-approved."
+        }
+      ]
+    },
+    "b96add2f-57d0-4373-8741-748e5560658e/mcp-tools": {
+      "context": "tidycrm-spatial-model-tools",
+      "subject": "mcp-tools",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T00:50:10.887Z",
+      "worker": "66b4e0e6-a38c-4b54-a75e-77d0488f85d3",
+      "techniques": [
+        {
+          "technique": "tool-identity-vs-tool-name",
+          "verdict": "deviation",
+          "evidence": "examples/tidycrm/components/blocks/tools/BlocksTools.tsx:12 Conflates tool identity with tool name; major semantic shifts (zones to databases) freeze the tool name open_group instead of minting a rename-stable identifier."
+        },
+        {
+          "technique": "ambient-selection-is-not-an-argument",
+          "verdict": "conformant",
+          "evidence": "examples/tidycrm/components/blocks/tools/BlocksTools.tsx:83 Resolves ambient spatial camera focus into explicit entity IDs in a dedicated read call before subsequent tools use them."
+        },
+        {
+          "technique": "tool-schema-design",
+          "verdict": "conformant",
+          "evidence": "examples/tidycrm/components/blocks/tools/BlocksTools.tsx:110 Machine-constrains database parameters with an explicit schema enum for server dispatch validation."
+        },
+        {
+          "technique": "orchestration-to-tool-migration",
+          "verdict": "conformant",
+          "evidence": "examples/tidycrm/components/blocks/tools/read.ts:11 Keeps human adjudication queues separate from rule-repairable deviations in read output rather than folding them into automated heuristics."
+        }
+      ]
     }
   }
 }

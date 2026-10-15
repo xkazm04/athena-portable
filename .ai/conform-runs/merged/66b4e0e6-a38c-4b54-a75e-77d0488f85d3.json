@@ -1,0 +1,146 @@
+{
+  "schema": "conform-run/1",
+  "worker": "66b4e0e6-a38c-4b54-a75e-77d0488f85d3",
+  "subject": "mcp-tools",
+  "evaluatedAt": "2026-10-15T00:50:10.887882+00:00",
+  "provider": "agy",
+  "model": "gemini-3.8-flash-high",
+  "pairs": [
+    {
+      "context": "ledgerbox-model-tools",
+      "subject": "mcp-tools",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "examples/ledgerbox/components/lanes/tools/BooksTools.tsx:217 Stripping the in-band failure flag from action results causes errors to appear as plain success text to the model and outer consumers.",
+      "techniques": [
+        {
+          "technique": "tool-schema-design",
+          "verdict": "deviation",
+          "evidence": "examples/ledgerbox/components/lanes/tools/BooksTools.tsx:217 say discards ok: false from server action results (markPaidAction, voidInvoiceAction), returning failed operations as unflagged strings that mimic success."
+        },
+        {
+          "technique": "tool-identity-vs-tool-name",
+          "verdict": "deviation",
+          "evidence": "examples/ledgerbox/test/tools.test.ts:45 The manifest and tests key tools strictly on mutable string names without minting or publishing rename-stable identifiers on definitions or results."
+        },
+        {
+          "technique": "orchestration-to-tool-migration",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/test/journey.test.ts:12 Leaves adaptive business decisions to the agent while publishing deterministic arithmetic facts."
+        },
+        {
+          "technique": "ambient-selection-is-not-an-argument",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/tools/BooksTools.tsx:421 Resolves arguments explicitly against durable invoice records rather than relying on ambient UI selection."
+        },
+        {
+          "technique": "client-integration",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/test/tools.test.ts:64 Tests that consequential actions reaching money or external contacts are gated rather than auto-approved."
+        }
+      ]
+    },
+    {
+      "context": "tidycrm-spatial-model-tools",
+      "subject": "mcp-tools",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "examples/tidycrm/components/blocks/tools/BlocksTools.tsx:12 Rather than minting rename-stable identifiers on definitions and results, the surface forces new domain nouns to reuse old tool names to simulate stability.",
+      "techniques": [
+        {
+          "technique": "tool-identity-vs-tool-name",
+          "verdict": "deviation",
+          "evidence": "examples/tidycrm/components/blocks/tools/BlocksTools.tsx:12 Conflates tool identity with tool name; major semantic shifts (zones to databases) freeze the tool name open_group instead of minting a rename-stable identifier."
+        },
+        {
+          "technique": "ambient-selection-is-not-an-argument",
+          "verdict": "conformant",
+          "evidence": "examples/tidycrm/components/blocks/tools/BlocksTools.tsx:83 Resolves ambient spatial camera focus into explicit entity IDs in a dedicated read call before subsequent tools use them."
+        },
+        {
+          "technique": "tool-schema-design",
+          "verdict": "conformant",
+          "evidence": "examples/tidycrm/components/blocks/tools/BlocksTools.tsx:110 Machine-constrains database parameters with an explicit schema enum for server dispatch validation."
+        },
+        {
+          "technique": "orchestration-to-tool-migration",
+          "verdict": "conformant",
+          "evidence": "examples/tidycrm/components/blocks/tools/read.ts:11 Keeps human adjudication queues separate from rule-repairable deviations in read output rather than folding them into automated heuristics."
+        }
+      ]
+    }
+  ],
+  "declined": [
+    {
+      "subject": "mcp-tools",
+      "context": "harness-engines",
+      "reason": "the seat returned unknown"
+    },
+    {
+      "subject": "mcp-tools",
+      "context": "desktop-companion-pane",
+      "reason": "The companion pane is a desktop UI presentation layer (state machine, drawing canvas, view-model) that formats tool rows for display; it does not implement MCP tool protocol dispatch, server composition, transports, or tool schemas."
+    },
+    {
+      "subject": "mcp-tools",
+      "context": "connector-service",
+      "reason": "withdrawn after review: reviewer (sonnet): The bypass claim does not hold in the code I opened: service.py:79 does check only the declared egress_params, but the providers read only those same fields (gmail.py reads to/cc, notion.py reads page_id/parent_page_id), so no unlisted field reaches egress."
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-15T00:50:10.887882+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "mcp-tools"
+      ],
+      "techniques": [
+        "authentication-and-scoping",
+        "client-integration",
+        "egress-argument-gating",
+        "tool-schema-design",
+        "untrusted-result-handling",
+        "write-freshness-gate"
+      ],
+      "deviations": 1,
+      "context": "connector-service",
+      "via": "curator-multi:agy",
+      "model": "gemini-3.8-flash-high"
+    },
+    {
+      "ts": "2026-10-15T00:50:10.887882+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "mcp-tools"
+      ],
+      "techniques": [
+        "ambient-selection-is-not-an-argument",
+        "client-integration",
+        "orchestration-to-tool-migration",
+        "tool-identity-vs-tool-name",
+        "tool-schema-design"
+      ],
+      "deviations": 1,
+      "context": "ledgerbox-model-tools",
+      "via": "curator-multi:agy",
+      "model": "gemini-3.8-flash-high"
+    },
+    {
+      "ts": "2026-10-15T00:50:10.887882+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "mcp-tools"
+      ],
+      "techniques": [
+        "ambient-selection-is-not-an-argument",
+        "orchestration-to-tool-migration",
+        "tool-identity-vs-tool-name",
+        "tool-schema-design"
+      ],
+      "deviations": 1,
+      "context": "tidycrm-spatial-model-tools",
+      "via": "curator-multi:agy",
+      "model": "gemini-3.8-flash-high"
+    }
+  ]
+}

@@ -7042,7 +7042,11 @@
           "revision": 31,
           "changedAt": "2026-10-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/ledgerbox/components/lanes/tools/BooksTools.tsx:217 Stripping the in-band failure flag from action results causes errors to appear as plain success text to the model and outer consumers.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:ed8e615f51454325",
+          "evaluatedRevision": 34
         },
         {
           "subject": "prompt-assembly",
@@ -8407,7 +8411,11 @@
           "revision": 31,
           "changedAt": "2026-10-06",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/tidycrm/components/blocks/tools/BlocksTools.tsx:12 Rather than minting rename-stable identifiers on definitions and results, the surface forces new domain nouns to reuse old tool names to simulate stability.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:ed8e615f51454325",
+          "evaluatedRevision": 34
         },
         {
           "subject": "hitl-approval",
