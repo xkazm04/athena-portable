@@ -5,9 +5,9 @@ from __future__ import annotations
 
 import pytest
 
-from athena.channels.voice.commands import Card, normalise, recognise
+from athena.channels.voice.commands import Card, normalise, outcome_of, recognise
 from athena.channels.voice.tts import TTS_CAP, spoken_line
-from athena.contracts.channel import TurnFinished
+from athena.contracts.channel import TRANSCRIPT_OUTCOMES, TurnFinished
 
 YES_NO = Card("apr_1", (("approve", "approve"), ("decline", "decline")))
 CHOOSE = Card("apr_2", (("send_now", "Send it now"), ("hold", "Hold until Monday")))
@@ -60,6 +60,28 @@ def test_a_stop_word_is_a_barge_in_only_while_something_is_playing() -> None:
 def test_silence_is_nothing() -> None:
     assert recognise("   ", [YES_NO], speaking=True).kind == "silence"
     assert recognise("...", [], speaking=False).kind == "silence"
+
+
+@pytest.mark.parametrize(
+    ("heard", "said", "speaking", "outcome"),
+    [
+        ("too_short", "", False, "too_short"),
+        ("silent", "", False, "silent"),
+        ("no_words", "", False, "no_words"),
+        ("", "   ", False, "no_words"),  # a transcriber that says nothing of how it heard
+        ("words", "...", False, "no_words"),
+        ("words", "stop", True, "stop"),
+        ("words", "approve", False, "answer"),
+        ("words", "what is overdue", False, "message"),
+        ("", "what is overdue", False, "message"),  # typed
+    ],
+)
+def test_one_map_names_how_every_utterance_ended(
+    heard: str, said: str, speaking: bool, outcome: str
+) -> None:
+    spoken = recognise(said, [YES_NO], speaking=speaking)
+    assert outcome_of(heard, spoken) == outcome
+    assert outcome in TRANSCRIPT_OUTCOMES
 
 
 # -- the spoken line ---------------------------------------------------------------------------

@@ -127,14 +127,39 @@ class TurnSummary(ChannelEvent):
 # ------------------------------------------------------------------------------------------
 
 
+TranscriptOutcome = Literal["message", "answer", "stop", "too_short", "silent", "no_words"]
+
+#: How one utterance ended, each named by the stage that knew it (ADR 0110). ``message`` runs a
+#: turn and ``answer`` answers a card, so the surface waits for what follows; the other four end
+#: the utterance on the transcript itself. ``stop`` is a stop word over a reply; ``too_short`` a
+#: key tapped and let go; ``silent`` a capture the level gate stopped before any engine heard it;
+#: ``no_words`` sound an engine heard and made no words of. The desktop's ``events.ts`` declares
+#: the same tuple, and a test reads it.
+TRANSCRIPT_OUTCOMES: tuple[TranscriptOutcome, ...] = (
+    "message",
+    "answer",
+    "stop",
+    "too_short",
+    "silent",
+    "no_words",
+)
+
+
 @dataclass(frozen=True)
 class VoiceTranscript(ChannelEvent):
     """What the microphone said, as the backend heard it. ``final`` marks the end of an
-    utterance; a partial is a hint the surface may show and the gateway may treat as speech."""
+    utterance; a partial is a hint the surface may show and the gateway may treat as speech.
+
+    A final transcript says how the utterance ended: ``outcome`` is a member of
+    :data:`TRANSCRIPT_OUTCOMES`, and ``peak_dbfs`` is the loudest sample the microphone sent, when
+    the transcriber measured it. A partial, and a producer from before ADR 0110, leave them ``""``
+    and ``None``; a reader takes that to mean "not said", never "silent"."""
 
     kind: ClassVar[str] = "voice.transcript"
     text: str = ""
     final: bool = False
+    outcome: str = ""
+    peak_dbfs: float | None = None
 
 
 @dataclass(frozen=True)

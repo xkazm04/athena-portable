@@ -107,11 +107,26 @@ export interface DecisionResolved {
   at: string;
 }
 
-/** What the microphone said, as the daemon's backend heard it. `final` ends an utterance. */
+/**
+ * How one utterance ended, each named by the stage that knew it (ADR 0110). `message` and `answer`
+ * go on to a turn or a card; the other four end the utterance on the transcript itself. The same
+ * tuple as `TRANSCRIPT_OUTCOMES` in `contracts/channel.py`, in the same order; a test reads both.
+ */
+export const TRANSCRIPT_OUTCOMES = ["message", "answer", "stop", "too_short", "silent", "no_words"] as const;
+
+export type TranscriptOutcome = (typeof TRANSCRIPT_OUTCOMES)[number];
+
+/**
+ * What the microphone said, as the daemon's backend heard it. `final` ends an utterance, and a
+ * final one says how it ended (`outcome`) and how loud the microphone was (`peak_dbfs`). A partial,
+ * or a daemon from before ADR 0110, leaves them empty: "not said", never "silent".
+ */
 export interface VoiceTranscript {
   kind: "voice.transcript";
   text: string;
   final: boolean;
+  outcome?: TranscriptOutcome | "";
+  peak_dbfs?: number | null;
 }
 
 /** Playback of one spoken line begins; the audio frames that follow carry `generation`. */

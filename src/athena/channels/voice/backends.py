@@ -33,12 +33,15 @@ from __future__ import annotations
 import http.client
 import io
 import json
+import math
 import os
+import sys
 import time
 import urllib.error
 import urllib.request
 import uuid
 import wave
+from array import array
 from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
@@ -50,6 +53,7 @@ __all__ = [
     "MAX_TRANSCRIPTION_REPLY_BYTES",
     "MAX_UTTERANCE_BYTES",
     "OPENAI_KEY_ENV",
+    "SILENCE_FLOOR_DBFS",
     "BufferedTranscriber",
     "ComposedBackend",
     "Listener",
@@ -264,26 +268,68 @@ MAX_TRANSCRIPTION_REPLY_BYTES = 1_048_576
 MAX_SPEECH_REPLY_SECONDS = 180
 
 
+#: Below this peak an utterance is silence — a muted or misrouted microphone, not a quiet voice —
+#: and no engine is asked to hear it (ADR 0110). Conservative on purpose: speech a person meant
+#: peaks well above -40 dBFS, and room tone through an open microphone sits above this too.
+SILENCE_FLOOR_DBFS = -55.0
+
+#: PCM16 full scale: a peak of this many steps is 0 dBFS.
+_PCM16_FULL_SCALE = 32_768
+
+
+def _peak(pcm: bytes) -> int:
+    """The largest sample magnitude in a chunk of PCM16 little-endian. A trailing odd byte is
+    ignored (the client sends whole samples)."""
+    samples = array("h")
+    samples.frombytes(pcm[: len(pcm) - len(pcm) % 2])
+    if not samples:
+        return 0
+    if sys.byteorder == "big":
+        samples.byteswap()
+    return max(max(samples), -min(samples))
+
+
+def _dbfs(peak: int) -> float:
+    """A PCM16 peak in dB below full scale, to a tenth. Zero reads as one step (about -90.3)."""
+    return round(20 * math.log10(max(peak, 1) / _PCM16_FULL_SCALE), 1)
+
+
 class BufferedTranscriber:
     """Collects the utterance and transcribes it whole on ``finish`` — no partials.
 
     Any one-request speech-to-text fits behind it: the provider here, and a local engine that
     takes a file (:mod:`athena.channels.voice.whisper`).
+
+    **It says how the utterance ended** (ADR 0110). ``finish`` sets :attr:`outcome` to
+    ``too_short`` (a tapped key), ``silent`` (the peak never reached :data:`SILENCE_FLOOR_DBFS`),
+    ``no_words`` (the engine heard it and made no words) or ``words``. The first two return before
+    ``transcribe`` is called: no process starts, no request is sent, no row is owed.
     """
 
     def __init__(self, transcribe: Callable[[bytes], str]) -> None:
         self._transcribe = transcribe
         self._chunks: list[bytes] = []
         self._held = 0
+        self._peak = 0
+        self._measured = False
         #: Whether ``finish`` handed the utterance to ``transcribe`` — set before the call, so a
         #: request that failed still counts as sent (ADR 0083).
         self.requested = False
+        #: How ``finish`` found the utterance; ``""`` until it has, or when ``transcribe`` raised.
+        self.outcome = ""
+
+    @property
+    def peak_dbfs(self) -> float | None:
+        """The loudest sample held so far, in dBFS; ``None`` before anything was held."""
+        return _dbfs(self._peak) if self._measured else None
 
     def feed(self, pcm: bytes) -> Sequence[str]:
         # Past the ceiling the frame is dropped, so the buffer never holds more than it (ADR 0072).
         if self._held + len(pcm) <= MAX_UTTERANCE_BYTES:
             self._chunks.append(pcm)
             self._held += len(pcm)
+            self._peak = max(self._peak, _peak(pcm))
+            self._measured = True
         return []
 
     def finish(self) -> str:
@@ -292,9 +338,15 @@ class BufferedTranscriber:
         self._held = 0
         # Under a tenth of a second is a key tapped by mistake, not a sentence.
         if len(audio) < INPUT_SAMPLE_RATE * 2 // 10:
+            self.outcome = "too_short"
+            return ""
+        if _dbfs(self._peak) < SILENCE_FLOOR_DBFS:
+            self.outcome = "silent"
             return ""
         self.requested = True
-        return self._transcribe(audio)
+        text = self._transcribe(audio)
+        self.outcome = "words" if text.strip() else "no_words"
+        return text
 
 
 @dataclass

@@ -114,6 +114,8 @@ def test_one_utterance_is_one_turn_one_ledger_row_and_one_spoken_line(
         "kind": "voice.transcript",
         "text": "what is overdue",
         "final": True,
+        "outcome": "message",
+        "peak_dbfs": None,
     }
     assert client.of("turn.finished")[0]["tts"] == "Two are late."
     speaking = client.of("voice.speaking")[0]
@@ -150,7 +152,30 @@ def test_a_typed_utterance_takes_the_same_path(voiced: Live, client: VoiceClient
     assert client.until("voice.speaking")["text"] == "Nothing is overdue."
 
 
-def test_silence_starts_no_turn(
+def test_a_message_utterance_keeps_its_event_kinds_one_row_and_one_request(
+    voiced: Live, backend: ScriptedBackend, client: VoiceClient
+) -> None:
+    """The guard (ADR 0110): the outcome rides the transcript; no event is added or moved."""
+    voiced.register()
+    voiced.script(claude_round("TTS: Two are late.\nTwo invoices are over thirty days."))
+    backend.utterances = ["what is overdue"]
+
+    client.utter()
+    client.until("voice.stopped")
+
+    assert client.kinds() == [
+        "voice.transcript",
+        "text.delta",
+        "turn.summary",
+        "turn.finished",
+        "voice.speaking",
+        "voice.stopped",
+    ]
+    assert len(voiced.daemon.ledger.recent(10).rows) == 1
+    assert len(voiced.transport.requests) == 1
+
+
+def test_an_utterance_with_no_words_is_one_final_transcript_that_says_no_words(
     voiced: Live, backend: ScriptedBackend, client: VoiceClient
 ) -> None:
     voiced.register()
@@ -161,7 +186,10 @@ def test_silence_starts_no_turn(
     _settle()
 
     assert client.kinds() == ["voice.transcript"]
+    (transcript,) = client.of("voice.transcript")
+    assert (transcript["final"], transcript["outcome"]) == (True, "no_words")
     assert voiced.transport.requests == []
+    assert voiced.daemon.ledger.recent(10).rows == ()
 
 
 def test_an_origin_with_no_session_is_refused_in_the_gates_word(client: VoiceClient) -> None:
@@ -196,6 +224,27 @@ def test_a_barge_in_cancels_playback_and_does_not_start_a_second_turn(
     assert len(voiced.transport.requests) == 1, "the stop word was not sent to the model"
     assert len(voiced.daemon.ledger.recent(10).rows) == 1
     assert client.of("voice.speaking") == client.of("voice.speaking")[:1]
+
+
+def test_a_stop_word_over_a_reply_ends_in_a_final_transcript_that_says_stop(
+    voiced: Live, backend: ScriptedBackend, client: VoiceClient
+) -> None:
+    voiced.register()
+    voiced.script(claude_round("TTS: Here is a very long answer about every invoice.\nLong."))
+    backend.utterances = ["what is overdue", "stop"]
+    backend.chunk_delay_s = 0.05
+    backend.chunks_per_text = 40
+
+    client.utter()
+    client.until("voice.speaking", generation=1)
+    client.utter()
+    client.until("voice.stopped", generation=1)
+    stopped = client.until("voice.transcript", final=True, text="stop")
+    _settle()
+
+    assert stopped["outcome"] == "stop"
+    assert len(voiced.daemon.ledger.recent(10).rows) == 1
+    assert len(client.of("voice.speaking")) == 1
 
 
 def test_new_speech_during_playback_is_a_barge_in_and_the_next_utterance_is_a_turn(
@@ -728,7 +777,7 @@ def test_a_buffered_transcriber_never_holds_more_than_the_ceiling() -> None:
     heard: list[int] = []
     transcriber = BufferedTranscriber(lambda audio: str(heard.append(len(audio))))
     for _ in range(MAX_UTTERANCE_BYTES // 65_536 + 10):
-        transcriber.feed(bytes(65_536))
+        transcriber.feed(VOICED_CHUNK[:4] * 16_384)  # 64 KiB that passes the level gate
     transcriber.finish()
     assert heard == [MAX_UTTERANCE_BYTES]
 
@@ -1378,6 +1427,17 @@ def test_a_turn_that_raises_is_logged_and_the_next_utterance_still_runs(
 
 #: Enough 640-byte frames to pass the buffered transcriber's tenth of a second.
 SENT_CHUNKS = 6
+#: 20 ms of sound peaking at -20 dBFS: loud enough to pass the level gate (ADR 0110). The
+#: client's own ``chunks`` are zeros, which the buffered transcriber now hears as silence.
+VOICED_CHUNK = struct.pack("<320h", *([3277, -3277] * 160))
+
+
+def _speak(client: VoiceClient, chunks: int = SENT_CHUNKS, chunk: bytes = VOICED_CHUNK) -> None:
+    """Key down, ``chunks`` frames of ``chunk``, key up."""
+    client.start()
+    for _ in range(chunks):
+        client.ws.send_binary(chunk)
+    client.stop()
 
 
 def _metered(
@@ -1427,7 +1487,7 @@ def test_a_metered_utterance_and_its_spoken_line_are_three_ledger_rows(
     voiced.script(claude_round("TTS: Two are late.\nTwo invoices are over thirty days."))
     provider = _metered(voiced, ["what is overdue"])
 
-    client.utter(chunks=SENT_CHUNKS)
+    _speak(client)
     assert client.until("voice.stopped")["reason"] == "done"
 
     # A speech row sends no event of its own: the socket hears what it always heard.
@@ -1469,7 +1529,7 @@ def test_a_transcription_the_provider_refuses_is_one_error_row_and_the_client_he
         raise gateway_module.VoiceBackendError("transcription refused with 500")
 
     provider.transcribe = refusing  # type: ignore[method-assign]
-    client.utter(chunks=SENT_CHUNKS)
+    _speak(client)
     refused = client.until("turn.error")
     assert (refused["reason"], refused["detail"]) == (
         "engine_error",
@@ -1554,6 +1614,24 @@ def test_an_utterance_too_short_to_send_writes_no_row(voiced: Live, client: Voic
     assert voiced.daemon.ledger.recent(10).rows == ()
 
 
+def test_a_metered_listener_fed_only_silence_sends_nothing_and_says_silent(
+    voiced: Live, client: VoiceClient
+) -> None:
+    voiced.register()
+    heard = ["never sent"]
+    _metered(voiced, heard)
+
+    _speak(client, chunk=bytes(640))
+    transcript = client.until("voice.transcript", final=True)
+    _settle()
+
+    assert (transcript["text"], transcript["outcome"]) == ("", "silent")
+    assert isinstance(transcript["peak_dbfs"], float) and transcript["peak_dbfs"] < -55
+    assert heard == ["never sent"], "the provider was sent no request"
+    assert voiced.daemon.ledger.recent(10).rows == ()
+    assert client.kinds() == ["voice.transcript"]
+
+
 def test_a_scripted_speaker_with_a_metered_listener_writes_only_the_transcription_row(
     voiced: Live, backend: ScriptedBackend, client: VoiceClient
 ) -> None:
@@ -1562,7 +1640,7 @@ def test_a_scripted_speaker_with_a_metered_listener_writes_only_the_transcriptio
     listener = _metered(voiced, ["what is overdue"], install=False)
     _slot(voiced).swap(ComposedBackend(speaker=backend, listener=listener))
 
-    client.utter(chunks=SENT_CHUNKS)
+    _speak(client)
     assert client.until("voice.stopped")["reason"] == "done"
 
     assert backend.spoken == ["Two are late."]
@@ -1595,9 +1673,9 @@ def test_a_ledger_that_refuses_every_speech_row_ends_no_line_and_no_session(
 
     monkeypatch.setattr(ledger, "record", refusing)
     with caplog.at_level("WARNING", logger="athena.channels.voice.gateway"):
-        client.utter(chunks=SENT_CHUNKS)
+        _speak(client)
         assert client.until("voice.stopped", generation=1)["reason"] == "done"
-        client.utter(chunks=SENT_CHUNKS)
+        _speak(client)
         assert client.until("turn.finished", text="Second.")
         assert client.until("voice.stopped", generation=2)["reason"] == "done"
 
@@ -1636,7 +1714,7 @@ def test_a_speech_row_that_fails_once_is_written_on_the_retry(
         return real(**row)
 
     monkeypatch.setattr(ledger, "record", once)
-    client.utter(chunks=SENT_CHUNKS)
+    _speak(client)
     client.until("turn.error")
 
     assert failed == [True]

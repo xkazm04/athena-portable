@@ -32,7 +32,7 @@ import { DaemonApi, type ExecuteRow } from "@/lib/api";
 import type { BridgeTool } from "@/lib/bridge";
 import { VoiceSetupApi, availabilityOf, refusalText } from "@/lib/voice-setup";
 import { TABS_READ, callOnPage, takeCapture, type Taken } from "@/lib/hands";
-import type { ChannelEvent, DecisionRequested, ToolCall } from "@/lib/events";
+import type { ChannelEvent, DecisionRequested, ToolCall, VoiceTranscript } from "@/lib/events";
 import { catalogIdOf, manifestBodyOf } from "@/lib/manifest";
 import {
   Player,
@@ -252,6 +252,10 @@ export const useVoice = create<VoiceState>((set, get) => {
         if (event.final) {
           set({ partial: "", heard: event.text.trim() || get().heard });
           if (event.text.trim()) runPush({ id: `v${Date.now()}`, kind: "user", text: event.text });
+          // An utterance that ends here starts no turn, so no turn.finished will bring the key
+          // back: the transcript's own outcome does, with its own sentence (ADR 0110).
+          const ended = endedBecause(event);
+          if (ended !== null && get().phase === "thinking") set({ phase: "idle", reason: ended });
         } else {
           set({ partial: event.text });
         }
@@ -594,6 +598,28 @@ export async function startVoice(): Promise<void> {
     document.addEventListener("visibilitychange", () => {
       if (document.visibilityState === "hidden") useVoice.getState().release();
     });
+  }
+}
+
+/**
+ * What to say when a final transcript ends the utterance, or `null` when it goes on to a turn or a
+ * card (`message`, `answer`) or does not say how it ended (a daemon from before ADR 0110). A stop
+ * word ends it quietly: the person said what they meant.
+ */
+function endedBecause(event: VoiceTranscript): string | null {
+  switch (event.outcome) {
+    case "too_short":
+      return "hold the key while you speak";
+    case "silent": {
+      const level = typeof event.peak_dbfs === "number" ? ` (${Math.round(event.peak_dbfs)} dB)` : "";
+      return `your microphone sounded silent${level}, check the input in Voice settings`;
+    }
+    case "no_words":
+      return "I heard sound but no words, try again";
+    case "stop":
+      return "";
+    default:
+      return null;
   }
 }
 

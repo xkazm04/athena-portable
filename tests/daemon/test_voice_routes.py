@@ -149,7 +149,8 @@ def test_a_ready_socket_hears_and_speaks_through_the_fakes(live: Live, installed
     client = VoiceClient(ws)
     try:
         client.start(PAGE_ORIGIN)
-        client.chunks(count=4, size=3200)
+        for _ in range(4):  # sound, not zeros: zeros stop at the level gate before whisper
+            client.ws.send_binary(struct.pack("<1600h", *([1000] * 1600)))
         client.stop()
         heard = client.until("voice.transcript", final=True, timeout=30)
         assert heard["text"] == "Heard 6400 frames."
@@ -212,7 +213,7 @@ def test_a_preview_with_no_engine_is_a_503_naming_what_is_missing(live: Live) ->
 
 
 def test_transcribe_takes_raw_pcm_and_answers_text_and_latency(live: Live, installed: Path) -> None:
-    pcm = struct.pack("<4800h", *([0] * 4800))
+    pcm = struct.pack("<4800h", *([1000] * 4800))  # -30 dBFS: over the level gate
     reply = _raw(live, "/voice/transcribe?engine=whisper", pcm)
 
     assert reply.status == 200

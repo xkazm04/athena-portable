@@ -23,6 +23,8 @@ from collections.abc import Iterable, Sequence
 from dataclasses import dataclass
 from typing import Literal
 
+from athena.contracts.channel import TranscriptOutcome
+
 __all__ = [
     "APPROVE_WORDS",
     "DECLINE_WORDS",
@@ -30,6 +32,7 @@ __all__ = [
     "Card",
     "Spoken",
     "normalise",
+    "outcome_of",
     "recognise",
 ]
 
@@ -112,6 +115,30 @@ def recognise(
         card, choice = fits[0]
         return Spoken("answer", text=text, approval_id=card.id, choice=choice)
     return Spoken("message", text=text)
+
+
+#: A recognised kind as the wire names its ending: nothing left once normalised is ``no_words``.
+_ENDED_AS: dict[str, TranscriptOutcome] = {
+    "message": "message",
+    "answer": "answer",
+    "stop": "stop",
+    "silence": "no_words",
+}
+
+
+def outcome_of(heard: str, spoken: Spoken) -> TranscriptOutcome:
+    """How an utterance ended, for the final transcript (ADR 0110): one map, two stages.
+
+    ``heard`` is the transcriber's own word for what it found (``too_short``, ``silent``,
+    ``no_words``, ``words``, or ``""`` from one that does not say). It wins where it knows more:
+    ``too_short`` and ``silent`` never reached an engine, so they are not "no words". Otherwise the
+    recogniser's kind decides, and its ``silence`` — nothing left once normalised — is ``no_words``.
+    """
+    if heard == "too_short":
+        return "too_short"
+    if heard == "silent":
+        return "silent"
+    return _ENDED_AS[spoken.kind]
 
 
 def _choice_for(spoken: str, options: Iterable[tuple[str, str]]) -> str | None:

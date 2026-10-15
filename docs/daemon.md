@@ -327,7 +327,7 @@ audio as binary frames of a 4-byte big-endian generation number followed by PCM1
 `voice.speaking` named:
 
 ```
-{"kind": "voice.transcript", "text": "what is overdue", "final": true}
+{"kind": "voice.transcript", "text": "what is overdue", "final": true, "outcome": "message", "peak_dbfs": -18.2}
 {"kind": "text.delta", …}  {"kind": "tool.call", …}  {"kind": "decision.requested", …}  {"kind": "turn.finished", "tts": "Two are late.", …}
 {"kind": "voice.speaking", "generation": 1, "text": "Two are late.", "truncated": false, "sample_rate": 24000}
 <binary>  0x00000001 + PCM16 …
@@ -340,6 +340,14 @@ own label, while a card is waiting, answers the card on top through the same pat
 `POST /decisions/<id>` — the model never sees the word — and any `execute` comes back as a
 `tool.call` for the page. Everything else is a message, and its turn is the ordinary one: the
 ledger row says `surface = voice`, `trigger = voice`, and nothing else differs.
+
+The final `voice.transcript` goes out once the utterance is known, and its `outcome` says how the
+utterance ended (ADR 0110): `message` (a turn follows), `answer` (a card is answered), `stop`,
+`too_short` (a key tapped and let go), `silent` (the peak never reached -55 dBFS) or `no_words`
+(an engine heard sound and made no words). For the last four, nothing else follows, so the client
+goes idle on the transcript itself. `peak_dbfs` is the loudest sample the microphone sent, or
+`null` when the backend did not measure it. A silent capture never reaches whisper or the
+provider, so it sends no request and writes no row. A partial leaves both fields empty.
 
 A `tool.call` with a host origin and no `tool.result` behind it in the same turn is the page's to
 run; the client answers with `tool_result` and the turn continues on the answers, bounded at

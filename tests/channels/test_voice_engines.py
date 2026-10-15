@@ -305,8 +305,9 @@ def test_whisper_transcribes_a_buffered_utterance_from_a_16k_wav(
     lay_out_whisper_model(homes.root, "base.en")
     stt = whisper.WhisperSTT(homes, "base.en", command=command("whisper", log))
     heard = stt.transcriber()
-    assert list(heard.feed(bytes(3200 * 2))) == []
-    heard.feed(bytes(3200 * 2))
+    sound = (5000).to_bytes(2, "little") * 3200  # -16 dBFS: over the level gate
+    assert list(heard.feed(sound)) == []
+    heard.feed(sound)
 
     assert heard.finish() == "Heard 6400 frames."
     argv = runs(log)[0]["argv"]

@@ -4,6 +4,8 @@ from __future__ import annotations
 
 import dataclasses
 import json
+import re
+from pathlib import Path
 
 import pytest
 
@@ -26,6 +28,7 @@ from athena.contracts import (
     event_from_json,
     family_of,
 )
+from athena.contracts.channel import TRANSCRIPT_OUTCOMES, TranscriptOutcome
 
 EVENTS: list[ChannelEvent] = [
     TextDelta(text="a chase for the late invoice"),
@@ -73,7 +76,7 @@ EVENTS: list[ChannelEvent] = [
         tab_nav=5,
     ),
     DecisionResolved(id="apr_0123456789ab", choice="decline", by="user", at="2026-09-12T09:00:00Z"),
-    VoiceTranscript(text="approve", final=True),
+    VoiceTranscript(text="approve", final=True, outcome="answer", peak_dbfs=-18.5),
     VoiceSpeaking(generation=3, text="Drafted three chases.", truncated=False, sample_rate=24000),
     VoiceStopped(generation=3, reason="barge_in"),
 ]
@@ -141,3 +144,44 @@ def test_the_tab_binding_is_on_the_cards_wire_form() -> None:
     card = DecisionRequested(id="apr_0123456789ab", action="host.a.b", tab_id=3, tab_nav=9)
     wire = json.loads(card.to_json())
     assert (wire["tab_id"], wire["tab_nav"]) == (3, 9)
+
+
+# -- how an utterance ended (ADR 0110) ------------------------------------------------------------
+
+EVENTS_TS = Path(__file__).resolve().parents[2] / "apps" / "desktop" / "src" / "lib" / "events.ts"
+_COMMENTS = re.compile(r"/\*.*?\*/|//[^\n]*", re.DOTALL)
+
+
+def _events_ts() -> str:
+    return _COMMENTS.sub("", EVENTS_TS.read_text(encoding="utf-8"))
+
+
+def test_a_final_transcript_carries_its_outcome_and_peak_on_the_wire() -> None:
+    heard = VoiceTranscript(text="", final=True, outcome="silent", peak_dbfs=-90.3)
+    wire = json.loads(heard.to_json())
+    assert (wire["outcome"], wire["peak_dbfs"]) == ("silent", -90.3)
+    assert event_from_json(heard.to_json()) == heard
+
+
+def test_a_transcript_from_before_the_outcome_reads_as_unsaid() -> None:
+    back = event_from_json(json.dumps({"kind": "voice.transcript", "text": "hi", "final": True}))
+    assert isinstance(back, VoiceTranscript)
+    assert (back.outcome, back.peak_dbfs) == ("", None)
+
+
+def test_the_outcome_vocabulary_is_closed_and_names_each_ending_once() -> None:
+    assert TRANSCRIPT_OUTCOMES == ("message", "answer", "stop", "too_short", "silent", "no_words")
+    assert set(TRANSCRIPT_OUTCOMES) == set(TranscriptOutcome.__args__)  # type: ignore[attr-defined]
+
+
+def test_the_desktop_declares_the_same_outcomes_in_the_same_order() -> None:
+    match = re.search(r"export const TRANSCRIPT_OUTCOMES\s*=\s*\[(.*?)\]", _events_ts(), re.DOTALL)
+    assert match is not None, "events.ts declares no TRANSCRIPT_OUTCOMES"
+    assert tuple(re.findall(r'"([^"]+)"', match.group(1))) == TRANSCRIPT_OUTCOMES
+
+
+def test_the_desktops_voice_transcript_names_every_field_the_contract_does() -> None:
+    match = re.search(r"export interface VoiceTranscript\s*\{(.*?)\}", _events_ts(), re.DOTALL)
+    assert match is not None
+    declared = set(re.findall(r"^\s*(\w+)\??:", match.group(1), re.MULTILINE))
+    assert declared == {"kind"} | {f.name for f in dataclasses.fields(VoiceTranscript)}

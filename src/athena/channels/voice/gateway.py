@@ -47,6 +47,7 @@ from __future__ import annotations
 
 import json
 import logging
+import math
 import queue
 import struct
 import threading
@@ -65,7 +66,7 @@ from athena.channels.voice.backends import (
     hearing_meter,
     speaking_meter,
 )
-from athena.channels.voice.commands import Card, Spoken, recognise
+from athena.channels.voice.commands import Card, Spoken, outcome_of, recognise
 from athena.channels.voice.tts import SpokenLine, spoken_line
 from athena.channels.voice.ws import FrameTooLarge, WebSocket, WebSocketError
 from athena.contracts.channel import (
@@ -285,6 +286,11 @@ class _Job:
     transcriber: Any = None
     #: What that transcriber's request bills under, or ``None`` when it costs no request.
     meter: Meter | None = None
+    #: What the finished transcriber said of the utterance — ``too_short``, ``silent``,
+    #: ``no_words``, ``words`` or ``""`` — and the peak it measured, for the final transcript
+    #: (ADR 0110). A typed job and a transcriber that does not say leave them empty.
+    heard: str = ""
+    peak_dbfs: float | None = None
 
 
 @dataclass(frozen=True)
@@ -339,6 +345,13 @@ def record_speech(
 def _is_count(value: object) -> bool:
     """A JSON integer that is not a bool and not negative."""
     return isinstance(value, int) and not isinstance(value, bool) and value >= 0
+
+
+def _level(value: object) -> float | None:
+    """A finite dBFS reading as a float, or ``None`` for anything else (a bool, NaN, infinity)."""
+    if isinstance(value, bool) or not isinstance(value, int | float):
+        return None
+    return float(value) if math.isfinite(value) else None
 
 
 def _frame_label(message: Any) -> str:
@@ -794,7 +807,15 @@ class VoiceSession:
         self._record_hearing(job, started, None)
         if self._closed:
             return None
-        return replace(job, text=text, transcriber=None)
+        heard = getattr(job.transcriber, "outcome", "")
+        peak = getattr(job.transcriber, "peak_dbfs", None)
+        return replace(
+            job,
+            text=text,
+            transcriber=None,
+            heard=heard if isinstance(heard, str) else "",
+            peak_dbfs=_level(peak),
+        )
 
     # -- the ledger ------------------------------------------------------------------------------
 
@@ -835,10 +856,19 @@ class VoiceSession:
         )
 
     def _handle(self, job: _Job) -> None:
-        self.send(VoiceTranscript(text=job.text, final=True))
         presented, inbox = self._known_cards()
         spoken = recognise(
             job.text, presented, speaking=job.interrupted or self.speaking, inbox=inbox
+        )
+        # The final transcript goes out once the utterance is known, and says how it ended: a
+        # surface waiting on a turn that will never come is told so here (ADR 0110).
+        self.send(
+            VoiceTranscript(
+                text=job.text,
+                final=True,
+                outcome=outcome_of(job.heard, spoken),
+                peak_dbfs=job.peak_dbfs,
+            )
         )
         if spoken.kind == "silence":
             return

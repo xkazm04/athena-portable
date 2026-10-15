@@ -6,6 +6,8 @@
 from __future__ import annotations
 
 import http.client
+import math
+import struct
 from typing import Any
 
 import pytest
@@ -155,7 +157,58 @@ def test_a_buffered_transcriber_says_whether_it_sent_the_utterance() -> None:
     assert (tapped.requested, sent) == (False, [])
 
     spoken = BufferedTranscriber(transcribe)
-    spoken.feed(bytes(INPUT_SAMPLE_RATE))
+    spoken.feed(_tone(0.5))
     with pytest.raises(VoiceBackendError):
         spoken.finish()
     assert (spoken.requested, sent) == (True, [INPUT_SAMPLE_RATE])
+
+
+# -- how an utterance ended, said by the stage that saw it (ADR 0110) ---------------------------
+
+
+def _tone(seconds: float, dbfs: float = -20.0, hz: float = 440.0) -> bytes:
+    """PCM16 little-endian of a sine whose peak is ``dbfs``."""
+    amplitude = 32768 * 10 ** (dbfs / 20)
+    count = int(INPUT_SAMPLE_RATE * seconds)
+    samples = (
+        round(amplitude * math.sin(2 * math.pi * hz * n / INPUT_SAMPLE_RATE)) for n in range(count)
+    )
+    return struct.pack(f"<{count}h", *samples)
+
+
+def test_a_tapped_key_is_too_short_and_sends_nothing() -> None:
+    sent: list[int] = []
+    tapped = BufferedTranscriber(lambda pcm: str(sent.append(len(pcm))))
+    tapped.feed(_tone(0.05))
+    assert len(_tone(0.05)) == 1_600
+    assert tapped.finish() == ""
+    assert (tapped.outcome, tapped.requested, sent) == ("too_short", False, [])
+
+
+def test_a_second_of_zeros_is_silent_and_never_reaches_the_engine() -> None:
+    sent: list[int] = []
+    muted = BufferedTranscriber(lambda pcm: str(sent.append(len(pcm))))
+    muted.feed(bytes(32_000))
+    assert muted.finish() == ""
+    assert (muted.outcome, muted.requested, sent) == ("silent", False, [])
+
+
+def test_a_tone_the_engine_hears_no_words_in_is_no_words_and_its_peak_is_measured() -> None:
+    sent: list[int] = []
+
+    def transcribe(pcm: bytes) -> str:
+        sent.append(len(pcm))
+        return ""
+
+    heard = BufferedTranscriber(transcribe)
+    heard.feed(_tone(1.0, dbfs=-20.0))
+    assert heard.finish() == ""
+    assert (heard.outcome, heard.requested, sent) == ("no_words", True, [32_000])
+    assert heard.peak_dbfs is not None and -21.0 <= heard.peak_dbfs <= -19.0
+
+
+def test_a_tone_the_engine_hears_words_in_is_words() -> None:
+    heard = BufferedTranscriber(lambda pcm: "what is overdue")
+    heard.feed(_tone(0.5))
+    assert heard.finish() == "what is overdue"
+    assert (heard.outcome, heard.requested) == ("words", True)

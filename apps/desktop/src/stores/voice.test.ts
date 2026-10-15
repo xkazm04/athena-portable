@@ -407,6 +407,39 @@ describe("playback and barge-in", () => {
     expect(useVoice.getState().phase).toBe("idle");
   });
 
+  it("a final transcript that says the utterance ended leaves thinking and says why; a message does not", async () => {
+    const { socket } = wire();
+    await startVoice();
+    await useVoice.getState().press();
+    useVoice.getState().release();
+    expect(useVoice.getState().phase).toBe("thinking");
+    await socket.emit({ kind: "voice.transcript", text: "", final: true, outcome: "silent", peak_dbfs: -70 });
+    expect(useVoice.getState().phase).toBe("idle");
+    expect(useVoice.getState().reason).toMatch(/microphone/);
+    expect(useVoice.getState().reason).toContain("-70");
+
+    await useVoice.getState().press();
+    useVoice.getState().release();
+    await socket.emit({ kind: "voice.transcript", text: "what is overdue", final: true, outcome: "message", peak_dbfs: -18 });
+    expect(useVoice.getState().phase).toBe("thinking");
+    expect(useVoice.getState().reason).toBe("");
+  });
+
+  it("each ended outcome has its own sentence, and a stop word is quiet", async () => {
+    const { socket } = wire();
+    await startVoice();
+    const end = async (outcome: string) => {
+      await useVoice.getState().press();
+      useVoice.getState().release();
+      await socket.emit({ kind: "voice.transcript", text: outcome === "stop" ? "stop" : "", final: true, outcome, peak_dbfs: -30 });
+      return useVoice.getState();
+    };
+    expect(await end("too_short")).toMatchObject({ phase: "idle", reason: expect.stringMatching(/hold the key/) });
+    expect(await end("no_words")).toMatchObject({ phase: "idle", reason: expect.stringMatching(/no words/) });
+    expect(await end("stop")).toMatchObject({ phase: "idle", reason: "" });
+    expect(await end("answer")).toMatchObject({ phase: "thinking" });
+  });
+
   it("pressing the key over a reply drops it locally and sends start, which the daemon reads as a barge-in", async () => {
     const { socket, player } = wire();
     await startVoice();
