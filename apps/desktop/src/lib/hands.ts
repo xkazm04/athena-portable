@@ -1,7 +1,7 @@
 /**
  * The generic hands, in TypeScript — README section 3.4 tier 2, ADR 0065.
  *
- * Rust owns the nine hands (`src-tauri/src/hands.rs`); this file fetches their catalogue once,
+ * Rust owns the ten hands (`src-tauri/src/hands.rs`); this file fetches their catalogue once,
  * offers it beside whatever a page registered, and sends a call to the right executor. Everything
  * goes through `lib/ipc.ts`, so outside the shell the list is empty and nothing here changes
  * anything: a plain browser, the preview harness and the headless tests behave as before.
@@ -22,7 +22,16 @@ interface HandReply {
   tier: number;
   /** The `captures` row a `page_screenshot` filed; `null` for every other hand. */
   capture_id?: string | null;
+  /** The tab a `tabs_read` read and its web origin (ADR 0105); `null` for every other hand. */
+  source_tab?: number | null;
+  source_origin?: string | null;
 }
+
+/**
+ * The shell hand that reads another open tab (`hands.rs` `TABS_READ`, ADR 0105). Reserved: a page
+ * tool of this name is dropped by {@link withHands}, so a call of it is always the shell's read.
+ */
+export const TABS_READ = "tabs_read";
 
 /** How long a capture may take before the request goes without one (ADR 0066). */
 export const CAPTURE_MS = 8000;
@@ -151,16 +160,20 @@ export async function startHands(): Promise<void> {
 
 /**
  * A page's tools followed by the hands it did not register under the same name. A page tool that
- * shares a hand's name keeps the page's: it is the one the page's author meant (ADR 0065).
+ * shares a hand's name keeps the page's: it is the one the page's author meant (ADR 0065). The one
+ * exception is {@link TABS_READ}: a page cannot answer for another tab, so its tool of that name
+ * is dropped and the shell's hand stands (ADR 0105).
  */
 export function withHands(pageTools: readonly BridgeTool[]): BridgeTool[] {
-  const named = new Set(pageTools.map((t) => t.name));
-  return [...pageTools.map(unmarked), ...hands.filter((h) => !named.has(h.name)).map(marked)];
+  const own = pageTools.filter((t) => t.name !== TABS_READ);
+  const named = new Set(own.map((t) => t.name));
+  return [...own.map(unmarked), ...hands.filter((h) => !named.has(h.name)).map(marked)];
 }
 
-/** Is this bare name a hand the page did not register itself? */
+/** Is this bare name a hand the page did not register itself? `tabs_read` is always the hand. */
 export function isHandCall(name: string, pageTools: readonly BridgeTool[]): boolean {
-  return hands.some((h) => h.name === name) && !pageTools.some((t) => t.name === name);
+  if (!hands.some((h) => h.name === name)) return false;
+  return name === TABS_READ || !pageTools.some((t) => t.name === name);
 }
 
 /**
@@ -172,10 +185,19 @@ export async function callOnPage(
   name: string,
   input: Record<string, unknown>,
   pageTools: readonly BridgeTool[],
-): Promise<{ ok: boolean; output: string; error?: string | null; reason?: string | null; tier?: number }> {
+): Promise<{
+  ok: boolean;
+  output: string;
+  error?: string | null;
+  reason?: string | null;
+  tier?: number;
+  sourceTab?: number | null;
+}> {
   if (isHandCall(name, pageTools)) {
     const reply = await call<HandReply>("hands_call", { tab_id: tabId, name, input: input as Args });
-    return { ok: reply.ok, output: reply.output, error: reply.error, reason: reply.reason, tier: 2 };
+    const answer = { ok: reply.ok, output: reply.output, error: reply.error, reason: reply.reason, tier: 2 };
+    // Which tab a read of another tab read, as the shell says it; the panel tags the result.
+    return typeof reply.source_tab === "number" ? { ...answer, sourceTab: reply.source_tab } : answer;
   }
   // The gate already allowed this call, so the parameters are the row's. `Args` is the IPC's own
   // wire type and the cast is the one place a gate-approved object meets it.

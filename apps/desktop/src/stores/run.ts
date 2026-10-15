@@ -29,6 +29,7 @@ import { ApiError, DaemonApi, type ExecuteRow, type ToolRow } from "@/lib/api";
 import { onLate, type BridgeTool, type LateAnswer } from "@/lib/bridge";
 import { driftOf, type ContractDrift, type ContractTable } from "@/lib/contract";
 import {
+  TABS_READ,
   callOnPage,
   describeRefs,
   handTools,
@@ -193,6 +194,12 @@ export interface RunDeps {
    * tightens.
    */
   accept?: (origin: string, tool: BridgeTool) => Promise<void>;
+  /**
+   * The open tab at a url, read now, with whether its web origin is an enabled row of the origins
+   * table: where a `tabs_read` reads, and whether it may (ADR 0105). Optional: without it no other
+   * tab can be found, so every `tabs_read` is refused `unknown_ref` and nothing is read.
+   */
+  openTab?: (url: string) => OpenTab | null;
   /** Keep one answered decision on this computer (the `activity` table). */
   record?: (row: ActivityWrite) => Promise<void>;
   /** Read back what earlier windows kept. */
@@ -207,6 +214,80 @@ export interface PageAnswer {
   error?: string | null;
   reason?: string | null;
   tier?: number;
+  /** The tab a `tabs_read` read, as the shell reports it (ADR 0105). */
+  sourceTab?: number | null;
+}
+
+/** An open tab a `tabs_read` names, as the panel sees it (ADR 0105). */
+export interface OpenTab {
+  tabId: number;
+  url: string;
+  title: string;
+  /** Its web origin, the key of the origins table and the name a card shows. */
+  origin: string;
+  /** The catalog id its page claimed or derives, so the record can group the text under it. */
+  appId: string | null;
+  /** An enabled row of the origins table. First sight and switched off are both `false`. */
+  trusted: boolean;
+}
+
+/**
+ * The open tab at `url`, or `null` (ADR 0105). Matched as the shell matches it: the url as
+ * `tabs_list` reports it, a trailing slash ignored. Trusted only when the web origin has an
+ * enabled row in a table that loaded: an unread table trusts nothing, which fails closed.
+ */
+export function openTabOf(
+  url: string,
+  tabs: readonly Tab[],
+  byTab: Readonly<Record<number, TabTools>>,
+  origins: TrustTable,
+): OpenTab | null {
+  const bare = (u: string) => u.trim().replace(/\/+$/, "");
+  const wanted = bare(url);
+  const tab = tabs.find((t) => bare(t.url) === wanted);
+  if (!tab) return null;
+  const origin = originOf(tab.url);
+  const trusted =
+    origin !== "" &&
+    origins.loaded &&
+    origins.problem === null &&
+    origins.known.includes(origin) &&
+    origins.records[origin]?.enabled === true;
+  return {
+    tabId: tab.id,
+    url: tab.url,
+    title: tab.title,
+    origin,
+    appId: catalogIdOf(origin, byTab[tab.id]?.appId ?? null),
+    trusted,
+  };
+}
+
+/**
+ * Why a `tabs_read` may not read, in the closed vocabulary, or `null` (ADR 0105). Checked by the
+ * panel before the shell is asked anything, so an untrusted tab's text is never read at all; the
+ * shell checks the same again before its relay is touched. No url, or the tab the turn is on, is
+ * `validator_failed`; a url no tab is at is `unknown_ref`; a tab whose origin is not an enabled
+ * row - first sight or switched off - is `foreign_origin`.
+ */
+export function tabReadRefusal(
+  params: Readonly<Record<string, unknown>>,
+  focused: TabRef | null,
+  open: OpenTab | null,
+): { reason: "validator_failed" | "unknown_ref" | "foreign_origin"; detail: string } | null {
+  const url = typeof params.url === "string" ? params.url.trim() : "";
+  if (!url) return { reason: "validator_failed", detail: "tabs_read needs the url of an open tab" };
+  if (!open) return { reason: "unknown_ref", detail: `no open tab is at ${url}; the open tabs are listed in host state` };
+  if (focused && open.tabId === focused.tabId) {
+    return { reason: "validator_failed", detail: "that is the tab this turn is on; read it with page_read" };
+  }
+  if (!open.trusted) {
+    return {
+      reason: "foreign_origin",
+      detail: `${open.origin || url} is not a site the person trusts, so its text is not read; ask them to switch to that tab`,
+    };
+  }
+  return null;
 }
 
 /** A playbook the person handed over: her active project on every turn until cleared (ADR 0044). */
@@ -355,6 +436,7 @@ const LIVE: RunDeps = {
     disabledOriginsOf(useOrigins.getState().records, useTabs.getState().tabs, useTools.getState().byTab),
   gated: () => gatedListsOf(useOrigins.getState(), useTabs.getState().tabs, useTools.getState().byTab),
   accept: (origin, tool) => useOrigins.getState().acceptContracts(origin, [tool]),
+  openTab: (url) => openTabOf(url, useTabs.getState().tabs, useTools.getState().byTab, useOrigins.getState()),
   record: async (row) => {
     if (hasShell()) await storeSet("activity", "", row as unknown as Wire);
   },
@@ -897,6 +979,14 @@ export const useRun = create<RunState>((set, get) => {
   /** Calls that timed out, by `<tab>|<page tool name>`, so a `late` answer can find its row. */
   const timedOut = new Map<string, { row: ExecuteRow; tier: number }>();
 
+  /**
+   * Web origins of other tabs a `tabs_read` returned text from since the user's last message
+   * (ADR 0105). Sent as `tainted_by` on every request until then, continuations started by an
+   * answered card included, so the gate files a card for every call on the page meanwhile.
+   * Emptied only by the user's next message: nothing else loosens it.
+   */
+  let tainted = new Set<string>();
+
   const now = () => stampOf(deps.now?.() ?? new Date());
 
   /** A tool row also goes in `calls`, which Clear does not touch; `record: false` keeps it out. */
@@ -957,6 +1047,21 @@ export const useRun = create<RunState>((set, get) => {
       push({ id: row.call_id, kind: "tool", text: `${row.name} → held: it may already have run`, tier: row.tier ?? 1, ok: false });
       return { ok: false, error: why };
     }
+    // A read of another tab is checked here before the shell is asked (ADR 0105): a refusal reads
+    // nothing, and the tab it would have read is never addressed.
+    const reading = bareName(row.name) === TABS_READ;
+    let source: OpenTab | null = null;
+    if (reading) {
+      const opened = typeof row.params.url === "string" ? (deps.openTab?.(row.params.url) ?? null) : null;
+      const refused = tabReadRefusal(row.params, target, opened);
+      if (refused) {
+        const why = `${refused.reason}: ${refused.detail}`;
+        outstanding.push(resultRow(row, false, "", why, 2));
+        push({ id: row.call_id, kind: "tool", text: `${row.name} → not read: ${refused.detail}`, tier: 2, ok: false });
+        return { ok: false, error: why };
+      }
+      source = opened;
+    }
     set({ phase: "acting" });
     let answer: PageAnswer;
     try {
@@ -982,7 +1087,13 @@ export const useRun = create<RunState>((set, get) => {
       timedOut.set(`${target.tabId}|${bareName(row.name)}`, { row, tier: answer.tier ?? row.tier ?? 1 });
     }
     if (timeout === "outcome_unknown") rememberUnsure({ origin: target.origin, tool: row.name, at: now() });
-    outstanding.push(resultRow(row, answer.ok, answer.output, error, answer.tier));
+    // Text from another tab is in the turn now: every later request until the user speaks says so.
+    // The source is the tab this panel resolved and checked, never a name the model gave.
+    const sourced = reading && source !== null && answer.ok && answer.output !== "" ? source : null;
+    if (sourced) tainted.add(sourced.origin);
+    outstanding.push(
+      resultRow(row, answer.ok, answer.output, error, answer.tier, sourced?.appId ? `host:${sourced.appId}` : undefined),
+    );
     // The user approved this call and it ran: the contract it ran under is now the accepted one
     // (ADR 0100). A declined, refused or failed call leaves the old one in force.
     if (approved && answer.ok && deps.accept) {
@@ -1114,6 +1225,9 @@ export const useRun = create<RunState>((set, get) => {
         // Read per request, not per exchange: a write that timed out in this exchange is gated
         // for the rest of it. Only ever tightens the snapshot's lists (ADR 0067, 0101).
         ...withUnsure(taking.gated),
+        // Another tab's text was read since the user's last message: the gate holds every call on
+        // the page to a card naming it (ADR 0105). Only ever tightens.
+        ...(tainted.size ? { tainted_by: [...tainted].sort() } : {}),
         ...activeProject(get().project),
       })) {
         await apply(event);
@@ -1317,6 +1431,8 @@ export const useRun = create<RunState>((set, get) => {
     ...EMPTY,
 
     async send(message: string) {
+      // The user spoke: what she reads from here on is a new exchange's (ADR 0105).
+      tainted = new Set();
       push({ id: `u${Date.now()}`, kind: "user", text: message });
       set({ phase: "running", error: null, summary: null, continuations: 0 });
       await exchange(message);
@@ -1561,6 +1677,7 @@ function resultRow(
   output: string,
   error: string | null,
   tier?: number,
+  source?: string,
 ): Record<string, unknown> {
   return {
     call_id: row.call_id,
@@ -1570,6 +1687,8 @@ function resultRow(
     error,
     tier: tier ?? row.tier ?? 1,
     ms: 0,
+    // Where the text came from, when it was another tab (ADR 0105). Set by the surface only.
+    ...(source ? { source } : {}),
   };
 }
 

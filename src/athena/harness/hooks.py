@@ -172,7 +172,11 @@ class GateHook:
             return GateOutcome(Proceed(dict(params)))
 
         capture = _capture_for(entry, ctx)
-        notice = _may_have_run(self.approvals, entry.name, params)
+        notice = "\n".join(
+            line
+            for line in (_may_have_run(self.approvals, entry.name, params), _taint_line(entry, ctx))
+            if line
+        )
         # Only a card that has a capture names one, so a table that predates the column is asked
         # nothing new; the same for the tab binding, so an unbound card asks nothing new either.
         optional: dict[str, Any] = {"capture_id": capture} if capture else {}
@@ -306,18 +310,48 @@ _STATUS_REASONS: Mapping[str, str] = {
 }
 
 
+#: The shell hand that reads another open tab (``hands.rs`` ``TABS_READ``, ADR 0105).
+TABS_READ = "tabs_read"
+
+
+def _reads_another_tab(entry: ToolEntry) -> bool:
+    """Is this the shell's ``tabs_read`` hand? A page's own tool of that name is tier 1, not it."""
+    return entry.tier == 2 and entry.name.rsplit(".", 1)[-1] == TABS_READ
+
+
+def _tainted(entry: ToolEntry, ctx: TurnContext) -> bool:
+    """Whether text read from another tab this exchange makes this host call ``GATED`` (ADR 0105).
+
+    Once a ``tabs_read`` has returned another tab's text, a figure from it could ride into any call
+    on the focused page, an ``AUTO`` one included, with nobody seeing it. So until the user speaks
+    again every host call files a card - page tools and hands alike - except the reading hand
+    itself, which acts nowhere and only brings back more of what is already in the turn.
+    """
+    if not ctx.tainted_by or entry.parsed_origin.kind != "host":
+        return False
+    return not _reads_another_tab(entry)
+
+
+def _taint_line(entry: ToolEntry, ctx: TurnContext) -> str:
+    """The card's line naming the tabs whose text this turn read, or ``""`` (ADR 0105)."""
+    if not _tainted(entry, ctx):
+        return ""
+    return f"uses text read from {', '.join(sorted(ctx.tainted_by))}"
+
+
 def _tightened(entry: ToolEntry, ctx: TurnContext) -> bool:
     """Whether the user's origins table makes this host tool ``GATED`` for this turn (ADR 0063).
 
     A page's flags are its own claim, so they are believed only once the user has trusted the
     origin: on first sight every host tool files a card, and a tool the user pinned ``GATED``
     files one whatever its flags say. Both lists ride on the context and can only tighten. Core
-    and connector entries are not the page's to describe, so they are untouched.
+    and connector entries are not the page's to describe, so they are untouched. Text read from
+    another tab this exchange tightens the same way (:func:`_tainted`, ADR 0105).
     """
     origin = entry.parsed_origin
     if origin.kind != "host":
         return False
-    return str(origin) in ctx.gated_origins or entry.name in ctx.gated_tools
+    return str(origin) in ctx.gated_origins or entry.name in ctx.gated_tools or _tainted(entry, ctx)
 
 
 def _announced(result: ExecResult) -> ExecResult:

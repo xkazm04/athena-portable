@@ -524,6 +524,7 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
             gated_tools=gated_tools_from(body),
             capture_id=capture_id_from(body),
             tab=tab_from(body),
+            tainted_by=tainted_by_from(body),
         )
     except ListTooLong as exc:
         return error(400, "validator_failed", str(exc))
@@ -613,6 +614,17 @@ def gated_tools_from(body: Mapping[str, Any]) -> frozenset[str]:
     return _names_from(body, "gated_tools", MAX_GATED_NAMES)
 
 
+def tainted_by_from(body: Mapping[str, Any]) -> frozenset[str]:
+    """``tainted_by`` off a request body: other tabs whose text was read this exchange (ADR 0105).
+
+    The web origins of the tabs a ``tabs_read`` returned text from since the user's last message.
+    While any is named, every host call files a card that names them. Read as
+    :func:`gated_origins_from` is: a malformed value tightens nothing, and a list past the cap is
+    refused whole, because a cut one would loosen.
+    """
+    return _names_from(body, "tainted_by", MAX_GATED_NAMES)
+
+
 def _names_from(body: Mapping[str, Any], key: str, cap: int) -> frozenset[str]:
     """The non-empty strings of ``body[key]``, stripped; anything else is empty.
 
@@ -639,6 +651,7 @@ def turn_context(
     gated_tools: frozenset[str] = frozenset(),
     capture_id: str | None = None,
     tab: tuple[int | None, int | None] = (None, None),
+    tainted_by: frozenset[str] = frozenset(),
 ) -> TurnContext:
     """The context one turn runs under, and the session refreshed for it.
 
@@ -663,6 +676,7 @@ def turn_context(
         capture_id=capture_id,
         tab_id=tab[0],
         tab_nav=tab[1],
+        tainted_by=tainted_by,
     )
     daemon.sessions.touch(session.origin, session.app_id, tools=session.tools)
     return ctx

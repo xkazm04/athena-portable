@@ -26,6 +26,12 @@
 //! is what a gated proposal carries, so a person asked to approve `page_click` on a ref can judge
 //! the page instead of the ref (README section 5 puts this on the never-cut list). See
 //! [`crate::capture`] for why the window and not the webview.
+//!
+//! **The tenth is the shell's too.** `tabs_read` reads another open tab by its url (ADR 0105).
+//! The shell resolves the url, refuses a tab whose web origin is not an enabled `origins` row
+//! before that tab's relay is touched, and asks that tab's `hands.js` for `page_read` and nothing
+//! else. It never calls the other page's tools and never registers it. What it brings back is
+//! what the gate then guards; that rule is `harness/hooks.py`'s, not this file's.
 
 use serde::Serialize;
 use serde_json::{json, Value};
@@ -74,7 +80,8 @@ pub struct Hand {
     pub runner: Runner,
 }
 
-/// The nine, in the order a person would use them: look, then act, then show what was seen.
+/// The ten, in the order a person would use them: look, then act, then show what was seen, then
+/// look at another tab (ADR 0105).
 pub const HANDS: &[Hand] = &[
     Hand {
         name: "page_read",
@@ -142,10 +149,33 @@ pub const HANDS: &[Hand] = &[
         side_effects: "none",
         runner: Runner::Shell,
     },
+    Hand {
+        name: TABS_READ,
+        description: "The text of another open tab, by its url, without acting there; only a tab whose site the person trusts. Pass query to keep the parts that mention it. A long answer names a cursor; pass it back with the same url.",
+        // A read of another page changes nothing anywhere, which derives AUTO. What it brings back
+        // is what the gate guards: every call on the focused page after it files a card for the
+        // rest of the turn (ADR 0105), and that rule lives in `harness/hooks.py`, not here.
+        reversible: true,
+        side_effects: "none",
+        runner: Runner::Shell,
+    },
 ];
 
-/// The one hand the shell answers. Named once, because three places ask for it by name.
+/// The shell hand that photographs the page. Named once, because three places ask for it by name.
 pub const SCREENSHOT: &str = "page_screenshot";
+
+/// The shell hand that reads another open tab (ADR 0105). The panel and the gate name it too.
+pub const TABS_READ: &str = "tabs_read";
+
+/// The longest url `tabs_read` takes: an open tab's url, as `tabs_list` reports it.
+pub const URL_MAX: usize = 2048;
+
+/// The longest query a scoped read takes. `hands.js` holds the same bound as `QUERY_MAX`.
+pub const QUERY_MAX: usize = 200;
+
+/// The most the `from` line of a `tabs_read` may be, so a 1,500-character packet plus this line
+/// still fits the lane's 1,600-character cut whole (ADR 0102, 0105).
+pub const FROM_LINE_MAX: usize = 99;
 
 /// The hand of that name, if the table holds one.
 ///
@@ -211,6 +241,15 @@ fn schema_for(name: &str) -> Value {
         // No parameters at all: the picture is of the page on screen, and there is nothing about
         // it for a caller to choose. A `ref` here would promise a crop the capture cannot do.
         SCREENSHOT => json!({ "type": "object", "properties": {} }),
+        TABS_READ => json!({
+            "type": "object",
+            "properties": {
+                "url": { "type": "string", "maxLength": URL_MAX },
+                "query": { "type": "string", "maxLength": QUERY_MAX },
+                "cursor": cursor_param,
+            },
+            "required": ["url"],
+        }),
         "page_read" => json!({
             "type": "object",
             "properties": { "ref": ref_param, "cursor": cursor_param },
@@ -277,6 +316,10 @@ pub struct HandResult {
     /// `OP:` line, and this field is what a surface reads to put a picture on a card without
     /// parsing a sentence.
     pub capture_id: Option<String>,
+    /// The tab a `tabs_read` read, and that tab's web origin; `null` for every other hand and for
+    /// a refusal. The panel sets the result's `source` from these and from nothing a model said.
+    pub source_tab: Option<u32>,
+    pub source_origin: Option<String>,
 }
 
 impl HandResult {
@@ -289,6 +332,8 @@ impl HandResult {
             tier: 2,
             ms,
             capture_id: None,
+            source_tab: None,
+            source_origin: None,
         }
     }
 }
@@ -307,6 +352,9 @@ pub async fn call(app: &AppHandle, tab: u32, name: &str, input: Value) -> HandRe
     };
     // One dispatch, off the table, so adding a shell hand is a row rather than a branch.
     if hand.runner == Runner::Shell {
+        if hand.name == TABS_READ {
+            return tabs_read(app, tab, &input, started).await;
+        }
         return screenshot(app, tab, elapsed(started));
     }
     let body = json!({ "hand": name, "input": input });
@@ -379,7 +427,187 @@ fn screenshot(app: &AppHandle, tab: u32, ms: u64) -> HandResult {
         tier: 2,
         ms,
         capture_id: Some(id),
+        source_tab: None,
+        source_origin: None,
     }
+}
+
+/// What a `tabs_read` asked for, checked before anything is looked up.
+#[derive(Debug, PartialEq, Eq)]
+struct ReadAsk {
+    url: String,
+    query: Option<String>,
+    cursor: Option<String>,
+}
+
+/// The parameters of a `tabs_read`, or the `validator_failed` sentence. Bounded as the schema is.
+fn read_ask(input: &Value) -> Result<ReadAsk, String> {
+    let url = input
+        .get("url")
+        .and_then(Value::as_str)
+        .map(str::trim)
+        .unwrap_or_default();
+    if url.is_empty() {
+        return Err("tabs_read needs the url of an open tab".to_string());
+    }
+    if url.chars().count() > URL_MAX {
+        return Err(format!("a url is at most {URL_MAX} characters"));
+    }
+    let optional = |key: &str, max: usize| -> Result<Option<String>, String> {
+        match input.get(key) {
+            None | Some(Value::Null) => Ok(None),
+            Some(Value::String(v)) if v.chars().count() <= max => Ok(Some(v.clone())),
+            Some(_) => Err(format!("{key} is a string of at most {max} characters")),
+        }
+    };
+    Ok(ReadAsk {
+        url: url.to_string(),
+        query: optional("query", QUERY_MAX)?,
+        cursor: optional("cursor", CURSOR_MAX)?,
+    })
+}
+
+/// The open tab a `tabs_read` names, or the refusal: `unknown_ref` when no tab is at that url,
+/// `validator_failed` when it is the tab the call came from (that one is read with `page_read`).
+fn pick_tab<'a>(
+    open: &'a [tabs::Tab],
+    caller: u32,
+    url: &str,
+) -> Result<&'a tabs::Tab, (&'static str, String)> {
+    let wanted = url.trim_end_matches('/');
+    let Some(tab) = open
+        .iter()
+        .find(|t| t.url.trim_end_matches('/') == wanted)
+    else {
+        return Err((
+            "unknown_ref",
+            format!("no open tab is at {url}; the open tabs are listed in host state"),
+        ));
+    };
+    if tab.id == caller {
+        return Err((
+            "validator_failed",
+            "that is the tab this turn is on; read it with page_read".to_string(),
+        ));
+    }
+    Ok(tab)
+}
+
+/// Whether an `origins` row trusts its origin: present and switched on. First sight (`null`) and
+/// a switched-off row are untrusted alike, and so is a store that could not be read.
+fn trusts(row: &Value) -> bool {
+    row.get("enabled").and_then(Value::as_bool) == Some(true)
+}
+
+/// `text` cut to `keep` characters, the last one an ellipsis when anything was cut.
+fn cut_to(text: &str, keep: usize) -> String {
+    if text.chars().count() <= keep {
+        return text.to_string();
+    }
+    if keep == 0 {
+        return String::new();
+    }
+    let kept: String = text.chars().take(keep - 1).collect();
+    format!("{kept}…")
+}
+
+/// `from <origin> - <title> (<url>)`, cut to [`FROM_LINE_MAX`]: the url keeps up to two thirds
+/// of the room and the title takes what is left, so the origin - the part the record and the card
+/// group by - is whole.
+fn from_line(origin: &str, title: &str, url: &str) -> String {
+    let fixed = format!("from {origin} -  ()").chars().count();
+    let room = FROM_LINE_MAX.saturating_sub(fixed);
+    let url = cut_to(
+        url,
+        (room * 2 / 3).max(room.saturating_sub(title.chars().count())),
+    );
+    let title = cut_to(title, room.saturating_sub(url.chars().count()));
+    cut_to(&format!("from {origin} - {title} ({url})"), FROM_LINE_MAX)
+}
+
+/// A packet with the `from` line on top and a `(showing N of M)` footer at the bottom, which the
+/// page's own answer has unless it was a whole page short enough to need none.
+fn sourced(from: &str, packet: &str) -> String {
+    let footed = packet
+        .lines()
+        .last()
+        .is_some_and(|last| last.starts_with("(showing ") && last.ends_with(')'));
+    if footed {
+        format!("{from}\n{packet}")
+    } else {
+        let n = packet.chars().count();
+        format!("{from}\n{packet}\n(showing {n} of {n})")
+    }
+}
+
+/// `tabs_read`: read another open tab's text through that tab's own hands relay (ADR 0105).
+///
+/// Every refusal happens before a word is read. A url no tab is at is `unknown_ref`; the tab the
+/// call came from is `validator_failed`; a tab whose web origin has no enabled `origins` row is
+/// `foreign_origin` with an empty output - its hands relay is never asked anything. Otherwise
+/// that tab's `hands.js` answers `page_read` (scoped by the query, or continued by the cursor),
+/// and nothing else: none of that page's own tools is called and no manifest is posted for it.
+async fn tabs_read(
+    app: &AppHandle,
+    caller: u32,
+    input: &Value,
+    started: std::time::Instant,
+) -> HandResult {
+    use tauri::Manager;
+    let elapsed = || started.elapsed().as_millis() as u64;
+
+    let ask = match read_ask(input) {
+        Ok(ask) => ask,
+        Err(detail) => return HandResult::refused("validator_failed", detail, elapsed()),
+    };
+    let open = app.state::<tabs::Tabs>().list();
+    let tab = match pick_tab(&open, caller, &ask.url) {
+        Ok(tab) => tab.clone(),
+        Err((reason, detail)) => return HandResult::refused(reason, detail, elapsed()),
+    };
+    let origin = tabs::origin_of(&tab.url);
+    let row = if origin.is_empty() {
+        Value::Null
+    } else {
+        store::opened(app)
+            .and_then(|store| store.get("origins", &origin))
+            .unwrap_or(Value::Null)
+    };
+    if !trusts(&row) {
+        let site = if origin.is_empty() { &tab.url } else { &origin };
+        return HandResult::refused(
+            "foreign_origin",
+            format!("{site} is not a site the person trusts, so its text is not read; ask them to switch to that tab"),
+            elapsed(),
+        );
+    }
+    let body = json!({ "hand": "page_read", "input": read_input(&ask) });
+    let answer = match bridge::ask_hands(app, tab.id, body).await {
+        Err(detail) => return HandResult::refused("unknown_ref", detail, elapsed()),
+        Ok(answer) => from_page(&answer, elapsed()),
+    };
+    if !answer.ok {
+        return answer;
+    }
+    HandResult {
+        output: sourced(&from_line(&origin, &tab.title, &tab.url), &answer.output),
+        source_tab: Some(tab.id),
+        source_origin: Some(origin),
+        ..answer
+    }
+}
+
+/// What the other tab's `hands.js` is asked: `page_read` with the query and the cursor, if any,
+/// and never a ref - a ref belongs to the page that minted it, and the model holds none of this one.
+fn read_input(ask: &ReadAsk) -> Value {
+    let mut asked = serde_json::Map::new();
+    if let Some(query) = ask.query.as_ref().filter(|q| !q.trim().is_empty()) {
+        asked.insert("query".to_string(), Value::String(query.clone()));
+    }
+    if let Some(cursor) = &ask.cursor {
+        asked.insert("cursor".to_string(), Value::String(cursor.clone()));
+    }
+    Value::Object(asked)
 }
 
 /// Read the page's answer into a result, trusting none of its shape.
@@ -401,6 +629,8 @@ fn from_page(answer: &Value, ms: u64) -> HandResult {
             tier: 2,
             ms,
             capture_id: None,
+            source_tab: None,
+            source_origin: None,
         };
     }
     let reason = answer
@@ -666,14 +896,14 @@ mod tests {
     }
 
     #[test]
-    fn there_are_nine_hands_and_every_name_is_distinct() {
+    fn there_are_ten_hands_and_every_name_is_distinct() {
         let names: std::collections::BTreeSet<_> = HANDS.iter().map(|h| h.name).collect();
         assert_eq!(names.len(), HANDS.len());
-        assert_eq!(HANDS.len(), 9);
+        assert_eq!(HANDS.len(), 10);
     }
 
     #[test]
-    fn eight_hands_are_the_pages_and_the_ninth_is_the_shells() {
+    fn eight_hands_are_the_pages_and_two_are_the_shells() {
         // Not a count for its own sake: the split is what `call` dispatches on, and a hand that
         // drifted to the wrong runner would either be asked of a page that cannot answer it or
         // answered by the shell for a page that could.
@@ -682,7 +912,7 @@ mod tests {
             .filter(|h| h.runner == Runner::Shell)
             .map(|h| h.name)
             .collect();
-        assert_eq!(shell, [SCREENSHOT]);
+        assert_eq!(shell, [SCREENSHOT, TABS_READ]);
         assert_eq!(HANDS.iter().filter(|h| h.runner == Runner::Page).count(), 8);
     }
 
@@ -732,7 +962,8 @@ mod tests {
                 "page_find",
                 "page_wait",
                 "page_scroll",
-                SCREENSHOT
+                SCREENSHOT,
+                TABS_READ
             ]
         );
     }
@@ -905,7 +1136,7 @@ mod tests {
     }
 
     #[test]
-    fn the_two_reads_take_an_optional_bounded_cursor_and_nothing_else_does() {
+    fn the_three_reads_take_an_optional_bounded_cursor_and_nothing_else_does() {
         // ADR 0102. Optional, because a read without one is the read it always was; bounded,
         // because the manifest validator refuses an unbounded string.
         for name in ["page_read", "page_find"] {
@@ -917,9 +1148,14 @@ mod tests {
             );
             assert!(schema.get("required").is_none(), "{name}");
         }
+        // ADR 0105: a read of another tab continues the same way, with its url beside the cursor.
+        assert_eq!(
+            schema_for(TABS_READ)["properties"]["cursor"]["maxLength"],
+            CURSOR_MAX
+        );
         for hand in HANDS
             .iter()
-            .filter(|h| !matches!(h.name, "page_read" | "page_find"))
+            .filter(|h| !matches!(h.name, "page_read" | "page_find" | TABS_READ))
         {
             assert!(
                 schema_for(hand.name)["properties"].get("cursor").is_none(),
@@ -1037,7 +1273,7 @@ mod tests {
         // The surface appends this list to whatever the page offered and hands one list to
         // `gate.js`. A ninth entry shaped differently would be classified differently.
         let tools = webmcp_tools();
-        assert_eq!(tools.len(), 9);
+        assert_eq!(tools.len(), 10);
         let ninth = tools
             .iter()
             .find(|t| t["name"] == SCREENSHOT)
@@ -1074,6 +1310,145 @@ mod tests {
             assert_eq!(result.tier, 2);
             assert!(result.capture_id.is_none());
         }
+    }
+
+    // --- tabs_read (ADR 0105) ---------------------------------------------------------------
+
+    fn tab(id: u32, url: &str, title: &str) -> tabs::Tab {
+        tabs::Tab {
+            id,
+            label: tabs::label_for(id),
+            url: url.to_string(),
+            title: title.to_string(),
+            focused: id == 1,
+            nav: 0,
+        }
+    }
+
+    #[test]
+    fn tabs_read_is_a_shell_hand_that_derives_auto_and_takes_a_required_bounded_url() {
+        let read = hand(TABS_READ).expect("tabs_read is a hand");
+        assert_eq!(read.runner, Runner::Shell);
+        assert!(read.reversible);
+        assert_eq!(read.side_effects, "none");
+        let schema = schema_for(TABS_READ);
+        assert_eq!(schema["required"], json!(["url"]));
+        assert_eq!(schema["properties"]["url"]["maxLength"], URL_MAX);
+        assert_eq!(schema["properties"]["query"]["maxLength"], QUERY_MAX);
+        assert!(schema["properties"].get("ref").is_none());
+    }
+
+    #[test]
+    fn the_script_does_not_declare_the_tab_reader_and_bounds_a_query_the_same() {
+        // The shell answers tabs_read; a page cannot offer to read another page. The query it
+        // forwards is bounded where the script cuts it.
+        let script = crate::hands_script();
+        let table = script
+            .split("const FLAGS = {")
+            .nth(1)
+            .and_then(|rest| rest.split("};").next())
+            .expect("FLAGS");
+        assert!(!table.contains(TABS_READ));
+        assert!(script.contains(&format!("const QUERY_MAX = {QUERY_MAX};")));
+    }
+
+    #[test]
+    fn a_tab_read_asks_for_a_url_and_bounds_the_rest() {
+        assert!(read_ask(&json!({})).is_err());
+        assert!(read_ask(&json!({ "url": "  " })).is_err());
+        assert!(read_ask(&json!({ "url": "x".repeat(URL_MAX + 1) })).is_err());
+        assert!(read_ask(
+            &json!({ "url": "https://bank.test/", "query": "q".repeat(QUERY_MAX + 1) })
+        )
+        .is_err());
+        assert!(read_ask(&json!({ "url": "https://bank.test/", "cursor": 3 })).is_err());
+        let ask =
+            read_ask(&json!({ "url": "https://bank.test/s", "query": "Closing balance" })).unwrap();
+        assert_eq!(ask.url, "https://bank.test/s");
+        assert_eq!(ask.query.as_deref(), Some("Closing balance"));
+        assert_eq!(
+            read_input(&ask),
+            json!({ "query": "Closing balance" }),
+            "the other page is asked page_read with the query and never a ref"
+        );
+    }
+
+    #[test]
+    fn a_tab_read_names_an_open_tab_other_than_its_own() {
+        let open = [
+            tab(1, "https://ledger.test/invoices", "Invoices"),
+            tab(2, "https://bank.test/statements/9", "Statement"),
+        ];
+        assert_eq!(
+            pick_tab(&open, 1, "https://bank.test/statements/9")
+                .unwrap()
+                .id,
+            2
+        );
+        // A trailing slash is the same address.
+        assert_eq!(
+            pick_tab(&open, 1, "https://bank.test/statements/9/")
+                .unwrap()
+                .id,
+            2
+        );
+        let (reason, _) = pick_tab(&open, 1, "https://bank.test/other").unwrap_err();
+        assert_eq!(reason, "unknown_ref");
+        let (reason, detail) = pick_tab(&open, 1, "https://ledger.test/invoices").unwrap_err();
+        assert_eq!(reason, "validator_failed");
+        assert!(detail.contains("page_read"));
+    }
+
+    #[test]
+    fn only_an_enabled_origins_row_trusts_a_tab() {
+        assert!(trusts(&json!({ "enabled": true, "overrides": {} })));
+        assert!(!trusts(&json!({ "enabled": false })));
+        assert!(!trusts(&Value::Null), "first sight is untrusted");
+        assert!(!trusts(&json!({ "enabled": 1 })));
+    }
+
+    #[test]
+    fn a_refused_tab_read_carries_no_text_and_names_no_source() {
+        let refused = HandResult::refused("foreign_origin", "not trusted", 0);
+        assert!(refused.output.is_empty());
+        assert!(refused.source_tab.is_none() && refused.source_origin.is_none());
+        assert_eq!(normalised("foreign_origin"), "foreign_origin");
+    }
+
+    #[test]
+    fn the_from_line_names_the_origin_whole_and_fits_beside_a_packet() {
+        let line = from_line("https://bank.test", "Statement", "https://bank.test/s/9");
+        assert_eq!(
+            line,
+            "from https://bank.test - Statement (https://bank.test/s/9)"
+        );
+        let long = from_line(
+            "https://bank.test",
+            &"A very long statement title ".repeat(10),
+            &format!("https://bank.test/{}", "p".repeat(500)),
+        );
+        assert!(
+            long.chars().count() <= FROM_LINE_MAX,
+            "{}",
+            long.chars().count()
+        );
+        assert!(long.starts_with("from https://bank.test - "));
+        // 1,500 for the packet (hands.js PACKET_CAP), one newline, and this line: the lane's cut.
+        const { assert!(1500 + 1 + FROM_LINE_MAX <= 1600) };
+    }
+
+    #[test]
+    fn a_sourced_packet_starts_with_its_from_line_and_ends_with_a_footer() {
+        let short = sourced("from o - t (u)", "Closing balance $12,480.22");
+        assert_eq!(
+            short,
+            "from o - t (u)\nClosing balance $12,480.22\n(showing 26 of 26)"
+        );
+        let packet = "cursor: cur_0_1_1400 (...)\nbody\n(showing 1400 of 3200)";
+        assert_eq!(
+            sourced("from o - t (u)", packet),
+            format!("from o - t (u)\n{packet}")
+        );
     }
 
     #[test]

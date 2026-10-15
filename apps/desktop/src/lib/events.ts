@@ -46,6 +46,8 @@ export interface ToolResult {
   error: string | null;
   tier: number;
   ms: number;
+  /** `host:<app_id>` of the other tab a `tabs_read` read; absent for everything else (ADR 0105). */
+  source?: string | null;
 }
 
 export interface TurnFinished {

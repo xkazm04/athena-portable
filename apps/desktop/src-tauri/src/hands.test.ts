@@ -371,6 +371,55 @@ describe("continuing", () => {
   });
 });
 
+// --- a scoped read, which the shell's tabs_read sends (ADR 0105) ---------------------------------
+
+describe("a scoped read", () => {
+  it("keeps the row a label sits in, so the figure in the next cell comes with it", async () => {
+    const filler = Array.from({ length: 80 }, (_, i) => `<tr><td>Purchase ${i}</td><td>$${i}.00</td></tr>`).join("");
+    document.body.innerHTML = `<table>${filler}<tr><td>Closing balance</td><td>$12,480.22</td></tr></table>`;
+
+    const answer = await ask("page_read", { query: "closing BALANCE" });
+
+    expect(answer.ok).toBe(true);
+    const lines = answer.output!.split("\n");
+    expect(lines[0]).toBe("Closing balance $12,480.22");
+    expect(lines[1]).toMatch(/^\(showing 26 of \d{4}\)$/);
+  });
+
+  it("widens a label alone in a div to the block that holds its value, and skips hidden text", async () => {
+    document.body.innerHTML = `<div><div><span>Due date</span><span>2026-10-30</span></div></div>
+      <div hidden><p>Due date 1999-01-01</p></div>`;
+
+    const answer = await ask("page_read", { query: "due date" });
+
+    expect(answer.output).toContain("Due date 2026-10-30");
+    expect(answer.output).not.toContain("1999");
+  });
+
+  it("says when nothing mentions the query, and refuses an empty one", async () => {
+    const none = await ask("page_read", { query: "wire fee" });
+    expect(none.ok).toBe(true);
+    expect(none.output).toMatch(/^nothing on this page mentions "wire fee"\n\(showing 0 of \d+\)$/);
+
+    const empty = await ask("page_read", { query: "   " });
+    expect(empty.ok).toBe(false);
+    expect(empty.reason).toBe("validator_failed");
+  });
+
+  it("packs many matches under the packet cap and continues them by cursor", async () => {
+    document.body.innerHTML = Array.from({ length: 120 }, (_, i) => `<p>Fee line ${i}: a monthly fee of $${i}.00</p>`).join("");
+
+    const first = await ask("page_read", { query: "fee" });
+
+    expect(first.output!.length).toBeLessThanOrEqual(1500);
+    const cursor = /^cursor: (cur_\d+_\d+_\d+)/.exec(first.output!)?.[1];
+    expect(cursor).toBeTruthy();
+    const next = await ask("page_read", { cursor });
+    expect(next.ok).toBe(true);
+    expect(next.output).toContain("Fee line");
+  });
+});
+
 // --- acting -------------------------------------------------------------------------------------
 
 describe("acting", () => {

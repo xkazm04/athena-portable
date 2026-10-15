@@ -81,6 +81,10 @@ class ToolResult(ChannelEvent):
     error: str | None = None
     tier: int = 0
     ms: int = 0
+    #: Where the text came from when it was not the focused page: the catalog origin
+    #: (``host:<app_id>``) of the other tab a ``tabs_read`` read. Set by the surface from the tab
+    #: it read, never by a model; the record groups the episode under it (ADR 0105).
+    source: str | None = None
 
 
 @dataclass(frozen=True)

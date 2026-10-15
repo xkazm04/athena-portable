@@ -208,8 +208,9 @@ class Policy:
                 "origin_pinning",
                 "foreign_origin",
                 f"this session is pinned to host:{ctx.app_id} and {entry.name} belongs to "
-                f"host:{app_id}. Another tab's tools cannot be called from this one: use "
-                f"core.recall for what you read there, or ask the person to switch to that tab",
+                f"host:{app_id}. Another tab's tools cannot be called from this one: read its "
+                f"text with tabs_read and its url, use core.recall for what you read there, or "
+                f"ask the person to switch to that tab to act there",
             )
         expected = self.pinned_origins.get(app_id)
         if expected is not None and ctx.page_origin is not None and ctx.page_origin != expected:

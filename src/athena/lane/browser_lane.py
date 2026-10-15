@@ -381,6 +381,10 @@ class BrowserLane:
         This is where the tier lands in the record (README §3.4): the page's own tool is tier 1,
         a generic hand is tier 2, a connector is tier 3, and the activity explorer can answer
         "what did it do, through which tier" without inferring it from a name.
+
+        A result read from another tab (``tabs_read``, ADR 0105) carries that tab's catalog
+        origin as ``source``, and its episode is marked with it, so the record groups the text
+        under the app it came from rather than under the page the turn was on.
         """
         origin = self._origin(ctx)
         for result in results:
@@ -393,7 +397,7 @@ class BrowserLane:
                 f"{result.name} {verb}: {result.output}".strip(),
                 "system",
                 ctx,
-                origin=origin,
+                origin=result.source or origin,
                 tier=result.tier or None,
             )
 

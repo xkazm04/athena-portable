@@ -31,7 +31,7 @@ import { create } from "zustand";
 import { DaemonApi, type ExecuteRow } from "@/lib/api";
 import type { BridgeTool } from "@/lib/bridge";
 import { VoiceSetupApi, availabilityOf, refusalText } from "@/lib/voice-setup";
-import { callOnPage, takeCapture, type Taken } from "@/lib/hands";
+import { TABS_READ, callOnPage, takeCapture, type Taken } from "@/lib/hands";
 import type { ChannelEvent, DecisionRequested, ToolCall } from "@/lib/events";
 import { catalogIdOf, manifestBodyOf } from "@/lib/manifest";
 import {
@@ -333,6 +333,14 @@ export const useVoice = create<VoiceState>((set, get) => {
       row.origin !== `host:${focused.appId}`
     ) {
       answer = { ok: false, output: "", error: `foreign_origin: ${row.origin} is not the focused page` };
+    } else if (bareName(row.name) === TABS_READ) {
+      // A read of another tab holds the rest of the turn to cards, which only the panel's run loop
+      // tracks (ADR 0105). Spoken turns do not read other tabs; nothing is asked of the shell.
+      answer = {
+        ok: false,
+        output: "",
+        error: "validator_failed: reading another tab is done from the panel, where the rest of the turn can be held to cards",
+      };
     } else {
       try {
         answer = await deps.call(

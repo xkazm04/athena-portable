@@ -141,6 +141,28 @@ test("a page tool named like a hand goes to the page", async () => {
   expect(commands.map((c) => c.command)).toEqual(["bridge_call"]);
 });
 
+test("tabs_read is reserved: a page's tool of that name is dropped and the call is the shell's", () => {
+  // ADR 0105: a page cannot answer for another tab, so its claim to the name is not kept.
+  hands.setHandsForTests([tool("page_read"), tool(hands.TABS_READ, { reversible: true, side_effects: "none" })]);
+  const own = tool(hands.TABS_READ, { reversible: true, side_effects: "none" });
+  const merged = hands.withHands([tool("pay"), own]);
+
+  expect(merged.map((t) => t.name)).toEqual(["pay", "page_read", hands.TABS_READ]);
+  expect(hands.isMarkedHand(merged[2])).toBe(true);
+  expect(hands.isHandCall(hands.TABS_READ, [own])).toBe(true);
+});
+
+test("a tabs_read answer carries the tab the shell read", async () => {
+  hands.setHandsForTests([tool(hands.TABS_READ, { reversible: true, side_effects: "none" })]);
+  handReply = () =>
+    Promise.resolve({ ok: true, output: "from https://bank.test - S (u)\nx", reason: null, error: null, tier: 2, ms: 1, source_tab: 4, source_origin: "https://bank.test" });
+
+  const answer = await hands.callOnPage(1, hands.TABS_READ, { url: "https://bank.test/s" }, []);
+
+  expect(commands.at(-1)).toEqual({ command: "hands_call", args: { tab_id: 1, name: "tabs_read", input: { url: "https://bank.test/s" } } });
+  expect(answer).toMatchObject({ ok: true, tier: 2, sourceTab: 4 });
+});
+
 test("a capture is page_screenshot through hands_call and answers its id", async () => {
   handReply = () =>
     Promise.resolve({ ok: true, output: "cap_0123456789ab · a capture", reason: null, error: null, tier: 2, ms: 1, capture_id: "cap_0123456789ab" });

@@ -221,6 +221,11 @@ class TurnContext:
     #: approval runs on that tab and that document or not at all (ADR 0103).
     tab_id: int | None = None
     tab_nav: int | None = None
+    #: Web origins (``https://…``) of other open tabs whose text a ``tabs_read`` returned since the
+    #: user's last message. While it is not empty every host call files a card whose summary names
+    #: them, whatever its class, except the reading hand itself (ADR 0105). Set by the surface from
+    #: the tab it read, never by a model, and it only tightens.
+    tainted_by: frozenset[str] = frozenset()
     extra: dict[str, Any] = field(default_factory=dict)
 
 

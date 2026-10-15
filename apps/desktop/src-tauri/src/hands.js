@@ -406,6 +406,65 @@
     );
   }
 
+  /** The longest query a scoped read takes; `hands.rs` bounds `tabs_read`'s query the same. */
+  const QUERY_MAX = 200;
+  /** Structure that is a whole row of content: a label and its figure live inside one of these. */
+  const ROW = new Set(["TR", "LI", "P", "DD", "DT", "BLOCKQUOTE", "FIGURE", "H1", "H2", "H3", "H4"]);
+
+  /**
+   * The parts of the page that mention `query`, each the smallest row that holds it (L2).
+   *
+   * Not a hand of its own: `page_read` with a query, which the shell's `tabs_read` sends when the
+   * model scoped its read of another tab. A whole-page read is cut at the packet, so a closing
+   * balance at character 3,000 of a statement is past the first part; this keeps only the rows
+   * that mention the query, so the figure lands inside the first packet. A match is the deepest
+   * element whose text holds the query, widened to its row - or to the first ancestor that holds
+   * more than the query itself, so a label in its own cell carries the figure beside it. Hidden
+   * subtrees and markup are skipped. The footer counts what was kept against the whole page.
+   */
+  function scopedRead(raw) {
+    const query = squash(raw).slice(0, QUERY_MAX).toLowerCase();
+    if (!query) return no("validator_failed", "a scoped read needs a non-empty query");
+    const body = document.body;
+    if (!body) return no("unknown_ref", "this document has no body yet");
+    const total = textOf(body).length;
+    const holds = (el) =>
+      !NOT_TEXT.has(el.tagName) &&
+      !el.closest("[hidden],[aria-hidden=true]") &&
+      squash(el.textContent).toLowerCase().includes(query);
+    const matching = Array.from(body.querySelectorAll("*")).filter(holds);
+    const deepest = matching.filter((el) => !Array.from(el.children).some(holds));
+    const picked = [];
+    for (const el of deepest) {
+      let at = el;
+      while (at !== body && !ROW.has(at.tagName) && squash(textOf(at)).length <= query.length + 2) {
+        at = at.parentElement ?? body;
+      }
+      // Widening that reached the whole page found nothing beside the label: keep the label alone.
+      if (at === body) at = el;
+      if (picked.some((p) => p === at || p.contains(at))) continue;
+      for (let i = picked.length - 1; i >= 0; i -= 1) if (at.contains(picked[i])) picked.splice(i, 1);
+      picked.push(at);
+    }
+    const parts = picked.map(textOf).filter(Boolean);
+    if (parts.length === 0) {
+      const said = squash(raw).slice(0, QUERY_MAX);
+      return ok(`nothing on this page mentions "${said}"\n(showing 0 of ${total})`, {
+        title: document.title,
+        url: location.href,
+      });
+    }
+    const joined = parts.join("\n");
+    const footer = `(showing ${joined.length} of ${total})`;
+    if (joined.length + footer.length + 1 <= PACKET_CAP) {
+      return ok(`${joined}\n${footer}`, { title: document.title, url: location.href });
+    }
+    const snapshot = { kind: "page_read", text: joined.slice(0, SNAPSHOT_TEXT_CAP), total: joined.length };
+    const id = keep(snapshot);
+    const packet = textPacket(id, snapshot, 0);
+    return ok(packet.output, { title: document.title, url: location.href, next: packet.next });
+  }
+
   const HANDS = {
     /**
      * The page, or one ref'd part of it, as text. Bounded and announced.
@@ -422,6 +481,7 @@
         const packet = textPacket(held.id, held.snapshot, held.offset);
         return ok(packet.output, { title: document.title, url: location.href, next: packet.next });
       }
+      if (input.query !== undefined && input.query !== null) return scopedRead(input.query);
       let root = document.body;
       if (input.ref !== undefined && input.ref !== null) {
         const found = resolve(input.ref);

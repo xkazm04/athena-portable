@@ -23,6 +23,7 @@ land in, and a page that can write its own tool's result can write anything into
 
 from __future__ import annotations
 
+import re
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any
@@ -90,9 +91,25 @@ def tool_results_from(payloads: Sequence[Mapping[str, Any]]) -> tuple[ToolResult
                 error=str(error) if error else None,
                 tier=_int(payload.get("tier")),
                 ms=_int(payload.get("ms")),
+                source=_source(payload.get("source")),
             )
         )
     return tuple(results)
+
+
+#: A catalog host origin, as the surface names the tab a ``tabs_read`` read (ADR 0105).
+_SOURCE = re.compile(r"host:[a-z0-9][a-z0-9_.-]{0,127}")
+
+
+def _source(value: Any) -> str | None:
+    """The result's ``source``: a ``host:<app_id>`` the surface set, or ``None`` for anything else.
+
+    A malformed value is dropped rather than kept, so a record is never grouped under a name the
+    catalog could not have minted.
+    """
+    if isinstance(value, str) and _SOURCE.fullmatch(value.strip()):
+        return value.strip()
+    return None
 
 
 def _int(value: Any) -> int:
