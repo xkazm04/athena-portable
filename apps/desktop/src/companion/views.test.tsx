@@ -315,6 +315,20 @@ test("an empty list of apps she has seen says first sight asks, and does not say
   expect(out).not.toContain("tools are off");
 });
 
+test("Origins: a page that could not be read says so above her hands, and never as nothing read yet", () => {
+  const model = fixtures["ledger origins"]();
+  const draw = (origins: Partial<typeof model.origins>) =>
+    renderToStaticMarkup(createElement(CompanionView, { model: { ...model, origins: { ...model.origins, ...origins } } }));
+  const failed = draw({ pageProblem: "bridge_error: the webview went away" });
+  expect(failed).toContain("This page could not be read: bridge_error: the webview went away");
+  expect(failed).toContain("Only her own hands are listed.");
+  const failedBare = draw({ pageProblem: "bridge_error: the webview went away", offers: [] });
+  expect(failedBare).not.toContain("Nothing has been read from this page yet.");
+  const silent = draw({ pageSilent: true, offers: [] });
+  expect(silent).toContain("This page publishes no tools of its own.");
+  expect(silent).not.toContain("could not be read");
+});
+
 test("welcome: a failed start shows the reason and a Try again button that restarts, not only Check again", () => {
   const model = fixtures["welcome"]();
   model.welcome.engineView = {

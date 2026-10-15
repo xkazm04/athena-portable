@@ -756,8 +756,18 @@ function Origins({ model }: { model: CompanionModel }) {
         {origins.host ? `What ${origins.host} offers her, and who she may act for.` : "No page is open."}
       </p>
       <h3 className="lg-h">This page offers</h3>
+      {origins.pageProblem ? (
+        <p className="lg-foot" role="alert">
+          This page could not be read: {origins.pageProblem}
+          {origins.offers.length > 0 ? ". Only her own hands are listed." : ""}
+        </p>
+      ) : origins.pageSilent ? (
+        <p className="lg-foot">This page publishes no tools of its own.</p>
+      ) : null}
       {origins.offers.length === 0 ? (
-        <p className="lg-foot">Nothing has been read from this page yet.</p>
+        origins.pageProblem || origins.pageSilent ? null : (
+          <p className="lg-foot">Nothing has been read from this page yet.</p>
+        )
       ) : (
         <ul className="offers">
           {origins.offers.map((o) => (

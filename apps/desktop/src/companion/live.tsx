@@ -298,6 +298,7 @@ export default function Live() {
   const focused = tabs.find((tab) => tab.focused) ?? tabs[0];
   const origin = focused ? originOf(focused.url) : null;
   const tools = focused ? toolRows(byTab[focused.id], gatedListsOf({ records, known, loaded: originsLoaded, problem: originsProblem }, tabs, byTab)) : [];
+  const toolsProblem = focused ? (byTab[focused.id]?.problem ?? null) : null;
   const ready = endpoint(daemon) !== null;
 
   // The record: what the daemon says it spent, read when her Record tab is open and again when a
@@ -388,6 +389,7 @@ export default function Live() {
     daemonReady: ready,
     origin,
     tools,
+    toolsProblem,
     held: snap.held,
     known: originViews,
     ledger: snap.ledger,

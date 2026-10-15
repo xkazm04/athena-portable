@@ -320,6 +320,13 @@ export interface CompanionModel {
     offers: readonly OfferView[];
     /** `(showing N of M)` when the offers were cut, `""` otherwise. */
     offersFooter: string;
+    /**
+     * Why the page's own tools could not be read, verbatim, or `null`. The offers are then only
+     * her hands, which run whatever the page says, so they stay; the failure is said above them.
+     */
+    pageProblem: string | null;
+    /** The page answered nothing because it has no bridge (`timeout`, ADR 0008): no tools of its own. */
+    pageSilent: boolean;
     known: readonly OriginView[];
   };
   welcome: { engine: string; engineView: EngineView };
@@ -350,6 +357,8 @@ export interface CompanionInputs {
   /** The focused page's web origin, or `null` when nothing is open. */
   origin: string | null;
   tools: readonly ToolRow[];
+  /** Why the focused page's tools could not be read, as the tools store kept it, or `null`. */
+  toolsProblem?: string | null;
   /** The card being stamped, once the store has dropped it. */
   held: DecisionRequested | null;
   known: readonly OriginView[];
@@ -498,6 +507,9 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
       host: hostOf(i.origin),
       offers: i.tools.slice(0, OFFERS_SHOWN).map((t) => ({ name: t.name, cls: t.class, description: t.description, tier: t.tier })),
       offersFooter: i.tools.length > OFFERS_SHOWN ? `(showing ${OFFERS_SHOWN} of ${i.tools.length})` : "",
+      // A timeout is a page with no bridge, which is a fact and not a failure (stores/tools.ts).
+      pageProblem: i.toolsProblem && i.toolsProblem !== "timeout" ? i.toolsProblem : null,
+      pageSilent: i.toolsProblem === "timeout",
       known: i.known,
     },
     welcome: {
