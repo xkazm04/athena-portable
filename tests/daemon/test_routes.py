@@ -92,6 +92,7 @@ def test_the_table_ships_every_route_the_daemon_answers(daemon: AthenaDaemon) ->
         "GET /engines",
         "POST /manifest",
         "POST /run",
+        "POST /run/stop",
         "GET /decisions",
         "GET /ledger",
         "GET /ledger/rollup",

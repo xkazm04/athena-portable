@@ -81,6 +81,7 @@ from athena.daemon.routes import (
     Reply,
     Request,
     RouteTable,
+    TurnDoor,
     base_routes,
     engine_row,
     error,
@@ -261,6 +262,10 @@ class AthenaDaemon:
     #: subprocess cannot hold a turn and a turn cannot hold the probe.
     probe_lock: threading.Lock = field(default_factory=threading.Lock)
     _engines: tuple[float, list[dict[str, str]]] | None = field(default=None, repr=False)
+    #: The running turn's door (ADR 0115), and the small lock around it: never the writer lock,
+    #: which the turn being stopped holds.
+    door_lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
+    _door: TurnDoor | None = field(default=None, repr=False)
 
     def __post_init__(self) -> None:
         self.routes = RouteTable(base_routes(self))
@@ -298,6 +303,31 @@ class AthenaDaemon:
             rows = [engine_row(status) for status in probe_all(executables=self.engine_executables)]
             self._engines = (time.monotonic(), rows)
             return [dict(row) for row in rows]
+
+    @contextmanager
+    def turn_door(self, origin: str) -> Iterator[TurnDoor]:
+        """The door of the turn about to run for ``origin``, open for as long as it runs.
+
+        Taken inside :meth:`writing`, so the one open door is always the turn holding the lock.
+        """
+        door = TurnDoor(origin)
+        with self.door_lock:
+            self._door = door
+        try:
+            yield door
+        finally:
+            with self.door_lock:
+                if self._door is door:
+                    self._door = None
+
+    def stop_turn(self, origin: str) -> bool:
+        """Stop the running turn if it is ``origin``'s. ``False`` when none of theirs runs."""
+        with self.door_lock:
+            door = self._door
+            if door is None or not origin or door.origin != origin:
+                return False
+            door.stop()
+            return True
 
     @contextmanager
     def writing(self) -> Iterator[Brain]:

@@ -7,7 +7,7 @@ knows nothing about Athena; a route is added by appending to the table rather th
 handler; and a test can append a route of its own to prove a property of the *server* — that a
 slow route does not stall a fast one — without the daemon shipping a debug route to production.
 
-Three routes write and five read.
+Three routes write, one stops and five read.
 
 ``POST /manifest``
     A page describes itself. Refused whole on any problem (``manifest_invalid``, 400), merged
@@ -19,6 +19,12 @@ Three routes write and five read.
     One turn, streamed as Server-Sent Events (:class:`EventStream`, ADR 0012). One turn per
     request, on the session for the request's origin, in the conversation the session or the
     active project names.
+
+``POST /run/stop``
+    End the turn running for one origin (ADR 0115). It takes no lock, because the turn it stops
+    holds the writer lock: it cancels the step the turn is on, the harness writes the one
+    ``cancelled`` row, and the stream ends in ``turn.error``. ``{"stopped": false}`` when no turn
+    is running on that origin. A card already filed is untouched and stays answerable.
 
 ``POST /decisions/<id>``
     The user's answer. An approval replays the gate with the approval id and the surface receives
@@ -43,6 +49,7 @@ from __future__ import annotations
 
 import asyncio
 import json
+import threading
 from collections.abc import (
     AsyncGenerator,
     AsyncIterator,
@@ -92,6 +99,7 @@ __all__ = [
     "Route",
     "RouteFn",
     "RouteTable",
+    "TurnDoor",
     "announced",
     "base_routes",
     "bounded",
@@ -109,6 +117,7 @@ __all__ = [
     "playbooks",
     "run",
     "sse_frame",
+    "stop",
     "turn_context",
     "turn_events",
 ]
@@ -346,26 +355,89 @@ def event_payload(event: ChannelEvent) -> dict[str, Any]:
     return payload
 
 
-def drain(events: AsyncIterator[ChannelEvent]) -> Iterator[ChannelEvent]:
+#: The ``turn.error`` detail of a turn the person stopped. The reason beside it is ``cancelled``.
+STOPPED_DETAIL = "you stopped the turn"
+
+
+class TurnDoor:
+    """Where the running turn is stopped from another thread (ADR 0115).
+
+    :func:`drain` runs each step of a turn as a task on the turn's private loop and binds it here;
+    :meth:`stop`, called on the stop route's thread, cancels that task through the loop's own
+    thread-safe door. A stop that lands between two steps cancels the next one once it is inside
+    the turn, never before it starts, so the harness always sees the cancellation and writes the
+    one ``cancelled`` row. Nothing here takes the writer lock.
+    """
+
+    def __init__(self, origin: str) -> None:
+        self.origin = origin
+        self.stopped = False
+        self._lock = threading.Lock()
+        self._loop: asyncio.AbstractEventLoop | None = None
+        self._step: asyncio.Future[Any] | None = None
+
+    def bind(self, loop: asyncio.AbstractEventLoop, step: asyncio.Future[Any]) -> None:
+        """The step the turn is about to run. Called on the turn's own thread."""
+        with self._lock:
+            self._loop, self._step = loop, step
+            if self.stopped:
+                # Queued behind the step's first pass, so the cancellation lands inside the turn.
+                loop.call_soon(step.cancel)
+
+    def stop(self) -> None:
+        """Stop the turn. Safe from any thread; a second call changes nothing."""
+        with self._lock:
+            self.stopped = True
+            loop, step = self._loop, self._step
+            if loop is None or step is None or step.done():
+                return
+            with suppress(RuntimeError):  # the loop closed as the turn ended on its own
+                loop.call_soon_threadsafe(step.cancel)
+
+
+def drain(
+    events: AsyncIterator[ChannelEvent], door: TurnDoor | None = None
+) -> Iterator[ChannelEvent]:
     """Pull an async stream one event at a time on a private loop.
 
     Frame by frame, not turn by turn: the handler writes each event as it is produced, and a
     ``run_until_complete`` over the whole generator would buffer a decision card behind the rest
     of the turn. The loop is private to this turn, because the daemon's threads have none.
+
+    Each step is a task bound to ``door``, so a stop cancels the step the turn is waiting in. The
+    harness writes the ``cancelled`` row as the cancellation passes through it, and the stream
+    then ends in ``turn.error``, not at a socket that simply closes (ADR 0115).
     """
     loop = asyncio.new_event_loop()
     try:
         while True:
+            step = asyncio.ensure_future(events.__anext__(), loop=loop)
+            if door is not None:
+                door.bind(loop, step)
             try:
-                yield loop.run_until_complete(events.__anext__())
+                event = loop.run_until_complete(step)
             except StopAsyncIteration:
                 return
+            except asyncio.CancelledError:
+                if door is None or not door.stopped:
+                    raise
+                yield TurnError(reason="cancelled", detail=STOPPED_DETAIL)
+                return
+            yield event
     finally:
         # A caller that stopped early (a client hung up) leaves the generator suspended; closing
         # it on the same loop runs its ``finally`` blocks before the loop goes away.
         if isinstance(events, AsyncGenerator):
             with suppress(RuntimeError, StopAsyncIteration):
                 loop.run_until_complete(events.aclose())
+        # A generator the closed one was iterating (the lane's ``async for`` over the harness) is
+        # not closed with it: the loop finalises it as a task of its own. Run those to the end too,
+        # or the harness never hears the hang-up and the turn has no row.
+        with suppress(RuntimeError):
+            loop.run_until_complete(loop.shutdown_asyncgens())
+            leftover = asyncio.all_tasks(loop)
+            if leftover:
+                loop.run_until_complete(asyncio.gather(*leftover, return_exceptions=True))
         loop.close()
 
 
@@ -773,7 +845,7 @@ def turn_events(
     the generator, and the handler closes the generator when a client hangs up. The voice gateway
     drives the same generator, so a spoken turn holds the lock exactly the way a typed one does.
     """
-    with daemon.writing():
+    with daemon.writing(), daemon.turn_door(ctx.page_origin or "") as door:
         try:
             events = daemon.lane.run(
                 message,
@@ -783,7 +855,7 @@ def turn_events(
                 active_project=project,
                 pending_decisions=pending_lines(daemon),
             )
-            yield from drain(events)
+            yield from drain(events, door)
         except Exception as exc:  # a lane bug ends the stream honestly, never silently
             # The type only: an exception's message can quote a request body, and a body may hold
             # anything the caller put in it.
@@ -808,6 +880,19 @@ def pending_lines(daemon: AthenaDaemon, limit: int = PENDING_LINES) -> list[str]
         line if len(line) <= PENDING_LINE_CAP else f"{line[: PENDING_LINE_CAP - 1]}…"
         for line in lines
     ]
+
+
+# --- POST /run/stop ------------------------------------------------------------------------------
+
+
+def stop(daemon: AthenaDaemon, request: Request) -> Reply:
+    """Stop the turn running for ``origin``, if one is (ADR 0115).
+
+    No writer lock: the turn being stopped holds it. A turn on another origin is not this caller's
+    to stop, so it runs on and the answer is ``stopped: false``, as when nothing runs at all.
+    """
+    origin = str(request.body.get("origin", "")).strip()
+    return 200, {"ok": True, "stopped": daemon.stop_turn(origin)}
 
 
 # --- POST /decisions/<id> ------------------------------------------------------------------------
@@ -1113,6 +1198,7 @@ def base_routes(daemon: AthenaDaemon) -> list[Route]:
         Route("GET", "/engines", lambda request: engines(daemon, request)),
         Route("POST", "/manifest", lambda request: manifest(daemon, request)),
         Route("POST", "/run", lambda request: run(daemon, request)),
+        Route("POST", "/run/stop", lambda request: stop(daemon, request)),
         Route("GET", "/decisions", lambda request: decisions(daemon, request)),
         Route("GET", "/ledger", lambda request: ledger_recent(daemon, request)),
         Route("GET", "/ledger/rollup", lambda request: ledger_rollup(daemon, request)),
