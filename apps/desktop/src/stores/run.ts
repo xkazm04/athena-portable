@@ -22,17 +22,23 @@
  * filed — or one bound to a tab that closed, reloaded or navigated since (ADR 0103).
  */
 import { create } from "zustand";
-// @ts-expect-error - gate.js is plain JavaScript with a .d.ts that does not cover this one.
-import { flagsOf } from "@athena/bridge/gate";
 
 import { ApiError, DaemonApi, type ExecuteRow, type ToolRow } from "@/lib/api";
 import { onLate, type BridgeTool, type LateAnswer } from "@/lib/bridge";
 import { driftOf, type ContractDrift, type ContractTable } from "@/lib/contract";
 import {
+  clearUnsureForTests,
+  forgetUnsure,
+  heldBefore,
+  rememberUnsure,
+  settleHostCall,
+  withUnsure,
+  type PageAnswer,
+} from "@/lib/execute";
+import {
   TABS_READ,
   callOnPage,
   describeRefs,
-  handTools,
   refsOf,
   takeCapture,
   tierOf,
@@ -53,6 +59,17 @@ import { useTools, type TabTools } from "@/stores/tools";
 import { sheetOf, slotFor, type SheetSlot } from "@/lib/sheet";
 
 export { SHEET_CAP, sheetKeyOf, sheetOf, slotFor, type SheetOf, type SheetSlot } from "@/lib/sheet";
+// The host-call rules of ADR 0101 are the window's and live in `lib/execute.ts`, which the voice
+// store drives too. Their old names stay importable from here.
+export {
+  UNSURE_CAP,
+  isReadCall,
+  readTimeout as timeoutReasonOf,
+  unsureTools,
+  withUnsure,
+  type PageAnswer,
+  type Unsure,
+} from "@/lib/execute";
 
 /** How many times the loop may continue one exchange on its own before it stops and says so. */
 export const MAX_CONTINUATIONS = 8;
@@ -205,17 +222,6 @@ export interface RunDeps {
   /** Read back what earlier windows kept. */
   earlier?: () => Promise<StorePage<ActivityRow>>;
   now?: () => Date;
-}
-
-/** What a page (or a hand) answered one call with. `reason` is the closed-set code, when it gave one. */
-export interface PageAnswer {
-  ok: boolean;
-  output: string;
-  error?: string | null;
-  reason?: string | null;
-  tier?: number;
-  /** The tab a `tabs_read` read, as the shell reports it (ADR 0105). */
-  sourceTab?: number | null;
 }
 
 /** An open tab a `tabs_read` names, as the panel sees it (ADR 0105). */
@@ -955,113 +961,6 @@ export interface Ran {
   error: string | null;
 }
 
-/**
- * Is this call a read? Only a tool whose flags say reversible *and* no side effects (README 3.3).
- * The page's own tool wins over a hand of the same name (ADR 0065); a tool nobody describes is
- * not a read, so its timeout counts as "may have run".
- */
-export function isReadCall(bare: string, pageTools: readonly BridgeTool[]): boolean {
-  const tool = pageTools.find((t) => t.name === bare) ?? handTools().find((t) => t.name === bare);
-  if (!tool) return false;
-  const flags = flagsOf(tool) as { reversible: boolean; side_effects: string };
-  return flags.reversible === true && flags.side_effects === "none";
-}
-
-/**
- * The reason a call's answer carries, for the record. A `timeout` on anything but a read is
- * `outcome_unknown`: the call was sent and never answered, so it may have run (ADR 0101). A hung
- * read is still a plain `timeout`. `null` for an answer that is not a timeout.
- */
-export function timeoutReasonOf(answer: PageAnswer, read: boolean): "timeout" | "outcome_unknown" | null {
-  if (answer.ok) return null;
-  const timedOut = answer.reason === "timeout" || answer.error === "timeout";
-  if (!timedOut) return null;
-  return read ? "timeout" : "outcome_unknown";
-}
-
-/** A tool whose last call never answered, by web origin and registry name (ADR 0101). */
-export interface Unsure {
-  origin: string;
-  tool: string;
-  at: string;
-}
-
-/** How many unanswered calls are remembered. Oldest goes first. */
-export const UNSURE_CAP = 32;
-const UNSURE_KEY = "athena.run.unsure";
-
-/**
- * The tools gated again because a call of theirs may have run: kept until a card for the tool is
- * answered. Bounded, in memory, and mirrored to `localStorage` when there is one, so a reload does
- * not forget a send that may have gone out. A storage that throws only costs the mirror.
- */
-const unsure = new Map<string, Unsure>(readUnsure());
-
-function readUnsure(): Array<[string, Unsure]> {
-  try {
-    const raw = globalThis.localStorage?.getItem(UNSURE_KEY);
-    const parsed: unknown = raw ? JSON.parse(raw) : [];
-    if (!Array.isArray(parsed)) return [];
-    return parsed
-      .filter(
-        (u): u is Unsure =>
-          typeof u === "object" && u !== null && typeof (u as Unsure).tool === "string" && typeof (u as Unsure).origin === "string",
-      )
-      .slice(-UNSURE_CAP)
-      .map((u) => [`${u.origin}|${u.tool}`, { origin: u.origin, tool: u.tool, at: String(u.at ?? "") }]);
-  } catch {
-    return [];
-  }
-}
-
-function writeUnsure(): void {
-  try {
-    globalThis.localStorage?.setItem(UNSURE_KEY, JSON.stringify([...unsure.values()]));
-  } catch {
-    // The mirror is a convenience; the map is the truth for this window.
-  }
-}
-
-function rememberUnsure(entry: Unsure): void {
-  const key = `${entry.origin}|${entry.tool}`;
-  unsure.delete(key);
-  unsure.set(key, entry);
-  while (unsure.size > UNSURE_CAP) {
-    const oldest = unsure.keys().next().value;
-    if (oldest === undefined) break;
-    unsure.delete(oldest);
-  }
-  writeUnsure();
-}
-
-function isUnsure(tool: string): boolean {
-  return [...unsure.values()].some((u) => u.tool === tool);
-}
-
-/** A card for the tool was answered, approved or declined: the user has had their say. */
-function forgetUnsure(tool: string): void {
-  let changed = false;
-  for (const [key, entry] of unsure) {
-    if (entry.tool === tool) {
-      unsure.delete(key);
-      changed = true;
-    }
-  }
-  if (changed) writeUnsure();
-}
-
-/** What is unsure now, oldest first. For the panel and the tests. */
-export function unsureTools(): Unsure[] {
-  return [...unsure.values()];
-}
-
-/** The gate's lists with every unsure tool added to `gated_tools`. Only ever tightens. */
-export function withUnsure(gated: GatedLists): GatedLists {
-  if (unsure.size === 0) return gated;
-  const tools = new Set([...gated.gated_tools, ...[...unsure.values()].map((u) => u.tool)]);
-  return { gated_origins: gated.gated_origins, gated_tools: [...tools].sort() };
-}
-
 /** How many timed-out calls are remembered for a `late` answer. */
 const TIMED_OUT_CAP = 32;
 
@@ -1074,8 +973,7 @@ export function setRunDeps(next: RunDeps): void {
 
 export function resetRunForTests(): void {
   deps = LIVE;
-  unsure.clear();
-  writeUnsure();
+  clearUnsureForTests();
   useRun.setState({ ...EMPTY });
 }
 
@@ -1148,11 +1046,11 @@ export const useRun = create<RunState>((set, get) => {
     // A call whose last run never answered waits for the user's answer before it runs again
     // (ADR 0101). The gate is told on every request; this is the same rule one step later, for a
     // call proposed before the gate heard.
-    if (!approved && isUnsure(row.name)) {
-      const why = `outcome_unknown: ${row.name} may already have run; it waits for the user's answer before it runs again`;
-      outstanding.push(resultRow(row, false, "", why));
-      push({ id: row.call_id, kind: "tool", text: `${row.name} → held: it may already have run`, tier: row.tier ?? 1, ok: false });
-      return { ok: false, error: why };
+    const held = heldBefore(row.name, approved);
+    if (held) {
+      outstanding.push(resultRow(row, false, "", held.error));
+      push({ id: row.call_id, kind: "tool", text: `${row.name} → ${held.line}`, tier: row.tier ?? 1, ok: false });
+      return { ok: false, error: held.error };
     }
     // A read of another tab is checked here before the shell is asked (ADR 0105): a refusal reads
     // nothing, and the tab it would have read is never addressed.
@@ -1182,11 +1080,8 @@ export const useRun = create<RunState>((set, get) => {
       answer = { ok: false, output: "", error: error instanceof Error ? error.message : String(error) };
     }
     const listedTools = routingTools(snap, target.tabId) ?? useTools.getState().byTab[target.tabId]?.tools ?? [];
-    const timeout = timeoutReasonOf(answer, isReadCall(bareName(row.name), listedTools));
-    let error = answer.error ?? null;
+    const { timeout, error, line } = settleHostCall(row.name, answer, listedTools);
     if (timeout !== null) {
-      const detail = answer.error && answer.error !== "timeout" ? answer.error : "no answer before the deadline";
-      error = `${timeout}: ${detail}`;
       if (timedOut.size >= TIMED_OUT_CAP) {
         const oldest = timedOut.keys().next().value;
         if (oldest !== undefined) timedOut.delete(oldest);
@@ -1215,13 +1110,7 @@ export const useRun = create<RunState>((set, get) => {
     push({
       id: row.call_id,
       kind: "tool",
-      text: `${row.name} → ${
-        answer.ok
-          ? answer.output
-          : timeout === "outcome_unknown"
-            ? "may have completed: no answer before the deadline"
-            : (error ?? "failed")
-      }`,
+      text: `${row.name} → ${line}`,
       tier: answer.tier ?? row.tier ?? 1,
       ok: answer.ok,
     });
