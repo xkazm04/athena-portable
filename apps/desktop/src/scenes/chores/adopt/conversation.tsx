@@ -52,6 +52,7 @@ export default function Conversation({
   onSay,
   onDrop,
   onEnough,
+  enoughBlocked,
   onDraft,
   stage,
   words,
@@ -67,6 +68,8 @@ export default function Conversation({
   /** Absent: no drop zone (the Chores front door takes no documents). */
   onDrop?: (file: File) => void;
   onEnough: () => void;
+  /** Why "Good enough" cannot be pressed yet, when it cannot (the front door: nothing said). */
+  enoughBlocked?: string;
   onDraft: (key: string, unsent: boolean) => void;
   /** What plays under the conversation once the brief is approved: the showcase. */
   stage?: ReactNode;
@@ -170,7 +173,7 @@ export default function Conversation({
                   ? "Waiting for the session"
                   : enough
                     ? w.enoughDone
-                    : undefined
+                    : enoughBlocked
               }
             >
               {w.enough}

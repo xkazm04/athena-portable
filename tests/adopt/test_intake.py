@@ -199,6 +199,18 @@ def test_decide_forces_a_verdict_at_once(live: Live, lib: Path) -> None:
     assert "Decide now" in live.rig.model.calls[-1].prompt
 
 
+def test_decide_before_a_word_is_refused_without_a_model_call(live: Live, lib: Path) -> None:
+    live.rig.model.script = {"intake": [CARD, template()]}
+    sid = open_intake(live)
+    frames_until(live, sid, "adopt.questions")
+    calls = len(live.rig.model.calls)
+    status, body = live.request(f"/intake/{sid}/decide", method="POST")
+    assert status == 409
+    assert body["reason"] == "validator_failed"
+    assert body["detail"].startswith("nothing_said:")
+    assert len(live.rig.model.calls) == calls
+
+
 def test_a_leg_that_still_fails_is_an_engine_error_not_a_verdict(live: Live, lib: Path) -> None:
     live.rig.model.script = {"intake": ["not json at all"]}
     sid = open_intake(live)

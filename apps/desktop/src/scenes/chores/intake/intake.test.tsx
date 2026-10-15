@@ -496,6 +496,19 @@ describe("the conversation", () => {
     expect(intake.routes("decide")).toEqual(["s1"]);
   });
 
+  it("holds Just decide for me until the person has said something", async () => {
+    await show();
+    await feed(CARD);
+    expect(
+      (button("Just decide for me") as HTMLButtonElement | null)?.disabled,
+    ).toBe(true);
+    expect(
+      document.querySelector('[title="Say what you need first"]'),
+    ).not.toBeNull();
+    await click(button("Just decide for me"));
+    expect(intake.routes("decide")).toEqual([]);
+  });
+
   it("follows a dropped stream from the last seq and stops at session_closed", async () => {
     await show();
     await feed(

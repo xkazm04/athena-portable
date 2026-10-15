@@ -78,6 +78,13 @@ function onEvent(s: IntakeState, e: AdoptEvent): IntakeState {
   return carried;
 }
 
+/** Has the person said anything yet: typed a line or answered a card. "Just decide" waits for it. */
+export function hasSaid(s: IntakeState): boolean {
+  return s.feed.some(
+    (f) => f.kind === "you" || (f.kind === "card" && f.answers !== null),
+  );
+}
+
 /** The first thing the person said, which a retried session carries as its need. */
 export function needOf(s: IntakeState): string {
   const first = s.feed.find((f) => f.kind === "you");

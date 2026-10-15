@@ -21,6 +21,7 @@ import type { AdoptDeps } from "../adopt/deps";
 import Conversation, { type ConversationWords } from "../adopt/conversation";
 import "../adopt/adopt.css";
 import { useIntakeSession } from "./session";
+import { hasSaid } from "./state";
 import VerdictCard from "./verdict";
 
 const WORDS: Omit<ConversationWords, "composer"> = {
@@ -204,6 +205,7 @@ export default function Intake({
           onAnswer={act.answer}
           onSay={act.say}
           onEnough={act.decide}
+          enoughBlocked={hasSaid(s) ? undefined : "Say what you need first"}
           onDraft={onDraft}
           words={{ ...WORDS, composer: !done }}
           stage={

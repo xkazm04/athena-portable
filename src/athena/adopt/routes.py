@@ -310,6 +310,9 @@ def intake_act(studio: AdoptStudio, request: Request, tail: str) -> Reply | Even
             return error(409, "validator_failed", "decided: the verdict was already given")
         return answer(session, request.body, intake.receive_answers)
     if verb == "decide":
+        if not session.answers:
+            # No model call: a verdict on nothing would be made up (ADR 0098).
+            return error(409, "validator_failed", "nothing_said: say what you need first")
         intake.decide(session)
         return 200, {"ok": True}
     return error(404, "unknown", f"no route for POST {INTAKE_PREFIX}{tail}")
