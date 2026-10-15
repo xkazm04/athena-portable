@@ -1,6 +1,6 @@
 """The voice channel: PCM16 over a WebSocket, one backend, the ``TTS:`` rule (README §3.1).
 
-Five files, each one thing (ADR 0019):
+Six files, each one thing (ADR 0019):
 
 - :mod:`athena.channels.voice.ws` — RFC 6455 in the standard library: the handshake key, frames
   in and out, and a client half for tests and a shell-free client.
@@ -8,8 +8,10 @@ Five files, each one thing (ADR 0019):
   speak one line), a scripted backend for tests, and one provider behind an environment key.
 - :mod:`athena.channels.voice.commands` — what an utterance *is* before it is a turn: a stop
   word, an answer to the card on top, or a message.
+- :mod:`athena.channels.voice.speech` — the speech door: display text made speakable, and where
+  its sentences end (ADR 0114).
 - :mod:`athena.channels.voice.tts` — what is spoken for a finished turn: the ``TTS:`` line, or
-  the text cut to the cap and announced.
+  the text as whole sentences up to the spoken budget and announced, both through the door.
 - :mod:`athena.channels.voice.gateway` — the socket's life: a reader, a worker that runs the
   ordinary browser-lane turn, a speaker, and barge-in by generation counter.
 
@@ -55,6 +57,7 @@ from athena.channels.voice.gateway import (
 from athena.channels.voice.home import EngineHomes, EngineProbe, resolve_homes
 from athena.channels.voice.install import Installer, InstallState
 from athena.channels.voice.kokoro import KokoroTTS
+from athena.channels.voice.speech import SPOKEN_BUDGET, speakable
 from athena.channels.voice.tts import TTS_CAP, SpokenLine, spoken_line
 from athena.channels.voice.ws import (
     MAX_FRAME_BYTES,
@@ -76,6 +79,7 @@ __all__ = [
     "NOT_SET_UP",
     "PROTOCOL_PREFIX",
     "RESULT_TIMEOUT_S",
+    "SPOKEN_BUDGET",
     "TTS_CAP",
     "VOICE_PATH",
     "BufferedTranscriber",
@@ -109,5 +113,6 @@ __all__ = [
     "connect",
     "recognise",
     "resolve_homes",
+    "speakable",
     "spoken_line",
 ]

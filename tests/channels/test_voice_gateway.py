@@ -285,19 +285,22 @@ def test_a_stop_word_into_silence_is_a_message(voiced: Live, client: VoiceClient
 # -- the spoken line ---------------------------------------------------------------------------
 
 
-def test_a_reply_longer_than_the_cap_is_spoken_truncated_and_announced(
+def test_a_reply_longer_than_the_budget_is_spoken_as_whole_sentences_and_announced(
     voiced: Live, backend: ScriptedBackend, client: VoiceClient
 ) -> None:
     voiced.register()
-    long = "word " * 400  # 2000 characters, no TTS line
+    # Sixty sentences of 36 characters, 2,219 in all, no TTS line: nine of them are 9 * 36 + 8 =
+    # 332 characters, under the 360 budget, and a tenth would make 369.
+    said = [f"Invoice {n} is late and still unpaid." for n in range(10, 70)]
+    long = " ".join(said)
+    assert len(long) > TTS_CAP and {len(one) for one in said} == {36}
     voiced.script(claude_round(long))
 
     client.say("tell me everything")
     speaking = client.until("voice.speaking")
 
     assert speaking["truncated"] is True
-    total = len(long.strip())
-    assert speaking["text"].endswith(f"(showing {TTS_CAP} of {total})")
+    assert speaking["text"] == " ".join(said[:9]) + " (showing 9 of 60)"
     # ``voice.speaking`` goes out before the backend is first pulled; the line is the backend's
     # record only once playback has run, so read it after the stop, not racing the speaker.
     client.until("voice.stopped", generation=speaking["generation"])

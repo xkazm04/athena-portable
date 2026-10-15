@@ -1,14 +1,17 @@
-"""The ``TTS:`` first-line rule, and the cap on what is spoken (README §3.2; ADR 0019).
+"""The ``TTS:`` line, the speech door and the spoken budget (README §3.2; ADR 0019, 0114).
 
 A reply is written for the eye and spoken for the ear, and the two are not the same text. The
 constitution lets the model put a ``TTS:`` line first — one sentence for the speaker — and
 :mod:`athena.harness.op_grammar` lifts it off the visible text into ``turn.finished.tts``. This
-module decides what the gateway actually says:
+module decides what the gateway actually says, and everything it says passes
+:func:`athena.channels.voice.speech.speakable` first (no markup, no URL paths, code mentioned):
 
-- the ``TTS:`` line, when there is one. The parser already holds it to :data:`TTS_CAP`;
-- otherwise the visible text, cut to the same cap and *announced* — the spoken text ends with
-  ``(showing N of M)`` like every other bounded thing in this repository (README §2, invariant 4),
-  so a person who hears a reply stop short hears that it stopped short;
+- the ``TTS:`` line, through the door, when it has words. The parser already holds it to
+  :data:`TTS_CAP`;
+- otherwise the visible text, through the door, as whole sentences up to
+  :data:`~athena.channels.voice.speech.SPOKEN_BUDGET` and *announced* — the spoken text ends with
+  ``(showing N of M)`` counted in sentences, like every other bounded thing in this repository
+  (README §2, invariant 4), so a person who hears a reply stop short hears how much is on screen;
 - nothing at all for an empty turn, so silence is never synthesised.
 """
 
@@ -16,11 +19,12 @@ from __future__ import annotations
 
 from dataclasses import dataclass
 
+from athena.channels.voice.speech import SPOKEN_BUDGET, pieces, speakable
 from athena.contracts.channel import TurnFinished
 from athena.contracts.harness import PromptBlock
 from athena.harness.op_grammar import TTS_CAP
 
-__all__ = ["TTS_CAP", "SpokenLine", "spoken_line"]
+__all__ = ["SPOKEN_BUDGET", "TTS_CAP", "SpokenLine", "spoken_line"]
 
 
 @dataclass(frozen=True)
@@ -31,13 +35,23 @@ class SpokenLine:
 
 def spoken_line(finished: TurnFinished) -> SpokenLine | None:
     """What to say for one finished turn, or ``None`` when there is nothing to say."""
-    if finished.tts and finished.tts.strip():
-        return SpokenLine(finished.tts.strip())
-    text = finished.text.strip()
+    if finished.tts:
+        line = speakable(finished.tts)
+        if line:
+            return SpokenLine(line)
+    text = speakable(finished.text)
     if not text:
         return None
-    total = len(text)
-    if total <= TTS_CAP:
+    if len(text) <= SPOKEN_BUDGET:
         return SpokenLine(text)
-    footer = PromptBlock("tts", text[:TTS_CAP], shown=TTS_CAP, total=total).footer()
-    return SpokenLine(f"{text[:TTS_CAP]} {footer}", truncated=True)
+    parts = pieces(text, SPOKEN_BUDGET)
+    shown: list[str] = []
+    size = -1
+    for part in parts:
+        if size + 1 + len(part) > SPOKEN_BUDGET:
+            break
+        shown.append(part)
+        size += 1 + len(part)
+    body = " ".join(shown)
+    footer = PromptBlock("tts", body, shown=len(shown), total=len(parts)).footer()
+    return SpokenLine(f"{body} {footer}", truncated=True) if footer else SpokenLine(body)

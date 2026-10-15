@@ -24,7 +24,6 @@ from __future__ import annotations
 
 import codecs
 import functools
-import re
 import subprocess
 import sys
 import tempfile
@@ -45,6 +44,7 @@ from athena.channels.voice.home import (
     dry_check,
     dry_run,
 )
+from athena.channels.voice.speech import sentences
 
 __all__ = [
     "ANSI_CODE_PAGE",
@@ -190,20 +190,17 @@ def probe(
 
 # --- one sentence -------------------------------------------------------------------------------
 
-_SENTENCE_END = re.compile(r"(?<=[.!?…])[\"')\]]*\s+")
-
 
 def split_sentences(text: str) -> list[str]:
     """The reply cut where a sentence ends, blanks dropped. A run with no stop is one sentence.
 
-    A fragment shorter than a few words is folded into the sentence before it — "Hi." as its own
-    process run costs a model load for half a second of audio.
+    Where a sentence ends is the speech door's rule (:func:`athena.channels.voice.speech.sentences`,
+    ADR 0114), so "Dr." or "e.g." does not end one and the chunker cuts where the spoken budget
+    does. A fragment shorter than a few words is folded into the sentence before it — "Hi." as its
+    own process run costs a model load for half a second of audio.
     """
-    parts = [part.strip() for part in _SENTENCE_END.split(text.strip())]
     out: list[str] = []
-    for part in parts:
-        if not part:
-            continue
+    for part in sentences(text):
         if out and len(part) < 12:
             out[-1] = f"{out[-1]} {part}"
         else:

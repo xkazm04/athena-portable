@@ -352,8 +352,10 @@ provider, so it sends no request and writes no row. A partial leaves both fields
 A `tool.call` with a host origin and no `tool.result` behind it in the same turn is the page's to
 run; the client answers with `tool_result` and the turn continues on the answers, bounded at
 eight. A gated call arrives as a `tool.call` refused `pending_approval` and a card — nothing runs.
-The spoken line is the reply's `TTS:` first line, else its text cut to 1,200 characters and
-announced with `(showing N of M)`. A new `start` over a reply, or a partial transcript arriving
+The spoken line is the reply's `TTS:` first line, else its text as the whole sentences that fit
+in 360 characters, announced with `(showing N of M)` counted in sentences. Both pass the speech
+door first (ADR 0114): no markup, a link spoken as its label, a bare URL as its host, and code
+as one "code on screen". A new `start` over a reply, or a partial transcript arriving
 over one, is a barge-in: playback stops at its next chunk and `voice.stopped` says `barge_in`
 for the generation to drop.
 

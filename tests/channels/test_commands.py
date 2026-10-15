@@ -6,7 +6,7 @@ from __future__ import annotations
 import pytest
 
 from athena.channels.voice.commands import Card, normalise, outcome_of, recognise
-from athena.channels.voice.tts import TTS_CAP, spoken_line
+from athena.channels.voice.tts import SPOKEN_BUDGET, TTS_CAP, spoken_line
 from athena.contracts.channel import TRANSCRIPT_OUTCOMES, TurnFinished
 
 YES_NO = Card("apr_1", (("approve", "approve"), ("decline", "decline")))
@@ -97,12 +97,11 @@ def test_without_a_tts_line_the_text_is_spoken_whole_when_it_fits() -> None:
     assert line is not None and line.text == "Two invoices are late."
 
 
-def test_a_long_reply_is_spoken_cut_to_the_cap_and_announced() -> None:
-    text = "x" * (TTS_CAP + 300)
+def test_one_word_longer_than_the_budget_is_the_only_cut_inside_a_word() -> None:
+    text = "x" * (TTS_CAP + 300)  # 1,500 characters, no space: five pieces of at most 360
     line = spoken_line(TurnFinished(text=text, tts=None))
     assert line is not None and line.truncated
-    assert line.text.endswith(f"(showing {TTS_CAP} of {TTS_CAP + 300})")
-    assert line.text.startswith("x" * TTS_CAP)
+    assert line.text == "x" * SPOKEN_BUDGET + " (showing 1 of 5)"
 
 
 def test_an_empty_turn_says_nothing() -> None:
