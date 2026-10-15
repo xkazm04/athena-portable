@@ -908,6 +908,13 @@ for a button and the wrong one for, say, a wide region frame.
 already owns the event; it is the only place that can decline it without the surface guessing.
 Written in `variants/archify/Nodes.tsx`.
 
+**Closed in the kit (2026-10-15), without `dragFrom`.** The rig's pointer is now the pure machine
+`demo-kit/src/zoom/gesture.ts`: a press is a click until it travels 4 screen px, the pointer is
+captured only at that threshold, the click after a drag is swallowed once, and up, cancel and a
+lost capture each release. A control in the scene answers the mouse with no opt-out, and a pan can
+start on it. `archify-lanes/Scene.tsx` dropped its `holdPointer`, the last copy of the
+workaround in the app.
+
 ### R5-A2. A surface that corrects the camera cancels the flight `useSemanticZoom` is holding, and the hook never recovers
 
 `rig.flyTo` returns a `cancel`, and `cancel()` does **not** call `onDone` — correctly, since the

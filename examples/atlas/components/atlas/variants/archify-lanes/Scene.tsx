@@ -323,15 +323,12 @@ export interface NodeProps {
 }
 
 /**
- * A NODE IS NOT A DRAG HANDLE — KIT-GAPS R5-A1, hit again here.
+ * A NODE IS A CLICK AND A DRAG HANDLE — KIT-GAPS R5-A1, closed in the kit.
  *
- * `useCameraRig`'s `onPointerDown` captures the pointer on the canvas, and a captured pointer
- * retargets the following `click` to the capturing element, so a node's own `onClick` never fires.
- * The node stops the pointer at itself; the camera still pans from the bands, the gaps and the
- * gutter, which is most of the drawing.
+ * The rig no longer captures on press: a press is a click until it travels `DRAG_SLOP` screen px,
+ * so a node's own `onClick` fires, and a pan may start on a node like anywhere else. A pan
+ * released over a node does not open it either: the rig swallows that one trailing click.
  */
-const holdPointer = (event: { stopPropagation: () => void }) => event.stopPropagation();
-
 export const Node = memo(function Node({
   node,
   rect,
@@ -361,7 +358,6 @@ export const Node = memo(function Node({
       tabIndex={0}
       role="button"
       aria-label={`${node.label} — ${node.sublabel}. ${node.note}`}
-      onPointerDown={holdPointer}
       onClick={() => onOpen(node.id)}
       onKeyDown={(e) => onKeyDown(e, node.id)}
       onPointerEnter={() => onHover(node.id)}
