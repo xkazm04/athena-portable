@@ -2711,7 +2711,11 @@
           "revision": 27,
           "changedAt": "2026-10-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/demo-kit/src/webmcp/modelContext.ts:114 Context searches found no run_turn, ModelRequest or register_hook occurrences, while the implementation dispatches page tools for outside agents at the protocol boundary excluded by this standard.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:45b3f952560a4cbc",
+          "evaluatedRevision": 28
         },
         {
           "subject": "structured-output",
@@ -5652,7 +5656,11 @@
           "revision": 27,
           "changedAt": "2026-10-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/harness/rounds.py:187 Cancellation closes the turn as an error without a first-class indeterminate result for an outstanding metered generation whose provider outcome may remain unknown.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:45b3f952560a4cbc",
+          "evaluatedRevision": 28
         },
         {
           "subject": "voice-io",

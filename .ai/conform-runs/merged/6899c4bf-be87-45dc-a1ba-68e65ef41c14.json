@@ -1,0 +1,135 @@
+{
+  "schema": "conform-run/1",
+  "worker": "6899c4bf-be87-45dc-a1ba-68e65ef41c14",
+  "subject": "agent-runtime-assembly",
+  "evaluatedAt": "2026-10-15T03:59:35.775416+00:00",
+  "provider": "codex",
+  "model": "gpt-6.1-sol",
+  "pairs": [
+    {
+      "context": "harness-engines",
+      "subject": "agent-runtime-assembly",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "src/athena/harness/rounds.py:187 Cancellation closes the turn as an error without a first-class indeterminate result for an outstanding metered generation whose provider outcome may remain unknown.",
+      "techniques": [
+        {
+          "technique": "indeterminate-closure-on-interruption",
+          "verdict": "deviation",
+          "evidence": "src/athena/harness/rounds.py:187 The cancellation path records is_error with a cancelled reason and re-raises; it does not settle the outstanding generation with a typed indeterminate outcome or reconcile its spend."
+        },
+        {
+          "technique": "operator-tier-code-loading",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/harness/engines.py:203 Engine selection uses the host's fixed dialect table; searches found no contributed in-process extension loader in this context."
+        },
+        {
+          "technique": "rewrite-before-the-gate",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/harness/rounds.py:305 Dispatch passes parsed parameters directly to the gate; searches found no contributed argument-rewriting frame."
+        },
+        {
+          "technique": "substituted-result-attribution",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/harness/hooks.py:227 The allowed execution path invokes the entry's executor and caps its result; no cache or alternate-producer wrapper was found."
+        }
+      ]
+    },
+    {
+      "context": "demo-kit-ui-webmcp",
+      "subject": "agent-runtime-assembly",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evidence": "examples/demo-kit/src/webmcp/modelContext.ts:114 Context searches found no run_turn, ModelRequest or register_hook occurrences, while the implementation dispatches page tools for outside agents at the protocol boundary excluded by this standard.",
+      "techniques": [
+        {
+          "technique": "activation-is-a-separate-mutation",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/webmcp/hooks.ts:96 Cleanup withdraws a page-lifetime tool registration; this is not installation of a persistent agent-runtime extension."
+        },
+        {
+          "technique": "bounded-projection-of-external-work",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/webmcp/bounded.ts:47 The bounded projection slices an ordinary result list; it does not represent durable external jobs."
+        },
+        {
+          "technique": "substituted-result-attribution",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/webmcp/modelContext.ts:115 The dispatcher serializes the selected tool's actual result; no replaying or alternate-producer frame was found."
+        }
+      ],
+      "absenceTerms": [
+        "run_turn",
+        "ModelRequest",
+        "register_hook"
+      ]
+    }
+  ],
+  "declined": [
+    {
+      "subject": "agent-runtime-assembly",
+      "context": "core-gate-and-ledger",
+      "reason": "the seat returned unknown"
+    },
+    {
+      "subject": "agent-runtime-assembly",
+      "context": "connector-service",
+      "reason": "the seat returned unknown"
+    },
+    {
+      "subject": "agent-runtime-assembly",
+      "context": "proving-sandbox",
+      "reason": "withdrawn after review: reviewer (sonnet): The not-applicable anchor (__main__.py:83) is incidental: the line is a report write, not the absence; the sandbox spike does fork from checkpoints and poll long-running operations, which this subject's standards cover, and the absence terms run_turn, ModelRequest and register_hook are too narrow to"
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-15T03:59:35.775416+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "agent-runtime-assembly"
+      ],
+      "techniques": [
+        "indeterminate-closure-on-interruption",
+        "operator-tier-code-loading",
+        "rewrite-before-the-gate",
+        "substituted-result-attribution"
+      ],
+      "deviations": 1,
+      "context": "harness-engines",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    },
+    {
+      "ts": "2026-10-15T03:59:35.775416+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "agent-runtime-assembly"
+      ],
+      "techniques": [
+        "bounded-projection-of-external-work",
+        "checkpoint-mode-custody"
+      ],
+      "deviations": 0,
+      "context": "proving-sandbox",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    },
+    {
+      "ts": "2026-10-15T03:59:35.775416+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "agent-runtime-assembly"
+      ],
+      "techniques": [
+        "activation-is-a-separate-mutation",
+        "bounded-projection-of-external-work",
+        "substituted-result-attribution"
+      ],
+      "deviations": 0,
+      "context": "demo-kit-ui-webmcp",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    }
+  ]
+}
