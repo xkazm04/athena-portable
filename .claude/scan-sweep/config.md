@@ -1,15 +1,26 @@
 # scan-sweep overlay — athena-portable
 
-contextMap: .claude/scan-sweep/context-map.json
+contextMap: context-map.json
 memoryOutbox: .claude/scan-history/memory-outbox.jsonl
 backlogDigest: none
 openBacklogs: .claude/scan-history/open-backlogs.jsonl
 handoff: off
 depth: 16
 neverSweep: generated, vendored, tests, the preview harness fixtures
+challenge.cohort: 6
+challenge.waveSize: 4
+challenge.worktrees: false
+challenge.sharedSurfaces: CHANGELOG.md, docs/adr/ (new ADR numbers only, take the next free one under the lock)
+challenge.integrationGate: every gate below except perf and cargo test, plus those two when a wave touched apps/desktop
+
+The root `context-map.json` (the 64-context map Personas regenerates) is the map. The older
+desktop-UI map at `.claude/scan-sweep/context-map.json` is what the 2026-10-13 stabilize rounds
+used; their scopes (components, styles-tokens, lib-motion, ...) are names from that map.
 
 ## Gates (run each in its own invocation, && chained, exit code asserted)
 
+- Python core, from the repo root: `uv run ruff check .`, `uv run ruff format --check .`, `uv run mypy`, `uv run pytest -m "not provider and not eval"`
+- workspace TS (bridge, examples, desktop), from the repo root: `pnpm typecheck && pnpm lint && pnpm test`
 - desktop UI, from apps/desktop: `pnpm typecheck && pnpm lint && pnpm test`
 - motion and first paint, from apps/desktop: `pnpm perf:all` (ADR 0089 budgets; transform and opacity only, no per-frame script)
 - Rust shell, from apps/desktop/src-tauri: `cargo check && cargo clippy --all-targets`, then `cargo test`
