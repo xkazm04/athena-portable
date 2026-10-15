@@ -2032,7 +2032,11 @@
           "revision": 43,
           "changedAt": "2026-10-02",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/core/catalog.py:522 Capability overflow removes still-registered tools from the documented roster instead of preserving every active name and purpose while reducing detail.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:ad13b2ee69c25e8d",
+          "evaluatedRevision": 44
         },
         {
           "subject": "mcp-tools",
@@ -5596,7 +5600,11 @@
           "revision": 43,
           "changedAt": "2026-10-02",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/harness/rounds.py:399 The harness appends the task after checking and hashing the supplied prompt blocks, leaving the completed model input outside those assembly checks.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:ad13b2ee69c25e8d",
+          "evaluatedRevision": 44
         },
         {
           "subject": "agent-runtime-assembly",

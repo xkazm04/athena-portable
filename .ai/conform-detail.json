@@ -312,6 +312,53 @@
           "evidence": "examples/tidycrm/components/blocks/tools/read.ts:11 Keeps human adjudication queues separate from rule-repairable deviations in read output rather than folding them into automated heuristics."
         }
       ]
+    },
+    "b22cae8a-16ec-45ac-b2a6-3a502a91c895/prompt-assembly": {
+      "context": "core-gate-and-ledger",
+      "subject": "prompt-assembly",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T01:20:10.850Z",
+      "worker": "282f6d5d-a30f-489d-a12b-9be45a9d6649",
+      "techniques": [
+        {
+          "technique": "capability-documentation",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/catalog.py:522 Overflow skips complete tool entries while their registrations remain active; tests/core/test_catalog.py explicitly checks that omitted tools still validate."
+        },
+        {
+          "technique": "context-budgeting",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/prompt.py:131 The composer checks character tripwires independently and returns warnings; it neither derives nor enforces a total token budget accounting for the model window, response reservation and safety margin."
+        },
+        {
+          "technique": "variable-interpolation",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/prompt.py:471 The default assembly path generates randomness internally, so identical declared inputs produce different frame bytes instead of receiving the actual nonce as an explicit input."
+        }
+      ]
+    },
+    "1cd39491-5acf-4229-b227-ae8068800d9b/prompt-assembly": {
+      "context": "harness-engines",
+      "subject": "prompt-assembly",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T01:20:10.850Z",
+      "worker": "282f6d5d-a30f-489d-a12b-9be45a9d6649",
+      "techniques": [
+        {
+          "technique": "fingerprinting-and-cache-keys",
+          "verdict": "deviation",
+          "evidence": "src/athena/harness/rounds.py:130 Hashes cover input blocks once per turn, excluding the appended task and subsequent round feedback; the API/CLI send paths and ledger hook do not persist the required digest and size of each complete prompt sent."
+        },
+        {
+          "technique": "layered-composition",
+          "verdict": "deviation",
+          "evidence": "src/athena/harness/rounds.py:399 The task is concatenated onto pre-rendered frame blocks after before_prompt and block hashing; later result messages are also assembled outside that checked artifact."
+        }
+      ]
     }
   }
 }
