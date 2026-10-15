@@ -1101,6 +1101,15 @@ select:focus-visible {
   animation: depth-pending-in 240ms var(--ease-fast) 150ms both;
 }
 
+/* The surface when the settings could not be read at all (console/scenes.tsx): the refusal and its
+ * retry, where the first act or her surface would be, in the space a pending depth takes. */
+.settings-problem {
+  display: grid;
+  place-items: center;
+  min-height: 40vh;
+  padding: var(--density-pad-sm);
+}
+
 @keyframes depth-pending-in {
   from {
     opacity: 0;
