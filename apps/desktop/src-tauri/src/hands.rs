@@ -422,6 +422,98 @@ fn floor_char_boundary(text: &str, at: usize) -> usize {
 }
 
 // ==============================================================================================
+// Describing a card's refs
+// ==============================================================================================
+
+/// The most refs one `describe` asks about. A card has a handful of parameters.
+const DESCRIBE_CAP: usize = 32;
+
+/// The longest label a description carries back, in characters; `hands.js` already cuts at 120.
+const DESCRIBE_LABEL_CAP: usize = 160;
+
+/// What the panel's card learns about its refs (ADR 0099). Never an `Err`, like a hand: a card
+/// that cannot be described keeps its raw ref and says so, which needs a sentence, not a throw.
+#[derive(Debug, Clone, Serialize)]
+pub struct Described {
+    pub ok: bool,
+    /// `ref -> { role, label }`, only for refs the page still holds. The label is the page's claim.
+    pub targets: serde_json::Map<String, Value>,
+    pub error: Option<String>,
+}
+
+/// Ask `hands.js` what each ref still names. Not a hand: it is in no table, no manifest offers it
+/// and a model cannot call it. The panel asks it through `hands_describe` over the same relay a
+/// hand uses; a page webview is granted nothing new (ADR 0014).
+pub async fn describe(app: &AppHandle, tab: u32, refs: &[String]) -> Described {
+    let asked = asked_refs(refs);
+    if asked.is_empty() {
+        return Described {
+            ok: true,
+            targets: serde_json::Map::new(),
+            error: None,
+        };
+    }
+    match bridge::ask_hands(app, tab, json!({ "describe": asked })).await {
+        Err(detail) => Described {
+            ok: false,
+            targets: serde_json::Map::new(),
+            error: Some(detail),
+        },
+        Ok(answer) => described(&answer, &asked),
+    }
+}
+
+/// The refs worth asking about: in the minted form, short, distinct, and at most [`DESCRIBE_CAP`].
+fn asked_refs(refs: &[String]) -> Vec<String> {
+    let mut out: Vec<String> = Vec::new();
+    for r in refs {
+        if out.len() == DESCRIBE_CAP {
+            break;
+        }
+        if r.starts_with("ref_") && r.len() <= 64 && !out.contains(r) {
+            out.push(r.clone());
+        }
+    }
+    out
+}
+
+/// Read the page's answer, trusting none of its shape: only refs that were asked, and only a role
+/// and a label that are strings, cut to [`DESCRIBE_LABEL_CAP`].
+fn described(answer: &Value, asked: &[String]) -> Described {
+    if answer.get("ok").and_then(Value::as_bool) != Some(true) {
+        let detail = answer
+            .get("error")
+            .and_then(Value::as_str)
+            .unwrap_or("the page did not describe its refs");
+        return Described {
+            ok: false,
+            targets: serde_json::Map::new(),
+            error: Some(detail.to_string()),
+        };
+    }
+    let mut targets = serde_json::Map::new();
+    if let Some(given) = answer.get("targets").and_then(Value::as_object) {
+        for r in asked {
+            let Some(entry) = given.get(r) else { continue };
+            let (Some(role), Some(label)) = (
+                entry.get("role").and_then(Value::as_str),
+                entry.get("label").and_then(Value::as_str),
+            ) else {
+                continue;
+            };
+            let role: String = role.chars().take(40).collect();
+            let label: String = label.chars().take(DESCRIBE_LABEL_CAP).collect();
+            targets.insert(r.clone(), json!({ "role": role, "label": label }));
+        }
+    }
+    Described {
+        ok: true,
+        targets,
+        error: None,
+    }
+}
+
+// ==============================================================================================
 // The smoke
 // ==============================================================================================
 
@@ -494,6 +586,55 @@ async fn smoke(app: AppHandle, tab: u32) {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn describe_asks_only_about_minted_refs_once_each() {
+        let refs = vec![
+            "ref_0_aa".to_string(),
+            "#send".to_string(),
+            "ref_0_aa".to_string(),
+            format!("ref_{}", "f".repeat(80)),
+            "ref_0_bb".to_string(),
+        ];
+        assert_eq!(asked_refs(&refs), vec!["ref_0_aa", "ref_0_bb"]);
+        let many: Vec<String> = (0..50).map(|i| format!("ref_0_{i:02x}")).collect();
+        assert_eq!(asked_refs(&many).len(), DESCRIBE_CAP);
+    }
+
+    #[test]
+    fn describe_keeps_only_asked_refs_with_a_string_role_and_label() {
+        let asked = vec!["ref_0_aa".to_string(), "ref_0_bb".to_string()];
+        let answer = json!({
+            "ok": true,
+            "targets": {
+                "ref_0_aa": { "role": "button", "label": "Send reminder" },
+                "ref_0_bb": { "role": 3, "label": "odd" },
+                "ref_0_cc": { "role": "link", "label": "not asked" },
+            },
+        });
+        let d = described(&answer, &asked);
+        assert!(d.ok);
+        assert_eq!(d.targets.len(), 1);
+        assert_eq!(d.targets["ref_0_aa"]["label"], "Send reminder");
+    }
+
+    #[test]
+    fn a_describe_the_page_refused_is_not_ok_and_says_why() {
+        let d = described(
+            &json!({ "ok": false, "error": "timeout" }),
+            &["ref_0_aa".to_string()],
+        );
+        assert!(!d.ok);
+        assert!(d.targets.is_empty());
+        assert_eq!(d.error.as_deref(), Some("timeout"));
+    }
+
+    #[test]
+    fn describe_is_not_a_hand() {
+        // The panel asks it; a model must never be offered it.
+        assert!(hand("describe").is_none());
+        assert!(webmcp_tools().iter().all(|t| t["name"] != "describe"));
+    }
 
     #[test]
     fn there_are_nine_hands_and_every_name_is_distinct() {

@@ -182,3 +182,53 @@ export async function callOnPage(
   const reply: CallReply = await bridgeCall(tabId, name, input as Args);
   return reply as { ok: boolean; output: string; error?: string | null };
 }
+
+/** What a ref still names on its page, as the page describes it: its role and its label. */
+export interface Target {
+  role: string;
+  label: string;
+}
+
+/** The form `hands.js` mints a ref in: `ref_<generation>_<hex>`. */
+const REF = /^ref_\d+_[0-9a-f]+$/;
+
+/** The parameter values of a card that are refs, in parameter order, each once. */
+export function refsOf(params: Readonly<Record<string, unknown>>): string[] {
+  const found = Object.values(params).filter((v): v is string => typeof v === "string" && REF.test(v));
+  return [...new Set(found)];
+}
+
+/**
+ * What each ref still names on a tab, through the shell's `hands_describe` (ADR 0099). Not a hand:
+ * no manifest offers it and a model cannot call it; the panel asks it for its card. Throws, with
+ * the reason, when there is no shell or the page could not be asked, so the card can say so.
+ */
+export async function describeRefs(tabId: number, refs: readonly string[]): Promise<Record<string, Target>> {
+  if (!hasShell()) throw new Error("this window has no shell to ask the page");
+  const reply = await call<{ ok: boolean; targets: Record<string, Target>; error: string | null }>(
+    "hands_describe",
+    { tab_id: tabId, refs: [...refs] },
+  );
+  if (!reply.ok) throw new Error(reply.error || "the page did not describe its refs");
+  return reply.targets ?? {};
+}
+
+/**
+ * Where a call happens (README 3.4): 1 a page's own tool, 2 a generic hand, 3 a connector. A tool
+ * row the panel already holds answers first, since the daemon's catalog reported it; otherwise a
+ * connector origin is 3, and a hand's name on a host origin is 2 unless the page registered that
+ * name itself (`pageTools`), whose own tool wins (ADR 0065). Says where, never whether it is gated.
+ */
+export function tierOf(
+  origin: string,
+  action: string,
+  rows: readonly { name: string; tier: number }[] = [],
+  pageTools: readonly BridgeTool[] = [],
+): 1 | 2 | 3 {
+  const row = rows.find((r) => r.name === action);
+  if (row && (row.tier === 1 || row.tier === 2 || row.tier === 3)) return row.tier;
+  if (origin.startsWith("connector:")) return 3;
+  const parts = action.split(".");
+  const bare = parts.length > 2 ? parts.slice(2).join(".") : action;
+  return origin.startsWith("host:") && isHandCall(bare, pageTools) ? 2 : 1;
+}

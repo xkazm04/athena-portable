@@ -9,9 +9,10 @@ import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
 import { expect, test } from "vitest";
 
+import type { ToolRow } from "@/lib/api";
 import { SIZES } from "@/lib/companion";
 
-import { CARDS, fixtureIds, fixtures } from "./fixtures";
+import { CARDS, TOOLS, fixtureIds, fixtures } from "./fixtures";
 import { modelFor, readQuery } from "./preview";
 import { cardView } from "./model";
 import CompanionView, { CaptureShown } from "./views";
@@ -304,6 +305,51 @@ test("a card without a capture says no capture was taken, and why when it is kno
     "No capture was taken: the screenshot took longer than 8 seconds.",
   );
   expect(cardView(CARDS[0], "no shell").capture).toEqual({ kind: "none", why: "no shell" });
+});
+
+test("a card names the app, whose tool it is and what its ref points at (ADR 0099)", () => {
+  const ref = "ref_0_3fa9c1d2e4b5";
+  const hand = {
+    ...CARDS[0],
+    action: "host.web_https_sledger_dtest.page_click",
+    origin: "host:web_https_sledger_dtest",
+    params: { ref },
+  };
+  const rows: ToolRow[] = [
+    { name: "host.web_https_sledger_dtest.page_click", origin: "host:web_https_sledger_dtest", class: "GATED", tier: 2, description: "" },
+  ];
+  const described = cardView(hand, null, {
+    tools: rows,
+    targets: { ok: true, targets: { [ref]: { role: "button", label: "Send reminder" } } },
+  });
+  expect(described.app).toBe("ledger.test");
+  expect(described.tier).toBe(2);
+  expect(described.where).toBe("In ledger.test - Athena's generic hand, not the app's own tool");
+  expect(described.params).toEqual([{ key: "ref", value: `button - Send reminder (${ref})` }]);
+  expect(described.claimed).toBe(true);
+  expect(described.targetNote).toBeNull();
+
+  const model = fixtures.slip();
+  const out = renderToStaticMarkup(createElement(CompanionView, { model: { ...model, cards: [{ ...model.cards[0], ...described }] } }));
+  expect(out).toContain("In ledger.test - Athena&#x27;s generic hand, not the app&#x27;s own tool");
+  expect(out).toContain(`button - Send reminder (${ref})`);
+  expect(out).toContain("the page&#x27;s own labels");
+
+  // A page's own tool says so, and the tier comes from the catalog's row.
+  const own = cardView(CARDS[0], null, { tools: TOOLS });
+  expect(own.tier).toBe(1);
+  expect(own.where).toBe("In ledgerbox - the app's own tool");
+
+  // The page could not be asked, or no longer holds the ref: the raw ref stays and the card says so.
+  const failed = cardView(hand, null, { tools: rows, targets: { ok: false, why: "timeout" } });
+  expect(failed.params).toEqual([{ key: "ref", value: ref }]);
+  expect(failed.targetNote).toBe("The target could not be described: timeout.");
+  expect(failed.claimed).toBe(false);
+  const dead = cardView(hand, null, { tools: rows, targets: { ok: true, targets: {} } });
+  expect(dead.params).toEqual([{ key: "ref", value: ref }]);
+  expect(dead.targetNote).toContain(`the page no longer holds ${ref}`);
+  // Not asked yet: raw, and nothing claimed either way.
+  expect(cardView(hand, null, { tools: rows }).targetNote).toBeNull();
 });
 
 test("an empty list of apps she has seen says first sight asks, and does not say tools are off", () => {

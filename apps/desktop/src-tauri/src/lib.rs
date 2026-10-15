@@ -76,6 +76,15 @@ async fn hands_call(
     hands::call(&app, tab_id, &name, input).await
 }
 
+/// What each ref on a card still names on a tab: `{ ref -> { role, label } }` (ADR 0099).
+///
+/// The panel's, never a page's: it is granted to the two privileged webviews only, and it is in no
+/// hand table, so a model cannot call it. Never `Err`: a card that cannot be described says so.
+#[tauri::command(rename_all = "snake_case")]
+async fn hands_describe(app: AppHandle, tab_id: u32, refs: Vec<String>) -> hands::Described {
+    hands::describe(&app, tab_id, &refs).await
+}
+
 /// The hands, shaped exactly as `inject.js` reports a page's own tools.
 ///
 /// The panel appends these to whatever the page listed and hands the one list to `gate.js`'s
@@ -155,7 +164,7 @@ async fn layout_select(app: AppHandle, shape: String) -> Result<(), String> {
 
 // ── registrations: commands ───────────────────────────────────────────────────────────────────
 // c19 bridge_list/bridge_call/bridge_reply · c20 daemon_status/daemon_restart
-// c21 store_get/store_set/origins_* · c24 hands_call/hands_list · c27 tray_set_pending
+// c21 store_get/store_set/origins_* · c24 hands_call/hands_list/hands_describe (ADR 0099) · c27 tray_set_pending
 // c24 has no command of its own for reading a capture back: `page_screenshot` answers with the
 // `captures` row id and `store_get("captures", id)` is the read. A second command would be a
 // second way to reach one table.
@@ -200,6 +209,7 @@ pub fn run() {
             store::captures_sweep,
             hands_call,
             hands_list,
+            hands_describe,
             companion::athena_set_size,
             companion::athena_show,
             companion::athena_hide,

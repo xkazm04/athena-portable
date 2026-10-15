@@ -1276,7 +1276,16 @@ body.athena {
   display: block;
   border: 1px solid var(--paper-rule);
 }
-.sl-nocap {
+/* Where the call happens (ADR 0099): the app, and whether it is the app's own tool or Athena's hand */
+.sl-where {
+  margin: 4px 0 6px;
+  font-size: var(--t-label);
+  font-weight: 700;
+  line-height: 1.3;
+  color: var(--paper-ink-2);
+}
+.sl-nocap,
+.sl-claim {
   margin: 6px 0 0;
   font-size: var(--t-label);
   line-height: 1.3;

@@ -793,6 +793,57 @@ describe("the record of answers", () => {
     expect(rows[0]).toMatchObject({ outcome: "refused", reason: "foreign_origin" });
   });
 
+  it("records a generic hand's card at tier 2, not the constant 1 (ADR 0099)", async () => {
+    setHandsForTests([{ name: "page_click", description: "", inputSchema: {} } as BridgeTool]);
+    try {
+      const rows: ActivityWrite[] = [];
+      const daemon = fakeDaemon({ resolutions: { apr_0000000000a1: APPROVED } });
+      const deps = wire(daemon, fakePage());
+      setRunDeps({ ...deps, record: async (row) => void rows.push(row) });
+      const hand = {
+        ...CARD,
+        action: "host.web_https_sledger_dtest.page_click",
+        origin: "host:web_https_sledger_dtest",
+        params: { ref: "ref_0_3fa9c1d2e4b5" },
+      };
+      useRun.setState({ cards: [hand as never, { ...CARD, id: "apr_0000000000a2" } as never] });
+
+      await useRun.getState().answer("apr_0000000000a1", "approve");
+
+      expect(rows[0]).toMatchObject({ tool: "host.web_https_sledger_dtest.page_click", tier: 2 });
+    } finally {
+      setHandsForTests([]);
+    }
+  });
+
+  it("asks the focused page what a card's refs name once, and keeps why when it could not", async () => {
+    const asked: Array<{ tab: number; refs: readonly string[] }> = [];
+    const deps = wire(fakeDaemon(), fakePage());
+    setRunDeps({
+      ...deps,
+      describe: async (tab, refs) => {
+        asked.push({ tab, refs });
+        return { ref_0_3fa9c1d2e4b5: { role: "button", label: "Send reminder" } };
+      },
+    });
+    const hand = { ...CARD, params: { ref: "ref_0_3fa9c1d2e4b5" } } as never;
+
+    await useRun.getState().describe(hand);
+    await useRun.getState().describe(hand);
+    await useRun.getState().describe(CARD as never); // no ref: nothing to ask
+
+    expect(asked).toEqual([{ tab: 1, refs: ["ref_0_3fa9c1d2e4b5"] }]);
+    expect(useRun.getState().targets.apr_0000000000a1).toEqual({
+      ok: true,
+      targets: { ref_0_3fa9c1d2e4b5: { role: "button", label: "Send reminder" } },
+    });
+
+    useRun.setState({ targets: {} });
+    setRunDeps({ ...deps, describe: async () => Promise.reject(new Error("timeout")) });
+    await useRun.getState().describe(hand);
+    expect(useRun.getState().targets.apr_0000000000a1).toEqual({ ok: false, why: "timeout" });
+  });
+
   it("reads back what earlier windows kept, once, with its own total", async () => {
     const earlier = vi.fn(async () => ({
       rows: [

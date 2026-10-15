@@ -61,6 +61,40 @@ export function derivedIdOf(origin: string): string | null {
   return `${RESERVED_PREFIX}${url.protocol.slice(0, -1)}_s${escapeHost(url.host)}`;
 }
 
+/**
+ * The host a derived id was minted from: `web_https_sledger_dtest` is `ledger.test`, and
+ * `web_http_slocalhost_c3000` is `localhost:3000`. The inverse of {@link derivedIdOf}, for naming
+ * an app to a person (ADR 0091); `null` for an id that is not in the derived form.
+ */
+export function hostOfDerivedId(app: string): string | null {
+  const m = /^web_https?_s(.+)$/.exec(app);
+  if (!m) return null;
+  let out = "";
+  const s = m[1];
+  for (let i = 0; i < s.length; i += 1) {
+    const ch = s[i];
+    if (ch !== "_") {
+      if (!PLAIN.test(ch)) return null;
+      out += ch;
+      continue;
+    }
+    const code = s[i + 1];
+    if (code === "d") out += ".";
+    else if (code === "u") out += "_";
+    else if (code === "c") out += ":";
+    else if (code === "x") {
+      const end = s.indexOf("_", i + 2);
+      const point = end === -1 ? NaN : parseInt(s.slice(i + 2, end), 16);
+      if (Number.isNaN(point)) return null;
+      out += String.fromCodePoint(point);
+      i = end;
+      continue;
+    } else return null;
+    i += 1;
+  }
+  return out || null;
+}
+
 /** Is this slug in the form only the shell mints? A page cannot claim it. */
 export function isReservedId(app: string): boolean {
   return app.startsWith(RESERVED_PREFIX);

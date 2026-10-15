@@ -408,9 +408,36 @@
     else el.value = value;
   }
 
+  // ---- describing, for the card ----------------------------------------------------------------
+
+  /** The most refs one `describe` answers for: a card has a handful of parameters, not a page. */
+  const DESCRIBE_CAP = 32;
+
+  /**
+   * What each ref still names on this document, as `{ ref: { role, label } }`, for the panel's
+   * card (ADR 0099). A ref that is dead, left behind by a navigation or never minted is simply
+   * absent: the card then shows the raw ref and says it could not be described.
+   *
+   * Not a hand, and deliberately not in `HANDS`: nothing here is offered to a model, it reads
+   * nothing a `page_find` did not already hand back, and it changes nothing. The label is the
+   * page's claim about its own control; the card shows it as that and the gate never reads it.
+   */
+  function describe(asked) {
+    const targets = {};
+    for (const ref of asked.slice(0, DESCRIBE_CAP)) {
+      const found = resolve(ref);
+      if (found.error) continue;
+      targets[ref] = { role: roleOf(found.el), label: labelOf(found.el) };
+    }
+    return { ok: true, output: "", targets };
+  }
+
   // ---- the wire -------------------------------------------------------------------------------
 
   async function answer(message) {
+    // The panel's question about its card, kept apart from the hands by its own field: a message
+    // naming a hand `describe` is still an unknown hand.
+    if (Array.isArray(message.describe)) return describe(message.describe);
     const hand = HANDS[message.hand];
     if (!hand) return no("unknown_ref", `no hand named ${String(message.hand)}`);
     try {

@@ -5,7 +5,7 @@ import { expect, test } from "vitest";
 
 import { toolRows } from "@/companion/tools";
 import type { BridgeTool } from "@/lib/bridge";
-import { catalogIdOf, derivedIdOf, manifestBodyOf } from "@/lib/manifest";
+import { catalogIdOf, derivedIdOf, hostOfDerivedId, manifestBodyOf } from "@/lib/manifest";
 import type { TabTools } from "@/stores/tools";
 
 const SLUG = /^[a-zA-Z0-9_-]+$/;
@@ -162,4 +162,14 @@ test("a manifest marks the hands it appended and strips the marker from a page's
   } finally {
     setHandsForTests([]);
   }
+});
+
+test("a derived id reads back as the host it was minted from (ADR 0099)", () => {
+  for (const origin of ["https://ledger.test", "http://localhost:3000", "https://a_b.example:8443"]) {
+    const id = derivedIdOf(origin)!;
+    expect(hostOfDerivedId(id)).toBe(new URL(origin).host);
+  }
+  expect(hostOfDerivedId("ledgerbox")).toBeNull();
+  expect(hostOfDerivedId("web_https_s")).toBeNull();
+  expect(hostOfDerivedId("web_https_sa_q")).toBeNull();
 });

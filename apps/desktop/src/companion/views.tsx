@@ -252,6 +252,7 @@ function Slip({ model, card, inline }: { model: CompanionModel; card: CardView |
       </header>
       <div className="sl-scroll">
         <p className="sl-why">{card.rationale}</p>
+        <p className="sl-where" data-tier={card.tier}>{card.where}</p>
         <div className="sl-mid">
           <dl className="sl-params">
             {card.params.map((p) => (
@@ -263,6 +264,8 @@ function Slip({ model, card, inline }: { model: CompanionModel; card: CardView |
           </dl>
           {!inline ? <CaptureFigure capture={card.capture} /> : null}
         </div>
+        {card.claimed ? <p className="sl-claim">The element names are the page&apos;s own labels.</p> : null}
+        {card.targetNote ? <p className="sl-claim">{card.targetNote}</p> : null}
         {card.capture.kind === "none" ? <NoCapture why={card.capture.why} /> : null}
       </div>
       <div className="sl-sign">

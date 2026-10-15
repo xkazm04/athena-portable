@@ -18,6 +18,8 @@ import type { DaemonHealth } from "@/lib/daemon";
 import type { AthenaState } from "@/lib/companion";
 import type { Side, Valign } from "@/lib/companion";
 import type { ToolRow } from "@/lib/api";
+import { refsOf, tierOf, type Target } from "@/lib/hands";
+import { hostOfDerivedId } from "@/lib/manifest";
 import { ENGINE_IDS, engineLabel, type EngineProbe } from "@/lib/engines";
 import type { Playbook } from "@/lib/playbooks";
 import type { DecisionRequested, TurnSummary } from "@/lib/events";
@@ -123,12 +125,29 @@ export type CardCapture =
   | { kind: "shot"; id: string }
   | { kind: "none"; why: string | null };
 
+/**
+ * What the page said its card's refs name (ADR 0099): the answer of `hands_describe`, or why there
+ * is none. No entry at all means nobody has asked yet.
+ */
+export type CardTargets = { ok: true; targets: Readonly<Record<string, Target>> } | { ok: false; why: string };
+
 /** One decision card, exactly as the approval was filed: every parameter, none cut. */
 export interface CardView {
   id: string;
   action: string;
   rationale: string;
+  /** The app the card is about, named for a person (`ledger.test`, ADR 0091). */
+  app: string;
+  /** Where the call happens: 1 the app's own tool, 2 Athena's generic hand, 3 a connector. Never its class. */
+  tier: 1 | 2 | 3;
+  /** The one line above the parameters: the app and whose tool this is. */
+  where: string;
+  /** A ref is shown as what the page says it names, `button - Send reminder (ref_0_3f..)`, when it said. */
   params: readonly { key: string; value: string }[];
+  /** Some parameter is named by the page's own label: the card says the name is the page's claim. */
+  claimed: boolean;
+  /** Why a ref is shown raw: the page could not describe it. `null` when nothing is missing. */
+  targetNote: string | null;
   capture: CardCapture;
   /** The answer is on its way; the buttons read "Sending..." and are off. */
   sending: boolean;
@@ -341,6 +360,8 @@ export interface CompanionInputs {
     refusals?: Readonly<Record<string, string>>;
     /** Why a card has no capture, by card id, when the shell knows. */
     captureWhy?: Readonly<Record<string, string>>;
+    /** What the page said each card's refs name, by card id (ADR 0099). */
+    targets?: Readonly<Record<string, CardTargets>>;
     /** Every call of this window; when absent the transcript's tool rows are the record. */
     calls?: readonly TranscriptEntry[];
     earlier?: EarlierRecord | null;
@@ -426,6 +447,8 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     i.run.answering ?? {},
     i.run.refusals ?? {},
     i.run.captureWhy ?? {},
+    i.tools,
+    i.run.targets ?? {},
   );
   const n = shown(m);
   const busy = i.run.phase === "running" || i.run.phase === "acting";
@@ -516,10 +539,12 @@ function cardsOf(
   answering: Readonly<Record<string, string>>,
   refusals: Readonly<Record<string, string>>,
   captureWhy: Readonly<Record<string, string>>,
+  tools: readonly ToolRow[],
+  targets: Readonly<Record<string, CardTargets>>,
 ): CardView[] {
   const list = m.decided && held && !cards.some((c) => c.id === held.id) ? [held, ...cards] : cards;
   return list.map((card, index) => ({
-    ...cardView(card, captureWhy[card.id] ?? null),
+    ...cardView(card, captureWhy[card.id] ?? null, { tools, targets: targets[card.id] }),
     sending: answering[card.id] !== undefined || (index === 0 && m.decided?.sending === true),
     refusal: refusals[card.id] ?? null,
   }));
@@ -528,12 +553,49 @@ function cardsOf(
 /** What a card says when the daemon's pending row carried no reason. */
 export const NO_RATIONALE = "No reason was filed with this request. Read the details below before you answer.";
 
-export function cardView(card: DecisionRequested, why: string | null = null): CardView {
+/** Whose tool a tier is, as the card's line says it. */
+const WHOSE: Record<1 | 2 | 3, string> = {
+  1: "the app's own tool",
+  2: "Athena's generic hand, not the app's own tool",
+  3: "a connector, not a page",
+};
+
+/**
+ * A card as the person reads it. `tools` are the rows the panel holds (their tier is the catalog's
+ * answer); `targets` is what the page said the card's refs name. Neither changes the class: every
+ * card is `GATED`, and a label is shown as the page's claim, never read by the gate.
+ */
+export function cardView(
+  card: DecisionRequested,
+  why: string | null = null,
+  context: { tools?: readonly ToolRow[]; targets?: CardTargets } = {},
+): CardView {
+  const app = appOf(card.origin) || "an unknown app";
+  const tier = tierOf(card.origin, card.action, context.tools ?? []);
+  const asked = context.targets;
+  const refs = refsOf(card.params);
+  const named = (value: unknown): string | null => {
+    if (!asked?.ok || typeof value !== "string" || !refs.includes(value)) return null;
+    const t = asked.targets[value];
+    if (!t) return null;
+    const name = [t.role, t.label].filter(Boolean).join(" - ");
+    return name ? `${name} (${value})` : null;
+  };
+  const params = Object.entries(card.params).map(([key, value]) => ({ key, value: named(value) ?? spell(value) }));
+  const missing = asked === undefined ? [] : refs.filter((r) => !asked.ok || !asked.targets[r]);
+  let targetNote: string | null = null;
+  if (asked !== undefined && !asked.ok) targetNote = `The target could not be described: ${asked.why}.`;
+  else if (missing.length) targetNote = `The target could not be described: the page no longer holds ${missing.join(", ")}.`;
   return {
     id: card.id,
     action: card.action,
     rationale: card.rationale || NO_RATIONALE,
-    params: Object.entries(card.params).map(([key, value]) => ({ key, value: spell(value) })),
+    app,
+    tier,
+    where: `In ${app} - ${WHOSE[tier]}`,
+    params,
+    claimed: refs.some((r) => named(r) !== null),
+    targetNote,
     capture: card.capture_id ? { kind: "shot", id: card.capture_id } : { kind: "none", why },
     sending: false,
     refusal: null,
@@ -653,9 +715,13 @@ export function recordOf(transcript: readonly TranscriptEntry[], tools: readonly
     .reverse();
 }
 
-/** `host:ledgerbox` is the app `ledgerbox`; a web origin is shown as its host. */
+/**
+ * `host:ledgerbox` is the app `ledgerbox`; `host:web_https_sledger_dtest`, the id a page that
+ * named no app is catalogued under (ADR 0065), is the host it came from, `ledger.test`; a web
+ * origin is shown as its host.
+ */
 export function appOf(origin: string): string {
-  if (origin.startsWith("host:")) return origin.slice(5);
+  if (origin.startsWith("host:")) return hostOfDerivedId(origin.slice(5)) ?? origin.slice(5);
   return hostOf(origin) ?? origin;
 }
 

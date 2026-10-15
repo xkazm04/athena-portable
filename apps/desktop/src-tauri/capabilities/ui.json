@@ -31,6 +31,7 @@
     "allow-captures-sweep",
     "allow-hands-call",
     "allow-hands-list",
+    "allow-hands-describe",
     "allow-athena-show",
     "allow-athena-hide",
     "allow-athena-open-main",

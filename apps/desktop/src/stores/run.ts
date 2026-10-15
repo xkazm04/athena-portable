@@ -25,7 +25,8 @@ import { create } from "zustand";
 
 import { ApiError, DaemonApi, type ExecuteRow, type ToolRow } from "@/lib/api";
 import type { BridgeTool } from "@/lib/bridge";
-import { callOnPage, takeCapture, type Taken } from "@/lib/hands";
+import { callOnPage, describeRefs, refsOf, takeCapture, tierOf, type Taken, type Target } from "@/lib/hands";
+import type { CardTargets } from "@/companion/model";
 import type { Wire } from "@/lib/ipc";
 import { catalogIdOf, derivedIdOf, manifestBodyOf } from "@/lib/manifest";
 import { reasonOf, refusalSentence, switchedOffSentence } from "@/companion/plain";
@@ -156,6 +157,12 @@ export interface RunDeps {
    * something else may omit it, which sends no capture.
    */
   capture?: (tabId: number, origin: string) => Promise<Taken>;
+  /**
+   * What each ref still names on a tab (`hands_describe`, ADR 0099), for a card's target line.
+   * Rejects with the reason when the page could not be asked. Optional: without it a card shows
+   * its refs raw, as before.
+   */
+  describe?: (tabId: number, refs: readonly string[]) => Promise<Record<string, Target>>;
   /** Keep one answered decision on this computer (the `activity` table). */
   record?: (row: ActivityWrite) => Promise<void>;
   /** Read back what earlier windows kept. */
@@ -193,6 +200,10 @@ export interface RunState {
   captureWhy: Record<string, string>;
   /** Why the latest request went without a capture; `null` when it had one (ADR 0066). */
   captureNow: string | null;
+  /** What the page said each card's refs name, by card id (ADR 0099). A card not yet asked has none. */
+  targets: Record<string, CardTargets>;
+  /** Ask the focused page what a card's refs name, once per card. A card with no ref asks nothing. */
+  describe: (card: DecisionRequested) => Promise<void>;
   /** Answers given in this window, newest first. */
   answered: AnsweredDecision[];
   /** What earlier windows kept, read once at start. `null` until the store has answered. */
@@ -227,6 +238,7 @@ export const EMPTY = {
   refusals: {} as Record<string, string>,
   captureWhy: {} as Record<string, string>,
   captureNow: null as string | null,
+  targets: {} as Record<string, CardTargets>,
   answered: [] as AnsweredDecision[],
   earlier: null as EarlierRecord | null,
   project: null as ActivePlaybook | null,
@@ -246,6 +258,7 @@ const LIVE: RunDeps = {
     return { tabId: tab.id, origin, appId: catalogIdOf(origin, byTab[tab.id]?.appId ?? null) };
   },
   capture: takeCapture,
+  describe: describeRefs,
   hostState: () => {
     const { tabs } = useTabs.getState();
     const focused = focusedTab();
@@ -696,6 +709,7 @@ export const useRun = create<RunState>((set, get) => {
             : [...s.cards, event],
           captureWhy: withCaptureWhy(s.captureWhy, event, s.captureNow),
         }));
+        void get().describe(event);
         break;
       case "decision.resolved":
         set((s) => ({ cards: s.cards.filter((c) => c.id !== event.id) }));
@@ -851,7 +865,8 @@ export const useRun = create<RunState>((set, get) => {
             ts: row.at,
             origin: row.origin,
             tool: row.action,
-            tier: 1,
+            // Where it would have run, as the card said it (ADR 0099): a hand is tier 2.
+            tier: card ? tierOf(card.origin, card.action, [], snap?.tools ?? []) : 1,
             class: "GATED",
             outcome: result === "approved" ? "approved" : result === "user_denied" ? "declined" : "refused",
             ms: 0,
@@ -937,6 +952,22 @@ export const useRun = create<RunState>((set, get) => {
       }));
     },
 
+    async describe(card) {
+      const refs = refsOf(card.params);
+      const focused = deps.focused();
+      if (!refs.length || !deps.describe || get().targets[card.id] !== undefined) return;
+      let found: CardTargets;
+      if (!focused) found = { ok: false, why: "no page is open" };
+      else {
+        try {
+          found = { ok: true, targets: await deps.describe(focused.tabId, refs) };
+        } catch (error) {
+          found = { ok: false, why: error instanceof Error ? error.message : String(error) };
+        }
+      }
+      set((s) => ({ targets: { ...s.targets, [card.id]: found } }));
+    },
+
     async loadEarlier() {
       if (!deps.earlier || get().earlier?.problem === null) return;
       try {
@@ -971,6 +1002,7 @@ export const useRun = create<RunState>((set, get) => {
         answering: keep.answering,
         refusals: keep.refusals,
         captureWhy: keep.captureWhy,
+        targets: keep.targets,
         answered: keep.answered,
         earlier: keep.earlier,
         project: keep.project,

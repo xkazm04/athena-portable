@@ -10,7 +10,7 @@ small window, plus a click-through **halo** on every screen.
 |---|---|
 | `layout.rs` | owns every rectangle; Main sized to the screen |
 | `tabs.rs`, `bridge.rs` | page webviews, `inject.js` as their initialisation script, the relay |
-| `hands.rs`, `hands.js` | nine generic DOM hands (`page_read`, `page_find`, `page_fill`, `page_click`, `page_select`, `page_submit`, `page_scroll`, `page_wait`, `page_screenshot`); a screenshot of the focused tab is captured before each request and filed on a gated card (ADR 0025, ADR 0066) |
+| `hands.rs`, `hands.js` | nine generic DOM hands (`page_read`, `page_find`, `page_fill`, `page_click`, `page_select`, `page_submit`, `page_scroll`, `page_wait`, `page_screenshot`); a screenshot of the focused tab is captured before each request and filed on a gated card (ADR 0025, ADR 0066); `hands_describe`, the panel's only, tells a card what its refs name (`button - Send reminder`) and is no hand (ADR 0099) |
 | `daemon.rs` | the daemon as a sidecar with a minted token file, restart on engine change, and exit hygiene (tree kill, a Windows job object, ADR 0015) |
 | `store.rs` | one SQLite store behind four generic commands (ADR 0016): settings, origins, projects, activity, captures with an LRU sweep |
 | `companion.rs`, `halo.rs`, `hotkeys.rs`, `tray.rs`, `capture.rs` | her window, the screen-edge light, the summon chord, the tray, window capture |
@@ -37,6 +37,14 @@ renders without Tauri in `preview.html?scene=<depth>&fixture=&theme=`.
 | **Accounts** | a drawing per connector, a staged connect, the gated writes switch, the allow-list, a records notice that cannot be dismissed ([connectors.md](connectors.md)) |
 | **Voice** | the studio as a staged act and settings as two instruments, with the keys and one frame loop (ADR 0092) |
 | **Mind** | the engine, the brain, the look (theme, text size and Calm motion), the data and the microphone; the first act (Mind, Reach, Voice) opens the same scene on first run |
+
+## The card
+
+A decision card names the app (`In ledger.test`, decoded from the catalog id the page was filed
+under) and whose tool it is: the app's own (tier 1), Athena's generic hand (tier 2) or a connector
+(tier 3), the tier the catalog reported. A ref parameter shows what the page says it names, as the
+page's claim; when the page cannot say, the raw ref stays and the card says so. The activity row of
+an answered card keeps that tier (ADR 0099).
 
 ## The halo
 

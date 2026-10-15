@@ -27,6 +27,7 @@
     "allow-store-list",
     "allow-store-delete",
     "allow-hands-call",
-    "allow-hands-list"
+    "allow-hands-list",
+    "allow-hands-describe"
   ]
 }

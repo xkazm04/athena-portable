@@ -404,3 +404,53 @@ describe("what it will not answer", () => {
     ]);
   });
 });
+
+// --- describing a card's refs (ADR 0099) --------------------------------------------------------
+
+describe("describe", () => {
+  function describeRefs(refs: unknown[]): Promise<Answer & { targets?: Record<string, { role: string; label: string }> }> {
+    const id = `d:${++seq}`;
+    return new Promise((resolve) => {
+      const onReply = (event: MessageEvent) => {
+        const message = event.data as Record<string, unknown> | null;
+        if (!message || message.__ns !== NS || message.dir !== "to-ext" || message.id !== id) return;
+        window.removeEventListener("message", onReply);
+        resolve(message as never);
+      };
+      window.addEventListener("message", onReply);
+      send({ __ns: NS, dir: "to-page", id, describe: refs });
+    });
+  }
+
+  it("names what each live ref points at, and leaves out the dead and the invented", async () => {
+    const found = await ask("page_find", { query: "send chase" });
+    const ref = found.matches![0].ref;
+    const live = await describeRefs([ref, "ref_0_000000000000", "#send"]);
+
+    expect(live.ok).toBe(true);
+    expect(live.targets).toEqual({ [ref]: { role: "button", label: "Send chase" } });
+
+    // After a re-render the element is detached: the ref no longer describes anything.
+    document.body.innerHTML = PAGE;
+    expect((await describeRefs([ref])).targets).toEqual({});
+  });
+
+  it("changes nothing on the page", async () => {
+    const found = await ask("page_find", { query: "send chase" });
+    await describeRefs([found.matches![0].ref]);
+
+    expect(clicks).toBe(0);
+  });
+
+  it("is not a hand: it is in neither the hands list nor the tools a manifest is built from", async () => {
+    const installed = (window as unknown as { __athenaHands: { names: string[]; tools: { name: string }[] } })
+      .__athenaHands;
+
+    expect(installed.names).not.toContain("describe");
+    expect(installed.tools.map((t) => t.name)).not.toContain("describe");
+    // Asked as a hand by name, it is an unknown hand like any other.
+    const asHand = await ask("describe", { refs: [] });
+    expect(asHand.ok).toBe(false);
+    expect(asHand.reason).toBe("unknown_ref");
+  });
+});

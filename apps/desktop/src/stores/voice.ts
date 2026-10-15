@@ -277,6 +277,7 @@ export const useVoice = create<VoiceState>((set, get) => {
           cards: [...s.cards, event as DecisionRequested],
           captureWhy: withCaptureWhy(s.captureWhy, event as DecisionRequested, s.captureNow),
         }));
+        void useRun.getState().describe(event as DecisionRequested);
         break;
       case "decision.resolved":
         useRun.setState((s) => ({ cards: s.cards.filter((c) => c.id !== event.id) }));
