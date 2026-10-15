@@ -2747,7 +2747,11 @@
           "revision": 15,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/demo-kit/src/webmcp/door.ts:29 The only argument door returns the first mismatch as one prose sentence, so a caller never receives a list of typed path-addressed errors.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:d51aec71411ccb2b",
+          "evaluatedRevision": 15
         },
         {
           "subject": "embedded-db",
@@ -6188,7 +6192,11 @@
           "revision": 15,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/hirelane/lib/scoring.ts:2 Rubric scores are a keyword heuristic over the applicant's own writing, so this context never extracts a structured artifact from model text.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:d51aec71411ccb2b",
+          "evaluatedRevision": 15
         },
         {
           "subject": "prompt-assembly",
@@ -6890,7 +6898,11 @@
           "revision": 15,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/ledgerbox/lib/match.ts:2 Invoice matching is a pure heuristic over bank lines and invoices, not extraction of a model-produced artifact.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:d51aec71411ccb2b",
+          "evaluatedRevision": 15
         },
         {
           "subject": "quality-gates",
@@ -8395,7 +8407,11 @@
           "revision": 15,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/lib/matching.ts:5 Duplicate confidence is the sum of named hand-set rules, so this context does not extract a structured model artifact.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:d51aec71411ccb2b",
+          "evaluatedRevision": 15
         },
         {
           "subject": "quality-gates",

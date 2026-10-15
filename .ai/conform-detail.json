@@ -1424,6 +1424,227 @@
           "evidence": "examples/journey/src/connector-surface.ts:76 Faked connector surfaces enforce egress gating but do not present persistent demo disclosure markers."
         }
       ]
+    },
+    "6c17278c-ed66-4d70-8a4f-4202662f1613/structured-output": {
+      "context": "hirelane-model-and-lib",
+      "subject": "structured-output",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:19:58.619Z",
+      "worker": "47e27b05-a0fe-4fb9-a6a8-f73de23654eb",
+      "techniques": [
+        {
+          "technique": "extraction-strategies",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/lib/scoring.ts:12 Sentence split is for keyword evidence in the CV, not a ladder over settled model text."
+        },
+        {
+          "technique": "schema-validation-and-repair",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/tools/search.ts:56 An unscored candidate is excluded from a score filter rather than treated as zero; there is no model-artifact door or repair loop here."
+        },
+        {
+          "technique": "answer-coverage-gating",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/lib/board/read.ts:6 The band counts how many criteria the application mentioned; the file says that figure is not model output, so there is no asked-versus-answered model set."
+        },
+        {
+          "technique": "output-budget-signal",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/tools/search.ts:21 Search results stop at a fixed page; nothing measures a model generation ceiling."
+        },
+        {
+          "technique": "op-grammar-allowlisting",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/lib/manifest.ts:265 This throw is registration-time for an app author naming a tool; this file does not dispatch a model-proposed operation."
+        },
+        {
+          "technique": "artifact-lifecycle",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/useRun.ts:12 useRun arms a UI action and disarms on a timer; it is not an extract-and-validate state machine."
+        },
+        {
+          "technique": "enumerable-domain-decoding",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/lib/manifest.ts:79 The enum is a tool-parameter vocabulary; this file builds no tokenizer prefix tree and runs no constrained decoder."
+        },
+        {
+          "technique": "graded-span-grounding",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/lib/scoring.ts:36 Evidence is the CV sentence the heuristic selected, not a model-returned quote to align."
+        }
+      ]
+    },
+    "a4c21bac-6dbe-41a3-b6ad-e7bec7001865/structured-output": {
+      "context": "voice-channel",
+      "subject": "structured-output",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:19:58.619Z",
+      "techniques": [
+        {
+          "technique": "extraction-strategies",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/whisper.py:174 Whisper stdout is cleaned into a transcript string; there is no ordered ladder from prose to a candidate object."
+        },
+        {
+          "technique": "schema-validation-and-repair",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/backends.py:387 The OpenAI call returns a transcript string; a missing text field becomes empty speech, and this function has no artifact schema or repair loop."
+        },
+        {
+          "technique": "output-budget-signal",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/tts.py:10 Spoken text is cut to a fixed cap and the cut is announced; that is not a measurement of a model output-token ceiling."
+        },
+        {
+          "technique": "op-grammar-allowlisting",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/commands.py:3 The closed word lists classify a person's utterance, not an operation the model proposed."
+        },
+        {
+          "technique": "artifact-lifecycle",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/install.py:5 The install phases including extracting unpack pinned engine archives; they are not a model-artifact run."
+        },
+        {
+          "technique": "display-vs-machine-channels",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/tts.py:3 Both products are human-facing prose; this module does not separate a validated machine artifact from display text."
+        },
+        {
+          "technique": "enumerable-domain-decoding",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/commands.py:13 Membership is exact string match on a person's words, not a constrained decoder over a value domain."
+        }
+      ],
+      "withdrawn": {
+        "worker": "47e27b05-a0fe-4fb9-a6a8-f73de23654eb",
+        "state": "not-applicable",
+        "at": "2026-10-15T22:22:26.067539+00:00",
+        "reason": "reviewer (sonnet): The anchor (__init__.py:26, 'voice is a transport and not a feature') does not show the precondition is absent. tts.py:1-10 shows the context consumes a model-authored `TTS:` first-line artifact and caps it, so the 'never extracts a machine artifact from model text' claim is not supported. The parse"
+      }
+    },
+    "3c4969f8-b87d-4ccd-bcab-2ebbcf35526c/structured-output": {
+      "context": "ledgerbox-domain-lib",
+      "subject": "structured-output",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:19:58.619Z",
+      "worker": "47e27b05-a0fe-4fb9-a6a8-f73de23654eb",
+      "techniques": [
+        {
+          "technique": "schema-validation-and-repair",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/lib/format.ts:48 Unusable money becomes null rather than a guessed amount; the parser is for typed amounts, not a model artifact at a repair loop."
+        },
+        {
+          "technique": "answer-coverage-gating",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/lib/match.ts:12 Matches under a fixed score floor are not offered; nothing enumerates units a model was asked to answer."
+        },
+        {
+          "technique": "op-grammar-allowlisting",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/lib/tool-classes.ts:2 The table records reversible and side-effect class; it does not dispatch model-proposed operations."
+        },
+        {
+          "technique": "enumerable-domain-decoding",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/lib/manifest.ts:175 period is a closed enum on a tool parameter; this file builds no tokenizer prefix tree."
+        }
+      ]
+    },
+    "046526ec-f0cc-4de8-b68b-37271969bd74/structured-output": {
+      "context": "tidycrm-domain-lib",
+      "subject": "structured-output",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:19:58.619Z",
+      "worker": "47e27b05-a0fe-4fb9-a6a8-f73de23654eb",
+      "techniques": [
+        {
+          "technique": "extraction-strategies",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/lib/normalize.ts:2 Field cleanup is four pure string rules, not a payload ladder over model text."
+        },
+        {
+          "technique": "schema-validation-and-repair",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/lib/csv.ts:14 CSV export renders a null cell as empty text; it is not a validation door for a model artifact."
+        },
+        {
+          "technique": "answer-coverage-gating",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/app/actions.ts:34 The pair list has a fixed page size; there is no set of units a model was asked to answer."
+        },
+        {
+          "technique": "output-budget-signal",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/app/actions.ts:33 The ceiling keeps a listing short for a caller; it does not record share of a model output-token ceiling."
+        },
+        {
+          "technique": "graded-span-grounding",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/lib/matching.ts:19 Duplicate evidence is a hand-weighted rule, not a model quote to locate in a source."
+        }
+      ]
+    },
+    "9e179811-457d-4d43-865e-87faad968f56/structured-output": {
+      "context": "demo-kit-ui-webmcp",
+      "subject": "structured-output",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:19:58.619Z",
+      "worker": "47e27b05-a0fe-4fb9-a6a8-f73de23654eb",
+      "techniques": [
+        {
+          "technique": "extraction-strategies",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/webmcp/modelContext.ts:113 Tool arguments arrive as a JSON string and are parsed once; the prose fence-and-span ladder has no input here."
+        },
+        {
+          "technique": "schema-validation-and-repair",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/src/webmcp/door.ts:29 The door returns the first failure as prose, and door.ts:34 iterates an array by its length while types.ts:104 publishes maxItems, which check() never reads."
+        },
+        {
+          "technique": "answer-coverage-gating",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/webmcp/hooks.ts:6 This module does not call a model, so there is no enumerated answer set to cover."
+        },
+        {
+          "technique": "output-budget-signal",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/webmcp/bounded.ts:2 The helper slices deterministic tool-result lists and states showing and of; it does not measure a model output ceiling."
+        },
+        {
+          "technique": "op-grammar-allowlisting",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/src/webmcp/modelContext.ts:112 An unregistered tool name is thrown; it is not left unexecuted, counted, and sampled as data."
+        },
+        {
+          "technique": "constrained-decoding-is-a-shared-budget",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/webmcp/index.ts:3 No model request is assembled here, so there is no shared constrained-decoding budget to shed."
+        },
+        {
+          "technique": "extraction-observability",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/activity/index.ts:2 The shared log records UI actions; it does not count extraction outcomes, strategy rungs, or repair depth."
+        },
+        {
+          "technique": "enumerable-domain-decoding",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/webmcp/types.ts:102 A closed set is copied onto the JSON schema for the argument door; this module builds no token-id prefix tree."
+        }
+      ],
+      "registryProposal": "Say whether a host that receives tool arguments as already-parsed JSON is inside this subject: the validation door and op-grammar fit that host, and the prose extraction ladder, repair loop, and constrained-decoding budget do not."
     }
   }
 }
