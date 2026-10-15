@@ -3064,7 +3064,11 @@
           "revision": 14,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/components/Table.tsx:83 Selectable tables declare grid semantics while implementing row-only focus, preventing the cell traversal required by the grid keyboard model.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:c587a204413d5373",
+          "evaluatedRevision": 14
         },
         {
           "subject": "mcp-tools",
@@ -6934,7 +6938,11 @@
           "revision": 14,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/ledgerbox/lib/db.ts:121 Invoice ordering omits an immutable unique tiebreaker, leaving rows with equal due dates without a guaranteed relative order.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:c587a204413d5373",
+          "evaluatedRevision": 14
         },
         {
           "subject": "prompt-assembly",
@@ -7934,7 +7942,11 @@
           "revision": 14,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/proving/server/static/index.html:844 A failed history refresh removes existing table rows and headers and replaces them with an empty-styled error without a retry action.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:c587a204413d5373",
+          "evaluatedRevision": 14
         }
       ],
       "governance": "governed"
@@ -8391,7 +8403,11 @@
           "revision": 14,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/tidycrm/lib/csv.ts:15 Contact exports apply CSV quoting without spreadsheet-formula guarding, allowing trigger-leading text to reach spreadsheet consumers unchanged.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:c587a204413d5373",
+          "evaluatedRevision": 14
         },
         {
           "subject": "structured-output",

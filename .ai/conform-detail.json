@@ -1645,6 +1645,125 @@
         }
       ],
       "registryProposal": "Say whether a host that receives tool arguments as already-parsed JSON is inside this subject: the validation door and op-grammar fit that host, and the prose extraction ladder, repair loop, and constrained-decoding budget do not."
+    },
+    "046526ec-f0cc-4de8-b68b-37271969bd74/table": {
+      "context": "tidycrm-domain-lib",
+      "subject": "table",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:41:51.481Z",
+      "worker": "f16e07c4-2955-49bc-afaa-0a4e063da695",
+      "techniques": [
+        {
+          "technique": "client-server-split",
+          "verdict": "conformant",
+          "evidence": "examples/tidycrm/lib/db.ts:188 The contact-page query filters, orders, counts and windows on the server, returning the answered segment and page."
+        },
+        {
+          "technique": "compressed-scroll-space",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/lib/constants.ts:57 The documented dataset and bounded samples do not approach the browser scroll-size ceiling."
+        },
+        {
+          "technique": "export-escapes-for-its-consumer",
+          "verdict": "deviation",
+          "evidence": "examples/tidycrm/lib/csv.ts:15 The complete cell encoder only quotes CSV syntax; it has no formula-trigger guard before quoting."
+        }
+      ]
+    },
+    "97da7e8d-8b3a-41fd-bcfe-326d41a66565/table": {
+      "context": "desktop-app-shell-ui",
+      "subject": "table",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:41:51.481Z",
+      "worker": "f16e07c4-2955-49bc-afaa-0a4e063da695",
+      "techniques": [
+        {
+          "technique": "compressed-scroll-space",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/components/Table.tsx:121 The primitive renders all supplied rows directly rather than using a virtual spacer."
+        },
+        {
+          "technique": "grid-keyboard-model",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/components/Table.tsx:124 Cells have no navigation focus target; the handler moves between rows and implements no horizontal cell traversal."
+        }
+      ]
+    },
+    "b5d94170-12ef-41ee-af0a-902add774f7d/table": {
+      "context": "proving-hosted-server",
+      "subject": "table",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:41:51.481Z",
+      "worker": "f16e07c4-2955-49bc-afaa-0a4e063da695",
+      "techniques": [
+        {
+          "technique": "client-server-split",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/server/runs.py:164 The server orders the complete run-id set before truncation, and the browser renders that order unchanged."
+        },
+        {
+          "technique": "compressed-scroll-space",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/server/runs.py:27 Server listings are clamped to at most 100 rows and rendered without a virtual spacer."
+        },
+        {
+          "technique": "filtering",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/server/static/index.html:843 The history table has a fixed recent-run request; the page's attack filters operate a separate detail list."
+        },
+        {
+          "technique": "loading-and-empty-states",
+          "verdict": "deviation",
+          "evidence": "src/athena/proving/server/static/index.html:844 Refresh failure discards populated content and chrome, uses empty-state styling, and supplies no retry."
+        },
+        {
+          "technique": "one-door-for-range-writes",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/server/static/index.html:690 History rows open reports or replays; their cells do not provide editable range-write gestures."
+        },
+        {
+          "technique": "sorting",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/server/runs.py:120 The fixed default order uses unique run-directory identities, producing a deterministic total order."
+        }
+      ]
+    },
+    "3c4969f8-b87d-4ccd-bcab-2ebbcf35526c/table": {
+      "context": "ledgerbox-domain-lib",
+      "subject": "table",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:41:51.481Z",
+      "worker": "f16e07c4-2955-49bc-afaa-0a4e063da695",
+      "techniques": [
+        {
+          "technique": "client-server-split",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/lib/lanes/index.ts:194 The client books payload carries the complete invoice collection rather than a server-truncated page."
+        },
+        {
+          "technique": "compressed-scroll-space",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/lib/db.ts:115 The documented 120-row dataset does not approach the massive virtual-table precondition."
+        },
+        {
+          "technique": "export-escapes-for-its-consumer",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/lib/export.ts:119 The reviewed summary exporter produces fixed-width text and Markdown tables, not CSV cells."
+        },
+        {
+          "technique": "sorting",
+          "verdict": "deviation",
+          "evidence": "examples/ledgerbox/lib/db.ts:121 Due date is the only ordering term; distinct invoices with equal dates lack the required identity tiebreaker."
+        }
+      ]
     }
   }
 }
