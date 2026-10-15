@@ -7,9 +7,12 @@
  * record at render — the standing word, the seal sentence, the age of the last probe — and
  * nothing is stored: a row that said "connected" after the grant went would be a surface lying.
  *
- * The class of a tool is not decided here. A write is what the spec's own flags make a write
- * (`reversible === false`, or `side_effects === "external"`), which is exactly the derivation the
- * catalog makes; the view shows the word GATED on those and nothing on the reads.
+ * The class of a tool is not decided here. A write is what `gate.js` `classify` makes `GATED` from
+ * the spec's own flags, the port of `HostTool.default_class`: anything not declared reversible, or
+ * anything with external reach (ADR 0116). The view shows the word GATED on those and nothing on
+ * the reads. What the writes switch stops is the daemon's narrower `service.is_write`
+ * (`switchGoverns` below); a card's warning reads that one, so it never predicts a refusal the
+ * daemon would not make.
  *
  * While the vault carries a `records_notice` (its connections file could not be read), no row may
  * read as connected: what the records say cannot be confirmed, so a row the record calls
@@ -19,6 +22,8 @@
 import type { ConnectorToolView, ConnectorView, FlowView } from "@/lib/api";
 import type { Tone } from "@/components/StatusDot";
 import { parseStamp } from "@/lib/time";
+// @ts-expect-error - gate.js is plain JavaScript with a .d.ts that does not cover this one.
+import { classify } from "@athena/bridge/gate";
 
 export type Standing = "not-connected" | "connected" | "needs-reauth" | "off" | "broken" | "unconfirmed";
 
@@ -89,8 +94,89 @@ export interface ConnectorsModel {
   actions: ConnectorActions;
 }
 
+/** The catalog's class, from the flags: `GATED` unless declared reversible and kept inside the app. */
 export function isWrite(tool: ConnectorToolView): boolean {
+  return classify({ reversible: tool.reversible, side_effects: tool.side_effects }) === "GATED";
+}
+
+/**
+ * What the writes switch stops: `is_write` in `src/athena/connectors/service.py`, which refuses a
+ * call while writes are off only when the tool is irreversible or reaches outside. Narrower than
+ * `isWrite` for a tool that omits `reversible`; read only to predict a refusal.
+ */
+export function switchGoverns(tool: ConnectorToolView): boolean {
   return tool.reversible === false || tool.side_effects === "external";
+}
+
+/** Why a connector card's approval will be refused, and where that is put right. */
+export interface ConnectorWarning {
+  text: string;
+  /** Accounts, in Main, is where a grant is reconnected and the switches are set. */
+  action: "accounts";
+}
+
+/**
+ * What a connector card says of the connector that will act (ADR 0116): its name, the account the
+ * vault holds it connected as, and, when the record already says the call cannot go through, the
+ * one cause. Display only: the card's buttons never read it, and the gate decides at replay.
+ */
+export interface ConnectorLine {
+  /** The connector's label (`Gmail`), never the raw origin. */
+  app: string;
+  line: string;
+  warning: ConnectorWarning | null;
+}
+
+const CONNECTOR = "connector:";
+
+/** `gmail` as a person reads it when the list has not named it: `Gmail`. */
+export function labelOfId(id: string): string {
+  const words = id.replace(/[_-]+/g, " ").trim();
+  return words ? words.charAt(0).toUpperCase() + words.slice(1) : "a connector";
+}
+
+/**
+ * The line for a card from `origin`, from the `/connectors` mirror; `null` for any other origin.
+ *
+ * A list that has not answered, or a vault whose records notice stands, confirms nothing: the line
+ * says so and claims no account. Otherwise the line names the account from the record, and a
+ * warning names the first cause that stops the call: the grant lapsed or is gone, the connector is
+ * switched off, or writes are off for a tool the writes switch governs. `action` is the card's tool
+ * (`connector.gmail.send_mail`); without it a writes-off record is read as stopping the call.
+ */
+export function connectorLineOf(
+  origin: string,
+  items: readonly ConnectorView[],
+  loaded: boolean,
+  notice: string = "",
+  action?: string,
+): ConnectorLine | null {
+  if (!origin.startsWith(CONNECTOR)) return null;
+  const id = origin.slice(CONNECTOR.length);
+  const view = items.find((c) => c.id === id);
+  const app = view?.label || labelOfId(id);
+  if (!loaded || notice || !view) {
+    return { app, line: `${app}'s standing could not be confirmed.`, warning: null };
+  }
+  const c = view.connection;
+  const line =
+    c.status === "disconnected"
+      ? `No account is connected for ${app}.`
+      : c.identity
+        ? `Acts as ${c.identity} through ${app}.`
+        : `Acts through ${app}, under an account it did not name.`;
+  const bare = action?.split(".").slice(2).join(".");
+  const tool = bare ? view.tools.find((t) => t.name === bare) : undefined;
+  let cause: string | null = null;
+  if (c.status === "needs_reauth") cause = `${app} needs reconnecting`;
+  else if (c.status !== "connected") cause = `${app} is not connected`;
+  else if (!c.enabled) cause = `${app} is switched off`;
+  else if (!c.writes_enabled && (tool === undefined || switchGoverns(tool))) cause = `Writes are off for ${app}`;
+  return {
+    app,
+    line,
+    warning: cause ? { text: `${cause}, so approving now will be refused.`, action: "accounts" } : null,
+  };
 }
 
 /** "3 min ago" from an ISO stamp, or the raw string when it cannot be read. */

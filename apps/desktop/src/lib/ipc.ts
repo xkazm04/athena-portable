@@ -14,7 +14,7 @@
  *     with a sentence rather than a `window.__TAURI_INTERNALS__` of undefined.
  */
 import { invoke } from "@tauri-apps/api/core";
-import { listen, type UnlistenFn } from "@tauri-apps/api/event";
+import { emit, listen, type UnlistenFn } from "@tauri-apps/api/event";
 
 /**
  * Everything JSON can spell, and nothing it cannot. `undefined` is deliberately not a member:
@@ -169,9 +169,10 @@ export const onLayoutChanged = (f: (shape: string) => void): Promise<UnlistenFn>
   listen<{ shape: string }>("layout:changed", (e) => f(e.payload.shape));
 
 /**
- * A table changed under another window's hand (ADR 0026): `{table, key}`. The settings, origins
- * and connectors mirrors re-read on it, so the theme and the engine cannot disagree between the
- * `chrome` window and the `athena` one.
+ * A table changed under another window's hand (ADR 0026): `{table, key}`. The settings and origins
+ * mirrors re-read on it, so the theme and the engine cannot disagree between the `chrome` window
+ * and the `athena` one. Rust emits it only for a write to one of `STORE_TABLES`; the connectors are
+ * the daemon's, not a table, and have their own event below.
  */
 export interface StoreChanged {
   table: string;
@@ -180,6 +181,25 @@ export interface StoreChanged {
 
 export const onStoreChanged = (f: (change: StoreChanged) => void): Promise<UnlistenFn> =>
   listen<StoreChanged>("store:changed", (e) => f(e.payload));
+
+/**
+ * A connector act succeeded in one window (ADR 0116): `{id, from}`, where `from` is the sending
+ * window's own mark so it can ignore its own word. The other window's `/connectors` mirror re-reads
+ * on it, so a card in her window cannot name an account Accounts in Main has just disconnected.
+ */
+export interface ConnectorsChanged {
+  id: string;
+  from: string;
+}
+
+export const CONNECTORS_CHANGED = "connectors:changed";
+
+/** Tell every window. A no-op without a shell: a plain browser has no other window to tell. */
+export const emitConnectorsChanged = (change: ConnectorsChanged): Promise<void> =>
+  hasShell() ? emit(CONNECTORS_CHANGED, change) : Promise.resolve();
+
+export const onConnectorsChanged = (f: (change: ConnectorsChanged) => void): Promise<UnlistenFn> =>
+  listen<ConnectorsChanged>(CONNECTORS_CHANGED, (e) => f(e.payload));
 
 /** What she is doing, as Rust reports it for the status pill (`athena:status`, ADR 0026). */
 export interface AthenaStatus {

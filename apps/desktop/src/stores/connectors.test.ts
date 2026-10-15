@@ -6,7 +6,16 @@ import { beforeEach, describe, expect, it } from "vitest";
 
 import { DaemonApi, type ConnectorView } from "@/lib/api";
 
-import { reloadOnStoreChange, resetConnectorsForTests, setConnectorDeps, useConnectors } from "./connectors";
+import { STORE_TABLES, type ConnectorsChanged } from "@/lib/ipc";
+
+import {
+  CONNECTORS_SOURCE,
+  followCards,
+  reloadOnConnectorsChanged,
+  resetConnectorsForTests,
+  setConnectorDeps,
+  useConnectors,
+} from "./connectors";
 
 function row(id: string, over: Partial<ConnectorView> = {}): ConnectorView {
   return {
@@ -314,8 +323,34 @@ describe("a connect's own word", () => {
   });
 });
 
-describe("store:changed", () => {
-  it("re-reads the list for the connectors table and for no other", async () => {
+const settle = () => new Promise((r) => setTimeout(r, 0));
+
+describe("connectors:changed (ADR 0116)", () => {
+  it("case 6: every successful act announces connectors:changed with its id, and a refused one does not", async () => {
+    const announced: ConnectorsChanged[] = [];
+    let refuse = false;
+    const daemon = fakeDaemon((path) => {
+      if (path === "/connectors") return { ok: true, connectors: [row("notion")], showing: 1, total: 1, footer: "" };
+      if (refuse) return { status: 409, payload: { ok: false, reason: "validator_failed", detail: "no" } };
+      return { ok: true, connector: row("notion") };
+    });
+    setConnectorDeps({
+      api: () => new DaemonApi({ url: "http://daemon", token: "t" }, daemon.fetchImpl),
+      wait: async () => {},
+      announce: (change) => announced.push(change),
+    });
+    await useConnectors.getState().load();
+    await useConnectors.getState().settings("notion", { enabled: false });
+    await useConnectors.getState().connect("notion", { token: "ntn_x" });
+    await useConnectors.getState().disconnect("notion");
+    await useConnectors.getState().probe("notion");
+    expect(announced).toEqual(Array.from({ length: 4 }, () => ({ id: "notion", from: CONNECTORS_SOURCE })));
+    refuse = true;
+    await useConnectors.getState().probe("notion");
+    expect(announced).toHaveLength(4);
+  });
+
+  it("case 6: the other window's mirror reloads on hearing it; its own word and an unasked mirror do not", async () => {
     let reads = 0;
     const api = {
       connectors: async () => {
@@ -325,13 +360,71 @@ describe("store:changed", () => {
     } as unknown as DaemonApi;
     setConnectorDeps({ api: () => api, wait: async () => {} });
 
-    reloadOnStoreChange({ table: "settings", key: "theme" });
-    await Promise.resolve();
+    // Nobody in this window has asked for the list: hearing about it costs nothing.
+    reloadOnConnectorsChanged({ id: "gmail", from: "another-window" });
+    await settle();
     expect(reads).toBe(0);
 
-    reloadOnStoreChange({ table: "connectors", key: "gmail" });
-    await new Promise((r) => setTimeout(r, 0));
+    await useConnectors.getState().load();
     expect(reads).toBe(1);
-    expect(useConnectors.getState().items).toHaveLength(1);
+    reloadOnConnectorsChanged({ id: "gmail", from: CONNECTORS_SOURCE });
+    await settle();
+    expect(reads).toBe(1);
+    reloadOnConnectorsChanged({ id: "gmail", from: "another-window" });
+    await settle();
+    expect(reads).toBe(2);
+  });
+
+  it("case 6: the dead store:changed branch is gone (no store table is named connectors)", async () => {
+    const store = await import("./connectors");
+    expect("reloadOnStoreChange" in store).toBe(false);
+    expect((STORE_TABLES as readonly string[]).includes("connectors")).toBe(false);
+  });
+});
+
+describe("her window's mirror (ADR 0116)", () => {
+  type Card = { id: string; origin: string };
+
+  function feed() {
+    let cards: Card[] = [];
+    const listeners = new Set<() => void>();
+    return {
+      read: () => cards,
+      subscribe: (f: () => void) => {
+        listeners.add(f);
+        return () => listeners.delete(f);
+      },
+      set(next: Card[]) {
+        cards = next;
+        listeners.forEach((f) => f());
+      },
+    };
+  }
+
+  it("case 5: a connector card arriving reads GET /connectors exactly once; a page's card reads nothing", async () => {
+    const daemon = fakeDaemon(() => ({ ok: true, connectors: [row("gmail")], showing: 1, total: 1, footer: "" }));
+    wire(daemon);
+    const cards = feed();
+    const stop = followCards(cards.read, cards.subscribe);
+    const lists = () => daemon.seen.filter((s) => s.path === "/connectors").length;
+
+    cards.set([{ id: "apr_host", origin: "host:ledgerbox" }]);
+    await settle();
+    expect(lists()).toBe(0);
+
+    cards.set([{ id: "apr_host", origin: "host:ledgerbox" }, { id: "apr_mail", origin: "connector:gmail" }]);
+    await settle();
+    expect(lists()).toBe(1);
+    expect(useConnectors.getState().items.map((c) => c.id)).toEqual(["gmail"]);
+
+    // The 30 s re-poll hands the same card back: it is not a new arrival.
+    cards.set([{ id: "apr_mail", origin: "connector:gmail" }]);
+    await settle();
+    expect(lists()).toBe(1);
+
+    stop();
+    cards.set([{ id: "apr_mail2", origin: "connector:gmail" }]);
+    await settle();
+    expect(lists()).toBe(1);
   });
 });

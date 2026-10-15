@@ -11,6 +11,7 @@ import { whenAgo } from "@/lib/time";
 import {
   INERT_ACTIONS,
   ageOf,
+  connectorLineOf,
   isWrite,
   paragraphsOf,
   sealSentence,
@@ -74,8 +75,82 @@ test("a write is what the flags say, exactly as the catalog derives it", () => {
   const row = selectConnectors([view()], true, null, true, {}, {}, INERT_ACTIONS, NOW).rows[0];
   expect(row.reads.map((t) => t.name)).toEqual(["search"]);
   expect(row.writes.map((t) => t.name)).toEqual(["append_to_page", "rename"]);
-  expect(isWrite({ name: "x", description: "", reversible: null, side_effects: "internal" })).toBe(false);
+  expect(isWrite({ name: "x", description: "", reversible: true, side_effects: "internal" })).toBe(false);
 });
+
+test("case 6: a tool with reversible null and internal side effects is listed under writes, as HostTool.default_class gates it", () => {
+  const omitted = { name: "tag_page", description: "Tag.", reversible: null, side_effects: "internal" };
+  const row = selectConnectors([view({ tools: [...view().tools, omitted] })], true, null, true, {}, {}, INERT_ACTIONS, NOW).rows[0];
+  expect(row.writes.map((t) => t.name)).toEqual(["append_to_page", "rename", "tag_page"]);
+  expect(row.reads.map((t) => t.name)).toEqual(["search"]);
+  expect(isWrite(omitted)).toBe(true);
+});
+
+// -- the line a connector card carries (ADR 0116) ----------------------------------------------------
+
+function gmailView(conn: Partial<ConnectorView["connection"]> = {}): ConnectorView {
+  return view(
+    {
+      id: "gmail",
+      label: "Gmail",
+      egress: "recipients",
+      tools: [
+        { name: "search_mail", description: "Search.", reversible: true, side_effects: "none" },
+        { name: "send_mail", description: "Send.", reversible: false, side_effects: "external" },
+      ],
+    },
+    { id: "gmail", identity: "mira@example.com", enabled: true, writes_enabled: true, ...conn },
+  );
+}
+
+test("case 1: a connected, enabled, writable connector names the account it acts as and has no warning", () => {
+  expect(connectorLineOf("connector:gmail", [gmailView()], true)).toEqual({
+    app: "Gmail",
+    line: "Acts as mira@example.com through Gmail.",
+    warning: null,
+  });
+});
+
+test("case 2: a lapsed grant, a switched-off connector or writes off each name the one cause and that approving will be refused", () => {
+  const warned = (conn: Partial<ConnectorView["connection"]>) => connectorLineOf("connector:gmail", [gmailView(conn)], true)?.warning;
+  expect(warned({ status: "needs_reauth" })).toEqual({
+    text: "Gmail needs reconnecting, so approving now will be refused.",
+    action: "accounts",
+  });
+  expect(warned({ enabled: false })).toEqual({
+    text: "Gmail is switched off, so approving now will be refused.",
+    action: "accounts",
+  });
+  expect(warned({ writes_enabled: false })).toEqual({
+    text: "Writes are off for Gmail, so approving now will be refused.",
+    action: "accounts",
+  });
+  // One cause, the first that stops it: a lapsed grant outranks the switches.
+  expect(warned({ status: "needs_reauth", enabled: false, writes_enabled: false })?.text).toBe(
+    "Gmail needs reconnecting, so approving now will be refused.",
+  );
+  // The writes switch governs what the daemon's service calls a write; a read it does not stop.
+  expect(connectorLineOf("connector:gmail", [gmailView({ writes_enabled: false })], true, "", "connector.gmail.search_mail")?.warning).toBeNull();
+  expect(connectorLineOf("connector:gmail", [gmailView({ writes_enabled: false })], true, "", "connector.gmail.send_mail")?.warning?.text).toBe(
+    "Writes are off for Gmail, so approving now will be refused.",
+  );
+});
+
+test("case 3: an unread list or a records notice claims no identity", () => {
+  for (const line of [
+    connectorLineOf("connector:gmail", [gmailView()], false),
+    connectorLineOf("connector:gmail", [gmailView()], true, NOTICE_FOR_LINE),
+    connectorLineOf("connector:gmail", [], false),
+  ]) {
+    expect(line?.app).toBe("Gmail");
+    expect(line?.line).toBe("Gmail's standing could not be confirmed.");
+    expect(line?.warning).toBeNull();
+    expect(JSON.stringify(line)).not.toContain("mira@example.com");
+  }
+  expect(connectorLineOf("host:ledgerbox", [gmailView()], true)).toBeNull();
+});
+
+const NOTICE_FOR_LINE = "The connections file could not be read (JSONDecodeError), so no connection is shown.";
 
 test("the seal is a sentence only while something is sealed, and busy and errors ride the row", () => {
   const rows = selectConnectors(

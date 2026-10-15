@@ -17,11 +17,16 @@
  * The OAuth flow is polled from here (`pollFlow`) every 1.5 s while the consent page is open;
  * the module's `index.ts` starts a `load` when it mounts and when the daemon becomes ready, so a
  * surface that is not on screen costs nothing.
+ *
+ * Two windows hold this mirror (ADR 0116, amending 0026). Main's Accounts acts on it; her window
+ * reads it only to tell a connector card who it acts as, and only when one arrives (`followCards`).
+ * Every act that succeeds says `connectors:changed`, and the other window's mirror, if anyone there
+ * has asked for it, reads the list again.
  */
 import { create } from "zustand";
 
 import { ApiError, DaemonApi, type ConnectorView } from "@/lib/api";
-import { hasShell, onStoreChanged, type StoreChanged } from "@/lib/ipc";
+import { emitConnectorsChanged, hasShell, onConnectorsChanged, type ConnectorsChanged } from "@/lib/ipc";
 import { endpoint, useDaemon } from "@/stores/daemon";
 import type { ConnectorProblem } from "@/modules/connectors/model";
 
@@ -32,7 +37,12 @@ export interface ConnectorDeps {
   api: () => DaemonApi | null;
   /** `setTimeout`, so the headless test can drive the poll by hand. */
   wait: (ms: number) => Promise<void>;
+  /** Tell the other window an act went through. Absent: nobody is told (the headless default). */
+  announce?: (change: ConnectorsChanged) => void;
 }
+
+/** This window's mark on what it announces, so it never re-reads on its own word. */
+export const CONNECTORS_SOURCE = `w${Math.random().toString(36).slice(2, 10)}`;
 
 const LIVE: ConnectorDeps = {
   api: () => {
@@ -40,6 +50,7 @@ const LIVE: ConnectorDeps = {
     return found ? new DaemonApi(found) : null;
   },
   wait: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+  announce: (change) => void emitConnectorsChanged(change).catch(() => {}),
 };
 
 let deps: ConnectorDeps = LIVE;
@@ -86,8 +97,11 @@ const EMPTY = {
 
 export function resetConnectorsForTests(): void {
   deps = LIVE;
+  asked.clear();
   useConnectors.setState({ ...EMPTY });
 }
+
+const announce = (id: string) => deps.announce?.({ id, from: CONNECTORS_SOURCE });
 
 function reasonOf(error: unknown): string {
   if (error instanceof ApiError) return error.message || error.reason;
@@ -154,6 +168,7 @@ export const useConnectors = create<ConnectorsState>((set, get) => {
     try {
       const reply = await run(api);
       replace(reply.connector);
+      announce(id);
       return true;
     } catch (error) {
       fail(id, error);
@@ -211,7 +226,10 @@ export const useConnectors = create<ConnectorsState>((set, get) => {
           const reply = await api.connectorAct(id, "flow");
           replace(reply.connector);
           const phase = reply.flow?.phase ?? reply.connector.flow?.phase;
-          if (!phase || phase === "done" || phase === "failed") return;
+          if (!phase || phase === "done" || phase === "failed") {
+            announce(id);
+            return;
+          }
           await deps.wait(FLOW_POLL_MS);
         }
       } catch (error) {
@@ -223,16 +241,48 @@ export const useConnectors = create<ConnectorsState>((set, get) => {
   };
 });
 
-/** Re-read the list when the other window says the connectors table moved (ADR 0026). */
-export function reloadOnStoreChange(change: StoreChanged): void {
-  if (change.table === "connectors") void useConnectors.getState().load();
+/**
+ * Re-read the list when the other window says a connector moved (ADR 0116). Its own word is
+ * skipped, and so is a mirror nobody in this window has asked for: it reads when it is asked.
+ */
+export function reloadOnConnectorsChanged(change: ConnectorsChanged): void {
+  if (change.from === CONNECTORS_SOURCE || !useConnectors.getState().loaded) return;
+  void useConnectors.getState().load();
+}
+
+/** The connector cards already read for, by card id; pruned to the cards still waiting. */
+const asked = new Set<string>();
+
+/**
+ * Her window's mirror (ADR 0116): one `GET /connectors` for each connector card that arrives, so
+ * the card names the account as the vault holds it now, and none for a page's card. A card the
+ * 30 s re-poll hands back is not a new arrival. `read` and `subscribe` are the run store's cards,
+ * passed in so this store does not import the turn. Returns what to undo.
+ */
+export function followCards(
+  read: () => readonly { id: string; origin: string }[],
+  subscribe: (f: () => void) => () => void,
+): () => void {
+  const check = () => {
+    const cards = read();
+    const waiting = new Set(cards.map((c) => c.id));
+    for (const id of asked) if (!waiting.has(id)) asked.delete(id);
+    const fresh = cards.filter((c) => c.origin.startsWith("connector:") && !asked.has(c.id));
+    // Not ready: nothing is marked, so the next change of the cards asks again.
+    if (!fresh.length || !deps.api()) return;
+    fresh.forEach((c) => asked.add(c.id));
+    void useConnectors.getState().load();
+  };
+  const stop = subscribe(check);
+  check();
+  return stop;
 }
 
 let started = false;
 
-/** Listen for `store:changed`. Called by `src/app.tsx`; a no-op without a shell. */
+/** Listen for `connectors:changed`. Called by both window roots; a no-op without a shell. */
 export async function startConnectors(): Promise<void> {
   if (started || !hasShell()) return;
   started = true;
-  await onStoreChanged(reloadOnStoreChange);
+  await onConnectorsChanged(reloadOnConnectorsChanged);
 }
