@@ -1764,6 +1764,57 @@
           "evidence": "examples/ledgerbox/lib/db.ts:121 Due date is the only ordering term; distinct invoices with equal dates lack the required identity tiebreaker."
         }
       ]
+    },
+    "82024321-4b38-4a9a-b360-154b5349e47b/fleet-orchestration": {
+      "context": "proving-core",
+      "subject": "fleet-orchestration",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T23:10:51.254Z",
+      "techniques": [
+        {
+          "technique": "parallel-dispatch",
+          "verdict": "deviation",
+          "evidence": "src/athena/proving/roles.py:435 Admission checks settled monetary spend, not shared concurrency capacity; the inspected Gauntlet caller starts two generators, each with its own workers-sized pool, instead of enforcing one cap at this invocation door."
+        }
+      ],
+      "withdrawn": {
+        "worker": "189c57f6-dc0d-4c82-84d8-64c1f7b2b06a",
+        "state": "deviation",
+        "at": "2026-10-15T23:11:10.843487+00:00",
+        "reason": "reviewer (sonnet): roles.py:440 does call client.complete with only a spend check, but the 'two generators each with a workers-sized pool' claim rests on gauntlet/run.py:583 and :238, which is not among this context's files and does not get called by them."
+      }
+    },
+    "9773ec7e-b7ea-4dda-a063-fd912a72a012/fleet-orchestration": {
+      "context": "desktop-setup-module",
+      "subject": "fleet-orchestration",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T23:10:51.254Z",
+      "techniques": [],
+      "withdrawn": {
+        "worker": "189c57f6-dc0d-4c82-84d8-64c1f7b2b06a",
+        "state": "not-applicable",
+        "at": "2026-10-15T23:11:10.868774+00:00",
+        "reason": "reviewer (sonnet): The anchor index.ts:71 is one daemon-restart line that does not show worker dispatch is absent, and the searched terms (fleet, hibernat, sweeper) are too narrow to prove absence for this subject."
+      }
+    },
+    "fe808407-91f4-4b85-8688-1125db0aec71/fleet-orchestration": {
+      "context": "desktop-scenes-accounts-apps",
+      "subject": "fleet-orchestration",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T23:10:51.254Z",
+      "techniques": [],
+      "withdrawn": {
+        "worker": "189c57f6-dc0d-4c82-84d8-64c1f7b2b06a",
+        "state": "not-applicable",
+        "at": "2026-10-15T23:11:10.889549+00:00",
+        "reason": "reviewer (sonnet): The anchor view.tsx:12 is a doc-comment line that only describes the scene, so it is incidental. The same narrow search terms cannot prove absence of worker or session management."
+      }
     }
   }
 }
