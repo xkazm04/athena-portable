@@ -1,0 +1,253 @@
+{
+ "schema": "conform-run/1",
+ "worker": "fac091c5-0863-463b-bb07-a37b91c7094d",
+ "subject": "agent-memory",
+ "evaluatedAt": "2026-10-15T01:57:04.781268+00:00",
+ "provider": "grok",
+ "model": "grok-4.7",
+ "pairs": [
+  {
+   "context": "core-gate-and-ledger",
+   "subject": "agent-memory",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "src/athena/core/prompt.py:31 The composer names a per-block recall budget and still injects an over-budget memory block, recording only a warning.",
+   "techniques": [
+    {
+     "technique": "recall-injection",
+     "verdict": "deviation",
+     "evidence": "src/athena/core/prompt.py:31 Always, keyword and episode lanes are separate blocks, but the stated budgets do not cap injection."
+    },
+    {
+     "technique": "loss-site-inventory",
+     "verdict": "deviation",
+     "evidence": "src/athena/core/prompt.py:443 A block that hides a cut is reported on the composition warning list, not written into the model block."
+    },
+    {
+     "technique": "episodic-capture",
+     "verdict": "deviation",
+     "evidence": "src/athena/core/catalog.py:60 The policy stores the tool answer itself, after a character cap, as the episode."
+    },
+    {
+     "technique": "memory-governance",
+     "verdict": "conformant",
+     "evidence": "src/athena/core/catalog.py:179 write_fact is GATED: a fact that outlives the turn is refused before a card unless its sources are live episode ids."
+    },
+    {
+     "technique": "filter-at-the-id-door",
+     "verdict": "conformant",
+     "evidence": "src/athena/core/validators.py:193 The gate rechecks episode-id shape and liveness on the write, not only when a shortlist was built."
+    },
+    {
+     "technique": "pending-beliefs-live-apart",
+     "verdict": "conformant",
+     "evidence": "src/athena/core/catalog.py:184 A gated fact is not executed during the turn; the write waits until the approval is resolved."
+    },
+    {
+     "technique": "working-memory",
+     "verdict": "conformant",
+     "evidence": "src/athena/core/prompt.py:14 Host state and per-message recall are frame blocks, so a resumed session does not freeze turn-one context into the system prompt."
+    }
+   ]
+  },
+  {
+   "context": "desktop-scenes-chores",
+   "subject": "agent-memory",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "apps/desktop/src/scenes/chores/replay.tsx:13 Searched the chores directory for episode, consolidation, provenance, belief and write_fact and found none; the scene store is only this replay-playing flag, which expires on its own.",
+   "techniques": [],
+   "absenceTerms": [
+    "episode",
+    "provenance",
+    "belief",
+    "write_fact"
+   ]
+  },
+  {
+   "context": "harness-engines",
+   "subject": "agent-memory",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "src/athena/harness/hooks.py:5 The last hook before the model call refuses to cap a composed block, so an oversized memory block still enters the prompt.",
+   "techniques": [
+    {
+     "technique": "recall-injection",
+     "verdict": "deviation",
+     "evidence": "src/athena/harness/hooks.py:5 The harness treats every prompt block's budget as a tripwire and will not skip or cut an oversized block."
+    },
+    {
+     "technique": "loss-site-inventory",
+     "verdict": "deviation",
+     "evidence": "src/athena/harness/hooks.py:373 A truncated block with no footer produces a turn flag, and the model still receives the block without an in-band notice."
+    },
+    {
+     "technique": "working-memory",
+     "verdict": "conformant",
+     "evidence": "src/athena/harness/api_harness.py:18 A later turn is not handed the prior transcript; continuity is the recomposed frame."
+    },
+    {
+     "technique": "memory-governance",
+     "verdict": "conformant",
+     "evidence": "src/athena/harness/hooks.py:164 A gated call files a card on before_tool_call and reaches an executor only when run_tool is replayed with an approval id."
+    }
+   ]
+  },
+  {
+   "context": "daemon-service",
+   "subject": "agent-memory",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "src/athena/daemon/routes.py:970 GET /playbooks keeps only recall items and never reads the trace's unavailable flag, so an unreadable store is answered as an empty playbook list.",
+   "techniques": [
+    {
+     "technique": "durable-store-failure-posture",
+     "verdict": "deviation",
+     "evidence": "src/athena/daemon/routes.py:970 The handler uses trace.items only; a recall that could not read the store has no items and an unread unavailable note."
+    },
+    {
+     "technique": "recall-injection",
+     "verdict": "deviation",
+     "evidence": "src/athena/daemon/routes.py:981 That empty item list is wrapped as a normal announced read, so failed recall and no procedurals look the same."
+    },
+    {
+     "technique": "loss-site-inventory",
+     "verdict": "deviation",
+     "evidence": "src/athena/daemon/routes.py:961 The route documents that its total is not the store, and that sentence stays in the docstring rather than the response."
+    },
+    {
+     "technique": "procedure-promotion",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/daemon/routes.py:958 This route only reads procedurals; it does not mint or invoke a capability."
+    },
+    {
+     "technique": "memory-governance",
+     "verdict": "conformant",
+     "evidence": "src/athena/daemon/routes.py:766 Text typed beside a decision is stored as an episode and does not alter the approved grant."
+    },
+    {
+     "technique": "episodic-capture",
+     "verdict": "conformant",
+     "evidence": "src/athena/daemon/routes.py:769 The user's decision aside is captured as its own episode, capped, at the decision boundary."
+    },
+    {
+     "technique": "working-memory",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/daemon/sessions.py:7 The session table is socket routing that dies with the process; the module says the brain holds what was said."
+    }
+   ]
+  },
+  {
+   "context": "browser-lane",
+   "subject": "agent-memory",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "src/athena/lane/browser_lane.py:383 Each tool result is appended as an episode whose body is the raw output, so the episodic layer stores a replay of the turn.",
+   "techniques": [
+    {
+     "technique": "episodic-capture",
+     "verdict": "deviation",
+     "evidence": "src/athena/lane/browser_lane.py:383 User text, assistant text and tool output are appended as episode bodies; the lane does not write a distilled claim plus a pointer."
+    },
+    {
+     "technique": "memory-governance",
+     "verdict": "conformant",
+     "evidence": "src/athena/lane/ports.py:157 The lane's brain port can only append episodes; a fact is not written from here."
+    },
+    {
+     "technique": "consolidation",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/lane/ports.py:156 The lane records episodes and does not run a distillation pass over them."
+    }
+   ]
+  }
+ ],
+ "declined": [],
+ "consults": [
+  {
+   "ts": "2026-10-15T01:57:04.781268+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "agent-memory"
+   ],
+   "techniques": [
+    "episodic-capture",
+    "filter-at-the-id-door",
+    "loss-site-inventory",
+    "memory-governance",
+    "pending-beliefs-live-apart",
+    "recall-injection",
+    "working-memory"
+   ],
+   "deviations": 1,
+   "context": "core-gate-and-ledger",
+   "via": "curator-multi:grok",
+   "model": "grok-4.7"
+  },
+  {
+   "ts": "2026-10-15T01:57:04.781268+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "agent-memory"
+   ],
+   "techniques": [],
+   "deviations": 0,
+   "context": "desktop-scenes-chores",
+   "via": "curator-multi:grok",
+   "model": "grok-4.7"
+  },
+  {
+   "ts": "2026-10-15T01:57:04.781268+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "agent-memory"
+   ],
+   "techniques": [
+    "loss-site-inventory",
+    "memory-governance",
+    "recall-injection",
+    "working-memory"
+   ],
+   "deviations": 1,
+   "context": "harness-engines",
+   "via": "curator-multi:grok",
+   "model": "grok-4.7"
+  },
+  {
+   "ts": "2026-10-15T01:57:04.781268+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "agent-memory"
+   ],
+   "techniques": [
+    "durable-store-failure-posture",
+    "episodic-capture",
+    "loss-site-inventory",
+    "memory-governance",
+    "procedure-promotion",
+    "recall-injection",
+    "working-memory"
+   ],
+   "deviations": 1,
+   "context": "daemon-service",
+   "via": "curator-multi:grok",
+   "model": "grok-4.7"
+  },
+  {
+   "ts": "2026-10-15T01:57:04.781268+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "agent-memory"
+   ],
+   "techniques": [
+    "consolidation",
+    "episodic-capture",
+    "memory-governance"
+   ],
+   "deviations": 1,
+   "context": "browser-lane",
+   "via": "curator-multi:grok",
+   "model": "grok-4.7"
+  }
+ ]
+}

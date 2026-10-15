@@ -1260,7 +1260,11 @@
           "revision": 48,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/lane/browser_lane.py:383 Each tool result is appended as an episode whose body is the raw output, so the episodic layer stores a replay of the turn.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:4f054116d66a9495",
+          "evaluatedRevision": 51
         },
         {
           "subject": "module-design",
@@ -2153,7 +2157,11 @@
           "revision": 48,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/core/prompt.py:31 The composer names a per-block recall budget and still injects an over-budget memory block, recording only a warning.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:4f054116d66a9495",
+          "evaluatedRevision": 51
         },
         {
           "subject": "module-design",
@@ -2382,7 +2390,11 @@
           "revision": 48,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/daemon/routes.py:970 GET /playbooks keeps only recall items and never reads the trace's unavailable flag, so an unreadable store is answered as an empty playbook list.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:4f054116d66a9495",
+          "evaluatedRevision": 51
         },
         {
           "subject": "quality-gates",
@@ -4453,7 +4465,11 @@
           "revision": 48,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/chores/replay.tsx:13 Searched the chores directory for episode, consolidation, provenance, belief and write_fact and found none; the scene store is only this replay-playing flag, which expires on its own.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:4f054116d66a9495",
+          "evaluatedRevision": 51
         },
         {
           "subject": "prompt-assembly",
@@ -5652,7 +5668,11 @@
           "revision": 48,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/harness/hooks.py:5 The last hook before the model call refuses to cap a composed block, so an oversized memory block still enters the prompt.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:4f054116d66a9495",
+          "evaluatedRevision": 51
         }
       ],
       "governance": "governed"
