@@ -21,6 +21,7 @@ import type { ToolRow } from "@/lib/api";
 import type { ContractDrift } from "@/lib/contract";
 import { refsOf, tierOf, type Target } from "@/lib/hands";
 import { hostOfDerivedId } from "@/lib/manifest";
+import { SHEET_CAP, sheetOf, type SheetSlot } from "@/lib/sheet";
 import { ENGINE_IDS, engineLabel, type EngineProbe } from "@/lib/engines";
 import type { Playbook } from "@/lib/playbooks";
 import type { DecisionRequested, TurnSummary } from "@/lib/events";
@@ -73,6 +74,8 @@ export interface CompanionActions {
   retryEngine: (id: string) => void;
   /** Focus a tab: the way back to the tab a card was proposed on (ADR 0103). */
   goToTab: (tabId: number) => void;
+  /** Tick or untick one row of a sheet (ADR 0104). */
+  tick: (id: string) => void;
 }
 
 export const NO_ACTIONS: CompanionActions = {
@@ -96,6 +99,7 @@ export const NO_ACTIONS: CompanionActions = {
   useEngine: () => {},
   retryEngine: () => {},
   goToTab: () => {},
+  tick: () => {},
 };
 
 // -- the pieces --------------------------------------------------------------------------------
@@ -166,6 +170,30 @@ export interface CardView {
    * accepted. `null` when the contract is the accepted one or the card is not about a page tool.
    */
   drift: ContractDrift | null;
+}
+
+/** One row of a sheet: the card whole, and whether its tick is on. */
+export interface SheetRow extends CardView {
+  ticked: boolean;
+}
+
+/**
+ * The cards one request filed on one app and one tab, answered in one press (ADR 0104). Every row
+ * is a card in full, in the order the model proposed them; each stays its own grant at the daemon.
+ */
+export interface SheetView {
+  key: string;
+  /** The app the rows are about, named for a person. */
+  app: string;
+  rows: readonly SheetRow[];
+  /** How many rows are ticked: what the approve button runs. */
+  ticked: number;
+  /** `Approve 8 of 10`. */
+  approve: string;
+  /** `(showing 12 of 13)` when cards past the cap stay cards of their own; `""` otherwise. */
+  footer: string;
+  /** What the last press came to when it stopped early: `ran 3 of 10; stopped at row 4: ...`. */
+  ran: string | null;
 }
 
 /** The tab a card was proposed on, as the card names it beside its app line (ADR 0103). */
@@ -355,6 +383,8 @@ export interface CompanionModel {
   sealLabel: string;
   /** Waiting cards, the one being stamped first. */
   cards: readonly CardView[];
+  /** The sheet the first waiting card is a row of, or `null` when it is a card (ADR 0104). */
+  sheet: SheetView | null;
   /** `sending`: the answer is on its way and nothing is stamped yet. */
   decision: { kind: Choice; by: By; tearing: boolean; sending: boolean } | null;
   listening: boolean;
@@ -417,6 +447,10 @@ export interface CompanionInputs {
     targets?: Readonly<Record<string, CardTargets>>;
     /** Every call of this window; when absent the transcript's tool rows are the record. */
     calls?: readonly TranscriptEntry[];
+    /** Where each streamed card belongs, the rows unticked, and what a sheet's last press ran (ADR 0104). */
+    slots?: Readonly<Record<string, SheetSlot>>;
+    unticked?: Readonly<Record<string, true>>;
+    ran?: Readonly<Record<string, string>>;
     earlier?: EarlierRecord | null;
   };
   voice: PanelVoice;
@@ -539,6 +573,7 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     badge: quietCard ? String(n) : "",
     sealLabel: sealLabel(form, n, mood),
     cards: waiting,
+    sheet: sheetView(i.run, waiting),
     decision: m.decided
       ? { kind: m.decided.kind, by: m.decided.by, tearing: m.decided.tearing, sending: m.decided.sending }
       : null,
@@ -609,6 +644,34 @@ function cardsOf(
     sending: answering[card.id] !== undefined || (index === 0 && m.decided?.sending === true),
     refusal: refusals[card.id] ?? null,
   }));
+}
+
+/**
+ * The sheet the first waiting card heads, as the person reads it. Only a card the store still holds
+ * heads one: the card being stamped has left it. Rows are the cards already built, so a row reads
+ * exactly as the card would.
+ */
+function sheetView(run: CompanionInputs["run"], waiting: readonly CardView[]): SheetView | null {
+  const head = waiting[0];
+  if (!head || !run.cards.some((c) => c.id === head.id)) return null;
+  const sheet = sheetOf(run.cards, run.slots ?? {}, head.id);
+  if (!sheet) return null;
+  const unticked = run.unticked ?? {};
+  const rows = sheet.rows.flatMap((card): SheetRow[] => {
+    const view = waiting.find((c) => c.id === card.id);
+    return view ? [{ ...view, ticked: !unticked[card.id] }] : [];
+  });
+  const ticked = rows.filter((r) => r.ticked).length;
+  const shownRows = Math.min(rows.length, SHEET_CAP);
+  return {
+    key: sheet.key,
+    app: head.app,
+    rows,
+    ticked,
+    approve: `Approve ${ticked} of ${rows.length}`,
+    footer: sheet.overflow > 0 ? showingOf(shownRows, rows.length + sheet.overflow) : "",
+    ran: run.ran?.[sheet.key] ?? null,
+  };
 }
 
 /** What a card says when the daemon's pending row carried no reason. */

@@ -13,6 +13,7 @@ import { PLAYBOOKS } from "@/lib/playbooks.shipped";
 import type { EngineProbe } from "@/lib/engines";
 import type { DecisionRequested } from "@/lib/events";
 import type { EarlierRecord, TranscriptEntry } from "@/stores/run";
+import { sheetKeyOf, slotFor, type SheetSlot } from "@/lib/sheet";
 
 import { INITIAL, reduce, type Event, type MachineState } from "./machine";
 import {
@@ -216,6 +217,10 @@ interface Setup {
   probes?: EngineProbe[] | null;
   probing?: boolean;
   onboarded?: boolean;
+  /** The cards arrived in one request, so they form a sheet (ADR 0104). */
+  sheet?: boolean;
+  unticked?: Record<string, true>;
+  ran?: string;
 }
 
 function model(setup: Setup): CompanionModel {
@@ -231,6 +236,7 @@ function model(setup: Setup): CompanionModel {
       answering: setup.answering,
       refusals: setup.refusals,
       earlier: setup.earlier === undefined ? EARLIER : setup.earlier,
+      ...(setup.sheet ? sheetOfCards(cards, setup.unticked ?? {}, setup.ran) : {}),
     },
     voice: { phase: setup.voice ? "listening" : setup.speaking ? "speaking" : "idle", available: true, partial: setup.partial ?? "" },
     daemonReady: setup.ready ?? true,
@@ -252,6 +258,22 @@ function model(setup: Setup): CompanionModel {
     actions: NO_ACTIONS,
   });
   return setup.capture ? { ...built, cards: built.cards.map((c): CardView => ({ ...c, capture: { kind: "sketch" } })) } : built;
+}
+
+/** What the run store holds for cards that arrived in one request: their slots, ticks and last press. */
+function sheetOfCards(cards: readonly DecisionRequested[], unticked: Record<string, true>, ran?: string) {
+  const key = sheetKeyOf(1, cards[0] ?? { origin: "", tab_id: null });
+  let slots: Record<string, SheetSlot> = {};
+  for (const c of cards) slots = { ...slots, [c.id]: slotFor(slots, 1, c) };
+  return { slots, unticked, ran: ran ? { [key]: ran } : {} };
+}
+
+/** Mira's overdue reminders, one card each, as one turn files them. */
+export function reminderCards(n: number): DecisionRequested[] {
+  return Array.from({ length: n }, (_, i) => ({
+    ...card(`apr_00000000r${String(i + 1).padStart(3, "0")}`, `INV-${200 + i}`, `ap${i + 1}@client.example`, `It is ${31 + i} days past due.`),
+    action: "host.ledgerbox.send_reminder",
+  }));
 }
 
 const one = [CARDS[0]];
@@ -282,6 +304,24 @@ export const fixtures: Record<string, () => CompanionModel> = {
     }),
   slip: () => model({ events: [INIT, { t: "cards", n: 1 }], cards: one, capture: true }),
   "slip many": () => model({ events: [INIT, { t: "cards", n: 3 }], cards: all, capture: true }),
+  /** One turn filed three reminders on one app: one sheet, one row unticked (ADR 0104). */
+  "slip sheet": () =>
+    model({
+      events: [INIT, { t: "cards", n: 3 }],
+      cards: reminderCards(3),
+      sheet: true,
+      unticked: { apr_00000000r002: true },
+    }),
+  /** Thirteen in one turn: twelve rows, the thirteenth a card of its own, and the sheet says so. */
+  "slip sheet long": () => model({ events: [INIT, { t: "cards", n: 13 }], cards: reminderCards(13), sheet: true }),
+  /** The last press stopped at a row that failed; the rows after it still wait. */
+  "slip sheet stopped": () =>
+    model({
+      events: [INIT, { t: "cards", n: 2 }],
+      cards: reminderCards(5).slice(3),
+      sheet: true,
+      ran: "ran 3 of 5; stopped at row 4: host.ledgerbox.send_reminder did not run: validator_failed. The rows after it are still waiting.",
+    }),
   "slip approved": () =>
     model({
       events: [INIT, { t: "cards", n: 1 }, { t: "decide", kind: "approve", by: "click" }, { t: "sent", ok: true }, { t: "cards", n: 0 }],

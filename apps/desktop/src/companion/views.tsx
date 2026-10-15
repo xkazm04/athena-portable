@@ -21,6 +21,7 @@ import { showingOf, type CardCapture } from "./model";
 import type {
   CardView,
   CompanionModel,
+  SheetView,
   EngineView,
   MessageBlock,
   ProjectView,
@@ -278,6 +279,9 @@ function Slip({ model, card, inline }: { model: CompanionModel; card: CardView |
   const stamped = decision !== null && !decision.sending;
   const sendingNow = (kind: "approve" | "decline") =>
     card.sending && (decision === null || decision.kind === kind);
+  // The card heads a sheet: one press answers every row, in order, each its own grant (ADR 0104).
+  const sheet = model.sheet && model.sheet.rows[0]?.id === card.id ? model.sheet : null;
+  if (sheet) return <Sheet model={model} sheet={sheet} inline={inline} decided={decided} sendingNow={sendingNow} />;
   return (
     <article
       className={`slip${inline ? " slip-inline" : ""}`}
@@ -389,6 +393,109 @@ function Slip({ model, card, inline }: { model: CompanionModel; card: CardView |
           <Stamp kind={decision.kind} by={decision.by} />
         </div>
       ) : null}
+    </article>
+  );
+}
+
+/**
+ * A turn's cards as one sheet (ADR 0104): the app once, then every row whole with its tick, and one
+ * press that says how many rows it runs. Nothing is cut: past the cap the rest stay cards and the
+ * footer says so.
+ */
+function Sheet({
+  model,
+  sheet,
+  inline,
+  decided,
+  sendingNow,
+}: {
+  model: CompanionModel;
+  sheet: SheetView;
+  inline: boolean;
+  decided: boolean;
+  sendingNow: (kind: "approve" | "decline") => boolean;
+}) {
+  const { actions } = model;
+  const n = sheet.rows.length;
+  const others = model.cards.length - n;
+  return (
+    <article
+      className={`slip slip-sheet${inline ? " slip-inline" : ""}`}
+      data-sheet={sheet.key}
+      data-rows={String(n)}
+      aria-label={`Decision sheet: ${n} requests in ${sheet.app}, waiting on you`}
+    >
+      <header className="sl-head">
+        <Chip cls="GATED" />
+        <span className="sl-action">
+          {n} requests in {sheet.app}
+        </span>
+        <span className="sl-count">{others > 0 ? `${model.cards.length} waiting` : `${n} waiting`}</span>
+      </header>
+      <div className="sl-scroll">
+        <p className="sl-why">One turn asked for these, in this order. They run top to bottom, and stop at the first one that fails.</p>
+        <ol className="sh-rows">
+          {sheet.rows.map((row, at) => (
+            <li key={row.id} className="sh-row" data-card={row.id} data-ticked={row.ticked ? "1" : "0"} data-tier={row.tier}>
+              <label className="sh-tick">
+                <input
+                  type="checkbox"
+                  checked={row.ticked}
+                  disabled={decided}
+                  onChange={() => actions.tick(row.id)}
+                  aria-label={`Row ${at + 1}: ${row.action}`}
+                />
+                <span className="sh-n">{at + 1}</span>
+                <code className="sl-action">{row.action}</code>
+              </label>
+              <p className="sl-where" data-tier={row.tier}>{row.where}</p>
+              {row.rationale ? <p className="sh-why">{row.rationale}</p> : null}
+              <dl className="sl-params">
+                {row.params.map((p) => (
+                  <div key={p.key}>
+                    <dt>{p.key}</dt>
+                    <dd>{p.value}</dd>
+                  </div>
+                ))}
+              </dl>
+              {row.targetNote ? <p className="sl-claim">{row.targetNote}</p> : null}
+              {row.drift ? <ContractChange drift={row.drift} /> : null}
+              {row.refusal ? <p className="sl-claim" data-refusal>{row.refusal}</p> : null}
+            </li>
+          ))}
+        </ol>
+        {sheet.rows.some((r) => r.claimed) ? <p className="sl-claim">The element names are the page&apos;s own labels.</p> : null}
+        {sheet.footer ? <p className="sh-footer" data-footer>{sheet.footer}</p> : null}
+      </div>
+      <div className="sl-sign">
+        <button type="button" className="aw-btn aw-btn-stamp" data-act="approve" aria-keyshortcuts="A" aria-busy={sendingNow("approve") || undefined} disabled={decided || sheet.ticked === 0} onClick={() => actions.approve("click")}>
+          {sendingNow("approve") ? (
+            "Sending…"
+          ) : (
+            <>
+              {sheet.approve} <kbd>A</kbd>
+            </>
+          )}
+        </button>
+        <button type="button" className="aw-btn aw-btn-ink" data-act="decline" aria-keyshortcuts="D" aria-busy={sendingNow("decline") || undefined} disabled={decided} onClick={() => actions.decline("click")}>
+          {sendingNow("decline") ? (
+            "Sending…"
+          ) : (
+            <>
+              Decline all <kbd>D</kbd>
+            </>
+          )}
+        </button>
+      </div>
+      {sheet.ran ? (
+        <p className="sl-refuse" data-ran>
+          <Icon name="warn" className="warn" />
+          <span>{sheet.ran}</span>
+        </p>
+      ) : null}
+      <p className="sl-note">
+        <span className="sl-note-a">Nothing runs until you sign. An unticked row is declined.</span>
+      </p>
     </article>
   );
 }

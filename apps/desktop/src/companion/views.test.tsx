@@ -426,3 +426,42 @@ test("a card names the tab it was proposed on beside its app line, and offers th
   expect(cardView(CARDS[0], null, { tabs }).bound).toBeNull();
   expect(html("slip")).not.toContain("data-bound-tab");
 });
+
+// -- a turn's cards as one sheet (ADR 0104) --------------------------------------------------------
+
+test("one turn's cards on one app are one sheet: every row whole, in order, each with its tick", () => {
+  const out = html("slip sheet");
+  expect(out).toContain('data-rows="3"');
+  expect(out).toContain("3 requests in ledgerbox");
+  for (const invoice of ["INV-200", "INV-201", "INV-202"]) expect(out).toContain(invoice);
+  expect(out.indexOf("INV-200")).toBeLessThan(out.indexOf("INV-201"));
+  expect(out.indexOf("INV-201")).toBeLessThan(out.indexOf("INV-202"));
+  expect(out.match(/type="checkbox"/g)).toHaveLength(3);
+  expect(out).toContain('data-card="apr_00000000r002" data-ticked="0"');
+  // The press says how many rows it runs, and the other button declines them all.
+  expect(out).toContain("Approve 2 of 3");
+  expect(out).toContain("Decline all");
+  expect(out).toContain("the app&#x27;s own tool");
+  expect(out).not.toContain("(showing");
+});
+
+test("a sheet of thirteen shows twelve rows and says it cut one", () => {
+  const out = html("slip sheet long");
+  expect(out).toContain('data-rows="12"');
+  expect(out).toContain("(showing 12 of 13)");
+  expect(out).toContain("Approve 12 of 12");
+  expect(out).not.toContain("INV-212");
+});
+
+test("a press that stopped early says what ran and why, on the rows still waiting", () => {
+  const out = html("slip sheet stopped");
+  expect(out).toContain("data-ran");
+  expect(out).toContain("ran 3 of 5; stopped at row 4");
+  expect(out).toContain("Approve 2 of 2");
+});
+
+test("a single card is still the card it always was", () => {
+  const out = html("slip");
+  expect(out).not.toContain("data-sheet");
+  expect(out).not.toContain("Decline all");
+});

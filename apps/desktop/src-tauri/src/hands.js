@@ -373,14 +373,38 @@
       "Operable elements whose label matches a query, each with a ref to act on. Many matches come in parts; the first line names a cursor, pass it back as cursor for the next part.",
     page_wait: "Wait, up to a bound, for text to appear on the page.",
     page_scroll: "Bring a ref into view, or move the page by one screen.",
-    page_click: "Click the element a ref names.",
-    page_fill: "Put a value into the field a ref names.",
-    page_select: "Choose an option, by its visible label, in the select a ref names.",
-    page_submit: "Submit the form the ref sits in.",
+    page_click:
+      "Click the element a ref names. Pass expect, the label page_find gave it: if the element no longer reads that, nothing is clicked.",
+    page_fill:
+      "Put a value into the field a ref names. Pass expect, the label page_find gave it: if the field no longer reads that, nothing is typed.",
+    page_select:
+      "Choose an option, by its visible label, in the select a ref names. Pass expect, the label page_find gave it: if the select no longer reads that, nothing changes.",
+    page_submit:
+      "Submit the form the ref sits in. Pass expect, the label page_find gave the ref: if the element no longer reads that, nothing is submitted.",
   };
 
   const ok = (output, extra) => ({ ok: true, output: String(output ?? ""), ...extra });
   const no = (reason, detail) => ({ ok: false, reason, error: detail || reason });
+
+  /**
+   * The label check an acting hand makes before it touches anything (ADR 0104).
+   *
+   * `expect` is the label `page_find` handed back with the ref, and the card showed it to the
+   * person who approved the call. If the element now reads otherwise - the page re-rendered, a
+   * row moved, the button was relabelled - the hand does nothing and says what it saw. Optional:
+   * a call without one acts as it always did. Compared as `labelOf` writes a label, squashed and
+   * case-blind, so a label cut at LABEL_CAP compares equal to the same cut.
+   */
+  function mislabelled(el, input) {
+    if (input.expect === undefined || input.expect === null) return null;
+    const wanted = squash(input.expect);
+    const seen = labelOf(el);
+    if (wanted.toLowerCase() === squash(seen).toLowerCase()) return null;
+    return no(
+      "validator_failed",
+      `expected "${wanted}" but that element now reads "${seen || roleOf(el)}"; nothing was done`,
+    );
+  }
 
   const HANDS = {
     /**
@@ -468,6 +492,8 @@
     page_click(input) {
       const found = resolve(input.ref);
       if (found.error) return no(found.error, found.detail);
+      const moved = mislabelled(found.el, input);
+      if (moved) return moved;
       if (found.el.disabled) return no("validator_failed", "that control is disabled");
       found.el.scrollIntoView({ block: "center", behavior: "instant" });
       found.el.click();
@@ -485,6 +511,8 @@
       const found = resolve(input.ref);
       if (found.error) return no(found.error, found.detail);
       const el = found.el;
+      const moved = mislabelled(el, input);
+      if (moved) return moved;
       const value = String(input.value ?? "");
       if (el.disabled || el.readOnly) return no("validator_failed", "that field cannot be typed in");
       // A select has a `value` and assigning an option it does not hold silently deselects it, so
@@ -510,6 +538,8 @@
       const found = resolve(input.ref);
       if (found.error) return no(found.error, found.detail);
       const el = found.el;
+      const moved = mislabelled(el, input);
+      if (moved) return moved;
       if (el.tagName !== "SELECT") return no("validator_failed", "that element is not a select");
       const wanted = squash(input.value).toLowerCase();
       const options = Array.from(el.options);
@@ -531,6 +561,8 @@
     page_submit(input) {
       const found = resolve(input.ref);
       if (found.error) return no(found.error, found.detail);
+      const moved = mislabelled(found.el, input);
+      if (moved) return moved;
       const form = found.el.tagName === "FORM" ? found.el : found.el.closest("form");
       if (!form) return no("unknown_ref", "that element is not inside a form");
       if (typeof form.requestSubmit === "function") form.requestSubmit();
@@ -686,12 +718,21 @@
     page_submit: [false, "internal"],
   };
 
+  /** The label an acting hand checks before it acts (ADR 0104); `labelOf` cuts at the same bound. */
+  const EXPECT = { type: "string", maxLength: LABEL_CAP };
+  const REF = { type: "string", maxLength: 64 };
+  const VALUE = { type: "string", maxLength: 2000 };
+
   /**
-   * The parameters of the two continuing reads, spelled as `hands.rs`'s `schema_for` spells them;
-   * a Rust test holds the cursor bound to the same number. The other hands keep the bare object
-   * they always had here, because `hands.rs` is the catalogue the daemon reads.
+   * The parameters of the two continuing reads and the four acting hands, spelled as `hands.rs`'s
+   * `schema_for` spells them; a Rust test holds the bounds to the same numbers. The other hands
+   * keep the bare object they always had here, because `hands.rs` is the catalogue the daemon reads.
    */
   const SCHEMAS = {
+    page_click: { type: "object", properties: { ref: REF, expect: EXPECT }, required: ["ref"] },
+    page_submit: { type: "object", properties: { ref: REF, expect: EXPECT }, required: ["ref"] },
+    page_fill: { type: "object", properties: { ref: REF, value: VALUE, expect: EXPECT }, required: ["ref", "value"] },
+    page_select: { type: "object", properties: { ref: REF, value: VALUE, expect: EXPECT }, required: ["ref", "value"] },
     page_read: {
       type: "object",
       properties: {

@@ -634,3 +634,86 @@ describe("describe", () => {
     expect(asHand.reason).toBe("unknown_ref");
   });
 });
+
+// --- the label check (ADR 0104) -----------------------------------------------------------------
+
+describe("expect", () => {
+  const found = async (query: string, role?: string) => {
+    const answer = await ask("page_find", role ? { query, role } : { query });
+    return answer.matches?.[0] as Match;
+  };
+
+  it("clicks when the element still reads the label page_find gave it", async () => {
+    const send = await found("send chase");
+    const answer = await ask("page_click", { ref: send.ref, expect: send.label });
+
+    expect(send.label).toBe("Send chase");
+    expect(answer.ok).toBe(true);
+    expect(clicks).toBe(1);
+  });
+
+  it("compares the label squashed and case-blind, as labelOf writes one", async () => {
+    const send = await found("send chase");
+    const answer = await ask("page_click", { ref: send.ref, expect: "  send   CHASE " });
+    expect(answer.ok).toBe(true);
+    expect(clicks).toBe(1);
+  });
+
+  it("clicks nothing when the control was relabelled, and says what it saw", async () => {
+    const send = await found("send chase");
+    // The page re-renders the same element under another name between the card and the answer.
+    document.getElementById("send")!.textContent = "Void invoice";
+
+    const answer = await ask("page_click", { ref: send.ref, expect: send.label });
+
+    expect(answer.ok).toBe(false);
+    expect(answer.reason).toBe("validator_failed");
+    expect(answer.error).toContain('expected "Send chase"');
+    expect(answer.error).toContain('"Void invoice"');
+    expect(clicks).toBe(0);
+  });
+
+  it("types, selects and submits nothing on a mismatch", async () => {
+    const note = await found("chase note");
+    const tone = await found("", "select");
+    let submitted = 0;
+    document.getElementById("chase")?.addEventListener("submit", (event) => {
+      event.preventDefault();
+      submitted += 1;
+    });
+    const before = (document.getElementById("tone") as HTMLSelectElement).value;
+
+    const filled = await ask("page_fill", { ref: note.ref, value: "late", expect: "Amount" });
+    const chosen = await ask("page_select", { ref: tone.ref, value: "Firm", expect: "Terms" });
+    const sent = await ask("page_submit", { ref: note.ref, expect: "Amount" });
+
+    for (const answer of [filled, chosen, sent]) expect(answer.reason).toBe("validator_failed");
+    expect((document.getElementById("note") as HTMLInputElement).value).toBe("");
+    expect((document.getElementById("tone") as HTMLSelectElement).value).toBe(before);
+    expect(submitted).toBe(0);
+  });
+
+  it("is optional: a call without one acts as it always did", async () => {
+    const send = await found("send chase");
+    const answer = await ask("page_click", { ref: send.ref });
+    expect(answer.ok).toBe(true);
+    expect(clicks).toBe(1);
+  });
+
+  it("is declared, optional and bounded at the label cap, on the four acting hands only", () => {
+    const installed = (window as unknown as {
+      __athenaHands: {
+        tools: { name: string; inputSchema: { properties?: Record<string, { maxLength?: number }>; required?: string[] } }[];
+      };
+    }).__athenaHands;
+    const schema = (name: string) => installed.tools.find((t) => t.name === name)?.inputSchema;
+    for (const name of ["page_click", "page_fill", "page_select", "page_submit"]) {
+      expect(schema(name)?.properties?.expect?.maxLength, name).toBe(120);
+      expect(schema(name)?.required ?? [], name).not.toContain("expect");
+      expect(schema(name)?.required ?? [], name).toContain("ref");
+    }
+    for (const name of ["page_read", "page_find", "page_wait", "page_scroll"]) {
+      expect(schema(name)?.properties?.expect, name).toBeUndefined();
+    }
+  });
+});

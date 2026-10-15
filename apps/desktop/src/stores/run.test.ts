@@ -23,6 +23,7 @@ import type { TabTools } from "@/stores/tools";
 import {
   MAX_CONTINUATIONS,
   RECONCILE_MS,
+  SHEET_CAP,
   cardFromRow,
   disabledOriginsOf,
   gatedListsOf,
@@ -30,6 +31,8 @@ import {
   resetRunForTests,
   snapshotOf,
   setRunDeps,
+  sheetOf,
+  slotFor,
   startRun,
   useRun,
   type ActivityWrite,
@@ -92,7 +95,7 @@ function fakeDaemon(script: Script = {}) {
       const id = decodeURIComponent(path.slice("/decisions/".length));
       const answer = script.resolutions?.[id];
       if (!answer) return jsonResponse({ reason: "unknown_ref", detail: id }, 404);
-      if (typeof answer === "function") return (answer as () => Promise<Response>)();
+      if (typeof answer === "function") return (answer as (b: Record<string, unknown> | null) => Promise<Response>)(body);
       return jsonResponse(answer);
     }
     if (path === "/manifest") return jsonResponse({ ok: true });
@@ -1732,5 +1735,262 @@ describe("the tab a card was proposed on", () => {
     expect([card?.tab_id, card?.tab_nav]).toEqual([2, 4]);
     const unbound = cardFromRow({ id: "apr_0000000000a2", action: "host.ledgerbox.chase", tab_nav: 4 });
     expect([unbound?.tab_id, unbound?.tab_nav]).toEqual([null, null]);
+  });
+});
+
+// -- a turn's cards as one sheet (ADR 0104) --------------------------------------------------------
+
+describe("a sheet", () => {
+  const idOf = (i: number) => `apr_00000000r${String(i).padStart(3, "0")}`;
+  type Action = { name: string; params: Record<string, unknown> };
+
+  /** One reply that proposes `actions` in order: for each, the call, its card, its refusal. */
+  function proposals(actions: Action[], origin = "host:ledgerbox"): Event[] {
+    return actions.flatMap((a, i) => [
+      { kind: "tool.call", call_id: `c${i + 1}`, name: a.name, params: a.params, origin, tier: 1 },
+      { ...CARD, id: idOf(i + 1), action: a.name, params: a.params, origin },
+      {
+        kind: "tool.result",
+        call_id: `c${i + 1}`,
+        name: a.name,
+        ok: false,
+        output: "gated",
+        truncated: false,
+        error: "pending_approval",
+        tier: 1,
+        ms: 0,
+      },
+    ]);
+  }
+
+  const reminders = (n: number): Action[] =>
+    Array.from({ length: n }, (_, i) => ({ name: "host.ledgerbox.send_reminder", params: { invoice: `INV-${i + 1}` } }));
+
+  /**
+   * A daemon that holds each row's single-use grant the way core/approvals.py does: an approve
+   * spends it once (consumed_at set) and hands back the execute; a decline spends nothing; a row
+   * that is no longer pending is refused.
+   */
+  function grants(actions: Action[], origin = "host:ledgerbox") {
+    const consumed: Record<string, string | null> = {};
+    const status: Record<string, "pending" | "approved" | "declined"> = {};
+    const resolutions: Record<string, unknown> = {};
+    actions.forEach((a, i) => {
+      const id = idOf(i + 1);
+      consumed[id] = null;
+      status[id] = "pending";
+      resolutions[id] = (body: Record<string, unknown> | null) => {
+        if (status[id] !== "pending") {
+          return Promise.resolve(jsonResponse({ reason: "unknown_ref", detail: `${id} is ${status[id]}` }, 409));
+        }
+        if (body?.choice === "decline") {
+          status[id] = "declined";
+          return Promise.resolve(jsonResponse({ ...APPROVED, id, status: "declined", choice: "decline", execute: [] }));
+        }
+        status[id] = "approved";
+        consumed[id] = "2026-10-15T10:00:00Z";
+        return Promise.resolve(
+          jsonResponse({ ...APPROVED, id, execute: [{ call_id: `${id}_exec`, name: a.name, params: a.params, origin, tier: 1 }] }),
+        );
+      };
+    });
+    return { consumed, status, resolutions };
+  }
+
+  /** A page that records every call in order and fails the invoices it is told to. */
+  function orderedPage(fail: string[] = []) {
+    const calls: Array<{ name: string; params: Record<string, unknown> }> = [];
+    return {
+      calls,
+      call: async (_tab: number, name: string, params: Record<string, unknown>) => {
+        calls.push({ name, params });
+        const said = String(params.invoice ?? params.ref ?? "");
+        return fail.includes(said)
+          ? { ok: false, output: "", error: "the reminder form did not open", reason: "validator_failed" }
+          : { ok: true, output: `${name} ${said}` };
+      },
+    };
+  }
+
+  async function setUp(n: number, fail: string[] = [], continuations = 1) {
+    const actions = reminders(n);
+    const g = grants(actions);
+    const daemon = fakeDaemon({
+      runs: [
+        [...proposals(actions), finished("These need your approval.")],
+        ...Array.from({ length: continuations }, () => [finished("Sent.")]),
+      ],
+      resolutions: g.resolutions,
+    });
+    const page = orderedPage(fail);
+    wire(daemon, page as never);
+    await useRun.getState().send("chase every overdue invoice");
+    return { g, daemon, page };
+  }
+
+  const posts = (daemon: ReturnType<typeof fakeDaemon>) => daemon.seen.filter((s) => s.path.startsWith("/decisions/"));
+  const ids = (from: number, to: number) => Array.from({ length: to - from + 1 }, (_, i) => idOf(from + i));
+
+  it("before: ten cards answered one by one are ten answers and eleven model runs", async () => {
+    const { daemon, page } = await setUp(10, [], 10);
+    for (let i = 1; i <= 10; i += 1) await useRun.getState().answer(idOf(i), "approve");
+    expect(posts(daemon)).toHaveLength(10);
+    expect(page.calls).toHaveLength(10);
+    // The first turn, then one continuation per approval: the per-card path.
+    expect(daemon.runs()).toHaveLength(11);
+    expect(useRun.getState().error).toBeNull();
+  });
+
+  it("after: one press answers ten rows in proposal order, and the model continues once", async () => {
+    const { g, daemon, page } = await setUp(10);
+    const settled = vi.fn();
+    await useRun.getState().answerSheet(idOf(1), "approve", settled);
+
+    expect(posts(daemon).map((p) => p.path)).toEqual(ids(1, 10).map((id) => `/decisions/${id}`));
+    expect(posts(daemon).every((p) => p.body?.choice === "approve")).toBe(true);
+    expect(Object.values(g.consumed).filter(Boolean)).toHaveLength(10);
+    expect(page.calls.map((c) => c.params.invoice)).toEqual(Array.from({ length: 10 }, (_, i) => `INV-${i + 1}`));
+    expect(daemon.runs()).toHaveLength(2);
+    const carried = daemon.runs()[1].body!.tool_results as Array<{ call_id: string; ok: boolean }>;
+    expect(carried.map((r) => r.call_id)).toEqual(ids(1, 10).map((id) => `${id}_exec`));
+    expect(settled).toHaveBeenCalledTimes(1);
+    expect(settled).toHaveBeenCalledWith({ ok: true, sentence: "" });
+    expect(useRun.getState().cards).toEqual([]);
+    expect(useRun.getState().phase).toBe("idle");
+  });
+
+  it("an unticked row is declined: untick two of ten and exactly eight sends go out", async () => {
+    const { g, daemon, page } = await setUp(10);
+    useRun.getState().tick(idOf(3));
+    useRun.getState().tick(idOf(7));
+    await useRun.getState().answerSheet(idOf(1), "approve");
+
+    expect(page.calls).toHaveLength(8);
+    expect(page.calls.map((c) => c.params.invoice)).not.toContain("INV-3");
+    expect(page.calls.map((c) => c.params.invoice)).not.toContain("INV-7");
+    expect([g.status[idOf(3)], g.status[idOf(7)]]).toEqual(["declined", "declined"]);
+    expect([g.consumed[idOf(3)], g.consumed[idOf(7)]]).toEqual([null, null]);
+    expect(Object.values(g.status).filter((s) => s === "approved")).toHaveLength(8);
+    const denied = useRun.getState().answered.filter((a) => a.result === "user_denied").map((a) => a.id);
+    expect(denied.sort()).toEqual([idOf(3), idOf(7)]);
+    expect(daemon.runs()).toHaveLength(2);
+  });
+
+  it("stops at the first row that fails: rows 1-3 ran, 5-10 still wait with their grants unspent", async () => {
+    const { g, daemon, page } = await setUp(10, ["INV-4"]);
+    await useRun.getState().answerSheet(idOf(1), "approve");
+
+    expect(page.calls.map((c) => c.params.invoice)).toEqual(["INV-1", "INV-2", "INV-3", "INV-4"]);
+    expect(posts(daemon).map((p) => p.path)).toEqual(ids(1, 4).map((id) => `/decisions/${id}`));
+    for (const id of ids(5, 10)) {
+      expect(g.status[id]).toBe("pending");
+      expect(g.consumed[id]).toBeNull();
+    }
+    const state = useRun.getState();
+    expect(state.cards.map((c) => c.id)).toEqual(ids(5, 10));
+    const key = state.slots[idOf(5)].key;
+    expect(state.ran[key]).toContain("ran 3 of 10");
+    expect(state.ran[key]).toContain("the reminder form did not open");
+    // The rows still waiting are still a sheet, for a fresh answer.
+    expect(sheetOf(state.cards, state.slots, idOf(5))?.rows).toHaveLength(6);
+    // One continuation carries what ran and the row that failed; nothing after it was attempted.
+    expect(daemon.runs()).toHaveLength(2);
+    const carried = daemon.runs()[1].body!.tool_results as Array<{ call_id: string; ok: boolean }>;
+    expect(carried.map((r) => r.ok)).toEqual([true, true, true, false]);
+  });
+
+  it("stops at a row the daemon refuses, and asks nothing about the rows after it", async () => {
+    const { g, daemon } = await setUp(4);
+    g.status[idOf(2)] = "approved"; // answered on another surface: a second answer is refused
+    await useRun.getState().answerSheet(idOf(1), "approve");
+    expect(posts(daemon).map((p) => p.path)).toEqual(ids(1, 2).map((id) => `/decisions/${id}`));
+    expect([g.status[idOf(3)], g.status[idOf(4)]]).toEqual(["pending", "pending"]);
+  });
+
+  it("decline all declines every row and runs nothing", async () => {
+    const { g, daemon, page } = await setUp(5);
+    await useRun.getState().answerSheet(idOf(2), "decline");
+    expect(page.calls).toEqual([]);
+    expect(Object.values(g.status)).toEqual(Array(5).fill("declined"));
+    expect(Object.values(g.consumed).filter(Boolean)).toEqual([]);
+    expect(daemon.runs()).toHaveLength(1);
+  });
+
+  it("a tier-2 form, three fields and Save, is one press and saved in proposal order", async () => {
+    const form: Action[] = [
+      { name: "host.portal.page_fill", params: { ref: "ref_1_a1", value: "Northwind", expect: "Client" } },
+      { name: "host.portal.page_fill", params: { ref: "ref_1_a2", value: "1200", expect: "Amount" } },
+      { name: "host.portal.page_select", params: { ref: "ref_1_a3", value: "Net 30", expect: "Terms" } },
+      { name: "host.portal.page_click", params: { ref: "ref_1_a4", expect: "Save" } },
+    ];
+    const g = grants(form, "host:portal");
+    const daemon = fakeDaemon({
+      runs: [[...proposals(form, "host:portal"), finished()], [finished("Saved.")]],
+      resolutions: g.resolutions,
+    });
+    const page = orderedPage();
+    setRunDeps({ ...wire(daemon, page as never), focused: () => ({ tabId: 1, origin: "https://portal.local", appId: "portal" }) });
+    await useRun.getState().send("file the invoice");
+    expect(useRun.getState().cards).toHaveLength(4);
+
+    await useRun.getState().answerSheet(idOf(4), "approve");
+
+    expect(page.calls.map((c) => [c.name, c.params.ref])).toEqual([
+      ["page_fill", "ref_1_a1"],
+      ["page_fill", "ref_1_a2"],
+      ["page_select", "ref_1_a3"],
+      ["page_click", "ref_1_a4"],
+    ]);
+    expect(page.calls[3].params.expect).toBe("Save");
+    expect(daemon.runs()).toHaveLength(2);
+  });
+
+  it("holds twelve rows; the thirteenth stays a card and the sheet knows it cut one", async () => {
+    const daemon = fakeDaemon({ runs: [[...proposals(reminders(13)), finished()]] });
+    wire(daemon, fakePage());
+    await useRun.getState().send("chase");
+    const { cards, slots } = useRun.getState();
+    const sheet = sheetOf(cards, slots, idOf(1))!;
+    expect(sheet.rows).toHaveLength(SHEET_CAP);
+    expect(sheet.overflow).toBe(1);
+    expect(sheetOf(cards, slots, idOf(13))).toBeNull();
+  });
+
+  it("a single card stays a card: answering it is the per-card path, untouched", async () => {
+    const one = reminders(1);
+    const g = grants(one);
+    const daemon = fakeDaemon({ runs: [[...proposals(one), finished()], [finished("Sent.")]], resolutions: g.resolutions });
+    const page = orderedPage();
+    wire(daemon, page as never);
+    await useRun.getState().send("chase one");
+    expect(sheetOf(useRun.getState().cards, useRun.getState().slots, idOf(1))).toBeNull();
+    useRun.getState().tick(idOf(1));
+    expect(useRun.getState().unticked).toEqual({});
+    await useRun.getState().answerSheet(idOf(1), "approve");
+    expect(page.calls).toHaveLength(1);
+    expect(daemon.runs()).toHaveLength(2);
+  });
+
+  it("cards of two requests, two apps or two tabs are different sheets", () => {
+    const a = slotFor({}, 1, { id: "a", origin: "host:ledgerbox", tab_id: 1 });
+    const b = slotFor({ a }, 2, { id: "b", origin: "host:ledgerbox", tab_id: 1 });
+    const c = slotFor({ a }, 1, { id: "c", origin: "host:portal", tab_id: 1 });
+    const d = slotFor({ a }, 1, { id: "d", origin: "host:ledgerbox", tab_id: 2 });
+    expect(new Set([a.key, b.key, c.key, d.key]).size).toBe(4);
+  });
+
+  it("the one continuation after a sheet is still bounded by the budget", async () => {
+    const actions = reminders(3);
+    const g = grants(actions);
+    const looping = Array.from({ length: MAX_CONTINUATIONS + 2 }, (_, i) => [
+      hostCall(`x${i}`, "host.ledgerbox.list_overdue"),
+      finished(),
+    ]);
+    const daemon = fakeDaemon({ runs: [[...proposals(actions), finished()], ...looping], resolutions: g.resolutions });
+    wire(daemon, orderedPage() as never);
+    await useRun.getState().send("chase");
+    await useRun.getState().answerSheet(idOf(1), "approve");
+    expect(useRun.getState().error?.reason).toBe("budget_exhausted");
+    expect(daemon.runs()).toHaveLength(1 + MAX_CONTINUATIONS + 1);
   });
 });

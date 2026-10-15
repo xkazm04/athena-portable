@@ -106,28 +106,28 @@ pub const HANDS: &[Hand] = &[
     },
     Hand {
         name: "page_click",
-        description: "Click the element a ref names.",
+        description: "Click the element a ref names. Pass expect, the label page_find gave it: if the element no longer reads that, nothing is clicked.",
         reversible: false,
         side_effects: "internal",
         runner: Runner::Page,
     },
     Hand {
         name: "page_fill",
-        description: "Put a value into the field a ref names.",
+        description: "Put a value into the field a ref names. Pass expect, the label page_find gave it: if the field no longer reads that, nothing is typed.",
         reversible: false,
         side_effects: "internal",
         runner: Runner::Page,
     },
     Hand {
         name: "page_select",
-        description: "Choose an option, by its visible label, in the select a ref names.",
+        description: "Choose an option, by its visible label, in the select a ref names. Pass expect, the label page_find gave it: if the select no longer reads that, nothing changes.",
         reversible: false,
         side_effects: "internal",
         runner: Runner::Page,
     },
     Hand {
         name: "page_submit",
-        description: "Submit the form the ref sits in.",
+        description: "Submit the form the ref sits in. Pass expect, the label page_find gave the ref: if the element no longer reads that, nothing is submitted.",
         reversible: false,
         side_effects: "internal",
         runner: Runner::Page,
@@ -195,12 +195,18 @@ pub fn webmcp_tools() -> Vec<Value> {
 /// `cur_<generation>_<snapshot>_<offset>`, three integers, so 64 is generous (ADR 0102).
 pub const CURSOR_MAX: usize = 64;
 
+/// The longest `expect` an acting hand takes: the label `page_find` handed back, which `hands.js`
+/// cuts at `LABEL_CAP` (ADR 0104). Optional, so a call without one acts as it always did.
+pub const EXPECT_MAX: usize = 120;
+
 /// The parameters each hand takes, as the capability block renders them.
 fn schema_for(name: &str) -> Value {
     let ref_param = json!({ "type": "string", "maxLength": 64 });
     // Optional on both reads: a call without one is the read it always was, and only an answer
     // too long for one packet hands one back.
     let cursor_param = json!({ "type": "string", "maxLength": CURSOR_MAX });
+    // The label the acting hands check before they act (ADR 0104).
+    let expect_param = json!({ "type": "string", "maxLength": EXPECT_MAX });
     match name {
         // No parameters at all: the picture is of the page on screen, and there is nothing about
         // it for a caller to choose. A `ref` here would promise a crop the capture cannot do.
@@ -234,8 +240,17 @@ fn schema_for(name: &str) -> Value {
         }),
         "page_fill" | "page_select" => json!({
             "type": "object",
-            "properties": { "ref": ref_param, "value": { "type": "string", "maxLength": 2000 } },
+            "properties": {
+                "ref": ref_param,
+                "value": { "type": "string", "maxLength": 2000 },
+                "expect": expect_param,
+            },
             "required": ["ref", "value"],
+        }),
+        "page_click" | "page_submit" => json!({
+            "type": "object",
+            "properties": { "ref": ref_param, "expect": expect_param },
+            "required": ["ref"],
         }),
         _ => json!({
             "type": "object",
@@ -946,6 +961,48 @@ mod tests {
                     hand.name
                 );
             }
+        }
+    }
+
+    #[test]
+    fn the_acting_hands_take_an_optional_expect_bounded_where_the_script_cuts_a_label() {
+        // ADR 0104. The bound is the script's LABEL_CAP, because the value is a label the script
+        // handed back; and the script spells the same schema, so both catalogues agree.
+        let script = crate::hands_script();
+        assert!(
+            script.contains(&format!("const LABEL_CAP = {EXPECT_MAX};")),
+            "hands.js does not cut a label at {EXPECT_MAX}"
+        );
+        assert!(script.contains("const EXPECT = { type: \"string\", maxLength: LABEL_CAP };"));
+        for name in ["page_click", "page_fill", "page_select", "page_submit"] {
+            let schema = schema_for(name);
+            assert_eq!(
+                schema["properties"]["expect"]["maxLength"], EXPECT_MAX,
+                "{name}"
+            );
+            let required = schema["required"].as_array().expect("required list");
+            assert!(
+                !required.iter().any(|r| r == "expect"),
+                "{name}: expect is optional"
+            );
+            assert!(
+                script.contains(&format!(
+                    "{name}: {{ type: \"object\", properties: {{ ref: REF,"
+                )),
+                "hands.js spells no schema for {name}"
+            );
+        }
+        for name in [
+            "page_read",
+            "page_find",
+            "page_wait",
+            "page_scroll",
+            SCREENSHOT,
+        ] {
+            assert!(
+                schema_for(name)["properties"].get("expect").is_none(),
+                "{name}"
+            );
         }
     }
 

@@ -49,9 +49,15 @@ import { endpoint, useDaemon } from "@/stores/daemon";
 import { useOrigins, type OriginsState } from "@/stores/origins";
 import { useTabs } from "@/stores/tabs";
 import { useTools, type TabTools } from "@/stores/tools";
+import { sheetOf, slotFor, type SheetSlot } from "@/lib/sheet";
+
+export { SHEET_CAP, sheetKeyOf, sheetOf, slotFor, type SheetOf, type SheetSlot } from "@/lib/sheet";
 
 /** How many times the loop may continue one exchange on its own before it stops and says so. */
 export const MAX_CONTINUATIONS = 8;
+
+/** The line a continuation carries: the user said nothing new, so no words are put in her mouth. */
+const CONTINUE = "(the tools you called have answered; continue)";
 
 export type RunPhase = "idle" | "running" | "acting" | "error";
 
@@ -251,6 +257,22 @@ export interface RunState {
    * moment it has (or has not), before any continuation turn, so the slip stamps on success only.
    */
   answer: (id: string, choice: string, settled?: (result: Settled) => void) => Promise<void>;
+  /** Where each card that arrived on the stream belongs: its request, app and tab (ADR 0104). */
+  slots: Record<string, SheetSlot>;
+  /** Sheet rows the user unticked: an approval of the sheet declines them. */
+  unticked: Record<string, true>;
+  /** What the last press of a sheet came to, by sheet key: `ran 3 of 10: <reason>`. */
+  ran: Record<string, string>;
+  /** Tick or untick one row of a sheet. A card that is not a row is left alone. */
+  tick: (id: string) => void;
+  /**
+   * Answer the sheet a card is a row of, in one press (ADR 0104); a card that is no row is answered
+   * on its own, exactly as {@link RunState.answer}. Approve declines the unticked rows, then walks
+   * the ticked ones in order through the same per-card route, each spending its own grant, and
+   * stops at the first that does not come back ok. The model continues once, after the walk.
+   * Decline declines every row.
+   */
+  answerSheet: (id: string, choice: string, settled?: (result: Settled) => void) => Promise<void>;
   /** Make the cards the union of the stream and what the daemon says is pending. */
   reconcile: () => Promise<void>;
   /**
@@ -280,6 +302,9 @@ export const EMPTY = {
   answered: [] as AnsweredDecision[],
   earlier: null as EarlierRecord | null,
   project: null as ActivePlaybook | null,
+  slots: {} as Record<string, SheetSlot>,
+  unticked: {} as Record<string, true>,
+  ran: {} as Record<string, string>,
 };
 
 /** The production wiring: the daemon store for the endpoint, the tabs store for the page. */
@@ -735,6 +760,12 @@ export function mergeCards(
   return added.length ? [...kept, ...added] : kept;
 }
 
+/** What one released call came to on the page: `ok`, or the reason it did not run or failed. */
+export interface Ran {
+  ok: boolean;
+  error: string | null;
+}
+
 /**
  * Is this call a read? Only a tool whose flags say reversible *and* no side effects (README 3.3).
  * The page's own tool wins over a hand of the same name (ADR 0065); a tool nobody describes is
@@ -894,7 +925,7 @@ export const useRun = create<RunState>((set, get) => {
    * rather than run when the target tab's app is not the row's: an approval is granted for one
    * origin, and the user may have moved tabs between the card and the answer.
    */
-  async function onPage(row: ExecuteRow, approved = false): Promise<void> {
+  async function onPage(row: ExecuteRow, approved = false): Promise<Ran> {
     const bound = row.tab_id !== undefined && row.tab_id !== null;
     const focused = deps.focused();
     const target = bound ? boundTab(row.tab_id as number, focused) : focused;
@@ -903,20 +934,19 @@ export const useRun = create<RunState>((set, get) => {
       // Before any dispatch: a call meant for a document that is gone runs nowhere.
       outstanding.push(resultRow(row, false, "", `${refused.reason}: ${refused.detail}`));
       push({ id: row.call_id, kind: "tool", text: `${row.name} → not run: ${refused.detail}`, tier: row.tier ?? 1, ok: false });
-      return;
+      return { ok: false, error: `${refused.reason}: ${refused.detail}` };
     }
     if (!target) {
       outstanding.push(resultRow(row, false, "", "unknown_ref: no page is open"));
-      return;
+      return { ok: false, error: "unknown_ref: no page is open" };
     }
     // Defence in depth, and only where the surface actually knows the answer. The daemon pinned
     // the session and `POST /decisions/<id>` refuses a stated origin that is not the row's; this
     // catches the same mistake one step earlier, when the page has told us what it calls itself.
     if (target.appId && row.origin.startsWith("host:") && row.origin !== `host:${target.appId}`) {
-      outstanding.push(
-        resultRow(row, false, "", `foreign_origin: ${row.origin} is not the ${bound ? "bound" : "focused"} page`),
-      );
-      return;
+      const why = `foreign_origin: ${row.origin} is not the ${bound ? "bound" : "focused"} page`;
+      outstanding.push(resultRow(row, false, "", why));
+      return { ok: false, error: why };
     }
     // A call whose last run never answered waits for the user's answer before it runs again
     // (ADR 0101). The gate is told on every request; this is the same rule one step later, for a
@@ -925,7 +955,7 @@ export const useRun = create<RunState>((set, get) => {
       const why = `outcome_unknown: ${row.name} may already have run; it waits for the user's answer before it runs again`;
       outstanding.push(resultRow(row, false, "", why));
       push({ id: row.call_id, kind: "tool", text: `${row.name} → held: it may already have run`, tier: row.tier ?? 1, ok: false });
-      return;
+      return { ok: false, error: why };
     }
     set({ phase: "acting" });
     let answer: PageAnswer;
@@ -978,6 +1008,7 @@ export const useRun = create<RunState>((set, get) => {
       ok: answer.ok,
     });
     set({ phase: "running" });
+    return { ok: answer.ok, error: answer.ok ? null : (error ?? "failed") };
   }
 
   /**
@@ -994,6 +1025,9 @@ export const useRun = create<RunState>((set, get) => {
 
   /** The snapshot of the exchange in progress: what the daemon's gate was told (ADR 0067). */
   let snap: Snapshot | null = null;
+
+  /** Counts `POST /run` requests: the cards one request files are the ones a sheet may group. */
+  let request = 0;
 
   async function apply(event: ChannelEvent): Promise<void> {
     switch (event.kind) {
@@ -1022,6 +1056,8 @@ export const useRun = create<RunState>((set, get) => {
             ? s.cards.map((c) => (c.id === event.id ? event : c))
             : [...s.cards, event],
           captureWhy: withCaptureWhy(s.captureWhy, event, s.captureNow),
+          // Cards of one request, one app and one tab form a sheet, in the order they arrive (ADR 0104).
+          slots: s.slots[event.id] ? s.slots : { ...s.slots, [event.id]: slotFor(s.slots, request, event) },
         }));
         void get().describe(event);
         break;
@@ -1058,6 +1094,7 @@ export const useRun = create<RunState>((set, get) => {
     }
     const carried = outstanding;
     outstanding = [];
+    request += 1;
     // One capture of the focused tab per request. It never blocks the request and never fails it.
     const taken = await captureOf(deps.capture, focused.tabId, focused.origin);
     set({ captureNow: taken.why });
@@ -1149,8 +1186,131 @@ export const useRun = create<RunState>((set, get) => {
         return;
       }
       set({ continuations: step + 1 });
-      message = "(the tools you called have answered; continue)";
+      message = CONTINUE;
     }
+  }
+
+  /** What one card's answer came to, for `answer` and a sheet's walk. */
+  interface OneAnswer {
+    /** The daemon took the answer. */
+    taken: boolean;
+    result: AnswerResult;
+    reason: string | null;
+    /** The plain sentence of a refusal; empty when taken. */
+    sentence: string;
+    /** What each released call came to on the page, in order. Empty for a decline or a refusal. */
+    ran: Ran[];
+  }
+
+  /**
+   * Answer one card through `POST /decisions/<id>` and run what the daemon releases. `null` when
+   * the card is already being answered or already was. `quiet` is a sheet's walk: no `settled`, no
+   * reconcile per row, and never a continuation here - the caller continues once (ADR 0104).
+   */
+  async function answerOne(
+    id: string,
+    choice: string,
+    settled: ((result: Settled) => void) | undefined,
+    quiet: boolean,
+  ): Promise<OneAnswer | null> {
+    const before = get();
+    // A second press is a second answer to a decision that is already on its way or already made.
+    if (before.answering[id] !== undefined) return null;
+    if (before.answered.some((a) => a.id === id && a.result !== "refused")) return null;
+    const card = before.cards.find((c) => c.id === id);
+    set((s) => ({ answering: { ...s.answering, [id]: choice }, refusals: without(s.refusals, id) }));
+
+    const note = (result: AnswerResult, reason: string | null) => {
+      const row: AnsweredDecision = {
+        id,
+        action: card?.action ?? id,
+        origin: card?.origin ?? "",
+        result,
+        reason,
+        at: now(),
+      };
+      set((s) => ({ answered: [row, ...s.answered] }));
+      void deps
+        .record?.({
+          ts: row.at,
+          origin: row.origin,
+          tool: row.action,
+          // Where it would have run, as the card said it (ADR 0099): a hand is tier 2.
+          tier: card ? tierOf(card.origin, card.action, [], snap?.tools ?? []) : 1,
+          class: "GATED",
+          outcome: result === "approved" ? "approved" : result === "user_denied" ? "declined" : "refused",
+          ms: 0,
+          reason,
+          approval_id: id,
+        })
+        .catch((error: unknown) => console.error(`[athena] activity: ${String(error)}`));
+    };
+
+    // The card stays. A refusal says so in plain words, under the buttons, and the daemon is asked
+    // again what it holds, because a refused answer leaves the decision pending there.
+    const refuse = async (reason: string, local: string | null = null): Promise<OneAnswer> => {
+      // A card for an app the user switched off cannot be helped by focusing it.
+      const off = reason === "foreign_origin" && card !== undefined && (deps.disabledOrigins?.() ?? []).includes(card.origin);
+      const sentence = local ?? (off ? switchedOffSentence() : refusalSentence(reason));
+      set((s) => ({
+        answering: without(s.answering, id),
+        refusals: { ...s.refusals, [id]: sentence },
+        // The daemon says no such decision is waiting: nothing is left to answer. A refusal the
+        // panel made itself (`local`) never asked the daemon, so the card is still waiting there.
+        cards: reason === "unknown_ref" && local === null ? s.cards.filter((c) => c.id !== id) : s.cards,
+      }));
+      note("refused", reason);
+      if (!quiet) {
+        settled?.({ ok: false, sentence });
+        await get().reconcile();
+      }
+      return { taken: false, result: "refused", reason, sentence, ran: [] };
+    };
+
+    // A card bound to a tab (ADR 0103) is approved only while that tab holds the document it was
+    // filed on. Checked before the daemon is asked, so the grant is not spent on a call that
+    // would be refused on the page; a decline needs no tab and is never stopped here.
+    if (card && choice === "approve") {
+      const refused = bindingRefusal(card, card.tab_id != null ? boundTab(card.tab_id, deps.focused()) : null);
+      if (refused) return refuse(refused.reason, boundTabSentence(refused.why));
+    }
+    const api = deps.api();
+    if (!api) return refuse("not_ready");
+    // A decision restored from a previous daemon process has no session behind it until the page
+    // has been registered (UAT r2: it was refused as "a different app" on the right tab). Register
+    // the focused page first, exactly as a turn does; a failure here is the answer's to report.
+    // The republish, the resolve and the routing of the rows it releases read the tab once.
+    const taking = snapshotFrom(deps);
+    snap = taking;
+    if (taking.manifest !== null) await api.manifest(taking.manifest).catch(() => undefined);
+    let resolution;
+    try {
+      resolution = await api.resolve(id, choice, taking.focused?.origin, undefined, taking.disabledOrigins);
+    } catch (error) {
+      return refuse(reasonOf(error));
+    }
+    const result: AnswerResult = resolution.status === "declined" ? "user_denied" : "approved";
+    // The user answered a card about this tool: the "may have run" hold has done its job.
+    const action = card?.action ?? resolution.execute[0]?.name;
+    if (action) forgetUnsure(action);
+    set((s) => ({
+      cards: s.cards.filter((c) => c.id !== id),
+      answering: without(s.answering, id),
+      refusals: without(s.refusals, id),
+      unticked: without(s.unticked, id),
+    }));
+    note(result, result === "user_denied" ? "user_denied" : null);
+    if (!quiet) {
+      settled?.({ ok: true, sentence: "" });
+      await get().reconcile();
+    }
+    if (resolution.status === "declined") {
+      push({ id, kind: "tool", text: `declined: ${card?.action ?? id}`, ok: false }, false);
+      return { taken: true, result, reason: "user_denied", sentence: "", ran: [] };
+    }
+    const ran: Ran[] = [];
+    for (const row of resolution.execute) ran.push(await onPage(row, true));
+    return { taken: true, result, reason: null, sentence: "", ran };
   }
 
   return {
@@ -1163,106 +1323,83 @@ export const useRun = create<RunState>((set, get) => {
     },
 
     async answer(id, choice, settled) {
-      const before = get();
-      // A second press is a second answer to a decision that is already on its way or already made.
-      if (before.answering[id] !== undefined) return;
-      if (before.answered.some((a) => a.id === id && a.result !== "refused")) return;
-      const card = before.cards.find((c) => c.id === id);
-      set((s) => ({ answering: { ...s.answering, [id]: choice }, refusals: without(s.refusals, id) }));
-
-      const note = (result: AnswerResult, reason: string | null) => {
-        const row: AnsweredDecision = {
-          id,
-          action: card?.action ?? id,
-          origin: card?.origin ?? "",
-          result,
-          reason,
-          at: now(),
-        };
-        set((s) => ({ answered: [row, ...s.answered] }));
-        void deps
-          .record?.({
-            ts: row.at,
-            origin: row.origin,
-            tool: row.action,
-            // Where it would have run, as the card said it (ADR 0099): a hand is tier 2.
-            tier: card ? tierOf(card.origin, card.action, [], snap?.tools ?? []) : 1,
-            class: "GATED",
-            outcome: result === "approved" ? "approved" : result === "user_denied" ? "declined" : "refused",
-            ms: 0,
-            reason,
-            approval_id: id,
-          })
-          .catch((error: unknown) => console.error(`[athena] activity: ${String(error)}`));
-      };
-
-      // The card stays. A refusal says so in plain words, under the buttons, and the daemon is asked
-      // again what it holds, because a refused answer leaves the decision pending there.
-      const refuse = async (reason: string, local: string | null = null) => {
-        // A card for an app the user switched off cannot be helped by focusing it.
-        const off = reason === "foreign_origin" && card !== undefined && (deps.disabledOrigins?.() ?? []).includes(card.origin);
-        const sentence = local ?? (off ? switchedOffSentence() : refusalSentence(reason));
-        set((s) => ({
-          answering: without(s.answering, id),
-          refusals: { ...s.refusals, [id]: sentence },
-          // The daemon says no such decision is waiting: nothing is left to answer. A refusal the
-          // panel made itself (`local`) never asked the daemon, so the card is still waiting there.
-          cards: reason === "unknown_ref" && local === null ? s.cards.filter((c) => c.id !== id) : s.cards,
-        }));
-        note("refused", reason);
-        settled?.({ ok: false, sentence });
-        await get().reconcile();
-      };
-
-      // A card bound to a tab (ADR 0103) is approved only while that tab holds the document it was
-      // filed on. Checked before the daemon is asked, so the grant is not spent on a call that
-      // would be refused on the page; a decline needs no tab and is never stopped here.
-      if (card && choice === "approve") {
-        const refused = bindingRefusal(card, card.tab_id != null ? boundTab(card.tab_id, deps.focused()) : null);
-        if (refused) {
-          await refuse(refused.reason, boundTabSentence(refused.why));
-          return;
-        }
-      }
-      const api = deps.api();
-      if (!api) {
-        await refuse("not_ready");
-        return;
-      }
-      // A decision restored from a previous daemon process has no session behind it until the page
-      // has been registered (UAT r2: it was refused as "a different app" on the right tab). Register
-      // the focused page first, exactly as a turn does; a failure here is the answer's to report.
-      // The republish, the resolve and the routing of the rows it releases read the tab once.
-      const taking = snapshotFrom(deps);
-      snap = taking;
-      if (taking.manifest !== null) await api.manifest(taking.manifest).catch(() => undefined);
-      let resolution;
-      try {
-        resolution = await api.resolve(id, choice, taking.focused?.origin, undefined, taking.disabledOrigins);
-      } catch (error) {
-        await refuse(reasonOf(error));
-        return;
-      }
-      const result: AnswerResult = resolution.status === "declined" ? "user_denied" : "approved";
-      // The user answered a card about this tool: the "may have run" hold has done its job.
-      const action = card?.action ?? resolution.execute[0]?.name;
-      if (action) forgetUnsure(action);
-      set((s) => ({
-        cards: s.cards.filter((c) => c.id !== id),
-        answering: without(s.answering, id),
-        refusals: without(s.refusals, id),
-      }));
-      note(result, result === "user_denied" ? "user_denied" : null);
-      settled?.({ ok: true, sentence: "" });
-      await get().reconcile();
-      if (resolution.status === "declined") {
-        push({ id, kind: "tool", text: `declined: ${card?.action ?? id}`, ok: false }, false);
-        return;
-      }
-      for (const row of resolution.execute) await onPage(row, true);
+      const out = await answerOne(id, choice, settled, false);
+      if (!out?.taken || out.result !== "approved") return;
       if (outstanding.length) {
         set({ phase: "running" });
-        await exchange("(the tools you called have answered; continue)");
+        await exchange(CONTINUE);
+      }
+    },
+
+    tick(id) {
+      const { cards, slots } = get();
+      if (!sheetOf(cards, slots, id)) return;
+      set((s) => (s.unticked[id] ? { unticked: without(s.unticked, id) } : { unticked: { ...s.unticked, [id]: true } }));
+    },
+
+    async answerSheet(id, choice, settled) {
+      const before = get();
+      const sheet = sheetOf(before.cards, before.slots, id);
+      if (!sheet) {
+        await get().answer(id, choice, settled);
+        return;
+      }
+      // A press while any row is on its way is a second press of the same sheet.
+      if (sheet.rows.some((row) => before.answering[row.id] !== undefined)) return;
+      const rows = sheet.rows;
+      const n = rows.length;
+      const approving = choice === "approve";
+      const ticked = approving ? rows.filter((row) => !before.unticked[row.id]) : [];
+      const declined = approving ? rows.filter((row) => before.unticked[row.id]) : rows;
+      set((s) => ({ ran: without(s.ran, sheet.key) }));
+
+      let answered = 0;
+      let firstRefusal = "";
+      const told = (out: OneAnswer | null) => {
+        if (out?.taken) answered += 1;
+        else if (out && !firstRefusal) firstRefusal = out.sentence;
+      };
+      // An unticked row is a "no" the user gave in so many words: it is declined first, whatever
+      // the ticked rows come to. A decline needs no page and spends no grant (ADR 0104).
+      for (const row of declined) told(await answerOne(row.id, optionOf(row, "decline"), undefined, true));
+
+      // Each ticked row through the per-card route, in proposal order: the daemon replays the gate
+      // and spends that row's grant, and its execute runs on the page before the next row is asked.
+      let ran = 0;
+      let stop: string | null = null;
+      for (const row of ticked) {
+        const out = await answerOne(row.id, optionOf(row, "approve"), undefined, true);
+        told(out);
+        if (!out) {
+          stop = `${row.action} was already answered`;
+          break;
+        }
+        if (!out.taken) {
+          stop = `${row.action} was refused: ${out.reason ?? "unknown"}`;
+          break;
+        }
+        const failed = out.ran.find((r) => !r.ok);
+        if (failed) {
+          stop = `${row.action} did not run: ${failed.error ?? "failed"}`;
+          break;
+        }
+        ran += 1;
+      }
+      if (approving) {
+        const k = ticked.length;
+        const line =
+          stop === null
+            ? `ran ${ran} of ${k}`
+            : `ran ${ran} of ${k}; stopped at row ${ran + 1}: ${stop}. The rows after it are still waiting.`;
+        if (stop !== null) set((s) => ({ ran: { ...s.ran, [sheet.key]: line } }));
+        push({ id: `sheet_${sheet.key}_${ran}`, kind: "tool", text: `sheet of ${n}: ${line}`, ok: stop === null }, false);
+      }
+      settled?.(answered > 0 ? { ok: true, sentence: "" } : { ok: false, sentence: firstRefusal || refusalSentence("unknown") });
+      await get().reconcile();
+      // One continuation for every row that ran, instead of one per row (ADR 0104).
+      if (outstanding.length) {
+        set({ phase: "running" });
+        await exchange(CONTINUE);
       }
     },
 
@@ -1360,6 +1497,9 @@ export const useRun = create<RunState>((set, get) => {
         answered: keep.answered,
         earlier: keep.earlier,
         project: keep.project,
+        slots: keep.slots,
+        unticked: keep.unticked,
+        ran: keep.ran,
       });
     },
   };
@@ -1431,6 +1571,11 @@ function resultRow(
     tier: tier ?? row.tier ?? 1,
     ms: 0,
   };
+}
+
+/** The option id the daemon knows a choice by; the card's own options are the authority. */
+function optionOf(card: DecisionRequested, kind: "approve" | "decline"): string {
+  return card.options.find((o) => o.id === kind)?.id ?? kind;
 }
 
 /** `host.<app_id>.<tool>` is the catalog's name; the page registered the last segment. */

@@ -80,7 +80,8 @@ function liveDeps(): RuntimeDeps {
       if (shell) athenaPin(on).catch(report("athena_pin"));
     },
     cards: () => useRun.getState().cards,
-    answer: (id, choice, settled) => void useRun.getState().answer(id, choice, settled).catch(report("answer")),
+    // A card that heads a sheet answers the sheet in one press; any other card is answered alone (ADR 0104).
+    answer: (id, choice, settled) => void useRun.getState().answerSheet(id, choice, settled).catch(report("answer")),
     // "Open your first app" sets `onboarded` and nothing else: Rust shows Main (ADR 0026).
     onboard: () => void useSettings.getState().setOnboarded(true).catch(report("onboard")),
     focus: (target) => {
@@ -378,6 +379,7 @@ export default function Live() {
       if (isEngineId(id)) void useDaemon.getState().restart(id).catch(report("engine"));
     },
     goToTab: (tabId) => void useTabs.getState().focus(tabId).catch(report("tabs_focus")),
+    tick: (id) => run.tick(id),
   };
 
   const originViews: OriginView[] = known.map((o) => ({

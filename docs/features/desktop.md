@@ -58,6 +58,13 @@ beside the app line, an approval runs on that tab even while another is focused,
 closed, reloaded or navigated refuses the approval with `unknown_ref` before the daemon is asked or
 anything is dispatched; "Go to that tab" focuses it (ADR 0103).
 
+Cards one turn files for one app and tab arrive as one sheet, in proposal order, at most 12 rows
+(`(showing 12 of N)` past that, the rest stay cards). Every row is the card in full with a tick;
+"Approve k of n" declines the unticked rows, then walks the ticked ones through the same per-card
+answer, each spending its own grant, stops at the first that is not ok (`ran k of n` and why; the
+rest wait unspent), and the model continues once. The acting hands take an optional `expect`, the
+label `page_find` gave, and do nothing (`validator_failed`) when the element reads otherwise (ADR 0104).
+
 ## The halo
 
 A click-through light on the edges of every monitor, painted by phase (listening, working,
