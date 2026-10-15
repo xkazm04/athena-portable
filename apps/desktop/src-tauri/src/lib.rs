@@ -65,8 +65,9 @@ pub fn hands_script() -> &'static str {
 ///
 /// Never `Err`: a hand that rejected would reach the panel as a thrown promise rather than as a
 /// tool result the model can read, and a refusal the model cannot read is one it will make again.
-/// The gate has already allowed this call; the shell carries it.
-#[tauri::command]
+/// The gate has already allowed this call; the shell carries it. Its arguments are snake_case like
+/// every other command here: the panel sends `tab_id`, and Tauri's default would expect `tabId`.
+#[tauri::command(rename_all = "snake_case")]
 async fn hands_call(
     app: AppHandle,
     tab_id: u32,
