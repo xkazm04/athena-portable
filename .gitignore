@@ -66,6 +66,7 @@ evidence/
 /.claude/skills/spark
 /.claude/skills/uat
 /.claude/skills/tiger
+/.claude/skills/scan-sweep
 /.claude/rules/ai-registry-access.md
 /.claude/rules/ai-registry-software-engineering.md
 /.ai/skill-runs.local.jsonl

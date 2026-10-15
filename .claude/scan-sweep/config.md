@@ -23,6 +23,31 @@ neverSweep: generated, vendored, tests, the preview harness fixtures
 - No machine paths in committed files.
 - Stage by explicit pathspec; `.claude/worktrees/` is gitignored.
 
+## Project lens: ui-perfectionist
+
+The skill is linked from ai-registry, whose lens catalog has no project lenses, so this repo's
+extra lens lives here. Add it to any stabilize package that touches UI; `coverage.mjs` counts
+only the registry catalog, so its runs show in the ledger's `lens_keys` but not in the N/M total.
+
+Match: `/ui|css|style|layout|component|scene|motion|transition|animation|spacing|theme|panel|view/i`
+
+Reads one surface the way a person with a ruler and a stopwatch would, and owns what
+`visual-craft` and `ux-reviewer` leave between them: spacing off the token scale or inconsistent
+between siblings (a 10px where the scale says 8 or 12, uneven gaps in one row, padding that
+differs by one pixel between twin controls), alignment and baseline slips, a hard clip or layout
+jump where content arrives, a state change with no transition or a transition on the wrong
+property (anything but transform and opacity in a hot path, `transition: all`, a duration or
+easing that is not a motion token), enter without exit, focus and hover states that jump,
+reduced-motion and Calm paths that leave a surface broken, and a flow with one click too many or
+no feedback after one. Every claim is checkable from the CSS and the component: the value, the
+token it should be, the sibling it disagrees with.
+
+Anchor examples:
+- A gap or padding off the spacing scale, or different between two sibling rows
+- A state swap (empty to loaded, open to closed) that jumps instead of easing
+- A hover or focus state with no transition while its siblings have one
+- A control whose size, weight or position misstates its importance
+
 ## Strategy for this run
 
 `--stabilize`, package `ui-perfectionist` first, then visual-craft, ux-reviewer, state-coverage, accessibility-checker, copy-auditor, mobile-specialist, code-optimizer.
