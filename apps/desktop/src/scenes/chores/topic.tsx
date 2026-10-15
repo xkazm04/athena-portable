@@ -33,7 +33,10 @@ export default function Topic({
   const p = view.playbook;
   const stills = stillsOf(view);
   const [at, setAt] = useState<number | null>(null);
-  const [said, setSaid] = useState("");
+  // What the last press of "Copy the command" came to. Only the latest press may answer, so a
+  // slow refusal never overwrites a later success.
+  const [copied, setCopied] = useState<"copied" | "failed" | null>(null);
+  const press = useRef(0);
   const band = beforeAfterOf(view);
   const guard = blueprintOf(view).guard;
   const worth = valueCell(view);
@@ -173,16 +176,28 @@ export default function Topic({
             <Button
               variant="ghost"
               onClick={() => {
-                model.actions.copy(p.command);
-                setSaid("Sent the command to the clipboard.");
+                const n = ++press.current;
+                const answer = (result: "copied" | "failed") => () => {
+                  if (n === press.current) setCopied(result);
+                };
+                void model.actions.copy(p.command).then(answer("copied"), answer("failed"));
               }}
             >
               Copy the command
             </Button>
           </div>
           <p className="pa-muted pa-said" role="status">
-            {said}
+            {copied === "copied"
+              ? "Sent the command to the clipboard."
+              : copied === "failed"
+                ? "Copying did not work here. Select the command below and copy it yourself."
+                : ""}
           </p>
+          {copied === "failed" ? (
+            <pre className="pa-command" aria-label="The command">
+              {p.command}
+            </pre>
+          ) : null}
         </section>
       </div>
 
