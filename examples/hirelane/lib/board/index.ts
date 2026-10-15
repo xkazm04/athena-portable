@@ -16,6 +16,7 @@ import "server-only";
 import { STAGE_LABEL, STAGES, TODAY } from "../constants";
 import { insightsFor } from "../insights";
 import {
+  applicantHistory,
   latestScorecards,
   listApplicants,
   listCriteria,
@@ -35,12 +36,14 @@ import {
   type BdCriterion,
   type BdRole,
 } from "@/components/board/model";
+import { HISTORY_SHOWN, historyRow } from "@/components/board/history";
 import { MS_DAY, bandOf, initialsOf, shorten } from "./read";
 
 export function buildBoard(): BdBoard {
   const roles = listRoles();
   const slots = listSlots();
   const messages = listMessages();
+  const history = applicantHistory(HISTORY_SHOWN);
 
   const heldBy = new Map<string, BdCandidate["meta"]["held"]>();
   for (const s of slots) {
@@ -137,6 +140,8 @@ export function buildBoard(): BdBoard {
           criteriaCount: criteria.length,
           held: heldBy.get(a.id) ?? [],
           sent: sentBy.get(a.id) ?? [],
+          history: (history[a.id]?.rows ?? []).map(historyRow),
+          historyTotal: history[a.id]?.total ?? 0,
         },
       };
     };

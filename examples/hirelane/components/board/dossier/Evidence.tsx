@@ -10,6 +10,7 @@
  */
 import { answerBody, fmtDate, fmtWhen, scoreWord } from "../format";
 import { SCORE_MAX, type BdCandidate, type BdRole } from "../model";
+import { DossierHistory } from "./History";
 import { Band } from "./parts";
 
 export function DossierEvidence({
@@ -96,6 +97,7 @@ export function DossierEvidence({
           </div>
         </dl>
       </div>
+      <DossierHistory candidate={candidate} />
     </div>
   );
 }

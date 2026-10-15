@@ -77,6 +77,51 @@
 }
 
 /*
+ * The History band: one row per act, when / what / the way back.
+ *
+ * Ruled like the evidence list rather than boxed like a criterion, because it is a record to read
+ * down, not a set of things to compare. The Undo takes the row's last column so the controls line
+ * up and a reader scanning for one finds them in a single vertical; a row without one carries its
+ * reason in the same column, in the hand face, so "never" sits where "now" would.
+ */
+.bd-history {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: var(--bd-s2);
+}
+
+.bd-history-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: baseline;
+  gap: var(--bd-s3);
+  padding-inline-start: var(--bd-s3);
+  border-inline-start: var(--bd-rule-1) solid var(--bd-rule-2);
+}
+
+.bd-history-when {
+  font-size: var(--bd-label);
+  font-family: var(--bd-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--bd-ink-3);
+}
+
+.bd-history-what {
+  font-size: var(--bd-text-sm);
+  line-height: var(--bd-leading-relaxed);
+  color: var(--bd-ink-2);
+  overflow-wrap: anywhere;
+}
+
+/* An undone act stays on the record, struck through, so the band never rewrites what happened. */
+.bd-history-row[data-undone="true"] .bd-history-what {
+  text-decoration: line-through;
+  color: var(--bd-ink-3);
+}
+
+/*
  * The bench: everyone else in this group, ranked.
  *
  * It is capped and scrolls its own list. Uncapped it simply ran off the bottom

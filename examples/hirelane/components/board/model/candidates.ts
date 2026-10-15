@@ -51,6 +51,27 @@ export interface BdStageMeta {
   held: { id: string; interviewer: string; startTs: string; minutes: number }[];
   /** offer / closed: what has already reached this person. */
   sent: { kind: "scheduling" | "rejection"; subject: string; ts: string }[];
+  /** Every stage: the newest acts on this person, newest first, bounded by `HISTORY_SHOWN`. */
+  history: BdHistoryRow[];
+  /** How many acts there are in all, so the band can say what it is not showing. */
+  historyTotal: number;
+}
+
+/**
+ * One act on a person, as the dossier's History band draws it. Built by `historyRow`, which is the
+ * one place that decides whether a row gets an Undo and, when it does not, what it says instead.
+ */
+export interface BdHistoryRow {
+  /** The activity row id, which is what `undoAction` takes. */
+  id: number;
+  ts: string;
+  action: string;
+  summary: string;
+  undone: boolean;
+  /** Reversible and not yet undone: the row draws an Undo. */
+  undoable: boolean;
+  /** Present exactly when `undoable` is false: why there is no Undo on this row. */
+  why?: string;
 }
 
 export interface BdCandidate {

@@ -18,7 +18,8 @@
 import { useCallback, useEffect, useRef, useState, useTransition } from "react";
 import { useToast } from "@athena/demo-kit/ui";
 
-import type { ActionResult } from "@/app/actions";
+import { undoAction, type ActionResult } from "@/app/actions";
+import { toastFor, undoToastFor } from "./history";
 
 /** How long an armed gate stays armed. */
 const DISARM_MS = 8000;
@@ -36,18 +37,32 @@ export function useRun() {
    * fails. The class is carried by the two dossier panels and by the register in the foot, where
    * it is a property of the act rather than of how the act went, and base/tokens.css keeps the
    * two locked hues off this path deliberately (§4.2).
+   *
+   * A reversible act's toast carries its Undo (`toastFor` decides when), and the History band in
+   * the dossier calls the same `undo`, so the two ways back are one call with one confirmation.
    */
-  const run = useCallback(
-    (fn: () => Promise<ActionResult>, after?: (result: ActionResult) => void) =>
+  const undo = useCallback(
+    (id: number) =>
       start(async () => {
-        const result = await fn();
-        toast(result.message, result.ok ? "success" : "error");
-        after?.(result);
+        const spec = undoToastFor(await undoAction(id));
+        toast(spec.text, spec.tone);
       }),
     [toast],
   );
 
-  return { pending, run };
+  const run = useCallback(
+    (fn: () => Promise<ActionResult>, after?: (result: ActionResult) => void) =>
+      start(async () => {
+        const result = await fn();
+        const spec = toastFor(result);
+        const action = spec.action;
+        toast(spec.text, spec.tone, action ? { label: action.label, onAction: () => undo(action.id) } : undefined);
+        after?.(result);
+      }),
+    [toast, undo],
+  );
+
+  return { pending, run, undo };
 }
 
 /**

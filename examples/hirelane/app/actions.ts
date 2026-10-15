@@ -50,6 +50,14 @@ export interface ActionResult {
    * so the times come back with the ids and nobody has to read them off the board.
    */
   slots?: HeldSlot[];
+  /**
+   * The activity row a reversible write logged, which is the id `undoAction` takes.
+   *
+   * Handed back so the surface that ran the act can offer its way back on the spot - the toast's
+   * Undo - instead of the remedy living only in a log no surface reads. Present on the four AUTO
+   * writes and absent on the three gated ones, which log no undo because there is none to log.
+   */
+  undoId?: number;
 }
 
 /** One held interview slot, as the caller of `propose_slots` reads it. */
@@ -117,7 +125,7 @@ export async function scoreAgainstRubric(applicantId: string): Promise<ActionRes
     "INSERT INTO notes (applicant_id, ts, author, kind, body, scores_json) VALUES (?, ?, ?, 'rubric', ?, ?)",
     [applicantId, new Date().toISOString(), "user", body, JSON.stringify(scores)],
   );
-  logActivity(db(), {
+  const { id: undoId } = logActivity(db(), {
     actor: "user",
     action: "score_against_rubric",
     target: `applicant:${applicantId}`,
@@ -126,7 +134,7 @@ export async function scoreAgainstRubric(applicantId: string): Promise<ActionRes
     undo: { kind: "note", noteId: lastInsertRowid },
   });
   refresh();
-  return { ok: true, message: `Scorecard written for ${applicant.name}.` };
+  return { ok: true, message: `Scorecard written for ${applicant.name}.`, undoId };
 }
 
 /** AUTO. A note is the only place a judgement belongs before a stage changes. */
@@ -139,7 +147,7 @@ export async function addNote(applicantId: string, text: string): Promise<Action
     "INSERT INTO notes (applicant_id, ts, author, kind, body, scores_json) VALUES (?, ?, 'user', 'note', ?, NULL)",
     [applicantId, new Date().toISOString(), body],
   );
-  logActivity(db(), {
+  const { id: undoId } = logActivity(db(), {
     actor: "user",
     action: "add_note",
     target: `applicant:${applicantId}`,
@@ -148,7 +156,7 @@ export async function addNote(applicantId: string, text: string): Promise<Action
     undo: { kind: "note", noteId: lastInsertRowid },
   });
   refresh();
-  return { ok: true, message: "Note added." };
+  return { ok: true, message: "Note added.", undoId };
 }
 
 function writeStage(applicantId: string, to: Stage, reason: string): number {
@@ -176,7 +184,7 @@ export async function moveStage(applicantId: string, stage: Stage): Promise<Acti
   if (decidedReason(applicant.stage)) return { ok: false, message: REFUSAL.decided_move(applicant) };
   if (!isMoveStage(stage)) return { ok: false, message: REFUSAL.not_a_move(stage) };
   const eventId = writeStage(applicantId, stage, `Moved to ${stage}.`);
-  logActivity(db(), {
+  const { id: undoId } = logActivity(db(), {
     actor: "user",
     action: "move_stage",
     target: `applicant:${applicantId}`,
@@ -185,7 +193,7 @@ export async function moveStage(applicantId: string, stage: Stage): Promise<Acti
     undo: { kind: "stage", applicantId, stage: applicant.stage, eventId },
   });
   refresh();
-  return { ok: true, message: `${applicant.name} moved to ${STAGE_LABEL[stage]}.` };
+  return { ok: true, message: `${applicant.name} moved to ${STAGE_LABEL[stage]}.`, undoId };
 }
 
 /** GATED. Offer and rejection end someone's process; the log records them as final. */
@@ -229,7 +237,7 @@ export async function proposeSlots(applicantId: string): Promise<ActionResult> {
   for (const id of ids) {
     db().run("UPDATE slots SET status = 'proposed', applicant_id = ? WHERE id = ?", [applicantId, id]);
   }
-  logActivity(db(), {
+  const { id: undoId } = logActivity(db(), {
     actor: "user",
     action: "propose_slots",
     target: `applicant:${applicantId}`,
@@ -238,7 +246,7 @@ export async function proposeSlots(applicantId: string): Promise<ActionResult> {
     undo: { kind: "slots", slotIds: ids },
   });
   refresh();
-  return { ok: true, message: `${ids.length} slots held for ${applicant.name}.`, slots: held };
+  return { ok: true, message: `${ids.length} slots held for ${applicant.name}.`, slots: held, undoId };
 }
 
 /**
@@ -385,8 +393,20 @@ function applyUndo(tx: Db, entry: ActivityEntry): void {
   throw new Error(`no undo strategy for ${entry.action}`);
 }
 
-export async function undoAction(id: number): Promise<{ ok: boolean; reason?: string }> {
+/** What `undoAction` reports: whether it took, why not if not, and what was undone if it did. */
+export interface UndoOutcome {
+  ok: boolean;
+  reason?: string;
+  /** The undone row's own summary, so the confirmation names the act it reversed. */
+  summary?: string;
+}
+
+export async function undoAction(id: number): Promise<UndoOutcome> {
   const result = undoActivity(db(), id, applyUndo);
   refresh();
-  return { ok: result.ok, ...(result.reason ? { reason: result.reason } : {}) };
+  return {
+    ok: result.ok,
+    ...(result.reason ? { reason: result.reason } : {}),
+    ...(result.ok && result.entry ? { summary: result.entry.summary } : {}),
+  };
 }

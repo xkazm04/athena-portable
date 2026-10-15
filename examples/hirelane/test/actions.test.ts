@@ -18,8 +18,16 @@ tempHome("hirelane-test-");
 const { STUDIO } = await import("@athena/demo-kit/seed");
 const { nextMoveFor, STAGES } = await import("../lib/constants");
 const { db } = await import("../lib/db");
-const { decideStage, moveStage, proposeSlots, sendRejection, sendSchedulingEmail, undoAction } =
-  await import("../app/actions");
+const {
+  addNote,
+  decideStage,
+  moveStage,
+  proposeSlots,
+  scoreAgainstRubric,
+  sendRejection,
+  sendSchedulingEmail,
+  undoAction,
+} = await import("../app/actions");
 
 interface Row {
   id: string;
@@ -98,7 +106,7 @@ test("an AUTO move cannot walk a decided candidate back into the pipeline", asyn
   const result = await moveStage(rejected.id, "screening");
 
   assert.equal(result.ok, false);
-  assert.match(result.message, /Undo/);
+  assert.match(result.message, /final/);
   assert.equal(pick("rejected").id, rejected.id, "the stage did not change");
   assert.equal(
     db().get<{ n: number }>("SELECT COUNT(*) AS n FROM stage_events WHERE applicant_id = ? AND from_stage = 'rejected'", [
@@ -277,6 +285,74 @@ test("nextMoveFor is unchanged for all five stages", () => {
     Object.fromEntries(STAGES.map((stage) => [stage, nextMoveFor(stage)])),
     { applied: "screening", screening: "interview", interview: null, offer: null, rejected: null },
   );
+});
+
+/*
+ * The undo each reversible act writes, handed back to whoever ran it, so a surface can offer it.
+ */
+interface ActivityRow {
+  action: string;
+  reversible: number;
+  undone: number;
+}
+const activity = (id: number): ActivityRow =>
+  db().get<ActivityRow>("SELECT action, reversible, undone FROM activity WHERE id = ?", [id])!;
+
+test("moveStage hands back the undo it wrote, and that undo puts the applicant back", async () => {
+  const applied = pick("applied");
+
+  const result = await moveStage(applied.id, "screening");
+
+  assert.equal(result.ok, true, result.message);
+  assert.equal(typeof result.undoId, "number", "the result names its undo");
+  const latest = db().get<{ id: number }>("SELECT id FROM activity WHERE action = 'move_stage' ORDER BY id DESC LIMIT 1")!;
+  assert.equal(result.undoId, latest.id, "the activity row this move wrote");
+
+  assert.equal((await undoAction(result.undoId!)).ok, true);
+  assert.equal(db().get<Row>("SELECT id, stage FROM applicants WHERE id = ?", [applied.id])!.stage, "applied");
+});
+
+test("addNote, scoreAgainstRubric and proposeSlots each hand back a live, reversible undo", async () => {
+  const live = pick("interview");
+  const results = {
+    add_note: await addNote(live.id, "Worth a second read."),
+    score_against_rubric: await scoreAgainstRubric(live.id),
+    propose_slots: await proposeSlots(live.id),
+  };
+  for (const [action, result] of Object.entries(results)) {
+    assert.equal(result.ok, true, `${action}: ${result.message}`);
+    assert.equal(typeof result.undoId, "number", `${action} names its undo`);
+    assert.deepEqual(activity(result.undoId!), { action, reversible: 1, undone: 0 }, `${action}: its own row`);
+  }
+  // Hand the held slots back, so the cases after this one see the pool they expect.
+  assert.equal((await undoAction(results.propose_slots.undoId!)).ok, true);
+});
+
+test("the three gated acts hand back no undo, because there is none", async () => {
+  const decided = await decideStage(pick("applied").id, "offer");
+  const rejection = await sendRejection(pick("screening").id, "standard");
+  const scheduled = await sendSchedulingEmail(pick("interview").id, openSlot().id);
+  for (const result of [decided, rejection, scheduled]) {
+    assert.equal(result.ok, true, result.message);
+    assert.equal("undoId" in result, false, `${result.message}: no undo to offer`);
+  }
+});
+
+test("a refused move on a decided applicant names no remedy the board would refuse", async () => {
+  const rejected = db().get<{ id: string; name: string }>(
+    "SELECT id, name FROM applicants WHERE stage = 'rejected' ORDER BY id LIMIT 1",
+  )!;
+
+  const result = await moveStage(rejected.id, "screening");
+
+  assert.equal(result.ok, false);
+  assert.doesNotMatch(result.message, /Undo on the activity row/, result.message);
+  assert.match(result.message, /final/);
+  // And the remedy it used to name really is unreachable: a decision logs no undo to take.
+  const decision = await decideStage(pick("screening").id, "rejected");
+  assert.equal(decision.ok, true, decision.message);
+  const row = db().get<{ id: number }>("SELECT id FROM activity WHERE action = 'decide_stage' ORDER BY id DESC LIMIT 1")!;
+  assert.equal((await undoAction(row.id)).ok, false, "undoing a decision is refused");
 });
 
 test("an ordinary move is untouched by the from-stage guard", async () => {

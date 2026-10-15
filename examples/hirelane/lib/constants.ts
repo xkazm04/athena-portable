@@ -37,9 +37,9 @@ export function isDecisionStage(stage: Stage): stage is DecisionStage {
 /**
  * The next stage a reversible move may set from `stage`, or null if there is none.
  *
- * A decision is terminal, so it has no next move: the way back from an offer or a rejection is Undo
- * on the activity row that made it, not another move. Both the button and `moveStage` read this, so
- * they agree by construction.
+ * A decision is terminal, so it has no next move, and there is no way back from an offer or a
+ * rejection at all: `decide_stage` logs no undo, so neither a move nor an Undo reverses one. Both
+ * the button and `moveStage` read this, so they agree by construction.
  */
 export function nextMoveFor(stage: Stage): MoveStage | null {
   if (isDecisionStage(stage)) return null;

@@ -73,9 +73,12 @@ export const REFUSAL = {
     `${STAGE_LABEL[p.stage]} is too early to book a time. Move ${p.name} to Interview first.`,
   no_slot: () => "No open slots left in the next two weeks.",
   next_is_a_decision: (p: Pick<ActPerson, "stage">): string => REFUSAL.not_a_move(ladderNext(p.stage) ?? p.stage),
-  /** A move asked of a decided person. It says what a move cannot do. */
+  /**
+   * A move asked of a decided person. It says what a move cannot do, and names no other way back:
+   * `decide_stage` logs `reversible: false`, so an Undo on its row would be refused too.
+   */
   decided_move: (p: Pick<ActPerson, "name" | "stage">) =>
-    `${p.name} is at ${STAGE_LABEL[p.stage]}. A decision is not undone with a move - use Undo on the activity row that made it.`,
+    `${p.name} is at ${STAGE_LABEL[p.stage]}. A decision is final: a move cannot reverse it, and it has no undo.`,
   not_a_move: (stage: Stage) => `${STAGE_LABEL[stage]} is a decision. Use the decision controls.`,
   not_a_decision: (stage: Stage) => `${STAGE_LABEL[stage]} is a move, not a decision.`,
   slot_taken: () => "That slot is gone or is held for someone else. Pick another.",

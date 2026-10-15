@@ -3,6 +3,10 @@
 /**
  * `Toast` - a minimal notification stack. Mutating actions confirm here; the durable record goes to
  * the activity log, not to a toast.
+ *
+ * A toast may carry ONE action - an Undo for the act it reports, typically. It is optional, so a
+ * caller that passes two arguments gets exactly the toast it always got. Pressing it runs the
+ * action and dismisses the toast, so one press cannot fire it twice.
  */
 import {
   createContext,
@@ -16,14 +20,21 @@ import { clsx } from "clsx";
 
 export type ToastTone = "info" | "success" | "warn" | "error";
 
+/** The one control a toast may carry. */
+export interface ToastAction {
+  label: string;
+  onAction: () => void;
+}
+
 export interface ToastMessage {
   id: number;
   text: string;
   tone: ToastTone;
+  action?: ToastAction;
 }
 
 interface ToastApi {
-  toast: (text: string, tone?: ToastTone) => void;
+  toast: (text: string, tone?: ToastTone, action?: ToastAction) => void;
   dismiss: (id: number) => void;
 }
 
@@ -37,9 +48,9 @@ export function ToastProvider({ children, ttlMs = 4000 }: { children: ReactNode;
   }, []);
 
   const toast = useCallback(
-    (text: string, tone: ToastTone = "info") => {
+    (text: string, tone: ToastTone = "info", action?: ToastAction) => {
       const id = Date.now() + Math.floor(Math.random() * 1000);
-      setItems((list) => [...list, { id, text, tone }]);
+      setItems((list) => [...list, action ? { id, text, tone, action } : { id, text, tone }]);
       window.setTimeout(() => dismiss(id), ttlMs);
     },
     [dismiss, ttlMs],
@@ -54,6 +65,18 @@ export function ToastProvider({ children, ttlMs = 4000 }: { children: ReactNode;
         {items.map((t) => (
           <div key={t.id} className={clsx("dk-toast", `dk-toast-${t.tone}`)}>
             <span>{t.text}</span>
+            {t.action ? (
+              <button
+                type="button"
+                className="dk-btn"
+                onClick={() => {
+                  dismiss(t.id);
+                  t.action?.onAction();
+                }}
+              >
+                {t.action.label}
+              </button>
+            ) : null}
             <button type="button" className="dk-btn dk-btn-ghost" onClick={() => dismiss(t.id)}>
               dismiss
             </button>

@@ -85,3 +85,46 @@ export function latestScorecards(roleId: string): Record<string, CriterionScore[
   );
   return Object.fromEntries(rows.map((r) => [r.applicant_id, JSON.parse(r.scores_json) as CriterionScore[]]));
 }
+
+/** One applicant's activity row, as the dossier's History band reads it. */
+export interface ApplicantActivity {
+  id: number;
+  ts: string;
+  action: string;
+  summary: string;
+  reversible: boolean;
+  undone: boolean;
+}
+
+interface ApplicantActivityRow extends Omit<ApplicantActivity, "reversible" | "undone"> {
+  applicant_id: string;
+  reversible: number;
+  undone: number;
+  total: number;
+}
+
+/**
+ * Each applicant's newest `limit` activity rows, newest first, and how many they have in all.
+ *
+ * Every act on a person logs `target = 'applicant:<id>'`, the agent's acts and every undo
+ * included, so this one read is the whole record of what was done to them. Bounded in SQL per
+ * applicant rather than after the fact, so a long history costs the page nothing it does not show.
+ */
+export function applicantHistory(limit: number): Record<string, { rows: ApplicantActivity[]; total: number }> {
+  const rows = db().all<ApplicantActivityRow>(
+    `SELECT id, ts, action, summary, reversible, undone, applicant_id, total FROM (
+       SELECT id, ts, action, summary, reversible, undone,
+              substr(target, length('applicant:') + 1) AS applicant_id,
+              ROW_NUMBER() OVER (PARTITION BY target ORDER BY id DESC) AS rn,
+              COUNT(*) OVER (PARTITION BY target) AS total
+       FROM activity WHERE target LIKE 'applicant:%'
+     ) WHERE rn <= ? ORDER BY id DESC`,
+    [limit],
+  );
+  const out: Record<string, { rows: ApplicantActivity[]; total: number }> = {};
+  for (const { applicant_id, total, reversible, undone, ...row } of rows) {
+    const entry = (out[applicant_id] ??= { rows: [], total });
+    entry.rows.push({ ...row, reversible: reversible === 1, undone: undone === 1 });
+  }
+  return out;
+}
