@@ -839,6 +839,110 @@
         "at": "2026-10-15T03:02:48.670857+00:00",
         "reason": "reviewer (sonnet): The claim that nothing stops a preview is not confirmed: stopPreview exists in modules/voice/live.ts and is called when the step leaves pick, on finish and on reopenStudio, so the scene reaches it through the store; the line-70 anchor is a comment about stopping a microphone take on blur and does no"
       }
+    },
+    "b22cae8a-16ec-45ac-b2a6-3a502a91c895/module-design": {
+      "context": "core-gate-and-ledger",
+      "subject": "module-design",
+      "bundle": "software-engineering",
+      "state": "conformant",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T03:15:36.269Z",
+      "worker": "74a4400d-cb56-4f13-a482-b25f081486a0",
+      "techniques": [
+        {
+          "technique": "module-depth",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/catalog.py:443 The catalog presents a deep module interface where callers invoke classify(name) or validate(name, params, ctx) without knowing the underlying tier allowlists or policy validators."
+        },
+        {
+          "technique": "seams-and-adapters",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/prompt.py:83 CatalogPort defines an explicit structural protocol seam decoupling prompt composition from the concrete catalog implementation."
+        },
+        {
+          "technique": "io-free-core",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/prompt.py:468 Prompt composer operates as a pure I/O-free transformation over state structures and historical frames."
+        },
+        {
+          "technique": "concurrency-at-the-edge",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/catalog.py:3 The core catalog policy logic is purely synchronous and sequential, keeping all async flow control at the outer harness/lane boundary."
+        },
+        {
+          "technique": "declarative-or-sequential",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/validators.py:179 Composite validator chains checks sequentially in a simple, readable loop that halts at the first invalid condition rather than nested declarative rules."
+        },
+        {
+          "technique": "marked-unverifiable-region",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/ledger.py:350 Dynamic SQL string formatting in rollup query is explicitly bounded to a fixed allowlist and commented to mark why it is safe."
+        },
+        {
+          "technique": "borrowed-surface",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/approvals.py:512 The approval table replay path exposes a narrow approval lookup rather than a generic map accessor, preventing callers from depending on broader storage internals."
+        },
+        {
+          "technique": "locality-and-leverage",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/catalog.py:1 All tool allowlists and categorization rules are colocated in catalog.py, providing high leverage where any policy modification touches a single file."
+        }
+      ],
+      "registryProposal": "None"
+    },
+    "f152c182-5811-458c-a43b-56fbce7a81e5/module-design": {
+      "context": "browser-lane",
+      "subject": "module-design",
+      "bundle": "software-engineering",
+      "state": "conformant",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T03:15:36.269Z",
+      "worker": "74a4400d-cb56-4f13-a482-b25f081486a0",
+      "techniques": [
+        {
+          "technique": "seams-and-adapters",
+          "verdict": "conformant",
+          "evidence": "src/athena/lane/ports.py:1 Packages communicate strictly via structural Protocol interfaces in ports.py rather than concrete class imports."
+        },
+        {
+          "technique": "borrowed-surface",
+          "verdict": "conformant",
+          "evidence": "src/athena/lane/browser_lane.py:98 Browser lane refuses to hold executors for host tools, strictly preventing borrowed surface coupling across the host boundary."
+        },
+        {
+          "technique": "concurrency-at-the-edge",
+          "verdict": "conformant",
+          "evidence": "src/athena/lane/browser_lane.py:209 Asynchronous streaming generator run() sits directly at the lane edge, coordinating events while frame composition remains synchronous."
+        },
+        {
+          "technique": "module-depth",
+          "verdict": "conformant",
+          "evidence": "src/athena/lane/browser_lane.py:265 answer_decision provides a simple, deep interface that handles card resolution, replay, and conversation-scoped episode writing behind one call."
+        },
+        {
+          "technique": "state-carrier-decides-the-lane",
+          "verdict": "conformant",
+          "evidence": "src/athena/lane/turn_frame.py:50 SurfaceTurn acts as an immutable carrier of all per-turn inputs (messages, host state, tool results), decoupling turn execution from ambient session state."
+        },
+        {
+          "technique": "declarative-or-sequential",
+          "verdict": "conformant",
+          "evidence": "src/athena/lane/browser_lane.py:233 Turn execution proceeds in an explicit sequential pipeline: record results, compose frame, run harness, remember frame, append assistant response."
+        },
+        {
+          "technique": "locality-and-leverage",
+          "verdict": "conformant",
+          "evidence": "src/athena/lane/browser_lane.py:27 Boundary separation ensures the lane contains zero policy logic, delegating all classification and gating to core modules."
+        },
+        {
+          "technique": "io-free-core",
+          "verdict": "conformant",
+          "evidence": "src/athena/lane/turn_frame.py:67 Normalizing and capping incoming surface tool results is implemented as a pure transformation function independent of I/O."
+        }
+      ],
+      "registryProposal": "None"
     }
   }
 }

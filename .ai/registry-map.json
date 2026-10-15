@@ -1280,7 +1280,11 @@
           "revision": 18,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "conformant",
+          "evidence": "src/athena/lane/ports.py:1 The browser lane enforces strict protocol seams and edge-only concurrency to isolate turn orchestration from host execution and policy decisions.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:7c8008f2207b1946",
+          "evaluatedRevision": 18
         },
         {
           "subject": "durable-agent-operations",
@@ -2177,7 +2181,11 @@
           "revision": 18,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "conformant",
+          "evidence": "src/athena/core/catalog.py:1 Centralizing tool gating decisions in an I/O-free catalog enforces policy invariants without coupling to execution harnesses or host environments.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:7c8008f2207b1946",
+          "evaluatedRevision": 18
         },
         {
           "subject": "prompt-safety",

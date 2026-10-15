@@ -1,0 +1,171 @@
+{
+ "schema": "conform-run/1",
+ "worker": "74a4400d-cb56-4f13-a482-b25f081486a0",
+ "subject": "module-design",
+ "evaluatedAt": "2026-10-15T03:15:36.269583+00:00",
+ "provider": "agy",
+ "model": "gemini-3.8-flash-high",
+ "pairs": [
+  {
+   "context": "core-gate-and-ledger",
+   "subject": "module-design",
+   "bundle": "software-engineering",
+   "state": "conformant",
+   "evidence": "src/athena/core/catalog.py:1 Centralizing tool gating decisions in an I/O-free catalog enforces policy invariants without coupling to execution harnesses or host environments.",
+   "techniques": [
+    {
+     "technique": "module-depth",
+     "verdict": "conformant",
+     "evidence": "src/athena/core/catalog.py:443 The catalog presents a deep module interface where callers invoke classify(name) or validate(name, params, ctx) without knowing the underlying tier allowlists or policy validators."
+    },
+    {
+     "technique": "seams-and-adapters",
+     "verdict": "conformant",
+     "evidence": "src/athena/core/prompt.py:83 CatalogPort defines an explicit structural protocol seam decoupling prompt composition from the concrete catalog implementation."
+    },
+    {
+     "technique": "io-free-core",
+     "verdict": "conformant",
+     "evidence": "src/athena/core/prompt.py:468 Prompt composer operates as a pure I/O-free transformation over state structures and historical frames."
+    },
+    {
+     "technique": "concurrency-at-the-edge",
+     "verdict": "conformant",
+     "evidence": "src/athena/core/catalog.py:3 The core catalog policy logic is purely synchronous and sequential, keeping all async flow control at the outer harness/lane boundary."
+    },
+    {
+     "technique": "declarative-or-sequential",
+     "verdict": "conformant",
+     "evidence": "src/athena/core/validators.py:179 Composite validator chains checks sequentially in a simple, readable loop that halts at the first invalid condition rather than nested declarative rules."
+    },
+    {
+     "technique": "marked-unverifiable-region",
+     "verdict": "conformant",
+     "evidence": "src/athena/core/ledger.py:350 Dynamic SQL string formatting in rollup query is explicitly bounded to a fixed allowlist and commented to mark why it is safe."
+    },
+    {
+     "technique": "borrowed-surface",
+     "verdict": "conformant",
+     "evidence": "src/athena/core/approvals.py:512 The approval table replay path exposes a narrow approval lookup rather than a generic map accessor, preventing callers from depending on broader storage internals."
+    },
+    {
+     "technique": "locality-and-leverage",
+     "verdict": "conformant",
+     "evidence": "src/athena/core/catalog.py:1 All tool allowlists and categorization rules are colocated in catalog.py, providing high leverage where any policy modification touches a single file."
+    }
+   ],
+   "registryProposal": "None"
+  },
+  {
+   "context": "browser-lane",
+   "subject": "module-design",
+   "bundle": "software-engineering",
+   "state": "conformant",
+   "evidence": "src/athena/lane/ports.py:1 The browser lane enforces strict protocol seams and edge-only concurrency to isolate turn orchestration from host execution and policy decisions.",
+   "techniques": [
+    {
+     "technique": "seams-and-adapters",
+     "verdict": "conformant",
+     "evidence": "src/athena/lane/ports.py:1 Packages communicate strictly via structural Protocol interfaces in ports.py rather than concrete class imports."
+    },
+    {
+     "technique": "borrowed-surface",
+     "verdict": "conformant",
+     "evidence": "src/athena/lane/browser_lane.py:98 Browser lane refuses to hold executors for host tools, strictly preventing borrowed surface coupling across the host boundary."
+    },
+    {
+     "technique": "concurrency-at-the-edge",
+     "verdict": "conformant",
+     "evidence": "src/athena/lane/browser_lane.py:209 Asynchronous streaming generator run() sits directly at the lane edge, coordinating events while frame composition remains synchronous."
+    },
+    {
+     "technique": "module-depth",
+     "verdict": "conformant",
+     "evidence": "src/athena/lane/browser_lane.py:265 answer_decision provides a simple, deep interface that handles card resolution, replay, and conversation-scoped episode writing behind one call."
+    },
+    {
+     "technique": "state-carrier-decides-the-lane",
+     "verdict": "conformant",
+     "evidence": "src/athena/lane/turn_frame.py:50 SurfaceTurn acts as an immutable carrier of all per-turn inputs (messages, host state, tool results), decoupling turn execution from ambient session state."
+    },
+    {
+     "technique": "declarative-or-sequential",
+     "verdict": "conformant",
+     "evidence": "src/athena/lane/browser_lane.py:233 Turn execution proceeds in an explicit sequential pipeline: record results, compose frame, run harness, remember frame, append assistant response."
+    },
+    {
+     "technique": "locality-and-leverage",
+     "verdict": "conformant",
+     "evidence": "src/athena/lane/browser_lane.py:27 Boundary separation ensures the lane contains zero policy logic, delegating all classification and gating to core modules."
+    },
+    {
+     "technique": "io-free-core",
+     "verdict": "conformant",
+     "evidence": "src/athena/lane/turn_frame.py:67 Normalizing and capping incoming surface tool results is implemented as a pure transformation function independent of I/O."
+    }
+   ],
+   "registryProposal": "None"
+  }
+ ],
+ "declined": [
+  {
+   "subject": "module-design",
+   "context": "proving-core",
+   "reason": "the seat returned unknown"
+  },
+  {
+   "subject": "module-design",
+   "context": "core-brain-memory",
+   "reason": "the seat returned unknown"
+  },
+  {
+   "subject": "module-design",
+   "context": "connector-service",
+   "reason": "the seat returned unknown"
+  }
+ ],
+ "consults": [
+  {
+   "ts": "2026-10-15T03:15:36.269583+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "module-design"
+   ],
+   "techniques": [
+    "borrowed-surface",
+    "concurrency-at-the-edge",
+    "declarative-or-sequential",
+    "io-free-core",
+    "locality-and-leverage",
+    "marked-unverifiable-region",
+    "module-depth",
+    "seams-and-adapters"
+   ],
+   "deviations": 0,
+   "context": "core-gate-and-ledger",
+   "via": "curator-multi:agy",
+   "model": "gemini-3.8-flash-high"
+  },
+  {
+   "ts": "2026-10-15T03:15:36.269583+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "module-design"
+   ],
+   "techniques": [
+    "borrowed-surface",
+    "concurrency-at-the-edge",
+    "declarative-or-sequential",
+    "io-free-core",
+    "locality-and-leverage",
+    "module-depth",
+    "seams-and-adapters",
+    "state-carrier-decides-the-lane"
+   ],
+   "deviations": 0,
+   "context": "browser-lane",
+   "via": "curator-multi:agy",
+   "model": "gemini-3.8-flash-high"
+  }
+ ]
+}
