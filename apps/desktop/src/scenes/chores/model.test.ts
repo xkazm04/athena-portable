@@ -1,7 +1,8 @@
 /** Tests for the Chores scene's pure helpers — README section 3.5, ADR 0040, 0090 and 0096. */
 import { describe, expect, it } from "vitest";
 
-import { isValid, parseHash, formatHash, type Path } from "@/depth/model";
+import { isValid, parseHash, formatHash, crumbs, type Path } from "@/depth/model";
+import { PLAYBOOKS } from "@/lib/playbooks.shipped";
 
 import { compact, gateSlots, stillsOf, timeCell } from "./facts";
 import { fixtureIds, fixtures, pathFor } from "./fixtures";
@@ -14,6 +15,8 @@ import {
   chorePath,
   emptyLine,
   lowerFirst,
+  NEW_ITEM,
+  newChorePath,
   runPath,
   shortLine,
   totalsLine,
@@ -181,7 +184,8 @@ describe("the fixtures", () => {
       const p = pathFor(id);
       expect(isValid(p), id).toBe(true);
       expect(p.root, id).toBe("chores");
-      if (p.item !== undefined) expect(choreAt(fixtures[id]!, p), id).not.toBeNull();
+      // The front door is a place, not a chore: "new" is reserved and names none.
+      if (p.item !== undefined && p.item !== NEW_ITEM) expect(choreAt(fixtures[id]!, p), id).not.toBeNull();
     }
     expect(pathFor("typical")).toEqual({ root: "chores" });
     expect(pathFor("open-run")).toEqual(runPath("carrier-refunds", 0));
@@ -202,5 +206,25 @@ describe("whether the replay is playing", () => {
     expect(isPlaying("a", t0 + REPLAY_STEP_MS * 2)).toBe(false);
     setPlaying(null, t0);
     expect(isPlaying("a", t0)).toBe(false);
+  });
+});
+
+describe("the front door's place (ADR 0098)", () => {
+  it("is chores/new, a legal place that round-trips through the hash", () => {
+    expect(newChorePath()).toEqual({ root: "chores", item: "new" });
+    expect(isValid(newChorePath())).toBe(true);
+    expect(parseHash(formatHash(newChorePath()))).toEqual(newChorePath());
+  });
+
+  it("reserves the id: no chore in the shipped library, and no fixture chore, is called new", () => {
+    expect(NEW_ITEM).toBe("new");
+    expect(PLAYBOOKS.map((p) => p.id)).not.toContain(NEW_ITEM);
+    for (const model of Object.values(fixtures)) expect(model.items.map((v) => v.id)).not.toContain(NEW_ITEM);
+  });
+
+  it("is called New chore in the crumb, and names no chore", () => {
+    const label = labeller(new Map([["carrier-refunds", "Late-parcel refunds"]]));
+    expect(crumbs(newChorePath(), label).map((c) => c.label)).toEqual(["Athena", "Chores", "New chore"]);
+    expect(choreAt(typical, newChorePath())).toBeNull();
   });
 });

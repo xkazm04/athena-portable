@@ -31,15 +31,18 @@ export default function Studio({
   model,
   deps,
   back,
+  intro,
 }: {
   view: PlaybookView;
   model: PlaybooksModel;
   deps: AdoptDeps | undefined;
   /** Back to the chore's topic page. */
   back: () => void;
+  /** What the person said at the front door (ADR 0098): the session's opening message. */
+  intro?: string;
 }) {
   const p = view.playbook;
-  const [s, act] = useAdoptSession(deps, p.id);
+  const [s, act] = useAdoptSession(deps, p.id, intro);
   const drafts = useRef(new Set<string>());
   const [asking, setAsking] = useState(false);
   const [aloud, setAloud] = useState(false);

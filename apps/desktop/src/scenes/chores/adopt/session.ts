@@ -67,6 +67,7 @@ export interface StudioActions {
 export function useAdoptSession(
   deps: AdoptDeps | undefined,
   playbookId: string,
+  intro?: string,
 ): [StudioState, StudioActions] {
   const [state, dispatch] = useReducer(reduce, INITIAL);
   const sid = useRef("");
@@ -75,6 +76,8 @@ export function useAdoptSession(
   const counter = useRef(0);
   const nextKey = () => `l${(counter.current += 1)}`;
   const [epoch, bump] = useReducer((n: number) => n + 1, 0);
+  // What the person said at the front door (ADR 0098): read when a session starts, never a reason to restart one.
+  const opening = useRef(intro);
 
   const follow = useCallback(
     async (id: string, signal: AbortSignal) => {
@@ -130,7 +133,7 @@ export function useAdoptSession(
     sid.current = "";
     dispatch({ t: "restart" });
     let started = "";
-    void deps.client.start(playbookId).then(
+    void deps.client.start(playbookId, opening.current).then(
       (reply) => {
         started = reply.session_id;
         if (ctl.signal.aborted) {

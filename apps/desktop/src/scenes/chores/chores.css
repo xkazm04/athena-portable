@@ -53,6 +53,9 @@
   gap: 8px 20px;
   margin-bottom: 24px;
 }
+.pa-head__new {
+  margin-left: auto;
+}
 .pa-h1 {
   margin: 0;
   font-size: 40px;
@@ -1460,4 +1463,116 @@ h4.ch-title {
     grid-template-columns: 1fr;
     gap: 2px;
   }
+}
+
+/* -- The front door's verdict (ADR 0098) ------------------------------------------------------ */
+.in-wrap {
+  max-width: 880px;
+}
+.in-verdict {
+  display: grid;
+  gap: 12px;
+  margin-top: 24px;
+  padding: 24px;
+  border-radius: 16px;
+  border: 1px solid var(--border-default);
+  background: var(--card-bg);
+}
+.in-verdict__eyebrow {
+  margin: 0;
+  font-size: 13px;
+  font-weight: 650;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+.in-verdict__title {
+  margin: 0;
+  font-size: 26px;
+  line-height: 1.2;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+.in-verdict__area {
+  margin: 0;
+  font-size: 14px;
+  color: var(--muted-foreground);
+}
+.in-verdict__why,
+.in-verdict__differs {
+  margin: 0;
+  max-width: 68ch;
+  font-size: 16px;
+  line-height: 1.55;
+}
+.in-verdict__h {
+  margin: 8px 0 0;
+  font-size: 15px;
+  font-weight: 650;
+}
+.in-verdict__acts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px 16px;
+  margin-top: 8px;
+}
+.in-verdict__spacer {
+  flex: 1 1 0;
+}
+.in-verdict__status {
+  margin: 0;
+}
+.in-command {
+  width: 100%;
+  min-height: 140px;
+  resize: vertical;
+  font-size: 15px;
+  line-height: 1.5;
+}
+.in-alts {
+  display: grid;
+  gap: 4px;
+  margin-top: 8px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border-default);
+}
+.in-alts__list {
+  display: grid;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.in-alt {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px 16px;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--recessed);
+}
+.in-alt__words {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  flex: 1 1 280px;
+}
+.in-alt__title {
+  font-size: 15px;
+  font-weight: 650;
+}
+.in-alt__area,
+.in-alt__why {
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--muted-foreground);
+}
+.in-alt__acts {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 12px;
 }

@@ -7,6 +7,7 @@
  * hands it spies. Without any, the studio says it needs the daemon.
  */
 import type { AdoptClient } from "@/lib/adopt-client";
+import type { IntakeClient } from "@/lib/intake-client";
 
 /** Hold-to-talk into the answer box, and her questions read aloud. */
 export interface Dictation {
@@ -22,6 +23,8 @@ export interface Dictation {
 
 export interface AdoptDeps {
   client: AdoptClient;
+  /** The Chores front door's client (ADR 0098); absent, "New chore" says it needs the daemon. */
+  intake?: IntakeClient;
   dictation: Dictation | null;
   /** The reconnect's pause; resolves early when the signal aborts. */
   wait?: (ms: number, signal: AbortSignal) => Promise<void>;

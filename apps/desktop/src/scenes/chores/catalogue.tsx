@@ -47,11 +47,14 @@ export default function Catalogue({
   state,
   set,
   open,
+  create,
 }: {
   model: PlaybooksModel;
   state: CatalogueState;
   set: (s: Partial<CatalogueState>) => void;
   open: (view: PlaybookView) => void;
+  /** The front door: "New chore". */
+  create: () => void;
 }) {
   const counts = categoryCounts(model.items, state.job);
   const rows = sortLedger(filterLedger(model.items, { category: state.category, job: state.job }), state.sort);
@@ -169,8 +172,13 @@ export default function Catalogue({
     <div className="pa-page">
       <div className="pa-wrap">
         <header className="pa-head">
-          <h1 className="pa-h1">Playbooks</h1>
+          <h1 className="pa-h1">Chores</h1>
           <p className="pa-totals">{totalsLine(model)}</p>
+          <div className="pa-head__new">
+            <Button variant="primary" size="sm" onClick={create}>
+              New chore
+            </Button>
+          </div>
         </header>
 
         <nav className="pa-tabs" aria-label="Areas">

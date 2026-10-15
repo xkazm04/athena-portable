@@ -49,6 +49,12 @@ export const chorePath = (id: string): Path => ({ root: "chores", item: id });
 /** The place of a chore's Adopt studio, where "Make it yours" leads (ADR 0097). */
 export const adoptPath = (id: string): Path => ({ root: "chores", item: id, sub: { kind: "adopt" } });
 
+/** The reserved item id of the front door: no chore may be called this (a test holds the library to it). */
+export const NEW_ITEM = "new";
+
+/** The place of the front door, where "New chore" leads (ADR 0098). */
+export const newChorePath = (): Path => ({ root: "chores", item: NEW_ITEM });
+
 /** "A store shipping…" read mid-sentence: "a store shipping…". An acronym ("SaaS", "EU") stays. */
 export function lowerFirst(text: string): string {
   return /^[A-Z][a-z]/.test(text) ? text.charAt(0).toLowerCase() + text.slice(1) : text;

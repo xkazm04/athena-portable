@@ -20,9 +20,10 @@ import type { PlaybooksModel } from "@/modules/playbooks/model";
 
 import type { AdoptDeps } from "./adopt/deps";
 import Studio from "./adopt/studio";
+import Intake from "./intake/intake";
 import Catalogue, { type CatalogueState } from "./catalogue";
 import "./chores.css";
-import { EDGE_ORDER, choreAt, chorePath, runPath, turnAt } from "./model";
+import { EDGE_ORDER, NEW_ITEM, adoptPath, choreAt, chorePath, newChorePath, runPath, turnAt } from "./model";
 import Replay from "./replay";
 import Topic from "./topic";
 
@@ -32,12 +33,27 @@ export interface ChoresViewProps {
   go: (to: Path) => void;
   /** The Adopt studio's client and dictation; absent, the studio says it needs the daemon. */
   adopt?: AdoptDeps;
+  /** Athena's composer (`athenaOffer`), for a custom verdict; without it the front door offers Copy. */
+  offer?: (text: string) => Promise<void>;
 }
 
-export default function ChoresView({ model, path, go, adopt }: ChoresViewProps) {
+export default function ChoresView({ model, path, go, adopt, offer }: ChoresViewProps) {
   const [state, setState] = useState<CatalogueState>({ category: "all", job: "all", sort: EDGE_ORDER, last: null });
   const set = useCallback((s: Partial<CatalogueState>) => setState((old) => ({ ...old, ...s })), []);
   const back = useCallback(() => go({ root: "chores" }), [go]);
+  // What the person said at the front door, for the one studio it opens (ADR 0098).
+  const [intro, setIntro] = useState<{ id: string; text: string } | null>(null);
+  const openAdopt = useCallback(
+    (id: string, text: string) => {
+      setIntro({ id, text });
+      go(adoptPath(id));
+    },
+    [go],
+  );
+  const openChore = useCallback((id: string) => go(chorePath(id)), [go]);
+  // Back on the catalogue or a chore's page, what was said is spent: a later studio starts clean.
+  const spent = path.item === undefined || (path.item !== NEW_ITEM && path.sub === undefined);
+  if (spent && intro !== null) setIntro(null);
 
   if (model.problem !== null) {
     return (
@@ -64,12 +80,18 @@ export default function ChoresView({ model, path, go, adopt }: ChoresViewProps) 
     );
   }
 
+  // "new" is reserved: the front door, before any chore is looked up.
+  if (path.item === NEW_ITEM) {
+    return <Intake deps={adopt} model={model} back={back} openAdopt={openAdopt} openChore={openChore} offer={offer} />;
+  }
+
   if (path.item === undefined) {
     return (
       <Catalogue
         model={model}
         state={state}
         set={set}
+        create={() => go(newChorePath())}
         open={(v) => {
           set({ last: v.id });
           go(chorePath(v.id));
@@ -96,7 +118,16 @@ export default function ChoresView({ model, path, go, adopt }: ChoresViewProps) 
   }
 
   if (path.sub?.kind === "adopt") {
-    return <Studio key={view.id} view={view} model={model} deps={adopt} back={() => go(chorePath(view.id))} />;
+    return (
+      <Studio
+        key={view.id}
+        view={view}
+        model={model}
+        deps={adopt}
+        back={() => go(chorePath(view.id))}
+        intro={intro?.id === view.id ? intro.text : undefined}
+      />
+    );
   }
 
   if (path.sub?.kind === "run") {

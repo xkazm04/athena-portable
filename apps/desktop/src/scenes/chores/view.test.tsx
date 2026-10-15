@@ -57,7 +57,8 @@ describe("the catalogue", () => {
   const l = html("ledger", { root: "chores" });
 
   it("heads the catalogue with its title and the bench's totals in one line", () => {
-    expect(l).toContain(">Playbooks</h1>");
+    expect(l).toContain(">Chores</h1>");
+    expect(l).toContain(">New chore</button>");
     expect(h).toContain("3 playbooks · 1 of 2 benched exceed the bar · $551.40 found on the bench");
   });
 

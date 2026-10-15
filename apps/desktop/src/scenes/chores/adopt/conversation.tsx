@@ -24,6 +24,24 @@ import QuestionCard from "./card";
 import type { Dictation } from "./deps";
 import type { FeedItem } from "./state";
 
+/** What the composer says; the studio's by default. */
+export interface ConversationWords {
+  label: string;
+  placeholder: string;
+  enough: string;
+  enoughDone: string;
+  /** False once the conversation has its end (a verdict): nothing more to say. */
+  composer: boolean;
+}
+
+const STUDIO_WORDS: ConversationWords = {
+  label: "Tell her anything, at any time",
+  placeholder: "My airline is Skylindle, and I paid with two cards…",
+  enough: "Good enough",
+  enoughDone: "Said: she is drafting with what she has",
+  composer: true,
+};
+
 export default function Conversation({
   feed,
   progress,
@@ -36,6 +54,7 @@ export default function Conversation({
   onEnough,
   onDraft,
   stage,
+  words,
 }: {
   feed: readonly FeedItem[];
   progress: string;
@@ -45,12 +64,16 @@ export default function Conversation({
   enough: boolean;
   onAnswer: (cardKey: string, answers: Answer[], via: AnswerVia) => void;
   onSay: (text: string, via: AnswerVia) => void;
-  onDrop: (file: File) => void;
+  /** Absent: no drop zone (the Chores front door takes no documents). */
+  onDrop?: (file: File) => void;
   onEnough: () => void;
   onDraft: (key: string, unsent: boolean) => void;
   /** What plays under the conversation once the brief is approved: the showcase. */
   stage?: ReactNode;
+  /** The composer's words, for a conversation that is not the studio's (ADR 0098). */
+  words?: ConversationWords;
 }) {
+  const w = { ...STUDIO_WORDS, ...words };
   const [text, setText] = useState("");
   const [via, setVia] = useState<AnswerVia>("text");
   const end = useRef<HTMLDivElement>(null);
@@ -90,69 +113,71 @@ export default function Conversation({
       {stage}
       <div ref={end} />
 
-      <div className="ad-composer">
-        <label className="ad-composer__label" htmlFor="ad-say">
-          Tell her anything, at any time
-        </label>
-        <textarea
-          id="ad-say"
-          className="input focus-ring ad-composer__box"
-          rows={2}
-          placeholder="My airline is Skylindle, and I paid with two cards…"
-          value={text}
-          onChange={(e) => {
-            setText(e.currentTarget.value);
-          }}
-          onKeyDown={(e) => {
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              send();
-            }
-          }}
-        />
-        {via === "voice" && text ? (
-          <p className="ad-note">
-            Heard from your voice. Read it, fix it, then send.
-          </p>
-        ) : null}
-        <div className="ad-composer__row">
-          <Button
-            variant="secondary"
-            onClick={send}
-            disabledReason={
-              !ready
-                ? "Waiting for the session"
-                : text.trim()
-                  ? undefined
-                  : "Write something first"
-            }
-          >
-            Send
-          </Button>
-          <Mic
-            dictation={dictation}
-            onHeard={(heard) => {
-              setText((t) => (t.trim() ? `${t.trim()} ${heard}` : heard));
-              setVia("voice");
+      {w.composer ? (
+        <div className="ad-composer">
+          <label className="ad-composer__label" htmlFor="ad-say">
+            {w.label}
+          </label>
+          <textarea
+            id="ad-say"
+            className="input focus-ring ad-composer__box"
+            rows={2}
+            placeholder={w.placeholder}
+            value={text}
+            onChange={(e) => {
+              setText(e.currentTarget.value);
+            }}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" && !e.shiftKey) {
+                e.preventDefault();
+                send();
+              }
             }}
           />
-          <DropZone onDrop={onDrop} disabled={!ready} />
-          <span className="ad-composer__spacer" />
-          <Button
-            variant="ghost"
-            onClick={onEnough}
-            disabledReason={
-              !ready
-                ? "Waiting for the session"
-                : enough
-                  ? "Said: she is drafting with what she has"
-                  : undefined
-            }
-          >
-            Good enough
-          </Button>
+          {via === "voice" && text ? (
+            <p className="ad-note">
+              Heard from your voice. Read it, fix it, then send.
+            </p>
+          ) : null}
+          <div className="ad-composer__row">
+            <Button
+              variant="secondary"
+              onClick={send}
+              disabledReason={
+                !ready
+                  ? "Waiting for the session"
+                  : text.trim()
+                    ? undefined
+                    : "Write something first"
+              }
+            >
+              Send
+            </Button>
+            <Mic
+              dictation={dictation}
+              onHeard={(heard) => {
+                setText((t) => (t.trim() ? `${t.trim()} ${heard}` : heard));
+                setVia("voice");
+              }}
+            />
+            {onDrop ? <DropZone onDrop={onDrop} disabled={!ready} /> : null}
+            <span className="ad-composer__spacer" />
+            <Button
+              variant="ghost"
+              onClick={onEnough}
+              disabledReason={
+                !ready
+                  ? "Waiting for the session"
+                  : enough
+                    ? w.enoughDone
+                    : undefined
+              }
+            >
+              {w.enough}
+            </Button>
+          </div>
         </div>
-      </div>
+      ) : null}
     </section>
   );
 }
