@@ -1206,6 +1206,100 @@
           "evidence": "examples/hirelane/components/board/style/base/the-room.css:20 --bd-s4 merely aliases --hl-space-4, so the rendered surface consumes a spacing primitive instead of a semantic layout role."
         }
       ]
+    },
+    "b22cae8a-16ec-45ac-b2a6-3a502a91c895/hitl-approval": {
+      "context": "core-gate-and-ledger",
+      "subject": "hitl-approval",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T04:43:53.960Z",
+      "worker": "0e41d115-81dd-49e3-8f9f-929616aae6dd",
+      "techniques": [
+        {
+          "technique": "decision-records",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/approvals.py:494 Revocation changes the original approval row, losing its previous choice and resolution time; the standard requires a new superseding record."
+        },
+        {
+          "technique": "fail-loud-classification-default",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/catalog.py:452 Unknown tools receive a structured refusal with a machine-readable reason rather than a permissive classification fallback."
+        },
+        {
+          "technique": "gate-state-machines",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/approvals.py:426 Concurrent opposing resolutions both return normally: the losing conditional update returns the winner's answer instead of reporting a conflicting transition."
+        },
+        {
+          "technique": "review-queues",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/approvals.py:557 The inbox orders by creation time even though callers can supply different TTLs, so an approval expiring sooner can sit behind one expiring later."
+        },
+        {
+          "technique": "severity-sla-ladder",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/approvals.py:82 Expiry uses a default duration and caller-supplied TTL rather than the required shared severity-to-deadline-and-terminal-action table."
+        }
+      ],
+      "registryProposal": "Clarify duplicate approval semantics: gate-state-machines calls double-approve a conflict, while resume-after-decision requires duplicate delivery of the same verdict to report success; distinguish a retried decision record from a new conflicting decision."
+    },
+    "63aafb7d-7b5c-4d41-a254-fe57017fdb35/hitl-approval": {
+      "context": "proving-characters-gauntlet",
+      "subject": "hitl-approval",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T04:43:53.960Z",
+      "worker": "0e41d115-81dd-49e3-8f9f-929616aae6dd",
+      "techniques": [
+        {
+          "technique": "consent-gates",
+          "verdict": "deviation",
+          "evidence": "src/athena/proving/characters/persona.py:380 user_prompt uses this unmarked truncation for the pending card's parameters; a read-only probe confirmed different invoice targets can produce identical disclosures."
+        },
+        {
+          "technique": "oracle-before-gate",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/gauntlet/approve.py:149 The approve-path probe captures the card's canonical parameters before approving and compares the resulting execute instruction against that concrete reference."
+        },
+        {
+          "technique": "resume-after-decision",
+          "verdict": "deviation",
+          "evidence": "src/athena/proving/characters/run.py:356 ran is set from gate authorization before page.execute returns its success flag and is never corrected on page failure, so card_status and judges can describe an unsuccessful action as completed."
+        },
+        {
+          "technique": "truncated-verdict-space",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/gauntlet/verdict.py:35 These are test-observation outcomes, not verdicts that admit a candidate to durable standing at a trust boundary."
+        },
+        {
+          "technique": "unattended-mode",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/gauntlet/run.py:12 Automatic approve-path probes operate on isolated test worlds, not standing grants authorizing unattended actions in the user's environment."
+        }
+      ]
+    },
+    "0769ade7-991a-4984-b4ec-0fc87a1ac287/hitl-approval": {
+      "context": "tidycrm-blocks-ui",
+      "subject": "hitl-approval",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T04:43:53.960Z",
+      "worker": "0e41d115-81dd-49e3-8f9f-929616aae6dd",
+      "techniques": [
+        {
+          "technique": "consent-gates",
+          "verdict": "deviation",
+          "evidence": "examples/tidycrm/components/blocks/dossier/Gate.tsx:120 The confirmation says disagreements take the surviving record's value, but mutations.ts:298-300 adopts a valid dropped phone and a newer dropped activity date; db.ts includes both among compared fields."
+        },
+        {
+          "technique": "cosmetic-vs-enforced-threshold-invariant",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/l0/octants/Scene.tsx:293 The scene colors current attention and defect state rather than elapsed approval age, and searches found no severity-indexed urgency/deadline tables in these components."
+        }
+      ]
     }
   }
 }

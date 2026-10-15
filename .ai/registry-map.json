@@ -2101,7 +2101,11 @@
           "revision": 22,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/core/approvals.py:494 Declining an unspent approval overwrites its original verdict and decision timestamp instead of preserving an immutable superseding record.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:52d7f3cfb87a79d9",
+          "evaluatedRevision": 22
         },
         {
           "subject": "companion-identity",
@@ -7485,7 +7489,11 @@
           "revision": 22,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/proving/characters/persona.py:380 The simulated approver sees silently truncated parameters even though approval executes the full stored action, allowing materially different actions to have identical disclosures.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:52d7f3cfb87a79d9",
+          "evaluatedRevision": 22
         },
         {
           "subject": "test-harness",
@@ -8191,7 +8199,11 @@
           "revision": 22,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/tidycrm/components/blocks/dossier/Gate.tsx:120 The merge confirmation promises survivor values for conflicting fields, while the mutation can adopt the dropped contact's phone and newer activity date, so consent describes a different result.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:52d7f3cfb87a79d9",
+          "evaluatedRevision": 22
         },
         {
           "subject": "authoring-block-vocabulary",
