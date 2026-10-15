@@ -7740,11 +7740,10 @@
           "bundle": "software-engineering",
           "source": "conform",
           "confidence": "strong",
-          "state": "unknown",
-          "evidence": "added by /conform: the matcher missed it; budget.py/roles.py/report.py run agents against worlds with a pinned judge control, per-engine dollar caps and partial-run reporting",
           "digest": "sha256-b2:7ccead00b7f92aba",
           "revision": 37,
-          "changedAt": "2026-09-29"
+          "changedAt": "2026-09-29",
+          "state": "unknown"
         }
       ],
       "governance": "governed"

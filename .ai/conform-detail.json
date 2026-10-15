@@ -117,6 +117,88 @@
           "evidence": "tests/e2e/conftest.py:408 The Spawn.flags helper treats configuration options (voice backend, connectors enabled, token auth) as orthogonal axes across the e2e test ladder rather than conflating them with suite rungs."
         }
       ]
+    },
+    "82024321-4b38-4a9a-b360-154b5349e47b/eval-harness": {
+      "context": "proving-core",
+      "subject": "eval-harness",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T00:18:52.630Z",
+      "techniques": [
+        {
+          "technique": "assertion-vs-judgment",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/world.py:103 Scoring relies strictly on deterministic gate and ledger records rather than LLM judgments over model prose."
+        },
+        {
+          "technique": "candidate-write-access",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/world.py:27 Each world runs in an isolated temporary directory ensuring candidates cannot write to host or neighbouring runs."
+        },
+        {
+          "technique": "eval-economics",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/budget.py:33 Enforces explicit per-engine dollar caps checked before each call to bound evaluation expenditure."
+        },
+        {
+          "technique": "failure-attribution",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/runlog.py:10 Captures bounded excerpts and error reasons for failed answers to attribute errors to schema or model failures."
+        },
+        {
+          "technique": "failure-signatures-beside-the-pass-rate",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/roles.py:402 Validity tracking categorizes failures into distinct structural signatures (not_json, bad_shape) beside pass rates."
+        },
+        {
+          "technique": "judge-stability",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/roles.py:78 Pins the control judge to an explicit immutable model version to prevent silent drift between evaluation runs."
+        },
+        {
+          "technique": "metric-role-contract",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/__main__.py:191 Zero breaches is enforced as an uncompromised satisficing constraint rather than averaged into a composite score."
+        },
+        {
+          "technique": "monitor-inside-the-loop",
+          "verdict": "conformant",
+          "evidence": "tests/proving/test_cards.py:288 Evaluator instructions require verifying actual card execution records instead of trusting candidate narrative text."
+        },
+        {
+          "technique": "outcome-conditioned-cost",
+          "verdict": "deviation",
+          "evidence": "src/athena/proving/world.py:98 Turn and run costs are summed across all invocations regardless of failure or breach without conditioning on successful outcomes."
+        },
+        {
+          "technique": "probe-the-decision-not-the-artifact",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/world.py:18 Probes discrete gate decisions and writer invocations directly rather than evaluating free-form dialogue artifacts."
+        },
+        {
+          "technique": "scenario-design",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/manifests.py:38 Transcribes the exact operational tool manifest and class table to provide realistic attack fixtures."
+        },
+        {
+          "technique": "selection-over-noise",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/__main__.py:207 Any breach fails proof 1 immediately; the harness does not take best-of-N to mask underlying run noise."
+        },
+        {
+          "technique": "unaided-baseline-screening",
+          "verdict": "conformant",
+          "evidence": "tests/proving/test_world_and_verdict.py:3 The evaluation suite screens the verdict detector with planted breaches to verify failures are reachable."
+        }
+      ],
+      "registryProposal": "The eval-harness standard assumes an evaluation benchmark where both arms are expected to reach an affirmative answer or solution, but for adversarial proving grounds where success is defined by repelling an attack and holding the gate (non-action), clarifying how outcome-conditioned cost applies when success involves no downstream tool execution would resolve ambiguity in security harnesses.",
+      "withdrawn": {
+        "worker": "20df0dad-b345-4690-975b-e1b0869847c5",
+        "state": "deviation",
+        "at": "2026-10-15T00:19:11.953910+00:00",
+        "reason": "reviewer (sonnet): world.py:98 is a per-turn sum of that turn's ledger rows. It does not aggregate across all turns, and nothing at that line (or in report.py, where I found only a header comment on cost) shows that outcome-conditioned cost deltas are absent, so the deviation anchor is incidental and the claim is unco"
+      }
     }
   }
 }
