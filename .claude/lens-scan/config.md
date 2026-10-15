@@ -39,31 +39,78 @@ features:
 
 ## Probes
 
-Written 2026-10-15 for the performance lens (lens-scan 1.5.1, metrics.md "## performance"). Each probe is the
-desktop perf gate (apps/desktop/scripts/perf-gate.mjs, README 3.1, ADR 0089) driving one preview scene by its own
-drive module (apps/desktop/scripts/perf-<scene>.drive.mjs, the path `pnpm perf:<scene>` runs and perf-budgets.mjs
-judges). `.ai/lens-scan/probes/scene-frames.mjs` only reshapes the gate's output: it builds the preview into its own
-gitignored directory, serves it with `vite preview` (a production build), runs the gate's `runPage` with the gate's
-init-script probes, and prints the frame intervals the gate judged - three passes pooled, several hundred samples -
-as one metrics.md JSON line. The skill computes the p95; the gate's own verdict per pass rides along as `gate`.
+Written 2026-10-15 for the performance lens (lens-scan 1.5.1, metrics.md "## performance"); extended 2026-10-15
+(lens-scan 1.5.3) with the metrics that keep headroom on a smooth page. Each probe is the desktop perf gate
+(apps/desktop/scripts/perf-gate.mjs, README 3.1, ADR 0089) driving one preview scene by its own drive module
+(apps/desktop/scripts/perf-<scene>.drive.mjs, the path `pnpm perf:<scene>` runs and perf-budgets.mjs judges).
+`.ai/lens-scan/probes/scene-frames.mjs` only reshapes the gate's data: it builds the preview into its own gitignored
+directory, serves it with `vite preview` (a production build), runs the gate's `runPage` with the gate's init-script
+probes, copies the frame and long-task lists out the moment the drive returns, and prints one metrics.md JSON line
+per metric over five passes, each in a fresh browser context:
+
+- frameP95Ms: every frame interval while the drive ran, pooled (several hundred samples); the skill takes the p95.
+- blockingMs: per pass, the sum over the gate's long tasks of (duration - 50 ms); the skill takes the median.
+- jankFrames: per pass, frame intervals over 33.3 ms; the skill takes the median.
+- idleWakeups: per pass, the gate's idleFrameRequests (requestAnimationFrame calls in its 1000 ms quiet second after
+  the drive, so a count per second); the skill takes the median.
+- interactionP95Ms: per interaction the drive performs, its Event Timing duration (the longest event entry sharing an
+  interactionId), pooled; the skill takes the p95. Printed only when every interaction counted by
+  performance.interactionCount was reported. Event Timing reports nothing under 16 ms, so a partial list would bias
+  the p95 upward; an incomplete scene prints `unmeasured` with the counts instead.
+
+One command serves every metric of a feature: the entries below share it, and one run gives all of a feature's lines.
+Since 2026-10-15 13:28 the probe pools five passes, not three. frameP95Ms readings before then are another series.
 
 probeEnv: local production build, Chrome headless through Playwright at 1600x900 on Windows 11. The gate picks Edge on
-Windows, but this machine has no Edge, so every entry names `--channel chrome`; a run on Edge is another series.
+Windows, but this machine has no Edge, so every entry names `--channel chrome`; a run on Edge is another series. In this
+browser a trivial page's click reads 32 ms in Event Timing and a key press 16 ms (C:/t calibration, 2026-10-15). That
+is the floor under every interactionP95Ms reading here.
 
-companion-window frameP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature companion-window --scene surface --runs 3 --channel chrome
-mind-and-first-run frameP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature mind-and-first-run --scene mind --runs 3 --channel chrome
-apps-depth frameP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature apps-depth --scene apps --runs 3 --channel chrome
-chores-depth frameP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature chores-depth --scene chores --runs 3 --channel chrome
-accounts-depth frameP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature accounts-depth --scene accounts --runs 3 --channel chrome
-voice-depth frameP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature voice-depth --scene voice --runs 3 --channel chrome
-stage-and-depths frameP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature stage-and-depths --scene stage --runs 3 --channel chrome
-bell-and-scene-art frameP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature bell-and-scene-art --scene bell --runs 3 --channel chrome
+companion-window frameP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature companion-window --scene surface --runs 5 --channel chrome
+companion-window blockingMs: node .ai/lens-scan/probes/scene-frames.mjs --feature companion-window --scene surface --runs 5 --channel chrome
+companion-window jankFrames: node .ai/lens-scan/probes/scene-frames.mjs --feature companion-window --scene surface --runs 5 --channel chrome
+companion-window idleWakeups: node .ai/lens-scan/probes/scene-frames.mjs --feature companion-window --scene surface --runs 5 --channel chrome
+mind-and-first-run frameP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature mind-and-first-run --scene mind --runs 5 --channel chrome
+mind-and-first-run blockingMs: node .ai/lens-scan/probes/scene-frames.mjs --feature mind-and-first-run --scene mind --runs 5 --channel chrome
+mind-and-first-run jankFrames: node .ai/lens-scan/probes/scene-frames.mjs --feature mind-and-first-run --scene mind --runs 5 --channel chrome
+mind-and-first-run idleWakeups: node .ai/lens-scan/probes/scene-frames.mjs --feature mind-and-first-run --scene mind --runs 5 --channel chrome
+mind-and-first-run interactionP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature mind-and-first-run --scene mind --runs 5 --channel chrome
+apps-depth frameP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature apps-depth --scene apps --runs 5 --channel chrome
+apps-depth blockingMs: node .ai/lens-scan/probes/scene-frames.mjs --feature apps-depth --scene apps --runs 5 --channel chrome
+apps-depth jankFrames: node .ai/lens-scan/probes/scene-frames.mjs --feature apps-depth --scene apps --runs 5 --channel chrome
+apps-depth idleWakeups: node .ai/lens-scan/probes/scene-frames.mjs --feature apps-depth --scene apps --runs 5 --channel chrome
+apps-depth interactionP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature apps-depth --scene apps --runs 5 --channel chrome
+chores-depth frameP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature chores-depth --scene chores --runs 5 --channel chrome
+chores-depth blockingMs: node .ai/lens-scan/probes/scene-frames.mjs --feature chores-depth --scene chores --runs 5 --channel chrome
+chores-depth jankFrames: node .ai/lens-scan/probes/scene-frames.mjs --feature chores-depth --scene chores --runs 5 --channel chrome
+chores-depth idleWakeups: node .ai/lens-scan/probes/scene-frames.mjs --feature chores-depth --scene chores --runs 5 --channel chrome
+accounts-depth frameP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature accounts-depth --scene accounts --runs 5 --channel chrome
+accounts-depth blockingMs: node .ai/lens-scan/probes/scene-frames.mjs --feature accounts-depth --scene accounts --runs 5 --channel chrome
+accounts-depth jankFrames: node .ai/lens-scan/probes/scene-frames.mjs --feature accounts-depth --scene accounts --runs 5 --channel chrome
+accounts-depth idleWakeups: node .ai/lens-scan/probes/scene-frames.mjs --feature accounts-depth --scene accounts --runs 5 --channel chrome
+accounts-depth interactionP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature accounts-depth --scene accounts --runs 5 --channel chrome
+voice-depth frameP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature voice-depth --scene voice --runs 5 --channel chrome
+voice-depth blockingMs: node .ai/lens-scan/probes/scene-frames.mjs --feature voice-depth --scene voice --runs 5 --channel chrome
+voice-depth jankFrames: node .ai/lens-scan/probes/scene-frames.mjs --feature voice-depth --scene voice --runs 5 --channel chrome
+voice-depth idleWakeups: node .ai/lens-scan/probes/scene-frames.mjs --feature voice-depth --scene voice --runs 5 --channel chrome
+stage-and-depths frameP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature stage-and-depths --scene stage --runs 5 --channel chrome
+stage-and-depths blockingMs: node .ai/lens-scan/probes/scene-frames.mjs --feature stage-and-depths --scene stage --runs 5 --channel chrome
+stage-and-depths jankFrames: node .ai/lens-scan/probes/scene-frames.mjs --feature stage-and-depths --scene stage --runs 5 --channel chrome
+stage-and-depths idleWakeups: node .ai/lens-scan/probes/scene-frames.mjs --feature stage-and-depths --scene stage --runs 5 --channel chrome
+stage-and-depths interactionP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature stage-and-depths --scene stage --runs 5 --channel chrome
+bell-and-scene-art frameP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature bell-and-scene-art --scene bell --runs 5 --channel chrome
+bell-and-scene-art blockingMs: node .ai/lens-scan/probes/scene-frames.mjs --feature bell-and-scene-art --scene bell --runs 5 --channel chrome
+bell-and-scene-art jankFrames: node .ai/lens-scan/probes/scene-frames.mjs --feature bell-and-scene-art --scene bell --runs 5 --channel chrome
+bell-and-scene-art idleWakeups: node .ai/lens-scan/probes/scene-frames.mjs --feature bell-and-scene-art --scene bell --runs 5 --channel chrome
+bell-and-scene-art interactionP95Ms: node .ai/lens-scan/probes/scene-frames.mjs --feature bell-and-scene-art --scene bell --runs 5 --channel chrome
 
 What the probes cannot produce, and why (no entry, so the metric stays unmeasured):
 
-- interactionP95Ms, every scene: the drive modules perform inputs (hovers, clicks, keys) but none defines an
-  input-to-paint interaction, and the gate records frame intervals and long tasks, not Event Timing. A probe for it
-  is a new instrument the repo does not have yet.
+- interactionP95Ms, companion-window: its drive only hovers (no click, tap or key), so there is no interaction to time.
+- interactionP95Ms, voice-depth: Event Timing reported 48 of the drive's 60 interactions (its studio keys run under the
+  16 ms floor), so the p95 would be biased. A drive with fewer bare key presses, or a trace-based timer, would fix it.
+- chores-depth, every metric: perf-chores.drive.mjs:60 waits for a "Fit it to me" button that c0cb495 removed, so the
+  drive times out (`pnpm perf:chores` fails the same way). The entries stay so the series resumes once the drive is updated.
 - startupMs, every scene: nothing times cold start. preview.html is a harness with no first-interactive mark, and the
   start a person waits for is the Tauri shell's native window, which no browser probe reaches.
 - memoryMb, every scene: the gate reads no heap. measureUserAgentSpecificMemory needs a cross-origin-isolated page,
@@ -73,7 +120,7 @@ What the probes cannot produce, and why (no entry, so the metric stays unmeasure
   events; the preview has no halo scene and the gate cannot drive it.
 - `native-shell`: no probe for any metric. It is the Tauri window itself (Rust, WebView2); a browser measures none of it.
 - `desktop-foundations`: no probe of its own. Its stores, IPC client and styles run inside every scene, so their cost
-  is already inside each scene's frame p95 and is not separable by feature.
+  is already inside each scene's readings and is not separable by feature.
 - Every other feature (the agent core, daemon, connectors, proving ground, example apps, journey, build tooling):
   the gate drives only the desktop preview scenes, so no probe exists.
 
@@ -94,3 +141,5 @@ What the probes cannot produce, and why (no entry, so the metric stays unmeasure
 - 2026-10-14 registry measure (r-20261014162135-7ae8): the first log line above is obsolete - ../ai-registry (registry.local) now has scripts/registry-lens.mjs, so no $AI_REGISTRY_DIR is needed. Three more map pairs failed their subject precondition on vocabulary alone: "sidecar" (a build-time Tauri externalBin, not provisioned after install), "art/illustration" (a desktop SVG mascot, not a scroll page) and "perf" (a pre-merge lab gate, not in-product instrumentation). For build/packaging and perf contexts, spend budget on packaging and quality-gates first.
 - 2026-10-14 registry execute (r-20261014192943-c5dd): 8 of 10 `deviations -1` items failed on re-judge although each closed every shortfall its verdict named. A conform deviation verdict names the first failing technique(s), not the full list, so the grain rule cannot be met from the evidence line alone. Before proposing a `deviations -1` item, re-judge the pair per technique (all applicable techniques, conform section 3) and put every unrealized one in the Flow. Also: the cut-off run merged builds before re-measuring them, so the failures had to be reverted on main (7 reverts); re-measure in the worktree, then merge.
 - 2026-10-15 performance measure (r-20261015105920-70e0): (1) this machine has no Edge, so the probe entries name `--channel chrome`. A run on another machine must keep the channel or note the series break. (2) frameP95Ms reads 16.8 ms, the 60 Hz vsync floor, on every probed scene, so frameP95Ms cannot carry a delta here. A useful performance item needs interactionP95Ms (Event Timing in the drive) or a trace-backed long-frame count. (3) A drive module rots with its scene: perf-chores.drive.mjs has been stale since c0cb495. Run `pnpm perf:<scene>` before trusting a missing reading. (4) The probe wrapper lives in `.ai/lens-scan/probes/`, which `.git/info/exclude` hides, so the entries need that file on the machine.
+- 2026-10-15 design execute (r-20261015112211-ab3d, pack k-des-1): (1) the overlay has no `## Gates` and .ai/manifest.yaml declares no capabilities, so gates were chosen per package (tsc, eslint, tests; next build for the example apps). Add a `## Gates` block so an execute does not have to pick. (2) In a pack worktree with junctioned node_modules, `next build` (Turbopack) fails with "Symlink ... points out of the filesystem root"; `next build --webpack` builds, so use it as the example apps' build gate there.
+- 2026-10-15 performance measure (r-20261015132844-b364) and k-des-1 shot backfill (r-20261015132209-fab4): (1) in a worktree with junctioned node_modules, pnpm 11's verify-deps-before-run turns `pnpm exec vite build` into a `pnpm install` through the junction (it failed; main's node_modules survived). Run probes there with `pnpm_config_verify_deps_before_run=false`. (2) blockingMs, jankFrames and idleWakeups read 0 on all seven scenes, already at target, so here the headroom metric is interactionP95Ms. Event Timing rounds to 8 ms, this browser's floor is 32 ms per click and 16 ms per key, and baseline p95s vary 80-88 between runs, so an item has to predict a move of 16 ms or more, or test it against bracketing baselines (deferring Stage's focus-on-move did not move it). (3) Every browser's pass 1 holds one 66-200 ms frame from GPU first-use, with no long task; it was the mind scene's 2451 ms. Judge passes by their median and do not chase a pass-1 max frame. (4) The k-des-1 items design failure states, but the harness routes render each scene's default fixture, so their before/after shots show only "no regression". To show the designed state, the item needs a preview fixture that reaches it (a route with `&fixture=<failure>`).
