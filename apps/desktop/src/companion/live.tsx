@@ -45,7 +45,7 @@ import { endpoint, useDaemon } from "@/stores/daemon";
 import { useEngines } from "@/stores/engines";
 import { useOrigins } from "@/stores/origins";
 import { usePlaybooks } from "@/stores/playbooks";
-import { gatedListsOf, useRun } from "@/stores/run";
+import { contractDriftsOf, gatedListsOf, useRun } from "@/stores/run";
 import { chooseFirstRunEngine, useSettings } from "@/stores/settings";
 import { useTabs } from "@/stores/tabs";
 import { useTools } from "@/stores/tools";
@@ -283,6 +283,7 @@ export default function Live() {
   const originsLoaded = useOrigins((s) => s.loaded);
   const originsProblem = useOrigins((s) => s.problem);
   const known = useOrigins((s) => s.known);
+  const contracts = useOrigins((s) => s.contracts);
   const engine = useSettings((s) => s.engine);
   const onboarded = useSettings((s) => s.onboarded);
   const probes = useEngines((s) => s.probes);
@@ -297,7 +298,10 @@ export default function Live() {
 
   const focused = tabs.find((tab) => tab.focused) ?? tabs[0];
   const origin = focused ? originOf(focused.url) : null;
-  const tools = focused ? toolRows(byTab[focused.id], gatedListsOf({ records, known, loaded: originsLoaded, problem: originsProblem }, tabs, byTab)) : [];
+  const trust = { records, known, loaded: originsLoaded, problem: originsProblem, contracts };
+  const tools = focused ? toolRows(byTab[focused.id], gatedListsOf(trust, tabs, byTab)) : [];
+  // What a card about a rewritten tool shows beside the new contract (ADR 0100).
+  const drifts = contractDriftsOf(trust, tabs, byTab);
   const ready = endpoint(daemon) !== null;
 
   // The record: what the daemon says it spent, read when her Record tab is open and again when a
@@ -389,6 +393,7 @@ export default function Live() {
     origin,
     tools,
     held: snap.held,
+    drifts,
     known: originViews,
     ledger: snap.ledger,
     decisions: run.answered,

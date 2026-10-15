@@ -25,6 +25,7 @@ import { create } from "zustand";
 
 import { ApiError, DaemonApi, type ExecuteRow, type ToolRow } from "@/lib/api";
 import type { BridgeTool } from "@/lib/bridge";
+import { driftOf, type ContractDrift, type ContractTable } from "@/lib/contract";
 import { callOnPage, describeRefs, refsOf, takeCapture, tierOf, type Taken, type Target } from "@/lib/hands";
 import type { CardTargets } from "@/companion/model";
 import type { Wire } from "@/lib/ipc";
@@ -163,6 +164,12 @@ export interface RunDeps {
    * its refs raw, as before.
    */
   describe?: (tabId: number, refs: readonly string[]) => Promise<Record<string, Target>>;
+  /**
+   * An approved call of this page tool ran and succeeded: its current contract becomes the accepted
+   * one for the web origin (ADR 0100). Optional: without it nothing is accepted, which only
+   * tightens.
+   */
+  accept?: (origin: string, tool: BridgeTool) => Promise<void>;
   /** Keep one answered decision on this computer (the `activity` table). */
   record?: (row: ActivityWrite) => Promise<void>;
   /** Read back what earlier windows kept. */
@@ -290,6 +297,7 @@ const LIVE: RunDeps = {
   disabledOrigins: () =>
     disabledOriginsOf(useOrigins.getState().records, useTabs.getState().tabs, useTools.getState().byTab),
   gated: () => gatedListsOf(useOrigins.getState(), useTabs.getState().tabs, useTools.getState().byTab),
+  accept: (origin, tool) => useOrigins.getState().acceptContracts(origin, [tool]),
   record: async (row) => {
     if (hasShell()) await storeSet("activity", "", row as unknown as Wire);
   },
@@ -338,7 +346,10 @@ export function disabledOriginsOf(
 export interface GatedLists {
   /** Catalog origins (`host:<app_id>`) of open tabs the origins table has no row for. */
   gated_origins: string[];
-  /** Registry names (`host.<app_id>.<tool>`) the user pinned `GATED` on an enabled row. */
+  /**
+   * Registry names (`host.<app_id>.<tool>`) the user pinned `GATED` on an enabled row, and every
+   * tool of an enabled row whose contract is not the one the user accepted (ADR 0100).
+   */
   gated_tools: string[];
 }
 
@@ -361,7 +372,7 @@ export interface Snapshot {
 
 /** The pure read behind {@link Snapshot}: the focused tab is the one flagged, else the first. */
 export function snapshotOf(
-  origins: Pick<OriginsState, "records" | "known" | "loaded" | "problem">,
+  origins: TrustTable,
   tabs: readonly Tab[],
   byTab: Readonly<Record<number, TabTools>>,
 ): Snapshot {
@@ -394,6 +405,41 @@ export interface SnapshotSource {
   manifest?: () => Record<string, unknown> | null;
   disabledOrigins?: () => string[];
   gated?: () => GatedLists;
+}
+
+/**
+ * The tools of trusted tabs whose contract is not the one the user accepted, by registry name
+ * (`host.<app_id>.<tool>`), each with what a card shows of the old and the new (ADR 0100).
+ *
+ * Only a tab whose origin is enabled is read: a first-sight app is gated whole already and a
+ * switched-off one is refused, so neither has a contract to drift from. A tool with no accepted
+ * contract — one registered after the origin was trusted — counts as changed. Nothing here
+ * loosens: the result is only ever added to `gated_tools`.
+ */
+export function contractDriftsOf(
+  origins: TrustTable,
+  tabs: readonly Tab[],
+  byTab: Readonly<Record<number, TabTools>>,
+): Record<string, ContractDrift> {
+  const out: Record<string, ContractDrift> = {};
+  if (!origins.loaded || origins.problem !== null) return out;
+  const enabled = (key: string) => origins.known.includes(key) && origins.records[key]?.enabled === true;
+  for (const tab of tabs) {
+    const origin = originOf(tab.url);
+    const found = byTab[tab.id];
+    const app = catalogIdOf(origin, found?.appId ?? null);
+    if (!app || !found) continue;
+    const trusted = enabled(origin) || (app === derivedIdOf(origin) && enabled(`host:${app}`));
+    // A row present and switched off refuses the app; no row is first sight. Either way, not here.
+    const off = [origin, `host:${app}`].some((k) => origins.known.includes(k) && origins.records[k]?.enabled === false);
+    if (!trusted || off) continue;
+    const accepted = origins.contracts?.[origin] ?? {};
+    for (const tool of found.tools) {
+      const drift = driftOf(accepted[tool.name], tool);
+      if (drift) out[`host.${app}.${tool.name}`] = drift;
+    }
+  }
+  return out;
 }
 
 /** One snapshot from a surface: its own, or one read of each of its parts. */
@@ -448,6 +494,12 @@ export function withCaptureWhy(
 
 export const NOTHING_GATED: GatedLists = { gated_origins: [], gated_tools: [] };
 
+/** What the gate's lists are read from: the origins table and, beside it, the accepted contracts. */
+export type TrustTable = Pick<OriginsState, "records" | "known" | "loaded" | "problem"> & {
+  /** Absent reads as nothing accepted: every tool of an enabled origin is a changed contract. */
+  contracts?: ContractTable;
+};
+
 /**
  * The first-sight apps and the user's `GATED` pins, for the daemon's gate (README section 3.3,
  * ADR 0063).
@@ -463,12 +515,12 @@ export const NOTHING_GATED: GatedLists = { gated_origins: [], gated_tools: [] };
  * first sight. A pin of `AUTO` or `READ` is never sent, because a pin only tightens.
  */
 export function gatedListsOf(
-  origins: Pick<OriginsState, "records" | "known" | "loaded" | "problem">,
+  origins: TrustTable,
   tabs: readonly Tab[],
   byTab: Readonly<Record<number, TabTools>>,
 ): GatedLists {
   const firstSight = new Set<string>();
-  const pinned = new Set<string>();
+  const pinned = new Set<string>(Object.keys(contractDriftsOf(origins, tabs, byTab)));
   const trusted = !origins.loaded || origins.problem !== null ? null : origins;
   const rowOf = (key: string): OriginRow | undefined =>
     trusted !== null && trusted.known.includes(key) ? trusted.records[key] : undefined;
@@ -628,7 +680,7 @@ export const useRun = create<RunState>((set, get) => {
    * Refused rather than run when the focused tab's origin is not the row's: an approval is granted
    * for one origin, and the user may have moved tabs between the card and the answer.
    */
-  async function onPage(row: ExecuteRow): Promise<void> {
+  async function onPage(row: ExecuteRow, approved = false): Promise<void> {
     const focused = deps.focused();
     if (!focused) {
       outstanding.push(resultRow(row, false, "", "unknown_ref: no page is open"));
@@ -656,6 +708,17 @@ export const useRun = create<RunState>((set, get) => {
       answer = { ok: false, output: "", error: error instanceof Error ? error.message : String(error) };
     }
     outstanding.push(resultRow(row, answer.ok, answer.output, answer.error ?? null, answer.tier));
+    // The user approved this call and it ran: the contract it ran under is now the accepted one
+    // (ADR 0100). A declined, refused or failed call leaves the old one in force.
+    if (approved && answer.ok && deps.accept) {
+      const listed = routingTools(snap, focused.tabId) ?? useTools.getState().byTab[focused.tabId]?.tools ?? [];
+      const tool = listed.find((t) => t.name === bareName(row.name));
+      if (tool) {
+        await deps
+          .accept(focused.origin, tool)
+          .catch((error: unknown) => console.error(`[athena] contract: ${String(error)}`));
+      }
+    }
     push({
       id: row.call_id,
       kind: "tool",
@@ -925,7 +988,7 @@ export const useRun = create<RunState>((set, get) => {
         push({ id, kind: "tool", text: `declined: ${card?.action ?? id}`, ok: false }, false);
         return;
       }
-      for (const row of resolution.execute) await onPage(row);
+      for (const row of resolution.execute) await onPage(row, true);
       if (outstanding.length) {
         set({ phase: "running" });
         await exchange("(the tools you called have answered; continue)");

@@ -18,6 +18,7 @@ import type { DaemonHealth } from "@/lib/daemon";
 import type { AthenaState } from "@/lib/companion";
 import type { Side, Valign } from "@/lib/companion";
 import type { ToolRow } from "@/lib/api";
+import type { ContractDrift } from "@/lib/contract";
 import { refsOf, tierOf, type Target } from "@/lib/hands";
 import { hostOfDerivedId } from "@/lib/manifest";
 import { ENGINE_IDS, engineLabel, type EngineProbe } from "@/lib/engines";
@@ -153,6 +154,12 @@ export interface CardView {
   sending: boolean;
   /** One plain sentence under the buttons when the daemon refused the last answer; `null` otherwise. */
   refusal: string | null;
+  /**
+   * The tool's contract changed since the user trusted it (ADR 0100): what it said then beside what
+   * it says now, neutralised and cut with `(showing N of M)`. `before` is null for a tool never
+   * accepted. `null` when the contract is the accepted one or the card is not about a page tool.
+   */
+  drift: ContractDrift | null;
 }
 
 /** One step on the tape: what she is doing and where. `cls` is the gate's answer, never ours. */
@@ -373,6 +380,8 @@ export interface CompanionInputs {
   tools: readonly ToolRow[];
   /** The card being stamped, once the store has dropped it. */
   held: DecisionRequested | null;
+  /** Page tools whose contract is not the accepted one, by registry name (ADR 0100). */
+  drifts?: Readonly<Record<string, ContractDrift>>;
   known: readonly OriginView[];
   ledger: LedgerSnapshot | null;
   decisions: readonly SessionDecision[];
@@ -449,6 +458,7 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     i.run.captureWhy ?? {},
     i.tools,
     i.run.targets ?? {},
+    i.drifts ?? {},
   );
   const n = shown(m);
   const busy = i.run.phase === "running" || i.run.phase === "acting";
@@ -541,10 +551,11 @@ function cardsOf(
   captureWhy: Readonly<Record<string, string>>,
   tools: readonly ToolRow[],
   targets: Readonly<Record<string, CardTargets>>,
+  drifts: Readonly<Record<string, ContractDrift>> = {},
 ): CardView[] {
   const list = m.decided && held && !cards.some((c) => c.id === held.id) ? [held, ...cards] : cards;
   return list.map((card, index) => ({
-    ...cardView(card, captureWhy[card.id] ?? null, { tools, targets: targets[card.id] }),
+    ...cardView(card, captureWhy[card.id] ?? null, { tools, targets: targets[card.id], drift: drifts[card.action] }),
     sending: answering[card.id] !== undefined || (index === 0 && m.decided?.sending === true),
     refusal: refusals[card.id] ?? null,
   }));
@@ -568,7 +579,7 @@ const WHOSE: Record<1 | 2 | 3, string> = {
 export function cardView(
   card: DecisionRequested,
   why: string | null = null,
-  context: { tools?: readonly ToolRow[]; targets?: CardTargets } = {},
+  context: { tools?: readonly ToolRow[]; targets?: CardTargets; drift?: ContractDrift } = {},
 ): CardView {
   const app = appOf(card.origin) || "an unknown app";
   const tier = tierOf(card.origin, card.action, context.tools ?? []);
@@ -599,6 +610,7 @@ export function cardView(
     capture: card.capture_id ? { kind: "shot", id: card.capture_id } : { kind: "none", why },
     sending: false,
     refusal: null,
+    drift: context.drift ?? null,
   };
 }
 

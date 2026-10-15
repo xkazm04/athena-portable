@@ -16,6 +16,7 @@ import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type K
 import { Chip, Defs, Icon, Mark, Mood, Ring, Sketch, Stamp } from "./drawing";
 import { SHRINK_MS, type LedgerTab } from "./machine";
 import { readCapture, type CaptureRead } from "./capture";
+import type { ContractDrift } from "@/lib/contract";
 import { showingOf, type CardCapture } from "./model";
 import type {
   CardView,
@@ -220,6 +221,46 @@ function NoCapture({ why }: { why: string | null }) {
   return <p className="sl-nocap">{why ? `No capture was taken: ${why}.` : "No capture was taken for this request."}</p>;
 }
 
+/**
+ * A page tool whose contract changed since the user trusted it (ADR 0100): what it said then beside
+ * what it says now. Both are the page's words, neutralised, and cut where they were long.
+ */
+function ContractChange({ drift }: { drift: ContractDrift }) {
+  return (
+    <div className="sl-drift" data-drift={drift.tool}>
+      <p className="sl-claim">
+        {drift.before ? "This tool changed since you trusted this app." : "This tool appeared after you trusted this app."}
+      </p>
+      <dl className="sl-params">
+        {drift.before ? (
+          <>
+            <div>
+              <dt>before</dt>
+              <dd>{drift.before.description}</dd>
+            </div>
+            {drift.before.schema !== drift.after.schema ? (
+              <div>
+                <dt>inputs before</dt>
+                <dd>{drift.before.schema}</dd>
+              </div>
+            ) : null}
+          </>
+        ) : null}
+        <div>
+          <dt>{drift.before ? "now" : "says"}</dt>
+          <dd>{drift.after.description}</dd>
+        </div>
+        {!drift.before || drift.before.schema !== drift.after.schema ? (
+          <div>
+            <dt>inputs now</dt>
+            <dd>{drift.after.schema}</dd>
+          </div>
+        ) : null}
+      </dl>
+    </div>
+  );
+}
+
 function Slip({ model, card, inline }: { model: CompanionModel; card: CardView | undefined; inline: boolean }) {
   const { actions, decision } = model;
   if (!card) {
@@ -266,6 +307,7 @@ function Slip({ model, card, inline }: { model: CompanionModel; card: CardView |
         </div>
         {card.claimed ? <p className="sl-claim">The element names are the page&apos;s own labels.</p> : null}
         {card.targetNote ? <p className="sl-claim">{card.targetNote}</p> : null}
+        {card.drift ? <ContractChange drift={card.drift} /> : null}
         {card.capture.kind === "none" ? <NoCapture why={card.capture.why} /> : null}
       </div>
       <div className="sl-sign">

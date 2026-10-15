@@ -46,6 +46,12 @@ under) and whose tool it is: the app's own (tier 1), Athena's generic hand (tier
 page's claim; when the page cannot say, the raw ref stays and the card says so. The activity row of
 an answered card keeps that tier (ADR 0099).
 
+Trust is per origin and per contract (ADR 0100). Enabling an app accepts the contracts (name,
+description, schema, flags, SHA-256 over canonical JSON) of the tools it lists then; a tool whose
+contract later differs, or that appeared after trust, is sent in `gated_tools` until an approved
+call of it runs, and its card shows the old description beside the new one, cut with
+`(showing N of M)`.
+
 ## The halo
 
 A click-through light on the edges of every monitor, painted by phase (listening, working,
