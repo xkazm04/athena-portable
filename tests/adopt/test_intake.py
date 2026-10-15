@@ -123,7 +123,8 @@ def test_post_gives_a_say_then_a_card(live: Live, lib: Path) -> None:
     sid = open_intake(live)
     frames = frames_until(live, sid, "adopt.questions")
     kinds = [f["kind"] for f in frames if f["kind"] in ("adopt.say", "adopt.questions")]
-    assert kinds[0] == "adopt.say" and kinds[-1] == "adopt.questions"
+    # The opening greets once; the first leg's own say is dropped while nothing was said.
+    assert kinds == ["adopt.say", "adopt.questions"]
     card = frames[-1]
     assert card["round"] == 1 and card["questions"][0]["slot_ids"] == []
     assert [o["label"] for o in card["questions"][0]["options"]] == ["Gusto", "ADP"]

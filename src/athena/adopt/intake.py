@@ -213,7 +213,8 @@ def _round(session: IntakeSession, *, decide_now: bool) -> None:
         )
         return
     say = str(value.get("say") or "").strip()
-    if say:
+    # With nothing said yet, the opening already greeted: a second greeting is noise.
+    if say and answers:
         session.emit(Say(text=say))
     with session.lock:
         session.round = round_no
