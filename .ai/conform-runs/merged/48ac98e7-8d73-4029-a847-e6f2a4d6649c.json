@@ -1,0 +1,199 @@
+{
+ "schema": "conform-run/1",
+ "worker": "48ac98e7-8d73-4029-a847-e6f2a4d6649c",
+ "subject": "demo-data-plane",
+ "evaluatedAt": "2026-10-15T21:28:46.065412+00:00",
+ "provider": "agy",
+ "model": "gemini-3.8-flash-high",
+ "pairs": [
+  {
+   "context": "demo-kit-ui-webmcp",
+   "subject": "demo-data-plane",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "examples/demo-kit/src/db/index.ts:55 The demo kit hardcodes a standalone local SQLite database and unmarked shell instead of routing fake data through a shared client interface with session-based runtime dispatch and explicit demo disclosure markers.",
+   "techniques": [
+    {
+     "technique": "seeded-determinism",
+     "verdict": "conformant",
+     "evidence": "examples/demo-kit/src/seed/index.ts:198 Mulberry32 PRNG seeded deterministically per stream via rngFor, ensuring identical fixture rows across demo runs."
+    },
+    {
+     "technique": "fixture-self-consistency",
+     "verdict": "conformant",
+     "evidence": "examples/demo-kit/src/seed/companies.ts:70 Defines one root declaration of shared entities and contacts so cross-app demo threads share identities and domains."
+    },
+    {
+     "technique": "fake-surface-honesty-contract",
+     "verdict": "deviation",
+     "evidence": "examples/demo-kit/src/ui/AppShell.tsx:61 AppShell renders action badges unconditionally without provenance gating, lacks persistent demo chrome markers, and state is persisted to disk in SQLite."
+    },
+    {
+     "technique": "runtime-dispatch-not-build-flag",
+     "verdict": "deviation",
+     "evidence": "examples/demo-kit/src/db/index.ts:55 Data access is statically bound to local SQLite files without session-based runtime dispatch between real and demo planes."
+    },
+    {
+     "technique": "network-faithful-mocks",
+     "verdict": "deviation",
+     "evidence": "examples/demo-kit/src/db/index.ts:130 Database operations execute synchronously via DatabaseSync with zero simulated latency and no provocable failure modes."
+    },
+    {
+     "technique": "one-interface-many-planes",
+     "verdict": "deviation",
+     "evidence": "examples/demo-kit/src/db/index.ts:16 Exposes a direct SQLite driver wrapper rather than a shared business data interface implemented by real, fake, and mirror planes."
+    }
+   ],
+   "registryProposal": "The standard assumes a client application that serves both real tenants and demo visitors from the same artifact (e.g. via a /demo route), but does not explicitly address architectural guidance for standalone demo companion apps built specifically to exercise an external agent host environment."
+  },
+  {
+   "context": "demo-kit-template",
+   "subject": "demo-data-plane",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "examples/demo-kit/template/lib/db.ts:58 The demo template statically connects to a local SQLite database without runtime plane dispatch or honesty contract markers, resolving queries synchronously without simulated network latency.",
+   "techniques": [
+    {
+     "technique": "seeded-determinism",
+     "verdict": "conformant",
+     "evidence": "examples/demo-kit/template/lib/db.ts:28 Uses a fixed reference date and a seeded RNG stream (rngFor) to ensure deterministic fixture generation across all runs."
+    },
+    {
+     "technique": "fixture-self-consistency",
+     "verdict": "conformant",
+     "evidence": "examples/demo-kit/template/app/page.tsx:9 Both the Levels semantic zoom hierarchy and RecordsTable project consistently from the single collection fetched via listRecords()."
+    },
+    {
+     "technique": "fake-surface-honesty-contract",
+     "verdict": "deviation",
+     "evidence": "examples/demo-kit/template/components/Shell.tsx:10 Mounts AppShell without persistent demo disclosure chrome and stores state in a persistent disk database across sessions."
+    },
+    {
+     "technique": "runtime-dispatch-not-build-flag",
+     "verdict": "deviation",
+     "evidence": "examples/demo-kit/template/lib/db.ts:58 Directly accesses a local SQLite database without per-call runtime dispatch from session state."
+    },
+    {
+     "technique": "one-interface-many-planes",
+     "verdict": "deviation",
+     "evidence": "examples/demo-kit/template/lib/db.ts:61 Directly queries local database functions rather than implementing a shared data plane interface."
+    },
+    {
+     "technique": "network-faithful-mocks",
+     "verdict": "deviation",
+     "evidence": "examples/demo-kit/template/lib/db.ts:63 Data access runs synchronously with zero simulated latency and no reachable fault modes."
+    }
+   ]
+  },
+  {
+   "context": "journey-stage-src",
+   "subject": "demo-data-plane",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "examples/journey/src/connectors/fake-mail.ts:67 The journey fakes execute synchronously with zero simulated network latency and no fault injection, deviating from network-faithful mock requirements.",
+   "techniques": [
+    {
+     "technique": "seeded-determinism",
+     "verdict": "conformant",
+     "evidence": "examples/journey/src/connectors/fake-mail.ts:43 Seed methods generate deterministic message identifiers from sequential indexes."
+    },
+    {
+     "technique": "fixture-self-consistency",
+     "verdict": "conformant",
+     "evidence": "examples/journey/src/stage.ts:20 Maintains consistent shared identifiers (such as STUDIO_NOTES) across journey test acts."
+    },
+    {
+     "technique": "network-faithful-mocks",
+     "verdict": "deviation",
+     "evidence": "examples/journey/src/connectors/fake-mail.ts:67 FakeMail and FakeNotes execute synchronously with zero latency and accept mutations without validating inputs against real service schemas."
+    },
+    {
+     "technique": "one-interface-many-planes",
+     "verdict": "deviation",
+     "evidence": "examples/journey/src/connectors/port.ts:18 ConnectorPort is implemented only by test doubles (FakeMail, FakeNotes) while the real connector service lives in an external repository."
+    },
+    {
+     "technique": "runtime-dispatch-not-build-flag",
+     "verdict": "deviation",
+     "evidence": "examples/journey/src/connector-surface.ts:33 Connector instances are injected directly into the test surface without runtime session-based plane dispatch."
+    },
+    {
+     "technique": "fake-surface-honesty-contract",
+     "verdict": "deviation",
+     "evidence": "examples/journey/src/connector-surface.ts:76 Faked connector surfaces enforce egress gating but do not present persistent demo disclosure markers."
+    }
+   ]
+  }
+ ],
+ "declined": [
+  {
+   "subject": "demo-data-plane",
+   "context": "demo-kit-zoom-engine",
+   "reason": "The semantic zoom engine (camera, level flight, roving focus, echo) contains 2D navigation and animation mechanics with no demo data planes, fixture models, or mock data sources."
+  },
+  {
+   "subject": "demo-data-plane",
+   "context": "demo-kit-tests",
+   "reason": "The demo kit unit tests assert zoom engine mechanics, flight, overlay escape, and output truncation; test assertions are outside the demo data plane subject."
+  }
+ ],
+ "consults": [
+  {
+   "ts": "2026-10-15T21:28:46.065412+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "demo-data-plane"
+   ],
+   "techniques": [
+    "fake-surface-honesty-contract",
+    "fixture-self-consistency",
+    "network-faithful-mocks",
+    "one-interface-many-planes",
+    "runtime-dispatch-not-build-flag",
+    "seeded-determinism"
+   ],
+   "deviations": 1,
+   "context": "demo-kit-ui-webmcp",
+   "via": "curator-multi:agy",
+   "model": "gemini-3.8-flash-high"
+  },
+  {
+   "ts": "2026-10-15T21:28:46.065412+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "demo-data-plane"
+   ],
+   "techniques": [
+    "fake-surface-honesty-contract",
+    "fixture-self-consistency",
+    "network-faithful-mocks",
+    "one-interface-many-planes",
+    "runtime-dispatch-not-build-flag",
+    "seeded-determinism"
+   ],
+   "deviations": 1,
+   "context": "demo-kit-template",
+   "via": "curator-multi:agy",
+   "model": "gemini-3.8-flash-high"
+  },
+  {
+   "ts": "2026-10-15T21:28:46.065412+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "demo-data-plane"
+   ],
+   "techniques": [
+    "fake-surface-honesty-contract",
+    "fixture-self-consistency",
+    "network-faithful-mocks",
+    "one-interface-many-planes",
+    "runtime-dispatch-not-build-flag",
+    "seeded-determinism"
+   ],
+   "deviations": 1,
+   "context": "journey-stage-src",
+   "via": "curator-multi:agy",
+   "model": "gemini-3.8-flash-high"
+  }
+ ]
+}

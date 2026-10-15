@@ -2499,7 +2499,11 @@
           "revision": 4,
           "changedAt": "2026-09-05",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/demo-kit/template/lib/db.ts:58 The demo template statically connects to a local SQLite database without runtime plane dispatch or honesty contract markers, resolving queries synchronously without simulated network latency.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:952fe6652c22027d",
+          "evaluatedRevision": 4
         },
         {
           "subject": "templates-scaffolding",
@@ -2650,7 +2654,11 @@
           "revision": 4,
           "changedAt": "2026-09-05",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/demo-kit/src/db/index.ts:55 The demo kit hardcodes a standalone local SQLite database and unmarked shell instead of routing fake data through a shared client interface with session-based runtime dispatch and explicit demo disclosure markers.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:952fe6652c22027d",
+          "evaluatedRevision": 4
         },
         {
           "subject": "mcp-tools",
@@ -6576,7 +6584,11 @@
           "revision": 4,
           "changedAt": "2026-09-05",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/journey/src/connectors/fake-mail.ts:67 The journey fakes execute synchronously with zero simulated network latency and no fault injection, deviating from network-faithful mock requirements.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:952fe6652c22027d",
+          "evaluatedRevision": 4
         },
         {
           "subject": "quality-gates",
