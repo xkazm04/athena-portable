@@ -348,3 +348,22 @@ test("a connected row says how long ago it was last probed, and a row that is no
   expect(never.probedAge).toBe("");
   expect(gone.probedAge).toBe("");
 });
+
+// -- reconnect through the kept client (ADR 0117) ------------------------------------------------------
+
+test("case 6: a needs-reauth OAuth row whose client is kept reconnects with one press, and no other row does", () => {
+  const gmail = (conn: Partial<ConnectorView["connection"]>, over: Partial<ConnectorView> = {}) =>
+    view({ id: "gmail", label: "Gmail", auth: "oauth", client_kept: true, ...over }, conn);
+  const [lost, unkept, older, connected, token] = rowsUnder("", [
+    gmail({ status: "needs_reauth" }),
+    gmail({ status: "needs_reauth" }, { client_kept: false }),
+    gmail({ status: "needs_reauth" }, { client_kept: undefined }),
+    gmail({ status: "connected" }),
+    view({ client_kept: true }, { status: "needs_reauth" }),
+  ]);
+  expect(lost.reconnect).toBe(true);
+  expect(unkept.reconnect).toBe(false);
+  expect(older.reconnect).toBe(false);
+  expect(connected.reconnect).toBe(false);
+  expect(token.reconnect).toBe(false);
+});

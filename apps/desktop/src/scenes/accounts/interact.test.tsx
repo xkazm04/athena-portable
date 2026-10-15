@@ -149,6 +149,40 @@ describe("connect", () => {
   });
 });
 
+describe("reconnect through the kept client (ADR 0117)", () => {
+  /** The needs-reauth fixture with the vault keeping Gmail's client, as `rowOf` derives it. */
+  function mountKept(actions = spies()) {
+    const source = fixtures["needs-reauth"]!;
+    const rows = source.rows.map((r) => ({ ...r, busy: "", reconnect: r.id === "gmail" }));
+    act(() => root.render(<AccountsView model={{ ...source, rows, actions }} path={item("gmail")} go={() => {}} />));
+    return actions;
+  }
+  const fieldLabels = () => [...host.querySelectorAll("label")].map((l) => l.textContent?.trim() ?? "");
+
+  it("case 7: one Reconnect press starts the flow with the kept client, and the two fields wait behind 'Use a different client'", () => {
+    const a = mountKept();
+    const reconnects = [...host.querySelectorAll("button")].filter((b) => b.textContent?.trim() === "Reconnect");
+    expect(reconnects).toHaveLength(1);
+    expect(fieldLabels().some((l) => l.startsWith("Client id"))).toBe(false);
+    expect(button("Connect with Google")).toBeUndefined();
+    click(reconnects[0]);
+    expect(a.connect).toHaveBeenCalledTimes(1);
+    expect(a.connect).toHaveBeenCalledWith("gmail", { reuse_client: true });
+
+    click(button("Use a different client"));
+    expect(fieldLabels().some((l) => l.startsWith("Client id"))).toBe(true);
+    expect(fieldLabels().some((l) => l.startsWith("Client secret"))).toBe(true);
+    expect(button("Connect with Google")).toBeTruthy();
+    expect(button("Reconnect")).toBeUndefined();
+  });
+
+  it("a needs-reauth row with no kept client shows today's two fields and no Reconnect", () => {
+    mount("needs-reauth", item("gmail"));
+    expect(button("Reconnect")).toBeUndefined();
+    expect(button("Connect with Google")).toBeTruthy();
+  });
+});
+
 describe("the switches", () => {
   it("the on and off switch and the writes switch call their own actions", () => {
     const a = mount("typical", item("notion"));

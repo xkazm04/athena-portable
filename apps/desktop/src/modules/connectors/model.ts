@@ -67,6 +67,11 @@ export interface ConnectorRow {
   probedAge: string;
   /** Why the writes switch and the allow-list cannot be changed now, or "" when they can. */
   disabledReason: string;
+  /**
+   * The grant needs reconnecting and the vault keeps the OAuth client it was connected with, so one
+   * press reconnects: `connect` with `{ reuse_client: true }` and no client value (ADR 0117).
+   */
+  reconnect: boolean;
   reads: readonly ConnectorToolView[];
   writes: readonly ConnectorToolView[];
   /** What the allow-list is a list of, or null when the connector has no writes. */
@@ -331,6 +336,7 @@ export function rowOf(
     disabledReason: connected
       ? ""
       : `Connect ${view.label} first; the switches apply to the account you connect.`,
+    reconnect: c.status === "needs_reauth" && view.auth === "oauth" && view.client_kept === true,
     reads: view.tools.filter((t) => !isWrite(t)),
     writes: view.tools.filter(isWrite),
     egress: view.egress === "none" ? null : view.egress,

@@ -162,6 +162,11 @@ export interface ConnectorView {
   connection: ConnectionView;
   live: boolean;
   seal_available: boolean;
+  /**
+   * Whether the vault keeps the OAuth client this connector was connected with, so a reconnect
+   * can reuse it (ADR 0117). A yes or a no, never the client. Optional: an older daemon omits it.
+   */
+  client_kept?: boolean;
   flow: FlowView | null;
   /** The vault's `records_notice`: plain words when the connections file could not be read, else "". */
   records_notice: string;

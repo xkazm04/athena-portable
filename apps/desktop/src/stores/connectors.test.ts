@@ -225,6 +225,28 @@ describe("the consent flow", () => {
   });
 });
 
+describe("reconnect through the kept client (ADR 0117)", () => {
+  it("case 6: a reconnect sends only the flag, never a client value, and polls the flow it started", async () => {
+    let polls = 0;
+    const flow = (phase: "awaiting_consent" | "done") => ({ id: "flow_r", connector: "gmail", phase, detail: phase, authorize_url: "" });
+    const lost = row("gmail", { client_kept: true, connection: { ...row("gmail").connection, status: "needs_reauth" } });
+    const daemon = fakeDaemon((path) => {
+      if (path === "/connectors") return { ok: true, connectors: [lost], showing: 1, total: 1, footer: "" };
+      if (path === "/connectors/gmail/connect") return { ok: true, flow: flow("awaiting_consent"), connector: { ...lost, flow: flow("awaiting_consent") } };
+      polls += 1;
+      const connection = { ...lost.connection, status: "connected" as const, identity: "me@example.test" };
+      return { ok: true, flow: flow("done"), connector: { ...lost, flow: flow("done"), live: true, connection } };
+    });
+    wire(daemon);
+    await useConnectors.getState().load();
+    await useConnectors.getState().connect("gmail", { reuse_client: true });
+    const sent = daemon.seen.find((s) => s.path === "/connectors/gmail/connect");
+    expect(sent?.body).toEqual({ reuse_client: true });
+    expect(polls).toBe(1);
+    expect(useConnectors.getState().items[0].connection.status).toBe("connected");
+  });
+});
+
 const NOTICE =
   "The connections file could not be read (JSONDecodeError), so no connection is shown. Its bytes are kept as connections.json.unreadable-20261010T120000000000Z. Connect again to start a fresh file.";
 

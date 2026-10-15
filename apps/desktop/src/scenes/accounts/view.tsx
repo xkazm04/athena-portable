@@ -557,18 +557,25 @@ export function Allowlist({ row, model, go }: { row: ConnectorRow; model: Connec
  * Connecting as a short staged act: get the credential, give it, and (for OAuth) consent. The rail
  * shows where the person is; the stage underneath is only the step in front of them. The guide for
  * getting the credential is one tap away on the account's own scene.
+ *
+ * A grant that needs reconnecting, whose client the vault still keeps, is one press (ADR 0117): the
+ * first two steps are already done, Reconnect asks for the consent alone, and no client value is
+ * typed or sent. "Use a different client" brings back the two fields, and a pasted pair wins.
  */
 function Connect({ row, model }: { row: ConnectorRow; model: ConnectorsModel }) {
   const { actions } = model;
   const [token, setToken] = useState("");
   const [clientId, setClientId] = useState("");
   const [clientSecret, setClientSecret] = useState("");
+  const [different, setDifferent] = useState(false);
   const busy = Boolean(row.busy);
   const flow = row.flow;
   const waiting = flow !== null && (flow.phase === "awaiting_consent" || flow.phase === "exchanging");
   const oauth = row.auth === "oauth";
   const stages = oauth ? ["Register a client", "Give the pair", "Consent"] : ["Get the token", "Paste it", "Probed, then stored"];
-  const at = waiting || busy ? 2 : 1;
+  const kept = oauth && row.reconnect && !different;
+  const at = waiting || busy || kept ? 2 : 1;
+  const consentOpen = busy || waiting ? "A consent page is open; finish it in the browser first." : undefined;
 
   const rail = (
     <ol className="stages" aria-label="Steps to connect">
@@ -657,49 +664,67 @@ function Connect({ row, model }: { row: ConnectorRow; model: ConnectorsModel }) 
       {flow && flow.phase === "failed" ? (
         <ProblemNote title="The consent did not complete." reason={flow.detail} tone="warning" />
       ) : null}
-      <div className="connect__fields">
-        <FormField label="Client id" hint="Your own OAuth client, registered once in the Google Cloud console.">
-          {(input) => (
-            <TextInput
-              {...input}
-              autoComplete="off"
-              value={clientId}
-              placeholder="….apps.googleusercontent.com"
-              onChange={(e) => setClientId(e.target.value)}
-            />
-          )}
-        </FormField>
-        <FormField label="Client secret" hint="Kept on this machine with the grant; never shown again.">
-          {(input) => (
-            <TextInput
-              {...input}
-              type="password"
-              autoComplete="off"
-              value={clientSecret}
-              onChange={(e) => setClientSecret(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") start();
-              }}
-            />
-          )}
-        </FormField>
-      </div>
-      <div className="act-row">
-        <Button
-          variant="primary"
-          onClick={start}
-          disabledReason={
-            busy || waiting
-              ? "A consent page is open; finish it in the browser first."
-              : clientId.trim()
-                ? undefined
-                : "Paste the client id first."
-          }
-        >
-          Connect with Google
-        </Button>
-        <span className="typo-caption">Your browser opens Google's consent page.</span>
-      </div>
+      {kept ? (
+        <>
+          <p className="typo-caption">
+            The client you connected with is still kept on this machine, so only Google's consent is needed.
+          </p>
+          <div className="act-row">
+            <Button variant="primary" onClick={() => actions.connect(row.id, { reuse_client: true })} disabledReason={consentOpen}>
+              Reconnect
+            </Button>
+            <Button size="sm" variant="ghost" onClick={() => setDifferent(true)}>
+              Use a different client
+            </Button>
+            <span className="typo-caption">Your browser opens Google's consent page.</span>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="connect__fields">
+            <FormField label="Client id" hint="Your own OAuth client, registered once in the Google Cloud console.">
+              {(input) => (
+                <TextInput
+                  {...input}
+                  autoComplete="off"
+                  value={clientId}
+                  placeholder="….apps.googleusercontent.com"
+                  onChange={(e) => setClientId(e.target.value)}
+                />
+              )}
+            </FormField>
+            <FormField label="Client secret" hint="Kept on this machine with the grant; never shown again.">
+              {(input) => (
+                <TextInput
+                  {...input}
+                  type="password"
+                  autoComplete="off"
+                  value={clientSecret}
+                  onChange={(e) => setClientSecret(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") start();
+                  }}
+                />
+              )}
+            </FormField>
+          </div>
+          <div className="act-row">
+            <Button
+              variant="primary"
+              onClick={start}
+              disabledReason={consentOpen ?? (clientId.trim() ? undefined : "Paste the client id first.")}
+            >
+              Connect with Google
+            </Button>
+            {row.reconnect ? (
+              <Button size="sm" variant="ghost" onClick={() => setDifferent(false)}>
+                Use the kept client
+              </Button>
+            ) : null}
+            <span className="typo-caption">Your browser opens Google's consent page.</span>
+          </div>
+        </>
+      )}
     </div>
   );
 }
