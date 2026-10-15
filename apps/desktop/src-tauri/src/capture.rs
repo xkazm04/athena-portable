@@ -29,6 +29,7 @@ pub struct Shot {
 }
 
 /// Encode top-down RGBA into a PNG. The one image format the captures table holds.
+#[cfg_attr(not(windows), allow(dead_code))]
 pub fn encode(rgba: &[u8], width: u32, height: u32) -> Result<Vec<u8>, String> {
     let mut out: Vec<u8> = Vec::new();
     {
@@ -48,6 +49,7 @@ pub fn encode(rgba: &[u8], width: u32, height: u32) -> Result<Vec<u8>, String> {
 /// `PrintWindow` leaves the alpha channel undefined for most controls, so a faithful copy of it
 /// produces a card that is mostly transparent — which renders as a chequerboard or as nothing at
 /// all depending on who opens it. A screenshot has no transparency to preserve.
+#[cfg_attr(not(windows), allow(dead_code))]
 pub fn bgra_to_rgba(bgra: &[u8]) -> Vec<u8> {
     let mut rgba = Vec::with_capacity(bgra.len());
     for pixel in bgra.chunks_exact(4) {
@@ -57,6 +59,7 @@ pub fn bgra_to_rgba(bgra: &[u8]) -> Vec<u8> {
 }
 
 /// Crop a top-down RGBA image. Returns `None` when the rectangle is not wholly inside.
+#[cfg_attr(not(windows), allow(dead_code))]
 pub fn crop(
     rgba: &[u8],
     width: u32,
@@ -90,6 +93,7 @@ pub fn crop(
 /// exactly small enough to look like a slightly wrong picture rather than an obviously wrong one:
 /// the first run of the smoke came back with a black band down the left edge. `inset` closes it —
 /// the client area's offset within the window, which the caller reads off the window itself.
+#[cfg_attr(not(windows), allow(dead_code))]
 pub fn page_rect_physical(
     width: f64,
     height: f64,

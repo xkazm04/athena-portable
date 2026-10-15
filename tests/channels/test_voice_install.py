@@ -444,8 +444,16 @@ def test_off_windows_the_answer_is_manual_and_an_installed_engine_is_not_needed(
 
 
 def test_a_whisper_model_brings_whisper_cli_when_it_is_missing(
-    tmp_path: Path, files: Files, server: str
+    tmp_path: Path, files: Files, server: str, monkeypatch: pytest.MonkeyPatch
 ) -> None:
+    # The release zip is a Windows build, so its binaries are ``.exe`` whatever host runs this;
+    # ``ENGINE_CANDIDATES`` only carries the suffix on Windows, and the extractor keeps ``.exe``
+    # and ``.dll`` members only. Pin the candidates the zip really holds.
+    monkeypatch.setattr(
+        whisper,
+        "ENGINE_CANDIDATES",
+        tuple(f"{c.removesuffix('.exe')}.exe" for c in whisper.ENGINE_CANDIDATES),
+    )
     files.bodies["/whisper-bin-x64.zip"] = _zip(
         {
             f"Release/{whisper.ENGINE_CANDIDATES[0]}": b"cli",

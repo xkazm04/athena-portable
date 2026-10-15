@@ -501,7 +501,7 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
                 # (``ConnectionAbortedError`` on Windows) and the caller never reads the
                 # refusal, which is indistinguishable from a daemon that died. Bounded and in
                 # chunks, so nothing oversized is ever held here.
-                self._discard(length)
+                self._discard(length, limit)
                 return None
             try:
                 payload = json.loads(self.rfile.read(length))
@@ -522,14 +522,17 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
                 return None
             return self.rfile.read(length)
 
-        def _discard(self, length: int) -> None:
+        def _discard(self, length: int, limit: int = 0) -> None:
             """Read and throw away up to :data:`DRAIN_LIMIT` bytes of a refused body.
 
             A caller that declared more than that is not drained to the end — the refusal is
             worth one bounded read and not an unbounded one — and the closed connection is what
-            it gets instead.
+            it gets instead. A route with a cap larger than the drain allowance (the documents
+            route's 14 MiB) drains up to twice its own cap, so that a body a hair over it is
+            still answered: on Linux the unread tail resets the connection and the caller's
+            write fails before it can read the refusal.
             """
-            remaining = min(length, DRAIN_LIMIT)
+            remaining = min(length, max(DRAIN_LIMIT, 2 * limit))
             while remaining > 0:
                 chunk = self.rfile.read(min(DRAIN_CHUNK, remaining))
                 if not chunk:
