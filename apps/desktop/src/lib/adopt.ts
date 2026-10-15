@@ -61,6 +61,27 @@ export interface Answer {
 /** One turn of a run, as bench.json's `trace` stores it (parsed by lib/playbooks.ts as TraceTurn). */
 export type RawTraceTurn = Record<string, unknown>;
 
+/** A chore that nearly fits (the intake conversation, ADR 0098). */
+export interface Alternate {
+  playbook_id: string;
+  title: string;
+  why: string;
+}
+
+/** The intake conversation's end. Strings are "" and lists [] when absent; no key is omitted. */
+export interface Verdict {
+  fit: "template" | "custom";
+  /** The chore that fits; "" when `fit` is "custom". */
+  playbook_id: string;
+  why: string;
+  differs: string;
+  alternates: Alternate[];
+  /** The need in the person's words: the opening message of an adopt session. */
+  need: string;
+  /** A draft command for Athena; "" when `fit` is "template". */
+  command: string;
+}
+
 export type AdoptEvent =
   | { kind: "adopt.progress"; seq: number; text: string }
   | { kind: "adopt.say"; seq: number; text: string }
@@ -101,6 +122,7 @@ export type AdoptEvent =
       ms: number;
       first_text_ms: number | null;
     }
+  | ({ kind: "adopt.verdict"; seq: number } & Verdict)
   | { kind: "adopt.error"; seq: number; reason: string; detail: string };
 
 export type AdoptEventKind = AdoptEvent["kind"];
@@ -115,6 +137,7 @@ export const ADOPT_EVENT_KINDS: readonly AdoptEventKind[] = [
   "adopt.clear",
   "adopt.showcase",
   "adopt.usage",
+  "adopt.verdict",
   "adopt.error",
 ];
 
@@ -129,6 +152,20 @@ export const ADOPT_ROUTES = {
   approve: (sid: string) => `/adopt/${encodeURIComponent(sid)}/approve`, // POST {rev}
   session: (sid: string) => `/adopt/${encodeURIComponent(sid)}`, // DELETE
 } as const;
+
+/** The Chores front door (ADR 0098): same frames and answer body as /adopt; no slots, no brief. */
+export const INTAKE_ROUTES = {
+  start: "/intake", // POST {need?} -> {ok, session_id}
+  events: (sid: string, after: number) =>
+    `/intake/${encodeURIComponent(sid)}/events?after=${after}`, // GET SSE
+  answer: (sid: string) => `/intake/${encodeURIComponent(sid)}/answer`, // POST {answers, via}; question_id "" = said to no question
+  session: (sid: string) => `/intake/${encodeURIComponent(sid)}`, // DELETE
+} as const;
+
+export interface IntakeStartReply {
+  ok: true;
+  session_id: string;
+}
 
 export interface StartReply {
   ok: true;

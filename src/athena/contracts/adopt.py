@@ -29,8 +29,17 @@ ShowcaseStatus = Literal["queued", "running", "done", "failed"]
 AnswerVia = Literal["text", "voice"]
 
 #: Every model call names its kind; the tier bench picks the model and effort per kind (tiers.json).
-LegKind = Literal["interview", "audit", "research", "shape", "persona", "judge"]
-LEG_KINDS: tuple[LegKind, ...] = ("interview", "audit", "research", "shape", "persona", "judge")
+LegKind = Literal["interview", "audit", "research", "shape", "persona", "judge", "intake"]
+LEG_KINDS: tuple[LegKind, ...] = (
+    "interview",
+    "audit",
+    "research",
+    "shape",
+    "persona",
+    "judge",
+    "intake",
+)
+VerdictFit = Literal["template", "custom"]
 Effort = Literal["low", "medium"]
 
 
@@ -190,11 +199,52 @@ class Usage(AdoptEvent):
 
 
 @dataclass(frozen=True)
+class Alternate:
+    """A chore that nearly fits: ``why`` is one sentence on what it would do for this need."""
+
+    playbook_id: str
+    title: str = ""
+    why: str = ""
+
+
+@dataclass(frozen=True)
+class Verdict(AdoptEvent):
+    """The intake conversation's end (the front door of the Chores page, ADR 0098).
+
+    ``fit`` ``"template"``: ``playbook_id`` is the chore that fits, ``why`` says why and
+    ``differs`` what would differ for this person; ``command`` is ``""``. ``fit`` ``"custom"``:
+    ``playbook_id`` is ``""`` and ``command`` is a draft to hand to Athena. ``need`` is the need in
+    the person's words, kept short; it becomes the opening message of an adopt session.
+    """
+
+    kind: ClassVar[str] = "adopt.verdict"
+    fit: VerdictFit = "custom"
+    playbook_id: str = ""
+    why: str = ""
+    differs: str = ""
+    alternates: tuple[Alternate, ...] = ()
+    need: str = ""
+    command: str = ""
+
+
+@dataclass(frozen=True)
 class Error(AdoptEvent):
     kind: ClassVar[str] = "adopt.error"
     reason: str = ""
     detail: str = ""
 
 
-_EVENTS = (Progress, Say, Questions, Slots, LaneEvent, Brief, Clear, Showcase, Usage, Error)
+_EVENTS: tuple[type[AdoptEvent], ...] = (
+    Progress,
+    Say,
+    Questions,
+    Slots,
+    LaneEvent,
+    Brief,
+    Clear,
+    Showcase,
+    Usage,
+    Verdict,
+    Error,
+)
 EVENT_KINDS: tuple[str, ...] = tuple(c.kind for c in _EVENTS)

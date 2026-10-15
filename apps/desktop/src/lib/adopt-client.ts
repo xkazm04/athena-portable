@@ -262,6 +262,21 @@ export function parseAdoptEvent(data: string): AdoptEvent | null {
         ms: num(raw.ms),
         first_text_ms: numOrNull(raw.first_text_ms),
       };
+    case "adopt.verdict":
+      return {
+        kind,
+        seq,
+        fit: oneOf(raw.fit, ["template", "custom"], "custom"),
+        playbook_id: str(raw.playbook_id),
+        why: str(raw.why),
+        differs: str(raw.differs),
+        alternates: list(raw.alternates)
+          .filter(isRaw)
+          .map((a) => ({ playbook_id: str(a.playbook_id), title: str(a.title), why: str(a.why) }))
+          .slice(0, 2),
+        need: str(raw.need),
+        command: str(raw.command),
+      };
     case "adopt.error":
       return { kind, seq, reason: str(raw.reason), detail: str(raw.detail) };
   }

@@ -239,6 +239,9 @@ function onEvent(prev: StudioState, e: AdoptEvent): StudioState {
         ...s,
         usage: { calls: s.usage.calls + 1, ms: s.usage.ms + e.ms },
       };
+    case "adopt.verdict":
+      // The Adopt studio never receives one; the intake page (ADR 0098) draws it.
+      return s;
     case "adopt.error":
       return {
         ...s,
