@@ -400,7 +400,10 @@ Reversibility buys the AUTO class. Not harmlessness — reversibility.
 6. Copy stays in the present tense of registration (§4.1).
 7. Every precondition the surface states is enforced in the server action, not only on the control.
    A disabled button is a projection of a rule; an agent calling the same action never sees it, so
-   its option set would otherwise be a strict superset of a person's.
+   its option set would otherwise be a strict superset of a person's. The other direction holds
+   too: the surface offers exactly what the action accepts, no less. Both read one declaration,
+   `actsFor` and its predicates in `lib/acts.ts`, never a copy of the rule in a component;
+   `test/acts.test.ts` runs every seeded applicant through every act against the real actions.
 
 ---
 

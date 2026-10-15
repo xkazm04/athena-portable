@@ -7,6 +7,7 @@
  * an unread application as one is the worst thing this domain can do.
  */
 
+import type { ActSlot } from "@/lib/acts";
 import type { Stage } from "@/lib/constants";
 import type { Band, Fit } from "./fit";
 import type { StageRole } from "./stages";
@@ -112,7 +113,8 @@ export interface BdRole {
 
 export interface BdBoard {
   roles: BdRole[];
-  openSlots: { id: string; interviewer: string; startTs: string; minutes: number }[];
+  /** Every interview slot and whose it is. `actsFor` in `lib/acts.ts` decides who may book which. */
+  slots: ActSlot[];
   /** Stage id -> the label the board prints. Sent down so no component has to
    *  import the constants module just to render a column heading. */
   stageLabel: Record<Stage, string>;

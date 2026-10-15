@@ -18,6 +18,7 @@ import { useEffect, useMemo, useRef } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { useOverlayEscape, useSharedIdentity } from "@athena/demo-kit/zoom";
 
+import { actsFor, type ActSlot } from "@/lib/acts";
 import { comparisonOrder, type BdCandidate, type BdColumn, type BdRole } from "./model";
 import { DOSSIER_STILL, useBoardMotion } from "./motion";
 import { DossierActs } from "./dossier/Acts";
@@ -30,14 +31,14 @@ export function Dossier({
   role,
   column,
   candidate,
-  openSlots,
+  slots,
   onFocus,
   onClose,
 }: {
   role: BdRole;
   column: BdColumn;
   candidate: BdCandidate;
-  openSlots: { id: string; interviewer: string; startTs: string; minutes: number }[];
+  slots: ActSlot[];
   onFocus: (id: string) => void;
   onClose: () => void;
 }) {
@@ -133,6 +134,10 @@ export function Dossier({
     [column],
   );
 
+  /* What may be done to this person, from `lib/acts.ts` - the module the server actions guard with,
+     so the bar offers exactly what they accept (DESIGN-LAW §7.7). Both zones read the one answer. */
+  const acts = useMemo(() => actsFor(candidate, slots), [candidate, slots]);
+
   return (
     <div
       className="bd-dossier-layer"
@@ -216,8 +221,8 @@ export function Dossier({
           className="bd-actbar"
           variants={reduced ? DOSSIER_STILL : m.dossierPart}
         >
-          <DossierActs key={`auto:${candidate.id}`} candidate={candidate} />
-          <DossierGate key={`gate:${candidate.id}`} candidate={candidate} openSlots={openSlots} />
+          <DossierActs key={`auto:${candidate.id}`} candidate={candidate} acts={acts} />
+          <DossierGate key={`gate:${candidate.id}`} candidate={candidate} acts={acts} />
         </motion.div>
       </motion.div>
     </div>

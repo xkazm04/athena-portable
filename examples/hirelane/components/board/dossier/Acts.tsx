@@ -21,11 +21,12 @@
 import { useState } from "react";
 
 import { addNote, moveStage, proposeSlots, scoreAgainstRubric } from "@/app/actions";
-import { nextMoveFor, STAGE_LABEL } from "@/lib/constants";
+import type { Acts } from "@/lib/acts";
+import { STAGE_LABEL } from "@/lib/constants";
 import type { BdCandidate } from "../model";
 import { useRun } from "../useRun";
 
-export function DossierActs({ candidate }: { candidate: BdCandidate }) {
+export function DossierActs({ candidate, acts }: { candidate: BdCandidate; acts: Acts }) {
   const { pending, run } = useRun();
   const [note, setNote] = useState("");
   const [noting, setNoting] = useState(false);
@@ -36,10 +37,12 @@ export function DossierActs({ candidate }: { candidate: BdCandidate }) {
    * Anything past it is a decision and lives behind the gate beside it. That is
    * the split the whole bar exists to make visible: `move_stage` reverses
    * cleanly, `decide_stage` ends somebody's application. The ladder is not
-   * re-typed here - `nextMoveFor` is the same declaration `moveStage` enforces
-   * against, so the button and the server cannot drift apart.
+   * re-typed here - `acts.move.to` is `nextMoveFor`, the same declaration
+   * `moveStage` enforces against, so the button and the server cannot drift
+   * apart. Propose slots reads `lib/acts.ts` the same way: shut when no slot
+   * is free, because the action would refuse it.
    */
-  const nextMove = nextMoveFor(candidate.stage);
+  const nextMove = acts.move.to;
 
   const close = () => {
     setNoting(false);
@@ -106,10 +109,10 @@ export function DossierActs({ candidate }: { candidate: BdCandidate }) {
           <button
             type="button"
             className="bd-btn"
-            disabled={pending}
+            disabled={pending || !acts.propose.enabled}
             onClick={() => run(() => proposeSlots(candidate.id))}
           >
-            Propose slots
+            {acts.propose.enabled ? "Propose slots" : "No slot is open"}
           </button>
           <button type="button" className="bd-btn" onClick={() => setNoting(true)}>
             Note…

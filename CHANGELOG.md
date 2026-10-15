@@ -449,6 +449,8 @@ One line per commit, newest phase first. Written by the orchestrator at the end 
 
 - `feat(playbooks): a filmed run shows on its tile and opens as a part of the layer` — ADR 0055; `parseEvidence` reads `evidence.json` and `thumb.jpg` through eager globs into `Playbook.evidence`; the tile carries the still and the length, *The run, filmed* plays the film where the dev server serves `evidence/` (byte ranges) and shows the still elsewhere, with the narration and current or stale against the bench; a `shipped:<id>` fixture per shipped playbook.
 
+- `fix(hirelane): the dossier offers exactly the acts the server actions accept, from one module both read.` DESIGN-LAW 7.7, ADR 0107 (scan-sweep challenge, architecture-challenger): the gate panel listed only `status = 'open'` slots, so a candidate whose slots Propose slots had just held was offered none of them; `lib/acts.ts` (`actsFor`, its predicates and `REFUSAL`) is now what the actions guard with, the dossier draws from, and the agent's dossier read and `read_view` carry. Tests: test/acts.test.ts (a parity matrix of every seeded applicant x six acts against the real actions), two guards in test/actions.test.ts.
+
 ## Playbooks — the edge between difficulty and usefulness (in progress)
 
 - `docs: module documentation in docs/features and a build report across the waves` — one page per module (core, harness, daemon and channels, connectors, bridge, desktop, playbooks, Proving Ground, examples and UAT) with its current state; `docs/report/index.html`, a standalone page of the five waves, the nine playbooks' latest runs, the twelve fixes and the limits.

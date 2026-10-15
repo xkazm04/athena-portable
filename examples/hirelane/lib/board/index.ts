@@ -180,14 +180,15 @@ export function buildBoard(): BdBoard {
   return {
     roles: built,
     stageLabel: STAGE_LABEL,
-    openSlots: slots
-      .filter((s) => s.status === "open")
-      .slice(0, 12)
-      .map((s) => ({
-        id: s.id,
-        interviewer: s.interviewer,
-        startTs: s.start_ts,
-        minutes: s.minutes,
-      })),
+    // Every slot with whose it is, not a pre-filtered list: which of them a person can be booked
+    // into is `lib/acts.ts`'s question, and the dossier asks it of exactly what the action reads.
+    slots: slots.map((s) => ({
+      id: s.id,
+      interviewer: s.interviewer,
+      startTs: s.start_ts,
+      minutes: s.minutes,
+      status: s.status,
+      applicantId: s.applicant_id,
+    })),
   };
 }

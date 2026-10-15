@@ -14,10 +14,13 @@
  */
 import { companyByName } from "@athena/demo-kit/seed";
 
+import { actsFor, isFree, refusalFor, type Act, type ActPerson, type ActSlot } from "@/lib/acts";
+import { DECISION_STAGES, STAGES } from "@/lib/constants";
 import {
   BAND_LABEL,
   FIT_LABEL,
   STAGE_WAIT,
+  type BdBoard,
   type BdCandidate,
   type BdColumn,
   type BdRole,
@@ -53,8 +56,42 @@ export function candidateRead(candidate: BdCandidate) {
   };
 }
 
-/** The same candidate with the evidence behind every score, which is L2. */
-export function dossierRead(role: BdRole, candidate: BdCandidate) {
+/** One act as the agent reads it: open with its choices, or shut with the server's own words. */
+function actRead<C extends object>(act: Act, person: ActPerson, choices: C) {
+  return act.enabled
+    ? { enabled: true as const, ...choices }
+    : { enabled: false as const, reason: act.reason, why: act.reason ? refusalFor(act.reason, person) : undefined };
+}
+
+/**
+ * Which tools would accept this person right now, keyed by tool name.
+ *
+ * It is `actsFor` - the module the dossier's buttons are drawn from and the actions guard with -
+ * so the agent sees the option set the person sees, including the slots held for this candidate,
+ * which come first.
+ */
+function actsRead(candidate: BdCandidate, slots: readonly ActSlot[]) {
+  const acts = actsFor(candidate, slots);
+  return {
+    score_against_rubric: actRead(acts.score, candidate, {}),
+    move_stage: actRead(acts.move, candidate, { stage: acts.move.to }),
+    propose_slots: actRead(acts.propose, candidate, {}),
+    decide_stage: actRead(acts.offer, candidate, { stages: [...DECISION_STAGES] }),
+    send_rejection: actRead(acts.reject, candidate, {}),
+    send_scheduling_email: actRead(acts.schedule, candidate, {
+      slots: acts.schedule.slots.map((s) => ({
+        id: s.id,
+        interviewer: s.interviewer,
+        starts: s.startTs,
+        minutes: s.minutes,
+        held_for_them: s.applicantId === candidate.id,
+      })),
+    }),
+  };
+}
+
+/** The same candidate with the evidence behind every score, and what may be done to them: L2. */
+export function dossierRead(role: BdRole, candidate: BdCandidate, slots: readonly ActSlot[]) {
   return {
     ...candidateRead(candidate),
     email: candidate.email,
@@ -77,6 +114,17 @@ export function dossierRead(role: BdRole, candidate: BdCandidate) {
       minutes: h.minutes,
     })),
     already_sent: candidate.meta.sent.map((s) => ({ kind: s.kind, subject: s.subject, at: s.ts })),
+    acts: actsRead(candidate, slots),
+  };
+}
+
+/** The whole board, which is L0: the roles, the stages, and how many slots nobody holds. */
+export function boardRead(board: BdBoard) {
+  return {
+    roles: board.roles.map(roleRead),
+    stages: STAGES.map((stage) => ({ id: stage, label: board.stageLabel[stage] })),
+    // Counted by `isFree`, the predicate Propose slots takes from, not by a capped display list.
+    open_interview_slots: board.slots.filter(isFree).length,
   };
 }
 

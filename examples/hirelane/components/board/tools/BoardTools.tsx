@@ -35,10 +35,9 @@
 import { useZoomTools, useWebMCPTool } from "@athena/demo-kit/webmcp";
 import type { ZoomNav } from "@athena/demo-kit/zoom";
 
-import { STAGES } from "@/lib/constants";
 import { registration } from "@/lib/manifest";
 import { candidateOf, columnOf, groupId, splitGroup, type BdBoard } from "../model";
-import { candidateRead, dossierRead, groupRead, roleRead } from "./read";
+import { boardRead, candidateRead, dossierRead, groupRead, roleRead } from "./read";
 import { readApplicants, readShortlist } from "./roster";
 import { searchBoard, type BoardQuery } from "./search";
 
@@ -103,7 +102,7 @@ export function BoardTools({
       const role = board.roles.find((r) => r.id === roleId);
       if (level === 2 && role) {
         const candidate = candidateOf(role, item);
-        return candidate ? dossierRead(role, candidate) : { error: `No candidate ${item}.` };
+        return candidate ? dossierRead(role, candidate, board.slots) : { error: `No candidate ${item}.` };
       }
       if (level === 1 && role) {
         const column = columnOf(role, stage);
@@ -114,11 +113,7 @@ export function BoardTools({
           candidates: column.candidates.map(candidateRead),
         };
       }
-      return {
-        roles: board.roles.map(roleRead),
-        stages: STAGES.map((stage) => ({ id: stage, label: board.stageLabel[stage] })),
-        open_interview_slots: board.openSlots.length,
-      };
+      return boardRead(board);
     },
   });
 

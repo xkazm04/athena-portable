@@ -16,6 +16,7 @@ import { tempHome } from "./tmp-home";
 tempHome("hirelane-test-");
 
 const { STUDIO } = await import("@athena/demo-kit/seed");
+const { nextMoveFor, STAGES } = await import("../lib/constants");
 const { db } = await import("../lib/db");
 const { decideStage, moveStage, proposeSlots, sendRejection, sendSchedulingEmail, undoAction } =
   await import("../app/actions");
@@ -257,6 +258,25 @@ test("propose_slots hands back the ids it held and when each one starts", async 
       `${slot.id}: held, not sent`,
     );
   }
+});
+
+/*
+ * Guards for `lib/acts.ts`: the refusals the act module took over keep their words and their effect.
+ */
+test("scheduling below Interview still sends the reader to move them to Interview first", async () => {
+  const applied = db().get<{ id: string; name: string }>(
+    "SELECT id, name FROM applicants WHERE stage = 'applied' ORDER BY id LIMIT 1",
+  )!;
+  const result = await sendSchedulingEmail(applied.id, openSlot().id);
+  assert.equal(result.ok, false);
+  assert.ok(result.message.includes(`Move ${applied.name} to Interview first`), result.message);
+});
+
+test("nextMoveFor is unchanged for all five stages", () => {
+  assert.deepEqual(
+    Object.fromEntries(STAGES.map((stage) => [stage, nextMoveFor(stage)])),
+    { applied: "screening", screening: "interview", interview: null, offer: null, rejected: null },
+  );
 });
 
 test("an ordinary move is untouched by the from-stage guard", async () => {

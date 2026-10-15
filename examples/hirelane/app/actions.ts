@@ -11,6 +11,14 @@ import { logActivity, undoActivity, type ActivityEntry } from "@athena/demo-kit/
 import type { Db } from "@athena/demo-kit/db";
 
 import {
+  canBook,
+  decidedReason,
+  isFree,
+  REFUSAL,
+  scheduleReason,
+  type ActSlot,
+} from "@/lib/acts";
+import {
   isDecisionStage,
   isMoveStage,
   STAGE_LABEL,
@@ -68,14 +76,35 @@ function missing(id: string): ActionResult {
  * Offer and rejected are the two stages this app calls irreversible, which means a SECOND decision
  * cannot re-enter them: no offer after a rejection, no second rejection letter. Without this, the
  * most consequential act in the app can be performed twice, or reversed by another act that is
- * itself irreversible.
+ * itself irreversible. The rule and its words are `lib/acts.ts`'s, the module the dossier draws its
+ * buttons from, so the button and this guard cannot disagree.
  */
 function decided(applicant: { name: string; stage: Stage }): ActionResult | null {
-  if (!isDecisionStage(applicant.stage)) return null;
-  return {
-    ok: false,
-    message: `${applicant.name} is already at ${STAGE_LABEL[applicant.stage]}. That decision has been made and cannot be re-made here.`,
-  };
+  if (!decidedReason(applicant.stage)) return null;
+  return { ok: false, message: REFUSAL.decided(applicant) };
+}
+
+interface SlotRow {
+  id: string;
+  interviewer: string;
+  start_ts: string;
+  minutes: number;
+  status: ActSlot["status"];
+  applicant_id: string | null;
+}
+
+/** Every slot, as `lib/acts.ts` reads it, in start order. */
+function allSlots(): ActSlot[] {
+  return db()
+    .all<SlotRow>("SELECT id, interviewer, start_ts, minutes, status, applicant_id FROM slots ORDER BY start_ts")
+    .map((s) => ({
+      id: s.id,
+      interviewer: s.interviewer,
+      startTs: s.start_ts,
+      minutes: s.minutes,
+      status: s.status,
+      applicantId: s.applicant_id,
+    }));
 }
 
 /** AUTO. Writes a scorecard as a note. Never touches the stage - a score is not a decision. */
@@ -144,15 +173,8 @@ function writeStage(applicantId: string, to: Stage, reason: string): number {
 export async function moveStage(applicantId: string, stage: Stage): Promise<ActionResult> {
   const applicant = getApplicant(applicantId);
   if (!applicant) return missing(applicantId);
-  if (isDecisionStage(applicant.stage)) {
-    return {
-      ok: false,
-      message: `${applicant.name} is at ${STAGE_LABEL[applicant.stage]}. A decision is not undone with a move - use Undo on the activity row that made it.`,
-    };
-  }
-  if (!isMoveStage(stage)) {
-    return { ok: false, message: `${STAGE_LABEL[stage]} is a decision. Use the decision controls.` };
-  }
+  if (decidedReason(applicant.stage)) return { ok: false, message: REFUSAL.decided_move(applicant) };
+  if (!isMoveStage(stage)) return { ok: false, message: REFUSAL.not_a_move(stage) };
   const eventId = writeStage(applicantId, stage, `Moved to ${stage}.`);
   logActivity(db(), {
     actor: "user",
@@ -171,7 +193,7 @@ export async function decideStage(applicantId: string, stage: Stage): Promise<Ac
   const applicant = getApplicant(applicantId);
   if (!applicant) return missing(applicantId);
   if (!isDecisionStage(stage)) {
-    return { ok: false, message: `${STAGE_LABEL[stage]} is a move, not a decision.` };
+    return { ok: false, message: REFUSAL.not_a_decision(stage) };
   }
   const already = decided(applicant);
   if (already) return already;
@@ -187,19 +209,21 @@ export async function decideStage(applicantId: string, stage: Stage): Promise<Ac
   return { ok: true, message: `${applicant.name}: ${STAGE_LABEL[stage]} recorded.` };
 }
 
-/** AUTO. Holds up to three open slots for an applicant. Nothing leaves the building yet. */
+/**
+ * AUTO. Holds up to three free slots for an applicant. Nothing leaves the building yet.
+ *
+ * Free is `isFree` from `lib/acts.ts`, the predicate the dossier's Propose button is enabled by.
+ */
 export async function proposeSlots(applicantId: string): Promise<ActionResult> {
   const applicant = getApplicant(applicantId);
   if (!applicant) return missing(applicantId);
-  const open = db().all<{ id: string; interviewer: string; start_ts: string; minutes: number }>(
-    "SELECT id, interviewer, start_ts, minutes FROM slots WHERE status = 'open' ORDER BY start_ts LIMIT 3",
-  );
-  if (open.length === 0) return { ok: false, message: "No open slots left in the next two weeks." };
+  const open = allSlots().filter(isFree).slice(0, 3);
+  if (open.length === 0) return { ok: false, message: REFUSAL.no_slot() };
   const ids = open.map((s) => s.id);
   const held: HeldSlot[] = open.map((s) => ({
     id: s.id,
     interviewer: s.interviewer,
-    start: s.start_ts,
+    start: s.startTs,
     minutes: s.minutes,
   }));
   for (const id of ids) {
@@ -223,35 +247,28 @@ export async function proposeSlots(applicantId: string): Promise<ActionResult> {
  * The Interview precondition is asserted HERE, not on the button. The dossier's gate panel
  * disables the control below Interview, but a disabled button is not a rule - an agent calling
  * `send_scheduling_email` never sees it. One engine, two surfaces: the agent's option set has to
- * be a subset of the human's, which means the invariant lives in the action.
+ * be a subset of the human's, which means the invariant lives in the action. Both the rule and the
+ * slot predicate are `lib/acts.ts`'s, and the dossier's slot list is built from the same two, so
+ * the human's option set is not a smaller one either (DESIGN-LAW §7.7).
  */
 export async function sendSchedulingEmail(applicantId: string, slotId: string): Promise<ActionResult> {
   const applicant = getApplicant(applicantId);
   if (!applicant) return missing(applicantId);
-  if (applicant.stage !== "interview") {
-    return {
-      ok: false,
-      message: `${STAGE_LABEL[applicant.stage]} is too early to book a time. Move ${applicant.name} to Interview first.`,
-    };
-  }
-  // `status != 'booked'` alone matches a slot `propose_slots` is holding for SOMEONE ELSE, and the
-  // UPDATE below would re-target it - one candidate's held interview silently moved to another,
-  // with no activity row naming the loss. Whose slot it is has to be part of the lookup, because
-  // the agent fills in `slot` as a free string and nothing upstream owns that decision.
-  const slot = db().get<{ id: string; interviewer: string; start_ts: string; minutes: number }>(
-    "SELECT id, interviewer, start_ts, minutes FROM slots WHERE id = ? AND status != 'booked' AND (applicant_id IS NULL OR applicant_id = ?)",
-    [slotId, applicantId],
-  );
-  if (!slot) {
-    return { ok: false, message: "That slot is gone or is held for someone else. Pick another." };
-  }
-  const when = slot.start_ts.replace("T", " ").slice(0, 16);
+  const early = scheduleReason(applicant.stage);
+  if (early) return { ok: false, message: REFUSAL[early](applicant) };
+  // Not-booked alone matches a slot `propose_slots` is holding for SOMEONE ELSE, and the UPDATE
+  // below would re-target it - one candidate's held interview silently moved to another, with no
+  // activity row naming the loss. Whose slot it is is part of `canBook`, because the agent fills in
+  // `slot` as a free string and nothing upstream owns that decision.
+  const slot = allSlots().find((s) => s.id === slotId);
+  if (!slot || !canBook(slot, applicantId)) return { ok: false, message: REFUSAL.slot_taken() };
+  const when = slot.startTs.replace("T", " ").slice(0, 16);
   const mail = schedulingMail({
     applicantName: applicant.name,
     applicantEmail: applicant.email,
     roleTitle: getRole(applicant.role_id)?.title ?? "the role",
     interviewer: slot.interviewer,
-    startTs: slot.start_ts,
+    startTs: slot.startTs,
     minutes: slot.minutes,
   });
   db().run("UPDATE slots SET status = 'booked', applicant_id = ? WHERE id = ?", [applicantId, slotId]);

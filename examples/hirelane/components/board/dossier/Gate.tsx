@@ -20,7 +20,10 @@
  *   - `Dossier.tsx` keys this component by the candidate, so a bench click
  *     voids an armed gate rather than re-pointing it at somebody else (§7.3);
  *   - every precondition below is a projection of a rule `app/actions.ts`
- *     enforces, never a second rule (§7.7).
+ *     enforces, never a second rule (§7.7). Literally: `acts` comes from
+ *     `actsFor` in `lib/acts.ts`, the predicates the actions guard with, so the
+ *     slot list is the set the action would book - this candidate's own held
+ *     slots first - and not a narrower one recomputed here.
  *
  * WHAT IT DOES CHANGE: arming takes over the whole bar. The reversible zone is
  * hidden for as long as an irreversible act is one click away, which is a
@@ -30,8 +33,8 @@
 import { useState } from "react";
 
 import { decideStage, sendRejection, sendSchedulingEmail } from "@/app/actions";
+import type { Act, Acts } from "@/lib/acts";
 import {
-  isDecisionStage,
   REJECTION_TEMPLATES,
   REJECTION_TEMPLATE_LABEL,
   STAGE_LABEL,
@@ -41,24 +44,23 @@ import { fmtWhen } from "../format";
 import type { BdCandidate } from "../model";
 import { useArm, useRun } from "../useRun";
 
-export function DossierGate({
-  candidate,
-  openSlots,
-}: {
-  candidate: BdCandidate;
-  openSlots: { id: string; interviewer: string; startTs: string; minutes: number }[];
-}) {
+export function DossierGate({ candidate, acts }: { candidate: BdCandidate; acts: Acts }) {
   const { pending, run } = useRun();
   const { armed, arm, disarm } = useArm();
   const [template, setTemplate] = useState<RejectionTemplate>("standard");
   // The pick is DERIVED, not seeded once: a refresh that consumes the chosen slot would otherwise
   // leave the select blank while the stale id is still what "Send it" submits.
   const [pick, setPick] = useState<string | null>(null);
-  const slotId = (pick && openSlots.some((s) => s.id === pick) ? pick : openSlots[0]?.id) ?? "";
-  const canScheduleFor = candidate.stage === "interview";
-  // Each of these three is a projection of a rule `app/actions.ts` enforces, never a second rule:
-  // a decision is terminal, so neither an offer nor a rejection may be recorded over one.
-  const settled = isDecisionStage(candidate.stage);
+  const slots = acts.schedule.slots;
+  const slotId = (pick && slots.some((s) => s.id === pick) ? pick : slots[0]?.id) ?? "";
+  // A shut act says why on its own face, in the words for its reason. The reason is the same one the
+  // server refuses with; the label is the short form a button has room for.
+  const shut = (act: Act): string =>
+    act.reason === "decided"
+      ? `${STAGE_LABEL[candidate.stage]} is decided`
+      : act.reason === "too_early"
+        ? "Scheduling opens at Interview"
+        : "No slot is open";
 
   return (
     <div className="bd-zone" data-class="GATED">
@@ -141,9 +143,10 @@ export function DossierGate({
               onChange={(event) => setPick(event.target.value)}
               aria-label="Which slot to offer"
             >
-              {openSlots.map((slot) => (
+              {slots.map((slot) => (
                 <option key={slot.id} value={slot.id}>
                   {slot.interviewer} · {fmtWhen(slot.startTs)} · {slot.minutes}m
+                  {slot.applicantId === candidate.id ? " · held for them" : ""}
                 </option>
               ))}
             </select>
@@ -174,32 +177,26 @@ export function DossierGate({
           <button
             type="button"
             className="bd-btn"
-            disabled={settled}
+            disabled={!acts.offer.enabled}
             onClick={() => arm("offer")}
           >
-            {settled ? `${STAGE_LABEL[candidate.stage]} is decided` : "Record an offer"}
+            {acts.offer.enabled ? "Record an offer" : shut(acts.offer)}
           </button>
           <button
             type="button"
             className="bd-btn"
-            disabled={settled || !canScheduleFor || openSlots.length === 0}
+            disabled={!acts.schedule.enabled}
             onClick={() => arm("schedule")}
           >
-            {settled
-              ? `${STAGE_LABEL[candidate.stage]} is decided`
-              : canScheduleFor
-                ? openSlots.length === 0
-                  ? "No slot is open"
-                  : "Email an invitation"
-                : "Scheduling opens at Interview"}
+            {acts.schedule.enabled ? "Email an invitation" : shut(acts.schedule)}
           </button>
           <button
             type="button"
             className="bd-btn"
-            disabled={settled}
+            disabled={!acts.reject.enabled}
             onClick={() => arm("reject")}
           >
-            {settled ? `${STAGE_LABEL[candidate.stage]} is decided` : "Send a rejection"}
+            {acts.reject.enabled ? "Send a rejection" : shut(acts.reject)}
           </button>
         </div>
       )}

@@ -574,7 +574,7 @@ export function Board({ board }: { board: BdBoard }) {
                 role={role}
                 column={column}
                 candidate={candidate}
-                openSlots={board.openSlots}
+                slots={board.slots}
                 onFocus={(id) => {
                   nav.hover(id);
                   nav.openItem(nav.state.focus.group ?? "", id);
