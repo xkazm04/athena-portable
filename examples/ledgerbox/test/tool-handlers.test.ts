@@ -54,6 +54,8 @@ type Class = { reversible: boolean; sideEffects: string };
 let reached: string[] = [];
 const registered = new Map<string, WebMCPToolSpec>();
 let zoomVerbsMounted = 0;
+/** The one server action that throws instead of answering, when a test asks for it. */
+let breaks: string | null = null;
 
 const RECORDER = Symbol.for("ledgerbox.test.recorder");
 (globalThis as Record<symbol, unknown>)[RECORDER] = {
@@ -65,9 +67,10 @@ const RECORDER = Symbol.for("ledgerbox.test.recorder");
     zoomVerbsMounted += 1;
   },
   router: { refresh: () => reached.push("router.refresh") },
-  toaster: { toast: () => reached.push("toast") },
+  toaster: { toast: (_text: string, tone: string) => reached.push(`toast:${tone}`) },
   act(name: string, args: unknown[]) {
     reached.push(`act:${name}`);
+    if (breaks === name) return Promise.reject(new Error("database is locked"));
     return (actions as unknown as Record<string, (...a: unknown[]) => unknown>)[name]!(...args);
   },
 };
@@ -317,4 +320,20 @@ test("a select whose every reference is unknown refuses, and the ticks a person 
   const cleared = await drive("select", { ids: [] });
   assert.ok(cleared.moved.includes("view.setPicked"));
   assert.match(cleared.answer, /Ticked 0 of 0/);
+});
+
+test("an act that throws still tells the person watching the page, not only the agent", async () => {
+  // The door turns a handler's throw into the agent's answer (`tool failed: ...`). The page used
+  // to say nothing: `settle` toasted and refreshed only after the action answered, so a write that
+  // threw left the person with no toast and a sheet that was never re-read.
+  const target = rows.find((r) => r.state === "open")!;
+  breaks = "categorizeAction";
+  try {
+    const crashed = await drive("categorize", { ids: [target.id], category: "design" });
+    assert.match(crashed.answer, /"ok":false.*tool failed: database is locked/);
+    assert.ok(crashed.moved.includes("toast:error"), `the person saw: ${crashed.moved.join(", ") || "nothing"}`);
+    assert.ok(crashed.moved.includes("router.refresh"), "and the sheet is re-read from the books");
+  } finally {
+    breaks = null;
+  }
 });

@@ -216,7 +216,17 @@ export function BooksTools({
    * make a complete, addressable draft unreachable from outside the page.
    */
   const settle = async <T extends { ok: boolean; message: string }>(work: Promise<T>): Promise<T> => {
-    const result = await work;
+    let result: T;
+    try {
+      result = await work;
+    } catch (error) {
+      // The kit's door turns the throw into the agent's answer; without this the person watching
+      // the page saw no toast and a sheet nobody re-read. Whether anything was written before the
+      // throw is not known here, so the toast does not claim either way.
+      toast("That act failed before it could answer - check the invoice before trying again.", "error");
+      router.refresh();
+      throw error;
+    }
     toast(result.message, result.ok ? "success" : "error");
     router.refresh();
     return result;
