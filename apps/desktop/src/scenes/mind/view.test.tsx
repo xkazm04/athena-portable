@@ -61,6 +61,18 @@ describe("the field", () => {
     expect(html("engine-missing")).toContain("cannot run a turn yet");
   });
 
+  it("never says the chosen engine runs the turns while the daemon is on another or failed on it", () => {
+    // heavy: Codex is stored and found, the daemon still runs on Claude Code until the restart.
+    const pending = html("heavy");
+    expect(pending).not.toContain("Codex runs the turns");
+    expect(pending).toContain('title="Codex is chosen, but Athena is still running on Claude Code."');
+    const failed = renderToStaticMarkup(
+      <MindView model={{ ...fixtures.typical!, daemonHealth: "failed" }} path={PATHS.field!} go={go} />,
+    );
+    expect(failed).not.toContain("runs the turns");
+    expect(failed).toContain('title="Claude Code is chosen, but Athena could not start on it."');
+  });
+
   it("asks for the restart that is pending, on the field, because it asks to be done now", () => {
     expect(html("heavy")).toContain("Restart on");
   });

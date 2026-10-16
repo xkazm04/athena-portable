@@ -9,6 +9,7 @@
  */
 import { engineLabel, probeOf } from "@/lib/engines";
 import type { SetupModel } from "@/modules/setup/model";
+import { engineFact } from "@/modules/setup/readiness";
 import type { ThemeChoice, TypeScale } from "@/stores/settings";
 
 export const THEME_HINTS: Record<ThemeChoice, string> = {
@@ -58,9 +59,12 @@ export function engineSentence(model: SetupModel): string {
   }
   const chosen = probeOf(model.probes, model.engine);
   if (chosen?.state === "found") {
-    return `${engineLabel(model.engine)} runs the turns${
-      model.daemonHealth === "ready" && model.daemonEngine === model.engine ? ", and is running now" : ""
-    }.`;
+    // Found is the probe's word; a turn goes to the engine the daemon is on. Until the daemon runs
+    // on the chosen one, the sentence is the readiness module's, so the line and the badge agree.
+    if (model.daemonHealth === "ready" && model.daemonEngine === model.engine) {
+      return `${engineLabel(model.engine)} runs the turns, and is running now.`;
+    }
+    return `${engineFact(model).summary}.`;
   }
   return `${engineLabel(model.engine)} is chosen and cannot run a turn yet.`;
 }
