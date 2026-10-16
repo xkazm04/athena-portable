@@ -13,7 +13,7 @@ import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
 import { CONCEPTS } from "../data";
-import { CLEAR_LENS, SET_LENS_PARAMETERS } from "../components/atlas/tools/read";
+import { CLEAR_LENS, SET_LENS_PARAMETERS, setViewParameters } from "../components/atlas/tools/read";
 import { validateArgs } from "../../demo-kit/src/webmcp/door";
 import { parametersToJsonSchema } from "../../demo-kit/src/webmcp/types";
 
@@ -172,4 +172,15 @@ test("both controls that toggle the lens say whether it is on (WCAG 4.1.2)", () 
   const chip = buttonWithClass(source("pane/Pane.tsx"), "at-chip");
   assert.match(claim, /aria-pressed=\{/);
   assert.match(chip, /aria-pressed=\{/, `the pane's chip shows the lens by colour only: ${chip}`);
+});
+
+test("set_view's schema lets a variant with no views reach the handler that says so", () => {
+  /* Before the variant's module has answered, and for any variant without `meta.views`, the enum
+     is empty. An empty enum refuses every value at the door, so the handler's own answer ("draws
+     one arrangement and has no views") could never be given. */
+  const none = parametersToJsonSchema(setViewParameters([]));
+  assert.equal(validateArgs({ view: "lanes" }, none), null);
+  const two = parametersToJsonSchema(setViewParameters(["lanes", "turn"]));
+  assert.equal(validateArgs({ view: "turn" }, two), null);
+  assert.notEqual(validateArgs({ view: "matrix" }, two), null, "a closed set still refuses the rest");
 });

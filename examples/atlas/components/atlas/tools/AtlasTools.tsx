@@ -60,6 +60,7 @@ import {
   componentRead,
   conceptsRead,
   lensRead,
+  setViewParameters,
   systemRead,
   variantRow,
   viewDetail,
@@ -118,15 +119,7 @@ export function AtlasTools({
     name: "set_view",
     description:
       "Choose which arrangement the drawing is in. A view is the variant's own second axis, not the app's: the lanes drawing has two (lanes, the four owners as rows and the six moments as columns; turn, the same twelve nodes with the turn's own path made the primary reading order) and re-arranges the same nodes between them, keeping the level, the open phase and the lens. A variant may have none, in which case this tool says so rather than failing. Call with no argument to read the current arrangement and what else is available.",
-    parameters: [
-      {
-        name: "view",
-        type: "string",
-        required: false,
-        enum: [...metaViews],
-        description: "The arrangement. Omit to read the current one without changing it.",
-      },
-    ],
+    parameters: setViewParameters(metaViews),
     reversible: true,
     sideEffects: "none",
     handler: ({ view: asked }) => {
@@ -148,7 +141,7 @@ export function AtlasTools({
       if (live.views.length === 0) {
         return {
           ok: false as const,
-          error: `The ${variantRow(variant).label} variant draws one arrangement and has no views to switch between.`,
+          error: `The ${variantRow(variant).label} variant has published no views to switch between: it draws one arrangement, or it has not finished mounting.`,
           variant: variantRow(variant),
           hint: "read_view names the drawing and everything else that is true of this level.",
         };

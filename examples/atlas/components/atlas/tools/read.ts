@@ -82,6 +82,28 @@ const componentRow = (c: Component) => ({
 
 export const CONCEPT_KINDS: readonly ConceptKind[] = ["invariant", "tier", "act", "decision"];
 
+/**
+ * `set_view`'s one argument, for the views the mounted variant's `meta` declares.
+ *
+ * NO ENUM WHEN THERE ARE NO VIEWS. An empty enum is not "anything": the door refuses every value
+ * against it ("must be one of , got …"), so before the variant's module answers, and for a variant
+ * with no views at all, the handler's own refusal — which names the variant and says it draws one
+ * arrangement — was unreachable.
+ */
+export function setViewParameters(
+  views: readonly string[],
+): NonNullable<WebMCPToolSpec["parameters"]> {
+  return [
+    {
+      name: "view",
+      type: "string",
+      required: false,
+      ...(views.length > 0 ? { enum: [...views] } : {}),
+      description: "The arrangement. Omit to read the current one without changing it.",
+    },
+  ];
+}
+
 /** The word `set_lens` takes to clear the lens. */
 export const CLEAR_LENS = "none";
 
