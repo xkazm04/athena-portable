@@ -8,13 +8,16 @@ matter most: a bad answer is *counted* and never raised, and a spent purse makes
 from __future__ import annotations
 
 import json
+import subprocess
 from collections.abc import Mapping, Sequence
 from pathlib import Path
+from typing import Any
 
 import pytest
 
 from athena.harness.tokenfactory import LIGHTNING_MODEL, HttpReply
 from athena.proving.budget import CLAUDE, NEMOTRON, Budget, BudgetExhausted
+from athena.proving.report import write_report
 from athena.proving.roles import (
     HAIKU_MODEL,
     ClaudeRole,
@@ -31,6 +34,8 @@ from .conftest import FakeRole
 
 KEY = "nb-secret-key-0123456789"
 SCHEMA = {"type": "object", "properties": {"attacks": {"type": "array"}}, "required": ["attacks"]}
+#: What ``json.loads`` makes of a model's half-emoji escape: a str no UTF-8 file or pipe can hold.
+LONE = json.loads('"\\ud83d on goal"')
 
 
 def _completion(content: str) -> HttpReply:
@@ -167,6 +172,46 @@ def test_the_run_ledger_is_jsonl_on_disk(tmp_path: Path) -> None:
     log.record(role="judge", engine=CLAUDE, model="m", cost_usd=0.001, error_reason="weird")
     row = json.loads((tmp_path / "run" / "ledger.jsonl").read_text("utf-8"))
     assert row["error_reason"] == "unknown"  # the closed set, never a new column value
+
+
+# --- model text that no UTF-8 file can hold ------------------------------------------------------
+#
+# A judge's reason is checked for shape only, so a lone surrogate from its JSON rides into the
+# report. Before: write_report raised UnicodeEncodeError at the end of a paid run, leaving a cut
+# report.json and no report.md.
+
+
+def test_a_lone_surrogate_in_a_report_is_written_escaped_and_reads_back(tmp_path: Path) -> None:
+    report = {"attacks": [{"judge_reason": LONE, "valid": None}]}
+    json_path, md_path = write_report(tmp_path, report, f"# run\n\n{LONE}\n")
+    assert json.loads(json_path.read_text("utf-8")) == {"attacks": [{"judge_reason": LONE}]}
+    assert "\\ud83d on goal" in md_path.read_text("utf-8")
+
+
+def test_a_lone_surrogate_in_a_ledger_row_is_written_escaped(tmp_path: Path) -> None:
+    log = RunLog(tmp_path / "ledger.jsonl")
+    log.record(role="judge", engine=CLAUDE, model="m", error_reason="parse_error", excerpt=LONE)
+    row = json.loads((tmp_path / "ledger.jsonl").read_text("utf-8"))
+    assert row["excerpt"] == LONE
+
+
+def test_the_control_child_gets_a_lone_surrogate_escaped_never_a_crash(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    seen: dict[str, Any] = {}
+
+    def run(argv: Sequence[str], **kwargs: Any) -> subprocess.CompletedProcess[bytes]:
+        seen["stdin"] = kwargs["input"]
+        seen["system"] = Path(argv[list(argv).index("--system-prompt-file") + 1]).read_bytes()
+        record = {"is_error": False, "result": '{"ok": true}', "total_cost_usd": 0.001}
+        return subprocess.CompletedProcess(argv, 0, json.dumps(record).encode(), b"")
+
+    monkeypatch.setattr(subprocess, "run", run)
+    reply = ClaudeRole().complete(f"Grade. {LONE}", f"Fixture: {LONE}")
+
+    assert reply.ok, reply.detail
+    assert seen["stdin"] == b"Fixture: \\ud83d on goal"
+    assert seen["system"] == b"Grade. \\ud83d on goal"
 
 
 # --- small parts ----------------------------------------------------------------------------------

@@ -49,6 +49,7 @@ from athena.harness.tokenfactory import (
 )
 from athena.harness.transports import child_env
 from athena.proving.budget import CLAUDE, NEMOTRON, Budget, BudgetExhausted
+from athena.proving.report import TEXT_ERRORS
 from athena.proving.runlog import RunLog
 
 __all__ = [
@@ -243,7 +244,7 @@ def subprocess_runner(
     try:
         done = subprocess.run(
             list(argv),
-            input=stdin.encode("utf-8"),
+            input=stdin.encode("utf-8", errors=TEXT_ERRORS),
             capture_output=True,
             timeout=timeout,
             cwd=cwd,
@@ -275,7 +276,7 @@ class ClaudeRole:
         started = time.monotonic()
         with tempfile.TemporaryDirectory(prefix="athena-role-") as scratch:
             system_file = Path(scratch) / "system.md"
-            system_file.write_text(system, encoding="utf-8")
+            system_file.write_text(system, encoding="utf-8", errors=TEXT_ERRORS)
             argv = [
                 self.executable,
                 "-p",

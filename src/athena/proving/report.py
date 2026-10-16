@@ -18,9 +18,13 @@ from typing import Any
 
 from athena.contracts.registry import ExecResult
 
-__all__ = ["RUNS_DIRNAME", "announce", "new_run_dir", "prune", "write_report"]
+__all__ = ["RUNS_DIRNAME", "TEXT_ERRORS", "announce", "new_run_dir", "prune", "write_report"]
 
 RUNS_DIRNAME = "proving-runs"
+
+#: How the Proving Ground encodes model text for a file or a child's stdin: a character UTF-8
+#: cannot hold (a lone surrogate) becomes its ``\uXXXX`` escape instead of an exception.
+TEXT_ERRORS = "backslashreplace"
 
 
 def new_run_dir(base: str | Path = RUNS_DIRNAME, *, now: datetime | None = None) -> Path:
@@ -52,12 +56,18 @@ def announce(shown: int, total: int) -> str:
 
 
 def write_report(run_dir: Path, report: Mapping[str, Any], markdown: str) -> tuple[Path, Path]:
-    """Write both files. The JSON is pruned; the markdown is the caller's rendering of it."""
+    """Write both files. The JSON is pruned; the markdown is the caller's rendering of it.
+
+    Model text can hold a lone surrogate (``json.loads`` of a half-emoji escape), which no UTF-8
+    file can. It is written as its ``\\uXXXX`` escape — in the JSON that is the same string read
+    back — so the report of a paid run is never lost to one character.
+    """
     json_path = run_dir / "report.json"
     md_path = run_dir / "report.md"
     json_path.write_text(
         json.dumps(prune(report), indent=2, ensure_ascii=False, sort_keys=False) + "\n",
         encoding="utf-8",
+        errors=TEXT_ERRORS,
     )
-    md_path.write_text(markdown.rstrip() + "\n", encoding="utf-8")
+    md_path.write_text(markdown.rstrip() + "\n", encoding="utf-8", errors=TEXT_ERRORS)
     return json_path, md_path

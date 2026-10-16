@@ -23,6 +23,7 @@ from pathlib import Path
 from typing import Any
 
 from athena.contracts.harness import normalize_reason
+from athena.proving.report import TEXT_ERRORS
 
 __all__ = ["EXCERPT_CHARS", "RunLog"]
 
@@ -82,7 +83,7 @@ class RunLog:
         with self._lock:
             self.rows.append(row)
             if self.path is not None:
-                with self.path.open("a", encoding="utf-8") as handle:
+                with self.path.open("a", encoding="utf-8", errors=TEXT_ERRORS) as handle:
                     handle.write(line + "\n")
         return row
 
