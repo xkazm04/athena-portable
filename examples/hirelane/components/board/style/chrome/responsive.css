@@ -173,7 +173,7 @@
 
   /*
    * The dossier becomes a SHEET, and these two rules live here rather than in the
-   * `@container bd-dossier` block below because a container cannot style itself — the pane is
+   * `@container bd-dossier` blocks above because a container cannot style itself — the pane is
    * `container-name: bd-dossier`, so its own max-block-size and corners have to be set from the
    * container above it. The descendants that change with it are in that block.
    *

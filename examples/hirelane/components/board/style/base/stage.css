@@ -3,11 +3,10 @@
 /*
  * The stage holds what it is given at the top of the room.
  *
- * Centring was tried and is wrong: it pushed the board away from the filters
- * that operate it and left a gap in the middle of the reading order. The board
- * belongs directly under its own controls, and the room belongs under the
- * board, lit by the third bloom, with the register's two class bands closing
- * the page beneath it.
+ * Centring was tried and is wrong: it pushed the board away from the masthead
+ * that states it and left a gap in the middle of the reading order. The board
+ * belongs directly under its heading, and the room belongs under the board,
+ * lit by the third bloom, with the foot's one row closing the page beneath it.
  */
 .bd-stage {
   position: relative;

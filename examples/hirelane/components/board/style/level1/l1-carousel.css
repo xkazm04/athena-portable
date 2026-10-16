@@ -16,8 +16,8 @@
 
 /*
  * A grid, not a wrapping flex row. `justify-content: space-between` on a flex
- * row lets a long annotation grow past its own share of the line, and a
- * handwriting face at 22px does exactly that — the note ran under the page's
+ * row lets a long annotation grow past its own share of the line, and the
+ * margin note did exactly that when it was a 22px handwriting face — it ran under the page's
  * right padding and `.bd-stage { overflow-x: clip }` sliced it mid-word.
  * A track it cannot leave is the fix.
  */
@@ -146,7 +146,7 @@
   grid-template-rows: auto auto 1fr auto;
   /*
    * The card is sized to the room the level has, and the room is a viewport
-   * minus a masthead, a toolbar and a footer. Every step in here was one size
+   * minus a masthead and a footer. Every step in here was one size
    * looser than it needed to be, and together they pushed the stage-specific
    * fact — the one thing this level shows that no other does — out through
    * `overflow: hidden`. Tightened, the whole card fits at 900px with room to

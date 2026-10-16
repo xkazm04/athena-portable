@@ -97,7 +97,6 @@
   border-color: var(--bd-rule-2);
 }
 
-/* The verdict band: the numbers that decide, on one line. */
 /*
  * The figures, beside the name rather than in a box beneath it.
  *
@@ -157,7 +156,6 @@
   max-inline-size: var(--bd-measure-prose);
 }
 
-/* The two columns. */
 /*
  * The two columns.
  *

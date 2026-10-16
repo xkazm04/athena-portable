@@ -64,15 +64,3 @@
 .bd-root[data-level="2"] .bd-deck {
   display: none;
 }
-
-/*
- * The presence line: a READING, not a caption (DESIGN-LAW §8).
- *
- * `data-on` is the bridge, and it is the only thing on this surface allowed to change state
- * without the reader having done something — so it changes by a dot and a value step, never by
- * motion. The dot is deliberately not `--bd-auto`: connectedness is not reversibility, and
- * spending the locked hue here would cost the gate its signal (§4.2).
- */
-
-
-

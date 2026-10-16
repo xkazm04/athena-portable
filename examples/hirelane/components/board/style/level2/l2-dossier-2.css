@@ -315,7 +315,7 @@
  *
  * Seven of them share one row with two class sentences, and at --bd-s4 they needed about 124px
  * more than the row had, so the reversible zone wrapped. --bd-s3 is the step below on the same
- * scale (§1.1), it is what the chip and the rung in the toolbar already use, and it buys 56px
+ * scale (§1.1), it is what the select and the note field beside them already use, and it buys 56px
  * across the bar. The reach target is untouched: --bd-control still sets the height, which is the
  * dimension that matters for hitting one.
  */
