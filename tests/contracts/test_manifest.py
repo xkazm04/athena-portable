@@ -244,7 +244,6 @@ def test_the_side_effects_vocabulary_is_the_one_the_bridge_reads() -> None:
 #: here is a row both sides answer.
 PAGE_ORIGINS_ADMITTED = (
     "http://localhost:3001",
-    "http://127.0.0.1:3001",
     "https://ledger.test",
 )
 PAGE_ORIGINS_REFUSED = (
@@ -253,6 +252,8 @@ PAGE_ORIGINS_REFUSED = (
     "https://",
     "http://example.com",
     "http://localhost:99999",
+    # Refused before ADR 0119 as well; admitting it widens who may register (an owner call).
+    "http://127.0.0.1:3001",
 )
 
 

@@ -78,7 +78,8 @@ function pythonOrigins(name: string): string[] {
 test("the page origin table is the contract's, row for row (ADR 0119)", () => {
   const admitted = pythonOrigins("PAGE_ORIGINS_ADMITTED");
   const refused = pythonOrigins("PAGE_ORIGINS_REFUSED");
-  expect(admitted).toContain("http://127.0.0.1:3001");
+  expect(admitted).toContain("http://localhost:3001");
+  expect(refused).toContain("http://127.0.0.1:3001");
   expect(refused).toContain("http://localhost.evil.example");
   for (const origin of admitted) expect(registrable(origin), origin).toBe(true);
   for (const origin of refused) expect(registrable(origin), origin).toBe(false);
@@ -88,7 +89,8 @@ test("a plain http host that only starts with localhost is not offered", () => {
   const tools = [{ name: "read", title: null, description: "", inputSchema: {}, annotations: null, athena: null }];
   const offer = (origin: string) => manifestBodyOf({ origin, appId: null, appVersion: null, transport: null, tools });
   expect(offer("http://localhost.evil.example")).toBeNull();
-  expect(offer("http://127.0.0.1:3001")?.page_origin).toBe("http://127.0.0.1:3001");
+  expect(offer("http://127.0.0.1:3001")).toBeNull();
+  expect(offer("http://localhost:3001")?.page_origin).toBe("http://localhost:3001");
 });
 
 test("the companion's rows use the same id", () => {

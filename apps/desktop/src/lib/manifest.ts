@@ -130,7 +130,7 @@ export interface ManifestSource {
  * The hosts a page may register from over plain `http`: this machine, by exact name (ADR 0119).
  * `LOOPBACK_PAGE_HOSTS` in `src/athena/contracts/manifest.py` is the same list, held by a parity test.
  */
-export const LOOPBACK_PAGE_HOSTS = Object.freeze(["localhost", "127.0.0.1"]);
+export const LOOPBACK_PAGE_HOSTS = Object.freeze(["localhost"]);
 
 /**
  * Whether the daemon would take a manifest from `origin` (`page_origin_admitted`, which

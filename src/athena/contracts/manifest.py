@@ -52,7 +52,7 @@ MAX_PROPERTIES_PER_TOOL = 24
 
 #: The hosts a page may register from over plain ``http``: this machine, by exact name (ADR 0119).
 #: ``apps/desktop/src/lib/manifest.ts`` spells the same list; a parity test holds the two.
-LOOPBACK_PAGE_HOSTS: tuple[str, ...] = ("localhost", "127.0.0.1")
+LOOPBACK_PAGE_HOSTS: tuple[str, ...] = ("localhost",)
 
 
 def page_origin_admitted(origin: str) -> bool:
