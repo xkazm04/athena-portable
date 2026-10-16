@@ -112,11 +112,18 @@ export function Carousel({
       } else if (event.key === "ArrowLeft") {
         event.preventDefault();
         move(-1);
+      } else if ((event.key === "Enter" || event.key === " ") && event.target === el) {
+        /* The rail is what holds focus when the level arrives, so it is where Enter has to
+           land. Only on the rail itself: a key aimed at a slide button is that button's
+           click already, and handling it here as well would open twice. */
+        event.preventDefault();
+        const card = ordered[at];
+        if (card) onOpen(card.id);
       }
     };
     el.addEventListener("keydown", onKey);
     return () => el.removeEventListener("keydown", onKey);
-  }, [move]);
+  }, [move, ordered, at, onOpen]);
 
   /*
    * THE RAIL TAKES FOCUS WHEN THE LEVEL ARRIVES.
@@ -283,7 +290,7 @@ export function Carousel({
           →
         </button>
         <span className="bd-hint">
-          ← → to move · click the centre card to open
+          ← → to move · Enter or click the centre card to open
         </span>
       </div>
     </section>
