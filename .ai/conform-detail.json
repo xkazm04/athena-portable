@@ -3321,6 +3321,67 @@
         }
       ],
       "registryProposal": "In settings.md, author-declared-include-graph is listed in the frontmatter techniques array and exists as a technique file, but is omitted from the markdown summary list under ## The techniques."
+    },
+    "5059ed32-0465-4c97-bf66-5d4c9442e96f/agent-cli-transport": {
+      "context": "cli-and-wiring",
+      "subject": "agent-cli-transport",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T23:05:42.657Z",
+      "techniques": [
+        {
+          "technique": "availability-probe",
+          "verdict": "deviation",
+          "evidence": "src/athena/cli.py:175 The engine health check stage relies on credential file existence rather than a zero-token auth status command executed through the constructed spawn environment."
+        },
+        {
+          "technique": "child-observed-posture",
+          "verdict": "deviation",
+          "evidence": "tests/test_wiring.py:94 Wiring tests check host instantiation intent without verifying child-observed argv preservation, runtime sandbox readiness, or prompt injection arrival tokens."
+        },
+        {
+          "technique": "dated-capability-matrix",
+          "verdict": "deviation",
+          "evidence": "src/athena/wiring.py:433 CLI capability flags and options are baked into source code as timeless constants rather than maintained in a dated capability matrix with verification dates and methods."
+        },
+        {
+          "technique": "fallback-ladder",
+          "verdict": "deviation",
+          "evidence": "src/athena/wiring.py:262 Engine selection fails immediately on unknown or missing engines without a tiered degradation ladder to an alternate provider or a labeled deterministic floor."
+        },
+        {
+          "technique": "host-routed-approval-round-trip",
+          "verdict": "not-applicable",
+          "evidence": "tests/test_wiring.py:96 The child agent CLI runs with native tools suppressed via dontAsk; because Athena exposes only its own gated tools, there are no child native approvals to route."
+        },
+        {
+          "technique": "output-normalization",
+          "verdict": "deviation",
+          "evidence": "src/athena/wiring.py:298 The wiring layer delegates process output handling to CliHarness without configuring envelope dialect parsing, error stream separation, or a multi-rung extraction ladder."
+        },
+        {
+          "technique": "permission-stance-enforcement",
+          "verdict": "deviation",
+          "evidence": "src/athena/wiring.py:307 Applies static CLI arguments rather than implementing the contract's closed mode vocabulary (generate, readonly-scan, edit) or verifying backing OS sandbox classes."
+        },
+        {
+          "technique": "subscription-auth-selection",
+          "verdict": "deviation",
+          "evidence": "src/athena/wiring.py:285 Environment construction at the composition root sets working directory without defining or enforcing the stripping of metered billing keys or cloud routing switches."
+        },
+        {
+          "technique": "thread-custody-across-resume",
+          "verdict": "deviation",
+          "evidence": "tests/test_wiring.py:86 Wiring binds dialects without defining thread custody unbinding rules, plan folding, or state reseeding upon thread failure across resumes."
+        }
+      ],
+      "withdrawn": {
+        "worker": "34b0761e-cc6e-409c-850c-a0bc521f5872",
+        "state": "deviation",
+        "at": "2026-10-16T23:05:56.314471+00:00",
+        "reason": "reviewer (sonnet): The main claim says wiring has no permission stance enforcement, but wiring.py:307 passes `_default_args(dialect)`, which returns CLAUDE_EXTRA_ARGS for the Claude CLI, and tests/test_wiring.py:96 asserts that is `('--restricted','--permission-mode','dontAsk')`. The constants at wiring.py:433 are als"
+      }
     }
   }
 }
