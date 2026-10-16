@@ -91,6 +91,16 @@
   border-block-end-color: var(--bk-sheet);
 }
 
+/*
+ * The ring inverts with the ground. The sheet's ring is redline, 5.8:1 on the stock and 2.6:1 on
+ * --bk-graphite, which is under the 3:1 a focus indicator needs, on the only controls on the card
+ * that cannot be undone. Drawn in the sheet's colour it is 15:1. Same weight as the base ring in
+ * base/the-sheet.css and later in the cascade, so it wins without !important.
+ */
+.bk-title-block :where(button, select, input, a, [tabindex]):focus-visible {
+  outline-color: var(--bk-sheet);
+}
+
 .bk-title-block .bk-lettering,
 .bk-title-block .bk-lettering[data-ink="1"] {
   color: var(--bk-sheet);
