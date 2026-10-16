@@ -457,6 +457,26 @@ export function Allowlist({ row, model, go }: { row: ConnectorRow; model: Connec
     setDraft("");
   };
 
+  // A pressed Remove leaves with its row once the save lands (and is re-drawn disabled while it is
+  // in flight), so focus would fall to the document. It goes to the Remove now in that place, or
+  // the last one, or the draft once the list is empty; never when the person has moved on.
+  const editor = useRef<HTMLDivElement>(null);
+  const removedAt = useRef<number | null>(null);
+  const remove = (e: string, at: number) => {
+    removedAt.current = at;
+    actions.setAllowlist(row.id, row.allowlist.filter((x) => x !== e));
+  };
+  useEffect(() => {
+    const at = removedAt.current;
+    if (at === null || busy) return;
+    removedAt.current = null;
+    const active = document.activeElement;
+    if (active && active !== document.body && active.isConnected) return;
+    const removes = editor.current?.querySelectorAll<HTMLButtonElement>(".entries button") ?? [];
+    const next = removes.length ? removes[Math.min(at, removes.length - 1)] : editor.current?.querySelector("input");
+    next?.focus();
+  }, [row.allowlist, busy]);
+
   return (
     <section className="list" aria-label={`Allowed ${noun}`}>
       <header className="list__head">
@@ -474,19 +494,19 @@ export function Allowlist({ row, model, go }: { row: ConnectorRow; model: Connec
         </p>
       </header>
 
-      <div className="list__editor">
+      <div className="list__editor" ref={editor}>
         {row.error ? <ProblemNote title={`${row.label} refused.`} reason={row.error} tone="error" /> : null}
         {locked ? <p className="typo-caption accounts__locked">{row.disabledReason}</p> : null}
 
         <ul className="entries" aria-label={`Allowed ${noun}, as saved`}>
-          {row.allowlist.map((e) => (
+          {row.allowlist.map((e, i) => (
             <li key={e} className="entry">
               <code className="typo-code">{e}</code>
               <Button
                 size="sm"
                 variant="ghost"
                 aria-label={`Remove ${e}`}
-                onClick={() => actions.setAllowlist(row.id, row.allowlist.filter((x) => x !== e))}
+                onClick={() => remove(e, i)}
                 disabledReason={locked ? row.disabledReason : busy ? `${row.busy}…` : undefined}
               >
                 Remove

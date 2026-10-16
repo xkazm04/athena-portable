@@ -311,6 +311,35 @@ describe("the allow-list is a draft until Add", () => {
     ]);
   });
 
+  it("keeps the keyboard's place when an entry goes: on the next Remove, or the draft once the list is empty", () => {
+    // The pressed Remove leaves with its row once the save lands, so focus fell to the document
+    // and a keyboard user removing three entries had to find the list again each time.
+    const a = spies();
+    const draw = (allowlist: string[], busy = "") => {
+      const source = fixtures.heavy!;
+      const rows = source.rows.map((r) => (r.id === "notion" ? { ...r, allowlist, busy } : { ...r, busy: "" }));
+      act(() => root.render(<AccountsView model={{ ...source, rows, actions: a }} path={list("notion")} go={() => {}} />));
+    };
+    const remove = (e: string) => host.querySelector(`[aria-label="Remove ${e}"]`) as HTMLButtonElement;
+    const [first, second, third] = fixtures.heavy!.rows.find((r) => r.id === "notion")!.allowlist;
+    draw([first!, second!, third!]);
+    act(() => remove(second!).focus());
+    click(remove(second!));
+    draw([first!, third!], "saving");
+    draw([first!, third!]);
+    expect(document.activeElement).toBe(remove(third!));
+
+    act(() => remove(third!).focus());
+    click(remove(third!));
+    draw([first!]);
+    expect(document.activeElement).toBe(remove(first!));
+
+    act(() => remove(first!).focus());
+    click(remove(first!));
+    draw([]);
+    expect(document.activeElement).toBe(input());
+  });
+
   it("Add is refused with a reason when the draft is empty or already listed", () => {
     mount("heavy", list("notion"));
     expect(host.querySelector('[aria-label="Type something first."]')).toBeTruthy();
