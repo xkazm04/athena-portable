@@ -20,9 +20,11 @@
  *   2. §9.2  .dk-*    - a `.dk-*` CLASS selector redefined in a variant stylesheet (§1.6). The
  *                       match requires the opening brace, so a stylesheet may still explain the
  *                       rule it obeys in a comment.
- *   3. §4.2  colours  - a hex or rgb() literal outside the token block. #000 and #fff inside a
+ *   3. §4.2  colours  - a colour literal outside the token block, in any CSS notation (hex,
+ *                       rgb, hsl, hwb, lab, lch, oklab, oklch, color()). #000 and #fff inside a
  *                       mask-image or a box-shadow are alpha stops and ring geometry rather than
- *                       palette, and are exempt.
+ *                       palette, and a white or black plane at an alpha is light, not a hue; those
+ *                       literals are exempt, and the rest of their line is still read.
  *   4. §9.1  motion   - a raw duration, delay or spring constant typed into a `.ts`/`.tsx` file
  *                       under the direction. §1.3 is a scale exactly as §1.1 is, and until this
  *                       pass nothing read a TypeScript file: five hand-tuned spring constants and
@@ -61,9 +63,28 @@ const EXEMPTION = "§9.4 exception";
 const RAW_PX = /(?:^|[^-a-z0-9.])-?(?:\d+(?:\.\d+)?|\.\d+)px/i;
 /** A `.dk-*` class selector opening a rule. The brace is what separates a selector from prose. */
 const DK_RULE = /(^|[^-a-zA-Z0-9_`])\.dk-[a-zA-Z0-9_-]+[^{]*\{/;
-const COLOUR = /#[0-9a-fA-F]{3,8}\b|\brgba?\(/;
-/** Alpha stops and ring geometry, not palette. */
-const NOT_PALETTE = /mask-image|box-shadow|\brgba?\(\s*255\s+255\s+255\s*\/|\brgba?\(\s*0\s+0\s+0\s*\//;
+/**
+ * A colour literal, in every notation CSS accepts. It used to be hex and `rgb()` only, so the same
+ * hue typed as `hsl()` or `oklch()` was not a colour as far as §4.2's instrument could tell.
+ */
+const COLOUR = /#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch|color)\(/i;
+/** A white or black plane at an alpha: glass, a wash, a scrim. Light and shade, not palette. */
+const ALPHA_PLANE = /\brgba?\(\s*(?:255\s+255\s+255|0\s+0\s+0)\s*\/[^)]*\)/gi;
+/** Plain black and white, which on a mask or shadow line are alpha stops and ring geometry. */
+const BLACK_OR_WHITE = /#(?:000000|ffffff|000|fff)\b/gi;
+
+/**
+ * Whether a line still carries a colour once the exempt literals are taken OUT of it.
+ *
+ * The exemption used to be decided per line - any line naming `box-shadow` or `mask-image`, or
+ * holding one white or black plane, passed whole - so a hue written beside an exempt stop
+ * (`box-shadow: ... #e11d48`) was waved through by the stop next to it.
+ */
+function offLock(line) {
+  let rest = line.replace(ALPHA_PLANE, " ");
+  if (/mask-image|box-shadow/.test(line)) rest = rest.replace(BLACK_OR_WHITE, " ");
+  return COLOUR.test(rest);
+}
 
 /**
  * A motion value typed as a literal in TypeScript.
@@ -162,7 +183,7 @@ function checkDirection(slug) {
         rawPx += 1;
         failures.push(`  §9.1  ${where(i)}  raw px: ${line.trim()}`);
       }
-      if (COLOUR.test(line) && !NOT_PALETTE.test(line)) {
+      if (offLock(line)) {
         offLockColours += 1;
         failures.push(`  §4.2  ${where(i)}  colour outside the token block: ${line.trim()}`);
       }

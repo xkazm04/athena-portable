@@ -59,3 +59,39 @@ test("§9.1: a px inside a custom-property name or an identifier is not a length
   const { code, out } = lawOn(css("margin: var(--bd-gap-12px); grid-area: col-2px;"));
   assert.equal(code, 0, out);
 });
+
+test("§4.2: a colour typed in a component stylesheet fails, in any notation CSS accepts", () => {
+  for (const body of [
+    "color: #e11d48;",
+    "color: rgb(225 29 72);",
+    "color: hsl(347 77% 50%);",
+    "color: oklch(0.6 0.2 15);",
+    "color: lab(50% 60 20);",
+    "color: hwb(347 11% 12%);",
+    "color: color(display-p3 0.9 0.1 0.3);",
+  ]) {
+    const { code, out } = lawOn(css(body));
+    assert.equal(code, 1, `${body} passed:\n${out}`);
+    assert.match(out, /colour outside the token block/, body);
+  }
+});
+
+test("§4.2: the alpha-stop exemption covers black and white, not every colour on the line", () => {
+  // What the exemption is for: a mask's alpha stops and a white or black glass plane.
+  for (const body of [
+    "mask-image: linear-gradient(90deg, transparent, #000 8%, #000 92%, transparent);",
+    "background: rgb(255 255 255 / 7%);",
+  ]) {
+    const { code, out } = lawOn(css(body));
+    assert.equal(code, 0, `${body} failed:\n${out}`);
+  }
+  // What it is not: a hue riding on the same line as an exempt literal.
+  for (const body of [
+    "box-shadow: inset 0 0 0 var(--bd-s1) #e11d48;",
+    "mask-image: linear-gradient(#000, #e11d48);",
+    "background: linear-gradient(rgb(255 255 255 / 7%), #e11d48);",
+  ]) {
+    const { code, out } = lawOn(css(body));
+    assert.equal(code, 1, `${body} passed:\n${out}`);
+  }
+});
