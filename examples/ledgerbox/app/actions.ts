@@ -179,6 +179,10 @@ export async function matchAction(ref: string, lineId: string): Promise<MatchRes
   if (!resolved.ok) return fail(resolved.error);
   const invoiceId = resolved.id;
   const invoice = getInvoice(invoiceId)!;
+  // The same rule `mark_paid` reads: a credit applied to a draft or a void is money no total shows.
+  // Before the balance check, whose "more than the $0.00 still owed" is not why a void refuses.
+  const unowed = notADebt(invoice, "no credit can be applied to it");
+  if (unowed) return fail(unowed);
   const line = unappliedLines().find((l) => l.id === lineId);
   if (!line) return fail("That bank line is already applied elsewhere.");
   // The guard `markPaidAction` has always had. Without it any credit could be applied to any
@@ -297,7 +301,10 @@ export async function markPaidAction(ref: string, amountCents: number): Promise<
   if (!resolved.ok) return fail(resolved.error);
   const invoiceId = resolved.id;
   const invoice = getInvoice(invoiceId)!;
-  if (invoice.state === "void") return fail("A voided invoice cannot be paid.");
+  // A void was the only state refused, so a payment landed on a draft no total counts - money
+  // applied that shows nowhere, on the one act Undo cannot take back.
+  const unowed = notADebt(invoice, "no payment can be recorded against it");
+  if (unowed) return fail(unowed);
   // NaN is false on both comparisons below, so without this it passes every guard and reaches the
   // INSERT, where `amount_cents INTEGER NOT NULL` throws mid-action instead of answering the user.
   if (!Number.isFinite(amountCents)) return fail("That is not an amount.");

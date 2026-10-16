@@ -160,3 +160,43 @@ test("no reminder is drafted or sent for an invoice nobody owes: a draft, or a v
     "nothing was stamped sent",
   );
 });
+
+/** Payment rows and applied bank lines an invoice carries. */
+function moneyOn(invoiceId: string): { payments: number; matches: number } {
+  const handle = db();
+  return {
+    payments: handle.get<{ n: number }>("SELECT COUNT(*) AS n FROM payments WHERE invoice_id = ?", [invoiceId])!.n,
+    matches: handle.get<{ n: number }>("SELECT COUNT(*) AS n FROM matches WHERE invoice_id = ?", [invoiceId])!.n,
+  };
+}
+
+/** An incoming bank line nobody has applied, no larger than `cap`. */
+function creditUpTo(cap: number): { id: string; amount_cents: number } {
+  const line = db().get<{ id: string; amount_cents: number }>(
+    `SELECT id, amount_cents FROM bank_lines
+     WHERE direction = 'in' AND amount_cents <= ? AND id NOT IN (SELECT line_id FROM matches)
+     ORDER BY amount_cents DESC LIMIT 1`,
+    [cap],
+  );
+  assert.ok(line, `an unapplied credit of at most ${cap}`);
+  return line;
+}
+
+test("no money is recorded or applied against an invoice nobody owes: a draft, or a void", async () => {
+  // `mark_paid` refused only a void and `match_bank_line` neither, so $10.00 - or a whole bank
+  // credit - landed on the seed's draft, which no total counts: money applied that shows nowhere.
+  // mark_paid is PERMANENT, so not even Undo took it back.
+  const draft = listInvoices().find((r) => r.state === "draft")!;
+  const voided = listInvoices().find((r) => r.state === "void")!;
+  for (const invoice of [draft, voided]) {
+    const before = moneyOn(invoice.id);
+    const paid = await actions.markPaidAction(invoice.id, 1000);
+    assert.equal(paid.ok, false, `mark_paid on ${invoice.state}: ${paid.message}`);
+    assert.match(paid.message, new RegExp(`${invoice.number} is (a draft - it has not been sent|void)`));
+    const credit = creditUpTo(Math.max(invoice.balance_cents, 1_000_000));
+    const matched = await actions.matchAction(invoice.id, credit.id);
+    assert.equal(matched.ok, false, `match on ${invoice.state}: ${matched.message}`);
+    assert.match(matched.message, new RegExp(`${invoice.number} is (a draft - it has not been sent|void)`));
+    assert.deepEqual(moneyOn(invoice.id), before, `nothing landed on the ${invoice.state}`);
+  }
+});
