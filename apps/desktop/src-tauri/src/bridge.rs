@@ -259,6 +259,40 @@ impl Bridge {
         Settled::Late(event)
     }
 
+    /// The tab is gone: answer every call still waiting on it now, and forget the tab.
+    ///
+    /// Without this a call in flight when its tab closed waited out the relay's 35 s timer for a
+    /// page that no longer exists, with the run sitting in "acting" the whole time. The answer is
+    /// the timer's own `timeout`, said early: the call reached the page and may have run, which is
+    /// exactly what the surface reads as `outcome_unknown` for a write (ADR 0101). Nothing is kept
+    /// for a `late` answer, because there is no page left to send one, and tab ids are never
+    /// reused, so the nonce goes too.
+    pub fn drop_tab(&self, tab: u32) {
+        let prefix = format!("{tab}:");
+        let waiting: Vec<oneshot::Sender<Value>> = {
+            let mut state = self.lock();
+            let ids: Vec<String> = state
+                .pending
+                .keys()
+                .filter(|id| id.starts_with(&prefix))
+                .cloned()
+                .collect();
+            for id in &ids {
+                state.names.remove(id);
+            }
+            state.expired.remove(&tab);
+            state.nonces.remove(&tab);
+            ids.iter().filter_map(|id| state.pending.remove(id)).collect()
+        };
+        for tx in waiting {
+            let _ = tx.send(json!({
+                "ok": false,
+                "reason": "timeout",
+                "error": "the tab was closed before it answered",
+            }));
+        }
+    }
+
     #[cfg(test)]
     fn parked(&self) -> usize {
         self.lock().pending.len()
@@ -796,6 +830,47 @@ mod tests {
         );
         let newest = json!({ "type": "late", "call": ids[LATE_KEEP + 3].clone(), "ok": true });
         assert!(matches!(bridge.settle(6, newest), Settled::Late(_)));
+    }
+
+    /// Closing a tab mid-call: the page that would have answered is gone, so its callers are
+    /// answered at once rather than at the relay's 35 s timer. The answer is `timeout` because the
+    /// call reached the page and may have run, which is what ADR 0101 has the surface read as
+    /// `outcome_unknown` for a write; another tab's calls are untouched.
+    #[tokio::test]
+    async fn closing_a_tab_answers_its_waiting_calls_now_and_leaves_other_tabs_alone() {
+        let bridge = Bridge::default();
+        let (first, first_rx) = bridge.park_call(3, "send_invoice");
+        let (_list, list_rx) = bridge.park(3);
+        let (other, other_rx) = bridge.park(4);
+        let _ = bridge.nonce_for(3);
+
+        bridge.drop_tab(3);
+
+        let started = Instant::now();
+        let answer = awaited(&bridge, first.clone(), first_rx, Duration::from_secs(5)).await;
+        assert!(started.elapsed() < Duration::from_secs(1), "it waited for the timer");
+        assert_eq!(answer["ok"], json!(false));
+        assert_eq!(answer["reason"], json!("timeout"));
+        assert!(answer["error"].as_str().unwrap_or("").contains("closed"), "{answer}");
+        let listed = awaited(&bridge, String::new(), list_rx, Duration::from_secs(5)).await;
+        assert_eq!(listed["reason"], json!("timeout"));
+
+        assert_eq!(bridge.parked(), 1, "tab 4's call is still waiting");
+        assert!(
+            !bridge.lock().nonces.contains_key(&3),
+            "the closed tab's nonce is forgotten"
+        );
+        // Nothing of tab 3's is left for a `late` answer: there is no page to send one.
+        assert_eq!(
+            bridge.settle(3, json!({ "type": "late", "call": first, "ok": true })),
+            Settled::Ignored("a late event for a call that did not time out")
+        );
+        assert_eq!(
+            bridge.settle(4, json!({ "id": other.clone(), "ok": true, "output": "4" })),
+            Settled::Delivered
+        );
+        let fourth = awaited(&bridge, other, other_rx, Duration::from_secs(5)).await;
+        assert_eq!(fourth["output"], json!("4"));
     }
 
     #[test]

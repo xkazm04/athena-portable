@@ -273,6 +273,8 @@ pub fn close(app: &AppHandle, id: u32) -> Result<(), String> {
         let _ = webview.close();
     }
     app.state::<Tabs>().remove(id);
+    // A call still waiting on this page would otherwise wait out the relay's 35 s timer.
+    app.state::<crate::bridge::Bridge>().drop_tab(id);
     layout::apply(app);
     announce(app);
     Ok(())
