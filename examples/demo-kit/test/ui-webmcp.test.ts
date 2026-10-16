@@ -30,6 +30,34 @@ const gate = (await import(new URL("../../../packages/athena-bridge/gate.js", im
   SIDE_EFFECTS: readonly string[];
 };
 
+test("every object the door closes to unknown arguments is published closed", () => {
+  // The door refuses a key the schema does not name, at the top and inside any object that lists
+  // its properties. JSON Schema's default is the opposite, so a schema that does not say
+  // `additionalProperties: false` tells the model (and the core's validator) extras are fine.
+  const schema = parametersToJsonSchema([
+    { name: "id" },
+    { name: "row", type: "object", attributes: [{ name: "x" }] },
+    { name: "rows", type: "object[]", attributes: [{ name: "y" }] },
+  ]);
+  const ok = { id: "a", row: { x: "1" }, rows: [{ y: "2" }] };
+  assert.equal(validateArgs(ok, schema), null);
+  assert.match(validateArgs({ ...ok, extra: 1 }, schema) ?? "", /unknown argument "extra"/);
+  assert.match(validateArgs({ ...ok, row: { x: "1", z: 2 } }, schema) ?? "", /unknown argument "row\.z"/);
+  assert.match(validateArgs({ ...ok, rows: [{ y: "2", z: 2 }] }, schema) ?? "", /unknown argument "rows\[0\]\.z"/);
+
+  const open: string[] = [];
+  const walk = (node: unknown, at: string): void => {
+    if (!node || typeof node !== "object") return;
+    const n = node as { properties?: Record<string, unknown>; items?: unknown; additionalProperties?: unknown };
+    if (n.properties && n.additionalProperties !== false) open.push(at || "(top)");
+    for (const [k, v] of Object.entries(n.properties ?? {})) walk(v, at ? `${at}.${k}` : k);
+    walk(n.items, `${at}[]`);
+  };
+  walk(schema, "");
+  assert.deepEqual(open, []);
+  assert.deepEqual(parametersToJsonSchema([]).additionalProperties, false, "a tool with no arguments takes none");
+});
+
 /* ------------------------------------------------------- the page's own claim -- */
 
 const CLAIMS: { reversible: boolean; sideEffects: SideEffects }[] = [true, false].flatMap((reversible) =>

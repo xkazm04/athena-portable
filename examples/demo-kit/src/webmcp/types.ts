@@ -81,6 +81,7 @@ export interface JsonSchema {
   enum?: string[];
   maxItems?: number;
   description?: string;
+  additionalProperties?: boolean;
 }
 
 /**
@@ -124,7 +125,14 @@ function paramSchema(p: HostParameter): JsonSchema {
   return base;
 }
 
-/** `HostParameter[]` -> the JSON Schema the manifest publishes. */
+/**
+ * `HostParameter[]` -> the JSON Schema the manifest publishes.
+ *
+ * Every object it builds is closed (`additionalProperties: false`), because the execute door
+ * (./door.ts) refuses a key the schema does not name, and the published schema is the enforced one
+ * (mcp-tools/tool-schema-design): left open, it told the model and the core's validator that an
+ * extra argument was fine, and only the page said otherwise.
+ */
 export function parametersToJsonSchema(params: HostParameter[] = []): JsonSchema {
   const properties: Record<string, JsonSchema> = {};
   const required: string[] = [];
@@ -132,7 +140,7 @@ export function parametersToJsonSchema(params: HostParameter[] = []): JsonSchema
     properties[p.name] = paramSchema(p);
     if (p.required !== false) required.push(p.name);
   }
-  const schema: JsonSchema = { type: "object", properties };
+  const schema: JsonSchema = { type: "object", properties, additionalProperties: false };
   if (required.length > 0) schema.required = required;
   return schema;
 }
