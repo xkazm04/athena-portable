@@ -7,7 +7,9 @@
  * mentions a rule cannot satisfy the check for it.
  */
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readFileSync, readdirSync } from "node:fs";
+import { join, relative } from "node:path";
+import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
 import { CONCEPTS } from "../data";
@@ -55,4 +57,36 @@ test("the boundary's card is the failed state, and it offers the retry", () => {
   assert.ok(boundary, "no Placeholder under the boundary's failed branch");
   assert.match(boundary[1]!, /state="failed"/);
   assert.match(boundary[1]!, /retry=\{/);
+});
+
+/* --------------------------------------------------------------- the stylesheets -- */
+
+const STYLE = new URL("../components/atlas/style/", import.meta.url);
+const ATLAS = new URL("../components/atlas/", import.meta.url);
+
+/** Every .css file under a folder, as [path relative to components/atlas, text]. */
+function sheets(dir: URL): [string, string][] {
+  const out: [string, string][] = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true, recursive: true })) {
+    if (!entry.isFile() || !entry.name.endsWith(".css")) continue;
+    const full = join(entry.parentPath, entry.name);
+    out.push([relative(fileURLToPath(ATLAS), full).replaceAll("\\", "/"), readFileSync(full, "utf8")]);
+  }
+  return out;
+}
+
+const uncomment = (css: string): string => css.replace(/\/\*[\s\S]*?\*\//g, "");
+
+test("every @container query in the shell's stylesheets names a container the app declares", () => {
+  const declared = new Set<string>();
+  for (const [, css] of sheets(ATLAS)) {
+    for (const m of uncomment(css).matchAll(/container(?:-name)?\s*:\s*([\w-]+)/g)) declared.add(m[1]!);
+  }
+  const dangling: string[] = [];
+  for (const [path, css] of sheets(STYLE)) {
+    for (const m of uncomment(css).matchAll(/@container\s+([\w-]+)\s*\(/g)) {
+      if (!declared.has(m[1]!)) dangling.push(`${path}: @container ${m[1]}`);
+    }
+  }
+  assert.deepEqual(dangling, [], "a query on a container nothing declares never matches");
 });

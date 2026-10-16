@@ -235,11 +235,18 @@
   outline-offset: var(--at-rule-1);
 }
 
-@container at-plate (max-width: 720px) {
+/* The narrow pane. A viewport query, not a container one: the pane is `position: fixed`, so the
+   viewport IS its containing block, and the `@container at-plate` this used to be named a
+   container nothing declares and never matched. The grow's anchor moves with the top inset. */
+@media (max-width: 720px) {
   .at-pane {
     inset-block: var(--at-space-4);
-    width: calc(100cqi - var(--at-space-6));
+    width: calc(100vw - var(--at-space-6));
     padding: var(--at-space-4);
+  }
+
+  .at-pane[data-anchored] {
+    transform-origin: calc(var(--at-pane-ox) - 50vw + 50%) calc(var(--at-pane-oy) - var(--at-space-4));
   }
 }
 

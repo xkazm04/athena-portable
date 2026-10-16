@@ -223,12 +223,6 @@
   font-size: var(--at-text-label);
 }
 
-@container at-app (max-width: 720px) {
-  .at-mast-counts {
-    display: none;
-  }
-}
-
 @media (max-width: 720px) {
   .at-mast-counts {
     display: none;
