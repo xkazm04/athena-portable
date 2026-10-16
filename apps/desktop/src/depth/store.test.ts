@@ -106,6 +106,17 @@ describe("the hash mirror", () => {
     stop();
   });
 
+  it("rewrites a hash that changes later to one that is not a place, as it does at start", () => {
+    const w = fakeWindow("");
+    vi.stubGlobal("window", w);
+    const stop = startDepth();
+    w.location.hash = "#/nowhere/at/all"; // already at the surface, so no move would write it
+    w.fire("hashchange");
+    expect(useDepth.getState().path).toEqual({ root: null });
+    expect(w.location.hash).toBe("#/");
+    stop();
+  });
+
   it("leaves a canonical hash and an absent one alone", () => {
     for (const hash of ["#/mind/engine", ""]) {
       const w = fakeWindow(hash);

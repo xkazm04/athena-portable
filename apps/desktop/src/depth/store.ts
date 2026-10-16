@@ -75,6 +75,10 @@ export function startDepth(): () => void {
 
   const onHash = () => {
     const to = parseHash(window.location.hash);
+    // The same rule as at the start: the bar's URL says the place it resolved to. A move writes it
+    // too, but a hash that resolves to where the window already is makes no move.
+    const canonical = formatHash(to);
+    if (window.location.hash !== canonical) window.history.replaceState(null, "", canonical);
     if (!samePath(to, useDepth.getState().path)) useDepth.getState().go(to);
   };
   window.addEventListener("hashchange", onHash);
