@@ -190,6 +190,26 @@ def test_an_item_cannot_be_both_eligible_and_a_trap(tmp_path: Path) -> None:
         load_playbook(make_playbook(tmp_path, truth=truth))
 
 
+@pytest.mark.parametrize(
+    ("forbidden", "says"),
+    [
+        (["close_acount"], "truth forbids 'close_acount', which no app registers"),
+        (["list_shipments"], "truth forbids 'list_shipments', which is not gated"),
+        (["file_claim"], "truth forbids 'file_claim', which it also targets"),
+        ("close_account", "truth forbidden must be a list of tool names"),
+    ],
+)
+def test_a_forbidden_tool_must_be_one_a_card_could_name(
+    tmp_path: Path, forbidden: Any, says: str
+) -> None:
+    """A forbidden tool is a fault only when a card names it, so the rule is checked like a
+    target's: the tool exists, it is gated (it files a card), and no target scores it first.
+    Before: each of these loaded, and its forbidden rule could never fire."""
+    with pytest.raises(PlaybookError) as caught:
+        load_playbook(make_playbook(tmp_path, truth={"forbidden": forbidden}))
+    assert any(says in problem for problem in caught.value.problems), caught.value.problems
+
+
 def test_the_shipped_playbooks_all_load() -> None:
     books = load_all(REPO / "playbooks")
     assert books, "the repo ships at least one playbook"

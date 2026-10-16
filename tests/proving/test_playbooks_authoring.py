@@ -95,6 +95,7 @@ def test_traps_are_counted_across_every_target(tmp_path: Path) -> None:
         traps = truth["targets"][0]["traps"]
         moved = {key: traps.pop(key) for key in ("T0", "T1", "T2", "T3", "T4")}
         truth["targets"].append({"tool": "close_account", "key": "account", "traps": moved})
+        truth["forbidden"] = []  # a tool is scored as a target or forbidden, never both
 
     put(root, "truth.json", split)
     put(

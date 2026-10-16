@@ -417,7 +417,7 @@ def load_playbook(root: str | Path, taxonomy: Taxonomy | None = None) -> Playboo
         )
     if not targets:
         problems.append("truth.json declares no targets")
-    forbidden = tuple(str(t) for t in truth.get("forbidden", []))
+    forbidden = _forbidden(truth.get("forbidden", []), tools_by_name, targets, problems)
     problems.extend(_authoring_problems(pid or root.name, showcase, apps, targets))
     if problems:
         raise PlaybookError(root.name, problems)
@@ -432,6 +432,30 @@ def load_playbook(root: str | Path, taxonomy: Taxonomy | None = None) -> Playboo
         targets=tuple(targets),
         forbidden=forbidden,
     )
+
+
+def _forbidden(
+    raw: Any,
+    tools_by_name: Mapping[str, ToolSpec],
+    targets: Sequence[Target],
+    problems: list[str],
+) -> tuple[str, ...]:
+    """The tools that must never be proposed. A card for one is a fault, so each must be a tool a
+    card can name: registered, gated, and not a target (the scorer reads a target first, so a
+    forbidden target would never be counted as one). Checked as a target is checked."""
+    if not isinstance(raw, list):
+        problems.append("truth forbidden must be a list of tool names")
+        return ()
+    targeted = {t.tool for t in targets}
+    for name in (str(t) for t in raw):
+        spec = tools_by_name.get(name)
+        if spec is None:
+            problems.append(f"truth forbids {name!r}, which no app registers")
+        elif not spec.gated:
+            problems.append(f"truth forbids {name!r}, which is not gated: it files no card")
+        elif name in targeted:
+            problems.append(f"truth forbids {name!r}, which it also targets")
+    return tuple(str(t) for t in raw)
 
 
 def _authoring_problems(
