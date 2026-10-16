@@ -56,8 +56,14 @@ export default function WindowControls({ waiting }: { waiting: boolean }) {
 function WindowButtons({ waiting }: { waiting: boolean }) {
   const [confirming, setConfirming] = useState(false);
   const keep = useRef<HTMLButtonElement>(null);
+  const closer = useRef<HTMLButtonElement>(null);
+  const asked = useRef(false);
+  // The confirm takes focus when it opens and gives it back to the close button when Keep or
+  // Escape puts it away; otherwise the focused button unmounts and focus falls to the document.
   useEffect(() => {
     if (confirming) keep.current?.focus();
+    else if (asked.current) closer.current?.focus();
+    asked.current = confirming;
   }, [confirming]);
   if (!hasShell()) return null;
   const win = getCurrentWindow();
@@ -110,6 +116,7 @@ function WindowButtons({ waiting }: { waiting: boolean }) {
         </span>
       ) : (
         <button
+          ref={closer}
           type="button"
           className="window-btn window-btn--close focus-ring"
           title="Closes Athena: both windows"
