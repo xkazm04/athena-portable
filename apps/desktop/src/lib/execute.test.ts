@@ -6,7 +6,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
 import type { BridgeTool } from "@/lib/bridge";
-import { setHandsForTests } from "@/lib/hands";
+import { TABS_READ, isHandCall, setHandsForTests } from "@/lib/hands";
 
 import {
   clearUnsureForTests,
@@ -55,6 +55,22 @@ describe("readTimeout", () => {
   it("a hand the page did not register is read from the hands' own flags", () => {
     setHandsForTests([flagged("page_read", { reversible: true, side_effects: "none" })]);
     expect(isReadCall("page_read", [])).toBe(true);
+  });
+
+  it("tabs_read is read from the shell's hand even when the page registered one, as the call runs the hand (ADR 0105)", () => {
+    setHandsForTests([flagged(TABS_READ, { reversible: true, side_effects: "none" })]);
+    const pages = flagged(TABS_READ, { reversible: false, side_effects: "external" });
+    // callOnPage routes this call to the shell; the flags it is judged by must be the shell's.
+    expect(isHandCall(TABS_READ, [pages])).toBe(true);
+    expect(isReadCall(TABS_READ, [pages])).toBe(true);
+    expect(settleHostCall(`host.ledgerbox.${TABS_READ}`, { ok: false, output: "", reason: "timeout" }, [pages]).timeout).toBe("timeout");
+  });
+
+  it("any other page tool that shares a hand's name keeps the page's flags, as the call runs the page's (ADR 0065)", () => {
+    setHandsForTests([flagged("page_read", { reversible: true, side_effects: "none" })]);
+    const own = flagged("page_read", { reversible: false, side_effects: "external" });
+    expect(isHandCall("page_read", [own])).toBe(false);
+    expect(isReadCall("page_read", [own])).toBe(false);
   });
 });
 

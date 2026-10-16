@@ -19,7 +19,7 @@
 import { flagsOf } from "@athena/bridge/gate";
 
 import type { BridgeTool } from "@/lib/bridge";
-import { handTools } from "@/lib/hands";
+import { handTools, isHandCall } from "@/lib/hands";
 
 /** What a page (or a hand) answered one call with. `reason` is the closed-set code, when it gave one. */
 export interface PageAnswer {
@@ -50,11 +50,14 @@ export interface Held {
 
 /**
  * Is this call a read? Only a tool whose flags say reversible *and* no side effects (README 3.3).
- * The page's own tool wins over a hand of the same name (ADR 0065); a tool nobody describes is
- * not a read, so its timeout counts as "may have run".
+ * The flags read are those of the tool the call runs, chosen by {@link isHandCall} as `callOnPage`
+ * chooses it: the page's own tool wins over a hand of the same name (ADR 0065), except `tabs_read`,
+ * which always runs the shell's hand (ADR 0105). A tool nobody describes is not a read, so its
+ * timeout counts as "may have run".
  */
 export function isReadCall(bare: string, pageTools: readonly BridgeTool[]): boolean {
-  const tool = pageTools.find((t) => t.name === bare) ?? handTools().find((t) => t.name === bare);
+  const runs = isHandCall(bare, pageTools) ? handTools() : pageTools;
+  const tool = runs.find((t) => t.name === bare);
   if (!tool) return false;
   const flags = flagsOf(tool) as { reversible: boolean; side_effects: string };
   return flags.reversible === true && flags.side_effects === "none";
