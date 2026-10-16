@@ -29,7 +29,8 @@ interface Call {
 function daemon(initial: VoiceConfig) {
   const calls: Call[] = [];
   let config = initial;
-  let installs: InstallState[] = [];
+  /** What GET /voice/install answers, in order; "fail" is one 500 the poll has to ride out. */
+  let installs: Array<InstallState | "fail"> = [];
   let previewGate: Promise<void> = Promise.resolve();
   /** Held for the next transcribe call only, which then answers "the older take". */
   let transcribeGate: Promise<void> | null = null;
@@ -63,10 +64,13 @@ function daemon(initial: VoiceConfig) {
       return json({ engine, text: ` heard by ${engine} `, elapsed_ms: engine === "whisper" ? 300 : 900 });
     }
     if (path === "/voice/install" && method === "POST") {
-      return installs.length ? json(installs[0], 202) : json({ reason: "conflict", detail: "an install is running" }, 409);
+      return installs.length
+        ? json(installs[0], 202)
+        : json({ reason: "conflict", detail: "an install is running" }, 409);
     }
     if (path === "/voice/install" && method === "GET") {
       const next = installs.shift() ?? { component: null, state: "idle", received_bytes: 0, total_bytes: null, error: null };
+      if (next === "fail") return json({ reason: "engine_error", detail: "the install state could not be read" }, 500);
       return json(next);
     }
     return new Response(null, { status: 204 });
@@ -75,7 +79,7 @@ function daemon(initial: VoiceConfig) {
     calls,
     fetchImpl,
     setConfig: (next: VoiceConfig) => (config = next),
-    queueInstalls: (list: InstallState[]) => (installs = list),
+    queueInstalls: (list: Array<InstallState | "fail">) => (installs = list),
     holdPreviews: () => {
       let release = () => {};
       previewGate = new Promise((r) => (release = r));
@@ -243,6 +247,26 @@ describe("install", () => {
     expect(S().config?.ready).toBe(true);
     S().actions.studio({ t: "next" });
     expect(S().studio.step).toBe("pick");
+  });
+
+  it("one install read that fails does not end the poll: the bar keeps moving and settles", async () => {
+    const { d, waits } = wire(BARE_CONFIG);
+    await S().connect(AT);
+    const running: InstallState = {
+      component: "kokoro",
+      state: "downloading_engine",
+      received_bytes: 1,
+      total_bytes: 10,
+      error: null,
+    };
+    d.queueInstalls([running, "fail", { ...running, state: "extracting", received_bytes: 10 }, { ...running, state: "completed", received_bytes: 10 }]);
+    d.setConfig(READY_CONFIG);
+    S().actions.install("kokoro");
+    await settle();
+    await settle();
+    expect(S().install?.state).toBe("completed");
+    expect(S().installError).toBeNull();
+    expect(waits.length).toBe(4);
   });
 
   it("a second install while one runs is said, not thrown", async () => {

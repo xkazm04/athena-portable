@@ -17,7 +17,8 @@
  * - **A column shows the newest take.** A transcript of an older take that lands after a newer
  *   take began is dropped, as an older preview's reply is.
  * - **An install is polled every 250 ms while it runs**, and only while it runs. The poll ends on
- *   any settled phase and the config is read again, so "installed" is the daemon's word.
+ *   any settled phase and the config is read again, so "installed" is the daemon's word. A read
+ *   that fails is shown and asked again; it does not end the poll.
  *
  * Every outside thing is an argument (`VoiceSetupDeps`), swapped wholesale in `live.test.ts`.
  */
@@ -176,15 +177,22 @@ export const useVoiceSetup = create<VoiceSetupState>((set, get) => {
   async function poll(): Promise<void> {
     if (rt.polling) return;
     rt.polling = true;
+    // The refusal a failed read put up, so the next good read takes down that one and no other.
+    let shown: string | null = null;
     try {
       while (rt.api && ACTIVE_INSTALL.has(get().install?.state ?? "idle")) {
         await deps.wait(INSTALL_POLL_MS);
         if (!rt.api) break;
         const out = await rt.api.installState();
         if (!out.ok) {
-          set({ installError: refusalText(out) });
-          break;
+          // One read that fails is not the install ending: the daemon is still writing, so the poll
+          // asks again. It stops when the daemon goes (connect(null) clears the api) or settles.
+          shown = refusalText(out);
+          set({ installError: shown });
+          continue;
         }
+        if (shown !== null && get().installError === shown) set({ installError: null });
+        shown = null;
         set({ install: out.value });
       }
     } finally {

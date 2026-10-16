@@ -78,6 +78,8 @@ export function InstallBlock({
             style={view.percent === null ? undefined : { transform: `scaleX(${Math.min(1, Math.max(0, view.percent / 100))})` }}
           />
         </span>
+        {/* A read of the running install that failed: the bar holds still until the next one lands. */}
+        {refusal ? <p className="typo-caption vs-error">{refusal}</p> : null}
       </div>
     );
   }
