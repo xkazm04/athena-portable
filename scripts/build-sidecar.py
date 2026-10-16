@@ -75,10 +75,27 @@ DATAS = [(ROOT / "constitution", "constitution")]
 PLAYBOOK_FILES = ("playbook.json", "world.json", "truth.json")
 LIBRARY_FILES = ("taxonomy.json",)
 
-#: Package data that lives beside its module: ``athena.adopt.legs`` reads ``tiers.json`` from its
-#: own directory, which in a frozen binary is ``_MEIPASS/athena/adopt``. Without it the daemon
-#: answers ``POST /adopt`` with 503 ``engine_error`` naming the missing file.
-PACKAGE_FILES = [(ROOT / "src" / "athena" / "adopt" / "tiers.json", "athena/adopt")]
+#: Package data that lives beside its module, read as ``Path(__file__).parent / ...``, which in a
+#: frozen binary is ``_MEIPASS/athena/<package>``: ``athena.adopt.legs`` reads ``tiers.json``
+#: (without it ``POST /adopt`` answers 503), and ``athena.connectors.spec`` globs
+#: ``connectors/builtin/*.json`` (without them the vault's catalog is silently empty). So every
+#: JSON file under ``src/athena`` ships, found rather than listed, and a new connector spec ships
+#: the day it lands. The proving ground's are left out: the tier bench's scenarios and the hosted
+#: proving server belong to ``python -m athena.proving``, which the sidecar cannot run.
+PACKAGE_DATA = "*.json"
+PACKAGE_EXCLUDED = ("proving",)
+
+
+def package_files(root: Path = ROOT) -> list[tuple[Path, str]]:
+    """Every package data file, ``(source, its package's directory in the bundle)``."""
+    package = root / "src" / "athena"
+    files: list[tuple[Path, str]] = []
+    for source in sorted(package.rglob(PACKAGE_DATA)):
+        rel = source.relative_to(package)
+        if rel.parts[0] in PACKAGE_EXCLUDED or "__pycache__" in rel.parts:
+            continue
+        files.append((source, (Path("athena") / rel.parent).as_posix()))
+    return files
 
 
 def data_files(root: Path = ROOT) -> list[tuple[Path, str]]:
@@ -98,8 +115,7 @@ def data_files(root: Path = ROOT) -> list[tuple[Path, str]]:
             for name in PLAYBOOK_FILES
             if (directory / name).is_file()
         ]
-    package = [(root / src.relative_to(ROOT), dest) for src, dest in PACKAGE_FILES]
-    return files + package
+    return files + package_files(root)
 
 
 def add_data_args(root: Path = ROOT) -> list[str]:
