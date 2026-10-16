@@ -185,6 +185,11 @@ export async function matchAction(ref: string, lineId: string): Promise<MatchRes
   if (unowed) return fail(unowed);
   const line = unappliedLines().find((l) => l.id === lineId);
   if (!line) return fail("That bank line is already applied elsewhere.");
+  // The pool is every line nobody matched, debits included, and a debit's amount is stored
+  // positive: without this the studio's own subscription settled part of a client's invoice.
+  if (line.direction !== "in") {
+    return fail(`"${line.memo}" is money paid out, not received - it cannot settle ${invoice.number}.`);
+  }
   // The guard `markPaidAction` has always had. Without it any credit could be applied to any
   // invoice: the balance goes negative, `stateOf` calls it paid, and `summarize` subtracts the
   // overshoot from `outstanding_cents` while the export's positive-balance table does not - two

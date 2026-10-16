@@ -200,3 +200,21 @@ test("no money is recorded or applied against an invoice nobody owes: a draft, o
     assert.deepEqual(moneyOn(invoice.id), before, `nothing landed on the ${invoice.state}`);
   }
 });
+
+test("a bank line of money paid out cannot be applied to an invoice as money received", async () => {
+  // `unappliedLines` is every line nobody matched, debits included, and `match_bank_line` took any
+  // of them: the studio's own FIGMA ORG SEAT subscription settled $90.00 of a client's invoice.
+  const owed = fresh("overdue");
+  const debit = db().get<{ id: string; memo: string; amount_cents: number }>(
+    `SELECT id, memo, amount_cents FROM bank_lines
+     WHERE direction = 'out' AND amount_cents <= ? AND id NOT IN (SELECT line_id FROM matches)
+     ORDER BY amount_cents DESC LIMIT 1`,
+    [owed.balance_cents],
+  );
+  assert.ok(debit, "the seed has an unapplied debit smaller than the invoice");
+  const before = moneyOn(owed.id);
+  const matched = await actions.matchAction(owed.id, debit.id);
+  assert.equal(matched.ok, false, matched.message);
+  assert.match(matched.message, /paid out/);
+  assert.deepEqual(moneyOn(owed.id), before, "no payment and no match for a debit");
+});
