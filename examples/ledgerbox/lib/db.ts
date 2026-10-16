@@ -236,23 +236,23 @@ export const COUNTED_OUT: InvoiceState[] = ["void", "draft"];
  * exclusion - so on a month it disagreed with its neighbours by most of its own value while the
  * four printed side by side under one heading in the export and the reports row. On the quarter the
  * two bases coincide, which is why the default view never showed it.
+ *
+ * So `collected_cents` is every payment recorded against those invoices, WHENEVER it arrived. It
+ * used to keep a second filter on the payment's own date, which made it neither basis: a June
+ * invoice paid in July left June's Collected and joined no other month's, and June's close printed
+ * Invoiced $1,594,825 over Collected $40,357 and Outstanding $916,816 - $637,652 short of adding up.
+ * Accrual means invoiced = collected + outstanding on every period, and the test pins exactly that.
  */
 export const summarize = cache((period: Period): PeriodSummary => {
   const rows = listInvoices().filter((r) => inPeriod(r.issued_at, period) && !COUNTED_OUT.includes(r.state));
   const lines = unappliedLines().filter((l) => l.direction === "in" && inPeriod(l.posted_at, period));
   const overdue = rows.filter((r) => r.days_overdue > 0);
   const collected = db()
-    .all<{ amount_cents: number; paid_at: string; issued_at: string; status: Invoice["status"] }>(
-      `SELECT p.amount_cents, p.paid_at, i.issued_at, i.status
+    .all<{ amount_cents: number; issued_at: string; status: Invoice["status"] }>(
+      `SELECT p.amount_cents, i.issued_at, i.status
        FROM payments p JOIN invoices i ON i.id = p.invoice_id`,
     )
-    .filter(
-      (p) =>
-        inPeriod(p.paid_at, period) &&
-        inPeriod(p.issued_at, period) &&
-        p.status !== "void" &&
-        p.status !== "draft",
-    )
+    .filter((p) => inPeriod(p.issued_at, period) && p.status !== "void" && p.status !== "draft")
     .reduce((sum, p) => sum + p.amount_cents, 0);
 
   return {
