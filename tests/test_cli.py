@@ -11,6 +11,7 @@ the entry point is a line in ``pyproject.toml`` and a line nothing runs is a lin
 
 from __future__ import annotations
 
+import io
 import json
 import subprocess
 import sys
@@ -137,6 +138,26 @@ def test_the_cause_is_the_first_non_ok_stage_whatever_its_status() -> None:
 
     assert report["cause"] == "brain"
     assert report["ok"] is False
+
+
+def test_a_brain_path_outside_the_pipes_code_page_still_prints_one_json_object(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A Windows pipe is cp1252 unless someone says otherwise, and a home like ``C:\\Users\\Jiří``
+    has a letter cp1252 cannot spell. The answer is still one JSON object, readable whatever the
+    pipe's code page, carrying the path exactly."""
+    root = tmp_path / "Jiří" / "brain"
+    raw = io.BytesIO()
+    pipe = io.TextIOWrapper(raw, encoding="cp1252", newline="\n")
+    monkeypatch.setattr(sys, "stdout", pipe)
+
+    code = main(["doctor", "--brain", str(root)])
+
+    pipe.flush()
+    report = json.loads(raw.getvalue().decode("cp1252"))
+    assert code == 0
+    brain = next(stage for stage in report["stages"] if stage["name"] == "brain")
+    assert str(root) in brain["detail"]
 
 
 def test_a_status_outside_the_closed_set_is_a_programming_error() -> None:

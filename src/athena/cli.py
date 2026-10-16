@@ -27,7 +27,8 @@ Three verbs, because three are what this build has a person do from a terminal.
     still works.
 
 Every command prints one JSON object on stdout and nothing else, so a shell, a test and the
-desktop shell all read the same answer.
+desktop shell all read the same answer. It is ASCII-escaped, so a path the pipe's code page cannot
+spell still arrives as JSON rather than as a traceback.
 """
 
 from __future__ import annotations
@@ -245,7 +246,10 @@ def doctor_report(stages: list[Stage]) -> dict[str, Any]:
 
 
 def _emit(payload: dict[str, Any]) -> None:
-    json.dump(payload, sys.stdout, ensure_ascii=False, indent=1)
+    """One JSON object, ASCII-escaped: a Windows pipe is cp1252 unless someone set otherwise, and
+    a brain under ``C:\\Users\\Jiří`` would raise half-way through the object rather than print it.
+    Every JSON reader turns ``\\u0159`` back into the letter."""
+    json.dump(payload, sys.stdout, ensure_ascii=True, indent=1)
     sys.stdout.write("\n")
     sys.stdout.flush()
 
