@@ -120,3 +120,21 @@ test("every class the shell's stylesheets style is one some component renders", 
   }
   assert.deepEqual([...unused], [], "a rule for a class nothing renders is a rule nobody can see");
 });
+
+/**
+ * Every token the token file declares outside its raw ramps is spent: read by a `var()` in some
+ * stylesheet (the token file's own alias layer included), or by name from script (`useTokens`).
+ * The ramps (spacing, type size) are a deliberate set whose unused steps are still the scale; the
+ * breakpoints are spent by `design/check-tokens.mjs`, which a query condition has to match.
+ */
+test("every role the token file declares is spent somewhere", () => {
+  const tokens = readFileSync(new URL("base/tokens.css", STYLE), "utf8");
+  const declared = [...uncomment(tokens).matchAll(/^\s*(--at-[\w-]+)\s*:/gm)].map((m) => m[1]!);
+  const ramp = /^--at-(space|text|bp)-/;
+  const css = sheets(ATLAS).map(([, text]) => uncomment(text)).join("\n");
+  const script = markup();
+  const unspent = [...new Set(declared)].filter(
+    (t) => !ramp.test(t) && !css.includes(`var(${t})`) && !script.includes(`"${t}"`),
+  );
+  assert.deepEqual(unspent, [], "a token nothing reads is a decision nobody is making");
+});
