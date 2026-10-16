@@ -152,8 +152,10 @@
   color: var(--bk-greenline);
 }
 
-/* A nought that counts nothing. Set back, but never below the rule ink it would then be read
-   against — --bk-graphite-3 is the floor for a figure, and it is not carrying meaning here. */
+/* A nought that counts nothing. Set back to the label's ink, which is still half the figure ink's
+   contrast and still read: "0 rows changed" is a figure someone reads, and the floor in
+   base/tokens.css stops text at --bk-graphite-2. It was --bk-graphite-3, 3.8:1 on the sheet and
+   3.3:1 on the dossier's vellum. */
 .bk-stat[data-quiet="true"] > b {
-  color: var(--bk-graphite-3);
+  color: var(--bk-label-ink);
 }

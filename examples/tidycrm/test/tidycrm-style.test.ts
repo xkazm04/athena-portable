@@ -284,3 +284,26 @@ test("every class the sheet styles is one the app renders", () => {
   assert.ok(styled.size > 50, `only ${styled.size} classes read off the sheet`);
   assert.deepEqual(unrendered, [], "the sheet styles classes no component renders");
 });
+
+test("every word and figure the sheet sets clears 4.5:1 on its ground", () => {
+  // base/tokens.css: "anything a reader reads stops at --bk-graphite-2". --bk-graphite-3 (3.8:1
+  // on the sheet, 3.3:1 on the vellum) and --bk-graphite-4 are rule and mark tones. A disabled
+  // control is the one exemption the floor allows.
+  const low: string[] = [];
+  for (const rule of RULES) {
+    const colour = rule.decls.get("color");
+    if (!colour || /currentColor|inherit/.test(colour) || /:disabled/.test(rule.selector)) continue;
+    const own = rule.decls.get("background") ?? rule.decls.get("background-color");
+    const grounds =
+      own && own !== "none"
+        ? [own]
+        : rule.selector.startsWith(".bk-title-block")
+          ? [INVERTED]
+          : SHEET_GROUNDS;
+    for (const ground of grounds) {
+      const r = ratio(colour, ground);
+      if (r < 4.5) low.push(`${rule.selector} on ${ground}: ${r.toFixed(2)}:1`);
+    }
+  }
+  assert.deepEqual(low, [], `text under 4.5:1:\n  ${low.join("\n  ")}`);
+});
