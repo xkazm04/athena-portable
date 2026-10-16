@@ -394,7 +394,7 @@ async function main() {
           words_per_second: wps,
           chars_per_second: cps || null,
           voices: Object.fromEntries(roles.map((r) => [r, null])),
-          beats: entries,
+          beats: await mergedBeats(manifestPath, entries),
         },
         null,
         2,
@@ -507,7 +507,7 @@ async function main() {
             { name: cast[r].name, voice_id: cast[r].voice_id },
           ]),
         ),
-        beats: entries,
+        beats: await mergedBeats(manifestPath, entries),
       },
       null,
       2,
@@ -519,6 +519,27 @@ async function main() {
     console.error(`\n${failures.length} beat(s) failed: ${failures.map((f) => f.id).join(', ')}`);
     process.exit(5);
   }
+}
+
+/**
+ * The manifest's beats, merged the way durations.json is: this run's entries replace their own ids
+ * and every other beat keeps the entry it had. A manifest that only listed the --only beats would
+ * stop src/script.ts noticing that one of the others was rewritten after its clip was recorded:
+ * isStale is silent about a beat the manifest never mentions, so the take would trust the old
+ * clip's length for the new line.
+ */
+async function mergedBeats(manifestPath, entries) {
+  let previous = [];
+  if (existsSync(manifestPath)) {
+    try {
+      const held = JSON.parse(await readFile(manifestPath, 'utf8')).beats;
+      if (Array.isArray(held)) previous = held;
+    } catch {
+      previous = [];
+    }
+  }
+  const fresh = new Set(entries.map((e) => e.id));
+  return [...previous.filter((b) => b && typeof b.id === 'string' && !fresh.has(b.id)), ...entries];
 }
 
 function report(entries, durations, allBeats, headline) {
