@@ -195,7 +195,7 @@ to be opposite to. Each row is checked against the code named beside it:
 | Primary axis | stage, across columns | `lib/constants.ts` `STAGES` |
 | Type voice | Sora display / Plus Jakarta Sans text / JetBrains Mono figures | `app/layout.tsx` — the three `next/font/google` faces |
 | Unscored | no bar at all, and an em dash where a number would be | `components/board/carousel/Slide.tsx:107` |
-| Comparison | signed diff list, widest gap first, each side quoting its own evidence | `components/board/model/order.ts` `diff()` |
+| Comparison | each criterion on an L1 card as a signed distance from the median of the column's scored candidates; the unscored are not in the field | `components/board/model/order.ts` `criterionMedians()` |
 
 ## 6. LAW FOUR §4.1 — copy allow-list compliance
 

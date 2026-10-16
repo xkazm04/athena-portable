@@ -43,27 +43,6 @@ export interface Applicant {
   gap_criterion_id: string | null;
 }
 
-export interface Note {
-  id: number;
-  applicant_id: string;
-  ts: string;
-  author: "user" | "athena" | "system";
-  /** `rubric` notes carry a scorecard; `note` notes are free text. */
-  kind: "note" | "rubric";
-  body: string;
-  scores: CriterionScore[] | null;
-}
-
-export interface StageEvent {
-  id: number;
-  applicant_id: string;
-  ts: string;
-  from_stage: Stage | null;
-  to_stage: Stage;
-  actor: "user" | "athena" | "system";
-  reason: string;
-}
-
 export interface Slot {
   id: string;
   interviewer: string;
@@ -91,12 +70,6 @@ export interface CriterionScore {
   score: number;
   weight: number;
   evidence: string[];
-}
-
-/** A stage column on the board. */
-export interface StageCount {
-  stage: Stage;
-  count: number;
 }
 
 /** What the board needs to know about an applicant without opening them. */

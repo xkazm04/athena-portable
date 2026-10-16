@@ -6,7 +6,6 @@
  * anything but the words the applicant wrote about their work - there is no other input, because
  * there is no other input in the data (see the README on bias mitigations).
  */
-import { SCORE_LABEL } from "./constants";
 import type { Criterion, CriterionScore } from "./types";
 
 /** Split prose into sentences worth quoting. Keeps the trailing punctuation. */
@@ -64,10 +63,6 @@ export function overallScore(scores: CriterionScore[]): number {
   if (weight === 0) return 0;
   const total = scores.reduce((sum, s) => sum + s.score * s.weight, 0);
   return Math.round((total / weight) * 10) / 10;
-}
-
-export function scoreLabel(score: number): string {
-  return SCORE_LABEL[Math.max(0, Math.min(4, Math.round(score)))] ?? "unscored";
 }
 
 /** The criterion with no evidence at all, when the rest of the card is strong. */

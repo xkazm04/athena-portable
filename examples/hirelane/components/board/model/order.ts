@@ -1,18 +1,11 @@
 /**
  * Finding one candidate or one column, and the order they compare in.
  *
- * `diff` is the head-to-head: the criteria where two people actually differ,
- * widest gap first, so a reader is shown the argument rather than left to
- * subtract two lists of five numbers.
+ * The comparison the board draws is `criterionMedians`: each criterion on an L1
+ * card as a signed distance from the middle of the column's scored field.
  */
 
-import type {
-  BdCandidate,
-  BdColumn,
-  BdCriterion,
-  BdRole,
-  BdScore,
-} from "./candidates";
+import type { BdCandidate, BdColumn, BdRole } from "./candidates";
 
 /**
  * Best first, unscored strictly last.
@@ -47,36 +40,7 @@ export function candidateOf(role: BdRole, id: string | null): BdCandidate | unde
   return undefined;
 }
 
-export function scoreFor(candidate: BdCandidate, criterionId: string): BdScore | undefined {
-  return candidate.scores.find((s) => s.criterionId === criterionId);
-}
-
 /* -------------------------------------------------------------- comparison */
-
-export interface BdDiff {
-  criterion: BdCriterion;
-  a: BdScore | undefined;
-  b: BdScore | undefined;
-  /** Positive when A is ahead. */
-  delta: number;
-}
-
-/**
- * What separates two candidates, widest gap first.
- *
- * A hiring manager does not need to be told that somebody is a 3.4. They need
- * to be told where the two people in front of them differ, and what each one
- * wrote to earn it.
- */
-export function diff(criteria: BdCriterion[], a: BdCandidate, b: BdCandidate): BdDiff[] {
-  return criteria
-    .map((criterion) => {
-      const sa = scoreFor(a, criterion.id);
-      const sb = scoreFor(b, criterion.id);
-      return { criterion, a: sa, b: sb, delta: (sa?.score ?? 0) - (sb?.score ?? 0) };
-    })
-    .sort((x, y) => Math.abs(y.delta) - Math.abs(x.delta));
-}
 
 /**
  * Per-criterion median among the SCORED candidates in a column.

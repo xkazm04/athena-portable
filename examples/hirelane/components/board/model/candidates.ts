@@ -143,9 +143,3 @@ export interface BdBoard {
    *  import the constants module just to render a column heading. */
   stageLabel: Record<Stage, string>;
 }
-
-/** One role's slice of one stage: the thing the board opens. */
-export interface BdColumnGroup {
-  role: BdRole;
-  column: BdColumn;
-}
