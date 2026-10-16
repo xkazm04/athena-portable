@@ -194,6 +194,28 @@ test("every id the template interpolates into a selector goes through CSS.escape
   assert.deepEqual(raw, [], "an id pasted into a selector unescaped");
 });
 
+test("every class the template puts on a button says it is clickable, as the kit's controls do", () => {
+  // The kit's clickable classes (.dk-btn, .dk-nav-link, .dk-table-row) carry a pointer or a hover
+  // ground; a row button with neither reads as a static list.
+  const sheets = templateCss() + readFileSync(join(KIT, "src", "ui", "demo-kit.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const classes = new Set<string>();
+  for (const { text } of payload().filter(({ file }) => file.endsWith(".tsx"))) {
+    for (const m of text.matchAll(/<button\b[^>]*?className="([^"]+)"/g)) {
+      for (const c of m[1]!.split(/\s+/)) classes.add(c);
+    }
+  }
+  assert.ok(classes.size > 0, "the template draws no class-styled button; this test has nothing to read");
+  const missing: string[] = [];
+  for (const c of classes) {
+    const esc = c.replace(/[-]/g, "\\-");
+    const base = new RegExp(String.raw`\.${esc}\s*\{[^}]*cursor\s*:\s*pointer`).test(sheets);
+    const hover = new RegExp(String.raw`\.${esc}:hover\s*\{`).test(sheets);
+    if (!base) missing.push(`.${c} has no pointer cursor`);
+    if (!hover) missing.push(`.${c} has no :hover state`);
+  }
+  assert.deepEqual(missing, []);
+});
+
 test("a template file that sends the reader to a README appendix sends them to one that exists", () => {
   const readme = readFileSync(join(TEMPLATE, "README.md"), "utf8");
   const hasAppendix = /^#+\s.*appendix/im.test(readme);
