@@ -70,7 +70,7 @@ export interface LevelFlight {
 export interface LevelFlightOptions {
   /**
    * A `--*` duration token naming this surface's level-change budget, e.g. `"--ln-dur-4"`.
-   * Read once per flight, off `el`, so the fallback and the CSS move cannot drift.
+   * Read off `el` when a flight needs it, so the fallback and the CSS move cannot drift.
    *
    * A LIST is SUMMED, which is the answer to round 2's `calc()` gap: an unregistered custom
    * property comes back from the cascade unresolved, so `--x: calc(var(--a) + var(--b))` reads
@@ -137,9 +137,30 @@ export function useLevelFlight(nav: FlightNav, opts: LevelFlightOptions = {}): L
     [settle],
   );
 
-  /* The budget, resolved where the cascade exists. A ref so `fallbackMs` on the returned object
-     can answer without a render, which is what `Echo`'s own safety net reads. */
-  const budget = useRef(fallbackMs ?? FLIGHT_FALLBACK_MS);
+  /* The budget, resolved where the cascade exists and WHEN it is asked for. `useEcho` reads
+     `fallbackMs` in a layout effect, which runs before this hook's passive effect: a value cached
+     by that effect is the PREVIOUS flight's, and on the first flight of a session it was the
+     400 ms default whatever the token said, so the first echo's safety net cut a longer move
+     short. The inputs are mirrored into a ref so the reader is stable and needs no render. */
+  const inputs = useRef({ fallbackToken, fallbackMs, el });
+  inputs.current = { fallbackToken, fallbackMs, el };
+  const readBudget = useCallback((): number => {
+    const { fallbackToken: token, fallbackMs: given, el: where } = inputs.current;
+    if (given !== undefined) return given;
+    if (!token) return FLIGHT_FALLBACK_MS;
+    const node = typeof where === "function" ? where() : (where ?? null);
+    const names = typeof token === "string" ? [token] : token;
+    let total = 0;
+    let read = false;
+    for (const name of names) {
+      const value = cssMs(name, node, -1);
+      if (value >= 0) {
+        total += value;
+        read = true;
+      }
+    }
+    return read ? total : FLIGHT_FALLBACK_MS;
+  }, []);
 
   /*
    * The safety net. Started per flight, cleared when the flight changes or settles, so a second
@@ -152,23 +173,7 @@ export function useLevelFlight(nav: FlightNav, opts: LevelFlightOptions = {}): L
   useEffect(() => {
     if (!moving) return;
 
-    const node = typeof el === "function" ? el() : (el ?? null);
-    let ms = fallbackMs;
-    if (ms === undefined && fallbackToken) {
-      const names = typeof fallbackToken === "string" ? [fallbackToken] : fallbackToken;
-      let total = 0;
-      let read = false;
-      for (const name of names) {
-        const value = cssMs(name, node, -1);
-        if (value >= 0) {
-          total += value;
-          read = true;
-        }
-      }
-      if (read) ms = total;
-    }
-    if (ms === undefined) ms = FLIGHT_FALLBACK_MS;
-    budget.current = ms;
+    const ms = readBudget();
 
     /* Nobody has said they are moving for this one. Give it a frame — a claim from a layout
        effect in the same commit has already landed, and one from a child's effect lands before
@@ -182,7 +187,7 @@ export function useLevelFlight(nav: FlightNav, opts: LevelFlightOptions = {}): L
 
     const id = window.setTimeout(() => settle(flight), Math.max(0, ms));
     return () => window.clearTimeout(id);
-  }, [moving, flight, fallbackMs, fallbackToken, el, settle]);
+  }, [moving, flight, fallbackMs, fallbackToken, el, settle, readBudget]);
 
   /* The one wire to the nav's Escape listener. False on unmount, so a surface that leaves
      mid-move does not leave the nav believing something is still in flight. */
@@ -200,9 +205,9 @@ export function useLevelFlight(nav: FlightNav, opts: LevelFlightOptions = {}): L
       settle,
       claim,
       get fallbackMs() {
-        return budget.current;
+        return readBudget();
       },
     }),
-    [current.from, current.to, moving, flight, settle, claim],
+    [current.from, current.to, moving, flight, settle, claim, readBudget],
   );
 }
