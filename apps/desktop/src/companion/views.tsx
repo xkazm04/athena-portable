@@ -185,17 +185,21 @@ function Rail({ model, form }: { model: CompanionModel; form: CompanionModel["fo
 
 // -- the slip ----------------------------------------------------------------------------------
 
-/** The capture the daemon filed with the card, read back from the store (ADR 0066). */
+/**
+ * The capture the daemon filed with the card, read back from the store (ADR 0066). A read is kept
+ * with the id it was for: when the next card takes the slip, the last card's picture is not shown
+ * under the new id while that card's is read.
+ */
 function ShotFigure({ id }: { id: string }) {
-  const [read, setRead] = useState<CaptureRead | null>(null);
+  const [read, setRead] = useState<{ id: string; read: CaptureRead } | null>(null);
   useEffect(() => {
     let current = true;
-    void readCapture(id).then((found) => current && setRead(found));
+    void readCapture(id).then((found) => current && setRead({ id, read: found }));
     return () => {
       current = false;
     };
   }, [id]);
-  return <CaptureShown id={id} read={read} />;
+  return <CaptureShown id={id} read={read?.id === id ? read.read : null} />;
 }
 
 /** The figure for one read: the picture, or the sentence that says why there is none. */
