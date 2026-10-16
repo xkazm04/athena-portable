@@ -307,7 +307,22 @@ test("a healthy verdict with a newer attempt reads connected, as a warning that 
   );
   expect(s.standing).toBe("connected");
   expect(s.tone).toBe("warning");
-  expect(s.sentence).toBe(`Verified 3 h ago; could not check since 5 min ago: ${obstacle}`);
+  expect(s.sentence).toBe(`Verified 3 h ago; could not check 5 min ago: ${obstacle}`);
+  // Every age reads as English after "could not check", and an attempt with no detail ends cleanly.
+  const attempt = (at: string, detail: string, verified = true) =>
+    standingOf(
+      view({}, { health: verified ? "healthy" : "unknown", health_at: verified ? "2026-09-12T09:00:00Z" : "", attempt_at: at, attempt_detail: detail }),
+      NOW,
+    ).sentence;
+  expect(attempt("2026-09-12T11:59:50Z", obstacle)).toBe(`Verified 3 h ago; could not check just now: ${obstacle}`);
+  expect(attempt("2026-09-12T11:55:00Z", "", false)).toBe("Could not check 5 min ago.");
+  for (const at of ["2026-09-12T11:59:50Z", "2026-09-12T11:55:00Z", "2026-09-12T10:00:00Z"]) {
+    for (const [detail, verified] of [[obstacle, true], ["", true], [obstacle, false], ["", false]] as const) {
+      const sentence = attempt(at, detail, verified);
+      expect(sentence, sentence).not.toMatch(/since (just now|\d)/);
+      expect(sentence, sentence).not.toMatch(/:\s*$/);
+    }
+  }
   expect(`${s.word} ${s.sentence}`).not.toMatch(/broken/);
   // An attempt older than the verdict is spent: the row reads as the verdict alone.
   const spent = standingOf(view({}, { health_at: "2026-09-12T11:59:00Z", attempt_at: "2026-09-12T11:00:00Z", attempt_detail: obstacle }), NOW);

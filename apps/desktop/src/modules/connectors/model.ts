@@ -291,12 +291,15 @@ export function standingOf(
   if (attemptIsNewer(c)) {
     // A check that reached no verdict says "could not verify", never "broken": the last verdict
     // stands with its age, and the obstacle is named beside it.
-    const since = `since ${ageOf(c.attempt_at ?? "", now)}: ${c.attempt_detail ?? ""}`;
+    // "could not check 5 min ago: <obstacle>", never "since just now", and no dangling colon when
+    // the attempt carries no detail.
+    const detail = c.attempt_detail ?? "";
+    const when = `${ageOf(c.attempt_at ?? "", now)}${detail ? `: ${detail}` : "."}`;
     const verified = c.health === "healthy" && c.health_at;
     return {
       standing: "connected",
       word: "connected",
-      sentence: verified ? `Verified ${ageOf(c.health_at, now)}; could not check ${since}` : `Could not check ${since}`,
+      sentence: verified ? `Verified ${ageOf(c.health_at, now)}; could not check ${when}` : `Could not check ${when}`,
       tone: "warning",
     };
   }
