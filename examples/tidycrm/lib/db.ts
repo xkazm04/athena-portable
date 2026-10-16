@@ -431,7 +431,9 @@ export function listConflicts(domain?: string): DomainConflict[] {
   const all = allDomainSpellings();
   const wanted = domain ? { [domain]: all[domain] ?? [] } : all;
   return Object.entries(wanted)
-    .filter(([, spellings]) => (domain ? true : spellings.length > 1))
+    // A named domain answers in conflict or not - but only if someone in the list is on it. With
+    // nobody there, an entry with no spellings and an empty consensus reads as a domain that exists.
+    .filter(([, spellings]) => (domain ? spellings.length > 0 : spellings.length > 1))
     .map(([d, spellings]) => ({
       domain: d,
       consensus: spellings[0]?.company ?? "",

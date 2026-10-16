@@ -24,6 +24,7 @@ const {
   getPair,
   listConflicts,
   listOpenPairs,
+  readConflicts,
   segmentRows,
 } = await import("../lib/db");
 const { CSV_COLUMNS, toCsv } = await import("../lib/csv");
@@ -226,6 +227,20 @@ test("a write on one record answers in the singular, as its log line already doe
   assert.ok(stale);
   assert.equal(flagStale([stale.id]).summary, "Flagged 1 contact as stale.");
   assert.equal(deleteContacts([stale.id]).summary, "Deleted 1 contact.");
+});
+
+test("read_conflicts on a domain nobody in the list is on answers with nothing, not an empty entry", () => {
+  const page = readConflicts("nobody-here.example", 5);
+  assert.equal(page.total, 0, "no domain, not one domain with no spellings");
+  assert.deepEqual(page.domains, []);
+  assert.equal(page.footer, "(showing 0 of 0)");
+
+  // A real domain still answers whether or not it is in conflict, as the tool promises.
+  const settled = segmentRows("all").find((c) => c.conflict === 0);
+  assert.ok(settled);
+  const one = readConflicts(settled.domain, 5);
+  assert.equal(one.total, 1);
+  assert.equal(one.domains[0]?.spellings.length, 1);
 });
 
 test("a company name prints as one Markdown table cell, whatever punctuation it carries", () => {
