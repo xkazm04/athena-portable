@@ -136,7 +136,9 @@ function markdownFor(
   const lines = [
     `## ${title}`,
     "",
-    `${c.contacts} contacts in **${label}**, after this cleanup:`,
+    // The segment narrows the row count and the company table below; the cleanup figures are
+    // counted over the whole list, and the sentence says so rather than pinning them to `label`.
+    `${c.contacts} contact${c.contacts === 1 ? "" : "s"} in **${label}**. The cleanup so far, across the whole list:`,
     "",
     `- Normalised ${c.normalized_fields} field${c.normalized_fields === 1 ? "" : "s"} on ${c.normalized} contact${c.normalized === 1 ? "" : "s"}`,
     `- Merged ${c.merged_pairs} duplicate pair${c.merged_pairs === 1 ? "" : "s"}, folding away ${c.merged} record${c.merged === 1 ? "" : "s"}`,

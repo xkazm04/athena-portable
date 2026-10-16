@@ -200,6 +200,22 @@ test("the write door checks at run time what the types only promise", () => {
   }
 });
 
+test("the export page says its cleanup figures are the whole list's, not the segment's", () => {
+  // The figures are counted over every revision and every pair; a segment narrows only the row
+  // count and the company table. A tidy on a contact outside the segment still counts.
+  const clients = new Set(segmentRows("clients").map((c) => c.id));
+  const outside = segmentRows("phone-format").find((c) => !clients.has(c.id));
+  assert.ok(outside, "a badly formatted phone off the client domains");
+  const before = exportSummary("clients").normalized_fields;
+  assert.equal(normalizeFields([outside.id], ["phone_e164"]).ok, true);
+  const after = exportSummary("clients");
+  assert.equal(after.normalized_fields, before + 1, "the clients page counts a non-client's tidy");
+
+  // So the sentence that introduces the figures must not pin them to the segment it just named.
+  assert.match(after.markdown, /across the whole list/);
+  assert.doesNotMatch(after.markdown, /in \*\*Client contacts\*\*, after this cleanup/);
+});
+
 test("a company name prints as one Markdown table cell, whatever punctuation it carries", () => {
   // Every seeded company is plain words, so the escape is the identity on the demo's own page.
   assert.ok(
