@@ -62,8 +62,10 @@ test("the seal, her one button at rest, answers a pointer by scaling its face, w
   expect(rule(".aw-face")).toContain("scale 260ms");
 });
 
-test("every data attribute the sheet selects on is written by the view (or the preview harness), and no class has no user", () => {
-  const sources = ["views.tsx", "drawing.tsx", "preview.tsx"].map((f) => readFileSync(new URL(`./${f}`, import.meta.url), "utf8")).join("\n");
+test("every data attribute the sheet selects on is written by the view (or the preview harness, or Calm's one writer), and no class has no user", () => {
+  const sources = ["./views.tsx", "./drawing.tsx", "./preview.tsx", "../lib/motion.ts"]
+    .map((f) => readFileSync(new URL(f, import.meta.url), "utf8"))
+    .join("\n");
   const attrs = [...new Set([...css.matchAll(/\[(data-[a-z-]+)/g)].map((m) => m[1]))];
   expect(attrs.length).toBeGreaterThan(10);
   for (const attr of attrs) expect(sources, attr).toContain(attr);
@@ -87,6 +89,28 @@ test("the small outlined buttons (Disable, Check again) are one height, with the
     (r) => r.match(/(?:min-)?height:\s*(\d+)px/)![1],
   );
   expect(new Set(heights).size).toBe(1);
+});
+
+/** The selectors of every rule inside every `@media (prefers-reduced-motion: reduce)` block. */
+function reducedSelectors(): string[] {
+  const out: string[] = [];
+  for (const m of css.matchAll(/@media \(prefers-reduced-motion: reduce\) \{\n([\s\S]*?)\n\}/g)) {
+    for (const head of m[1].matchAll(/^ {2}([^\s{}][^{}]*?)\s*\{/gm)) {
+      out.push(...head[1].split(",").map((s) => s.trim()).filter(Boolean));
+    }
+  }
+  return out;
+}
+
+test("Calm stills her as the OS's reduced motion does: every reduced-motion rule has a Calm twin (lib/motion.ts)", () => {
+  const reduced = reducedSelectors();
+  expect(reduced.length).toBeGreaterThan(8);
+  // `data-motion` is the person's choice resolved with the OS's (ADR 0089); the media query alone
+  // misses a person who chose Calm on a machine that does not ask for less motion.
+  const calm = css.replace(/\/\*[\s\S]*?\*\//g, "");
+  for (const selector of reduced) {
+    expect(calm.includes(`:root[data-motion="calm"] ${selector}`), selector).toBe(true);
+  }
 });
 
 test("the composer answers a pointer, and goes in and out of its blocked state on the fast duration", () => {
