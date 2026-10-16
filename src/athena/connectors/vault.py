@@ -529,7 +529,8 @@ class Vault:
 
         A 429 — or, on OAuth, a 403 whose body names a rate or quota reason — is
         :class:`RateLimited` and the grant stays connected. A 401, or any other 403, on an OAuth
-        call marks the grant ``needs_reauth``: a refusal it cannot place fails closed."""
+        call marks the grant ``needs_reauth``: a refusal it cannot place fails closed. A 401 on a
+        pasted token is returned as it came and recorded as a broken verdict."""
         spec = self.spec(connector_id)
         token, generation = self._fresh_token(spec)
         headers: dict[str, str] = {"Accept": "application/json", **spec.auth.extra_headers}
@@ -558,6 +559,13 @@ class Vault:
                 )
                 self._mark_reauth(spec, generation, lost)
                 raise lost
+            if not oauth and status == 401 and self._generation(connector_id) == generation:
+                # A pasted token's 401 is the provider's word on the credential, as the probe
+                # reads it: a broken verdict with its time. The record stays connected (a person
+                # pastes a new token; nothing here can be refreshed), and the caller still gets
+                # the answer. A 403 is about the resource, not the token, and is not a verdict.
+                health.record(rec, health.classify(status, decoded, label=spec.label), _now())
+                self._save()
         return status, decoded
 
     def _decode(self, raw: bytes, token: str) -> Any:

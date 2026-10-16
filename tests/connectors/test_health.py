@@ -191,6 +191,28 @@ def test_case5_a_request_answered_401_marks_needs_reauth_and_broken_with_its_tim
     assert "401" in record.health_detail
 
 
+def test_case5_a_pasted_token_answered_401_on_a_call_is_broken_and_stays_connected(
+    tmp_path: Path, specs: dict[str, ConnectorSpec]
+) -> None:
+    """A token connector's 401 is the provider's word on the credential, as the probe already
+    reads it; the record stays connected (the pinned Notion rule) but no longer reads healthy."""
+    answer: dict[str, Answer] = {"now": (200, {"name": "n", "id": "x"})}
+    vault = _vault(tmp_path, specs, lambda *_: answer["now"])
+    vault.connect_token("notion", TOKEN)
+    before = vault.record("notion").health_at
+    answer["now"] = (403, {"object": "error", "code": "restricted_resource"})
+    vault.request("notion", "GET", "https://api.notion.com/v1/pages/p")
+    assert vault.record("notion").health == "healthy", "a 403 is about the page, not the token"
+    answer["now"] = (401, {"object": "error", "code": "unauthorized"})
+    status, _ = vault.request("notion", "POST", "https://api.notion.com/v1/search", {})
+    record = vault.record("notion")
+    assert status == 401 and vault.is_live("notion") and record.status == "connected"
+    assert record.health == "broken" and _fresh(record.health_at) and record.health_at != before
+    assert "401" in record.health_detail and TOKEN not in record.health_detail
+    reread = _vault(tmp_path, specs, lambda *_: answer["now"]).record("notion")
+    assert reread.health == "broken", "the verdict is saved, not only held"
+
+
 # -- case 6: a refresh that failed this time is an attempt, and the grant stays connected ----------
 
 
