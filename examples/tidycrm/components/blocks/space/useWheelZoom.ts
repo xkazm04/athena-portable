@@ -43,7 +43,7 @@
  */
 import { useEffect, type RefObject } from "react";
 
-import { zoomAt, type CameraRig } from "@athena/demo-kit/zoom";
+import { zoomAt, type CameraPose, type CameraRig } from "@athena/demo-kit/zoom";
 
 import { CAMERA_FOV, CAMERA_Z } from "../model";
 
@@ -59,7 +59,56 @@ function worldPerPixel(frameHeight: number): number {
   return CAMERA_Z / focal;
 }
 
-export function useWheelZoom(rig: CameraRig, frame: RefObject<HTMLElement | null>): void {
+/** The fields of a wheel event the step reads. */
+export interface WheelInput {
+  deltaY: number;
+  deltaMode: number;
+  clientX: number;
+  clientY: number;
+}
+
+/**
+ * One wheel event's pose, pure, so the arithmetic is testable without a DOM.
+ *
+ * `zoom` is the rig's own bounds tuple. `zoomAt` clamps the zoom to it BEFORE
+ * it solves the pan; without it the pan is solved for a zoom the rig then
+ * refuses, and every notch past a bound slides the scene toward the pointer
+ * while the zoom stands still (canvas-graph: clamp, then recompute the pan).
+ */
+export function wheelPose(
+  pose: CameraPose,
+  event: WheelInput,
+  box: { left: number; top: number; width: number; height: number },
+  zoom: readonly [number, number],
+): CameraPose {
+  const unit = event.deltaMode === 1 ? LINE : event.deltaMode === 2 ? PAGE : 1;
+  const factor = Math.exp(-event.deltaY * unit * PER_PIXEL);
+
+  /*
+   * The anchor, converted into the units `zoomAt` is written in.
+   *
+   * `pan.x` is the target's offset along the camera's RIGHT, so moving it
+   * toward +x moves the image the other way — hence the mirrored x. `pan.y`
+   * is along UP and the screen's y runs down, and those two inversions
+   * cancel, so y is only scaled. The arithmetic is derived in the header.
+   */
+  const k = worldPerPixel(box.height);
+  const ax = event.clientX - box.left - box.width / 2;
+  const ay = event.clientY - box.top - box.height / 2;
+  return zoomAt(
+    pose,
+    factor,
+    { x: box.width / 2 - ax * k, y: box.height / 2 + ay * k },
+    { w: box.width, h: box.height },
+    zoom,
+  );
+}
+
+export function useWheelZoom(
+  rig: CameraRig,
+  frame: RefObject<HTMLElement | null>,
+  zoom: readonly [number, number],
+): void {
   useEffect(() => {
     const el = frame.current;
     if (!el) return;
@@ -68,28 +117,7 @@ export function useWheelZoom(rig: CameraRig, frame: RefObject<HTMLElement | null
       const box = el.getBoundingClientRect();
       if (box.height === 0) return;
       event.preventDefault();
-      const unit = event.deltaMode === 1 ? LINE : event.deltaMode === 2 ? PAGE : 1;
-      const factor = Math.exp(-event.deltaY * unit * PER_PIXEL);
-
-      /*
-       * The anchor, converted into the units `zoomAt` is written in.
-       *
-       * `pan.x` is the target's offset along the camera's RIGHT, so moving it
-       * toward +x moves the image the other way — hence the mirrored x. `pan.y`
-       * is along UP and the screen's y runs down, and those two inversions
-       * cancel, so y is only scaled. The arithmetic is derived in the header.
-       */
-      const k = worldPerPixel(box.height);
-      const ax = event.clientX - box.left - box.width / 2;
-      const ay = event.clientY - box.top - box.height / 2;
-      rig.set(
-        zoomAt(
-          rig.get(),
-          factor,
-          { x: box.width / 2 - ax * k, y: box.height / 2 + ay * k },
-          { w: box.width, h: box.height },
-        ),
-      );
+      rig.set(wheelPose(rig.get(), event, box, zoom));
     };
 
     el.addEventListener("wheel", onWheel, { passive: false });
@@ -97,5 +125,5 @@ export function useWheelZoom(rig: CameraRig, frame: RefObject<HTMLElement | null
     // `frame` is a ref object and never changes identity; the element it holds
     // is set by the same commit that mounts this hook's owner.
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [rig]);
+  }, [rig, zoom]);
 }

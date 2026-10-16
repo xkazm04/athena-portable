@@ -106,7 +106,7 @@ export function Blocks({ sheet }: { sheet: BkSheet }) {
     // the list form cannot express.
     snap: (pose) => snapNear(pose, insideRef.current),
   });
-  useWheelZoom(rig, frameRef);
+  useWheelZoom(rig, frameRef, BOUNDS.zoom);
 
   /*
    * `--bk-dur-6` is the safety net, not the clock: `beats.ts` is the clock, the
