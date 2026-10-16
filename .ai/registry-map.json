@@ -5509,7 +5509,11 @@
           "revision": 13,
           "changedAt": "2026-09-05",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/stores/settings.ts:206 The desktop settings store fans out into seven separate IPC read commands at startup instead of batching, performs optimistic UI mutations without rollback on write failure, and lacks store-side key validation, setting kind classification, or audit recording.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:85c48ec5bdb5581f",
+          "evaluatedRevision": 13
         }
       ],
       "governance": "governed"

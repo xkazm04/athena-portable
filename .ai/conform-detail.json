@@ -3244,6 +3244,83 @@
           "evidence": "apps/desktop/src/stores/origins.ts:145 Every save resends enabled from a cached read, including override-only changes; per-webview queues cannot prevent another window's concurrent disable from being overwritten without a spanning transaction or compare-and-set."
         }
       ]
+    },
+    "a7dc73bb-f8b4-4b57-8fb0-f8032842f356/settings": {
+      "context": "desktop-stores",
+      "subject": "settings",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T22:38:52.072Z",
+      "worker": "9adc2487-ca09-4bb1-b501-0f3b49cd56c2",
+      "techniques": [
+        {
+          "technique": "key-registry",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/settings.ts:107 Write path delegates to generic key-value store without a store-side allowlist, orphan detection, or retirement reaping."
+        },
+        {
+          "technique": "typed-accessors",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/stores/settings.ts:220 Typed read boundary parses and validates stored string values via type guard, falling back to declared default without persisting it."
+        },
+        {
+          "technique": "read-batching",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/settings.ts:206 Startup fans out into seven separate single-key store_get IPC calls across the boundary instead of executing a bulk read or batched query."
+        },
+        {
+          "technique": "setting-kinds",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/settings.ts:70 Settings are aggregated as a flat interface without declaring kinds (preference, operational config, ceiling, flag) or per-kind contracts."
+        },
+        {
+          "technique": "inherited-default-override",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/stores/settings.ts:52 Resolves theme against the live OS source continuously via media query listeners, storing the system choice rather than the resolved value."
+        },
+        {
+          "technique": "settings-audit-and-history",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/settings.ts:117 Setting mutations write directly to the store without producing audit records of old/new values, timestamps, categories, or origins."
+        },
+        {
+          "technique": "save-experience",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/settings.ts:114 State and UI attributes are updated optimistically before write, with no rollback or error recovery to restore truth if settingWrite fails."
+        },
+        {
+          "technique": "cross-source-precedence-chain",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stores/settings.ts:207 Settings resolve from a single SQLite store rather than a declared multi-source precedence chain across CLI, env, and files."
+        },
+        {
+          "technique": "presence-decides-precedence",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stores/settings.ts:208 The store is read-write with singular key access, without read-only multi-name grace period fallbacks."
+        },
+        {
+          "technique": "applied-defaults-ledger",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stores/settings.ts:96 Defaults are scalar values rather than user-editable collections of shipped items requiring an applied-defaults ledger."
+        },
+        {
+          "technique": "config-backup-and-restore",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/settings.ts:226 Corrupted or unreadable local store state silently falls back to hardcoded defaults without bounded backup rotation or a boot-time restore prompt."
+        },
+        {
+          "technique": "author-declared-include-graph",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stores/settings.ts:2 Configuration is held in database rows rather than author-authored hierarchical include graphs."
+        },
+        {
+          "technique": "in-place-document-patch",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stores/settings.test.ts:131 Store granularity is individual key rows rather than a single structural document."
+        }
+      ],
+      "registryProposal": "In settings.md, author-declared-include-graph is listed in the frontmatter techniques array and exists as a technique file, but is omitted from the markdown summary list under ## The techniques."
     }
   }
 }
