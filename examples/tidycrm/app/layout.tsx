@@ -25,10 +25,9 @@ export const metadata: Metadata = {
 
 /*
  * The root layout owns html/body, the providers and the capability manifest, and nothing else.
- * Each route segment brings its own shell, its own `next/font` faces (`app/v/blocks/layout.tsx`)
- * and its own `data-variant` wrapper (`components/blocks/Blocks.tsx`, on the direction's root
- * element rather than on a layout), so a direction can be added or removed without anything here
- * changing and without two of them fighting over a single <html> attribute.
+ * The one screen brings the rest: its `next/font` faces are evaluated in `app/page.tsx`, and its
+ * `data-variant` is set on The Blocks' own root element (`components/blocks/Blocks.tsx`) rather
+ * than on <html>, so nothing here has to change when the screen does.
  */
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const counts = defectCounts();
