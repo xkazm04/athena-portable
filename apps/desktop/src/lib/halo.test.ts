@@ -175,6 +175,27 @@ describe("the producer", () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
+  it("sends a refused frame again on the next change, rather than remembering it as sent", async () => {
+    const errors = vi.spyOn(console, "error").mockImplementation(() => {});
+    let refuse = false;
+    const f = fake();
+    f.deps.invoke = async (signal) => {
+      if (refuse) throw new Error("ipc down");
+      f.sent.push(signal);
+    };
+    stop = startHalo(f.deps);
+    f.set({ voice: "thinking" });
+    refuse = true;
+    f.set({ voice: "idle" }); // the frame that hides the halo is refused
+    await Promise.resolve();
+    await Promise.resolve();
+    refuse = false;
+    f.set({ heard: "a change that leaves the frame as it was" });
+    expect(f.sent.at(-1)?.phase).toBe("idle");
+    expect(errors).toHaveBeenCalledTimes(1);
+    errors.mockRestore();
+  });
+
   it("does nothing at all without a shell", () => {
     const f = fake({ shell: () => false });
     stop = startHalo(f.deps);

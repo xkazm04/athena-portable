@@ -184,6 +184,9 @@ export function startHalo(deps: HaloDeps = liveHaloDeps()): () => void {
           // Once per run of failures: a refused command at 30 Hz would bury every other line.
           if (!failing) console.error(`[athena] ${HALO_COMMAND}: ${String(error)}`);
           failing = true;
+          // Not sent, so not remembered: the next change sends it again. A refused idle frame
+          // kept as `last` would leave the edges on the phase before it until the phase changed.
+          if (last === key) last = "";
         },
       );
     }
