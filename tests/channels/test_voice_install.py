@@ -22,6 +22,7 @@ from collections.abc import Iterator, Mapping
 from dataclasses import dataclass, field
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
+from typing import get_args
 
 import pytest
 
@@ -30,13 +31,16 @@ from athena.channels.voice.home import EngineHomes
 from athena.channels.voice.install import (
     DOWNLOAD_CHUNK,
     DOWNLOAD_DEADLINE_S,
+    INSTALL_STATES,
     LOCK_FILENAME,
     READ_TIMEOUT_S,
+    RUNNING,
     SOURCES,
     STALE_LOCK_S,
     InstallBusy,
     Installer,
     InstallError,
+    InstallPhase,
     Sources,
     _inside,
     _safe_parts,
@@ -228,6 +232,36 @@ def _settle(installer: Installer) -> str:
 
 
 # -- the component -------------------------------------------------------------------------------
+
+
+VOICE_SETUP_TS = (
+    Path(__file__).resolve().parents[2] / "apps" / "desktop" / "src" / "lib" / "voice-setup.ts"
+)
+_TS_COMMENTS = re.compile(r"/\*.*?\*/|//[^\n]*", re.DOTALL)
+
+
+def _voice_setup_ts() -> str:
+    return _TS_COMMENTS.sub("", VOICE_SETUP_TS.read_text(encoding="utf-8"))
+
+
+def _ts_strings(pattern: str) -> tuple[str, ...]:
+    match = re.search(pattern, _voice_setup_ts(), re.DOTALL)
+    assert match is not None, f"voice-setup.ts declares nothing matching {pattern!r}"
+    return tuple(re.findall(r'"([^"]+)"', match.group(1)))
+
+
+def test_the_install_phases_are_one_vocabulary_here_and_on_the_desktop() -> None:
+    """The desktop polls while a phase is in ACTIVE_INSTALL and labels each phase by name: a
+    phase added here and not there stops the poll mid-install or shows no line for it."""
+    assert get_args(InstallPhase) == INSTALL_STATES
+    assert _ts_strings(r"export type InstallPhase\s*=(.*?);") == INSTALL_STATES
+    assert set(_ts_strings(r"export const ACTIVE_INSTALL[^=]*=\s*new Set\(\[(.*?)\]\)")) == RUNNING
+
+
+def test_the_desktops_preview_bound_is_the_preview_routes() -> None:
+    match = re.search(r"export const PREVIEW_MAX_CHARS\s*=\s*(\d+)\s*;", _voice_setup_ts())
+    assert match is not None
+    assert int(match.group(1)) == kokoro.TEXT_CAP
 
 
 def test_a_component_is_kokoro_or_a_whisper_model_from_the_allowlist() -> None:
