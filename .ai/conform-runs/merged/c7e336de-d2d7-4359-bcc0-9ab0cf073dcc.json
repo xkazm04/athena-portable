@@ -1,0 +1,161 @@
+{
+ "schema": "conform-run/1",
+ "worker": "c7e336de-d2d7-4359-bcc0-9ab0cf073dcc",
+ "subject": "companion-runtime",
+ "evaluatedAt": "2026-10-16T01:21:18.690756+00:00",
+ "provider": "codex",
+ "model": "gpt-6.1-sol",
+ "pairs": [
+  {
+   "context": "contracts-seam",
+   "subject": "companion-runtime",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "src/athena/contracts/manifest.py:129 Reversible internal mutations become AUTO, whereas the standard requires mutations to be proposed for approval.",
+   "techniques": [
+    {
+     "technique": "action-catalog-single-source",
+     "verdict": "deviation",
+     "evidence": "tests/contracts/test_manifest.py:33 The test explicitly preserves unattended execution for reversible internal side effects, contrary to the standard's read/mutate approval distinction."
+    },
+    {
+     "technique": "headless-turn-stream",
+     "verdict": "deviation",
+     "evidence": "src/athena/contracts/harness.py:203 The terminal contract offers success or error, without the distinct interrupted verdict required by the standard; cancellation is instead included among error reasons."
+    },
+    {
+     "technique": "metered-llm-seam",
+     "verdict": "deviation",
+     "evidence": "src/athena/contracts/harness.py:159 The contract aggregates a turn into one ledger row, explicitly allowing up to eight provider rounds, whereas the standard requires one row per model invocation."
+    }
+   ]
+  },
+  {
+   "context": "desktop-companion-pane",
+   "subject": "companion-runtime",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "apps/desktop/src/companion/model.ts:1058 The ledger view translates unavailable cost into \u201cno cost,\u201d losing the explicit unknown-cost state required by the metered seam.",
+   "techniques": [
+    {
+     "technique": "metered-llm-seam",
+     "verdict": "deviation",
+     "evidence": "apps/desktop/src/companion/model.ts:1058 Null or missing usage cost is rendered as \u201cno cost\u201d rather than unknown; model.test.ts also expects this fallback."
+    },
+    {
+     "technique": "signal-economy-contract",
+     "verdict": "conformant",
+     "evidence": "apps/desktop/src/companion/views.tsx:296 For the applicable count-placement rule, the waiting count appears on the decision slip containing Approve and Decline controls; the seal's badge opens that same resolution surface."
+    }
+   ]
+  },
+  {
+   "context": "desktop-halo",
+   "subject": "companion-runtime",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "apps/desktop/src/halo/main.ts:110 Searches found neither run_turn nor run_cycle throughout the halo and lib directories, while repository-wide results locate turn execution in Python and the halo code only projects and receives display signals.",
+   "techniques": [
+    {
+     "technique": "action-catalog-single-source",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/lib/halo.ts:175 The producer projects existing state into a display signal rather than accepting model-generated actions."
+    },
+    {
+     "technique": "autonomous-cycle-hosting",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/lib/halo-rehearsal.test.ts:65 The timed rehearsal is a user-triggered display script, not an autonomous maintenance cycle."
+    },
+    {
+     "technique": "headless-turn-stream",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/halo/main.ts:96 This adapter consumes display frames and does not execute conversation turns."
+    },
+    {
+     "technique": "host-seam-contracts",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/lib/halo-signal.ts:6 The overlay is explicitly a signal consumer rather than a host for the companion brain."
+    },
+    {
+     "technique": "metered-llm-seam",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/lib/halo.ts:81 Captions use already-produced speech text; this context does not initiate model legs."
+    },
+    {
+     "technique": "operative-working-set",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/halo/main.ts:100 The retained value is the latest presentation frame, not a companion working set used for autonomous decisions."
+    },
+    {
+     "technique": "signal-economy-contract",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/lib/halo.ts:137 The producer relays existing pending-card state; it produces no autonomous outcome requiring a report-or-absorb decision and displays no standing numeral."
+    }
+   ],
+   "absenceTerms": [
+    "run_turn",
+    "run_cycle"
+   ]
+  }
+ ],
+ "declined": [
+  {
+   "subject": "companion-runtime",
+   "context": "core-brain-memory",
+   "reason": "Inspected the listed storage, reconciliation, recall and test files; they establish durable-memory behavior, but I could not establish an applicable runtime-technique verdict without extrapolating provenance or database locking into working-set lifetime, turn serialization or cycle-hosting guarantees."
+  }
+ ],
+ "consults": [
+  {
+   "ts": "2026-10-16T01:21:18.690756+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "companion-runtime"
+   ],
+   "techniques": [
+    "action-catalog-single-source",
+    "headless-turn-stream",
+    "metered-llm-seam"
+   ],
+   "deviations": 1,
+   "context": "contracts-seam",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  },
+  {
+   "ts": "2026-10-16T01:21:18.690756+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "companion-runtime"
+   ],
+   "techniques": [
+    "metered-llm-seam",
+    "signal-economy-contract"
+   ],
+   "deviations": 1,
+   "context": "desktop-companion-pane",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  },
+  {
+   "ts": "2026-10-16T01:21:18.690756+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "companion-runtime"
+   ],
+   "techniques": [
+    "action-catalog-single-source",
+    "autonomous-cycle-hosting",
+    "headless-turn-stream",
+    "host-seam-contracts",
+    "metered-llm-seam",
+    "operative-working-set",
+    "signal-economy-contract"
+   ],
+   "deviations": 0,
+   "context": "desktop-halo",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  }
+ ]
+}

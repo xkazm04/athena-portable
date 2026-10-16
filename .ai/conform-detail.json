@@ -2298,6 +2298,99 @@
           "evidence": "examples/hirelane/components/board/style/base/tokens.css:6 Scale aliases for the board skin, not enumerated tone and size props on a control."
         }
       ]
+    },
+    "645f955f-74d6-44ae-a966-70f6ed2ece17/companion-runtime": {
+      "context": "contracts-seam",
+      "subject": "companion-runtime",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T01:21:18.690Z",
+      "worker": "c7e336de-d2d7-4359-bcc0-9ab0cf073dcc",
+      "techniques": [
+        {
+          "technique": "action-catalog-single-source",
+          "verdict": "deviation",
+          "evidence": "tests/contracts/test_manifest.py:33 The test explicitly preserves unattended execution for reversible internal side effects, contrary to the standard's read/mutate approval distinction."
+        },
+        {
+          "technique": "headless-turn-stream",
+          "verdict": "deviation",
+          "evidence": "src/athena/contracts/harness.py:203 The terminal contract offers success or error, without the distinct interrupted verdict required by the standard; cancellation is instead included among error reasons."
+        },
+        {
+          "technique": "metered-llm-seam",
+          "verdict": "deviation",
+          "evidence": "src/athena/contracts/harness.py:159 The contract aggregates a turn into one ledger row, explicitly allowing up to eight provider rounds, whereas the standard requires one row per model invocation."
+        }
+      ]
+    },
+    "8eda71be-d611-4429-8363-be69f12b3c83/companion-runtime": {
+      "context": "desktop-companion-pane",
+      "subject": "companion-runtime",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T01:21:18.690Z",
+      "worker": "c7e336de-d2d7-4359-bcc0-9ab0cf073dcc",
+      "techniques": [
+        {
+          "technique": "metered-llm-seam",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/companion/model.ts:1058 Null or missing usage cost is rendered as “no cost” rather than unknown; model.test.ts also expects this fallback."
+        },
+        {
+          "technique": "signal-economy-contract",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/companion/views.tsx:296 For the applicable count-placement rule, the waiting count appears on the decision slip containing Approve and Decline controls; the seal's badge opens that same resolution surface."
+        }
+      ]
+    },
+    "42ac1c25-8a07-450d-a03a-c3ac5d50f5fe/companion-runtime": {
+      "context": "desktop-halo",
+      "subject": "companion-runtime",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T01:21:18.690Z",
+      "worker": "c7e336de-d2d7-4359-bcc0-9ab0cf073dcc",
+      "techniques": [
+        {
+          "technique": "action-catalog-single-source",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/halo.ts:175 The producer projects existing state into a display signal rather than accepting model-generated actions."
+        },
+        {
+          "technique": "autonomous-cycle-hosting",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/halo-rehearsal.test.ts:65 The timed rehearsal is a user-triggered display script, not an autonomous maintenance cycle."
+        },
+        {
+          "technique": "headless-turn-stream",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/halo/main.ts:96 This adapter consumes display frames and does not execute conversation turns."
+        },
+        {
+          "technique": "host-seam-contracts",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/halo-signal.ts:6 The overlay is explicitly a signal consumer rather than a host for the companion brain."
+        },
+        {
+          "technique": "metered-llm-seam",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/halo.ts:81 Captions use already-produced speech text; this context does not initiate model legs."
+        },
+        {
+          "technique": "operative-working-set",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/halo/main.ts:100 The retained value is the latest presentation frame, not a companion working set used for autonomous decisions."
+        },
+        {
+          "technique": "signal-economy-contract",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/halo.ts:137 The producer relays existing pending-card state; it produces no autonomous outcome requiring a report-or-absorb decision and displays no standing numeral."
+        }
+      ]
     }
   }
 }

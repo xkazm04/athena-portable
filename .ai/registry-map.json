@@ -1686,7 +1686,11 @@
           "revision": 4,
           "changedAt": "2026-09-23",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/contracts/manifest.py:129 Reversible internal mutations become AUTO, whereas the standard requires mutations to be proposed for approval.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:7a0b336cac31d173",
+          "evaluatedRevision": 4
         },
         {
           "subject": "test-harness",
@@ -3466,7 +3470,11 @@
           "revision": 4,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/companion/model.ts:1058 The ledger view translates unavailable cost into “no cost,” losing the explicit unknown-cost state required by the metered seam.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:7a0b336cac31d173",
+          "evaluatedRevision": 4
         },
         {
           "subject": "conversation-orchestration",
@@ -3949,7 +3957,11 @@
           "revision": 4,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/halo/main.ts:110 Searches found neither run_turn nor run_cycle throughout the halo and lib directories, while repository-wide results locate turn execution in Python and the halo code only projects and receives display signals.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:7a0b336cac31d173",
+          "evaluatedRevision": 4
         },
         {
           "subject": "prompt-assembly",
