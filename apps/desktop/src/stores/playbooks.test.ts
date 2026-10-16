@@ -8,12 +8,21 @@ import { readFileSync, readdirSync, statSync } from "node:fs";
 import path from "node:path";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { Playbook } from "@/lib/playbooks";
 import { PLAYBOOKS } from "@/lib/playbooks.shipped";
+
+// The real fetch unless a test hands one in: a failed chunk load cannot be produced otherwise.
+const fetcher = vi.hoisted(() => ({ next: null as null | (() => Promise<readonly Playbook[]>) }));
+vi.mock("@/lib/playbooks", async (importOriginal) => {
+  const real = await importOriginal<typeof import("@/lib/playbooks")>();
+  return { ...real, loadShipped: () => (fetcher.next ?? real.loadShipped)() };
+});
 
 import { usePlaybooks } from "./playbooks";
 
 beforeEach(() => {
   usePlaybooks.setState({ items: null, problem: null });
+  fetcher.next = null;
   vi.resetModules();
 });
 
@@ -39,6 +48,26 @@ describe("loading", () => {
     await usePlaybooks.getState().load();
     expect(usePlaybooks.getState().items).toBe(first);
   }, 30_000);
+});
+
+describe("a failed load", () => {
+  it("is kept as a sentence, not thrown, and the set stays not-here", async () => {
+    fetcher.next = () => Promise.reject(new Error("chunk offline"));
+    await expect(usePlaybooks.getState().load()).resolves.toBeUndefined();
+    expect(usePlaybooks.getState().problem).toBe("the playbooks could not be read: Error: chunk offline");
+    expect(usePlaybooks.getState().items).toBeNull();
+  });
+
+  it("is retried by the next ask, which fetches again and clears the sentence", async () => {
+    fetcher.next = () => Promise.reject(new Error("chunk offline"));
+    await usePlaybooks.getState().load();
+    const again = vi.fn(async () => PLAYBOOKS.slice(0, 2));
+    fetcher.next = again;
+    await usePlaybooks.getState().load();
+    expect(again).toHaveBeenCalledTimes(1);
+    expect(usePlaybooks.getState().items?.map((p) => p.id)).toEqual(PLAYBOOKS.slice(0, 2).map((p) => p.id));
+    expect(usePlaybooks.getState().problem).toBeNull();
+  });
 });
 
 describe("the eager copy stays out of the running app", () => {
