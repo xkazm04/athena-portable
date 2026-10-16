@@ -921,9 +921,11 @@ def decide(daemon: AthenaDaemon, request: Request, approval_id: str) -> Reply:
     if refusal is not None:
         return refusal
 
-    ctx = _decision_ctx(
-        daemon, grant.origin, grant.conversation, disabled_origins_from(request.body)
-    )
+    try:
+        disabled = disabled_origins_from(request.body)
+    except ListTooLong as exc:  # refused whole, as ``POST /run`` refuses it
+        return error(400, "validator_failed", str(exc))
+    ctx = _decision_ctx(daemon, grant.origin, grant.conversation, disabled)
     with daemon.writing():
         resolution = daemon.lane.answer_decision(approval_id, choice, ctx)
     if resolution.reason is not None and resolution.reason != "user_denied":

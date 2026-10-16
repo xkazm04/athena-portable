@@ -8,7 +8,7 @@ approved card from being spent on a neighbouring call.
 
 from __future__ import annotations
 
-from athena.daemon.routes import tab_from
+from athena.daemon.routes import MAX_DISABLED_ORIGINS, tab_from
 from athena.daemon.server import AthenaDaemon
 
 from .conftest import (
@@ -259,3 +259,24 @@ def test_the_tab_parse_takes_counts_and_nothing_else() -> None:
         assert tab_from({"tab_id": raw, "tab_nav": 5}) == (None, None)
     assert tab_from({"tab_id": 2, "tab_nav": "5"}) == (2, None)
     assert tab_from({}) == (None, None)
+
+
+def test_an_answer_naming_too_many_switched_off_origins_is_refused_whole_like_a_run(
+    live: Live, daemon: AthenaDaemon
+) -> None:
+    """``disabled_origins`` is read off a decision as off a run, and past its cap it is refused
+    the way ``POST /run`` refuses it: a 400 in the refusal vocabulary, the card left pending. A
+    cut list would read the origins past the cap as switched on; an uncaught one was a 500."""
+    approval_id = _card(live)
+    too_many = [f"host:app{n}" for n in range(MAX_DISABLED_ORIGINS + 1)]
+
+    reply = live.request(
+        f"/decisions/{approval_id}",
+        method="POST",
+        json_body={"choice": "approve", "disabled_origins": too_many},
+    )
+
+    assert reply.status == 400
+    assert reply.body["reason"] == "validator_failed"
+    assert "disabled_origins" in reply.body["detail"]
+    assert daemon.approvals.describe(approval_id).status == "pending"
