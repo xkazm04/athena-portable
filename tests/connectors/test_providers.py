@@ -11,9 +11,10 @@ from urllib.parse import urlsplit
 
 import pytest
 
+from athena.connectors import providers
 from athena.connectors.providers import gmail, notion
 from athena.connectors.seal import FileSeal
-from athena.connectors.service import check_egress
+from athena.connectors.service import PROVIDERS, check_egress
 from athena.connectors.spec import load_builtin
 from athena.connectors.vault import Vault
 
@@ -238,3 +239,26 @@ def test_gmail_stays_keyed_on_the_address(tmp_path: Path) -> None:
     kept = vault.record("gmail")
     assert kept.identity == "me@example.test" and kept.account == "me@example.test"
     assert kept.writes_enabled is True and kept.allowlist == ["a@example.test"]
+
+
+# -- the provider's handlers are the spec's tools, both ways ---------------------------------------
+
+
+def test_every_builtin_spec_has_a_provider_and_its_handlers_are_exactly_its_tools() -> None:
+    """Derived from the two grounds, the builtin directory and the providers package: a tool a
+    spec adds with no handler, or a handler left behind a renamed tool, fails here and not at the
+    first call ("gmail has no tool ...")."""
+    specs = load_builtin()
+    assert set(PROVIDERS) == set(specs), "a spec with no provider is left out of the catalog"
+    for cid, spec in specs.items():
+        module = getattr(providers, cid)
+        assert PROVIDERS[cid] is module.execute
+        assert set(module.TOOLS) == {t.name for t in spec.tools}, cid
+
+
+def test_a_name_with_no_handler_is_refused_without_a_request() -> None:
+    def request(method: str, url: str, body: Any) -> tuple[int, Any]:
+        raise AssertionError("nothing may leave")
+
+    assert gmail.execute(request, "delete_mail", {}) == (False, "gmail has no tool 'delete_mail'")
+    assert notion.execute(request, "drop", {}) == (False, "notion has no tool 'drop'")

@@ -12,7 +12,16 @@ import urllib.parse
 from collections.abc import Callable, Mapping
 from typing import Any
 
-__all__ = ["API", "BLOCK_CHARS", "Request", "execute", "normalize_id", "render_blocks", "title_of"]
+__all__ = [
+    "API",
+    "BLOCK_CHARS",
+    "TOOLS",
+    "Request",
+    "execute",
+    "normalize_id",
+    "render_blocks",
+    "title_of",
+]
 
 API = "https://api.notion.com/v1"
 #: Notion refuses a rich-text run longer than this, so a long append is split, never cut.
@@ -116,50 +125,74 @@ def paragraphs(text: str, limit: int = BLOCK_CHARS) -> list[dict[str, Any]]:
     ]
 
 
+Handler = Callable[[Request, Mapping[str, Any]], tuple[bool, str]]
+
+
+def _search(request: Request, params: Mapping[str, Any]) -> tuple[bool, str]:
+    limit = max(1, int(params.get("max_results", 5) or 5))
+    status, body = request(
+        "POST", f"{API}/search", {"query": str(params["query"]), "page_size": limit}
+    )
+    if status >= 300:
+        return False, f"Notion answered {status} to the search"
+    return True, render_search(body) or "Nothing matched."
+
+
+def _read_page(request: Request, params: Mapping[str, Any]) -> tuple[bool, str]:
+    page_id = normalize_id(str(params["page_id"]))
+    status, page = request("GET", f"{API}/pages/{_q(page_id)}", None)
+    if status >= 300:
+        return False, f"Notion answered {status} to the page read"
+    status, blocks = request(
+        "GET", f"{API}/blocks/{_q(page_id)}/children?page_size={CHILDREN_PAGE}", None
+    )
+    if status >= 300:
+        return False, f"Notion answered {status} to the block read"
+    return True, f"# {title_of(page) or '(untitled)'}\n\n{render_blocks(blocks)}"
+
+
+def _append_to_page(request: Request, params: Mapping[str, Any]) -> tuple[bool, str]:
+    page_id = normalize_id(str(params["page_id"]))
+    status, _ = request(
+        "PATCH",
+        f"{API}/blocks/{_q(page_id)}/children",
+        {"children": paragraphs(str(params["text"]))},
+    )
+    if status >= 300:
+        return False, f"Notion answered {status} to the append"
+    return True, f"appended {len(str(params['text']))} characters to page {page_id}"
+
+
+def _create_page(request: Request, params: Mapping[str, Any]) -> tuple[bool, str]:
+    parent = normalize_id(str(params["parent_page_id"]))
+    page_body: dict[str, Any] = {
+        "parent": {"type": "page_id", "page_id": parent},
+        "properties": {
+            "title": {"title": [{"type": "text", "text": {"content": str(params["title"])}}]}
+        },
+    }
+    if params.get("text"):
+        page_body["children"] = paragraphs(str(params["text"]))
+    status, created = request("POST", f"{API}/pages", page_body)
+    if status >= 300:
+        return False, f"Notion answered {status} to the create"
+    new_id = created.get("id", "") if isinstance(created, Mapping) else ""
+    return True, f"created page {new_id} under {parent}"
+
+
+#: One handler per tool the spec declares (``builtin/notion.json``); a parity test holds the two
+#: to the same names, so a tool cannot be declared without a handler or kept without a tool.
+TOOLS: dict[str, Handler] = {
+    "search": _search,
+    "read_page": _read_page,
+    "append_to_page": _append_to_page,
+    "create_page": _create_page,
+}
+
+
 def execute(request: Request, tool: str, params: Mapping[str, Any]) -> tuple[bool, str]:
     """Run one tool. ``(ok, text)``: a read's text, a write's sentence, or a refusal's reason."""
-    if tool == "search":
-        limit = max(1, int(params.get("max_results", 5) or 5))
-        status, body = request(
-            "POST", f"{API}/search", {"query": str(params["query"]), "page_size": limit}
-        )
-        if status >= 300:
-            return False, f"Notion answered {status} to the search"
-        return True, render_search(body) or "Nothing matched."
-    if tool == "read_page":
-        page_id = normalize_id(str(params["page_id"]))
-        status, page = request("GET", f"{API}/pages/{_q(page_id)}", None)
-        if status >= 300:
-            return False, f"Notion answered {status} to the page read"
-        status, blocks = request(
-            "GET", f"{API}/blocks/{_q(page_id)}/children?page_size={CHILDREN_PAGE}", None
-        )
-        if status >= 300:
-            return False, f"Notion answered {status} to the block read"
-        return True, f"# {title_of(page) or '(untitled)'}\n\n{render_blocks(blocks)}"
-    if tool == "append_to_page":
-        page_id = normalize_id(str(params["page_id"]))
-        status, _ = request(
-            "PATCH",
-            f"{API}/blocks/{_q(page_id)}/children",
-            {"children": paragraphs(str(params["text"]))},
-        )
-        if status >= 300:
-            return False, f"Notion answered {status} to the append"
-        return True, f"appended {len(str(params['text']))} characters to page {page_id}"
-    if tool == "create_page":
-        parent = normalize_id(str(params["parent_page_id"]))
-        page_body: dict[str, Any] = {
-            "parent": {"type": "page_id", "page_id": parent},
-            "properties": {
-                "title": {"title": [{"type": "text", "text": {"content": str(params["title"])}}]}
-            },
-        }
-        if params.get("text"):
-            page_body["children"] = paragraphs(str(params["text"]))
-        status, created = request("POST", f"{API}/pages", page_body)
-        if status >= 300:
-            return False, f"Notion answered {status} to the create"
-        new_id = created.get("id", "") if isinstance(created, Mapping) else ""
-        return True, f"created page {new_id} under {parent}"
-    return False, f"notion has no tool {tool!r}"
+    handler = TOOLS.get(tool)
+    if handler is None:
+        return False, f"notion has no tool {tool!r}"
+    return handler(request, params)

@@ -16,7 +16,15 @@ from urllib.parse import quote
 
 from athena.connectors.addresses import one_address
 
-__all__ = ["API", "Request", "execute", "extract_text", "parse_metadata", "render_results"]
+__all__ = [
+    "API",
+    "TOOLS",
+    "Request",
+    "execute",
+    "extract_text",
+    "parse_metadata",
+    "render_results",
+]
 
 API = "https://gmail.googleapis.com/gmail/v1/users/me"
 WANTED_HEADERS = ("From", "To", "Subject", "Date")
@@ -127,68 +135,89 @@ def _statuses(failed: Sequence[int]) -> str:
     return ", ".join(str(code) for code in sorted(set(failed)))
 
 
+Handler = Callable[[Request, Mapping[str, Any]], tuple[bool, str]]
+
+
+def _search_mail(request: Request, params: Mapping[str, Any]) -> tuple[bool, str]:
+    limit = int(params.get("max_results", 5) or 5)
+    status, body = request(
+        "GET", f"{API}/messages?q={_q(str(params['query']))}&maxResults={limit}", None
+    )
+    if status >= 300:
+        return False, f"Gmail answered {status} to the search"
+    ids = parse_message_ids(body)[:limit]
+    rows = []
+    failed: list[int] = []
+    for message_id in ids:
+        headers = "".join(f"&metadataHeaders={h}" for h in WANTED_HEADERS)
+        status, detail = request(
+            "GET", f"{API}/messages/{_q(message_id)}?format=metadata{headers}", None
+        )
+        if status < 300:
+            rows.append(parse_metadata(detail))
+        else:
+            failed.append(status)
+    if not ids:
+        return True, "No messages matched."
+    if not rows:
+        return False, (
+            f"Gmail found {len(ids)} messages but all {len(ids)} reads failed "
+            f"(answered {_statuses(failed)})"
+        )
+    text = render_results(rows)
+    if failed:
+        text += (
+            f"\n(showing {len(rows)} of {len(ids)}; {len(failed)} reads failed, "
+            f"answered {_statuses(failed)})"
+        )
+    return True, text
+
+
+def _read_mail(request: Request, params: Mapping[str, Any]) -> tuple[bool, str]:
+    status, body = request(
+        "GET", f"{API}/messages/{_q(str(params['message_id']))}?format=full", None
+    )
+    if status >= 300:
+        return False, f"Gmail answered {status} to the read"
+    meta = parse_metadata(body)
+    return True, (
+        f"from: {meta.get('from', '')}\ndate: {meta.get('date', '')}\n"
+        f"subject: {meta.get('subject', '')}\n\n{extract_text(body)}"
+    )
+
+
+def _send_mail(request: Request, params: Mapping[str, Any]) -> tuple[bool, str]:
+    subject = str(params["subject"])
+    if "\r" in subject or "\n" in subject:
+        raise SubjectRefused("a subject is one line; remove the line breaks from it")
+    payload = build_send_body(
+        to=[str(a) for a in params["to"]],
+        subject=subject,
+        body=str(params["body"]),
+        cc=[str(a) for a in params.get("cc", [])],
+    )
+    status, body = request("POST", f"{API}/messages/send", payload)
+    if status >= 300:
+        return False, f"Gmail answered {status} to the send"
+    sent_id = body.get("id", "") if isinstance(body, Mapping) else ""
+    return (
+        True,
+        f"sent to {', '.join(_checked(str(a)) for a in params['to'])} (message {sent_id})",
+    )
+
+
+#: One handler per tool the spec declares (``builtin/gmail.json``); a parity test holds the two
+#: to the same names, so a tool cannot be declared without a handler or kept without a tool.
+TOOLS: dict[str, Handler] = {
+    "search_mail": _search_mail,
+    "read_mail": _read_mail,
+    "send_mail": _send_mail,
+}
+
+
 def execute(request: Request, tool: str, params: Mapping[str, Any]) -> tuple[bool, str]:
     """Run one tool. ``(ok, text)``: a read's text, a write's sentence, or a refusal's reason."""
-    if tool == "search_mail":
-        limit = int(params.get("max_results", 5) or 5)
-        status, body = request(
-            "GET", f"{API}/messages?q={_q(str(params['query']))}&maxResults={limit}", None
-        )
-        if status >= 300:
-            return False, f"Gmail answered {status} to the search"
-        ids = parse_message_ids(body)[:limit]
-        rows = []
-        failed: list[int] = []
-        for message_id in ids:
-            headers = "".join(f"&metadataHeaders={h}" for h in WANTED_HEADERS)
-            status, detail = request(
-                "GET", f"{API}/messages/{_q(message_id)}?format=metadata{headers}", None
-            )
-            if status < 300:
-                rows.append(parse_metadata(detail))
-            else:
-                failed.append(status)
-        if not ids:
-            return True, "No messages matched."
-        if not rows:
-            return False, (
-                f"Gmail found {len(ids)} messages but all {len(ids)} reads failed "
-                f"(answered {_statuses(failed)})"
-            )
-        text = render_results(rows)
-        if failed:
-            text += (
-                f"\n(showing {len(rows)} of {len(ids)}; {len(failed)} reads failed, "
-                f"answered {_statuses(failed)})"
-            )
-        return True, text
-    if tool == "read_mail":
-        status, body = request(
-            "GET", f"{API}/messages/{_q(str(params['message_id']))}?format=full", None
-        )
-        if status >= 300:
-            return False, f"Gmail answered {status} to the read"
-        meta = parse_metadata(body)
-        return True, (
-            f"from: {meta.get('from', '')}\ndate: {meta.get('date', '')}\n"
-            f"subject: {meta.get('subject', '')}\n\n{extract_text(body)}"
-        )
-    if tool == "send_mail":
-        subject = str(params["subject"])
-        if "\r" in subject or "\n" in subject:
-            raise SubjectRefused("a subject is one line; remove the line breaks from it")
-        payload = build_send_body(
-            to=[str(a) for a in params["to"]],
-            subject=subject,
-            body=str(params["body"]),
-            cc=[str(a) for a in params.get("cc", [])],
-        )
-        status, body = request("POST", f"{API}/messages/send", payload)
-        if status >= 300:
-            return False, f"Gmail answered {status} to the send"
-        sent_id = body.get("id", "") if isinstance(body, Mapping) else ""
-        return (
-            True,
-            f"sent to {', '.join(_checked(str(a)) for a in params['to'])} (message {sent_id})",
-        )
-    return False, f"gmail has no tool {tool!r}"
+    handler = TOOLS.get(tool)
+    if handler is None:
+        return False, f"gmail has no tool {tool!r}"
+    return handler(request, params)
