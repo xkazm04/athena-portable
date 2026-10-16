@@ -23,6 +23,8 @@
  *   1. Every token in FLOORS is at or above its floor against the worst composited surface.
  *   2. Every token in FLOORS still exists in the token block. A floor for a token somebody deleted
  *      is a check that passes by not looking, which §9.2's post-mortem is about.
+ *   3. Every token in a text-carrying family (TEXT_TOKEN) has a floor in FLOORS. The mirror of 2:
+ *      a token somebody added with no floor is never scored at all.
  *
  * WHAT IT DOES NOT CHECK, deliberately: which token is used where. That needs the cascade, and a
  * static reader that guessed at it would be wrong in both directions - it would miss a token used
@@ -38,7 +40,8 @@ import { readdirSync, readFileSync, existsSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const APP = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+/* The app root, or a fixture tree in its shape (`test/contrast-gate.test.ts` seeds one). */
+const APP = process.argv[2] ? resolve(process.argv[2]) : resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const COMPONENTS = join(APP, "components");
 
 /**
@@ -69,6 +72,15 @@ const FLOORS = {
   "--bd-accent": { floor: 4.5, role: "structure: the level rail, a region title" },
   "--bd-mark": { floor: 4.5, role: "the borderline flag and the named gap" },
 };
+
+/**
+ * The families whose every member carries text: the ink ladder and the locked hues.
+ *
+ * This is what makes "fails on an unknown token" true. The loop below reads FLOORS, so on its own
+ * it could only ever score the tokens somebody had already listed - a fifth rung at 2:1 went
+ * unscored and `lint` stayed green. Every declared token matching this is asked for its floor.
+ */
+const TEXT_TOKEN = /^--bd-(?:ink(?:-\d+)?|auto|gate|accent|mark)$/;
 
 /**
  * The grounds, and the translucent planes laid over them.
@@ -179,6 +191,11 @@ for (const slug of found) {
   }
 
   const width = Math.max(...Object.keys(FLOORS).map((t) => t.length));
+  for (const name of tokens.keys()) {
+    if (!TEXT_TOKEN.test(name) || name in FLOORS) continue;
+    console.log(`  NOFLOOR ${name.padEnd(width)}  carries text and has no floor here: give it one in FLOORS`);
+    failed = true;
+  }
   for (const [name, { floor, role }] of Object.entries(FLOORS)) {
     const declared = tokens.get(name);
     if (!declared) {
