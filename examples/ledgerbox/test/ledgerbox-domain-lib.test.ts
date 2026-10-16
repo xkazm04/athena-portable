@@ -16,7 +16,10 @@ import { tempHome } from "./tmp-home";
 tempHome("ledgerbox-domain-lib-");
 
 const { PERIODS } = await import("../lib/constants");
-const { db, getInvoiceDetail, lineSuggestions, listInvoices, summarize } = await import("../lib/db");
+const { db, getInvoiceDetail, lineSuggestions, listInvoices, summarize, unappliedCredits } =
+  await import("../lib/db");
+const actions = await import("../app/actions");
+const { TOOL_CLASSES } = await import("../lib/tool-classes");
 const { parseDollars } = await import("../lib/format");
 const { composeReminder } = await import("../lib/reminder");
 const { buildSheet } = await import("../lib/lanes");
@@ -186,4 +189,82 @@ test("one of something is said in the singular, on the sheet and in the close", 
     assert.doesNotMatch(text, /across 1 invoices/, `${render.name}: not "1 invoices"`);
     assert.match(render({ summary: { ...summary, overdue_count: 4 }, outstanding: [] }), /across 4 invoices/);
   }
+});
+
+/* ------------------------------------------- the class each act declares, against what it does */
+
+type Act = keyof typeof TOOL_CLASSES;
+type Observed = { reversible: boolean; undoes: boolean };
+
+/** The newest activity row an act wrote, then what `undoAction` makes of it. */
+async function observe(action: Act): Promise<Observed> {
+  const row = db().get<{ id: number; reversible: number; undo_json: string | null }>(
+    "SELECT id, reversible, undo_json FROM activity WHERE action = ? ORDER BY id DESC LIMIT 1",
+    [action],
+  );
+  assert.ok(row, `${action} wrote an activity row`);
+  const undone = await actions.undoAction(row.id);
+  return { reversible: row.reversible === 1 && row.undo_json !== null, undoes: undone.ok };
+}
+
+/**
+ * Drives every act that is not a read through its server action once, against the seeded books,
+ * and records the class the act gave ITSELF: whether its activity row is reversible with an undo
+ * payload, and whether `undoAction` then reverses it.
+ */
+async function driveEveryAct(): Promise<Record<string, Observed>> {
+  const rows = listInvoices();
+  const chase = rows.find((r) => r.state === "overdue" && !r.has_draft_reminder)!;
+  const voidable = rows.find((r) => r.state === "overdue" && r.paid_cents === 0 && r.id !== chase.id)!;
+  const payable = rows.find((r) => r.state === "partial")!;
+  const credit = unappliedCredits().find((c) => !c.ambiguous && c.suggestions.length > 0)!;
+  const seeded = db().get<{ invoice_id: string; line_id: string }>(
+    `SELECT m.invoice_id, m.line_id FROM matches m JOIN invoices i ON i.id = m.invoice_id
+     WHERE i.status = 'sent' ORDER BY m.line_id LIMIT 1`,
+  )!;
+  assert.ok(chase && voidable && payable && credit && seeded, "the seed has a target for every act");
+
+  const seen: Record<string, Observed> = {};
+  const run = async (action: Act, act: () => Promise<{ ok: boolean; message: string }>) => {
+    const result = await act();
+    assert.equal(result.ok, true, `${action}: ${result.message}`);
+    seen[action] = await observe(action);
+  };
+  await run("categorize", () => actions.categorizeAction([chase.id], "consulting"));
+  await run("match_bank_line", () => actions.matchAction(credit.suggestions[0]!.invoice_id, credit.line.id));
+  await run("unmatch", () => actions.unmatchAction(seeded.invoice_id, seeded.line_id));
+  await run("draft_reminder", () => actions.draftReminderAction(chase.id, "gentle"));
+  await run("export_summary", () => actions.exportSummaryAction("2026-08"));
+  await run("mark_paid", () => actions.markPaidAction(payable.id, 100));
+  await actions.draftReminderAction(chase.id, "firm");
+  await run("send_reminder", () => actions.sendReminderAction(chase.id));
+  await run("void_invoice", () => actions.voidInvoiceAction(voidable.id));
+  return seen;
+}
+
+/** Every act whose observed class differs from the one the table declares for it. */
+function disagreements(classes: Record<Act, { reversible: boolean }>, seen: Record<string, Observed>) {
+  return Object.entries(seen)
+    .filter(([name, o]) => {
+      const declared = classes[name as Act].reversible;
+      return o.reversible !== declared || o.undoes !== declared;
+    })
+    .map(([name]) => name);
+}
+
+test("every act is as reversible as its tool class says, by its own activity row and its undo", async () => {
+  // `lib/tool-classes.ts` is what the gate reads: AUTO for a reversible data write, a card for the
+  // rest. The other half of that claim lives in `app/actions.ts` - the `reversible` flag and undo
+  // payload each act logs, and the `applyUndo` case that reverses it - and until now no test held
+  // the two together. A table that called an irreversible act reversible would run it with no
+  // card and no way back; an act that stopped logging its undo would leave an AUTO write that
+  // cannot be taken back.
+  const seen = await driveEveryAct();
+  const writes = (Object.keys(TOOL_CLASSES) as Act[]).filter((n) => TOOL_CLASSES[n].sideEffects !== "none");
+  assert.deepEqual(Object.keys(seen).sort(), [...writes].sort(), "every write in the table was driven");
+  assert.deepEqual(disagreements(TOOL_CLASSES, seen), []);
+
+  // The negative control: the same observations against a table that lies about one act.
+  const lying = { ...TOOL_CLASSES, export_summary: { reversible: false, sideEffects: "data" as const } };
+  assert.deepEqual(disagreements(lying, seen), ["export_summary"], "a flipped class is caught");
 });
