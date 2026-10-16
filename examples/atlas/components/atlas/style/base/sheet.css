@@ -261,6 +261,9 @@
   font: inherit;
   font-size: var(--at-text-label);
   cursor: pointer;
+  transition:
+    border-color var(--at-dur-hair) var(--at-ease),
+    color var(--at-dur-hair) var(--at-ease);
 }
 
 .at-missing-retry:hover {

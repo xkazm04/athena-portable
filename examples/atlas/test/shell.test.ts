@@ -115,7 +115,7 @@ test("every class the shell's stylesheets style is one some component renders", 
   for (const [path, css] of sheets(STYLE)) {
     for (const m of uncomment(css).matchAll(/\.(at-[\w-]+)/g)) {
       const cls = m[1]!;
-      if (!new RegExp(`(?<![\w-])${cls}(?![\w-])`).test(source)) unused.add(`${path}: .${cls}`);
+      if (!new RegExp(String.raw`(?<![\w-])${cls}(?![\w-])`).test(source)) unused.add(`${path}: .${cls}`);
     }
   }
   assert.deepEqual([...unused], [], "a rule for a class nothing renders is a rule nobody can see");
@@ -183,4 +183,18 @@ test("set_view's schema lets a variant with no views reach the handler that says
   const two = parametersToJsonSchema(setViewParameters(["lanes", "turn"]));
   assert.equal(validateArgs({ view: "turn" }, two), null);
   assert.notEqual(validateArgs({ view: "matrix" }, two), null, "a closed set still refuses the rest");
+});
+
+/* ---------------------------------------------------------------------- the motion -- */
+
+test("every control the shell restyles on hover eases into it on the hair clock, as its siblings do", () => {
+  const css = sheets(STYLE).map(([, text]) => uncomment(text)).join("\n");
+  const hovered = new Set([...css.matchAll(/\.(at-[\w-]+)[^{,]*:hover/g)].map((m) => m[1]!));
+  const jumps: string[] = [];
+  for (const cls of hovered) {
+    const base = new RegExp(String.raw`(?:^|\n)\s*\.${cls}\s*\{([^}]*)\}`).exec(css);
+    if (!base || !/transition\s*:[^;]*var\(--at-dur-hair\)/.test(base[1]!)) jumps.push(`.${cls}`);
+  }
+  assert.ok(hovered.size >= 5, `only ${hovered.size} hovered controls found; the instrument is blind`);
+  assert.deepEqual(jumps, [], "a hover state with no transition jumps where its siblings ease");
 });

@@ -124,6 +124,9 @@
   cursor: pointer;
   font: inherit;
   font-size: var(--at-text-label);
+  transition:
+    border-color var(--at-dur-hair) var(--at-ease),
+    color var(--at-dur-hair) var(--at-ease);
 }
 
 .at-chip:hover,
@@ -160,6 +163,9 @@
   cursor: pointer;
   font: inherit;
   text-align: start;
+  transition:
+    border-color var(--at-dur-hair) var(--at-ease),
+    background var(--at-dur-hair) var(--at-ease);
 }
 
 .at-link:hover,
@@ -223,6 +229,7 @@
   cursor: pointer;
   font: inherit;
   font-size: var(--at-text-label);
+  transition: background var(--at-dur-hair) var(--at-ease);
 }
 
 .at-close:hover,
