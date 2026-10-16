@@ -7,10 +7,12 @@ the one route this daemon ships answers off a read connection rather than the wr
 
 from __future__ import annotations
 
+from pathlib import Path
+
 import pytest
 
 from athena.core.approvals import Approvals
-from athena.daemon.routes import Route, RouteTable, error, health
+from athena.daemon.routes import Route, RouteTable, base_routes, error, health
 from athena.daemon.server import AthenaDaemon
 
 from .conftest import ENGINE, Live
@@ -174,3 +176,26 @@ def test_every_pending_card_reaches_the_frame_and_a_long_one_is_cut() -> None:
     assert len(lines) == 14 and asked == [100]
     assert len(lines[-1]) == PENDING_LINE_CAP and lines[-1].endswith("…")
     assert lines[0] == 'apr_00: host.bank.pay_bill {"reference": "CL-0"}'
+
+
+# -- the docstrings a reader meets first ---------------------------------------------------------
+
+
+def test_the_routes_docstring_names_every_route_the_base_table_ships(daemon: AthenaDaemon) -> None:
+    """The module docstring is the route list a reviewer reads; a route added to the table and
+    not to it is a route the reader is told does not exist."""
+    from athena.daemon import routes
+
+    doc = routes.__doc__ or ""
+    missing = [route.label for route in base_routes(daemon) if f"``{route.label}``" not in doc]
+    assert missing == []
+
+
+def test_the_package_docstring_names_every_module_in_the_package() -> None:
+    """``athena.daemon``'s docstring is its table of contents ("read them one at a time")."""
+    import athena.daemon as package
+
+    doc = package.__doc__ or ""
+    here = Path(package.__file__).parent
+    modules = sorted(p.stem for p in here.glob("*.py") if p.stem != "__init__")
+    assert [m for m in modules if f":mod:`athena.daemon.{m}`" not in doc] == []

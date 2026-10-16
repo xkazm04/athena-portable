@@ -1,15 +1,19 @@
 """The daemon: one Athena on 127.0.0.1, beside whatever page is open (README §3.1, §3.5).
 
-The environment layer's front door. Four files rather than one long module, because a reviewer
+The environment layer's front door. Six files rather than one long module, because a reviewer
 should be able to read them one at a time:
 
 - :mod:`athena.daemon.server` — the socket, the token, CORS, one request per connection, and the
   ``AthenaDaemon`` object every route runs against.
-- :mod:`athena.daemon.routes` — the route table and the routes themselves: ``/health``,
-  ``/manifest``, ``/run`` and ``/decisions/<id>`` write; ``/decisions``, ``/ledger``,
-  ``/ledger/rollup`` and ``/playbooks`` read, each bounded and off a read connection.
+- :mod:`athena.daemon.routes` — the route table and the base routes: ``/manifest``, ``/run`` and
+  ``/decisions/<id>`` write and ``/run/stop`` stops; ``/health``, ``/decisions``, ``/ledger``,
+  ``/ledger/rollup`` and ``/playbooks`` read, each bounded and off a read connection, and
+  ``/engines`` reads the machine (a cached probe, no brain).
 - :mod:`athena.daemon.sessions` — who is talking, keyed by origin, in memory.
 - :mod:`athena.daemon.ready` — the one JSON line a spawned daemon prints once it is listening.
+- :mod:`athena.daemon.voice` — the voice studio's routes (ADR 0028), added by wiring.
+- :mod:`athena.daemon.connectors` — the connector routes (README §4, ADR 0021), added by wiring
+  when there is a vault.
 
 Nothing here decides policy. The gate lives in ``core/catalog.py`` and ``harness/hooks.py``; this
 package carries a request to it and carries the answer back.

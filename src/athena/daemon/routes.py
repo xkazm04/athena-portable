@@ -7,7 +7,7 @@ knows nothing about Athena; a route is added by appending to the table rather th
 handler; and a test can append a route of its own to prove a property of the *server* — that a
 slow route does not stall a fast one — without the daemon shipping a debug route to production.
 
-Three routes write, one stops and five read.
+Three routes write, one stops and six read.
 
 ``POST /manifest``
     A page describes itself. Refused whole on any problem (``manifest_invalid``, 400), merged
@@ -34,6 +34,10 @@ Three routes write, one stops and five read.
     What is running, what is waiting on the user, what was spent, and what the brain has
     distilled about one origin. Every one is bounded and carries an honest
     ``showing`` / ``total`` / ``footer``; every one is served off ``Brain.read_connection()``.
+
+``GET /engines``
+    Which engines this machine can run, probed in a subprocess and cached for
+    :data:`ENGINES_TTL_S` (``?fresh=1`` skips the cache). It reads no brain and takes no lock.
 
 **Read routes take no lock.** A read reads through a fresh read-only handle per call (ADR 0003)
 and what it reports is consistent as of the last completed write. Only a route that *writes*
