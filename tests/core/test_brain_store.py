@@ -598,3 +598,44 @@ def test_a_locked_index_is_not_called_damaged(
         assert not isinstance(raised.value, IndexDamagedError)
     finally:
         blocker.close()
+
+
+class _CommitFailsOnce:
+    """The writer connection, except that its first COMMIT raises, as a full disk or an I/O error
+    can. ``sqlite3.Connection`` cannot be patched in place, so the brain gets this in its stead."""
+
+    def __init__(self, con: sqlite3.Connection) -> None:
+        self._con = con
+        self.failed = False
+
+    @property
+    def in_transaction(self) -> bool:
+        return self._con.in_transaction
+
+    def execute(self, sql: str, *args: object) -> sqlite3.Cursor:
+        if sql == "COMMIT" and not self.failed:
+            self.failed = True
+            raise sqlite3.OperationalError("disk I/O error")
+        return self._con.execute(sql, *args)
+
+    def executemany(self, sql: str, rows: object) -> sqlite3.Cursor:
+        return self._con.executemany(sql, rows)  # type: ignore[arg-type]
+
+    def close(self) -> None:
+        self._con.close()
+
+
+def test_a_commit_that_fails_does_not_leave_every_later_write_uncommitted(tmp_path: Path) -> None:
+    """A failed COMMIT used to leave the transaction open, and ``write_txn`` then joined it on
+    every later write instead of opening its own: nothing after it ever reached a reader."""
+    with Brain(tmp_path / "brain") as brain:
+        flaky = _CommitFailsOnce(brain.writer)
+        brain._con = cast(sqlite3.Connection, flaky)
+
+        with pytest.raises(sqlite3.OperationalError, match="disk I/O error"):
+            brain.append_episode("the write whose commit failed", role="user")
+        later = brain.append_episode("the next write", role="user")
+
+        assert flaky.failed
+        assert not brain.writer.in_transaction
+        assert brain.node(later.id) is not None, "a reader sees the next write"

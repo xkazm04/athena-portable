@@ -232,6 +232,12 @@ class Brain:
         writers queue here instead of discovering each other halfway through a memory. The lock
         is re-entrant because a writer may call another writer's helper; only the outermost
         frame opens and closes the transaction, which keeps "one memory, one transaction" true.
+
+        A COMMIT that fails (a full disk, an I/O error, SQLITE_BUSY) can leave the transaction
+        open, and a frame that finds one open joins it rather than opening its own: every later
+        write would then sit uncommitted, unseen by every reader, until the connection closed and
+        dropped them all. So a failed COMMIT is rolled back before it is raised. The file is
+        already on disk, and a reconcile indexes it, as after any failed write.
         """
         with self._write_lock:
             if self._con.in_transaction:
@@ -243,7 +249,12 @@ class Brain:
             except BaseException:
                 self._con.execute("ROLLBACK")
                 raise
-            self._con.execute("COMMIT")
+            try:
+                self._con.execute("COMMIT")
+            except BaseException:
+                if self._con.in_transaction:
+                    self._con.execute("ROLLBACK")
+                raise
 
     def read_connection(self) -> sqlite3.Connection:
         """A fresh **read-only** handle, one per call. The caller closes it.
