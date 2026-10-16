@@ -240,3 +240,32 @@ def test_case_5_a_pasted_pair_in_the_body_wins_over_the_kept_one(
         "pasted.apps.googleusercontent.com",
         "pasted-secret",
     )
+
+
+def test_an_oauth_admission_waits_for_the_writer_lock_like_every_other_act(
+    live: Live, routed: Vault, provider: FakeProvider
+) -> None:
+    def google(method: str, url: str, headers: Any, body: bytes | None) -> Any:
+        if urlsplit(url).path == "/token":
+            return 200, {"access_token": "ya29.held", "refresh_token": "1//h", "expires_in": 3600}
+        return 200, {"emailAddress": "me@example.test"}
+
+    provider.script = google
+    reply = live.request(
+        "/connectors/gmail/connect",
+        method="POST",
+        json_body={"client_id": "cid", "client_secret": "sec", "open_browser": False},
+    )
+    asked = parse_qs(urlsplit(reply.body["flow"]["authorize_url"]).query)
+    callback = (
+        f"{asked['redirect_uri'][0]}?state={urllib.parse.quote(asked['state'][0])}&code=the-code"
+    )
+    flow = routed.flows.for_connector("gmail")
+    assert flow is not None
+    with live.daemon.writing():  # a turn holds the writer lock
+        threading.Thread(target=lambda: urllib.request.urlopen(callback, timeout=10).read()).start()
+        assert not flow.wait(1.0), "the admission committed while a turn held the writer lock"
+        assert "connector.gmail.search_mail" not in live.daemon.catalog
+        assert not routed.is_live("gmail")
+    assert flow.wait(5) and flow.phase == "done", flow.detail
+    assert "connector.gmail.search_mail" in live.daemon.catalog

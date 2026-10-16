@@ -23,7 +23,9 @@
     Revoke and destroy; re-check the credential; ``{"enabled", "writes_enabled", "allowlist"}``.
 
 Every write here takes the writer lock and re-merges the connector's tools into the catalog, so
-a connect is visible to the very next turn and a disconnect refuses the very next call.
+a connect is visible to the very next turn and a disconnect refuses the very next call. An OAuth
+connect admits later, on the flow's own thread; the vault takes the same lock around that
+admission (``guard``), so its re-merge never lands beside a running turn either.
 """
 
 from __future__ import annotations
@@ -95,6 +97,7 @@ def _connect(daemon: AthenaDaemon, vault: Vault, connector_id: str, body: Any) -
         client_secret=str(body.get("client_secret", "")),
         open_browser=bool(body.get("open_browser", True)),
         reuse_client=body.get("reuse_client") is True,
+        guard=daemon.writing,
     )
     return 200, {"ok": True, "flow": flow.view(), "connector": vault.view(connector_id)}
 

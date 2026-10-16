@@ -838,6 +838,7 @@ class Vault:
         client_secret: str = "",
         open_browser: bool = True,
         reuse_client: bool = False,
+        guard: Callable[[], contextlib.AbstractContextManager[object]] | None = None,
     ) -> OAuthFlow:
         """Start the consent flow. The flow's ``authorize_url`` is what the browser opens.
 
@@ -847,7 +848,12 @@ class Vault:
 
         ``reuse_client`` with no pasted pair starts the flow with the pair this vault sealed at the
         last admission (ADR 0117): the caller names the act and never the value, and the flow's
-        view withholds its authorize URL, which carries the client id. A pasted pair always wins."""
+        view withholds its authorize URL, which carries the client id. A pasted pair always wins.
+
+        ``guard`` is what every other connector act runs inside (the daemon's writer lock): the
+        flow thread takes it around the admission — after the code is exchanged, so a long turn
+        cannot let the code expire — and the catalog's re-merge happens under it, never beside a
+        running turn."""
         spec = self.spec(connector_id)
         if spec.auth.type != "oauth":
             raise VaultError(f"{spec.label} connects with a pasted token, not OAuth")
@@ -861,7 +867,7 @@ class Vault:
         self._seal_or_refuse()
 
         def on_code(flow: OAuthFlow, code: str) -> str:
-            return self._exchange(spec, flow, code)
+            return self._exchange(spec, flow, code, guard)
 
         made = _KeptClientFlow if kept else OAuthFlow
         flow = self.flows.add(
@@ -888,7 +894,13 @@ class Vault:
             )
         return kept_id, kept_secret
 
-    def _exchange(self, spec: ConnectorSpec, flow: OAuthFlow, code: str) -> str:
+    def _exchange(
+        self,
+        spec: ConnectorSpec,
+        flow: OAuthFlow,
+        code: str,
+        guard: Callable[[], contextlib.AbstractContextManager[object]] | None = None,
+    ) -> str:
         form = {
             "grant_type": "authorization_code",
             "code": code,
@@ -908,13 +920,14 @@ class Vault:
         grant = self._decode(raw, code)
         if status >= 300 or not isinstance(grant, Mapping) or not grant.get("access_token"):
             raise VaultError(f"{spec.label} refused the code with {status}")
-        return self._admit(
-            spec,
-            str(grant["access_token"]),
-            refresh=str(grant.get("refresh_token", "") or ""),
-            expires_in=_expires_in(grant, spec.label, VaultError),
-            client=(flow.client_id, flow.client_secret),
-        )
+        with guard() if guard is not None else contextlib.nullcontext():
+            return self._admit(
+                spec,
+                str(grant["access_token"]),
+                refresh=str(grant.get("refresh_token", "") or ""),
+                expires_in=_expires_in(grant, spec.label, VaultError),
+                client=(flow.client_id, flow.client_secret),
+            )
 
     def probe(self, connector_id: str) -> ConnectionRecord:
         """Re-check a stored credential and record what was learnt (connectors/health.py): a
