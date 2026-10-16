@@ -170,7 +170,13 @@ const CALLS: Record<string, Record<string, unknown>> = {
   void_invoice: { id: voidable.id },
 };
 
-type Seen = { acts: string[]; rows: { action: string; reversible: boolean }[]; answer: string };
+type Seen = {
+  acts: string[];
+  rows: { action: string; reversible: boolean }[];
+  answer: string;
+  /** Everything else the call reached: the view setters, the router, the toast. */
+  moved: string[];
+};
 
 const newestActivity = () =>
   db().get<{ n: number }>("SELECT COALESCE(MAX(id), 0) AS n FROM activity")!.n;
@@ -190,6 +196,7 @@ async function drive(name: string, args: Record<string, unknown>): Promise<Seen>
     acts: reached.filter((r) => r.startsWith("act:")),
     rows: written.map((w) => ({ action: w.action, reversible: w.reversible === 1 && w.undo_json !== null })),
     answer,
+    moved: reached.filter((r) => !r.startsWith("act:")),
   };
 }
 
@@ -290,4 +297,24 @@ test("a refusal answers { ok: false, error } on every tool that can refuse, as t
     }
   }
   assert.deepEqual(bare, [], "every refusal carries ok: false and the sentence under error");
+});
+
+test("a select whose every reference is unknown refuses, and the ticks a person made stand", async () => {
+  // An empty list is the documented way to clear the tick. A list in which nothing resolves is a
+  // caller's mistake (a stale id, a misread number), and it used to clear the tick all the same:
+  // `setPicked([])`, answered with "Ticked 0 of 2 requested" - the person's working set gone on a
+  // typo, under a sentence that reads as a count rather than as a refusal.
+  const stray = await drive("select", { ids: ["INV-118", "LB-1999-0001"] });
+  assert.ok(!stray.moved.includes("view.setPicked"), `the ticks were touched: ${stray.moved.join(", ")}`);
+  const parsed = JSON.parse(stray.answer) as { ok?: boolean; error?: string };
+  assert.equal(parsed.ok, false, stray.answer);
+  assert.match(String(parsed.error), /INV-118|LB-2026-0002/);
+
+  // The two things that do move it still do: a list with one real invoice, and the empty list.
+  const mixed = await drive("select", { ids: ["INV-118", chase.number] });
+  assert.ok(mixed.moved.includes("view.setPicked"));
+  assert.match(mixed.answer, /Ticked 1 of 2 requested; 1 not in the books/);
+  const cleared = await drive("select", { ids: [] });
+  assert.ok(cleared.moved.includes("view.setPicked"));
+  assert.match(cleared.answer, /Ticked 0 of 0/);
 });

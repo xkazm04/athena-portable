@@ -433,6 +433,14 @@ export function BooksTools({
         const found = resolveInvoiceRef(ref, rows);
         return found.ok ? [found.id] : [];
       });
+      // An empty list clears the tick on purpose. A list in which NOTHING resolves is a stale id
+      // or a misread number, and clearing a person's working set on it is a write they did not
+      // ask for - so it is refused and the tick stands.
+      if (capped.length > 0 && kept.length === 0) {
+        return refused(
+          `None of the ${capped.length} reference${capped.length === 1 ? " is an invoice" : "s are invoices"} in the books, so the tick is unchanged. ${REF_HINT}`,
+        );
+      }
       setPicked(kept);
       // Capped and not-found are different failures and an agent has to be able to tell them apart.
       const over = sent.length > SELECT_MAX ? `; ${sent.length - SELECT_MAX} over the cap of ${SELECT_MAX}` : "";
