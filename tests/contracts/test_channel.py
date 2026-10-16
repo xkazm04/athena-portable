@@ -118,6 +118,27 @@ def test_unknown_fields_are_dropped_rather_than_crashing_an_older_reader() -> No
     assert back == TextDelta(text="hi")
 
 
+def test_an_option_with_a_field_from_a_later_writer_is_read_without_it() -> None:
+    """The rule above, one level down: a card's option is part of the card's wire form."""
+    back = event_from_dict(
+        {
+            "kind": "decision.requested",
+            "id": "apr_0123456789ab",
+            "options": [{"id": "approve", "label": "Send it", "hint": "added later"}],
+        }
+    )
+    assert isinstance(back, DecisionRequested)
+    assert back.options == (DecisionOption("approve", "Send it"),)
+
+
+@pytest.mark.parametrize("option", ["approve", {"label": "Send it"}, {"id": 7}])
+def test_an_option_that_is_not_an_option_is_a_value_error(option: object) -> None:
+    """The reader's one refusal is ``ValueError``, as for an unknown kind, never a ``TypeError``
+    out of a constructor the caller did not know it was calling."""
+    with pytest.raises(ValueError, match="decision option"):
+        event_from_dict({"kind": "decision.requested", "id": "apr_1", "options": [option]})
+
+
 def test_events_are_frozen() -> None:
     with pytest.raises(dataclasses.FrozenInstanceError):
         TextDelta(text="hi").text = "ho"  # type: ignore[misc]

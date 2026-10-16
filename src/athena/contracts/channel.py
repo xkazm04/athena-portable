@@ -267,7 +267,8 @@ def family_of(kind: str) -> str:
 
 
 def event_from_dict(data: dict[str, Any]) -> ChannelEvent:
-    """Rebuild an event from its wire form. Unknown keys are dropped, an unknown kind raises."""
+    """Rebuild an event from its wire form. Unknown keys are dropped, a card's options' too; an
+    unknown kind or a malformed option raises ``ValueError``."""
     payload = dict(data)
     kind = payload.pop("kind", None)
     if not isinstance(kind, str) or kind not in EVENT_KINDS:
@@ -276,11 +277,20 @@ def event_from_dict(data: dict[str, Any]) -> ChannelEvent:
     names = {f.name for f in fields(event_cls)}
     kwargs = {k: v for k, v in payload.items() if k in names}
     if event_cls is DecisionRequested and "options" in kwargs:
-        kwargs["options"] = tuple(
-            o if isinstance(o, DecisionOption) else DecisionOption(**o) for o in kwargs["options"]
-        )
+        kwargs["options"] = tuple(_option_from(o) for o in kwargs["options"])
     ctor = cast(Any, event_cls)
     return cast(ChannelEvent, ctor(**kwargs))
+
+
+def _option_from(raw: object) -> DecisionOption:
+    """One card option off the wire, by the event's own rule: unknown keys are dropped, and
+    anything that is not an option is a ``ValueError`` naming it."""
+    if isinstance(raw, DecisionOption):
+        return raw
+    if not isinstance(raw, dict) or not isinstance(raw.get("id"), str):
+        raise ValueError(f"a decision option must be an object with a string id: {raw!r}")
+    label = raw.get("label", "")
+    return DecisionOption(id=raw["id"], label=label if isinstance(label, str) else str(label))
 
 
 def event_from_json(raw: str) -> ChannelEvent:
