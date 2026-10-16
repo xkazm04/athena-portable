@@ -68,6 +68,19 @@ describe("a failed load", () => {
     expect(usePlaybooks.getState().items?.map((p) => p.id)).toEqual(PLAYBOOKS.slice(0, 2).map((p) => p.id));
     expect(usePlaybooks.getState().problem).toBeNull();
   });
+
+  it("is no longer said while the retry is on its way, so the depth says it is loading", async () => {
+    fetcher.next = () => Promise.reject(new Error("chunk offline"));
+    await usePlaybooks.getState().load();
+    let arrive: (items: readonly Playbook[]) => void = () => {};
+    fetcher.next = () => new Promise((resolve) => (arrive = resolve));
+    const retry = usePlaybooks.getState().load();
+    expect(usePlaybooks.getState().problem).toBeNull();
+    expect(usePlaybooks.getState().items).toBeNull();
+    arrive(PLAYBOOKS.slice(0, 1));
+    await retry;
+    expect(usePlaybooks.getState().items).toHaveLength(1);
+  });
 });
 
 describe("the eager copy stays out of the running app", () => {
