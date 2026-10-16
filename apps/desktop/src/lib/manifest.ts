@@ -84,8 +84,12 @@ export function hostOfDerivedId(app: string): string | null {
     else if (code === "c") out += ":";
     else if (code === "x") {
       const end = s.indexOf("_", i + 2);
-      const point = end === -1 ? NaN : parseInt(s.slice(i + 2, end), 16);
-      if (Number.isNaN(point)) return null;
+      const hex = end === -1 ? "" : s.slice(i + 2, end);
+      // Hex digits and nothing else (`parseInt` would read "1g" as 1), naming a real code point
+      // (`String.fromCodePoint` throws past U+10FFFF): anything else is not an id this file minted.
+      if (!/^[0-9a-f]{1,6}$/.test(hex)) return null;
+      const point = parseInt(hex, 16);
+      if (point > 0x10ffff) return null;
       out += String.fromCodePoint(point);
       i = end;
       continue;

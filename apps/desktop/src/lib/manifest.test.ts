@@ -173,3 +173,13 @@ test("a derived id reads back as the host it was minted from (ADR 0099)", () => 
   expect(hostOfDerivedId("web_https_s")).toBeNull();
   expect(hostOfDerivedId("web_https_sa_q")).toBeNull();
 });
+
+test("an id whose escape is not a code point is not in the derived form, and reading it never throws", () => {
+  // Past U+10FFFF: `String.fromCodePoint` throws, and the card that names the app would not render.
+  expect(() => hostOfDerivedId("web_https_s_x110000_")).not.toThrow();
+  expect(hostOfDerivedId("web_https_s_x110000_")).toBeNull();
+  // `parseInt` reads "1g" as 1; an escape is hex digits and nothing else.
+  expect(hostOfDerivedId("web_https_sa_x1g_")).toBeNull();
+  expect(hostOfDerivedId("web_https_sa_x_")).toBeNull();
+  expect(hostOfDerivedId("web_https_sa_x21_b")).toBe("a!b");
+});
