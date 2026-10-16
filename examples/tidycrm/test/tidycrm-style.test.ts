@@ -307,3 +307,28 @@ test("every word and figure the sheet sets clears 4.5:1 on its ground", () => {
   }
   assert.deepEqual(low, [], `text under 4.5:1:\n  ${low.join("\n  ")}`);
 });
+
+test("the values the TypeScript restates from base/tokens.css agree with it", async () => {
+  // A `three` material cannot read a custom property and a projector cannot measure one before it
+  // writes, so two modules restate token values by hand: the scene's inks, and the width a label
+  // is authored at. Each says so in its own comment; nothing held them to it. A palette edit in
+  // the sheet left the cube's dots in the old gold with the suite green.
+  const { INK } = await import("../components/blocks/l0/contract");
+  const tokenFor: Record<string, string> = { rule: "--bk-rule-ink" };
+  const drift: string[] = [];
+  for (const [key, value] of Object.entries(INK)) {
+    const name = tokenFor[key] ?? `--bk-${key}`;
+    const declared = TOKENS.get(name);
+    if (declared?.toLowerCase() !== String(value).toLowerCase()) {
+      drift.push(`INK.${key} ${String(value)} vs ${name} ${declared ?? "(undeclared)"}`);
+    }
+  }
+  const projector = strip(read("components/blocks/field/useProjector.ts"));
+  const labelW = /export const LABEL_W = (\d+);/.exec(projector);
+  assert.ok(labelW, "field/useProjector.ts no longer declares LABEL_W as a number");
+  if (TOKENS.get("--bk-label-w") !== `${labelW[1]}px`) {
+    drift.push(`LABEL_W ${labelW[1]} vs --bk-label-w ${TOKENS.get("--bk-label-w") ?? "(undeclared)"}`);
+  }
+  assert.ok(Object.keys(INK).length >= 7, "the scene's ink table shrank; revisit this");
+  assert.deepEqual(drift, []);
+});
