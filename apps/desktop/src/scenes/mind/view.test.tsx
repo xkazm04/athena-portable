@@ -5,6 +5,7 @@ import { describe, expect, it } from "vitest";
 import type { Path } from "@/depth/model";
 
 import { PATHS, fixtureIds, fixtures } from "./fixtures";
+import { labeller } from "./live";
 import MindView from "./view";
 
 const go = () => {};
@@ -139,6 +140,19 @@ describe("the brain, the data and the microphone", () => {
     expect(h).toContain("Check the microphone");
     expect(html("typical", PATHS.mic)).toContain("Check again");
     expect(h).toContain("Asking here keeps the prompt out of a turn.");
+  });
+});
+
+describe("the crumb's name for a level", () => {
+  // live.tsx keeps its own copy of the names (the view is a lazy chunk it may not import), so the
+  // crumb and the level's marquee are pinned to each other here.
+  it("is the name the level's marquee shows, for every setting", () => {
+    for (const [name, path] of Object.entries(PATHS)) {
+      if (name === "field" || name === "missing") continue;
+      const marquee = /mind__marquee--level">([^<]*)</.exec(html("typical", path))?.[1];
+      expect(labeller(path), name).toBe(marquee);
+    }
+    expect(labeller(PATHS.missing!)).toBeUndefined();
   });
 });
 
