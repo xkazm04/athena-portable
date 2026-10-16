@@ -227,6 +227,37 @@ test("a glyph drawn into a control is kept out of the control's name", () => {
   assert.deepEqual(named, []);
 });
 
+test("the scrollbar thumb is one token per ground, in both scrollbar models", () => {
+  // Two engines, two models: `scrollbar-color` (Firefox, Chromium) and `::-webkit-scrollbar-thumb`
+  // (Safari). The room declares the first once for every element; each ground that re-colours it
+  // has to re-colour the second the same way, and nothing else may restate it.
+  const thumbOf = (body: string): string | undefined =>
+    /scrollbar-color\s*:\s*var\((--bd-[a-z0-9-]+)\)/.exec(body)?.[1];
+  const webkitOf = (body: string): string | undefined =>
+    /(?:^|;)\s*background\s*:\s*var\((--bd-[a-z0-9-]+)\)\s*(?:;|$)/.exec(body.trim())?.[1];
+
+  const problems: string[] = [];
+  const room = RULES.find((r) => r.selectors.includes(".bd-root :where(*)") && thumbOf(r.body));
+  assert.ok(room, "the room declares no scrollbar-color for every element");
+  for (const rule of RULES) {
+    const token = thumbOf(rule.body);
+    if (!token) continue;
+    for (const selector of rule.selectors) {
+      const scope = selector.replace(/\s*:where\(\*\)$/, "");
+      if (scope === selector) {
+        problems.push(`${rule.file}: ${selector} restates scrollbar-color outside a ground's :where(*)`);
+        continue;
+      }
+      const webkit = RULES.find((r) => r.selectors.includes(`${scope} ::-webkit-scrollbar-thumb`));
+      const painted = webkit && webkitOf(webkit.body);
+      if (painted !== token) {
+        problems.push(`${scope}: scrollbar-color thumb ${token}, webkit thumb ${painted ?? "unset or a literal"}`);
+      }
+    }
+  }
+  assert.deepEqual(problems, []);
+});
+
 test("the room's focus ring names every focusable tag the board renders", () => {
   // The tags are read out of the components, not listed here: a disclosure added to a component
   // is a tag this list did not know about, which is how the foot's <summary> was missed.

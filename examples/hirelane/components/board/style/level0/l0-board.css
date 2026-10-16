@@ -100,8 +100,7 @@
   min-block-size: 0;
   overflow-y: auto;
   overscroll-behavior: contain;
-  scrollbar-width: thin;
-  scrollbar-color: var(--bd-rule-2) transparent;
+  /* Thin and themed by the room's own scrollbar rule (base/the-room.css), not restated here. */
 }
 
 /* A role, as one band: who it is on the first line, who is in it on the

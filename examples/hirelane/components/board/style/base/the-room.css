@@ -116,8 +116,10 @@
   background: transparent;
 }
 
+/* The same token `scrollbar-color` names above, for the engine that reads this model instead, so a
+   retune of --bd-rule-2 moves the thumb in Safari as well. */
 .bd-root ::-webkit-scrollbar-thumb {
-  background: rgb(255 255 255 / 18%);
+  background: var(--bd-rule-2);
   border-radius: var(--bd-radius-round);
   border: var(--bd-rule-w3) solid transparent;
   background-clip: content-box;
@@ -128,9 +130,15 @@
   background-clip: content-box;
 }
 
-/* The gated region inverts, so its scrollbar has to invert with it. */
+/* The gated region inverts, so its scrollbar has to invert with it - in both models. A white
+   thumb at 18% on the light sheet is a thumb nobody can see. */
 .bd-zone[data-class="GATED"] :where(*) {
   scrollbar-color: var(--bd-gate-edge) transparent;
+}
+
+.bd-zone[data-class="GATED"] ::-webkit-scrollbar-thumb {
+  background: var(--bd-gate-edge);
+  background-clip: content-box;
 }
 
 /*
