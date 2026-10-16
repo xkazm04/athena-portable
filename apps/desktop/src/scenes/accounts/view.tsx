@@ -444,7 +444,12 @@ export function Allowlist({ row, model, go }: { row: ConnectorRow; model: Connec
     .split(/[\n,]/)
     .map((e) => e.trim())
     .filter(Boolean);
-  const fresh = parsed.filter((e, i) => !row.allowlist.includes(e) && parsed.indexOf(e) === i);
+  // "Already listed" is the vault's sameness, not the string's: it keeps every entry lower-cased
+  // (connectors/vault.py `set_allowlist`), so a capitalised copy would change nothing there.
+  const same = (e: string) => e.toLowerCase();
+  const saved = new Set(row.allowlist.map(same));
+  const keys = parsed.map(same);
+  const fresh = parsed.filter((_, i) => !saved.has(keys[i]!) && keys.indexOf(keys[i]!) === i);
 
   const add = () => {
     if (locked || busy || fresh.length === 0) return;

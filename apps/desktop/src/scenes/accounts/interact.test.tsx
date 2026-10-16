@@ -289,6 +289,19 @@ describe("the allow-list is a draft until Add", () => {
     expect(document.activeElement).not.toBe(input());
   });
 
+  it("knows an entry is already listed as the vault does: by its lower case", () => {
+    // The vault keeps `v.strip().lower()` (connectors/vault.py set_allowlist), so a capitalised
+    // copy of a saved entry changes nothing there; the draft must say so instead of sending it.
+    const a = mount("heavy", list("notion"));
+    type(input(), "0123456789ABCDEF0123456789ABCDEF");
+    expect(host.querySelector('[aria-label="That is already on the list."]')).toBeTruthy();
+    key(input(), "Enter");
+    expect(a.setAllowlist).not.toHaveBeenCalled();
+    type(input(), "AAAA1111bbbb2222cccc3333dddd4444, aaaa1111BBBB2222cccc3333dddd4444");
+    key(input(), "Enter");
+    expect((a.setAllowlist.mock.calls[0]![1] as string[]).slice(3)).toEqual(["AAAA1111bbbb2222cccc3333dddd4444"]);
+  });
+
   it("Remove saves the list without that entry", () => {
     const a = mount("heavy", list("notion"));
     click(host.querySelector('[aria-label="Remove fedcba9876543210fedcba9876543210"]') ?? undefined);
