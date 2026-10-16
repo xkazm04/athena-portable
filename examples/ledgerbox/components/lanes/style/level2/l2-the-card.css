@@ -60,7 +60,7 @@
 }
 
 .ln-card-state {
-  color: var(--tone);
+  color: var(--tone-ink);
 }
 
 .ln-card-client {
@@ -100,7 +100,7 @@
 
 .ln-figure[data-lead="true"] b {
   font-size: var(--ln-text-figure);
-  color: var(--tone);
+  color: var(--tone-ink);
 }
 
 .ln-figure span {
@@ -113,7 +113,7 @@
 }
 
 .ln-figure[data-lead="true"] span {
-  color: var(--tone);
+  color: var(--tone-ink);
   opacity: 0.85;
 }
 

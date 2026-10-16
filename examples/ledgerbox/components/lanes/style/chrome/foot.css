@@ -230,7 +230,7 @@
 }
 
 .ln-legend-chip[aria-pressed="true"] b {
-  color: var(--tone, var(--ln-ink));
+  color: var(--tone-ink, var(--ln-ink));
 }
 
 .ln-legend i {
@@ -251,7 +251,7 @@
   margin-inline-start: calc(-1 * var(--ln-s1));
   border-radius: 999px;
   border: 1px solid var(--tone);
-  color: var(--tone);
+  color: var(--tone-ink);
   font-style: normal;
   font-size: var(--ln-label);
 }

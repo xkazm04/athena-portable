@@ -139,7 +139,7 @@
   gap: var(--ln-s2);
   min-inline-size: 0;
   font-size: var(--ln-text-md);
-  color: var(--tone);
+  color: var(--tone-ink);
 }
 
 .ln-node-status-say {
@@ -154,9 +154,11 @@
 }
 
 /* The settled and the out-of-play states keep the glyph and lose the shout: the
-   same argument the card's own elevation makes one rule up. */
-.ln-node[data-heat="good"] .ln-node-status-mark,
-.ln-node[data-heat="inert"] .ln-node-status-mark {
+   same argument the card's own elevation makes one rule up. The GLYPH, not the
+   word beside it - dimmed with it, a settled card's standing was 3.8:1 on the
+   deep ground, and the word is the half that has to be read. */
+.ln-node[data-heat="good"] .ln-node-status-mark > svg,
+.ln-node[data-heat="inert"] .ln-node-status-mark > svg {
   opacity: 0.75;
 }
 
@@ -183,7 +185,7 @@
   font-size: var(--ln-text-md);
   font-weight: 500;
   font-variant-numeric: tabular-nums;
-  color: var(--tone);
+  color: var(--tone-ink);
 }
 
 .ln-node-client {

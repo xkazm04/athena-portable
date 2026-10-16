@@ -1,22 +1,36 @@
 /* ------------------------------------------------------ heat, in one place */
 
+/*
+ * Two values per state. `--tone` is the SWATCH - the bar, the rule, the border,
+ * the meter - and `--tone-ink` is TEXT set in the state's colour. They are the
+ * same value for the four states in play. `--ln-inert` is a swatch dark on
+ * purpose (void and draft are not in play), and as text it was 1.6 to 2.1:1 on
+ * these grounds: the money, the standing, the card's state word and its lead
+ * figure on a void or a draft invoice were set in it. Its ink is the held-back
+ * grey every other secondary word on the sheet is set in.
+ * `test/ledgerbox-style-design.test.ts` holds every ink to 4.5:1 on every ground.
+ */
 [data-heat="good"] {
   --tone: var(--ln-good);
+  --tone-ink: var(--ln-good);
 }
 
 [data-heat="watch"] {
   --tone: var(--ln-watch);
+  --tone-ink: var(--ln-watch);
 }
 
 [data-heat="risk"] {
   --tone: var(--ln-risk);
+  --tone-ink: var(--ln-risk);
 }
 
 [data-heat="alert"] {
   --tone: var(--ln-alert);
+  --tone-ink: var(--ln-alert);
 }
 
 [data-heat="inert"] {
   --tone: var(--ln-inert);
+  --tone-ink: var(--ln-faint);
 }
-

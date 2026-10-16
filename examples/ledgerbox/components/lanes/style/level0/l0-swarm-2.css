@@ -124,7 +124,7 @@
   border-radius: 999px;
   background: var(--ln-void);
   border: 1px solid var(--tone);
-  color: var(--tone);
+  color: var(--tone-ink);
   font-family: var(--ln-font-mono);
   font-size: var(--ln-label);
   font-weight: 500;
@@ -202,7 +202,7 @@
   font-family: var(--ln-font-mono);
   font-size: var(--ln-text-md);
   font-variant-numeric: tabular-nums;
-  color: var(--tone);
+  color: var(--tone-ink);
 }
 
 .ln-tip-client {

@@ -277,7 +277,7 @@
 }
 
 .ln-lane-late {
-  color: var(--tone, var(--ln-mute));
+  color: var(--tone-ink, var(--ln-mute));
   font-weight: 500;
 }
 
