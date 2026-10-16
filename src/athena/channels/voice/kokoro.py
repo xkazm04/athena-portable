@@ -24,6 +24,7 @@ from __future__ import annotations
 
 import codecs
 import functools
+import logging
 import subprocess
 import sys
 import tempfile
@@ -367,6 +368,9 @@ class _Render:
         except VoiceBackendError as exc:
             self.error = exc
         except Exception as exc:  # a bug in a helper thread must still end the wait
+            # The speaker reads a VoiceBackendError as the engine's refusal and logs nothing, so
+            # this is the last place the bug's traceback can be kept.
+            logging.getLogger(__name__).exception("voice: a kokoro render thread failed")
             self.error = VoiceBackendError(f"kokoro failed ({type(exc).__name__})")
         finally:
             self.done.set()

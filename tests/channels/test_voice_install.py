@@ -11,6 +11,7 @@ from __future__ import annotations
 
 import hashlib
 import io
+import logging
 import os
 import re
 import tarfile
@@ -330,6 +331,32 @@ def test_a_missing_upstream_asset_is_a_failure_naming_the_status(
     installer.start("kokoro")
     assert _settle(installer) == "failed"
     assert installer.state().error == "download of engine.tar.bz2 failed (HTTP 404)"
+
+
+def test_a_bug_in_the_run_fails_it_by_type_and_logs_the_traceback_once(
+    tmp_path: Path,
+    server: str,
+    monkeypatch: pytest.MonkeyPatch,
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The state carries the type name only (it is shown to a person); the daemon's log carries
+    the traceback, as the gateway's own bug door does. So does a studio refresh that raises."""
+
+    def broken(self: Installer) -> None:
+        raise RuntimeError("a bug")
+
+    def refresh(component: str) -> None:
+        raise KeyError(component)
+
+    monkeypatch.setattr(Installer, "_kokoro", broken)
+    installer = _installer(tmp_path, server, on_done=refresh)
+    with caplog.at_level(logging.WARNING, logger="athena.channels.voice.install"):
+        installer.start("kokoro")
+        assert _settle(installer) == "failed"
+    assert installer.state().error == "install failed (RuntimeError)"
+    logged = [r for r in caplog.records if r.name == "athena.channels.voice.install"]
+    assert [r.exc_info[0] for r in logged if r.exc_info] == [RuntimeError, KeyError]
+    assert all("a bug" not in r.getMessage() for r in logged)
 
 
 def test_an_entry_that_climbs_out_of_the_model_directory_is_refused(

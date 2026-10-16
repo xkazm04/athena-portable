@@ -38,6 +38,7 @@ from __future__ import annotations
 import hashlib
 import http.client
 import json
+import logging
 import os
 import shutil
 import sys
@@ -48,7 +49,6 @@ import time
 import urllib.request
 import zipfile
 from collections.abc import Callable, Mapping
-from contextlib import suppress
 from dataclasses import dataclass, field, replace
 from pathlib import Path, PurePosixPath
 from typing import Any, Literal
@@ -342,12 +342,18 @@ class Installer:
         except InstallError as exc:
             self._set(state="failed", error=str(exc))
         except Exception as exc:  # a bug ends the run honestly, never as a stuck "downloading"
+            # The state is shown to a person and says the type; the traceback is the log's.
+            logging.getLogger(__name__).exception("voice: an install run failed")
             self._set(state="failed", error=f"install failed ({type(exc).__name__})")
         finally:
-            # The studio's refresh must not leave the run unfinished.
+            # The studio's refresh must not leave the run unfinished, nor fail unseen.
             if self.on_done is not None:
-                with suppress(Exception):
+                try:
                     self.on_done(component)
+                except Exception:
+                    logging.getLogger(__name__).exception(
+                        "voice: the refresh after an install failed"
+                    )
 
     def _kokoro(self) -> None:
         bin_dir, model_dir = self.homes.tts_bin, self.homes.kokoro_dir

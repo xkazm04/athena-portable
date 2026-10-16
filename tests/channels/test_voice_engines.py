@@ -11,6 +11,7 @@ the WAV was parsed and says which sentence it came from, in which order.
 from __future__ import annotations
 
 import codecs
+import logging
 import subprocess
 import sys
 import time
@@ -214,6 +215,36 @@ def test_a_render_cancelled_before_its_process_exists_is_killed_when_it_starts(
 
     assert time.monotonic() - began < 4, "the engine ran until its timeout"
     assert job.proc is not None and job.proc.returncode not in (None, 0)
+
+
+def test_a_bug_in_a_render_thread_is_an_engine_error_and_its_traceback_is_logged(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    """The speaker reads a :class:`VoiceBackendError` as an engine's refusal and logs nothing, so
+    the render thread is the last place a bug in it can be seen."""
+
+    def buggy(job: kokoro._Render) -> bytes:
+        raise RuntimeError("a bug")
+
+    with caplog.at_level(logging.WARNING, logger="athena.channels.voice.kokoro"):
+        job = kokoro._Render(buggy, "Hello.").start()
+        with pytest.raises(VoiceBackendError, match=r"^kokoro failed \(RuntimeError\)$"):
+            job.result()
+    logged = [r for r in caplog.records if r.name == "athena.channels.voice.kokoro"]
+    assert [r.exc_info[0] for r in logged if r.exc_info] == [RuntimeError]
+
+
+def test_an_engine_refusal_in_a_render_thread_is_not_logged(
+    caplog: pytest.LogCaptureFixture,
+) -> None:
+    def refused(job: kokoro._Render) -> bytes:
+        raise VoiceBackendError("kokoro exited with 2: the model would not load")
+
+    with caplog.at_level(logging.DEBUG, logger="athena.channels.voice.kokoro"):
+        job = kokoro._Render(refused, "Hello.").start()
+        with pytest.raises(VoiceBackendError):
+            job.result()
+    assert [r for r in caplog.records if r.name == "athena.channels.voice.kokoro"] == []
 
 
 def test_a_sentence_that_never_finishes_times_out(homes: EngineHomes, log: Path) -> None:
