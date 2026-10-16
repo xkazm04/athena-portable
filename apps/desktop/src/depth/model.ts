@@ -32,15 +32,6 @@ export const ROOT_LABEL: Readonly<Record<Root, string>> = {
   mind: "Mind",
 };
 
-/** The module whose model, fixtures and tests a root's scene is built on. Ids stay as they were. */
-export const ROOT_MODULE: Readonly<Record<Root, string>> = {
-  apps: "browser",
-  chores: "playbooks",
-  accounts: "connectors",
-  voice: "voice",
-  mind: "setup",
-};
-
 export type SubKind = "page" | "tool" | "run" | "adopt" | "allowlist";
 
 export interface Sub {
