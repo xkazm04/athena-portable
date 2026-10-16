@@ -234,6 +234,8 @@ export async function proposeSlots(applicantId: string): Promise<ActionResult> {
   const refused = proposeReason(applicant, slots);
   if (refused) return { ok: false, message: refusalFor(refused, applicant) };
   const open = slotsToHold(slots, applicantId);
+  // A top-up can hold one or two, so the count is said the way a person would say it.
+  const count = `${open.length} slot${open.length === 1 ? "" : "s"}`;
   const ids = open.map((s) => s.id);
   const held: HeldSlot[] = open.map((s) => ({
     id: s.id,
@@ -248,12 +250,12 @@ export async function proposeSlots(applicantId: string): Promise<ActionResult> {
     actor: "user",
     action: "propose_slots",
     target: `applicant:${applicantId}`,
-    summary: `Held ${ids.length} slots for ${applicant.name}.`,
+    summary: `Held ${count} for ${applicant.name}.`,
     reversible: true,
     undo: { kind: "slots", slotIds: ids },
   });
   refresh();
-  return { ok: true, message: `${ids.length} slots held for ${applicant.name}.`, slots: held, undoId };
+  return { ok: true, message: `${count} held for ${applicant.name}.`, slots: held, undoId };
 }
 
 /**

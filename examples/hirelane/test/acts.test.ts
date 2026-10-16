@@ -165,6 +165,11 @@ test("with one of their three released, propose_slots tops them back up to three
     const result = await proposeSlots(heldFor);
     assert.equal(result.ok, true, result.message);
     assert.equal(result.slots?.length, 1, "one slot held, the one they were short");
+    assert.equal(result.message, `1 slot held for ${candidate.name}.`, "and it says one, in the singular");
+    const logged = db().get<{ summary: string }>(
+      "SELECT summary FROM activity WHERE action = 'propose_slots' ORDER BY id DESC LIMIT 1",
+    )!.summary;
+    assert.equal(logged, `Held 1 slot for ${candidate.name}.`, "the History band reads the same");
     assert.equal(heldCount(heldFor), 3);
   });
 });
