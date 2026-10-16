@@ -132,8 +132,28 @@ export function createRuntime(deps: RuntimeDeps): Runtime {
     }
   };
 
+  const clock = deps.clock ?? REAL_CLOCK;
+
+  /**
+   * Is her window on screen? `true` where there is no window to ask (a plain browser: she is where
+   * the page is), `null` when it has not answered within {@link VISIBLE_MS}. Card changes are applied
+   * in order, so a question that never comes back must not hold every later card behind it.
+   */
+  const askVisible = (): Promise<boolean | null> =>
+    new Promise((done) => {
+      let answered = false;
+      const finish = (visible: boolean | null) => {
+        if (answered) return;
+        answered = true;
+        clock.clear(timer);
+        done(visible);
+      };
+      const timer = clock.set(() => finish(null), VISIBLE_MS);
+      deps.visible().then(finish, () => finish(true));
+    });
+
   const driver: Driver = createDriver({
-    clock: deps.clock ?? REAL_CLOCK,
+    clock,
     run,
     // A peek stays open while the keyboard is inside her; only the window knows that.
     decorate: (event) => (event.t === "peekEnd" ? { ...event, focusIn: deps.focusIn() } : event),
@@ -154,13 +174,9 @@ export function createRuntime(deps: RuntimeDeps): Runtime {
       chain = chain.then(async () => {
         const n = cards.length;
         if (n > driver.get().cards) {
-          let visible = true;
-          try {
-            visible = await deps.visible();
-          } catch {
-            // No window to ask (a plain browser): she is where the page is.
-          }
-          driver.dispatch({ t: "cards", n, hidden: !visible });
+          const visible = await askVisible();
+          // Unknown (the window did not answer in time): what the page knows of her decides.
+          driver.dispatch(visible === null ? { t: "cards", n } : { t: "cards", n, hidden: !visible });
         } else {
           driver.dispatch({ t: "cards", n });
         }
@@ -195,6 +211,9 @@ export function typingIn(target: KeyTarget | null): boolean {
   if (target.isContentEditable === true || target.tagName === "TEXTAREA") return true;
   return target.tagName === "INPUT" && !NOT_TEXT.has((target.type ?? "").toLowerCase());
 }
+
+/** How long a card waits for her window to say whether it is on screen (ms). */
+export const VISIBLE_MS = 500;
 
 /** What she says when the store's call ended without the daemon's verdict: the card is still the card. */
 export const UNSETTLED = "That answer did not go through. The decision is still waiting.";

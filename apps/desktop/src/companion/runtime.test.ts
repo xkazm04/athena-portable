@@ -12,10 +12,10 @@ import type { DecisionRequested } from "@/lib/events";
 
 import type { Clock } from "./driver";
 import { SETTLE_MS, SHRINK_MS } from "./machine";
-import { choiceFor, createRuntime, lineOf, LINE_MAX, typingIn, UNSETTLED, type RuntimeDeps } from "./runtime";
+import { choiceFor, createRuntime, lineOf, LINE_MAX, typingIn, UNSETTLED, VISIBLE_MS, type RuntimeDeps } from "./runtime";
 import { CARDS } from "./fixtures";
 
-function harness(opts: { visible?: boolean; returns?: () => Promise<unknown> } = {}) {
+function harness(opts: { visible?: boolean; hang?: boolean; returns?: () => Promise<unknown> } = {}) {
   let now = 0;
   let next = 0;
   const timers = new Map<number, { at: number; run: () => void }>();
@@ -46,7 +46,7 @@ function harness(opts: { visible?: boolean; returns?: () => Promise<unknown> } =
     },
     onboard: () => log.push("onboard"),
     focus: (target) => log.push(`focus ${target}`),
-    visible: async () => opts.visible ?? true,
+    visible: opts.hang ? () => new Promise<boolean>(() => {}) : async () => opts.visible ?? true,
     focusIn: () => false,
   };
   const rt = createRuntime(deps);
@@ -244,4 +244,22 @@ test("a key is typing only in a box that takes text: a sheet row's tick is not, 
   expect(typingIn(el("INPUT", "text"))).toBe(true);
   expect(typingIn(el("INPUT", "search"))).toBe(true);
   expect(typingIn(el("DIV", "", true))).toBe(true);
+});
+
+test("a window that never says whether it is on screen does not hold every card behind it", async () => {
+  const h = harness({ hang: true });
+  const settled = async () => {
+    for (let i = 0; i < 5; i += 1) await Promise.resolve();
+  };
+  h.rt.cardsChanged([CARDS[0]]);
+  await settled();
+  h.advance(VISIBLE_MS);
+  await settled();
+  // Not known to be hidden, so the card is what the page knows: the slip, with its pulse.
+  expect(h.rt.getSnapshot().machine.cards).toBe(1);
+  expect(h.rt.getSnapshot().machine.form).toBe("slip");
+  // And the next change is not queued behind the first forever.
+  h.rt.cardsChanged([]);
+  await settled();
+  expect(h.rt.getSnapshot().machine.cards).toBe(0);
 });
