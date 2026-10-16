@@ -2,7 +2,8 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
 
-const css = readFileSync(new URL("./mind.css", import.meta.url), "utf8");
+// Comments stripped first: a comment that names a selector is not a rule for it.
+const css = readFileSync(new URL("./mind.css", import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
 
 /** The declarations of the rule whose selector is exactly `selector`. */
 function rule(selector: string): string {
@@ -23,5 +24,5 @@ test("the field's line, which changes on every hover, holds two lines like the s
 
 test("the text field eases its hover like the surface's ask field", () => {
   expect(rule(".mind__input")).toMatch(/transition:[^;]*var\(--duration-fast\)/);
-  expect(css.includes(".mind__input:hover")).toBe(true);
+  expect(rule(".mind__input:hover")).toMatch(/border-color:\s*var\(--/);
 });

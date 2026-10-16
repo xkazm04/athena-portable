@@ -2,7 +2,8 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
 
-const css = readFileSync(new URL("./surface.css", import.meta.url), "utf8");
+// Comments stripped first: a comment that names a selector is not a rule for it.
+const css = readFileSync(new URL("./surface.css", import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
 
 /** The declarations of the rule whose selector is exactly `selector`. */
 function rule(selector: string): string {
@@ -21,8 +22,9 @@ test("every control the pointer can press eases its hover on the fast duration, 
   const blocks = css.split("}").filter((b) => /cursor:\s*pointer/.test(b));
   expect(blocks.length).toBeGreaterThan(0);
   for (const b of blocks) expect(b, b.trim().split("{")[0]).toMatch(/transition:[^;]*var\(--duration-fast\)/);
-  for (const sel of [".surface__summon", ".surface__send", ".surface__input"]) {
-    expect(css.includes(`${sel}:hover`), sel).toBe(true);
+  // A hover rule with a declaration in it, not the selector's name somewhere in the file.
+  for (const sel of [".surface__summon:hover", ".surface__send:hover:not(:disabled)", ".surface__input:hover:not(:disabled)"]) {
+    expect(rule(sel), sel).toMatch(/(background|border-color):\s*[^;]+;/);
   }
 });
 
