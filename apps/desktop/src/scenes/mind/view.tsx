@@ -131,6 +131,8 @@ function Field({ model, go }: { model: SetupModel; go: (to: Path) => void }) {
           title="Athena could not check which engines are installed."
           reason={model.problem}
           detail="The names below are all this page can say until a check goes through. Press Check again."
+          onRetry={model.actions.checkEngines}
+          retryLabel={model.checking ? "Checking…" : "Check again"}
         />
       ) : null}
       {model.startFailure ? (

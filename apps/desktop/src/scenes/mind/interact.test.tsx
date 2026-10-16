@@ -107,6 +107,13 @@ describe("the field", () => {
     expect(a.reopenOnboarding).toHaveBeenCalledOnce();
   });
 
+  it("offers the Check again its failed-check note asks for, on the field itself", () => {
+    const a = mount("degraded", PATHS.field!);
+    expect(host.textContent).toContain("Press Check again.");
+    click(button("Check again"));
+    expect(a.checkEngines).toHaveBeenCalledOnce();
+  });
+
   it("restarts on the engine that is pending, from the field", () => {
     const a = mount("heavy", PATHS.field!);
     click([...host.querySelectorAll("button")].find((b) => b.textContent?.startsWith("Restart on")));
