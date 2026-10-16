@@ -56,15 +56,8 @@
   font-weight: 500;
 }
 
-.btn .vs-kbd {
-  margin-right: 6px;
-}
-
-/* A chip that ends the label (Hold to talk, then Space) has nothing after it to clear: its 6px
- * margin would sit inside the button's right padding only, 16px against the left's 10px. */
-.btn .vs-kbd:last-child {
-  margin-right: 0;
-}
+/* Inside a button a chip takes no margin: `.btn` is a flex row with a 6px gap, which spaces the
+ * chip from its label whichever side it sits on. */
 
 .btn--primary .vs-kbd {
   border-color: color-mix(in srgb, var(--primary-fg) 45%, transparent);
@@ -110,7 +103,6 @@
   display: inline-block;
   width: 8px;
   height: 8px;
-  margin-right: 8px;
   border-radius: 999px;
   background: currentColor;
 }

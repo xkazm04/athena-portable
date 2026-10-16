@@ -43,8 +43,15 @@ test("the install bar fills by scale, not width, and stills under Calm", () => {
   expect(css).toMatch(/:root\[data-motion="calm"\] \.vs-progress > span \{\s*transition: none/);
 });
 
-test("a chip that ends a button's label does not leave its leading margin on the trailing edge", () => {
-  expect(rule(".btn .vs-kbd:last-child")).toMatch(/margin-right:\s*0/);
+test("inside a button, the key chip and the hold dot are spaced by the button's gap alone", () => {
+  // `.btn` is a flex row with a 6px gap (styles/app.css), so a margin on a chip or the dot is added
+  // to it: chip to label read 12px and dot to label 14px, against 6px from the label to a trailing
+  // chip in the same button.
+  const app = readFileSync(new URL("../../styles/app.css", import.meta.url), "utf8");
+  const btn = app.slice(app.indexOf("\n.btn {"), app.indexOf("\n}", app.indexOf("\n.btn {")));
+  expect(btn).toMatch(/gap:\s*6px/);
+  expect(css).not.toMatch(/\.btn \.vs-kbd[^{]*\{[^}]*margin/);
+  expect(rule(".vs-hold__dot")).not.toMatch(/margin/);
 });
 
 test("a wave bar that changes colour (idle to live, voice to microphone) eases it beside its height", () => {
