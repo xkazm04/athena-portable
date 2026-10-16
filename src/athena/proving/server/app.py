@@ -8,7 +8,8 @@ refused. Two things differ, and on purpose:
   the latest run is meant to be seen by whoever has the URL. Nothing on those routes is a secret
   — a report carries sizes, costs, verdicts and model output, never a key or a prompt — and every
   body is passed through :meth:`Runner.redact` before it is written, so a key that leaked into a
-  log line still does not leave.
+  log line still does not leave. Event streams, which hold a thread each, are bounded
+  (:data:`MAX_STREAMS`); ``HEAD`` on one answers headers only.
 - **Triggering costs money, so it takes a token.** ``POST /runs`` wants ``Authorization: Bearer
   <token>``, compared with :func:`secrets.compare_digest`; with no ``PROVING_JUDGE_TOKEN`` set,
   triggering is off (403) and the page says so. ``POST /runs/<id>/cancel`` takes the same token
@@ -28,6 +29,7 @@ from __future__ import annotations
 
 import json
 import secrets
+import threading
 from collections.abc import Iterable, Iterator, Mapping
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from importlib import resources
@@ -57,6 +59,11 @@ MAX_BODY_BYTES = 4096
 DRAIN_LIMIT = 64 * 1024
 
 IDLE_TIMEOUT_S = 30.0
+
+#: Event streams open at once. Reads are public, and a live run's stream holds a server thread
+#: for the run's whole length, so a stranger's thousand open streams would be a thousand threads.
+#: Past this a stream answers 503 ``too_many_streams``; a finished stream frees its slot.
+MAX_STREAMS = 64
 
 _NONCE = "__CSP_NONCE__"
 
@@ -98,6 +105,7 @@ def build_handler(
     allow_origins: Iterable[str] = (),
 ) -> type[BaseHTTPRequestHandler]:
     origins = frozenset(allow_origins)
+    streams = threading.BoundedSemaphore(MAX_STREAMS)
 
     class Handler(BaseHTTPRequestHandler):
         protocol_version = "HTTP/1.1"
@@ -141,18 +149,23 @@ def build_handler(
             self._json(status, {"error": reason, "detail": detail})
 
         def _stream(self, frames: Iterator[str]) -> None:
-            self._headers(200, "text/event-stream; charset=utf-8", _JSON_CSP)
-            self.send_header("X-Accel-Buffering", "no")
-            self.end_headers()
-            self.close_connection = True
-            if self.command == "HEAD":
-                return  # headers only: a live stream would otherwise hold this thread for the run
+            if not streams.acquire(blocking=False):
+                self._error(503, "too_many_streams", "too many event streams are open; retry")
+                return
             try:
+                self._headers(200, "text/event-stream; charset=utf-8", _JSON_CSP)
+                self.send_header("X-Accel-Buffering", "no")
+                self.end_headers()
+                self.close_connection = True
+                if self.command == "HEAD":
+                    return  # headers only: a live stream would hold this thread for the run
                 for frame in frames:
                     self.wfile.write(runner.redact(frame).encode("utf-8"))
                     self.wfile.flush()
             except (BrokenPipeError, ConnectionError):
                 pass
+            finally:
+                streams.release()
 
         # -- reading ---------------------------------------------------------------------
 

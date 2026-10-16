@@ -506,6 +506,34 @@ def test_head_on_an_event_stream_answers_headers_and_no_frames(make: Any, tmp_pa
     assert body == b""  # a HEAD response has no body, and holds no thread for a run's length
 
 
+def test_open_event_streams_are_bounded_and_a_finished_one_frees_its_slot(
+    make: Any, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(app_module, "MAX_STREAMS", 1)
+    _past_run(
+        tmp_path / "runs",
+        "20261006T010000Z",
+        report={"run_id": "x"},
+        ledger=[{"engine": "nemotron", "cost_usd": 0.001}],
+    )
+    s, _ = make(gate=tmp_path / "never")
+    past = "/runs/20261006T010000Z/events"
+    assert s.request("GET", past)[0] == 200  # a replay ends, and gives its slot back
+    assert s.request("GET", past)[0] == 200
+    status, body = s.post_run()
+    assert status == 202
+    with socket.create_connection(("127.0.0.1", s.port), timeout=10) as held:
+        held.sendall(f"GET {body['events']} HTTP/1.1\r\nHost: x\r\n\r\n".encode())
+        seen = b""
+        while b"event: start" not in seen and (chunk := held.recv(65536)):
+            seen += chunk
+        assert b"event: start" in seen  # a live stream, holding the one slot
+        status, _, text = s.request("GET", past)
+        assert status == 503 and json.loads(text)["error"] == "too_many_streams"
+        ok = {"Authorization": f"Bearer {TOKEN}"}
+        s.request("POST", f"/runs/{body['run_id']}/cancel", b"", ok)
+
+
 # --- reading ---------------------------------------------------------------------------------
 
 
