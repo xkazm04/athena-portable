@@ -647,6 +647,26 @@ describe("playback and barge-in", () => {
     expect(socket.frames().at(-1)?.type).toBe("start");
   });
 
+  it("a line the daemon began speaking as the key went down does not take the key: release still sends stop", async () => {
+    // The gateway's speaker runs on its own thread, so a voice.speaking it sent just before it read
+    // the start frame lands here while the person is already talking over it.
+    const { socket, player, mic } = wire();
+    await startVoice();
+    await useVoice.getState().press();
+    expect(useVoice.getState().phase).toBe("listening");
+    await socket.emit({ kind: "voice.speaking", generation: 7, text: "Two are late.", truncated: false, sample_rate: 24000 });
+    expect(useVoice.getState().phase).toBe("listening");
+    expect(useVoice.getState().speakingText).toBe("");
+    expect(player.dropped).toContain(7);
+    expect(mic.opened()).toBe(true);
+    useVoice.getState().release();
+    expect(socket.frames().at(-1)?.type).toBe("stop");
+    expect(useVoice.getState().phase).toBe("thinking");
+    // Its barge_in stop leaves the turn the person started alone.
+    await socket.emit({ kind: "voice.stopped", generation: 7, reason: "barge_in" });
+    expect(useVoice.getState().phase).toBe("thinking");
+  });
+
   describe("the player holds nothing of a generation once its voice.stopped is handled", () => {
     function realPlayer(): RealPlayer {
       const source = () => ({

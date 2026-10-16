@@ -318,6 +318,13 @@ export const useVoice = create<VoiceState>((set, get) => {
       }
       case "voice.speaking":
         sampleRate = event.sample_rate;
+        // The speaker runs on its own thread, so a line it began just before it read `start` lands
+        // here while the key is down. It is being talked over: drop it, and leave the key listening
+        // so the release still sends `stop` — the daemon's `barge_in` for it follows.
+        if (get().phase === "listening") {
+          player?.drop(event.generation);
+          break;
+        }
         set({ phase: "speaking", generation: event.generation, speakingText: event.text, heard: "" });
         break;
       case "voice.stopped":
