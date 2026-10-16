@@ -146,6 +146,21 @@ describe("hold to talk", () => {
   });
 });
 
+describe("a step change is heard", () => {
+  // Only a change inside a region already on the page is voiced; a region mounted with its text is
+  // silent on most readers. The step's words are keyed by the step, so the region must outlive it.
+  it("the step's eyebrow, title and line sit in one live region that outlives the step", () => {
+    mount(fixtures["stt-compare"]!, STUDIO);
+    const region = host.querySelector(".vsc-title")!.closest("[aria-live]");
+    expect(region).not.toBeNull();
+    expect(region!.querySelectorAll("[aria-live]")).toHaveLength(0);
+    mount(fixtures.ready!, STUDIO);
+    expect(region!.isConnected).toBe(true);
+    expect(region!.textContent).toContain("She is ready.");
+    expect(region!.textContent).toContain("Step 5 of 5");
+  });
+});
+
 describe("the studio's Hold button held from the keyboard", () => {
   // The button shows <Kbd>Space</Kbd>, and a mouse take leaves it focused; the document keys give a
   // focused button its own Space and Enter (keys.ts ownsKey), so the button must take them itself.

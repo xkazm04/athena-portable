@@ -114,14 +114,16 @@ export default function StudioAct({ model }: { model: VoiceModel }) {
             />
             <span className="vsc-stylised">Stylised drawing</span>
           </div>
-          <div className="vsc-head__words" key={step}>
-            <p className="vsc-eyebrow">
-              Step {n} of {STEP_ORDER.length} · {STEP_LABEL[step]}
-            </p>
-            <h1 className="vsc-title">{title}</h1>
-            <p className="vsc-lead" aria-live="polite">
-              {model.line}
-            </p>
+          {/* The words are keyed by the step so they rise in with it; the live region around them
+              is not, because a region mounted with its text already in it is not read out. */}
+          <div className="vsc-head__live" aria-live="polite">
+            <div className="vsc-head__words" key={step}>
+              <p className="vsc-eyebrow">
+                Step {n} of {STEP_ORDER.length} · {STEP_LABEL[step]}
+              </p>
+              <h1 className="vsc-title">{title}</h1>
+              <p className="vsc-lead">{model.line}</p>
+            </div>
           </div>
         </header>
 

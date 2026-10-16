@@ -263,6 +263,9 @@ li[data-status="done"] > .vsc-step > span:first-child {
   justify-items: center;
   gap: 2px;
 }
+.vsc-head__live {
+  min-width: 0;
+}
 .vsc-head__words {
   display: grid;
   gap: 8px;
