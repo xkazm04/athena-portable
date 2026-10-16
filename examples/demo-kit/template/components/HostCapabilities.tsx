@@ -5,11 +5,9 @@
  *
  * The app ships without Athena; these are registered and waiting (design 4.6), on
  * `document.modelContext` through `@athena/demo-kit/webmcp` rather than in a chat the app hosts
- * itself. This is the seam three of the four reference apps use (hirelane, ledgerbox, tidycrm) and
- * the one the Athena side panel reads. A browser agent speaks the standard natively and applies
- * the design 5.1 rule from the annotations `useWebMCPTool` writes - `consequentialHint` is GATED,
- * `readOnlyHint` is AUTO, unknown is gated.
- *
+ * itself. This is the kit's agent seam, and the one the Athena side panel reads. A browser agent
+ * speaks the standard natively and applies the design 5.1 rule from the annotations
+ * `useWebMCPTool` writes - `consequentialHint` is GATED, `readOnlyHint` is AUTO, unknown is gated.
  */
 import { usePathname, useRouter } from "next/navigation";
 import { useWebMCPTool } from "@athena/demo-kit/webmcp";

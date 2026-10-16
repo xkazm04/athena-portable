@@ -6,9 +6,33 @@
 // nothing (`lib/constants.ts`) or the source text itself.
 
 import assert from "node:assert/strict";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 
 import { VIEWS, routeFor, viewFor } from "../template/lib/constants.ts";
+
+const KIT = join(dirname(fileURLToPath(import.meta.url)), "..");
+const TEMPLATE = join(KIT, "template");
+const EXAMPLES = join(KIT, "..");
+
+/** The template's source: what a copy runs and what its author reads. README.md is not in it. */
+function payload(): { file: string; text: string }[] {
+  const out: { file: string; text: string }[] = [];
+  const walk = (dir: string) => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      if (entry.name === "node_modules" || entry.name.startsWith(".")) continue;
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) walk(path);
+      else if (/\.(ts|tsx|css|mjs)$/.test(entry.name)) {
+        out.push({ file: relative(TEMPLATE, path).replaceAll("\\", "/"), text: readFileSync(path, "utf8") });
+      }
+    }
+  };
+  walk(TEMPLATE);
+  return out;
+}
 
 /** Where the browser actually lands for a pushed href: the URL parser collapses `.` and `..`. */
 function landsOn(href: string): string {
@@ -47,4 +71,30 @@ test("read_current_view names a record page whose id starts with activity as det
   assert.equal(viewFor("/activity"), "activity");
   assert.equal(viewFor("/activity-log"), "detail");
   assert.equal(viewFor("/"), "list");
+});
+
+test("the template's prose names no sibling app and counts none: a copy is the next sibling", () => {
+  // Ground truth: the Next apps beside the kit today. The template is copied in among them, so a
+  // sentence that lists them or counts them is stale in the copy the day it is made, and goes
+  // stale in the template the day a fifth app lands (one of them already had: atlas was missing).
+  const apps = readdirSync(EXAMPLES, { withFileTypes: true })
+    .filter((d) => d.isDirectory() && existsSync(join(EXAMPLES, d.name, "app", "layout.tsx")))
+    .map((d) => d.name);
+  assert.ok(apps.length >= 2, `expected the example apps beside the kit, found ${apps.join(", ")}`);
+  const named = new RegExp(String.raw`\b(${apps.join("|")})\b`, "i");
+  const counted = /\b(?:all|of the)\s+(?:two|three|four|five|six)\b|\b(?:one|two|three|four|five|six)\b[^.]{0,20}\b(?:shipped|reference)\s+apps?\b/i;
+  const hits: string[] = [];
+  for (const { file, text } of payload()) {
+    text.split("\n").forEach((line, i) => {
+      if (named.test(line) || counted.test(line)) hits.push(`${file}:${i + 1}: ${line.trim()}`);
+    });
+  }
+  assert.deepEqual(hits, [], "the template describes its siblings instead of its own seam");
+});
+
+test("a template file that sends the reader to a README appendix sends them to one that exists", () => {
+  const readme = readFileSync(join(TEMPLATE, "README.md"), "utf8");
+  const hasAppendix = /^#+\s.*appendix/im.test(readme);
+  const pointers = payload().filter(({ text }) => /appendix/i.test(text)).map(({ file }) => file);
+  if (!hasAppendix) assert.deepEqual(pointers, [], "README.md has no appendix to point at");
 });

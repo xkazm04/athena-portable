@@ -4,9 +4,8 @@ export const APP_VERSION = "0.1.0";
 
 /**
  * The name of this app's design. One name, one `[data-variant]` block in `app/globals.css`, set
- * statically on `<html>` in `app/layout.tsx` - which is what all four shipped apps do. The kit's
- * `ThemeVariantSwitcher` still exists for a prototyping round with several live directions; reach
- * for it when you have one, not by default.
+ * statically on `<html>` in `app/layout.tsx`. The kit's `ThemeVariantSwitcher` still exists for a
+ * prototyping round with several live directions; reach for it when you have one, not by default.
  */
 export const VARIANT = "plain";
 

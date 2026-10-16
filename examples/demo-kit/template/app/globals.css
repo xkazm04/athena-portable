@@ -10,10 +10,9 @@
  * shell - reads these and nothing else, so they follow your palette without you touching a kit
  * component. Tailwind `data-[variant=<name>]:` utilities reach the same block from markup.
  *
- * Each of the four shipped apps does exactly this and ships one design. The kit's
- * `ThemeVariantSwitcher` is for a prototyping round with several live directions at once; a round
- * is over when the switcher is gone and the winner is the sole render, which is where all four
- * ended up. Start where they ended.
+ * Ship one design. The kit's `ThemeVariantSwitcher` is for a prototyping round with several live
+ * directions at once; a round is over when the switcher is gone and the winner is the sole render.
+ * Start where a finished round ends.
  */
 [data-variant="plain"] {
   /* The one colour that means "this app". Nav highlight, primary button, athena's actor chip. */
