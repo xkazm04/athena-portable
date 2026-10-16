@@ -66,12 +66,11 @@ function ToolCount({ tools }: { tools: BrowserTools | null }) {
       </Badge>
     );
   }
+  // Counted as the field's summary counts (`appOf`): "1 tool", never "1 tools" or "tool(s)".
+  const counted = `${tools.count} tool${tools.count === 1 ? "" : "s"}`;
   return (
-    <Badge
-      tone={tools.count ? "success" : "neutral"}
-      title={`${tools.count} tool(s) over ${tools.transport ?? "no transport"}`}
-    >
-      {`${tools.count} tools`}
+    <Badge tone={tools.count ? "success" : "neutral"} title={`${counted} over ${tools.transport ?? "no transport"}`}>
+      {counted}
     </Badge>
   );
 }
