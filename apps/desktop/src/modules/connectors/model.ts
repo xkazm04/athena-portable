@@ -336,9 +336,12 @@ export function rowOf(
     connected,
     healthNote: connected && c.health !== "broken" ? c.notice || c.health_detail : "",
     probedAge: connected && c.health_at ? ageOf(c.health_at, now) : "",
+    // A lapsed grant says the row's own word ("needs reconnecting") and the button's ("Reconnect").
     disabledReason: connected
       ? ""
-      : `Connect ${view.label} first; the switches apply to the account you connect.`,
+      : c.status === "needs_reauth"
+        ? `Reconnect ${view.label} first; the switches apply to the account you reconnect.`
+        : `Connect ${view.label} first; the switches apply to the account you connect.`,
     reconnect: c.status === "needs_reauth" && view.auth === "oauth" && view.client_kept === true,
     reads: view.tools.filter((t) => !isWrite(t)),
     writes: view.tools.filter(isWrite),

@@ -348,7 +348,9 @@ test("the switches carry a plain reason while not connected, and none once conne
   ]);
   expect(connected.disabledReason).toBe("");
   expect(gone.disabledReason).toBe("Connect Gmail first; the switches apply to the account you connect.");
-  expect(reauth.disabledReason).toBe("Connect Gmail first; the switches apply to the account you connect.");
+  // A lapsed grant is put right by reconnecting: the reason uses the row's own word and the button's.
+  expect(reauth.word).toBe("needs reconnecting");
+  expect(reauth.disabledReason).toBe("Reconnect Gmail first; the switches apply to the account you reconnect.");
 });
 
 // -- the last probe's age, for the Accounts depth ------------------------------------------------------
