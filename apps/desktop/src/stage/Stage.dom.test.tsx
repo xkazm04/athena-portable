@@ -6,11 +6,11 @@
  * console does (the stage first, then the app root's effect starts the store), so the order the
  * real window runs in is the order under test.
  */
-import { act } from "react";
+import { act, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, expect, it, vi } from "vitest";
 
-import { INITIAL, formatHash } from "@/depth/model";
+import { INITIAL, formatHash, type Path } from "@/depth/model";
 import { startDepth, useDepth } from "@/depth/store";
 
 import Stage from "./Stage";
@@ -135,4 +135,74 @@ it("a reload at the surface leaves the one surface layer as it was", () => {
   });
   expect(scenes(h)).toEqual(["#/"]);
   expect(useDepth.getState().seq).toBe(0);
+});
+
+/**
+ * A scene that claims Escape for itself (a chore's topic closes its lightbox, the studio asks before
+ * dropping a draft) listens on the document, as `scenes/chores/topic.tsx` does, and marks the key
+ * taken. It is mounted by a dive, so after the stage has started listening.
+ */
+function ClaimsEscape({ onClaim }: { onClaim: () => void }) {
+  useEffect(() => {
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== "Escape" || e.defaultPrevented) return;
+      e.preventDefault();
+      onClaim();
+    };
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [onClaim]);
+  return <p>topic</p>;
+}
+
+it("leaves Escape to a scene that claims it, though the scene started listening after the stage", () => {
+  const onRise = vi.fn();
+  const onClaim = vi.fn();
+  const props = (path: Path, seq: number) => ({
+    state: { ...INITIAL, path, seq, move: seq === 0 ? ("none" as const) : ("down" as const) },
+    calm: true,
+    renderScene: (p: Path) => (p.root === "chores" ? <ClaimsEscape onClaim={onClaim} /> : <p>surface</p>),
+    presence: { pose: "resting" as const, text: "resting", waiting: 0 },
+    onGo: () => {},
+    onRise,
+    onSurface: () => {},
+    onSettle: () => {},
+  });
+  host = document.createElement("div");
+  document.body.append(host);
+  root = createRoot(host);
+  act(() => root!.render(<Stage {...props({ root: null }, 0)} />)); // the stage, listening
+  act(() => root!.render(<Stage {...props({ root: "chores", item: "carrier-refunds" }, 1)} />)); // the dive
+  act(() => {
+    document.body.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+  });
+  expect(onClaim).toHaveBeenCalledTimes(1);
+  expect(onRise).not.toHaveBeenCalled();
+});
+
+it("still rises on an Escape no scene claimed", () => {
+  const onRise = vi.fn();
+  host = document.createElement("div");
+  document.body.append(host);
+  root = createRoot(host);
+  act(() =>
+    root!.render(
+      <Stage
+        state={{ ...INITIAL, path: { root: "mind" } }}
+        calm
+        renderScene={() => <p>mind</p>}
+        presence={{ pose: "resting", text: "resting", waiting: 0 }}
+        onGo={() => {}}
+        onRise={onRise}
+        onSurface={() => {}}
+        onSettle={() => {}}
+      />,
+    ),
+  );
+  const press = new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true });
+  act(() => {
+    document.body.dispatchEvent(press);
+  });
+  expect(onRise).toHaveBeenCalledTimes(1);
+  expect(press.defaultPrevented).toBe(true);
 });

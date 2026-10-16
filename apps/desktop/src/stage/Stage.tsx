@@ -100,7 +100,9 @@ export default function Stage(props: StageProps) {
     return () => clearTimeout(t);
   }, [settled, state.seq]);
 
-  // ---- Escape rises
+  // ---- Escape rises, last: on the window, so it hears the key after every scene's own document
+  // listener (a topic's lightbox, a studio's "drop your draft?"). The stage is mounted first, so on
+  // the document it would always hear the key first and rise before a scene could claim it.
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (escapeRises({ key: e.key, defaultPrevented: e.defaultPrevented, targetIsTyping: isTyping(e.target) })) {
@@ -108,8 +110,8 @@ export default function Stage(props: StageProps) {
         onRise();
       }
     };
-    document.addEventListener("keydown", onKey);
-    return () => document.removeEventListener("keydown", onKey);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   }, [onRise]);
 
   // ---- focus follows the move, so a keyboard user is never left on a layer that went away
