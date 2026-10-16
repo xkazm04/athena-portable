@@ -29,6 +29,7 @@ const { buildSheet } = await import("../lib/lanes");
 const { scoreCandidate } = await import("../lib/match");
 const { statusOf } = await import("../lib/lanes/read");
 const { renderSummary, renderSummaryMarkdown } = await import("../lib/export");
+const { statusOf: standingOf } = await import("../components/lanes/model");
 
 test("on every period, what was invoiced is what was collected plus what is still owed", () => {
   // All three figures describe one set of invoices (issued in the period, drafts and voids out),
@@ -191,6 +192,26 @@ test("one of something is said in the singular, on the sheet and in the close", 
     assert.match(text, /across 1 invoice\b/, `${render.name}: singular`);
     assert.doesNotMatch(text, /across 1 invoices/, `${render.name}: not "1 invoices"`);
     assert.match(render({ summary: { ...summary, overdue_count: 4 }, outstanding: [] }), /across 4 invoices/);
+  }
+});
+
+test("the sentence under a card's standing glyph leads with the same fact the glyph shows", () => {
+  // The card prints the standing (`statusOf` in components/lanes/model/status.ts: disputed, then 45+ days late,
+  // then a credit) beside `mark.status` from lib/lanes/read.ts, which put the credit first: three
+  // seeded invoices 51-67 days late wore the "45+ days late" glyph over "1 unapplied credit could
+  // belong here." - and `read_view` handed that sentence to an agent as what the invoice waits on.
+  const marks = buildSheet().lanes.flatMap((l) => l.marks);
+  const shouting = marks.filter((m) => standingOf(m) === "long-overdue");
+  assert.ok(
+    shouting.filter((m) => m.candidateCount > 0).length >= 3,
+    "the seed has long-overdue invoices a credit might settle",
+  );
+  for (const m of shouting) {
+    assert.match(m.status, new RegExp(`^${m.daysOverdue} days past due`), `${m.number}: lateness first`);
+    if (m.candidateCount > 0) assert.match(m.status, /could belong here\.$/, `${m.number}: and the credit`);
+  }
+  for (const m of marks.filter((x) => standingOf(x) === "credit")) {
+    assert.match(m.status, /could belong here\.$/, `${m.number}: a credit standing names the credit`);
   }
 });
 

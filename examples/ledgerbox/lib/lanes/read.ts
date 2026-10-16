@@ -11,7 +11,7 @@ import "server-only";
 import { MS_DAY } from "./constants";
 import { TODAY } from "../constants";
 import type { InvoiceRow } from "../types";
-import type { LnAxis, LnLane, LnMark } from "@/components/lanes/model";
+import { SHOUT_AT, type LnAxis, type LnLane, type LnMark } from "@/components/lanes/model";
 
 /**
  * Log compression: the studio's biggest invoice is many times its smallest, and
@@ -36,13 +36,15 @@ export function statusOf(row: InvoiceRow): string {
     return row.dispute_note ? `Disputed: ${row.dispute_note}` : "Disputed. Held until it is settled.";
   }
   if (row.balance_cents <= 0) return "Settled in full.";
-  if (row.candidate_count > 0) {
-    const n = row.candidate_count;
-    return `${n} unapplied ${n === 1 ? "credit" : "credits"} could belong here.`;
-  }
-  if (row.days_overdue > 30) {
-    return `${row.days_overdue} days past due${row.reminders_sent > 0 ? `, ${row.reminders_sent} chased` : ", never chased"}.`;
-  }
+  const n = row.candidate_count;
+  const credit = n > 0 ? `${n} unapplied ${n === 1 ? "credit" : "credits"} could belong here.` : null;
+  const chased = `${row.days_overdue} days past due${row.reminders_sent > 0 ? `, ${row.reminders_sent} chased` : ", never chased"}.`;
+  // The standing glyph beside this sentence ranks 45+ days late above a credit that fits
+  // (`statusOf` in components/lanes/model/status.ts), so the sentence leads with the same fact
+  // and still names the credit; putting the credit first had the two disagree on the card.
+  if (row.days_overdue >= SHOUT_AT) return credit ? `${chased} ${credit}` : chased;
+  if (credit) return credit;
+  if (row.days_overdue > 30) return chased;
   if (row.days_overdue > 0) {
     return `${row.days_overdue} ${row.days_overdue === 1 ? "day" : "days"} past due.`;
   }
