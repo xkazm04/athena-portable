@@ -17,6 +17,9 @@
  *     8-second self-disarm;
  *   - the armed sentence names the person and says, in words, what stops being
  *     true — verbatim, unshortened, because this is the moment §7.4 is about;
+ *   - an armed act starts on its Cancel, never on the fire button: the second
+ *     press is the consent, so a held or doubled Enter must not be able to give
+ *     it (`test/gate.test.ts`);
  *   - `Dossier.tsx` keys this component by the candidate, so a bench click
  *     voids an armed gate rather than re-pointing it at somebody else (§7.3);
  *   - every precondition below is a projection of a rule `app/actions.ts`
@@ -86,13 +89,12 @@ export function DossierGate({ candidate, acts }: { candidate: BdCandidate; acts:
               type="button"
               className="bd-btn"
               data-fire="true"
-              autoFocus
               disabled={pending}
               onClick={() => run(() => decideStage(candidate.id, "offer"), disarm)}
             >
               Record the offer
             </button>
-            <button type="button" className="bd-btn" onClick={disarm}>
+            <button type="button" className="bd-btn" autoFocus onClick={disarm}>
               Cancel
             </button>
           </div>
@@ -125,7 +127,7 @@ export function DossierGate({ candidate, acts }: { candidate: BdCandidate; acts:
             >
               Send it
             </button>
-            <button type="button" className="bd-btn" onClick={disarm}>
+            <button type="button" className="bd-btn" autoFocus onClick={disarm}>
               Cancel
             </button>
           </div>
@@ -159,7 +161,7 @@ export function DossierGate({ candidate, acts }: { candidate: BdCandidate; acts:
             >
               Send it
             </button>
-            <button type="button" className="bd-btn" onClick={disarm}>
+            <button type="button" className="bd-btn" autoFocus onClick={disarm}>
               Cancel
             </button>
           </div>
