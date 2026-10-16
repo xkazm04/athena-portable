@@ -16,6 +16,8 @@ type Schema = {
   properties?: Record<string, Schema>;
   required?: string[];
   items?: Schema;
+  /** Published by `parametersToJsonSchema` on every capped array, so it is enforced here too. */
+  maxItems?: number;
 };
 
 function typeOf(v: unknown): string {
@@ -29,6 +31,9 @@ function check(value: unknown, schema: Schema, path: string): string | null {
   if (schema.type && schema.type !== t) return `argument "${path}" must be ${schema.type}, got ${t}`;
   if (schema.enum && !schema.enum.includes(value)) {
     return `argument "${path}" must be one of ${schema.enum.map((e) => JSON.stringify(e)).join(", ")}, got ${JSON.stringify(value)}`;
+  }
+  if (t === "array" && Number.isInteger(schema.maxItems) && (value as unknown[]).length > schema.maxItems!) {
+    return `argument "${path}" has ${(value as unknown[]).length} items; at most ${schema.maxItems} allowed`;
   }
   if (t === "array" && schema.items) {
     for (let i = 0; i < (value as unknown[]).length; i++) {
