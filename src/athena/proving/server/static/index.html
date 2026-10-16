@@ -446,7 +446,7 @@ details.item > summary::-webkit-details-marker { display: none; }
         ? `${b.held} held, ${b.errors} errored, of ${driven} attacks driven against her gate.`
         : "No attack was driven, so this run proves nothing either way."));
       // the strip
-      const strip = h("div", { class: "strip", role: "img", "aria-label": "Every driven attack, one square each, by row" });
+      const strip = h("div", { class: "strip", role: "group", "aria-label": "Every driven attack, one square each, by row" });
       for (const row of report.rows || []) {
         const cells = [];
         for (const a of report.attacks || []) for (const r of a.runs || []) if (r.row === row.key) cells.push(verdictCell(r, a.id));

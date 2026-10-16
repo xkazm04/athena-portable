@@ -782,6 +782,15 @@ def test_the_page_greys_out_what_the_host_cannot_run() -> None:
 # --- the page reads (WCAG 2.2 AA) --------------------------------------------------------------
 
 
+def test_the_verdict_strip_is_a_group_of_buttons_not_an_image() -> None:
+    """``role="img"`` makes its children presentational (WAI-ARIA 1.2), so the strip's verdict
+    buttons would be focusable with no role a screen reader announces. A group keeps its label."""
+    script = page_html().split("<script", 1)[1]
+    strip = re.search(r'h\("div", \{ class: "strip", role: "(\w+)"', script)
+    assert strip is not None and strip.group(1) == "group"
+    assert 'role: "img"' not in script
+
+
 def _hex_tokens(block: str) -> dict[str, str]:
     return dict(re.findall(r"--([\w-]+):\s*(#[0-9a-fA-F]{6})\b", block))
 
