@@ -289,13 +289,12 @@
  * the state. It reads as a key rather than as a caption — same mono face as the
  * figures, held back to `--ln-faint`.
  *
- * IT IS CLAMPED AT THREE LINES AND IT CANNOT GROW THE LANE. The head shares a
+ * IT IS CLAMPED AT TWO LINES AND IT CANNOT GROW THE LANE. The head shares a
  * grid row with the track, so a paragraph in the gutter sets a floor on the
  * height of every short lane — which is how the first cut of this took 200px
  * off the swarm and pushed the sixth lane under the fold on a laptop. The clamp
- * plus `min-block-size: 0` on the head is what keeps it a key rather than a
- * column. On the narrow steps it goes: at 116px of gutter it is nine lines of
- * two words.
+ * plus `min-block-size: 0` on the reading is what keeps it a key rather than a
+ * column. On the narrow steps it goes (`chrome/responsive.css`).
  */
 .ln-lane-reading {
   /*

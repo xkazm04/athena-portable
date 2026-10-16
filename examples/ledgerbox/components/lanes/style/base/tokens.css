@@ -14,8 +14,9 @@
  *    at every edge. Depth is that bath plus a vignette plus grain, never a drop
  *    shadow.
  * 2. VIOLENT SCALE CONTRAST IN THE TYPE. A very large heavy condensed face in
- *    caps with the leading closed up, and directly beneath it an 11px mono
- *    label tracked out to 0.2em. Nothing occupies the middle of that range.
+ *    caps with the leading closed up, and directly beneath it a small mono
+ *    label tracked out to 0.2em - 11px in the reference, `--ln-label` (the
+ *    13px floor) here. Nothing occupies the middle of that range.
  * 3. FIGURES ARE THE HERO. The big numbers are set in the display face at
  *    poster size with a tiny caps label under each, which is how a stat row
  *    reads as a claim rather than as a table.

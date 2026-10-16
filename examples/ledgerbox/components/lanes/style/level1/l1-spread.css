@@ -213,7 +213,7 @@
 }
 
 /* Raised mode lifts the top row by up to 26px and shears the outer columns, so
-   the field is given the room in advance rather than climbing into the rails. */
+   the field is given the room in advance rather than climbing into the head. */
 .ln-field[data-mode="raised"] {
   padding-block: var(--ln-s5) var(--ln-s4);
   padding-inline: var(--ln-s3);
