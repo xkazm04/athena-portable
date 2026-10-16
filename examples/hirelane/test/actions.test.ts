@@ -409,6 +409,25 @@ test("undoing a move after a decision leaves the decision standing, and says so"
   assert.match(lastSummary(), /left the stage alone: a decision \(Rejected\)/);
 });
 
+/*
+ * A server action is a POST endpoint, and `move_stage` and `decide_stage` refuse a stage outside
+ * their vocabulary. `send_rejection` took its template on trust and threw on an unknown one, so the
+ * caller saw "the outcome is unknown" for a gated send that had in fact sent nothing.
+ */
+test("a rejection in a wording the app does not have is refused, and nothing is sent", async () => {
+  const id = pick("screening").id;
+  const letters = (): number =>
+    db().get<{ n: number }>("SELECT COUNT(*) AS n FROM messages WHERE applicant_id = ?", [id])!.n;
+  const before = letters();
+
+  const result = await sendRejection(id, "curt" as Parameters<typeof sendRejection>[1]);
+
+  assert.equal(result.ok, false);
+  assert.match(result.message, /standard, encouraging, keep_in_touch/, result.message);
+  assert.equal(stageOf(id), "screening", "the stage did not change");
+  assert.equal(letters(), before, "no letter was written");
+});
+
 test("an ordinary move is untouched by the from-stage guard", async () => {
   const screening = pick("screening");
 

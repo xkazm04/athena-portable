@@ -27,6 +27,7 @@ import {
 import {
   isDecisionStage,
   isMoveStage,
+  REJECTION_TEMPLATES,
   STAGE_LABEL,
   type RejectionTemplate,
   type Stage,
@@ -327,6 +328,15 @@ export async function sendRejection(
 ): Promise<ActionResult> {
   const applicant = getApplicant(applicantId);
   if (!applicant) return missing(applicantId);
+  // The template arrives as a free string on a POST endpoint. It is refused here, as a stage outside
+  // move_stage's vocabulary is, rather than thrown inside the letter: a throw reads as "outcome
+  // unknown" to the caller of a gated send that has in fact sent nothing.
+  if (!(REJECTION_TEMPLATES as readonly string[]).includes(template)) {
+    return {
+      ok: false,
+      message: `No rejection wording called "${template}". Use one of: ${REJECTION_TEMPLATES.join(", ")}.`,
+    };
+  }
   const already = decided(applicant);
   if (already) return already;
   const mail = rejectionMail({
