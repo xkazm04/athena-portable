@@ -1,18 +1,20 @@
 /**
- * What opening Main loads — README section 3.5, ADR 0089.
+ * What opening Main loads — README section 3.5, ADR 0089 and 0095.
  *
  * The first-paint budget is kept by what the console imports **statically**: the stage, the surface
  * and the first act, and for each depth only its live part, whose view is a `lazy` chunk. A fixture,
  * the preview harness, the eager copy of the shipped playbooks or a depth's view in that graph would
  * put hundreds of kilobytes in the first frame and say nothing. This walks the static imports from
- * the console's root and fails on any of them, so the budget cannot be spent by an import nobody
- * noticed.
+ * the module `chrome.html` loads (the document Tauri puts in the Main webview), so an import added
+ * to the entry itself is walked too, and fails on any of them, so the budget cannot be spent by an
+ * import nobody noticed.
  */
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
 const SRC = path.join(__dirname, "..");
+const APP = path.join(SRC, "..");
 
 const STATIC_IMPORT = /^\s*(?:import|export)\s+(?!type\b)(?:[^"';]*?\sfrom\s+)?["']([^"']+)["']/gm;
 
@@ -40,11 +42,21 @@ function graph(entry: string): Set<string> {
   return new Set([...seen].map((f) => path.relative(SRC, f).replaceAll("\\", "/")));
 }
 
-describe("what the console loads when Main opens", () => {
-  const loaded = graph(path.join(SRC, "console", "root.tsx"));
+/** The module script `chrome.html` loads: the real first frame starts there, not at the console. */
+function mainEntry(): string {
+  const html = readFileSync(path.join(APP, "chrome.html"), "utf8").replace(/<!--[\s\S]*?-->/g, "");
+  const scripts = [...html.matchAll(/<script\b[^>]*\btype="module"[^>]*\bsrc="\/([^"]+)"/g)].map((m) => m[1]!);
+  expect(scripts, "chrome.html loads exactly one module script").toHaveLength(1);
+  return path.join(APP, scripts[0]!);
+}
 
-  it("walks the stage, the surface and the first act", () => {
-    for (const expected of ["stage/Stage.tsx", "scenes/surface/view.tsx", "scenes/waking/view.tsx", "console/Console.tsx"]) {
+describe("what the console loads when Main opens", () => {
+  const entry = mainEntry();
+  const loaded = graph(entry);
+
+  it("starts at the module chrome.html loads, and walks the stage, the surface and the first act", () => {
+    expect(path.relative(SRC, entry).replaceAll("\\", "/")).toBe("chrome.tsx");
+    for (const expected of ["console/root.tsx", "stage/Stage.tsx", "scenes/surface/view.tsx", "scenes/waking/view.tsx", "console/Console.tsx"]) {
       expect(loaded, expected).toContain(expected);
     }
   });
