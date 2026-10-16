@@ -54,6 +54,11 @@ function known(rules: NormalizeRule[]): NormalizeRule[] {
   return Array.isArray(rules) ? RULES.filter((r) => rules.includes(r)) : [];
 }
 
+/** `1 contact`, `3 contacts`: the answer a toast shows and an agent reads back, verbatim. */
+function count(n: number, noun: string): string {
+  return `${n} ${noun}${n === 1 ? "" : "s"}`;
+}
+
 /** The two verdicts `resolvePair` may write; `merged` belongs to `mergeContacts` alone. */
 const VERDICTS: readonly PairStatus[] = ["kept_both", "skipped"];
 
@@ -179,7 +184,7 @@ export function normalizeFields(ids: string[], rules: NormalizeRule[]): Mutation
     ts,
   });
 
-  return { ok: true, summary: `Normalised ${fields} fields across ${plans.length} contacts.` };
+  return { ok: true, summary: `Normalised ${count(fields, "field")} on ${count(plans.length, "contact")}.` };
 }
 
 /* ------------------------------------------------------------ flag stale */
@@ -200,7 +205,7 @@ export function flagStale(ids: string[]): MutationResult {
     reversible: true,
     undo: { kind: "flag_stale", ids: targets },
   });
-  return { ok: true, summary: `Flagged ${targets.length} contacts as stale.` };
+  return { ok: true, summary: `Flagged ${count(targets.length, "contact")} as stale.` };
 }
 
 
@@ -326,7 +331,7 @@ export function resolveCompany(domain: string, canonicalName: string): MutationR
 
   return {
     ok: true,
-    summary: `Filed ${revisionIds.length} contacts on ${plan.domain} under "${plan.canonical_name}".`,
+    summary: `Filed ${count(revisionIds.length, "contact")} on ${plan.domain} under "${plan.canonical_name}".`,
   };
 }
 
@@ -439,7 +444,7 @@ export function deleteContacts(ids: string[]): MutationResult {
     reversible: false,
     ts,
   });
-  return { ok: true, summary: `Deleted ${rows.length} contacts.` };
+  return { ok: true, summary: `Deleted ${count(rows.length, "contact")}.` };
 }
 
 /* ------------------------------------------------------- reviewer verdict */

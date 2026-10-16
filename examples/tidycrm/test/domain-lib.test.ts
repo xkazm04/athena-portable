@@ -28,7 +28,7 @@ const {
 } = await import("../lib/db");
 const { CSV_COLUMNS, toCsv } = await import("../lib/csv");
 const { exportSummary } = await import("../lib/summary");
-const { deleteContacts, mergeContacts, normalizeFields, resolveCompany, resolvePair, undoWrite } =
+const { deleteContacts, flagStale, mergeContacts, normalizeFields, resolveCompany, resolvePair, undoWrite } =
   await import("../lib/mutations");
 
 test("a merge that carries a recent activity date over clears the survivor's stale flag", () => {
@@ -214,6 +214,18 @@ test("the export page says its cleanup figures are the whole list's, not the seg
   // So the sentence that introduces the figures must not pin them to the segment it just named.
   assert.match(after.markdown, /across the whole list/);
   assert.doesNotMatch(after.markdown, /in \*\*Client contacts\*\*, after this cleanup/);
+});
+
+test("a write on one record answers in the singular, as its log line already does", () => {
+  // The answer is what the toast shows and what the agent reads back, verbatim.
+  const phone = segmentRows("phone-format").find((c) => c.in_open_pair === 0);
+  assert.ok(phone);
+  assert.equal(normalizeFields([phone.id], ["phone_e164"]).summary, "Normalised 1 field on 1 contact.");
+
+  const stale = segmentRows("stale").find((c) => c.stale_flagged === 0 && c.in_open_pair === 0);
+  assert.ok(stale);
+  assert.equal(flagStale([stale.id]).summary, "Flagged 1 contact as stale.");
+  assert.equal(deleteContacts([stale.id]).summary, "Deleted 1 contact.");
 });
 
 test("a company name prints as one Markdown table cell, whatever punctuation it carries", () => {
