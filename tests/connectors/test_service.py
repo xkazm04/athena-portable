@@ -4,6 +4,8 @@ and the catalog classing a connector's tools as it classes a page's (connectors/
 from __future__ import annotations
 
 import base64
+import http.client
+import urllib.error
 from collections.abc import Mapping
 from email import message_from_bytes
 from email.utils import getaddresses
@@ -15,7 +17,7 @@ import pytest
 from athena.connectors.providers import gmail
 from athena.connectors.service import READ_CAP, Service, check_egress, services_for
 from athena.connectors.spec import ConnectorSpec
-from athena.connectors.vault import Vault
+from athena.connectors.vault import UrllibTransport, Vault
 from athena.contracts.registry import ToolClass
 from athena.core.catalog import CoreServices, build_catalog
 from athena.core.fence import is_fenced
@@ -226,3 +228,75 @@ def test_a_valueerror_from_a_provider_is_a_failure_not_an_escape(vault: Vault) -
     vault._admit(vault.specs["gmail"], "ya29.access", refresh="", expires_in=3600)
     result = Service(vault.specs["gmail"], vault, provider=boom).call("search_mail", {"query": "x"})
     assert not result.ok and result.error == "engine_error" and "bad header" in result.output
+
+
+# -- a write whose answer never came is outcome_unknown (ADR 0101, for connectors) ---------------
+
+
+class _Opener:
+    """Stands in for the vault's urllib opener: every request fails with ``error``."""
+
+    def __init__(self, error: BaseException) -> None:
+        self.error = error
+
+    def open(self, request: Any, timeout: float) -> Any:
+        raise self.error
+
+
+def _notion_writable(vault: Vault) -> Service:
+    vault.connect_token("notion", "ntn_test_token_0123456789")
+    vault.set_writes("notion", True)
+    vault.set_allowlist("notion", [PAGE])
+    return Service(vault.specs["notion"], vault)
+
+
+@pytest.mark.parametrize(
+    "error",
+    [
+        urllib.error.URLError(TimeoutError("timed out")),
+        TimeoutError("timed out"),
+        ConnectionResetError("reset by peer"),
+        http.client.RemoteDisconnected("closed"),
+    ],
+    ids=["urlopen-timeout", "read-timeout", "reset", "remote-disconnected"],
+)
+def test_a_write_with_no_answer_is_outcome_unknown_and_a_read_is_not(
+    vault: Vault, monkeypatch: pytest.MonkeyPatch, error: BaseException
+) -> None:
+    service = _notion_writable(vault)
+    vault.transport = UrllibTransport()
+    monkeypatch.setattr("athena.connectors.vault._OPENER", _Opener(error))
+    sent = service.call("append_to_page", {"page_id": PAGE, "text": "hello"})
+    assert not sent.ok and sent.error == "outcome_unknown"
+    assert "may have gone through" in sent.output
+    read = service.call("search", {"query": "x"})
+    assert not read.ok and read.error == "engine_error"
+
+
+def test_a_write_that_was_never_sent_stays_a_failure(
+    vault: Vault, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    service = _notion_writable(vault)
+    vault.transport = UrllibTransport()
+    monkeypatch.setattr(
+        "athena.connectors.vault._OPENER",
+        _Opener(urllib.error.URLError(ConnectionRefusedError("refused"))),
+    )
+    sent = service.call("append_to_page", {"page_id": PAGE, "text": "hello"})
+    assert not sent.ok and sent.error == "engine_error"
+
+
+@pytest.mark.parametrize("status", [500, 502, 503, 504])
+def test_a_write_answered_5xx_is_outcome_unknown_and_a_4xx_or_a_read_is_not(
+    vault: Vault, provider: FakeProvider, status: int
+) -> None:
+    service = _notion_writable(vault)
+    provider.script = lambda *_: (status, {"object": "error"})
+    sent = service.call("append_to_page", {"page_id": PAGE, "text": "hello"})
+    assert not sent.ok and sent.error == "outcome_unknown"
+    assert str(status) in sent.output and "may have gone through" in sent.output
+    read = service.call("search", {"query": "x"})
+    assert not read.ok and read.error == "engine_error"
+    provider.script = lambda *_: (400, {"object": "error"})
+    refused = service.call("append_to_page", {"page_id": PAGE, "text": "hello"})
+    assert not refused.ok and refused.error == "engine_error"

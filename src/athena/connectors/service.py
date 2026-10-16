@@ -16,7 +16,10 @@ before a provider runs, from the record read live on each call:
    model never reads a mailbox as instructions.
 5. **Three error channels.** A provider's refusal is ``ok=False`` with a sanitised reason; a
    grant that is gone is the one sentence that sends the person to Connectors; a refused host is
-   a bug in a provider and is reported as such.
+   a bug in a provider and is reported as such. A write whose answer never came — it timed out,
+   the connection dropped after it was sent, or the provider answered 5xx — is
+   ``outcome_unknown``, not a failure: it may have run, and a record that said "failed" would
+   invite the second send (ADR 0101). A read in the same plight is still ``engine_error``.
 6. **No secret surface.** There is no tool here that lists, shows or rotates a credential.
 """
 
@@ -28,7 +31,7 @@ from typing import Any
 from athena.connectors.addresses import one_address, refusal_reason
 from athena.connectors.providers import gmail, notion
 from athena.connectors.spec import ConnectorSpec, ToolSpec
-from athena.connectors.vault import NeedsReauth, Vault, VaultError
+from athena.connectors.vault import NeedsReauth, NoAnswer, Vault, VaultError
 from athena.contracts.manifest import HostTool
 from athena.contracts.registry import ExecResult, Tier
 from athena.core.fence import wrap_untrusted
@@ -117,7 +120,8 @@ class Service:
                 "unknown_ref", f"{self.spec.label} has no tool {name!r}", tier=CONNECTOR_TIER
             )
         record = self.vault.record(self.spec.id)
-        if is_write(tool.tool):
+        write = is_write(tool.tool)
+        if write:
             if not record.writes_enabled:
                 return ExecResult.failure(
                     "validator_failed",
@@ -128,13 +132,21 @@ class Service:
             if refusal is not None:
                 return ExecResult.failure("validator_failed", refusal, tier=CONNECTOR_TIER)
 
+        statuses: list[int] = []
+
         def request(method: str, url: str, json_body: Any) -> tuple[int, Any]:
-            return self.vault.request(self.spec.id, method, url, json_body)
+            status, body = self.vault.request(self.spec.id, method, url, json_body)
+            statuses.append(status)
+            return status, body
 
         try:
             ok, text = self._provider(request, name, params)
         except NeedsReauth as exc:
             return ExecResult.failure("validator_failed", str(exc), tier=CONNECTOR_TIER)
+        except NoAnswer as exc:
+            if write:
+                return self._unknown(f"{self.spec.label}: {exc}")
+            return ExecResult.failure("engine_error", str(exc), tier=CONNECTOR_TIER)
         except VaultError as exc:
             return ExecResult.failure("engine_error", str(exc), tier=CONNECTOR_TIER)
         except gmail.SubjectRefused as exc:
@@ -146,10 +158,21 @@ class Service:
                 tier=CONNECTOR_TIER,
             )
         if not ok:
+            if write and statuses and statuses[-1] >= 500:
+                return self._unknown(text)
             return ExecResult.failure("engine_error", text, tier=CONNECTOR_TIER)
-        if is_write(tool.tool):
+        if write:
             return ExecResult(ok=True, output=text, tier=CONNECTOR_TIER)
         return ExecResult(ok=True, output=read_result(text, self.spec.id), tier=CONNECTOR_TIER)
+
+    @staticmethod
+    def _unknown(said: str) -> ExecResult:
+        """A write that was sent and whose outcome nobody heard (ADR 0101)."""
+        return ExecResult.failure(
+            "outcome_unknown",
+            f"{said}; the write may have gone through, so check before trying it again",
+            tier=CONNECTOR_TIER,
+        )
 
 
 def services_for(vault: Vault) -> dict[str, Service]:

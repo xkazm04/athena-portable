@@ -60,6 +60,7 @@ __all__ = [
     "ConnectionRecord",
     "HostRefused",
     "NeedsReauth",
+    "NoAnswer",
     "NotConnected",
     "RateLimited",
     "RefreshFailed",
@@ -103,6 +104,11 @@ class HostRefused(VaultError):
 
 class NotConnected(VaultError):
     """Not connected, or switched off."""
+
+
+class NoAnswer(VaultError):
+    """The request may have reached the provider and no answer came back: it timed out, or the
+    connection dropped after it was sent. A write that meets this may have run (ADR 0101)."""
 
 
 class NeedsReauth(VaultError):
@@ -189,7 +195,15 @@ class UrllibTransport:
         except urllib.error.HTTPError as exc:
             answer = exc.read(MAX_RESPONSE_BYTES + 1)
             return int(exc.code), answer, dict(exc.headers.items()) if exc.headers else {}
-        except (urllib.error.URLError, TimeoutError, OSError) as exc:
+        except urllib.error.URLError as exc:
+            if isinstance(exc.reason, TimeoutError):
+                why = type(exc.reason).__name__
+                raise NoAnswer(f"the provider did not answer: {why}") from None
+            raise VaultError(f"the provider could not be reached: {type(exc).__name__}") from None
+        except (TimeoutError, ConnectionResetError, ConnectionAbortedError) as exc:
+            # After the request went out: whatever it asked for may have been done.
+            raise NoAnswer(f"the provider did not answer: {type(exc).__name__}") from None
+        except OSError as exc:
             raise VaultError(f"the provider could not be reached: {type(exc).__name__}") from None
 
 
