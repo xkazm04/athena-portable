@@ -7,6 +7,7 @@
 import { describe, expect, it } from "vitest";
 
 import type { InstallState, VoiceConfig } from "@/lib/voice-setup";
+import { HOTKEY } from "@/scenes/voice/parts";
 
 import { fixtures } from "./fixtures";
 import {
@@ -287,6 +288,12 @@ describe("the dock", () => {
       "Heart · English (US) · female · A",
     ]);
     expect(fixtures.ready.styleHears[0].value).toBe("Whisper base.en, on this machine");
+  });
+
+  it("the ready card names the hotkey the Voice scene shows, so the two spellings cannot drift", () => {
+    // The scene's chips and lines spell it from HOTKEY; the studio's last line is written here by hand.
+    expect(fixtures.ready.config?.ready).toBe(true);
+    expect(fixtures.ready.line).toContain(`Hold ${HOTKEY} anywhere`);
   });
 });
 
