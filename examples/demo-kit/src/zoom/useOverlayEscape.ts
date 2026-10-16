@@ -41,8 +41,9 @@ export interface OverlayEscapeOptions {
   onClose: () => void;
   /**
    * Where focus goes if the opener is gone — an agent opened the overlay and nothing on the
-   * sheet had focus, or the level underneath re-rendered. Called at unmount, so it can look the
-   * element up then rather than capture one that may not survive.
+   * sheet had focus, or the level underneath re-rendered. Called on the frame after unmount, so
+   * it can look the element up then rather than capture one that may not survive, and an
+   * element the level underneath puts back in the same commit is already there to be found.
    */
   returnFocusTo?: () => HTMLElement | null;
   /**
@@ -102,16 +103,19 @@ export function useOverlayEscape({
     }
 
     return () => {
-      const target = focusReturnTarget(
-        opener.current,
-        fallback.current?.() ?? null,
-        document.body,
-        preference.current,
-      );
       /* Next frame, not this one: React is still committing the unmount, and the level
-         underneath has not been painted for the fallback to exist in yet. */
+         underneath may not have put its element back yet (an effect of this same commit runs
+         after this cleanup). So the TARGET is chosen in the frame too, not here: a fallback
+         looked up now finds nothing and drops focus to the body, and an opener checked now may
+         be gone by the time it is focused. */
       pending.current = requestAnimationFrame(() => {
         pending.current = null;
+        const target = focusReturnTarget(
+          opener.current,
+          fallback.current?.() ?? null,
+          document.body,
+          preference.current,
+        );
         target?.focus({ preventScroll: true });
       });
     };
