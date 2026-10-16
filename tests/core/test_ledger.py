@@ -16,7 +16,7 @@ from athena.contracts import ids
 from athena.contracts.harness import ERROR_REASONS
 from athena.core.brain import Brain
 from athena.core.brain.reconcile import reconcile_from_disk
-from athena.core.ledger import Ledger, LedgerError, LedgerRow
+from athena.core.ledger import TRIGGERS, Ledger, LedgerError, LedgerRow
 
 CONVERSATION = ids.conversation_for_app("invoices")
 
@@ -63,6 +63,26 @@ def test_a_turn_writes_one_row_that_says_what_it_cost(ledger: Ledger) -> None:
     assert row.turn_id == turn_id
     assert row.error_reason is None
     assert row.to_summary().rounds == 8
+
+
+def test_the_documented_triggers_are_the_ones_the_writers_use() -> None:
+    """``TRIGGERS`` is what a reader filters a rollup by, so it is held to the writers' own
+    defaults rather than to a list nobody checks: it named ``chat`` while every typed turn has
+    always been written as ``cli``."""
+    from dataclasses import fields
+
+    from athena.contracts import TurnContext
+    from athena.lane.browser_lane import BrowserLane
+
+    decision = next(f.default for f in fields(BrowserLane) if f.name == "decision_trigger")
+    written = {
+        TurnContext(conversation_id=CONVERSATION, turn_id="turn-1").trigger,
+        decision,
+        "voice",
+        "adopt",
+    }
+    assert written <= set(TRIGGERS)
+    assert "chat" not in TRIGGERS
 
 
 def test_a_failed_turn_writes_exactly_one_error_row(ledger: Ledger) -> None:

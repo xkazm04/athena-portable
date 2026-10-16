@@ -8,9 +8,10 @@ with a reason from the closed set in ``contracts.harness.ERROR_REASONS``.
 Three properties are worth stating because each is a way ledgers usually go wrong.
 
 **Failures are rows, not gaps.** A turn that died is the expensive one; a ledger that only records
-successes shows a cheap week. ``record`` takes ``is_error`` and refuses to write a success that
-carries a reason or an error that carries none — an error with no reason becomes ``unknown``
-rather than ``NULL``, because a row nobody can group by is a log line.
+successes shows a cheap week. ``record`` takes ``is_error`` and never stores a success that
+carries a reason or an error that carries none: a success's reason is dropped, and an error with
+no reason becomes ``unknown`` rather than ``NULL``, because a row nobody can group by is a log
+line. Neither is refused, since a turn that leaves no row is the failure this module exists for.
 
 **The reason vocabulary is closed.** Anything unrecognised collapses to ``unknown`` through
 ``contracts.harness.normalize_reason``. A reason invented at a call site would be a column with
@@ -58,9 +59,12 @@ __all__ = [
     "RollupRow",
 ]
 
-#: The triggers seen so far. Documentation, not a gate: an unknown trigger is stored verbatim,
-#: because refusing to record a turn is a worse failure than a rollup key nobody recognises.
-TRIGGERS: tuple[str, ...] = ("chat", "voice", "mcp", "schedule", "resume")
+#: The triggers the writers use: ``cli`` for a typed turn (``TurnContext.trigger``'s default),
+#: ``voice`` for an utterance, ``decision`` for a row the lane writes when a card is answered, and
+#: ``adopt``, which an adopt run writes as ``adopt.<leg kind>``. Documentation, not a gate: an
+#: unknown trigger is stored verbatim, because refusing to record a turn is a worse failure than
+#: a rollup key nobody recognises. ``tests/core/test_ledger.py`` holds it to the writers' defaults.
+TRIGGERS: tuple[str, ...] = ("cli", "voice", "decision", "adopt")
 
 #: ``rollup(by=...)`` → the column it groups on. The dimensions the activity module of README §1
 #: act 4 offers, and no free-form column name ever reaches SQL.
