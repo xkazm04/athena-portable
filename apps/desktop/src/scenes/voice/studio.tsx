@@ -99,7 +99,7 @@ export default function StudioAct({ model }: { model: VoiceModel }) {
     <div className="vsc vsc--studio" data-step={step} ref={root}>
       <Rail model={model} />
 
-      <main className="vsc-act">
+      <div className="vsc-act">
         <header className="vsc-head">
           <div className="vsc-head__art">
             <VoiceArt
@@ -147,7 +147,7 @@ export default function StudioAct({ model }: { model: VoiceModel }) {
           {dock.canSkip ? <Chip k="S" label="Skip" onPress={() => actions.studio({ t: "skip" })} /> : null}
           <Chip k="Enter" label={dock.primaryLabel} primary disabledReason={dock.primaryDisabledReason} onPress={primary(model)} />
         </footer>
-      </main>
+      </div>
     </div>
   );
 }

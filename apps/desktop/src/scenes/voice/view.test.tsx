@@ -211,6 +211,13 @@ describe("the studio", () => {
     expect(out).toContain("Ctrl+Shift+Space");
   });
 
+  it("is not a second main landmark: the stage's scenes are the one <main>", () => {
+    // stage/Stage.tsx wraps every scene in <main className="stage__scenes">.
+    for (const id of ["engine", "installing", "pick", "stt-compare", "ready"]) {
+      expect(draw(id, STUDIO)).not.toMatch(/<main[\s>]/);
+    }
+  });
+
   it("the dock shows Back only after the first step, Skip until the last, and Enter always", () => {
     expect(draw("engine", STUDIO)).not.toContain(">Back<");
     expect(draw("pick", STUDIO)).toContain("Back");
