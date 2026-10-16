@@ -1,0 +1,340 @@
+{
+  "schema": "conform-run/1",
+  "worker": "ae78fcab-d55d-41d8-8e21-b0dd85be6297",
+  "subject": "motion",
+  "evaluatedAt": "2026-10-16T00:00:02.982515+00:00",
+  "provider": "grok",
+  "model": "grok-4.7",
+  "pairs": [
+    {
+      "context": "desktop-art-bell",
+      "subject": "motion",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "apps/desktop/src/art/glyphs.css:22 The install ring eases progress by transitioning stroke-dasharray, a paint property the vocabulary is not allowed to animate.",
+      "techniques": [
+        {
+          "technique": "performance-discipline",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/art/glyphs.css:22 Account ink also transitions stroke and fill; only the bell keyframes stay on transform, rotate, and opacity."
+        },
+        {
+          "technique": "preset-vocabulary",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/art/chore.css:10 Hero float inlines 7s and the glyph float inlines 6s, two nudged copies rather than one duration class."
+        },
+        {
+          "technique": "taste-budgets",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/bell/bell.css:68 Hearing and asking ripples scale to 1.7, far past an ambient travel of a few pixels, and each tendril adds two more infinite sways."
+        },
+        {
+          "technique": "unprompted-motion-lifecycle",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/bell/bell.css:25 Pulse, glow, ripple, sway, and the glyph floats run indefinitely; Bell.tsx and the preview expose no visible stop."
+        },
+        {
+          "technique": "content-bearing-degradation",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/art/voice.tsx:139 The ring's markup is the real progress; Calm only drops the transition, and the drawings stay painted while floats stop."
+        },
+        {
+          "technique": "engine-selection",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/bell/bell.css:4 Fire-and-forget motion is platform keyframes; the bell test forbids a frame loop."
+        },
+        {
+          "technique": "continuity-across-change",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/bell/bell.css:16 A pose retunes variables on the same svg instead of swapping in another drawing."
+        },
+        {
+          "technique": "gesture-decomposition",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/bell/bell.css:73 Lean is a separate rotate track from the sway transform, with its own transition."
+        },
+        {
+          "technique": "reduced-motion-mechanics",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/art/glyphs.css:28 Calm stops the decorative float and the ring and ink transitions, leaving the settled drawing."
+        }
+      ],
+      "registryProposal": "A few-pixel infinite float is the ambient class taste-budgets already caps, but unprompted-motion-lifecycle's five-second rule still demands a visible stop, so every decorative loop fails the same test as an autoplay carousel."
+    },
+    {
+      "context": "desktop-scenes-mind-surface",
+      "subject": "motion",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "apps/desktop/src/scenes/mind/mind.css:84 Instrument hover eases background and border-color, which repaint, and the Mind and Surface sheets never settle those transitions under Calm.",
+      "techniques": [
+        {
+          "technique": "performance-discipline",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/mind/mind.css:84 Surface controls likewise transition background, border-color, and color; the engine glow is the only opacity-only piece."
+        },
+        {
+          "technique": "reduced-motion-mechanics",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/surface/surface.css:66 Mind's own calm copy says moves land at once, but surface.css and mind.css have no data-motion rule; the notice fade is specified as 0ms, not an epsilon."
+        },
+        {
+          "technique": "content-bearing-degradation",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/scenes/shared/EngineSection.tsx:49 The notice text is in the element; opacity 0 lives only in the keyframe from-state, so a fade that never runs still shows the warning."
+        },
+        {
+          "technique": "continuity-across-change",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/scenes/shared/engine.css:26 Choosing an engine fades a layer on the same card instead of swapping cards."
+        },
+        {
+          "technique": "engine-selection",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/scenes/shared/engine.css:23 Hover, selection, and the notice fade are declarative stylesheet motion with no library switch."
+        },
+        {
+          "technique": "preset-vocabulary",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/scenes/mind/mind.css:170 These sheets reference duration and easing tokens and do not inline milliseconds."
+        },
+        {
+          "technique": "taste-budgets",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/scenes/surface/surface.css:124 Hover and error color use the fast feedback step; the notice uses the depth token, under a second."
+        }
+      ]
+    },
+    {
+      "context": "hirelane-board-ui",
+      "subject": "motion",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "examples/hirelane/components/board/Columns.tsx:221 Live pile faces enter from invisible on every mount, and leaving level 0 unmounts the columns so the same candidates play that entrance again.",
+      "techniques": [
+        {
+          "technique": "one-shot-guarding",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/components/board/Columns.tsx:221 Board renders Columns only at level 0, so a return remounts every face; there is no surface seen-set."
+        },
+        {
+          "technique": "reduced-motion-mechanics",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/components/board/motion.ts:80 The scrim exit uses exact zero inside AnimatePresence; the stylesheet side correctly uses 0.01ms."
+        },
+        {
+          "technique": "content-bearing-degradation",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/motion.ts:141 Reduced motion skips the echo and collapses both dossier beats onto the shown state, with initial false."
+        },
+        {
+          "technique": "continuity-across-change",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/Columns.tsx:193 candidate-<id> is held by the pile, the card, or the dossier, and the echo carries no layoutId."
+        },
+        {
+          "technique": "engine-selection",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/Board.tsx:40 Layout morphs sit on motion/react, the reducedMotion switch is named in reduced-motion.css, and a second navigation replaces the echo."
+        },
+        {
+          "technique": "performance-discipline",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/Board.tsx:505 The camera echo moves opacity and scale; the vocabulary is not written through per-frame React state."
+        },
+        {
+          "technique": "preset-vocabulary",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/motion.ts:176 Zoom, settle, lift, fade, and leave take duration and easing from the cascade tokens, with DOSSIER_STILL as the fallback."
+        },
+        {
+          "technique": "taste-budgets",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/motion.ts:84 The level change is held to 350ms, under the stated 400ms ceiling, and nothing in this module loops."
+        },
+        {
+          "technique": "gesture-decomposition",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/motion.ts:123 The dossier is two sequenced beats: the box lands, then the regions stagger in."
+        },
+        {
+          "technique": "loop-pause-governance",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/motion.ts:8 There is no looping gesture for a merged pause signal to govern."
+        }
+      ]
+    },
+    {
+      "context": "ledgerbox-style-design",
+      "subject": "motion",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "examples/ledgerbox/components/lanes/style/level0/l0-swarm-2.css:59 A mark's hover transitions box-shadow, so the pointer response repaints instead of staying on transform and opacity.",
+      "techniques": [
+        {
+          "technique": "performance-discipline",
+          "verdict": "deviation",
+          "evidence": "examples/ledgerbox/components/lanes/style/level0/l0-swarm-2.css:59 The mast headline was moved off font-size onto transform and opacity, but the mark still eases its shadow."
+        },
+        {
+          "technique": "one-shot-guarding",
+          "verdict": "deviation",
+          "evidence": "examples/ledgerbox/components/lanes/style/chrome/mast.css:37 Levels 1 and 2 override animation-name, so returning to level 0 restarts the open entrance; no seen-set exists in the sheet."
+        },
+        {
+          "technique": "reduced-motion-mechanics",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/style/base/reduced-motion.css:11 They rejected a 0.01ms duration because fill-mode still painted the from pose, and none leaves the stylesheet's end state."
+        },
+        {
+          "technique": "content-bearing-degradation",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/style/base/reduced-motion.css:4 Tilt and perspective go away; lane position is grid and inset, and opacity 0 for arrivals lives in keyframes that no longer apply."
+        },
+        {
+          "technique": "preset-vocabulary",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/style/level1/l1-spread.css:29 Arrival timing names --ln-dur and --ln-ease tokens instead of raw milliseconds."
+        },
+        {
+          "technique": "taste-budgets",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/style/base/tokens.css:218 The level move is 300ms and stagger is capped so a long lane still finishes in the same 140ms tail."
+        },
+        {
+          "technique": "continuity-across-change",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/style/level0/l0-swarm.css:262 The stationary lane name hides while the one matched word travels, so the label is not drawn twice."
+        },
+        {
+          "technique": "engine-selection",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/style/level1/l1-spread.css:32 These sheets own their gestures as declarative keyframes; nothing here installs a library kill switch."
+        },
+        {
+          "technique": "gesture-decomposition",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/style/level1/l1-spread.css:26 Figures are a later track, held one duration step behind the traveling title."
+        }
+      ],
+      "registryProposal": "A near-zero duration still runs a fill-mode keyframe, so the from pose flashes; for a stylesheet whose resting rule is already the end state, animation none is the settled fallback, and the global-kill section treats that removal as the failure."
+    }
+  ],
+  "declined": [
+    {
+      "subject": "motion",
+      "context": "tidycrm-style",
+      "reason": "withdrawn after review: reviewer (sonnet): The claim that nothing sets animation-duration is contradicted: examples/tidycrm/app/globals.css:37 sets `animation-duration: 0.01ms !important` on all elements under prefers-reduced-motion, and the sheet's reduced-motion.css adds the delay reset. Under reduced motion the dossier fill therefore land"
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-16T00:00:02.982515+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "motion"
+      ],
+      "techniques": [
+        "content-bearing-degradation",
+        "continuity-across-change",
+        "engine-selection",
+        "gesture-decomposition",
+        "performance-discipline",
+        "preset-vocabulary",
+        "reduced-motion-mechanics",
+        "taste-budgets",
+        "unprompted-motion-lifecycle"
+      ],
+      "deviations": 1,
+      "context": "desktop-art-bell",
+      "via": "curator-multi:grok",
+      "model": "grok-4.7"
+    },
+    {
+      "ts": "2026-10-16T00:00:02.982515+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "motion"
+      ],
+      "techniques": [
+        "content-bearing-degradation",
+        "continuity-across-change",
+        "engine-selection",
+        "performance-discipline",
+        "preset-vocabulary",
+        "reduced-motion-mechanics",
+        "taste-budgets"
+      ],
+      "deviations": 1,
+      "context": "desktop-scenes-mind-surface",
+      "via": "curator-multi:grok",
+      "model": "grok-4.7"
+    },
+    {
+      "ts": "2026-10-16T00:00:02.982515+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "motion"
+      ],
+      "techniques": [
+        "content-bearing-degradation",
+        "continuity-across-change",
+        "engine-selection",
+        "gesture-decomposition",
+        "loop-pause-governance",
+        "one-shot-guarding",
+        "performance-discipline",
+        "preset-vocabulary",
+        "reduced-motion-mechanics",
+        "taste-budgets"
+      ],
+      "deviations": 1,
+      "context": "hirelane-board-ui",
+      "via": "curator-multi:grok",
+      "model": "grok-4.7"
+    },
+    {
+      "ts": "2026-10-16T00:00:02.982515+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "motion"
+      ],
+      "techniques": [
+        "content-bearing-degradation",
+        "continuity-across-change",
+        "engine-selection",
+        "gesture-decomposition",
+        "one-shot-guarding",
+        "performance-discipline",
+        "preset-vocabulary",
+        "reduced-motion-mechanics",
+        "taste-budgets"
+      ],
+      "deviations": 1,
+      "context": "ledgerbox-style-design",
+      "via": "curator-multi:grok",
+      "model": "grok-4.7"
+    },
+    {
+      "ts": "2026-10-16T00:00:02.982515+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "motion"
+      ],
+      "techniques": [
+        "content-bearing-degradation",
+        "continuity-across-change",
+        "engine-selection",
+        "gesture-decomposition",
+        "performance-discipline",
+        "preset-vocabulary",
+        "reduced-motion-mechanics",
+        "taste-budgets"
+      ],
+      "deviations": 1,
+      "context": "tidycrm-style",
+      "via": "curator-multi:grok",
+      "model": "grok-4.7"
+    }
+  ]
+}

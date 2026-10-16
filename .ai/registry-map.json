@@ -3150,11 +3150,14 @@
           "bundle": "software-engineering",
           "source": "conform",
           "confidence": "strong",
-          "state": "unknown",
-          "evidence": "added by /conform: the context is ambient self-starting CSS motion (Bell pulse, tendril sway, glyph/chore float) that Calm turns off (apps/desktop/src/art/chore.tsx:15); the matcher ranked narrative-scroll-surface on art/illustration vocabulary instead",
+          "state": "deviation",
+          "evidence": "apps/desktop/src/art/glyphs.css:22 The install ring eases progress by transitioning stroke-dasharray, a paint property the vocabulary is not allowed to animate.",
           "digest": "sha256-b2:8d9b3eabe2f3b534",
           "revision": 10,
-          "changedAt": "2026-09-24"
+          "changedAt": "2026-09-24",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:8d9b3eabe2f3b534",
+          "evaluatedRevision": 10
         }
       ],
       "governance": "governed"
@@ -4705,7 +4708,11 @@
           "revision": 10,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/scenes/mind/mind.css:84 Instrument hover eases background and border-color, which repaint, and the Mind and Surface sheets never settle those transitions under Calm.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:8d9b3eabe2f3b534",
+          "evaluatedRevision": 10
         },
         {
           "subject": "quality-gates",
@@ -5864,7 +5871,11 @@
           "revision": 10,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/hirelane/components/board/Columns.tsx:221 Live pile faces enter from invisible on every mount, and leaving level 0 unmounts the columns so the same candidates play that entrance again.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:8d9b3eabe2f3b534",
+          "evaluatedRevision": 10
         },
         {
           "subject": "eval-harness",
@@ -7335,7 +7346,11 @@
           "revision": 10,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/ledgerbox/components/lanes/style/level0/l0-swarm-2.css:59 A mark's hover transitions box-shadow, so the pointer response repaints instead of staying on transform and opacity.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:8d9b3eabe2f3b534",
+          "evaluatedRevision": 10
         },
         {
           "subject": "test-input-generation",
