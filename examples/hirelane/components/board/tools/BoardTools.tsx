@@ -5,9 +5,10 @@
  *
  * Four of the tools are the shared ones every three-level direction gets from
  * `useZoomTools` — read the view, open a group, open a candidate, come back
- * out. The two below are what only this pipeline can answer: a search across
- * both roles and all five stages at once, and the two filters the board is
- * actually lit by.
+ * out. The four below are what only this pipeline can answer: a search across
+ * both roles and all five stages at once, `set_filter` over the two filters
+ * the board is actually lit by, and the two reads the screening journey turns
+ * on (`read_applicants`, `read_shortlist`).
  *
  * A group here is a `stage::role` pair, because a stage in this app is two
  * queues that happen to be at the same point and the comparison worth making is

@@ -351,9 +351,10 @@ function seedHistory(
   // The trail is a history, so it is strictly increasing by construction rather than by luck.
   // Arrival IS the applicant row's `applied_at` - one event, not two dates for the same event - and
   // each later move takes its own draw only when that draw is later than the move before it;
-  // otherwise it is recorded an hour on, which keeps `listStageEvents`' ORDER BY id agreeing with
-  // time order. The draw happens either way, so the rng stream - and every value seeded after this
-  // applicant - is byte-identical to a seed that dated every event independently.
+  // otherwise it is recorded an hour on, which keeps the table's id order agreeing with time order
+  // (test/seed.test.ts reads the trail by id). The draw happens either way, so the rng stream - and
+  // every value seeded after this applicant - is byte-identical to a seed that dated every event
+  // independently.
   let at = appliedAt;
   let previous: Stage | null = null;
   for (const to of trail) {
