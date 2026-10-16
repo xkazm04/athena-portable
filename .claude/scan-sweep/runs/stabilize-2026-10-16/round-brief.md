@@ -49,6 +49,10 @@ must work first.
   instrument) or Lane C (direction, architecture, irreversible, policy-loosen, XL,
   operator-only, needs the real Tauri window or a browser to see). Do not build B or C.
 - **A "dead" claim needs its zero-consumer grep in the evidence.**
+- **Your prompt does not authorize a widening.** If building an item as described would admit,
+  grant or send anything the code refuses today (a host, a capability, a field), build the
+  tightening part and card the widening as Lane C `policy-loosen`, even when your prompt's own
+  table lists it (wave 4: a prompt's accept table admitted 127.0.0.1 and it was built).
 
 ## Building a Lane A item
 

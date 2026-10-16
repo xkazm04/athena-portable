@@ -1,0 +1,246 @@
+{
+ "context": "proving-core",
+ "files_read": 14,
+ "loc": 2744,
+ "registry": "software-engineering/test-harness, software-engineering/cost-metering, software-engineering/model-call-outcome-integrity, software-engineering/structured-output",
+ "techniques": [
+  "isolation-lanes",
+  "budget-enforcement",
+  "price-tables",
+  "unattempted-is-not-failed",
+  "credential-posture-at-the-call-door",
+  "extraction-strategies"
+ ],
+ "deviations": 8,
+ "assigned": [],
+ "built": [
+  {
+   "sha": "dd054fb",
+   "title": "A provider or eval test runs only when -m names its marker, so a key in the environment never makes a bare pytest spend",
+   "lens": "test-strategist",
+   "red_before": "tests/proving/test_live.py inner pytest over a provider/eval/plain tree with a key set: bare run '3 passed' (both opt-in tests ran); probe: bare uv run pytest tests/proving/test_live.py with a fake key resolved api.tokenfactory.nebius.com once",
+   "after": "bare run '1 passed, 2 skipped', -m provider '1 passed, 2 deselected'; probe 0 lookups"
+  },
+  {
+   "sha": "01260f8",
+   "title": "A lone surrogate in model text is written as its escape, so a paid run never loses its report, a ledger row or a judge call to one character",
+   "lens": "bounty-hunter",
+   "red_before": "test_roles_and_budget: write_report, RunLog.record and ClaudeRole stdin each raised UnicodeEncodeError; e2e probe: run_gauntlet with a judge reason '\\ud83d on goal' raised at the end, report.json cut/unparseable, no report.md",
+   "after": "all three read back the same string / b'\\\\ud83d'; e2e probe completed, report.json parses, report.md written, 14 ledger rows"
+  },
+  {
+   "sha": "a7a5218",
+   "title": "An answer whose brackets nest past the decoder's depth is a counted not_json, not a RecursionError that ends the run",
+   "lens": "bounty-hunter",
+   "red_before": "test_roles_and_budget: extract_json('[' * 5000) raised RecursionError past call_json's except ValueError (no row, no count)",
+   "after": "ValueError, call_json counts not_json with a schema_ok False row; 60,000 brackets in 0.009 s (a bare catch took 6.3 s)"
+  },
+  {
+   "sha": "32694de",
+   "title": "Every non-provider test under tests/proving is refused the network beyond loopback and a model CLI spawn",
+   "lens": "security-auditor",
+   "red_before": "test_live: a TEST-NET connect 'timed out' (reached the stack); inner plain test found no guard ('1 failed, 2 skipped')",
+   "after": "connect, public lookup, claude spawn, codex.exe asyncio spawn and urlopen each raise 'offline: ...'; loopback and a Python child work; tests/proving green (pre-build probe: 0 egress, 0 CLI spawns over the whole directory)"
+  },
+  {
+   "sha": "b2d41be",
+   "title": "A Nemotron answer cut at the role's own token ceiling is a counted void, never the model's bad JSON",
+   "lens": "parity-auditor",
+   "red_before": "test_roles_and_budget: finish_reason 'length' + cut JSON -> reply ok, counted not_json ('no JSON value in the answer')",
+   "after": "engine_error naming the 64-token ceiling and NebiusRole.max_tokens, validity {ok 0, not_json 0, bad_shape 0, cut 1}, row stopped 'length' with cost"
+  },
+  {
+   "sha": "923a9ba",
+   "title": "A world whose manifest is refused closes its brain and removes its throwaway root before the error leaves",
+   "lens": "error-handler",
+   "red_before": "test_world_and_verdict (build_local spied): close called 0 times on WorldError",
+   "after": "closed once, temp root gone, WorldError still raised"
+  },
+  {
+   "sha": "b2b12e5",
+   "title": "The Haiku control's claude child no longer inherits NEBIUS_API_KEY, which every proving run holds",
+   "lens": "security-auditor",
+   "red_before": "test_roles_and_budget (subprocess.run patched): leaked == ['NEBIUS_API_KEY']",
+   "after": "leaked == [], PATH kept; claude_env still keeps the key for the hosted runner's child"
+  },
+  {
+   "sha": "b92deff",
+   "title": "The purse states its real overshoot - one call per worker in flight, not one call - and a test pins it",
+   "lens": "copy-auditor",
+   "red_before": "seeded control: the docstring's claim as an assertion (1 call made) failed 'assert 4 == 1' with four workers held past the check",
+   "after": "docstring states one per worker; test pins 4 calls, 0.99 + 4 x 0.5 spent, next call budget_exhausted"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "report.prune drops None from lists, shifting positional values",
+   "before": "0 lists holding None across 6,702 prune() calls in tests/proving's report writers (probe plugin)",
+   "after": "0 - keeping None in lists would change nothing a test-produced report holds"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "bounty-hunter",
+   "checked": "extract_json on degenerate nesting (built a7a5218); lone surrogates through check_schema, judge reasons, report/runlog writes (built 01260f8); prune list-None positional shift (rejected, 0 of 6702)"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "finish_reason the engine reports vs NebiusRole (built b2d41be); LEDGERBOX_CLASSES vs examples/ledgerbox/lib/tool-classes.ts (pinned by tests/proving/test_gauntlet.py:177); can_spend vs require (same rule); runner.EXIT_MEANING vs __main__ docstring (card)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "World.__init__ failure path (built 923a9ba); ClaudeRole TimeoutError/OSError branches; World.turn/decide catch-alls (record an error, by design); bench/showcase register leak (card)"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "RoleCaller rows on every path: budget, engine error, not_json, bad_shape, cut; a raising client writes none (card); RunLog extra= at 5 call sites cannot overwrite a core column today (0 collisions)"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "the shared purse across worker threads (bound measured, built b92deff); unpriced calls never drain it (card); new_run_dir exists-then-mkdir race - the hosted runner serialises runs (Busy 409), not real"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "extract_json opener hunt timed on 4 adversarial shapes (card: 2.07 s at 32 kB); World per attack builds a full composition - by design (fresh brain per attack)"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "CLI exit states 0/1/2 for gauntlet and characters against what each code path returns (characters exit 2 card); TurnRecord error vs turn.error event precedence"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "budget overshoot claim (built b92deff); claude_env docstring 'without ANTHROPIC_API_KEY' (corrected in b2b12e5); __main__ exit sentences and runner copies (card); conftest docstring's 'no socket' promise (now enforced, 32694de)"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "how test_live is kept offline (key skipif only; built dd054fb); tests/harness live test (card); hand-kept lists: OPT_IN_MARKERS vs pyproject markers, Validity buckets pinned by test_characters.py:454"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "test-tree egress and CLI spawns (built 32694de); control child env (built b2b12e5); load_env_file returns names only (tested); runlog never stores a prompt (record() fields)"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "test-harness suite-partitioning deviation (recorded 2026-10-14) now resolved for tests/proving by dd054fb; cost-metering price-tables 'never zero' (card); unattempted-is-not-failed (built); extraction-strategies opener bound (card)"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "claude_env used as a generic door by proving/server/runner.py for a non-CLI child (control_env split, b2b12e5); World's observing wrappers over gate.run_tool and brain writers"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "imports of the 8 modules: stdlib plus athena; no provider SDK (ADR 0002); report imported by runlog/roles adds no cycle"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "module first lines cite README §9 / ADRs in all 8 modules; __main__ usage block vs argparse (abbreviated, consistent)"
+  },
+  {
+   "key": "analytics-planner",
+   "checked": "validity table and cost_by_role inputs; the new 'cut' bucket keeps the model's rate honest (b2d41be)"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "Token Factory finish_reason and usage fields as tokenfactory.py:257-273 passes them; claude CLI json record fields read by _claude_reply"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "_int duplicated again in roles.py (a fourth copy beside harness's three) - churn, not emitted"
+  },
+  {
+   "key": "feature-scout",
+   "checked": "nothing proposed under stabilize; the unpriced-call default is a policy card, not a feature"
+  },
+  {
+   "key": "innovation-catalyst",
+   "checked": "Validity as the Nemotron feedback instrument - kept as is, cut bucket added"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "ux-reviewer",
+   "why": "no UI: Python library, CLI and tests"
+  },
+  {
+   "key": "visual-craft",
+   "why": "no rendered surface, tokens or styles"
+  },
+  {
+   "key": "accessibility-checker",
+   "why": "no rendered surface"
+  },
+  {
+   "key": "mobile-specialist",
+   "why": "no viewport"
+  },
+  {
+   "key": "ui-perfectionist",
+   "why": "no UI in the context (project lens)"
+  },
+  {
+   "key": "onboarding-designer",
+   "why": "no first-run flow; the CLI's key refusal is one line, checked under copy-auditor"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "the purses are cost caps, not pricing or plans"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no sharing or invite surface"
+  },
+  {
+   "key": "business-strategist",
+   "why": "evaluation harness with no product surface"
+  },
+  {
+   "key": "devops-optimizer",
+   "why": "no CI, build or deploy file in the context"
+  }
+ ],
+ "findings": 15,
+ "lanes": "A:8/B:6/C:0",
+ "fp": 0,
+ "gates": {
+  "uv run ruff check <touched files> (each commit)": 0,
+  "uv run ruff format --check <touched files> (each commit)": 0,
+  "uv run mypy (each commit)": 0,
+  "uv run pytest tests/proving -m \"not provider and not eval\" (each commit; last on b92deff)": 0,
+  "uv run pytest tests/proving tests/adopt -m \"not provider and not eval\" (a7a5218)": 0,
+  "uv run pytest tests/proving tests/adopt/test_showcase.py tests/test_wiring.py -m \"not provider and not eval\" (923a9ba)": 0
+ },
+ "leads": [
+  {
+   "ts": "2026-10-16T18:45:00Z",
+   "bundle": "software-engineering",
+   "nearest": "structured-output",
+   "kind": "technique",
+   "claim": "When model text that passed through a JSON decoder is written to a UTF-8 file, pipe or child's stdin, encode it with an escaping error handler, because a model's half-emoji escape decodes to a lone surrogate that no UTF-8 sink accepts, and a strict encode then fails at the write - typically the final report, after the spend.",
+   "because": "athena-portable 01260f8: a judge reason holding '\\ud83d' (shape-checked only) made a Gauntlet run raise UnicodeEncodeError in write_report after every call was paid, leaving a cut report.json and no report.md; backslashreplace reads back as the same JSON string. No structured-output or eval technique mentions surrogates or the write side of decoded model text.",
+   "confidence": "medium",
+   "from": "scan-sweep@4.6.1"
+  }
+ ],
+ "consult": {
+  "ts": "2026-10-16T18:45:00Z",
+  "bundle": "software-engineering",
+  "subjects": [
+   "test-harness",
+   "cost-metering",
+   "model-call-outcome-integrity",
+   "structured-output"
+  ],
+  "techniques": [
+   "isolation-lanes",
+   "budget-enforcement",
+   "price-tables",
+   "unattempted-is-not-failed",
+   "credential-posture-at-the-call-door",
+   "extraction-strategies"
+  ],
+  "deviations": 8
+ },
+ "degraded": false,
+ "note": "8 built, 6 Lane B; test tree now refuses provider runs and egress",
+ "notes": "No assigned items for this context. test_live.py was offline only by its key skipif (CI and AGENTS.md run bare pytest); dd054fb + 32694de make tests/proving refuse provider/eval tests unless -m names them and refuse non-loopback egress and claude/codex spawns for every other test - this also covers tests/proving/sandbox (its provider test) and the other proving contexts' tests, all green under it. tests/harness's live test is still exposed (card; measured 2 Token Factory lookups from a bare run with a fake key) - a root tests/conftest.py is the fix. Golden paths: read the technique files named above, not every subject's golden path in full. Probes (netprobe, pruneprobe, e2e surrogate run) live in the scratchpad, nothing in the repo. Sibling uncommitted files seen and not touched: apps/desktop/src/components/WindowControls*.tsx (earlier), other contexts' findings/round files. The registry-map deviation row proving-core/test-harness (suite-partitioning) is resolved for tests/proving by dd054fb and wants /conform. Findings 15 (8 built, 6 B, 1 rejected)."
+}

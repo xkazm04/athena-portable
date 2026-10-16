@@ -1,0 +1,71 @@
+{
+ "context": "desktop-app-shell-ui",
+ "files_read": 22,
+ "loc": 2428,
+ "registry": "software-engineering/ui-controls, software-engineering/accessibility, software-engineering/design-tokens, software-engineering/quality-gates, software-engineering/dead-code, software-engineering/motion",
+ "techniques": ["control-inventory-and-discovery", "composition-contracts", "keyboard-navigation-models", "a11y-verification", "name-and-description-wiring", "primitive-level-a11y", "token-taxonomy", "prose-rule-drift", "renameable-detector-keys", "gate-liveness", "instrument-per-orphan-class", "deletion-protocols", "continuity-across-change"],
+ "deviations": 9,
+ "assigned": [],
+ "built": [
+  {"sha": "9b4b59f", "title": "A value rail whose value matches no option still has its one tab stop", "lens": "accessibility-checker", "red_before": "components/PillGroup.test.tsx: 0 of 3 pills at tabindex 0 for value \"\" (the Whisper model picker before a model is chosen); [0,-1,-1] with a disabled first pill", "after": "5/5 file, desktop suite 1510 green"},
+  {"sha": "ac4d17f", "title": "The value rail's arrows step over an option that cannot be picked instead of stalling on it", "lens": "bounty-hunter", "red_before": "PillGroup.test.tsx: ArrowRight next to a disabled pill picked nothing (last pick not 'c'); Home/End 0 of 2 picks", "after": "5/5, suite 1515 green"},
+  {"sha": "3dc712d", "title": "Putting the close confirm away gives focus back to the close button", "lens": "accessibility-checker", "red_before": "components/WindowControls.test.tsx (new): after Keep and after Escape, activeElement was <body>", "after": "5/5, suite 1521 green"},
+  {"sha": "1541744", "title": "The close confirm is described by its question", "lens": "accessibility-checker", "red_before": "WindowControls.test.tsx: alertdialog aria-describedby was null", "after": "6/6, suite 1524 green"},
+  {"sha": "abf873f", "title": "--bar-height and --strip-height are held to layout.rs by a test", "lens": "parity-auditor", "red_before": "styles/layout-parity.test.ts (new) seeded: --strip-height 41px -> expected 41 to be 40", "after": "2/2, 0 -> 2 parity checks, suite 1527 green"},
+  {"sha": "8f45cee", "title": "The catalog is checked against the folder, and the push-to-talk pill nobody imports is gone", "lens": "registry-conformance", "red_before": "components/catalog.test.ts (new): rows 9 vs files 10; PushToTalk has no importer", "after": "4/4; -200 lines (component, test, 85 lines of .ptt CSS), suite 1529 green"},
+  {"sha": "0d68865", "title": "app.css drops the rules, keyframes and tokens no view uses", "lens": "tech-debt-tracker", "red_before": "styles/sheet-users.test.ts (new): 5 classes, 2 keyframes, 6 tokens with no user", "after": "4/4; -75 lines of app.css, suite 1534 green"},
+  {"sha": "4764cef", "title": "The lazy-depth placeholder guard reads which depths are lazy from the tree", "lens": "test-strategist", "red_before": "seeded scratch scenes copy + zz/live.tsx with lazy() and fallback null: new guard red ('zz ... depth-pending'); the old five-name list could not see it", "after": "5/5, suite 1535 green"},
+  {"sha": "0a9d409", "title": "app.css no longer calls itself the whole stylesheet; the catalog no longer names the deleted module bar", "lens": "documentation-auditor", "red_before": "probe: 2 contradicted sentences (19 .css files; module bar deleted ADR 0095)", "after": "0; copy only, suite 1536 green"},
+  {"sha": "3160ae7", "title": "The close confirm's buttons take the interactive radius token; the sheet's corners are held to the tokens", "lens": "ui-perfectionist", "red_before": "motion-tokens.test.ts: off-token radii received [\"4px\"]", "after": "[] ; 10/10 file, suite 1537 green"}
+ ],
+ "rejected": [
+  {"title": "PillGroup's onKeyDown useCallback never memoizes (options is a new array each render)", "before": "callback re-created every render; 2-5 pills re-render with their parent regardless", "after": "same render count with a stable dep: no measurable change, pure churn"},
+  {"title": "Ease the chosen pill's box-shadow along with its border and fill", "before": "1px elevation shadow snaps while border/background ease over --duration-fast", "after": "would add a non-composited box-shadow transition against the overlay's transform/opacity rule for a 1px shadow: not-better"},
+  {"title": "TextInput reads aria-invalid=\"false\" (a string) as invalid", "before": "0 callers pass the string form (grep aria-invalid in src: only FormField's `true`)", "after": "0 affected sites either way: latent, not-better to churn"}
+ ],
+ "lens_keys": [
+  {"key": "ui-perfectionist", "checked": "every border-radius, transition and hover in app.css; .close-confirm__btn 4px radius (built); .ptt:hover on aria-disabled (moot, component removed); .pill box-shadow snap (rejected)"},
+  {"key": "bounty-hunter", "checked": "PillGroup keyboard walk over disabled options (built); Table onKeyDown clamp and stale refs past rows.length (clamped, fine); TextInput aria-invalid string (rejected)"},
+  {"key": "parity-auditor", "checked": "--bar-height/--strip-height vs layout.rs BAR_HEIGHT/STRIP_HEIGHT (built); Button disabledReason contract vs 2 bare-disabled callers (card B); the --duration-fast pairing guard rendered twice (motion-tokens.test.ts:82, source-guards.test.ts:31) - same rule, both agree, churn"},
+  {"key": "error-handler", "checked": "WindowControls void win.close/minimize/toggleMaximize/setTheme: capabilities/ui.json grants allow-close, allow-minimize, allow-toggle-maximize, so no realistic rejection; ProblemNote verbatim reason; nothing real"},
+  {"key": "observability-auditor", "checked": "the entries (athena.tsx, chrome.tsx, preview.tsx) and WindowControls for swallowed promises: the store starters are idempotent (`started` guards in stores/*.ts), window calls are granted; nothing real"},
+  {"key": "risk-assessor", "checked": "athena.tsx effect under StrictMode double-mount: every start* is guarded by `started`, stopRun/stopHalo/stopMirror are returned; preview.tsx unknown scene falls back to surface; nothing real"},
+  {"key": "code-optimizer", "checked": "Table per-render findIndex and PillGroup useCallback (rejected: churn); first paint: chrome.tsx/athena.tsx static imports unchanged, app.css shrank by 160 lines"},
+  {"key": "ux-reviewer", "checked": "Button disabledReason wrapper names a role-less span (card B); close confirm flow Keep/Escape focus (built under accessibility-checker)"},
+  {"key": "visual-craft", "checked": "close confirm swaps in one frame and widens the bar (card C, needs the window); badge/status-dot/empty-state sizes against the tokens"},
+  {"key": "state-coverage", "checked": "PillGroup value outside options (built under accessibility-checker), disabled option/group reasons (card B); Table empty row colSpan; EmptyState vs ProblemNote"},
+  {"key": "copy-auditor", "checked": "every user-facing string in WindowControls, ProblemNote, EmptyState, Table and the deleted PushToTalk; nothing wrong in UI copy (stale design-doc prose went to documentation-auditor)"},
+  {"key": "accessibility-checker", "checked": "PillGroup roving tab stop (built), close confirm focus restore and description (built x2); Table grid roles and aria-sort (ADR 0096, fine)"},
+  {"key": "test-strategist", "checked": "source-guards five-name depth list (built); motion-tokens pins on dead .ptt CSS (removed with it); no test existed for WindowControls or PillGroup (added)"},
+  {"key": "security-auditor", "checked": "preview.tsx query params (scene validated by isSceneName, surface compared to a literal; no HTML injection); WindowControls close path; nothing real"},
+  {"key": "architecture-analyst", "checked": "CATALOG rule 3 (no store/IPC in src/components): WindowControls violates it (card B); rule 1 (two callers): Table and WindowControls have one each, noted in the card"},
+  {"key": "registry-conformance", "checked": "ui-controls control-inventory-and-discovery against CATALOG.md and the folder: zero-adopter PushToTalk, no catalog gate (built)"},
+  {"key": "tech-debt-tracker", "checked": "every class, keyframes and custom property in app.css against the tree (built: 13 orphans removed)"},
+  {"key": "documentation-auditor", "checked": "app.css header claims, CATALOG.md rows and rules, component headers (built: 2 stale sentences)"},
+  {"key": "dependency-auditor", "checked": "imports of the 19 files: react, react-dom, @tauri-apps/api/window only; nothing real"}
+ ],
+ "lens_no_surface": [
+  {"key": "mobile-specialist", "why": "desktop Tauri windows, minimum 900px; the one responsive rule (.split) had no user and was removed"},
+  {"key": "onboarding-designer", "why": "no first-run flow lives in the shell primitives (the first act is scenes/waking)"},
+  {"key": "feature-scout", "why": "stabilize: design-system primitives, no feature surface"},
+  {"key": "monetization-advisor", "why": "no paid surface"},
+  {"key": "analytics-planner", "why": "no telemetry in the primitives or entries"},
+  {"key": "growth-hacker", "why": "single-user local app, no sharing surface"},
+  {"key": "innovation-catalyst", "why": "stabilize package; primitives only"},
+  {"key": "integration-planner", "why": "no external integration in this context"},
+  {"key": "devops-optimizer", "why": "no build or pipeline file in this context"},
+  {"key": "business-strategist", "why": "no business surface in shared primitives"}
+ ],
+ "findings": 18,
+ "lanes": "A:10/B:4/C:1",
+ "fp": 0,
+ "gates": {
+  "pnpm typecheck (apps/desktop)": 0,
+  "pnpm lint (apps/desktop)": 0,
+  "pnpm test (apps/desktop)": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "10 built; PushToTalk and 13 app.css orphans removed under new gates",
+ "notes": "Sibling reds seen and cleared on re-run, none mine: companion/companion.css.test.ts (Calm twin) and companion/model.test.ts (ledger rows). One full `pnpm lint` hit ENOENT in apps/desktop/dist-perf (a sibling's perf build mid-write, gitignored); scoped lint green, re-run green. perf:all not run: no motion or first-paint import changed (CSS only removed, plus one radius). context-map.json still lists PushToTalk.tsx/.test.tsx (deleted in 8f45cee); the map is Personas-generated, left for the next rescan. ADR 0020 still names components/PushToTalk.tsx as history; no ADR edited. Gate numbers are from the last run before 3160ae7 (suite 1537)."
+}

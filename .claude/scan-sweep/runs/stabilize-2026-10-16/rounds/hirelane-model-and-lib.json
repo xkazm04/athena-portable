@@ -1,0 +1,60 @@
+{"context":"hirelane-model-and-lib","files_read":27,"loc":2961,
+ "registry":"software-engineering/mcp-tools, software-engineering/error-handling, software-engineering/dead-code",
+ "techniques":["tool-schema-design","error-doors","user-facing-mapping","dead-code"],"deviations":4,
+ "assigned":[
+  {"title":"propose_slots holds for decided or pre-interview people, and on every call","verdict":"built 6eb64a8 (Lane A policy-tighten: refused for Applied/Screening as too_early and Offer/Rejected as decided; three held refuses as already_held; fewer tops up to three; test/acts.test.ts drain loop rewritten to advance applicants to Interview; coupled one-label edit in components/board/dossier/Acts.tsx, hirelane-board-ui's file)"}
+ ],
+ "built":[
+  {"sha":"6eb64a8","title":"propose_slots holds time only for someone at Interview, three slots each in all, never three more per call","lens":"parity-auditor","red_before":"test/acts.test.ts 5 of 8 failed on the base tree: propose offered at Applied, no already_held, a top-up held 3 not 1, no proposeLabel, matrix never met propose:decided","after":"refused for 4 of 4 non-Interview stages (was 0 of 4); a second call holds 0 new slots (was 3); 91 pass"},
+  {"sha":"d028a47","title":"a person's sent letters stay on their card however many the app has sent since","lens":"state-coverage","red_before":"test/board.test.ts new case: seeded rejected applicant's meta.sent 0 (expected 1) after 50 sends to another applicant","after":"1 of 1 kept, the other card carries all 50; 92 pass"},
+  {"sha":"389ef21","title":"read_view, open_group and set_filter see the groups the board draws under its filters","lens":"parity-auditor","red_before":"test/groups.test.ts 3 of 3 failed (no boardGroups); probe: tools' group count matched drawn rows in 1 of 6 filter combinations (9 vs 1,5,1,4,0)","after":"6 of 6 filter combinations agree; 95 pass"},
+  {"sha":"da9b26c","title":"an act or an Undo whose server action throws ends in a toast saying the outcome is unknown","lens":"error-handler","red_before":"test/run.test.ts 3 of 3 failed (no settle; run and undo awaited actions bare)","after":"thrown acts reaching an error boundary 0 of 2 paths (was 2 of 2); 98 pass"},
+  {"sha":"99aeb97","title":"the agent's dossier read says which of a person's slots is a booked interview and which is only held","lens":"copy-auditor","red_before":"test/acts.test.ts new case failed: seeded booked interviews carried no status","after":"5 of 5 seeded booked interviews read as booked (was 0 of 5); 99 pass"},
+  {"sha":"404ebdf","title":"the domain lib and board model drop eight exports nothing reads, and a test counts readers","lens":"code-optimizer","red_before":"test/exports.test.ts listed 5 unread exports (BdColumnGroup, diff, scoreLabel, StageEvent, StageCount); BdDiff/scoreFor read only by diff, Note removed on its grep","after":"0 unread exports; 80 lines removed; lint 0 warnings; 101 pass"},
+  {"sha":"0f3ae83","title":"search_candidates' promises to an agent are pinned by a test","lens":"test-strategist","red_before":"seeded: removing the two !c.scored guards in search.ts failed 2 of 6 new cases; restored, 6 of 6","after":"searchBoard rules pinned 4 of 4 (was 0 tests); 107 pass"},
+  {"sha":"df8f741","title":"a propose_slots top-up that holds one slot says 1 slot held, in the toast and in the History band","lens":"copy-auditor","red_before":"test/acts.test.ts top-up case extended: message read '1 slots held for <name>.'","after":"toast and activity summary singular for a one-slot hold; 107 pass"},
+  {"sha":"a824831","title":"three comments in the domain lib and the board tools stop misstating the code beside them","lens":"documentation-auditor","red_before":"n/a: comments only; probe: listStageEvents has 0 definitions, BoardTools header counted 2 of 4 tools, groups.ts header duplicated","after":"3 misstating comment sites -> 0; 107 pass"}
+ ],
+ "rejected":[
+  {"title":"read_shortlist ranks by overall alone instead of the scored-first, wait-ordered comparator","before":"on the seed and every reachable state an unscored interviewee (overall 0) already sorts after every scored one (all scored interviewees > 0)","after":"the shared comparator changes only the order among the unscored (by wait instead of column order) - no reader-visible gain, not-better"},
+  {"title":"Unify read_applicants' and search_candidates' two copies of one comparator","before":"diffed: the same three clauses (scored first, overall desc, waitingDays desc) in roster.ts:97-101 and search.ts:256-260","after":"one function, identical order on every input - pure churn, not-better"},
+  {"title":"Derive the ROLE_ID parameter description from ROLE_SEEDS instead of typing two ids","before":"a two-id string in lib/manifest.ts, correct today","after":"manifest.ts is client-imported (Foot.tsx, HostCapabilities.tsx); importing lib/seed-content.ts (244 lines of CV text) into the client bundle to build the string costs bytes for no reader-visible change - not-better"}
+ ],
+ "lens_keys":[
+  {"key":"bounty-hunter","checked":"slot lifecycle across propose/decide/move/schedule in app/actions.ts and lib/acts.ts: propose for anyone and re-hold (built 6eb64a8), second booking for a booked person (card), holds outliving a decision (card); splitGroup cast of an unknown stage (unreachable: open_group checks the listed ids)"},
+  {"key":"parity-auditor","checked":"actsFor vs the actions (built 6eb64a8); BoardTools groups() vs columns/filter.ts (built 389ef21); meta.held booked vs proposed (built 99aeb97); seed's role-scoped interviewers vs role-blind slot predicates (card); roster vs search comparators (rejected, identical)"},
+  {"key":"error-handler","checked":"useRun run/undo awaited bare inside transitions with no error boundary in app/ (built da9b26c); actions' refusals all return REFUSAL sentences; latestScorecards JSON.parse over app-written rows only"},
+  {"key":"observability-auditor","checked":"listMessages cap silently truncating meta.sent (built d028a47); settle keeps the thrown error on console.error; refusals in actions.ts log no row (the daemon ledger records the tool call, so not a gap here)"},
+  {"key":"risk-assessor","checked":"irreversible gated sends: double interview booking for seeded candidates (card); holds locking the calendar after a decision (card)"},
+  {"key":"code-optimizer","checked":"8 unread exports (built 404ebdf); buildBoard per-request work (one pass per role, bounded seed); scoring regex per sentence x keyword (seed-sized, nothing real)"},
+  {"key":"ux-reviewer","checked":"the agent's journey through the tools: open_group into filtered-out groups (built 389ef21); propose refusal wording and the dossier's Propose label per reason (built 6eb64a8); the toast after a thrown act (built da9b26c)"},
+  {"key":"state-coverage","checked":"sent letters past the 50-message cap (built d028a47); booked vs held state in the dossier read (built 99aeb97) and in the board UI (card); L1/L2 detail error objects in BoardTools detail()"},
+  {"key":"copy-auditor","checked":"REFUSAL sentences incl. new already_held; propose_slots tool description vs the new rule (card); 'Time held' over a booked interview (card); slot_id parameter description"},
+  {"key":"test-strategist","checked":"searchBoard had 0 tests (built 0f3ae83); exports reader count (instrument in 404ebdf); acts parity matrix extended with three propose reasons"},
+  {"key":"security-auditor","checked":"every SQL in lib/queries.ts, lib/db.ts and app/actions.ts is parameterized; PROTECTED_ATTRIBUTES enforced by tools.test.ts; tool args validated at the kit door (door.ts types and enums), so Boolean('false') cannot reach a handler - nothing real"},
+  {"key":"documentation-auditor","checked":"db.ts listStageEvents, BoardTools header count, groups.ts duplicate header (built a824831); board-brief Comparison row naming dead diff() (fixed with 404ebdf)"},
+  {"key":"tech-debt-tracker","checked":"scoreLabel duplicating format.ts scoreWord with a different fallback (removed in 404ebdf); APP_VERSION kept pending the atlas identity card"},
+  {"key":"registry-conformance","checked":"mcp-tools/tool-schema-design against the board tools (groups, booked status, propose description); error-handling/error-doors against useRun; dead-code against the lib's exports"},
+  {"key":"integration-planner","checked":"WebMCP registrations read lib/manifest registration(); the journey's propose beat (moves to interview first) stays inside the new rule"},
+  {"key":"architecture-analyst","checked":"tools/read.ts, roster.ts, search.ts are pure over BdBoard and testable; acts.ts is the one act module the action, dossier and agent read"},
+  {"key":"dependency-auditor","checked":"no dependency added; run.test.ts stubs the kit's .tsx UI barrel with a module hook rather than a new loader dependency"},
+  {"key":"analytics-planner","checked":"activity rows per act are the only event trail; propose's activity summary counts the slots actually held; a one-slot top-up read 'Held 1 slots' (fixed df8f741)"}
+ ],
+ "lens_no_surface":[
+  {"key":"visual-craft","why":"no CSS or rendered component in the context; the one label touched lives in hirelane-board-ui's Acts.tsx"},
+  {"key":"ui-perfectionist","why":"no stylesheet, motion or layout in the 23 files"},
+  {"key":"accessibility-checker","why":"no rendered markup in the context's files"},
+  {"key":"mobile-specialist","why":"no viewport or layout surface"},
+  {"key":"onboarding-designer","why":"no first-run flow; the seed always populates the board"},
+  {"key":"feature-scout","why":"stabilize strategy; no forward-building ask in scope"},
+  {"key":"monetization-advisor","why":"no billing or pricing surface"},
+  {"key":"growth-hacker","why":"no sharing or invite surface"},
+  {"key":"business-strategist","why":"a demo example's domain lib"},
+  {"key":"innovation-catalyst","why":"stabilize strategy"},
+  {"key":"devops-optimizer","why":"no build or deploy config in the context"}
+ ],
+ "findings":17,"lanes":"A:9/B:5/C:0","fp":0,
+ "gates":{"pnpm --filter hirelane typecheck":0,"pnpm --filter hirelane lint":0,"pnpm --filter hirelane test":0},
+ "leads":[],
+ "degraded":false,"note":"9 built (1 assigned + its plural follow-up), 5 Lane B; no browser",
+ "notes":"Assigned item built as Lane A policy-tighten; its commit body lists what previously succeeded and now refuses. Coupled edits outside the granted set, named in their commit bodies: components/board/dossier/Acts.tsx (hirelane-board-ui, swept earlier today; Propose label per reason, 6eb64a8) and design/board-brief.md (in no context; Comparison row, 404ebdf). test/actions.test.ts: two cases now undo the holds they leave, since a person holds three at most. 404ebdf was amended once by me (title count seven->eight, CHANGELOG line with it) under the lock while HEAD was still mine. lib/constants.ts APP_VERSION is unread and deliberately kept (named in test/exports.test.ts) pending the atlas-data-and-app identity card. Sibling in-flight edits seen in apps/desktop/**, src/athena/proving/** and tests/proving/** (not mine). CHANGELOG.md is CRLF in the working tree; my appends kept CRLF. Consult line for .ai/consults.jsonl: {\"bundle\":\"software-engineering\",\"subjects\":[\"mcp-tools\",\"error-handling\",\"dead-code\"],\"techniques\":[\"tool-schema-design\",\"error-doors\",\"user-facing-mapping\",\"dead-code\"],\"deviations\":4}. No registry lead filed. Lane B open from this round: 5. Findings 17 against a budget of 16: df8f741 is the assigned item's own follow-up (a plural the top-up made ordinary)."}
