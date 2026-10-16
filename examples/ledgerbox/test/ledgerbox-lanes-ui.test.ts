@@ -66,6 +66,8 @@ const { db, COUNTED_OUT } = await import("../lib/db");
 const { CATEGORIES } = await import("../lib/constants");
 const { actRefusal, gateSubject, stillArmed, NOT_A_DEBT } = await import("../components/lanes/card/read");
 const { tabStop } = await import("../components/lanes/swarm/marks");
+const { TOOL_CLASSES } = await import("../lib/tool-classes");
+const { isAuto } = await import("../lib/manifest");
 
 /** The scratch books, or a failed test - never the app's own database. */
 function books(): ReturnType<typeof buildSheet> {
@@ -154,11 +156,25 @@ test("an armed gate closes when what it disclosed changes under it, and when its
 test("every gate on the card is armed through stillArmed, on the subject of its own act", () => {
   const gate = source("Gate.tsx");
   assert.match(gate, /stillArmed\(/, "Gate derives `armed` from what it was armed on");
+  // Every act on the list that the class table gates names its own subject and question; the
+  // set is read off TOOL_CLASSES, so reclassifying an act makes this ask for them.
   const decide = source("card/Decide.tsx");
-  const gates = decide.match(/<Gate\b/g)?.length ?? 0;
-  const bound = [...decide.matchAll(/subject=\{gateSubject\("(\w+)"/g)].map((m) => m[1]);
-  assert.equal(gates, 3, "the three gated acts");
-  assert.deepEqual(bound.sort(), ["mark_paid", "send_reminder", "void_invoice"]);
+  const listed = [...decide.matchAll(/tool: "(\w+)"/g)].map((m) => m[1] as keyof typeof TOOL_CLASSES);
+  const gated = listed.filter((t) => !isAuto(TOOL_CLASSES[t])).sort();
+  const bound = [...decide.matchAll(/subject: gateSubject\("(\w+)"/g)].map((m) => m[1]).sort();
+  assert.deepEqual(gated, ["mark_paid", "send_reminder", "void_invoice"], "the three gated acts on the list");
+  assert.deepEqual(bound, gated, "each gated act is armed on its own subject");
+});
+
+test("the decision list draws a Gate exactly where the class table says GATED, and nowhere else", () => {
+  // The badge on each row was read from lib/tool-classes.ts, but the control beside it was typed
+  // by hand per row - three <Gate>s and two <button>s - so a reclassified act would wear the Gated
+  // badge over a button that fires on the first press (hitl-approval: the trigger predicate lives
+  // in one place). One render branch, keyed on the same `isAuto` the badge reads.
+  const decide = source("card/Decide.tsx");
+  assert.equal(decide.match(/<Gate\b/g)?.length ?? 0, 1, "one Gate, in the render, not one per row");
+  assert.match(decide, /const auto = isAuto\(TOOL_CLASSES\[act\.tool\]\);/);
+  assert.match(decide, /const take = auto \?/, "the control is chosen by the class");
 });
 
 /* ------------------------------------------- the card offers what the books will take, and only that */

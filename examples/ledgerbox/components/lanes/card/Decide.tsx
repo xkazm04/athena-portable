@@ -49,6 +49,7 @@ import {
   voidInvoiceAction,
 } from "@/app/actions";
 import { CATEGORIES, TONES, type Category, type Tone } from "@/lib/constants";
+import type { ActionResult } from "@/lib/types";
 import { formatMoney } from "@/lib/format";
 import { isAuto } from "@/lib/manifest";
 import { TOOL_CLASSES, type ToolName } from "@/lib/tool-classes";
@@ -71,9 +72,16 @@ interface Act {
   reaches: string;
   /** The parameters this act needs, drawn inside its own row. */
   params?: ReactNode;
-  /** The control that takes it — a plain button for AUTO, a `Gate` for GATED. */
-  take: ReactNode;
-  disabled?: boolean;
+  /** The words on the control that takes it. */
+  takeLabel: string;
+  /** The server action the control issues. */
+  issue: () => Promise<ActionResult>;
+  /** Why it cannot be taken now, if it cannot - the row is disabled. */
+  blocked: boolean;
+  /** For a GATED act: the second question, and what an armed gate is armed on.
+   *  A row the class gates and that names neither asks its own `reaches` line. */
+  question?: string;
+  subject?: string;
 }
 
 export function Decide({
@@ -222,17 +230,9 @@ export function Decide({
           </select>
         </label>
       ),
-      take: (
-        <button
-          type="button"
-          className="ln-btn"
-          disabled={pending || refused.draft !== null}
-          onClick={() => run(() => draftReminderAction(mark.id, tone))}
-        >
-          Draft it
-        </button>
-      ),
-      disabled: refused.draft !== null,
+      takeLabel: "Draft it",
+      issue: () => draftReminderAction(mark.id, tone),
+      blocked: refused.draft !== null,
     },
     {
       tool: "categorize",
@@ -250,17 +250,9 @@ export function Decide({
           </select>
         </label>
       ),
-      take: (
-        <button
-          type="button"
-          className="ln-btn"
-          disabled={pending || category === mark.category}
-          onClick={() => run(() => categorizeAction([mark.id], category))}
-        >
-          Refile
-        </button>
-      ),
-      disabled: category === mark.category,
+      takeLabel: "Refile",
+      issue: () => categorizeAction([mark.id], category),
+      blocked: category === mark.category,
     },
     {
       tool: "mark_paid",
@@ -271,17 +263,11 @@ export function Decide({
       reaches:
         refused.paid ??
         `Writes ${formatMoney(mark.balanceCents)} against the books. There is no undo row for this one.`,
-      take: (
-        <Gate
-          label="Record it"
-          confirmLabel="Record it"
-          question={`This writes ${formatMoney(mark.balanceCents)} against the books and cannot be replayed backwards.`}
-          onConfirm={() => markPaidAction(mark.id, mark.balanceCents)}
-          subject={gateSubject("mark_paid", mark, detail)}
-          disabled={refused.paid !== null}
-        />
-      ),
-      disabled: refused.paid !== null,
+      takeLabel: "Record it",
+      issue: () => markPaidAction(mark.id, mark.balanceCents),
+      blocked: refused.paid !== null,
+      question: `This writes ${formatMoney(mark.balanceCents)} against the books and cannot be replayed backwards.`,
+      subject: gateSubject("mark_paid", mark, detail),
     },
     {
       tool: "send_reminder",
@@ -291,38 +277,25 @@ export function Decide({
         (email
           ? `Reaches ${to} at ${email} by email. You cannot un-send it.`
           : `Reaches ${to} by email. You cannot un-send it.`),
-      take: (
-        <Gate
-          label="Send it"
-          confirmLabel="Send it"
-          question={`This reaches ${email ?? "the client"}. You cannot un-send it.`}
-          onConfirm={() => sendReminderAction(mark.id)}
-          subject={gateSubject("send_reminder", mark, detail)}
-          disabled={refused.send !== null}
-        />
-      ),
-      disabled: refused.send !== null,
+      takeLabel: "Send it",
+      issue: () => sendReminderAction(mark.id),
+      blocked: refused.send !== null,
+      question: `This reaches ${email ?? "the client"}. You cannot un-send it.`,
+      subject: gateSubject("send_reminder", mark, detail),
     },
     {
       tool: "void_invoice",
       label: "Void this invoice",
       /* `voidInvoiceAction` refuses any invoice with payments applied, so the row
-         has to say so before it is pressed rather than after. */
+         has to say so before it is pressed rather than after. No "unapply first"
+         question: a blocked gate cannot be armed, and an armed one closes the
+         moment a credit lands (`stillArmed`). */
       reaches: refused.void ?? "Writes the balance off permanently. There is no undo.",
-      take: (
-        <Gate
-          label="Void it"
-          confirmLabel="Void it"
-          /* No "unapply first" question: a disabled gate cannot be armed, and an
-             armed one closes the moment a credit lands (`stillArmed`). The row's
-             own line says why it is blocked. */
-          question="Voiding writes off the balance. There is no undo."
-          onConfirm={() => voidInvoiceAction(mark.id)}
-          subject={gateSubject("void_invoice", mark, detail)}
-          disabled={refused.void !== null}
-        />
-      ),
-      disabled: refused.void !== null,
+      takeLabel: "Void it",
+      issue: () => voidInvoiceAction(mark.id),
+      blocked: refused.void !== null,
+      question: "Voiding writes off the balance. There is no undo.",
+      subject: gateSubject("void_invoice", mark, detail),
     },
   ];
 
@@ -381,6 +354,31 @@ export function Decide({
         <ul className="ln-acts">
           {acts.map((act) => {
             const auto = isAuto(TOOL_CLASSES[act.tool]);
+            /*
+             * THE CONTROL FOLLOWS THE CLASS, as the badge does. Which acts arm
+             * before they issue is `lib/tool-classes.ts`'s answer and nobody
+             * else's: a row cannot wear the Gated badge over a button that fires
+             * on the first press, because there is no per-row choice to make.
+             */
+            const take = auto ? (
+              <button
+                type="button"
+                className="ln-btn"
+                disabled={pending || act.blocked}
+                onClick={() => run(act.issue)}
+              >
+                {act.takeLabel}
+              </button>
+            ) : (
+              <Gate
+                label={act.takeLabel}
+                confirmLabel={act.takeLabel}
+                question={act.question ?? act.reaches}
+                onConfirm={act.issue}
+                subject={act.subject ?? act.reaches}
+                disabled={act.blocked}
+              />
+            );
             return (
               <li className="ln-act" key={act.tool} data-class={auto ? "auto" : "gated"}>
                 <span className="ln-act-class">{auto ? "Auto" : "Gated"}</span>
@@ -390,7 +388,7 @@ export function Decide({
                   <code className="num">{act.tool}</code>
                 </span>
                 {act.params ? <span className="ln-act-params">{act.params}</span> : null}
-                <span className="ln-act-take">{act.take}</span>
+                <span className="ln-act-take">{take}</span>
               </li>
             );
           })}
