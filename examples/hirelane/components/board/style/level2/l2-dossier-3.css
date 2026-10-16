@@ -7,7 +7,12 @@
   color: var(--bd-ink);
   font-size: var(--bd-text-sm);
   cursor: pointer;
-  transition: transform var(--bd-dur-1) var(--bd-ease), background var(--bd-dur-1) var(--bd-ease);
+  /* `border-color` too: the GATED zone's hover moves the edge with the fill, and an edge left off
+     this list jumped at frame zero while the fill eased (test/hover.test.ts). */
+  transition:
+    transform var(--bd-dur-1) var(--bd-ease),
+    background var(--bd-dur-1) var(--bd-ease),
+    border-color var(--bd-dur-1) var(--bd-ease);
 }
 
 .bd-btn:hover:not(:disabled) {

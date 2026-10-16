@@ -74,6 +74,9 @@
   color: var(--bd-ink-2);
   font-size: var(--bd-text-md);
   cursor: pointer;
+  /* The back pill's hover, on the back pill's clock: the same round control, so it eases the
+     same two properties rather than snapping beside it (test/hover.test.ts). */
+  transition: color var(--bd-dur-2) var(--bd-ease), border-color var(--bd-dur-2) var(--bd-ease);
 }
 
 .bd-arrow:hover:not(:disabled) {
