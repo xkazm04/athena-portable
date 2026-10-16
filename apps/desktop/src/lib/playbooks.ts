@@ -526,11 +526,6 @@ export function edgeRank(p: Playbook): number {
   return p.edge.difficulty * p.edge.usefulness;
 }
 
-/** "Only Athena": hard for anyone else and worth real money. The corner the cycles push into. */
-export function onTheEdge(p: Playbook): boolean {
-  return p.edge.difficulty >= 4 && p.edge.usefulness >= 4;
-}
-
 // -- words ---------------------------------------------------------------------------------------
 
 export function usd(n: number): string {

@@ -9,7 +9,6 @@ import { CATEGORIES } from "@/lib/playbook-taxonomy";
 
 import { fixtures } from "./fixtures";
 import {
-  arrange,
   categoryCounts,
   filterLedger,
   foundBy,
@@ -76,32 +75,9 @@ test("reads are named in words, each once with its count", () => {
   ]);
 });
 
-test("the grid filters by whose chore it is and keeps each tile's number from the map", () => {
-  const items = fixtures.typical.items;
-  const all = arrange(items, "all", "edge");
-  expect(all.map((r) => r.rank)).toEqual([1, 2, 3]);
-  const home = arrange(items, "home", "edge");
-  expect(home.map((r) => r.view.playbook.audience)).toEqual(["home"]);
-  expect(home[0].rank).toBe(items.findIndex((v) => v.playbook.audience === "home") + 1);
-  expect(arrange(items, "work", "edge").every((r) => r.view.playbook.audience === "work")).toBe(true);
-});
-
-test("the grid orders by money a year or hours by hand, the map's order breaking ties", () => {
-  const items = fixtures.typical.items;
-  const money = arrange(items, "all", "money").map((r) => r.view.title);
-  expect(money[0]).toBe("Chargeback evidence packs");
-  const time = arrange(items, "all", "time").map((r) => r.view.playbook.economics.manualMinutes);
-  expect([...time].sort((a, b) => b - a)).toEqual(time);
-});
-
-test("the totals add the latest runs' traps, false claims, minutes and cost", () => {
-  const t = fixtures.typical.totals;
-  expect(t.trapsTotal).toBe(9);
-  expect(t.trapsFiled).toBe(1);
-  expect(t.falseClaims).toBe(1);
-  expect(t.athenaMinutes).toBeCloseTo((372 + 1640) / 60);
-  expect(t.manualMinutes).toBe(180 + 45);
-  expect(t.costUsd).toBeCloseTo(0.41 + 1.12);
+test("the totals are the catalogue line's and the surface's: how many, benched, over the bar, found", () => {
+  // Three playbooks, the flights one unbenched: what the two benched runs found, and one beat its bar.
+  expect(fixtures.typical.totals).toEqual({ count: 3, benched: 2, exceeds: 1, foundUsd: 551.4 });
 });
 
 test("a film is current while it films the bench's run, stale once the bench moved on", () => {
@@ -176,7 +152,7 @@ test("the ledger filters by area and job, keeping the order it was given", () =>
   expect(filterLedger(ITEMS, { category: "family", job: "all" })).toEqual([]);
 });
 
-test("the edge order is the map's, best first ascending and its exact reverse descending", () => {
+test("the edge order is the shipped order, best first ascending and its exact reverse descending", () => {
   const shuffled = [ITEMS[3], ITEMS[0], ITEMS[4], ITEMS[2], ITEMS[1]];
   expect(ids(sortLedger(shuffled, { key: "edge", dir: "asc" }))).toEqual(["a", "b", "c", "d", "e"]);
   expect(ids(sortLedger(shuffled, { key: "edge", dir: "desc" }))).toEqual(["e", "d", "c", "b", "a"]);
@@ -189,11 +165,9 @@ test("value is the money a year, a month counting twelve; a tie keeps the edge's
   expect(ids(sortLedger(ITEMS, { key: "value", dir: "asc" }))).toEqual(["e", "a", "b", "d", "c"]);
 });
 
-test("time is the hours by hand, the grid's measure; a tie keeps the edge's order either way", () => {
+test("time is the hours by hand; a tie keeps the edge's order either way", () => {
   expect(ids(sortLedger(ITEMS, { key: "time", dir: "desc" }))).toEqual(["b", "a", "c", "d", "e"]);
   expect(ids(sortLedger(ITEMS, { key: "time", dir: "asc" }))).toEqual(["e", "d", "a", "c", "b"]);
-  const grid = arrange(ITEMS, "all", "time").map((r) => r.view.id);
-  expect(grid).toEqual(ids(sortLedger(ITEMS, { key: "time", dir: "desc" })));
 });
 
 test("sorting is stable over equal playbooks and never touches its input", () => {

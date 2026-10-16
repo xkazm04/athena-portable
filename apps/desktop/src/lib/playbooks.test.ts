@@ -13,7 +13,6 @@ import {
   loadPlaybooks,
   parseEvidence,
   minutes,
-  onTheEdge,
   parsePlaybook,
   speedup,
   usd,
@@ -42,7 +41,6 @@ test("a playbook with a bench reads its score; one without says nothing measured
   });
   expect(benched?.bench?.found).toBe(2);
   expect(benched?.bench?.cards.map((c) => c.outcome)).toEqual(["correct", "other"]);
-  expect(benched !== null && onTheEdge(benched)).toBe(true);
 });
 
 test("a playbook without an id is dropped, and the order is hardest-and-most-useful first", () => {

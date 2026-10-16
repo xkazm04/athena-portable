@@ -3,8 +3,8 @@
  *
  * A playbook is a chore worth real money that only an agent living in the person's own tabs can
  * do: it spans portals nobody integrates, and it ends in something irreversible that wants a
- * signature. This surface shows each one where it sits between difficulty (for anyone else) and
- * usefulness (to the person), what it is worth, and — the part that earns the place on the map —
+ * signature. Each is ordered by where it sits between difficulty (for anyone else) and usefulness
+ * (to the person), and shown with what it is worth and — the part that earns its place —
  * what the bench measured when a real Athena ran it on the real gate, against portals that were
  * invented for the bench: the numbers are measured on that invented world, never on the person's
  * accounts. The value and the hand minutes are the playbook author's estimates, and say so.
@@ -19,8 +19,6 @@ import {
   clock,
   edgeRank,
   evidenceCurrent,
-  minutes,
-  onTheEdge,
   speedup,
   usd,
   type Bench,
@@ -50,14 +48,6 @@ export interface Verdict {
   sentence: string;
 }
 
-export interface MapPoint {
-  /** 1–5 on each axis, nudged apart when two playbooks share a point. */
-  x: number;
-  y: number;
-  /** 0–1: the mark's size, from the playbook's value. */
-  weight: number;
-}
-
 /** The run filmed and narrated (ADR 0055), as the card and the layer show it. */
 export interface EvidenceView {
   /** It films the run `bench.json` holds now. */
@@ -82,38 +72,21 @@ export interface PlaybookView {
   /** "$4,940" and "a year". */
   value: string;
   per: string;
-  /** "3 h by hand". */
-  manual: string;
-  /** "6 min with Athena", measured; "" when not benched. */
-  measured: string;
-  /** "30× faster", or "". */
+  /** "30× faster", measured against the hand minutes; "" when not benched or either is unknown. */
   speed: string;
   verdict: Verdict;
-  onEdge: boolean;
-  point: MapPoint;
   evidence: EvidenceView | null;
 }
 
 export interface PlaybooksModel {
   items: readonly PlaybookView[];
+  /** What the catalogue's line and the surface say: how many, how many benched and beat the bar. */
   totals: {
     count: number;
     benched: number;
     exceeds: number;
-    onEdge: number;
-    /** Product fixes the playbooks' runs uncovered, counted once per decision record. */
-    lessons: number;
-    /** Money the bench found across every benched playbook, and what was there to find. */
+    /** Money the bench found across every benched playbook. */
     foundUsd: number;
-    availableUsd: number;
-    /** Across the latest runs: traps the worlds held and how many she filed; claims that were wrong. */
-    trapsTotal: number;
-    trapsFiled: number;
-    falseClaims: number;
-    /** Her minutes on the bench, the minutes the same chores take by hand, and the model's cost. */
-    athenaMinutes: number;
-    manualMinutes: number;
-    costUsd: number;
   };
   /** The shipped set has not arrived yet (it loads lazily): an empty list is then not "none ship". */
   loading: boolean;
@@ -200,31 +173,7 @@ export function evidenceOf(p: Playbook): EvidenceView | null {
   };
 }
 
-/** Spread playbooks that share a point around it, so no mark hides another. Pure. */
-export function layoutPoints(playbooks: readonly Playbook[]): MapPoint[] {
-  const max = Math.max(1, ...playbooks.map(annualValue));
-  const seen = new Map<string, number>();
-  const counts = new Map<string, number>();
-  for (const p of playbooks) {
-    const k = `${p.edge.difficulty}:${p.edge.usefulness}`;
-    counts.set(k, (counts.get(k) ?? 0) + 1);
-  }
-  return playbooks.map((p) => {
-    const k = `${p.edge.difficulty}:${p.edge.usefulness}`;
-    const i = seen.get(k) ?? 0;
-    seen.set(k, i + 1);
-    const n = counts.get(k) ?? 1;
-    const angle = n > 1 ? (2 * Math.PI * i) / n - Math.PI / 2 : 0;
-    const r = n > 1 ? 0.3 : 0;
-    return {
-      x: p.edge.difficulty + r * Math.cos(angle),
-      y: p.edge.usefulness + r * Math.sin(angle),
-      weight: Math.sqrt(annualValue(p) / max),
-    };
-  });
-}
-
-/** A playbook's value on one scale, so marks compare: a month is twelve of a year. */
+/** A playbook's value on one scale, so rows compare: a month is twelve of a year. */
 export function annualValue(p: Playbook): number {
   const v = p.economics.valueUsd;
   switch (p.economics.per) {
@@ -243,25 +192,18 @@ export function selectPlaybooks(
   loading = false,
   problem: string | null = null,
 ): PlaybooksModel {
-  const points = layoutPoints(playbooks);
-  const items = playbooks.map((p, i): PlaybookView => {
-    const bench = p.bench;
-    const measuredMin = bench ? bench.wallS / 60 : 0;
-    return {
+  const items = playbooks.map(
+    (p): PlaybookView => ({
       playbook: p,
       id: p.id,
       title: p.title,
       value: usd(p.economics.valueUsd),
       per: PER[p.economics.per] ?? `per ${p.economics.per}`,
-      manual: p.economics.manualMinutes ? `${minutes(p.economics.manualMinutes)} by hand` : "",
-      measured: bench ? `${minutes(measuredMin)} with Athena` : "",
-      speed: bench ? speedup(p.economics.manualMinutes, measuredMin) : "",
-      verdict: verdictOf(bench),
-      onEdge: onTheEdge(p),
-      point: points[i],
+      speed: p.bench ? speedup(p.economics.manualMinutes, p.bench.wallS / 60) : "",
+      verdict: verdictOf(p.bench),
       evidence: evidenceOf(p),
-    };
-  });
+    }),
+  );
   const benched = items.filter((v) => v.playbook.bench !== null);
   return {
     items,
@@ -269,27 +211,13 @@ export function selectPlaybooks(
       count: items.length,
       benched: benched.length,
       exceeds: items.filter((v) => v.verdict.word === "exceeds").length,
-      onEdge: items.filter((v) => v.onEdge).length,
-      lessons: new Set(
-        items.flatMap((v) => v.playbook.lessons.filter((l) => l.adr).map((l) => l.adr)),
-      ).size,
       foundUsd: benched.reduce((s, v) => s + (v.playbook.bench?.valueFoundUsd ?? 0), 0),
-      availableUsd: benched.reduce((s, v) => s + (v.playbook.bench?.valueTotalUsd ?? 0), 0),
-      trapsTotal: sumBench(benched, (b) => b.trapsTotal),
-      trapsFiled: sumBench(benched, (b) => b.trapsFiled),
-      falseClaims: sumBench(benched, (b) => b.falseClaims),
-      athenaMinutes: sumBench(benched, (b) => b.wallS / 60),
-      manualMinutes: benched.reduce((s, v) => s + v.playbook.economics.manualMinutes, 0),
-      costUsd: sumBench(benched, (b) => b.costUsd ?? 0),
     },
     loading,
     problem,
     actions,
   };
 }
-
-const sumBench = (views: readonly PlaybookView[], f: (b: Bench) => number): number =>
-  views.reduce((s, v) => s + (v.playbook.bench ? f(v.playbook.bench) : 0), 0);
 
 // --- the replay ----------------------------------------------------------------------------------
 
@@ -347,38 +275,10 @@ export function readsOf(turn: TraceTurn): { name: string; times: number }[] {
   return out;
 }
 
-// --- the grid's filter and order -----------------------------------------------------------------
-
-/** Which playbooks the grid shows: all, a household's, or a business's. */
-export type AudienceFilter = "all" | Playbook["audience"];
-
-/** How the grid is ordered: the edge (the map's order), the money a year, or the hours by hand. */
-export type SortBy = "edge" | "money" | "time";
-
-/**
- * The grid's items, filtered and ordered. Pure. Each keeps its rank on the map (`rank`), so the
- * number on a tile is the number of its mark whatever the order.
- */
-export function arrange(
-  items: readonly PlaybookView[],
-  audience: AudienceFilter,
-  by: SortBy,
-): { view: PlaybookView; rank: number }[] {
-  const ranked = items.map((view, i) => ({ view, rank: i + 1 }));
-  const shown = ranked.filter((r) => audience === "all" || r.view.playbook.audience === audience);
-  const key = (r: { view: PlaybookView; rank: number }): number =>
-    by === "money"
-      ? annualValue(r.view.playbook)
-      : by === "time"
-        ? r.view.playbook.economics.manualMinutes
-        : -r.rank;
-  return [...shown].sort((a, b) => key(b) - key(a) || a.rank - b.rank);
-}
-
 // -- the ledger (ADR 0096) -------------------------------------------------------------------------
 //
-// The ledger reads the same `PlaybookView`s the map and the grid do — `PlaybooksModel.items`, in
-// the edge's order — so a row, its preview and its mark are one object and the scene keeps one key.
+// The ledger reads `PlaybooksModel.items` as they come, in the edge's order, so a row and its topic
+// page are one object and the scene keeps one key.
 
 export type CategoryFilter = CategoryId | "all";
 export type JobFilter = JobId | "all";
@@ -424,10 +324,10 @@ const byEdge = (a: PlaybookView, b: PlaybookView): number =>
   edgeRank(b.playbook) - edgeRank(a.playbook) || a.title.localeCompare(b.title) || a.id.localeCompare(b.id);
 
 /**
- * The ledger's rows in one of its three orders. Pure, and total: `edge` is the map's order (`asc`
+ * The ledger's rows in one of its three orders. Pure, and total: `edge` is the shipped order (`asc`
  * best first, `desc` its exact reverse); `value` is the money a year (`annualValue`, so a month
- * counts twelve times); `time` is the hours the chore takes by hand, the measure the grid's "time"
- * uses. On value and time, a tie keeps the edge's order best first whichever way the column runs,
+ * counts twelve times); `time` is the hours the chore takes by hand. On value and time, a tie keeps
+ * the edge's order best first whichever way the column runs,
  * so two playbooks worth the same never swap places when the person flips the arrow.
  */
 export function sortLedger(items: readonly PlaybookView[], s: LedgerSort): PlaybookView[] {
