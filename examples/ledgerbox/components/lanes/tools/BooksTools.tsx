@@ -522,8 +522,9 @@ export function BooksTools({
     description: "Record a payment against an invoice. Cannot be taken back.",
     ...registration("mark_paid"),
     handler: ({ id, amount }) => {
-      // The same reading the card's gate uses: an agent that sends "1,250" is told so, rather than
-      // having `Number()` turn it into NaN and the INSERT fail under it.
+      // The schema says `number`, so the kit's door has already refused "1,250" before this runs.
+      // What reaches here is read the way the card's gate reads an amount: a fraction of a cent or
+      // a non-finite number is refused rather than rounded into a payment.
       const cents = parseDollars(amount as string | number);
       if (cents === null) return refused(`"${String(amount)}" is not an amount.`);
       return say(markPaidAction(String(id), cents));

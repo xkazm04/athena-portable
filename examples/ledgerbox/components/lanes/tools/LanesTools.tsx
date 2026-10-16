@@ -5,8 +5,8 @@
  *
  * Four of the tools are the shared ones every three-level direction gets from
  * `useZoomTools` — read the view, open an area, open an invoice, come back out.
- * The two below are what only the books can answer: a search across all 124
- * invoices at once, and the filter the swarm is actually lit by.
+ * The two below are what only the books can answer: a search across every
+ * invoice at once, and the filter the swarm is actually lit by.
  *
  * NOTHING HERE CHANGES THE BOOKS. Recording a payment, sending a reminder and
  * voiding an invoice are registered beside this file by `BooksTools.tsx`, where

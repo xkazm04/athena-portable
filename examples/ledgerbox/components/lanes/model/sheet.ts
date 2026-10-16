@@ -1,5 +1,6 @@
 /**
- * What the server hands the surface: one sheet, six lanes, 124 marks.
+ * What the server hands the surface: one sheet, a lane per category, a mark per
+ * invoice (six lanes and 125 marks on the seed).
  *
  * Money is in minor units everywhere in this file and everywhere downstream of
  * it. There is exactly one place that divides by a hundred and it is the
