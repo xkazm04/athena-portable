@@ -1,0 +1,258 @@
+{
+ "context": "desktop-build-config",
+ "files_read": 12,
+ "loc": 1292,
+ "registry": "software-engineering/page-load-pipeline, software-engineering/build-economics, software-engineering/packaging, software-engineering/quality-gates, software-engineering/test-harness (mapped for desktop-build-config: build-economics, agent-addressable-ui, packaging [deviation, known], quality-gates; workspace-build-config: sidecar-provisioning [not-applicable], packaging via build; uat: test-harness [deviation, known])",
+ "techniques": [
+  "field-measured-load-budget",
+  "build-measurement",
+  "dev-variant-design",
+  "gate-liveness",
+  "instrument-answers-only-its-own-question",
+  "adoption-time-packaging-audit",
+  "native-payload-verification",
+  "variant-config-parity"
+ ],
+ "deviations": 6,
+ "assigned": [
+  {
+   "title": "First paint 155.4 kB gz vs ~125 kB recorded, and no byte gate (desktop-console Lane B card)",
+   "verdict": "built 27810da (instrument: scripts/first-paint.mjs + first-paint.test.ts in pnpm test, ratchet 161,000 B over today's 159,082 B; 6df9ff5 shares its build). The 125 kB gap is backlogged C (owner call); ADR 0095's figure untouched. Premise re-verified: the figure moved from 155.4 to 159.1 kB since the card's base (app chunk 118.3 -> 121.1 kB)."
+  }
+ ],
+ "built": [
+  {
+   "sha": "27810da",
+   "title": "the first frame's gzipped bytes are gated by pnpm test, with a ratchet at today's 159.1 kB",
+   "lens": "risk-assessor",
+   "red_before": "first-paint.test.ts with the ceiling at 158,000 B: 'first paint is 159.1 kB gzipped, over the 158.0 kB ceiling (largest: app 121.1, root 26.7, voice-setup 3.4)'",
+   "after": "159,082 B under a 161,000 B ceiling; fixture cases pin preloads, nested static imports, a 50 kB lazy chunk left out, missing doc/script/chunk fail; 1678 green"
+  },
+  {
+   "sha": "46cbb74",
+   "title": "ESLint stops linting the perf gate's build output in dist-perf",
+   "lens": "devops-optimizer",
+   "red_before": "eslint . walked 1,353 files, 1,026 of them dist-perf chunks; 11.28/11.28/11.25 s",
+   "after": "329 files, 8.81/8.87/8.92 s"
+  },
+  {
+   "sha": "a8c6575",
+   "title": "ESLint judges the plain-JS scripts and the src-tauri hands files instead of parsing them under no rules",
+   "lens": "test-strategist",
+   "red_before": "seeded scripts/zz-seed.mjs (unused const, undefined call) and src-tauri/src/zz-seed.ts (unused const): eslint exit 0",
+   "after": "same seeds: 3 errors, exit 1; real tree 331 files, 0 problems"
+  },
+  {
+   "sha": "bf1863d",
+   "title": "the frozen daemon ships the builtin connector specs, so its vault's catalog is not empty",
+   "lens": "parity-auditor",
+   "red_before": "tests/test_sidecar_data.py: 2 package files missing (connectors/builtin/gmail.json, notion.json); frozen layout load_builtin -> [] vs source ['gmail','notion']",
+   "after": "3 of 3; --list-data 304 files incl. both specs; scoped pytest 198 passed"
+  },
+  {
+   "sha": "6df9ff5",
+   "title": "a production build is searched for the dev inspector and source stamps, which nothing checked",
+   "lens": "security-auditor",
+   "red_before": "same test with the build in --mode development: 'assets/inspector-CN4UkfE0.js' found (and first paint 221.8 kB)",
+   "after": "production build with ATHENA_INSPECTOR=1: 0 files name data-inspector/data-loc; 1679 green"
+  },
+  {
+   "sha": "e599aa0",
+   "title": "the placeholder icon script goes, since running it as its header says would overwrite the shipped logo",
+   "lens": "risk-assessor",
+   "red_before": "make-icon.mjs output (temp copy) differs from the committed app-icon.png at byte 36; git grep make-icon: only itself and the two generated maps",
+   "after": "0 scripts write src-tauri/icons/; gates green"
+  },
+  {
+   "sha": "ab9dc7a",
+   "title": "build.rs stops saying only the chrome webview can call the privileged commands",
+   "lens": "copy-auditor",
+   "red_before": "probe: 7 statements contradicted by capabilities/*.json (athena.json grants 19 listed commands; origins_* named; duplicates)",
+   "after": "0; comments only; cargo check 0, clippy 0, commands.test.ts green"
+  },
+  {
+   "sha": "5e5f7ef",
+   "title": "the inspector's HUD text meets the 12px floor, and an inline size under it now fails a test",
+   "lens": "visual-craft",
+   "red_before": "lib/dev/inspector.test.ts: 'lib/dev/inspector.tsx: 11px' twice",
+   "after": "0 inline sizes under 12px across src/**/*.tsx; 1681 green"
+  },
+  {
+   "sha": "26d016a",
+   "title": "the inspector's DOM walk and its typing guard are tested, where only the pure helpers were",
+   "lens": "test-strategist",
+   "red_before": "seeded locate.ts (malformed stamps kept, SELECT dropped): 2 of 3 new cases fail; before the file: 0 cases",
+   "after": "3 of 3; 1684 green"
+  },
+  {
+   "sha": "779e3c3",
+   "title": "the dev film route answers a suffix range with the file's last bytes, not its first",
+   "lens": "bounty-hunter",
+   "red_before": "evidence-films.test.ts on the old vite.config.ts: bytes=-100 -> [206,'0-100','bytes 0-100/1000']; bytes=-0 -> 206",
+   "after": "4 of 4; pnpm build 0; 1688 green"
+  },
+  {
+   "sha": "a52c146",
+   "title": "pnpm typecheck sees the seven tests vitest runs from scripts/ and src-tauri/src",
+   "lens": "parity-auditor",
+   "red_before": "seeded scripts/zz-seed.test.ts (const n: number = 'seed'): pnpm typecheck exit 0",
+   "after": "seed -> TS2322, exit 2; real tree 0 errors with 7 files added"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "build-sidecar's HIDDEN_IMPORTS comment says PyInstaller cannot see function-level imports",
+   "before": "comment inaccurate (modulegraph scans function bodies); 5 hidden imports, all harmless",
+   "after": "same binary either way; rewording is churn"
+  },
+  {
+   "title": "smoke.mjs reads --timeout abc as NaN and fails at once with 'nothing said in NaNs'",
+   "before": "operator typo -> immediate FAIL, exit 1",
+   "after": "a validation message instead; same exit, same operator action; impact ~0"
+  },
+  {
+   "title": "The inspector's 'mapping is off' hint names pnpm tauri:inspect even in a browser dev session",
+   "before": "1 hint naming the Tauri command; pnpm dev:inspect also exists (ADR 0086 names both)",
+   "after": "the shell's normal surface is Tauri; both commands work; no measurable gain"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "risk-assessor",
+   "checked": "assigned first-paint card re-measured (159,082 B, 12 chunks); make-icon.mjs output vs committed app-icon.png (cmp)"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "build-sidecar data list vs src/athena package data and Path(__file__) loaders (connectors/builtin missed); vitest include vs tsconfig include (7 files); frozen vs source seal selection (keyring extra)"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "dev inspector and data-loc stamps in a production build (seeded via --mode development); vite evidence route path guard (.. rejected by startsWith('.') and the one-segment regex); smoke.mjs serve() path.basename"
+  },
+  {
+   "key": "bounty-hunter",
+   "checked": "evidence route Range arithmetic (suffix and zero-length ranges wrong); inspector chord and Escape handling; dev-source-loc /src/ prefix and node_modules skip"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "eslint rule coverage per file type (js/mjs unjudged, src-tauri ignored whole); locate.ts buildChain/isTypingTarget untested"
+  },
+  {
+   "key": "devops-optimizer",
+   "checked": "eslint walk of dist-perf (1,026 built chunks), timed 3x before/after"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "build.rs header and per-block comments vs the four capability files; make-icon header (module bar gone); inspector HUD copy"
+  },
+  {
+   "key": "visual-craft",
+   "checked": "inspector inline font sizes vs the 12px floor; grep of all src/**/*.tsx inline sizes"
+  },
+  {
+   "key": "ui-perfectionist",
+   "checked": "inspector HUD: label offset after 11->12px (12x1.4+2 < 20), raw radius/padding values in a dev-only overlay (left: dev tool)"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "drive-script waitUntil swallows its last error; build-sidecar prints triple/source/out; load_builtin on a missing dir returns {} silently (carried in the sidecar fix)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "smoke.mjs spawn error/timeout/exit paths (all FAIL with a reason); build-sidecar rustc failure fallback; first-paint missing doc/script/chunk throw"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "preview-only chunks in the shipped dist (7 files, 234 kB raw) via a closure walk; first-frame chunk breakdown"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "inspector states: unarmed, armed-no-stamps (relaunch hint), hover, copied ok/failed, no crumbs"
+  },
+  {
+   "key": "accessibility-checker",
+   "checked": "inspector HUD rows are real <button type=button> with text; dev-only overlay, pointer-events none outside the HUD"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "inspector arm/disarm flow (Ctrl+Shift+L, ; i, Esc) and left-click left alone; smoke usage text"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "@babel/core and cross-env dev-only (ADR 0086); build extra excludes pytest/mypy/ruff/numpy, none imported by src/athena"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "first-paint gate placement: vitest over a temp-dir build vs a perf:all step (picked pnpm test: runs on every desktop change, build ~1.7 s)"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "ADR 0086/0095, parity.md:120 and overlay 125 kB claim vs measured; SIDECAR.md build line vs extras"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "make-icon.mjs dead since e7b60aa; build.rs placeholder comment lines"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "sidecar_entry argv: serve prepended, leading serve tolerated, same cli.main path as `uv run athena serve`"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "packaging deviation (smoke drives a dev binary) and test-harness deviation (CDP attach, crop) already recorded: not re-emitted"
+  },
+  {
+   "key": "analytics-planner",
+   "checked": "first-paint gate reports gzipBytes, chunks, overTargetBytes metrics per run"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "mobile-specialist",
+   "why": "desktop build config, a dev overlay and Windows driver scripts: no viewport surface"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "no billing, plan or pricing surface"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no share, invite or notification surface"
+  },
+  {
+   "key": "business-strategist",
+   "why": "build tooling; no product value proposition to judge"
+  },
+  {
+   "key": "onboarding-designer",
+   "why": "no first-run or setup flow in these files"
+  },
+  {
+   "key": "feature-scout",
+   "why": "stabilize strategy; build tooling has no feature roadmap surface"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "no agent or model surface in build/config/driver files"
+  }
+ ],
+ "findings": 18,
+ "lanes": "A:11/B:3/C:1",
+ "fp": 0,
+ "gates": {
+  "apps/desktop pnpm typecheck": 0,
+  "apps/desktop pnpm lint": 0,
+  "apps/desktop pnpm test (1688 passed)": 0,
+  "apps/desktop pnpm build": 0,
+  "uv run ruff check scripts/build-sidecar.py tests/test_sidecar_data.py": 0,
+  "uv run ruff format --check (same files)": 0,
+  "uv run mypy": 0,
+  "uv run pytest tests/test_sidecar_data.py tests/adopt/test_showcase_sidecar.py tests/connectors": 0,
+  "src-tauri cargo check": 0,
+  "src-tauri cargo clippy --all-targets": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "first-paint byte gate in pnpm test; 11 built; ADR 0095 gap is an owner call",
+ "notes": "Gate choice for the assigned item: a vitest test (apps/desktop/scripts/first-paint.test.ts) over a production build into the OS temp dir, so `pnpm test` (every desktop change) runs it; not a perf:all step. Build adds ~1.7 s to the suite. The prompt cited 'ADR 0089 / the overlay' for 125 kB: the figure lives in ADR 0095:28 (0089 holds the motion budgets); untouched. The overlay .claude/scan-sweep/config.md still says 'First paint (about 125 kB gz) is pinned by console/graph.test.ts' and docs/redesign/parity.md:120 the same: both stale (graph.test counts files; the byte gate is first-paint.test.ts). Director owns the overlay; parity.md left for the C card's owner. Extra paths touched and why: apps/desktop/tsconfig.json (unmapped in context-map; this context's description owns the TS config; a52c146), tests/test_sidecar_data.py (new test for scripts/build-sidecar.py), apps/desktop/src/lib/dev/inspector.test.ts and locate.dom.test.ts (tests of this context). make-icon.mjs deleted (e599aa0): context-map.json and .ai/registry-map.json still list it until the next scan. workspace-build-config lens results: parity-auditor built bf1863d (connector specs missing from the frozen daemon); parity/observability backlogged B (keyring extra dropped by `uv sync --extra build`, vault ignores the record's seal kind); sidecar_entry.py read in full: frozen argv path == `uv run athena serve` path through cli.main, freeze_support harmless, nothing else differs; HIDDEN_IMPORTS comment inaccuracy rejected as churn; no secrets bundled (data = constitution/, playbook JSON, src/athena *.json outside proving). uat-characters-journeys lens results: drive-script.mjs read in full; known deviations (CDP attach without store check, crop 'no process') not re-emitted; backlogged B: zero-expect runs exit 0 and waitUntil drops its last error (the uat skill's exit-code text is in .claude/skills, never-touch, and needs the same change). No sibling reds seen (only round-agent this wave). pnpm perf:all not run: the first-paint change adds a byte check in vitest, not motion. Temp files only under the scratchpad."
+}
