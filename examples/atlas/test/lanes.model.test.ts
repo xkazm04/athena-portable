@@ -22,6 +22,7 @@
  *      went with the sheet, were dropped.
  */
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { COMPONENTS, COMPONENT_BY_ID, LAYER_ORDER, SYSTEMS, componentById } from "../data";
@@ -53,12 +54,14 @@ import {
   NODE_OF_SYSTEM,
   PHASES,
   ROLES,
+  ROLE_LABEL,
   kindOfNode,
   nodeName,
   roleCounts,
   systemCoverage,
 } from "../components/atlas/variants/archify-lanes/workflow";
-import { TEXT_BOX, fitSize, fitTier } from "../components/atlas/variants/archify-lanes/text";
+import { ADVANCE, TEXT_BOX, TIERS, fitSize, fitTier } from "../components/atlas/variants/archify-lanes/text";
+import { LABEL_ADVANCE } from "../components/atlas/variants/archify-lanes/routing";
 
 test("every system of the model is in exactly one node", () => {
   const missing = systemCoverage().filter((c) => !c.node);
@@ -182,6 +185,23 @@ test("every node names a real component for the pane to open", () => {
       `${n.id} opens ${n.item}, which belongs to ${c!.system} — not one of its systems`,
     );
   }
+});
+
+test("the legend reads the role words and the label advance from their owners, never a copy", () => {
+  /* `Scene.tsx` cannot be imported under `node --test` (JSX), so its source is read, comments
+     stripped, for literals that restate what `workflow.ts` and `routing.ts` already state. */
+  const scene = readFileSync(
+    new URL("../components/atlas/variants/archify-lanes/Scene.tsx", import.meta.url),
+    "utf8",
+  )
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:])\/\/.*$/gm, "$1");
+  for (const role of ROLES) {
+    const words = ROLE_LABEL[role];
+    assert.ok(!scene.includes(`"${words}"`), `Scene.tsx re-types the ${role} legend words "${words}"`);
+  }
+  assert.ok(!/\b5\.4\b/.test(scene), "Scene.tsx re-types the 9-unit monospace advance");
+  assert.equal(LABEL_ADVANCE, ADVANCE * TIERS.sublabel.base, "the run label advance is not the text's");
 });
 
 test("a node's accessible name says which lane owns it and which phase it happens in", () => {

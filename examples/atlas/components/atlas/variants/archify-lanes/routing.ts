@@ -48,6 +48,7 @@ import {
   type Point,
   type Rect,
 } from "./geometry";
+import { ADVANCE, TIERS } from "./text";
 import { EDGES, type Role, type Side, type WEdge } from "./workflow";
 
 export { runPath };
@@ -66,7 +67,7 @@ export const LABEL_CLEAR = 4;
  * exactly what the reader sees, which is the property archify's own "one footprint measurement"
  * rule exists to protect.
  */
-export const LABEL_ADVANCE = 5.4;
+export const LABEL_ADVANCE = ADVANCE * TIERS.sublabel.base;
 export const LABEL_PAD = 5;
 export const LABEL_H = 14;
 

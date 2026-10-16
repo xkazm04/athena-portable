@@ -23,10 +23,18 @@
  */
 import { memo, type CSSProperties, type KeyboardEvent } from "react";
 
-import { kindOfNode, nodeName, statusOfNode, type WNode, type Role } from "./workflow";
+import {
+  ROLES,
+  ROLE_LABEL,
+  kindOfNode,
+  nodeName,
+  statusOfNode,
+  type WNode,
+  type Role,
+} from "./workflow";
 import { fitTier, rem } from "./text";
 import type { LaneBand, NodeBox, PhaseBand, Plan } from "./geometry";
-import type { Run } from "./routing";
+import { LABEL_ADVANCE, type Run } from "./routing";
 import { Sigil } from "./Sigil";
 
 
@@ -250,16 +258,17 @@ export const Trail = memo(function Trail({
 
 /* ------------------------------------------ the legend --------------------------------------- */
 
-/** The 9-unit monospace advance the legend measures its own counts against. */
-const LEGEND_ADVANCE = 5.4;
+/**
+ * The legend's words are `ROLE_LABEL`'s, in `ROLES` order, and its labels are set in the run
+ * label's own 9-unit type, so it measures its counts with the run label's advance. Both are
+ * stated once, where the roles and the router live.
+ */
+const LEGEND_ADVANCE = LABEL_ADVANCE;
 
-export const ROLE_LEGEND: readonly { role: Role; text: string }[] = [
-  { role: "main", text: "the turn" },
-  { role: "branch", text: "a side path" },
-  { role: "async", text: "written, not awaited" },
-  { role: "return", text: "the answer, home" },
-  { role: "error", text: "the gate declines" },
-];
+export const ROLE_LEGEND: readonly { role: Role; text: string }[] = ROLES.map((role) => ({
+  role,
+  text: ROLE_LABEL[role],
+}));
 
 /**
  * The legend, INSIDE the canvas footprint (study §2: one footprint measurement shared by the
