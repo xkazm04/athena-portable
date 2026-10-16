@@ -87,7 +87,7 @@ export const SYSTEMS: System[] = [
     layer: "surfaces",
     name: "The shell",
     blurb:
-      "The Tauri window: chrome, page webviews, the relay, the nine hands, the capture and the daemon sidecar.",
+      "The Tauri shell: Main's chrome and page webviews, her own window beside it, the relay, the nine hands, the capture and the daemon sidecar.",
     home: "apps/desktop/src-tauri/src",
     source: "README §3.1, surfaces; §3.5",
     file: "apps/desktop/src-tauri/src/lib.rs",
@@ -97,12 +97,12 @@ export const SYSTEMS: System[] = [
     id: "sys-panel",
     part: "S-02",
     layer: "surfaces",
-    name: "The modules",
+    name: "The console",
     blurb:
-      "The window's front end: a thin module bar and one full-width module, each a view-model, fixtures and a pure view.",
-    home: "apps/desktop/src/modules",
-    source: "README §3.5; ADR 0013, 0024",
-    file: "apps/desktop/src/modules/registry.ts",
+      "Main is one scene with depths — Athena on the surface, Apps, Chores, Accounts, Voice and Mind beneath her — and she is her own window beside it.",
+    home: "apps/desktop/src",
+    source: "README §3.5; ADR 0026, 0087, 0095",
+    file: "apps/desktop/src/console/Console.tsx",
     status: "built",
   },
   {

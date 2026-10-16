@@ -13,10 +13,35 @@ import { fileURLToPath } from "node:url";
 import { join } from "node:path";
 import { test } from "node:test";
 
-import { ADRS } from "../data";
+import { ADRS, COMPONENTS, CONCEPTS, LAYERS, SYSTEMS } from "../data";
 
 /** The repository root: this file is `examples/atlas/test/data.test.ts`. */
 const REPO = fileURLToPath(new URL("../../../", import.meta.url));
+const inTree = (path: string): boolean => existsSync(join(REPO, path));
+
+test("every entry that says it is built cites a path in the tree", () => {
+  const missing: string[] = [];
+  for (const c of COMPONENTS) {
+    if (c.status !== "planned" && !inTree(c.file)) missing.push(`${c.part} ${c.id} -> ${c.file}`);
+  }
+  for (const s of SYSTEMS) {
+    if (!inTree(s.home)) missing.push(`${s.part} ${s.id} home -> ${s.home}`);
+    if (s.status !== "planned" && !inTree(s.file)) missing.push(`${s.part} ${s.id} -> ${s.file}`);
+  }
+  for (const c of CONCEPTS) if (!inTree(c.file)) missing.push(`${c.part} ${c.id} -> ${c.file}`);
+  for (const l of LAYERS) if (!inTree(l.file)) missing.push(`${l.part} ${l.id} -> ${l.file}`);
+  assert.deepEqual(missing, [], "a citation names a path that is not in the tree");
+});
+
+test("a planned component names a file that is not in the tree yet", () => {
+  /* `planned` is a claim about the tree (data/types.ts: "an atlas of a machine that silently omits
+     the parts that were designed and not built is a sales brochure"). The day the file lands, the
+     status is wrong in the other direction, and this is what says so. */
+  for (const c of COMPONENTS) {
+    if (c.status !== "planned") continue;
+    assert.ok(!inTree(c.file), `${c.id} is marked planned but ${c.file} is in the tree`);
+  }
+});
 
 test("every ADR the model lists is the file in docs/adr it names, under its own number and H1", () => {
   const ns = ADRS.map((a) => a.n);

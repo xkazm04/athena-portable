@@ -47,10 +47,10 @@ export const COMPONENTS: Component[] = [
     system: "sys-shell",
     name: "lib.rs",
     enforces:
-      "The window is one module bar plus one full-width module; the browser is a registry entry, not a frame that hosts a panel.",
+      "Two windows, one product: Main holds the console and one page webview per tab, Athena is her own window beside it, and Rust owns every rectangle.",
     file: "apps/desktop/src-tauri/src/lib.rs",
     concepts: ["dec-module-first"],
-    adrs: [13, 24],
+    adrs: [26, 88],
     status: "built",
   },
   {
@@ -126,48 +126,48 @@ export const COMPONENTS: Component[] = [
     status: "built",
   },
 
-  /* ============================ surfaces / the modules ========================== */
+  /* ============================ surfaces / the console ========================== */
   {
     id: "cmp-mod-registry",
     part: "C-008",
     system: "sys-panel",
-    name: "modules/registry.ts",
+    name: "scenes/registry.ts — the depths",
     enforces:
-      "Every module in one list, each a ModuleEntry; adding a surface is adding a row, not editing the window.",
-    file: "apps/desktop/src/modules/registry.ts",
+      "Every depth in one record keyed by its root, so a new root is a compile error until it has a scene; the preview harness and the tests read it, the running app never does.",
+    file: "apps/desktop/src/scenes/registry.ts",
     concepts: ["dec-module-first"],
-    adrs: [13],
+    adrs: [87, 95],
     status: "built",
   },
   {
     id: "cmp-mod-panel",
     part: "C-009",
     system: "sys-panel",
-    name: "the Panel module",
+    name: "the companion — her window",
     enforces:
-      "The run loop: a turn's channel events become a conversation, and a decision card is one frame of it. Renders headless against a fake daemon.",
-    file: "apps/desktop/src/modules/panel",
+      "The run loop in her own window: a turn's channel events become a conversation, and a decision card is one frame of it.",
+    file: "apps/desktop/src/companion",
     concepts: ["act-command", "inv-gate"],
-    adrs: [12, 24],
+    adrs: [12, 26],
     status: "built",
   },
   {
     id: "cmp-mod-browser",
     part: "C-010",
     system: "sys-panel",
-    name: "the Browser module",
+    name: "the Browser model — the Apps depth",
     enforces:
-      "The browsing surface with a doorway and an origins-backed app ledger: which apps were visited, what each offered, at which tier.",
+      "The origins-backed app ledger the Apps depth draws: which apps were visited, what each offered, at which tier.",
     file: "apps/desktop/src/modules/browser",
     concepts: ["act-record", "tier-native"],
-    adrs: [13, 24],
+    adrs: [24, 91],
     status: "built",
   },
   {
     id: "cmp-mod-connectors",
     part: "C-011",
     system: "sys-panel",
-    name: "the Connectors module",
+    name: "the Connectors model — the Accounts depth",
     enforces:
       "Health is three-valued and rendered with its age, probed on events and never on render; readiness names its own remediation.",
     file: "apps/desktop/src/modules/connectors",
@@ -179,12 +179,12 @@ export const COMPONENTS: Component[] = [
     id: "cmp-mod-setup",
     part: "C-012",
     system: "sys-panel",
-    name: "the Setup module",
+    name: "the Setup model — the first act",
     enforces:
-      "First launch with no key typed: the engine probe's answer, rendered, and the mic check beside it.",
+      "First launch with no key typed: the engine probe's answer, rendered as the first act of the scene, and the mic check beside it.",
     file: "apps/desktop/src/modules/setup",
     concepts: ["act-setup", "inv-noprovider"],
-    adrs: [24],
+    adrs: [24, 87],
     status: "built",
   },
 

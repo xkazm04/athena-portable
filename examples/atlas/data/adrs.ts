@@ -1,6 +1,7 @@
 /**
- * `docs/adr/` — the twenty-five decisions, by number, so a component can cite one and L2 can
- * print its title without the reader leaving the page.
+ * `docs/adr/` — the decisions the model cites, by number, so a component can cite one and L2 can
+ * print its title without the reader leaving the page. Not every ADR in the directory: only the
+ * ones a component names, and `test/data.test.ts` holds each to its file and its H1.
  *
  * Titles are the ADRs' own H1s, shortened only where an H1 restates its own number. The `file`
  * is the path in this repository; nothing here fetches it, and there is no link — a component's
@@ -34,4 +35,10 @@ export const ADRS: Adr[] = [
   { n: 23, title: "Contrast is measured against the composited surface, and the label tier carries the accent", file: "docs/adr/0023-contrast-is-measured-against-the-composited-surface-and-the-label-tier-carries-the-accent.md" },
   { n: 24, title: "The shell's second pass: apps as a ledger, the panel as a conversation, setup as one module", file: "docs/adr/0024-the-shells-second-pass-apps-as-a-ledger-the-panel-as-a-conversation-setup-as-one-module.md" },
   { n: 25, title: "The screenshot is a hand the shell answers, and it is of the window cropped to the page", file: "docs/adr/0025-the-screenshot-is-a-hand-the-shell-answers-and-it-is-of-the-window-cropped-to-the-page.md" },
+  { n: 26, title: "Athena is her own window, and Main is the workhorse beside her", file: "docs/adr/0026-athena-is-her-own-window-and-main-is-the-workhorse.md" },
+  { n: 87, title: "Main is one scene with depths, and Fathom is the chosen design", file: "docs/adr/0087-the-main-window-is-one-scene-with-depths-and-fathom-is-the-chosen-design.md" },
+  { n: 88, title: "Depth has two shapes, because the page webview is native", file: "docs/adr/0088-depth-has-two-shapes-because-the-page-webview-is-native.md" },
+  { n: 90, title: "Depths are ported one at a time behind a bridge, and the console is opt-in", file: "docs/adr/0090-depths-are-ported-one-at-a-time-behind-a-bridge-and-the-console-is-opt-in.md" },
+  { n: 91, title: "Apps are named by origin, and the tool level shows claims, not classes", file: "docs/adr/0091-apps-are-named-by-origin-and-the-tool-level-shows-claims-not-classes.md" },
+  { n: 95, title: "The cutover deletes the bar and the old views, and the first paint is a budget", file: "docs/adr/0095-the-cutover-deletes-the-bar-and-the-old-views-and-the-first-paint-is-a-budget.md" },
 ];

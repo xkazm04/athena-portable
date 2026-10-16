@@ -183,10 +183,10 @@ export const CONCEPTS: Concept[] = [
     id: "dec-module-first",
     part: "D-3",
     kind: "decision",
-    name: "The window is module-first",
+    name: "Main is one scene with depths",
     claim:
-      "A thin module bar plus one full-width module; the browser is an ordinary registry entry, not a frame hosting a side panel.",
-    source: "README §3.5; ADR 0013",
-    file: "docs/adr/0013-module-first-window.md",
+      "Athena on the surface and Apps, Chores, Accounts, Voice and Mind beneath her, each depth a view-model, fixtures and a pure view; she is her own window beside it.",
+    source: "README §3.5; ADR 0087, 0026",
+    file: "docs/adr/0087-the-main-window-is-one-scene-with-depths-and-fathom-is-the-chosen-design.md",
   },
 ];

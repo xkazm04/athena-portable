@@ -14,7 +14,7 @@ import type { Edge } from "./types";
 
 export const EDGES: Edge[] = [
   /* --- the shell holds the window together --- */
-  { from: "cmp-shell-lib", to: "cmp-mod-registry", kind: "reads", note: "the module bar is the registry, rendered" },
+  { from: "cmp-shell-lib", to: "cmp-mod-panel", kind: "calls", note: "her window is a second webview the shell creates and places" },
   { from: "cmp-shell-lib", to: "cmp-shell-tabs", kind: "calls", note: "opens and closes page webviews" },
   { from: "cmp-shell-lib", to: "cmp-shell-daemon", kind: "calls", note: "spawns the sidecar and owns its lifetime" },
   { from: "cmp-shell-lib", to: "cmp-shell-store", kind: "calls", note: "four generic key/value commands" },
@@ -28,11 +28,10 @@ export const EDGES: Edge[] = [
   { from: "cmp-shell-daemon", to: "cmp-daemon-ready", kind: "reads", note: "the ready line is how the shell learns the port" },
   { from: "cmp-inject", to: "cmp-kit-webmcp", kind: "reads", note: "a page's own registrations are what tier 1 reads" },
 
-  /* --- the modules are the front of the window --- */
-  { from: "cmp-mod-registry", to: "cmp-mod-panel", kind: "reads", note: "one ModuleEntry" },
-  { from: "cmp-mod-registry", to: "cmp-mod-browser", kind: "reads", note: "one ModuleEntry; the browser is not special" },
-  { from: "cmp-mod-registry", to: "cmp-mod-connectors", kind: "reads", note: "one ModuleEntry" },
-  { from: "cmp-mod-registry", to: "cmp-mod-setup", kind: "reads", note: "one ModuleEntry" },
+  /* --- the depths are the front of the window, each over a module's model --- */
+  { from: "cmp-mod-registry", to: "cmp-mod-browser", kind: "reads", note: "the Apps depth draws the browsing model" },
+  { from: "cmp-mod-registry", to: "cmp-mod-connectors", kind: "reads", note: "the Accounts depth draws the connectors model" },
+  { from: "cmp-mod-registry", to: "cmp-mod-setup", kind: "reads", note: "the Mind depth's engine section reads the setup model" },
   { from: "cmp-mod-panel", to: "cmp-daemon-routes", kind: "calls", note: "POST /run, then the SSE stream of the turn" },
   { from: "cmp-mod-panel", to: "cmp-c-channel", kind: "reads", note: "a decision card is one channel event" },
   { from: "cmp-mod-panel", to: "cmp-shell-hands", kind: "calls", note: "host tools have no executor in the lane; the surface runs them" },
