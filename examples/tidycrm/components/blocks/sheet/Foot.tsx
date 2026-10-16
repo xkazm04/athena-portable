@@ -15,10 +15,15 @@
  * that the reading may be MOVED and not deleted — it is still on the surface, still visible
  * without interaction, still counted from the live registrations rather than typed.
  */
-import { DEVIATION_LABEL, type BkDatabase, type BkSheet, type BkTable, type DeviationKind } from "../model";
+import {
+  DEVIATION_KINDS,
+  DEVIATION_LABEL,
+  type BkDatabase,
+  type BkSheet,
+  type BkTable,
+  type DeviationKind,
+} from "../model";
 import { presenceLine, useAthenaPresence } from "../presence";
-
-const KIND_ORDER: DeviationKind[] = ["duplicate", "conflict", "phone", "stale"];
 
 /**
  * The ink a kind's count carries, and the reason the two are not one colour.
@@ -117,7 +122,7 @@ export function SheetFoot({
       </div>
       {showKinds ? (
         <div className="bk-marks" role="group" aria-label="Deviations by kind">
-          {KIND_ORDER.map((kind) => (
+          {DEVIATION_KINDS.map((kind) => (
             <span className="bk-chip" data-kind={kind} key={kind}>
               <span>{DEVIATION_LABEL[kind]}</span>
               <b data-tone={markTone(kind, sheet.byKind[kind])}>{sheet.byKind[kind]}</b>

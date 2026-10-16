@@ -236,3 +236,9 @@ test("the export tool names the file the way the route does, through lib/csv.ts"
   assert.match(shell, /import \{[^}]*\bexportFilename\b[^}]*\} from "@\/lib\/csv"/, "it reads the one rule");
   assert.doesNotMatch(shell, /tidycrm-\$\{/, "and types no second copy of it");
 });
+
+test("the foot's deviation breakdown walks DEVIATION_KINDS, not a copy of it", () => {
+  const foot = code("components/blocks/sheet/Foot.tsx");
+  assert.doesNotMatch(foot, /\[\s*"duplicate",\s*"conflict"/, "Foot types its own list of the four kinds");
+  assert.match(foot, /DEVIATION_KINDS\.map\(/, "the breakdown is drawn from the model's list");
+});
