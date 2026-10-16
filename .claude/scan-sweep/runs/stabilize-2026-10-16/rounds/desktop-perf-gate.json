@@ -1,0 +1,224 @@
+{
+ "context": "desktop-perf-gate",
+ "files_read": 36,
+ "loc": 5676,
+ "registry": "software-engineering/quality-gates, software-engineering/test-harness, software-engineering/measurement-honesty, software-engineering/modal-stack, software-engineering/motion",
+ "techniques": [
+  "renameable-detector-keys",
+  "vacuous-by-evaluation",
+  "gate-liveness",
+  "live-app-harness",
+  "noise-band-and-hysteresis",
+  "blocking-by-input-determinism",
+  "focus-and-scroll-containment",
+  "layering-and-precedence",
+  "prose-rule-drift"
+ ],
+ "deviations": 5,
+ "assigned": [
+  {
+   "title": "perf:all exits 1 at perf:chores: the drive waits for a \"Fit it to me\" button nothing renders",
+   "verdict": "built 064353b"
+  }
+ ],
+ "built": [
+  {
+   "sha": "064353b",
+   "title": "the Chores perf drive presses \"Talk it through with her\" (where \"Fit it to me\" was) and a test holds every name it presses to the scene",
+   "lens": "test-strategist",
+   "red_before": "scripts/perf-chores.drive.test.ts seeded with the old names: 2 of 5 failed ('Fit it to me' not on the topic, 'Cancel' not in the studio); perf:chores timed out 30 s on the button",
+   "after": "5/5; perf:chores pass 680 frames p95 16.8 ms 0 long task; perf:all exit 0, all 8 scenes"
+  },
+  {
+   "sha": "7cbacb0",
+   "title": "an open lightbox keeps Tab on its own controls, and an Escape from outside it closes the still instead of leaving the page",
+   "lens": "accessibility-checker",
+   "red_before": "wired.test.tsx 'keeps Tab inside an open lightbox': Tab on Close not prevented; Edge probe: Tab 4 left the aria-modal dialog for the stage dock, then Escape rose to the catalogue (scroll 1460 -> 0)",
+   "after": "test green; probe: Tabs 4-5 stay in the dialog, Escape closes the still, topic kept at 1460"
+  },
+  {
+   "sha": "c60cae0",
+   "title": "the topic page's figure tiles and flow steps pad on the density tokens, as the replay's tiles already do",
+   "lens": "ui-perfectionist",
+   "red_before": "chores.css.test.ts: expected ['.pa-kpi', '.pa-step'] to deeply equal [] (14px pads in the pa- half the ch- guard never covered)",
+   "after": "0 non-control 14px pads in the pa- half; 1546/1546"
+  },
+  {
+   "sha": "f4717e7",
+   "title": "the Apps, Mind and Chores drives fail when a control they step through is gone instead of skipping the step",
+   "lens": "test-strategist",
+   "red_before": "scripts/perf-drives.test.ts: 3 of 3 drives resolved against a stand-in page missing their guarded control",
+   "after": "3/3 reject; perf:apps and perf:mind pass, 0 long task"
+  },
+  {
+   "sha": "af45c04",
+   "title": "perf:all judges every scene from one build and a red scene no longer hides the scenes after it",
+   "lens": "test-strategist",
+   "red_before": "scripts/perf-gate.test.ts 4 of 4 failed (drivesIn/runScenes missing, chained script); the chained perf:all stopped at a chores red without judging mind, 96 s",
+   "after": "4/4; perf:all exit 0 in 67-68 s, one build, self-test + 8 scenes judged"
+  },
+  {
+   "sha": "3995f5b",
+   "title": "the catalogue's filters and pick, the front door's words and a topic's scroll outlive the fresh view the stage mounts at every move",
+   "lens": "parity-auditor",
+   "red_before": "with the view remounted per move as the stage does: 5 failed (filters lost, intro undefined at the studio x3, scroll 0 not 900); Edge probes: Recover money/Most value back as All jobs/Best edge, topic 2229 -> 0",
+   "after": "187/187 chores tests, 1554/1554; probes: filters, sort and pick kept; topic back at 2229 from studio and replay"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "turn.tsx's inline() duplicates rich.tsx's exported inline()",
+   "before": "2 definitions, same regex, same output on every input (Fragment vs bare string only)",
+   "after": "1 definition, same output: churn, no behaviour or reader-visible change"
+  },
+  {
+   "title": "perf-gate serveBuild proceeds after 30 s without a server and fails in page.goto",
+   "before": "the failure already exits 1 naming ERR_CONNECTION_REFUSED on the preview URL",
+   "after": "a reworded message, same exit and same cause named: not better"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "test-strategist",
+   "checked": "every drive's selectors against the scene (chores levels rendered from the drive's fixture), the if-guards in apps/mind/chores drives, perf:all's chain, wired/intake tests' re-render-vs-remount harness; 3 built, 1 card"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "wired.test re-render vs Stage.tsx key-per-layer (built 3995f5b), ch-/pa- 14px guard (built c60cae0), adopt/intake follow loops (card), perf:<scene> scripts vs drive files (pinned in af45c04), turn/rich inline (rejected)"
+  },
+  {
+   "key": "bounty-hunter",
+   "checked": "Escape routing topic/lightbox/stage in Edge (built 7cbacb0), intro lost across the studio move (built 3995f5b), replay ArrowRight at the last turn (moveTo no-ops on samePath: fine)"
+  },
+  {
+   "key": "accessibility-checker",
+   "checked": "lightbox aria-modal focus (built), replay aria-live on remounted TurnView (card C), dot labels say state in words (fine), studio Escape ask-first"
+  },
+  {
+   "key": "error-handler",
+   "checked": "perf-gate drive throw path (now a FAIL line, af45c04), serveBuild 30 s wait (rejected), adopt/intake session start/close/retry catches, copy/hand failures (card)"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "copy/hand console-only failures with a success line (card B), perf-gate prints numbers to stdout only and writes no record (doc card)"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "perf:chores long-task flips 4/8 fresh-build runs vs 9/9 same-build (card B, budget not loosened)"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "perf:all eight vite builds -> one (96 s -> 67 s, af45c04); replay timer and idle frame requests (0 in every run)"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "rise from studio/replay lost the topic's scroll (built in 3995f5b), catalogue filters lost on return (built), Make it yours button order"
+  },
+  {
+   "key": "visual-craft",
+   "checked": "lightbox box vs viewport probe (card B), pa-kpi/pa-step pads vs ch- twins (built)"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "catalogue problem/loading/empty/filter-empty, topic no stills, replay no trace/turn out of range, studio no deps/failed/lost/closed: all designed"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "topic Sent-to-clipboard and showcase Handed lines (card), chores.css motion header vs its hovers (card C), lightbox 'over everything' (in the lightbox card)"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "rich.tsx and turn.tsx build text nodes only (no HTML from briefs or model prose); lightbox img src from bundled evidence; documentRefusal before a drop"
+  },
+  {
+   "key": "ui-perfectionist",
+   "checked": "chores.css 1-1330: transitions all on --duration-fast/--ease-fast, Calm blocks for pa- and ch-, 12px floor, 14px pads (built), lightbox covers frame only (card)"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "fathom.md sections 5 and 7 vs perf-gate.mjs and BUDGETS (card B); view.tsx docstring claim about filters (fixed in 3995f5b)"
+  },
+  {
+   "key": "devops-optimizer",
+   "checked": "perf:all pipeline shape and build count (af45c04)"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "per-move remount vs view-held state (memory.ts, ADR 0093 pattern), live.tsx lazy chunk boundary keeps adopt clients out of first paint"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "perf scripts import playwright-core only (^1.64.0, Edge channel, no browser download); no new dependency added"
+  },
+  {
+   "key": "mobile-specialist",
+   "checked": "container queries at 760/820/1060/1080/1400 px in chores.css; the gate's fixed 1600x900 viewport never exercises them (noted, no card)"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "the stale context map (chore.tsx, field.tsx, parts.tsx gone; adopt/ and intake/ in no context)"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "adopt/intake SSE follow-from-seq with backoff and close-on-leave (parity card)"
+  },
+  {
+   "key": "onboarding-designer",
+   "checked": "New chore front door: no-daemon, connecting and Just decide for me states present"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "quality-gates, test-harness, modal-stack, measurement-honesty techniques named on every built item and card"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "monetization-advisor",
+   "why": "no billing, plan or pricing surface in the perf scripts or the chores scene"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no sharing, invite or referral surface"
+  },
+  {
+   "key": "business-strategist",
+   "why": "stabilize round over a gate and a scene; no pricing or conversion surface to judge"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "no model or agent logic in these files; the studio only renders a daemon session"
+  },
+  {
+   "key": "analytics-planner",
+   "why": "the app ships no product analytics; the gate's numbers are judged, not tracked"
+  },
+  {
+   "key": "feature-scout",
+   "why": "stabilize strategy: the one coverage gap (studio/intake not driven) is filed under test-strategist"
+  }
+ ],
+ "findings": 16,
+ "lanes": "A:6/B:6/C:2",
+ "fp": 0,
+ "gates": {
+  "pnpm typecheck": 0,
+  "pnpm lint": 0,
+  "pnpm test": 0,
+  "pnpm perf:all": 0
+ },
+ "leads": [
+  {
+   "ts": "2026-10-16T18:22:43.928Z",
+   "bundle": "software-engineering",
+   "nearest": "test-harness",
+   "kind": "technique",
+   "claim": "When the shell mounts a fresh view for every navigation (a keyed layer, a route element), a test of state that must survive a round trip unmounts and remounts the view between steps, because re-rendering one root keeps component state the running app discards.",
+   "because": "athena-portable chores: wired and intake tests re-rendered one root and passed while the stage dropped the catalogue's filters, the topic's scroll and the front door's opening message on every move; remounting in the tests turned 5 red, a module store turned them green, and Edge probes confirmed both sides.",
+   "confidence": "medium",
+   "from": "scan-sweep@4.6.1"
+  }
+ ],
+ "degraded": false,
+ "note": "perf:all green, 8 scenes; drive fixed; 6 built, 6 B, 2 C",
+ "notes": "desktop-scenes-chores was swept in this round (lens results are in lens_keys and the findings file under this context's name). Built for chores: 7cbacb0 (lightbox focus/Escape), c60cae0 (pa- density pads), 3995f5b (state outlives the per-move remount: catalogue filters, front-door intro (ADR 0098 was broken in the app), topic scroll). perf:all scenes passed at the end: self-test, accounts, apps, bell, chores, mind, stage, surface, voice (67 s, one build). perf:all is now `pnpm perf && node scripts/perf-gate.mjs --all` (package.json line changed, coupled). Not loosened: perf:chores alone showed a single 52-63 ms long task in 4 of 8 fresh-build runs under sibling load, 0 in 9 same-build runs and in both final --all runs (card B). The context map is stale for chores: chore.tsx, field.tsx, parts.tsx no longer exist and chores/adopt/ and chores/intake/ (about 30 files) are in no context; I read adopt/studio, adopt/session, intake/intake head and intake/session, not the rest. chores.css lines 1330-1578 were not read. Other scenes' tests may share the re-render-instead-of-remount blind spot (their views mostly hold hover/draft state, not cross-move state; not checked further). Sibling paths seen modified (not mine): examples/tidycrm/*, tests/proving/test_server.py, src/athena/proving/server/static/index.html. My preview servers (ports 4791, 4801-4803) were stopped."
+}

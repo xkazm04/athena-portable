@@ -1,0 +1,242 @@
+{
+ "context": "proving-hosted-server",
+ "files_read": 18,
+ "loc": 5305,
+ "registry": "software-engineering/agent-cli-transport, software-engineering/test-harness, software-engineering/agent-runtime-assembly, software-engineering/subprocess-lifecycle",
+ "techniques": [
+  "subscription-auth-selection",
+  "isolation-lanes",
+  "spawn-contract",
+  "termination-and-reaping",
+  "negative-control-tests"
+ ],
+ "deviations": 3,
+ "assigned": [
+  {
+   "title": "NEBIUS_API_KEY still reaches every CLI child through the shared spawn door",
+   "verdict": "built 088dae5"
+  },
+  {
+   "title": "tests/harness's live Nemotron test still runs in a bare uv run pytest when a key is set",
+   "verdict": "built 24c1669"
+  }
+ ],
+ "built": [
+  {
+   "sha": "088dae5",
+   "title": "No CLI child inherits NEBIUS_API_KEY; the proving run child gets it by name",
+   "lens": "security-auditor",
+   "red_before": "tests/harness/test_subprocess_exit.py real child printed NEBIUS_API_KEY (['NEBIUS_API_KEY'] == []); seeded control: door change alone turned tests/proving/test_server.py (new run-child test and test_no_secret_in_any_response) red",
+   "after": "0 of 7 billing/foreign keys reach a CLI child (was 1 of 7); run child still sees the key; 1048 passed over proving, harness, adopt, lane and importers"
+  },
+  {
+   "sha": "24c1669",
+   "title": "The live Nemotron test under tests/harness runs only when -m names provider",
+   "lens": "test-strategist",
+   "red_before": "inner pytest over a 3-test tree with a key set: '3 passed' (provider and eval ran)",
+   "after": "'1 passed, 2 skipped' bare, '1 passed, 2 deselected' with -m provider; the real live test with a fake key: 2 skipped, no lookup"
+  },
+  {
+   "sha": "1f4d4c4",
+   "title": "A cancelled run whose report cannot be written still ends and frees the runner",
+   "lens": "error-handler",
+   "red_before": "cancelled_report raising OSError: job.done False and runner busy 20 s after the cancel",
+   "after": "one end event (report false, meaning names the failed write); runner free"
+  },
+  {
+   "sha": "3811479",
+   "title": "HEAD on a run's event stream answers headers only",
+   "lens": "bounty-hunter",
+   "red_before": "bare-socket HEAD on a replayed run: body held SSE frames",
+   "after": "200 text/event-stream headers, empty body"
+  },
+  {
+   "sha": "2893ee7",
+   "title": "Open event streams are bounded (MAX_STREAMS 64, 503 too_many_streams)",
+   "lens": "security-auditor",
+   "red_before": "cap patched to 1 with the constant present but unenforced: a second stream beside a held live one answered 200",
+   "after": "503 too_many_streams while held; sequential replays both 200 (slots freed)"
+  },
+  {
+   "sha": "f7e3f43",
+   "title": "A Sandboxes reply with no uuid, bad base64 or a non-UTF-8 marker is a probe's no, not a crash",
+   "lens": "error-handler",
+   "red_before": "three tests: KeyError 'uuid', binascii.Error, UnicodeDecodeError escaped run_spike",
+   "after": "each becomes the probe's evidence; spike returns its verdict"
+  },
+  {
+   "sha": "786796d",
+   "title": "Every text colour on the trigger page reads at AA in both themes",
+   "lens": "accessibility-checker",
+   "red_before": "CSS-derived contrast gate: 18 failing pairs over 7 rules (light accent text 2.97-3.49:1, --ok on the feed 4.42:1)",
+   "after": "0 failing pairs; text takes the unused --primary (4.96-5.83:1 light)"
+  },
+  {
+   "sha": "6dc2450",
+   "title": "The verdict strip is a labelled group, not role=img over buttons",
+   "lens": "accessibility-checker",
+   "red_before": "source guard: strip role was img",
+   "after": "role group, same label"
+  },
+  {
+   "sha": "2a7762d",
+   "title": "The theme button's accessible name carries its visible word",
+   "lens": "accessibility-checker",
+   "red_before": "source guard: fixed aria-label 'Switch colour theme' over Auto/Light/Dark",
+   "after": "aria-label 'Colour theme: <word>' set in applyTheme"
+  },
+  {
+   "sha": "fd6ee17",
+   "title": "No text on the trigger page under 12px",
+   "lens": "visual-craft",
+   "red_before": "four 11px font sizes; .mono about 11.2px in history cells",
+   "after": "minimum 12px over 34 declarations; .mono max(12px, 0.86em)"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "Merge seed._SECRET_NAMES and Runner.secrets into one list",
+   "before": "2 hand-kept lists, both NEBIUS_API_KEY + PROVING_JUDGE_TOKEN with the same 8-char floor (seed.py:58, runner.py:489-492): they agree",
+   "after": "same two names, same behaviour: churn"
+  },
+  {
+   "title": "Cache day_spend behind GET /status (public, polled every 15 s)",
+   "before": "probe: 9.9 ms per /status over 30 runs with 80 kB reports each, far above the runs a $3/day cap allows",
+   "after": "a cache would save under 10 ms per 15 s poll and add invalidation"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "security-auditor",
+   "checked": "every route of app.py as a stranger: bearer doors, body drain, run-id path guard, CORS, CSP, redaction, SSE thread hold (built cap), HEAD; NEBIUS door (built); token guessing (card C); sandbox pack (card B)"
+  },
+  {
+   "key": "bounty-hunter",
+   "checked": "HEAD through do_GET (built), start/cancel race under _lock, Last-Event-ID bounds, caps rounding at 4 vs 6 places, announce-line matching on scrubbed text"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "child_env door vs runner env (built), seed vs runner secret lists (rejected, agree), replay vs _call event shape (agree), page error map vs server statuses (agree), page preset hints vs CLI defaults (agree)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "reader-thread epilogue (built), sandbox probes' except vs KeyError/binascii/Unicode (built), run_spend fallbacks, _stream pipe errors"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "log_message silenced, no POST outcome line, refused tokens untraced (card C); reader death was silent (fixed with 1f4d4c4)"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "kill paths vs grandchildren (card B), container PID 1 shutdown, one-run lock, daily cap from records across restarts"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "day_spend per /status (probe 9.9 ms at 30 runs, rejected), RunIndex mtime cache, job.events growth"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "history rows keyboard action (card B), start/cancel messages per status, follow/replay flow"
+  },
+  {
+   "key": "visual-craft",
+   "checked": "font sizes vs the 12px floor (built), token use, inline caption styles"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "select() failure leaves headline stale (card B); empty, loading, hosted, triggering-off, cancelled, no-report states"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "PRESET/HOSTED/KIND hints vs proving/__main__.py defaults (agree); runner overshoot and EXIT_MEANING copy = proving-core's open card, left to it"
+  },
+  {
+   "key": "accessibility-checker",
+   "checked": "contrast of every text rule (built), role=img over buttons (built), label-in-name on theme (built), radiogroups, live regions, focus-visible"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "opt-in marker hook in tests/harness (built); tests for HEAD, stream cap, reader epilogue added; sandbox fakes' failure knobs"
+  },
+  {
+   "key": "ui-perfectionist",
+   "checked": "type floor and mono sizing (with visual-craft), reduced-motion on .cell transform, hover states"
+  },
+  {
+   "key": "mobile-specialist",
+   "checked": "520/860px breakpoints; 12px verdict cells as tap targets (card C)"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "agent-cli-transport/subscription-auth-selection and test-harness/isolation-lanes deviations, both built"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "SandboxClient's five REST calls, no-redirect opener, error verbatim + scrubbed"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "server and sandbox import stdlib only (urllib, http.server, tarfile); no extra"
+  },
+  {
+   "key": "devops-optimizer",
+   "checked": "proving/serverless/Dockerfile (read only, outside paths): non-root user, secrets by name, healthcheck on /health"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "ADR 0007 note updated with 088dae5; ADR 0037:72 overshoot sentence belongs to proving-core's open card"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "runner.py money/process/SSE split; app handler closure; nothing structural worth a card"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "--primary defined and unused (consumed by 786796d); duplicated opt-in hook in two conftests (noted)"
+  },
+  {
+   "key": "onboarding-designer",
+   "checked": "first-load states: no run yet, triggering off, no key; all say what to do"
+  },
+  {
+   "key": "feature-scout",
+   "checked": "light pass over the page and runner; no in-scope gap under stabilize"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "analytics-planner",
+   "why": "the page makes no external request by design and has no product metrics to plan"
+  },
+  {
+   "key": "business-strategist",
+   "why": "a judge-facing proof page with no pricing or conversion surface"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "public-by-URL is the whole sharing model; nothing to grow"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "caps are spend limits on the operator's own keys, not revenue"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "stabilize pass over a runner and a REST spike; no model-integration seam in these files"
+  }
+ ],
+ "findings": 19,
+ "lanes": "A:10/B:4/C:3",
+ "fp": 0,
+ "gates": {
+  "uv run ruff check <touched files> (each commit)": 0,
+  "uv run ruff format --check <touched files> (each commit)": 0,
+  "uv run mypy (each commit)": 0,
+  "uv run pytest tests/proving tests/harness -m \"not provider and not eval\" (each commit; last 814 passed)": 0,
+  "uv run pytest tests/proving tests/harness tests/adopt tests/connectors/test_routes.py tests/daemon/test_stop.py tests/lane tests/test_cli.py tests/test_wiring.py -m \"not provider and not eval\" (088dae5, child_env importers; 1048 passed)": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "10 built (2 assigned); stream cap, reader wedge, sandbox crash, page AA",
+ "notes": "Paired round: proving-sandbox's lens results are inside lens_keys (error-handler: f7e3f43 built; security-auditor: pack card B; integration-planner and dependency-auditor clean; registry subjects untrusted-extension-host n/a, agent-runtime-assembly no match). 088dae5 touched two coupled proving-core paths the fix required: src/athena/proving/roles.py (claude_env docstring said the key is kept) and tests/proving/test_roles_and_budget.py:332 (pinned the old door; strengthened to == {}), plus docs/adr/0007 note. 24c1669 copies the opt-in hook into tests/harness/conftest.py rather than moving it to tests/conftest.py (not granted); two copies of OPT_IN_MARKERS now exist, and tests/harness still has no offline_lane fence (the proving-core card's optional half). Left open on purpose: proving-core's card 'runner.py's hand-kept copies of the CLI's exit meaning and the purse's overshoot' (needs proving/__main__.py too). Consult line for the director: {bundle: software-engineering, subjects: [agent-cli-transport, test-harness, subprocess-lifecycle], techniques: [subscription-auth-selection, isolation-lanes, termination-and-reaping], deviations: 3}. No sibling reds seen in my scoped runs; the tree had sibling edits in apps/desktop and examples/ (not mine). Line endings: my changelog helper wrote CRLF once (088dae5's working copy); blobs were normalised by git and the working copy restored to LF. Nothing verified in a browser or the Tauri window."
+}
