@@ -38,6 +38,10 @@ export default function PillGroup<T extends string>({
   disabled?: boolean;
 }) {
   const refs = useRef<(HTMLButtonElement | null)[]>([]);
+  // The one tab stop: the chosen option, or the first that can be picked when none is chosen or
+  // the chosen one cannot take focus. A group with no stop cannot be reached from the keyboard.
+  const chosen = options.findIndex((o) => o.value === value);
+  const stop = chosen >= 0 && !options[chosen]?.disabledReason ? chosen : options.findIndex((o) => !o.disabledReason);
 
   const onKeyDown = useCallback(
     (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
@@ -70,7 +74,7 @@ export default function PillGroup<T extends string>({
             type="button"
             role="radio"
             aria-checked={active}
-            tabIndex={active ? 0 : -1}
+            tabIndex={i === stop ? 0 : -1}
             disabled={disabled || Boolean(option.disabledReason)}
             title={option.disabledReason ?? option.hint}
             ref={(el) => {
