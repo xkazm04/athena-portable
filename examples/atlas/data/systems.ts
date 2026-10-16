@@ -1,5 +1,5 @@
 /**
- * The six layers of README §3.1 and the eighteen systems that realise them.
+ * The six layers of README §3.1 and the nineteen systems that realise them.
  *
  * The layer blurbs are README §3.1's own words for each line of its stack diagram, kept verbatim
  * where they fit on one line, because the whole value of an atlas is that it does not paraphrase

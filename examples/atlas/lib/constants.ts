@@ -3,8 +3,8 @@
  *
  * There is no `lib/db.ts` here and there never will be: Atlas has no database, no server action
  * and no mutation. Its model is a TypeScript module under `data/`, compiled into the bundle, and
- * every capability it registers is a read or a move. That is why this file is three exports long
- * and why the template's `routeFor` is gone with the routes it addressed — Atlas is one page and
+ * every capability it registers is a read or a move. That is why this file holds only names and
+ * caps, and why the template's `routeFor` is gone with the routes it addressed — Atlas is one page and
  * three depths, and an agent moves through it with the kit's `open_group` / `open_item` /
  * `zoom_out`, which mean the same thing here as on every other surface in `examples/`.
  */
@@ -14,9 +14,10 @@ export const APP_VERSION = "0.1.0";
 /**
  * The name of this app's design. One name, one `[data-variant]` block in
  * `components/atlas/style/base/tokens.css`, set statically on `<html>` in `app/layout.tsx`.
- * `ThemeVariantSwitcher` is not mounted and there is no renderer switch either: round 4 has ONE
- * direction on purpose (DESIGN.md §0). The switcher in the mast chooses an ARRANGEMENT of the one
- * drawing, which is a different kind of choice — the same design, four layouts.
+ * `ThemeVariantSwitcher` is not mounted: there is ONE design on purpose (DESIGN.md §0). The two
+ * switchers in the mast choose something else — which FINISH of the one drawing is mounted
+ * (`?variant=`, three of them, round 7) and which ARRANGEMENT of it is on the sheet (`?view=`, two)
+ * — and every one of them is drawn in this design's tokens.
  */
 export const VARIANT = "blueprint";
 

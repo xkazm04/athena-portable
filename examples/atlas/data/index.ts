@@ -2,8 +2,9 @@
  * The model, assembled, plus every derivation the surface and the tools read.
  *
  * PURE, AND NO REACT. Everything here is a lookup or a fold over the five data modules, so
- * `test/model.test.ts` can pin the model's integrity and `test/lens.test.ts` the lens's arithmetic
- * under `node --test` without a DOM. The components render this; they never re-derive it.
+ * `test/model.test.ts` can pin the model's integrity and the lens's arithmetic, and
+ * `test/data.test.ts` every citation against the tree, under `node --test` without a DOM. The
+ * components render this; they never re-derive it.
  *
  * THE LENS is the app's one idea and it is computed in exactly one place (`lensFor`). A concept
  * names the components that carry it; those components name their systems; those systems name
