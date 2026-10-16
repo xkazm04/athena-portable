@@ -100,6 +100,23 @@ def test_the_narration_says_the_chore_the_money_the_traps_and_the_time() -> None
     assert "She took 4 minutes. By hand, the same chore takes 25 hours" in text
 
 
+def test_a_run_that_approved_its_cards_never_says_they_waited_unsigned() -> None:
+    """``bench --approve all`` approves every card and runs it on the page, and bench.json says so
+    in ``approve``. The film's closing words must not say nothing was sent."""
+    showcase = _json(SHIPPED / "lien-desk" / "playbook.json")
+    bench = _json(SHIPPED / "lien-desk" / "bench.json")
+    assert bench["approve"] == "none"
+    unsigned = "Every card she filed waited for a person's signature, and nothing was sent."
+    assert narration(showcase, bench).endswith(unsigned)
+
+    approved = narration(showcase, {**bench, "approve": "all"})
+    assert "nothing was sent" not in approved and "waited for a person's signature" not in approved
+    assert approved.endswith(
+        "This run approved every card she filed, so each one ran once on the simulated portal; "
+        "nothing reached a real person."
+    )
+
+
 def test_a_short_run_says_why_it_fell_short() -> None:
     showcase = {"title": "Late parcels", "persona": "A small online shop", "economics": {}}
     bench = {

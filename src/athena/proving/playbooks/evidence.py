@@ -345,7 +345,14 @@ def narration(showcase: Mapping[str, Any], bench: Mapping[str, Any]) -> str:
         )
     caveat_raw = str(showcase.get("caveat", "")).strip()
     caveat = _sentence(_spoken(_first_sentence(caveat_raw))) if caveat_raw else ""
-    closing = "Every card she filed waited for a person's signature, and nothing was sent."
+    # ``bench --approve all`` signs every card and runs it on the page; only an unanswered run may
+    # say that nothing was sent.
+    closing = (
+        "This run approved every card she filed, so each one ran once on the simulated portal; "
+        "nothing reached a real person."
+        if bench.get("approve") == "all"
+        else "Every card she filed waited for a person's signature, and nothing was sent."
+    )
 
     # Output order, with the optional parts named; then the optional ones in the order they are
     # added while there is time for them.
