@@ -147,3 +147,35 @@ test("a sortable header's accessible name is the header a reader sees, not the c
   // The unsorted header claims no order; the sorted one says which (aria-sort, set on click).
   assert.doesNotMatch(html, /aria-sort=/);
 });
+
+/* -------------------------------------------------------------- the database -- */
+
+const { openDb } = await import("../src/db/index.ts");
+const { mkdtempSync, rmSync } = await import("node:fs");
+const { tmpdir } = await import("node:os");
+const { join } = await import("node:path");
+
+test("a transaction SQLite already ended does not hide the error that ended it", () => {
+  // SQLite rolls a transaction back by itself on some errors (a full disk, an I/O error, an
+  // interrupt), and `raw` is handed out for what the wrappers do not cover. The unconditional
+  // ROLLBACK in withTx's catch then threw "no transaction is active" in place of the real cause.
+  const dir = mkdtempSync(join(tmpdir(), "dk-ui-webmcp-"));
+  const db = openDb("t", { file: join(dir, "t.sqlite"), seed: (d) => d.exec("CREATE TABLE x (v INTEGER)") });
+  try {
+    assert.throws(
+      () =>
+        db.withTx((tx) => {
+          tx.run("INSERT INTO x VALUES (1)");
+          tx.raw.exec("ROLLBACK");
+          throw new Error("the real cause");
+        }),
+      /the real cause/,
+    );
+    db.withTx((tx) => tx.run("INSERT INTO x VALUES (2)"));
+    assert.deepEqual(db.all("SELECT v FROM x"), [{ v: 2 }], "the handle is usable and nothing leaked");
+    assert.throws(() => db.withTx(() => { throw new Error("plain"); }), /plain/, "a live transaction still rolls back");
+  } finally {
+    db.close();
+    rmSync(dir, { recursive: true, force: true });
+  }
+});

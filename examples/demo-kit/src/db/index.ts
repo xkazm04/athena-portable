@@ -150,7 +150,9 @@ export function openDb(appId: string, opts: OpenDbOptions): Db {
         raw.exec("COMMIT");
         return out;
       } catch (err) {
-        raw.exec("ROLLBACK");
+        // SQLite ends a transaction itself on some errors (full disk, I/O, interrupt); a second
+        // ROLLBACK would then throw "no transaction is active" in place of the error that ended it.
+        if (raw.isTransaction) raw.exec("ROLLBACK");
         throw err;
       } finally {
         txDepth = 0;
