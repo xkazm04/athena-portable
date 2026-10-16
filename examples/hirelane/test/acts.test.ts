@@ -44,7 +44,7 @@ const firstAt = (stage: string): string =>
  * Run in order, on one database. The first case holds three slots for one interview candidate and
  * leaves them held - the state the bug lived in - and the two reads after it look at that state.
  * The parity matrix runs last because it drains every free slot; each of its own calls is rolled
- * back through a SAVEPOINT, so the acts it compares are always the ones the board would show.
+ * back (`rolledBack`), so the acts it compares are always the ones the board would show.
  */
 let heldFor = "";
 let held: string[] = [];
@@ -116,14 +116,26 @@ test("the agent's dossier read carries the same acts, and read_view counts free 
 const heldCount = (id: string): number =>
   db().get<{ n: number }>("SELECT COUNT(*) AS n FROM slots WHERE status = 'proposed' AND applicant_id = ?", [id])!.n;
 
+/**
+ * Every table an act writes, parents first.
+ *
+ * An act commits its writes in its own transaction (`withTx`, `test/atomic.test.ts`), and SQLite
+ * will not BEGIN inside an open SAVEPOINT, so a case cannot be wrapped in one any more. It is undone
+ * by putting these tables back as they were, children first so the foreign keys hold.
+ */
+const WRITTEN = ["applicants", "slots", "stage_events", "notes", "messages", "activity"] as const;
+
 const rolledBack = async (body: () => Promise<void>): Promise<void> => {
   const raw = db().raw;
-  raw.exec("SAVEPOINT propose");
+  for (const table of WRITTEN) raw.exec(`CREATE TEMP TABLE kept_${table} AS SELECT * FROM main.${table}`);
   try {
     await body();
   } finally {
-    raw.exec("ROLLBACK TO propose");
-    raw.exec("RELEASE propose");
+    for (const table of [...WRITTEN].reverse()) raw.exec(`DELETE FROM main.${table}`);
+    for (const table of WRITTEN) {
+      raw.exec(`INSERT INTO main.${table} SELECT * FROM kept_${table}`);
+      raw.exec(`DROP TABLE kept_${table}`);
+    }
   }
 };
 
@@ -196,7 +208,6 @@ test("a shut Propose button names its own reason, and the dossier prints that la
 });
 
 test("the dossier's act set equals what the server actions accept, for every applicant and act", async () => {
-  const raw = db().raw;
   const anySlot = (): string =>
     db().get<{ id: string }>("SELECT id FROM slots WHERE status <> 'booked' ORDER BY id LIMIT 1")?.id ??
     "slot_none";
@@ -222,18 +233,14 @@ test("the dossier's act set equals what the server actions accept, for every app
       for (const [act, call] of Object.entries(calls) as [keyof typeof calls, () => Promise<{ ok: boolean; message: string }>][]) {
         const offered = acts[act];
         if (offered.reason) reasons.add(`${act}:${offered.reason}`);
-        raw.exec("SAVEPOINT parity");
-        try {
+        await rolledBack(async () => {
           const result = await call();
           if (result.ok !== offered.enabled) {
             mismatches.push(
               `${label} ${id} (${candidate.stage}) ${act}: offered ${offered.enabled}, server ${result.ok} - ${result.message}`,
             );
           }
-        } finally {
-          raw.exec("ROLLBACK TO parity");
-          raw.exec("RELEASE parity");
-        }
+        });
       }
     }
     return { mismatches, reasons };

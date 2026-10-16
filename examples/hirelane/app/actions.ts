@@ -5,6 +5,10 @@
  * and stores an undo payload whenever the change is reversible. The three that reach a candidate -
  * an offer, a rejection, a scheduling email - store nothing, because there is nothing to store:
  * you cannot un-send a decision. That asymmetry is what makes them GATED in the manifest.
+ *
+ * Each action's writes run in one `withTx`, the change and its activity row together, as
+ * `examples/ledgerbox/app/actions.ts` does. A row that fails to log takes the change back with it,
+ * so a rejection can never stand on file with no row saying it was sent (`test/atomic.test.ts`).
  */
 import { revalidatePath } from "next/cache";
 import { logActivity, undoActivity, type ActivityEntry } from "@athena/demo-kit/activity";
@@ -123,17 +127,19 @@ export async function scoreAgainstRubric(applicantId: string): Promise<ActionRes
   if (!applicant) return missing(applicantId);
   const scores = scoreAgainst(listCriteria(applicant.role_id), applicant.cv_text, applicant.short_answer);
   const body = `Scored against the rubric: ${summarise(scores)}.`;
-  const { lastInsertRowid } = db().run(
-    "INSERT INTO notes (applicant_id, ts, author, kind, body, scores_json) VALUES (?, ?, ?, 'rubric', ?, ?)",
-    [applicantId, new Date().toISOString(), "user", body, JSON.stringify(scores)],
-  );
-  const { id: undoId } = logActivity(db(), {
-    actor: "user",
-    action: "score_against_rubric",
-    target: `applicant:${applicantId}`,
-    summary: `Scored ${applicant.name} against the ${applicant.role_id.replace("role_", "")} rubric.`,
-    reversible: true,
-    undo: { kind: "note", noteId: lastInsertRowid },
+  const { id: undoId } = db().withTx((tx) => {
+    const { lastInsertRowid } = tx.run(
+      "INSERT INTO notes (applicant_id, ts, author, kind, body, scores_json) VALUES (?, ?, ?, 'rubric', ?, ?)",
+      [applicantId, new Date().toISOString(), "user", body, JSON.stringify(scores)],
+    );
+    return logActivity(tx, {
+      actor: "user",
+      action: "score_against_rubric",
+      target: `applicant:${applicantId}`,
+      summary: `Scored ${applicant.name} against the ${applicant.role_id.replace("role_", "")} rubric.`,
+      reversible: true,
+      undo: { kind: "note", noteId: lastInsertRowid },
+    });
   });
   refresh();
   return { ok: true, message: `Scorecard written for ${applicant.name}.`, undoId };
@@ -145,27 +151,29 @@ export async function addNote(applicantId: string, text: string): Promise<Action
   if (!applicant) return missing(applicantId);
   const body = text.trim();
   if (body.length === 0) return { ok: false, message: "Write something first." };
-  const { lastInsertRowid } = db().run(
-    "INSERT INTO notes (applicant_id, ts, author, kind, body, scores_json) VALUES (?, ?, 'user', 'note', ?, NULL)",
-    [applicantId, new Date().toISOString(), body],
-  );
-  const { id: undoId } = logActivity(db(), {
-    actor: "user",
-    action: "add_note",
-    target: `applicant:${applicantId}`,
-    summary: `Note on ${applicant.name}: ${body.slice(0, 80)}`,
-    reversible: true,
-    undo: { kind: "note", noteId: lastInsertRowid },
+  const { id: undoId } = db().withTx((tx) => {
+    const { lastInsertRowid } = tx.run(
+      "INSERT INTO notes (applicant_id, ts, author, kind, body, scores_json) VALUES (?, ?, 'user', 'note', ?, NULL)",
+      [applicantId, new Date().toISOString(), body],
+    );
+    return logActivity(tx, {
+      actor: "user",
+      action: "add_note",
+      target: `applicant:${applicantId}`,
+      summary: `Note on ${applicant.name}: ${body.slice(0, 80)}`,
+      reversible: true,
+      undo: { kind: "note", noteId: lastInsertRowid },
+    });
   });
   refresh();
   return { ok: true, message: "Note added.", undoId };
 }
 
-function writeStage(applicantId: string, to: Stage, reason: string): number {
+function writeStage(tx: Db, applicantId: string, to: Stage, reason: string): number {
   const now = new Date().toISOString();
   const from = getApplicant(applicantId)?.stage ?? null;
-  db().run("UPDATE applicants SET stage = ? WHERE id = ?", [to, applicantId]);
-  const { lastInsertRowid } = db().run(
+  tx.run("UPDATE applicants SET stage = ? WHERE id = ?", [to, applicantId]);
+  const { lastInsertRowid } = tx.run(
     "INSERT INTO stage_events (applicant_id, ts, from_stage, to_stage, actor, reason) VALUES (?, ?, ?, ?, 'user', ?)",
     [applicantId, now, from, to, reason],
   );
@@ -185,14 +193,16 @@ export async function moveStage(applicantId: string, stage: Stage): Promise<Acti
   if (!applicant) return missing(applicantId);
   if (decidedReason(applicant.stage)) return { ok: false, message: REFUSAL.decided_move(applicant) };
   if (!isMoveStage(stage)) return { ok: false, message: REFUSAL.not_a_move(stage) };
-  const eventId = writeStage(applicantId, stage, `Moved to ${stage}.`);
-  const { id: undoId } = logActivity(db(), {
-    actor: "user",
-    action: "move_stage",
-    target: `applicant:${applicantId}`,
-    summary: `${applicant.name}: ${STAGE_LABEL[applicant.stage]} to ${STAGE_LABEL[stage]}.`,
-    reversible: true,
-    undo: { kind: "stage", applicantId, stage: applicant.stage, eventId },
+  const { id: undoId } = db().withTx((tx) => {
+    const eventId = writeStage(tx, applicantId, stage, `Moved to ${stage}.`);
+    return logActivity(tx, {
+      actor: "user",
+      action: "move_stage",
+      target: `applicant:${applicantId}`,
+      summary: `${applicant.name}: ${STAGE_LABEL[applicant.stage]} to ${STAGE_LABEL[stage]}.`,
+      reversible: true,
+      undo: { kind: "stage", applicantId, stage: applicant.stage, eventId },
+    });
   });
   refresh();
   return { ok: true, message: `${applicant.name} moved to ${STAGE_LABEL[stage]}.`, undoId };
@@ -207,13 +217,15 @@ export async function decideStage(applicantId: string, stage: Stage): Promise<Ac
   }
   const already = decided(applicant);
   if (already) return already;
-  writeStage(applicantId, stage, `Decision: ${stage}.`);
-  logActivity(db(), {
-    actor: "user",
-    action: "decide_stage",
-    target: `applicant:${applicantId}`,
-    summary: `Decision on ${applicant.name}: ${STAGE_LABEL[stage]}.`,
-    reversible: false,
+  db().withTx((tx) => {
+    writeStage(tx, applicantId, stage, `Decision: ${stage}.`);
+    logActivity(tx, {
+      actor: "user",
+      action: "decide_stage",
+      target: `applicant:${applicantId}`,
+      summary: `Decision on ${applicant.name}: ${STAGE_LABEL[stage]}.`,
+      reversible: false,
+    });
   });
   refresh();
   return { ok: true, message: `${applicant.name}: ${STAGE_LABEL[stage]} recorded.` };
@@ -243,16 +255,18 @@ export async function proposeSlots(applicantId: string): Promise<ActionResult> {
     start: s.startTs,
     minutes: s.minutes,
   }));
-  for (const id of ids) {
-    db().run("UPDATE slots SET status = 'proposed', applicant_id = ? WHERE id = ?", [applicantId, id]);
-  }
-  const { id: undoId } = logActivity(db(), {
-    actor: "user",
-    action: "propose_slots",
-    target: `applicant:${applicantId}`,
-    summary: `Held ${count} for ${applicant.name}.`,
-    reversible: true,
-    undo: { kind: "slots", slotIds: ids },
+  const { id: undoId } = db().withTx((tx) => {
+    for (const id of ids) {
+      tx.run("UPDATE slots SET status = 'proposed', applicant_id = ? WHERE id = ?", [applicantId, id]);
+    }
+    return logActivity(tx, {
+      actor: "user",
+      action: "propose_slots",
+      target: `applicant:${applicantId}`,
+      summary: `Held ${count} for ${applicant.name}.`,
+      reversible: true,
+      undo: { kind: "slots", slotIds: ids },
+    });
   });
   refresh();
   return { ok: true, message: `${count} held for ${applicant.name}.`, slots: held, undoId };
@@ -288,17 +302,19 @@ export async function sendSchedulingEmail(applicantId: string, slotId: string): 
     startTs: slot.startTs,
     minutes: slot.minutes,
   });
-  db().run("UPDATE slots SET status = 'booked', applicant_id = ? WHERE id = ?", [applicantId, slotId]);
-  db().run(
-    "INSERT INTO messages (applicant_id, ts, kind, to_email, subject, body) VALUES (?, ?, 'scheduling', ?, ?, ?)",
-    [applicantId, new Date().toISOString(), mail.to, mail.subject, mail.body],
-  );
-  logActivity(db(), {
-    actor: "user",
-    action: "send_scheduling_email",
-    target: `applicant:${applicantId}`,
-    summary: `Emailed ${applicant.name} at ${mail.to} an interview time with ${slot.interviewer} (${when} UTC).`,
-    reversible: false,
+  db().withTx((tx) => {
+    tx.run("UPDATE slots SET status = 'booked', applicant_id = ? WHERE id = ?", [applicantId, slotId]);
+    tx.run(
+      "INSERT INTO messages (applicant_id, ts, kind, to_email, subject, body) VALUES (?, ?, 'scheduling', ?, ?, ?)",
+      [applicantId, new Date().toISOString(), mail.to, mail.subject, mail.body],
+    );
+    logActivity(tx, {
+      actor: "user",
+      action: "send_scheduling_email",
+      target: `applicant:${applicantId}`,
+      summary: `Emailed ${applicant.name} at ${mail.to} an interview time with ${slot.interviewer} (${when} UTC).`,
+      reversible: false,
+    });
   });
   refresh();
   return { ok: true, message: `Interview time sent to ${applicant.name} at ${mail.to}.`, mail };
@@ -319,17 +335,19 @@ export async function sendRejection(
     roleTitle: getRole(applicant.role_id)?.title ?? "the role",
     template,
   });
-  writeStage(applicantId, "rejected", `Rejection sent (${template}).`);
-  db().run(
-    "INSERT INTO messages (applicant_id, ts, kind, to_email, subject, body) VALUES (?, ?, 'rejection', ?, ?, ?)",
-    [applicantId, new Date().toISOString(), mail.to, mail.subject, mail.body],
-  );
-  logActivity(db(), {
-    actor: "user",
-    action: "send_rejection",
-    target: `applicant:${applicantId}`,
-    summary: `Sent ${applicant.name} the ${template.replace("_", " ")} rejection at ${mail.to}.`,
-    reversible: false,
+  db().withTx((tx) => {
+    writeStage(tx, applicantId, "rejected", `Rejection sent (${template}).`);
+    tx.run(
+      "INSERT INTO messages (applicant_id, ts, kind, to_email, subject, body) VALUES (?, ?, 'rejection', ?, ?, ?)",
+      [applicantId, new Date().toISOString(), mail.to, mail.subject, mail.body],
+    );
+    logActivity(tx, {
+      actor: "user",
+      action: "send_rejection",
+      target: `applicant:${applicantId}`,
+      summary: `Sent ${applicant.name} the ${template.replace("_", " ")} rejection at ${mail.to}.`,
+      reversible: false,
+    });
   });
   refresh();
   return { ok: true, message: `Rejection sent to ${applicant.name} at ${mail.to}.`, mail };
