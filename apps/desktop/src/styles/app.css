@@ -918,7 +918,7 @@ select:focus-visible {
 .close-confirm__btn {
   padding: 2px 10px;
   border: 1px solid var(--border-emphasis);
-  border-radius: 4px;
+  border-radius: var(--radius-interactive);
   background: transparent;
   color: var(--foreground);
   font: inherit;

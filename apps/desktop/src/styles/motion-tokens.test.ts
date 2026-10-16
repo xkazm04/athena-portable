@@ -105,6 +105,12 @@ test("the controls ease every state they change: press, disabled, primary hover,
   expect(css).not.toMatch(/transition:\s*all/);
 });
 
+test("every corner is a radius token, a pill (999px) or square (0): no one-off radius", () => {
+  const radii = [...css.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/border-radius:\s*([^;]+);/g)].map((m) => m[1]!.trim());
+  expect(radii.length).toBeGreaterThan(8);
+  expect(radii.filter((r) => !/^var\(--radius-[\w-]+\)$|^999px$|^0$/.test(r))).toEqual([]);
+});
+
 test("the window chrome eases its hovers", () => {
   for (const sel of [".window-btn", ".tab-chip", ".tab-chip__close", ".close-confirm__btn"]) {
     expect(rule(sel), sel).toMatch(/transition:[^;]*var\(--duration-fast\) var\(--ease-fast\)/);
