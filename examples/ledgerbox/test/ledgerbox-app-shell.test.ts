@@ -257,3 +257,32 @@ test("send_reminder re-checks the books: a letter the books no longer stand behi
   const sent = await actions.sendReminderAction(seeded.invoice_id);
   assert.equal(sent.ok, true, sent.message);
 });
+
+test("a server action refuses a value outside its own vocabulary, from any caller", async () => {
+  // The enums were checked only in the tool layer (BooksTools' isOneOf). A server action is an
+  // endpoint of its own, and its TypeScript types do not exist at runtime: `banana` was filed as a
+  // category (the invoice then sits in no lane), an unknown tone threw "OPENING[input.tone] is not
+  // a function" out of the action, and a period the books do not have wrote an export row.
+  const target = fresh("open");
+  const filed = await actions.categorizeAction([target.id], "banana" as never);
+  assert.equal(filed.ok, false, filed.message);
+  assert.match(filed.message, /banana/);
+  assert.equal(
+    db().get<{ category: string }>("SELECT category FROM invoices WHERE id = ?", [target.id])!.category,
+    target.category,
+    "the category is unchanged",
+  );
+  const notAList = await actions.categorizeAction(target.id as never, "design");
+  assert.equal(notAList.ok, false, notAList.message);
+
+  const rude = await actions.draftReminderAction(target.id, "rude" as never);
+  assert.equal(rude.ok, false, rude.message);
+  assert.match(rude.message, /rude/);
+  assert.equal(remindersOf(target.id), 0, "no reminder row");
+
+  const exportsBefore = db().get<{ n: number }>("SELECT COUNT(*) AS n FROM exports")!.n;
+  const exported = await actions.exportSummaryAction("1999-01" as never);
+  assert.equal(exported.ok, false, exported.message);
+  assert.match(exported.message, /1999-01/);
+  assert.equal(db().get<{ n: number }>("SELECT COUNT(*) AS n FROM exports")!.n, exportsBefore, "no export row");
+});

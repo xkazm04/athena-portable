@@ -9,7 +9,7 @@ import { revalidatePath } from "next/cache";
 import { logActivity, undoActivity, type ActivityEntry } from "@athena/demo-kit/activity";
 import type { Db } from "@athena/demo-kit/db";
 
-import { MAX_IDS, type Category, type Period, type Tone } from "@/lib/constants";
+import { CATEGORIES, MAX_IDS, PERIODS, TONES, type Category, type Period, type Tone } from "@/lib/constants";
 import {
   COUNTED_OUT,
   db,
@@ -114,6 +114,20 @@ function fail(message: string): ActionResult {
 }
 
 /**
+ * Whether `value` is one of a closed vocabulary. The tool layer checks its enums before it calls
+ * (BooksTools' own `isOneOf`), but a server action is an endpoint of its own and its parameter
+ * types do not exist at runtime, so every act that takes an enum checks it here as well.
+ */
+function oneOf<T extends string>(list: readonly T[], value: unknown): value is T {
+  return typeof value === "string" && (list as readonly string[]).includes(value);
+}
+
+/** "Unknown tone "rude" - one of gentle, firm." */
+function unknown(what: string, value: unknown, list: readonly string[]): string {
+  return `Unknown ${what} ${JSON.stringify(value)} - one of ${list.join(", ")}.`;
+}
+
+/**
  * Why nothing about money may touch this invoice: it is not a debt. `COUNTED_OUT` is the books'
  * one statement of which states those are - a draft was never sent to the client, a void was
  * withdrawn - and every total already reads it. The acts that chase or apply money read it here,
@@ -130,6 +144,8 @@ function notADebt(invoice: InvoiceRow, consequence: string): string | null {
 
 /** AUTO - file invoices under a book-keeping category. */
 export async function categorizeAction(ids: string[], category: Category): Promise<ActionResult> {
+  if (!oneOf(CATEGORIES, category)) return fail(unknown("category", category, CATEGORIES));
+  if (!Array.isArray(ids)) return fail("Pass the invoices as a list of ids or numbers.");
   // An id or a number, whichever the caller read; a reference that matches nothing stays in the
   // count as not found, so the shortfall is still reported.
   const targets = ids.slice(0, MAX_IDS).map((ref) => findInvoiceId(ref) ?? String(ref));
@@ -368,6 +384,7 @@ function letterFor(invoice: InvoiceRow, tone: Tone): ReminderDraft {
 
 /** AUTO - writes a draft. Nothing leaves the building until `send_reminder`. */
 export async function draftReminderAction(ref: string, tone: Tone): Promise<DraftResult> {
+  if (!oneOf(TONES, tone)) return fail(unknown("tone", tone, TONES));
   const resolved = resolveInvoice(ref);
   if (!resolved.ok) return fail(resolved.error);
   const invoiceId = resolved.id;
@@ -493,6 +510,8 @@ export async function voidInvoiceAction(ref: string): Promise<ActionResult> {
  * than leaving a caller to invent a heading and reflow a monospaced block into one.
  */
 export async function exportSummaryAction(period: Period): Promise<ExportResult> {
+  // A period the books do not have summarizes to zeros and would still be filed as an export.
+  if (!oneOf(PERIODS, period)) return { ...fail(unknown("period", period, PERIODS)), title: "" };
   const summary = summarize(period);
   const outstanding = listInvoices()
     .filter((r) => r.balance_cents > 0 && !COUNTED_OUT.includes(r.state) && inPeriod(r.issued_at, period))
