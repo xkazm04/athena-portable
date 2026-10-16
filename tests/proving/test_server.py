@@ -777,3 +777,49 @@ def test_the_page_greys_out_what_the_host_cannot_run() -> None:
     script = page_html().split("<script", 1)[1]
     for needed in ("capabilities", "refused", "/cancel", "runs_public", "valid_rate", ".na"):
         assert needed in script, needed
+
+
+# --- the page reads (WCAG 2.2 AA) --------------------------------------------------------------
+
+
+def _hex_tokens(block: str) -> dict[str, str]:
+    return dict(re.findall(r"--([\w-]+):\s*(#[0-9a-fA-F]{6})\b", block))
+
+
+def _contrast(a: str, b: str) -> float:
+    def luminance(colour: str) -> float:
+        channels = [int(colour[i : i + 2], 16) / 255 for i in (1, 3, 5)]
+        lin = [c / 12.92 if c <= 0.03928 else ((c + 0.055) / 1.055) ** 2.4 for c in channels]
+        return 0.2126 * lin[0] + 0.7152 * lin[1] + 0.0722 * lin[2]
+
+    high, low = sorted((luminance(a), luminance(b)), reverse=True)
+    return (high + 0.05) / (low + 0.05)
+
+
+def test_every_text_colour_on_the_page_reads_at_aa_contrast_in_both_themes() -> None:
+    """Each ``color: var(--x)`` rule against the three surfaces text sits on, light and dark.
+
+    Large text (the headline, the big verdict number) and icons need 3:1 and are left out; every
+    other text needs 4.5:1. A rule that paints its own solid background is read against that
+    background alone. Derived from the page's own CSS, so a new rule is checked as it lands.
+    """
+    css = page_html().split("<style>", 1)[1].split("</style>", 1)[0]
+    light = _hex_tokens(css.split(":root {", 1)[1].split("}", 1)[0])
+    dark = {**light, **_hex_tokens(css.split(':root[data-theme="dark"] {', 1)[1].split("}", 1)[0])}
+    uses: set[tuple[str, str, tuple[str, ...]]] = set()
+    for selector, body in re.findall(r"([^{}]+)\{([^{}]*)\}", css):
+        if any(large in selector for large in ("h1", ".big", "svg")):
+            continue
+        own = re.findall(r"(?<![\w-])background:\s*var\(--([\w-]+)\)", body)
+        surfaces = tuple(n for n in own if n in light) or ("bg", "card", "recessed")
+        for name in re.findall(r"(?<![\w-])color:\s*var\(--([\w-]+)\)", body):
+            uses.add((selector.strip(), name, surfaces))
+    assert len(uses) > 20  # the matcher sees the page's text rules
+    failing = [
+        f"{theme} {selector} --{name} on --{surface} {_contrast(tokens[name], tokens[surface]):.2f}"
+        for theme, tokens in (("light", light), ("dark", dark))
+        for selector, name, surfaces in sorted(uses)
+        for surface in surfaces
+        if _contrast(tokens[name], tokens[surface]) < 4.5
+    ]
+    assert failing == []

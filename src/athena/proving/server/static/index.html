@@ -17,7 +17,7 @@
   --card: #f7f9fb;
   --raised: #ffffff;
   --recessed: #e3e7ee;
-  --primary: #0c6a84;
+  --primary: #0c6a84; /* the accent as small text: AA on every light surface */
   --accent: #0891b2;
   --btn: #0e7490;
   --on-btn: #ffffff;
@@ -25,7 +25,7 @@
   --line-soft: rgba(15, 23, 42, 0.08);
   --line-strong: rgba(15, 23, 42, 0.34);
   --wash: rgba(14, 116, 144, 0.07);
-  --ok: #047857;
+  --ok: #047352;
   --warn: #92400e;
   --bad: #be1b1b;
   --info: #1d4ed8;
@@ -88,7 +88,7 @@ body {
   margin: 0; background: var(--bg); color: var(--ink); font: 15px/1.5 var(--font-sans);
   overflow-x: hidden;
 }
-a { color: var(--accent); }
+a { color: var(--primary); }
 button, input, select { font: inherit; color: inherit; }
 :focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
 .wrap { max-width: 1120px; margin: 0 auto; padding: 0 16px; }
@@ -167,7 +167,7 @@ input[type="password"], input[type="text"] { width: 100%; background: var(--rais
 .seg input { position: absolute; opacity: 0; inset: 0; margin: 0; cursor: pointer; }
 .seg span { display: block; padding: 6px 12px; font-size: 13px; border-right: 1px solid var(--line); }
 .seg label:last-child span { border-right: 0; }
-.seg input:checked + span { background: var(--wash); color: var(--accent); font-weight: 600; }
+.seg input:checked + span { background: var(--wash); color: var(--primary); font-weight: 600; }
 .seg input:focus-visible + span { outline: 2px solid var(--focus); outline-offset: -2px; }
 .seg input:disabled { cursor: not-allowed; }
 .seg input:disabled + span { opacity: 0.45; text-decoration: line-through; }
@@ -175,7 +175,7 @@ input[type="password"], input[type="text"] { width: 100%; background: var(--rais
 .hint { font-size: 12px; color: var(--ink-3); margin: 6px 0 0; }
 .btn { background: var(--btn); color: var(--on-btn); border: 0; border-radius: var(--r-sm); padding: 9px 16px; font-weight: 600; cursor: pointer; }
 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
-.btn.ghost { background: transparent; color: var(--accent); border: 1px solid var(--line); font-weight: 500; }
+.btn.ghost { background: transparent; color: var(--primary); border: 1px solid var(--line); font-weight: 500; }
 .row-actions { display: flex; gap: 10px; align-items: center; margin-top: 16px; flex-wrap: wrap; }
 .msg { font-size: 13px; margin-top: 10px; padding: 8px 10px; border-radius: var(--r-sm); border: 1px solid var(--line); overflow-wrap: anywhere; }
 .msg.bad { border-color: color-mix(in srgb, var(--bad) 40%, transparent); }
@@ -187,7 +187,7 @@ input[type="password"], input[type="text"] { width: 100%; background: var(--rais
 .tally b { color: var(--ink); }
 .feed { background: var(--recessed); border-radius: var(--r-sm); border: 1px solid var(--line-soft); height: 340px; overflow: auto; padding: 8px 10px; font-family: var(--font-mono); font-size: 12px; line-height: 1.55; }
 .feed .ln { white-space: pre-wrap; overflow-wrap: anywhere; }
-.feed .ln.sys { color: var(--accent); }
+.feed .ln.sys { color: var(--primary); }
 .feed .ln.call { color: var(--ink-2); }
 .feed .ln.call.err { color: var(--warn); }
 .feed .ln.end { color: var(--ok); font-weight: 600; }
@@ -207,7 +207,7 @@ input[type="password"], input[type="text"] { width: 100%; background: var(--rais
 /* drill-down */
 .filters { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; }
 .filters button { border: 1px solid var(--line); background: transparent; border-radius: 999px; padding: 3px 10px; font-size: 12px; cursor: pointer; color: var(--ink-2); }
-.filters button[aria-pressed="true"] { background: var(--wash); color: var(--accent); border-color: var(--accent); }
+.filters button[aria-pressed="true"] { background: var(--wash); color: var(--primary); border-color: var(--accent); }
 details.item { background: var(--card); border: 1px solid var(--line); border-radius: var(--r-sm); margin-bottom: 8px; min-width: 0; }
 details.item[open] { border-color: var(--line-strong); }
 details.item > summary { list-style: none; cursor: pointer; padding: 10px 12px; display: grid; grid-template-columns: minmax(0, 1fr) auto; gap: 8px 12px; align-items: center; }
