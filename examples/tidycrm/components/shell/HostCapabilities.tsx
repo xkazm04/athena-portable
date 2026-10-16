@@ -27,6 +27,7 @@ import {
   type Segment,
   type View,
 } from "@/lib/constants";
+import { exportFilename } from "@/lib/csv";
 import { RULES, type NormalizeRule } from "@/lib/normalize";
 import type { DefectCounts } from "@/lib/types";
 import {
@@ -125,14 +126,14 @@ function SharedCapabilities({ counts }: { counts: DefectCounts }) {
       // router must not be involved or the CSV would be handed to the client-side navigation.
       const link = document.createElement("a");
       link.href = `/api/export?segment=${encodeURIComponent(target)}`;
-      link.download = `tidycrm-${target}.csv`;
+      link.download = exportFilename(target);
       link.click();
       // The file is the artifact; this is the half a model can read. A tool that answered
       // "Exporting all." left the agent with nothing to say about what it had just done, so the
       // close of the campaign had to be narrated from memory - which is how a summary acquires
       // figures nobody counted.
       const summary = await exportSummaryAction(target as Segment);
-      return { ...summary, file: `tidycrm-${target}.csv` };
+      return { ...summary, file: exportFilename(target) };
     },
   });
 

@@ -230,3 +230,9 @@ test("undo's description names every refusal applyUndo can give, so an agent can
   assert.match(said, /changed again|later write|later change/, "a field a later write has changed since");
   assert.match(said, /no longer in the list|left the list|deleted or merged/, "a pair whose record is gone");
 });
+
+test("the export tool names the file the way the route does, through lib/csv.ts", () => {
+  const shell = code("components/shell/HostCapabilities.tsx");
+  assert.match(shell, /import \{[^}]*\bexportFilename\b[^}]*\} from "@\/lib\/csv"/, "it reads the one rule");
+  assert.doesNotMatch(shell, /tidycrm-\$\{/, "and types no second copy of it");
+});
