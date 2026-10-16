@@ -26,9 +26,9 @@ body {
 
 /*
  * `data-variant` used to sit on <html>, so the document background came from the design's own
- * tokens. Each design direction now owns a wrapper inside <body> instead (under app/v), which
- * paints the viewport but not the overscroll gutter. This rule hands the document back the right
- * ground colour.
+ * tokens. The direction now owns a wrapper inside <body> instead (the `.h-root` that
+ * components/board/Board.tsx mounts), which paints the viewport but not the overscroll gutter. This
+ * rule hands the document back the right ground colour.
  *
  * It is a `var()`, and that is the whole point. This line used to be a hand-copied hex, and it
  * said `#f2efe9` — the warm bone sheet of the first pass — long after that pass was replaced by a
