@@ -3603,7 +3603,11 @@
           "revision": 5,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/companion/model.ts:1143 While a turn runs the composer is blocked, so Send is disabled and a follow-up cannot be accepted as a queue, an interjection, or a cancel.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:5b4e7d399a4d924e",
+          "evaluatedRevision": 5
         }
       ],
       "governance": "governed"
@@ -9184,7 +9188,11 @@
           "revision": 5,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/channels/voice/gateway.py:3 This socket runs a lane turn and emits voice.transcript frames; it does not render a conversation document, and composer, markdown, scrollIntoView, and bubble are absent from src/athena/channels and tests/channels.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:5b4e7d399a4d924e",
+          "evaluatedRevision": 5
         },
         {
           "subject": "agent-browser-control",
