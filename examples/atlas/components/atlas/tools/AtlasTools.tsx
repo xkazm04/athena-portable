@@ -54,7 +54,9 @@ import { VARIANTS, type VariantSlug } from "../variants/contract";
 import { readViews, requestView } from "../variants/viewBus";
 
 import {
+  CLEAR_LENS,
   CONCEPT_KINDS,
+  SET_LENS_PARAMETERS,
   componentRead,
   conceptsRead,
   lensRead,
@@ -261,21 +263,13 @@ export function AtlasTools({
     name: "set_lens",
     description:
       "Mark up the whole atlas with one claim: every component that enforces it, every system and layer above those components. Reversible — call again with a different concept, or with none to clear. Call with no arguments to read the current lens without changing it.",
-    parameters: [
-      {
-        name: "concept",
-        type: "string",
-        required: false,
-        enum: CONCEPTS.map((c) => c.id),
-        description: "The concept id from read_concepts. Omit to read; pass \"none\" to clear.",
-      },
-    ],
+    parameters: SET_LENS_PARAMETERS,
     reversible: true,
     sideEffects: "none",
     handler: ({ concept }) => {
       if (concept === undefined || concept === null) return lensRead(lensId);
       const asked = String(concept);
-      if (asked === "none" || asked === "") {
+      if (asked === CLEAR_LENS || asked === "") {
         setLens(null);
         return { ...lensRead(null), cleared: true };
       }

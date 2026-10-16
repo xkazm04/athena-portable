@@ -10,7 +10,7 @@
  * footer" but `bounded()` returns no such field, so the sentence is added here by `announce()`.
  * Logged as a kit gap (KIT-GAPS.md, 2026-09-14, #5) rather than worked around silently.
  */
-import { bounded } from "@athena/demo-kit/webmcp";
+import { bounded, type WebMCPToolSpec } from "@athena/demo-kit/webmcp";
 import type { Focus } from "@athena/demo-kit/zoom";
 
 import {
@@ -81,6 +81,26 @@ const componentRow = (c: Component) => ({
 /* --------------------------------------------------------------------- the reads -- */
 
 export const CONCEPT_KINDS: readonly ConceptKind[] = ["invariant", "tier", "act", "decision"];
+
+/** The word `set_lens` takes to clear the lens. */
+export const CLEAR_LENS = "none";
+
+/**
+ * `set_lens`'s one argument, as published. Here rather than inline so a test can hand it to the door.
+ *
+ * The clear word is IN the enum. The kit's door validates every call against this schema before the
+ * handler runs, so a word the description offers and the enum leaves out is refused at the door, and
+ * the handler's clear branch is unreachable: an agent told to pass it gets "must be one of" instead.
+ */
+export const SET_LENS_PARAMETERS: NonNullable<WebMCPToolSpec["parameters"]> = [
+  {
+    name: "concept",
+    type: "string",
+    required: false,
+    enum: [CLEAR_LENS, ...CONCEPTS.map((c) => c.id)],
+    description: `The concept id from read_concepts. Omit to read; pass "${CLEAR_LENS}" to clear.`,
+  },
+];
 
 /**
  * Which drawing is on the table, in the words the switcher uses.
