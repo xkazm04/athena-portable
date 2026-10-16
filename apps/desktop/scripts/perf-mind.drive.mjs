@@ -14,8 +14,7 @@ export default async function drive(page) {
   await tiles[2].click();
   await page.waitForTimeout(480);
   for (const word of ["light", "compact", "dark"]) {
-    const choice = await page.$(`[role="radio"]:has-text("${word}")`);
-    if (choice) await choice.click();
+    await page.click(`[role="radio"]:has-text("${word}")`);
     await page.waitForTimeout(160);
   }
   await page.keyboard.press("Escape");

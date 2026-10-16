@@ -56,19 +56,17 @@ export default async function drive(page) {
   await page.mouse.wheel(0, 900);
   await page.waitForTimeout(300);
 
-  // Enlarge a still, step the lightbox, close it.
-  const frame = page.locator(".pa-frame").first();
-  if (await frame.count()) {
-    await frame.click();
-    await page.waitForSelector(".lbx");
-    await page.waitForTimeout(300);
-    await page.keyboard.press("ArrowRight");
-    await page.waitForTimeout(250);
-    await page.keyboard.press("ArrowRight");
-    await page.waitForTimeout(250);
-    await page.keyboard.press("Escape");
-    await page.waitForTimeout(300);
-  }
+  // Enlarge a still, step the lightbox, close it. The fixture's first chore has stills
+  // (perf-chores.drive.test.ts), so a missing one is a failure, never a step skipped in silence.
+  await page.locator(".pa-frame").first().click();
+  await page.waitForSelector(".lbx");
+  await page.waitForTimeout(300);
+  await page.keyboard.press("ArrowRight");
+  await page.waitForTimeout(250);
+  await page.keyboard.press("ArrowRight");
+  await page.waitForTimeout(250);
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(300);
 
   // Make it yours: the studio opens from the page's foot and closes back to the page. The preview
   // hands the shipped fixture no daemon, so the studio draws its own "needs the daemon" note.

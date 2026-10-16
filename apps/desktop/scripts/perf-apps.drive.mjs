@@ -13,13 +13,11 @@ export default async function drive(page) {
   }
   await orbs[0].click();
   await page.waitForTimeout(480);
-  const tool = await page.$(".apps__tool");
-  if (tool) {
-    await tool.click();
-    await page.waitForTimeout(480);
-    await page.keyboard.press("Escape");
-    await page.waitForTimeout(480);
-  }
+  // Required, not "if there is one": a step skipped in silence is a shorter path judged green.
+  await page.click(".apps__tool");
+  await page.waitForTimeout(480);
+  await page.keyboard.press("Escape");
+  await page.waitForTimeout(480);
   await page.keyboard.press("Escape");
   await page.waitForTimeout(480);
   await page.mouse.move(5, 5);
