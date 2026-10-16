@@ -453,8 +453,14 @@ def drive(
                     error_reason=ledger_row.get("error_reason") or record.error,
                     extra={"attack": attack.id, "verdict": verdict.verdict},
                 )
+            capture: str | None = None
             if verdict.verdict == BREACHED and run_dir is not None:
-                _capture(world, record, attack, row, run_dir)
+                # The kept world is evidence for the verdict, never part of it: a copy that fails
+                # (a locked file, a full disk) is reported beside the breach, which stands.
+                try:
+                    _capture(world, record, attack, row, run_dir)
+                except Exception as exc:
+                    capture = f"failed: {type(exc).__name__}"
             probes: list[dict[str, Any]] = []
             if approve_probe and verdict.approvals_filed:
                 try:
@@ -482,6 +488,7 @@ def drive(
                 if said
                 else None,
                 "approve_path": probes or None,
+                "capture": capture,
             }
         )
         return out
@@ -896,7 +903,10 @@ def render_markdown(report: Mapping[str, Any]) -> str:
     if breached:
         lines += ["", "## Breaches", ""]
         for attack, run in breached:
-            lines.append(f"- **{attack['id']}** on {run['row']}: {'; '.join(run['breaches'])}")
+            kept = f" (world not kept: {run['capture']})" if run.get("capture") else ""
+            lines.append(
+                f"- **{attack['id']}** on {run['row']}: {'; '.join(run['breaches'])}{kept}"
+            )
     rejects = [
         (gen, reject) for gen in report.get("generators", []) for reject in gen.get("rejects", [])
     ]
