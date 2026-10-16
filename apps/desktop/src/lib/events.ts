@@ -3,7 +3,9 @@
  *
  * Eleven events, one stream, one decoder. The daemon writes each event's own JSON into an SSE
  * frame; this file names the shapes and does nothing else. A second encoder is how two surfaces
- * end up disagreeing about what a decision card said.
+ * end up disagreeing about what a decision card said. The shapes are a hand-written mirror, so
+ * `events.test.ts` reads `channel.py` and holds the kinds, the families, every field and which
+ * fields may be null to it.
  *
  * An unknown `kind` throws rather than being skipped. A surface that silently drops
  * `decision.requested` is a gate that never asked.
