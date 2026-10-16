@@ -405,6 +405,29 @@ def test_an_unknown_approval_is_refused_unknown_ref(tmp_path: Path) -> None:
     assert built.ledger.rows == [], "there is no row to attribute a cost or a blame to"
 
 
+def test_an_approved_card_whose_tool_left_the_catalog_is_ledgered_like_a_refused_replay(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The page that published the tool is gone by the time the person approves: no replay can
+    run. That is a refusal of an answered card, and it leaves the same row as one the gate
+    refused at its replay (``_card_refused_while_its_app_is_off``)."""
+    built = build_lane([claude_round(op("host.invoices.pay", invoice="INV-118"))], tmp_path)
+    drain(built.lane, built)
+    card = built.approvals.only
+
+    def gone(name: str) -> Any:
+        raise ValueError(f"{name} is not in the catalog")
+
+    monkeypatch.setattr(built.catalog, "get", gone)
+    resolution = built.lane.answer_decision(card.id, "approve", built.ctx())
+
+    assert (resolution.approved, resolution.reason) == (True, "unknown_ref")
+    assert resolution.execute is None
+    (row,) = built.ledger.error_rows
+    assert (row.error_reason, row.rounds) == ("unknown_ref", 0)
+    assert row.fields["origin"] == ORIGIN
+
+
 def test_a_card_answered_twice_is_refused_the_second_time(tmp_path: Path) -> None:
     built = build_lane([claude_round(op("host.invoices.pay", invoice="INV-118"))], tmp_path)
     drain(built.lane, built)

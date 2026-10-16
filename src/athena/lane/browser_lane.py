@@ -314,7 +314,17 @@ class BrowserLane:
         try:
             entry = self.catalog.get(grant.action)
         except ValueError as exc:
-            return self._refused(approval_id, choice, "unknown_ref", str(exc), turn_ctx)
+            # The page that published the tool is gone. The person approved and nothing can run:
+            # a refusal of an answered card, ledgered like one the gate refused at its replay.
+            return self._refused(
+                approval_id,
+                choice,
+                "unknown_ref",
+                str(exc),
+                turn_ctx,
+                grant=grant,
+                approved=True,
+            )
 
         outcome = self.gate.run_tool(entry, grant.params, turn_ctx, approval_id=approval_id)
         if isinstance(outcome.decision, Cancel):
