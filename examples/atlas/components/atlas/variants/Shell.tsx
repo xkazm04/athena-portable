@@ -106,27 +106,46 @@ function makeMounts(): Mounts {
   return out;
 }
 
+/**
+ * What the card says, by state. LOADING is the wait every first visit sits through while the lazy
+ * chunk arrives, so it names the wait and cites no file; FAILED is the absence, and it names the
+ * file that would end it. One card used to say "not built yet" for both, so every page load opened
+ * by announcing that the default drawing did not exist.
+ */
+const PLACEHOLDER = {
+  loading: { head: "loading", why: null },
+  failed: { head: "did not load", why: "the module is missing, or it threw while loading" },
+} as const;
+
 function Placeholder({
   slug,
-  why,
+  state,
   retry,
 }: {
   slug: VariantSlug;
-  why: string;
+  state: keyof typeof PLACEHOLDER;
   retry?: () => void;
 }) {
   const meta = VARIANTS.find((v) => v.slug === slug);
+  const copy = PLACEHOLDER[state];
   return (
-    <div className="at-missing" role="status">
+    <div
+      className="at-missing"
+      role="status"
+      data-state={state}
+      aria-busy={state === "loading" ? true : undefined}
+    >
       <p className="at-missing-head">
-        <b>{meta?.label ?? slug}</b> &mdash; not built yet
+        <b>{meta?.label ?? slug}</b> &mdash; {copy.head}
       </p>
       <p className="at-label">{meta?.blurb}</p>
-      <p className="at-cite">
-        <span>
-          components/atlas/variants/{slug}/index.tsx &mdash; {why}
-        </span>
-      </p>
+      {copy.why ? (
+        <p className="at-cite">
+          <span>
+            components/atlas/variants/{slug}/index.tsx &mdash; {copy.why}
+          </span>
+        </p>
+      ) : null}
       {retry ? (
         <button type="button" className="at-missing-retry" onClick={retry}>
           Try again
@@ -154,11 +173,7 @@ class VariantBoundary extends Component<
   render() {
     if (this.state.failed) {
       return (
-        <Placeholder
-          slug={this.props.slug}
-          why="the module is missing, or it threw while loading"
-          retry={this.props.retry}
-        />
+        <Placeholder slug={this.props.slug} state="failed" retry={this.props.retry} />
       );
     }
     return this.props.children;
@@ -321,7 +336,7 @@ export function Shell() {
 
           <main className="at-stage">
             <VariantBoundary key={`${variant}:${attempt}`} slug={variant} retry={retry}>
-              <Suspense fallback={<Placeholder slug={variant} why="loading" />}>
+              <Suspense fallback={<Placeholder slug={variant} state="loading" />}>
                 <Variant {...props} />
               </Suspense>
             </VariantBoundary>

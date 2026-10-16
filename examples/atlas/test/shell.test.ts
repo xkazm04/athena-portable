@@ -7,6 +7,7 @@
  * mentions a rule cannot satisfy the check for it.
  */
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import { CONCEPTS } from "../data";
@@ -28,4 +29,30 @@ test("set_lens's schema accepts every concept id and nothing else", () => {
   for (const c of CONCEPTS) assert.equal(validateArgs({ concept: c.id }, schema), null, c.id);
   assert.equal(validateArgs({}, schema), null, "omitting the concept is the read");
   assert.notEqual(validateArgs({ concept: "inv-nope" }, schema), null);
+});
+
+/* --------------------------------------------------------------------- the mount -- */
+
+/** A source file under components/atlas, with block and line comments removed. */
+function source(path: string): string {
+  return readFileSync(new URL(`../components/atlas/${path}`, import.meta.url), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\{\s*\}/g, "{}")
+    .replace(/(^|[^:])\/\/.*$/gm, "$1");
+}
+
+test("the variant's loading fallback says it is loading, not that the variant is missing", () => {
+  const shell = source("variants/Shell.tsx");
+  const fallback = /<Suspense\s+fallback=\{(<Placeholder[^>]*\/>)\}/.exec(shell);
+  assert.ok(fallback, "no <Suspense fallback={<Placeholder … />}> in Shell.tsx");
+  assert.match(fallback[1]!, /state="loading"/, `the fallback is not the loading state: ${fallback[1]}`);
+  assert.doesNotMatch(shell, /not built yet/, "a head that names an absence is still in the shell");
+});
+
+test("the boundary's card is the failed state, and it offers the retry", () => {
+  const shell = source("variants/Shell.tsx");
+  const boundary = /if \(this\.state\.failed\)[\s\S]*?(<Placeholder[\s\S]*?\/>)/.exec(shell);
+  assert.ok(boundary, "no Placeholder under the boundary's failed branch");
+  assert.match(boundary[1]!, /state="failed"/);
+  assert.match(boundary[1]!, /retry=\{/);
 });
