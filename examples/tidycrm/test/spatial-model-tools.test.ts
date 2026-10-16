@@ -48,12 +48,16 @@ const recorder = `globalThis[Symbol.for("tidycrm.test.spatialRecorder")]`;
 let reached: string[] = [];
 const registered = new Map<string, WebMCPToolSpec>();
 
-(globalThis as Record<symbol, unknown>)[RECORDER] = {
+const record = {
+  /** What `useRun`'s transition was handed back by its action, and what it toasted. */
+  transition: undefined as Promise<unknown> | undefined,
+  toasts: [] as [string, string][],
   register(spec: WebMCPToolSpec) {
     assert.ok(!registered.has(spec.name), `${spec.name} is registered twice`);
     registered.set(spec.name, spec);
   },
 };
+(globalThis as Record<symbol, unknown>)[RECORDER] = record;
 
 /**
  * `[importer, specifier] -> module`. An importer is matched by URL prefix, so a stand-in applies
@@ -75,6 +79,25 @@ const STAND_INS: [string, string, string][] = [
   // The kit's zoom verbs, run for real: their registration goes to the same recorder.
   [kit("webmcp/zoomTools.ts"), "react", moduleOf("export const useMemo = (make) => make();")],
   [kit("webmcp/zoomTools.ts"), "./hooks", moduleOf(`export const useWebMCPTool = (spec) => ${recorder}.register(spec);`)],
+  // `useRun`, outside React: the transition hands back what its action returned, the toast records.
+  [
+    here("components/blocks/useRun.ts"),
+    "react",
+    moduleOf(
+      [
+        "export const useCallback = (fn) => fn;",
+        `export const useTransition = () => [false, (action) => { ${recorder}.transition = action(); }];`,
+        "export const useState = (v) => [v, () => {}];",
+        "export const useRef = (v) => ({ current: v });",
+        "export const useEffect = () => {};",
+      ].join("\n"),
+    ),
+  ],
+  [
+    here("components/blocks/useRun.ts"),
+    "@athena/demo-kit/ui",
+    moduleOf(`export const useToast = () => ({ toast: (text, tone) => ${recorder}.toasts.push([tone, text]) });`),
+  ],
 ];
 
 registerHooks({
@@ -278,6 +301,39 @@ test("coverage_under keeps every table whose printed coverage is at or under it"
     if (!(under.items as { id: string }[]).some((i) => i.id === t.ident)) dropped.push(`${t.ident} at ${printed}`);
   }
   assert.deepEqual(dropped, [], "printed at N, missing from coverage_under N");
+});
+
+test("a write that throws is toasted and disarms its gate, rather than escaping the transition", async () => {
+  // The dossier's buttons run every server action through `useRun`, and the two irreversible ones
+  // pass `disarm` as `after`. A thrown action (the database locked, the connection dropped) used
+  // to reject inside the transition: no toast, `after` never called, the merge still armed, and
+  // React handing the rejection to the error boundary.
+  const { useRun } = await import("../components/blocks/useRun");
+  const { run } = useRun();
+  const after: unknown[] = [];
+  const logged: unknown[] = [];
+  const log = console.error;
+  console.error = (...args: unknown[]) => logged.push(args);
+  try {
+    record.toasts = [];
+    run(() => Promise.reject(new Error("database is locked")), (result) => after.push(result));
+    await record.transition;
+  } finally {
+    console.error = log;
+  }
+  assert.equal(record.toasts.length, 1, "the person is told");
+  assert.equal(record.toasts[0]![0], "error");
+  assert.match(record.toasts[0]![1], /database is locked/);
+  assert.equal(after.length, 1, "the gate's after runs, so the irreversible control disarms");
+  assert.equal((after[0] as { ok: boolean }).ok, false);
+  assert.equal(logged.length, 1, "the developer gets the stack");
+
+  // And an answer still goes the way it always did.
+  record.toasts = [];
+  run(() => Promise.resolve({ ok: true, summary: "Merged." }), (result) => after.push(result));
+  await record.transition;
+  assert.deepEqual(record.toasts, [["success", "Merged."]]);
+  assert.equal(after.length, 2);
 });
 
 test("the check catches a read that writes, a read that moves, and a write wearing the read class", async () => {

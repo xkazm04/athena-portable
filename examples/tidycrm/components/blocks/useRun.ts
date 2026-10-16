@@ -25,7 +25,18 @@ export function useRun() {
   const run = useCallback(
     (fn: () => Promise<MutationResult>, after?: (result: MutationResult) => void) =>
       start(async () => {
-        const result = await fn();
+        let result: MutationResult;
+        try {
+          result = await fn();
+        } catch (err) {
+          // A server action that throws - the database locked, the connection dropped - rejects
+          // here, and inside a transition that rejection goes to the error boundary: the sheet
+          // gone, no word to the person, and `after` never run, so an armed merge stays armed. It
+          // answers as a refusal instead; the developer gets the stack.
+          console.error("tidycrm: a write threw:", err);
+          const reason = err instanceof Error ? err.message : String(err);
+          result = { ok: false, summary: "", error: `That did not go through: ${reason}` };
+        }
         toast(result.error ?? result.summary, result.ok ? "success" : "error");
         after?.(result);
       }),
