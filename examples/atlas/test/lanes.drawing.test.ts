@@ -27,6 +27,18 @@ function callback(name: string): string {
   return SOURCE.slice(at, end === -1 ? undefined : end);
 }
 
+test("the canvas's label tells a keyboard reader what its keys do there", () => {
+  /* On the focused canvas the rig binds the arrows to PAN, plus and minus to zoom, and Home; the
+     arrows move between nodes only once focus is on a node. A label that promises the second on
+     the first sends the reader the wrong way. */
+  const label = /role="application"\s+aria-label="([^"]+)"/.exec(SOURCE)?.[1];
+  assert.ok(label, "no labelled application canvas in Drawing.tsx");
+  assert.match(label, /arrow keys to pan/i, `"${label}" does not say the arrows pan the canvas`);
+  assert.match(label, /plus and minus/i, `"${label}" does not name the zoom keys`);
+  assert.match(label, /Home/, `"${label}" does not name Home`);
+  assert.match(label, /on a node, the arrows/i, `"${label}" does not say where the arrows rove`);
+});
+
 test("Home goes to the same place from the keyboard as from the toolbar", () => {
   /* The rig's own Home flies to its `initial` pose, which is the kit's rest pose: pan 0,0. On this
      sheet that is the world's top-left corner, so the drawing slid three quarters off the frame. */

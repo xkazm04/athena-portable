@@ -584,7 +584,7 @@ export default function LanesDrawing({
         style={rig.bind.style}
         data-camera={rig.bind["data-camera"]}
         role="application"
-        aria-label="The turn in lanes. Rows are lanes, columns are when a step happens. Drag to pan, wheel to zoom, arrows to move between nodes."
+        aria-label="The turn in lanes. Rows are lanes, columns are when a step happens. Drag or the arrow keys to pan, the wheel or plus and minus to zoom, Home to come back. On a node, the arrows move to the next node."
       >
         {/*
           THE TRANSFORMED ELEMENT IS A POINT, AND THAT IS THE WHOLE FRAME OF REFERENCE.
