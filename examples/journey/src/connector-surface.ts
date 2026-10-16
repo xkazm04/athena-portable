@@ -11,7 +11,7 @@ import { decide, manifestOf, type Decision, type GateTool, type HostManifest } f
 import { ApprovalError, type Approvals, type Card } from "./approvals.ts";
 import { EgressRefused, type ConnectorPort } from "./connectors/port.ts";
 import type { Ledger, LedgerRow } from "./ledger.ts";
-import { parse } from "./surface.ts";
+import { parse, rowOf, withRow } from "./surface.ts";
 
 export interface ConnectorResult {
   readonly output: string;
@@ -70,12 +70,39 @@ export class ConnectorSurface {
   async run(name: string, params: Record<string, unknown> = {}, approval: Card | null = null): Promise<ConnectorResult> {
     const cls = this.classOf(name);
     const target = this.port.targetOf(name, params);
+    // Every refusal writes its row before it throws (invariant 6, failures included): the gate's,
+    // the allow-list's and the service's own. `refused` reads the row back rather than writing one.
+    const refuse = (error: Error, reason: string): Error =>
+      withRow(error, this.ledger.write({
+        app: this.origin,
+        tier: 3,
+        tool: name,
+        cls,
+        outcome: "refused",
+        reason,
+        approval: cls === "GATED" ? (approval?.id ?? null) : null,
+        target,
+      }));
     let card: Card | null = null;
-    if (cls === "GATED") card = this.approvals.prove(approval?.id ?? null, this.origin, name, params);
+    if (cls === "GATED") {
+      try {
+        card = this.approvals.prove(approval?.id ?? null, this.origin, name, params);
+      } catch (error) {
+        throw error instanceof ApprovalError ? refuse(error, error.reason) : error;
+      }
+    }
     // Second, and only after the approval: the switch layers on the gate, it does not replace it.
-    if (target !== null && !this.port.allowed.has(target)) throw new EgressRefused(this.port.id, target);
+    if (target !== null && !this.port.allowed.has(target)) {
+      const egress = new EgressRefused(this.port.id, target);
+      throw refuse(egress, egress.reason);
+    }
 
-    const output = String(await this.port.call(name, params));
+    let output: string;
+    try {
+      output = String(await this.port.call(name, params));
+    } catch (error) {
+      throw refuse(error instanceof Error ? error : new Error(String(error)), "unknown");
+    }
     const row = this.ledger.write({
       app: this.origin,
       tier: 3,
@@ -117,19 +144,8 @@ export class ConnectorSurface {
       await this.run(name, params, card);
     } catch (error) {
       const reason = error instanceof ApprovalError ? error.reason : error instanceof EgressRefused ? error.reason : null;
-      if (reason) {
-        const row = this.ledger.write({
-          app: this.origin,
-          tier: 3,
-          tool: name,
-          cls: "GATED",
-          outcome: "refused",
-          reason,
-          approval: card?.id ?? null,
-          target: this.port.targetOf(name, params),
-        });
-        return { reason, message: (error as Error).message, row };
-      }
+      // `run` wrote the row when it refused; this only hands it back.
+      if (reason) return { reason, message: (error as Error).message, row: rowOf(error as Error) };
       throw error;
     }
     throw new Error(`${name} ran when it should have been refused; the gate did not hold`);

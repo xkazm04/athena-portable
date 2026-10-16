@@ -184,30 +184,40 @@ export class Surface {
    */
   async run(name: string, params: Record<string, unknown> = {}, approval: Card | null = null): Promise<Result> {
     const cls = this.classOf(name);
-    let card: Card | null = null;
-    if (cls === "GATED") card = this.approvals.prove(approval?.id ?? null, this.origin, name, params);
-
-    const ticket = this.budget.take(this.origin);
-    if (!ticket.ok) throw new Error(`${this.origin}: ${ticket.message}`);
-
     const tier = this.tierOf(name);
-    // Two transports, one gate. A hand goes to the hands namespace and a page tool to the page's,
-    // and everything either side of this line — the class, the approval, the budget, the row — is
-    // the same code for both.
-    const answer = tier === 2 ? await hand(this.page, name, params) : await call(this.page, name, params);
-    if (answer.ok !== true) {
-      const row = this.ledger.write({
+    // Every refusal below writes its row before it throws, so "failures included" holds for the
+    // calls the gate stops as well as the ones the page refuses; `refused` reads the row back.
+    const refuse = (error: Error, reason: string): Error =>
+      withRow(error, this.ledger.write({
         app: this.app.id,
         tier,
         tool: name,
         cls,
         outcome: "refused",
-        reason: answer.reason ?? "unknown",
-        approval: card?.id ?? null,
+        reason,
+        // The card the caller cited, which is the card a granted call would have recorded.
+        approval: cls === "GATED" ? (approval?.id ?? null) : null,
         target: null,
-      });
-      throw Object.assign(new Error(`${name}: ${answer.error}`), { row });
+      }));
+    let card: Card | null = null;
+    if (cls === "GATED") {
+      try {
+        card = this.approvals.prove(approval?.id ?? null, this.origin, name, params);
+      } catch (error) {
+        throw error instanceof ApprovalError ? refuse(error, error.reason) : error;
+      }
     }
+
+    const ticket = this.budget.take(this.origin);
+    if (!ticket.ok) {
+      throw refuse(new Error(`${this.origin}: ${ticket.message}`), ticket.reason ?? "budget_exhausted");
+    }
+
+    // Two transports, one gate. A hand goes to the hands namespace and a page tool to the page's,
+    // and everything either side of this line — the class, the approval, the budget, the row — is
+    // the same code for both.
+    const answer = tier === 2 ? await hand(this.page, name, params) : await call(this.page, name, params);
+    if (answer.ok !== true) throw refuse(new Error(`${name}: ${answer.error}`), answer.reason ?? "unknown");
     const row = this.ledger.write({
       app: this.app.id,
       tier,
@@ -254,23 +264,24 @@ export class Surface {
     try {
       await this.run(name, params, card);
     } catch (error) {
-      if (error instanceof ApprovalError) {
-        const row = this.ledger.write({
-          app: this.app.id,
-          tier: this.tierOf(name),
-          tool: name,
-          cls: "GATED",
-          outcome: "refused",
-          reason: error.reason,
-          approval: card?.id ?? null,
-          target: null,
-        });
-        return { reason: error.reason, message: error.message, row };
-      }
+      // `run` wrote the row when it refused; this only hands it back.
+      if (error instanceof ApprovalError) return { reason: error.reason, message: error.message, row: rowOf(error) };
       throw error;
     }
     throw new Error(`${name} executed without a granted approval; the gate did not hold`);
   }
+}
+
+/** Attach the ledger row a refusal wrote to the error that reports it. */
+export function withRow<E extends Error>(error: E, row: LedgerRow): E & { row: LedgerRow } {
+  return Object.assign(error, { row });
+}
+
+/** The row a refusal wrote before it threw. A refusal with none is a refusal the record lost. */
+export function rowOf(error: Error): LedgerRow {
+  const row = (error as Error & { row?: LedgerRow }).row;
+  if (!row) throw new Error(`${error.message} (refused without a ledger row)`);
+  return row;
 }
 
 /** Tool output is always a string on the wire; most of these answer JSON. Neither is assumed. */
