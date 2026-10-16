@@ -37,7 +37,7 @@ import {
   TRAIL_COUNTS,
   beatState,
 } from "../components/atlas/variants/archify-lanes/story";
-import { turnRead } from "../components/atlas/variants/archify-lanes/turn";
+import { askStop, turnRead } from "../components/atlas/variants/archify-lanes/turn";
 
 const FRAME = { w: 1188, h: 660 };
 const pose = (p: { zoom?: number; pan?: { x: number; y: number } }) => ({
@@ -166,4 +166,23 @@ test("read_turn answers with this drawing's lanes, phases and runs", () => {
   assert.equal(gate.beat, "active");
   assert.ok(gate.lane !== null && gate.phase !== null, "a stop knows its lane and its phase");
   assert.equal(answer.hops.authored, TRAIL_COUNTS.authored);
+});
+
+/**
+ * `set_turn`'s parameter is typed `number`, which a fraction satisfies. A stop of 2.5 used to be
+ * accepted, stored as 1.5, and then read back as `BEAT_VIEWS[1.5]` — undefined — so the story bar
+ * threw on `beat.nodeLabel` and the drawing went down with it.
+ */
+test("set_turn takes a whole stop from 1 to 12 and refuses everything else", () => {
+  assert.deepEqual(askStop(1), { ok: true, stop: 0 });
+  assert.deepEqual(askStop("12"), { ok: true, stop: 11 });
+  for (const bad of [0, 13, -1, 2.5, "7.25", "seven", Number.NaN, Number.POSITIVE_INFINITY]) {
+    const out = askStop(bad);
+    assert.equal(out.ok, false, `stop ${String(bad)} was accepted`);
+    if (!out.ok) assert.match(out.error, /12 stops, numbered from 1/);
+  }
+  for (let n = 1; n <= BEAT_VIEWS.length; n += 1) {
+    const out = askStop(n);
+    assert.ok(out.ok && BEAT_VIEWS[out.stop], `stop ${n} does not land on a beat`);
+  }
 });

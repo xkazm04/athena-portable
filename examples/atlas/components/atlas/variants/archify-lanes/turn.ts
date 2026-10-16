@@ -26,6 +26,26 @@ const WAIT_STOP = BEAT_VIEWS.findIndex((b) => b.kind === "wait");
 
 const HOP_INTO = new Map(HOPS.map((h) => [h.index, h]));
 
+/**
+ * What `set_turn` makes of the stop it was asked for: a whole stop from 1 to the last, as a 0-based
+ * index, or a refusal that says what the turn has. Pure, so the refusal is pinned by a test rather
+ * than living only inside the hook that registers the tool.
+ */
+export function askStop(
+  asked: unknown,
+): { ok: true; stop: number } | { ok: false; error: string } {
+  const n = Number(asked);
+  /* `Number.isInteger` and not `isFinite`: the schema says `number`, a fraction satisfies it, and
+     a fractional index reads back as no beat at all. */
+  if (!Number.isInteger(n) || n < 1 || n > BEAT_VIEWS.length) {
+    return {
+      ok: false,
+      error: `No stop ${String(asked)}. The turn has ${BEAT_VIEWS.length} stops, numbered from 1.`,
+    };
+  }
+  return { ok: true, stop: n - 1 };
+}
+
 /** The turn, as an agent reads it. Bounded like every list in this repository, and it says so. */
 export function turnRead(at: number, telling: boolean, playing: boolean) {
   const plan = planOf(null);

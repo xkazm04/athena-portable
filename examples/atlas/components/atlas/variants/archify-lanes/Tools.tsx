@@ -24,7 +24,7 @@
 import { useWebMCPTool } from "@athena/demo-kit/webmcp";
 
 import { BEAT_VIEWS } from "./story";
-import { turnRead } from "./turn";
+import { askStop, turnRead } from "./turn";
 
 export { turnRead };
 
@@ -72,21 +72,16 @@ export function LanesTools({
     ],
     reversible: true,
     sideEffects: "none",
-    handler: ({ stop: asked, tell }) => {
-      const n = Number(asked);
-      if (!Number.isFinite(n) || n < 1 || n > BEAT_VIEWS.length) {
-        return {
-          ok: false as const,
-          error: `No stop ${String(asked)}. The turn has ${BEAT_VIEWS.length} stops, numbered from 1.`,
-        };
-      }
-      setStop(n - 1);
+    handler: ({ stop: raw, tell }) => {
+      const asked = askStop(raw);
+      if (!asked.ok) return asked;
+      setStop(asked.stop);
       /* The answer names the state the tool LEAVES the surface in — React has not re-rendered
          inside this handler, so reading the props back here would answer the previous one. */
       const telling = tell === true ? true : tell === false ? false : story;
       if (tell === true) setStory(true);
       if (tell === false) setStory(false);
-      return turnRead(n - 1, telling, telling ? playing : false);
+      return turnRead(asked.stop, telling, telling ? playing : false);
     },
     deps: [setStop, setStory, story, playing],
   });
