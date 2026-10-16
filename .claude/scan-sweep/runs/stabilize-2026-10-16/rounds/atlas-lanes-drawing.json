@@ -1,0 +1,84 @@
+{
+ "context": "atlas-lanes-drawing",
+ "files_read": 25,
+ "loc": 6130,
+ "registry": "software-engineering/design-tokens, software-engineering/motion, software-engineering/accessibility, software-engineering/test-harness, software-engineering/dead-code, software-engineering/ui-controls",
+ "techniques": [
+  "name-and-description-wiring",
+  "keyboard-navigation-models",
+  "continuity-across-change",
+  "performance-discipline",
+  "micro-interaction-contracts",
+  "cross-language-token-parity",
+  "deletion-protocols",
+  "pin-the-call-not-the-name",
+  "negative-control-tests"
+ ],
+ "deviations": 8,
+ "assigned": [],
+ "built": [
+  {"sha": "7ad745d", "title": "set_turn refuses a fractional stop instead of crashing the story bar", "lens": "bounty-hunter", "red_before": "lanes.poses 'set_turn takes a whole stop': with the check extracted verbatim, 'stop 2.5 was accepted'", "after": "8 bad inputs refused, 12 of 12 stops land on a beat"},
+  {"sha": "b6f01d2", "title": "set_turn tell=false stops the story clock, as the TURN toggle and the view switch do", "lens": "parity-auditor", "red_before": "lanes.poses tell=false case: turnAfter at old behaviour returned {story:false, playing:true}", "after": "3 of 3 story-off doors stop the clock; the tool's answer equals the next read_turn"},
+  {"sha": "6a4cf13", "title": "a lane node's accessible name says which lane owns it and which phase it happens in", "lens": "accessibility-checker", "red_before": "lanes.model accessible-name case: nodeName at the old expression 'never names its lane'", "after": "12 of 12 names carry lane and phase (0 of 12 before)"},
+  {"sha": "bb8cbd0", "title": "a lane node's tag and a fine run label fade in at L1 as they fade out at L0", "lens": "ui-perfectionist", "red_before": "new lanes.css test: '.al-node-tag is hidden by the band but only eases while hidden'", "after": "2 of 2 band-hidden tiers ease in both states (0 of 2)"},
+  {"sha": "1b9d2b4", "title": "a run and the story trail ease their opacity when the story steps, as the node does", "lens": "ui-perfectionist", "red_before": "lanes.css story-dim case: '.al-run changes opacity with the story and has no opacity transition'", "after": "4 of 4 story-stepped classes ease (1 of 4)"},
+  {"sha": "4710e89", "title": "TURN, chapter, home and theme controls say their state and purpose, not only in colour", "lens": "accessibility-checker", "red_before": "new lanes.chrome test: 4 of 4 control cases failed", "after": "4 of 4 pass"},
+  {"sha": "abea9b8", "title": "zoom buttons say when the camera is at its bound instead of answering a press with nothing", "lens": "state-coverage", "red_before": "lanes.chrome zoom case: no aria-disabled on either zoom button", "after": "2 of 2 bound states exposed; focus kept (aria-disabled, guarded handler)"},
+  {"sha": "5b0f37c", "title": "the lane legend reads its role words and label advance from workflow.ts and routing.ts", "lens": "parity-auditor", "red_before": "lanes.model legend case: 'Scene.tsx re-types the main legend words'", "after": "role-word copies 2 -> 1, 9-unit advance copies 3 -> 1"},
+  {"sha": "9fb93d7", "title": "the lanes folder drops eighteen exports the deleted archify sheet left with no consumer", "lens": "code-optimizer", "red_before": "zero-consumer git grep -nw over every tracked file: 18 symbols with only their definition; tsc is the negative control", "after": "0 dead exports, about 100 lines fewer; typecheck and 90/90 tests green"},
+  {"sha": "550bf4b", "title": "the lanes headers stop citing a deleted test, a frame nobody draws and a world ten units too wide", "lens": "copy-auditor", "red_before": "lanes.model cited-tests case, seeded red by restoring script.ts's old citation", "after": "7 stale header claims -> 0"},
+  {"sha": "4cd9c3c", "title": "the Home key on the lane canvas flies home, not to the sheet's top-left corner", "lens": "parity-auditor", "red_before": "new lanes.drawing test: 'the canvas hands Home to the rig's rest pose'", "after": "2 of 2 home paths land on poseFor level 0 (1 of 2)"},
+  {"sha": "96f5388", "title": "the lane canvas's label says its arrow keys pan and names the zoom and Home keys", "lens": "copy-auditor", "red_before": "lanes.drawing canvas-label case: label did not say the arrows pan", "after": "4 of 4 key behaviours named"}
+ ],
+ "rejected": [
+  {"title": "Round the zoom readout so the drawing re-renders less during a camera move", "before": "a pan already bails out (zoom unchanged, setState is a no-op); a 1 -> 1.6 fly is about 19 frames with about 19 distinct percents", "after": "the same ~19 renders per fly with rounding to 1%: not-better"},
+  {"title": "Drop box-shadow from the node's transition list (DESIGN.md §7 colour-only)", "before": "12 nodes, hover/focus only, 90 ms paint", "after": "no measurable cost removed; the focus ring would snap while the border eases beside it: not-better"}
+ ],
+ "lens_keys": [
+  {"key": "bounty-hunter", "checked": "Tools.tsx set_turn input (fractional stop -> undefined beat -> StoryBar throw, built); Drawing.tsx BEAT_VIEWS clamp, chapterOf/nodeAt bounds, pickStop modulo"},
+  {"key": "parity-auditor", "checked": "the three story-off doors (built), keyboard Home vs toolbar Home (built), ROLE_LEGEND vs ROLE_LABEL and three copies of the 9-unit advance (built), geometry phase-of-col vs workflow phaseOfCol"},
+  {"key": "error-handler", "checked": "set_turn refusal path moved to a tested askStop; reportOrigin's missing-element branch; no catch in the folder"},
+  {"key": "observability-auditor", "checked": "grep for console/catch/onError in archify-lanes: none; tool refusals return to the agent with the reason; no silent path that changes an outcome"},
+  {"key": "risk-assessor", "checked": "routing CACHE keyed by plan.open, frame measured before the rig (R5-A2 ordering), document.querySelector on nav-validated ids only"},
+  {"key": "code-optimizer", "checked": "setZoomRead per camera frame (rejected, figures), Runs/Node memo props, dead inherited exports (built), Signal scan keyframes (card C)"},
+  {"key": "ux-reviewer", "checked": "toolbar flow: zoom at bounds (built), Home key (built), Play under reduced motion becomes Step, ScriptRail vs StoryBar sharing set_turn's path"},
+  {"key": "visual-craft", "checked": "screen-space chrome on world type tokens, 14 selectors (card C), sibling dim transitions (built)"},
+  {"key": "state-coverage", "checked": "zoom bounds (built), story off while playing (built), reduced toggled mid-play, editorial with story off shows no bar"},
+  {"key": "copy-auditor", "checked": "canvas aria-label key claims (built), stale header citations (built), counted claims in cards / read_turn note / '/ 12' (card B, all true today), set_variant wording in read_turn's note (accurate)"},
+  {"key": "accessibility-checker", "checked": "node aria-label without lane/phase (built), toggle state by colour only (built), canvas key help (built), focus kept on bound zoom buttons"},
+  {"key": "test-strategist", "checked": "set_turn validation and state now under test; roving rule untested (card B); hand-typed numerals untested (card B); 6 existing test files read in full"},
+  {"key": "security-auditor", "checked": "querySelector built from focus.item: ids come from nav (useZoomTools items), no URL source in Shell/Atlas; WebMCP tools sideEffects none"},
+  {"key": "ui-perfectionist", "checked": "lanes.css transitions: detail tier enter/exit (built), run/trail dim (built), story-what clip (card C), box-shadow transition (rejected), hover on disabled tool"},
+  {"key": "architecture-analyst", "checked": "inherited kinds/script/primitives modules: what moved vs what is read; dead remainder removed (built)"},
+  {"key": "documentation-auditor", "checked": "every module header in archify-lanes against the tree: 7 stale claims (built with a cited-tests gate)"},
+  {"key": "tech-debt-tracker", "checked": "zero-consumer grep over 40 exported symbols; 18 dead (built)"},
+  {"key": "mobile-specialist", "checked": "touch-action none on canvas, 900px breakpoint in lanes.css, toolbar/chapter targets ~19-21 px (folded into card C1)"},
+  {"key": "integration-planner", "checked": "read_turn/set_turn contract: refusal shape, answer = next read (built)"},
+  {"key": "onboarding-designer", "checked": "first view: TURN behind a toggle with cards explaining the merges; editorial shows the twelve stops; nothing real"},
+  {"key": "registry-conformance", "checked": "design-tokens deviation already recorded in .ai/registry-map.json (lanes.css 1.1s, unit-list gate, type sizes copied); not re-emitted"},
+  {"key": "feature-scout", "checked": "story/scan/preset surface for missing modes; nothing inside scope worth a card"},
+  {"key": "innovation-catalyst", "checked": "WebMCP read_turn/set_turn as the agent surface; nothing real"}
+ ],
+ "lens_no_surface": [
+  {"key": "monetization-advisor", "why": "a static demo drawing; nothing is paid for"},
+  {"key": "growth-hacker", "why": "no sharing, invite or notification surface"},
+  {"key": "business-strategist", "why": "a hackathon architecture drawing with no funnel or retention"},
+  {"key": "analytics-planner", "why": "Atlas emits no telemetry and has no network"},
+  {"key": "dependency-auditor", "why": "no manifest in this context; imports are react and the workspace demo-kit only"},
+  {"key": "devops-optimizer", "why": "no pipeline or build files in this context"}
+ ],
+ "findings": 19,
+ "lanes": "A:12/B:2/C:3",
+ "fp": 0,
+ "gates": {
+  "pnpm --filter atlas typecheck": 0,
+  "pnpm --filter atlas lint": 0,
+  "pnpm --filter atlas test": 0
+ },
+ "leads": [
+  {"ts": "2026-10-16T17:30:00+02:00", "bundle": "software-engineering", "nearest": "motion", "kind": "technique", "claim": "When a state attribute or class toggles a property in CSS, declare the transition on the base selector and let the state rules set values only, because a transition runs on the after-change style, so one declared only on the hidden state animates the exit and pops the enter (and one on a child never fires when the state sets the parent's opacity).", "because": "atlas lanes: the detail tiers' transition sat only under [data-band=0] and the run's on .al-run-line while data-dim set .al-run; a stylesheet test reading rules (comments stripped) went red on both and green after moving the transitions", "confidence": "medium", "from": "scan-sweep@4.6.1"}
+ ],
+ "degraded": false,
+ "note": "12 built; 2 B + 3 C carded; no browser, so visual claims are carded C",
+ "notes": "Findings 19 against the round budget of 16 (12 built, 2 rejected, 5 carded); ui-perfectionist took 3 with its card. Sibling reds seen and not mine: examples/atlas/test/data.test.ts (cited paths) on one run and examples/atlas/test/check-tokens.test.ts on one run, both atlas-data-and-app in flight; green on re-run, and every commit's whole atlas run was green before it landed. examples/demo-kit/src/zoom/useCameraRig.ts is being changed by another round: 4cd9c3c intercepts Home on the lane canvas before the rig, so a kit change to Home semantics does not reach this drawing (the toolbar and the key share flyHome). New test files are mine: test/lanes.css.test.ts, lanes.chrome.test.ts, lanes.drawing.test.ts. Consult: software-engineering subjects design-tokens, motion, accessibility, test-harness, dead-code, ui-controls; deviations 8. Lane B open +2 - drain with /scan-sweep --ab-only."
+}

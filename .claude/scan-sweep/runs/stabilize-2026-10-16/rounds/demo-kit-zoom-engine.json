@@ -1,0 +1,294 @@
+{
+ "context": "demo-kit-zoom-engine",
+ "files_read": 32,
+ "loc": 5753,
+ "registry": "software-engineering/canvas-graph, software-engineering/design-tokens, software-engineering/mcp-tools, software-engineering/modal-stack",
+ "techniques": [
+  "viewport-transform",
+  "canvas-accessibility",
+  "direct-manipulation",
+  "cross-language-token-parity",
+  "motion-tokens",
+  "tool-schema-design",
+  "focus-and-scroll-containment"
+ ],
+ "deviations": 5,
+ "assigned": [
+  {
+   "title": "camera.ts FLY_EASE/DEFAULT_EASE retype --dk-ease; BEZIER_RE re-parses parseBezier",
+   "verdict": "built 6bb1765"
+  },
+  {
+   "title": "R4-5: rig.frame() and (pose, frame) for resolveGroup, resolveItem, poseFor",
+   "verdict": "built ca18d05"
+  },
+  {
+   "title": "echo-rule.ts samePlace duplicates state.ts sameFocus (deliberate)",
+   "verdict": "built 34f7e8d - premise confirmed (probe: extensionless value import -> ERR_MODULE_NOT_FOUND under node), copy kept; it was pinned from one side only (sameFocus drift failed 0 tests), now 729 pairs hold both"
+  },
+  {
+   "title": "page-bridge: validate call input against inputSchema in inject.js",
+   "verdict": "built c73569c"
+  },
+  {
+   "title": "page-bridge: own codes for 'No tool named' and 'Unknown request'",
+   "verdict": "built f3b82fd - existing members unknown_ref / validator_failed, REFUSAL_REASONS unchanged (no parity-test or desktop change needed); desktop follow-through carded B"
+  },
+  {
+   "title": "inject.test.js deadline test flake (~1 in 10 on Windows)",
+   "verdict": "built 364eb03 - the class was eleven fixed-sleep tests, not one"
+  }
+ ],
+ "built": [
+  {
+   "sha": "364eb03",
+   "title": "The inject tests wait for each reply instead of sleeping a fixed time",
+   "lens": "test-strategist",
+   "red_before": "30 runs under a 72-thread CPU burner: 4 failed (native registry, handler throw); 1 of 30 at 48 threads",
+   "after": "0 of 60 under the same 72-thread burner"
+  },
+  {
+   "sha": "f3b82fd",
+   "title": "Unknown tool answers unknown_ref, unknown request validator_failed, apart from a handler fault",
+   "lens": "parity-auditor",
+   "red_before": "inject.test.js reason case: r1 reply had no reason key",
+   "after": "3 of 3 replies in shape, both reasons vocabulary members"
+  },
+  {
+   "sha": "c73569c",
+   "title": "A call's input is checked against the tool's own inputSchema before the page runs it",
+   "lens": "security-auditor",
+   "red_before": "inject.test.js: missing-required input reached the tool; an array input was coerced to {} and ran (13 of 13 gate-refused inputs ran)",
+   "after": "13 of 13 refused before the tool, 2 of 2 accepted run; seeded `in` for hasOwn turns the inherited-name case red"
+  },
+  {
+   "sha": "ea815f2",
+   "title": "A wheel or pinch past a zoom bound no longer slides the scene",
+   "lens": "bounty-hunter",
+   "red_before": "camera.test.ts bound cases: pan (-29.1,-25.7) instead of (5,-3) at max; overshoot missed its anchor by 120 px (probe: 600 scene units drift in 10 ticks at min)",
+   "after": "pose unchanged at both bounds; overshoot pinned to 1e-9"
+  },
+  {
+   "sha": "6bb1765",
+   "title": "The kit's default curve is typed once, parsed by one bezier parser, pinned to --dk-ease",
+   "lens": "parity-auditor",
+   "red_before": "seeded --dk-ease retune: 0 of 154 tests failed; seeded DEFAULT_EASE retune: 0 of 154",
+   "after": "the CSS seed fails the pin test; one parser, one typed copy"
+  },
+  {
+   "sha": "34f7e8d",
+   "title": "echo-rule's same-place test is pinned to sameFocus over every pair of foci",
+   "lens": "test-strategist",
+   "red_before": "seeded sameFocus drift: 0 of 157 tests failed",
+   "after": "1 of 158 fails on that seed; samePlace seed still fails"
+  },
+  {
+   "sha": "ca18d05",
+   "title": "The rig exposes its frame, and semantic zoom hands it to poseFor and both resolvers",
+   "lens": "ux-reviewer",
+   "red_before": "cameraMove absent (decision untested inside the hook); probe: rig.frame absent, 0 of 4 callback calls carried a frame",
+   "after": "rig.frame() = {w:800,h:600}, 4 of 4 calls carry it; cameraMove decision table under node --test"
+  },
+  {
+   "sha": "aa238f7",
+   "title": "A + or - key press during a fly stops the fly",
+   "lens": "bounty-hunter",
+   "red_before": "probe: '+' mid-fly 1.651 -> 1.898, then landed 3.885 (fly overwrote it)",
+   "after": "probe: '+' mid-fly 1.622 -> 1.865 and stays; key mapping pinned in gesture.test.ts"
+  },
+  {
+   "sha": "cab6dd1",
+   "title": "The camera leaves a key alone when a field, a child or the browser owns it",
+   "lens": "accessibility-checker",
+   "red_before": "gesture.test.ts ownership case: INPUT returned a zoom; probe: '-' in a field zoomed (0.870) and was prevented, a child's used ArrowRight orbited, Ctrl+= zoomed and was prevented",
+   "after": "11 of 11; probe: field and Ctrl+= untouched and unprevented, child's arrow leaves yaw 0, scene keys still move"
+  },
+  {
+   "sha": "26f8424",
+   "title": "An overlay chooses where focus returns on the frame it restores it",
+   "lens": "state-coverage",
+   "red_before": "probe: origin card re-created by the level's effect on close; focus dropped to body although the card existed",
+   "after": "probe: focus on #card"
+  },
+  {
+   "sha": "15bff60",
+   "title": "The first echo of a session gets the token's safety net, not the 400 ms default",
+   "lens": "state-coverage",
+   "red_before": "probe (token 1200ms): first echo net 400 ms, second 1200 ms",
+   "after": "probe: both 1200 ms"
+  },
+  {
+   "sha": "9e86936",
+   "title": "The zoom barrel no longer points at a ../three/nav module and /three barrel that do not exist",
+   "lens": "copy-auditor",
+   "red_before": "git grep three/nav|demo-kit/three: 2 hits, 0 files behind them, no ./three export",
+   "after": "0 hits"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "useTokens re-reads getComputedStyle on every render while a token is unset",
+   "before": "a partial read re-reads per render (documented: not cached so the next render retries)",
+   "after": "caching the miss would freeze a scope that mounts later at its defaults; the retry IS the feature - not-better"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "bounty-hunter",
+   "checked": "zoomAt vs clampPose at the bounds (probe, fixed); keyboard +/- vs a running fly (fixed); gesture down/up/cancel paths and pinch-to-drag handover; levelForZoom jumping 0->2; gate.js bounded() with a non-integer limit (no in-tree caller, not raised)"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "FLY_EASE/DEFAULT_EASE/--dk-ease and two bezier parsers (fixed); samePlace vs sameFocus (pinned); inject vs hands.js vs catalog.validate unknown-name reason (fixed); gate.js REFUSAL_REASONS vs ERROR_REASONS (unchanged, parity test untouched)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "inject.js handle/call/lateFrom failure shapes (coded, f3b82fd); handler throw stays uncoded in-band; useCameraRig capture/release try-catch; flyTo exactly-one of onDone/onCancel"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "inject.js install() silent catch (deliberate, ADR 0008: no bridge = zero tools, protocol.md 'No bridge'); bridge.rs reads reason only for timeout; desktop result rows drop the new reasons (carded B)"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "inject.js check never stricter than check_schema (code points, int-only limits, Python ==, hasOwn); include_str! of inject.js into the desktop build; CameraRig/SemanticZoomOptions additions vs every in-tree consumer (root typecheck)"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "useTokens partial-read retry (rejected); per-wheel getBoundingClientRect in zoomBy (one read per event, no write between in the hook; left); useEcho one layout read per flight"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "semantic-zoom callback API without the frame (R4-5, fixed); flyTo/reset/Home behaviour; atlas KIT-GAPS W1 frame-change notification (not built, noted)"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "overlay focus return when the fallback arrives in the same commit (fixed); first-flight echo budget (fixed); useLevelFlight armed/unclaimed self-settle; Echo animationend vs timeout race"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "index.ts ../three/nav claim (fixed); inject.js header 'decides nothing' and protocol.md Requests/Timeouts reason sentences (updated with the fixes); desktop CallReply comment (carded)"
+  },
+  {
+   "key": "accessibility-checker",
+   "checked": "rig keyboard ownership: fields, used keys, Ctrl/Meta/Alt (fixed); scene accessible name (consumers label it: template aria-label, atlas role=application + label); Echo aria-hidden + inert; useRoving walls and preventDefault only on a move"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "inject.test.js fixed sleeps (fixed); samePlace/sameFocus pin (added); semantic drive decision had no test (cameraMove extracted); validator corpus pinned one-sided (carded B)"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "inject.js input validation at dispatch (fixed); frame/origin guards on the message listener; polyfill registerTool guards; fence/neutralise in gate.js (unchanged, pinned by parity test)"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "design-tokens deviation camera.ts:80 (fixed 6bb1765); mcp-tools deviation inject.js:98/116/129 (fixed f3b82fd, c73569c); canvas-graph pointer deviation useCameraRig:459 (already fixed by the challenge run's gesture.ts); viewport-transform clamp-in-the-authority (fixed ea815f2)"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "protocol.md Requests and Timeouts (updated with both bridge fixes); demo-kit README zoomAt/useCameraRig/useSemanticZoom signatures (updated); docs/kit-camera-contract.md Deviations (stabilize note added)"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "node ESM value-import rule shaping module boundaries: easing moved to tokens.ts (import-free) rather than a cross import; cameraMove pure in semantic.ts beside levelForZoom"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "bridge wire format: additive `reason` field (bridge.rs, lib/bridge.ts CallReply reason?: string, hands.ts) - no reader breaks"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "hand-kept lists: KEYWORDS easing table, REFUSAL_REASONS, VERDICTS corpus (carded), ARROWS key map"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "bridge devDeps (jsdom, eslint, typescript) unchanged; demo-kit adds no dependency; node 24 type stripping relied on by tests"
+  },
+  {
+   "key": "mobile-specialist",
+   "checked": "pinch path through zoomBy now clamps at the bound (same fix as the wheel); touch-action none in bind; drag slop measured in screen px"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "visual-craft",
+   "why": "the kit ships no stylesheet and Echo has no visual of its own; looks are the consumer's"
+  },
+  {
+   "key": "ui-perfectionist",
+   "why": "no CSS or spacing in these paths; the fly's curve and clock are covered under parity (tokens)"
+  },
+  {
+   "key": "onboarding-designer",
+   "why": "a library and a page script; no first-run surface"
+  },
+  {
+   "key": "feature-scout",
+   "why": "stabilize strategy; URL-held levels is the excluded direction card"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "stabilize strategy"
+  },
+  {
+   "key": "business-strategist",
+   "why": "no business surface"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "no billing surface"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no sharing surface"
+  },
+  {
+   "key": "analytics-planner",
+   "why": "the kit and the bridge emit no product events by design"
+  },
+  {
+   "key": "devops-optimizer",
+   "why": "no pipeline config in these paths (the flake fix is test code, under test-strategist)"
+  }
+ ],
+ "findings": 16,
+ "lanes": "A:12/B:3/C:0",
+ "fp": 0,
+ "gates": {
+  "pnpm --filter @athena/bridge typecheck": 0,
+  "pnpm --filter @athena/bridge lint": 0,
+  "pnpm --filter @athena/bridge test (29 pass)": 0,
+  "pnpm --filter @athena/demo-kit typecheck": 0,
+  "pnpm --filter @athena/demo-kit lint": 0,
+  "pnpm --filter @athena/demo-kit test (162 pass)": 0,
+  "pnpm typecheck (root)": 0,
+  "pnpm --filter hirelane test (barrel consumer, after 6bb1765)": 0,
+  "inject.test.js x60 under 72-thread CPU load (after 364eb03)": 0
+ },
+ "leads": [
+  {
+   "ts": "2026-10-16T00:00:00Z",
+   "bundle": "software-engineering",
+   "nearest": "canvas-accessibility",
+   "kind": "technique",
+   "claim": "When a canvas or camera binds its keyboard handler on the container, decline any key that is already defaultPrevented, carries Ctrl/Meta/Alt, or targets an editable descendant, because the container hears every key typed inside it and otherwise eats text input, double-handles a child's roving key and swallows the browser's page zoom.",
+   "because": "cab6dd1: probe showed '-' typed in a field zoomed the camera and never reached the field, a roving list's arrow also orbited, Ctrl+= was prevented; an atlas surface had already worked around it with `event.target !== canvas`",
+   "confidence": "medium",
+   "from": "scan-sweep@4.6.1"
+  },
+  {
+   "ts": "2026-10-16T00:00:00Z",
+   "bundle": "software-engineering",
+   "nearest": "modal-stack",
+   "kind": "technique",
+   "claim": "When an overlay's focus restore is deferred to a later frame, resolve the fallback target (and the invoker's connectivity) inside that frame, not at teardown, because the surface beneath can rebuild the landmark between teardown and restore and a teardown-time lookup answers nothing.",
+   "because": "26f8424: probe with the origin card re-created by an effect of the closing commit dropped focus to the body; resolving in the frame focused the card",
+   "confidence": "medium",
+   "from": "scan-sweep@4.6.1"
+  }
+ ],
+ "degraded": false,
+ "note": "12 built incl. all 6 assigned; 3 B cards; nothing seen in a browser",
+ "notes": "page-bridge (paired, 6 files + protocol.md): built 364eb03 (flake), f3b82fd (reason codes), c73569c (input validation); lenses over it: parity (hands.js/catalog unknown_ref pair), security (dispatch validation), error-handler (coded refusals vs in-band handler fault), observability (silent install catch is ADR 0008, not raised), test-strategist (fixed sleeps), copy/doc (protocol.md updated twice); no visual/a11y surface. REFUSAL_REASONS unchanged: both new codes are existing members, so tests/test_refusal_parity.py and apps/desktop plain.ts were not touched; the desktop follow-through (CallReply comment, execute.ts reason, e2e page mimic) is carded B for the desktop owner. Out-of-scope touches: none outside the write set except docs/kit-camera-contract.md (Deviations note, under the lock, ca18d05) and examples/demo-kit/README.md (coupled signatures). Probes (react-dom over jsdom with a resolve hook, jsdom borrowed from packages/athena-bridge) live in scratch only. Registry: mcp-tools digest in .ai/registry-map.json (afba7a2) differs from index.json (bf4c5f0, revision 32 vs 31): the page-bridge deviation verdict is one revision stale; both its halves are now fixed, so /conform should re-judge it. Not built, noted: atlas KIT-GAPS W1 (rig frame-change notification in subscribe) - larger than R4-5. No sibling reds seen in my gates; apps/desktop and examples/atlas commits from other agents landed in between. Findings 16 = 12 built + 3 B + 1 rejected (the six assigned items counted). Consult line: {bundle: software-engineering, subjects: [canvas-graph, design-tokens, mcp-tools, modal-stack], techniques: [viewport-transform, canvas-accessibility, cross-language-token-parity, tool-schema-design, focus-and-scroll-containment], deviations: 5}."
+}

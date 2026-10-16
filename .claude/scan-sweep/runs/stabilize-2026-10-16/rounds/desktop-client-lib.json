@@ -1,0 +1,62 @@
+{
+ "context": "desktop-client-lib",
+ "files_read": 31,
+ "loc": 4900,
+ "registry": "software-engineering/ipc-contract, software-engineering/mcp-tools, software-engineering/voice-io, software-engineering/multi-provider-gateway-plane",
+ "techniques": ["command-registration", "drift-gates", "generated-type-contracts"],
+ "deviations": 3,
+ "assigned": [
+  {"title": "plain.ts has no sentence for approval_spent, and the plain.test.ts REASONS list is not pinned to gate.js REFUSAL_REASONS", "verdict": "built a4075a3"},
+  {"title": "events.ts mirrors contracts/channel.py by hand, with no parity test", "verdict": "built f5dc0ff (premise partly true: tests/contracts/test_channel.py already pinned TRANSCRIPT_OUTCOMES and VoiceTranscript; the other ten events, EventKind, FAMILIES and DecisionOption had nothing)"},
+  {"title": "companion/tools.ts toolRows merges hands without withHands' tabs_read rule", "verdict": "built 29443fb (third site, src/lib/execute.ts isReadCall, backlogged B: outside the write set)"},
+  {"title": "Tauri command names live in four hand-kept lists (build.rs, lib.rs, capabilities, ipc), with no parity test", "verdict": "built de1369c (D==R, P subset of R, I subset of R and granted, R-I a named loan; no set mismatch, so no Rust or capability edit). The per-window gap the set check cannot see is backlogged C (tabs_focus, daemon_restart) and B (captures_sweep); athena_snap_to idle is backlogged C"}
+ ],
+ "built": [
+  {"sha": "de1369c", "title": "The shell's command names are one checked set across build.rs, lib.rs, the capabilities and the calls", "lens": "parity-auditor", "red_before": "commands.test.ts seeded: hands_describe dropped from R and the loan list emptied -> 4 of 6 red", "after": "6 of 6 green on the real tree; 28 declared == 28 registered; 1 idle loan"},
+  {"sha": "a4075a3", "title": "A spent approval has its own plain sentence, and the reasons the test walks are the gate's own list", "lens": "copy-auditor", "red_before": "plain.test.ts: REFUSAL_REASONS - REASONS = [approval_spent]; plainFailure(approval_spent) was the catch-all -> 3 red", "after": "9 of 9; 0 gate reasons fall to the catch-all"},
+  {"sha": "29443fb", "title": "Her tool rows are built from the manifest's own list, so a page's tabs_read is dropped there too", "lens": "parity-auditor", "red_before": "companion/tools.test.ts: rows showed the page's tabs_read at tier 1 and hid the hand; order disagreed with withHands -> 2 red", "after": "2 of 2, existing toolRows cases green"},
+  {"sha": "f5dc0ff", "title": "The panel's channel events are held to channel.py field for field, family for family", "lens": "parity-auditor", "red_before": "events.test.ts seeded on events.ts: rounds dropped, capture_id non-null, voice.stopped out of FAMILIES -> 3 of 6 red; capture_id alone -> nullability case red", "after": "6 of 6 green; mirror agrees today"},
+  {"sha": "b21d404", "title": "A frame subscriber that throws is dropped and logged, and the window's other motion keeps running", "lens": "error-handler", "red_before": "motion.test.ts: tick threw 'a broken meter' out of the frame, loop left unscheduled", "after": "no throw; other subscriber runs frames 1 and 2; one error logged; perf scenes pass except chores (pre-existing driver break)"},
+  {"sha": "87f602d", "title": "A daemon stream the panel stops reading early is cancelled, not left open and unread", "lens": "error-handler", "red_before": "api.test.ts: break after first of two frames -> cancel called 0 times", "after": "cancel 1, body unlocked; self-ended stream cancel 0; errored stream rejects with its own error"},
+  {"sha": "f1ff76d", "title": "Reading an app id back to its host returns null for an escape that is not a code point, instead of throwing", "lens": "bounty-hunter", "red_before": "manifest.test.ts: RangeError Invalid code point 1114112", "after": "null for out-of-range, partial-hex, empty escapes; round-trip case green"},
+  {"sha": "620d4f0", "title": "The store tables, the daemon status and the tab the panel restates are held to the Rust that defines them", "lens": "test-strategist", "red_before": "rust-mirrors.test.ts seeded on ipc.ts/daemon.ts: captures, Tab.nav, brain, 'stopped' dropped -> 3 of 3 red", "after": "3 of 3 green"},
+  {"sha": "6eb9aa6", "title": "A hands catalogue the shell could not give is logged, not swallowed", "lens": "observability-auditor", "red_before": "hands.test.ts: 0 error lines naming hands_list after a rejected fetch", "after": "exactly one '[athena] hands_list: ...'; next start fetches the nine hands"}
+ ],
+ "rejected": [],
+ "lens_keys": [
+  {"key": "parity-auditor", "checked": "events.ts vs channel.py; STORE_TABLES/DaemonStatus/Tab vs Rust; toolRows vs withHands vs isHandCall vs execute.ts isReadCall; command lists D/R/P/I and per-window grants vs athena.tsx-started stores"},
+  {"key": "bounty-hunter", "checked": "manifest.ts hostOfDerivedId escape decoding (RangeError), derivedIdOf injectivity, time.ts parseStamp zone/fraction cases, url.ts scheme-then-port"},
+  {"key": "error-handler", "checked": "motion.ts frame loop throw path; api.ts sseFrames early exit and errored body; api.ts refusal() non-JSON; companion.ts pttHandler press failure and release ordering"},
+  {"key": "observability-auditor", "checked": "hands.ts startHands bare catch (fixed), sweepCaptures logs, halo invoke logging, companion.ts drag/ptt console.error paths"},
+  {"key": "risk-assessor", "checked": "sseFrames cancel change against adopt-client and intake-client consumers (full suite green); toolRows switch to withHands marker for tier/class"},
+  {"key": "code-optimizer", "checked": "events.ts familyOf/KNOWN, hands.ts isHandCall/tierOf scans, motion.ts per-frame Map copy; nothing measurable"},
+  {"key": "test-strategist", "checked": "hand-kept lists without tests: REASONS, STORE_TABLES, DaemonStatus, Tab, events.ts, command lists; ipc.test.ts type-only assertion"},
+  {"key": "security-auditor", "checked": "url.ts passes any scheme to tabs_create/navigate (Rust Url::parse accepts it; documented, user-typed only); daemon token only in ui_emit payload; page.json grants bridge_reply alone (now pinned)"},
+  {"key": "copy-auditor", "checked": "plain.ts refusal and failure sentences per gate reason (approval_spent fixed; focus remedy backlogged), engines.ts remedies against JARGON"},
+  {"key": "state-coverage", "checked": "engines.ts engineLine null/problem/checking/unreported states; DaemonHealth four states; plainFailure per reason"},
+  {"key": "dead-code-detector", "checked": "R - I over registered commands: athena_snap_to has 0 callers (git grep); handTools still consumed by execute.ts"},
+  {"key": "registry-conformance", "checked": "ipc-contract command-registration D/R/P/I sets and per-surface P; drift-gates on hand-kept mirrors; mcp-tools deviation at bridge.ts:83 already recorded"}
+ ],
+ "lens_no_surface": [
+  {"key": "ux-reviewer", "why": "lib context renders nothing; flows live in companion/ and scenes/"},
+  {"key": "visual-craft", "why": "no CSS or markup in these files"},
+  {"key": "accessibility-checker", "why": "no rendered elements; drag keyboard alternative belongs to the companion views (noted on the snap_to card)"},
+  {"key": "ui-perfectionist", "why": "no UI surface; motion.ts touched only for the loop's error path"},
+  {"key": "mobile-specialist", "why": "desktop Tauri client library, no viewport"}
+ ],
+ "findings": 14,
+ "lanes": "A:9/B:3/C:2",
+ "fp": 0,
+ "gates": {
+  "pnpm typecheck (apps/desktop)": 0,
+  "pnpm lint (apps/desktop)": 0,
+  "pnpm test (apps/desktop, 1501 passed)": 0,
+  "pnpm perf:all (apps/desktop)": 1,
+  "pnpm perf:mind (apps/desktop)": 0,
+  "uv run pytest tests/contracts/test_channel.py": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "4 assigned built; 5 more A; per-window ACL gaps carded",
+ "notes": "perf:all exits 1 at the chores scene before measuring: scripts/perf-chores.drive.mjs:60 waits for a 'Fit it to me' button that no longer exists in src (pre-existing, chores untouched here); stage, bell, surface, apps, accounts, voice passed in that run and mind passed alone. Highest-impact open item: her window calls tabs_focus and daemon_restart (go-to-tab, retry/use engine on her welcome) and captures_sweep, none granted by capabilities/athena.json - never seen in the real Tauri window; needs a grant-vs-route decision. .ai/consults.jsonl not written (brief forbids .ai/*)."
+}

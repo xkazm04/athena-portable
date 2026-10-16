@@ -1,0 +1,71 @@
+{
+ "context": "atlas-data-and-app",
+ "files_read": 16,
+ "loc": 2208,
+ "registry": "software-engineering/docs-sync, software-engineering/quality-gates, software-engineering/test-harness, software-engineering/design-tokens",
+ "techniques": [
+  "coupled-surface-inventory",
+  "source-as-data-without-the-app",
+  "negative-claims-are-pinned",
+  "gate-liveness",
+  "gate-scope-is-not-report-scope",
+  "unparseable-form-is-a-finding",
+  "token-enforcement"
+ ],
+ "deviations": 8,
+ "assigned": [],
+ "built": [
+  {"sha": "687264d", "title": "Every ADR the model lists is checked against its file in docs/adr, its number and its H1", "lens": "test-strategist", "red_before": "test/data.test.ts ADR case, seeded on a copy of data/adrs.ts (ADR 7 retitled, ADR 12 pointed at 0013): failed 'ADR 7's title is not its H1'", "after": "ADR properties checked against the tree 3 of 3 (was 0 of 3); 25/25 entries match"},
+  {"sha": "ead62ed", "title": "The model draws the window that is built (one scene with depths, her own window), not the deleted module bar", "lens": "copy-auditor", "red_before": "test/data.test.ts 'every entry that says it is built cites a path in the tree': failed on 3 missing citations (C-008 modules/registry.ts, C-009 modules/panel, S-02)", "after": "missing citations 0 (was 3); phrases naming the deleted bar/registry in data/ 0 (was 13); ids unchanged; six ADRs added"},
+  {"sha": "53dbabe", "title": "The lint gate reads data/ instead of ignoring it", "lens": "test-strategist", "red_before": "seeded `export const seeded: any = 1` in a copy of data/adrs.ts passed `eslint .` (exit 0); with the ignore dropped, exit 1", "after": "data/ files linted 7 of 7 (was 0 of 7), 0 problems"},
+  {"sha": "e74cdab", "title": "The token gate checks the token file's own alias layer for a mistyped --at-* token", "lens": "test-strategist", "red_before": "test/check-tokens.test.ts: `--dk-seeded: var(--at-grund)` appended to tokens.css exited 0", "after": "exit 1 'undeclared token --at-grund'; files whose --at-* uses are checked 44 of 44 (was 43)"},
+  {"sha": "a45b53e", "title": "The token gate skips data, design and test only at the app root", "lens": "test-strategist", "red_before": "test/check-tokens.test.ts: `padding: 12px` in components/atlas/data/x.css exited 0", "after": "nested data/design/test folders read 3 of 3 (was 0 of 3); real tree unchanged, 44 files, 0 problems"},
+  {"sha": "10d8d5c", "title": "The page's description names the lane diagram it draws, not the deleted round-5 sheet", "lens": "copy-auditor", "red_before": "probe: 2 claims in app/layout.tsx metadata contradicting the README's opening (no node test can load next/font)", "after": "0 stale claims"},
+  {"sha": "8544587", "title": "The drawn face loads the four weights the stylesheets use, not 900", "lens": "code-optimizer", "red_before": "probe: Chivo weights declared 5, used by any rule 4 (900 unused)", "after": "declared 4, used 4; byte saving not measured (no next build)"},
+  {"sha": "d29ff58", "title": "Header comments name the test file, system count and switchers that exist", "lens": "copy-auditor", "red_before": "probe: 4 stale claims (test/lens.test.ts absent, 'eighteen' systems of 19, 'three exports' of 6, 'no renderer switch')", "after": "0 stale claims"}
+ ],
+ "rejected": [
+  {"title": "COUNTS.planned counts partial components as planned (data/index.ts:222)", "before": "planned 1 = not-built 1; components with status partial: 0", "after": "the same 1 under `status === 'planned'`; no figure moves on this tree, so not-better (latent label only)"}
+ ],
+ "lens_keys": [
+  {"key": "ui-perfectionist", "checked": "app/globals.css (html/body ground, color-scheme), app/layout.tsx font setup: no spacing, motion or transition rules live in this context's CSS; nothing off-scale"},
+  {"key": "bounty-hunter", "checked": "data/index.ts lensFor cache, layerLinks with an unknown layer (-1 depth, empty tally), componentsOfLayer order claim, COUNTS.planned (rejected, latent)"},
+  {"key": "parity-auditor", "checked": "the window rule in data/ vs README 3.5 / ADR 0095 (built ead62ed); lanes workflow.ts and lib.rs copies (card); APP_ID vs ledgerbox athena:app (card); --dk-* aliases vs demo-kit.css hooks (3 JS-read hooks, fine)"},
+  {"key": "error-handler", "checked": "check-tokens.mjs exit paths (exit 1 with list, exit 0 with count); register-free app has no await or fetch; providers.tsx mounts only ToastProvider"},
+  {"key": "observability-auditor", "checked": "check-tokens: a skipped file was silent (built e74cdab, a45b53e); eslint ignore made `eslint data/` say 'all files ignored' with no gate failure (built 53dbabe)"},
+  {"key": "risk-assessor", "checked": "hand-extracted model as a single point of truth for every tool read: no test read the tree (built 687264d, ead62ed); planned status pinned both ways"},
+  {"key": "code-optimizer", "checked": "font weights declared vs used across atlas and demo-kit CSS and TSX (built 8544587); data/index.ts derivations are module-level, lensFor memoised"},
+  {"key": "ux-reviewer", "checked": "app/page.tsx single client tree, providers' one ToastProvider, Mast as the only header (AppShell intentionally unmounted)"},
+  {"key": "visual-craft", "checked": "tokens.css alias layer typo path (built e74cdab); globals.css uses only --at-ground"},
+  {"key": "state-coverage", "checked": "app/ has no error.tsx/global-error.tsx in atlas or any sibling app (card, needs a DOM render instrument)"},
+  {"key": "copy-auditor", "checked": "layout metadata, data blurbs/claims vs README 3.1/3.5, header comments (built ead62ed, 10d8d5c, d29ff58); halo/nebius missing (card)"},
+  {"key": "accessibility-checker", "checked": "layout.tsx <html lang=\"en\">, color-scheme dark declared, fonts display swap with real fallback stacks in tokens; nothing real"},
+  {"key": "test-strategist", "checked": "model.test reads only the hand-kept lists (built data.test citations + ADRs), check-tokens had no liveness test (built check-tokens.test), lint scope (built)"},
+  {"key": "security-auditor", "checked": "next.config.ts (transpilePackages, agentRules off, devIndicators off), no route handlers, no input, no secrets; static page - nothing real"},
+  {"key": "documentation-auditor", "checked": "module headers in data/, lib/constants.ts (built d29ff58)"},
+  {"key": "registry-conformance", "checked": "docs-sync/coupled-surface-inventory and negative-claims-are-pinned against data/ (built); quality-gates/gate-liveness against check-tokens (built)"},
+  {"key": "architecture-analyst", "checked": "data/index.ts as the one derivation (lensFor), edges derived to systems/layers; check-tokens resolves from its own location - nothing real"},
+  {"key": "dependency-auditor", "checked": "package.json pins exact versions; postcss/tailwind configs minimal; no unused dependency found by grep of clsx/lucide-react/motion imports"},
+  {"key": "mobile-specialist", "checked": "layout has Next's default viewport; breakpoints are token-checked by check-tokens rule 4 - nothing in this context's files"},
+  {"key": "tech-debt-tracker", "checked": "APP_ID/APP_VERSION zero consumers (folded into the athena:app card)"},
+  {"key": "devops-optimizer", "checked": "lint chain `eslint . && node design/check-tokens.mjs`; test glob picks up new test files - nothing beyond the built gate fixes"},
+  {"key": "integration-planner", "checked": "athena:app identity publication vs README 3.4 / ADR 0065 (card)"}
+ ],
+ "lens_no_surface": [
+  {"key": "onboarding-designer", "why": "no first-run or setup flow in app shell or data"},
+  {"key": "feature-scout", "why": "stabilize: no forward capability in a static model and app shell"},
+  {"key": "monetization-advisor", "why": "no billing or plan surface"},
+  {"key": "analytics-planner", "why": "a static demo page with no event tracking by design"},
+  {"key": "growth-hacker", "why": "no sharing or invite surface"},
+  {"key": "innovation-catalyst", "why": "stabilize strategy; no AI surface in these files"},
+  {"key": "business-strategist", "why": "no business-value surface in a repo-architecture demo"}
+ ],
+ "findings": 14,
+ "lanes": "A:8/B:5/C:0",
+ "fp": 0,
+ "gates": {"pnpm --filter atlas typecheck": 0, "pnpm --filter atlas lint": 0, "pnpm --filter atlas test": 0},
+ "leads": [],
+ "degraded": false,
+ "note": "8 built; data now matches README 3.5 and the tree; 5 B cards",
+ "notes": "Sibling reds seen mid-round (lanes.chrome/lanes.poses zoom-button cases, lanes.model legend case) were the lanes agent's red-first tests; each was green on the re-run and none touched my paths. B card 1 (seconds unit) needs lanes.css:650 retokened before check-tokens' regex can change; B card 2 needs the lanes node sublabel (workflow.ts:188,191) and lib.rs:4 docstring. Consult: {\"bundle\":\"software-engineering\",\"subjects\":[\"docs-sync\",\"quality-gates\",\"test-harness\",\"design-tokens\"],\"techniques\":[\"coupled-surface-inventory\",\"source-as-data-without-the-app\",\"negative-claims-are-pinned\",\"gate-liveness\",\"gate-scope-is-not-report-scope\",\"unparseable-form-is-a-finding\",\"token-enforcement\"],\"deviations\":8}. No registry lead filed."
+}

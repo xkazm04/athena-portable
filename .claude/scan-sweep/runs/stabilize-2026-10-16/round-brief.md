@@ -98,7 +98,9 @@ gate the fix, take the lock, append the changelog line, commit, release.
 ## Temp files are yours alone
 
 Keep every temp file (messages, logs, probes) in `<scratchpad>/stab/<your context>/` (the
-scratchpad path is in your prompt). Never write a probe, cache or log inside the repo
+scratchpad path is in your prompt). Give a non-Bash program (Python, node, PowerShell, an env
+var) the Windows form `C:\Users\...`; the Bash form `/c/Users/...` read by a Windows program
+becomes `C:\c\Users\...` (wave 1 left a stray tree that way). Never write a probe, cache or log inside the repo
 (`UV_CACHE_DIR`, pytest temp, npm cache all stay outside). Before your last commit,
 `git status --porcelain` must show nothing of yours uncommitted.
 
