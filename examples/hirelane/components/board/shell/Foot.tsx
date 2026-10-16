@@ -25,7 +25,7 @@
  */
 import { useAthenaPresence } from "../presence";
 import type { BdCandidate, BdColumn, BdRole } from "../model";
-import { CAPABILITY_COUNTS, REGISTER } from "../register";
+import { AUTO_BAND, CAPABILITY_COUNTS, REGISTER } from "../register";
 
 export function BoardFoot({
   totals,
@@ -96,7 +96,7 @@ export function BoardFoot({
           <div className="bd-register-body">
             <div className="bd-register-group" data-class="AUTO">
               <p className="bd-class" data-class="AUTO">
-                Auto — reversible, and each writes an undo
+                {AUTO_BAND}
               </p>
               <ul>
                 {REGISTER.filter((t) => t.auto).map((tool) => (
