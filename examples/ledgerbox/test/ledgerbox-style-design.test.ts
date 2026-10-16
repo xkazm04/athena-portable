@@ -205,6 +205,58 @@ test("every --ln-* token the TypeScript names is declared in the sheet", () => {
   );
 });
 
+/* -------------------------------------------------------------- targets */
+
+/** The parts in cascade order, as `style/index.css` imports them. */
+const ORDER = [...readFileSync(join(STYLE, "index.css"), "utf8").matchAll(/@import "\.\/([^"]+)"/g)].map((m) => m[1]!);
+
+/** Rules in cascade order with the at-rule each sits in (`null` at the top level). */
+function cascade(): { selector: string; body: string; at: string | null }[] {
+  const out: { selector: string; body: string; at: string | null }[] = [];
+  for (const name of ORDER) {
+    const css = part(name);
+    const stack: string[] = [];
+    let start = 0;
+    for (let i = 0; i < css.length; i++) {
+      if (css[i] === "{") {
+        stack.push(css.slice(start, i).trim());
+        start = i + 1;
+      } else if (css[i] === "}") {
+        const prelude = stack.pop() ?? "";
+        if (prelude && !prelude.startsWith("@")) {
+          out.push({ selector: prelude, body: css.slice(start, i), at: stack.findLast((p) => p.startsWith("@")) ?? null });
+        }
+        start = i + 1;
+      }
+    }
+  }
+  return out;
+}
+
+test("at phone width every control a person presses is a 44px target", () => {
+  // The legend's chips are 30px on a desktop footer and the narrow step gives them their 44px back,
+  // which is the sheet's own argument. The ancestor crumb beside them stayed 30px on a phone, and
+  // the card's and the decision dialog's close stayed 40px at every width, beside 44px twins.
+  const buttons = new Set(
+    [...RENDERERS.matchAll(/<(?:motion\.)?button\b[^>]*?className="([^"]+)"/g)].flatMap((m) => m[1]!.split(/\s+/)),
+  );
+  // Data, not chrome: a mark is the invoice drawn to scale and a node is a whole card.
+  for (const data of ["ln-mark", "ln-node"]) buttons.delete(data);
+  assert.ok(buttons.has("ln-close") && buttons.has("ln-back"), `read ${[...buttons].join(", ")}`);
+
+  const narrow = cascade().filter(({ at }) => at === null || /ln-shell \(max-width: (42|58)rem\)/.test(at));
+  const short: string[] = [];
+  for (const cls of buttons) {
+    let size: string | null = null;
+    for (const { selector, body } of narrow) {
+      if (!selector.split(",").some((s) => new RegExp(`\\.${cls}$`).test(s.trim()))) continue;
+      size = /min-block-size:\s*([0-9.]+px)/.exec(body)?.[1] ?? size;
+    }
+    if (size !== null && parseFloat(size) < 44) short.push(`.${cls}: ${size}`);
+  }
+  assert.deepEqual(short, [], "under 44px at the narrow step");
+});
+
 test("text in the state's colour reads the ink, never the swatch", () => {
   const swatchText: string[] = [];
   for (const [name, css] of SHEET) {

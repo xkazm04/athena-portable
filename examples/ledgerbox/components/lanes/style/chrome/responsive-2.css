@@ -42,6 +42,11 @@
     min-block-size: 44px;
   }
 
+  /* The ancestor crumb beside them is a control too, and gets the same 44px. */
+  .ln-crumb-up {
+    min-block-size: 44px;
+  }
+
   .ln-legend-set {
     min-inline-size: 0;
     flex-wrap: nowrap;

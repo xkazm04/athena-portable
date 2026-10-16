@@ -65,8 +65,9 @@
   border: 1px solid var(--ln-rule);
   border-radius: var(--ln-radius);
   color: var(--ln-mute);
-  min-block-size: 40px;
-  min-inline-size: 40px;
+  /* The 44px every other control on the card keeps; it was 40 beside them. */
+  min-block-size: 44px;
+  min-inline-size: 44px;
   cursor: pointer;
 }
 
