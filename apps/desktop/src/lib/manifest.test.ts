@@ -1,11 +1,14 @@
 /**
  * The catalog id of a tab — README section 3.3, ADR 0065.
  */
+import { readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
 import { expect, test } from "vitest";
 
 import { toolRows } from "@/companion/tools";
 import type { BridgeTool } from "@/lib/bridge";
-import { catalogIdOf, derivedIdOf, hostOfDerivedId, manifestBodyOf } from "@/lib/manifest";
+import { catalogIdOf, derivedIdOf, hostOfDerivedId, manifestBodyOf, registrable } from "@/lib/manifest";
 import type { TabTools } from "@/stores/tools";
 
 const SLUG = /^[a-zA-Z0-9_-]+$/;
@@ -62,6 +65,30 @@ test("an origin the daemon would refuse is not offered", () => {
   expect(
     manifestBodyOf({ origin: "http://example.test", appId: null, appVersion: null, transport: null, tools }),
   ).toBeNull();
+});
+
+/** One of the two origin tuples in the contract test, so both sides answer the same table. */
+function pythonOrigins(name: string): string[] {
+  const path = resolve(__dirname, "../../../../tests/contracts/test_manifest.py");
+  const text = readFileSync(path, "utf8").replace(/#[^\n]*/g, "");
+  const block = new RegExp(String.raw`^${name} = \(([\s\S]*?)^\)`, "m").exec(text)?.[1] ?? "";
+  return [...block.matchAll(/"([^"]*)"/g)].map((m) => m[1]);
+}
+
+test("the page origin table is the contract's, row for row (ADR 0119)", () => {
+  const admitted = pythonOrigins("PAGE_ORIGINS_ADMITTED");
+  const refused = pythonOrigins("PAGE_ORIGINS_REFUSED");
+  expect(admitted).toContain("http://127.0.0.1:3001");
+  expect(refused).toContain("http://localhost.evil.example");
+  for (const origin of admitted) expect(registrable(origin), origin).toBe(true);
+  for (const origin of refused) expect(registrable(origin), origin).toBe(false);
+});
+
+test("a plain http host that only starts with localhost is not offered", () => {
+  const tools = [{ name: "read", title: null, description: "", inputSchema: {}, annotations: null, athena: null }];
+  const offer = (origin: string) => manifestBodyOf({ origin, appId: null, appVersion: null, transport: null, tools });
+  expect(offer("http://localhost.evil.example")).toBeNull();
+  expect(offer("http://127.0.0.1:3001")?.page_origin).toBe("http://127.0.0.1:3001");
 });
 
 test("the companion's rows use the same id", () => {

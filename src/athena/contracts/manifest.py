@@ -15,11 +15,13 @@ from __future__ import annotations
 
 from dataclasses import dataclass, field
 from typing import Any, Literal
+from urllib.parse import urlsplit
 
 from athena.contracts.registry import ToolClass, ToolOrigin, is_origin, parse_origin
 
 __all__ = [
     "HAND_RUNNER",
+    "LOOPBACK_PAGE_HOSTS",
     "MAX_PROPERTIES_PER_TOOL",
     "MAX_TOOLS_PER_MANIFEST",
     "HostManifest",
@@ -28,6 +30,7 @@ __all__ = [
     "StateReadable",
     "ToolOrigin",
     "is_origin",
+    "page_origin_admitted",
     "params_schema_problems",
     "parse_origin",
 ]
@@ -46,6 +49,28 @@ SIDE_EFFECTS: tuple[str, ...] = ("none", "internal", "external")
 #: each cap stands at more than twice that.
 MAX_TOOLS_PER_MANIFEST = 96
 MAX_PROPERTIES_PER_TOOL = 24
+
+#: The hosts a page may register from over plain ``http``: this machine, by exact name (ADR 0119).
+#: ``apps/desktop/src/lib/manifest.ts`` spells the same list; a parity test holds the two.
+LOOPBACK_PAGE_HOSTS: tuple[str, ...] = ("localhost", "127.0.0.1")
+
+
+def page_origin_admitted(origin: str) -> bool:
+    """Whether a page at ``origin`` may register: ``https`` with a host, or ``http`` on loopback.
+
+    Read off the parsed origin, never off a prefix of the string. A prefix test admits
+    ``http://localhost.evil.example``: a remote page over plain http, which a network attacker
+    can rewrite in transit, is the one class this rule exists to refuse. A port that is not a
+    port is refused too, as the browser's own URL parser refuses it.
+    """
+    try:
+        parts = urlsplit(origin)
+        _ = parts.port
+    except ValueError:
+        return False
+    if parts.scheme == "https":
+        return bool(parts.hostname)
+    return parts.scheme == "http" and parts.hostname in LOOPBACK_PAGE_HOSTS
 
 
 def params_schema_problems(schema: object) -> list[str]:
@@ -209,14 +234,15 @@ class HostManifest:
         if self.origin_kind not in ("host", "connector"):
             problems.append(f"origin_kind must be 'host' or 'connector': {self.origin_kind!r}")
 
-        if self.origin_kind == "host" and self.page_origin:
-            ok = self.page_origin.startswith("https://") or self.page_origin.startswith(
-                "http://localhost"
+        if (
+            self.origin_kind == "host"
+            and self.page_origin
+            and not page_origin_admitted(self.page_origin)
+        ):
+            problems.append(
+                "page_origin must be https with a host, or http on "
+                f"{' or '.join(LOOPBACK_PAGE_HOSTS)}: {self.page_origin!r}"
             )
-            if not ok:
-                problems.append(
-                    f"page_origin must be https (or http://localhost): {self.page_origin!r}"
-                )
 
         if len(self.tools) > MAX_TOOLS_PER_MANIFEST:
             problems.append(

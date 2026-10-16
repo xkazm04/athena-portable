@@ -13,9 +13,11 @@ import pytest
 from athena.contracts import HostManifest, HostTool, StateReadable, ToolClass
 from athena.contracts.manifest import (
     HAND_RUNNER,
+    LOOPBACK_PAGE_HOSTS,
     MAX_PROPERTIES_PER_TOOL,
     MAX_TOOLS_PER_MANIFEST,
     SIDE_EFFECTS,
+    page_origin_admitted,
     params_schema_problems,
 )
 
@@ -233,3 +235,45 @@ def test_the_side_effects_vocabulary_is_the_one_the_bridge_reads() -> None:
     body = _exported("packages/athena-bridge/gate.js", "SIDE_EFFECTS")
     assert tuple(re.findall(r'"([^"]*)"', body)) == SIDE_EFFECTS
     assert "Object.freeze([" in body
+
+
+# --- where a page may register from (README §3.3, ADR 0119) ------------------------------------
+
+#: One accept/refuse table for the page origin rule. ``apps/desktop/src/lib/manifest.test.ts``
+#: reads these two tuples out of this file and holds ``registrable`` to every row, so a row added
+#: here is a row both sides answer.
+PAGE_ORIGINS_ADMITTED = (
+    "http://localhost:3001",
+    "http://127.0.0.1:3001",
+    "https://ledger.test",
+)
+PAGE_ORIGINS_REFUSED = (
+    "http://localhost.evil.example",
+    "http://localhostile.net",
+    "https://",
+    "http://example.com",
+    "http://localhost:99999",
+)
+
+
+@pytest.mark.parametrize("origin", PAGE_ORIGINS_ADMITTED)
+def test_a_page_on_tls_or_this_machine_may_register(origin: str) -> None:
+    assert page_origin_admitted(origin)
+    assert a_manifest(page_origin=origin).validate() == []
+
+
+@pytest.mark.parametrize("origin", PAGE_ORIGINS_REFUSED)
+def test_a_plain_http_host_that_only_starts_with_localhost_is_refused(origin: str) -> None:
+    """The rule is read off the parsed host, never off a prefix of the string: a prefix admits
+    ``http://localhost.evil.example``, a page a network attacker can rewrite in transit."""
+    assert not page_origin_admitted(origin)
+    assert any("page_origin" in problem for problem in a_manifest(page_origin=origin).validate())
+
+
+def test_the_loopback_hosts_are_the_ones_the_desktop_offers() -> None:
+    """``lib/manifest.ts`` decides which tabs are offered with its own copy of the host list; a
+    host on one side only is a manifest the shell offers and the daemon refuses, or the reverse."""
+    declared = re.findall(
+        r'"([^"]*)"', _exported("apps/desktop/src/lib/manifest.ts", "LOOPBACK_PAGE_HOSTS")
+    )
+    assert tuple(declared) == LOOPBACK_PAGE_HOSTS

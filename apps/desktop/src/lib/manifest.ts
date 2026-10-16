@@ -126,9 +126,27 @@ export interface ManifestSource {
   tools: readonly BridgeTool[];
 }
 
-/** The daemon refuses any other `page_origin` (`HostManifest.validate`), so none is offered. */
-function registrable(origin: string): boolean {
-  return origin.startsWith("https://") || origin.startsWith("http://localhost");
+/**
+ * The hosts a page may register from over plain `http`: this machine, by exact name (ADR 0119).
+ * `LOOPBACK_PAGE_HOSTS` in `src/athena/contracts/manifest.py` is the same list, held by a parity test.
+ */
+export const LOOPBACK_PAGE_HOSTS = Object.freeze(["localhost", "127.0.0.1"]);
+
+/**
+ * Whether the daemon would take a manifest from `origin` (`page_origin_admitted`, which
+ * `HostManifest.validate` applies): `https` with a host, or `http` on this machine. Read off the
+ * parsed host, never a prefix of the string, which would admit `http://localhost.evil.example`.
+ * Nothing else is offered.
+ */
+export function registrable(origin: string): boolean {
+  let url: URL;
+  try {
+    url = new URL(origin);
+  } catch {
+    return false;
+  }
+  if (url.protocol === "https:") return url.hostname !== "";
+  return url.protocol === "http:" && LOOPBACK_PAGE_HOSTS.includes(url.hostname);
 }
 
 /**
