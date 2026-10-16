@@ -183,7 +183,7 @@ export function Slide({
         <span className="bd-led-rows">
           {comparable ? (
             <span className="bd-led-head">
-              <span>against the {medians.size === 0 ? 0 : column.scored} scored here</span>
+              <span>against the {column.scored} scored here</span>
             </span>
           ) : null}
           {rows.map(({ score, delta, isGap }) => (
