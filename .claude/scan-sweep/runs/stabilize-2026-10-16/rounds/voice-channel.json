@@ -1,0 +1,221 @@
+{
+ "context": "voice-channel",
+ "files_read": 24,
+ "loc": 8370,
+ "registry": "software-engineering/voice-io, software-engineering/test-harness",
+ "techniques": [
+  "engine-abstraction",
+  "voice-setup-experience",
+  "speech-ready-text",
+  "render-acceptance",
+  "on-device-vs-cloud"
+ ],
+ "deviations": 3,
+ "assigned": [
+  {
+   "title": "home.dry_check caches a broken verdict per exe size and mtime forever",
+   "verdict": "built af21c76"
+  },
+  {
+   "title": "VoiceSession.say and the typed text frame path have no desktop caller",
+   "verdict": "backlogged C (VoiceSession.say half false: internal speaker queue, callers gateway.py:947 and :1015; the server text frame is live and tested; apps/desktop useVoice.say has 0 production callers, a desktop direction call)"
+  },
+  {
+   "title": "A resumable, staged Kokoro install (install.py)",
+   "verdict": "backlogged B (M, needs a Range-capable test server to measure; not Lane A)"
+  },
+  {
+   "title": "Flake: test_a_session_remembers_the_newest_cards_and_a_bare_yes_answers_the_newest (fixture race)",
+   "verdict": "built b6e88dc"
+  }
+ ],
+ "built": [
+  {
+   "sha": "b6e88dc",
+   "title": "the newest-cards test reads the session of the one socket it opens",
+   "lens": "test-strategist",
+   "red_before": "unused client fixture's session built after the __init__ patch: 3/20 failed under a 16-process CPU burn, 0/20 idle; a 0.3 s handler-delay probe plugin made it 1/1 red (ValueError: too many values to unpack)",
+   "after": "0/20 and 0/12 under the burn; the delay probe 1/1 green"
+  },
+  {
+   "sha": "af21c76",
+   "title": "a broken engine verdict is asked again after a minute",
+   "lens": "error-handler",
+   "red_before": "test_a_broken_verdict_is_looked_at_again_once_its_window_has_passed: third call returned the cached 'exited with 3' after the executable began exiting 0",
+   "after": "third call None, one more spawn; inside the 60 s window no spawn"
+  },
+  {
+   "sha": "bb23702",
+   "title": "a bug in an install run or a Kokoro render thread leaves its traceback",
+   "lens": "observability-auditor",
+   "red_before": "0 log records for 2 seeded bugs in an install run (run + refresh) and 0 for 1 in a render thread",
+   "after": "2 and 1 records, each with exc_info of the seeded type; an engine refusal still logs 0"
+  },
+  {
+   "sha": "851745b",
+   "title": "a TTS line the speech door lengthens is held to its cap again",
+   "lens": "bounty-hunter",
+   "red_before": "test_case5b: a 1200-char parsed line left the door at 1359 chars > kokoro.MAX_CHARS 1264; probe: 3 of 4 cap-length lines over the limit",
+   "after": "1218/1216/1216/1200 chars, 0 of 4 over, the cut ones announced"
+  },
+  {
+   "sha": "889bc39",
+   "title": "install phases, running set and preview bound pinned to the desktop copies",
+   "lens": "parity-auditor",
+   "red_before": "0 of 4 mirrored values under a parity test; seeded drifts in a copy of voice-setup.ts (ACTIVE_INSTALL minus extracting, InstallPhase plus verifying, PREVIEW_MAX_CHARS 1000) each went red",
+   "after": "4 of 4 pinned; unmutated copy green"
+  },
+  {
+   "sha": "4244aa2",
+   "title": "the WebSocket module stops naming an athena voice client that does not exist",
+   "lens": "copy-auditor",
+   "red_before": "probe: git grep 'athena voice' 1 hit; the CLI has no voice subcommand",
+   "after": "0 hits"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "An invalid-UTF-8 text frame closes 1002 where RFC 6455 says 1007",
+   "before": "close 1002 (ws.py:181-184 raises WebSocketError -> gateway 1002)",
+   "after": "close 1007; no client in the tree can send it (the browser WebSocket API and ws.connect both encode UTF-8), so no user-visible figure moves: not-better"
+  },
+  {
+   "title": "GET /voice/config unseals the provider key on every poll",
+   "before": "1-2 unseal calls per view (compose -> listener when stt is openai; engines -> probe_openai), read from config.py:233-264,357",
+   "after": "a cached key would save one local DPAPI call (well under 1 ms) per poll and add a staleness path after set_key/delete_key: not-better"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "bounty-hunter",
+   "checked": "speech door vs kokoro MAX_CHARS (built); gateway _start/_stop/_audio/_control state paths; _answer execute rows; kokoro _Render cancel race"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "INSTALL_STATES/InstallPhase/RUNNING/TEXT_CAP vs voice-setup.ts (built); TEXT_CAP vs TTS_CAP (pinned in 851745b); kokoro vs whisper engine-skip in install (card); _installed vs probe (card)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "dry_check verdict cache (built); _HomeLock stale takeover after a killed daemon (card); _fetch/_download error doors; seal unseal None"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "every except Exception in channels/voice: gateway logs (3 sites), install._run and on_done and kokoro._Render did not (built)"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "install pins/size/deadline/lock; stale lock window 1 h; dry_check TTL cost (one spawn/min while broken) weighed in af21c76"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "_xor_mask, BufferedTranscriber._peak, _fetch per-chunk _set, unseal per view (rejected), _await_results 0.25 s wait"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "install retry cost after a failure (card); reasons the studio shows per probe state"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "install phases incl. not_needed for a broken engine (probe reproduced, card); utterance outcomes too_short/silent/no_words; refused utterance and empty slot"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "every person-facing sentence in config/home/kokoro/whisper/install/gateway; ws.py athena voice claim (built); unreadable key sentence (card)"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "fixture races in test_voice_gateway (client fixture + class patches: one found and fixed, _served tests clean); dry_check had no direct test (added)"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "archive extraction (_safe_parts, _inside, symlink/hardlink members skipped), install URL pins, key handling and repr, _frame_label never logs content, ws frame/fragment ceilings"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "voice-io map row: both recorded deviations (tts.py:41 markup door, commands.py:91 silence) are fixed on this tree by ADR 0114 and 0110; voice-setup-experience rule 2 (resumable step) deviation carded"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "channels -> daemon.routes and harness imports; gateway three-thread model; studio/gateway swap seam: nothing real"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "INSTALL_STATES unused twin (now pinned), kokoro.TEXT_CAP typed copy of TTS_CAP (now pinned)"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "module docstrings vs behaviour: ws.py (fixed), home.py cache rule (updated), tts.py (updated), __init__ file list"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "stdlib-only rule in channels/voice: urllib, tarfile, zipfile, ctypes only; no new imports"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "Personas shared home (PERSONAS_HOME, overrides, .install.lock shape) - lock takeover card"
+  },
+  {
+   "key": "devops-optimizer",
+   "checked": "gate shape for this context: tests/channels run in one process; fake engines spawn sys.executable; no change warranted"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "visual-craft",
+   "why": "Python transport and engine adapters; no rendered surface"
+  },
+  {
+   "key": "accessibility-checker",
+   "why": "no UI in this context; the desktop renders it"
+  },
+  {
+   "key": "ui-perfectionist",
+   "why": "no CSS or component in this context"
+  },
+  {
+   "key": "mobile-specialist",
+   "why": "a localhost daemon channel; no viewport"
+  },
+  {
+   "key": "onboarding-designer",
+   "why": "the onboarding flow lives in apps/desktop"
+  },
+  {
+   "key": "feature-scout",
+   "why": "stabilize strategy; no forward items sought"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "no paid surface; metering rows only"
+  },
+  {
+   "key": "analytics-planner",
+   "why": "no product analytics in this context"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no acquisition surface"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "stabilize strategy"
+  },
+  {
+   "key": "business-strategist",
+   "why": "stabilize strategy; no business surface"
+  }
+ ],
+ "findings": 13,
+ "lanes": "A:6/B:4/C:1",
+ "fp": 0,
+ "gates": {
+  "uv run ruff check src/athena/channels tests/channels": 0,
+  "uv run ruff format --check src/athena/channels tests/channels": 0,
+  "uv run mypy": 0,
+  "uv run pytest tests/channels tests/daemon tests/adopt tests/proving -m \"not provider and not eval\"": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "6 built (flake, dry-check TTL, logs, TTS cap, TS parity, copy); 4 B, 1 C",
+ "notes": "Registry map voice-io pair is stale (map digest fa1c8ca7 rev 20, index fa03abea rev 21) and both of its recorded deviations look fixed on this tree (speech door ADR 0114, transcript outcome ADR 0110): /conform --stale. speech.py and test_speech_text.py are under src/athena/channels/** but missing from context-map.json file_paths. tests/e2e imports channels and was not run (end-to-end, director's). The flake probe plugin and CPU burn live in the scratchpad only."
+}

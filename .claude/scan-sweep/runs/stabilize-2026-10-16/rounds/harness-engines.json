@@ -1,0 +1,272 @@
+{
+ "context": "harness-engines",
+ "files_read": 36,
+ "loc": 9906,
+ "registry": "software-engineering/agent-cli-transport, software-engineering/subprocess-lifecycle, software-engineering/authorization, software-engineering/test-harness",
+ "techniques": [
+  "subscription-auth-selection",
+  "availability-probe",
+  "dated-capability-matrix",
+  "output-normalization",
+  "spawn-contract",
+  "termination-and-reaping",
+  "authorization-audit",
+  "nested-run-is-not-its-parent"
+ ],
+ "deviations": 6,
+ "assigned": [
+  {
+   "title": "child_env strips only ANTHROPIC_API_KEY, so OPENAI_API_KEY reaches codex",
+   "verdict": "built 5ff9504 (judged: neither CLI owns a key; all six claude/codex billing switches stripped from every CLI child). The NEBIUS_API_KEY half is backlogged B: proving/server/runner.py spawns its own Python child through the same door and needs the key."
+  },
+  {
+   "title": "engines._logged_in treats a credential file's existence as signed in",
+   "verdict": "built 4fdf0e5 + ADR 0118 (CLI's own zero-token check, verified 2026-10-16 on claude 2.1.301 and codex-cli 0.160.0, version floor, spawn env); follow-up 3c59780 (its spawns open no console). Wire/doctor consumers backlogged B."
+  },
+  {
+   "title": "Policy.authorize and Policy.to_cedar are two hand-kept renderings of four rules",
+   "verdict": "built 20b1142 (recording-proxy parity test; 3 unrendered inputs fixed)"
+  }
+ ],
+ "built": [
+  {
+   "sha": "5ff9504",
+   "title": "No CLI child inherits a billing key, so OPENAI_API_KEY no longer reaches codex",
+   "lens": "security-auditor",
+   "red_before": "test_subprocess_exit real child: 5 of 6 billing keys visible (only ANTHROPIC_API_KEY stripped)",
+   "after": "0 of 6 visible; child starts; ENGINE_KEYS pinned to ENGINES"
+  },
+  {
+   "sha": "20b1142",
+   "title": "The Cedar rendering names every input the policy reads, pinned by a parity test",
+   "lens": "parity-auditor",
+   "red_before": "test_policy recording-proxy parity: 3 inputs read and never rendered (context.disabled_origins, context.gated_origins, context.open_tab_origins)",
+   "after": "0 missing; cross-tab pin clause no longer forbids what authorize permits"
+  },
+  {
+   "sha": "4fdf0e5",
+   "title": "A CLI's own sign-in check decides logged_in (ADR 0118)",
+   "lens": "error-handler",
+   "red_before": "test_engines: 0 of 9 cases (signed-out file -> False, signed-in no file -> True, codex both ways, 5 unreadable -> None, spawn env/stdin)",
+   "after": "10 of 10; this machine: claude 2.1.301 and codex 0.160.0 read True via their checks; +~0.5 s per CLI per probe"
+  },
+  {
+   "sha": "5d9ade8",
+   "title": "A switch change whose turn failed still gives the next frame the whole picture",
+   "lens": "bounty-hunter",
+   "red_before": "test_turn_frame: retry frame after a failed switch-change turn had delta.first False (empty delta to a new session)",
+   "after": "delta.first True; finished switch change still moves the baseline"
+  },
+  {
+   "sha": "296e3a4",
+   "title": "A model call that raises is named by its type alone; a refused key never reaches a turn error",
+   "lens": "security-auditor",
+   "red_before": "test_tokenfactory: key with a line break -> ValueError message carrying 'Bearer <key>' in TurnError detail (offline, real urllib_post); RuntimeError text in detail",
+   "after": "neither key nor text in any event or ledger field; detail names the type"
+  },
+  {
+   "sha": "eb8615a",
+   "title": "An approved card whose tool left the catalog is ledgered like any refused replay",
+   "lens": "observability-auditor",
+   "red_before": "test_browser_lane: approved=False and 0 ledger rows",
+   "after": "approved=True, 1 row unknown_ref rounds 0 with the card's origin"
+  },
+  {
+   "sha": "d399c60",
+   "title": "A native tool call whose arguments do not parse meets the grammar's repairs, never runs with none",
+   "lens": "parity-auditor",
+   "red_before": "test_tokenfactory: '{\"n\": 1,}' and 'n=1, then the rest' both ran the executor with {}",
+   "after": "first runs with {'n': 1}; second dropped as parse_error and told in the same turn"
+  },
+  {
+   "sha": "3ef59b4",
+   "title": "A CLI that exits before reading its input still reports its exit, not a broken pipe",
+   "lens": "error-handler",
+   "red_before": "test_subprocess_exit real child exiting 2 unread with 4 MiB stdin: BrokenPipeError [WinError 109] raised, child unreaped",
+   "after": "no lines, exit 2 and the stderr tail reported"
+  },
+  {
+   "sha": "3c59780",
+   "title": "An engine probe opens no console window, like a turn's spawn",
+   "lens": "parity-auditor",
+   "red_before": "test_engines: both probe spawns passed creationflags None",
+   "after": "both pass transports.NO_WINDOW (CREATE_NO_WINDOW on Windows)"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "logged_in: read a present credential file as None instead of True (the S slice of assigned item 2)",
+   "before": "wire state for a stale file = found (routes.engine_row maps True and None alike)",
+   "after": "found - 0 user-visible change; superseded by the built status check"
+  },
+  {
+   "title": "rounds._deadline is never reset, though its comment says None between turns",
+   "before": "0 readers of _remaining_s outside a turn (rounds.py:154 and cli_harness.py _request, both inside run_turn)",
+   "after": "0 - comment-only churn"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "bounty-hunter",
+   "checked": "turn_frame FrameBuilder baseline vs switch (built 5d9ade8); op_grammar params_at_top with name/tool (card); _quote_keys/_strip_commas empty-context edges (harmless, traced)"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "authorize vs to_cedar (built 20b1142); rounds catch-all vs ApiHarness catch-all (built 296e3a4); two refusal paths in answer_decision (built eb8615a); grammar vs native tool-call parser (built d399c60); turn spawn vs probe spawn flags (built 3c59780)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "SubprocessTransport stdin write outside reaping try (built 3ef59b4); engines._logged_in (built 4fdf0e5); codex error-record outcome rule (card); tokenfactory urllib_post exception classes traced"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "browser_lane refusal rows (built eb8615a); rounds failure path ignoring _finish's unwritten-row return - pinned deliberate by test_a_ledger_that_raises_does_not_replace_the_failure_paths_turn_error"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "per-instance harness state (_told, _deadline) across concurrent turns: daemon routes.py:848 serialises turns under writing(); single writer lock is the known card of challenge-2026-10-15"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "probe cost after 4fdf0e5 measured (+0.5 s per CLI, 10 s cache); _candidates repair ladder at most 16 json.loads on a failed op; held_host_executors one pass per turn - nothing real"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "logged_in True/False/None through routes.engine_row and cli doctor (card: unknown renders found)"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "FAILURE_SENTENCES vs when each class fires; silent_detail after ADR 0109; doctor's 'no credential was found' after ADR 0118 (card)"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "hand-kept lists: ENGINE_KEYS vs ENGINES (pinned in 5ff9504), RULES reachability test, REPAIRS pinned; FrameBuilder switch had no test (added in 5d9ade8); real-spawn coverage in test_subprocess_exit"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "child_env strip (built 5ff9504), NEBIUS via proving runner (card), parent session markers (card), codex session persistence (card), API exception text (built 296e3a4)"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "agent-cli-transport deviations recorded 2026-10-14 (availability-probe, subscription-auth-selection) now partly resolved by 4fdf0e5/5ff9504; dated-capability-matrix and termination-and-reaping deviations already recorded - not re-emitted"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "child_env used as a generic door by proving/server/runner.py for a non-CLI child (the NEBIUS card); adopt/legs.py SubprocessWarm is a second claude spawn site beside SubprocessTransport (other context)"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "ADR 0007 probe clause (amended by ADR 0118); docs/daemon.md GET /engines (updated in 4fdf0e5); rounds._deadline comment 'None between turns' (rejected, no reader)"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "three copies of _int (cli_harness, tokenfactory, turn_frame) and API_KEY_ENV beside ENGINE_KEYS - churn, not emitted"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "imports of all 15 src modules: stdlib plus athena only; tokenfactory stays stdlib (ADR 0002)"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "Token Factory payload, PRICES and DEFAULT_BASE_URL carry their verification dates; CLI flags verified live: claude --restricted/--permission-mode/--system-prompt-file, codex exec --json/-s/--skip-git-repo-check"
+  },
+  {
+   "key": "analytics-planner",
+   "checked": "LedgerHook.flags are in memory only (ADR 0007 names the schema change); one row per turn and per refused card checked"
+  },
+  {
+   "key": "feature-scout",
+   "checked": "probe record lacks auth method (seat vs key) the technique names - folded into the sign-in card's notes, not emitted"
+  },
+  {
+   "key": "innovation-catalyst",
+   "checked": "native tool calls already rendered through the grammar; no new paradigm proposed under stabilize"
+  },
+  {
+   "key": "onboarding-designer",
+   "checked": "setup's engine probe states (not_found / not_logged_in / found) traced end to end; covered by 4fdf0e5 and the sign-in card"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "ux-reviewer",
+   "why": "no UI: the contexts are Python libraries; their user-facing words are covered by copy-auditor"
+  },
+  {
+   "key": "visual-craft",
+   "why": "no UI surface, tokens or styles in either context"
+  },
+  {
+   "key": "accessibility-checker",
+   "why": "no rendered surface"
+  },
+  {
+   "key": "mobile-specialist",
+   "why": "no viewport; library code"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "no billing or plan surface (PRICES is a ledger estimate table)"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no sharing, invite or notification surface"
+  },
+  {
+   "key": "business-strategist",
+   "why": "library seam with no product surface of its own"
+  },
+  {
+   "key": "devops-optimizer",
+   "why": "no CI, build or deploy file in either context"
+  }
+ ],
+ "findings": 17,
+ "lanes": "A:9/B:6/C:0",
+ "fp": 0,
+ "gates": {
+  "uv run ruff check <touched files> (each commit)": 0,
+  "uv run ruff format --check <touched files> (each commit)": 0,
+  "uv run mypy (each commit)": 0,
+  "uv run pytest tests/harness tests/lane tests/adopt tests/proving tests/daemon/test_engines.py tests/test_cli.py -m \"not provider and not eval\" (last commit 3c59780)": 0,
+  "uv run pytest tests/lane tests/daemon -m \"not provider and not eval\" (5d9ade8, eb8615a)": 0,
+  "uv run pytest tests/test_wiring.py -m \"not provider and not eval\" (20b1142)": 0,
+  "uv run pytest tests/harness tests/lane tests/adopt tests/proving (5ff9504)": 1
+ },
+ "leads": [
+  {
+   "ts": "2026-10-16T14:06:16Z",
+   "bundle": "software-engineering",
+   "nearest": "subprocess-lifecycle",
+   "kind": "technique",
+   "claim": "When a host writes a child's input before it reads the child's exit, write it inside the scope that reaps the child and treat a closed or reset pipe as no error, because a child that refuses at startup exits unread and a large input then turns its classified exit and stderr into an unreaped broken-pipe exception.",
+   "because": "athena-portable 3ef59b4: a 4 MiB stdin to a child that exits 2 without reading raised BrokenPipeError (WinError 109) out of the transport, skipping ADR 0109's exit classification and leaving the child unreaped; after the fix the exit code and stderr tail are reported. No subprocess-lifecycle technique mentions stdin or a broken pipe.",
+   "confidence": "medium",
+   "from": "scan-sweep@4.6.1"
+  }
+ ],
+ "consult": {
+  "ts": "2026-10-16T14:06:16Z",
+  "bundle": "software-engineering",
+  "subjects": [
+   "agent-cli-transport",
+   "subprocess-lifecycle",
+   "authorization",
+   "test-harness"
+  ],
+  "techniques": [
+   "subscription-auth-selection",
+   "availability-probe",
+   "dated-capability-matrix",
+   "output-normalization",
+   "spawn-contract",
+   "termination-and-reaping",
+   "authorization-audit",
+   "nested-run-is-not-its-parent"
+  ],
+  "deviations": 6
+ },
+ "degraded": false,
+ "note": "9 built (3 assigned), 6 Lane B; paired with browser-lane",
+ "notes": "browser-lane (paired, 8 files, read in full): bounty-hunter - FrameBuilder committed the switch at build, not at remember (built 5d9ade8); observability-auditor/parity-auditor - answer_decision's catalog-gone refusal wrote no row (built eb8615a); copy-auditor - _record_results 'may have completed' wording matches ADR 0101; security-auditor - tool_results_from caps and _source regex checked, raw-output episodes are the recorded agent-memory deviation (not re-emitted); test-strategist - no test drove the disabled-origins switch through FrameBuilder (added); code-optimizer - held_host_executors one pass per turn, nothing; error-handler - resolve/describe/_reopened ValueError paths traced, all closed-set reasons; state-coverage - Resolution.ok/approved consumers (daemon routes.py:929-946) traced; lens_no_surface for browser-lane as for harness (no UI). Gate notes: the 5ff9504 pytest exit 1 is tests/adopt/test_research_lanes.py (cancel test, the known flake, plus max_parallel once under load; both pass alone except the cancel flake; neither imports a harness module). An earlier draft of 5ff9504 also stripped NEBIUS_API_KEY and turned tests/proving/test_server.py::test_no_secret_in_any_response red; narrowed before commit, card filed. 4fdf0e5 spawns a second subprocess per CLI per probe (measured +0.5 s, cached 10 s). Other contexts' docstrings (src/athena/adopt/legs.py:9, src/athena/proving/roles.py:229) still say child_env strips ANTHROPIC_API_KEY - true but incomplete now. The registry-map deviation row for harness-engines/agent-cli-transport (availability-probe, subscription-auth-selection) is partly resolved by 4fdf0e5/5ff9504 and wants /conform. Findings 17 vs budget 16: a paired round over two contexts. Sibling uncommitted files seen and not touched: src/athena/connectors/*, tests/connectors/*."
+}

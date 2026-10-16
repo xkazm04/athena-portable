@@ -1,0 +1,258 @@
+{
+ "context": "connector-service",
+ "files_read": 26,
+ "loc": 5750,
+ "registry": "software-engineering/credential-vault, software-engineering/connector-catalog, software-engineering/mcp-tools, software-engineering/seal-and-key-hierarchy",
+ "techniques": [
+  "encryption-at-rest",
+  "health-probing",
+  "acquisition",
+  "rotation-and-remediation",
+  "adapter-normalization",
+  "catalog-as-data",
+  "server-composition"
+ ],
+ "deviations": 6,
+ "assigned": [
+  {
+   "title": "Connector write timeouts and 5xx are outcome_unknown (ADR 0101)",
+   "verdict": "built b4246ce (plus 451a37c: http.client errors escaped the same door)"
+  },
+  {
+   "title": "DPAPI seals with null entropy; ciphertext not bound to its handle",
+   "verdict": "backlogged C: irreversible - every bound seal (and upgrade-on-read) is a blob an older build cannot open; seal.py also serves channels/voice/config.py"
+  },
+  {
+   "title": "Provider dispatch is a hand-kept if-chain beside the spec's tool list",
+   "verdict": "built de94445"
+  },
+  {
+   "title": "An OAuth admission re-merges the catalog outside daemon.writing()",
+   "verdict": "built ffcda47 (wiring.py untouched; the guard is passed by daemon/connectors.py)"
+  },
+  {
+   "title": "Writes switch does not block a tool whose spec leaves reversible unset",
+   "verdict": "built 44cb325 (and eff80e9: such a spec is now refused at load, since the catalog refuses it at merge)"
+  }
+ ],
+ "built": [
+  {
+   "sha": "b4246ce",
+   "title": "A connector write that timed out or was answered 5xx is outcome_unknown",
+   "lens": "error-handler",
+   "red_before": "test_service no-answer/5xx: 8 of 9 cases engine_error (refused-connect control green)",
+   "after": "9 of 9"
+  },
+  {
+   "sha": "451a37c",
+   "title": "A garbled or cut-short provider answer fails the call instead of ending the turn",
+   "lens": "error-handler",
+   "red_before": "test_vault garbled-answer: BadStatusLine/IncompleteRead escaped the transport (2 of 2)",
+   "after": "2 of 2 raise NoAnswer"
+  },
+  {
+   "sha": "44cb325",
+   "title": "The writes switch blocks a tool whose spec leaves reversible unset",
+   "lens": "parity-auditor",
+   "red_before": "test_service reversible-unset: the call ran with writes off (ok=True, 1 request)",
+   "after": "refused validator_failed, 0 requests"
+  },
+  {
+   "sha": "eff80e9",
+   "title": "A spec whose tools the catalog would refuse is refused at load",
+   "lens": "parity-auditor",
+   "red_before": "test_spec_and_oauth: 3 malformed tools parsed (probe: connect sealed, then CatalogError -> 500)",
+   "after": "3 of 3 SpecError"
+  },
+  {
+   "sha": "ffcda47",
+   "title": "An OAuth admission takes the daemon's writer lock",
+   "lens": "bounty-hunter",
+   "red_before": "test_routes writer-lock: flow settled and merged while the lock was held",
+   "after": "waits 1 s+ under the lock, merges after release"
+  },
+  {
+   "sha": "bc3511c",
+   "title": "A consent flow cancelled mid-exchange seals nothing",
+   "lens": "bounty-hunter",
+   "red_before": "test_grant cancelled-while-exchanged: phase done, new token and pair sealed",
+   "after": "phase failed, live token and kept pair unchanged"
+  },
+  {
+   "sha": "e56490f",
+   "title": "The consent callback page says what happened",
+   "lens": "copy-auditor",
+   "red_before": "test_spec_and_oauth browser-page: 3 of 3 wrong copy (stranger x2, 'connected' x1)",
+   "after": "3 of 3"
+  },
+  {
+   "sha": "f581a43",
+   "title": "A settings switch that is not JSON true/false is refused",
+   "lens": "security-auditor",
+   "red_before": "test_routes switch: 6 of 6 answered 200 with writes on",
+   "after": "6 of 6 answered 409, nothing applied"
+  },
+  {
+   "sha": "d2b5586",
+   "title": "A disconnect destroys every sealed value even when the seal cannot be read",
+   "lens": "error-handler",
+   "red_before": "test_seal unreadable-seal: VaultError, nothing destroyed",
+   "after": "disconnected, keystore empty"
+  },
+  {
+   "sha": "7227f59",
+   "title": "A pasted token answered 401 on a call is recorded as broken",
+   "lens": "parity-auditor",
+   "red_before": "test_health case 5 token: health stayed healthy",
+   "after": "broken with its time, still connected"
+  },
+  {
+   "sha": "de94445",
+   "title": "Providers dispatch through a handler table pinned to the spec's tools",
+   "lens": "test-strategist",
+   "red_before": "no instrument possible against the if-chain (AttributeError); seeded: dropping a handler turns the parity test red",
+   "after": "parity green both ways"
+  },
+  {
+   "sha": "db1aca8",
+   "title": "The connector read cap is pinned to the catalog's own",
+   "lens": "test-strategist",
+   "red_before": "0 tests failed with the copy at 1500 (measured); seeded red with the new test",
+   "after": "1 test pins it"
+  }
+ ],
+ "rejected": [],
+ "lens_keys": [
+  {
+   "key": "bounty-hunter",
+   "checked": "flow thread vs writer lock (oauth.py _finish -> vault _exchange/_admit -> wiring merge); cancel vs exchange race; FlowManager replace path"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "is_write vs HostTool.default_class; parse_spec vs HostManifest.validate; probe 401 vs call 401 classification; reuse_client 'is True' vs settings bool()"
+  },
+  {
+   "key": "error-handler",
+   "checked": "every except in service.call and UrllibTransport (HTTPException escape); disconnect's _get raising before _drop; Service.call ValueError path"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "logger calls in vault.py (one: records_notice); no record of connector acts (card); health writes per door"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "daemon start merging every live connector (_wire_connectors) - a spec drift raised CatalogError at boot (fixed eff80e9)"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "view -> client_kept unseal per render (card); search_mail N sequential metadata reads (bounded at 10, below budget)"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "seal.py DPAPI entropy (card), settings bool coercion (fixed), redirect pin, redact on probe/attempt details, OAuth state/PKCE"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "provider tool lists vs specs (table + parity), READ_CAP copy vs catalog, flow tests that block on the callback"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "loopback callback page sentences (fixed); refusal sentences in service.py and vault.py for value leakage (none)"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "the consent round-trip as a person sees it in the browser tab: declined consent read as a stranger's page (fixed with copy-auditor)"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "flow phases after settle and after disconnect (stale flow card); attempt vs verdict fields on every door"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "OAuth exchange/refresh/revoke against RFC 6749 errors; Notion 401 vs 403 semantics"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "service/vault/provider seams; import cycle core.catalog <-> connectors package (why READ_CAP is copied)"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "daemon/connectors.py docstring 'every write takes the writer lock' (now true); service.py error channels docstring updated"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "hand-kept lists: PROVIDERS map, provider if-chains, READ_CAP, ACTS tuple (ACTS is dispatch-local, fine)"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "credential-vault encryption-at-rest and health-probing deviations (one carded, one fixed)"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "stdlib-only vault/oauth; keyring imported lazily behind SealUnavailable"
+  },
+  {
+   "key": "analytics-planner",
+   "checked": "nothing counts legacy-format unseals or flow outcomes; folded into the DPAPI card's counter"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "visual-craft",
+   "why": "no rendered UI in this context (the callback page is text/plain)"
+  },
+  {
+   "key": "accessibility-checker",
+   "why": "no rendered UI; the plain-text callback page has no structure to label"
+  },
+  {
+   "key": "mobile-specialist",
+   "why": "daemon-side Python; no viewport"
+  },
+  {
+   "key": "onboarding-designer",
+   "why": "the setup guide is spec data rendered by the desktop panel, another context"
+  },
+  {
+   "key": "feature-scout",
+   "why": "stabilize strategy; no capability gap judged"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "stabilize strategy"
+  },
+  {
+   "key": "business-strategist",
+   "why": "no business surface"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "no billing surface"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no sharing or invite surface"
+  },
+  {
+   "key": "devops-optimizer",
+   "why": "no pipeline or build config in this context"
+  },
+  {
+   "key": "ui-perfectionist",
+   "why": "no CSS or component in this context"
+  }
+ ],
+ "findings": 16,
+ "lanes": "A:12/B:2/C:2",
+ "fp": 0,
+ "gates": {
+  "uv run ruff check <touched files> (per commit)": 0,
+  "uv run ruff format --check <touched files> (per commit)": 0,
+  "uv run mypy": 0,
+  "uv run pytest tests/connectors tests/core/test_catalog_connectors.py tests/adopt/test_research.py tests/channels/test_voice_config.py tests/daemon tests/test_wiring.py tests/e2e/test_connectors.py tests/e2e/test_connectors_journey.py -m \"not provider and not eval\"": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "12 built incl. 4 of 5 assigned; DPAPI entropy carded C (irreversible)",
+ "notes": "No sibling reds seen. Coupled edits: test_grant callback on a thread (e56490f). connect_oauth gained guard= and _admit admit_if=; OAuthFlow gained claim() and page_text(); vault exports NoAnswer. seal.py format change is shared with channels/voice/config.py. Nothing seen in a real browser or Tauri window. Consult line: {bundle: software-engineering, subjects: [credential-vault, connector-catalog, mcp-tools, seal-and-key-hierarchy], deviations: 6}."
+}
