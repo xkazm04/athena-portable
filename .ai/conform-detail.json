@@ -3172,6 +3172,78 @@
           "evidence": "apps/desktop/src/companion/model.ts:622 OfferView and Origins render name, gate class, description and tier; neither carries exercise state, exercise date or evidence."
         }
       ]
+    },
+    "645f955f-74d6-44ae-a966-70f6ed2ece17/data-access": {
+      "context": "contracts-seam",
+      "subject": "data-access",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T21:52:56.915Z",
+      "worker": "63c06f3b-8cec-4cd0-973c-985e541a3c21",
+      "techniques": [
+        {
+          "technique": "capability-declared-in-the-type",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/harness.py:185 The implementation family described here consists of inference harnesses, not storage backends."
+        },
+        {
+          "technique": "cross-driver-invariant-parity",
+          "verdict": "not-applicable",
+          "evidence": "tests/contracts/test_ids.py:41 The parity concern here is a shared identifier vocabulary, not behavioral equivalence between storage drivers."
+        },
+        {
+          "technique": "layering-rules",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/__init__.py:4 This is the shared contract leaf below implementations, rather than the repository layer that owns statements and connections."
+        },
+        {
+          "technique": "operator-defined-tables",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/manifest.py:54 These schemas describe tool parameters consumed by rendering and validation, not operator-defined database tables."
+        },
+        {
+          "technique": "repo-testing",
+          "verdict": "not-applicable",
+          "evidence": "tests/contracts/test_channel.py:84 This exercises serialization of contract values, rather than a repository against a storage engine."
+        },
+        {
+          "technique": "row-mapping",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/channel.py:244 This decoder reconstructs transport events; it is not a mapper for stored rows."
+        }
+      ]
+    },
+    "a7dc73bb-f8b4-4b57-8fb0-f8032842f356/data-access": {
+      "context": "desktop-stores",
+      "subject": "data-access",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T21:52:56.915Z",
+      "worker": "63c06f3b-8cec-4cd0-973c-985e541a3c21",
+      "techniques": [
+        {
+          "technique": "operator-defined-tables",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stores/origins.ts:26 The origin store explicitly operates against fixed columns; its tool contracts are settings data rather than runtime table definitions."
+        },
+        {
+          "technique": "repo-testing",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/settings.test.ts:173 This test requires a subscription established by an earlier test; beforeEach only clears recorded calls, violating independent test isolation."
+        },
+        {
+          "technique": "row-mapping",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/run.ts:1004 Malformed persisted data returns an untainted empty collection; malformed individual entries are also filtered without reporting their loss."
+        },
+        {
+          "technique": "transactions-and-units-of-work",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/origins.ts:145 Every save resends enabled from a cached read, including override-only changes; per-webview queues cannot prevent another window's concurrent disable from being overwritten without a spanning transaction or compare-and-set."
+        }
+      ]
     }
   }
 }

@@ -1771,7 +1771,11 @@
           "revision": 18,
           "changedAt": "2026-10-06",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/contracts/__init__.py:3 Searches found no storage execution terms in the contract source or tests, while repository-wide matches locate persistence elsewhere, consistent with this package's explicit no-I/O boundary.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:2dba94be6400dea1",
+          "evaluatedRevision": 19
         },
         {
           "subject": "quality-gates",
@@ -5469,7 +5473,11 @@
           "revision": 18,
           "changedAt": "2026-10-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/stores/run.ts:1004 A malformed persisted collection of uncertain tool outcomes becomes an empty successful read, silently losing the holds that should survive reload.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:2dba94be6400dea1",
+          "evaluatedRevision": 19
         },
         {
           "subject": "agent-memory",
