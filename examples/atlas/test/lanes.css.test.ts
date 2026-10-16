@@ -75,6 +75,25 @@ test("the instrument reads rules, not prose", () => {
   assert.equal(seeded.length, 1, "a commented-out rule was parsed");
 });
 
+test("everything the story dims or steps eases its opacity, as the node does", () => {
+  /* The node's `data-dim` eases; a run's and the trail's states are the same story change, on the
+     same sheet, at the same moment, and a sibling that snaps beside one that eases reads as a
+     glitch rather than a step. */
+  const state = /\[data-(dim|story-beat-state)\b/;
+  const stepped = RULES.filter(
+    (r) => r.decls.has("opacity") && r.selectors.some((s) => state.test(subjectOf(s))),
+  ).flatMap((r) =>
+    r.selectors.filter((s) => state.test(subjectOf(s))).map((s) => classOf(subjectOf(s))),
+  );
+  assert.ok(stepped.includes(".al-node"), "the node no longer dims — re-read this test");
+  for (const cls of new Set(stepped)) {
+    assert.ok(
+      easesOpacityInEveryState(cls, state),
+      `${cls} changes opacity with the story and has no opacity transition, so it snaps`,
+    );
+  }
+});
+
 test("a detail tier fades in as well as out: the band only sets opacity, never the transition", () => {
   const band = /\[data-band=/;
   const hidden = RULES.filter(

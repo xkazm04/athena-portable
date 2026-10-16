@@ -326,6 +326,10 @@
   stroke-width: 1.5;
   stroke-linecap: square;
   stroke-linejoin: round;
+}
+/* The story dims the RUN (its group), not the line, so the run is what eases — on the node's own
+   lens duration, so a dimmed box and its dimmed runs recede together. */
+.al-run {
   transition: opacity var(--al-dur-lens) var(--al-ease);
 }
 .al-marker path {
@@ -600,6 +604,7 @@
   stroke-linecap: round;
   stroke-linejoin: round;
   opacity: var(--at-op-next);
+  transition: opacity var(--al-dur-lens) var(--al-ease);
 }
 .al-trail-line:not([data-authored]) {
   stroke-dasharray: 2 5;
@@ -610,6 +615,9 @@
 .al-trail-line[data-story-beat-state="active"] {
   opacity: var(--at-op-active);
   stroke-width: 3.4;
+}
+.al-trail-mark {
+  transition: opacity var(--al-dur-lens) var(--al-ease);
 }
 .al-trail-mark circle {
   fill: var(--al-canvas);
