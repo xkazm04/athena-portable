@@ -134,3 +134,40 @@ def test_the_vault_turns_a_seal_failure_into_its_own_vocabulary(
         vault.connect_token("notion", "ntn_test_token_0123456789")
     with pytest.raises(VaultError, match="could not be read"):
         vault.probe("notion")
+
+
+class _ReadBrokenKeyring(types.ModuleType):
+    """A keystore that stores and deletes but can no longer read: a keychain locked after the
+    connect."""
+
+    def __init__(self, name: str) -> None:
+        super().__init__(name)
+        self.kept: dict[str, str] = {}
+        self.readable = True
+
+    def set_password(self, service: str, name: str, value: str) -> None:
+        self.kept[name] = value
+
+    def get_password(self, service: str, name: str) -> str | None:
+        if not self.readable:
+            raise RuntimeError("the keychain is locked")
+        return self.kept.get(name)
+
+    def delete_password(self, service: str, name: str) -> None:
+        self.kept.pop(name, None)
+
+
+def test_a_seal_that_cannot_be_read_does_not_keep_a_credential_the_person_disconnected(
+    tmp_path: Path, specs: dict[str, ConnectorSpec], monkeypatch: pytest.MonkeyPatch
+) -> None:
+    store = _ReadBrokenKeyring("keyring")
+    monkeypatch.setitem(sys.modules, "keyring", store)
+    vault = Vault(
+        tmp_path / "connectors", specs=specs, transport=FakeProvider(), seal=KeyringSeal()
+    )
+    vault.connect_token("notion", "ntn_test_token_0123456789")
+    assert "notion.token" in store.kept
+    store.readable = False
+    record = vault.disconnect("notion")
+    assert record.status == "disconnected" and not vault.is_live("notion")
+    assert store.kept == {}, "every sealed value was destroyed"

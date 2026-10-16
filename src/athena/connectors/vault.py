@@ -1008,7 +1008,12 @@ class Vault:
         """Revoke upstream when the spec knows how; destroy every sealed value; keep the
         switches, which are the person's and not the credential's."""
         spec = self.spec(connector_id)
-        token = self._get(connector_id, "token")
+        try:
+            token = self._get(connector_id, "token")
+        except VaultError:
+            # A seal that cannot be read (a locked keychain) cannot revoke upstream, and is no
+            # more a reason to keep the credential than an unreachable revoke endpoint is.
+            token = None
         if token and spec.auth.revoke_url:
             # The sealed value is destroyed either way; an unreachable revoke endpoint is not a
             # reason to keep a credential the person asked to be rid of.
