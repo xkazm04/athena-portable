@@ -5,12 +5,17 @@ contracts/manifest.py, README §3.3.
 
 from __future__ import annotations
 
+import re
+from pathlib import Path
+
 import pytest
 
 from athena.contracts import HostManifest, HostTool, StateReadable, ToolClass
 from athena.contracts.manifest import (
+    HAND_RUNNER,
     MAX_PROPERTIES_PER_TOOL,
     MAX_TOOLS_PER_MANIFEST,
+    SIDE_EFFECTS,
     params_schema_problems,
 )
 
@@ -197,3 +202,34 @@ def test_the_caps_stand_above_the_largest_manifests_the_repo_ships() -> None:
     search_candidates with 8 parameters. A cap at or under them would refuse a real page."""
     assert MAX_TOOLS_PER_MANIFEST >= 2 * 41
     assert MAX_PROPERTIES_PER_TOOL >= 2 * 8
+
+
+# --- the two words the TypeScript spells by hand (README §3.3, §3.4 tier 2) --------------------
+
+_ROOT = Path(__file__).resolve().parents[2]
+_COMMENTS = re.compile(r"/\*.*?\*/|//[^\n]*", re.DOTALL)
+
+
+def _exported(relative: str, name: str) -> str:
+    """The source of ``export const <name> = ...;`` in a TypeScript or JavaScript file, comments
+    removed, so a sentence that mentions the word cannot stand in for the declaration."""
+    source = _COMMENTS.sub("", (_ROOT / relative).read_text(encoding="utf-8"))
+    match = re.search(rf"export const {name}\s*=(.*?);", source, re.DOTALL)
+    assert match is not None, f"{relative} does not export {name}"
+    return match.group(1)
+
+
+def test_the_hand_marker_is_the_word_the_desktop_writes() -> None:
+    """``lib/hands.ts`` puts ``runner: HAND_RUNNER`` on every hand it appends, and the catalog
+    reports a host tool at tier 2 only when its ``runner`` is this word. A drift on either side
+    files every hand at tier 1 and nothing fails."""
+    declared = re.findall(r'"([^"]*)"', _exported("apps/desktop/src/lib/hands.ts", "HAND_RUNNER"))
+    assert declared == [HAND_RUNNER]
+
+
+def test_the_side_effects_vocabulary_is_the_one_the_bridge_reads() -> None:
+    """``gate.js`` decides a page's flags against ``SIDE_EFFECTS`` before a manifest is built;
+    a member on one side only is a flag one half accepts and the other refuses."""
+    body = _exported("packages/athena-bridge/gate.js", "SIDE_EFFECTS")
+    assert tuple(re.findall(r'"([^"]*)"', body)) == SIDE_EFFECTS
+    assert "Object.freeze([" in body
