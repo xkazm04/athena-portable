@@ -24,6 +24,7 @@ const base: SurfaceSources = {
   ],
   chores: { total: 16, benched: 12, foundUsd: 551, loaded: true, failed: false },
   voiceAvailable: true,
+  voiceKnown: true,
   engine: { label: "Claude Code", standing: "done", checkFailed: false },
   inShell: true,
   actions: INERT_ACTIONS,

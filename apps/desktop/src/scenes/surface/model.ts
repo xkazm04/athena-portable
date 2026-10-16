@@ -36,6 +36,11 @@ export interface SurfaceSources {
   chores: { total: number; benched: number; foundUsd: number; loaded: boolean; failed: boolean };
   voiceAvailable: boolean;
   /**
+   * The daemon is up, so `voiceAvailable` is an answer. Before that (starting, failed, stopped) an
+   * unavailable voice is not known, as the Mind depth's Voice card says, not "not set up".
+   */
+  voiceKnown: boolean;
+  /**
    * The chosen engine as the Setup module's `engineFact` stands it, so the light and the Mind
    * depth one dive below cannot disagree. `checkFailed`: the probe could not run at all, which is
    * not the same fact as a check still in flight.
@@ -132,7 +137,7 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
     },
     voice: {
       label: ROOT_LABEL.voice,
-      stat: s.voiceAvailable ? "ready to talk" : "not set up",
+      stat: s.voiceAvailable ? "ready to talk" : s.voiceKnown ? "not set up" : "not known yet",
       hint: "Her voice and how she hears you.",
       attention: false,
     },

@@ -117,6 +117,7 @@ export function useSurfaceModel(): SurfaceModel {
       }),
       chores: { ...totalsOf(playbooks), loaded: playbooks !== null, failed: playbooks === null && playbooksProblem !== null },
       voiceAvailable,
+      voiceKnown: daemonHealth === "ready",
       engine: {
         label: engineLabel(engine),
         standing: fact.standing,

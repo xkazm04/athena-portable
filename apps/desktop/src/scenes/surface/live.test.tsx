@@ -16,6 +16,7 @@ import { useDaemon } from "@/stores/daemon";
 import { useEngines } from "@/stores/engines";
 import { usePlaybooks } from "@/stores/playbooks";
 import { useSettings } from "@/stores/settings";
+import { useVoice } from "@/stores/voice";
 
 import { useSurfaceModel } from "./live";
 
@@ -96,5 +97,18 @@ describe("the Chores light", () => {
   it("says it could not count when the shipped set failed to load, instead of counting for ever", () => {
     usePlaybooks.setState({ items: null, problem: "the playbooks could not be read: 404" });
     expect(lightOf("chores").stat).toBe("could not be counted");
+  });
+});
+
+describe("the Voice light", () => {
+  it("says it is not known yet while the daemon is not up, as the Mind depth does, not that voice is not set up", () => {
+    useVoice.setState({ available: false, reason: "the daemon is not running yet" });
+    useDaemon.setState({ health: "starting" });
+    expect(lightOf("voice").stat).toBe("not known yet");
+  });
+
+  it("says not set up once the daemon is up and voice is not available", () => {
+    useVoice.setState({ available: false, reason: "voice is not set up yet" });
+    expect(lightOf("voice").stat).toBe("not set up");
   });
 });
