@@ -139,6 +139,27 @@ def test_nothing_resolved_names_every_place_that_was_looked_in(tmp_path: Path) -
     assert "package:" in str(raised.value)
 
 
+@pytest.mark.parametrize("law", ["", "\n", "  \n\t\n"])
+def test_a_law_file_with_nothing_in_it_is_no_law(tmp_path: Path, law: str) -> None:
+    """A zero-byte ``law.md`` (a truncated copy, a botched build) used to load and compose
+    "(no law on file)" while ``load`` and the doctor reported a law found."""
+    package = install(tmp_path / "athena", law=law)
+
+    with pytest.raises(ConstitutionMissing, match=r"law.md"):
+        load(environ={}, package_root=package, checkout_root=tmp_path / "nope")
+
+
+def test_an_empty_frozen_law_falls_through_like_a_missing_one(tmp_path: Path) -> None:
+    frozen = install(tmp_path / "_MEI1", law="")
+    package = install(tmp_path / "athena", law="# Law\n\nPackaged.\n")
+
+    loaded = load(
+        environ={}, frozen_root=frozen, package_root=package, checkout_root=tmp_path / "nope"
+    )
+
+    assert loaded.source.kind == "package"
+
+
 def test_load_or_empty_never_raises(tmp_path: Path) -> None:
     """The doctor's view: a missing law is a stage that reports red, not an exception."""
     loaded = load_or_empty(

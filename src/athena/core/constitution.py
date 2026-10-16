@@ -88,8 +88,14 @@ class Source:
 
     @property
     def complete(self) -> bool:
-        """``True`` when this directory really carries a law. The other sections are optional."""
-        return (self.directory / f"{REQUIRED_SECTION}.md").is_file()
+        """``True`` when this directory really carries a law. The other sections are optional.
+
+        A ``law.md`` holding nothing but whitespace carries none: it would compose as
+        "(no law on file)" while the loader and the doctor reported a law found, so it falls
+        through to the next candidate exactly as a missing file does.
+        """
+        path = self.directory / f"{REQUIRED_SECTION}.md"
+        return path.is_file() and bool(path.read_bytes().strip())
 
 
 # --- where Athena might be running from -------------------------------------------------------
