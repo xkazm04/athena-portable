@@ -35,11 +35,27 @@ export interface ComposeInput {
   amountCents: number;
 }
 
+/** `1 day`, `21 days`. */
+function dayCount(days: number): string {
+  return `${days} ${days === 1 ? "day" : "days"}`;
+}
+
+/**
+ * The opening line, from the one fact the composer is given: how many days past due the invoice
+ * is, which may be none - `draft_reminder` takes any invoice with a balance. The gentle line used
+ * to say the invoice "went out N days ago" with N = days past DUE, a send date the books never
+ * gave it (a 30-day-terms invoice issued 91 days ago "went out 70 days ago"), and both tones
+ * floored the count at one, so an invoice inside terms was "1 days past its due date".
+ */
 const OPENING: Record<Tone, (n: string, d: number) => string> = {
   gentle: (n, d) =>
-    `Hope the work has been landing well. ${n} went out ${d} days ago and is still showing as open on our side - no rush if it is already in a payment run, just flagging it.`,
+    d > 0
+      ? `Hope the work has been landing well. ${n} is ${dayCount(d)} past its due date and still showing as open on our side - no rush if it is already in a payment run, just flagging it.`
+      : `Hope the work has been landing well. ${n} is still showing as open on our side - no rush if it is already in a payment run, just flagging it ahead of the due date.`,
   firm: (n, d) =>
-    `${n} is now ${d} days past its due date. Please let us know today when payment will be made, or we will pause scheduled work until it clears.`,
+    d > 0
+      ? `${n} is now ${dayCount(d)} past its due date. Please let us know today when payment will be made, or we will pause scheduled work until it clears.`
+      : `${n} is still open on our side. Please let us know today when payment will be made.`,
 };
 
 /** First name only, the way a person opens a letter. */
@@ -48,12 +64,12 @@ function firstName(name: string): string {
 }
 
 export function reminderSubject(input: Pick<ComposeInput, "number" | "balanceCents" | "daysOverdue">): string {
-  const late = input.daysOverdue > 0 ? `, ${input.daysOverdue} days past due` : "";
+  const late = input.daysOverdue > 0 ? `, ${dayCount(input.daysOverdue)} past due` : "";
   return `${input.number}: ${formatMoney(input.balanceCents)} outstanding${late}`;
 }
 
 export function composeReminder(input: ComposeInput): ReminderDraft {
-  const days = Math.max(input.daysOverdue, 1);
+  const days = Math.max(input.daysOverdue, 0);
   return {
     to: input.contactEmail,
     to_name: input.contactName,

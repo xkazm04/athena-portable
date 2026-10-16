@@ -18,6 +18,7 @@ tempHome("ledgerbox-domain-lib-");
 const { PERIODS } = await import("../lib/constants");
 const { summarize } = await import("../lib/db");
 const { parseDollars } = await import("../lib/format");
+const { composeReminder } = await import("../lib/reminder");
 
 test("on every period, what was invoiced is what was collected plus what is still owed", () => {
   // All three figures describe one set of invoices (issued in the period, drafts and voids out),
@@ -61,6 +62,37 @@ test("an amount the gate cannot read one way only is refused, not read the other
   ];
   for (const [input, cents] of reads) {
     assert.equal(parseDollars(input), cents, `${JSON.stringify(input)} reads as ${cents} cents`);
+  }
+});
+
+test("a reminder letter states only what the books know: how late, never a made-up send date", () => {
+  // The letter reaches a person (send_reminder). Its gentle opening said the invoice "went out N
+  // days ago" with N = days PAST DUE, so a 30-day-terms invoice issued 91 days ago went out "70
+  // days ago"; and an invoice still inside terms was "1 days past its due date" in both tones.
+  const letter = (tone: "gentle" | "firm", daysOverdue: number) =>
+    composeReminder({
+      number: "LB-2026-0042",
+      clientName: "Halcyon Works",
+      contactName: "Ada Byrne",
+      contactEmail: "ada@halcyon.example",
+      tone,
+      daysOverdue,
+      balanceCents: 120_000,
+      amountCents: 120_000,
+    });
+
+  for (const tone of ["gentle", "firm"] as const) {
+    const within = letter(tone, 0);
+    assert.doesNotMatch(within.body, /past its due date|days? ago/, `${tone}, inside terms: not late`);
+    assert.doesNotMatch(within.subject, /past due/, `${tone}, inside terms: the subject says so too`);
+
+    const one = letter(tone, 1);
+    assert.match(one.body, /\b1 day past its due date/, `${tone}: one day, singular`);
+    assert.match(one.subject, /, 1 day past due$/);
+
+    const late = letter(tone, 21);
+    assert.match(late.body, /\b21 days past its due date/, `${tone}: the lateness, stated as lateness`);
+    assert.doesNotMatch(late.body, /went out/, `${tone}: no send date the books never gave it`);
   }
 });
 
