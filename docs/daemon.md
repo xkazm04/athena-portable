@@ -66,8 +66,10 @@ sentence "Open the app this is about and focus its tab, then try again."
                          {"id": "nebius", "state": "not_found", "detail": "NEBIUS_API_KEY is not set"}]}
 ```
 
-`state` is `found`, `not_found` or `not_logged_in` (installed, but the CLI's credential file is
-absent). For the two CLIs the probe is a `--version` subprocess, so it takes its own lock and never
+`state` is `found`, `not_found` or `not_logged_in` (installed, and the CLI's own zero-token sign-in
+check says it is signed out; on a CLI older than the version that check was verified on, its
+credential file is absent; ADR 0118). For the two CLIs the probe is a `--version` subprocess and,
+where verified, that check, so it takes its own lock and never
 the writer lock or a brain connection. `nebius` (NVIDIA Nemotron on Nebius Token Factory, ADR
 0031) is `found` exactly when `NEBIUS_API_KEY` is set in the daemon's environment: presence only,
 no request made, and the key never appears in the row. The answer is cached for 10 seconds; `?fresh=1` skips the cache (the

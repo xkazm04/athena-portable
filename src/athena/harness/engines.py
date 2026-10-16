@@ -12,16 +12,21 @@ Ground, not the daily one.
 cannot tell the user what is missing, and that is the whole job it has. Every failure comes back
 as an :class:`EngineStatus` with ``available = False`` and a sentence naming what to do.
 
-A probe proves the binary answers ``--version``. It does not prove the user is logged in, and it
-does not run inference. For ``nebius`` there is no binary: the probe is whether the key is set,
-and it reads presence only. ``logged_in`` is a *cheap* signal — the credential file the CLI writes
-where it writes it — and it is ``None`` when there is no cheap way to tell, because "I do not
-know" and "no" are different answers to give a user staring at a setup screen.
+A probe proves the binary answers ``--version``, and it never runs inference. For ``nebius`` there
+is no binary: the probe is whether the key is set, and it reads presence only. ``logged_in`` is
+the CLI's own word where it has a zero-token sign-in check at a version that check was verified
+on (:data:`_STATUS_CHECKS`), asked in the environment a turn's spawn builds; below that version it
+is the cheap guess it always was, the credential file the CLI writes. A file's existence proves
+nothing about a revoked or signed-out session (ADR 0118). It is ``None`` whenever the answer
+cannot be read, because "I do not know" and "no" are different answers to give a user staring at
+a setup screen, and neither is "yes".
 """
 
 from __future__ import annotations
 
+import json
 import os
+import re
 import shutil
 import subprocess
 from collections.abc import Mapping
@@ -49,7 +54,7 @@ from athena.harness.tokenfactory import (
 from athena.harness.tokenfactory import (
     ENGINE as NEBIUS,
 )
-from athena.harness.transports import SubprocessTransport
+from athena.harness.transports import SubprocessTransport, child_env
 
 __all__ = [
     "API_ENGINES",
@@ -77,6 +82,19 @@ _CREDENTIAL_PATHS: dict[str, tuple[str, ...]] = {
     CLAUDE.name: (".claude/.credentials.json", ".claude.json"),
     CODEX.name: (".codex/auth.json",),
 }
+
+#: Each CLI's own sign-in check, which spends no tokens, and the oldest version it was verified on
+#: (2026-10-16: ``claude`` 2.1.301 answers ``auth status --json`` with ``{"loggedIn": ...}``;
+#: ``codex-cli`` 0.160.0 answers ``login status`` with "Logged in using ..." and exit 0, or "Not
+#: logged in" and exit 1). Dated data: a CLI older than its floor, or one whose version does not
+#: parse, is never asked, because a CLI that does not know the subcommand could take it for a
+#: prompt. Raise a floor's reach only by running the check on that version.
+_STATUS_CHECKS: dict[str, tuple[tuple[str, ...], tuple[int, int, int]]] = {
+    CLAUDE.name: (("auth", "status", "--json"), (2, 1, 301)),
+    CODEX.name: (("login", "status"), (0, 160, 0)),
+}
+
+_SEMVER = re.compile(r"(\d+)\.(\d+)\.(\d+)")
 
 
 @dataclass(frozen=True)
@@ -125,7 +143,7 @@ def probe(
         return EngineStatus(
             name, False, f"{binary} --version exited {done.returncode}", version=version
         )
-    signed_in = _logged_in(name, home)
+    signed_in = _signed_in(name, path, version, home)
     return EngineStatus(
         name,
         True,
@@ -159,6 +177,54 @@ def _probe_key(env: Mapping[str, str] | None) -> EngineStatus:
     if key_present(env if env is not None else os.environ):
         return EngineStatus(NEBIUS, True, f"{API_KEY_ENV} is set")
     return EngineStatus(NEBIUS, False, f"{API_KEY_ENV} is not set")
+
+
+def _signed_in(name: str, path: str, version: str, home: Path | None) -> bool | None:
+    """Is this CLI signed in? Its own zero-token check where verified, else the cheap guess.
+
+    The check runs the binary the probe resolved, with no stdin, in the environment a turn's
+    spawn is given (:func:`~athena.harness.transports.child_env`): these CLIs report their auth
+    from the environment they are handed, so a check run in the host's would describe a process
+    nobody launches. Only the verdict is read; the rest of the answer (an account's e-mail and
+    organisation among it) is dropped here.
+    """
+    check = _STATUS_CHECKS.get(name)
+    found = _SEMVER.search(version)
+    if check is None or found is None:
+        return _logged_in(name, home)
+    argv, floor = check
+    if tuple(int(part) for part in found.groups()) < floor:
+        return _logged_in(name, home)
+    try:
+        done = subprocess.run(
+            [path, *argv],
+            capture_output=True,
+            text=True,
+            timeout=PROBE_TIMEOUT_S,
+            check=False,
+            stdin=subprocess.DEVNULL,
+            env=child_env(os.environ),
+        )
+    except (OSError, subprocess.SubprocessError):
+        return None
+    return _read_status(name, done.returncode, done.stdout or "", done.stderr or "")
+
+
+def _read_status(name: str, returncode: int, stdout: str, stderr: str) -> bool | None:
+    """One sign-in check's verdict, or ``None`` when it says something this does not know."""
+    if name == CLAUDE.name:
+        try:
+            answer = json.loads(stdout)
+        except json.JSONDecodeError:
+            return None
+        verdict = answer.get("loggedIn") if isinstance(answer, dict) else None
+        return verdict if isinstance(verdict, bool) else None
+    said = f"{stdout}\n{stderr}".lower()
+    if "not logged in" in said:
+        return False
+    if returncode == 0 and "logged in" in said:
+        return True
+    return None
 
 
 def _logged_in(name: str, home: Path | None = None) -> bool | None:
