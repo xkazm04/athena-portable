@@ -13,7 +13,8 @@ import { VARIANT } from "@/lib/constants";
  */
 const draft = Chivo({
   subsets: ["latin"],
-  weight: ["400", "500", "600", "700", "900"],
+  /* The weights a rule asks for, and no other: each one is a font file the build fetches. */
+  weight: ["400", "500", "600", "700"],
   variable: "--font-draft",
   display: "swap",
 });
