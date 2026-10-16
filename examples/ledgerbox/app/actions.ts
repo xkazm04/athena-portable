@@ -26,7 +26,7 @@ import { renderSummary, renderSummaryMarkdown, summaryTitle } from "@/lib/export
 import { formatMoney } from "@/lib/format";
 import { scoreCandidate } from "@/lib/match";
 import { composeReminder, type ReminderDraft } from "@/lib/reminder";
-import type { ActionResult } from "@/lib/types";
+import type { ActionResult, InvoiceRow } from "@/lib/types";
 
 /** `match_bank_line`'s answer: the message, plus the trading name the credit arrived under. */
 export interface MatchResult extends ActionResult {
@@ -111,6 +111,21 @@ function paymentForMatch(
 
 function fail(message: string): ActionResult {
   return { ok: false, message };
+}
+
+/**
+ * Why nothing about money may touch this invoice: it is not a debt. `COUNTED_OUT` is the books'
+ * one statement of which states those are - a draft was never sent to the client, a void was
+ * withdrawn - and every total already reads it. The acts that chase or apply money read it here,
+ * so the sentence a refusal gives is the reason, not a balance of zero standing in for one.
+ * `consequence` finishes the sentence for the act that asked.
+ */
+function notADebt(invoice: InvoiceRow, consequence: string): string | null {
+  if (!COUNTED_OUT.includes(invoice.state)) return null;
+  if (invoice.state === "draft") {
+    return `${invoice.number} is a draft - it has not been sent to the client, so ${consequence}.`;
+  }
+  return `${invoice.number} is ${invoice.state}, so ${consequence}.`;
 }
 
 /** AUTO - file invoices under a book-keeping category. */
@@ -316,6 +331,9 @@ export async function draftReminderAction(ref: string, tone: Tone): Promise<Draf
   if (!resolved.ok) return fail(resolved.error);
   const invoiceId = resolved.id;
   const invoice = getInvoice(invoiceId)!;
+  // Before the balance: a void's balance reads 0, and "settled" is not why it cannot be chased.
+  const unowed = notADebt(invoice, "there is nothing to chase");
+  if (unowed) return fail(unowed);
   if (invoice.balance_cents <= 0) return fail(`${invoice.number} is settled - nothing to chase.`);
   // Stated where it is meant. This used to be an accident of the days_overdue arithmetic.
   if (invoice.state === "disputed") {
@@ -383,6 +401,9 @@ export async function sendReminderAction(ref: string): Promise<SendResult> {
     [invoiceId],
   );
   if (!draft) return fail("Draft a reminder first - there is nothing to send.");
+  // The draft may predate the invoice being voided; a letter about a debt that is not one stays.
+  const unowed = notADebt(invoice, "the reminder was not sent");
+  if (unowed) return fail(unowed);
 
   const sentAt = new Date().toISOString();
   handle.withTx((tx) => {

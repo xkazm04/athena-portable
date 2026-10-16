@@ -12,6 +12,29 @@
 import assert from "node:assert/strict";
 import { readFileSync } from "node:fs";
 import { test } from "node:test";
+import { tempHome } from "./tmp-home";
+
+// Own scratch cwd, own seeded copy: `openDb` resolves the file from `process.cwd()/data`.
+tempHome("ledgerbox-app-shell-");
+
+const { db, listInvoices } = await import("../lib/db");
+const actions = await import("../app/actions");
+
+/** How many reminder rows - drafted or sent - an invoice has. */
+function remindersOf(invoiceId: string): number {
+  return db().get<{ n: number }>("SELECT COUNT(*) AS n FROM reminders WHERE invoice_id = ?", [invoiceId])!.n;
+}
+
+/** An invoice in `state` that nothing else in this file has touched, largest balance first. */
+const used = new Set<string>();
+function fresh(state: string): ReturnType<typeof listInvoices>[number] {
+  const row = listInvoices()
+    .filter((r) => r.state === state && !used.has(r.id) && !r.has_draft_reminder)
+    .sort((a, b) => b.balance_cents - a.balance_cents)[0];
+  assert.ok(row, `the seed has an unused ${state} invoice`);
+  used.add(row.id);
+  return row;
+}
 
 /** `22.18.0` -> [22, 18, 0]. */
 function parse(version: string): [number, number, number] {
@@ -100,4 +123,40 @@ test("the Node range package.json declares is one the tests and the books actual
   }
   // And the Node running this test is one the range admits.
   assert.ok(satisfies(range, process.versions.node), `${range} admits the running Node ${process.versions.node}`);
+});
+
+test("no reminder is drafted or sent for an invoice nobody owes: a draft, or a void", async () => {
+  // `draft_reminder` asked only about the balance and a dispute, so the seed's draft (never sent
+  // to the client, out of every total) got a dunning letter, and `send_reminder` sent it. A void
+  // invoice was turned away as "settled", which is not why.
+  const draft = fresh("draft");
+  const drafted = await actions.draftReminderAction(draft.id, "gentle");
+  assert.equal(drafted.ok, false, drafted.message);
+  assert.match(drafted.message, new RegExp(`${draft.number} is a draft - it has not been sent to the client`));
+  assert.equal(remindersOf(draft.id), 0, "no reminder row for the draft");
+
+  const voided = fresh("void");
+  const onVoid = await actions.draftReminderAction(voided.id, "gentle");
+  assert.equal(onVoid.ok, false);
+  assert.match(onVoid.message, new RegExp(`${voided.number} is void`));
+
+  // A letter that already exists does not get through either: one drafted while the invoice was
+  // open and still unsent when it was voided, and one left on the draft from before this rule.
+  const open = fresh("open");
+  assert.equal((await actions.draftReminderAction(open.id, "gentle")).ok, true);
+  assert.equal((await actions.voidInvoiceAction(open.id)).ok, true);
+  const sendVoid = await actions.sendReminderAction(open.id);
+  assert.equal(sendVoid.ok, false, sendVoid.message);
+  assert.match(sendVoid.message, new RegExp(`${open.number} is void`));
+  db().run(
+    "INSERT INTO reminders (id, invoice_id, tone, recipient, subject, body, created_at, sent_at) VALUES (?, ?, 'gentle', 'a@b.example', 's', 'b', ?, NULL)",
+    ["rem_probe_draft", draft.id, new Date().toISOString()],
+  );
+  const sendDraft = await actions.sendReminderAction(draft.id);
+  assert.equal(sendDraft.ok, false, sendDraft.message);
+  assert.equal(
+    db().get<{ n: number }>("SELECT COUNT(*) AS n FROM reminders WHERE invoice_id IN (?, ?) AND sent_at IS NOT NULL", [draft.id, open.id])!.n,
+    0,
+    "nothing was stamped sent",
+  );
 });
