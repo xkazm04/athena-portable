@@ -16,7 +16,7 @@ import { tempHome } from "./tmp-home";
 tempHome("ledgerbox-domain-lib-");
 
 const { PERIODS } = await import("../lib/constants");
-const { summarize } = await import("../lib/db");
+const { db, getInvoiceDetail, lineSuggestions, listInvoices, summarize } = await import("../lib/db");
 const { parseDollars } = await import("../lib/format");
 const { composeReminder } = await import("../lib/reminder");
 const { buildSheet } = await import("../lib/lanes");
@@ -140,4 +140,31 @@ test("no credit is offered for an invoice it is larger than, because applying it
   const short = scoreCandidate(input, line(99_000));
   assert.equal(short?.short_by_cents, 1_000);
   assert.ok(short?.evidence.includes("short by $10.00, about a wire fee"));
+});
+
+test("a draft is offered no credit anywhere, the card included", () => {
+  // Three readers ask "can a credit be applied here?" - the row's candidate count, the strip's
+  // suggestions and the invoice card. The row and the strip said no for a draft (nobody has been
+  // asked for the money); the card asked only whether a balance was left, and offered the credit.
+  const draft = listInvoices().find((r) => r.state === "draft")!;
+  assert.ok(draft, "the seed carries a draft invoice");
+  const lineId = "bl_draft_probe";
+  db().run(
+    "INSERT INTO bank_lines (id, posted_at, memo, amount_cents, direction, source_file) VALUES (?, ?, ?, ?, 'in', ?)",
+    [lineId, draft.due_at, `${draft.client_name.toUpperCase()} PAYMENT`, draft.balance_cents, "statement-probe.csv"],
+  );
+  try {
+    assert.equal(listInvoices().find((r) => r.id === draft.id)!.candidate_count, 0, "the row: none");
+    assert.ok(
+      !(lineSuggestions()[lineId] ?? []).some((s) => s.invoice_id === draft.id),
+      "the strip: not suggested",
+    );
+    assert.deepEqual(
+      getInvoiceDetail(draft.id)!.candidates.map((c) => c.line.id),
+      [],
+      "the card: none either",
+    );
+  } finally {
+    db().run("DELETE FROM bank_lines WHERE id = ?", [lineId]);
+  }
 });

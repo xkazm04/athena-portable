@@ -87,17 +87,17 @@ function toRow(raw: RawRow, pool: BankLine[]): InvoiceRow {
     raw.status !== "void" && raw.status !== "draft" && balance > 0
       ? Math.max(0, daysPast(raw.due_at))
       : 0;
-  const candidates =
-    balance > 0 && raw.status !== "void" && raw.status !== "draft"
-      ? candidatesFor(
-          { invoice: raw, clientName: raw.client_name, balanceCents: balance, alias: raw.client_bank_alias },
-          pool,
-        )
-      : [];
+  const state = stateOf(raw, balance, overdueDays);
+  const candidates = takesCredit({ state, balance_cents: balance })
+    ? candidatesFor(
+        { invoice: raw, clientName: raw.client_name, balanceCents: balance, alias: raw.client_bank_alias },
+        pool,
+      )
+    : [];
   return {
     ...raw,
     balance_cents: balance,
-    state: stateOf(raw, balance, overdueDays),
+    state,
     days_overdue: overdueDays,
     candidate_count: candidates.length,
     has_draft_reminder: raw.drafts > 0,
@@ -178,7 +178,7 @@ export function getInvoiceDetail(id: string): InvoiceDetail | undefined {
     payments: handle.all<Payment>("SELECT * FROM payments WHERE invoice_id = ? ORDER BY paid_at", [id]),
     matches,
     candidates:
-      invoice.balance_cents > 0
+      takesCredit(invoice)
         ? candidatesFor(
             {
               invoice,
@@ -226,6 +226,16 @@ export { inPeriodClient as inPeriod } from "./filter-period";
  * readers - `summarize` here and `exportSummaryAction`'s own outstanding table.
  */
 export const COUNTED_OUT: InvoiceState[] = ["void", "draft"];
+
+/**
+ * Whether a credit may be offered against this invoice: something is owed, and it is a debt at
+ * all. One predicate for its three readers - the row's `candidate_count`, `lineSuggestions` and
+ * the card's `getInvoiceDetail` - because the card used to ask only about the balance and offered
+ * a draft the credit its own row said it had none of.
+ */
+function takesCredit(row: { state: InvoiceState; balance_cents: number }): boolean {
+  return row.balance_cents > 0 && !COUNTED_OUT.includes(row.state);
+}
 
 /**
  * The numbers `export_summary` and the reports view both read from. Memoised per period.
@@ -310,7 +320,7 @@ export interface CreditView {
  * deliberately ambiguous seed rows show up - two open invoices tying for the same credit.
  */
 export const lineSuggestions = cache((): Record<string, LineSuggestion[]> => {
-  const open = listInvoices().filter((r) => r.balance_cents > 0 && r.state !== "void" && r.state !== "draft");
+  const open = listInvoices().filter(takesCredit);
   const out: Record<string, LineSuggestion[]> = {};
   for (const line of unappliedLines()) {
     if (line.direction !== "in") continue;
