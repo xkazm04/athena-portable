@@ -26,9 +26,9 @@
 
 /*
  * The phone. What this block exists to prevent is the sheet's numbers pushing
- * the plate off the screen: six figures at one per line and a level rail whose
- * three labels each wrapped to two put the picture 745px down the page, which on a
- * 390-wide phone means the subject of the direction is not on it.
+ * the plate off the screen: six figures at one per line (and, while the sheet had
+ * one, a level rail whose labels each wrapped to two) put the picture 745px down the
+ * page, which on a 390-wide phone means the subject of the direction is not on it.
  */
 @container bk-sheet (max-width: 34rem) {
   .bk-head {
@@ -58,25 +58,6 @@
 
   .bk-stats > .bk-stat > b {
     font-size: var(--bk-text-sm);
-  }
-
-  .bk-bar {
-    display: grid;
-    justify-content: stretch;
-    gap: var(--bk-s2);
-  }
-
-  .bk-rail {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  /* Tighter, but never below the 44px target: the rung keeps `--bk-s7`. */
-  .bk-rung {
-    gap: var(--bk-s1);
-    justify-content: center;
-    padding: var(--bk-s2) var(--bk-s1);
-    font-size: var(--bk-text-xs);
   }
 
   .bk-grid-head {

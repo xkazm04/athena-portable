@@ -65,11 +65,6 @@
   }
 }
 
-.bk-fig {
-  font-family: var(--bk-font-fig);
-  font-variant-numeric: tabular-nums lining-nums;
-}
-
 /* Every scroll surface, in the print's own ink. A default scrollbar on vellum
    is a blue-grey rail from another operating system. */
 .bk-root :where(*) {

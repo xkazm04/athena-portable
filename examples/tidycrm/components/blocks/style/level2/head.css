@@ -53,12 +53,3 @@
   border-block: var(--bk-rule-1) solid var(--bk-rule-ink);
 }
 
-.bk-why {
-  margin: 0;
-  max-inline-size: var(--bk-measure-wide);
-  font-family: var(--bk-font-note);
-  font-size: var(--bk-text-base);
-  line-height: var(--bk-leading-relaxed);
-  color: var(--bk-graphite-2);
-}
-

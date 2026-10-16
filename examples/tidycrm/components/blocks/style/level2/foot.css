@@ -150,16 +150,6 @@
   line-height: var(--bk-leading-relaxed);
 }
 
-.bk-select {
-  min-block-size: var(--bk-s7);
-  padding: var(--bk-s2) var(--bk-s3);
-  background: var(--bk-sheet);
-  border: var(--bk-rule-1) solid var(--bk-graphite);
-  border-radius: var(--bk-radius-0);
-  color: var(--bk-graphite);
-  font-size: var(--bk-text-xs);
-}
-
 @container bk-dossier (max-width: 62rem) {
   .bk-dossier-body {
     grid-template-columns: minmax(0, 1fr);

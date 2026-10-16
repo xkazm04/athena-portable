@@ -89,12 +89,6 @@
   min-inline-size: 0;
 }
 
-.bk-tile-head {
-  display: grid;
-  gap: var(--bk-s0);
-  min-inline-size: 0;
-}
-
 /* The name leads the card; the code follows it. Order is in the markup (Field.tsx) — what is
    here is only that neither may push the other out of the card. */
 .bk-tile-name {

@@ -13,7 +13,7 @@
  *   node --experimental-transform-types --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { readdirSync, readFileSync } from "node:fs";
 import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 
@@ -261,4 +261,26 @@ test("a legend key keeps its fault or quiet stripe while it is hovered, focused 
     for (const prop of rule.decls.keys()) if (reaches.test(prop)) offenders.push(`${rule.selector} { ${prop} }`);
   }
   assert.deepEqual(offenders, [], "a later hover/on rule repaints the verdict stripe");
+});
+
+test("every class the sheet styles is one the app renders", () => {
+  // A rule for a class nothing renders is a rule nobody can see, and in this sheet the dead ones
+  // were not neutral: they kept a contrast exception (a disabled rung under the ink floor) and a
+  // comment ("the breakdown under the bar") describing a level rail that no longer exists.
+  const sources: string[] = [];
+  const walk = (dir: string): void => {
+    for (const entry of readdirSync(fileURLToPath(new URL(`../${dir}`, import.meta.url)), { withFileTypes: true })) {
+      const path = `${dir}/${entry.name}`;
+      if (entry.isDirectory()) walk(path);
+      else if (/\.(ts|tsx)$/.test(entry.name)) sources.push(read(path));
+    }
+  };
+  for (const dir of ["app", "components", "lib"]) walk(dir);
+  const code = sources.join("\n");
+  const styled = new Set([...SHEET.matchAll(/\.(bk-[a-z0-9-]+)/g)].map((m) => m[1]!));
+  const unrendered = [...styled].filter(
+    (c) => !new RegExp(`(?<![a-z0-9-])${c}(?![a-z0-9-])`).test(code),
+  );
+  assert.ok(styled.size > 50, `only ${styled.size} classes read off the sheet`);
+  assert.deepEqual(unrendered, [], "the sheet styles classes no component renders");
 });
