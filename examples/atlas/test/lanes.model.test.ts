@@ -54,6 +54,7 @@ import {
   PHASES,
   ROLES,
   kindOfNode,
+  nodeName,
   roleCounts,
   systemCoverage,
 } from "../components/atlas/variants/archify-lanes/workflow";
@@ -180,6 +181,19 @@ test("every node names a real component for the pane to open", () => {
       n.systems.includes(c!.system),
       `${n.id} opens ${n.item}, which belongs to ${c!.system} — not one of its systems`,
     );
+  }
+});
+
+test("a node's accessible name says which lane owns it and which phase it happens in", () => {
+  /* The lanes and phases are aria-hidden SVG, so the node's own name is where position is spoken. */
+  for (const n of NODES) {
+    const name = nodeName(n);
+    const lane = LANES.find((l) => l.id === n.lane)!;
+    const phase = PHASES.find((p) => n.col >= p.fromCol && n.col <= p.toCol)!;
+    assert.ok(name.startsWith(n.label), `${n.id}: the name does not lead with the label`);
+    assert.ok(name.includes(`lane ${lane.label}`), `${n.id}: "${name}" never names its lane`);
+    assert.ok(name.includes(`phase ${phase.label}`), `${n.id}: "${name}" never names its phase`);
+    assert.ok(name.includes(n.note), `${n.id}: the note fell out of the name`);
   }
 });
 

@@ -344,6 +344,22 @@ export const nodeOfSystem = (systemId: string): string | undefined => NODE_OF_SY
  */
 export const kindOfNode = (n: WNode): Kind => kindOfSystem(n.systems[0]!);
 
+/**
+ * What a node is called to a screen reader. The drawing's claim is POSITION — the lane says who
+ * owns the step, the phase says when — and the lane and phase chrome is `aria-hidden` SVG, so the
+ * name is the only place a reader who cannot see the grid is told where a node stands.
+ */
+export function nodeName(n: WNode): string {
+  const lane = laneById(n.lane);
+  const where = [
+    lane
+      ? `lane ${lane.label}${lane.variant === "exception" ? " (the exception lane)" : ""}`
+      : null,
+    `phase ${phaseOfCol(n.col).label}`,
+  ].filter((s): s is string => s !== null);
+  return `${n.label} — ${n.sublabel}. In ${where.join(", ")}. ${n.note}`;
+}
+
 /** All seven kinds are used; the legend counts them. */
 export const kindCounts = (): { kind: Kind; n: number }[] => {
   const tally = new Map<Kind, number>();

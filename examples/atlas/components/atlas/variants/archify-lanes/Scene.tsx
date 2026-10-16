@@ -23,7 +23,7 @@
  */
 import { memo, type CSSProperties, type KeyboardEvent } from "react";
 
-import { kindOfNode, statusOfNode, type WNode, type Role } from "./workflow";
+import { kindOfNode, nodeName, statusOfNode, type WNode, type Role } from "./workflow";
 import { fitTier, rem } from "./text";
 import type { LaneBand, NodeBox, PhaseBand, Plan } from "./geometry";
 import type { Run } from "./routing";
@@ -357,7 +357,7 @@ export const Node = memo(function Node({
       style={{ ...box(rect), "--al-present": presence } as CSSProperties}
       tabIndex={0}
       role="button"
-      aria-label={`${node.label} — ${node.sublabel}. ${node.note}`}
+      aria-label={nodeName(node)}
       onClick={() => onOpen(node.id)}
       onKeyDown={(e) => onKeyDown(e, node.id)}
       onPointerEnter={() => onHover(node.id)}
