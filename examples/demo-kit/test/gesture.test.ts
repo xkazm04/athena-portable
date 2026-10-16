@@ -13,6 +13,7 @@ import {
   DRAG_SLOP,
   gestureStep,
   initialGesture,
+  keyAction,
   swallowsClick,
   type GestureEffect,
   type GestureInput,
@@ -170,4 +171,17 @@ test("case 6: the slop is screen space: 3 px at zoom 4 is a click, measured befo
     drag.all.filter((e) => e.type === "drag").map((e) => (e.type === "drag" ? e.dx : NaN)),
     [4],
   );
+});
+
+/* ---------------------------------------------------------------------------------- the keys */
+
+test("each key the rig answers is a move, and every other key is not the camera's", () => {
+  assert.deepEqual(keyAction({ key: "ArrowLeft" }, "orbit"), { type: "orbit", dx: -1, dy: 0 });
+  assert.deepEqual(keyAction({ key: "ArrowDown" }, "orbit"), { type: "orbit", dx: 0, dy: 1 });
+  assert.deepEqual(keyAction({ key: "ArrowUp", shiftKey: true }, "orbit"), { type: "pan", dx: 0, dy: -1 });
+  assert.deepEqual(keyAction({ key: "ArrowRight" }, "pan"), { type: "pan", dx: 1, dy: 0 });
+  for (const key of ["+", "="]) assert.deepEqual(keyAction({ key }, "orbit"), { type: "zoom", direction: "in" });
+  for (const key of ["-", "_"]) assert.deepEqual(keyAction({ key }, "orbit"), { type: "zoom", direction: "out" });
+  assert.deepEqual(keyAction({ key: "Home" }, "orbit"), { type: "home" });
+  for (const key of ["Enter", " ", "a", "Escape", "Tab", "End"]) assert.equal(keyAction({ key }, "orbit"), null, key);
 });

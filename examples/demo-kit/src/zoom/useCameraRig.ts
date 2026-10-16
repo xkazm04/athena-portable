@@ -69,7 +69,7 @@ import {
   type CameraPose,
   type CameraVelocity,
 } from "./camera";
-import { gestureStep, initialGesture, type GestureInput, type GestureState } from "./gesture";
+import { gestureStep, initialGesture, keyAction, type GestureInput, type GestureState } from "./gesture";
 import { FLY_EASE, cssEase, cssMs, easeFromCss } from "./tokens";
 
 export interface CameraRigOptions {
@@ -593,68 +593,37 @@ export function useCameraRig(options: CameraRigOptions): CameraRig {
 
       onKeyDown: (event) => {
         if (opts.current.keyboard === false) return;
+        const action = keyAction(event, opts.current.drag ?? "orbit");
+        if (!action) return;
         see(event.currentTarget);
-        const box = frame();
-        const centre = { x: box.left + box.w / 2, y: box.top + box.h / 2 };
-        const panning = (opts.current.drag ?? "orbit") === "pan" || event.shiftKey;
-        const step = (dx: number, dy: number) => {
-          stopInertia();
-          fly.current?.();
-          if (panning) {
-            const d = panDelta(dx * KEY_PAN, dy * KEY_PAN, pose.current.zoom);
-            apply({
-              ...pose.current,
-              pan: { x: pose.current.pan.x + d.x, y: pose.current.pan.y + d.y },
-            });
-          } else {
-            /* One press is `KEY_ORBIT` radians, whatever the drag sensitivity is: a key is a
-               fixed step and a drag is a ratio, and tying the two makes a surface that orbits
-               slowly under the mouse unreachable from the keyboard. */
-            const d = orbitDelta(dx, dy, KEY_ORBIT);
-            apply({
-              ...pose.current,
-              yaw: pose.current.yaw + d.yaw,
-              pitch: pose.current.pitch + d.pitch,
-            });
-          }
-          scheduleIdle();
-        };
-
-        switch (event.key) {
-          case "ArrowLeft":
-            step(-1, 0);
-            break;
-          case "ArrowRight":
-            step(1, 0);
-            break;
-          case "ArrowUp":
-            step(0, -1);
-            break;
-          case "ArrowDown":
-            step(0, 1);
-            break;
-          case "+":
-          case "=":
-            stopInertia();
-            zoomBy(KEY_ZOOM, centre);
-            scheduleIdle();
-            break;
-          case "-":
-          case "_":
-            stopInertia();
-            zoomBy(1 / KEY_ZOOM, centre);
-            scheduleIdle();
-            break;
-          case "Home":
-            flyTo(initial.current);
-            break;
-          default:
-            return;
-        }
         event.preventDefault();
+        if (action.type === "home") {
+          flyTo(initial.current);
+          return;
+        }
+        // A key is a move the reader asked for: it stops whatever else was moving the camera,
+        // a fly included, or the fly's next frame overwrites it.
+        stopInertia();
+        fly.current?.();
+        clearIdle();
+        if (action.type === "zoom") {
+          const box = frame();
+          const centre = { x: box.left + box.w / 2, y: box.top + box.h / 2 };
+          zoomBy(action.direction === "in" ? KEY_ZOOM : 1 / KEY_ZOOM, centre);
+        } else if (action.type === "pan") {
+          const d = panDelta(action.dx * KEY_PAN, action.dy * KEY_PAN, pose.current.zoom);
+          apply({ ...pose.current, pan: { x: pose.current.pan.x + d.x, y: pose.current.pan.y + d.y } });
+        } else {
+          /* One press is `KEY_ORBIT` radians, whatever the drag sensitivity is: a key is a fixed
+             step and a drag is a ratio, and tying the two makes a surface that orbits slowly
+             under the mouse unreachable from the keyboard. */
+          const d = orbitDelta(action.dx, action.dy, KEY_ORBIT);
+          apply({ ...pose.current, yaw: pose.current.yaw + d.yaw, pitch: pose.current.pitch + d.pitch });
+        }
+        scheduleIdle();
       },
     };
-  }, [apply, flyTo, frame, runGesture, scheduleIdle, see, stopInertia, zoomBy]);
+  }, [apply, clearIdle, flyTo, frame, runGesture, scheduleIdle, see, stopInertia, zoomBy]);
 
   return useMemo<CameraRig>(() => {
     const rig: CameraRig = {

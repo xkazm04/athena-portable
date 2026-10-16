@@ -298,3 +298,53 @@ export function gestureStep(state: GestureState, input: GestureInput, opts: Gest
       return state.pointers.some((p) => p.id === input.id && p.captured) ? abort(state, input.id) : none;
   }
 }
+
+/* ---------------------------------------------------------------------------------- the keys */
+
+/** The shape `keyAction` needs from a `KeyboardEvent`. */
+export interface KeyInput {
+  key: string;
+  shiftKey?: boolean;
+}
+
+/**
+ * What one key press asks of the camera, or `null` when the key is not the camera's.
+ *
+ * Arrows orbit (pan with shift, or when `drag` is `"pan"`) by one step, `+`/`=` and `-`/`_` zoom
+ * about the frame's centre, `Home` flies back to `initial`. Every answer is a MOVE the reader
+ * asked for, so the hook halts whatever was moving the camera first — inertia, the idle snap and
+ * a fly in progress alike — exactly as a drag, a wheel and `set` do. A key that left the fly
+ * running had its zoom overwritten by the fly's next frame.
+ */
+export type KeyAction =
+  | { type: "orbit"; dx: number; dy: number }
+  | { type: "pan"; dx: number; dy: number }
+  | { type: "zoom"; direction: "in" | "out" }
+  | { type: "home" };
+
+const ARROWS: Record<string, [number, number]> = {
+  ArrowLeft: [-1, 0],
+  ArrowRight: [1, 0],
+  ArrowUp: [0, -1],
+  ArrowDown: [0, 1],
+};
+
+export function keyAction(input: KeyInput, drag: GestureOptions["drag"]): KeyAction | null {
+  const arrow = ARROWS[input.key];
+  if (arrow) {
+    const [dx, dy] = arrow;
+    return drag === "pan" || input.shiftKey ? { type: "pan", dx, dy } : { type: "orbit", dx, dy };
+  }
+  switch (input.key) {
+    case "+":
+    case "=":
+      return { type: "zoom", direction: "in" };
+    case "-":
+    case "_":
+      return { type: "zoom", direction: "out" };
+    case "Home":
+      return { type: "home" };
+    default:
+      return null;
+  }
+}
