@@ -189,6 +189,26 @@ test("every control cut from the round-pill recipe answers a hover", () => {
   assert.deepEqual(silent, []);
 });
 
+test("a transform a state sets is eased by the element at rest", () => {
+  // Transform is the property this direction moves things with (DESIGN-LAW §1.3), so a state that
+  // scales or shifts an element and lands in one frame is a jump the rest of the board does not
+  // make. The button's press nudge was eased; the carousel's current dot scaled 1.4x in a frame.
+  const STATE = /:active|:hover|:focus-visible|\[aria-[a-z-]+(?:="[^"]*")?\]|\[data-[a-z-]+(?:="[^"]*")?\]|\[open\]/g;
+  const jumps: string[] = [];
+  for (const rule of RULES) {
+    if (!/(?:^|;)\s*transform\s*:/.test(rule.body)) continue;
+    for (const selector of rule.selectors) {
+      if (!selector.match(STATE)) continue;
+      const rest = selector.replace(STATE, "").replace(/:not\(\)/g, "").replace(/:not\([^)]*\)/g, "").trim();
+      const eased = RULES.some(
+        (r) => r.selectors.includes(rest) && /(?:^|;)\s*transition\s*:[^;]*\btransform\b/.test(r.body),
+      );
+      if (!eased) jumps.push(`${rule.file}: ${selector} (rest: ${rest})`);
+    }
+  }
+  assert.deepEqual(jumps, []);
+});
+
 test("the room's focus ring names every focusable tag the board renders", () => {
   // The tags are read out of the components, not listed here: a disclosure added to a component
   // is a tag this list did not know about, which is how the foot's <summary> was missed.

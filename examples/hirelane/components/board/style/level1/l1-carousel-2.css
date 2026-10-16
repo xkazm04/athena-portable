@@ -103,5 +103,8 @@
   border-radius: var(--bd-radius-round);
   background: rgb(255 255 255 / 22%);
   cursor: pointer;
+  /* The current dot grows and lights as the loupe moves; on the arrows' clock, so the marker eases
+     with the cards it marks instead of popping in one frame beside them. */
+  transition: transform var(--bd-dur-2) var(--bd-ease), background var(--bd-dur-2) var(--bd-ease);
 }
 
