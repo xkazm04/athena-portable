@@ -6,11 +6,14 @@
 // the DOM path is exercised against a stubbed `getComputedStyle`.
 
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { test } from "node:test";
 
 import {
+  FLY_EASE,
   cssEase,
   cssMs,
+  easeFromCss,
   parseBezier,
   parseEase,
   parseMs,
@@ -107,5 +110,59 @@ test("in a browser the value comes off the element you name", () => {
   } finally {
     delete g.window;
     delete g.document;
+  }
+});
+
+/* ------------------------------------------------------------------------ easing, from a token */
+
+const near = (a: number, b: number, eps = 1e-9) => assert.ok(Math.abs(a - b) < eps, `${a} !== ${b}`);
+
+test("an ease from the cascade starts at 0, ends at 1 and never runs backwards", () => {
+  for (const raw of ["linear", "ease-in-out", "cubic-bezier(0.2, 0, 0, 1)", "", "steps(4)"]) {
+    const ease = easeFromCss(raw);
+    near(ease(0), 0, 1e-6);
+    near(ease(1), 1, 1e-6);
+    let last = -1;
+    for (let t = 0; t <= 1; t += 0.05) {
+      const v = ease(t);
+      assert.ok(v >= last - 1e-6, `${raw} went backwards at ${t}`);
+      last = v;
+    }
+  }
+});
+
+test("linear is exactly linear, and the kit's curve is not", () => {
+  near(easeFromCss("linear")(0.25), 0.25, 1e-9);
+  assert.ok(easeFromCss("cubic-bezier(0.2, 0, 0, 1)")(0.25) > 0.25);
+});
+
+test("the kit's default curve is the template's --dk-ease, read out of the stylesheet", () => {
+  // Two authorities for one curve is a race with a delay fuse: the retune happens in the CSS and
+  // the JS default goes on flying the old curve. The template is the kit's own scaffold, so its
+  // stylesheet is the artefact this pins against, not a comment that says they match.
+  const css = readFileSync(new URL("../template/app/globals.css", import.meta.url), "utf8");
+  const declared = /--dk-ease:\s*([^;]+);/.exec(css)?.[1]?.trim();
+  assert.ok(declared, "the template declares --dk-ease");
+  assert.equal(FLY_EASE, declared);
+  assert.ok(parseBezier(FLY_EASE), "and it is a curve the one parser reads");
+});
+
+test("an unreadable token falls back to exactly the FLY_EASE curve, not a second copy of it", () => {
+  // The fallback is sampled FROM the string, so retyping one without the other cannot happen.
+  const kit = easeFromCss(FLY_EASE);
+  for (const raw of ["", "steps(4)", "cubic-bezier(1, 2)", null, undefined]) {
+    const fallback = easeFromCss(raw);
+    for (let t = 0; t <= 1; t += 0.125) near(fallback(t), kit(t), 1e-12);
+  }
+});
+
+test("a curve means the same to easeFromCss as it does to parseBezier", () => {
+  // One parser: whatever parseBezier refuses, easeFromCss treats as unreadable, and vice versa.
+  const cases = ["cubic-bezier(0.4, 0, 0.2, 1)", " cubic-bezier( 0.4 ,0,0.2 , 1 ) ", "cubic-bezier(0.4, 0, 0.2)", "cubic-bezier(a, 0, 0, 1)", "CUBIC-BEZIER(0.4, 0, 0.2, 1)"];
+  const fallback = easeFromCss("");
+  for (const raw of cases) {
+    const read = parseBezier(raw) !== null;
+    const differs = [0.25, 0.5, 0.75].some((t) => Math.abs(easeFromCss(raw)(t) - fallback(t)) > 1e-6);
+    assert.equal(differs, read, `${raw}: parseBezier ${read ? "reads" : "refuses"} it`);
   }
 });

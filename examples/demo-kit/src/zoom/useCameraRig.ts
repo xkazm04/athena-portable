@@ -50,13 +50,11 @@ import { useCallback, useEffect, useMemo, useRef } from "react";
 import type { KeyboardEvent as ReactKeyboardEvent, PointerEvent as ReactPointerEvent, WheelEvent as ReactWheelEvent } from "react";
 
 import {
-  FLY_EASE,
   FLY_MS,
   ORBIT_SENSITIVITY,
   REST_POSE,
   ZERO_VELOCITY,
   clampPose,
-  easeFromCss,
   isNegligible,
   lerpPose,
   mergePose,
@@ -71,7 +69,7 @@ import {
   type CameraVelocity,
 } from "./camera";
 import { gestureStep, initialGesture, type GestureInput, type GestureState } from "./gesture";
-import { cssEase, cssMs } from "./tokens";
+import { FLY_EASE, cssEase, cssMs, easeFromCss } from "./tokens";
 
 export interface CameraRigOptions {
   /** Where the camera starts. Default `REST_POSE`. Read once, at mount. */

@@ -78,8 +78,10 @@ export { useSharedIdentity } from "./useSharedIdentity";
 
 /* Rule 4: one clock per level change, read out of the cascade. */
 export {
+  FLY_EASE,
   cssEase,
   cssMs,
+  easeFromCss,
   parseBezier,
   parseEase,
   parseMs,
@@ -119,7 +121,6 @@ export { useRoving, type Roving, type RovingOptions } from "./useRoving";
  * camera can serve a swimlane, a kanban, a cube and a map.
  */
 export {
-  FLY_EASE,
   FLY_MS,
   FRAME_MS,
   NEGLIGIBLE,
@@ -129,7 +130,6 @@ export {
   ZERO_VELOCITY,
   angleDelta,
   clampPose,
-  easeFromCss,
   isNegligible,
   lerpPose,
   mergePose,

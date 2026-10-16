@@ -76,9 +76,6 @@ export const FRAME_MS = 1000 / 60;
 /** The kit's default fly duration when no token answers: the rubric's DOM level-change budget. */
 export const FLY_MS = 420;
 
-/** The kit's default fly ease. The same curve the template's `--dk-ease` declares. */
-export const FLY_EASE = "cubic-bezier(0.2, 0, 0, 1)";
-
 const clamp = (n: number, lo: number, hi: number): number => (n < lo ? lo : n > hi ? hi : n);
 
 const finite = (n: number, fallback: number): number => (Number.isFinite(n) ? n : fallback);
@@ -350,58 +347,3 @@ export function lerpPose(a: CameraPose, b: CameraPose, t: number): CameraPose {
     pan: { x: a.pan.x + (b.pan.x - a.pan.x) * k, y: a.pan.y + (b.pan.y - a.pan.y) * k },
   };
 }
-
-/* ------------------------------------------------------------------------ easing, from a token */
-
-const bezier = (p1: number, p2: number, p3: number, p4: number) => (t: number): number => {
-  // x(u) and y(u) are the cubic Bézier with its endpoints pinned at (0,0) and (1,1), which is
-  // what CSS's four numbers mean. Invert x by bisection — twenty-four halvings is 6e-8, far
-  // inside a pixel, and unlike Newton it cannot diverge on a control point outside 0..1, which
-  // CSS allows on the x axis.
-  const x = (u: number) => 3 * (1 - u) ** 2 * u * p1 + 3 * (1 - u) * u * u * p3 + u ** 3;
-  const y = (u: number) => 3 * (1 - u) ** 2 * u * p2 + 3 * (1 - u) * u * u * p4 + u ** 3;
-  let lo = 0;
-  let hi = 1;
-  let u = t;
-  for (let i = 0; i < 24; i += 1) {
-    const at = x(u);
-    if (Math.abs(at - t) < 1e-5) break;
-    if (at < t) lo = u;
-    else hi = u;
-    u = (lo + hi) / 2;
-  }
-  return y(u);
-};
-
-const KEYWORDS: Record<string, (t: number) => number> = {
-  linear: (t) => t,
-  ease: bezier(0.25, 0.1, 0.25, 1),
-  "ease-in": bezier(0.42, 0, 1, 1),
-  "ease-out": bezier(0, 0, 0.58, 1),
-  "ease-in-out": bezier(0.42, 0, 0.58, 1),
-};
-
-const BEZIER_RE = /^cubic-bezier\(([^)]+)\)$/;
-
-/**
- * A CSS easing string as the function `flyTo` samples. Rule 4: JS reads tokens, it does not type
- * curves either.
- *
- * Understands the four keywords and `cubic-bezier(...)`; anything else — `steps()`, a spring, a
- * token that is not set — falls back to `FLY_EASE`, so an unreadable cascade lands on the kit's
- * curve rather than on a linear slide that reads as a machine.
- */
-export function easeFromCss(raw: string | null | undefined): (t: number) => number {
-  const value = (raw ?? "").trim();
-  const keyword = KEYWORDS[value];
-  if (keyword) return keyword;
-  const m = BEZIER_RE.exec(value);
-  const parts = m ? (m[1] ?? "").split(",").map((p) => Number(p.trim())) : [];
-  if (parts.length === 4 && parts.every((p) => Number.isFinite(p))) {
-    return bezier(parts[0] as number, parts[1] as number, parts[2] as number, parts[3] as number);
-  }
-  return DEFAULT_EASE;
-}
-
-/** `FLY_EASE`, resolved once. The answer for an unset token and for a curve JS cannot sample. */
-const DEFAULT_EASE = bezier(0.2, 0, 0, 1);

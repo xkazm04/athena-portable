@@ -12,7 +12,6 @@ import {
   REST_POSE,
   ZERO_VELOCITY,
   clampPose,
-  easeFromCss,
   isNegligible,
   lerpPose,
   mergePose,
@@ -224,23 +223,4 @@ test("mergePose takes only what the patch names, pan axis by axis", () => {
   const base = pose({ zoom: 2, pan: { x: 5, y: 6 } });
   assert.deepEqual(mergePose(base, { pan: { x: 9 } as { x: number; y: number } }).pan, { x: 9, y: 6 });
   assert.equal(mergePose(base, { yaw: 1 }).zoom, 2);
-});
-
-test("an ease from the cascade starts at 0, ends at 1 and never runs backwards", () => {
-  for (const raw of ["linear", "ease-in-out", "cubic-bezier(0.2, 0, 0, 1)", "", "steps(4)"]) {
-    const ease = easeFromCss(raw);
-    near(ease(0), 0, 1e-6);
-    near(ease(1), 1, 1e-6);
-    let last = -1;
-    for (let t = 0; t <= 1; t += 0.05) {
-      const v = ease(t);
-      assert.ok(v >= last - 1e-6, `${raw} went backwards at ${t}`);
-      last = v;
-    }
-  }
-});
-
-test("linear is exactly linear, and the kit's curve is not", () => {
-  near(easeFromCss("linear")(0.25), 0.25, 1e-9);
-  assert.ok(easeFromCss("cubic-bezier(0.2, 0, 0, 1)")(0.25) > 0.25);
 });

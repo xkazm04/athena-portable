@@ -128,3 +128,64 @@ export function readTokens<const N extends readonly string[]>(
   }
   return out as { readonly [K in N[number]]: TokenValue };
 }
+
+/* ------------------------------------------------------------------------ easing, from a token */
+
+/**
+ * The kit's default ease, for a fly or a move whose token is not set. It is the template's
+ * `--dk-ease` (template/app/globals.css), and `test/tokens.test.ts` reads that stylesheet and
+ * fails when the two differ. This string is the one place JS types the curve: the sampled
+ * function below is parsed from it, not typed again.
+ */
+export const FLY_EASE = "cubic-bezier(0.2, 0, 0, 1)";
+
+const bezier = (p1: number, p2: number, p3: number, p4: number) => (t: number): number => {
+  // x(u) and y(u) are the cubic Bézier with its endpoints pinned at (0,0) and (1,1), which is
+  // what CSS's four numbers mean. Invert x by bisection — twenty-four halvings is 6e-8, far
+  // inside a pixel, and unlike Newton it cannot diverge on a control point outside 0..1, which
+  // CSS allows on the x axis.
+  const x = (u: number) => 3 * (1 - u) ** 2 * u * p1 + 3 * (1 - u) * u * u * p3 + u ** 3;
+  const y = (u: number) => 3 * (1 - u) ** 2 * u * p2 + 3 * (1 - u) * u * u * p4 + u ** 3;
+  let lo = 0;
+  let hi = 1;
+  let u = t;
+  for (let i = 0; i < 24; i += 1) {
+    const at = x(u);
+    if (Math.abs(at - t) < 1e-5) break;
+    if (at < t) lo = u;
+    else hi = u;
+    u = (lo + hi) / 2;
+  }
+  return y(u);
+};
+
+const KEYWORDS: Record<string, (t: number) => number> = {
+  linear: (t) => t,
+  ease: bezier(0.25, 0.1, 0.25, 1),
+  "ease-in": bezier(0.42, 0, 1, 1),
+  "ease-out": bezier(0, 0, 0.58, 1),
+  "ease-in-out": bezier(0.42, 0, 0.58, 1),
+};
+
+/** A `cubic-bezier(...)` as a sampled curve, through the one parser this module has. */
+const curveOf = (raw: string): ((t: number) => number) | null => {
+  const p = parseBezier(raw);
+  return p ? bezier(p[0], p[1], p[2], p[3]) : null;
+};
+
+/** `FLY_EASE`, resolved once. The answer for an unset token and for a curve JS cannot sample. */
+const DEFAULT_EASE: (t: number) => number = curveOf(FLY_EASE) ?? KEYWORDS["ease-out"]!;
+
+/**
+ * A CSS easing string as the function a fly samples. Rule 4: JS reads tokens, it does not type
+ * curves either.
+ *
+ * Understands the four keywords and `cubic-bezier(...)` (read by `parseBezier`, the same parser
+ * `motion`'s callers use, so the two cannot disagree about what a token means); anything else —
+ * `steps()`, a spring, a token that is not set — falls back to `FLY_EASE`, so an unreadable
+ * cascade lands on the kit's curve rather than on a linear slide that reads as a machine.
+ */
+export function easeFromCss(raw: string | null | undefined): (t: number) => number {
+  const value = (raw ?? "").trim();
+  return KEYWORDS[value] ?? curveOf(value) ?? DEFAULT_EASE;
+}
