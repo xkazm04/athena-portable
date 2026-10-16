@@ -7,7 +7,7 @@ module decides what the gateway actually says, and everything it says passes
 :func:`athena.channels.voice.speech.speakable` first (no markup, no URL paths, code mentioned):
 
 - the ``TTS:`` line, through the door, when it has words. The parser already holds it to
-  :data:`TTS_CAP`;
+  :data:`TTS_CAP`, and what the door makes of it is held to the same cap, cut and announced;
 - otherwise the visible text, through the door, as whole sentences up to
   :data:`~athena.channels.voice.speech.SPOKEN_BUDGET` and *announced* — the spoken text ends with
   ``(showing N of M)`` counted in sentences, like every other bounded thing in this repository
@@ -34,21 +34,31 @@ class SpokenLine:
 
 
 def spoken_line(finished: TurnFinished) -> SpokenLine | None:
-    """What to say for one finished turn, or ``None`` when there is nothing to say."""
+    """What to say for one finished turn, or ``None`` when there is nothing to say.
+
+    The ``TTS:`` line is held to :data:`TTS_CAP` again *after* the door: the parser cut it before,
+    and a bare URL spoken as "a link to" its host is longer than the URL, so the door can carry a
+    line past what a speaker takes (``kokoro.MAX_CHARS``) and the whole line would be refused.
+    """
     if finished.tts:
         line = speakable(finished.tts)
         if line:
-            return SpokenLine(line)
+            return _within(line, TTS_CAP)
     text = speakable(finished.text)
     if not text:
         return None
-    if len(text) <= SPOKEN_BUDGET:
+    return _within(text, SPOKEN_BUDGET)
+
+
+def _within(text: str, limit: int) -> SpokenLine:
+    """``text`` whole when it fits ``limit``, else whole sentences up to it and announced."""
+    if len(text) <= limit:
         return SpokenLine(text)
-    parts = pieces(text, SPOKEN_BUDGET)
+    parts = pieces(text, limit)
     shown: list[str] = []
     size = -1
     for part in parts:
-        if size + 1 + len(part) > SPOKEN_BUDGET:
+        if size + 1 + len(part) > limit:
             break
         shown.append(part)
         size += 1 + len(part)

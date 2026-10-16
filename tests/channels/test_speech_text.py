@@ -7,7 +7,7 @@ from athena.channels.voice import kokoro
 from athena.channels.voice.speech import SPOKEN_BUDGET, sentences, speakable
 from athena.channels.voice.tts import SpokenLine, spoken_line
 from athena.contracts.channel import TurnFinished
-from athena.harness.op_grammar import TTS_CAP
+from athena.harness.op_grammar import TTS_CAP, parse_turn
 
 
 def _sentence(n: int, length: int) -> str:
@@ -89,6 +89,22 @@ def test_case4b_a_run_on_longer_than_the_budget_is_cut_between_words_and_announc
 def test_case5_the_tts_line_passes_the_door() -> None:
     line = spoken_line(TurnFinished(text="A long visible answer.", tts="**Done.** See `INV-7`."))
     assert line == SpokenLine("Done. See INV-7.", truncated=False)
+
+
+def test_case5b_a_tts_line_the_door_lengthens_still_fits_what_kokoro_will_speak() -> None:
+    """The parser holds the line to TTS_CAP before the door; a bare URL spoken as "a link to"
+    its host is longer than the URL, so the door can carry a line past Kokoro's limit, and Kokoro
+    refuses a line past it whole. Past the cap after the door, the line is cut and announced."""
+    assert (
+        kokoro.TEXT_CAP >= TTS_CAP
+    )  # the preview bound is the turn's own cap, not a copy below it
+    tts = parse_turn("TTS: " + "Go https://x.y " * 200 + "\nBody.").tts
+    assert tts is not None and len(tts) == TTS_CAP
+    line = spoken_line(TurnFinished(text="Body.", tts=tts))
+    assert line is not None
+    assert len(line.text) <= kokoro.MAX_CHARS
+    assert line.truncated and line.text.startswith("Go a link to x.y")
+    assert line.text.endswith(")") and "(showing " in line.text
 
 
 # -- 6. sentence boundaries --------------------------------------------------------------------
