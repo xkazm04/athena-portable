@@ -171,3 +171,30 @@ test("the CSV export opens a formula-shaped cell as text and leaves every ordina
   assert.equal(resolveCompany(sample.domain, hostile[0]!).ok, true);
   assert.match(toCsv(segmentRows("all").filter((c) => c.domain === sample.domain)), /,"'=HYPERLINK\(/);
 });
+
+test("the write door checks at run time what the types only promise", () => {
+  // A server action is an HTTP endpoint: its TypeScript signature is advice to the caller, not a
+  // check on what arrives. The tool layer filters, but the library is the door every caller shares.
+  const pair = listOpenPairs(200)[0];
+  assert.ok(pair);
+  for (const status of ["merged", "open", "deleted"]) {
+    const result = resolvePair(pair.id, status as never);
+    assert.equal(result.ok, false, `resolve_pair does not write status "${status}"`);
+    assert.equal(getPair(pair.id)?.status, "open");
+  }
+
+  const odd = segmentRows("phone-format")[0];
+  assert.ok(odd);
+  assert.equal(normalizeFields([odd.id], ["phone_e164", "drop_everything"] as never).ok, true);
+  const logged = getActivity(db(), lastActivityId())?.summary ?? "";
+  assert.match(logged, /phone_e164/);
+  assert.doesNotMatch(logged, /drop_everything/, "the log names only the rules that were applied");
+
+  const target = segmentRows("all").find((c) => c.in_open_pair === 0);
+  assert.ok(target);
+  for (const name of ["Acme\n# Signed off", "Acme\u0000Ltd", "Acme\tLtd"]) {
+    const result = resolveCompany(target.domain, name);
+    assert.equal(result.ok, false, `${JSON.stringify(name)} is refused`);
+    assert.match(result.error ?? "", /line break|control/);
+  }
+});

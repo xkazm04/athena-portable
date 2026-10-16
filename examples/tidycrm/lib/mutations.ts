@@ -19,6 +19,7 @@ import {
   isE164,
   NORMALIZABLE_FIELDS,
   planChanges,
+  RULES,
   type FieldChange,
   type NormalizableField,
   type NormalizeRule,
@@ -38,9 +39,23 @@ export interface MutationResult {
   error?: string;
 }
 
+/**
+ * The ids a write may touch. Every export of this file is reached from a server action, which is
+ * an HTTP endpoint: its parameter types are what the caller was told, not what arrived. So the
+ * shapes are checked here, once, at the door every caller shares.
+ */
 function cap(ids: string[]): string[] {
-  return [...new Set(ids)].slice(0, MAX_IDS);
+  if (!Array.isArray(ids)) return [];
+  return [...new Set(ids.filter((id): id is string => typeof id === "string"))].slice(0, MAX_IDS);
 }
+
+/** The rules a caller asked for that exist, in the order `planChanges` applies them. */
+function known(rules: NormalizeRule[]): NormalizeRule[] {
+  return Array.isArray(rules) ? RULES.filter((r) => rules.includes(r)) : [];
+}
+
+/** The two verdicts `resolvePair` may write; `merged` belongs to `mergeContacts` alone. */
+const VERDICTS: readonly PairStatus[] = ["kept_both", "skipped"];
 
 /**
  * One liveness rule for every write path in this file.
@@ -103,10 +118,11 @@ function domainOf(tx: Db, contactId: string): string | undefined {
 
 /** What `normalize_fields` would do, without doing it. Powers the preview and `preview_merge`'s twin. */
 export function planNormalize(ids: string[], rules: NormalizeRule[]): NormalizePlan[] {
-  if (rules.length === 0) return [];
+  const applied = known(rules);
+  if (applied.length === 0) return [];
   return getContacts(cap(ids))
     .filter(live)
-    .map((c) => ({ contact_id: c.id, name: displayName(c), changes: planChanges(c, rules) }))
+    .map((c) => ({ contact_id: c.id, name: displayName(c), changes: planChanges(c, applied) }))
     .filter((p) => p.changes.length > 0)
     .sort((a, b) => a.contact_id.localeCompare(b.contact_id));
 }
@@ -157,7 +173,7 @@ export function normalizeFields(ids: string[], rules: NormalizeRule[]): Mutation
     target: `contacts:${plans.length}`,
     summary: `Normalised ${fields} field${fields === 1 ? "" : "s"} on ${plans.length} contact${
       plans.length === 1 ? "" : "s"
-    } (${rules.join(", ")}).`,
+    } (${known(rules).join(", ")}).`,
     reversible: true,
     undo: { kind: "normalize", revisions: revisionIds },
     ts,
@@ -219,6 +235,11 @@ function companyRefusal(domain: string, canonical: string): string | null {
   if (!domain.trim()) return "Name the email domain whose company field should be rewritten.";
   if (!canonical) return "Name the spelling to keep.";
   if (canonical.length > 120) return "That company name is too long.";
+  // A name is one line of text. A line break or control character in it would be written to every
+  // contact on the domain and carried into the CSV and the Markdown the export hands on.
+  if (/[\u0000-\u001f\u007f]/.test(canonical)) {
+    return "A company name cannot contain a line break, a tab or another control character.";
+  }
   return null;
 }
 
@@ -428,6 +449,9 @@ export function deleteContacts(ids: string[]): MutationResult {
  * mis-keyed verdict costs one click on the activity log.
  */
 export function resolvePair(pairId: string, status: Exclude<PairStatus, "open" | "merged">): MutationResult {
+  if (!VERDICTS.includes(status)) {
+    return { ok: false, summary: "", error: `"${String(status)}" is not a verdict; use kept_both or skipped.` };
+  }
   const pair = getPair(pairId);
   if (!pair) return { ok: false, summary: "", error: `No pair ${pairId}.` };
   if (pair.status !== "open") return { ok: false, summary: "", error: `${pairId} is already ${pair.status}.` };
