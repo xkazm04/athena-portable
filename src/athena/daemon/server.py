@@ -368,6 +368,17 @@ class DaemonServer(ThreadingHTTPServer):
         super().server_bind()
 
 
+def _log_escape(method: str, path: str, exc: BaseException) -> None:
+    """One line on stderr for a failure that escaped a route or a socket (the daemon's log).
+
+    The caller gets its 500 or its 1011; without this line the machine kept nothing, because
+    stdout is the ready line's and the request log is off. The route and the exception's type
+    only, never its message or the query string: either can quote what the caller sent.
+    """
+    with suppress(Exception):
+        print(f"[daemon] {method} {path} raised {type(exc).__name__}", file=sys.stderr, flush=True)
+
+
 def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRequestHandler]:
     """The request handler for one daemon: HTTP, the token, CORS, and nothing about Athena."""
 
@@ -523,7 +534,8 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
             ws = WebSocket(self.rfile, self.wfile, masked=False)
             try:
                 fn(ws, request)
-            except Exception:  # a channel's bug closes its socket, never the daemon
+            except Exception as exc:  # a channel's bug closes its socket, never the daemon
+                _log_escape("SOCKET", url.path, exc)
                 with suppress(Exception):
                     ws.close(1011, "internal error")
             finally:
@@ -650,6 +662,7 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
             except Exception as exc:  # a route's bug is a 500, never a dropped connection
                 # The type only: an exception's message can quote a request body, and a body
                 # may hold anything the caller put in it.
+                _log_escape(method, url.path, exc)
                 self._fail(error(500, "unknown", type(exc).__name__))
                 return
             if isinstance(answer, BinaryReply):

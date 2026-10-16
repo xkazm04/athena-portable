@@ -27,6 +27,8 @@ import threading
 import time
 from http.client import HTTPConnection
 
+import pytest
+
 from athena.daemon.routes import Reply, Request, Route
 from athena.daemon.server import TOKEN_HEADER, AthenaDaemon, DaemonConfig, make_server
 
@@ -308,6 +310,28 @@ def test_a_route_that_raises_is_a_500_that_quotes_nothing(live: Live) -> None:
     assert reply.status == 500
     assert reply.body == {"ok": False, "reason": "unknown", "detail": "RuntimeError"}
     assert "swordfish" not in reply.raw.decode()
+
+
+def test_a_route_that_raises_leaves_one_line_in_the_daemons_log_that_quotes_nothing(
+    live: Live, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The 500 went to the caller and nowhere else: stdout is the ready line's channel and the
+    request log is off, so a route's bug left no trace on the machine. stderr is the daemon's log
+    (the shell pumps it into its own), and it gets the route and the type, never the message,
+    which can quote a body."""
+
+    def boom(request: Request) -> Reply:
+        raise RuntimeError(json.dumps(dict(request.body)))
+
+    live.daemon.routes.add(Route("POST", "/boom", boom))
+
+    live.request("/boom?x=1", method="POST", body='{"secret": "swordfish"}')
+
+    captured = capsys.readouterr()
+    lines = [line for line in captured.err.splitlines() if "/boom" in line]
+    assert lines == ["[daemon] POST /boom raised RuntimeError"]
+    assert "swordfish" not in captured.err
+    assert captured.out == ""
 
 
 def test_an_unknown_path_is_404_and_a_known_path_with_the_wrong_verb_is_405(live: Live) -> None:
