@@ -47,13 +47,15 @@
 }
 
 /* A chip that is also a TARGET. The box is `.bk-chip`; this is the 44px floor and the pressed
-   state, which is all a button adds to it. */
-.bk-db-chip {
+   state, which is all a button adds to it. Keyed on the element, not on one chip's class: it
+   used to say `.bk-db-chip`, and the dossier's pair picker - the same chip in another file - was
+   a 34px target whose pressed pair looked like the others. */
+.bk-chip:where(button) {
   min-block-size: var(--bk-s7);
   cursor: pointer;
 }
 
-.bk-db-chip[aria-pressed="true"] {
+.bk-chip:where(button)[aria-pressed="true"] {
   border-color: var(--bk-graphite);
   color: var(--bk-graphite);
 }

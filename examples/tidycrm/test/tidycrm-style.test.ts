@@ -205,3 +205,42 @@ test("the L1 card's focus ring is drawn inside the box that clips it", () => {
   const reach = px(ring.decls.get("outline-offset") ?? "0px") + px(width!);
   assert.ok(reach <= 0, `the ring reaches ${reach}px outside a box clipped at its edge: 0 of ${px(width!)}px paints`);
 });
+
+test("every chip that is a button is a 44px target with a drawn pressed state, in a spaced strip", () => {
+  // `.bk-chip` is the box (chrome/rail-and-bar.css); a chip that can be pressed is also a TARGET,
+  // and a pressed one has to look pressed. The rule for that used to name one chip class, so the
+  // dossier's pair picker - the same chip in another file - got neither, and its strip no layout.
+  const selectors = (r: Rule): string[] => r.selector.split(",").map((s) => s.trim());
+  const files = ["components/blocks/field/Head.tsx", "components/blocks/dossier/Pair.tsx"];
+  const found: string[] = [];
+  const missing: string[] = [];
+  for (const file of files) {
+    const src = read(file);
+    for (const m of src.matchAll(/<button\b[\s\S]*?className="([^"]*\bbk-chip\b[^"]*)"([\s\S]*?)>/g)) {
+      const classes = m[1]!.split(/\s+/);
+      const pressable = /aria-pressed=/.test(m[0]);
+      const owns = (s: string): boolean =>
+        classes.some((c) => s === `.${c}`) || s === ".bk-chip:where(button)";
+      const ownsPressed = (s: string): boolean =>
+        classes.some((c) => s === `.${c}[aria-pressed="true"]`) ||
+        s === '.bk-chip:where(button)[aria-pressed="true"]';
+      const label = `${file} <button class="${m[1]}">`;
+      found.push(label);
+      const floor = RULES.filter((r) => selectors(r).some(owns) && r.decls.has("min-block-size"));
+      if (!floor.some((r) => px(r.decls.get("min-block-size")!) >= 44)) missing.push(`${label}: no 44px floor`);
+      if (!RULES.some((r) => selectors(r).some(owns) && r.decls.get("cursor") === "pointer")) {
+        missing.push(`${label}: no pointer cursor`);
+      }
+      if (pressable && !RULES.some((r) => selectors(r).some(ownsPressed))) {
+        missing.push(`${label}: aria-pressed with no pressed state drawn`);
+      }
+    }
+    for (const g of src.matchAll(/<div className="([^"]+)" role="group"/g)) {
+      if (!RULES.some((r) => selectors(r).includes(`.${g[1]}`) && r.decls.has("gap"))) {
+        missing.push(`${file} .${g[1]}: a strip of chips with no gap between them`);
+      }
+    }
+  }
+  assert.equal(found.length, 2, `expected the database jump and the pair picker, found ${found.length}`);
+  assert.deepEqual(missing, []);
+});

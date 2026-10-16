@@ -21,6 +21,14 @@
   color: var(--bk-graphite-2);
 }
 
+/* The pair picker: the L1 database strip's arrangement, and the chip is the same button chip. */
+.bk-zone-strip {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--bk-s2);
+  margin-block-end: var(--bk-s3);
+}
+
 .bk-pair {
   display: grid;
   gap: var(--bk-s3);
