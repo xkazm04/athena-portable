@@ -147,7 +147,7 @@ export default function Inspector() {
             top: hover.pointer.top > 22 ? hover.pointer.top - 20 : hover.pointer.top + 2,
             padding: "1px 6px",
             borderRadius: 4,
-            font: `700 11px/1.4 ${MONO}`,
+            font: `700 12px/1.4 ${MONO}`,
             whiteSpace: "nowrap",
             color: "var(--primary-fg)",
             background: "var(--accent)",
@@ -208,7 +208,7 @@ export default function Inspector() {
         ) : (
           <div style={{ color: "var(--muted)" }}>Hover a component</div>
         )}
-        <div style={{ marginTop: 6, fontSize: 11, color: "var(--muted)" }}>
+        <div style={{ marginTop: 6, fontSize: 12, color: "var(--muted)" }}>
           right-click: call site · Alt+right-click: this element · click a row · Esc: exit
         </div>
       </div>
