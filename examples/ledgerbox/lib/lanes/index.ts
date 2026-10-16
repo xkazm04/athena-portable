@@ -14,6 +14,7 @@ import "server-only";
 
 import { CATEGORIES, PERIODS, type Category, type Period } from "../constants";
 import {
+  COUNTED_OUT,
   getInvoiceDetail,
   lineSuggestions,
   listClients,
@@ -99,9 +100,12 @@ export function buildSheet(): LnSheet {
         marks,
         rows: subRows,
         count: marks.length,
-        invoicedCents: marks.reduce((s, m) => (m.state === "void" ? s : s + m.amountCents), 0),
+        // The same exclusion `summarize` makes, from the same list: a void was withdrawn and a
+        // draft never sent, so neither is billed or owed. Skipping only `void` here put the
+        // seed's $73,100 draft into the Unfiled lane's figures and not into the totals.
+        invoicedCents: marks.reduce((s, m) => (COUNTED_OUT.includes(m.state) ? s : s + m.amountCents), 0),
         collectedCents: marks.reduce((s, m) => s + m.paidCents, 0),
-        owedCents: marks.reduce((s, m) => (m.state === "void" ? s : s + m.balanceCents), 0),
+        owedCents: marks.reduce((s, m) => (COUNTED_OUT.includes(m.state) ? s : s + m.balanceCents), 0),
         lateCents: late.reduce((s, m) => s + m.balanceCents, 0),
         lateCount: late.length,
         worstDays: marks.reduce((m, x) => Math.max(m, x.daysOverdue), 0),

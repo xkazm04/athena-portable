@@ -19,6 +19,7 @@ const { PERIODS } = await import("../lib/constants");
 const { summarize } = await import("../lib/db");
 const { parseDollars } = await import("../lib/format");
 const { composeReminder } = await import("../lib/reminder");
+const { buildSheet } = await import("../lib/lanes");
 
 test("on every period, what was invoiced is what was collected plus what is still owed", () => {
   // All three figures describe one set of invoices (issued in the period, drafts and voids out),
@@ -96,3 +97,19 @@ test("a reminder letter states only what the books know: how late, never a made-
   }
 });
 
+
+test("the lanes add up to the totals the mast prints beside them", () => {
+  // `read_view` hands an agent both: each lane's invoiced and still-open, and the quarter's. A
+  // draft was never sent, so nobody owes it (COUNTED_OUT); the lanes counted it anyway, and the
+  // Unfiled lane's "open" figure carried a draft the quarter's Outstanding leaves out.
+  const sheet = buildSheet();
+  const sum = (pick: (l: (typeof sheet.lanes)[number]) => number) =>
+    sheet.lanes.reduce((s, l) => s + pick(l), 0);
+  assert.ok(
+    sheet.lanes.some((l) => l.marks.some((m) => m.state === "draft")),
+    "the seed's draft is on the sheet",
+  );
+  assert.equal(sum((l) => l.invoicedCents), sheet.totals.invoicedCents, "invoiced");
+  assert.equal(sum((l) => l.owedCents), sheet.totals.outstandingCents, "still open");
+  assert.equal(sum((l) => l.collectedCents), sheet.totals.collectedCents, "collected");
+});
