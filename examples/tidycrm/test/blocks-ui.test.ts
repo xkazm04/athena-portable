@@ -242,3 +242,13 @@ test("the foot's deviation breakdown walks DEVIATION_KINDS, not a copy of it", (
   assert.doesNotMatch(foot, /\[\s*"duplicate",\s*"conflict"/, "Foot types its own list of the four kinds");
   assert.match(foot, /DEVIATION_KINDS\.map\(/, "the breakdown is drawn from the model's list");
 });
+
+test("a table's card is announced name first, the order it prints in", () => {
+  const field = code("components/blocks/Field.tsx");
+  const label = [...field.matchAll(/aria-label=\{`([^`]*)`\}/g)]
+    .map((m) => m[1]!)
+    .find((l) => l.includes("${table.ident}"));
+  assert.ok(label, "the card's accessible name was found");
+  assert.match(label, /^Open \$\{table\.name\}/, `the name leads, as on the card: ${label}`);
+  assert.match(label, /\$\{table\.ident\}/, "and the ident is still in it");
+});

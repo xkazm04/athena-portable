@@ -144,7 +144,7 @@ export function Field({
                 if (from && Math.hypot(e.clientX - from.x, e.clientY - from.y) > SLOP) return;
                 onOpenTable(table.ident);
               }}
-              aria-label={`Open ${table.ident}, ${table.name}. ${table.why}`}
+              aria-label={`Open ${table.name}, ${table.ident}. ${table.why}`}
             >
               <span className="bk-cell-cluster">
                 <Cluster marks={table.marks} />
