@@ -126,6 +126,25 @@ test("an answer about a document the tab has left is dropped", async () => {
   expect(entry.tools.map((t) => t.name)).toEqual(["fresh"]);
 });
 
+test("on one document, an older answer that arrives last does not overwrite the newer one", async () => {
+  // The page registers a tool and announces it; the first ask is slow.
+  let release: (reply: ListReply) => void = () => {};
+  answer = () => new Promise<ListReply>((resolve) => (release = resolve));
+  const first = useTools.getState().refresh(1);
+
+  // It registers a second and announces again; this ask answers at once, with both.
+  answer = () => ({ ok: true, page: PAGE, tools: [tool("invoice_list"), tool("invoice_send")] });
+  await useTools.getState().refresh(1);
+
+  // Now the first ask answers with what the page had before. It is an older answer, not news.
+  release({ ok: true, page: PAGE, tools: [tool("invoice_list")] });
+  await first;
+
+  const entry = useTools.getState().byTab[1];
+  expect(entry.tools.map((t) => t.name)).toEqual(["invoice_list", "invoice_send"]);
+  expect(entry.asking).toBe(false);
+});
+
 test("a closed tab is forgotten", async () => {
   answer = () => ({ ok: true, page: PAGE, tools: [] });
   useTabs.setState({ tabs: [] });

@@ -62,10 +62,20 @@ function blank(tabId: number, url: string): TabTools {
   };
 }
 
+/**
+ * The latest ask of each tab. Two asks of one document can answer out of order (a page that
+ * announces twice while the first ask is slow), and only the latest may write: a guard on the url
+ * alone lets the older answer, about the same document, overwrite the newer one.
+ */
+const latest = new Map<number, number>();
+let asks = 0;
+
 export const useTools = create<ToolsState>((set, get) => ({
   byTab: {},
   refresh: async (tabId) => {
     const url = urlOf(tabId);
+    const mine = ++asks;
+    latest.set(tabId, mine);
     // The placeholder goes in first, so a second reconcile pass in the same tick sees this tab as
     // asked and the store answers "asking" rather than "nothing here".
     set({ byTab: { ...get().byTab, [tabId]: blank(tabId, url) } });
@@ -94,7 +104,8 @@ export const useTools = create<ToolsState>((set, get) => ({
     const known = get().byTab[tabId];
     // Two ways an answer arrives too late to be true: the tab closed, or it went somewhere else
     // while the page was thinking. Either way this is an answer about a document that is gone.
-    if (!known || known.url !== url) return;
+    // A third: a newer ask of the same tab was made since, and its answer is the one that counts.
+    if (!known || known.url !== url || latest.get(tabId) !== mine) return;
     set({ byTab: { ...get().byTab, [tabId]: answer } });
   },
 }));
