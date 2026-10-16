@@ -18,8 +18,8 @@ import { pillText } from "@/stores/athena";
 export interface SurfaceActions {
   /** Hand a sentence to her window. Rejects with a sentence when it cannot (no shell). */
   ask: (text: string) => Promise<void>;
-  /** Bring her own window forward: the cards waiting are answered there. */
-  summon: () => void;
+  /** Bring her own window forward: the cards waiting are answered there. Rejects when it cannot. */
+  summon: () => Promise<void>;
   dive: (root: Root) => void;
 }
 
@@ -160,6 +160,6 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
 
 export const INERT_ACTIONS: SurfaceActions = {
   ask: () => Promise.resolve(),
-  summon: () => {},
+  summon: () => Promise.resolve(),
   dive: () => {},
 };

@@ -37,7 +37,12 @@ const NO_ACTIONS = { copy: () => {}, open: () => {}, hand: () => {} };
 const ACTIONS: SurfaceActions = {
   // The mirror's hand-over (decision D1): the sentence goes to her own window, which answers.
   ask: (text) => athenaOffer(text),
-  summon: () => void athenaShow().catch((e: unknown) => console.error(`[surface] summon: ${String(e)}`)),
+  // A window that will not come forward is told on the surface (the view) and kept in the log.
+  summon: () =>
+    athenaShow().catch((e: unknown) => {
+      console.error(`[surface] summon: ${String(e)}`);
+      throw e;
+    }),
   dive: (root) => useDepth.getState().go({ root }),
 };
 

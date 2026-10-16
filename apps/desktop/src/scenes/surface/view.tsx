@@ -30,6 +30,14 @@ const SurfaceView: View<SurfaceModel> = ({ model }) => {
   // The five lights sit left to right, so the lean is where the focused one is along them.
   const lean = focused === null ? 0 : (ROOTS.indexOf(focused) - (ROOTS.length - 1) / 2) / ((ROOTS.length - 1) / 2);
 
+  // The press is acknowledged by her window coming forward; a window that does not is said where
+  // the hand-over's own outcome is said, in the error colour.
+  const summon = () => {
+    model.actions.summon().catch((err: unknown) =>
+      setSent({ problem: `Her window did not come forward: ${err instanceof Error ? err.message : String(err)}` }),
+    );
+  };
+
   const submit = (e: FormEvent) => {
     e.preventDefault();
     const text = draft.trim();
@@ -58,7 +66,7 @@ const SurfaceView: View<SurfaceModel> = ({ model }) => {
         </p>
 
         {model.waiting > 0 && (
-          <button type="button" className="surface__summon focus-ring" onClick={model.actions.summon}>
+          <button type="button" className="surface__summon focus-ring" onClick={summon}>
             Open her window to answer ({model.waiting})
           </button>
         )}

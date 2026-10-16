@@ -63,6 +63,17 @@ describe("the ask row", () => {
     expect(note().dataset.tone).toBeUndefined();
   });
 
+  it("says so, as an error, when her window would not come forward for a card that waits", async () => {
+    const base = fixtures.asking!;
+    const summon = vi.fn(() => Promise.reject(new Error("no window labelled athena")));
+    act(() => root.render(<SurfaceView model={{ ...base, actions: { ...base.actions, summon } }} />));
+    const open = [...host.querySelectorAll("button")].find((b) => b.textContent?.startsWith("Open her window"))!;
+    await act(async () => open.click());
+    expect(summon).toHaveBeenCalledOnce();
+    expect(note().textContent).toBe("Her window did not come forward: no window labelled athena");
+    expect(note().dataset.tone).toBe("error");
+  });
+
   it("shows a refusal as an error, and clears it when the person types again", async () => {
     mount(() => Promise.reject(new Error("her window did not answer")));
     type("hello");
