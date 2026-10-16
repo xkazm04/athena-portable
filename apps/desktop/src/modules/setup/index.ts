@@ -24,9 +24,8 @@ import { useVoice } from "@/stores/voice";
 import { selectSetup, type SetupActions, type SetupModel } from "./model";
 
 /**
- * The model, built from the stores. A hook so the Setup module and the depth scenes that carry its
- * work (the first act, the Mind depth) share one selector and one set of actions; the old view and
- * the new ones differ only in what they draw.
+ * The model, built from the stores. A hook so the depth scenes that carry its work (the first act,
+ * the Mind depth) share one selector and one set of actions, and differ only in what they draw.
  */
 export function useSetupModel(
   options: { afterFinish?: () => void; onReopen?: () => void } = {},
@@ -90,7 +89,8 @@ export function useSetupModel(
         // page is wanted under a scene (ADR 0088), so this module selects nothing itself.
         afterFinish?.();
       },
-      // The module bar re-shows its own welcome; a scene says where the first act is shown instead.
+      // The Mind depth says where the first act is shown again (`onReopen`); without one, this
+      // visit shows the welcome again.
       reopenOnboarding: () => (onReopen ? onReopen() : setReopened(true)),
     };
   }, [afterFinish, onReopen]);

@@ -21,17 +21,16 @@ import { originOf, selectBrowser, tabOn, type BrowserActions, type BrowserModel 
 
 export interface BrowserModelOptions {
   /**
-   * Called once a tab for an app is focused or opened by `openApp` or `register`. The module bar
-   * has nothing to do then (the Browser module is already showing it); the depth scene moves to the
-   * page. It is called after the tab exists, never before, so the page shape is never asked for
-   * with no page to show.
+   * Called once a tab for an app is focused or opened by `openApp` or `register`; the Apps depth
+   * moves to the page. It is called after the tab exists, never before, so the page shape is never
+   * asked for with no page to show.
    */
   onShown?: (origin: string) => void;
 }
 
 /**
- * The model, built from the stores. A hook so the Browser module and the Apps depth scene share one
- * selector and one set of actions.
+ * The model, built from the stores. A hook so every level of the Apps depth shares one selector and
+ * one set of actions.
  */
 export function useBrowserModel(options: BrowserModelOptions = {}): BrowserModel {
   const { onShown } = options;
@@ -41,8 +40,9 @@ export function useBrowserModel(options: BrowserModelOptions = {}): BrowserModel
   const close = useTabs((s) => s.close);
   const focus = useTabs((s) => s.focus);
   const navigate = useTabs((s) => s.navigate);
-  // Read, never started: `src/app.tsx` starts these stores, because the focused page's tool list
-  // and the origins table have to stay true while the user is looking at another module.
+  // Read, never started: the window roots (`console/root.tsx`, `athena.tsx`) start these stores,
+  // because the focused page's tool list and the origins table have to stay true while the user
+  // is looking at another depth.
   const byTab = useTools((s) => s.byTab);
   const records = useOrigins((s) => s.records);
   const known = useOrigins((s) => s.known);

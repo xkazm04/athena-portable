@@ -23,9 +23,9 @@ const ACTIONS: ConnectorActions = {
 };
 
 /**
- * The model, built from the stores. A hook so the Connectors module and the Accounts depth share
- * one selector and one set of actions (README 3.5, ADR 0090). Loading the list belongs here too: it is asked for when a surface that
- * shows it mounts and again whenever the daemon becomes ready.
+ * The model, built from the stores, for the Accounts depth (README 3.5, ADR 0090). Loading the list
+ * belongs here too: it is asked for when a surface that shows it mounts and again whenever the
+ * daemon becomes ready.
  */
 export function useConnectorsModel(): ConnectorsModel {
   const items = useConnectors((s) => s.items);
