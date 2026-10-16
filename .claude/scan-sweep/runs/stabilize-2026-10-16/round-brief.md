@@ -62,7 +62,10 @@ must work first.
    - Python touched: `uv run ruff check <your files>`, `uv run ruff format --check <your files>`
      (`uv run ruff format <your files>` to fix; never the whole tree), `uv run mypy`, and pytest
      SCOPED: `uv run pytest <your test dirs and every test dir that imports a module you changed>
-     -m "not provider and not eval"`. **Never run the full pytest suite** - three agents running
+     -m "not provider and not eval"`. "Imports a module you changed" includes tests that import
+     a FUNCTION you changed from anywhere: `git grep -l "<function name>" tests` for every
+     function whose behaviour you changed, and add those files (wave 3: a CLI exit-code fix broke
+     two tests in tests/core that call `cmd_reconcile` directly). **Never run the full pytest suite** - three agents running
      it at once ran this machine out of memory last run. The director runs it after the wave.
    - TS in examples/ or packages/: `pnpm --filter <pkg> typecheck`, `... lint`, `... test`.
      Never touch or run `examples/journey` (an e2e that boots dev servers).

@@ -1,0 +1,224 @@
+{
+ "context": "contracts-seam",
+ "files_read": 21,
+ "loc": 4126,
+ "registry": "software-engineering/ipc-contract",
+ "techniques": [
+  "drift-gates",
+  "error-shape-mapping"
+ ],
+ "deviations": 4,
+ "assigned": [],
+ "built": [
+  {
+   "sha": "1408690",
+   "title": "athena doctor and reconcile print their JSON whatever code page the pipe has",
+   "lens": "bounty-hunter",
+   "red_before": "tests/test_cli.py brain under 'Jiří', stdout a cp1252 TextIOWrapper: UnicodeEncodeError '\\u0159'; also reproduced through the console script redirected (exit 1, half an object, a traceback)",
+   "after": "one ASCII-escaped JSON object that decodes back to the exact path; exit 0"
+  },
+  {
+   "sha": "112b358",
+   "title": "the desktop's adopt wire types are held to contracts/adopt.py field for field and word for word",
+   "lens": "parity-auditor",
+   "red_before": "seeded drifts in a copy of adopt.ts (drop usage.first_text_ms, add a SlotSource member, drop Answer.text, drop Verdict.need): 0 of 4 caught by the existing three tests",
+   "after": "4 of 4 red; unmutated copy green; 11 events, 8 nested shapes, 7 vocabularies compared"
+  },
+  {
+   "sha": "f1144eb",
+   "title": "a missing law's doctor line names every place it looked and the variable that fixes it",
+   "lens": "copy-auditor",
+   "red_before": "test with $ATHENA_CONSTITUTION at an empty 'J. Smith\\law': detail cut to '...(looked in: environment: ...\\J', no remedy",
+   "after": "detail carries the whole path and '$ATHENA_CONSTITUTION'"
+  },
+  {
+   "sha": "30435c7",
+   "title": "athena brain reconcile exits non-zero when its report says ok is false",
+   "lens": "parity-auditor",
+   "red_before": "a stray .md with no frontmatter: report ok false, file named in skipped, exit 0 ('assert 0 == 1')",
+   "after": "exit 1; clean and damaged-index rebuilds still exit 0"
+  },
+  {
+   "sha": "26fb774",
+   "title": "a composition that fails after opening the brain closes it, and AthenaLocal.close always closes the brain",
+   "lens": "error-handler",
+   "red_before": "recording Brain subclass: build_local with the engine dir path a file raised OSError with 1 brain opened, 0 closed; close() with an adopt studio that raises left the brain open",
+   "after": "1 opened, 1 closed in both; the first error still reaches the caller"
+  },
+  {
+   "sha": "6f43cf0",
+   "title": "the id and channel contracts stop citing a TypeScript id table, a parity test and an MCP renderer that do not exist",
+   "lens": "copy-auditor",
+   "red_before": "probe: git grep over src/athena/contracts + docs/features/core.md: 4 claims of absent things (lib/ids.ts, tests/test_ids_parity.py twice, an MCP renderer)",
+   "after": "0 such claims; the 2 remaining hits say the thing is absent"
+  },
+  {
+   "sha": "bc96872",
+   "title": "the hand marker and the side-effects vocabulary are held to hands.ts and gate.js",
+   "lens": "parity-auditor",
+   "red_before": "seeded drifts in copies (HAND_RUNNER renamed, a fourth side-effects member, freeze removed): 0 of 3 caught by any test",
+   "after": "3 of 3 red; unmutated copies green"
+  },
+  {
+   "sha": "6fd7656",
+   "title": "a decision card's option is read by the event's own rule - later field dropped, malformed option a ValueError",
+   "lens": "bounty-hunter",
+   "red_before": "4 of 4 new cases failed: TypeError x3 (extra key, a string, no id) and DID NOT RAISE (an int id accepted)",
+   "after": "4 of 4 pass; round-trips unchanged; desktop events.test.ts (reads channel.py) green"
+  },
+  {
+   "sha": "83a8bd3",
+   "title": "the version athena --version prints is held to pyproject.toml's",
+   "lens": "test-strategist",
+   "red_before": "__version__ set to 0.1.1 in-process: the smoke test stayed green (0 tests compared the two copies)",
+   "after": "red on the seeded value; green on the tree"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "hands.rs normalised() covers 7 of 16 ERROR_REASONS and does not trim or lowercase, though it claims normalize_reason's rule",
+   "before": "reasons a page or the shell can produce today that the subset loses: 0 (inject.js mints timeout, unknown_ref, validator_failed; hands.rs's literals are foreign_origin, unknown, unknown_ref, validator_failed - all mapped)",
+   "after": "a full mirror would lose the same 0; a membership pin over a list that is correct today is churn here: not-better"
+  },
+  {
+   "title": "ExecResult.bounded calls itself 'the one place the footer is written' while PromptBlock.from_items, gate.js bounded and hands.rs capped also write it",
+   "before": "4 writers, all emitting the identical '(showing N of M)' form (read of each)",
+   "after": "merging them changes no output and crosses three languages: not-better"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "bounty-hunter",
+   "checked": "cli _emit on a cp1252 pipe (built); event_from_dict options (built); capture id width shell vs ids.py (probe, card); kind_of/is_id prefix overlap (test exists)"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "TS/JS/Rust mirrors of every contract: events.ts (pinned f5dc0ff), adopt.ts (built), hands.ts HAND_RUNNER + gate.js SIDE_EFFECTS (built), store.rs capture mint (card), manifest.ts registrable (card), hands.rs normalised (rejected); reconcile ok vs exit (built)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "build_local failure after Brain() and AthenaLocal.close chain (built); cmd_reconcile IndexDamagedError path; doctor stage excepts; serve's except (OSError, ValueError) around build_local"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "doctor _brain_stage catches Exception and reports it in the detail (kept); event_from_dict raising types (built); _wire_connectors merge at startup raises CatalogError (a ValueError serve reports on its failure line): nothing new"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "proving/world.py builds an Athena in a long-lived process: the leaked index handle on Windows (built in 26fb774)"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "kind_of sorts 10 kinds per call, is_id builds its pattern per call (re cache), event_from_dict fields() per call: microseconds, not-real"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "doctor's ordered stages and cause; reconcile report shape; a bare `athena brain` prints the brain help (tested)"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "doctor statuses ok/warn/skip/fail and the brain-fails-index-skips path (tested); reconcile's skipped state vs its exit (built)"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "every person-facing sentence in cli.py (law detail built); contract docstrings (ids/channel built); adopt.ts header path (card); README 212/311 (noted)"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "test_adopt_parity kinds-only (built); test_smoke version (built); test_refusal_parity strips only whole-line // comments (an inline comment fails closed, not open); test_adr_numbering derives from the directory"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "page_origin prefix rule (probe, card); capture_id validation; connector ToolEntry without executor (card); parse_origin dot/colon refusal; cli prints no token or key"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "ipc-contract drift faces against every mirror: type drift x3 (adopt fields built, capture width and registrable carded), name drift none found; eval-harness pair already not-applicable"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "docs/features/core.md contracts paragraph (fixed with 6f43cf0); cli and wiring module docstrings vs behaviour (updated with 1408690, 30435c7, 26fb774)"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "contracts import only stdlib and each other (one direction: harness->registry/channel, manifest->registry); __init__ imports no subpackage; tomllib is stdlib at the 3.11 floor"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "wiring's import graph and the serve->wiring local import; contracts' import direction; nothing real"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "four footer writers (rejected); __version__ beside pyproject (pinned 83a8bd3); HostManifest.state_readables validated but read by nothing in src (design-declared, left)"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "the five cross-language seams of this context (events.ts, adopt.ts, hands.ts, gate.js, store.rs) enumerated by grep; two carded"
+  },
+  {
+   "key": "devops-optimizer",
+   "checked": "this pair's gate: tests/test_cli.py spawns the console script; the scoped pytest set; nothing warranted"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "visual-craft",
+   "why": "Python contracts and a CLI; no rendered surface"
+  },
+  {
+   "key": "accessibility-checker",
+   "why": "no UI in either context"
+  },
+  {
+   "key": "ui-perfectionist",
+   "why": "no CSS, component or motion in either context"
+  },
+  {
+   "key": "mobile-specialist",
+   "why": "a CLI and in-process types; no viewport"
+  },
+  {
+   "key": "onboarding-designer",
+   "why": "no first-run flow here; the desktop's Setup owns it"
+  },
+  {
+   "key": "analytics-planner",
+   "why": "no product analytics in either context"
+  },
+  {
+   "key": "feature-scout",
+   "why": "stabilize strategy; no forward items sought"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "stabilize strategy"
+  },
+  {
+   "key": "business-strategist",
+   "why": "no business surface"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "no paid surface"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no acquisition or sharing surface"
+  }
+ ],
+ "findings": 15,
+ "lanes": "A:9/B:4/C:0",
+ "fp": 1,
+ "gates": {
+  "uv run ruff check <touched files> (each commit)": 0,
+  "uv run ruff format --check <touched files> (each commit)": 0,
+  "uv run mypy": 0,
+  "uv run pytest tests/test_cli.py tests/test_wiring.py tests/test_adr_numbering.py tests/test_refusal_parity.py tests/test_smoke.py tests/contracts tests/daemon tests/adopt tests/connectors/test_routes.py tests/harness/test_tokenfactory.py tests/proving -m \"not provider and not eval\"": 0,
+  "uv run pytest tests/contracts tests/daemon/test_tabs_read_taint.py tests/harness tests/lane -m \"not provider and not eval\"": 0,
+  "pnpm test (apps/desktop; events.test.ts reads channel.py)": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "9 built (cli x4, wiring, contracts x4); 4 B incl. capture-id width drift",
+ "notes": "cli-and-wiring lens results are folded in above (1408690, f1144eb, 30435c7, 26fb774, 83a8bd3 are its fixes). Highest-impact open card: the shell mints cap_<16 hex> (store.rs:819) and ids.py accepts 12, so routes.capture_id_from drops every real desktop capture and no card shows its screenshot (probe-confirmed) - needs a Rust or a cross-context fixture change. Both context-map.json and registry-map rows for contracts-seam omit src/athena/contracts/adopt.py and tests/contracts/test_adopt_parity.py (swept here). README.md:212 and :311 still claim ids.ts / test_ids_parity.py (not this round's file). docs/features/core.md was edited a few minutes before the lock was taken and committed under it (6f43cf0); no other writer touched it. Sibling uncommitted files seen (src/athena/core/catalog.py, recall.py, tests/core, examples/atlas) were not touched and no gate of mine went red. No registry lead: nothing landed is novel against ipc-contract. | DIRECTOR: 30435c7 broke two tests in tests/core its scoped gate did not run; fixed forward in 43668f3 (fp=1)."
+}

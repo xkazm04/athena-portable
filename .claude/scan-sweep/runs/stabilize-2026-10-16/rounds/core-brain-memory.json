@@ -1,0 +1,232 @@
+{
+ "context": "core-brain-memory",
+ "files_read": 13,
+ "loc": 4394,
+ "registry": "software-engineering/agent-memory",
+ "techniques": [
+  "recall-injection",
+  "loss-site-inventory",
+  "durable-store-failure-posture",
+  "lane-reconciliation",
+  "episodic-capture"
+ ],
+ "deviations": 6,
+ "assigned": [],
+ "built": [
+  {
+   "sha": "7bcf8f1",
+   "title": "A query matches what a memory says, not the role or kind tags the index files it under",
+   "lens": "bounty-hunter",
+   "red_before": "test_a_word_that_only_names_a_role_or_a_kind_matches_no_memory: whole recall showed 20 of 41 for one Acme turn",
+   "after": "episodes (showing 1 of 1); 'Acme fact' keyword 1 of 1 (was 2 of 2)"
+  },
+  {
+   "sha": "af50092",
+   "title": "A question's punctuation is not part of its words",
+   "lens": "parity-auditor",
+   "red_before": "4 window cases + recency test: 3 of 4 phrasings showed the head; 0 of 5 recent turns kept for 'did Acme pay it?'",
+   "after": "4 of 4 phrasings show the match; 5 of 5 recent turns kept"
+  },
+  {
+   "sha": "8970eb5",
+   "title": "Fleet chatter that outranks a relevant turn no longer pushes it out of the frame window",
+   "lens": "parity-auditor",
+   "red_before": "test_machine_chatter_does_not_crowd_a_relevant_turn_out_of_the_window: relevant turn absent behind 45 machine rows",
+   "after": "turn present beside exactly 2 machine rows; reads budget+2 rows, was budget*2"
+  },
+  {
+   "sha": "7e7b316",
+   "title": "A whole recall that found no distilled memory reserves its note, so the answer fits its cap",
+   "lens": "parity-auditor",
+   "red_before": "test_a_whole_recall_that_found_no_distilled_memory_still_fits_its_cap: 4828/4810/4820 chars vs cap 4800",
+   "after": "0 of 86 episode sizes over the cap (was 3 of 86)"
+  },
+  {
+   "sha": "e743b7b",
+   "title": "A memory file saved with a byte order mark is rebuilt, not skipped as 'no id in frontmatter'",
+   "lens": "error-handler",
+   "red_before": "frontmatter parse gave {}; reconcile skipped the fact as 'no id in frontmatter'",
+   "after": "probe brain rebuilt with 0 skipped (episode 1, fact 1)"
+  },
+  {
+   "sha": "a800086",
+   "title": "The tree and the rebuild's walk are built from the scope lists the writers accept",
+   "lens": "test-strategist",
+   "red_before": "seeded scope 'team' in the writers' list only: new test red, existing suite 0 of 1 drifts caught",
+   "after": "lists derived; same seed walked and green; derived TREE/WALK equal to the old literals"
+  },
+  {
+   "sha": "6ae5114",
+   "title": "A COMMIT that fails is rolled back, so later writes are not held in a transaction no reader sees",
+   "lens": "risk-assessor",
+   "red_before": "test_a_commit_that_fails_does_not_leave_every_later_write_uncommitted: writer still in a transaction, next episode invisible",
+   "after": "transaction closed; next write visible to a read handle"
+  },
+  {
+   "sha": "8dfe8ac",
+   "title": "A fact or rule longer than its stored excerpt is marked as cut in the always and keyword lines",
+   "lens": "copy-auditor",
+   "red_before": "3 of 4 long distilled lines (ascii keyword, three-byte always and keyword) ended with no ellipsis",
+   "after": "4 of 4 marked; a short fact renders unchanged; block budget tests pass"
+  },
+  {
+   "sha": "e35cf07",
+   "title": "A long turn the frame window shows by recency, or by a non-literal match, is marked where it was cut",
+   "lens": "observability-auditor",
+   "red_before": "recency head and around() no-hit head both ended mid-text with no mark",
+   "after": "both end in ' ...' within EXCERPT_BYTES plus the mark; uncut turn unchanged"
+  },
+  {
+   "sha": "02d15c4",
+   "title": "Damage the session upsert meets first is named IndexDamagedError and the handle is closed",
+   "lens": "error-handler",
+   "red_before": "ensure_session raising SQLITE_CORRUPT escaped as bare sqlite3.DatabaseError with the writer open",
+   "after": "IndexDamagedError naming the repair; the index file renames on Windows"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "recall()'s 'no distilled memory matched' note is false when the always tier holds the match",
+   "before": "note added whenever the keyword lane is empty, even with a matching always-tier fact",
+   "after": "no reader: only wiring.recall_executor renders notes, and it calls recall_whole, which has no always tier; the frame path never renders trace.notes (grep '.notes' src) - identical for every consumer"
+  },
+  {
+   "title": "read_body and the always_line alias have no production consumer",
+   "before": "grep: read_body only in tests/core/test_brain_connections.py; always_line only in tests/core/test_recall.py",
+   "after": "removal is churn: both are documented API the tests pin, and the figure (0 consumers) is the same after"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "bounty-hunter",
+   "checked": "every MATCH in recall.py against the FTS tags column (built 7bcf8f1); the always/keyword exclusion; the NOT IN '' guard"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "fts_terms vs the FTS5 tokenizer (af50092); _episode_block vs _whole_episodes machine paging (8970eb5); packer vs wiring renderer (7e7b316); writer importance vs rebuild (card B)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "reconcile's read/parse doors: BOM (e743b7b); Brain.__init__ damage guard vs ensure_session (02d15c4); OSError/UnicodeDecodeError skips already named"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "every excerpt site: recency tail and around() fallback unmarked (e35cf07); reconcile skip names; unavailable_trace logs once"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "write_txn COMMIT failure (6ae5114); schema_version stamp lowered by an older build (card C); provenance check before txn"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "recall count queries ride idx_node_kind; _episode_block page cut from budget*2 to budget+2 rows; rowid FTS joins (ADR 0077) - nothing else"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "model-facing lines: unmarked distilled excerpts (8dfe8ac); 'no id in frontmatter' for a BOM file (e743b7b); recall() note (rejected, no reader)"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "recall's empty / failed / locked states: (showing 0 of 0) + note, unavailable_trace on sqlite3.Error, busy timeout 5 s - all three distinct and tested (ADR 0076)"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "hand-kept scope lists FACT_SCOPES/PROCEDURAL_SCOPES vs TREE vs WALK (a800086); catalog enum src/athena/core/catalog.py:131 also copies FACT_SCOPES (not this context's file)"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "frontmatter line-break refusal on keys, values and list items; FTS quoting with control chars dropped; file names from minted id + ascii slug; read handle mode=ro - nothing new"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "agent-memory pair is a recorded deviation (supersede key, packing break); verdict now stale (digest 7770d30f -> 44a563d2, rev 48 -> 50); 8dfe8ac closes the 'unmarked 500-byte fact excerpt' fd42e84 listed open"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "recall imports catalog.canonical_line/neutralise_text (core to core); scope lists moved into paths, which store already imported - no cycle"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "always_line alias and read_body (rejected as churn); store docstring's 'three rules' over four headings"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "_whole_episodes comment claimed the notes line reserved (fixed in 7e7b316); recall_whole and wiring docstrings promise a gate-cut oversized episode the dead spent==0 branch never gives (card B)"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "core/brain and recall imports: stdlib plus athena.contracts and athena.core only (AGENTS.md core is stdlib-only) - clean"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "Personas Rust writer parity: frontmatter key order, bare type/role, companion_ table names, 500-byte excerpt - unchanged by every fix here"
+  },
+  {
+   "key": "feature-scout",
+   "checked": "fd42e84's open list (supersede key, forgetting sweep) - both recorded already, not re-emitted"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "ux-reviewer",
+   "why": "Python core library; no UI in this context"
+  },
+  {
+   "key": "visual-craft",
+   "why": "no rendered surface"
+  },
+  {
+   "key": "accessibility-checker",
+   "why": "no rendered surface"
+  },
+  {
+   "key": "mobile-specialist",
+   "why": "no rendered surface"
+  },
+  {
+   "key": "ui-perfectionist",
+   "why": "project lens for UI; none here"
+  },
+  {
+   "key": "onboarding-designer",
+   "why": "no first-run flow in the store or recall"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "nothing paid for"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no sharing or notification surface"
+  },
+  {
+   "key": "business-strategist",
+   "why": "infrastructure library under stabilize"
+  },
+  {
+   "key": "analytics-planner",
+   "why": "no product analytics in this context"
+  },
+  {
+   "key": "devops-optimizer",
+   "why": "no pipeline or build files in this context"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "stabilize strategy; memory-architecture moves are the recorded deviation's, not new"
+  }
+ ],
+ "findings": 15,
+ "lanes": "A:10/B:2/C:1",
+ "fp": 0,
+ "gates": {
+  "uv run ruff check <changed files>": 0,
+  "uv run ruff format --check <changed files>": 0,
+  "uv run mypy": 0,
+  "uv run pytest tests/core tests/adopt tests/daemon tests/e2e tests/harness tests/test_cli.py tests/test_wiring.py -m \"not provider and not eval\"": 1
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "10 built; scoped pytest red only on 2 tests a sibling's cli commit broke",
+ "notes": "30435c7 (sibling cli-and-wiring round: reconcile exits 1 when it skipped a file) turned tests/core/test_brain_reconcile.py::test_cmd_reconcile_reports_a_bad_file_and_still_exits_zero and ::test_cmd_reconcile_names_a_non_utf8_file_and_still_exits_zero red; they sit in this context's test file and pin the opposite contract (exit 0). Left as they are for the director: aligning them is taking a side on that sibling's policy change. Every scoped run's only other reds were sibling in-flight work: tests/core/test_validators.py enum tests (uncommitted validators.py, once) and tests/daemon/test_server.py 404/405 test (once; passed alone and on a tests/daemon re-run, exit 0). Registry verdict for core-brain-memory x agent-memory is stale: map digest 7770d30f rev 48, index 44a563d2 rev 50. Consult line: {\"bundle\":\"software-engineering\",\"subjects\":[\"agent-memory\"],\"techniques\":[\"recall-injection\",\"loss-site-inventory\",\"durable-store-failure-posture\",\"lane-reconciliation\",\"episodic-capture\"],\"deviations\":6}. No leads filed."
+}

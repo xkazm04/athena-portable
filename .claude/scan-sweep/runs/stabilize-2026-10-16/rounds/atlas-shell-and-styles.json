@@ -1,0 +1,63 @@
+{"context":"atlas-shell-and-styles","files_read":20,"loc":3469,
+ "registry":"software-engineering/design-tokens, software-engineering/async-ui-states, software-engineering/mcp-tools, software-engineering/accessibility, software-engineering/dead-code",
+ "techniques":["tool-schema-design","placeholder-design","token-taxonomy","token-enforcement","motion-tokens","density-and-scale-axes","deletion-protocols","name-and-description-wiring","hidden-but-mounted-inertness","keyboard-navigation-models"],
+ "deviations":9,
+ "assigned":[
+  {"title":"raw 1.1s duration slipping past the token gate","verdict":"false: not in this context's files - it is examples/atlas/components/atlas/variants/archify-lanes/lanes.css:650 and design/check-tokens.mjs:48 (atlas-lanes-drawing / atlas-data-and-app); a seconds-unit grep over style/ finds 0"},
+  {"title":"stale 'module bar' label","verdict":"false: not in this context's files - archify-lanes/workflow.ts:188,191 and src-tauri lib.rs:4; grep -i 'module bar|ModuleBar|module-first' over this context's 20 files finds 0"}
+ ],
+ "built":[
+  {"sha":"32aed73","title":"set_lens accepts the \"none\" its description tells an agent to pass to clear the lens","lens":"parity-auditor","red_before":"test/shell.test.ts: the kit's door (validateArgs) refused {concept:\"none\"} with 'must be one of ..., got \"none\"'","after":"clear word validates 1 of 1 (was 0); 17 ids still pass, unknown id still refused"},
+  {"sha":"e2b59bd","title":"the variant's loading fallback says it is loading, not that the drawing is \"not built yet\"","lens":"state-coverage","red_before":"test/shell.test.ts: Suspense fallback was <Placeholder why=\"loading\"/> with a hard-wired 'not built yet' head; boundary card had no failed state","after":"states reading as an absence while loading 0 of 2 (was 1 of 2)"},
+  {"sha":"b4c5eef","title":"the L2 pane's narrow layout applies on a narrow screen; its query named a container nothing declares","lens":"ui-perfectionist","red_before":"test/shell.test.ts listed @container at-app (mast.css) and @container at-plate (l2-pane.css), no container declared anywhere","after":"dangling container queries 0 (was 2); pane rule is @media 720 with its grow origin adjusted"},
+  {"sha":"c325b0f","title":"the shell's stylesheets drop 31 classes no component renders, rails.css whole","lens":"code-optimizer","red_before":"test/shell.test.ts listed 31 styled classes with no renderer in app/, components/, lib/","after":"unrendered classes 0 (was 31); 512 CSS lines removed"},
+  {"sha":"103ba17","title":"the token file declares only roles something reads: twelve orphaned tokens go","lens":"visual-craft","red_before":"test/shell.test.ts listed 12 roles with no var() and no script reader","after":"unspent roles 0 (was 12); check-tokens 60 tokens declared (was 72)"},
+  {"sha":"85795ae","title":"the L2 pane's claim chips say whether they are the lens, as the claims rail's rows already do","lens":"accessibility-checker","red_before":"test/shell.test.ts: .at-chip button had no aria-pressed","after":"lens toggles exposing state 2 of 2 (was 1 of 2)"},
+  {"sha":"298910b","title":"set_view publishes no enum while there are no views, so its own \"no views\" answer is reachable","lens":"error-handler","red_before":"test/shell.test.ts: door refused {view:\"lanes\"} under an empty enum with 'must be one of , got'","after":"value under no views reaches the handler 1 of 1 (was 0); closed set still refuses unknowns"},
+  {"sha":"8a5ad87","title":"the pane's chips, links and Close and the placeholder's Try again ease into hover on the hair clock","lens":"ui-perfectionist","red_before":"test/shell.test.ts listed .at-missing-retry, .at-chip, .at-link, .at-close","after":"hovered controls without the hair transition 0 of 7 (was 4 of 7)"},
+  {"sha":"13f5fa1","title":"the variant placeholder centres itself in the stage; its grid placement was inert in a block parent","lens":"visual-craft","red_before":"test/shell.test.ts: .at-missing used place-self/grid-row inside the block .at-stage","after":"inert grid properties on the card 0 (was 2)"},
+  {"sha":"6706557","title":"the shell's header comments name the files, counts and mechanism that exist","lens":"copy-auditor","red_before":"probe: 10 stale claims (canvas/canvas.css x2, Atlas.tsx as writer x2, shared id, matrix3d, six of five sections, single slug, eight of 19 modules, a third grid row)","after":"0 stale claims"},
+  {"sha":"0e76da1","title":"the variant boundary drops a reset branch its key makes unreachable, and the test pins the key instead","lens":"bounty-hunter","red_before":"test/shell.test.ts: componentDidUpdate present although the one render site keys by slug and attempt","after":"unreachable reset branches 0 (was 1); key without slug or attempt fails"},
+  {"sha":"73c20f3","title":"the mast's model counts reach a screen reader; two of the three are said nowhere else","lens":"accessibility-checker","red_before":"test/shell.test.ts: .at-mast-counts carried aria-hidden","after":"visible counts exposed 3 of 3 (was 0 of 3)"}
+ ],
+ "rejected":[
+  {"title":"Give the mast's lens 'clear' button a longer accessible name","before":"name 'clear', inside the same .at-lens-on container as the lens part and name, read in sequence","after":"'Clear the lens' carries the same verb and target a reader already hears; no figure moves (not-better)"}
+ ],
+ "lens_keys":[
+  {"key":"ui-perfectionist","checked":"hover rules vs transitions across 7 shell controls (built 8a5ad87); @container names vs declared containers (built b4c5eef); .at-missing placement in a block parent (built 13f5fa1); focus-ring offsets in mast (1px inside an overflow-hidden 56px row, deliberate)"},
+  {"key":"bounty-hunter","checked":"VariantBoundary key vs componentDidUpdate (built 0e76da1); set_lens toggle guard (asked !== lensId, correct); useChoice commit early-return and value validation; measureOrigin querySelector ids (model ids only)"},
+  {"key":"parity-auditor","checked":"set_lens description vs enum vs handler (built 32aed73); Claims row vs Pane chip toggles (built 85795ae); set_view enum vs handler branch (built 298910b); tool description counts vs data (17, 6/4/4/3, 68: all match)"},
+  {"key":"error-handler","checked":"set_view empty enum at the door (built 298910b); VariantBoundary retry re-creating the lazy; metaViews import .catch -> views []"},
+  {"key":"observability-auditor","checked":"Shell metaViews .catch (the boundary renders the failure and React logs caught errors); useChoice localStorage catches fall back to the default; tools return in-band errors, never throw"},
+  {"key":"risk-assessor","checked":"useChoice module store capturing fallback (documented, prod-safe); viewBus single module-level publication with one variant mounted; lazy template import over variants/*/index"},
+  {"key":"code-optimizer","checked":"31 unrendered classes, rails.css whole (built c325b0f); Shell per-render props object and lensFor memo; Claims carriers() per render via memoised lensFor"},
+  {"key":"ux-reviewer","checked":"in-pane edge link keeps scroll and drops focus (card B); placeholder copy on every cold load (built e2b59bd); pane footer Escape copy"},
+  {"key":"visual-craft","checked":"12 orphaned tokens (built 103ba17); placeholder centring vs vignette (built 13f5fa1); 11px micro text on 9 live selectors (card C)"},
+  {"key":"state-coverage","checked":"Suspense fallback vs boundary failure (built e2b59bd); pane empty sections (concepts/calls/reaches/ADRs all designed); lens off state; set_view before meta loads (built 298910b)"},
+  {"key":"copy-auditor","checked":"10 stale header claims (built 6706557); set_view refusal sentence (rewritten in 298910b); set_variant/read_concepts descriptions vs data"},
+  {"key":"accessibility-checker","checked":"chip aria-pressed (built 85795ae); mast counts aria-hidden (built 73c20f3); lens clear name (rejected); level rail current step disabled + aria-current; radiogroups via useRoving"},
+  {"key":"test-strategist","checked":"no test reached Shell, Mast, Pane, the tool schemas or the shell CSS; test/shell.test.ts (new, 13 cases) runs the real kit door over the published schemas and reads sources/CSS with comments stripped"},
+  {"key":"security-auditor","checked":"tool handlers echo agent input only into JSON error strings; Pane/measureOrigin selectors take model ids only (Pane renders only on a componentById hit); every tool reversible, sideEffects none"},
+  {"key":"mobile-specialist","checked":"pane narrow layout never applied (built b4c5eef); mast row at 375px with two non-shrinking switchers (card C); claims rail 30dvh at 900"},
+  {"key":"architecture-analyst","checked":"shell/variant seam: lazy template import, contract.ts props, viewBus channel, lanes.ts shim keeping the no-sibling-import rule; nothing real"},
+  {"key":"dependency-auditor","checked":"imports of motion/react, @athena/demo-kit/zoom|webmcp, @/data; lanes.ts re-export is the only cross-folder path; nothing real"},
+  {"key":"documentation-auditor","checked":"module header citations against the tree (built 6706557 via copy-auditor); DESIGN.md/KIT-GAPS references to rails.css (none)"},
+  {"key":"tech-debt-tracker","checked":"useChoice as the fifth copy of a kit-missing hook (already logged in KIT-GAPS; not re-emitted); the empty third grid row in .at-app (noted in comment)"},
+  {"key":"integration-planner","checked":"WebMCP registration seam: published schema vs the kit door's validation (built 32aed73, 298910b); read_view/useZoomTools projection"},
+  {"key":"registry-conformance","checked":"design-tokens deviation already recorded at sheet.css (numbered spacing primitives consumed directly); not re-emitted"}
+ ],
+ "lens_no_surface":[
+  {"key":"feature-scout","why":"stabilize: no forward-building surface asked of a shell"},
+  {"key":"onboarding-designer","why":"no first-run or setup flow in the shell"},
+  {"key":"monetization-advisor","why":"no pricing, plan or billing surface"},
+  {"key":"growth-hacker","why":"no sharing, invite or notification surface"},
+  {"key":"business-strategist","why":"an architecture diagram demo; no conversion or retention surface"},
+  {"key":"analytics-planner","why":"no tracking or telemetry in the shell by design (Atlas writes nothing)"},
+  {"key":"devops-optimizer","why":"no build or pipeline file in this context (the lint chain lives in atlas-data-and-app)"},
+  {"key":"innovation-catalyst","why":"stabilize strategy; the agent tool surface was judged by parity and error lenses"}
+ ],
+ "findings":16,"lanes":"A:12/B:1/C:2","fp":0,
+ "gates":{"pnpm --filter atlas typecheck":0,"pnpm --filter atlas lint":0,"pnpm --filter atlas test":0},
+ "leads":[],
+ "degraded":false,"note":"12 built (2 tool-schema bugs, 4 CSS/layout, 2 dead-code), 1 B, 2 C",
+ "notes":"No sibling reds seen. chrome/rails.css was deleted (c325b0f): context-map.json still lists it for this context and needs a rescan. DESIGN.md (not this context) still describes --at-cs, .at-world and --at-dur-beat as round history. Consult line: {bundle:software-engineering, subjects:[design-tokens,async-ui-states,mcp-tools,accessibility,dead-code], techniques:[tool-schema-design,placeholder-design,token-taxonomy,deletion-protocols,motion-tokens], deviations:9}. None of the 12 fixes was seen in a browser."}
