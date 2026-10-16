@@ -146,6 +146,34 @@ describe("hold to talk", () => {
   });
 });
 
+describe("the studio's Hold button held from the keyboard", () => {
+  // The button shows <Kbd>Space</Kbd>, and a mouse take leaves it focused; the document keys give a
+  // focused button its own Space and Enter (keys.ts ownsKey), so the button must take them itself.
+  it("Space and Enter on the focused button start a take, and letting go stops it, once each", () => {
+    const { model, calls } = spy("stt-compare");
+    mount(model, STUDIO);
+    const hold = button("Hold to talk");
+    act(() => hold.focus());
+    keyOn(hold, " ");
+    keyOn(hold, "Enter");
+    expect(calls).toEqual(["recordStart", "recordStart"]);
+    const recording = spy("recording");
+    mount(recording.model, STUDIO);
+    const held = button("Listening");
+    act(() => held.focus());
+    keyOn(held, " ", "keyup");
+    expect(recording.calls).toEqual(["recordStop"]);
+  });
+
+  it("a held key's repeats do not restart the take", () => {
+    const { model, calls } = spy("stt-compare");
+    mount(model, STUDIO);
+    const hold = button("Hold to talk");
+    act(() => void hold.dispatchEvent(new KeyboardEvent("keydown", { key: " ", repeat: true, bubbles: true, cancelable: true })));
+    expect(calls).toEqual([]);
+  });
+});
+
 describe("the studio's document keys", () => {
   it("take Enter, B, S and the numbers from the body, and Escape is left alone for the stage", () => {
     const { model, calls } = spy("stt-compare");

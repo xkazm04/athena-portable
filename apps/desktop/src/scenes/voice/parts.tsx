@@ -94,8 +94,9 @@ export function Chip({
 }
 
 /**
- * Hold to talk: pointer down starts the take, up (or a cancel) ends it. The studio's document keys
- * own Space, so this button is the pointer's way in; it has no meter of its own.
+ * Hold to talk: pointer down starts the take, up (or a cancel) ends it, and Space or Enter held on
+ * the focused button does the same (the studio's document keys hold Space everywhere else). It has
+ * no meter of its own.
  */
 export function HoldButton({
   recording,
@@ -122,6 +123,18 @@ export function HoldButton({
         if (recording) onStop();
       }}
       onPointerCancel={() => {
+        if (recording) onStop();
+      }}
+      // A focused button keeps its own Space and Enter (the studio's document keys give way to it),
+      // and a mouse take leaves this one focused: held from the keyboard it holds, as the module's
+      // HoldToTalk does, or the Space it shows does nothing.
+      onKeyDown={(e) => {
+        if (e.repeat || (e.key !== " " && e.key !== "Enter")) return;
+        e.preventDefault();
+        if (!recording) onStart();
+      }}
+      onKeyUp={(e) => {
+        if (e.key !== " " && e.key !== "Enter") return;
         if (recording) onStop();
       }}
     >
