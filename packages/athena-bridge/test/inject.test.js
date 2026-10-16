@@ -233,6 +233,105 @@ test("a call is given its input and its output is rendered as text", async () =>
   assert.equal(p.replyTo("c2").output, "12");
 });
 
+/**
+ * One schema and fifteen inputs, with the verdict `check_schema` (src/athena/core/validators.py)
+ * gives each. The page checks the same subset at dispatch and may never be stricter than the gate:
+ * an input the gate accepts must reach the tool.
+ */
+const SCHEMA = {
+  type: "object",
+  properties: {
+    id: { type: "string", maxLength: 4 },
+    label: { type: "string", enum: ["travel", "food"] },
+    count: { type: "integer", minimum: 1, maximum: 10 },
+    tags: { type: "array", maxItems: 2, items: { type: "string" } },
+    ratio: { type: "number" },
+  },
+  required: ["id"],
+  additionalProperties: false,
+};
+
+/** @type {Array<[string, unknown, boolean]>} name, input, does check_schema accept it */
+const VERDICTS = [
+  ["valid", { id: "inv3", label: "travel", count: 3, tags: ["a"], ratio: 0.5 }, true],
+  ["missing required", { label: "travel" }, false],
+  ["wrong type", { id: 7 }, false],
+  ["enum miss", { id: "a", label: "golf" }, false],
+  ["unknown key", { id: "a", extra: 1 }, false],
+  ["too long", { id: "abcde" }, false],
+  // Four code points and eight UTF-16 units: Python counts the first, so the page must too.
+  ["astral at the limit", { id: "\u{1F600}\u{1F600}\u{1F600}\u{1F600}" }, true],
+  ["boolean for integer", { id: "a", count: true }, false],
+  ["fraction for integer", { id: "a", count: 2.5 }, false],
+  ["below minimum", { id: "a", count: 0 }, false],
+  ["above maximum", { id: "a", count: 11 }, false],
+  ["too many items", { id: "a", tags: ["a", "b", "c"] }, false],
+  ["wrong item type", { id: "a", tags: ["a", 1] }, false],
+  ["null for a string", { id: null }, false],
+  // An own key that is also an Object.prototype name is still an unknown key.
+  ["inherited name as a key", { id: "a", constructor: 1 }, false],
+];
+
+test("a call is checked against the tool's own inputSchema before the tool runs", async () => {
+  // README 3.3, the registry's mcp-tools/tool-schema-design: validation runs at dispatch,
+  // against the schema the tool publishes now. The gate checked the manifest it was given at
+  // list time; a page that re-registered the tool since, or a surface with no catalog behind it,
+  // must not be able to hand the handler arguments its own schema refuses.
+  const p = page();
+  /** @type {unknown[]} */
+  const ran = [];
+  register(
+    p.window,
+    "file",
+    (input) => {
+      ran.push(input);
+      return "filed";
+    },
+    { inputSchema: SCHEMA },
+  );
+
+  VERDICTS.forEach(([, input], i) => p.send({ id: `v${i}`, type: "call", name: "file", input }));
+  await p.until(() => VERDICTS.every((_, i) => p.replyTo(`v${i}`) !== undefined));
+
+  VERDICTS.forEach(([name, input, accepted], i) => {
+    const reply = p.replyTo(`v${i}`);
+    if (accepted) {
+      assert.equal(reply.ok, true, `${name}: the gate accepts it, so the page must`);
+      assert.equal(reply.output, "filed");
+    } else {
+      assert.equal(reply.ok, false, `${name}: refused before the tool ran`);
+      assert.equal(reply.reason, "validator_failed", name);
+      assert.match(reply.error, /^file: /, `${name}: the sentence names the tool`);
+      assert.equal(
+        ran.some((r) => JSON.stringify(r) === JSON.stringify(input)),
+        false,
+        `${name}: never reached the tool`,
+      );
+    }
+  });
+  assert.equal(ran.length, VERDICTS.filter(([, , ok]) => ok).length);
+});
+
+test("a tool with no usable schema runs as before, and an omitted input is an empty object", async () => {
+  // Defence in depth may never be a new way to refuse: a schema the manifest door would have
+  // refused, or none at all, is the gate's business, not a reason for the page to stop a call.
+  const p = page();
+  register(p.window, "loose", (input) => JSON.stringify(input), { inputSchema: undefined });
+  register(p.window, "odd", (input) => JSON.stringify(input), { inputSchema: { type: "object", required: "id" } });
+  register(p.window, "bare", (input) => JSON.stringify(input), { inputSchema: { type: "object", properties: {} } });
+
+  p.send({ id: "s1", type: "call", name: "loose", input: { anything: 1 } });
+  p.send({ id: "s2", type: "call", name: "odd", input: { x: 1 } });
+  p.send({ id: "s3", type: "call", name: "bare" });
+  p.send({ id: "s4", type: "call", name: "bare", input: ["not", "an", "object"] });
+  await p.until(() => ["s1", "s2", "s3", "s4"].every((id) => p.replyTo(id) !== undefined));
+
+  assert.equal(p.replyTo("s1").output, '{"anything":1}');
+  assert.equal(p.replyTo("s2").output, '{"x":1}');
+  assert.equal(p.replyTo("s3").output, "{}");
+  assert.equal(p.replyTo("s4").reason, "validator_failed", "an input that is not an object is refused, as the gate refuses it");
+});
+
 test("a call past the deadline is a timeout refusal, even when the tool ignores its signal", async () => {
   const p = page();
   // The hostile case: nothing here ever settles and the signal is never read. The reply must

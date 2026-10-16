@@ -10,7 +10,8 @@ speaks the same messages.
 | `inject.js` | the page's main world, at document start | polyfill `document.modelContext`, answer `list` and `call`, post `toolchange` and `late` |
 | `gate.js` | the surface — the panel, an extension — never the page | annotations → flags → `AUTO`/`GATED`, the refusal vocabulary, the untrusted fence, bounded output, the per-origin budget |
 
-`inject.js` decides nothing. It lists what the page registered and runs what it is told to run.
+`inject.js` decides no policy. It lists what the page registered and runs what it is told to run,
+once the input fits the tool's own schema.
 Whether a tool is `AUTO` or `GATED` is decided by the surface's gate and by the catalog behind it
 (README §3.3, ADR 0004): a page cannot argue itself out of `GATED`, and neither can a model.
 
@@ -49,7 +50,11 @@ so an advertisement in an iframe cannot register tools that reach the surface.
 An unknown `type` is answered `{ ok: false, reason: "validator_failed", error: "Unknown request
 <type>" }`. A `call` for a name the page has not registered is answered `{ ok: false, reason:
 "unknown_ref", error: "No tool named <name>" }`, the reason the catalog gives for a name it does
-not hold. A throw inside the tool becomes `{ ok: false, error }` with no `reason`: that is the
+not hold. A `call` whose `input` fails the tool's own `inputSchema`, as the tool publishes it at
+the moment of the call, is answered `{ ok: false, reason: "validator_failed", error: "<name>:
+<problem>" }` and the tool never runs. The check is the gate's subset (`check_schema`,
+`src/athena/core/validators.py`) and is never stricter than it: a keyword outside the subset is
+ignored and a malformed schema is not a refusal here. An omitted `input` is `{}`. A throw inside the tool becomes `{ ok: false, error }` with no `reason`: that is the
 tool's own outcome, not a refusal by the bridge. Every `reason` this half sends is a member of
 `REFUSAL_REASONS` (gate.js), and `error` is always the human sentence. A refusal is a result,
 never a dropped promise, because a relay with a pending entry that never clears is a surface that

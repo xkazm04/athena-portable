@@ -6,11 +6,12 @@
 //
 //   1. polyfills `document.modelContext` when the browser has none, so a page written against
 //      WebMCP behaves the same in every build;
-//   2. answers `list` and `call` for the relay over `window.postMessage`;
+//   2. answers `list` and `call` for the relay over `window.postMessage`, checking a call's input
+//      against the tool's own `inputSchema` before the tool runs (the gate's subset, never stricter);
 //   3. posts `toolchange` whenever the registry moves, so the surface's manifest is never stale,
 //      and `late` when a call it already answered `timeout` settles after all.
 //
-// It decides nothing. Whether a tool is AUTO or GATED is decided by gate.js in the surface and by
+// It decides no policy. Whether a tool is AUTO or GATED is decided by gate.js in the surface and by
 // the catalog behind it (README §3.3, ADR 0004); a page cannot argue itself out of GATED and
 // neither can a model. Everything here is wrapped in one `try`: a page that froze its globals
 // before this script ran gets no bridge, and no bridge is a page with zero tools — never an
@@ -107,6 +108,12 @@
       const tool = tools.find((t) => t && t.name === name);
       if (!tool) return { ok: false, reason: UNKNOWN_REF, error: `No tool named ${name}` };
 
+      // Checked at dispatch, against the schema the tool publishes NOW: the gate checked the
+      // manifest it was handed at list time, and a page may have re-registered the tool since.
+      const params = input === undefined || input === null ? {} : input;
+      const problem = checkInput(params, tool.inputSchema);
+      if (problem) return { ok: false, reason: VALIDATOR_FAILED, error: `${name}: ${problem}` };
+
       const budgetMs = deadline(requestedMs);
       const controller = new AbortController();
       let expired = false;
@@ -121,7 +128,7 @@
         // surface open past the deadline. The abort is the courtesy; the race is the guarantee.
         // The raced promise is kept: a timeout is "no answer yet", not "did not happen", and a
         // write that finishes after the deadline must still be heard (`late`, protocol.md).
-        running = execute(tool, input, controller.signal);
+        running = execute(tool, params, controller.signal);
         const output = await Promise.race([running, aborted(controller.signal)]);
         return { ok: true, output: render(output) };
       } catch (error) {
@@ -302,6 +309,132 @@
     return new Promise((_resolve, reject) => {
       signal.addEventListener("abort", () => reject(new Error("aborted")), { once: true });
     });
+  }
+
+  // --- the input check, the gate's subset at the page's door ------------------------------------
+  //
+  // `check_schema` (src/athena/core/validators.py) is the authority, and this is the same subset:
+  // `type`, `required`, `enum`, `additionalProperties: false`, `maxLength`, `minItems`,
+  // `maxItems`, `minimum`, `maximum` and nested `items`. It is defence in depth, so it may never be
+  // STRICTER than the gate: a keyword outside the subset is ignored, a schema the manifest door
+  // would refuse is not a reason to stop a call here, and a string's length counts code points as
+  // Python's `len` does. test/inject.test.js pins it to the gate's verdicts.
+
+  /** JSON Schema's type names, as tests over a structured-clone value. */
+  const TYPES = /** @type {Record<string, (value: unknown) => boolean>} */ ({
+    string: (v) => typeof v === "string",
+    number: (v) => typeof v === "number",
+    integer: (v) => typeof v === "number" && Number.isInteger(v),
+    boolean: (v) => typeof v === "boolean",
+    array: (v) => Array.isArray(v),
+    object: (v) => isRecord(v),
+  });
+
+  /**
+   * @param {unknown} value
+   * @returns {value is Record<string, unknown>}
+   */
+  function isRecord(value) {
+    return typeof value === "object" && value !== null && !Array.isArray(value);
+  }
+
+  /** @param {unknown} value */
+  function kindOf(value) {
+    if (value === null) return "null";
+    if (Array.isArray(value)) return "array";
+    if (typeof value === "number" && Number.isInteger(value)) return "integer";
+    return typeof value;
+  }
+
+  /**
+   * Python's `==` for JSON values, which is what `value not in allowed` compares with: a number
+   * equals a boolean of the same value, and lists and objects compare by content.
+   * @param {unknown} a
+   * @param {unknown} b
+   * @returns {boolean}
+   */
+  function same(a, b) {
+    const numeric = (/** @type {unknown} */ v) => typeof v === "number" || typeof v === "boolean";
+    if (numeric(a) && numeric(b)) return Number(a) === Number(b);
+    if (Array.isArray(a) && Array.isArray(b)) return a.length === b.length && a.every((v, i) => same(v, b[i]));
+    if (isRecord(a) && isRecord(b)) {
+      const keys = Object.keys(a);
+      return keys.length === Object.keys(b).length && keys.every((k) => Object.hasOwn(b, k) && same(a[k], b[k]));
+    }
+    return a === b;
+  }
+
+  /**
+   * The first problem with `params` under `schema`, or `null`. Mirrors `check_schema`.
+   * @param {unknown} params
+   * @param {unknown} schema
+   * @returns {string | null}
+   */
+  function checkInput(params, schema) {
+    if (!isRecord(params)) return "input must be an object";
+    if (!isRecord(schema)) return null;
+    const required = Array.isArray(schema.required) ? schema.required : [];
+    for (const key of required) {
+      if (typeof key === "string" && !Object.hasOwn(params, key)) return `missing required parameter "${key}"`;
+    }
+    const props = isRecord(schema.properties) ? schema.properties : {};
+    if (schema.additionalProperties === false) {
+      const extra = Object.keys(params).filter((k) => !Object.hasOwn(props, k)).sort();
+      if (extra.length) return `unknown parameter(s): ${extra.join(", ")}`;
+    }
+    for (const [key, value] of Object.entries(params)) {
+      const sub = Object.hasOwn(props, key) ? props[key] : undefined;
+      if (isRecord(sub)) {
+        const problem = checkValue(key, value, sub);
+        if (problem) return problem;
+      }
+    }
+    return null;
+  }
+
+  /**
+   * @param {string} path
+   * @param {unknown} value
+   * @param {Record<string, unknown>} schema
+   * @returns {string | null}
+   */
+  function checkValue(path, value, schema) {
+    const expected = schema.type;
+    if (typeof expected === "string" && expected in TYPES && !TYPES[expected](value)) {
+      return `${path}: expected ${expected}, got ${kindOf(value)}`;
+    }
+    if (Array.isArray(schema.enum) && !schema.enum.some((allowed) => same(allowed, value))) {
+      return `${path}: ${JSON.stringify(value)} is not one of ${JSON.stringify(schema.enum)}`;
+    }
+    if (typeof value === "string" && Number.isInteger(schema.maxLength)) {
+      const length = [...value].length;
+      const limit = /** @type {number} */ (schema.maxLength);
+      if (length > limit) return `${path}: ${length} characters exceeds maxLength ${limit}`;
+    }
+    if (Array.isArray(value)) {
+      if (Number.isInteger(schema.maxItems) && value.length > /** @type {number} */ (schema.maxItems)) {
+        return `${path}: ${value.length} items exceeds maxItems ${schema.maxItems}`;
+      }
+      if (Number.isInteger(schema.minItems) && value.length < /** @type {number} */ (schema.minItems)) {
+        return `${path}: ${value.length} items is under minItems ${schema.minItems}`;
+      }
+      if (isRecord(schema.items)) {
+        for (let i = 0; i < value.length; i += 1) {
+          const problem = checkValue(`${path}[${i}]`, value[i], schema.items);
+          if (problem) return problem;
+        }
+      }
+    }
+    if (typeof value === "number") {
+      if (!Number.isFinite(value)) return `${path}: ${value} is not a finite number`;
+      if (typeof schema.minimum === "number" && value < schema.minimum) {
+        return `${path}: ${value} is below minimum ${schema.minimum}`;
+      }
+      if (typeof schema.maximum === "number" && value > schema.maximum) {
+        return `${path}: ${value} is above maximum ${schema.maximum}`;
+      }
+    }
+    return null;
   }
 
   /**
