@@ -396,7 +396,7 @@ export function BooksTools({
   useWebMCPTool({
     name: "navigate",
     description:
-      "Move the sheet to a view: the whole book, or only what is overdue, carrying an unapplied credit, or disputed. Returns to the overview and lights that subset; nothing is removed from the sheet.",
+      "Move the sheet to a view: every state, or only what is overdue, carrying an unapplied credit, or disputed. Returns to the overview and lights that subset; nothing is removed from the sheet. A client chosen with set_filter stays chosen, so only its invoices light and the answer names it; set_filter with client 'all' widens it again.",
     ...registration("navigate"),
     handler: ({ view }) => {
       if (!isOneOf(VIEWS, view)) return { ok: false, error: `Unknown view ${String(view)}.`, views: [...VIEWS] };
