@@ -219,9 +219,12 @@
   border-inline-start-color: var(--bk-greenline);
 }
 
+/* Three edges, not four: the inline-start edge is the verdict stripe above, and `border-color`
+   here (same weight, later) repainted it graphite on the one key the reader was pointing at. */
 .bk-db-key:hover,
 .bk-db-key[data-on="true"] {
-  border-color: var(--bk-graphite);
+  border-block-color: var(--bk-graphite);
+  border-inline-end-color: var(--bk-graphite);
   background: var(--bk-vellum);
 }
 

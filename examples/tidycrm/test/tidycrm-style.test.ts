@@ -244,3 +244,21 @@ test("every chip that is a button is a 44px target with a drawn pressed state, i
   assert.equal(found.length, 2, `expected the database jump and the pair picker, found ${found.length}`);
   assert.deepEqual(missing, []);
 });
+
+test("a legend key keeps its fault or quiet stripe while it is hovered, focused or opening", () => {
+  // The key's inline-start edge is the database's verdict: redline in fault, greenline quiet
+  // (`level0/l0.css`, pinned by `l0-fill.test.ts`). The hover / on rule has the same weight and
+  // comes later, so any border declaration in it that reaches the inline-start edge repaints the
+  // verdict graphite on exactly the key the reader is pointing at.
+  const fill = RULES.filter((r) => /^\.bk-db-key\[data-fill="(fault|quiet)"\]$/.test(r.selector));
+  assert.equal(fill.length, 2, "the two stripe rules moved; revisit this");
+  const reaches = /^border(-color|-style|-width|-inline|-inline-start(-color)?|-left(-color)?)?$/;
+  const offenders: string[] = [];
+  for (const rule of RULES) {
+    const parts = rule.selector.split(",").map((s) => s.trim());
+    if (!parts.some((s) => /^\.bk-db-key(:hover|\[data-on="true"\])$/.test(s))) continue;
+    if (rule.order < Math.min(...fill.map((r) => r.order))) continue;
+    for (const prop of rule.decls.keys()) if (reaches.test(prop)) offenders.push(`${rule.selector} { ${prop} }`);
+  }
+  assert.deepEqual(offenders, [], "a later hover/on rule repaints the verdict stripe");
+});
