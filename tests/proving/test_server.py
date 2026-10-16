@@ -782,6 +782,16 @@ def test_the_page_greys_out_what_the_host_cannot_run() -> None:
 # --- the page reads (WCAG 2.2 AA) --------------------------------------------------------------
 
 
+def test_no_text_on_the_page_is_set_under_12px() -> None:
+    """The repo's floor for UI text (``.claude/scan-sweep/config.md``), in the CSS and inline."""
+    source = page_html()
+    sizes = [float(px) for px in re.findall(r"font-size:\s*(\d+(?:\.\d+)?)px", source)]
+    assert len(sizes) > 20 and min(sizes) >= 12, sorted(sizes)[:5]
+    # mono runs at 0.86em, which inside 13px table text would be 11.2px: floored too
+    mono = re.search(r"\.mono \{[^}]*font-size:\s*([^;]+);", source)
+    assert mono is not None and mono.group(1).startswith("max(12px")
+
+
 def test_the_theme_buttons_name_carries_what_it_shows() -> None:
     """WCAG 2.5.3 Label in Name: the button shows Auto, Light or Dark, so its accessible name
     must contain that word (a speech user says what they see), and it says the current state."""
