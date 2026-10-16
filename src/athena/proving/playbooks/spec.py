@@ -32,6 +32,8 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from athena.proving.manifests import FLAGS
+
 __all__ = [
     "BEFORE_ADR_0057",
     "KINDS",
@@ -52,15 +54,11 @@ __all__ = [
 
 PLAYBOOKS_DIRNAME = "playbooks"
 
-#: The four kinds a portal's tool can be, as manifest flags ``(reversible, side_effects)`` — the
-#: same table as :data:`athena.proving.manifests.FLAGS`, so a playbook's portal is classed exactly
-#: as a real page that registered the same claims would be.
-KINDS: dict[str, tuple[bool, str]] = {
-    "READ": (True, "none"),
-    "WRITE": (True, "internal"),
-    "PERMANENT": (False, "internal"),
-    "REACHES_A_PERSON": (False, "external"),
-}
+#: The four kinds a portal's tool can be, as manifest flags ``(reversible, side_effects)``. It IS
+#: :data:`athena.proving.manifests.FLAGS`, the table Ledgerbox's world is built from, not a copy
+#: of it, so a playbook's portal is classed exactly as a real page that registered the same claims
+#: would be.
+KINDS: dict[str, tuple[bool, str]] = FLAGS
 
 #: The nine playbooks authored before ADR 0057 fixed the floor of 2 portals and 8 traps (rule 1)
 #: and ADR 0056 asked for ``times_per_year``. They are exempt from those three rules only. The set

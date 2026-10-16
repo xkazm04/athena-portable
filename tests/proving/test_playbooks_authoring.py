@@ -13,8 +13,16 @@ from typing import Any
 
 import pytest
 
+from athena.proving.manifests import FLAGS
 from athena.proving.playbooks.__main__ import main
-from athena.proving.playbooks.spec import BEFORE_ADR_0057, PlaybookError, load_playbook
+from athena.proving.playbooks.rank import PERIODS
+from athena.proving.playbooks.spec import (
+    BEFORE_ADR_0057,
+    KINDS,
+    PER_TABLE,
+    PlaybookError,
+    load_playbook,
+)
 
 from .test_playbooks import REPO, library, make_playbook
 
@@ -116,11 +124,23 @@ def test_a_per_outside_the_table_is_refused(tmp_path: Path, per: Any) -> None:
     assert f"found {per!r}" in text
 
 
-@pytest.mark.parametrize("per", ["year", "quarter", "month", "estate", "episode"])
+@pytest.mark.parametrize("per", PER_TABLE)
 def test_every_per_in_the_table_is_accepted(tmp_path: Path, per: str) -> None:
     root = compliant(tmp_path)
     put(root, "playbook.json", lambda v: v["economics"].update(per=per))
     assert load_playbook(root).id == "late-parcels"
+
+
+def test_the_loader_and_the_ranker_hold_one_period_table() -> None:
+    """ADR 0056 (a) is one table read in two places: the loader admits a ``per`` and the ranker
+    prices it. A period added to one only would load and then sit unranked, with no test red.
+    Before: the accepted list above was typed by hand and left out ``week``."""
+    assert tuple(PERIODS) == PER_TABLE
+
+
+def test_a_portal_tool_is_classed_by_the_manifest_flags_themselves() -> None:
+    """The playbook loader and Ledgerbox's world read one kind table, not two copies of it."""
+    assert KINDS is FLAGS
 
 
 @pytest.mark.parametrize("times", [0, -1, "4", None, True])
