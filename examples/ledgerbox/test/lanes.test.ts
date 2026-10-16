@@ -162,6 +162,13 @@ test("the legend is built out of the enum the manifest already publishes", () =>
     assert.ok(entry.says.length > 0, `${entry.state} says nothing`);
   }
   assert.equal(LEGEND[0]?.state, "all", "the reset is the first entry");
+  // And the other direction: every state `set_filter` and `navigate` can light has exactly one
+  // entry. A state with none is a filter a call can set and the panel can neither show nor undo,
+  // and `legendCounts` would announce `undefined` for it.
+  for (const state of STATE_FILTERS) {
+    const entries = LEGEND.filter((e) => e.state === state).length;
+    assert.equal(entries, 1, `${state} has ${entries} legend entries`);
+  }
 });
 
 test("the count a legend entry announces is the count its press produces", () => {

@@ -34,8 +34,11 @@ export interface LegendEntry {
 }
 
 /**
- * The panel, in the order `STATE_FILTERS` declares — worst first after the
- * reset, which is the order the sheet is read in.
+ * The panel, in its own reading order: the reset, then the three readings that
+ * ask for a decision (late, a credit waiting, disputed), then the quiet ones.
+ * That is NOT the order `STATE_FILTERS` declares (`open`, `partial` and
+ * `disputed` sit differently there); what binds the two is the set - one entry
+ * per state, which `test/lanes.test.ts` holds in both directions.
  */
 export const LEGEND: readonly LegendEntry[] = [
   { state: "all", label: STATE_FILTER_LABEL.all, heat: null, glyph: null, says: "every invoice on the sheet" },
