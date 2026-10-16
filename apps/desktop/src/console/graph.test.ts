@@ -7,16 +7,28 @@
  * put hundreds of kilobytes in the first frame and say nothing. This walks the static imports from
  * the module `chrome.html` loads (the document Tauri puts in the Main webview), so an import added
  * to the entry itself is walked too, and fails on any of them, so the budget cannot be spent by an
- * import nobody noticed.
+ * import nobody noticed. A depth's view is known by the `import()` that fetches it, and every other
+ * file under a depth's folder is held out of the first frame unless it is named as shared.
  */
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
+import { ROOTS } from "@/depth/model";
+
 const SRC = path.join(__dirname, "..");
 const APP = path.join(SRC, "..");
 
 const STATIC_IMPORT = /^\s*(?:import|export)\s+(?!type\b)(?:[^"';]*?\sfrom\s+)?["']([^"']+)["']/gm;
+const DYNAMIC_IMPORT = /\bimport\(\s*["']([^"']+)["']\s*\)/g;
+
+/**
+ * The files of a depth the first frame may carry besides its live part: the models the console's
+ * own following and the surface read (`apps/model`, `chores/model`), and the page band the Apps
+ * depth draws over a page (`apps/strip`). Anything else under a depth's folder belongs to its lazy
+ * chunk; adding one here is a decision to pay for it in the first paint.
+ */
+const SHARED_DEPTH_FILES = ["scenes/apps/model.ts", "scenes/apps/strip.tsx", "scenes/chores/model.ts"];
 
 function resolve(from: string, spec: string): string | null {
   const base = spec.startsWith("@/") ? path.join(SRC, spec.slice(2)) : spec.startsWith(".") ? path.resolve(path.dirname(from), spec) : null;
@@ -27,8 +39,12 @@ function resolve(from: string, spec: string): string | null {
   return null; // a stylesheet or an asset
 }
 
-function graph(entry: string): Set<string> {
+const rel = (file: string) => path.relative(SRC, file).replaceAll("\\", "/");
+
+/** The files `entry` imports statically, and the chunks those files fetch with `import()`. */
+function graph(entry: string): { files: Set<string>; lazy: Set<string> } {
   const seen = new Set<string>();
+  const lazy = new Set<string>();
   const visit = (file: string) => {
     if (seen.has(file)) return;
     seen.add(file);
@@ -37,9 +53,13 @@ function graph(entry: string): Set<string> {
       const next = resolve(file, m[1]!);
       if (next) visit(next);
     }
+    for (const m of text.matchAll(DYNAMIC_IMPORT)) {
+      const chunk = resolve(file, m[1]!);
+      if (chunk) lazy.add(rel(chunk));
+    }
   };
   visit(entry);
-  return new Set([...seen].map((f) => path.relative(SRC, f).replaceAll("\\", "/")));
+  return { files: new Set([...seen].map(rel)), lazy };
 }
 
 /** The module script `chrome.html` loads: the real first frame starts there, not at the console. */
@@ -52,7 +72,7 @@ function mainEntry(): string {
 
 describe("what the console loads when Main opens", () => {
   const entry = mainEntry();
-  const loaded = graph(entry);
+  const { files: loaded, lazy } = graph(entry);
 
   it("starts at the module chrome.html loads, and walks the stage, the surface and the first act", () => {
     expect(path.relative(SRC, entry).replaceAll("\\", "/")).toBe("chrome.tsx");
@@ -73,8 +93,19 @@ describe("what the console loads when Main opens", () => {
     expect(heavy).toEqual([]);
   });
 
-  it("holds no depth's view: each is a lazy chunk, fetched when the depth is entered", () => {
-    const views = [...loaded].filter((f) => /^scenes\/(apps|chores|accounts|voice|mind)\/view\.tsx$/.test(f));
-    expect(views).toEqual([]);
+  it("fetches every depth's view as a lazy chunk, and imports no lazy chunk statically", () => {
+    // Read from the code's own `import()` calls, so a chunk with another name (Chores fetches
+    // `live-view.tsx`) or a new depth is covered without a list here to keep in step.
+    for (const root of ROOTS) {
+      expect([...lazy].some((f) => f.startsWith(`scenes/${root}/`)), `${root} has no lazy view`).toBe(true);
+    }
+    expect([...lazy].filter((f) => loaded.has(f))).toEqual([]);
+  });
+
+  it("carries no file of a depth beyond its live part and the few the first frame shares", () => {
+    const allowed = new Set([...ROOTS.map((root) => `scenes/${root}/live.tsx`), ...SHARED_DEPTH_FILES]);
+    const depths = new RegExp(`^scenes/(${ROOTS.join("|")})/`);
+    const extra = [...loaded].filter((f) => depths.test(f) && !allowed.has(f));
+    expect(extra, "a depth's own file is in the first paint; import it from its lazy view instead").toEqual([]);
   });
 });
