@@ -32,7 +32,7 @@ import { EngineState, InstallBlock, Kbd } from "@/modules/voice/parts";
 import { primary, KeyField, WhisperModels } from "@/modules/voice/pieces";
 
 import { perform, studioKey } from "./keys";
-import { Chip, HOTKEY, HoldButton, Hero } from "./parts";
+import { Chip, HOTKEY, HoldButton, Hero, useTakeEndsWithPlace } from "./parts";
 
 const TITLE: Record<Exclude<StepId, "ready">, string> = {
   engine: "Who speaks for her?",
@@ -67,20 +67,15 @@ function useStudioKeys(model: VoiceModel, root: RefObject<HTMLElement | null>): 
     };
     const down = on("down");
     const up = on("up");
-    // A take must not outlive the window's focus: let go of the key elsewhere and it would run on.
-    const lost = () => {
-      if (latest.current.hear.recording) latest.current.actions.recordStop();
-    };
     document.addEventListener("keydown", down);
     document.addEventListener("keyup", up);
-    window.addEventListener("blur", lost);
     return () => {
       document.removeEventListener("keydown", down);
       document.removeEventListener("keyup", up);
-      window.removeEventListener("blur", lost);
-      lost();
     };
   }, [root]);
+  // A take must not outlive the window's focus or the studio (the same rule settings' test take keeps).
+  useTakeEndsWithPlace(model);
 }
 
 export default function StudioAct({ model }: { model: VoiceModel }) {

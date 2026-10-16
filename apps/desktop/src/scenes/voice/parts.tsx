@@ -4,9 +4,10 @@
  * What both places draw: the gate (every state that is not "the config answered with engines"),
  * the hold-to-talk button without its own meter (the scene has one frame loop at a time, so the
  * studio's hero waveform is the microphone's meter), the hero waveform read from the microphone's
- * level, and the key chip. All are pure functions of what they are handed.
+ * level, and the key chip. All are pure functions of what they are handed; the one hook is the rule
+ * both places keep about a take (it ends with the window's focus and with the place).
  */
-import { useMemo, type ReactNode } from "react";
+import { useEffect, useMemo, useRef, type ReactNode } from "react";
 
 import Button from "@/components/Button";
 import EmptyState from "@/components/EmptyState";
@@ -69,6 +70,28 @@ export function Gate({ kind, model }: { kind: GateKind; model: VoiceModel }): Re
         />
       );
   }
+}
+
+/**
+ * A take must not outlive the window's focus or the place it was started in: a key let go in
+ * another window never comes back as a keyup, and a place left by Escape or the dock takes its
+ * button with it, so either would leave the microphone open. Both places that record use this.
+ */
+export function useTakeEndsWithPlace(model: VoiceModel): void {
+  const latest = useRef(model);
+  useEffect(() => {
+    latest.current = model;
+  });
+  useEffect(() => {
+    const lost = () => {
+      if (latest.current.hear.recording) latest.current.actions.recordStop();
+    };
+    window.addEventListener("blur", lost);
+    return () => {
+      window.removeEventListener("blur", lost);
+      lost();
+    };
+  }, []);
 }
 
 /** A key and what it does, as a button: the dock shows the keys for this moment and no others. */

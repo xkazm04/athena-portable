@@ -24,7 +24,7 @@ import { EngineState, HoldToTalk, InstallBlock, Kbd } from "@/modules/voice/part
 import { KeyField, WhisperModels } from "@/modules/voice/pieces";
 import { Waveform } from "@/modules/voice/waveform";
 
-import { HOTKEY } from "./parts";
+import { HOTKEY, useTakeEndsWithPlace } from "./parts";
 
 const STT_HINT: Record<SttEngineId, string> = {
   whisper: "Whisper listens on this computer.",
@@ -33,6 +33,8 @@ const STT_HINT: Record<SttEngineId, string> = {
 
 export default function SettingsAct({ model }: { model: VoiceModel }) {
   const { actions } = model;
+  // The test take is held from the keyboard too: alt-tab or Escape mid-take must not leave it open.
+  useTakeEndsWithPlace(model);
   return (
     <div className="vsc vsc--settings">
       <header className="vsc-bar">

@@ -133,6 +133,30 @@ describe("hold to talk", () => {
     expect(recording.calls).toEqual(["recordStop"]);
   });
 
+  it("the settings test take does not outlive the window's focus or the place, as the studio's does not", () => {
+    const rec = { hear: { recording: true, micError: null, takes: {} } };
+    const blurred = spy("typical", rec);
+    mount(blurred.model, SETTINGS);
+    act(() => void window.dispatchEvent(new Event("blur")));
+    expect(blurred.calls).toEqual(["recordStop"]);
+    const left = spy("typical", rec);
+    mount(left.model, SETTINGS);
+    act(() => root.render(<div />));
+    expect(left.calls).toEqual(["recordStop"]);
+    const idle = spy("typical");
+    mount(idle.model, SETTINGS);
+    act(() => void window.dispatchEvent(new Event("blur")));
+    act(() => root.render(<div />));
+    expect(idle.calls).toEqual([]);
+  });
+
+  it("the studio's take stops when the window loses focus", () => {
+    const { model, calls } = spy("recording");
+    mount(model, STUDIO);
+    act(() => void window.dispatchEvent(new Event("blur")));
+    expect(calls).toEqual(["recordStop"]);
+  });
+
   it("in the studio the button records and the document's Space holds, release stops", () => {
     const { model, calls } = spy("stt-compare");
     mount(model, STUDIO);
