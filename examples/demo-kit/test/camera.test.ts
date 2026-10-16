@@ -98,6 +98,38 @@ test("in and out by the same factor comes back to where it started", () => {
   assert.ok(samePose(back, pose({ zoom: 2 })));
 });
 
+test("at a zoom bound, zooming further moves nothing: the scene does not slide under the pointer", () => {
+  // The rig clamps every pose it applies. A pan solved for the UNCLAMPED zoom and then kept with
+  // the clamped one is a pan for a zoom that never happened, so each wheel tick past a bound slid
+  // the scene towards the pointer while the zoom stood still (measured: ten ticks at the minimum
+  // moved it 600 scene units). The bound is applied inside the anchored zoom, before the pan.
+  const frame = { w: 800, h: 600 };
+  const anchor = { x: 700, y: 500 };
+  const atMax = pose({ zoom: 8, pan: { x: 5, y: -3 } });
+  const atMin = pose({ zoom: 0.5, pan: { x: 5, y: -3 } });
+  let inward = atMax;
+  let outward = atMin;
+  for (let tick = 0; tick < 10; tick += 1) {
+    inward = clampPose(zoomAt(inward, 1.1, anchor, frame, BOUNDS.zoom), BOUNDS);
+    outward = clampPose(zoomAt(outward, 1 / 1.1, anchor, frame, BOUNDS.zoom), BOUNDS);
+  }
+  assert.ok(samePose(inward, atMax), `past the maximum: ${JSON.stringify(inward)}`);
+  assert.ok(samePose(outward, atMin), `past the minimum: ${JSON.stringify(outward)}`);
+});
+
+test("a zoom that would overshoot its bound stops at the bound with the anchor still pinned", () => {
+  const frame = { w: 800, h: 600 };
+  const anchor = { x: 120, y: 90 };
+  const before = pose({ zoom: 7, pan: { x: 30, y: -12 } });
+  const after = clampPose(zoomAt(before, 2, anchor, frame, BOUNDS.zoom), BOUNDS);
+  assert.equal(after.zoom, 8, "as far as the bound allows, not refused outright");
+
+  const offset = { x: anchor.x - frame.w / 2, y: anchor.y - frame.h / 2 };
+  const world = { x: offset.x / before.zoom - before.pan.x, y: offset.y / before.zoom - before.pan.y };
+  near(after.zoom * (world.x + after.pan.x), offset.x);
+  near(after.zoom * (world.y + after.pan.y), offset.y);
+});
+
 test("an element that has not been laid out yet anchors at its centre rather than dividing by 0", () => {
   const after = zoomAt(pose(), 2, { x: 0, y: 0 }, { w: 0, h: 0 });
   assert.equal(after.zoom, 2);

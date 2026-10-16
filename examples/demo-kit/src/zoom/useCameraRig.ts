@@ -368,7 +368,8 @@ export function useCameraRig(options: CameraRigOptions): CameraRig {
   const zoomBy = useCallback(
     (factor: number, anchor: Pt) => {
       const box = frame();
-      apply(zoomAt(pose.current, factor, { x: anchor.x - box.left, y: anchor.y - box.top }, box));
+      const at = { x: anchor.x - box.left, y: anchor.y - box.top };
+      apply(zoomAt(pose.current, factor, at, box, opts.current.bounds.zoom));
     },
     [apply, frame],
   );

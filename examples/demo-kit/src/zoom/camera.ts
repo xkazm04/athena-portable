@@ -134,15 +134,23 @@ export function clampPose(pose: CameraPose, bounds: CameraBounds): CameraPose {
  *
  * so no knowledge of `w` is needed and the result is exact at any zoom. A zero-sized frame (an
  * element that has not been laid out yet) anchors at its centre, which is a plain zoom.
+ *
+ * `zoom` is the bounds' zoom range, and it is applied HERE, to `z₂`, before the pan is solved.
+ * The rig clamps every pose it applies, and a pan solved for a zoom the clamp then refuses is a
+ * pan for a zoom that never happened: each wheel tick past a bound would slide the scene towards
+ * the pointer while the zoom stood still. Inside the bound the answer is unchanged; at the bound
+ * a further zoom is no move at all, and an overshoot stops at the bound with the anchor pinned.
  */
 export function zoomAt(
   pose: CameraPose,
   factor: number,
   anchor: { x: number; y: number },
   frame: CameraFrame,
+  zoom?: readonly [number, number],
 ): CameraPose {
   const z1 = pose.zoom;
-  const z2 = finite(pose.zoom * factor, z1);
+  let z2 = finite(pose.zoom * factor, z1);
+  if (zoom) z2 = clamp(z2, Math.min(zoom[0], zoom[1]), Math.max(zoom[0], zoom[1]));
   if (z2 === z1 || z1 === 0 || z2 === 0) return pose;
 
   const w = finite(frame.w, 0);

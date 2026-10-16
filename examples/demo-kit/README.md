@@ -206,7 +206,7 @@ useCameraRig({ bounds, initial?, drag?, wheel?, inertia?, snap?, keyboard?, redu
   : { get(), set(partial), flyTo(partial, { ms?, onDone?, onCancel? }): cancel, reset(), subscribe(cb),
       moving, bind }
 poseToTransform(pose, { perspective? }): string
-zoomAt(pose, factor, anchor: {x,y}, frame: {w,h}): CameraPose   // anchor is frame-relative px
+zoomAt(pose, factor, anchor: {x,y}, frame: {w,h}, zoom?: [min, max]): CameraPose   // anchor is frame-relative px; pass the bounds' zoom so a zoom past a bound never slides the scene
 useSemanticZoom(nav, rig, { bands, resolveGroup, resolveItem, poseFor, hysteresis?, flight? })
   : { level, driving }
 levelForZoom(zoom, bands, hysteresis = 0.08, current: Level = 0): Level
