@@ -43,7 +43,9 @@ export function statusOf(row: InvoiceRow): string {
   if (row.days_overdue > 30) {
     return `${row.days_overdue} days past due${row.reminders_sent > 0 ? `, ${row.reminders_sent} chased` : ", never chased"}.`;
   }
-  if (row.days_overdue > 0) return `${row.days_overdue} days past due.`;
+  if (row.days_overdue > 0) {
+    return `${row.days_overdue} ${row.days_overdue === 1 ? "day" : "days"} past due.`;
+  }
   if (row.paid_cents > 0) return "Part paid and still inside terms.";
   return "Within terms.";
 }

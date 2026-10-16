@@ -23,6 +23,12 @@ function pad(label: string): string {
   return label.padEnd(22, " ");
 }
 
+/** "$1,200.00 across 1 invoice" - the overdue figure, said the same way in both forms. */
+function overdueLine(summary: PeriodSummary): string {
+  const n = summary.overdue_count;
+  return `${formatMoney(summary.overdue_cents)} across ${n} ${n === 1 ? "invoice" : "invoices"}`;
+}
+
 /** What the exported page is called: "August 2026 close". */
 export function summaryTitle(period: Period): string {
   return `${PERIOD_LABEL[period]} close`;
@@ -36,7 +42,7 @@ export function renderSummary({ summary, outstanding }: SummaryInput): string {
     `${pad("Invoiced")}${formatMoney(summary.invoiced_cents)}`,
     `${pad("Collected")}${formatMoney(summary.collected_cents)}`,
     `${pad("Outstanding")}${formatMoney(summary.outstanding_cents)}`,
-    `${pad("Overdue")}${formatMoney(summary.overdue_cents)} across ${summary.overdue_count} invoices`,
+    `${pad("Overdue")}${overdueLine(summary)}`,
     `${pad("Disputed")}${summary.disputed_count}`,
     `${pad("Bank lines unapplied")}${summary.unmatched_lines} worth ${formatMoney(summary.unmatched_cents)}`,
   ];
@@ -85,7 +91,7 @@ export function renderSummaryMarkdown({ summary, outstanding }: SummaryInput): s
     ["Invoiced", formatMoney(summary.invoiced_cents)],
     ["Collected", formatMoney(summary.collected_cents)],
     ["Outstanding", formatMoney(summary.outstanding_cents)],
-    ["Overdue", `${formatMoney(summary.overdue_cents)} across ${summary.overdue_count} invoices`],
+    ["Overdue", overdueLine(summary)],
     ["Disputed", String(summary.disputed_count)],
     ["Bank lines unapplied", `${summary.unmatched_lines} worth ${formatMoney(summary.unmatched_cents)}`],
   ];

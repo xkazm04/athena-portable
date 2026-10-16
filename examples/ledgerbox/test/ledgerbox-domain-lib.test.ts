@@ -21,6 +21,8 @@ const { parseDollars } = await import("../lib/format");
 const { composeReminder } = await import("../lib/reminder");
 const { buildSheet } = await import("../lib/lanes");
 const { scoreCandidate } = await import("../lib/match");
+const { statusOf } = await import("../lib/lanes/read");
+const { renderSummary, renderSummaryMarkdown } = await import("../lib/export");
 
 test("on every period, what was invoiced is what was collected plus what is still owed", () => {
   // All three figures describe one set of invoices (issued in the period, drafts and voids out),
@@ -166,5 +168,22 @@ test("a draft is offered no credit anywhere, the card included", () => {
     );
   } finally {
     db().run("DELETE FROM bank_lines WHERE id = ?", [lineId]);
+  }
+});
+
+test("one of something is said in the singular, on the sheet and in the close", () => {
+  // Two seeded invoices sit one day past due, and a month's close can hold one overdue invoice:
+  // "1 days past due." on the hover read-out and "across 1 invoices" in the export a person pastes.
+  const oneDayLate = listInvoices().find((r) => r.days_overdue === 1 && r.candidate_count === 0)!;
+  assert.ok(oneDayLate, "the seed leaves an invoice one day past due");
+  assert.equal(statusOf(oneDayLate), "1 day past due.");
+  assert.equal(statusOf({ ...oneDayLate, days_overdue: 2 }), "2 days past due.");
+
+  const summary = { ...summarize("2026-08"), overdue_count: 1 };
+  for (const render of [renderSummary, renderSummaryMarkdown]) {
+    const text = render({ summary, outstanding: [] });
+    assert.match(text, /across 1 invoice\b/, `${render.name}: singular`);
+    assert.doesNotMatch(text, /across 1 invoices/, `${render.name}: not "1 invoices"`);
+    assert.match(render({ summary: { ...summary, overdue_count: 4 }, outstanding: [] }), /across 4 invoices/);
   }
 });
