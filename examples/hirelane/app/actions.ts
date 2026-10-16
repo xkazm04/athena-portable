@@ -393,6 +393,24 @@ function applyUndo(tx: Db, entry: ActivityEntry): void {
       tx.run("DELETE FROM stage_events WHERE id = ?", [undo.eventId]);
       return;
     }
+    // A later move outranks this one the same way. Restoring this move's FROM stage after another
+    // move would reverse that move too, unlogged, and leave its own Undo pointing at a stage they
+    // are no longer in. The move stays on the record, because it happened and still shaped where
+    // they are; the newer row's Undo is the way back.
+    const latest = tx.get<{ id: number; to_stage: Stage }>(
+      "SELECT id, to_stage FROM stage_events WHERE applicant_id = ? ORDER BY id DESC LIMIT 1",
+      [undo.applicantId],
+    );
+    if (latest && latest.id !== undo.eventId) {
+      logActivity(tx, {
+        actor: "user",
+        action: "undo",
+        target: entry.target,
+        summary: `#${entry.id} left the stage alone: a later move (to ${STAGE_LABEL[latest.to_stage]}) was made after it.`,
+        reversible: false,
+      });
+      return;
+    }
     tx.run("UPDATE applicants SET stage = ? WHERE id = ?", [undo.stage, undo.applicantId]);
     tx.run("DELETE FROM stage_events WHERE id = ?", [undo.eventId]);
     return;

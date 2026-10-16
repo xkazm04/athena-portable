@@ -361,6 +361,54 @@ test("a refused move on a decided applicant names no remedy the board would refu
   assert.equal((await undoAction(row.id)).ok, false, "undoing a decision is refused");
 });
 
+/*
+ * An undo puts a stage back only if the move it reverses is still the last thing that moved them.
+ *
+ * The History band offers Undo on every reversible row, in any order. Undoing an older move after a
+ * newer one used to restore the older move's FROM stage, which silently reversed the newer move as
+ * well, and left that newer row's own Undo pointing at a stage the person was no longer in.
+ */
+const stageOf = (id: string): string =>
+  db().get<Row>("SELECT id, stage FROM applicants WHERE id = ?", [id])!.stage!;
+const lastSummary = (): string =>
+  db().get<{ summary: string }>("SELECT summary FROM activity WHERE action = 'undo' ORDER BY id DESC LIMIT 1 OFFSET 1")!
+    .summary;
+
+test("undoing an older move after a newer one leaves the newer move standing, and says so", async () => {
+  const id = pick("applied").id;
+  const first = await moveStage(id, "screening");
+  const second = await moveStage(id, "interview");
+  assert.equal(first.ok && second.ok, true, `${first.message} / ${second.message}`);
+
+  assert.equal((await undoAction(first.undoId!)).ok, true);
+  assert.equal(stageOf(id), "interview", "the later move to Interview still stands");
+  assert.match(lastSummary(), new RegExp(`#${first.undoId} left the stage alone: a later move \\(to Interview\\)`));
+
+  // The newer row's own undo is still the true way back one step.
+  assert.equal((await undoAction(second.undoId!)).ok, true);
+  assert.equal(stageOf(id), "screening");
+});
+
+test("undoing the newest move first, then the one before it, walks them back to where they began", async () => {
+  const id = pick("applied").id;
+  const first = await moveStage(id, "screening");
+  const second = await moveStage(id, "interview");
+  assert.equal((await undoAction(second.undoId!)).ok, true);
+  assert.equal(stageOf(id), "screening");
+  assert.equal((await undoAction(first.undoId!)).ok, true);
+  assert.equal(stageOf(id), "applied");
+});
+
+test("undoing a move after a decision leaves the decision standing, and says so", async () => {
+  const id = pick("applied").id;
+  const moved = await moveStage(id, "screening");
+  assert.equal((await decideStage(id, "rejected")).ok, true);
+
+  assert.equal((await undoAction(moved.undoId!)).ok, true);
+  assert.equal(stageOf(id), "rejected", "a decision is not walked back by an AUTO undo");
+  assert.match(lastSummary(), /left the stage alone: a decision \(Rejected\)/);
+});
+
 test("an ordinary move is untouched by the from-stage guard", async () => {
   const screening = pick("screening");
 
