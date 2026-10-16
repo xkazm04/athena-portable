@@ -3490,6 +3490,78 @@
           "evidence": "examples/tidycrm/components/blocks/style/index.css:4 This context maintains an ordered stylesheet cascade, with no locale-specific authored bodies to compare."
         }
       ]
+    },
+    "6099214d-afb1-49fe-b67b-346df665a89f/build-economics": {
+      "context": "desktop-build-config",
+      "subject": "build-economics",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T23:53:49.560Z",
+      "techniques": [
+        {
+          "technique": "cache-budgeting",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src-tauri/Cargo.toml:69 Incremental state is enabled; searches found no byte-budget enforcement, routine pruner or cache hit-rate instrument for this build directory."
+        },
+        {
+          "technique": "declinable-capability-split",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src-tauri/Cargo.toml:9 This shell crate is unpublished; no declining downstream library consumer was identified."
+        }
+      ],
+      "withdrawn": {
+        "worker": "4d12a39d-61ec-4e42-877c-b49a16375f09",
+        "state": "deviation",
+        "at": "2026-10-16T23:54:22.348896+00:00",
+        "reason": "reviewer (sonnet): Cargo.toml:69 is `[profile.dev] incremental = true`, which only restates Cargo's default dev setting. It doesn't show that the disk cost is unbounded or that a policy is missing, and the 'no pruner' claim rests only on a negative search I couldn't tie to this build directory."
+      }
+    },
+    "2c7d08b8-f9aa-4b85-908f-99e34042a011/build-economics": {
+      "context": "hirelane-design-law",
+      "subject": "build-economics",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T23:53:49.560Z",
+      "worker": "4d12a39d-61ec-4e42-877c-b49a16375f09",
+      "techniques": [
+        {
+          "technique": "build-measurement",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/check-contrast.mjs:197 The measured quantity is visual contrast, not build time, compiler work or build memory."
+        },
+        {
+          "technique": "cache-budgeting",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/check-law.mjs:144 The checker reads source files directly; inspection and searches found no persistent build cache in this context."
+        },
+        {
+          "technique": "capability-feature-gating",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/build-tokens.mjs:68 The standalone token generator uses Node builtins; no heavy optional compiled capability was identified."
+        },
+        {
+          "technique": "compilation-unit-splitting",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/check-law.mjs:113 This traverses files for textual design checks rather than compiling a large unit or changing an invalidation frontier."
+        },
+        {
+          "technique": "debug-artifact-economics",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/hl-scales.css:20 The scale layer defines CSS values; these files configure no debug artifacts or linker settings."
+        },
+        {
+          "technique": "declinable-capability-split",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/package.json:4 Hirelane is a private example application, and these design files expose no separately consumed published capability."
+        },
+        {
+          "technique": "dev-variant-design",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/build-tokens.mjs:326 The variant parameter selects a CSS scope for a visual direction, not a development build profile."
+        }
+      ]
     }
   }
 }

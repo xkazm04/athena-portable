@@ -6188,7 +6188,11 @@
           "revision": 7,
           "changedAt": "2026-09-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/hirelane/design/build-tokens.mjs:6 Searches found no cache, incremental, debuginfo or sccache references in the design directory; its active scripts check visual rules and its token generator is documented as unwired.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:2dc0e92ddb23f674",
+          "evaluatedRevision": 7
         }
       ],
       "governance": "governed"
