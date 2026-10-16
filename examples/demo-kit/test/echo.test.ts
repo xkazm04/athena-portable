@@ -16,7 +16,7 @@ import {
   echoStages,
   levelChanged,
 } from "../src/zoom/echo-rule.ts";
-import { HOME, type Focus } from "../src/zoom/state.ts";
+import { HOME, sameFocus, type Focus } from "../src/zoom/state.ts";
 
 const L1: Focus = { level: 1, group: "a", item: null };
 const L1b: Focus = { level: 1, group: "b", item: null };
@@ -51,6 +51,27 @@ test("a move that did not happen never gets one, whatever `stages` says", () => 
 });
 
 /* ------------------------------------------------------------------------------- which way */
+
+test("echo-rule's own same-place test is sameFocus, for every pair of foci", () => {
+  // echo-rule.ts keeps a private copy of `sameFocus` on purpose: it is loaded by `node --test`,
+  // whose ESM resolver refuses an extensionless VALUE import, and every pure module in the kit is
+  // type-imports-only for that reason. Two copies of one rule are only safe while something
+  // holds them together; this does, over every pair of a small focus set that differs in each
+  // field. `stages` always says yes, so the only thing left deciding is the same-place test.
+  const groups = [null, "a", "b"];
+  const items = [null, "a1", "a2"];
+  const foci: Focus[] = [];
+  for (const level of [0, 1, 2] as const) {
+    for (const group of groups) for (const item of items) foci.push({ level, group, item });
+  }
+  for (const a of foci) {
+    assert.equal(echoStages(a, { ...a }, () => true), false, "a copy of a focus is the same place");
+    for (const b of foci) {
+      const moved = echoStages(a, b, () => true);
+      assert.equal(moved, !sameFocus(a, b), `${JSON.stringify(a)} -> ${JSON.stringify(b)}`);
+    }
+  }
+});
 
 test("down is in, back up is out", () => {
   assert.equal(echoDirection(HOME, L1), "in");
