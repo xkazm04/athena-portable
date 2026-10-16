@@ -137,6 +137,41 @@ it("a reload at the surface leaves the one surface layer as it was", () => {
   expect(useDepth.getState().seq).toBe(0);
 });
 
+it("settles a move that plays no animation (a hidden window) after the safety window, and says so", () => {
+  vi.useFakeTimers();
+  try {
+    const onSettle = vi.fn();
+    const at = (path: Path, seq: number) => (
+      <Stage
+        state={{ path, from: seq === 0 ? null : { root: null }, move: seq === 0 ? "none" : "down", seq }}
+        calm={false}
+        renderScene={(p) => <p data-scene={formatHash(p)}>scene</p>}
+        presence={{ pose: "resting", text: "resting", waiting: 0 }}
+        onGo={() => {}}
+        onRise={() => {}}
+        onSurface={() => {}}
+        onSettle={onSettle}
+      />
+    );
+    host = document.createElement("div");
+    document.body.append(host);
+    root = createRoot(host);
+    act(() => root!.render(at({ root: null }, 0)));
+    act(() => root!.render(at({ root: "apps" }, 1)));
+    // jsdom fires no animationend: both layers are on screen, the old one leaving.
+    expect(host.querySelectorAll(".stage__layer")).toHaveLength(2);
+    expect(onSettle).not.toHaveBeenCalled();
+    act(() => vi.advanceTimersByTime(899));
+    expect(host.querySelectorAll(".stage__layer")).toHaveLength(2);
+    act(() => vi.advanceTimersByTime(1));
+    expect(scenes(host)).toEqual(["#/apps"]);
+    expect(host.querySelector(".stage__layer")!.getAttribute("data-phase")).toBe("rest");
+    expect(onSettle).toHaveBeenCalledWith(1);
+  } finally {
+    vi.useRealTimers();
+  }
+});
+
 it("mounts a crumb afresh when the place it names changes, so it fades in on the move like a dived one", () => {
   const at = (path: Path, seq: number) => (
     <Stage
