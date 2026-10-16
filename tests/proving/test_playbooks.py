@@ -8,6 +8,7 @@ files, so a run that *says* it filed a claim and filed none scores zero.
 from __future__ import annotations
 
 import json
+import re
 import shutil
 from collections.abc import Callable
 from pathlib import Path
@@ -19,6 +20,7 @@ from athena.harness.ports import ModelRequest
 from athena.proving.characters.scene import CONTINUE
 from athena.proving.playbooks import spec
 from athena.proving.playbooks.bench import (
+    MAX_CONTINUATIONS,
     BenchConfig,
     _absorb,
     _Run,
@@ -239,6 +241,16 @@ def test_a_malformed_entry_is_reported_with_the_rest_not_raised(
     with pytest.raises(PlaybookError) as caught:
         load_playbook(root)
     assert any(says in problem for problem in caught.value.problems), caught.value.problems
+
+
+def test_the_bench_runs_the_desktop_run_loop_by_its_own_words_and_bound() -> None:
+    """The bench and the Characters claim the desktop's run loop: its continuation line verbatim
+    and its bound (``apps/desktop/src/stores/run.ts``). Both were typed into Python by hand, so
+    the TypeScript is read here, as the Ledgerbox tool classes are read for the Gauntlet."""
+    source = (REPO / "apps" / "desktop" / "src" / "stores" / "run.ts").read_text("utf-8")
+    assert re.findall(r'^const CONTINUE = "([^"]*)";$', source, flags=re.MULTILINE) == [CONTINUE]
+    bound = re.findall(r"^export const MAX_CONTINUATIONS = (\d+);$", source, flags=re.MULTILINE)
+    assert [int(n) for n in bound] == [MAX_CONTINUATIONS]
 
 
 def test_the_shipped_playbooks_all_load() -> None:
