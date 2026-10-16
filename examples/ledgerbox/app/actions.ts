@@ -566,6 +566,12 @@ export async function exportSummaryAction(period: Period): Promise<ExportResult>
   };
 }
 
+/**
+ * An undo the books can no longer take. Thrown from `applyUndo` so `undoActivity`'s transaction
+ * rolls back with nothing written, and answered by `undoAction` as a reason rather than a throw.
+ */
+class UndoRefused extends Error {}
+
 /** The app-specific half of `undoActivity`: only this file knows how to reverse these writes. */
 function applyUndo(tx: Db, entry: ActivityEntry): void {
   const undo = entry.undo as Undo | null;
@@ -579,7 +585,23 @@ function applyUndo(tx: Db, entry: ActivityEntry): void {
       tx.run("DELETE FROM matches WHERE invoice_id = ? AND line_id = ?", [undo.invoice_id, undo.line_id]);
       tx.run("DELETE FROM payments WHERE id = ?", [paymentIdFor(undo.line_id)]);
       return;
-    case "unmatch":
+    case "unmatch": {
+      // The world moved after the unmatch. Re-applying a line that is now on another invoice would
+      // have one bank credit pay two; re-applying it past what is still owed overshoots the
+      // balance - the guard `matchAction` has, which this path never asked.
+      const now = tx.all<{ number: string }>(
+        "SELECT i.number FROM matches m JOIN invoices i ON i.id = m.invoice_id WHERE m.line_id = ? ORDER BY i.number",
+        [undo.line_id],
+      );
+      if (now.length > 0) {
+        throw new UndoRefused(`That bank line is applied to ${now.map((r) => r.number).join(", ")} now - unapply it there first.`);
+      }
+      const invoice = getInvoice(undo.invoice_id);
+      if (invoice && undo.amount_cents > invoice.balance_cents) {
+        throw new UndoRefused(
+          `${formatMoney(undo.amount_cents)} is more than the ${formatMoney(invoice.balance_cents)} now owed on ${invoice.number}.`,
+        );
+      }
       tx.run("INSERT INTO matches (invoice_id, line_id, matched_at, actor, evidence) VALUES (?, ?, ?, ?, ?)", [
         undo.invoice_id,
         undo.line_id,
@@ -601,6 +623,7 @@ function applyUndo(tx: Db, entry: ActivityEntry): void {
         ],
       );
       return;
+    }
     case "reminder":
       tx.run("DELETE FROM reminders WHERE id = ? AND sent_at IS NULL", [undo.id]);
       return;
@@ -613,7 +636,13 @@ function applyUndo(tx: Db, entry: ActivityEntry): void {
 }
 
 export async function undoAction(id: number): Promise<{ ok: boolean; reason?: string }> {
-  const result = undoActivity(db(), id, applyUndo);
+  let result: { ok: boolean; reason?: string };
+  try {
+    result = undoActivity(db(), id, applyUndo);
+  } catch (error) {
+    if (!(error instanceof UndoRefused)) throw error;
+    return { ok: false, reason: error.message };
+  }
   refresh();
   return { ok: result.ok, ...(result.reason ? { reason: result.reason } : {}) };
 }

@@ -337,3 +337,47 @@ test("the page's identity tags are the app's constants, not a second copy of the
     assert.ok(!tags.includes(`"${literal}"`) && !tags.includes(`'${literal}'`), `no literal ${literal}`);
   }
 });
+
+test("undoing an unmatch does not re-apply a bank line that has since gone to another invoice", async () => {
+  // The undo put the match and its payment back without asking where the line was now. Unapply a
+  // credit from A, apply it to B, undo the unmatch: the one bank credit then paid both invoices.
+  const seeded = db().get<{ invoice_id: string; line_id: string; amount_cents: number }>(
+    `SELECT m.invoice_id, m.line_id, b.amount_cents FROM matches m
+     JOIN invoices i ON i.id = m.invoice_id JOIN bank_lines b ON b.id = m.line_id
+     WHERE i.status = 'sent' AND b.direction = 'in' ORDER BY b.amount_cents ASC LIMIT 1`,
+  )!;
+  assert.ok(seeded, "a seeded match");
+  assert.equal((await actions.unmatchAction(seeded.invoice_id, seeded.line_id)).ok, true);
+  const unmatchRow = db().get<{ id: number }>("SELECT id FROM activity WHERE action = 'unmatch' ORDER BY id DESC LIMIT 1")!;
+  const other = listInvoices()
+    .filter((r) => (r.state === "open" || r.state === "overdue") && r.id !== seeded.invoice_id && !used.has(r.id))
+    .find((r) => r.balance_cents >= seeded.amount_cents)!;
+  assert.ok(other, "another invoice the credit fits");
+  used.add(other.id);
+  const moved = await actions.matchAction(other.id, seeded.line_id);
+  assert.equal(moved.ok, true, moved.message);
+
+  const undone = await actions.undoAction(unmatchRow.id);
+  assert.equal(undone.ok, false, "the undo is refused");
+  assert.match(undone.reason ?? "", new RegExp(`applied to ${other.number}`));
+  const holders = db().all<{ invoice_id: string }>("SELECT invoice_id FROM matches WHERE line_id = ?", [seeded.line_id]);
+  assert.deepEqual(holders.map((h) => h.invoice_id), [other.id], "the line is on one invoice");
+});
+
+test("undoing an unmatch does not re-apply a credit past what the invoice now owes", async () => {
+  // Unapply a credit, record the rest by hand, undo the unmatch: the balance went below zero, the
+  // overshoot `matchAction` refuses.
+  const seeded = db().get<{ invoice_id: string; line_id: string }>(
+    `SELECT m.invoice_id, m.line_id FROM matches m
+     JOIN invoices i ON i.id = m.invoice_id JOIN bank_lines b ON b.id = m.line_id
+     WHERE i.status = 'sent' AND b.direction = 'in' ORDER BY b.amount_cents DESC LIMIT 1`,
+  )!;
+  assert.equal((await actions.unmatchAction(seeded.invoice_id, seeded.line_id)).ok, true);
+  const unmatchRow = db().get<{ id: number }>("SELECT id FROM activity WHERE action = 'unmatch' ORDER BY id DESC LIMIT 1")!;
+  const owedNow = listInvoices().find((r) => r.id === seeded.invoice_id)!;
+  assert.equal((await actions.markPaidAction(owedNow.id, owedNow.balance_cents)).ok, true);
+  const undone = await actions.undoAction(unmatchRow.id);
+  assert.equal(undone.ok, false, "the undo is refused");
+  assert.match(undone.reason ?? "", /now owed on/);
+  assert.equal(listInvoices().find((r) => r.id === seeded.invoice_id)!.balance_cents, 0, "the balance stays at zero");
+});
