@@ -53,7 +53,7 @@
    * against a curve or a rule rather than against the grid, and snapping them to the grid would
    * have been a silent visual change. Tokens all the same, so a density pass still moves them. */
   --dk-inset-meta: 3px; /* the activity meta line riding under its summary */
-  --dk-inset-control: 5px; /* segmented control and pill button, vertical */
+  --dk-inset-control: 5px; /* segmented control, vertical */
   --dk-inset-pill: 7px; /* badge, horizontal */
   --dk-inset-cell: 9px; /* table cell, vertical */
 
@@ -62,9 +62,10 @@
   --dk-gap: var(--dk-space-6);
 
   /* --- Type. Five steps, and deliberately no step below 12px: the kit shipped four rules at 11px
-   * (nav badge, badge, chip, manifest meta) and an 11px floor is the one defect the owner of this
-   * repo has rejected twice - `tidycrm/design/tc-scales.css:26-31` records both rejections. Those
-   * four rules now take `--dk-text-xs`, so they render one step larger than they used to. That is
+   * (nav badge, badge, chip, and a manifest drawer's meta line that nothing ever drew, since
+   * removed) and an 11px floor is the one defect the owner of this repo has rejected twice -
+   * `tidycrm/design/tc-scales.css:26-31` records both rejections. Those rules now take
+   * `--dk-text-xs`, so they render one step larger than they used to. That is
    * the single intended visual change in this file. `md` is the step the kit does not currently
    * spend; it is here so an app's ramp has a rung between body and display. */
   --dk-text-xs: 12px;
@@ -74,8 +75,8 @@
   --dk-text-lg: 20px;
 
   /* --- Shape and elevation. `sm` is the nested radius a control inside a rounded box takes;
-   * `pill` is the fully-round end. `--dk-shadow-lg` is the drawer's cast - it used to be typed
-   * inline at `.dk-manifest-open`, an ad-hoc value in the file that owns the shadow token. */
+   * `pill` is the fully-round end. `--dk-shadow-lg` is the cast of a surface that floats over the
+   * page (a drawer, a popover); the kit draws none itself, so it is a step an app spends. */
   --dk-radius: 8px;
   --dk-radius-sm: calc(var(--dk-radius) - var(--dk-space-1));
   --dk-radius-pill: 999px;
@@ -196,15 +197,3 @@
 /* `warn` is the fourth tone ToastTone offers. Deliberately weaker than error's 45% so the two
  * consequences rank instead of reading the same; `info` stays the unstyled base. */
 .dk-toast-warn { border-color: color-mix(in oklab, var(--dk-gated) 30%, transparent); }
-
-.dk-manifest-toggle { position: fixed; inset-block-end: var(--dk-space-8); inset-inline-start: var(--dk-space-8); z-index: 55; font: inherit; font-size: var(--dk-text-xs); font-family: var(--dk-font-mono); padding: var(--dk-inset-control) var(--dk-space-5); border-radius: var(--dk-radius-pill); border: 1px solid var(--dk-line); background: var(--dk-surface); color: var(--dk-ink-soft); cursor: pointer; }
-.dk-manifest { position: fixed; inset-block: 0; inset-inline-start: 0; width: min(420px, 92vw); z-index: 70; background: var(--dk-surface); border-inline-end: 1px solid var(--dk-line); padding: var(--dk-space-9); overflow-y: auto; transform: translateX(-101%); transition: transform 160ms ease; }
-.dk-manifest-open { transform: none; box-shadow: var(--dk-shadow-lg); }
-.dk-manifest-head { display: flex; align-items: center; justify-content: space-between; }
-.dk-manifest-note { font-size: var(--dk-text-xs); color: var(--dk-ink-soft); margin: var(--dk-space-5) 0 var(--dk-space-7); }
-.dk-manifest-subhead { font-size: var(--dk-text-xs); text-transform: uppercase; letter-spacing: 0.04em; color: var(--dk-ink-soft); margin: var(--dk-space-9) 0 var(--dk-space-3); }
-.dk-manifest-list { list-style: none; margin: 0; padding: 0; display: grid; gap: var(--dk-space-4); }
-.dk-manifest-item { display: flex; gap: var(--dk-space-5); align-items: start; font-size: var(--dk-text-sm); }
-.dk-manifest-item code { font-family: var(--dk-font-mono); font-size: var(--dk-text-xs); }
-.dk-manifest-item p { margin: var(--dk-space-1) 0 0; color: var(--dk-ink-soft); }
-.dk-manifest-meta { font-size: var(--dk-text-xs); font-family: var(--dk-font-mono); }

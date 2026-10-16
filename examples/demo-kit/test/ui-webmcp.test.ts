@@ -225,3 +225,38 @@ test("a handler that throws leaves its stack in the page console, not only a sen
   await runTool({ type: "object", properties: {} }, { x: 1 }, () => "unreached");
   assert.equal(logged.length, 0, "a refused argument is the caller's mistake, not the page's");
 });
+
+/* ------------------------------------------------------------- the stylesheet -- */
+
+test("every class the kit's stylesheet styles is drawn by something in the tree", async () => {
+  // A rule nobody renders ships to every app that imports the sheet and can only drift: the
+  // manifest drawer's eleven rules (a raw 160ms transition among them) had no element since the
+  // kit landed. Scaffold vocabulary kept on purpose is named here WITH its reason, and an entry
+  // that something does draw fails too, so the list cannot go stale.
+  const { readdirSync, statSync } = await import("node:fs");
+  const KEPT: Record<string, string> = {
+    "dk-btn-primary": "the scaffold's primary action, for the app copied from the template",
+    "dk-badge-gated": "the GATED half of the auto/gated pair DetailPane's actions slot is for",
+  };
+  const examples = fileURLToPath(new URL("../../", import.meta.url));
+  const sheetPath = fileURLToPath(new URL("../src/ui/demo-kit.css", import.meta.url));
+  const sources: string[] = [];
+  const walk = (dir: string): void => {
+    for (const name of readdirSync(dir)) {
+      // A class only a test names is not drawn; this file names the kept ones itself.
+      if (["node_modules", ".next", "data", "test", "e2e"].includes(name) || name.startsWith(".")) continue;
+      const path = join(dir, name);
+      if (statSync(path).isDirectory()) walk(path);
+      else if (/\.(tsx?|css|mjs|html)$/.test(name) && path !== sheetPath) sources.push(readFileSync(path, "utf8"));
+    }
+  };
+  walk(examples);
+  const text = sources.join("\n");
+  const dynamic = [...text.matchAll(/(dk-[a-z0-9-]+-)\$\{/g)].map((m) => m[1]!);
+  const sheet = readFileSync(sheetPath, "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+  const classes = [...new Set([...sheet.matchAll(/\.(dk-[a-z0-9-]+)/g)].map((m) => m[1]!))];
+  const drawn = (c: string) =>
+    new RegExp(`(^|[^a-z0-9-])${c}($|[^a-z0-9-])`).test(text) || dynamic.some((p) => c.startsWith(p));
+  assert.deepEqual(classes.filter((c) => !drawn(c) && !(c in KEPT)), [], "styled, never drawn");
+  assert.deepEqual(Object.keys(KEPT).filter(drawn), [], "kept as unused, but something draws it now");
+});
