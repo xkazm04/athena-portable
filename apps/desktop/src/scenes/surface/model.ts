@@ -12,6 +12,7 @@
 import type { Reach } from "@/bell/Bell";
 import { POSE_WORDS, poseOf, type Pose } from "@/bell/pose";
 import { ROOTS, ROOT_LABEL, type Root } from "@/depth/model";
+import type { Standing } from "@/modules/setup/readiness";
 import { pillText } from "@/stores/athena";
 
 export interface SurfaceActions {
@@ -31,7 +32,12 @@ export interface SurfaceSources {
   /** `loaded` is false while the shipped playbooks are still being fetched (they load lazily). */
   chores: { total: number; benched: number; foundUsd: number; loaded: boolean };
   voiceAvailable: boolean;
-  engine: { label: string; ready: boolean | null };
+  /**
+   * The chosen engine as the Setup module's `engineFact` stands it, so the light and the Mind
+   * depth one dive below cannot disagree. `checkFailed`: the probe could not run at all, which is
+   * not the same fact as a check still in flight.
+   */
+  engine: { label: string; standing: Standing; checkFailed: boolean };
   /** False in a plain browser, where there is no window of hers to hand anything to. */
   inShell: boolean;
   actions: SurfaceActions;
@@ -65,6 +71,20 @@ export interface SurfaceModel {
 
 const usd = (n: number) => `$${Math.round(n).toLocaleString("en-US")}`;
 const plural = (n: number, one: string, many = `${one}s`) => `${n} ${n === 1 ? one : many}`;
+
+/** The Mind light's short line: the four standings of `engineFact`, in a light's few words. */
+function engineStat(engine: SurfaceSources["engine"]): string {
+  switch (engine.standing) {
+    case "done":
+      return `${engine.label} is ready`;
+    case "todo":
+      return `${engine.label} is not ready yet`;
+    case "missing":
+      return `${engine.label} is not ready`;
+    case "unknown":
+      return engine.checkFailed ? "the engine check failed" : "checking the engine";
+  }
+}
 
 export function selectSurface(s: SurfaceSources): SurfaceModel {
   const onApps = s.apps.filter((a) => a.enabled);
@@ -113,14 +133,9 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
     },
     mind: {
       label: ROOT_LABEL.mind,
-      stat:
-        s.engine.ready === null
-          ? "checking the engine"
-          : s.engine.ready
-            ? `${s.engine.label} is ready`
-            : `${s.engine.label} is not ready`,
+      stat: engineStat(s.engine),
       hint: "The engine she thinks with, and how she looks.",
-      attention: s.engine.ready === false,
+      attention: s.engine.standing === "missing" || (s.engine.standing === "unknown" && s.engine.checkFailed),
     },
   };
 

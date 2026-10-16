@@ -1,23 +1,27 @@
 /**
  * The surface, as the running app uses it — the one file here that knows a store exists.
  *
- * It reads and starts nothing: the app root starts the stores (README 3.5). Seven are read here:
+ * It reads and starts nothing: the app root starts the stores (README 3.5). Nine are read here:
  * her status (the mirror), the origins, the tabs, the connectors, the voice's availability, the
- * engine's probe and the settings. `useSurfaceModel` is a hook so the console can compose the same
+ * engine's probe, the daemon (which engine it runs, and whether it started), the shipped playbooks
+ * and the settings. `useSurfaceModel` is a hook so the console can compose the same
  * model into other views.
  */
 import { createElement, useEffect, useMemo } from "react";
 
 import { useDepth } from "@/depth/store";
 import { athenaOffer, athenaShow } from "@/lib/companion";
-import { engineLabel, probeOf } from "@/lib/engines";
+import { ENGINE_IDS, engineLabel } from "@/lib/engines";
 import type { Playbook } from "@/lib/playbooks";
 import { hostOf } from "@/lib/url";
 import { standingOf } from "@/modules/connectors/model";
 import { selectPlaybooks } from "@/modules/playbooks/model";
+import { INERT_ACTIONS as INERT_SETUP_ACTIONS, selectSetup } from "@/modules/setup/model";
+import { engineFact } from "@/modules/setup/readiness";
 import { hasShell } from "@/lib/ipc";
 import { useAthena } from "@/stores/athena";
 import { useConnectors } from "@/stores/connectors";
+import { useDaemon } from "@/stores/daemon";
 import { useEngines } from "@/stores/engines";
 import { useOrigins } from "@/stores/origins";
 import { usePlaybooks } from "@/stores/playbooks";
@@ -53,6 +57,12 @@ export function useSurfaceModel(): SurfaceModel {
   const voiceAvailable = useVoice((s) => s.available);
   const engine = useSettings((s) => s.engine);
   const probes = useEngines((s) => s.probes);
+  const checking = useEngines((s) => s.checking);
+  const problem = useEngines((s) => s.problem);
+  const daemonHealth = useDaemon((s) => s.health);
+  const daemonEngine = useDaemon((s) => s.engine);
+  const daemonLoaded = useDaemon((s) => s.loaded);
+  const daemonError = useDaemon((s) => s.lastError);
   const playbooks = usePlaybooks((s) => s.items);
   // Counting the chores needs the shipped set; fetched once, after the first frame has been drawn.
   useEffect(() => {
@@ -62,7 +72,27 @@ export function useSurfaceModel(): SurfaceModel {
   }, []);
 
   return useMemo(() => {
-    const chosen = probes === null ? null : probeOf(probes, engine);
+    // The Mind light reads the Setup module's own rule, not the probe alone: found is the probe's
+    // word, ready is the daemon's too (README 3.5, `modules/setup/readiness.ts`).
+    const setup = selectSetup({
+      onboarded: true,
+      hydrated: true,
+      engine,
+      engineIds: ENGINE_IDS,
+      probes,
+      problem,
+      checking,
+      theme: "system",
+      brainPath: "",
+      tabs: [],
+      storePath: null,
+      daemonHealth,
+      daemonEngine,
+      daemonError,
+      daemonLoaded,
+      actions: INERT_SETUP_ACTIONS,
+    });
+    const fact = engineFact(setup);
     return selectSurface({
       athena: { state: athena.state, cards: athena.cards, line: athena.line },
       apps: known.flatMap((origin) => {
@@ -81,11 +111,32 @@ export function useSurfaceModel(): SurfaceModel {
       }),
       chores: { ...totalsOf(playbooks), loaded: playbooks !== null },
       voiceAvailable,
-      engine: { label: engineLabel(engine), ready: chosen === null ? null : chosen.state === "found" },
+      engine: {
+        label: engineLabel(engine),
+        standing: fact.standing,
+        checkFailed: !setup.checking && setup.problem !== null,
+      },
       inShell: hasShell(),
       actions: ACTIONS,
     });
-  }, [athena, records, known, tabs, connectors, notice, voiceAvailable, engine, probes, playbooks]);
+  }, [
+    athena,
+    records,
+    known,
+    tabs,
+    connectors,
+    notice,
+    voiceAvailable,
+    engine,
+    probes,
+    checking,
+    problem,
+    daemonHealth,
+    daemonEngine,
+    daemonLoaded,
+    daemonError,
+    playbooks,
+  ]);
 }
 
 export function Live() {

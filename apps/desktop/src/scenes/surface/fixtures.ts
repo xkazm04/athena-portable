@@ -24,7 +24,7 @@ const base: SurfaceSources = {
   ],
   chores: { total: 16, benched: 12, foundUsd: 551, loaded: true },
   voiceAvailable: true,
-  engine: { label: "Claude Code", ready: true },
+  engine: { label: "Claude Code", standing: "done", checkFailed: false },
   inShell: true,
   actions: INERT_ACTIONS,
 };
@@ -38,7 +38,7 @@ export const fixtures: Record<string, SurfaceModel> = {
     accounts: [],
     chores: { total: 0, benched: 0, foundUsd: 0, loaded: true },
     voiceAvailable: false,
-    engine: { label: "Claude Code", ready: null },
+    engine: { label: "Claude Code", standing: "unknown", checkFailed: false },
   }),
   typical: make(),
   working: make({ athena: { state: "tape", cards: 0, line: "Reading Invoices" } }),
@@ -56,7 +56,7 @@ export const fixtures: Record<string, SurfaceModel> = {
   counting: make({ chores: { total: 0, benched: 0, foundUsd: 0, loaded: false } }),
   degraded: make({
     inShell: false,
-    engine: { label: "Claude Code", ready: false },
+    engine: { label: "Claude Code", standing: "missing", checkFailed: false },
     voiceAvailable: false,
   }),
 };
