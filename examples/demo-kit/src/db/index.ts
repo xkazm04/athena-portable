@@ -7,7 +7,7 @@
 import "server-only";
 import { DatabaseSync, type StatementSync } from "node:sqlite";
 import { mkdirSync } from "node:fs";
-import { dirname, isAbsolute, join } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve } from "node:path";
 
 export type SqlValue = string | number | bigint | null | Uint8Array;
 export type SqlParams = SqlValue[] | Record<string, SqlValue>;
@@ -47,6 +47,28 @@ export interface OpenDbOptions {
 }
 
 const OPEN = new Map<string, Db>();
+
+/**
+ * When set, `openDb` opens only files under this directory and throws on any other.
+ *
+ * A test harness sets it to its scratch home (each app's `test/tmp-home.ts`) and never clears it:
+ * the file is resolved from `process.cwd()`, and a harness that restores the working directory
+ * early - its root `after` hook firing mid-file across a top-level `await` - would otherwise aim
+ * every later test at the app's own `data/<appId>.sqlite`, the running dev server's database.
+ * Unset (the apps themselves), nothing changes.
+ */
+export const DB_SCRATCH_ENV = "DEMO_KIT_DB_SCRATCH";
+
+function assertInScratch(file: string): void {
+  const scratch = process.env[DB_SCRATCH_ENV];
+  if (!scratch) return;
+  const rel = relative(resolve(scratch), resolve(file));
+  if (rel !== "" && !rel.startsWith("..") && !isAbsolute(rel)) return;
+  throw new Error(
+    `openDb refused ${file}: ${DB_SCRATCH_ENV} confines this process to ${scratch}, ` +
+      "so a test never opens the app's own database",
+  );
+}
 
 /** Default file for an app, resolved from `process.cwd()` (the app directory under `next dev`). */
 export function defaultDbFile(appId: string): string {
@@ -107,6 +129,7 @@ export function openDb(appId: string, opts: OpenDbOptions): Db {
       ? opts.file
       : join(process.cwd(), "data", opts.file)
     : defaultDbFile(appId);
+  assertInScratch(file);
 
   const cached = OPEN.get(file);
   if (cached) return cached;
