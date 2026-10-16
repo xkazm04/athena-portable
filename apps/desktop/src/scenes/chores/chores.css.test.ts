@@ -105,6 +105,17 @@ test("the replay's part keeps its gaps and pads on the density tokens, not 14px 
   expect(rule(".ch-gone", chPart)).toMatch(/gap:\s*var\(--density-gap\)/);
 });
 
+test("the catalogue's and the topic's tiles keep their pads on the density tokens too, as the replay's do", () => {
+  // The pressable pills (job chips, the order switch) are left out: their padding is the button
+  // scale's question, which app.css's `.btn` has not answered yet.
+  const paPart = css.slice(0, css.indexOf("/* ---- the replay and a place that is not there"));
+  const tiles = paPart.split("}").filter((b) => !/cursor:\s*pointer/.test(b));
+  const off = tiles.filter((b) => /(padding|gap|margin)[a-z-]*:[^;]*\b14px/.test(b)).map((b) => b.trim().split("{")[0]!.trim());
+  expect(off).toEqual([]);
+  expect(rule(".pa-kpi")).toMatch(/padding:\s*var\(--density-pad-sm\) var\(--density-pad\)/);
+  expect(rule(".pa-step")).toMatch(/padding:\s*var\(--density-pad-sm\);/);
+});
+
 test("the sheet holds no rule for the field, the map, the preview or the old chore it replaced", () => {
   for (const gone of ["ch-fit", "ch-field", "ch-led", "ch-map", "ch-mark", "ch-pane", "ch-story", "ch-facets", "ch-panel", "proto-host"]) {
     expect(css, gone).not.toMatch(new RegExp(`\\.${gone}(?![a-z_-])`));
