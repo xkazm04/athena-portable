@@ -850,7 +850,11 @@ export function stepOf(entry: TranscriptEntry, tools: readonly ToolRow[]): StepV
   const name = arrow === -1 ? entry.text : entry.text.slice(0, arrow);
   const result = arrow === -1 ? "" : entry.text.slice(arrow + 3);
   const parts = name.split(".");
-  const app = parts.length > 2 ? parts[1] : parts[0] || "athena";
+  // Named as the card names it (`appOf`): a derived id is its host, a connector its label.
+  const app =
+    parts.length > 2
+      ? appOf(`${parts[0] === "connector" ? "connector" : "host"}:${parts[1]}`)
+      : parts[0] || "athena";
   const bare = (parts.length > 2 ? parts.slice(2).join(".") : (parts[parts.length - 1] ?? name)).replace(/[_-]+/g, " ");
   const found = tools.find((t) => t.name === name);
   return {

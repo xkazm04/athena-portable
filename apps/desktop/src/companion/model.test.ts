@@ -248,7 +248,7 @@ test("every fixture is a model the machine can reach, and the seven names are th
 import { clockOf } from "@/lib/time";
 import type { EarlierRecord } from "@/stores/run";
 
-import { activityRow, decisionRow, engineView, recordView, showingOf, type LedgerSnapshot } from "./model";
+import { activityRow, appOf, decisionRow, engineView, recordView, showingOf, type LedgerSnapshot } from "./model";
 
 const WHOLE_LEDGER: LedgerSnapshot = { rows: [], footer: "", showing: 0, total: 0, problem: null };
 const WHOLE_EARLIER: EarlierRecord = { rows: [], showing: 0, total: 0, problem: null };
@@ -591,4 +591,25 @@ test("an approve of a sheet with no row ticked is refused before it is sent, as 
   expect(approveRunsNothing(cards, slots, none, head, "decline")).toBeNull();
   expect(approveRunsNothing([cards[0]], {}, {}, head, "approve")).toBeNull();
   expect(NOTHING_TICKED).not.toMatch(/origin|manifest|session|daemon/i);
+});
+
+test("a step names its app as the card and the Record's decisions do, never by its catalog id (ADR 0065, 0091)", () => {
+  // A page that published no app is catalogued under an id derived from its origin.
+  const derived = stepOf({ id: "1", kind: "tool", text: "host.web_https_sledger_dtest.list_overdue → 3 rows", ok: true }, []);
+  expect(derived.app).toBe(appOf("host:web_https_sledger_dtest"));
+  expect(derived.app).toBe("ledger.test");
+  const mail = stepOf({ id: "2", kind: "tool", text: "connector.gmail.send_mail → sent", ok: true }, []);
+  expect(mail.app).toBe(appOf("connector:gmail"));
+  expect(stepOf({ id: "3", kind: "tool", text: "host.ledgerbox.chase → ok", ok: true }, []).app).toBe("ledgerbox");
+  // One app, one name, in one list: a call this window ran and a decision it answered.
+  const view = recordView({
+    calls: [{ id: "c1", kind: "tool", text: "host.web_https_sledger_dtest.pay → paid", ok: true, at: "2026-09-30T09:00:00Z" }],
+    decisions: [
+      { id: "d1", action: "host.web_https_sledger_dtest.pay", origin: "host:web_https_sledger_dtest", result: "approved", reason: null, at: "2026-09-30T08:59:00Z" },
+    ],
+    tools: [],
+    earlier: null,
+    ledger: null,
+  });
+  expect(new Set(view.session.map((r) => r.app))).toEqual(new Set(["ledger.test"]));
 });
