@@ -3,9 +3,9 @@
  *
  * The only element on this surface allowed to sit over the sheet. No shadow and no blur: a scrim
  * is a flat `--at-scrim`, because frosted glass is not a thing that happens to paper (DESIGN.md
- * §4). The pane grows out of the row it was opened from — it holds that row's shared id for as
- * long as it is up (formula §1 rule 2) — and it fills with ink only after the box has landed
- * (rule 3), which is what `.at-pane-ink` is for.
+ * §4). The pane grows out of the part it was opened from — measured, not morphed: no shared id,
+ * because the camera owns the part's transform (formula §1 rule 11) — and it fills with ink only
+ * after the box has landed (rule 3), which is what `.at-pane-ink` is for.
  */
 
 .at-scrim {
@@ -37,11 +37,11 @@
 /*
  * IT RISES OUT OF THE PART.
  *
- * `--at-pane-ox` / `--at-pane-oy` are the part's projected position on screen, written inline by
- * `Atlas.tsx` on the commit the pane opens. Anchoring the scale's origin there is what makes the
- * grow read as the part opening rather than as a dialog appearing in the middle of the page — and
- * it is the only mechanism available, because the part is a face carrying a `matrix3d` and a
- * `layoutId` morph would measure a rectangle that is nowhere near where the reader sees it.
+ * `--at-pane-ox` / `--at-pane-oy` are the part's position on screen, written inline by
+ * `pane/Pane.tsx` before the pane's first paint. Anchoring the scale's origin there is what makes
+ * the grow read as the part opening rather than as a dialog appearing in the middle of the page —
+ * and it is the mechanism rule 11 leaves, because the part's position belongs to the camera and a
+ * `layoutId` morph would make the pane a second owner of that transform.
  *
  * The origin is in VIEWPORT pixels and the pane is `position: fixed`, so the two coordinate
  * systems are the same one and the offset needs no correction.
@@ -79,14 +79,14 @@
 }
 
 /*
- * A SECTION inside the pane: a small heading and its content. Six of them, always in this order:
+ * A SECTION inside the pane: a small heading and its content. Five of them, always in this order:
  * what it enforces, the claims it carries, who calls it, what it reaches, which ADR decided it.
  *
- * Named `at-pane-section` and not `at-block`, which is what round 3 called it. `at-block` now
- * means a SYSTEM BLOCK ON THE SHEET and carries `position: absolute` from `canvas/canvas.css`;
- * the two collided on the first capture and stacked the whole pane's contents on one line. A
- * class name is a namespace, and two namespaces in one stylesheet is a bug waiting for a
- * screenshot.
+ * Named `at-pane-section` and not `at-block`, which is what round 3 called it. In round 4
+ * `at-block` meant a SYSTEM BLOCK ON THE SHEET and carried `position: absolute` from the round-4
+ * canvas stylesheet; the two collided on the first capture and stacked the whole pane's contents
+ * on one line. A class name is a namespace, and two namespaces in one stylesheet is a bug waiting
+ * for a screenshot.
  */
 .at-pane-section {
   display: grid;

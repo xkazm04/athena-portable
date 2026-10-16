@@ -1,10 +1,11 @@
 /*
  * The scaffold: the page the drawing lies on.
  *
- * Three rows — the mast, the body, and the turn's step control when the turn is on the sheet —
- * and the body is the claims rail beside the stage. The stage is the only element that grows,
- * because the drawing is the subject and everything else is a margin around it. Nothing here is
- * decorative; the sheet's own atmosphere is in `canvas/canvas.css`.
+ * The mast over the body, and the body is the claims rail beside the stage. (The grid keeps a
+ * third, empty `auto` row; the turn's step control that filled it moved into the variant's stage
+ * in round 5.) The stage is the only element that grows, because the drawing is the subject and
+ * everything else is a margin around it. Nothing here is decorative; a drawing's own atmosphere
+ * lives in its variant folder's stylesheet.
  */
 
 /* The app fills the viewport exactly and never scrolls: the drawing is the thing that moves, and

@@ -27,10 +27,10 @@
  * has to be survivable at runtime rather than at build time, this capture is where to start.
  *
  * ONE VALUE IS STILL A CHOICE, AS FAR AS THIS HOOK IS CONCERNED. After the round-6 verdict
- * `VARIANTS` has a single slug, so `values` has one member and `commit` can only ever be called
- * with the value already held. Nothing here special-cases that — the hook stays the general thing
- * and the MAST is where "there is nothing to choose" becomes "draw no switcher", because that is a
- * question about a control and not about a store.
+ * `VARIANTS` had a single slug, so `values` had one member and `commit` could only ever be called
+ * with the value already held; round 7 has three again. Nothing here special-cases either — the
+ * hook stays the general thing and the MAST is where "there is nothing to choose" becomes "draw no
+ * switcher", because that is a question about a control and not about a store.
  *
  * THE STORE IS MODULE-LEVEL AND THE HOOK NEVER HOLDS IT. The choice is a fact about the page, not
  * about one component: two components reading the same axis must never disagree, and a `useState`

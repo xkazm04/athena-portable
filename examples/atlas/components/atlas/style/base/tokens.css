@@ -159,7 +159,7 @@
   --dk-dur-fade: var(--at-dur-ink);
   --dk-ease: var(--at-ease);
 
-  /* Where the L2 pane grows from — the middle of the part's client rect, written by `Atlas.tsx`. */
+  /* Where the L2 pane grows from — the middle of the part's client rect, written by `pane/Pane.tsx`. */
   --at-pane-ox: 50%;
   --at-pane-oy: 50%;
 }

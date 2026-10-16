@@ -17,8 +17,8 @@
  *
  * The count on each row is the answer before you click — how many of the sixty-eight components
  * carry the claim — which makes the rail a small piece of evidence in its own right: invariant 3
- * lights eight modules, and a claim that lit one would be a claim this repository is not really
- * making.
+ * (the one gate) lights nineteen modules, and a claim that lit one would be a claim this
+ * repository is not really making.
  */
 import { CONCEPTS, COUNTS, lensFor, type ConceptKind, type Lens } from "@/data";
 
