@@ -28,7 +28,7 @@ import {
   type LnMark,
 } from "../model";
 import { instant, move } from "../motion";
-import { flagOf, labelledIn, markVars } from "./marks";
+import { flagOf, labelledIn, markVars, tabStop } from "./marks";
 
 /**
  * What the swarm owns and lends to every lane.
@@ -98,6 +98,9 @@ export function Lane({
   const name = sharedIdentity(`lane-name-${lane.id}`, live);
   const shown = lane.marks.filter((m) => matches(m, filter)).length;
   const lateShare = lane.owedCents > 0 ? lane.lateCents / lane.owedCents : 0;
+  const inOrder = byDate.get(lane.id) ?? lane.marks;
+  /* The lane's one tab stop, held inside the lane: a refile can shorten it under the index. */
+  const stop = tabStop(roving[lane.id], inOrder.length);
 
   return (
   <motion.div
@@ -181,7 +184,7 @@ export function Lane({
       onClick={() => onOpenLane(lane.id)}
       onKeyDown={rove}
     >
-      {(byDate.get(lane.id) ?? lane.marks).map((mark, index) => {
+      {inOrder.map((mark, index) => {
         /*
          * HOW PRESENT THIS MARK IS — one reading, decided in `model/attention.ts`
          * and drawn as one `opacity`. `lit` is an invoice asking for a decision,
@@ -220,7 +223,7 @@ export function Lane({
           "data-presence": presence,
           "data-open": open,
           "data-picked": picked.has(mark.id),
-          tabIndex: index === (roving[lane.id] ?? 0) ? 0 : -1,
+          tabIndex: index === stop ? 0 : -1,
           style: { ...markVars(mark, todayX), opacity },
           onMouseEnter: (event: React.MouseEvent<HTMLButtonElement>) =>
             enter(mark, lane, event.currentTarget),

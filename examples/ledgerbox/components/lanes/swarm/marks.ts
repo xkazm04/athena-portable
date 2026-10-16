@@ -49,6 +49,22 @@ export function labelledIn(lane: LnLane): Set<string> {
   );
 }
 
+/**
+ * Which index in a row of peers is its one tab stop.
+ *
+ * Both rows that rove - a lane at L0, the field at L1 - remember the stop as an
+ * INDEX into their marks in due order, which is right while the row holds still and
+ * wrong the moment it shrinks: refile the latest-due invoice out of a lane and the
+ * remembered index points past its end, no mark is `tabIndex={0}`, and the row can
+ * no longer be reached with Tab at all. So the stop is the remembered index held
+ * inside the row, the first mark when nobody has walked it yet, and -1 for a row
+ * with nothing in it.
+ */
+export function tabStop(remembered: number | undefined, count: number): number {
+  if (count <= 0) return -1;
+  return Math.min(Math.max(0, remembered ?? 0), count - 1);
+}
+
 export function markVars(mark: LnMark, todayX: number): CSSProperties {
   return {
     "--x": mark.x,

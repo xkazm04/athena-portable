@@ -40,6 +40,7 @@ import {
 } from "./model";
 import { fade, instant, lift, move, revealDelay, zoom } from "./motion";
 import { StatusGlyph } from "./spread/Glyph";
+import { tabStop } from "./swarm/marks";
 import { SpreadHead } from "./spread/Head";
 
 export type SpreadMode = "flat" | "raised";
@@ -95,6 +96,9 @@ export function Spread({
    * without a media query anywhere near it.
    */
   const [roving, setRoving] = useState(0);
+  /* Held inside the lane: a refile, or an agent opening a shorter lane in place, can
+     leave the remembered index past the last card. */
+  const stop = tabStop(roving, ordered.length);
   const rove = useCallback((event: React.KeyboardEvent<HTMLDivElement>) => {
     const keys = ["ArrowRight", "ArrowLeft", "ArrowDown", "ArrowUp", "Home", "End"];
     if (!keys.includes(event.key)) return;
@@ -229,7 +233,7 @@ export function Spread({
               "data-presence": presence,
               "data-picked": picked.has(mark.id),
               /* One stop for the field; the arrows walk the rest. See `rove`. */
-              tabIndex: index === roving ? 0 : -1,
+              tabIndex: index === stop ? 0 : -1,
               onFocus: () => setRoving((r) => (r === index ? r : index)),
               onClick: () => onOpenItem(mark.id),
               "aria-label": `Open ${mark.number}, ${mark.clientName}. ${mark.status}${

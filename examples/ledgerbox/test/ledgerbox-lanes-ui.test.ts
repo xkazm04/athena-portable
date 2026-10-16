@@ -65,6 +65,7 @@ const actions = await import("../app/actions");
 const { db, COUNTED_OUT } = await import("../lib/db");
 const { CATEGORIES } = await import("../lib/constants");
 const { actRefusal, gateSubject, stillArmed, NOT_A_DEBT } = await import("../components/lanes/card/read");
+const { tabStop } = await import("../components/lanes/swarm/marks");
 
 /** The scratch books, or a failed test - never the app's own database. */
 function books(): ReturnType<typeof buildSheet> {
@@ -208,4 +209,40 @@ test("the decision list takes each row's enabled state and its blocked line from
   const decide = source("card/Decide.tsx");
   const asked = [...decide.matchAll(/actRefusal\("(\w+)"/g)].map((m) => m[1]).sort();
   assert.deepEqual(asked, ["draft_reminder", "mark_paid", "send_reminder", "void_invoice"]);
+});
+
+/* --------------------------------------------- a row of peers keeps one tab stop as it shrinks */
+
+test("a lane that loses the mark its tab stop was on still has exactly one tab stop", async () => {
+  // L0 and L1 remember the tab stop as an INDEX into the lane's marks in due order. Open the
+  // latest-due invoice in a lane (the stop moves to the last index), refile it from its card, and
+  // the lane is one shorter: `index === roving` then matched no mark, and the lane - at L0 one
+  // of six tab stops, at L1 the whole field - could no longer be reached with Tab.
+  const inOrder = (sheet: Sheet, lane: string) =>
+    [...(sheet.lanes.find((l) => l.id === lane)?.marks ?? [])].sort((a, b) => a.x - b.x);
+
+  const before = books();
+  let lost = 0;
+  for (const lane of before.lanes) {
+    const marks = inOrder(before, lane.id);
+    const remembered = marks.length - 1;
+    const elsewhere = CATEGORIES.find((c) => c !== lane.id)!;
+    assert.ok((await actions.categorizeAction([marks[remembered]!.id], elsewhere)).ok);
+    const now = inOrder(books(), lane.id);
+    if (!now.some((_, index) => index === remembered)) lost += 1; // the rule as it was
+    const stops = now.filter((_, index) => index === tabStop(remembered, now.length));
+    assert.equal(stops.length, 1, `${lane.id}: ${stops.length} tab stops after refiling its last mark`);
+    await actions.categorizeAction([marks[remembered]!.id], lane.id);
+  }
+  assert.equal(lost, before.lanes.length, "every lane lost its stop under the index-only rule");
+  assert.equal(tabStop(undefined, 3), 0, "a lane nobody has walked starts at its first mark");
+  assert.equal(tabStop(7, 0), -1, "an empty row has no stop");
+});
+
+test("both rows of peers, the swarm's lanes and the spread's field, pick their stop through tabStop", () => {
+  for (const path of ["Spread.tsx", "swarm/Lane.tsx"]) {
+    const code = source(path);
+    assert.match(code, /tabStop\(/, `${path} asks tabStop`);
+    assert.doesNotMatch(code, /index === \(?roving/, `${path} no longer compares the index to the remembered stop`);
+  }
 });
