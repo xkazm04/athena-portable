@@ -206,3 +206,22 @@ test("a seed that throws closes the handle it opened, so the next request starts
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("a handler that throws leaves its stack in the page console, not only a sentence for the agent", async (t) => {
+  // The door turns a fault into an in-band error so one bad handler cannot break the bridge, and
+  // that sentence reaches only the calling agent. The stack was discarded, so the developer of the
+  // page had nothing in devtools to say which handler broke or where.
+  const { runTool } = await import("../src/webmcp/door.ts");
+  const logged: unknown[][] = [];
+  t.mock.method(console, "error", (...args: unknown[]) => void logged.push(args));
+  const boom = new TypeError("cannot read x of undefined");
+  const out = await runTool({ type: "object", properties: {} }, {}, () => {
+    throw boom;
+  });
+  assert.deepEqual(JSON.parse(out), { ok: false, error: "tool failed: cannot read x of undefined" });
+  assert.equal(logged.length, 1);
+  assert.ok(logged[0]!.includes(boom), "the error object itself, with its stack");
+  logged.length = 0;
+  await runTool({ type: "object", properties: {} }, { x: 1 }, () => "unreached");
+  assert.equal(logged.length, 0, "a refused argument is the caller's mistake, not the page's");
+});

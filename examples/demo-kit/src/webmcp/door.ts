@@ -117,6 +117,9 @@ export async function runTool(
     try {
       return asText(await handler(args, { signal }));
     } catch (e) {
+      // The agent gets the sentence; the page's developer gets the stack, or nothing in devtools
+      // says which handler broke (a refused argument is the caller's, and is not logged).
+      console.error("WebMCP tool handler threw:", e);
       return toolError(`tool failed: ${e instanceof Error ? e.message : String(e)}`);
     }
   })();
