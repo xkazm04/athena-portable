@@ -367,7 +367,7 @@ def _packed_chars(block: RecallBlock) -> int:
 def _whole_episodes(
     con: sqlite3.Connection, query: str, cap: int, limit: int | None, spent: int
 ) -> RecallBlock:
-    match = fts_match(query)
+    match = _body_match(query)
     if not match:
         return RecallBlock(EPISODE_BLOCK, (), 0)
     where = "companion_fts MATCH ? AND n.kind = 'episode' AND n.importance > 0"
@@ -446,6 +446,18 @@ def around(body: str, query: str) -> str:
 # -- the lanes ---------------------------------------------------------------------------------
 
 
+def _body_match(query: str) -> str:
+    """:func:`~athena.core.brain.text.fts_match`, held to the ``body`` column.
+
+    ``companion_fts`` also indexes ``tags``: ``session:<id> role:<role>`` on every episode and the
+    kind on every fact and procedural. Unfiltered, the word "user" in a question matched every
+    turn the user typed and "fact" matched every fact, so a lane padded itself with rows that
+    said nothing asked for and counted them in its M. Empty for a query with no terms.
+    """
+    match = fts_match(query)
+    return f"body : ({match})" if match else ""
+
+
 def _rows(con: sqlite3.Connection, sql: str, params: tuple[Any, ...]) -> list[tuple[Any, ...]]:
     """Run a read. An error is not caught here: it ends the recall (ADR 0076).
 
@@ -510,7 +522,7 @@ def _keyword_block(
     ``exclude`` is subtracted from the population as well as from the results, so this block's M
     is "matches you have not already read above" and not a number the block could never reach.
     """
-    match = fts_match(query)
+    match = _body_match(query)
     if not match or slots <= 0:
         return RecallBlock(KEYWORD_BLOCK, (), 0)
     kind_marks = ",".join("?" for _ in DISTILLED_KINDS)
@@ -548,7 +560,7 @@ def _episode_block(con: sqlite3.Connection, query: str, budget: int) -> RecallBl
         return RecallBlock(EPISODE_BLOCK, (), total)
 
     chosen: dict[str, Memory] = {}
-    match = fts_match(query)
+    match = _body_match(query)
     if match:
         machine_taken = 0
         # A matched episode shows where it matched (ADR 0042): the head excerpt of a page of

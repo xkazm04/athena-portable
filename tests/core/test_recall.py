@@ -973,3 +973,28 @@ def test_an_unavailable_note_carries_no_live_fence_marker(message: str) -> None:
         assert not LIVE_MARKER.search(text), repr(text)
     assert all(n.startswith(UNAVAILABLE_PREFIX) for n in trace.notes)
     assert all((b.note or "").startswith(UNAVAILABLE_PREFIX) for b in trace.blocks)
+
+
+# -- a query matches what a memory says, never the tags the index files it under ----------------
+
+
+def test_a_word_that_only_names_a_role_or_a_kind_matches_no_memory(tmp_path: Path) -> None:
+    """``role:user`` and ``fact`` are index tags, not anything a memory said (ADR 0042)."""
+    with Brain(tmp_path / "brain") as brain:
+        acme = brain.append_episode("Acme paid 34 days late", "user", created=BASE).id
+        for n in range(12):
+            brain.append_episode(
+                f"chat line {n} about the weather", "user", created=BASE + timedelta(minutes=n + 1)
+            )
+        brain.write_fact("acme pays late", "Acme pays late", sources=[acme])
+        brain.write_fact("crm", "the CRM is Pipedrive", sources=[acme])
+
+        whole = recall_whole(brain, "what did the user say about Acme", cap=4800)
+        frame = recall(brain, "the user and the assistant")
+        facts = recall(brain, "Acme fact")
+
+    episodes = whole.block(EPISODE_BLOCK)
+    assert [m.id for m in episodes.items] == [acme]
+    assert episodes.total == 1, "M counts what matched the words, not every user turn"
+    assert [m.lane for m in frame.block(EPISODE_BLOCK).items].count(KEYWORD_BLOCK) == 0
+    assert facts.block(KEYWORD_BLOCK).total == 1, "the word 'fact' is not in either fact"
