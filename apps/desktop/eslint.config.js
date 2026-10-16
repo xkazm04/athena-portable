@@ -4,7 +4,9 @@ import tseslint from "typescript-eslint";
 import reactHooks from "eslint-plugin-react-hooks";
 
 export default tseslint.config(
-  { ignores: ["dist", "src-tauri"] },
+  // Build output is not source: `dist` is `pnpm build`'s, `dist-perf` is the perf gate's
+  // (`scripts/perf-gate.mjs` builds into it), and both are gitignored but not ignored by ESLint.
+  { ignores: ["dist", "dist-perf", "src-tauri"] },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
