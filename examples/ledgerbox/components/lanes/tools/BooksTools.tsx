@@ -92,6 +92,14 @@ const VIEW_STATE: Record<View, StateFilter> = {
 const isOneOf = <T extends string>(list: readonly T[], v: unknown): v is T =>
   list.includes(String(v) as T);
 
+/**
+ * A refusal, in the one shape the kit's execute door gives its own (`toolError`) and `navigate`,
+ * `open_invoice` and the zoom verbs already answer with. A refusal said as a bare sentence reads,
+ * to a caller and to anything that keeps its answers, exactly like a success
+ * (mcp-tools/tool-schema-design, two error channels).
+ */
+const refused = (error: string) => ({ ok: false as const, error });
+
 function asIds(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.map(String).slice(0, MAX_IDS);
@@ -214,7 +222,11 @@ export function BooksTools({
     return result;
   };
 
-  const say = async (work: Promise<{ ok: boolean; message: string }>) => (await settle(work)).message;
+  /** The sentence when the act happened, the refusal shape when it did not. */
+  const say = async (work: Promise<{ ok: boolean; message: string }>) => {
+    const result = await settle(work);
+    return result.ok ? result.message : refused(result.message);
+  };
 
   /** What is lit right now — the answer both `navigate` and `set_filter` owe their caller. */
   const litBy = (next: LnFilter) => {
@@ -289,7 +301,7 @@ export function BooksTools({
     ...registration("read_invoice"),
     handler: ({ id }) => {
       const found = resolveInvoiceRef(id, rows);
-      if (!found.ok) return found.error;
+      if (!found.ok) return refused(found.error);
       const r = rows.find((x) => x.id === found.id)!;
       const offers = Object.entries(suggestions)
         .flatMap(([line_id, hits]) =>
@@ -435,7 +447,7 @@ export function BooksTools({
     description: "Point the close readout and export_summary at an accounting period.",
     ...registration("set_period"),
     handler: ({ period: p }) => {
-      if (!isOneOf(PERIODS, p)) return `Unknown period ${String(p)}.`;
+      if (!isOneOf(PERIODS, p)) return refused(`Unknown period ${String(p)}.`);
       setPeriod(p);
       return `The close is now on ${p}.`;
     },
@@ -448,7 +460,7 @@ export function BooksTools({
     handler: ({ ids, category }) =>
       isOneOf(CATEGORIES, category)
         ? say(categorizeAction(asIds(ids), category as Category))
-        : `Unknown category ${String(category)}.`,
+        : refused(`Unknown category ${String(category)}.`),
   });
 
   useWebMCPTool({
@@ -458,6 +470,7 @@ export function BooksTools({
     ...registration("match_bank_line"),
     handler: async ({ invoice_id, line_id }) => {
       const result = await settle(matchAction(String(invoice_id), String(line_id)));
+      if (!result.ok) return refused(result.message);
       // The alias travels with the match, so a credit that arrived under a trading name can be
       // remembered as one fact rather than re-derived from the memo next month.
       return result.counterparty_alias ? result : result.message;
@@ -477,8 +490,9 @@ export function BooksTools({
       "Write a payment reminder in a tone and save it as a draft addressed to the client's billing contact. The draft appears on the invoice's card. Returns the whole message - to, subject, body. Nothing is sent.",
     ...registration("draft_reminder"),
     handler: async ({ id, tone }) => {
-      if (!isOneOf(TONES, tone)) return `Unknown tone ${String(tone)}.`;
+      if (!isOneOf(TONES, tone)) return refused(`Unknown tone ${String(tone)}.`);
       const result = await settle(draftReminderAction(String(id), tone as Tone));
+      if (!result.ok) return refused(result.message);
       // The whole message, not a confirmation that one exists. `send_reminder` is carried by a
       // connector outside the page, and what it carries has to be addressable before the gate.
       return result.draft ? { ...result, draft: result.draft } : result.message;
@@ -493,7 +507,7 @@ export function BooksTools({
       // The same reading the card's gate uses: an agent that sends "1,250" is told so, rather than
       // having `Number()` turn it into NaN and the INSERT fail under it.
       const cents = parseDollars(amount as string | number);
-      if (cents === null) return `"${String(amount)}" is not an amount.`;
+      if (cents === null) return refused(`"${String(amount)}" is not an amount.`);
       return say(markPaidAction(String(id), cents));
     },
   });
@@ -505,6 +519,7 @@ export function BooksTools({
     ...registration("send_reminder"),
     handler: async ({ id }) => {
       const result = await settle(sendReminderAction(String(id)));
+      if (!result.ok) return refused(result.message);
       // Who it reached, in the answer as well as in the activity row.
       return result.to
         ? { ok: result.ok, message: result.message, to: result.to, subject: result.subject }
@@ -525,9 +540,10 @@ export function BooksTools({
       "Generate the summary for an accounting period and point the close readout at it. Returns a page: title, markdown, and the plain-text body.",
     ...registration("export_summary"),
     handler: async ({ period: p }) => {
-      if (!isOneOf(PERIODS, p)) return `Unknown period ${String(p)}.`;
+      if (!isOneOf(PERIODS, p)) return refused(`Unknown period ${String(p)}.`);
       setPeriod(p);
       const result = await settle(exportSummaryAction(p));
+      if (!result.ok) return refused(result.message);
       // A page, ready to become one somewhere else: a title and a Markdown body. `body` is the
       // plain-text form the close readout prints, kept so the two callers read one result.
       return {

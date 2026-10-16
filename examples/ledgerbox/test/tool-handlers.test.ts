@@ -252,3 +252,42 @@ test("every handler reaches only what its class allows: reads no act, each write
   };
   assert.deepEqual(disagreements(lying, seen), ["mark_paid", "read_invoice"], "a lying table is caught");
 });
+
+/* ------------------------------------------------------------- a refusal is one */
+
+test("a refusal answers { ok: false, error } on every tool that can refuse, as the kit's door does", async () => {
+  // The door refuses a bad argument as `{"ok":false,"error":...}` (`toolError`), and `navigate`,
+  // `open_invoice`, `set_filter` and the kit's zoom verbs answer their own refusals the same way.
+  // A tool that answers a refusal as a bare sentence reads, to a caller and to anything that keeps
+  // its answers, exactly like a success (mcp-tools/tool-schema-design, two error channels).
+  const stranger = "INV-118";
+  const refusals: Record<string, Record<string, unknown>> = {
+    set_filter: { client: "nobody" },
+    search_invoices: { area: "nowhere" },
+  };
+  // Every tool that takes an invoice reference is asked about one that is not in the books; the
+  // set is read off the registrations, so a new invoice-taking tool joins it without an edit here.
+  for (const [name, spec] of registered) {
+    const params = new Map((spec.parameters ?? []).map((p) => [p.name, p]));
+    if (params.has("ids") && name !== "select") refusals[name] = { ids: [stranger], category: "design" };
+    if (params.has("id")) refusals[name] = { id: stranger, ...(params.has("tone") ? { tone: "gentle" } : {}), ...(params.has("amount") ? { amount: 1 } : {}) };
+    if (params.has("invoice_id")) refusals[name] = { invoice_id: stranger, line_id: credit.line.id };
+  }
+  assert.ok(Object.keys(refusals).length >= 11, `${Object.keys(refusals).length} tools can refuse`);
+
+  const bare: string[] = [];
+  for (const [name, args] of Object.entries(refusals)) {
+    const { answer } = await drive(name, args);
+    let parsed: unknown = null;
+    try {
+      parsed = JSON.parse(answer);
+    } catch {
+      /* a bare sentence */
+    }
+    const shaped = parsed as { ok?: unknown; error?: unknown } | null;
+    if (!(shaped && shaped.ok === false && typeof shaped.error === "string" && shaped.error.length > 0)) {
+      bare.push(`${name}: ${answer.slice(0, 80)}`);
+    }
+  }
+  assert.deepEqual(bare, [], "every refusal carries ok: false and the sentence under error");
+});

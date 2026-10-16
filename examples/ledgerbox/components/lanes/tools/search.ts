@@ -79,6 +79,7 @@ export function searchLanes(sheet: LnSheet, q: LanesQuery) {
   // error and says so, the way `set_filter` rejects an unknown client id.
   if (q.state !== undefined && !(STATE_FILTERS as readonly string[]).includes(q.state)) {
     return {
+      ok: false as const,
       ...bounded([], SEARCH_PAGE),
       error: `No state called ${q.state}.`,
       states: [...STATE_FILTERS],
@@ -88,6 +89,7 @@ export function searchLanes(sheet: LnSheet, q: LanesQuery) {
   const lanes = q.area && q.area !== "all" ? sheet.lanes.filter((l) => l.id === q.area) : sheet.lanes;
   if (lanes.length === 0) {
     return {
+      ok: false as const,
       ...bounded([], SEARCH_PAGE),
       error: `No area called ${q.area}.`,
       areas: sheet.lanes.map((l) => l.id),
