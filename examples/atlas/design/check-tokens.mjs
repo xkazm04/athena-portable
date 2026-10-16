@@ -10,8 +10,9 @@
  *
  *   1. every `<n>px` and `<n>ms` literal in a stylesheet or a .ts/.tsx file, except in
  *      `style/base/tokens.css`, which is the one authority;
- *   2. that every `--at-*` custom property a file USES is declared in that token file, so a
- *      typo'd token (which CSS silently resolves to nothing) fails the build instead of the eye;
+ *   2. that every `--at-*` custom property a file USES — the token file's own alias layer
+ *      included — is declared in that token file, so a typo'd token (which CSS silently resolves
+ *      to nothing) fails the build instead of the eye;
  *   3. that the five duration tokens the formula's clock is made of are all declared;
  *   4. that every literal in an `@container` / `@media` CONDITION equals one of the declared
  *      `--at-bp-*` breakpoints. A query condition cannot read a custom property — that is a CSS
@@ -65,12 +66,14 @@ const problems = [];
 let scanned = 0;
 
 for (const file of walk(ROOT)) {
-  if (file === TOKEN_FILE) continue;
   scanned += 1;
   const text = readFileSync(file, "utf8");
   const where = relative(ROOT, file).replaceAll("\\", "/");
 
-  for (const m of text.matchAll(RAW)) {
+  /* The token file is the one authority for literals, so check 1 skips it; check 2 does not —
+     its alias layer re-points every `--dk-*` hook at an `--at-*` value, and a typo there resolves
+     to nothing exactly as it would anywhere else. */
+  for (const m of file === TOKEN_FILE ? [] : text.matchAll(RAW)) {
     if (Number(m[1]) === 0) continue;
     const line = text.slice(0, m.index).split("\n").length;
     const source = text.split("\n")[line - 1] ?? "";
