@@ -42,7 +42,8 @@ import { parseBezier, secs, useTokens } from "@athena/demo-kit/zoom";
  *
  * `--bd-dur-*` and `--bd-ease*` are aliases of the `--hl-*` scale in
  * `design/hl-scales.css` (§1.3); `--hl-stagger` is read directly because the scale
- * declares exactly one list stagger and the direction does not rename it.
+ * declares exactly one list stagger and the direction does not rename it. `--bd-s2`
+ * is a spacing step, not a clock: the one distance a transition here travels.
  *
  * NOT `--bd-zoom`. It is a `calc()` of two steps, and a custom property that is not
  * registered with `@property` keeps its `calc(...)` through computed style — so it
@@ -56,6 +57,7 @@ const TOKENS = [
   "--bd-ease",
   "--bd-ease-out",
   "--hl-stagger",
+  "--bd-s2",
 ] as const;
 
 /** How far the outgoing board pushes past the reader, and how far the outgoing
@@ -65,11 +67,6 @@ export const PULL = 0.74;
 
 /** The scale a face arrives from when a filter lets it back onto the board. */
 export const ARRIVE = 0.7;
-
-/** The rise on a staged entrance: `--hl-space-2`, the one spacing step small
- *  enough to read as settling rather than as flying in. Not exported: nothing
- *  outside this file has business typing a distance into a transition. */
-const RISE = 8;
 
 /** Where a thrown card lands. Off-table geometry, not a scale value — the only
  *  reason it is written here is that this file is where a number may be typed. */
@@ -165,6 +162,11 @@ export function useBoardMotion(el?: Element | null): BoardMotion {
     const d2 = t["--bd-dur-2"].ms;
     const d3 = t["--bd-dur-3"].ms;
     const stagger = t["--hl-stagger"].ms;
+    /* The rise on a staged entrance: `--bd-s2` (`--hl-space-2`), the one spacing step small
+       enough to read as settling rather than as flying in. Read, not typed - it used to be an
+       `8` with this sentence as its only link to the scale. `"8px"` parses to 8; an unread
+       cascade parses to NaN and rises by 0, which is the final state, as every duration is. */
+    const rise = Number.parseFloat(t["--bd-s2"].raw) || 0;
     /* A named curve is a token, and motion takes it as the four numbers. `easeOut`
        is the answer only when there is no cascade to read — the server, or a scope
        that is not mounted — and in that case every duration above is 0 as well, so
@@ -189,7 +191,7 @@ export function useBoardMotion(el?: Element | null): BoardMotion {
         shown: { transition: { delayChildren: secs(d3), staggerChildren: secs(stagger) } },
       },
       dossierPart: {
-        hidden: { opacity: 0, y: RISE },
+        hidden: { opacity: 0, y: rise },
         shown: { opacity: 1, y: 0, transition: fade },
       },
       throwOut: (id: string) => {

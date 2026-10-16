@@ -137,6 +137,18 @@ test("the landing light outlives the echo by one step and no more", () => {
   assert.ok(landMs < parseMs(scale("hl-dur-6")), "longer than a beat and it reads as a selection");
 });
 
+test("the staged rise is the spacing scale's own step, read off the cascade", () => {
+  /* It was `const RISE = 8` under a comment naming `--hl-space-2`: a second copy of a spacing
+     step, kept in step by prose. A rebased spacing scale (a legitimate change under §1) would
+     have moved every gap in the stylesheet and left the dossier's entrance rising by the old
+     distance. The rise is asked for by name now, through the direction's alias of that step. */
+  assert.ok(asked().includes("--bd-s2"), "motion.ts reads the rise from --bd-s2");
+  assert.equal(token("bd-s2"), "var(--hl-space-2)", "and --bd-s2 is the scale's step, not a number");
+  assert.equal(Number.parseFloat(scale("hl-space-2")), 8, "which the px read in motion.ts can take");
+  const code = MOTION.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+  assert.doesNotMatch(code, /\bRISE\s*=\s*\d/, "no spacing step is typed in motion.ts");
+});
+
 test("no millisecond is typed in the direction's TypeScript any more", () => {
   /* `design/check-law.mjs` exempts `motion.ts` by name so that geometry — a throw's off-table
      distance, a scale ratio — can be written somewhere. That exemption used to cover the whole
