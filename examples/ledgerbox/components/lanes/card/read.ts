@@ -96,3 +96,62 @@ export function gateSubject(act: GatedAct, mark: LnMark, detail: LnDetail | unde
 export function stillArmed(armedOn: string | null, subject: string, disabled: boolean): boolean {
   return armedOn !== null && armedOn === subject && !disabled;
 }
+
+/**
+ * The states nobody owes: an invoice never sent, or one withdrawn. The books' own
+ * `COUNTED_OUT` (`lib/db.ts`), which a client module cannot import - so this is a
+ * copy, and `test/ledgerbox-lanes-ui.test.ts` holds it equal to the original.
+ */
+export const NOT_A_DEBT: ReadonlySet<LnMark["state"]> = new Set(["draft", "void"]);
+
+/** The acts on the decision list whose refusal the card has to know before the press. */
+export type ListedAct = "draft_reminder" | GatedAct;
+
+/**
+ * Why the books would refuse this act on this invoice right now, as the line the
+ * row prints instead of what the act reaches - or `null` when they would take it.
+ *
+ * The decision list and `app/actions.ts` are two statements of one rule. A row the
+ * list offers and the server refuses is a press that can only come back as an
+ * error toast, so each refusal the server makes on an open invoice is stated here
+ * first, in the row, and the test drives every act on every open invoice against
+ * the real actions to keep the two agreeing.
+ */
+export function actRefusal(act: ListedAct, mark: LnMark, detail: LnDetail | undefined): string | null {
+  const unsent = mark.state === "draft";
+  switch (act) {
+    case "draft_reminder":
+      if (NOT_A_DEBT.has(mark.state)) {
+        return unsent
+          ? "Blocked: this invoice is a draft, never sent to the client, so there is nothing to chase."
+          : "Blocked: this invoice is void, so there is nothing to chase.";
+      }
+      if (mark.balanceCents <= 0) return "Blocked: nothing is owed, so there is nothing to chase.";
+      if (mark.state === "disputed") return "Blocked: the invoice is disputed. Resolve the dispute before chasing.";
+      return null;
+    case "mark_paid":
+      if (NOT_A_DEBT.has(mark.state)) {
+        return unsent
+          ? "Blocked: this invoice is a draft, never sent to the client, so no payment can be recorded against it."
+          : "Blocked: this invoice is void, so no payment can be recorded against it.";
+      }
+      if (mark.balanceCents <= 0) return "Blocked: nothing is owed on this invoice.";
+      return null;
+    case "send_reminder":
+      if (!detail?.draft) return "Blocked: nothing is drafted yet. Draft a reminder first.";
+      // The send re-asks what the draft asked: a letter is not sent about a debt that is
+      // not one, has been paid since, or is now disputed.
+      if (NOT_A_DEBT.has(mark.state)) {
+        return unsent
+          ? "Blocked: this invoice is a draft, never sent to the client, so a reminder cannot go."
+          : "Blocked: this invoice is void, so a reminder cannot go.";
+      }
+      if (mark.balanceCents <= 0) return "Blocked: nothing is owed now, so the reminder cannot go.";
+      if (mark.state === "disputed") return "Blocked: the invoice is disputed. Resolve the dispute before chasing.";
+      return null;
+    case "void_invoice":
+      if (mark.state === "void") return "Blocked: this invoice is already void.";
+      if (mark.paidCents > 0) return "Blocked: there are credits applied to this invoice. Unapply them first.";
+      return null;
+  }
+}

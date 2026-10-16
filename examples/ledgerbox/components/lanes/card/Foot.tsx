@@ -34,7 +34,6 @@ export function CardFoot({
   mark,
   detail,
   actionable,
-  owed,
   tone,
   setTone,
   category,
@@ -45,7 +44,6 @@ export function CardFoot({
   mark: LnMark;
   detail: LnDetail | undefined;
   actionable: boolean;
-  owed: boolean;
   tone: Tone;
   setTone: (next: Tone) => void;
   category: Category;
@@ -77,7 +75,6 @@ export function CardFoot({
             <Decide
               mark={mark}
               detail={detail}
-              owed={owed}
               tone={tone}
               setTone={setTone}
               category={category}

@@ -54,7 +54,7 @@ import { isAuto } from "@/lib/manifest";
 import { TOOL_CLASSES, type ToolName } from "@/lib/tool-classes";
 import { Gate } from "../Gate";
 import type { LnDetail, LnMark } from "../model";
-import { gateSubject } from "./read";
+import { actRefusal, gateSubject } from "./read";
 import { fade, instant } from "../motion";
 import type { useRun } from "../useRun";
 
@@ -79,7 +79,6 @@ interface Act {
 export function Decide({
   mark,
   detail,
-  owed,
   tone,
   setTone,
   category,
@@ -90,7 +89,6 @@ export function Decide({
 }: {
   mark: LnMark;
   detail: LnDetail | undefined;
-  owed: boolean;
   tone: Tone;
   setTone: (next: Tone) => void;
   category: Category;
@@ -187,6 +185,19 @@ export function Decide({
   const email = detail?.email;
 
   /*
+   * What the books would refuse right now, act by act - `card/read.ts` actRefusal,
+   * held equal to `app/actions.ts` by a test that presses every act on every open
+   * invoice. A refused row is disabled and says why in place of what it reaches,
+   * so the list never offers a press that can only come back as an error.
+   */
+  const refused = {
+    draft: actRefusal("draft_reminder", mark, detail),
+    paid: actRefusal("mark_paid", mark, detail),
+    send: actRefusal("send_reminder", mark, detail),
+    void: actRefusal("void_invoice", mark, detail),
+  };
+
+  /*
    * THE LIST. Every act the card could take, in the order a bookkeeper would
    * consider them: ask first, then file, then the three that cannot be undone.
    * The consequence clause is built from the books — the contact's real name and
@@ -197,7 +208,8 @@ export function Decide({
     {
       tool: "draft_reminder",
       label: `Draft a ${tone} reminder`,
-      reaches: "Nobody. It writes a draft on this invoice and replaces any draft already there.",
+      reaches:
+        refused.draft ?? "Nobody. It writes a draft on this invoice and replaces any draft already there.",
       params: (
         <label className="ln-field-select">
           <span className="ln-field-label">Tone</span>
@@ -214,12 +226,13 @@ export function Decide({
         <button
           type="button"
           className="ln-btn"
-          disabled={pending}
+          disabled={pending || refused.draft !== null}
           onClick={() => run(() => draftReminderAction(mark.id, tone))}
         >
           Draft it
         </button>
       ),
+      disabled: refused.draft !== null,
     },
     {
       tool: "categorize",
@@ -255,7 +268,9 @@ export function Decide({
       // units, which is right for a headline figure and wrong on the one control
       // that moves money.
       label: `Record ${formatMoney(mark.balanceCents)} received`,
-      reaches: `Writes ${formatMoney(mark.balanceCents)} against the books. There is no undo row for this one.`,
+      reaches:
+        refused.paid ??
+        `Writes ${formatMoney(mark.balanceCents)} against the books. There is no undo row for this one.`,
       take: (
         <Gate
           label="Record it"
@@ -263,17 +278,19 @@ export function Decide({
           question={`This writes ${formatMoney(mark.balanceCents)} against the books and cannot be replayed backwards.`}
           onConfirm={() => markPaidAction(mark.id, mark.balanceCents)}
           subject={gateSubject("mark_paid", mark, detail)}
-          disabled={!owed}
+          disabled={refused.paid !== null}
         />
       ),
-      disabled: !owed,
+      disabled: refused.paid !== null,
     },
     {
       tool: "send_reminder",
       label: detail?.draft ? "Send the drafted reminder" : "Send a reminder",
-      reaches: email
-        ? `Reaches ${to} at ${email} by email. You cannot un-send it.`
-        : `Reaches ${to} by email. You cannot un-send it.`,
+      reaches:
+        refused.send ??
+        (email
+          ? `Reaches ${to} at ${email} by email. You cannot un-send it.`
+          : `Reaches ${to} by email. You cannot un-send it.`),
       take: (
         <Gate
           label="Send it"
@@ -281,21 +298,17 @@ export function Decide({
           question={`This reaches ${email ?? "the client"}. You cannot un-send it.`}
           onConfirm={() => sendReminderAction(mark.id)}
           subject={gateSubject("send_reminder", mark, detail)}
-          disabled={!detail?.draft}
+          disabled={refused.send !== null}
         />
       ),
-      disabled: !detail?.draft,
+      disabled: refused.send !== null,
     },
     {
       tool: "void_invoice",
       label: "Void this invoice",
       /* `voidInvoiceAction` refuses any invoice with payments applied, so the row
-         has to say so before it is pressed rather than after. `mark_paid`
-         through the tool layer hits the same guard. */
-      reaches:
-        mark.paidCents > 0
-          ? "Blocked: there are credits applied to this invoice. Unapply them first."
-          : "Writes the balance off permanently. There is no undo.",
+         has to say so before it is pressed rather than after. */
+      reaches: refused.void ?? "Writes the balance off permanently. There is no undo.",
       take: (
         <Gate
           label="Void it"
@@ -306,10 +319,10 @@ export function Decide({
           question="Voiding writes off the balance. There is no undo."
           onConfirm={() => voidInvoiceAction(mark.id)}
           subject={gateSubject("void_invoice", mark, detail)}
-          disabled={mark.paidCents > 0}
+          disabled={refused.void !== null}
         />
       ),
-      disabled: mark.paidCents > 0,
+      disabled: refused.void !== null,
     },
   ];
 

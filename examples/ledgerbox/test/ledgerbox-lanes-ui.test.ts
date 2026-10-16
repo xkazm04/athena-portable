@@ -143,3 +143,55 @@ test("every gate on the card is armed through stillArmed, on the subject of its 
   assert.equal(gates, 3, "the three gated acts");
   assert.deepEqual(bound.sort(), ["mark_paid", "send_reminder", "void_invoice"]);
 });
+
+/* ------------------------------------------- the card offers what the books will take, and only that */
+
+test("every act the decision list offers on an open invoice is one the books take, and every one it holds back they refuse", async () => {
+  // Two statements of one rule: `card/Decide.tsx` enables a row, `app/actions.ts` decides whether
+  // the act goes through. On the seed the list offered Draft it on both disputed invoices and Draft
+  // it and Record it on the unsent draft LB-2026-0055 - four presses that could only come back as
+  // an error toast. Each act runs for real on the scratch books and is rolled back.
+  const { db, COUNTED_OUT } = await import("../lib/db");
+  const { actRefusal, NOT_A_DEBT } = await import("../components/lanes/card/read");
+  assert.deepEqual([...NOT_A_DEBT].sort(), [...COUNTED_OUT].sort(), "the card's copy of the books' COUNTED_OUT");
+
+  const sheet = buildSheet();
+  const open = sheet.lanes.flatMap((l) => l.marks).filter((m) => m.balanceCents > 0 || m.state === "disputed");
+  assert.ok(open.length > 50, "the seed's open invoices");
+  const newest = () => db().get<{ n: number }>("SELECT COALESCE(MAX(id), 0) AS n FROM activity")!.n;
+  const disagree: string[] = [];
+  for (const mark of open) {
+    const detail = sheet.details[mark.id];
+    const acts = {
+      draft_reminder: () => actions.draftReminderAction(mark.id, "gentle"),
+      mark_paid: () => actions.markPaidAction(mark.id, mark.balanceCents),
+      send_reminder: () => actions.sendReminderAction(mark.id),
+      void_invoice: () => actions.voidInvoiceAction(mark.id),
+    };
+    for (const [act, take] of Object.entries(acts)) {
+      const before = newest();
+      let answer: Promise<{ ok: boolean; message: string }> | undefined;
+      try {
+        db().withTx(() => {
+          answer = take();
+          throw new Error("roll back");
+        });
+      } catch (error) {
+        if ((error as Error).message !== "roll back") throw error;
+      }
+      const result = await answer!;
+      assert.equal(newest(), before, `${act} on ${mark.number} was rolled back`);
+      const offered = actRefusal(act as keyof typeof acts, mark, detail) === null;
+      if (offered !== result.ok) {
+        disagree.push(`${mark.number} (${mark.state}) ${act}: card ${offered ? "offers" : "holds back"}, books ${result.ok ? "take it" : `refuse: ${result.message}`}`);
+      }
+    }
+  }
+  assert.deepEqual(disagree, []);
+});
+
+test("the decision list takes each row's enabled state and its blocked line from actRefusal", () => {
+  const decide = source("card/Decide.tsx");
+  const asked = [...decide.matchAll(/actRefusal\("(\w+)"/g)].map((m) => m[1]).sort();
+  assert.deepEqual(asked, ["draft_reminder", "mark_paid", "send_reminder", "void_invoice"]);
+});

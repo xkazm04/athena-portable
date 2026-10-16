@@ -184,7 +184,6 @@ export function Card({
             mark={mark}
             detail={detail}
             actionable={actionable}
-            owed={owed}
             tone={tone}
             setTone={setTone}
             category={category}
