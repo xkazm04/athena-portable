@@ -660,6 +660,7 @@ export default function LanesDrawing({
         story={story}
         setStory={setStory}
         playing={playing}
+        setPlaying={setPlaying}
       />
 
       {/* The shell's pane, rendered LAST so it sits over the world (contract, rule 3, rule 11). */}

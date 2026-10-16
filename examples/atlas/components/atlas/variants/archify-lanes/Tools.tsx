@@ -24,7 +24,7 @@
 import { useWebMCPTool } from "@athena/demo-kit/webmcp";
 
 import { BEAT_VIEWS } from "./story";
-import { askStop, turnRead } from "./turn";
+import { askStop, turnAfter, turnRead } from "./turn";
 
 export { turnRead };
 
@@ -34,12 +34,14 @@ export function LanesTools({
   story,
   setStory,
   playing,
+  setPlaying,
 }: {
   stop: number;
   setStop: (index: number) => void;
   story: boolean;
   setStory: (on: boolean) => void;
   playing: boolean;
+  setPlaying: (on: boolean) => void;
 }) {
   useWebMCPTool({
     name: "read_turn",
@@ -75,15 +77,16 @@ export function LanesTools({
     handler: ({ stop: raw, tell }) => {
       const asked = askStop(raw);
       if (!asked.ok) return asked;
-      setStop(asked.stop);
       /* The answer names the state the tool LEAVES the surface in — React has not re-rendered
-         inside this handler, so reading the props back here would answer the previous one. */
-      const telling = tell === true ? true : tell === false ? false : story;
-      if (tell === true) setStory(true);
-      if (tell === false) setStory(false);
-      return turnRead(asked.stop, telling, telling ? playing : false);
+         inside this handler, so reading the props back here would answer the previous one. And
+         the state IS that answer: putting the trail away stops the clock, as the toggle does. */
+      const next = turnAfter(asked.stop, tell, { story, playing });
+      setStop(next.stop);
+      setStory(next.story);
+      setPlaying(next.playing);
+      return turnRead(next.stop, next.story, next.playing);
     },
-    deps: [setStop, setStory, story, playing],
+    deps: [setStop, setStory, setPlaying, story, playing],
   });
 
   return null;

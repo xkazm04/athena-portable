@@ -37,7 +37,7 @@ import {
   TRAIL_COUNTS,
   beatState,
 } from "../components/atlas/variants/archify-lanes/story";
-import { askStop, turnRead } from "../components/atlas/variants/archify-lanes/turn";
+import { askStop, turnAfter, turnRead } from "../components/atlas/variants/archify-lanes/turn";
 
 const FRAME = { w: 1188, h: 660 };
 const pose = (p: { zoom?: number; pan?: { x: number; y: number } }) => ({
@@ -185,4 +185,30 @@ test("set_turn takes a whole stop from 1 to 12 and refuses everything else", () 
     const out = askStop(n);
     assert.ok(out.ok && BEAT_VIEWS[out.stop], `stop ${n} does not land on a beat`);
   }
+});
+
+/**
+ * THREE DOORS TURN THE STORY OFF — the TURN toggle, the view switch and `set_turn tell=false` —
+ * and the first two also stop the clock. The tool's answer already said `playing: false`, while
+ * the state kept playing, so the next `read_turn` contradicted the answer it had just been given
+ * and the interval kept stepping a story nobody could see.
+ */
+test("set_turn tell=false stops the clock, and its answer is what read_turn then reads", () => {
+  const playing = { story: true, playing: true };
+  const off = turnAfter(4, false, playing);
+  assert.deepEqual(off, { stop: 4, story: false, playing: false });
+  assert.deepEqual(
+    turnRead(off.stop, off.story, off.playing),
+    turnRead(4, false, false),
+    "set_turn's answer and the next read_turn disagree",
+  );
+
+  /* Leaving `tell` out keeps whatever is telling, playing included; `tell=true` keeps the clock. */
+  assert.deepEqual(turnAfter(2, undefined, playing), { stop: 2, story: true, playing: true });
+  assert.deepEqual(turnAfter(2, true, playing), { stop: 2, story: true, playing: true });
+  assert.deepEqual(turnAfter(2, undefined, { story: false, playing: false }), {
+    stop: 2,
+    story: false,
+    playing: false,
+  });
 });

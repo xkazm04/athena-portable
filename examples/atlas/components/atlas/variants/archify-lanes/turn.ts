@@ -46,6 +46,27 @@ export function askStop(
   return { ok: true, stop: n - 1 };
 }
 
+export interface TurnState {
+  stop: number;
+  story: boolean;
+  playing: boolean;
+}
+
+/**
+ * The state `set_turn` leaves the drawing in. `tell` turns the story on or off, or leaves it.
+ *
+ * Putting the trail away stops the clock, which is the rule the TURN toggle and the view switch
+ * already keep; the tool is the third door onto the same state and has to keep it too.
+ */
+export function turnAfter(
+  stop: number,
+  tell: unknown,
+  now: { story: boolean; playing: boolean },
+): TurnState {
+  const story = tell === true ? true : tell === false ? false : now.story;
+  return { stop, story, playing: story ? now.playing : false };
+}
+
 /** The turn, as an agent reads it. Bounded like every list in this repository, and it says so. */
 export function turnRead(at: number, telling: boolean, playing: boolean) {
   const plan = planOf(null);
