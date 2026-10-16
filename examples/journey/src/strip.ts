@@ -438,7 +438,9 @@ export function argLine(params: Record<string, unknown>): string {
         ? `[${value.length}]`
         : typeof value === "string"
           ? value
-          : JSON.stringify(value);
+          : // `JSON.stringify` answers `undefined` (not a string) for undefined, a function or a
+            // symbol, and `.length` of that threw inside the beat: the strip prints what is sent.
+            (JSON.stringify(value) ?? String(value));
       return `${key}=${rendered.length > 42 ? `${rendered.slice(0, 42)}…` : rendered}`;
     })
     .join("  ");
