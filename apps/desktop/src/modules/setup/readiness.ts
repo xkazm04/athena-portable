@@ -227,7 +227,9 @@ export function restartNotice(model: SetupModel): RestartNotice | null {
   if (!model.pendingEngine) return null;
   const label = engineLabel(model.pendingEngine);
   return {
-    title: `${label} is stored. The daemon is still on ${engineLabel(model.daemonEngine)}.`,
+    // The engine fact's words for the same two facts, since both are on screen together: what is
+    // chosen and what she is running on; never "stored" or "the daemon".
+    title: `${label} is chosen. Athena is still running on ${engineLabel(model.daemonEngine)}.`,
     detail: "A restart drops nothing: conversations are on disk and resume on the new engine.",
     actionLabel: `Restart on ${label}`,
   };

@@ -163,6 +163,12 @@ test("there is no restart notice until a running daemon disagrees with the store
   const notice = restartNotice(model({ engine: "codex" }));
   expect(notice?.actionLabel).toBe("Restart on Codex");
   expect(notice?.title).toContain("Claude Code");
+  // The notice sits above the engine fact on one screen and says the same thing in its words.
+  expect(notice?.title).toBe("Codex is chosen. Athena is still running on Claude Code.");
+  expect(`${notice?.title} ${notice?.detail}`).not.toMatch(/daemon|stored|hands|origin|probe|PATH/);
+  expect(engineFact(model({ engine: "codex", probes: BOTH_FOUND })).summary).toBe(
+    "Codex is chosen, but Athena is still running on Claude Code",
+  );
 });
 
 const BOTH_FOUND: EngineProbe[] = [
