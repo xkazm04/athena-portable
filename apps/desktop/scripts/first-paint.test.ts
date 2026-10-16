@@ -5,16 +5,17 @@
  * frame loads, leave out what a depth fetches later, and fail on a build it cannot read. Then the
  * real gate: a production build of this tree into the OS temp directory, measured and judged
  * against the ceiling in `first-paint.mjs`. It runs in `pnpm test`, so every desktop change is
- * judged by it, not only the ones that run `pnpm perf:all`.
+ * judged by it, not only the ones that run `pnpm perf:all`. The same build is also searched for
+ * the dev inspector (ADR 0086), which only `import.meta.env.DEV` keeps out of what ships.
  */
 import { spawnSync } from "node:child_process";
-import { mkdirSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { mkdirSync, mkdtempSync, readdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { createRequire } from "node:module";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 
-import { afterAll, describe, expect, it } from "vitest";
+import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
 // @ts-expect-error a plain .mjs gate, no declarations
 import { FIRST_PAINT, judgeFirstPaint, measureFirstPaint } from "./first-paint.mjs";
@@ -99,23 +100,46 @@ describe("judgeFirstPaint", () => {
   });
 });
 
-describe("the first frame of this tree", () => {
-  it("is under the first-paint ceiling in a production build", { timeout: 180_000 }, () => {
-    const out = temp("athena-fp-build-");
+/** Every built file under `dir` that names the dev inspector or carries a source stamp. */
+function devToolsIn(dir: string): string[] {
+  return readdirSync(dir, { recursive: true, withFileTypes: true })
+    .filter((e) => e.isFile() && /\.(js|html)$/.test(e.name))
+    .map((e) => path.join(e.parentPath, e.name))
+    .filter((file) => /data-inspector|data-loc/.test(readFileSync(file, "utf8")))
+    .map((file) => path.relative(dir, file).replaceAll("\\", "/"));
+}
+
+describe("a production build of this tree", () => {
+  let out = "";
+  let build: { status: number | null; log: string } = { status: null, log: "not run" };
+
+  beforeAll(() => {
+    out = temp("athena-fp-build-");
     const vitePkg = createRequire(path.join(APP, "package.json")).resolve("vite/package.json");
     const vite = path.join(path.dirname(vitePkg), "bin", "vite.js");
     // The test runner's own variables must not reach the build: NODE_ENV=test would bundle React's
-    // development build and measure something that never ships.
+    // development build and measure something that never ships. ATHENA_INSPECTOR=1 is set on
+    // purpose: a developer whose shell exports it and runs `pnpm build` must still ship no stamps.
     const env: NodeJS.ProcessEnv = {};
     for (const [k, v] of Object.entries(process.env)) if (!/^(VITEST|NODE_ENV$|TEST$)/.test(k)) env[k] = v;
     env.NODE_ENV = "production";
-    const build = spawnSync(process.execPath, [vite, "build", "--outDir", out, "--emptyOutDir", "--logLevel", "error"], {
+    env.ATHENA_INSPECTOR = "1";
+    const run = spawnSync(process.execPath, [vite, "build", "--outDir", out, "--emptyOutDir", "--logLevel", "error"], {
       cwd: APP,
       env,
       encoding: "utf8",
     });
-    expect(build.status, build.stderr || build.stdout).toBe(0);
+    build = { status: run.status, log: run.stderr || run.stdout };
+  }, 180_000);
+
+  it("draws the first frame under the first-paint ceiling", () => {
+    expect(build.status, build.log).toBe(0);
     const verdict = judgeFirstPaint(measureFirstPaint(out)) as Judged;
     expect(verdict.failures).toEqual([]);
+  });
+
+  it("carries neither the dev inspector nor a source stamp (ADR 0086)", () => {
+    expect(build.status, build.log).toBe(0);
+    expect(devToolsIn(out)).toEqual([]);
   });
 });
