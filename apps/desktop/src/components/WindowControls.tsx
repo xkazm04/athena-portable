@@ -10,7 +10,7 @@
  * confirm leaves its own Escape to itself: it marks the key handled, so a stage listening for
  * Escape to rise a level does not also rise.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useId, useRef, useState } from "react";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import { hasShell } from "@/lib/ipc";
@@ -58,6 +58,8 @@ function WindowButtons({ waiting }: { waiting: boolean }) {
   const keep = useRef<HTMLButtonElement>(null);
   const closer = useRef<HTMLButtonElement>(null);
   const asked = useRef(false);
+  // An alert dialog's question is its description: without it a reader hears "Keep" and not why.
+  const question = useId();
   // The confirm takes focus when it opens and gives it back to the close button when Keep or
   // Escape puts it away; otherwise the focused button unmounts and focus falls to the document.
   useEffect(() => {
@@ -94,6 +96,7 @@ function WindowButtons({ waiting }: { waiting: boolean }) {
           className="close-confirm"
           role="alertdialog"
           aria-label="Confirm close"
+          aria-describedby={question}
           onKeyDown={(e) => {
             if (e.key === "Escape") {
               e.preventDefault(); // handled here: not also a request to rise a level
@@ -101,7 +104,7 @@ function WindowButtons({ waiting }: { waiting: boolean }) {
             }
           }}
         >
-          <span className="close-confirm__text typo-caption">A decision is waiting. Close anyway?</span>
+          <span id={question} className="close-confirm__text typo-caption">A decision is waiting. Close anyway?</span>
           <button type="button" className="close-confirm__btn focus-ring" onClick={close}>
             Close
           </button>

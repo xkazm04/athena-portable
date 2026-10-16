@@ -67,6 +67,15 @@ it("gives focus back to the close button when Escape dismisses the confirm", () 
   expect(document.activeElement).toBe(closeButton(h));
 });
 
+it("is described by its question, so a screen reader says why it asks and not only Keep", () => {
+  const h = mount(true);
+  act(() => closeButton(h)!.click());
+  const dialog = h.querySelector('[role="alertdialog"]')!;
+  const id = dialog.getAttribute("aria-describedby");
+  expect(id).toBeTruthy();
+  expect(document.getElementById(id!)?.textContent).toBe("A decision is waiting. Close anyway?");
+});
+
 it("leaves focus alone on a first render, when nothing was confirmed", () => {
   const before = document.activeElement;
   mount(true);
