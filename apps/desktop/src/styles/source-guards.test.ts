@@ -1,5 +1,5 @@
 /** Source guards over every stylesheet in src — README section 3.1, ADR 0026 and 0089. */
-import { readFileSync, readdirSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { join } from "node:path";
 import { expect, test } from "vitest";
 
@@ -48,8 +48,17 @@ test("a lazy depth shows a calm placeholder, not nothing: delayed, opacity only,
   expect(frames).toMatch(/opacity: 0/);
   expect(frames).not.toMatch(/transform|height|margin|top|left/);
   expect(app).toMatch(/:root\[data-motion="calm"\] \.depth-pending \{\s*display: none;/);
-  for (const depth of ["accounts", "apps", "mind", "voice", "chores"]) {
-    const live = readFileSync(join(decodeURIComponent(root), "scenes", depth, "live.tsx"), "utf8");
+  // Every scene whose live.tsx loads its view lazily, read from the tree rather than listed here,
+  // so a sixth lazy depth is held to the placeholder the day it lands.
+  const scenes = join(decodeURIComponent(root), "scenes");
+  const lazyDepths = readdirSync(scenes, { withFileTypes: true })
+    .filter((d) => d.isDirectory())
+    .map((d) => ({ depth: d.name, path: join(scenes, d.name, "live.tsx") }))
+    .filter(({ path }) => existsSync(path))
+    .map(({ depth, path }) => ({ depth, live: readFileSync(path, "utf8") }))
+    .filter(({ live }) => /\blazy\(/.test(live));
+  expect(lazyDepths.map((d) => d.depth)).toEqual(expect.arrayContaining(["accounts", "apps", "mind", "voice", "chores"]));
+  for (const { depth, live } of lazyDepths) {
     expect(live, depth).toContain("depth-pending");
     expect(live, depth).not.toMatch(/fallback:\s*null/);
   }
