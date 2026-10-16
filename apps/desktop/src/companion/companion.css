@@ -1864,9 +1864,6 @@ body.athena {
 .rec-user_denied {
   color: var(--paper-stamp);
 }
-.rec-waiting {
-  font-style: italic;
-}
 .offers b {
   color: var(--paper-external);
 }

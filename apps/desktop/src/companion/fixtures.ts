@@ -482,6 +482,3 @@ export const fixtures: Record<string, () => CompanionModel> = {
 };
 
 export const fixtureIds: readonly string[] = Object.keys(fixtures);
-
-/** The seven named states, each as its plainest fixture: what `?state=` selects. */
-export const STATE_FIXTURES = ["seal", "tape", "hear", "slip", "welcome", "ledger", "tab"] as const;

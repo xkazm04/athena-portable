@@ -69,7 +69,8 @@ test("every data attribute the sheet selects on is written by the view (or the p
   const attrs = [...new Set([...css.matchAll(/\[(data-[a-z-]+)/g)].map((m) => m[1]))];
   expect(attrs.length).toBeGreaterThan(10);
   for (const attr of attrs) expect(sources, attr).toContain(attr);
-  for (const dead of [".wl-sim", ".aw-fact"]) expect(css.includes(dead), dead).toBe(false);
+  // `.rec-waiting`: no Record row's result is "waiting" (wordOf, recordOf, the store's outcomes).
+  for (const dead of [".wl-sim", ".aw-fact", ".rec-waiting"]) expect(css.includes(dead), dead).toBe(false);
 });
 
 test("a parameter's key on the decision card grows or breaks inside its column; it never runs over the value", () => {
