@@ -9,11 +9,35 @@
  *   node --experimental-transform-types --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { test } from "node:test";
+import { tempHome } from "./tmp-home";
+
+tempHome("tidycrm-test-");
 
 const { wheelPose } = await import("../components/blocks/space/useWheelZoom");
 const { BOUNDS, REST } = await import("../components/blocks/space/camera");
 const { clampPose } = await import("@athena/demo-kit/zoom");
+const { getContact, listOpenPairs } = await import("../lib/db");
+const { mergeContacts } = await import("../lib/mutations");
+
+const from = (path: string): string => fileURLToPath(new URL(`../${path}`, import.meta.url));
+
+/** Source text with block and line comments removed, so prose cannot pass for code. */
+function code(path: string): string {
+  return readFileSync(from(path), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/(^|[^:"'`])\/\/.*$/gm, "$1")
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, "");
+}
+
+/** The prose a component prints, with JSX expressions and markup flattened to spaces. */
+function words(path: string): string {
+  return code(path)
+    .replace(/&rsquo;/g, "'")
+    .replace(/\s+/g, " ");
+}
 
 /* ------------------------------------------------------------------ the wheel */
 
@@ -42,4 +66,55 @@ test("inside the bounds the wheel still zooms at the pointer", () => {
   const pose = step(REST, -120);
   assert.ok(pose.zoom > REST.zoom, "a notch in zooms in");
   assert.notDeepEqual(pose.pan, REST.pan, "and keeps the point under the pointer, which moves the pan");
+});
+
+/* ------------------------------------------------------- the merge's consent */
+
+/** The merge confirmation the gate prints, and the description an agent reads before the same act. */
+const gateMergeQuestion = () => {
+  const gate = words("components/blocks/dossier/Gate.tsx");
+  return gate.slice(gate.indexOf('armed === "merge"'), gate.indexOf('armed === "delete"'));
+};
+const toolMergeDescription = () => {
+  const shell = words("components/shell/HostCapabilities.tsx");
+  const at = shell.indexOf('name: "merge_contacts"');
+  return shell.slice(at, shell.indexOf("parameters:", at));
+};
+
+test("a merge carries the folded record's valid phone and newer activity date over the survivor's", () => {
+  const pairs = listOpenPairs(200);
+  const phone = pairs.find((p) => {
+    const keep = getContact(p.keep_id)!;
+    const drop = getContact(p.drop_id)!;
+    return keep.phone_ok === 0 && drop.phone_ok === 1 && keep.phone !== drop.phone;
+  });
+  const newer = pairs.find((p) => {
+    if (p.id === phone?.id) return false;
+    return getContact(p.drop_id)!.last_activity_at > getContact(p.keep_id)!.last_activity_at;
+  });
+  assert.ok(phone && newer, "the seed holds a pair of each kind");
+
+  const dropPhone = getContact(phone.drop_id)!.phone;
+  assert.equal(mergeContacts(phone.keep_id, phone.drop_id).ok, true);
+  assert.equal(getContact(phone.keep_id)!.phone, dropPhone, "the survivor took the folded record's phone");
+
+  const dropSeen = getContact(newer.drop_id)!.last_activity_at;
+  assert.equal(mergeContacts(newer.keep_id, newer.drop_id).ok, true);
+  assert.equal(getContact(newer.keep_id)!.last_activity_at, dropSeen, "and its newer activity date");
+});
+
+test("the merge's consent says so, at the gate and in the tool an agent reads", () => {
+  for (const [where, text] of [
+    ["the gate's confirmation", gateMergeQuestion()],
+    ["merge_contacts' description", toolMergeDescription()],
+  ] as const) {
+    assert.ok(text.length > 40, `${where} was found in the source`);
+    assert.doesNotMatch(
+      text,
+      /disagree on take the surviving record's value/,
+      `${where} promises the survivor's value for every field the two disagree on`,
+    );
+    assert.match(text, /phone/i, `${where} names the phone the merge can carry over`);
+    assert.match(text, /activity/i, `${where} names the activity date the merge can carry over`);
+  }
 });

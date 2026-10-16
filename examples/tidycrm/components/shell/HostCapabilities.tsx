@@ -215,7 +215,7 @@ function ShippedCapabilities() {
   useWebMCPTool({
     name: "merge_contacts",
     description:
-      "Fold one contact into another. The dropped record stays visible in the merged segment, but the two histories become one.",
+      "Fold one contact into another. The dropped record stays visible in the merged segment, but the two histories become one. Where the two disagree the survivor keeps its own value, except that it takes the dropped record's phone when its own is not a valid number and the dropped one's is, and the dropped record's last activity date when that is more recent.",
     parameters: [
       { name: "keep_id", type: "string", required: true, description: "Contact that survives" },
       { name: "drop_id", type: "string", required: true, description: "Contact folded in" },

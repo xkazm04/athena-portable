@@ -115,9 +115,12 @@ export function DossierGate({
       <div className="bk-arm">
         <p className="bk-arm-q">
           Fold {pair.drop.name} into {pair.keep.name} on {table.domain}. The folded record
-          stops being a contact and the {pair.conflicts.length} field
-          {pair.conflicts.length === 1 ? "" : "s"} the two disagree on take the surviving
-          record&rsquo;s value. There is no undo payload, because there is nothing to store.
+          stops being a contact. Of the {pair.conflicts.length} field
+          {pair.conflicts.length === 1 ? "" : "s"} the two disagree on, the surviving record
+          keeps its own value with two exceptions it takes from the folded one: the phone, when
+          the survivor&rsquo;s is not a valid number and the folded one&rsquo;s is, and the
+          last activity date, when the folded one&rsquo;s is more recent. There is no undo
+          payload, because there is nothing to store.
         </p>
         <div className="bk-actions">
           <button
