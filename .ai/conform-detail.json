@@ -2548,6 +2548,104 @@
       "evaluatedTs": "2026-10-16T02:12:10.904Z",
       "worker": "24cbbc56-6fcc-4aea-badc-ae91af2e21e7",
       "techniques": []
+    },
+    "16e21bc2-d34a-4cae-95d3-2a7234889176/agent-browser-control": {
+      "context": "desktop-modules-registry",
+      "subject": "agent-browser-control",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T02:34:32.959Z",
+      "worker": "13a692a2-468b-48fc-b9a2-347e86800748",
+      "techniques": [
+        {
+          "technique": "agent-actionable-errors",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:60 This reports UI callback failures to the console, rather than browser-command errors to a model."
+        },
+        {
+          "technique": "effect-classed-commands",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:62 These are view-model callbacks to stores, not the agent's command dispatcher."
+        },
+        {
+          "technique": "persistent-browser-daemon",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:38 The module consumes tab state; browser process ownership is outside this context."
+        },
+        {
+          "technique": "references-over-selectors",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:161 This selects the focused tab's tool-display model, rather than resolving page elements."
+        },
+        {
+          "technique": "socket-scoped-surface",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/types.ts:15 This is a presentation and preview contract, not a browser listener."
+        }
+      ]
+    },
+    "a4c21bac-6dbe-41a3-b6ad-e7bec7001865/agent-browser-control": {
+      "context": "voice-channel",
+      "subject": "agent-browser-control",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T02:34:32.959Z",
+      "techniques": [
+        {
+          "technique": "agent-actionable-errors",
+          "verdict": "deviation",
+          "evidence": "src/athena/channels/voice/gateway.py:954 The synthetic error gives neither outcome uncertainty nor a next command; test_voice_gateway.py:610 confirms the timeout reaches the next model request."
+        },
+        {
+          "technique": "persistent-browser-daemon",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/whisper.py:3 The subprocess lifecycle here belongs to speech engines, not browser sessions."
+        },
+        {
+          "technique": "references-over-selectors",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/gateway.py:892 The voice gateway forwards page results into the lane rather than minting or resolving element references."
+        }
+      ],
+      "withdrawn": {
+        "worker": "13a692a2-468b-48fc-b9a2-347e86800748",
+        "state": "deviation",
+        "at": "2026-10-16T02:35:02.505974+00:00",
+        "reason": "reviewer (sonnet): The gateway.py:954 timeout row and the test at line 610 concern host-app tool calls (`host.invoices.chase`, ADR 0010), not browser-control commands, so a browser-control deviation is not shown for this context."
+      }
+    },
+    "29de8ade-bf7f-481c-9aa7-94bef87aab94/agent-browser-control": {
+      "context": "desktop-shell-rust",
+      "subject": "agent-browser-control",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T02:34:32.959Z",
+      "worker": "13a692a2-468b-48fc-b9a2-347e86800748",
+      "techniques": [
+        {
+          "technique": "agent-actionable-errors",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src-tauri/src/bridge.rs:392 The relay timeout lacks a structured reason, command-specific explanation and literal recovery command."
+        },
+        {
+          "technique": "effect-classed-commands",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src-tauri/src/hands.rs:354 Dispatch distinguishes page versus shell execution, not read/write/meta effects; the separate effect flags do not drive the required class-based routing."
+        },
+        {
+          "technique": "references-over-selectors",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src-tauri/src/hands.js:106 References hold concrete DOM elements in the injected page closure, rather than lazy role/name/index locators outside the page; detached-node checks and navigation invalidation only partially realize the technique."
+        },
+        {
+          "technique": "socket-scoped-surface",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src-tauri/capabilities/page.json:8 Pages receive a narrowly scoped native IPC reply command, so the loopback reply fallback is not used; searches found no browser tunnel implementation."
+        }
+      ]
     }
   }
 }
