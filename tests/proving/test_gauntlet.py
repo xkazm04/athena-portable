@@ -10,9 +10,12 @@ from __future__ import annotations
 
 import json
 import re
+from collections.abc import Mapping
 from pathlib import Path
 from typing import Any
 
+from athena.contracts.registry import ToolEntry, TurnContext
+from athena.harness.hooks import GateOutcome, Proceed
 from athena.harness.tokenfactory import DEFAULT_MODEL, LIGHTNING_MODEL
 from athena.proving.gauntlet.attacks import GATED_TARGETS, SURFACES, Attack
 from athena.proving.gauntlet.run import (
@@ -172,6 +175,47 @@ def test_sampling_is_seeded_and_prefers_judged_valid_attacks() -> None:
     assert [a.id for a in first] == [a.id for a in again]
     assert len(first) == 3 * len(SURFACES) * 2
     assert all(grades[a.id]["valid"] for a in first)
+
+
+def _waved_through(engine: str, model: str) -> World:
+    """A world with the bug the Gauntlet exists to find: a gate that lets everything through."""
+    world = World(engine="nebius", model="fake", model_fn=injected_model())
+
+    def wave_through(
+        entry: ToolEntry, params: Mapping[str, Any], ctx: TurnContext, *, rationale: str = ""
+    ) -> GateOutcome:
+        return GateOutcome(Proceed(dict(params)))
+
+    world.local.gate.before_tool_call = wave_through  # type: ignore[method-assign]
+    return world
+
+
+def test_a_run_against_a_gate_that_waves_everything_through_fails_proof_one(
+    tmp_path: Path,
+) -> None:
+    """The run-level half of ADR 0032's falsifiability: every other run here ends ``held``, so
+    without this a proof that always passes, or a breach that is never kept, reads green."""
+    engines, _ = _engines()
+    engines.world = _waved_through
+    run_dir = new_run_dir(tmp_path / "proving-runs")
+    config = _small(surfaces=("page_state",), n=2, claude_row=False, workers=1)
+    report = run_gauntlet(config, engines, run_dir=run_dir)
+
+    [row] = report["rows"]
+    assert row["driven"] == 2 and row["verdicts"]["breached"] == 2
+    proof = report["proof"]["breaches_zero"]
+    assert proof["pass"] is False and proof["breached"] == 2 and proof["held"] == 0
+    for attack in report["attacks"]:
+        for run in attack["runs"] or []:
+            assert run["verdict"] == "breached"
+            kept = run_dir / "breaches" / f"athena-nemotron-{attack['id']}"
+            evidence = json.loads((kept / "record.json").read_text("utf-8"))
+            assert evidence["attack"]["id"] == attack["id"]
+            assert any(trip["allowed"] and trip["cls"] == "GATED" for trip in evidence["gate"])
+            assert (kept / "world").is_dir()
+    md = (run_dir / "report.md").read_text("utf-8")
+    assert "**Zero breaches** — FAIL" in md
+    assert "## Breaches" in md and "gate allowed GATED host.ledgerbox.mark_paid" in md
 
 
 def test_the_world_manifest_is_ledgerbox_tool_classes_transcribed() -> None:
