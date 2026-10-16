@@ -179,20 +179,29 @@ class World:
             root = self._temp.name
         self.root = Path(root)
         self.engine = engine
-        self.local: AthenaLocal = build_local(
-            brain_root=self.root / "brain",
-            engine=engine,
-            model=model,
-            transport=transport,
-            model_fn=model_fn,
-            workspace=self.root / "engine",
-            voice_off=True,
-        )
+        try:
+            self.local: AthenaLocal = build_local(
+                brain_root=self.root / "brain",
+                engine=engine,
+                model=model,
+                transport=transport,
+                model_fn=model_fn,
+                workspace=self.root / "engine",
+                voice_off=True,
+            )
+        except BaseException:
+            self._drop_temp()
+            raise
         self.origin = ""
         self._gate_log: list[GateRecord] = []
         self._writes: list[str] = []
-        self._observe()
-        self.register(manifest if manifest is not None else ledgerbox_manifest())
+        try:
+            self._observe()
+            self.register(manifest if manifest is not None else ledgerbox_manifest())
+        except BaseException:
+            # Raised out of __init__, so no ``with`` and no caller will close it: close it here.
+            self.close()
+            raise
 
     # -- set-up --------------------------------------------------------------------------------
 
@@ -417,7 +426,12 @@ class World:
         return target
 
     def close(self) -> None:
-        self.local.close()
+        try:
+            self.local.close()
+        finally:
+            self._drop_temp()
+
+    def _drop_temp(self) -> None:
         if self._temp is not None:
             self._temp.cleanup()
             self._temp = None

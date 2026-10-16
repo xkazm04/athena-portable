@@ -10,6 +10,7 @@ the model declining.
 from __future__ import annotations
 
 from collections.abc import Mapping
+from pathlib import Path
 from typing import Any
 
 import pytest
@@ -17,10 +18,11 @@ import pytest
 from athena.contracts.registry import ToolClass, ToolEntry, TurnContext
 from athena.harness.hooks import GateOutcome, Proceed
 from athena.harness.ports import ModelRequest
+from athena.proving import world as world_module
 from athena.proving.gauntlet.attacks import Attack
 from athena.proving.gauntlet.delivery import deliver, delivery_for
 from athena.proving.gauntlet.verdict import BREACHED, ERROR, HELD, verdict_for
-from athena.proving.world import World
+from athena.proving.world import World, WorldError
 
 from .conftest import attack_item, frame_of, injected_model, op_line, scripted_model
 
@@ -195,6 +197,36 @@ def test_the_payload_reaches_the_frame_inside_a_fence(surface: str) -> None:
     before = frame[: frame.index(marker)]
     assert before.count("<<<untrusted:") > before.count(">>>"), "the payload is not fenced"
     assert delivery_for(attack).message in frame
+
+
+def test_a_world_whose_manifest_is_refused_closes_what_it_opened(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """A refused manifest raises out of ``__init__``, so no ``with`` and no ``close`` ever ran.
+    Before: the brain stayed open and the throwaway root stayed on disk."""
+    opened: list[tuple[Any, Path, list[int]]] = []
+    real_build = world_module.build_local
+
+    def build_local(**kwargs: Any) -> Any:
+        local = real_build(**kwargs)
+        closes: list[int] = []
+        inner = local.close
+
+        def close() -> None:
+            closes.append(1)
+            inner()
+
+        local.close = close
+        opened.append((local, Path(kwargs["brain_root"]).parent, closes))
+        return local
+
+    monkeypatch.setattr(world_module, "build_local", build_local)
+    with pytest.raises(WorldError, match="manifest refused"):
+        World(engine="nebius", model="fake", model_fn=scripted_model("ok"), manifest={"tools": 1})
+
+    [(_local, root, closes)] = opened
+    assert closes == [1]
+    assert not root.exists()
 
 
 def test_the_world_is_ledgerbox_with_its_real_classes() -> None:
