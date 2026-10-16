@@ -87,7 +87,8 @@ export function WhisperModels({ model }: { model: VoiceModel }) {
 export function KeyField({ model, onDone }: { model: VoiceModel; onDone?: () => void }) {
   const [draft, setDraft] = useState("");
   const save = () => {
-    if (!draft.trim()) return;
+    // The button's rule, for Enter too: nothing while a save is in flight, and the draft is kept.
+    if (!draft.trim() || model.keyBusy) return;
     model.actions.saveKey(draft.trim());
     setDraft("");
     onDone?.();
