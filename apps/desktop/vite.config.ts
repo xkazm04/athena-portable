@@ -35,6 +35,25 @@ const root = path.dirname(fileURLToPath(import.meta.url));
 const EVIDENCE = path.resolve(root, "../../evidence");
 
 /**
+ * The bytes a `Range` header asks of a file of `size` bytes (RFC 9110 section 14.1.2): `a-b`,
+ * `a-` (to the end) and `-n` (the last n). A header that is not one single range is ignored and the
+ * whole file is sent; a range the file cannot satisfy is 416.
+ */
+export function evidenceRange(
+  header: string | undefined,
+  size: number,
+): { status: 200 | 206 | 416; start: number; end: number } {
+  const m = /^bytes=(\d*)-(\d*)$/.exec(header ?? "");
+  if (!m || (m[1] === "" && m[2] === "")) return { status: 200, start: 0, end: size - 1 };
+  const [start, end] =
+    m[1] === ""
+      ? [Math.max(0, size - Number(m[2])), Number(m[2]) === 0 ? -1 : size - 1]
+      : [Number(m[1]), m[2] ? Math.min(Number(m[2]), size - 1) : size - 1];
+  if (start > end || start >= size) return { status: 416, start, end };
+  return { status: 206, start, end };
+}
+
+/**
  * `GET /evidence/<id>/<file>.mp4` from `evidence/`, with byte ranges so a `<video>` can seek. One
  * directory deep and one name pattern: nothing else under the repository is reachable this way.
  */
@@ -55,20 +74,18 @@ function evidenceFilms(): Plugin {
           res.end();
           return;
         }
-        const range = /^bytes=(\d*)-(\d*)$/.exec(req.headers.range ?? "");
-        const start = range && range[1] ? Number(range[1]) : 0;
-        const end = range && range[2] ? Math.min(Number(range[2]), size - 1) : size - 1;
-        if (start > end || start >= size) {
+        const { status, start, end } = evidenceRange(req.headers.range, size);
+        if (status === 416) {
           res.statusCode = 416;
           res.setHeader("Content-Range", `bytes */${size}`);
           res.end();
           return;
         }
-        res.statusCode = range ? 206 : 200;
+        res.statusCode = status;
         res.setHeader("Content-Type", "video/mp4");
         res.setHeader("Accept-Ranges", "bytes");
         res.setHeader("Content-Length", String(end - start + 1));
-        if (range) res.setHeader("Content-Range", `bytes ${start}-${end}/${size}`);
+        if (status === 206) res.setHeader("Content-Range", `bytes ${start}-${end}/${size}`);
         createReadStream(file, { start, end }).pipe(res);
       });
     },
