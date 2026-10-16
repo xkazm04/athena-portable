@@ -7,6 +7,7 @@ import base64
 import http.client
 import urllib.error
 from collections.abc import Mapping
+from dataclasses import replace
 from email import message_from_bytes
 from email.utils import getaddresses
 from pathlib import Path
@@ -15,7 +16,7 @@ from typing import Any
 import pytest
 
 from athena.connectors.providers import gmail
-from athena.connectors.service import READ_CAP, Service, check_egress, services_for
+from athena.connectors.service import READ_CAP, Service, check_egress, is_write, services_for
 from athena.connectors.spec import ConnectorSpec
 from athena.connectors.vault import UrllibTransport, Vault
 from athena.contracts.registry import ToolClass
@@ -300,3 +301,23 @@ def test_a_write_answered_5xx_is_outcome_unknown_and_a_4xx_or_a_read_is_not(
     provider.script = lambda *_: (400, {"object": "error"})
     refused = service.call("append_to_page", {"page_id": PAGE, "text": "hello"})
     assert not refused.ok and refused.error == "engine_error"
+
+
+# -- the writes switch reads the catalog's own class (ADR 0116; contracts/manifest.py) ----------
+
+
+def test_a_tool_whose_spec_leaves_reversible_unset_is_a_write_to_the_switch(
+    notion: Vault, provider: FakeProvider
+) -> None:
+    spec = notion.specs["notion"]
+    silent = replace(spec.tools[0], tool=replace(spec.tools[0].tool, reversible=None))
+    assert silent.tool.side_effects == "none"
+    assert silent.tool.default_class() is ToolClass.GATED, "the catalog's answer"
+    service = Service(replace(spec, tools=(silent, *spec.tools[1:])), notion)
+    before = len(provider.seen)
+    refused = service.call("search", {"query": "x"})
+    assert not refused.ok and refused.error == "validator_failed"
+    assert "switched off" in refused.output
+    assert len(provider.seen) == before, "nothing left"
+    for tool in (*spec.tools, silent):
+        assert is_write(tool.tool) is (tool.tool.default_class() is ToolClass.GATED)

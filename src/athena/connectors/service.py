@@ -33,7 +33,7 @@ from athena.connectors.providers import gmail, notion
 from athena.connectors.spec import ConnectorSpec, ToolSpec
 from athena.connectors.vault import NeedsReauth, NoAnswer, Vault, VaultError
 from athena.contracts.manifest import HostTool
-from athena.contracts.registry import ExecResult, Tier
+from athena.contracts.registry import ExecResult, Tier, ToolClass
 from athena.core.fence import wrap_untrusted
 
 __all__ = ["READ_CAP", "Service", "check_egress", "is_write", "read_result", "services_for"]
@@ -47,8 +47,10 @@ PROVIDERS: dict[str, Provider] = {"gmail": gmail.execute, "notion": notion.execu
 
 
 def is_write(tool: HostTool) -> bool:
-    """The manifest's own answer, as the catalog derives it: irreversible, or leaves the app."""
-    return tool.reversible is False or tool.side_effects == "external"
+    """The catalog's own answer, read from the one rule that derives it: anything that is not
+    declared reversible, or that leaves the app, is ``GATED`` — an unset ``reversible`` included,
+    as the panel lists it (ADR 0116)."""
+    return tool.default_class() is ToolClass.GATED
 
 
 def _values(params: Mapping[str, Any], names: Sequence[str]) -> list[str]:
