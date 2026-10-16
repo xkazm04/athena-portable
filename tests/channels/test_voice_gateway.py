@@ -1136,9 +1136,11 @@ def test_a_page_that_answers_after_the_socket_closed_starts_no_continuation_step
 def test_a_session_remembers_the_newest_cards_and_a_bare_yes_answers_the_newest(
     voiced: Live,
     backend: ScriptedBackend,
-    client: VoiceClient,
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    # No ``client`` fixture here: its socket's session is built on the daemon's handler thread
+    # after ``connect`` returns, so under load it could be built after the patch below and be
+    # counted as this test's. The one socket this test opens is the one whose session it reads.
     sessions: list[VoiceSession] = []
     init = VoiceSession.__init__
 
@@ -1150,7 +1152,7 @@ def test_a_session_remembers_the_newest_cards_and_a_bare_yes_answers_the_newest(
     fresh = _fresh(voiced)
     try:
         filed = [str(_file_a_card(voiced, fresh)["id"]) for _ in range(MAX_SESSION_CARDS + 2)]
-        (session,) = sessions
+        (session,) = [one for one in sessions if one.gateway is _gateway(voiced)]
         assert [card.id for card in session.cards] == filed[::-1][:MAX_SESSION_CARDS]
         assert len(session.cards) == MAX_SESSION_CARDS == 32
 
