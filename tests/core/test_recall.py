@@ -1058,3 +1058,20 @@ def test_machine_chatter_does_not_crowd_a_relevant_turn_out_of_the_window(tmp_pa
 
     assert spoken in {memory.id for memory in window.items}
     assert sum(memory.machine for memory in window.items) == MACHINE_EPISODE_SLOTS
+
+
+@pytest.mark.parametrize("size", [756, 910, 1148])
+def test_a_whole_recall_that_found_no_distilled_memory_still_fits_its_cap(
+    tmp_path: Path, size: int
+) -> None:
+    """The "no distilled memory matched" line rides after the blocks, so packing reserves it."""
+    with Brain(tmp_path / "brain") as brain:
+        for n in range(8):
+            brain.append_episode(
+                f"invoice {n} " + "x" * size, "user", created=BASE + timedelta(minutes=n)
+            )
+
+        trace = recall_whole(brain, "invoice", cap=4800)
+
+    assert trace.notes == ["no distilled memory matched the query"]
+    assert len(_rendered(trace)) <= 4800

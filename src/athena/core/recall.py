@@ -81,6 +81,8 @@ DISTILLED_KINDS: tuple[str, ...] = ("fact", "procedural")
 
 #: What every block of a recall that could not read the store says, before SQLite's own message.
 UNAVAILABLE_PREFIX = "memory could not be read: "
+#: The note of a recall whose keyword lane matched nothing; ``core.recall`` renders it last.
+NO_DISTILLED_MATCH = "no distilled memory matched the query"
 
 _log = logging.getLogger(__name__)
 
@@ -306,7 +308,7 @@ def recall(
         return unavailable_trace(query, exc, (ALWAYS_BLOCK, KEYWORD_BLOCK, EPISODE_BLOCK))
     trace = RecallTrace(query=query, blocks=(always, keyword, episodes))
     if not keyword.total:
-        trace.notes.append("no distilled memory matched the query")
+        trace.notes.append(NO_DISTILLED_MATCH)
     return trace
 
 
@@ -336,12 +338,17 @@ def recall_whole(
     try:
         with closing(brain.read_connection()) as con:
             keyword = _keyword_block(con, query, keyword_slots, set())
-            episodes = _whole_episodes(con, query, cap, limit, _packed_chars(keyword))
+            # The note that nothing distilled matched rides after the blocks, so it is paid for
+            # before any episode is packed, as the keyword block is.
+            spent = _packed_chars(keyword)
+            if not keyword.total:
+                spent += _note_chars(NO_DISTILLED_MATCH)
+            episodes = _whole_episodes(con, query, cap, limit, spent)
     except sqlite3.Error as exc:
         return unavailable_trace(query, exc, (KEYWORD_BLOCK, EPISODE_BLOCK))
     trace = RecallTrace(query=query, blocks=(keyword, episodes))
     if not keyword.total:
-        trace.notes.append("no distilled memory matched the query")
+        trace.notes.append(NO_DISTILLED_MATCH)
     return trace
 
 
@@ -362,6 +369,11 @@ def unavailable_trace(query: str, exc: sqlite3.Error, names: tuple[str, ...]) ->
 def _packed_chars(block: RecallBlock) -> int:
     """What a block costs in the rendered answer: its header, its lines, its footer, a separator."""
     return len("### " + block.name + "\n" + block.render()) + 2
+
+
+def _note_chars(note: str) -> int:
+    """What a note costs in the rendered answer: ``(note)`` and the separator before it."""
+    return len(f"({note})") + 2
 
 
 def _whole_episodes(
