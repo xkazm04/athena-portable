@@ -375,7 +375,7 @@ function ShippedCapabilities() {
   useWebMCPTool({
     name: "undo",
     description:
-      "Put back one reversible write, by the activity-log id it was recorded under. Normalisations replay their revisions backwards, stale flags are cleared, a closed pair reopens. An entry that is not reversible, or that was already undone, is refused with the reason.",
+      "Put back one reversible write, by the activity-log id it was recorded under. Normalisations replay their revisions backwards, stale flags are cleared, a closed pair reopens. An entry that is not reversible, or that was already undone, is refused with the reason, and so is one whose field a later write has changed again (undo the later change first) or whose pair has a record that is no longer in the list.",
     parameters: [
       { name: "activity_id", type: "number", required: true, description: "Activity log id of the write to reverse" },
     ],

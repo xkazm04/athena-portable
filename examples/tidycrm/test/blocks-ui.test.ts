@@ -208,3 +208,25 @@ test("the L0 caption counts one of anything in the singular", async () => {
   assert.match(said, /1 deviation outstanding/);
   assert.match(databaseSummary({ ...one, records: 2, outstanding: 2 }), /2 records, .*2 deviations outstanding/);
 });
+
+/* ------------------------------------------------------- the tools' contract */
+
+/** One tool's description, from the shell's registration. */
+const toolDescription = (name: string): string => {
+  const shell = words("components/shell/HostCapabilities.tsx");
+  const at = shell.indexOf(`name: "${name}"`);
+  assert.ok(at >= 0, `${name} is registered`);
+  return shell.slice(at, shell.indexOf("parameters:", at));
+};
+
+test("undo's description names every refusal applyUndo can give, so an agent can plan the order", () => {
+  // lib/mutations.ts throws UndoRefused for these two (pinned in test/domain-lib.test.ts); the
+  // kit's undoActivity refuses the other two.
+  const refusals = [...readFileSync(from("lib/mutations.ts"), "utf8").matchAll(/throw new UndoRefused\(/g)];
+  assert.equal(refusals.length, 2, "applyUndo still refuses in exactly two places");
+  const said = toolDescription("undo");
+  assert.match(said, /not reversible/, "an irreversible entry");
+  assert.match(said, /already undone/, "an entry undone before");
+  assert.match(said, /changed again|later write|later change/, "a field a later write has changed since");
+  assert.match(said, /no longer in the list|left the list|deleted or merged/, "a pair whose record is gone");
+});
