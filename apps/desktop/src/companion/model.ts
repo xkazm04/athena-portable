@@ -1111,8 +1111,11 @@ export function ledgerFrom(reply: Record<string, unknown>): LedgerSnapshot {
   const raw = Array.isArray(reply.rows) ? (reply.rows as Array<Record<string, unknown>>) : [];
   const str = (v: unknown) => (typeof v === "string" ? v : "");
   const num = (v: unknown) => (typeof v === "number" ? v : 0);
+  // `row_id` is the ledger's integer key (routes.py `ledger_recent`); a turn's rounds share a
+  // `turn_id`, so it is a fallback only, and the view keys each line on this.
+  const idOf = (v: unknown) => (typeof v === "number" && Number.isFinite(v) ? String(v) : str(v));
   const rows = raw.map((row) => ({
-      id: str(row.row_id) || str(row.turn_id),
+      id: idOf(row.row_id) || str(row.turn_id),
       when: str(row.created_at),
       clock: str(row.created_at) ? clockOf(str(row.created_at)) : "—",
       model: str(row.model) || str(row.engine),

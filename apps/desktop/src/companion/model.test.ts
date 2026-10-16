@@ -224,9 +224,25 @@ test("the daemon's ledger reply is read defensively and its footer is kept verba
     footer: "(showing 2 of 9)",
   });
   expect(snap.rows[0]).toMatchObject({ id: "r1", cost: "~$0.5000", rounds: 2, isError: false });
-  expect(snap.rows[1]).toMatchObject({ id: "", isError: true, reason: "engine_error", cost: "no cost" });
+  expect(snap.rows[1]).toMatchObject({ id: "7", isError: true, reason: "engine_error", cost: "no cost" });
   expect(snap.footer).toBe("(showing 2 of 9)");
   expect(ledgerFrom({}).rows).toEqual([]);
+});
+
+test("each ledger row keeps its own id: the daemon's row_id is an integer, and one turn has many rows (routes.py ledger_recent)", () => {
+  // The wire shape `GET /ledger` sends: `row_id` is the table's INTEGER PRIMARY KEY, one row per
+  // model invocation, so the rounds of one turn share a `turn_id`.
+  const snap = ledgerFrom({
+    rows: [
+      { row_id: 12, turn_id: "t_1", created_at: "2026-09-30T09:41:12+00:00", rounds: 1, is_error: false },
+      { row_id: 11, turn_id: "t_1", created_at: "2026-09-30T09:41:02+00:00", rounds: 1, is_error: false },
+      { row_id: 10, turn_id: null, created_at: "2026-09-30T09:40:00+00:00", rounds: 1, is_error: true },
+      { row_id: 9, turn_id: null, created_at: "2026-09-30T09:39:00+00:00", rounds: 1, is_error: true },
+    ],
+  });
+  expect(snap.rows.map((r) => r.id)).toEqual(["12", "11", "10", "9"]);
+  // The view keys each line on it: no two may share one.
+  expect(new Set(snap.rows.map((r) => r.id)).size).toBe(snap.rows.length);
 });
 
 test("every fixture is a model the machine can reach, and the seven names are the ADR's forms", () => {
