@@ -19,7 +19,7 @@ from typing import Any
 
 import pytest
 
-from athena.channels.voice import kokoro, whisper
+from athena.channels.voice import home, kokoro, whisper
 from athena.channels.voice.backends import VoiceBackendError
 from athena.channels.voice.home import EngineHomes, resolve_homes
 
@@ -262,6 +262,51 @@ def test_the_probe_names_the_missing_file_then_tells_broken_from_ready(
     assert broken.state == "broken"
     assert "exited with 3" in str(broken.reason)
     assert kokoro.probe(homes, command=command("kokoro", log)).ready
+
+
+# -- the dry check ---------------------------------------------------------------------------------
+
+
+def _scripted_runs(monkeypatch: pytest.MonkeyPatch, codes: list[int]) -> list[list[str]]:
+    """``subprocess.run`` as the dry check sees it: each spawn exits with the next code."""
+    spawned: list[list[str]] = []
+
+    def run(argv: list[str], **_: object) -> subprocess.CompletedProcess[bytes]:
+        spawned.append(list(argv))
+        return subprocess.CompletedProcess(argv, codes[min(len(spawned), len(codes)) - 1])
+
+    monkeypatch.setattr(home.subprocess, "run", run)
+    return spawned
+
+
+def test_a_ready_verdict_runs_the_executable_once_per_file_version(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    exe = tmp_path / kokoro.ENGINE_FILENAME
+    exe.write_bytes(b"exe")
+    spawned = _scripted_runs(monkeypatch, [0])
+    assert [home.dry_check(exe) for _ in range(5)] == [None] * 5
+    assert len(spawned) == 1
+
+
+def test_a_broken_verdict_is_looked_at_again_once_its_window_has_passed(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """A missing DLL put back beside the executable, or a first run held past the timeout by a
+    virus scan, changes nothing about the executable's own size or time, so a broken verdict
+    cached by those alone would stand until the daemon restarts."""
+    exe = tmp_path / kokoro.ENGINE_FILENAME
+    exe.write_bytes(b"exe")
+    spawned = _scripted_runs(monkeypatch, [3, 0])
+
+    assert home.dry_check(exe) == f"{exe.name} exited with 3"
+    # Within the window a polling page spawns nothing more.
+    assert home.dry_check(exe) == f"{exe.name} exited with 3"
+    assert len(spawned) == 1
+
+    monkeypatch.setattr(home, "BROKEN_RECHECK_S", 0.0)
+    assert home.dry_check(exe) is None
+    assert len(spawned) == 2
 
 
 # -- whisper ---------------------------------------------------------------------------------------

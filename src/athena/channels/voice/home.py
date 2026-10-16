@@ -16,7 +16,9 @@ arguments, so a test points it at ``tmp_path`` and never sees the machine's real
 ``broken`` (the files are there but the executable will not run), ``ready``. The dry check that
 tells broken from ready runs the executable with ``--help`` once per file version: its result is
 cached by path, size and modification time, because a settings page that polls must not spawn a
-process per poll.
+process per poll. A *broken* verdict stands for :data:`BROKEN_RECHECK_S` only: what broke it — a
+DLL missing beside the executable, a first run held past the timeout by a virus scan — can be
+put right without touching the executable's own size or time.
 """
 
 from __future__ import annotations
@@ -25,12 +27,14 @@ import os
 import subprocess
 import sys
 import threading
+import time
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 from typing import Literal
 
 __all__ = [
+    "BROKEN_RECHECK_S",
     "DRY_CHECK_TIMEOUT_S",
     "EXE_SUFFIX",
     "PERSONAS_HOME_ENV",
@@ -53,6 +57,11 @@ EXE_SUFFIX = ".exe" if os.name == "nt" else ""
 #: How long ``--help`` may take before the executable is called broken. Both engines answer in
 #: well under a second; a binary that hangs on ``--help`` would hang on a sentence too.
 DRY_CHECK_TIMEOUT_S = 10.0
+
+#: How long a broken verdict stands before the next probe runs the executable again. A ready
+#: verdict stands for as long as the file is unchanged; a broken one is re-asked at most this
+#: often, so a polling page spawns one process a minute while it waits for a repair.
+BROKEN_RECHECK_S = 60.0
 
 ProbeState = Literal["ready", "absent", "broken"]
 
@@ -125,14 +134,17 @@ def creation_flags() -> int:
 
 
 _dry_lock = threading.Lock()
-_dry_cache: dict[tuple[str, int, int], str | None] = {}
+#: The verdict per file version, and when it was reached (``time.monotonic``).
+_dry_cache: dict[tuple[str, int, int], tuple[str | None, float]] = {}
 
 
 def dry_check(exe: Path, args: Sequence[str] = ("--help",)) -> str | None:
     """Run ``exe --help`` once per file version. ``None`` when it ran, else why it did not.
 
     A missing DLL on Windows is not an ``OSError`` at spawn but an exit code from the loader,
-    which is why a non-zero exit counts as broken too.
+    which is why a non-zero exit counts as broken too. That verdict is asked again once it is
+    :data:`BROKEN_RECHECK_S` old, because the DLL can come back while the executable stays as it
+    was; a ready verdict is kept for as long as the file is unchanged.
     """
     try:
         stat = exe.stat()
@@ -140,8 +152,11 @@ def dry_check(exe: Path, args: Sequence[str] = ("--help",)) -> str | None:
         return f"{exe.name} could not be read"
     key = (str(exe), stat.st_size, stat.st_mtime_ns)
     with _dry_lock:
-        if key in _dry_cache:
-            return _dry_cache[key]
+        cached = _dry_cache.get(key)
+    if cached is not None:
+        verdict, reached = cached
+        if verdict is None or time.monotonic() - reached < BROKEN_RECHECK_S:
+            return verdict
     try:
         done = subprocess.run(
             [str(exe), *args],
@@ -158,7 +173,7 @@ def dry_check(exe: Path, args: Sequence[str] = ("--help",)) -> str | None:
     except OSError as exc:
         verdict = f"{exe.name} would not start ({type(exc).__name__})"
     with _dry_lock:
-        _dry_cache[key] = verdict
+        _dry_cache[key] = (verdict, time.monotonic())
     return verdict
 
 
