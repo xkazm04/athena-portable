@@ -563,17 +563,28 @@ def _episode_block(con: sqlite3.Connection, query: str, budget: int) -> RecallBl
     match = _body_match(query)
     if match:
         machine_taken = 0
+        # Two pages, as in a whole recall: the turns a person or a page wrote, and at most
+        # MACHINE_EPISODE_SLOTS machine ones, merged by rank. One page of ``budget * 2`` let a burst
+        # of fleet chatter that outranked them fill the page, and the turn asked about never
+        # reached the loop that would have capped the chatter at two.
+        rows = [
+            row
+            for machine, size in ((0, budget), (1, MACHINE_EPISODE_SLOTS))
+            for row in _rows(
+                con,
+                """SELECT n.id, n.kind, f.body, n.file_path, n.created_at, n.machine,
+                        bm25(companion_fts)
+                    FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
+                    WHERE companion_fts MATCH ? AND n.kind = 'episode' AND n.importance > 0
+                      AND n.machine = ?
+                    ORDER BY bm25(companion_fts) ASC LIMIT ?""",
+                (match, machine, size),
+            )
+        ]
+        rows.sort(key=lambda row: float(row[6]))
         # A matched episode shows where it matched (ADR 0042): the head excerpt of a page of
         # results is its first rows, and the row asked about is often further down.
-        for row in _rows(
-            con,
-            """SELECT n.id, n.kind, f.body, n.file_path, n.created_at, n.machine,
-                    bm25(companion_fts)
-                FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
-                WHERE companion_fts MATCH ? AND n.kind = 'episode' AND n.importance > 0
-                ORDER BY bm25(companion_fts) ASC LIMIT ?""",
-            (match, budget * 2),
-        ):
+        for row in rows:
             if len(chosen) >= budget:
                 break
             memory = _memory(

@@ -1039,3 +1039,22 @@ def test_a_short_word_with_a_question_mark_does_not_crowd_out_the_recent_turns(
         window = recall(brain, "did Acme pay it?").block(EPISODE_BLOCK)
 
     assert set(recent) <= {memory.id for memory in window.items}
+
+
+def test_machine_chatter_does_not_crowd_a_relevant_turn_out_of_the_window(tmp_path: Path) -> None:
+    """Machine episodes take at most two relevance slots (ref §8), and so they read at most two."""
+    with Brain(tmp_path / "brain") as brain:
+        spoken = brain.append_episode("duplex notes from the walk-through", "user", created=BASE).id
+        for n in range(25):
+            brain.append_episode(f"chat {n}", "user", created=BASE + timedelta(days=1, minutes=n))
+        for n in range(45):
+            brain.append_episode(
+                f"fleet-event worker {n} duplex duplex duplex",
+                "system",
+                created=BASE + timedelta(days=2, minutes=n),
+            )
+
+        window = recall(brain, "duplex").block(EPISODE_BLOCK)
+
+    assert spoken in {memory.id for memory in window.items}
+    assert sum(memory.machine for memory in window.items) == MACHINE_EPISODE_SLOTS
