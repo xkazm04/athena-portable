@@ -486,7 +486,16 @@ def _count(con: sqlite3.Connection, sql: str, params: tuple[Any, ...]) -> int:
     return int(rows[0][0]) if rows else 0
 
 
-_NODE_SELECT = """SELECT n.id, n.kind, n.body_excerpt, n.file_path, n.created_at, n.machine"""
+#: A distilled row with its whole body (``f`` is its FTS row), for :func:`_cut` to window. The
+#: stored ``body_excerpt`` is 500 bytes with no mark, and a line under its cap showed that cut as
+#: the whole memory; the excerpt stands in only where no FTS row exists.
+_BODY_SELECT = """SELECT n.id, n.kind, COALESCE(f.body, n.body_excerpt), n.file_path, n.created_at,
+    n.machine"""
+
+
+def _cut(row: tuple[Any, ...]) -> tuple[Any, ...]:
+    """``row`` with its body cut to an excerpt's worth, marked where it was cut (:func:`around`)."""
+    return (row[0], row[1], around(str(row[2] or ""), ""), *row[3:])
 
 
 def _memory(row: tuple[Any, ...], lane: str, score: float = 0.0) -> Memory:
@@ -514,10 +523,11 @@ def _always_block(con: sqlite3.Connection) -> RecallBlock:
     items: list[Memory] = []
     for kind, cap in (("fact", ALWAYS_FACTS), ("procedural", ALWAYS_PROCEDURALS)):
         items.extend(
-            _memory(row, ALWAYS_BLOCK, score=float(row[6]))
+            _memory(_cut(row), ALWAYS_BLOCK, score=float(row[6]))
             for row in _rows(
                 con,
-                f"""{_NODE_SELECT}, n.importance FROM companion_node n
+                f"""{_BODY_SELECT}, n.importance
+                    FROM companion_node n LEFT JOIN companion_fts f ON f.rowid = n.rowid
                     WHERE n.importance >= ? AND n.kind = ?
                     ORDER BY n.importance DESC, n.created_at DESC LIMIT ?""",
                 (ALWAYS_IMPORTANCE_FLOOR, kind, cap),
@@ -551,7 +561,7 @@ def _keyword_block(
     )
     rows = _rows(
         con,
-        f"""{_NODE_SELECT}, bm25(companion_fts)
+        f"""{_BODY_SELECT}, bm25(companion_fts)
             FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
             WHERE companion_fts MATCH ? AND n.importance > 0 AND n.kind IN ({kind_marks})
               AND n.id NOT IN ({skip_marks})
@@ -559,7 +569,9 @@ def _keyword_block(
         (*params, slots),
     )
     return RecallBlock(
-        KEYWORD_BLOCK, tuple(_memory(row, KEYWORD_BLOCK, float(row[6])) for row in rows), total
+        KEYWORD_BLOCK,
+        tuple(_memory(_cut(row), KEYWORD_BLOCK, float(row[6])) for row in rows),
+        total,
     )
 
 
@@ -626,7 +638,7 @@ def _episode_block(con: sqlite3.Connection, query: str, budget: int) -> RecallBl
         ):
             if len(chosen) >= budget:
                 break
-            memory = _memory((row[0], row[1], around(str(row[2] or ""), ""), *row[3:]), "recency")
+            memory = _memory(_cut(row), "recency")
             if memory.id not in chosen:
                 chosen[memory.id] = memory
 

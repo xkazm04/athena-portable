@@ -15,7 +15,7 @@ import pytest
 
 from athena.core.brain import Brain, store
 from athena.core.brain.text import EXCERPT_BYTES, fts_match, fts_quote
-from athena.core.catalog import CoreServices, build_catalog
+from athena.core.catalog import CoreServices, build_catalog, canonical_line
 from athena.core.constitution import Constitution, Source
 from athena.core.prompt import BUDGETS, compose
 from athena.core.recall import (
@@ -1101,3 +1101,42 @@ def test_a_long_body_with_no_literal_match_shows_its_head_marked_as_cut() -> Non
 
     assert shown.startswith("filler text.") and shown.endswith(" …")
     assert len(shown.encode("utf-8")) <= EXCERPT_BYTES + len(" …".encode())
+
+
+def _rendered_line(block: RecallBlock) -> str:
+    (line, _) = block.render().splitlines()
+    return str(json.loads(line[2:]))
+
+
+@pytest.mark.parametrize(
+    "value",
+    [
+        "Acme pays late. " * 40,
+        "\u4f1a\u8b70\u306f\u91d1\u66dc\u65e5\u306b\u79fb\u52d5\u3057\u307e\u3057\u305f\u3002" * 20,
+    ],
+    ids=["ascii", "three-byte"],
+)
+def test_a_distilled_memory_longer_than_its_excerpt_is_marked_as_cut_in_either_lane(
+    tmp_path: Path, value: str
+) -> None:
+    """The stored excerpt is 500 bytes; a line under its cap used to show it cut with no mark."""
+    assert len(value.encode("utf-8")) > EXCERPT_BYTES
+    with Brain(tmp_path / "brain") as brain:
+        source = brain.append_episode("evidence", role="user").id
+        brain.write_fact("always", value, sources=[source], every_turn=True)
+        always = _rendered_line(recall(brain, "").block(ALWAYS_BLOCK))
+        keyword = _rendered_line(
+            recall(brain, value.split()[0], include_always=False).block(KEYWORD_BLOCK)
+        )
+
+    for line in (always, keyword):
+        assert line.endswith("\u2026"), line[-20:]
+        assert line[:12] == canonical_line(value)[:12]
+
+
+def test_a_distilled_memory_inside_its_excerpt_carries_no_mark(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        source = brain.append_episode("evidence", role="user").id
+        brain.write_fact("short", "Acme pays late", sources=[source], every_turn=True)
+
+        assert _rendered_line(recall(brain, "").block(ALWAYS_BLOCK)) == "Acme pays late"
