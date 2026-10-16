@@ -3,14 +3,16 @@
 ///
 /// Without it, every command in `invoke_handler` is callable from every webview in the window —
 /// including the page webviews, which hold whatever site the user navigated to. With it, a
-/// command is reachable only from a webview some capability grants it to, and
-/// `capabilities/ui.json` grants the list below to the `chrome` webview alone. A page webview is
-/// named by no capability, so it can call nothing at all; c19 gives it exactly one command
-/// (`bridge_reply`) through a capability of its own.
+/// command is reachable only from a webview some capability grants it to, and each surface has
+/// its own file in `capabilities/`: `ui.json` for the `chrome` webview, `athena.json` for her
+/// window (which holds `hands_call`, `bridge_call` and the store too), `halo.json` for the
+/// overlays (nothing), and `page.json` for the page webviews, which get exactly one command
+/// (`bridge_reply`, c19) and nothing else.
 ///
 /// The cost is that a new command has to be added in three places — here, the `invoke_handler`
-/// in `lib.rs`, and `capabilities/ui.json`. Forgetting this one produces `Permission ... not
-/// found` at runtime, so it is the first list to edit, not the last.
+/// in `lib.rs`, and the capability file of every surface that calls it. Forgetting this one
+/// produces `Permission ... not found` at runtime, so it is the first list to edit, not the last.
+/// `src/lib/commands.test.ts` holds the four lists to one another.
 fn main() {
     // `src/bridge.rs` embeds the bridge package's `inject.js` with `include_str!`, so a change to
     // that file has to rebuild this crate even though it is nowhere in `src/`. Cargo tracks
@@ -30,18 +32,16 @@ fn main() {
             // layout.rs — which shape the window is in (ADR 0088)
             "layout_select",
             // ---- later milestones add their commands here, one block per module ----
-            // bridge.rs (c19) — the first two are the chrome's, the third is the page's only one
+            // bridge.rs (c19) — the first two are the chrome's and hers, the third is the page's
+            // only one
             "bridge_list",
             "bridge_call",
             "bridge_reply",
-            // daemon.rs (c20): daemon_status, daemon_restart
-            // bridge.rs (c19): bridge_list, bridge_call, bridge_reply
             // daemon.rs (c20) — the sidecar's URL, token and health, and a restart on an
             // engine change. The names are the function names in `daemon.rs`, wherever the
             // function is declared.
             "daemon_status",
             "daemon_restart",
-            // store.rs  (c21): store_get, store_set, origins_*
             // store.rs (c21) — one key/value surface over every table, not one command per table
             "store_get",
             "store_set",
@@ -51,16 +51,16 @@ fn main() {
             "captures_sweep",
             // hands.rs (c24) — the generic hands of README section 3.4 tier 2. `hands_call`
             // runs one on a tab; `hands_list` is the catalogue the panel appends to a page's
-            // manifest. Both are the chrome's; a page webview is named by no capability that
-            // grants them, which is what stops a site operating itself through them.
+            // manifest. Both are the chrome's and hers; no capability a page webview holds grants
+            // them, which is what stops a site operating itself through them.
             "hands_call",
             "hands_list",
-            // `hands_describe` names what a card's refs still point at (ADR 0099). The panel's
-            // only: it is no hand, and no capability a page webview holds grants it.
+            // `hands_describe` names what a card's refs still point at (ADR 0099). The chrome's
+            // and hers: it is no hand, and no capability a page webview holds grants it.
             "hands_describe",
             // companion.rs (ADR 0026) - her window: named sizes, show and hide, pin, and what she
-            // reports. The first four are hers; `athena_show` and `athena_hide` are also the chrome's
-            // (the status pill summons her).
+            // reports. All seven are hers; `athena_show`, `athena_hide`, `athena_snap_to` and
+            // `athena_open_main` are also the chrome's (the status pill summons her).
             "athena_set_size",
             "athena_show",
             "athena_hide",
