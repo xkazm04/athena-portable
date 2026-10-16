@@ -94,8 +94,16 @@ function str(value: unknown): string {
   return String(value);
 }
 
+/**
+ * A figure an app printed as a number or as text with a number in it (`$1,234.50`, `42 days`).
+ *
+ * Text with no digit at all is not a number, and is refused rather than read as `0`: `Number("")`
+ * is `0`, so stripping "n/a" or "pending" down to nothing and parsing the rest was the silent
+ * default this file's header promises an adapter never returns.
+ */
 function num(value: unknown): number {
-  const parsed = typeof value === "number" ? value : Number(String(value).replace(/[^0-9.-]/g, ""));
+  const digits = typeof value === "number" ? null : String(value).replace(/[^0-9.-]/g, "");
+  const parsed = digits === null ? (value as number) : /[0-9]/.test(digits) ? Number(digits) : Number.NaN;
   if (!Number.isFinite(parsed)) throw new Error(`not a number: ${preview(value)}`);
   return parsed;
 }
