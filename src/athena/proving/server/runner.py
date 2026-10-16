@@ -612,13 +612,18 @@ class Runner:
         if job.cancelled:
             meaning = "cancelled by a judge"
             if job.run_dir is not None and not (job.run_dir / "report.json").is_file():
-                stamp = self.clock().isoformat()
-                record = cancelled_report(
-                    job.kind, job.run_dir, stamp, "hosted" if job.hosted else "full"
-                )
-                (job.run_dir / "report.json").write_text(
-                    json.dumps(record, indent=2) + "\n", encoding="utf-8"
-                )
+                # A failed write must still end the run below: a reader thread that dies here
+                # leaves the runner busy until a restart, and every later start a 409.
+                try:
+                    stamp = self.clock().isoformat()
+                    record = cancelled_report(
+                        job.kind, job.run_dir, stamp, "hosted" if job.hosted else "full"
+                    )
+                    (job.run_dir / "report.json").write_text(
+                        json.dumps(record, indent=2) + "\n", encoding="utf-8"
+                    )
+                except OSError as exc:
+                    meaning += f"; its report could not be written ({type(exc).__name__})"
         report = job.run_dir is not None and (job.run_dir / "report.json").is_file()
         dropped = job.calls_seen - job.calls_streamed
         job.emit(

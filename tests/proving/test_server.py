@@ -26,6 +26,7 @@ import pytest
 
 from athena.proving.roles import HOSTED_ENV
 from athena.proving.server import app as app_module
+from athena.proving.server import runner as runner_module
 from athena.proving.server.app import ProvingServer, build_handler, page_html
 from athena.proving.server.runner import (
     MAX_CALL_EVENTS,
@@ -689,6 +690,27 @@ def test_cancel_takes_the_token_kills_the_child_and_marks_the_run(
     # a finished run cannot be cancelled, and the day's spend still counts the cancelled run
     assert s.request("POST", cancel, b"", ok)[0] == 409
     assert _status(s)["daily"]["nemotron"]["spent_usd"] == 0.03
+
+
+def test_a_cancelled_run_whose_report_cannot_be_written_still_ends_and_frees_the_runner(
+    make: Any, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def no_disk(*args: Any, **kwargs: Any) -> dict[str, Any]:
+        raise OSError("No space left on device")
+
+    monkeypatch.setattr(runner_module, "cancelled_report", no_disk)
+    s, _ = make(gate=tmp_path / "never")
+    status, body = s.post_run()
+    assert status == 202
+    s.request("POST", f"/runs/{body['run_id']}/cancel", b"", {"Authorization": f"Bearer {TOKEN}"})
+    job = s.runner.current
+    assert job is not None
+    with job.cond:
+        job.cond.wait_for(lambda: job.done, timeout=20)
+    assert job.done and not s.runner.busy()  # the next run can start
+    end = [e["data"] for e in job.events if e["kind"] == "end"]
+    assert len(end) == 1 and end[0]["cancelled"] is True and end[0]["report"] is False
+    assert "could not be written" in end[0]["meaning"]
 
 
 def test_cancel_is_off_without_a_configured_token(make: Any) -> None:
