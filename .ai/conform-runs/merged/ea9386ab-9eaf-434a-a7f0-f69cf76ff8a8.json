@@ -1,0 +1,457 @@
+{
+ "schema": "conform-run/1",
+ "worker": "ea9386ab-9eaf-434a-a7f0-f69cf76ff8a8",
+ "subject": "codebase-scanning",
+ "evaluatedAt": "2026-10-16T21:04:00.363092+00:00",
+ "provider": "codex",
+ "model": "gpt-6.1-sol",
+ "pairs": [
+  {
+   "context": "proving-core",
+   "subject": "codebase-scanning",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "src/athena/proving/world.py:260 This context evaluates running agent turns through daemon routes; searches found no scanner, ruleset or unused_exports references in its directories.",
+   "techniques": [
+    {
+     "technique": "causes-beside-the-finding-count",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/__main__.py:192 The published count concerns driven runtime attacks and breaches, rather than code-scan findings or remediation causes."
+    },
+    {
+     "technique": "dead-code-detection",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/manifests.py:43 The manifest exposes simulated invoicing operations, with no code-reference or reachability analysis."
+    },
+    {
+     "technique": "evidence-scoping",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/world.py:252 The evaluated input is application host state, rather than unfamiliar repository evidence."
+    },
+    {
+     "technique": "finding-lifecycle",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/world.py:277 These records track action approvals from a turn, rather than scanner findings awaiting remediation."
+    },
+    {
+     "technique": "incremental-scanning",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/world.py:176 World construction creates an isolated runtime environment, rather than maintaining a code-scan ledger."
+    },
+    {
+     "technique": "ingestion-budget",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/budget.py:75 The budget controls model spending, rather than selection or fetching of foreign repository files."
+    },
+    {
+     "technique": "llm-assisted-scanning",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/roles.py:4 Models play attack, user and evaluation roles; they do not emit findings about source code."
+    },
+    {
+     "technique": "precision-trades-have-a-direction",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/__main__.py:49 This command exercises the runtime gate, rather than offering an optimized static-analysis backend."
+    },
+    {
+     "technique": "rule-precision-discipline",
+     "verdict": "not-applicable",
+     "evidence": "tests/proving/test_world_and_verdict.py:128 The planted defect tests runtime breach detection, outside the standard's code-at-rest scanner scope."
+    },
+    {
+     "technique": "sensor-pipeline",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/world.py:274 The observation collects gate execution records, rather than gathering a source snapshot for finding emission."
+    },
+    {
+     "technique": "the-broad-root-is-the-unaudited-one",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/__main__.py:50 The declared scope consists of attack surfaces, rather than source roots or entry-point globs."
+    },
+    {
+     "technique": "the-narrowest-view-owns-the-number",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/roles.py:146 Role invocation supplies a prompt without a repository-coverage figure used to weight a scanning judgment."
+    },
+    {
+     "technique": "the-tree-is-not-the-population",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/manifests.py:103 The manifest identifies an application origin, rather than an enumerated and filtered source tree."
+    },
+    {
+     "technique": "verify-after-generate",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/report.py:59 The report is deterministically serialized run data, rather than a model-generated codebase inventory consumed as authority."
+    }
+   ],
+   "absenceTerms": [
+    "scanner",
+    "ruleset",
+    "unused_exports"
+   ]
+  },
+  {
+   "context": "desktop-setup-module",
+   "subject": "codebase-scanning",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "apps/desktop/src/modules/setup/readiness.ts:181 This context derives first-run readiness from engine and page state; searches found no scanner, ruleset or unused_exports references in its files and directories.",
+   "techniques": [
+    {
+     "technique": "causes-beside-the-finding-count",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/setup/readiness.ts:111 The count describes usable engines, rather than findings or independent remediation causes."
+    },
+    {
+     "technique": "dead-code-detection",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/setup/index.ts:69 The check probes installed engines, rather than proving source declarations unreachable."
+    },
+    {
+     "technique": "evidence-scoping",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/setup/readiness.ts:55 Selection concerns the user's chosen engine probe, rather than evidence permitted for a repository detector."
+    },
+    {
+     "technique": "finding-lifecycle",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/setup/model.ts:200 Pending state represents an engine choice awaiting daemon alignment, rather than a persisted scanner finding."
+    },
+    {
+     "technique": "incremental-scanning",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/setup/model.ts:176 The selector derives the current interface mode without tracking examined source units."
+    },
+    {
+     "technique": "ingestion-budget",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/setup/model.ts:187 Inputs are existing tab state, rather than files fetched from a metered foreign repository."
+    },
+    {
+     "technique": "llm-assisted-scanning",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/setup/index.ts:67 Choosing an execution engine does not invoke a model to inspect code or produce findings."
+    },
+    {
+     "technique": "precision-trades-have-a-direction",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/setup/index.ts:71 The backend change restarts the application daemon, rather than replacing a scanner's analysis backend."
+    },
+    {
+     "technique": "rule-precision-discipline",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/setup/readiness.ts:97 This is a runtime readiness determination, rather than an advisory source-code detection rule."
+    },
+    {
+     "technique": "sensor-pipeline",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/setup/index.ts:48 The hook subscribes to engine state without implementing a code-scan gather and emission pipeline."
+    },
+    {
+     "technique": "the-broad-root-is-the-unaudited-one",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/setup/fixtures.ts:14 The fixture roster names execution engines, rather than scan roots or inclusion patterns."
+    },
+    {
+     "technique": "the-narrowest-view-owns-the-number",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/setup/readiness.ts:133 The number describes open tabs and does not license a judgment over sampled repository evidence."
+    },
+    {
+     "technique": "the-tree-is-not-the-population",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/setup/index.ts:43 The observed population is browser tabs, with no source-tree traversal or inherited file filters."
+    },
+    {
+     "technique": "verify-after-generate",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/setup/model.ts:192 The model is assembled directly from application state, rather than consumed from a model-generated artifact."
+    }
+   ],
+   "absenceTerms": [
+    "scanner",
+    "ruleset",
+    "unused_exports"
+   ]
+  },
+  {
+   "context": "desktop-modules-registry",
+   "subject": "codebase-scanning",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "apps/desktop/src/modules/browser/model.ts:161 This context presents browser tabs and their registered application tools; searches found no scanner, ruleset or unused_exports references in its files and directories.",
+   "techniques": [
+    {
+     "technique": "causes-beside-the-finding-count",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/browser/model.ts:177 The number counts page-registered tools, rather than findings that could share remediation."
+    },
+    {
+     "technique": "dead-code-detection",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/types.ts:8 The module contract describes state selectors, rather than a code-reachability analyzer."
+    },
+    {
+     "technique": "evidence-scoping",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/browser/model.ts:217 The determination concerns a web application's offered capabilities, rather than evidence of repository practices."
+    },
+    {
+     "technique": "finding-lifecycle",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/browser/model.ts:211 Disabled state expresses user permission for an app, rather than suppression of a scanner finding."
+    },
+    {
+     "technique": "incremental-scanning",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/browser/model.ts:149 The selector maps current tabs without maintaining source digests or prior scan results."
+    },
+    {
+     "technique": "ingestion-budget",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/browser/index.ts:38 The input comes from an application store, rather than remote repository ingestion."
+    },
+    {
+     "technique": "llm-assisted-scanning",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/browser/index.ts:71 Registration saves application trust state and does not request model-generated code findings."
+    },
+    {
+     "technique": "precision-trades-have-a-direction",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/browser/index.ts:79 This action opens an application tab, rather than selecting an alternative analysis backend."
+    },
+    {
+     "technique": "rule-precision-discipline",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/browser/model.test.ts:56 Tests verify browser-state selection, rather than calibrating a source-code detector against matches."
+    },
+    {
+     "technique": "sensor-pipeline",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/browser/index.ts:46 The hook reads per-tab tool state without operating a code-scanning sensor roster."
+    },
+    {
+     "technique": "the-broad-root-is-the-unaudited-one",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/browser/index.ts:47 The registry consists of web origins, rather than source roots or entry-point patterns."
+    },
+    {
+     "technique": "the-narrowest-view-owns-the-number",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/browser/model.ts:222 The summary reports page capabilities without a coverage coefficient for a repository judgment."
+    },
+    {
+     "technique": "the-tree-is-not-the-population",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/browser/model.ts:186 Filtering selects tabs by web origin, rather than excluding files from a scanner's population."
+    },
+    {
+     "technique": "verify-after-generate",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/modules/browser/fixtures.ts:166 Fixtures derive from explicitly authored application state, rather than a model-generated authoritative inventory."
+    }
+   ],
+   "absenceTerms": [
+    "scanner",
+    "ruleset",
+    "unused_exports"
+   ]
+  },
+  {
+   "context": "proving-playbooks-bench",
+   "subject": "codebase-scanning",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "src/athena/proving/playbooks/bench.py:187 This context scores agent action cards against simulated-world truth and produces deterministic presentation artifacts; searches found no scanner, ruleset or unused_exports references in its directories.",
+   "techniques": [
+    {
+     "technique": "causes-beside-the-finding-count",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/bench.py:472 The population consists of eligible simulated tasks, rather than code-defect findings and remediation causes."
+    },
+    {
+     "technique": "dead-code-detection",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/page.py:67 Portal reads answer from simulated tables and do not analyze source references."
+    },
+    {
+     "technique": "evidence-scoping",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/bench.py:274 Agent evidence comes from a simulated portal, rather than an unfamiliar source repository."
+    },
+    {
+     "technique": "finding-lifecycle",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/bench.py:315 The collected items are action approval cards, rather than scanner findings with remediation histories."
+    },
+    {
+     "technique": "incremental-scanning",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/bench.py:161 Execution advances through authored world phases, rather than changed source units."
+    },
+    {
+     "technique": "ingestion-budget",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/bench.py:157 The bench instantiates a local simulated world instead of fetching a foreign codebase."
+    },
+    {
+     "technique": "llm-assisted-scanning",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/bench.py:272 The model performs an application task under evaluation, rather than scanning source for defects."
+    },
+    {
+     "technique": "precision-trades-have-a-direction",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/rank.py:3 Ranking computes use-case economics from saved data, rather than replacing a static-analysis backend."
+    },
+    {
+     "technique": "rule-precision-discipline",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/spec.py:423 These checks enforce playbook authoring contracts, a validation boundary rather than advisory code scanning."
+    },
+    {
+     "technique": "sensor-pipeline",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/page.py:65 Read accounting observes simulated portal operations, rather than source-scanning collectors."
+    },
+    {
+     "technique": "the-broad-root-is-the-unaudited-one",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/spec.py:561 Discovery selects playbook data directories, without declaring source reachability roots."
+    },
+    {
+     "technique": "the-narrowest-view-owns-the-number",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/page.py:167 Paging discloses simulated portal rows; no code-scan coverage figure weights the agent's judgment."
+    },
+    {
+     "technique": "the-tree-is-not-the-population",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/spec.py:304 The loader reads an explicitly named world specification, rather than traversing and filtering source files."
+    },
+    {
+     "technique": "verify-after-generate",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/evidence.py:9 The presentation generator is deterministic, which this technique explicitly excludes."
+    }
+   ],
+   "absenceTerms": [
+    "scanner",
+    "ruleset",
+    "unused_exports"
+   ]
+  }
+ ],
+ "declined": [],
+ "consults": [
+  {
+   "ts": "2026-10-16T21:04:00.363092+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "codebase-scanning"
+   ],
+   "techniques": [
+    "causes-beside-the-finding-count",
+    "dead-code-detection",
+    "evidence-scoping",
+    "finding-lifecycle",
+    "incremental-scanning",
+    "ingestion-budget",
+    "llm-assisted-scanning",
+    "precision-trades-have-a-direction",
+    "rule-precision-discipline",
+    "sensor-pipeline",
+    "the-broad-root-is-the-unaudited-one",
+    "the-narrowest-view-owns-the-number",
+    "the-tree-is-not-the-population",
+    "verify-after-generate"
+   ],
+   "deviations": 0,
+   "context": "proving-core",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  },
+  {
+   "ts": "2026-10-16T21:04:00.363092+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "codebase-scanning"
+   ],
+   "techniques": [
+    "causes-beside-the-finding-count",
+    "dead-code-detection",
+    "evidence-scoping",
+    "finding-lifecycle",
+    "incremental-scanning",
+    "ingestion-budget",
+    "llm-assisted-scanning",
+    "precision-trades-have-a-direction",
+    "rule-precision-discipline",
+    "sensor-pipeline",
+    "the-broad-root-is-the-unaudited-one",
+    "the-narrowest-view-owns-the-number",
+    "the-tree-is-not-the-population",
+    "verify-after-generate"
+   ],
+   "deviations": 0,
+   "context": "desktop-setup-module",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  },
+  {
+   "ts": "2026-10-16T21:04:00.363092+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "codebase-scanning"
+   ],
+   "techniques": [
+    "causes-beside-the-finding-count",
+    "dead-code-detection",
+    "evidence-scoping",
+    "finding-lifecycle",
+    "incremental-scanning",
+    "ingestion-budget",
+    "llm-assisted-scanning",
+    "precision-trades-have-a-direction",
+    "rule-precision-discipline",
+    "sensor-pipeline",
+    "the-broad-root-is-the-unaudited-one",
+    "the-narrowest-view-owns-the-number",
+    "the-tree-is-not-the-population",
+    "verify-after-generate"
+   ],
+   "deviations": 0,
+   "context": "desktop-modules-registry",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  },
+  {
+   "ts": "2026-10-16T21:04:00.363092+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "codebase-scanning"
+   ],
+   "techniques": [
+    "causes-beside-the-finding-count",
+    "dead-code-detection",
+    "evidence-scoping",
+    "finding-lifecycle",
+    "incremental-scanning",
+    "ingestion-budget",
+    "llm-assisted-scanning",
+    "precision-trades-have-a-direction",
+    "rule-precision-discipline",
+    "sensor-pipeline",
+    "the-broad-root-is-the-unaudited-one",
+    "the-narrowest-view-owns-the-number",
+    "the-tree-is-not-the-population",
+    "verify-after-generate"
+   ],
+   "deviations": 0,
+   "context": "proving-playbooks-bench",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  }
+ ]
+}

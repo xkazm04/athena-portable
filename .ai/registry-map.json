@@ -4075,7 +4075,11 @@
           "revision": 12,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:161 This context presents browser tabs and their registered application tools; searches found no scanner, ruleset or unused_exports references in its files and directories.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:06416fce13bc2342",
+          "evaluatedRevision": 12
         },
         {
           "subject": "prompt-assembly",
@@ -5053,7 +5057,11 @@
           "revision": 12,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/readiness.ts:181 This context derives first-run readiness from engine and page state; searches found no scanner, ruleset or unused_exports references in its files and directories.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:06416fce13bc2342",
+          "evaluatedRevision": 12
         },
         {
           "subject": "prompt-assembly",
@@ -7844,7 +7852,11 @@
           "revision": 12,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/proving/world.py:260 This context evaluates running agent turns through daemon routes; searches found no scanner, ruleset or unused_exports references in its directories.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:06416fce13bc2342",
+          "evaluatedRevision": 12
         },
         {
           "subject": "fleet-orchestration",
@@ -8173,7 +8185,11 @@
           "revision": 12,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/bench.py:187 This context scores agent action cards against simulated-world truth and produces deterministic presentation artifacts; searches found no scanner, ruleset or unused_exports references in its directories.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:06416fce13bc2342",
+          "evaluatedRevision": 12
         },
         {
           "subject": "eval-harness",
