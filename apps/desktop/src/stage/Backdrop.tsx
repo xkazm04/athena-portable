@@ -61,7 +61,8 @@ export default function Backdrop({
     const cv = canvas.current;
     const cx = cv?.getContext("2d");
     if (!cv || !cx) return;
-    // The snow is the accent token's colour: a canvas cannot read a variable, so it is asked once.
+    // The snow is the accent token's colour: a canvas cannot read a variable, so it is asked once
+    // per theme.
     let ink = "";
     paint.current = () => {
       const { w, h, dpr } = size.current;
@@ -89,7 +90,15 @@ export default function Backdrop({
     fit();
     const ro = new ResizeObserver(fit);
     ro.observe(cv);
+    // The theme can change under the water (the settings resolve after the first paint, the bar
+    // has a theme button), and a canvas is not repainted by CSS: ask for the accent again.
+    const mo = new MutationObserver(() => {
+      ink = "";
+      paint.current();
+    });
+    mo.observe(document.documentElement, { attributes: true, attributeFilter: ["data-theme"] });
     return () => {
+      mo.disconnect();
       ro.disconnect();
       stop.current?.();
       stop.current = null;
