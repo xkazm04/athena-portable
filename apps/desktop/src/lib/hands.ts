@@ -142,7 +142,7 @@ export async function takeCapture(
 /** The one hand the shell answers (`hands.rs` `SCREENSHOT`). */
 const SCREENSHOT = "page_screenshot";
 
-/** Fetch the list once. It is static, so a second call asks nothing. The first call also sweeps `captures`. A failure leaves it empty. */
+/** Fetch the list once. It is static, so a second call asks nothing. The first call also sweeps `captures`. A failure is logged and leaves it empty. */
 export async function startHands(): Promise<void> {
   if (!hasShell()) return;
   // Once per window, so a table that is already over its cap is trimmed (README 3.5).
@@ -153,7 +153,9 @@ export async function startHands(): Promise<void> {
   if (hands.length > 0) return;
   try {
     hands = await call<BridgeTool[]>("hands_list");
-  } catch {
+  } catch (error) {
+    // Every page then publishes no hands, so say why once; the next start asks again.
+    console.error(`[athena] hands_list: ${error instanceof Error ? error.message : String(error)}`);
     hands = [];
   }
 }

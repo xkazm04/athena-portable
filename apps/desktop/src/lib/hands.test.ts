@@ -15,6 +15,8 @@ let shell = true;
 let handReply: (() => Promise<unknown>) | null = null;
 /** What `captures_sweep` does next; `null` answers a sweep result. */
 let sweepReply: (() => Promise<unknown>) | null = null;
+/** What `hands_list` does next; `null` answers the nine hands. */
+let listReply: (() => Promise<unknown>) | null = null;
 
 const HAND_NAMES = [
   "page_read",
@@ -45,6 +47,7 @@ vi.mock("@/lib/ipc", async (importOriginal) => {
     call: (command: string, args: Args = {}) => {
       commands.push({ command, args });
       if (command === "hands_list") {
+        if (listReply) return listReply();
         return Promise.resolve(HAND_NAMES.map((n) => tool(n, { reversible: n !== "page_click", side_effects: "none" })));
       }
       if (command === "hands_call") {
@@ -64,6 +67,7 @@ beforeEach(() => {
   shell = true;
   handReply = null;
   sweepReply = null;
+  listReply = null;
   hands.setHandsForTests([]);
 });
 
@@ -259,6 +263,24 @@ test("startHands sweeps once, so a table already too big is trimmed, and a failu
     await hands.startHands();
     expect(sweeps()).toHaveLength(1);
     expect(hands.handTools().map((h) => h.name)).toEqual(HAND_NAMES);
+  } finally {
+    log.mockRestore();
+  }
+});
+
+test("a catalogue that could not be fetched is said once, and the next start asks again", async () => {
+  const log = vi.spyOn(console, "error").mockImplementation(() => undefined);
+  try {
+    listReply = () => Promise.reject(new Error("hands_list not allowed"));
+    await hands.startHands();
+    expect(hands.handTools()).toEqual([]);
+    expect(log.mock.calls.map((c) => String(c[0])).filter((m) => m.includes("hands_list"))).toEqual([
+      "[athena] hands_list: hands_list not allowed",
+    ]);
+
+    listReply = null;
+    await hands.startHands();
+    expect(hands.handTools().map((t) => t.name)).toEqual(HAND_NAMES);
   } finally {
     log.mockRestore();
   }
