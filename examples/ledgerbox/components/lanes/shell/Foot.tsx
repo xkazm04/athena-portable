@@ -61,7 +61,7 @@ export function Foot({
   setFilter: (next: LnFilter) => void;
 }) {
   const presence = useAthenaPresence();
-  /* Counted off the sheet, once per client narrowing — 124 invoices against
+  /* Counted off the sheet, once per client narrowing — 125 invoices against
      eight predicates is a thousand comparisons, which is nothing, but it is
      nothing on every keystroke without this. */
   const counts = useMemo(() => legendCounts(sheet, filter.client), [sheet, filter.client]);
@@ -131,7 +131,7 @@ export function Foot({
        * Every entry is a real button with `aria-pressed`, so the panel is
        * keyboard-operable by being made of controls rather than by a handler
        * that reimplements what a button already does. Its accessible name
-       * carries the count and the clause — "Late, 54 of 124 invoices, past its
+       * carries the count and the clause — "Late, 54 of 125 invoices — past its
        * due date and still owed" — because a swatch and a word is a legend and
        * a reader who cannot see the swatch still has to be able to filter.
        */}

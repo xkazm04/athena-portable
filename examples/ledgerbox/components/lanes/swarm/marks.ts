@@ -1,9 +1,10 @@
 /**
  * Which marks speak, and what a mark's box is.
  *
- * The swarm is 124 invoices and it must not become 124 labels, so labelling is
- * a rule rather than a threshold: three amounts per lane, picked by balance, so
- * the labels land on the money actually at stake. A width threshold was the
+ * The swarm is every invoice in the books (125 on the seed) and it must not
+ * become that many labels, so labelling is a rule rather than a threshold:
+ * three amounts per lane, picked by balance, so the labels land on the money
+ * actually at stake. A width threshold was the
  * obvious rule and the wrong one — at this scale a dense stretch of a lane
  * turned into a run of colliding figures.
  *

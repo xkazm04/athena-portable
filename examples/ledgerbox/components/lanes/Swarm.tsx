@@ -8,13 +8,13 @@
  *
  * WHAT IS LABELLED, AND WHY NOT EVERYTHING. The first cut of this level carried
  * no text at all, and the honest complaint was that you could not tell what you
- * were looking at. The answer is not a label on all hundred and twenty-four —
+ * were looking at. The answer is not a label on every invoice in the books —
  * that is the noise this level exists to avoid — but a label on the ones worth
  * reading:
  *
- *   · the AMOUNT, on any mark wide enough to print one without colliding with
- *     its neighbour (the packing already guarantees the gap, so the test is a
- *     width threshold and nothing more);
+ *   · the AMOUNT, on the three marks in each lane with the most still owed
+ *     (`swarm/marks.ts` labelledIn — a width threshold was the first rule and
+ *     turned dense stretches into runs of colliding figures);
  *   · a GLYPH, on the few that are asking for something. Three meanings only,
  *     so the legend fits in a person's head: `!` long overdue, `?` disputed,
  *     `+` an unapplied credit that would clear it.

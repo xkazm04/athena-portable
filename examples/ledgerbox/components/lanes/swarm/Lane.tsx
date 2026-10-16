@@ -6,8 +6,8 @@
  * A mark's width IS what it is worth and its tail IS how late it is, so the
  * lane can be read as a picture before any of it is read as text. Three amounts
  * per lane are printed and the few marks asking for something carry a glyph;
- * everything else answers on hover, because 124 labels is not a swarm, it is a
- * table drawn badly.
+ * everything else answers on hover, because a label on every mark is not a
+ * swarm, it is a table drawn badly.
  *
  * The spine is the LATE SHARE, not the lane's heat. Every lane has at least one
  * long-overdue invoice, so heat made all six the same red and the rule carried

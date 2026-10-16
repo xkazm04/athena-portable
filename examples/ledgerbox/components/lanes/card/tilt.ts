@@ -18,8 +18,9 @@ const TILT = 3.4;
  *
  * The element ref is owned by the component and handed in, rather than created
  * here and handed back: a hook that returns a ref makes every read of its
- * result a ref read during render, which the React compiler's rules forbid —
- * and the component needs this same node for its focus trap anyway.
+ * result a ref read during render, which the React compiler's rules forbid.
+ * (It is the lean wrapper inside the card, not the dialog: the card's focus trap
+ * holds its own ref on the dialog box.)
  */
 export function usePointerTilt(target: RefObject<HTMLDivElement | null>, enabled: boolean) {
   const onPointerMove = useCallback(
