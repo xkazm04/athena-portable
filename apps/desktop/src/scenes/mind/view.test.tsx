@@ -86,6 +86,12 @@ describe("the field", () => {
   it("asks for the restart that is pending, on the field, because it asks to be done now", () => {
     expect(html("heavy")).toContain("Restart on");
   });
+
+  it("draws that restart notice as the engine level draws it, one rendering of one notice", () => {
+    const h = html("heavy");
+    expect(h).toContain('class="engines__notice" role="status"');
+    expect(h).not.toContain("mind__notice");
+  });
 });
 
 describe("the engine", () => {

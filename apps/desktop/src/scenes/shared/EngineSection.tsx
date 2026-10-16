@@ -48,9 +48,27 @@ function unprobed(model: SetupModel): { word: string; tone: Tone; line: string }
   return { word: "checking", tone: "pending", line: "Athena has not heard back about this engine yet." };
 }
 
+/**
+ * The restart that asks to be done now, drawn once for every place that shows it (this section and
+ * the Mind field), so its spacing and its fade-in cannot drift apart. Nothing when none is pending.
+ */
+export function RestartNoticeBar({ model }: { model: SetupModel }) {
+  const notice = restartNotice(model);
+  if (!notice) return null;
+  return (
+    <div className="engines__notice" role="status">
+      <p>
+        <b>{notice.title}</b> {notice.detail}
+      </p>
+      <Button variant="primary" size="sm" onClick={model.actions.restart}>
+        {notice.actionLabel}
+      </Button>
+    </div>
+  );
+}
+
 export default function EngineSection({ model }: { model: SetupModel }) {
   const fact = engineFact(model);
-  const notice = restartNotice(model);
   const none = unprobed(model);
   return (
     <div className="engines">
@@ -63,16 +81,7 @@ export default function EngineSection({ model }: { model: SetupModel }) {
           retryLabel={model.startFailure.actionLabel}
         />
       )}
-      {notice && (
-        <div className="engines__notice" role="status">
-          <p>
-            <b>{notice.title}</b> {notice.detail}
-          </p>
-          <Button variant="primary" size="sm" onClick={model.actions.restart}>
-            {notice.actionLabel}
-          </Button>
-        </div>
-      )}
+      <RestartNoticeBar model={model} />
       <ul className="engines__list">
         {model.engines.map((e) => {
           const chosen = model.engine === e.id;

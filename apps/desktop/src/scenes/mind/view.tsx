@@ -23,8 +23,8 @@ import type { Path } from "@/depth/model";
 import { engineLabel } from "@/lib/engines";
 import { MOTION_CHOICES } from "@/lib/motion";
 import type { SetupModel } from "@/modules/setup/model";
-import { brainFact, engineFact, micFact, restartNotice, type Standing } from "@/modules/setup/readiness";
-import EngineSection from "@/scenes/shared/EngineSection";
+import { brainFact, engineFact, micFact, type Standing } from "@/modules/setup/readiness";
+import EngineSection, { RestartNoticeBar } from "@/scenes/shared/EngineSection";
 import { THEME_CHOICES, TYPE_SCALES } from "@/stores/settings";
 
 import "./mind.css";
@@ -114,7 +114,6 @@ function lineOf(model: SetupModel, which: Instrument): { word: string | null; to
 
 function Field({ model, go }: { model: SetupModel; go: (to: Path) => void }) {
   const [focused, setFocused] = useState<Instrument | null>(null);
-  const notice = restartNotice(model);
   const shown = focused ? lineOf(model, focused) : null;
   return (
     <div className="mind mind--field">
@@ -144,16 +143,7 @@ function Field({ model, go }: { model: SetupModel; go: (to: Path) => void }) {
           retryLabel={model.startFailure.actionLabel}
         />
       ) : null}
-      {notice ? (
-        <div className="mind__notice" role="status">
-          <p>
-            <b>{notice.title}</b> {notice.detail}
-          </p>
-          <Button variant="primary" size="sm" onClick={model.actions.restart}>
-            {notice.actionLabel}
-          </Button>
-        </div>
-      ) : null}
+      <RestartNoticeBar model={model} />
 
       <ul className="mind__instruments" aria-label="Settings">
         {INSTRUMENTS.map((which) => {

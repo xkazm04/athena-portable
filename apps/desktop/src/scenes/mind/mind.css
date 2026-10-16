@@ -45,19 +45,10 @@
   min-height: 3em;
 }
 
-.mind__notice {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  justify-content: space-between;
-  gap: 10px;
-  padding: 10px 14px;
-  border-radius: var(--radius-card);
-  border: 1px solid var(--status-warning);
+/* The restart notice is the engine section's own (scenes/shared/engine.css: density tokens, the
+ * fade on the depth clock); on the field it keeps the head's measure. */
+.mind--field > .engines__notice {
   max-width: 56rem;
-}
-.mind__notice p {
-  margin: 0;
 }
 
 .mind__instruments {

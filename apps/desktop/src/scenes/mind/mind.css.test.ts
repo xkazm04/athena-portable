@@ -22,6 +22,11 @@ test("the field's line, which changes on every hover, holds two lines like the s
   expect(rule(".mind--field .mind__line")).toMatch(/min-height:\s*3em/);
 });
 
+test("keeps no second restart notice: the field draws the engine section's, tokens and fade included", () => {
+  expect(css).not.toMatch(/\.mind__notice/);
+  expect(rule(".mind--field > .engines__notice")).toMatch(/max-width:\s*56rem/);
+});
+
 test("the text field eases its hover like the surface's ask field", () => {
   expect(rule(".mind__input")).toMatch(/transition:[^;]*var\(--duration-fast\)/);
   expect(rule(".mind__input:hover")).toMatch(/border-color:\s*var\(--/);
