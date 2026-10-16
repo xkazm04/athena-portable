@@ -477,11 +477,25 @@ export default function LanesDrawing({
     [onOpen, plan.lanes],
   );
 
+  /* ONE HOME. The toolbar and the canvas's Home key both land here; the rig's own Home flies to
+     its `initial` pose, the kit's rest pose at pan 0,0, which on this sheet is the world's top-left
+     corner — the drawing slid three quarters off the frame. */
+  const flyHome = useCallback(
+    () => rig.flyTo(poseFor({ level: 0, group: null, item: null }, frame.current)),
+    [rig],
+  );
+
   const onCanvasKey = useCallback(
     (event: KeyboardEvent<HTMLElement>) => {
-      if (event.target === canvasRef.current) rig.bind.onKeyDown(event);
+      if (event.target !== canvasRef.current) return;
+      if (event.key === "Home") {
+        event.preventDefault();
+        flyHome();
+        return;
+      }
+      rig.bind.onKeyDown(event);
     },
-    [rig],
+    [flyHome, rig],
   );
 
   /* ------------------------------------- the pane's origin box -------------------------------- */
@@ -548,7 +562,7 @@ export default function LanesDrawing({
         }}
         zoom={zoomRead}
         onZoom={(by) => rig.flyTo({ zoom: zoomRead * (by > 0 ? 1.25 : 0.8) })}
-        onHome={() => rig.flyTo(poseFor({ level: 0, group: null, item: null }, frame.current))}
+        onHome={flyHome}
         level={level}
       />
       </div>
