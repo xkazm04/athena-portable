@@ -70,8 +70,24 @@ function Field({ model, go }: { model: AppsModel; go: (to: Path) => void }) {
   const hovered = apps.find((a) => a.origin === focused) ?? null;
   const none = appsLoaded && !appsProblem && apps.length === 0;
 
+  // A pressed close leaves with its chip once the tab is gone, so focus would fall to the document.
+  // It goes to the close now in that place, or the last one, or the register box once none is
+  // open; never when the person has moved on in the meantime.
+  const field = useRef<HTMLDivElement>(null);
+  const closed = useRef<{ tabId: number; at: number } | null>(null);
+  useEffect(() => {
+    if (closed.current === null || pages.some((p) => p.tabId === closed.current!.tabId)) return;
+    const { at } = closed.current;
+    closed.current = null;
+    const active = document.activeElement;
+    if (active && active !== document.body && active.isConnected) return;
+    const closes = field.current?.querySelectorAll<HTMLButtonElement>(".apps__chip-close") ?? [];
+    const next = closes.length ? closes[Math.min(at, closes.length - 1)] : field.current?.querySelector("input");
+    next?.focus();
+  }, [pages]);
+
   return (
-    <div className="apps apps--field">
+    <div className="apps apps--field" ref={field}>
       <header className="apps__head">
         <p className="apps__eyebrow">{hovered ? STANDING_WORD[hovered.standing] : "Apps"}</p>
         <h1 className="apps__marquee">{hovered ? hovered.host : "The apps Athena works in"}</h1>
@@ -148,7 +164,7 @@ function Field({ model, go }: { model: AppsModel; go: (to: Path) => void }) {
         <section className="apps__pages" aria-label="Open pages">
           <h2 className="apps__pages-title">Open pages</h2>
           <ul>
-            {pages.map((page) => (
+            {pages.map((page, i) => (
               <PageChip
                 key={page.tabId}
                 page={page}
@@ -156,7 +172,10 @@ function Field({ model, go }: { model: AppsModel; go: (to: Path) => void }) {
                   actions.focus(page.tabId);
                   go(pagePath(page.item));
                 }}
-                onClose={() => actions.close(page.tabId)}
+                onClose={() => {
+                  closed.current = { tabId: page.tabId, at: i };
+                  actions.close(page.tabId);
+                }}
               />
             ))}
           </ul>

@@ -188,6 +188,33 @@ describe("the field", () => {
     expect(host.querySelector(".apps__marquee")?.textContent).toBe("The apps Athena works in");
   });
 
+  it("keeps the keyboard's place when a page is closed from its chip: the close now in that place, or the register box", () => {
+    // The pressed close leaves with its chip once the tab is gone, so focus fell to the document.
+    const actions = spies();
+    const source = fixtures.typical!;
+    const draw = (pages: AppsModel["pages"]) =>
+      act(() =>
+        root.render(<AppsView model={{ ...source, pages, browser: { ...source.browser, actions } }} path={PATHS.field!} go={() => {}} />),
+      );
+    const closes = () => [...host.querySelectorAll<HTMLButtonElement>(".apps__chip-close")];
+    let pages = source.pages;
+    expect(pages.length).toBeGreaterThan(1);
+    draw(pages);
+    while (pages.length) {
+      const at = pages.length > 1 ? 1 : 0;
+      act(() => closes()[at]!.focus());
+      click(closes()[at]);
+      expect(actions.close).toHaveBeenLastCalledWith(pages[at]!.tabId);
+      pages = pages.filter((_, i) => i !== at);
+      draw(pages);
+      expect(document.activeElement).toBe(
+        pages.length
+          ? closes()[Math.min(at, pages.length - 1)]
+          : host.querySelector('input[aria-label="Address of the app to register"]'),
+      );
+    }
+  });
+
   it("opens an app's own level from its orb, and a page from its chip after focusing its tab", () => {
     const go = vi.fn();
     const a = mount("typical", PATHS.field!, go);
