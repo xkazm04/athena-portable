@@ -12,7 +12,7 @@ import type { DecisionRequested } from "@/lib/events";
 
 import type { Clock } from "./driver";
 import { SETTLE_MS, SHRINK_MS } from "./machine";
-import { choiceFor, createRuntime, lineOf, LINE_MAX, UNSETTLED, type RuntimeDeps } from "./runtime";
+import { choiceFor, createRuntime, lineOf, LINE_MAX, typingIn, UNSETTLED, type RuntimeDeps } from "./runtime";
 import { CARDS } from "./fixtures";
 
 function harness(opts: { visible?: boolean; returns?: () => Promise<unknown> } = {}) {
@@ -231,4 +231,17 @@ test("a verdict given before the store call ends is the one that counts, and is 
   await Promise.resolve();
   expect(h.rt.getSnapshot().machine.decided).toMatchObject({ sending: false });
   expect(h.rt.getSnapshot().machine.say.text).toBe("Approved. Stamped and sent to the record.");
+});
+
+test("a key is typing only in a box that takes text: a sheet row's tick is not, so A, D and Escape still answer there", () => {
+  const el = (tagName: string, type = "", isContentEditable = false) => ({ tagName, type, isContentEditable });
+  // The sheet's ticks (views.tsx Sheet) are checkboxes: A after ticking rows approves them.
+  expect(typingIn(el("INPUT", "checkbox"))).toBe(false);
+  expect(typingIn(el("INPUT", "radio"))).toBe(false);
+  expect(typingIn(el("BUTTON"))).toBe(false);
+  expect(typingIn(null)).toBe(false);
+  expect(typingIn(el("TEXTAREA"))).toBe(true);
+  expect(typingIn(el("INPUT", "text"))).toBe(true);
+  expect(typingIn(el("INPUT", "search"))).toBe(true);
+  expect(typingIn(el("DIV", "", true))).toBe(true);
 });

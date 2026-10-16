@@ -59,7 +59,7 @@ import {
   type CompanionActions,
   type OriginView,
 } from "./model";
-import { createRuntime, lineOf, type Runtime, type RuntimeDeps } from "./runtime";
+import { createRuntime, lineOf, typingIn, type Runtime, type RuntimeDeps } from "./runtime";
 import { originOf, toolRows } from "./tools";
 import CompanionView from "./views";
 
@@ -244,8 +244,7 @@ function connect(rt: Runtime): () => void {
   const onKey = (e: KeyboardEvent) => {
     poke();
     const target = e.target as HTMLElement | null;
-    const typing = target?.tagName === "INPUT" || target?.tagName === "TEXTAREA";
-    if (typing) {
+    if (typingIn(target as HTMLInputElement | null)) {
       if (e.key === "Escape") {
         target?.blur();
         e.stopPropagation();

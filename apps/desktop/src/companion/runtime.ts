@@ -175,6 +175,27 @@ export function createRuntime(deps: RuntimeDeps): Runtime {
   };
 }
 
+/** The part of a key's target the keyboard rule reads. */
+export interface KeyTarget {
+  tagName: string;
+  type?: string;
+  isContentEditable?: boolean;
+}
+
+/** Inputs that take no text: a key pressed on one is hers (a sheet row's tick is a checkbox). */
+const NOT_TEXT = new Set(["checkbox", "radio", "button", "submit", "reset", "range", "color", "file", "image"]);
+
+/**
+ * Is a key pressed here typing, so her own keys (A, D, Escape) leave it alone? Only a box that
+ * takes text is: the composer, a text input, an editable region. A sheet's tick is not, so A after
+ * ticking rows approves them, as the button's `aria-keyshortcuts` says (ADR 0104).
+ */
+export function typingIn(target: KeyTarget | null): boolean {
+  if (!target) return false;
+  if (target.isContentEditable === true || target.tagName === "TEXTAREA") return true;
+  return target.tagName === "INPUT" && !NOT_TEXT.has((target.type ?? "").toLowerCase());
+}
+
 /** What she says when the store's call ended without the daemon's verdict: the card is still the card. */
 export const UNSETTLED = "That answer did not go through. The decision is still waiting.";
 
