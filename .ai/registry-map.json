@@ -1819,7 +1819,11 @@
           "revision": 4,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/contracts/__init__.py:3 This package is frozen dataclasses and protocols for ids, channel events, harness turns and tool manifests; a search of src/athena/contracts and tests/contracts for disabledReason, className, clipboard and forwardRef found no hits.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:a6af68867a07fdfa",
+          "evaluatedRevision": 4
         }
       ],
       "governance": "governed"
@@ -3016,7 +3020,11 @@
           "revision": 4,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/components/CATALOG.md:26 The shell catalog is a hand-edited table, so a primitive can carry @catalog and still be missing from the list callers are told to check before building.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:a6af68867a07fdfa",
+          "evaluatedRevision": 4
         },
         {
           "subject": "native-shell-integration",
@@ -6399,7 +6407,11 @@
           "revision": 4,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/hirelane/components/board/style/index.css:4 This context is the Board cascade sheet and its token block; a search of examples/hirelane/components/board/style for disabledReason, className, clipboard and forwardRef found no hits, and reduced-motion.css says the motion paths are motion/react in Board.tsx, outside these files.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:a6af68867a07fdfa",
+          "evaluatedRevision": 4
         },
         {
           "subject": "quality-gates",
@@ -7298,7 +7310,11 @@
           "revision": 4,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/index.css:4 This context is the Lanes cascade sheet and a retired token build; a search of examples/ledgerbox/components/lanes/style and examples/ledgerbox/design for disabledReason, className, clipboard and forwardRef found no hits, and reduced-motion.css points the motion behavior at motion.ts and Lanes.tsx outside these files.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:a6af68867a07fdfa",
+          "evaluatedRevision": 4
         },
         {
           "subject": "retrieval",
@@ -8813,7 +8829,11 @@
           "revision": 4,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:4 This context is the Blocks cascade sheet; a search of examples/tidycrm/components/blocks/style for disabledReason, className, clipboard and forwardRef found no hits, and the button rule is a :where() font reset rather than a component contract.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:a6af68867a07fdfa",
+          "evaluatedRevision": 4
         },
         {
           "subject": "persistent-batch-mutation",

@@ -2092,6 +2092,212 @@
         "at": "2026-10-16T00:00:46.870563+00:00",
         "reason": "reviewer (sonnet): The claim that nothing sets animation-duration is contradicted: examples/tidycrm/app/globals.css:37 sets `animation-duration: 0.01ms !important` on all elements under prefers-reduced-motion, and the sheet's reduced-motion.css adds the delay reset. Under reduced motion the dossier fill therefore land"
       }
+    },
+    "97da7e8d-8b3a-41fd-bcfe-326d41a66565/ui-controls": {
+      "context": "desktop-app-shell-ui",
+      "subject": "ui-controls",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T00:36:26.152Z",
+      "worker": "cd69db8c-8756-438c-a053-f321d3dcc0ff",
+      "techniques": [
+        {
+          "technique": "adoption-enforcement",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/components/CATALOG.md:4 The only do-not-hand-roll rule in this context is that sentence. apps/desktop/eslint.config.js enables only react-hooks recommended rules, and no component test fails the build on a raw button or a clipboard call."
+        },
+        {
+          "technique": "call-site-ownership",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/components/Button.tsx:16 Only className is removed from the attribute type, so style and the rest of the button attributes still pass through and can restyle the control. The token checks in source-guards.test.ts do not read property family."
+        },
+        {
+          "technique": "composition-contracts",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/components/Button.tsx:33 disabledReason's disabled flag and the variant class are set before {...rest}, so a caller prop replaces them instead of merging, and can turn the button back on."
+        },
+        {
+          "technique": "control-inventory-and-discovery",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/components/CATALOG.md:26 Tags exist on the primitives, but the routing table is hand-written. PushToTalk.tsx has @catalog and is not a row in this table. WindowControls.tsx imports useSettings while the catalog says primitives must not read a store."
+        },
+        {
+          "technique": "micro-interaction-contracts",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/components/PillGroup.tsx:74 A reason natively disables the option, and the next line puts that reason on title. PushToTalk.test.tsx also treats title as the tooltip. Button's disabledReason wrapper is focusable but still explains itself with title."
+        },
+        {
+          "technique": "variant-discipline",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/components/Button.tsx:14 Tone is a closed intent enum and size is sm|md, mapped once by the .btn--* rules in app.css. No prefers pointer: coarse rule in app.css, so the size axis does not add a coarse-pointer hit area; the open style channel is judged under call-site-ownership."
+        }
+      ]
+    },
+    "f9349ce6-a48d-4abe-9bb1-412a99b45907/ui-controls": {
+      "context": "ledgerbox-style-design",
+      "subject": "ui-controls",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T00:36:26.152Z",
+      "worker": "cd69db8c-8756-438c-a053-f321d3dcc0ff",
+      "techniques": [
+        {
+          "technique": "adoption-enforcement",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/index.css:4 No primitive module and no signature detector; the file is an ordered CSS cascade."
+        },
+        {
+          "technique": "call-site-ownership",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/base/tokens.css:2 Skin tokens for one data-variant, not a shared control with a class or style passthrough prop."
+        },
+        {
+          "technique": "composition-contracts",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/design/build-tokens.mjs:3 A retired token emitter, not a controlled-component API."
+        },
+        {
+          "technique": "control-inventory-and-discovery",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/index.css:11 Adding a rule means editing a CSS part, not generating a primitive catalog."
+        },
+        {
+          "technique": "micro-interaction-contracts",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/base/reduced-motion.css:13 Motion timing is declared here and the behavior is named as living in motion.ts, which is not in this context. .ln-toggle only paints aria-pressed."
+        },
+        {
+          "technique": "variant-discipline",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/chrome/rail-and-toolbar.css:140 A length on a .ln-toggle button stylesheet rule, not a closed variant enum on a shared control."
+        }
+      ],
+      "registryProposal": "Say explicitly that a stylesheet-only context is out of scope even when it paints button, toggle, and aria-pressed, because the ownership technique already assigns those stylesheet rules to a style-layer linter."
+    },
+    "645f955f-74d6-44ae-a966-70f6ed2ece17/ui-controls": {
+      "context": "contracts-seam",
+      "subject": "ui-controls",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T00:36:26.152Z",
+      "worker": "cd69db8c-8756-438c-a053-f321d3dcc0ff",
+      "techniques": [
+        {
+          "technique": "adoption-enforcement",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/__init__.py:3 No UI primitive and no shadow-copy detector; the package forbids forking these Python types, which is a different seam."
+        },
+        {
+          "technique": "call-site-ownership",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/channel.py:1 Turn event dataclasses, not a control that accepts a class or style passthrough."
+        },
+        {
+          "technique": "composition-contracts",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/harness.py:1 A Protocol for a model turn, not controlled or uncontrolled UI state."
+        },
+        {
+          "technique": "control-inventory-and-discovery",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/manifest.py:1 The manifest's catalog is host tools with GATED/READ/AUTO, not a generated UI primitive list."
+        },
+        {
+          "technique": "micro-interaction-contracts",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/registry.py:1 Tool-execution classes, not copy, tooltip, toggle, stepper or tab state machines."
+        },
+        {
+          "technique": "variant-discipline",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/ids.py:1 One id-prefix table, not a control's enumerated visual variants."
+        }
+      ]
+    },
+    "67f42245-132f-4a4e-bef9-35f7748e9fea/ui-controls": {
+      "context": "tidycrm-style",
+      "subject": "ui-controls",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T00:36:26.152Z",
+      "worker": "cd69db8c-8756-438c-a053-f321d3dcc0ff",
+      "techniques": [
+        {
+          "technique": "adoption-enforcement",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:4 No component module whose adopters or shadow copies could be counted."
+        },
+        {
+          "technique": "call-site-ownership",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/base/the-sheet.css:29 A stylesheet reset on native controls. The ownership technique assigns stylesheet rules to a style-layer linter, and there is no component passthrough here."
+        },
+        {
+          "technique": "composition-contracts",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/base/tokens.css:2 A token scope, not a controlled or slotted component API."
+        },
+        {
+          "technique": "control-inventory-and-discovery",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:11 The inventory is CSS parts in import order, not annotated primitives."
+        },
+        {
+          "technique": "micro-interaction-contracts",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/base/reduced-motion.css:7 A reduced-motion duration override, not a copy, tooltip, toggle, stepper or tab state machine."
+        },
+        {
+          "technique": "variant-discipline",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/base/tokens.css:11 Palette and type tokens, which this subject says belong to design-tokens, not a control variant enum."
+        }
+      ]
+    },
+    "5f577ad0-7081-4566-be34-04f5b359bb2e/ui-controls": {
+      "context": "hirelane-style",
+      "subject": "ui-controls",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T00:36:26.152Z",
+      "worker": "cd69db8c-8756-438c-a053-f321d3dcc0ff",
+      "techniques": [
+        {
+          "technique": "adoption-enforcement",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/style/index.css:4 No primitive module and no adoption detector."
+        },
+        {
+          "technique": "call-site-ownership",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/style/base/tokens.css:5 A token-value rule for the sheet, not a gate on who may set appearance props on a shared control."
+        },
+        {
+          "technique": "composition-contracts",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/style/base/reduced-motion.css:11 The file says the meaningful motion is motion/react in Board.tsx, which is not in this context."
+        },
+        {
+          "technique": "control-inventory-and-discovery",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/style/index.css:11 CSS part ownership, not a generated component catalog."
+        },
+        {
+          "technique": "micro-interaction-contracts",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/style/base/reduced-motion.css:15 Reduced-motion policy is delegated to JS outside this context; no copy, tooltip, stepper or tab contract is defined here."
+        },
+        {
+          "technique": "variant-discipline",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/style/base/tokens.css:6 Scale aliases for the board skin, not enumerated tone and size props on a control."
+        }
+      ]
     }
   }
 }
