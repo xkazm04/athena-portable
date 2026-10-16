@@ -1,6 +1,6 @@
 /** The inbox filter predicates, client-safe, so the list and the readables never disagree. */
 import type { Filter } from "./constants";
-import type { FilterCounts, InvoiceRow } from "./types";
+import type { InvoiceRow } from "./types";
 
 export function matchesFilterClient(row: InvoiceRow, filter: Filter): boolean {
   switch (filter) {
@@ -24,13 +24,4 @@ export const MOSTLY_PAID_RATIO = 0.7;
 
 export function isMostlyPaid(row: { paid_cents: number; amount_cents: number }): boolean {
   return row.paid_cents > 0 && row.paid_cents / Math.max(1, row.amount_cents) >= MOSTLY_PAID_RATIO;
-}
-
-export function countByFilter(rows: InvoiceRow[]): FilterCounts {
-  return {
-    all: rows.length,
-    overdue: rows.filter((r) => matchesFilterClient(r, "overdue")).length,
-    unmatched: rows.filter((r) => matchesFilterClient(r, "unmatched")).length,
-    disputed: rows.filter((r) => matchesFilterClient(r, "disputed")).length,
-  };
 }

@@ -88,13 +88,6 @@ export interface Reminder {
   sent_at: string | null;
 }
 
-export interface ExportRecord {
-  id: string;
-  period: Period;
-  generated_at: string;
-  body: string;
-}
-
 /** One inbox row: the invoice plus everything the list needs, computed once on the server. */
 export interface InvoiceRow extends Invoice {
   client_name: string;
@@ -152,13 +145,6 @@ export interface PeriodSummary {
   unmatched_cents: number;
   disputed_count: number;
   invoice_count: number;
-}
-
-export interface FilterCounts {
-  all: number;
-  overdue: number;
-  unmatched: number;
-  disputed: number;
 }
 
 export type { Category, Filter, Period, Tone };

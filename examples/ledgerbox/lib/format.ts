@@ -1,5 +1,5 @@
 /** Money and dates, formatted one way everywhere. Safe on both sides of the wire. */
-import { CURRENCY, LOCALE, TODAY } from "./constants";
+import { CURRENCY, LOCALE } from "./constants";
 
 const money = new Intl.NumberFormat(LOCALE, {
   style: "currency",
@@ -19,7 +19,6 @@ const fullDate = new Intl.DateTimeFormat(LOCALE, {
   month: "short",
   year: "numeric",
 });
-const monthYear = new Intl.DateTimeFormat(LOCALE, { month: "long", year: "numeric" });
 
 /** Minor units in, currency out. Negative amounts keep their sign. */
 export function formatMoney(cents: number): string {
@@ -77,19 +76,4 @@ export function formatDate(iso: string): string {
 
 export function formatFullDate(iso: string): string {
   return fullDate.format(new Date(iso));
-}
-
-export function formatMonth(iso: string): string {
-  return monthYear.format(new Date(iso));
-}
-
-/** Whole days between two ISO instants, positive when `later` is after `earlier`. */
-export function daysBetween(earlier: string, later: string = TODAY): number {
-  const ms = Date.parse(later) - Date.parse(earlier);
-  return Math.floor(ms / 86_400_000);
-}
-
-/** `2026-07` for any ISO instant - the key the period filter groups on. */
-export function periodKey(iso: string): string {
-  return iso.slice(0, 7);
 }

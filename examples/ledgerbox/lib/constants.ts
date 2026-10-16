@@ -11,16 +11,9 @@ export const VIEWS = [
 ] as const;
 export type View = (typeof VIEWS)[number];
 
-/** Inbox filters. `current_filter` is a readable; `navigate` can set three of them. */
+/** What `read_inbox` may be narrowed to; `matchesFilterClient` (lib/filter.ts) is the predicate. */
 export const FILTERS = ["all", "overdue", "unmatched", "disputed"] as const;
 export type Filter = (typeof FILTERS)[number];
-
-export const FILTER_LABEL: Record<Filter, string> = {
-  all: "All",
-  overdue: "Overdue",
-  unmatched: "Unmatched",
-  disputed: "Disputed",
-};
 
 /**
  * What `read_credits` may be narrowed to - the split the reconciliation beat turns on: the credits

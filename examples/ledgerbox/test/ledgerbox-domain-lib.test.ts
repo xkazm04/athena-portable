@@ -9,7 +9,10 @@
  *   node --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
 import assert from "node:assert/strict";
+import { readdirSync, readFileSync, statSync } from "node:fs";
+import { join, relative } from "node:path";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
 import { tempHome } from "./tmp-home";
 
 // Own scratch cwd, own seeded copy: `openDb` resolves the file from `process.cwd()/data`.
@@ -267,4 +270,60 @@ test("every act is as reversible as its tool class says, by its own activity row
   // The negative control: the same observations against a table that lies about one act.
   const lying = { ...TOOL_CLASSES, export_summary: { reversible: false, sideEffects: "data" as const } };
   assert.deepEqual(disagreements(lying, seen), ["export_summary"], "a flipped class is caught");
+});
+
+/* ------------------------------------------------------------- every export has a reader */
+
+/*
+ * tsc never calls an export unused and eslint-config-next tracks no cross-module reachability, so
+ * the lib had grown readers' worth of API nobody reads: a reports view's `listExports`, a
+ * statement view's `matchIndex` and `listBankLines`, an inbox's `countByFilter`, three date
+ * helpers. This is the count neither gate takes (the same instrument hirelane's
+ * `test/exports.test.ts` keeps). A reader is any mention outside comments, anywhere in the app's
+ * source or tests, other than the declaration; a name used inside its own file has one.
+ */
+const APP_ROOT = fileURLToPath(new URL("../", import.meta.url));
+
+/** Kept with no reader, on purpose: the studio-wide call on `athena:app-version` (see hirelane). */
+const KEPT = new Set(["APP_VERSION"]);
+const SKIP_DIRS = new Set(["node_modules", ".next", "data", "public"]);
+
+function walk(dir: string, out: string[] = []): string[] {
+  for (const name of readdirSync(dir)) {
+    if (SKIP_DIRS.has(name)) continue;
+    const path = join(dir, name);
+    if (statSync(path).isDirectory()) walk(path, out);
+    else if (/\.(ts|tsx|mjs)$/.test(name)) out.push(path);
+  }
+  return out;
+}
+
+const stripComments = (text: string): string =>
+  text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/\/\/.*$/gm, "");
+
+const DECL = /^export\s+(?:async\s+)?(?:function|const|let|interface|type|class)\s+([A-Za-z_$][\w$]*)/gm;
+
+function unreadExports(): { scanned: string[]; dead: string[] } {
+  const sources = walk(APP_ROOT).map((path) => ({
+    path: relative(APP_ROOT, path).replaceAll("\\", "/"),
+    text: stripComments(readFileSync(path, "utf8")),
+  }));
+  const inScope = sources.filter((s) => /^lib\/(?:lanes\/)?[^/]+\.ts$/.test(s.path));
+  const dead: string[] = [];
+  for (const file of inScope) {
+    for (const match of file.text.matchAll(DECL)) {
+      const name = match[1]!;
+      if (KEPT.has(name)) continue;
+      const word = new RegExp(`\\b${name.replace(/\$/g, "\\$")}\\b`, "g");
+      const uses = sources.reduce((n, s) => n + (s.text.match(word)?.length ?? 0), 0);
+      if (uses <= 1) dead.push(`${file.path}: ${name}`);
+    }
+  }
+  return { scanned: inScope.map((s) => s.path), dead };
+}
+
+test("every export of the domain lib has a reader besides its own declaration", () => {
+  const { scanned, dead } = unreadExports();
+  assert.equal(scanned.length, 18, `the scan reaches the context's 18 files: ${scanned.join(", ")}`);
+  assert.deepEqual(dead, []);
 });

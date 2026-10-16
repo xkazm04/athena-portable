@@ -196,24 +196,6 @@ export function getInvoiceDetail(id: string): InvoiceDetail | undefined {
   };
 }
 
-export function listBankLines(): BankLine[] {
-  return db().all<BankLine>("SELECT * FROM bank_lines ORDER BY posted_at DESC");
-}
-
-/** Which invoice each bank line is applied to, for the statement view. */
-export function matchIndex(): Record<string, { invoice_id: string; number: string }> {
-  const rows = db().all<{ line_id: string; invoice_id: string; number: string }>(
-    "SELECT m.line_id, m.invoice_id, i.number FROM matches m JOIN invoices i ON i.id = m.invoice_id",
-  );
-  const out: Record<string, { invoice_id: string; number: string }> = {};
-  for (const r of rows) out[r.line_id] = { invoice_id: r.invoice_id, number: r.number };
-  return out;
-}
-
-export function getClient(id: string): Client | undefined {
-  return db().get<Client>("SELECT * FROM clients WHERE id = ?", [id]);
-}
-
 export const listClients = cache((): Client[] =>
   db().all<Client>("SELECT * FROM clients ORDER BY name"),
 );
@@ -278,10 +260,6 @@ export const summarize = cache((period: Period): PeriodSummary => {
     disputed_count: rows.filter((r) => r.state === "disputed").length,
   };
 });
-
-export function listExports(): { id: string; period: Period; generated_at: string; body: string }[] {
-  return db().all("SELECT * FROM exports ORDER BY generated_at DESC LIMIT 10");
-}
 
 export interface LineSuggestion {
   invoice_id: string;
