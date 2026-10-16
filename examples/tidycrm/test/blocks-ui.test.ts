@@ -184,3 +184,27 @@ test("the table a dossier opens is called a table and its parent a database, as 
     "the checks band calls the table a block",
   );
 });
+
+/* ------------------------------------------------------------- the caption */
+
+test("the L0 caption counts one of anything in the singular", async () => {
+  const { databaseSummary } = await import("../components/blocks/l0/cells");
+  const one = {
+    id: "billing",
+    name: "Billing",
+    blurb: "",
+    tables: 1,
+    records: 1,
+    outstanding: 1,
+    faulty: 1,
+    attention: 0,
+    clear: 0,
+    dots: [],
+    share: 1,
+  };
+  const said = databaseSummary(one);
+  assert.doesNotMatch(said, /\b1 (records|deviations|tables)\b/, `plural after one: ${said}`);
+  assert.match(said, /1 record\b/);
+  assert.match(said, /1 deviation outstanding/);
+  assert.match(databaseSummary({ ...one, records: 2, outstanding: 2 }), /2 records, .*2 deviations outstanding/);
+});

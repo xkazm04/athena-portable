@@ -79,5 +79,7 @@ export function databaseSummary(cell: L0Cell): string {
     cell.attention === 0
       ? ""
       : `, ${cell.attention} awaiting a person`;
-  return `${cell.name} — ${tables}, ${cell.records} records, ${fault}${awaiting}. ${cell.outstanding} deviations outstanding.`;
+  const records = `${cell.records} ${cell.records === 1 ? "record" : "records"}`;
+  const deviations = `${cell.outstanding} ${cell.outstanding === 1 ? "deviation" : "deviations"}`;
+  return `${cell.name} — ${tables}, ${records}, ${fault}${awaiting}. ${deviations} outstanding.`;
 }
