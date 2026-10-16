@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from athena.contracts.manifest import HostTool
+from athena.contracts.manifest import HostManifest, HostTool
 
 __all__ = [
     "AUTH_TYPES",
@@ -225,6 +225,14 @@ def parse_spec(data: Mapping[str, Any]) -> ConnectorSpec:
         tools.append(ToolSpec(tool=tool, egress_params=egress_params))
     if egress == "none" and any(t.egress_params for t in tools):
         raise SpecError(f"{where}: egress is 'none' but a tool names egress_params")
+    # The catalog's own manifest rule, applied at load: a tool it would refuse at merge (no
+    # ``reversible``, an unknown ``side_effects``, a duplicate name, a bad schema) must refuse the
+    # spec here, before a credential is sealed for a connector whose tools can never merge.
+    problems = HostManifest(
+        app_id=spec_id, origin_kind="connector", tools=[t.tool for t in tools]
+    ).validate()
+    if problems:
+        raise SpecError(f"{where}: {'; '.join(problems)}")
 
     return ConnectorSpec(
         id=spec_id,

@@ -60,9 +60,20 @@ def test_a_spec_parses_and_the_probe_method_is_upper_cased() -> None:
         ({**GOOD, "egress": "everything"}, "not one of"),
         ({**GOOD, "tools": []}, "non-empty list"),
         ({**GOOD, "egress": "none"}, "egress_params"),
+        (
+            {**GOOD, "tools": [{"name": "read", "description": "Read.", "side_effects": "none"}]},
+            "must declare reversible",
+        ),
+        (
+            {**GOOD, "tools": [{"name": "read", "reversible": True, "side_effects": "sometimes"}]},
+            "side_effects must be one of",
+        ),
+        ({**GOOD, "tools": [GOOD["tools"][0], GOOD["tools"][0]]}, "duplicate tool"),
     ],
 )
 def test_a_malformed_spec_is_refused_whole(broken: dict[str, Any], match: str) -> None:
+    """Refused at load, never at connect: a tool the catalog's manifest rule would refuse is a
+    spec the vault must not seal a credential for (the merge after admission would raise)."""
     with pytest.raises(SpecError, match=match):
         parse_spec(broken)
 
