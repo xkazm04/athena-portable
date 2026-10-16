@@ -28,6 +28,23 @@ test("the shell hides an idle halo only after the caption's linger and every fad
   expect(last).toBeLessThanOrEqual(Number(hide![1]));
 });
 
+test("the hues spelled here are the house's dark-theme roles they name, not copies that can drift", () => {
+  // The page cannot load `styles/app.css`, so it spells the hex; this keeps each spelling equal to
+  // the token it copies. The dark theme's, because the halo is light on whatever is under it.
+  const app = readFileSync(new URL("../styles/app.css", import.meta.url), "utf8");
+  const dark = app.slice(app.indexOf('[data-theme="dark"] {'), app.indexOf('[data-theme="light"] {'));
+  const value = (sheet: string, name: string) => sheet.match(new RegExp(`${name}:\\s*([^;]+);`))?.[1].trim();
+  const copies: [string, string][] = [
+    ["--halo-speak", "--accent"],
+    ["--halo-think", "--role-agent"],
+    ["--halo-gate", "--role-human"],
+  ];
+  for (const [halo, token] of copies) {
+    expect(value(dark, token), token).toMatch(/^#[0-9a-f]{6}$/i);
+    expect(value(css, halo), `${halo} copies ${token}`).toBe(value(dark, token));
+  }
+});
+
 test("the halo page does not load the app's sheet, so every custom property it reads it also defines", () => {
   const defined = new Set([...css.matchAll(/(--[a-z][\w-]*)\s*:/g)].map((m) => m[1]));
   const read = [...css.matchAll(/var\((--[a-z][\w-]*)/g)].map((m) => m[1]);
