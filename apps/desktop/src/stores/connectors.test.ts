@@ -225,6 +225,86 @@ describe("the consent flow", () => {
   });
 });
 
+describe("a consent flow whose poll fails once", () => {
+  const flow = (phase: "awaiting_consent" | "done") => ({ id: "flow_3", connector: "gmail", phase, detail: phase, authorize_url: "" });
+
+  it("rides out a read that did not reach the daemon or a 5xx: it says so, asks again, and settles", async () => {
+    let polls = 0;
+    const daemon = fakeDaemon((path) => {
+      if (path === "/connectors") return { ok: true, connectors: [row("gmail")], showing: 1, total: 1, footer: "" };
+      if (path === "/connectors/gmail/connect") {
+        return { ok: true, flow: flow("awaiting_consent"), connector: row("gmail", { flow: flow("awaiting_consent") }) };
+      }
+      polls += 1;
+      if (polls === 1) return { status: 503, payload: { ok: false, reason: "engine_error", detail: "the daemon is busy" } };
+      if (polls === 2) throw new TypeError("Failed to fetch");
+      if (polls === 3) return { ok: true, flow: flow("awaiting_consent"), connector: row("gmail", { flow: flow("awaiting_consent") }) };
+      const connection = { ...row("gmail").connection, status: "connected" as const, identity: "me@example.test" };
+      return { ok: true, flow: flow("done"), connector: row("gmail", { flow: flow("done"), live: true, connection }) };
+    });
+    const seenErrors: string[] = [];
+    const waits: number[] = [];
+    setConnectorDeps({
+      api: () => new DaemonApi({ url: "http://daemon", token: "t" }, daemon.fetchImpl),
+      wait: async (ms) => {
+        waits.push(ms);
+        seenErrors.push(useConnectors.getState().errors.gmail ?? "");
+      },
+    });
+    await useConnectors.getState().load();
+    await useConnectors.getState().connect("gmail", { client_id: "cid", client_secret: "sec" });
+    expect(polls).toBe(4);
+    // Each failed read was shown while the poll waited, and the next good read took it down.
+    expect(seenErrors).toEqual(["the daemon is busy", "Failed to fetch", ""]);
+    const state = useConnectors.getState();
+    expect(state.items[0].connection.status).toBe("connected");
+    expect(state.errors).toEqual({});
+    expect(state.busy).toEqual({});
+  });
+
+  it("stops on the daemon's refusal, and when the daemon goes", async () => {
+    let polls = 0;
+    let gone = false;
+    const daemon = fakeDaemon((path) => {
+      if (path === "/connectors") return { ok: true, connectors: [row("gmail")], showing: 1, total: 1, footer: "" };
+      if (path === "/connectors/gmail/connect") {
+        return { ok: true, flow: flow("awaiting_consent"), connector: row("gmail", { flow: flow("awaiting_consent") }) };
+      }
+      polls += 1;
+      return { status: 409, payload: { ok: false, reason: "conflict", detail: "no flow is open for Gmail" } };
+    });
+    setConnectorDeps({
+      api: () => (gone ? null : new DaemonApi({ url: "http://daemon", token: "t" }, daemon.fetchImpl)),
+      wait: async () => {},
+    });
+    await useConnectors.getState().load();
+    await useConnectors.getState().connect("gmail", { client_id: "cid", client_secret: "sec" });
+    expect(polls).toBe(1);
+    expect(useConnectors.getState().errors.gmail).toBe("no flow is open for Gmail");
+    expect(useConnectors.getState().busy).toEqual({});
+
+    // A transport failure with the daemon gone ends the poll at once instead of asking nobody.
+    polls = 0;
+    const unreachable = fakeDaemon((path) => {
+      if (path === "/connectors/gmail/connect") {
+        return { ok: true, flow: flow("awaiting_consent"), connector: row("gmail", { flow: flow("awaiting_consent") }) };
+      }
+      polls += 1;
+      throw new TypeError("Failed to fetch");
+    });
+    setConnectorDeps({
+      api: () => (gone ? null : new DaemonApi({ url: "http://daemon", token: "t" }, unreachable.fetchImpl)),
+      wait: async () => {
+        gone = true;
+      },
+    });
+    await useConnectors.getState().connect("gmail", { client_id: "cid", client_secret: "sec" });
+    expect(polls).toBe(1);
+    expect(useConnectors.getState().errors.gmail).toBe("Failed to fetch");
+    expect(useConnectors.getState().busy).toEqual({});
+  });
+});
+
 describe("reconnect through the kept client (ADR 0117)", () => {
   it("case 6: a reconnect sends only the flag, never a client value, and polls the flow it started", async () => {
     let polls = 0;

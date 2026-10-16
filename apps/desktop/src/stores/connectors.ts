@@ -14,9 +14,10 @@
  * comes with the list and with every row a reply carries (each view repeats it), so a connect
  * that answers with a notice raises the banner and one that answers without it lowers it.
  *
- * The OAuth flow is polled from here (`pollFlow`) every 1.5 s while the consent page is open;
- * the module's `index.ts` starts a `load` when it mounts and when the daemon becomes ready, so a
- * surface that is not on screen costs nothing.
+ * The OAuth flow is polled from here (`pollFlow`) every 1.5 s while the consent page is open. A
+ * read that fails to reach the daemon, or answers 5xx, is shown and asked again; a 4xx refusal or
+ * a daemon that went ends the poll. The module's `index.ts` starts a `load` when it mounts and
+ * when the daemon becomes ready, so a surface that is not on screen costs nothing.
  *
  * Two windows hold this mirror (ADR 0116, amending 0026). Main's Accounts acts on it; her window
  * reads it only to tell a connector card who it acts as, and only when one arrives (`followCards`).
@@ -218,12 +219,30 @@ export const useConnectors = create<ConnectorsState>((set, get) => {
       act(id, "saving", (api) => api.connectorAct(id, "settings", { ...patch })).then(() => {}),
 
     async pollFlow(id) {
-      const api = deps.api();
-      if (!api) return;
+      if (!deps.api()) return;
       mark(id, "waiting for consent");
+      // The reason a failed read put up, so the next good read takes down that one and no other.
+      let shown: string | null = null;
       try {
         for (;;) {
-          const reply = await api.connectorAct(id, "flow");
+          // Asked each time: the poll ends when the daemon goes, never asking nobody.
+          const api = deps.api();
+          if (!api) return;
+          let reply: Awaited<ReturnType<DaemonApi["connectorAct"]>>;
+          try {
+            reply = await api.connectorAct(id, "flow");
+          } catch (error) {
+            fail(id, error);
+            // The daemon answered and refused (a 4xx): the flow is not there to wait for. A read
+            // that never reached it, or a 5xx, is not the consent ending: the person may be in the
+            // browser right now, so the poll says so and asks again (as the voice install poll does).
+            if (error instanceof ApiError && error.status < 500) return;
+            shown = reasonOf(error);
+            await deps.wait(FLOW_POLL_MS);
+            continue;
+          }
+          if (shown !== null && get().errors[id] === shown) clearError(id);
+          shown = null;
           replace(reply.connector);
           const phase = reply.flow?.phase ?? reply.connector.flow?.phase;
           if (!phase || phase === "done" || phase === "failed") {
@@ -232,8 +251,6 @@ export const useConnectors = create<ConnectorsState>((set, get) => {
           }
           await deps.wait(FLOW_POLL_MS);
         }
-      } catch (error) {
-        fail(id, error);
       } finally {
         mark(id, null);
       }
