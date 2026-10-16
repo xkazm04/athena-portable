@@ -2,6 +2,8 @@
 import { readFileSync } from "node:fs";
 import { expect, test } from "vitest";
 
+import { CAPTION_LINGER_MS } from "./model";
+
 const css = readFileSync(new URL("./halo.css", import.meta.url), "utf8");
 
 /** The declarations of the rule whose selector is exactly `selector`. */
@@ -11,6 +13,20 @@ function rule(selector: string): string {
   if (at === -1) throw new Error(`no rule ${selector}`);
   return css.slice(at, css.indexOf("\n}", at));
 }
+
+test("the shell hides an idle halo only after the caption's linger and every fade have finished", () => {
+  // The pair: `HIDE_AFTER` in the shell, and the page's linger and fades. The Rust test pins its
+  // own copy of the page's numbers; this one reads the page's real ones.
+  const rust = readFileSync(new URL("../../src-tauri/src/halo.rs", import.meta.url), "utf8");
+  const hide = rust.match(/HIDE_AFTER: Duration = Duration::from_millis\((\d+)\)/);
+  expect(hide).not.toBeNull();
+  const captionFade = rule(".caption").match(/transition: opacity (\d+)ms/);
+  const edgeFade = rule('.halo[data-phase="idle"]').match(/--live (\d+)ms/);
+  expect(captionFade).not.toBeNull();
+  expect(edgeFade).not.toBeNull();
+  const last = CAPTION_LINGER_MS + Math.max(Number(captionFade![1]), Number(edgeFade![1]));
+  expect(last).toBeLessThanOrEqual(Number(hide![1]));
+});
 
 test("the halo page does not load the app's sheet, so every custom property it reads it also defines", () => {
   const defined = new Set([...css.matchAll(/(--[a-z][\w-]*)\s*:/g)].map((m) => m[1]));
