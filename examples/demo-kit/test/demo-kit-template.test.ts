@@ -92,6 +92,24 @@ test("the template's prose names no sibling app and counts none: a copy is the n
   assert.deepEqual(hits, [], "the template describes its siblings instead of its own seam");
 });
 
+/** The template's stylesheet with its comments stripped, so prose about a rule cannot satisfy it. */
+function templateCss(): string {
+  return readFileSync(join(TEMPLATE, "app", "globals.css"), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+}
+
+test("the template spends the kit's spacing scale and never re-types a step of it", () => {
+  // The kit's `--dk-gap` is `var(--dk-space-6)`, so re-pointing the scale moves every rule that
+  // spends it. A literal here pins half the kit while the other half follows the scale.
+  const spacing = /^(?:--dk-gap|(?:padding|margin|gap|row-gap|column-gap)(?:-[a-z-]+)?)$/;
+  const offenders: string[] = [];
+  for (const [, prop, value] of templateCss().matchAll(/([a-z-]+)\s*:\s*([^;{}]+);/g)) {
+    if (!spacing.test(prop!)) continue;
+    const rest = value!.replace(/var\(\s*--dk-(?:space-\d+|inset-[a-z]+|gap)\s*\)/g, "");
+    if (/\d/.test(rest.replace(/(^|\s)0(?=\s|$)/g, ""))) offenders.push(`${prop}: ${value!.trim()}`);
+  }
+  assert.deepEqual(offenders, [], "a spacing value that is not a step of the kit's scale");
+});
+
 test("a template file that sends the reader to a README appendix sends them to one that exists", () => {
   const readme = readFileSync(join(TEMPLATE, "README.md"), "utf8");
   const hasAppendix = /^#+\s.*appendix/im.test(readme);

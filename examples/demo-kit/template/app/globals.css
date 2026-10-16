@@ -31,9 +31,10 @@
   --dk-auto: #15803d;
   --dk-gated: #b45309;
 
-  /* Shape and rhythm. --dk-gap is the single spacing step every kit component reads. */
+  /* Shape and rhythm. Spacing is the kit's scale, --dk-space-1 to --dk-space-13 (--dk-gap is step
+   * 6): to change this design's density, re-point steps here and every kit rule that spends one
+   * moves with them. Never re-type a step as a literal; that pins it while the rest follow. */
   --dk-radius: 8px;
-  --dk-gap: 12px;
   --dk-shadow: 0 1px 2px rgb(0 0 0 / 6%);
 
   /* Type. --dk-font-display is headings and the brand; --dk-font-mono is timestamps and ids. */
@@ -84,7 +85,7 @@ body {
 
 .dk-level {
   display: grid;
-  gap: calc(var(--dk-gap) / 2);
+  gap: var(--dk-space-3);
   margin: 0;
   padding: 0;
   list-style: none;
