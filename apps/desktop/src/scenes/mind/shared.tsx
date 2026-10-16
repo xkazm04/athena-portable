@@ -4,7 +4,9 @@
  *
  * The one-line sentences about the engine, the page, the microphone and the voice, the hints for the
  * theme and the text size, and the miniature of the app in a theme. They were the old Setup view's
- * own; the words are unchanged because they are the copy the app settled on, and the miniature
+ * own; the words are the copy the app settled on, except where they said more than the facts (an
+ * engine "runs the turns" before the daemon is on it, a voice "not installed" whatever the reason
+ * was), and there they are the readiness module's and the voice store's own; the miniature
  * re-scopes the tokens with `data-theme` on its own root. Pure functions of the Setup view-model.
  */
 import { engineLabel, probeOf } from "@/lib/engines";
@@ -93,5 +95,9 @@ export function voiceSentence(model: SetupModel): string {
   if (model.daemonHealth === "starting") return "Athena is still starting, so nothing is known yet.";
   if (model.daemonHealth === "failed") return "Athena could not start, so nothing is known yet.";
   if (model.daemonHealth === "stopped") return "Athena is not running, so nothing is known yet.";
-  return "Voice is not installed with this copy of Athena.";
+  // The voice store's own reason says which rung failed (switched off, a model missing, a config
+  // that could not be read), and the Voice depth one press away is where each is fixed.
+  const reason = model.voiceReason.trim().replace(/\.$/, "");
+  if (reason === "") return "Voice is not set up yet.";
+  return `${reason.charAt(0).toUpperCase()}${reason.slice(1)}.`;
 }

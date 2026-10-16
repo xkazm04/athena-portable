@@ -73,6 +73,16 @@ describe("the field", () => {
     expect(failed).toContain('title="Claude Code is chosen, but Athena could not start on it."');
   });
 
+  it("says which rung of the voice failed, in the voice store's own reason, not that it is not installed", () => {
+    const h = html("heavy");
+    expect(h).not.toContain("Voice is not installed");
+    expect(h).toContain("The daemon was started without a voice backend.");
+    const bare = renderToStaticMarkup(
+      <MindView model={{ ...fixtures.heavy!, voiceReason: "" }} path={PATHS.field!} go={go} />,
+    );
+    expect(bare).toContain("Voice is not set up yet.");
+  });
+
   it("asks for the restart that is pending, on the field, because it asks to be done now", () => {
     expect(html("heavy")).toContain("Restart on");
   });
