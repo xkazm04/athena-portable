@@ -2136,3 +2136,48 @@ describe("Stop", () => {
     expect(useRun.getState().transcript).toEqual([]);
   });
 });
+
+// -- Clear while she works ---------------------------------------------------------------------------
+
+describe("Clear", () => {
+  it("in the middle of a turn empties the conversation but leaves the turn running and stoppable", async () => {
+    const daemon = fakeDaemon({ runs: [{ hang: [said("Looking.")] }] });
+    wire(daemon, fakePage());
+
+    const sending = useRun.getState().send("Which invoices are late?");
+    await until(() => useRun.getState().transcript.some((e) => e.text === "Looking."));
+
+    useRun.getState().clear();
+
+    // The request is still streaming: the panel must still say so, and Stop must still reach it.
+    expect(useRun.getState().transcript).toEqual([]);
+    expect(useRun.getState().phase).toBe("running");
+    await useRun.getState().stop();
+    await sending;
+    expect(daemon.signals[0]?.aborted).toBe(true);
+    expect(daemon.count("/run/stop")).toBe(1);
+  });
+
+  it("never drops a page result that is waiting to go with the next message", async () => {
+    let release: (answer: { ok: boolean; output: string }) => void = () => {};
+    const daemon = fakeDaemon({
+      runs: [[hostCall("c1", "host.ledgerbox.mark_paid"), finished()], [finished("Noted.")]],
+    });
+    const deps = wire(daemon, fakePage());
+    setRunDeps({ ...deps, call: () => new Promise((resolve) => (release = resolve)) });
+
+    const sending = useRun.getState().send("mark it paid");
+    await until(() => useRun.getState().phase === "acting");
+    const stopping = useRun.getState().stop();
+    release({ ok: true, output: "marked" });
+    await stopping;
+    await sending;
+
+    // The write ran on the page. Clearing the conversation is not a reason for the model not to hear it.
+    useRun.getState().clear();
+    await useRun.getState().send("what happened?");
+
+    const carried = daemon.runs()[1].body!.tool_results as Array<Record<string, unknown>>;
+    expect(carried.map((r) => [r.call_id, r.output])).toEqual([["c1", "marked"]]);
+  });
+});

@@ -1709,13 +1709,17 @@ export const useRun = create<RunState>((set, get) => {
     },
 
     clear() {
-      outstanding = [];
-      proposed = new Map();
       // The transcript goes. What the daemon is still holding for the user does not: a card is a
       // decision waiting, not a line of conversation, and the Record keeps what was done.
+      // Nor does the turn: a request still streaming keeps its phase, so the panel still says she
+      // is working and Stop still reaches it, and the calls it proposed still run. A page result
+      // waiting for the next message (`outstanding`) is a write that ran: it is never dropped
+      // (ADR 0115), Clear or not.
       const keep = get();
+      const working = keep.phase === "running" || keep.phase === "acting";
       set({
         ...EMPTY,
+        ...(working ? { phase: keep.phase, continuations: keep.continuations, captureNow: keep.captureNow } : {}),
         cards: keep.cards,
         calls: keep.calls,
         answering: keep.answering,
