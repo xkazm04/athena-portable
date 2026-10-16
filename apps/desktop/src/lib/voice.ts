@@ -391,6 +391,12 @@ export class Player {
   play(generation: number, pcm: Uint8Array, sampleRate: number): void {
     if (this.dropped.has(generation) || pcm.byteLength < 2) return;
     const context = (this.context ??= this.audioContext());
+    // A context made outside a gesture starts suspended in some engines — and her first chunk
+    // arrives seconds after the key, through the shell's hotkey, never a click in this webview.
+    // Resumed as the studio's preview player resumes; a refusal leaves her silent, and says so.
+    if (context.state === "suspended") {
+      context.resume?.().catch((error: unknown) => console.warn(`[voice] her voice could not start: ${String(error)}`));
+    }
     if (this.analyser === null) {
       this.analyser = context.createAnalyser();
       this.analyser.fftSize = 1024;

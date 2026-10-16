@@ -10,6 +10,7 @@ import {
   LEVEL_CEIL_DB,
   LEVEL_FLOOR_DB,
   PROTOCOL_PREFIX,
+  Player,
   VoiceSocket,
   currentLevel,
   downsample,
@@ -231,5 +232,46 @@ describe("openMicrophone releases the microphone on failure (council voice full 
     session.stop();
     for (const t of tracks) expect(t.stop).toHaveBeenCalledTimes(1);
     expect(close).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("her reply plays into a context that is running", () => {
+  /** A context the engine created suspended: one made after the gesture that started the turn. */
+  function suspended() {
+    const resume = vi.fn(async () => {});
+    const started: number[] = [];
+    const context = {
+      state: "suspended",
+      currentTime: 0,
+      destination: {},
+      resume,
+      createAnalyser: () => ({ fftSize: 0, connect: () => {}, getFloatTimeDomainData: () => {} }),
+      createBuffer: (_c: number, length: number) => ({ duration: length / 16000, copyToChannel: () => {} }),
+      createBufferSource: () => ({
+        buffer: null as unknown,
+        connect: () => {},
+        start: (at: number) => started.push(at),
+        stop: () => {},
+        onended: null as unknown,
+      }),
+    };
+    return { context, resume, started };
+  }
+
+  it("resumes a suspended context before her first chunk, as the studio's preview player does", () => {
+    const { context, resume, started } = suspended();
+    const player = new Player(() => context as unknown as AudioContext);
+    player.play(1, new Uint8Array([0, 1, 0, 2]), 16000);
+    expect(resume).toHaveBeenCalledTimes(1);
+    expect(started).toHaveLength(1);
+  });
+
+  it("asks nothing of a context that is already running", () => {
+    const { context, resume } = suspended();
+    context.state = "running";
+    const player = new Player(() => context as unknown as AudioContext);
+    player.play(1, new Uint8Array([0, 1, 0, 2]), 16000);
+    player.play(1, new Uint8Array([0, 1, 0, 2]), 16000);
+    expect(resume).not.toHaveBeenCalled();
   });
 });
