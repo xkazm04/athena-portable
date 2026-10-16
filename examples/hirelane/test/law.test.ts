@@ -95,3 +95,19 @@ test("§4.2: the alpha-stop exemption covers black and white, not every colour o
     assert.equal(code, 1, `${body} passed:\n${out}`);
   }
 });
+
+test("§4.2: a colour typed in a component's TypeScript fails like one typed in its stylesheet", () => {
+  const tsx = (line: string): Record<string, string> => ({
+    "components/board/Seeded.tsx": `export const Seeded = () => (\n  ${line}\n);\n`,
+  });
+  for (const line of ['<i style={{ color: "#e11d48" }} />', '<rect fill="hsl(347 77% 50%)" />']) {
+    const { code, out } = lawOn(tsx(line));
+    assert.equal(code, 1, `${line} passed:\n${out}`);
+    assert.match(out, /colour outside the token block/, line);
+  }
+  // A white plane at an alpha is light, as it is in a stylesheet; a colour named in a comment is prose.
+  for (const line of ['<i style={{ color: "rgb(255 255 255 / 40%)" }} />', "<i /> // was #e11d48"]) {
+    const { code, out } = lawOn(tsx(line));
+    assert.equal(code, 0, `${line} failed:\n${out}`);
+  }
+});

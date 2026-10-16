@@ -20,7 +20,8 @@
  *   2. §9.2  .dk-*    - a `.dk-*` CLASS selector redefined in a variant stylesheet (§1.6). The
  *                       match requires the opening brace, so a stylesheet may still explain the
  *                       rule it obeys in a comment.
- *   3. §4.2  colours  - a colour literal outside the token block, in any CSS notation (hex,
+ *   3. §4.2  colours  - a colour literal outside the token block, in a stylesheet or in the
+ *                       direction's `.ts`/`.tsx` (an inline style, an SVG fill), in any CSS notation (hex,
  *                       rgb, hsl, hwb, lab, lch, oklab, oklch, color()). #000 and #fff inside a
  *                       mask-image or a box-shadow are alpha stops and ring geometry rather than
  *                       palette, and a white or black plane at an alpha is light, not a hue; those
@@ -124,19 +125,23 @@ function directions() {
 }
 
 /**
- * §9.1 for motion: the direction's `.ts`/`.tsx`, minus its own motion token block.
+ * The direction's `.ts`/`.tsx`: §9.1 for motion, minus its own motion token block, and §4.2.
  *
  * Comments are blanked the same way the stylesheets' are, so the file that explains why
- * `stiffness: 260` was wrong may go on saying so.
+ * `stiffness: 260` was wrong may go on saying so. A colour is read in every one of these files,
+ * the motion token block included: §4.2 says "no new colour may be introduced in a component
+ * file", and a `style={{ color }}` or an SVG `fill` is as much a component file's colour as a
+ * stylesheet's, which this check used to never open for one.
  */
-function checkMotion(slug) {
+function checkScripts(slug) {
   const root = join(COMPONENTS, slug);
   const tokenModule = join(root, "motion.ts");
   const failures = [];
   let rawMotion = 0;
+  let offLockColours = 0;
 
   for (const file of walk(root, [".ts", ".tsx"]).sort()) {
-    if (file === tokenModule) continue;
+    const isMotionBlock = file === tokenModule;
     const source = readFileSync(file, "utf8");
     const raw = source.split("\n");
     /* `//` as well as `/* *\/`: a TypeScript file explains itself in both. */
@@ -148,13 +153,17 @@ function checkMotion(slug) {
 
     code.forEach((line, i) => {
       if (exempt(i)) return;
-      if (RAW_MOTION.test(line) || RAW_EASE.test(line)) {
+      if (!isMotionBlock && (RAW_MOTION.test(line) || RAW_EASE.test(line))) {
         rawMotion += 1;
         failures.push(`  §9.1  ${where(i)}  raw motion value: ${line.trim()}`);
       }
+      if (offLock(line)) {
+        offLockColours += 1;
+        failures.push(`  §4.2  ${where(i)}  colour outside the token block: ${line.trim()}`);
+      }
     });
   }
-  return { rawMotion, failures };
+  return { rawMotion, offLockColours, failures };
 }
 
 function checkDirection(slug) {
@@ -189,14 +198,14 @@ function checkDirection(slug) {
       }
     });
   }
-  const motion = checkMotion(slug);
+  const scripts = checkScripts(slug);
   return {
     slug,
     rawPx,
     dkOverrides,
-    offLockColours,
-    rawMotion: motion.rawMotion,
-    failures: [...failures, ...motion.failures],
+    offLockColours: offLockColours + scripts.offLockColours,
+    rawMotion: scripts.rawMotion,
+    failures: [...failures, ...scripts.failures],
   };
 }
 
