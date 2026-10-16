@@ -24,6 +24,32 @@ import { toastFor, undoToastFor } from "./history";
 /** How long an armed gate stays armed. */
 const DISARM_MS = 8000;
 
+/**
+ * What the toast says when an action never answered. The act may or may not have landed - a
+ * server can commit and then fail to reply - so it claims neither, and names the band that says.
+ */
+export const NO_ANSWER =
+  "No answer came back from the server, so whether that went through is unknown. Check the History band before you try it again.";
+
+/**
+ * Await an act, and turn a throw into a refusal the toast can show.
+ *
+ * A server action that throws rejects the transition it runs in, React hands the error to the
+ * nearest error boundary, and this app declares none: the whole board went to the framework's
+ * error page over one act (test/run.test.ts). The error still reaches the console for whoever is
+ * debugging; the person gets a toast and keeps their place.
+ */
+export function settle(act: () => Promise<ActionResult>): Promise<ActionResult>;
+export function settle<T>(act: () => Promise<T>, failed: () => T): Promise<T>;
+export async function settle<T>(act: () => Promise<T>, failed?: () => T): Promise<T | ActionResult> {
+  try {
+    return await act();
+  } catch (error) {
+    console.error("[hirelane] a server action threw", error);
+    return failed ? failed() : { ok: false, message: NO_ANSWER };
+  }
+}
+
 export function useRun() {
   const [pending, start] = useTransition();
   const { toast } = useToast();
@@ -44,7 +70,9 @@ export function useRun() {
   const undo = useCallback(
     (id: number) =>
       start(async () => {
-        const spec = undoToastFor(await undoAction(id));
+        // No answer is not "Not undone": the undo may have landed, so the toast claims neither.
+        const outcome = await settle(() => undoAction(id), () => null);
+        const spec = outcome ? undoToastFor(outcome) : { text: NO_ANSWER, tone: "error" as const };
         toast(spec.text, spec.tone);
       }),
     [toast],
@@ -53,7 +81,7 @@ export function useRun() {
   const run = useCallback(
     (fn: () => Promise<ActionResult>, after?: (result: ActionResult) => void) =>
       start(async () => {
-        const result = await fn();
+        const result = await settle(fn);
         const spec = toastFor(result);
         const action = spec.action;
         toast(spec.text, spec.tone, action ? { label: action.label, onAction: () => undo(action.id) } : undefined);
