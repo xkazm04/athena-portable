@@ -53,6 +53,7 @@ import { useTools } from "@/stores/tools";
 import { useVoice } from "@/stores/voice";
 
 import {
+  approveRunsNothing,
   ledgerFrom,
   selectCompanion,
   type CompanionActions,
@@ -83,7 +84,16 @@ function liveDeps(): RuntimeDeps {
     cards: () => useRun.getState().cards,
     // A card that heads a sheet answers the sheet in one press; any other card is answered alone (ADR 0104).
     // The promise goes back to the runtime, which hears one that ends without a verdict as not sent.
-    answer: (id, choice, settled) => useRun.getState().answerSheet(id, choice, settled).catch(report("answer")),
+    // An approve with every row of its sheet unticked runs nothing, whichever key or chord sent it.
+    answer: (id, choice, settled) => {
+      const run = useRun.getState();
+      const nothing = approveRunsNothing(run.cards, run.slots, run.unticked, id, choice);
+      if (nothing !== null) {
+        settled({ ok: false, sentence: nothing });
+        return;
+      }
+      return run.answerSheet(id, choice, settled).catch(report("answer"));
+    },
     // "Open your first app" sets `onboarded` and nothing else: Rust shows Main (ADR 0026).
     onboard: () => void useSettings.getState().setOnboarded(true).catch(report("onboard")),
     focus: (target) => {

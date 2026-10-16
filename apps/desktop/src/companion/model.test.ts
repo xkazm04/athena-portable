@@ -8,13 +8,16 @@
 import { expect, test } from "vitest";
 
 import type { ToolRow } from "@/lib/api";
+import { slotFor, type SheetSlot } from "@/lib/sheet";
 import { connection, gmail } from "@/modules/connectors/fixtures";
 import type { TranscriptEntry } from "@/stores/run";
 
-import { CARDS, TOOLS, fixtures, machineAfter } from "./fixtures";
+import { CARDS, TOOLS, fixtures, machineAfter, reminderCards } from "./fixtures";
 import {
   DEFAULT_SUGGESTION,
+  NOTHING_TICKED,
   NO_ACTIONS,
+  approveRunsNothing,
   OFFERS_SHOWN,
   blockedBecause,
   cardView,
@@ -573,4 +576,19 @@ test("guard 7: a host-origin card is unchanged by the connectors mirror, and car
   const mirrored = cardView(CARDS[0], null, { ...context, connectors: { items: [MIRA], loaded: true, notice: "" } });
   expect(mirrored).toEqual(plain);
   expect(plain.where).toBe("In ledgerbox - the app's own tool");
+});
+
+test("an approve of a sheet with no row ticked is refused before it is sent, as its button is off (ADR 0104)", () => {
+  const cards = reminderCards(3);
+  let slots: Record<string, SheetSlot> = {};
+  for (const c of cards) slots = { ...slots, [c.id]: slotFor(slots, 1, c) };
+  const none = Object.fromEntries(cards.map((c) => [c.id, true as const]));
+  const head = cards[0].id;
+  // Every row unticked: the press would only decline them, under an Approved stamp.
+  expect(approveRunsNothing(cards, slots, none, head, "approve")).toBe(NOTHING_TICKED);
+  // One row ticked, a decline, or a card that is not a sheet: the answer goes as it always did.
+  expect(approveRunsNothing(cards, slots, { [cards[0].id]: true, [cards[1].id]: true }, head, "approve")).toBeNull();
+  expect(approveRunsNothing(cards, slots, none, head, "decline")).toBeNull();
+  expect(approveRunsNothing([cards[0]], {}, {}, head, "approve")).toBeNull();
+  expect(NOTHING_TICKED).not.toMatch(/origin|manifest|session|daemon/i);
 });

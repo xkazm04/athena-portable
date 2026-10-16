@@ -720,6 +720,28 @@ function sheetView(run: CompanionInputs["run"], waiting: readonly CardView[]): S
   };
 }
 
+/** What she says when an approve of a sheet would run nothing: every row is unticked (ADR 0104). */
+export const NOTHING_TICKED = "No row is ticked, so there is nothing to approve. Tick a row, or press Decline all.";
+
+/**
+ * An approve of the sheet `id` heads, with every row unticked, runs nothing: the store would only
+ * decline the rows, and the slip would stamp it Approved. The button is off then (`SheetView.ticked`);
+ * this is the same rule for the key, the chord and any other way in. {@link NOTHING_TICKED} when the
+ * press is refused, `null` when the answer goes as it always did.
+ */
+export function approveRunsNothing(
+  cards: readonly DecisionRequested[],
+  slots: Readonly<Record<string, SheetSlot>>,
+  unticked: Readonly<Record<string, true>>,
+  id: string,
+  choice: string,
+): string | null {
+  if (choice !== "approve") return null;
+  const sheet = sheetOf(cards, slots, id);
+  if (!sheet) return null;
+  return sheet.rows.every((row) => unticked[row.id]) ? NOTHING_TICKED : null;
+}
+
 /** What a card says when the daemon's pending row carried no reason. */
 export const NO_RATIONALE = "No reason was filed with this request. Read the details below before you answer.";
 
