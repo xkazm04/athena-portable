@@ -177,3 +177,31 @@ test("text set in a state's colour clears 4.5:1 on the sheet and on the vellum",
   }
   assert.deepEqual(low, [], `text in a state's colour under 4.5:1:\n  ${low.join("\n  ")}`);
 });
+
+/** A length in px, from a `--bk-*` rule width or a `calc(-1 * ...)` of one. */
+function px(value: string): number {
+  const v = resolve(value).replace(/\s+/g, " ").trim();
+  const neg = /^calc\(-1 \* (\d+(?:\.\d+)?)px\)$/.exec(v);
+  if (neg) return -Number(neg[1]);
+  const plain = /^(-?\d+(?:\.\d+)?)px$/.exec(v);
+  assert.ok(plain, `not a length this test can read: ${value} -> ${v}`);
+  return Number(plain[1]);
+}
+
+test("the L1 card's focus ring is drawn inside the box that clips it", () => {
+  // `.bk-cell` fills its projected wrapper (`.bk-cell-at`, 100% by 100%), and the wrapper clips
+  // (`overflow: hidden`) so a short slab cuts its card rather than printing on the wall behind.
+  // A ring drawn OUTSIDE the cell is therefore drawn outside the clip: none of it paints, and the
+  // focused card looks exactly like a hovered one.
+  const wrapper = RULES.find((r) => r.selector === ".bk-cell-at");
+  assert.equal(wrapper?.decls.get("overflow"), "hidden", "the wrapper no longer clips; revisit this");
+  const cell = RULES.find((r) => r.selector === ".bk-cell");
+  assert.equal(cell?.decls.get("inline-size"), "100%");
+  assert.equal(cell?.decls.get("block-size"), "100%");
+
+  const ring = RULES.find((r) => r.selector === ".bk-cell:focus-visible");
+  assert.ok(ring, "the card declares no focus ring of its own");
+  const [width] = ring.decls.get("outline")!.split(" ");
+  const reach = px(ring.decls.get("outline-offset") ?? "0px") + px(width!);
+  assert.ok(reach <= 0, `the ring reaches ${reach}px outside a box clipped at its edge: 0 of ${px(width!)}px paints`);
+});

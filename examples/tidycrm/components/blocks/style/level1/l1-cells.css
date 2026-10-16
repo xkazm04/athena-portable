@@ -60,9 +60,11 @@
   border-color: var(--bk-graphite);
 }
 
+/* Drawn INSIDE the card, as the frame's own ring is: the card fills `.bk-cell-at`, which clips
+   it, so a ring outside the card's edge was clipped whole and focus read exactly like hover. */
 .bk-cell:focus-visible {
   outline: var(--bk-rule-2) solid var(--bk-graphite);
-  outline-offset: var(--bk-rule-1);
+  outline-offset: calc(-1 * var(--bk-rule-2));
 }
 
 .bk-cell-cluster {
