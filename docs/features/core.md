@@ -7,7 +7,8 @@ imports a provider, a transport or a cloud SDK.
 
 The seam every package is written against: `registry.py` (`ToolEntry`, `ToolClass`), `manifest.py`
 (a page's `HostManifest`), `channel.py` (the stream's events), `harness.py` (the `Harness` port and
-the closed `ERROR_REASONS`), `ids.py` (every id prefix, with a parity test against `lib/ids.ts`).
+the closed `ERROR_REASONS`), `ids.py` (every id prefix; no TypeScript copy exists yet) and `adopt.py`
+(the Adopt studio's events, held to the desktop's `lib/adopt.ts` by `tests/contracts/test_adopt_parity.py`).
 A contract changes only with a test.
 
 ## Brain and recall

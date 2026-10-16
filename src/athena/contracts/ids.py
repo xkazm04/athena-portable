@@ -3,9 +3,11 @@
 The first build minted ids in two modules and each added a prefix, so a conversation for a project
 came out as ``conv_proj_proj_<id>``. The fix is structural, not a convention: one table, one
 ``mint``, one ``is_id``, and derived ids built by a function that is handed an already-minted id
-instead of a bare slug. The panel's ``lib/ids.ts`` is the same table in TypeScript and
-``tests/test_ids_parity.py`` asserts the two agree — which is why :data:`ID_PREFIXES` is a plain
-dict of strings and nothing cleverer.
+instead of a bare slug. :data:`ID_PREFIXES` is a plain dict of strings and nothing cleverer so
+that another language can read it as text. None does yet: the desktop has no ``lib/ids.ts``
+(AGENTS.md names it as later work, with a parity test), and the one id it mints that crosses this
+seam - the shell's capture id, in ``apps/desktop/src-tauri/src/store.rs`` - is held to this table
+by no test.
 
 Episode ids are ``ep_`` plus **eight** hex digits rather than the twelve every other kind uses.
 That is not tidiness: the brain's markdown and frontmatter stay byte-compatible with the Personas

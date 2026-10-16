@@ -1,10 +1,11 @@
 """The channel events — what a turn emits and every surface renders (README §3.2).
 
 Eleven events, one stream. The lane produces them; the daemon writes them to an AG-UI SSE stream;
-the panel, the voice gateway and the MCP server each render the families they can. They are frozen
-dataclasses with a ``kind`` tag, and :meth:`ChannelEvent.to_json` / :func:`event_from_json` are the
-only serialization any transport uses — a second encoder is how two surfaces end up disagreeing
-about what a decision card said.
+the panel and the voice gateway each render the families they can (the MCP server README §3 plans
+would be a third; it is not built). They are frozen dataclasses with a ``kind`` tag, and
+:meth:`ChannelEvent.to_dict` is the one shape every transport sends (``daemon.routes``'
+``event_payload``, SSE and the voice socket alike), with :func:`event_from_json` as its reader — a
+second encoder is how two surfaces end up disagreeing about what a decision card said.
 
 An unknown ``kind`` raises rather than being skipped: a surface that silently drops
 ``decision.requested`` is a gate that never asked.
