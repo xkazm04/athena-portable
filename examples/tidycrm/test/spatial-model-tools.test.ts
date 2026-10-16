@@ -266,6 +266,20 @@ test("no tool the Blocks register changes the sheet or the database, or moves th
   });
 });
 
+test("coverage_under keeps every table whose printed coverage is at or under it", async () => {
+  // The filter and the figure it filters on are one number: a table search_blocks prints at 72
+  // must come back for coverage_under 72, or the agent is told it is not there.
+  const spec = registered.get("search_blocks")!;
+  const dropped: string[] = [];
+  for (const t of sheet.databases.flatMap((d) => d.tables)) {
+    const { answer } = await drive(spec, { text: t.ident });
+    const printed = (answer.items as { id: string; coverage: number }[]).find((i) => i.id === t.ident)!.coverage;
+    const { answer: under } = await drive(spec, { text: t.ident, coverage_under: printed });
+    if (!(under.items as { id: string }[]).some((i) => i.id === t.ident)) dropped.push(`${t.ident} at ${printed}`);
+  }
+  assert.deepEqual(dropped, [], "printed at N, missing from coverage_under N");
+});
+
 test("the check catches a read that writes, a read that moves, and a write wearing the read class", async () => {
   // Negative controls, through the same drive and the same disagreements, on a copy of the sheet.
   const copy = structuredClone(sheet);

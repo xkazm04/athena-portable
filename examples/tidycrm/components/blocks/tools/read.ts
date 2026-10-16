@@ -19,6 +19,14 @@ import {
   type BkTable,
 } from "../model";
 
+/**
+ * A coverage fraction as the whole percentage every read prints.
+ *
+ * One function, because `search_blocks` filters on the figure a read prints: a filter that
+ * compared the raw fraction dropped a table printed at 72 from `coverage_under: 72`.
+ */
+export const percent = (fraction: number): number => Number((fraction * 100).toFixed(0));
+
 /** One table: what the cell prints, plus why it is marked. */
 export function tableRead(table: BkTable) {
   return {
@@ -27,7 +35,7 @@ export function tableRead(table: BkTable) {
     domain: table.domain,
     records: table.records,
     checked: table.checked,
-    coverage: Number((table.coverage * 100).toFixed(0)),
+    coverage: percent(table.coverage),
     changed: table.changed,
     deviations: table.deviationTotal,
     by_kind: table.deviations.map((d) => ({
@@ -50,7 +58,7 @@ export function databaseRead(db: BkDatabase) {
     tables: db.tables.length,
     records: db.records,
     checked: db.checked,
-    coverage: Number((db.coverage * 100).toFixed(0)),
+    coverage: percent(db.coverage),
     changed: db.changed,
     deviations: db.deviationTotal,
     // What fills the cell red on the plate, and therefore what a reader saw
@@ -68,7 +76,7 @@ export function sheetRead(sheet: BkSheet) {
     databases: sheet.databases.length,
     tables: sheet.tableCount,
     records: sheet.records,
-    coverage: Number((sheet.coverage * 100).toFixed(0)),
+    coverage: percent(sheet.coverage),
     deviations: sheet.deviationTotal,
     by_kind: Object.entries(sheet.byKind).map(([kind, count]) => ({
       kind,

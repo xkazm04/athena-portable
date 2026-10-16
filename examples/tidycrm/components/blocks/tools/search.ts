@@ -14,7 +14,7 @@
 import { bounded } from "@athena/demo-kit/webmcp";
 
 import type { BkDatabase, BkSheet, BkTable } from "../model";
-import { tableRead } from "./read";
+import { percent, tableRead } from "./read";
 
 /** Results returned before a search stops and says how many it left out. */
 export const SEARCH_PAGE = 25;
@@ -38,7 +38,8 @@ function hay(t: BkTable): string {
 function hit(t: BkTable, q: BlocksQuery): boolean {
   if (q.text && !hay(t).includes(q.text.toLowerCase())) return false;
   if (q.deviations_over !== undefined && t.deviationTotal < q.deviations_over) return false;
-  if (q.coverage_under !== undefined && t.coverage * 100 > q.coverage_under) return false;
+  // The printed figure, not the raw fraction: see `percent`.
+  if (q.coverage_under !== undefined && percent(t.coverage) > q.coverage_under) return false;
   if (q.awaiting_a_person && !t.attention) return false;
   return true;
 }
