@@ -105,11 +105,18 @@ pub fn page_rect_physical(
     // picture of Athena's own words is not evidence about anything.
     let rect = layout::rects(width, height, page_shown).page?;
     let (inset_x, inset_y) = (f64::from(inset.0.max(0)), f64::from(inset.1.max(0)));
+    // Each edge is rounded once and the size is the difference. Rounding the origin and the size
+    // separately can put the far edge a pixel past the window wherever the band's 76 logical px
+    // lands on a half pixel (112.5 % is 85.5): the crop is then refused and the card has no page.
+    let edge = |logical: f64, inset: f64| (logical * scale + inset).round().max(0.0) as u32;
+    let (left, top) = (edge(rect.x, inset_x), edge(rect.y, inset_y));
+    let right = edge(rect.x + rect.width, inset_x);
+    let bottom = edge(rect.y + rect.height, inset_y);
     Some((
-        (rect.x * scale + inset_x).round().max(0.0) as u32,
-        (rect.y * scale + inset_y).round().max(0.0) as u32,
-        (rect.width * scale).round().max(1.0) as u32,
-        (rect.height * scale).round().max(1.0) as u32,
+        left,
+        top,
+        right.saturating_sub(left).max(1),
+        bottom.saturating_sub(top).max(1),
     ))
 }
 
@@ -184,17 +191,16 @@ mod windows_capture {
         .ok_or("no page is on screen to capture")?;
 
         let shot = window_bitmap(hwnd, outer.width, outer.height)?;
-        // A page larger than the window it is in cannot happen, but a rounding error at a
-        // fractional scale factor can put the rectangle one pixel outside — in which case the
-        // whole window is a worse picture than none, so it is the whole window.
-        let (pixels, width, height) = match crop(&shot, outer.width, outer.height, x, y, w, h) {
-            Some(cropped) => (cropped, w, h),
-            None => (shot, outer.width, outer.height),
-        };
+        // `page_rect_physical` rounds edges, so the page ends inside the window at every scale. A
+        // rectangle that still falls outside is refused rather than swapped for the whole window:
+        // that picture is mostly the bar and the strip, Athena's own chrome, and a card whose
+        // picture is of the wrong thing is worse than a card with none.
+        let pixels = crop(&shot, outer.width, outer.height, x, y, w, h)
+            .ok_or("the page rectangle falls outside the window's picture")?;
         Ok(Shot {
-            png: encode(&pixels, width, height)?,
-            width,
-            height,
+            png: encode(&pixels, w, h)?,
+            width: w,
+            height: h,
         })
     }
 
@@ -329,6 +335,33 @@ mod tests {
         assert_eq!(y, (logical.y * 2.0) as u32);
         assert_eq!(w, (logical.width * 2.0) as u32);
         assert_eq!(h, (logical.height * 2.0) as u32);
+    }
+
+    /// At a custom scale such as 112.5 %, the band's 76 logical px is 85.5 physical: rounding the
+    /// top and the height separately put the bottom edge one pixel past the window, the crop was
+    /// refused, and the card carried the whole window - the bar and strip included - instead of
+    /// the page. Rounded as two edges, the rectangle ends where the window does at every scale.
+    #[test]
+    fn the_page_rectangle_ends_inside_the_window_at_every_scale() {
+        for scale in [1.0, 1.1, 1.125, 1.25, 1.375, 1.5, 1.625, 1.75, 2.0, 2.25, 2.5] {
+            for (width, height) in [(1920u32, 1080u32), (1366, 705), (2560, 1377), (1001, 601)] {
+                for inset in [(0, 0), (8, 31)] {
+                    let (x, y, w, h) = page_rect_physical(
+                        f64::from(width) / scale,
+                        f64::from(height) / scale,
+                        scale,
+                        true,
+                        inset,
+                    )
+                    .expect("a page");
+                    let (right, bottom) = (width + inset.0 as u32, height + inset.1 as u32);
+                    assert!(x + w <= right, "{scale} {width}x{height} {inset:?}: x {x} + w {w}");
+                    assert!(y + h <= bottom, "{scale} {width}x{height} {inset:?}: y {y} + h {h}");
+                    // And it still reaches the bottom: a page short by a row is a page cut.
+                    assert!(y + h + 1 >= bottom, "{scale} {width}x{height}: ends at {}", y + h);
+                }
+            }
+        }
     }
 
     #[test]
