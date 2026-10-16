@@ -15,6 +15,8 @@ from __future__ import annotations
 import asyncio
 import json
 import os
+import subprocess
+import sys
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
@@ -638,3 +640,76 @@ def test_live_one_turn_against_nemotron(
     assert row.fields["model"] == model
     assert row.fields["input_tokens"] > 0 and row.fields["output_tokens"] > 0
     assert row.fields["cost_usd"] is not None and row.fields["cost_usd"] > 0
+
+
+# --- what keeps the live test out of a run that did not ask for it -------------------------------
+#
+# A key in the environment is never what decides that a test spends money: CI and AGENTS.md run a
+# bare ``uv run pytest``. ``conftest.py``'s ``pytest_runtest_setup`` skips a ``provider`` or
+# ``eval`` test unless the run's ``-m`` names it; this runs pytest itself over a two-test tree
+# that uses that conftest, with a key set (tests/proving/test_live.py does the same for its own).
+
+HARNESS_CONFTEST = Path(__file__).with_name("conftest.py")
+
+_INNER_CONFTEST = """\
+import importlib.util
+import sys
+
+_spec = importlib.util.spec_from_file_location("harness_conftest", {path!r})
+_module = importlib.util.module_from_spec(_spec)
+sys.modules[_spec.name] = _module
+_spec.loader.exec_module(_module)
+globals().update({{k: v for k, v in vars(_module).items() if k.startswith("pytest_")}})
+"""
+
+_INNER_TESTS = """\
+import pytest
+
+
+@pytest.mark.provider
+def test_spends():
+    pass
+
+
+@pytest.mark.eval
+def test_grades():
+    pass
+
+
+def test_offline():
+    pass
+"""
+
+
+def _inner_pytest(tmp_path: Path, *args: str) -> str:
+    (tmp_path / "pytest.ini").write_text(
+        "[pytest]\naddopts = -p no:cacheprovider --strict-markers\n"
+        "markers =\n    provider: live\n    eval: opt-in\n",
+        encoding="utf-8",
+    )
+    (tmp_path / "conftest.py").write_text(
+        _INNER_CONFTEST.format(path=str(HARNESS_CONFTEST)), encoding="utf-8"
+    )
+    (tmp_path / "test_inner.py").write_text(_INNER_TESTS, encoding="utf-8")
+    env = {**os.environ, "NEBIUS_API_KEY": "nb-not-a-real-key"}
+    done = subprocess.run(
+        [sys.executable, "-m", "pytest", "-rs", *args, str(tmp_path)],
+        cwd=tmp_path,
+        env=env,
+        capture_output=True,
+        text=True,
+        timeout=120,
+        check=False,
+    )
+    return done.stdout + done.stderr
+
+
+def test_a_bare_run_with_a_key_set_skips_the_provider_and_eval_tests(tmp_path: Path) -> None:
+    out = _inner_pytest(tmp_path)
+    assert "1 passed, 2 skipped" in out, out
+    assert "runs only when selected with -m provider" in out, out
+
+
+def test_a_run_whose_marker_expression_names_provider_runs_it(tmp_path: Path) -> None:
+    out = _inner_pytest(tmp_path, "-m", "provider")
+    assert "1 passed, 2 deselected" in out, out

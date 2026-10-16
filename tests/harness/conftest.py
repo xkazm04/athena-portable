@@ -4,11 +4,17 @@ The gate is policy over data. Nothing it decides needs SQLite, a subprocess or a
 gate that could only be tested with all three would be a gate nobody tests. These fakes are the
 ports and nothing else; ``tests/harness/test_ports.py`` is where the real ``athena.core`` classes
 are driven through the same protocols, so the fakes cannot drift into a shape core does not have.
+
+A test that reaches a live provider is marked ``provider`` (or ``eval``), and
+:func:`pytest_runtest_setup` runs it only when the run's ``-m`` names that marker: CI and
+``AGENTS.md`` run bare ``uv run pytest``, so a key in the environment must never be what decides
+that a test spends money (the same rule as ``tests/proving/conftest.py``).
 """
 
 from __future__ import annotations
 
 import json
+import re
 from collections.abc import Callable, Mapping
 from dataclasses import dataclass, field
 from typing import Any
@@ -29,6 +35,21 @@ from athena.contracts.registry import (
 )
 
 CONVERSATION = "conv_invoices"
+
+#: Markers whose tests reach a live model or run the opt-in eval suite (``pyproject.toml``).
+OPT_IN_MARKERS: tuple[str, ...] = ("provider", "eval")
+
+
+def pytest_runtest_setup(item: pytest.Item) -> None:
+    """Skip a ``provider`` or ``eval`` test unless this run's ``-m`` expression names its marker.
+
+    ``-m "not provider"`` deselects it before this runs; ``-m provider`` names it and lets it run;
+    a bare run never names it, whatever keys the environment holds.
+    """
+    named = set(re.findall(r"[A-Za-z_]\w*", str(item.config.getoption("markexpr", "") or "")))
+    for marker in OPT_IN_MARKERS:
+        if item.get_closest_marker(marker) is not None and marker not in named:
+            pytest.skip(f"a {marker} test runs only when selected with -m {marker}")
 
 
 def _ran(params: dict[str, Any], ctx: TurnContext) -> ExecResult:
