@@ -54,6 +54,7 @@ import { isAuto } from "@/lib/manifest";
 import { TOOL_CLASSES, type ToolName } from "@/lib/tool-classes";
 import { Gate } from "../Gate";
 import type { LnDetail, LnMark } from "../model";
+import { gateSubject } from "./read";
 import { fade, instant } from "../motion";
 import type { useRun } from "../useRun";
 
@@ -261,6 +262,7 @@ export function Decide({
           confirmLabel="Record it"
           question={`This writes ${formatMoney(mark.balanceCents)} against the books and cannot be replayed backwards.`}
           onConfirm={() => markPaidAction(mark.id, mark.balanceCents)}
+          subject={gateSubject("mark_paid", mark, detail)}
           disabled={!owed}
         />
       ),
@@ -278,6 +280,7 @@ export function Decide({
           confirmLabel="Send it"
           question={`This reaches ${email ?? "the client"}. You cannot un-send it.`}
           onConfirm={() => sendReminderAction(mark.id)}
+          subject={gateSubject("send_reminder", mark, detail)}
           disabled={!detail?.draft}
         />
       ),
@@ -297,12 +300,12 @@ export function Decide({
         <Gate
           label="Void it"
           confirmLabel="Void it"
-          question={
-            mark.paidCents > 0
-              ? "Unapply the credits on this invoice first."
-              : "Voiding writes off the balance. There is no undo."
-          }
+          /* No "unapply first" question: a disabled gate cannot be armed, and an
+             armed one closes the moment a credit lands (`stillArmed`). The row's
+             own line says why it is blocked. */
+          question="Voiding writes off the balance. There is no undo."
           onConfirm={() => voidInvoiceAction(mark.id)}
+          subject={gateSubject("void_invoice", mark, detail)}
           disabled={mark.paidCents > 0}
         />
       ),

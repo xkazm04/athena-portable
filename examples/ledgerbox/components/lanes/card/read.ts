@@ -56,3 +56,43 @@ export function hasEvidenceFor(detail: LnDetail | undefined): boolean {
         detail.note),
   );
 }
+
+/** The three acts on the card that arm through `Gate` before they issue. */
+export type GatedAct = "mark_paid" | "send_reminder" | "void_invoice";
+
+/**
+ * What a gated act's confirm is a decision ABOUT, as one comparable string.
+ *
+ * An armed gate is a person's yes to the thing it showed them, and the sheet under
+ * it is live: an agent's call, or the person's own click elsewhere on the card,
+ * re-renders this invoice while the confirm is up. `send_reminder` sends the NEWEST
+ * draft, `mark_paid` writes the balance as it is at the press, and both used to fire
+ * on whatever the row said by then (hitl-approval, gate-state-machines: approval of
+ * version N is not approval of version N+1). So the gate remembers the subject it
+ * was armed on, and a different subject is a closed gate.
+ *
+ *   send_reminder  the letter: the address it goes to, its tone and its body
+ *   mark_paid      the amount it writes, and the state it writes it into
+ *   void_invoice   what it writes off: the state, the total and what is paid
+ */
+export function gateSubject(act: GatedAct, mark: LnMark, detail: LnDetail | undefined): string {
+  switch (act) {
+    case "send_reminder":
+      return detail?.draft
+        ? [detail.email, detail.draft.tone, detail.draft.body].join("\u0000")
+        : "";
+    case "mark_paid":
+      return `${mark.state}:${mark.balanceCents}`;
+    case "void_invoice":
+      return `${mark.state}:${mark.amountCents}:${mark.paidCents}`;
+  }
+}
+
+/**
+ * Whether a gate armed on `armedOn` may still be confirmed: nothing it showed has
+ * moved, and its act is not refused now. A gate whose row turned disabled while it
+ * was armed would otherwise offer a confirm the server will refuse.
+ */
+export function stillArmed(armedOn: string | null, subject: string, disabled: boolean): boolean {
+  return armedOn !== null && armedOn === subject && !disabled;
+}

@@ -8,11 +8,18 @@
  * is always visible. Nothing here decides whether an action is gated: that is
  * the `reversible && sideEffects !== "external"` rule on the manifest, and the
  * card passes the answer in.
+ *
+ * ARMED ON A SUBJECT, NOT ON A ROW. Arming records `subject` - what the confirm is
+ * a decision about (`card/read.ts` gateSubject) - and the confirm is offered only
+ * while the subject is unchanged and the act is not disabled. A letter redrafted,
+ * a balance moved or a credit applied under an armed gate closes it, and the
+ * person arms again on what is now there.
  */
 import { useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 
 import type { ActionResult } from "@/lib/types";
+import { stillArmed } from "./card/read";
 import { fade } from "./motion";
 import { useRun } from "./useRun";
 
@@ -21,16 +28,23 @@ export function Gate({
   confirmLabel,
   question,
   onConfirm,
-  disabled,
+  subject,
+  disabled = false,
 }: {
   label: ReactNode;
   confirmLabel: string;
   question: string;
   onConfirm: () => Promise<ActionResult>;
+  /** What the confirm is a decision about; arming holds it, and a new one closes the gate. */
+  subject: string;
   disabled?: boolean;
 }) {
-  const [armed, setArmed] = useState(false);
+  const [armedOn, setArmedOn] = useState<string | null>(null);
   const { pending, run } = useRun();
+  const armed = stillArmed(armedOn, subject, disabled);
+  // Forget a subject that has moved on, so the same text coming back later (an undo)
+  // does not re-open a confirm nobody pressed. React's adjust-state-during-render form.
+  if (armedOn !== null && !armed) setArmedOn(null);
 
   return (
     <AnimatePresence mode="wait" initial={false}>
@@ -51,11 +65,11 @@ export function Gate({
             data-kind="danger"
             autoFocus
             disabled={pending}
-            onClick={() => run(onConfirm, () => setArmed(false))}
+            onClick={() => run(onConfirm, () => setArmedOn(null))}
           >
             {pending ? "Working…" : confirmLabel}
           </button>
-          <button type="button" className="ln-btn" data-kind="ghost" onClick={() => setArmed(false)}>
+          <button type="button" className="ln-btn" data-kind="ghost" onClick={() => setArmedOn(null)}>
             Cancel
           </button>
         </motion.span>
@@ -66,7 +80,7 @@ export function Gate({
           className="ln-btn"
           data-kind="gate"
           disabled={disabled || pending}
-          onClick={() => setArmed(true)}
+          onClick={() => setArmedOn(subject)}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}

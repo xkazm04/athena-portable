@@ -92,3 +92,54 @@ test("an act that answers is toasted in its own tone, and leaves the refresh to 
   assert.deepEqual(await press(async () => ({ ok: true, message: "Done." })), ["toast:success", "after"]);
   assert.deepEqual(await press(async () => ({ ok: false, message: "Refused." })), ["toast:error", "after"]);
 });
+
+/* ------------------------------------------- a gate is armed on what it showed, not on the row */
+
+const { buildSheet } = await import("../lib/lanes");
+const actions = await import("../app/actions");
+const { gateSubject, stillArmed } = await import("../components/lanes/card/read");
+
+type Sheet = ReturnType<typeof buildSheet>;
+const markIn = (sheet: Sheet, id: string) => sheet.lanes.flatMap((l) => l.marks).find((m) => m.id === id)!;
+
+test("an armed gate closes when what it disclosed changes under it, and when its act becomes refused", async () => {
+  // hitl-approval/gate-state-machines, "approved content swapped before execution": a person arms
+  // Send it having read one letter; an agent redrafts in the meantime; `sendReminderAction` sends
+  // the NEWEST draft. Approval of version N is not approval of version N+1.
+  let sheet = buildSheet();
+  const marks = sheet.lanes.flatMap((l) => l.marks);
+  const chase = marks.find((m) => m.state === "overdue" && !m.hasDraft && m.candidateCount === 0)!;
+  assert.ok((await actions.draftReminderAction(chase.id, "gentle")).ok);
+  sheet = buildSheet();
+  const read = gateSubject("send_reminder", markIn(sheet, chase.id), sheet.details[chase.id]);
+  assert.ok(stillArmed(read, read, false), "nothing moved: the gate stays armed");
+  assert.ok((await actions.draftReminderAction(chase.id, "firm")).ok);
+  sheet = buildSheet();
+  const now = gateSubject("send_reminder", markIn(sheet, chase.id), sheet.details[chase.id]);
+  assert.equal(stillArmed(read, now, false), false, "a redrafted letter re-closes the send gate");
+
+  // Record it is armed on an amount; a credit applied meanwhile moves the balance it would write.
+  const owed = marks.find(
+    (m) => m.balanceCents > 0 && m.paidCents === 0 && (sheet.details[m.id]?.candidates.length ?? 0) > 0,
+  )!;
+  const credit = sheet.details[owed.id]!.candidates[0]!;
+  const paidOn = gateSubject("mark_paid", markIn(sheet, owed.id), sheet.details[owed.id]);
+  const voidOn = gateSubject("void_invoice", markIn(sheet, owed.id), sheet.details[owed.id]);
+  assert.ok((await actions.matchAction(owed.id, credit.lineId)).ok);
+  sheet = buildSheet();
+  const after = markIn(sheet, owed.id);
+  assert.equal(stillArmed(paidOn, gateSubject("mark_paid", after, sheet.details[owed.id]), false), false);
+  // Void it is refused once a credit is applied, and the row says so; an armed confirm must not outlive that.
+  assert.equal(stillArmed(voidOn, voidOn, after.paidCents > 0), false, "a refused act cannot stay armed");
+  assert.equal(stillArmed(null, paidOn, false), false, "unarmed is unarmed");
+});
+
+test("every gate on the card is armed through stillArmed, on the subject of its own act", () => {
+  const gate = source("Gate.tsx");
+  assert.match(gate, /stillArmed\(/, "Gate derives `armed` from what it was armed on");
+  const decide = source("card/Decide.tsx");
+  const gates = decide.match(/<Gate\b/g)?.length ?? 0;
+  const bound = [...decide.matchAll(/subject=\{gateSubject\("(\w+)"/g)].map((m) => m[1]);
+  assert.equal(gates, 3, "the three gated acts");
+  assert.deepEqual(bound.sort(), ["mark_paid", "send_reminder", "void_invoice"]);
+});
