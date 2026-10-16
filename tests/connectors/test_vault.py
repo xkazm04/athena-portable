@@ -2,6 +2,7 @@
 
 from __future__ import annotations
 
+import http.client
 import json
 import threading
 from collections.abc import Mapping
@@ -16,6 +17,7 @@ from athena.connectors.spec import ConnectorSpec
 from athena.connectors.vault import (
     HostRefused,
     NeedsReauth,
+    NoAnswer,
     NotConnected,
     UrllibTransport,
     Vault,
@@ -467,3 +469,24 @@ def test_a_probe_that_names_no_account_never_matches(
     vault.disconnect("notion")
     record = vault.connect_token("notion", TOKEN)
     assert record.writes_enabled is False and "did not name" in record.notice
+
+
+class _BrokenOpener:
+    def __init__(self, error: BaseException) -> None:
+        self.error = error
+
+    def open(self, request: Any, timeout: float) -> Any:
+        raise self.error
+
+
+@pytest.mark.parametrize(
+    "error",
+    [http.client.BadStatusLine("garbage"), http.client.IncompleteRead(b"half")],
+    ids=["bad-status-line", "incomplete-read"],
+)
+def test_a_garbled_answer_is_the_vaults_own_error_never_an_http_client_one(
+    monkeypatch: pytest.MonkeyPatch, error: BaseException
+) -> None:
+    monkeypatch.setattr("athena.connectors.vault._OPENER", _BrokenOpener(error))
+    with pytest.raises(NoAnswer, match=type(error).__name__):
+        UrllibTransport()("POST", "https://api.notion.com/v1/pages", {}, b"{}", 5.0)

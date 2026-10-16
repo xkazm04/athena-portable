@@ -30,6 +30,7 @@ runs in a test against a fake provider with no network.
 from __future__ import annotations
 
 import contextlib
+import http.client
 import json
 import logging
 import os
@@ -200,8 +201,15 @@ class UrllibTransport:
                 why = type(exc.reason).__name__
                 raise NoAnswer(f"the provider did not answer: {why}") from None
             raise VaultError(f"the provider could not be reached: {type(exc).__name__}") from None
-        except (TimeoutError, ConnectionResetError, ConnectionAbortedError) as exc:
-            # After the request went out: whatever it asked for may have been done.
+        except (
+            TimeoutError,
+            ConnectionResetError,
+            ConnectionAbortedError,
+            http.client.HTTPException,
+        ) as exc:
+            # After the request went out (a garbled or cut-short answer included): whatever it
+            # asked for may have been done. ``http.client``'s own errors are not ``OSError``s, and
+            # one that escaped here would end the turn instead of failing the call.
             raise NoAnswer(f"the provider did not answer: {type(exc).__name__}") from None
         except OSError as exc:
             raise VaultError(f"the provider could not be reached: {type(exc).__name__}") from None
