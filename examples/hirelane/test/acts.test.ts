@@ -269,3 +269,22 @@ test("the dossier's act set equals what the server actions accept, for every app
     assert.ok(seen.has(reason), `the matrix met ${reason}, so the parity covers it`);
   }
 });
+
+test("the agent's dossier read says which of a person's slots is booked and which is only held", async () => {
+  const fresh = db().all<{ id: string; slot: string }>(
+    "SELECT applicant_id AS id, id AS slot FROM slots WHERE status = 'booked' ORDER BY applicant_id",
+  );
+  assert.ok(fresh.length > 0, "the seed books interviews, or this asserts nothing");
+  const board = buildBoard();
+  for (const { id, slot } of fresh) {
+    const { role, candidate } = find(board, id);
+    const read = dossierRead(role, candidate, board.slots);
+    const entry = read.slots_held.find((s) => s.id === slot);
+    assert.ok(entry, `${id}: the booked interview is listed`);
+    assert.equal(entry.status, "booked", `${id}: and it says it is booked, not held`);
+  }
+  const { role, candidate } = find(board, heldFor);
+  const holds = dossierRead(role, candidate, board.slots).slots_held.filter((s) => held.includes(s.id));
+  assert.equal(holds.length, 3);
+  for (const h of holds) assert.equal(h.status, "held", `${h.id}: a hold reads as a hold`);
+});

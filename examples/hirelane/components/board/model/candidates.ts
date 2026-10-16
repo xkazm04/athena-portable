@@ -47,8 +47,11 @@ export interface BdStageMeta {
   /** screening: criteria carrying at least one quoted sentence, out of all. */
   evidenced: number;
   criteriaCount: number;
-  /** interview: slots held for this candidate. */
-  held: { id: string; interviewer: string; startTs: string; minutes: number }[];
+  /**
+   * interview: every slot that is this candidate's, held or booked. `booked` is an interview they
+   * have been emailed about; `held` is time Propose slots is keeping for them and nobody has sent.
+   */
+  held: { id: string; interviewer: string; startTs: string; minutes: number; status: "held" | "booked" }[];
   /** offer / closed: what has already reached this person. */
   sent: { kind: "scheduling" | "rejection"; subject: string; ts: string }[];
   /** Every stage: the newest acts on this person, newest first, bounded by `HISTORY_SHOWN`. */

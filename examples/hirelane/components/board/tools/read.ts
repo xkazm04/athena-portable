@@ -109,11 +109,14 @@ export function dossierRead(role: BdRole, candidate: BdCandidate, slots: readonl
     })),
     waiting_days: candidate.meta.waitingDays,
     criteria_evidenced: `${candidate.meta.evidenced} of ${candidate.meta.criteriaCount}`,
+    // A booked interview has been emailed about; a held slot has not. Both are this person's, and
+    // an agent deciding whether to propose or to write needs to know which it is looking at.
     slots_held: candidate.meta.held.map((h) => ({
       id: h.id,
       interviewer: h.interviewer,
       starts: h.startTs,
       minutes: h.minutes,
+      status: h.status,
     })),
     already_sent: candidate.meta.sent.map((s) => ({ kind: s.kind, subject: s.subject, at: s.ts })),
     acts: actsRead(candidate, slots),

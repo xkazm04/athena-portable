@@ -49,7 +49,13 @@ export function buildBoard(): BdBoard {
   for (const s of slots) {
     if (!s.applicant_id || s.status === "open") continue;
     const list = heldBy.get(s.applicant_id) ?? [];
-    list.push({ id: s.id, interviewer: s.interviewer, startTs: s.start_ts, minutes: s.minutes });
+    list.push({
+      id: s.id,
+      interviewer: s.interviewer,
+      startTs: s.start_ts,
+      minutes: s.minutes,
+      status: s.status === "booked" ? "booked" : "held",
+    });
     heldBy.set(s.applicant_id, list);
   }
 
