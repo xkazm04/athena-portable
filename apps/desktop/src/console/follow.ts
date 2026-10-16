@@ -14,7 +14,7 @@ import { useEffect, useRef } from "react";
 
 import { shapeOf, type Path } from "@/depth/model";
 import { useDepth } from "@/depth/store";
-import { onLayoutChanged } from "@/lib/ipc";
+import { hasShell, onLayoutChanged } from "@/lib/ipc";
 import { itemOfTab, pagePath } from "@/scenes/apps/model";
 import { useTabs } from "@/stores/tabs";
 
@@ -54,14 +54,28 @@ export function useFollowShell(): void {
   const previous = useRef<number | null>(null);
 
   useEffect(() => {
+    // No shell (the preview harness's `?scene=console`, a plain browser): Rust moves nothing, and
+    // `listen` would only reject. Every other listener in the app asks the same question first.
+    if (!hasShell()) return;
+    let alive = true;
     let stop: (() => void) | undefined;
-    void onLayoutChanged((shape) => {
+    onLayoutChanged((shape) => {
       const { path, go } = useDepth.getState();
       const tab = useTabs.getState().tabs.find((t) => t.focused);
       const to = followLayout(path, shape, tab ? { id: tab.id, url: tab.url } : null);
       if (to) go(to);
-    }).then((un) => (stop = un));
-    return () => stop?.();
+    })
+      .then((un) => {
+        // A listener that lands after the console unmounted (StrictMode's dev remount) is taken
+        // down at once, or it would keep following for a console that is gone.
+        if (alive) stop = un;
+        else un();
+      })
+      .catch((error: unknown) => console.error(`[console] follow the layout: ${String(error)}`));
+    return () => {
+      alive = false;
+      stop?.();
+    };
   }, []);
 
   useEffect(() => {
