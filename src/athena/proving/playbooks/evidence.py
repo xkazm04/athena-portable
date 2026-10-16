@@ -1125,9 +1125,10 @@ def verify(books: Iterable[Playbook], repo: Path) -> list[Standing]:
             elif required:
                 notes.append(f"{where or part} is missing")
         notes += _story_notes(repo, index)
-        if state == "current" and index.get("narration", {}).get("text") != narration(
-            book.showcase, bench
-        ):
+        # Read like the media entries above: anything but an object is an entry with no text.
+        spoken = index.get("narration")
+        said = spoken.get("text") if isinstance(spoken, dict) else None
+        if state == "current" and said != narration(book.showcase, bench):
             notes.append("the narration no longer says what the record says: film it again")
         out.append(Standing(book.id, state, tuple(notes)))
     return out

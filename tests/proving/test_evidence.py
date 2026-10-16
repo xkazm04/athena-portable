@@ -390,6 +390,23 @@ def test_verify_reports_a_malformed_record_instead_of_raising(
     assert note.startswith(f"{name} ")
 
 
+@pytest.mark.parametrize("narrated", ["the words, flattened", None, ["a", "list"]])
+def test_verify_reads_a_narration_that_is_not_an_object_as_a_fault_not_a_crash(
+    tmp_path: Path, narrated: Any
+) -> None:
+    """The narration entry is read like the video's and the thumbnail's: anything but an object
+    is an entry with no text. Before: ``.get`` on a string raised, and ``--verify`` reported no
+    playbook at all."""
+    root = _copy(tmp_path)
+    _index(root, str(_json(root / "bench.json")["run_at"]))
+    index = _json(root / "evidence.json")
+    index["narration"] = narrated
+    (root / "evidence.json").write_text(json.dumps(index), encoding="utf-8")
+    [standing] = verify([load_playbook(root)], tmp_path)
+    assert standing.state == "current" and not standing.ok
+    assert "the narration no longer says what the record says: film it again" in standing.notes
+
+
 def test_verify_still_reports_the_other_playbooks_and_exits_nonzero(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
