@@ -25,6 +25,7 @@ from typing import Any
 from athena.connectors.spec import AuthSpec
 
 __all__ = [
+    "CALLBACK_WAIT_S",
     "FLOW_TTL_S",
     "JUNK_BUDGET",
     "FlowManager",
@@ -37,6 +38,9 @@ __all__ = [
 FLOW_TTL_S = 600.0
 #: How many callbacks that are not this flow's are answered before the listener gives up.
 JUNK_BUDGET = 32
+#: How long the browser's callback page waits for the exchange to settle before it answers, so
+#: it says what happened rather than what was hoped (an admission may wait for a running turn).
+CALLBACK_WAIT_S = 10.0
 
 PHASES: tuple[str, ...] = ("awaiting_consent", "exchanging", "done", "failed")
 
@@ -159,6 +163,19 @@ class OAuthFlow:
     def wait(self, timeout: float | None = None) -> bool:
         return self._done.wait(timeout)
 
+    def page_text(self) -> str:
+        """What the browser tab says after this flow's own callback: the outcome, never a hope."""
+        if self.phase == "done":
+            return "Athena is connected. You can close this tab."
+        if self.phase == "failed":
+            return (
+                f"Athena could not finish connecting: {self.detail.rstrip('.')}. "
+                "Close this tab and try again from Athena."
+            )
+        return (
+            "Athena is finishing the connection. You can close this tab; Athena shows the result."
+        )
+
     def _set(self, phase: str, detail: str) -> None:
         self.phase = phase
         self.detail = detail
@@ -214,11 +231,11 @@ def _make_handler(flow: OAuthFlow) -> type[BaseHTTPRequestHandler]:
             ours = url.path == "/callback" and flow.accept_callback(
                 query.get("state", ""), query.get("code"), query.get("error")
             )
-            text = (
-                "Athena is connected. You can close this tab."
-                if ours and flow.phase != "failed"
-                else "This page is not for this flow."
-            )
+            if ours:
+                flow.wait(CALLBACK_WAIT_S)
+                text = flow.page_text()
+            else:
+                text = "This page is not for this flow."
             body = text.encode("utf-8")
             self.send_response(200 if ours else 404)
             self.send_header("Content-Type", "text/plain; charset=utf-8")

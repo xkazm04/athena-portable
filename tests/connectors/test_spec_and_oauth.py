@@ -4,6 +4,7 @@ own callback (connectors/spec.py, connectors/oauth.py)."""
 from __future__ import annotations
 
 import json
+import threading
 import urllib.request
 from typing import Any
 
@@ -140,3 +141,55 @@ def test_a_flow_view_carries_no_verifier_or_key() -> None:
     # the signing key never leave the process.
     assert flow.verifier not in text and flow._key.hex() not in text
     flow.cancel()
+
+
+def _flow_with(on_code: Any) -> OAuthFlow:
+    return OAuthFlow(
+        "gmail", load_builtin()["gmail"].auth, client_id="cid", on_code=on_code, ttl_s=10
+    ).start()
+
+
+def test_the_browser_page_says_connected_only_once_the_grant_is_admitted() -> None:
+    def refused(flow: OAuthFlow, code: str) -> str:
+        raise RuntimeError("Gmail refused the code with 400")
+
+    flow = _flow_with(refused)
+    try:
+        status, text = _get(f"http://127.0.0.1:{flow.port}/callback?state={flow.state}&code=c")
+        assert status == 200 and "connected." not in text
+        assert "could not finish connecting" in text and "refused the code with 400" in text
+    finally:
+        flow.cancel()
+
+
+def test_the_browser_page_for_a_declined_consent_says_so_not_that_it_is_a_stranger() -> None:
+    flow = _flow_with(lambda f, c: "")
+    try:
+        status, text = _get(
+            f"http://127.0.0.1:{flow.port}/callback?state={flow.state}&error=access_denied"
+        )
+        assert status == 200 and "not for this flow" not in text
+        assert "access_denied" in text
+    finally:
+        flow.cancel()
+
+
+def test_the_browser_page_for_a_slow_admission_says_it_is_still_finishing(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    monkeypatch.setattr("athena.connectors.oauth.CALLBACK_WAIT_S", 0.2)
+    gate = threading.Event()
+
+    def slow(flow: OAuthFlow, code: str) -> str:
+        assert gate.wait(5)
+        return "me@example.test"
+
+    flow = _flow_with(slow)
+    try:
+        status, text = _get(f"http://127.0.0.1:{flow.port}/callback?state={flow.state}&code=c")
+        assert status == 200 and "connected." not in text and "finishing" in text
+        gate.set()
+        assert flow.wait(5) and flow.phase == "done"
+    finally:
+        gate.set()
+        flow.cancel()

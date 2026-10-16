@@ -636,7 +636,8 @@ def test_a_flow_cancelled_while_its_code_is_exchanged_admits_nothing(
     google.block = True
     try:
         flow = vault.connect_oauth("gmail", client_id="B", client_secret="b", open_browser=False)
-        _callback(flow.port, flow.state, "the-code")
+        # On a thread: the callback page waits for the exchange this test is holding.
+        threading.Thread(target=_callback, args=(flow.port, flow.state, "the-code")).start()
         assert google.entered.wait(5), "the exchange never started"
         flow.cancel("replaced by a newer flow")
         google.release.set()
