@@ -155,3 +155,17 @@ export function actRefusal(act: ListedAct, mark: LnMark, detail: LnDetail | unde
       return null;
   }
 }
+
+/**
+ * The first line of the decision list's conversation slot, from the page's own
+ * reading of whether a bridge is here (`presence.ts` useAthenaPresence) - the same
+ * reading the footer's presence line draws. In ink it was a sentence that cannot
+ * become false, and with a bridge in the page the footer said connected while the
+ * dialog said not. Neither branch says Athena has done, is doing or will do
+ * anything (`design/pass3-law-brief.md` §4.1): the acts below are the person's.
+ */
+export function talkSay(bridged: boolean): string {
+  return bridged
+    ? "Athena is connected — the options below are still yours to take."
+    : "Athena is not connected — the options below are yours to take.";
+}

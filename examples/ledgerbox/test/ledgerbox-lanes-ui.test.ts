@@ -276,3 +276,18 @@ test("an armed gate's confirm is described by its own question, so a screen read
   const confirm = gate.match(/<button[^>]*data-kind="danger"[^>]*>/s)?.[0] ?? "";
   assert.match(confirm, new RegExp(`aria-describedby=\{${id}\}`), "the confirm is described by the question");
 });
+
+/* --------------------------------------------------- the conversation slot reads the presence */
+
+test("the decision list's conversation slot says whether Athena is connected from the page's own reading, not in ink", async () => {
+  // `presence.ts`: "Athena is not connected yet" in ink "is a sentence that cannot become false".
+  // The footer's presence line reads `useAthenaPresence`; the decision list printed the sentence
+  // as a literal, so with a bridge in the page the footer said connected and the dialog said not.
+  const { talkSay } = await import("../components/lanes/card/read");
+  assert.match(talkSay(false), /^Athena is not connected/);
+  assert.match(talkSay(true), /^Athena is connected/);
+  const decide = source("card/Decide.tsx");
+  assert.match(decide, /useAthenaPresence\(\)/, "the dialog takes the page's reading");
+  assert.match(decide, /talkSay\(presence\.bridged\)/, "and says the sentence for it");
+  assert.doesNotMatch(decide, /Athena is not connected/, "no sentence in ink");
+});

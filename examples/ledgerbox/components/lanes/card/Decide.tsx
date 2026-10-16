@@ -23,10 +23,10 @@
  * they are.
  *
  * THE CONVERSATION SLOT IS EMPTY AND SAYS SO. This is where Athena's proposal
- * and the user's reply will live. She is not connected to this app — no bridge,
- * no chat, no provider — so the slot renders that fact in the present tense of
- * registration rather than a disabled text box implying a feature that is
- * coming. `design/pass3-law-brief.md` §4.1 forbids any sentence in which Athena
+ * and the user's reply will live. Whether a bridge is in the page is READ, by
+ * the same `useAthenaPresence` the footer's presence line draws (`card/read.ts`
+ * talkSay), and said in the present tense of registration rather than as a
+ * disabled text box implying a feature that is coming. `design/pass3-law-brief.md` §4.1 forbids any sentence in which Athena
  * has done, is doing, or will shortly do something; "the options below are yours
  * to take" is what is true.
  *
@@ -55,7 +55,8 @@ import { isAuto } from "@/lib/manifest";
 import { TOOL_CLASSES, type ToolName } from "@/lib/tool-classes";
 import { Gate } from "../Gate";
 import type { LnDetail, LnMark } from "../model";
-import { actRefusal, gateSubject } from "./read";
+import { useAthenaPresence } from "../presence";
+import { actRefusal, gateSubject, talkSay } from "./read";
 import { fade, instant } from "../motion";
 import type { useRun } from "../useRun";
 
@@ -106,6 +107,7 @@ export function Decide({
   onClose: () => void;
 }) {
   const reduced = useReducedMotion();
+  const presence = useAthenaPresence();
   const paneRef = useRef<HTMLDivElement | null>(null);
   const headingRef = useRef<HTMLHeadingElement | null>(null);
 
@@ -343,9 +345,7 @@ export function Decide({
          */}
         <div className="ln-talk">
           <span className="ln-label">the conversation</span>
-          <p className="ln-talk-say">
-            Athena is not connected — the options below are yours to take.
-          </p>
+          <p className="ln-talk-say">{talkSay(presence.bridged)}</p>
           <p className="ln-talk-note">
             Her proposal and your reply will sit here. Every act below is registered and waiting.
           </p>
