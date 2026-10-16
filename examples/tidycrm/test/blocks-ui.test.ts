@@ -252,3 +252,9 @@ test("a table's card is announced name first, the order it prints in", () => {
   assert.match(label, /^Open \$\{table\.name\}/, `the name leads, as on the card: ${label}`);
   assert.match(label, /\$\{table\.ident\}/, "and the ident is still in it");
 });
+
+test("the foot's first crumb is BK_LEVELS' L0 word, the one read_view tells an agent", () => {
+  const foot = code("components/blocks/sheet/Foot.tsx");
+  assert.doesNotMatch(foot, /<b>The plate<\/b>/, "the crumb types the level's name by hand");
+  assert.match(foot, /<b>\{BK_LEVELS\[0\]\}<\/b>/, "the crumb prints the shared level word");
+});

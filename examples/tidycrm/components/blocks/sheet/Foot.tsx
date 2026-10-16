@@ -16,6 +16,7 @@
  * without interaction, still counted from the live registrations rather than typed.
  */
 import {
+  BK_LEVELS,
   DEVIATION_KINDS,
   DEVIATION_LABEL,
   type BkDatabase,
@@ -66,7 +67,7 @@ export function SheetFoot({
     <footer className="bk-foot">
       <div className="bk-crumbs">
         <span className="bk-crumb">
-          <b>The plate</b>
+          <b>{BK_LEVELS[0]}</b>
           <i>
             {sheet.databases.length} databases · {sheet.tableCount} tables · {sheet.records} records
           </i>
