@@ -24,7 +24,7 @@ import StatusDot, { type Tone } from "@/components/StatusDot";
 import type { Path } from "@/depth/model";
 import { whenAgo } from "@/lib/time";
 import { normaliseUrl } from "@/lib/url";
-import type { AppStanding, RegisteredApp } from "@/modules/browser/model";
+import { originOf, type AppStanding, type RegisteredApp } from "@/modules/browser/model";
 
 import type { AppsModel, PageEntry, ToolView } from "./model";
 import { appFor, appPath, pageFor, pagePath, toolPath } from "./model";
@@ -219,9 +219,13 @@ function Register({
   onRegister: (url: string) => void;
 }) {
   const [typed, setTyped] = useState("");
+  // The module registers an origin, and drops a URL that has none without a word (a phrase with a
+  // space, `about:blank`): such an address is refused here, with the reason, and stays in the box.
+  const url = normaliseUrl(typed);
+  const origin = url ? originOf(url) : "";
+  const placeable = origin !== "" && origin !== "null";
   const register = () => {
-    const url = normaliseUrl(typed);
-    if (!url) return;
+    if (!url || !placeable) return;
     setTyped("");
     onRegister(url);
   };
@@ -250,7 +254,13 @@ function Register({
             }
           }}
         />
-        <Button variant="primary" disabledReason={typed.trim() ? undefined : "Type an address first."} onClick={register}>
+        <Button
+          variant="primary"
+          disabledReason={
+            !typed.trim() ? "Type an address first." : placeable ? undefined : "That is not an address an app can live at."
+          }
+          onClick={register}
+        >
           Register and open
         </Button>
       </div>

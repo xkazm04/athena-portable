@@ -166,6 +166,22 @@ describe("the field", () => {
     expect(document.activeElement).not.toBe(input);
   });
 
+  it("keeps an address that names no origin in the box and says why, instead of clearing it for nothing", () => {
+    // The module's register drops a URL with no origin without a word (modules/browser
+    // `register`: `if (!origin) return`), so the box emptied and nothing was registered.
+    const a = mount("typical", PATHS.field!);
+    const input = host.querySelector<HTMLInputElement>('input[aria-label="Address of the app to register"]')!;
+    for (const typed of ["my invoicing tool", "about:blank"]) {
+      type(input, typed);
+      act(() => {
+        input.dispatchEvent(new KeyboardEvent("keydown", { key: "Enter", bubbles: true }));
+      });
+      expect(a.register).not.toHaveBeenCalled();
+      expect(input.value).toBe(typed);
+      expect(host.querySelector('[title="That is not an address an app can live at."]')).toBeTruthy();
+    }
+  });
+
   it("will not register an empty address, and says why on the button", () => {
     const a = mount("typical", PATHS.field!);
     const press = host.querySelector<HTMLInputElement>('input[aria-label="Address of the app to register"]')!;
