@@ -79,6 +79,23 @@ def _type_check(path: str, value: Any, declared: Any) -> ValidationResult:
     )
 
 
+def _same_json(a: Any, b: Any) -> bool:
+    """JSON Schema's equality, which ``==`` is not: ``True == 1`` in Python, ``true != 1`` here.
+
+    A boolean equals only a boolean; numbers compare by value, whatever their Python type; lists
+    and objects compare member by member under this same rule.
+    """
+    if isinstance(a, bool) or isinstance(b, bool):
+        return isinstance(a, bool) and isinstance(b, bool) and a == b
+    if isinstance(a, list) and isinstance(b, list):
+        return len(a) == len(b) and all(_same_json(x, y) for x, y in zip(a, b, strict=True))
+    if isinstance(a, dict) and isinstance(b, dict):
+        return a.keys() == b.keys() and all(_same_json(a[k], b[k]) for k in a)
+    if isinstance(a, list | dict) or isinstance(b, list | dict):
+        return False
+    return bool(a == b)
+
+
 def check_schema(params: dict[str, Any], schema: dict[str, Any]) -> ValidationResult:
     """Validate ``params`` against the supported subset, or reject with the first problem found.
 
@@ -127,7 +144,7 @@ def _check_value(path: str, value: Any, schema: dict[str, Any]) -> ValidationRes
 
     if "enum" in schema:
         allowed = schema["enum"]
-        if isinstance(allowed, list) and value not in allowed:
+        if isinstance(allowed, list) and not any(_same_json(value, v) for v in allowed):
             rendered = ", ".join(repr(v) for v in allowed)
             return ValidationResult.reject(
                 "validator_failed", f"{path}: {value!r} is not one of [{rendered}]"

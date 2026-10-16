@@ -112,6 +112,28 @@ def test_a_type_the_gate_cannot_check_refuses_every_call_instead_of_passing_it(
     assert "params_schema" in result.detail
 
 
+@pytest.mark.parametrize(
+    ("enum", "value"),
+    [([0, 1], False), ([1, 2], True), ([[1, 2]], [True, 2]), ([{"n": 1}], {"n": True})],
+)
+def test_an_enum_compares_as_json_does_so_a_boolean_never_passes_for_a_number(
+    enum: list[Any], value: Any
+) -> None:
+    """``True == 1`` in Python and ``true != 1`` in JSON; an untyped enum used to take the bool."""
+    schema = {"type": "object", "properties": {"pick": {"enum": enum}}}
+    result = check_schema({"pick": value}, schema)
+    assert not result.ok
+    assert result.reason == "validator_failed"
+    assert check_schema({"pick": enum[0]}, schema).ok
+
+
+def test_an_enum_still_takes_an_equal_number_of_the_other_numeric_type() -> None:
+    schema = {"type": "object", "properties": {"n": {"enum": [1, 2.5]}}}
+    assert check_schema({"n": 1.0}, schema).ok
+    assert check_schema({"n": 2.5}, schema).ok
+    assert not check_schema({"n": 3}, schema).ok
+
+
 def test_an_enum_refuses_a_value_it_does_not_list() -> None:
     result = check_schema({"key": "a", "scope": "world"}, SCHEMA)
     assert not result.ok
