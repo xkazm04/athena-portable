@@ -20,6 +20,7 @@ from athena.connectors.service import READ_CAP, Service, check_egress, is_write,
 from athena.connectors.spec import ConnectorSpec
 from athena.connectors.vault import UrllibTransport, Vault
 from athena.contracts.registry import ToolClass
+from athena.core import catalog as catalog_module
 from athena.core.catalog import CoreServices, build_catalog
 from athena.core.fence import is_fenced
 
@@ -321,3 +322,9 @@ def test_a_tool_whose_spec_leaves_reversible_unset_is_a_write_to_the_switch(
     assert len(provider.seen) == before, "nothing left"
     for tool in (*spec.tools, silent):
         assert is_write(tool.tool) is (tool.tool.default_class() is ToolClass.GATED)
+
+
+def test_the_connector_read_cap_is_the_catalogs_own() -> None:
+    """service.READ_CAP is a copy (importing the catalog's from here would be an import cycle:
+    the catalog imports connectors.port, whose package imports this module), so this pins it."""
+    assert READ_CAP == catalog_module.READ_CAP

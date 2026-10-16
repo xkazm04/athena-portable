@@ -38,7 +38,8 @@ from athena.core.fence import wrap_untrusted
 
 __all__ = ["READ_CAP", "Service", "check_egress", "is_write", "read_result", "services_for"]
 
-#: The same cap every other READ in the catalog is held to.
+#: The same cap every other READ in the catalog is held to: ``core.catalog.READ_CAP``, copied
+#: because importing it here is a cycle, and pinned equal by ``test_service``.
 READ_CAP = 1600
 CONNECTOR_TIER: Tier = 3
 
