@@ -1,0 +1,132 @@
+{
+ "context": "desktop-shell-rust",
+ "files_read": 15,
+ "loc": 10106,
+ "registry": "software-engineering/native-shell-integration, software-engineering/agent-browser-control, software-engineering/agent-memory",
+ "techniques": [
+  "native-side-owns-the-target-set",
+  "native-owned-stream",
+  "non-stealing-overlay",
+  "capability-presence-contract"
+ ],
+ "deviations": 1,
+ "assigned": [
+  {
+   "title": "The shell mints 16-hex capture ids the contract refuses, so no card shows its screenshot",
+   "verdict": "built a4ef2d1 - the shell side moved (12 hex): contracts first, every other kind and every Python/TS fixture is 12, and no card ever held a 16-hex id (the daemon dropped them all) and the store reads rows by key without checking width, so nothing is orphaned; moving ids.py to 16 would have broken every 12-hex fixture and any stored approval capture_id"
+  }
+ ],
+ "built": [
+  {
+   "sha": "a4ef2d1",
+   "title": "The shell mints capture ids at the contract's twelve hex digits, so the daemon keeps them and a card can show its screenshot",
+   "lens": "parity-auditor",
+   "red_before": "tests/contracts/test_ids.py::test_the_shells_capture_id_is_the_shape_this_table_accepts (reads store.rs with comments stripped): ['16'] != ['12']",
+   "after": "test_ids.py 42 passed; store.rs capture test asserts 12 lowercase hex; tests/daemon/test_gated_origins.py green; cargo check/clippy/test 0; vitest 1501"
+  },
+  {
+   "sha": "2052057",
+   "title": "A daemon that refuses to start keeps its reason on the status after it exits, and a refusal after a slow start is reported",
+   "lens": "error-handler",
+   "red_before": "daemon.rs a_refusal_survives_the_exit_that_follows_it (status read 'the daemon exited', not 'port in use') and a_refusal_after_a_slow_start_is_reported_and_not_dropped (1 report of 2), seeded on a behaviour-preserving refactor",
+   "after": "both green; cargo test 137; clippy 0 warnings; vitest 1501"
+  },
+  {
+   "sha": "2deab4d",
+   "title": "A select the page disabled, or any control inside a disabled fieldset, is refused rather than operated or reported as pressed",
+   "lens": "parity-auditor",
+   "red_before": "hands.test.ts: disabled select answered ok:true and changed value; fieldset-disabled button listed without '(disabled)' and page_click reported a click that never happened",
+   "after": "hands.test.ts 52 passed; desktop typecheck/lint/vitest 1505 0; cargo test 137"
+  },
+  {
+   "sha": "4c97cc8",
+   "title": "The screenshot refusal for a tab not on screen is one sentence again, not one with twenty-two spaces in the middle",
+   "lens": "copy-auditor",
+   "red_before": "hands.rs a_capture_of_a_tab_not_on_screen_says_so_in_one_plain_sentence: the literal carried 22 spaces of source indentation",
+   "after": "green; no other 4+-space run in any src-tauri string literal; cargo test 138"
+  },
+  {
+   "sha": "16a7cbd",
+   "title": "Closing a tab answers the calls still waiting on it at once, instead of after the relay's 35 s timer",
+   "lens": "state-coverage",
+   "red_before": "bridge.rs closing_a_tab_answers_its_waiting_calls_now_and_leaves_other_tabs_alone (drop_tab seeded as a no-op): waited the full 5 s test deadline",
+   "after": "answered in under 1 s with reason timeout (surface maps a write to outcome_unknown); other tab untouched; cargo test 139; vitest 1505"
+  },
+  {
+   "sha": "d09dd09",
+   "title": "At a half-pixel scale such as 112.5 % the card's picture is the page, not the whole window with the bar and strip",
+   "lens": "bounty-hunter",
+   "red_before": "capture.rs the_page_rectangle_ends_inside_the_window_at_every_scale: '1.125 1920x1080 (0, 0): y 86 + h 995' (1081 > 1080); probe: 1600/1600 heights overshot at 112.5 %, 1491/1600 at 137.5 %, 0 at the default 5 % steps",
+   "after": "green over 11 scales x 4 sizes x 2 insets; whole-window fallback now refuses; cargo test 140; vitest 1505"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "A hand whose relay timed out reports reason unknown rather than timeout",
+   "before": "hands.rs from_page maps the relay's {ok:false,error:'timeout'} (no reason) to reason 'unknown'",
+   "after": "reason would read 'timeout', but apps/desktop/src/lib/execute.ts readTimeout already keys on error === 'timeout', so the run's outcome (outcome_unknown for a write) is identical on both sides: not-better"
+  },
+  {
+   "title": "capped() counts its (showing N of M) footer in bytes while every other footer counts characters",
+   "before": "hands.rs capped fires only past 8,000 bytes",
+   "after": "unreachable: hands.js packs every answer under 1,500 chars (<= 6,000 bytes in UTF-8), so 0 reachable cases either way: not-better"
+  },
+  {
+   "title": "daemon_restart passes any engine string where launch_engine keeps to KNOWN_ENGINES",
+   "before": "the panel sends only ENGINE_IDS, pinned to KNOWN_ENGINES by apps/desktop/src/lib/engines.test.ts:41; an unknown engine is refused by the daemon",
+   "after": "same outcome, and since 2052057 the refusal's reason now stays on the status: not-better"
+  }
+ ],
+ "lens_keys": [
+  {"key": "bounty-hunter", "checked": "capture.rs crop arithmetic swept over scales (built d09dd09); halo.rs show/hide atomics (card); bridge settle/late id namespace (clean)"},
+  {"key": "parity-auditor", "checked": "store.rs mint vs contracts/ids.py (built a4ef2d1); the three acting hands' disabled guards (built 2deab4d); hands.rs normalised vs ERROR_REASONS (subset, pinned); capped vs sourced footer units (rejected)"},
+  {"key": "error-handler", "checked": "daemon.rs supervise/await_ready refusal paths (built 2052057); hands call/from_page error doors; store.rs every map_err (all surfaced)"},
+  {"key": "observability-auditor", "checked": "daemon status overwrite on exit (built 2052057); hotkeys set_card_chords register-twice log noise (acknowledged in code); bridge dropped-reply eprintlns"},
+  {"key": "risk-assessor", "checked": "daemon start not serialised across windows (card); job object + tree kill exit hygiene (sound); token file creation mode"},
+  {"key": "code-optimizer", "checked": "halo thread-per-idle signal (page dedups identical frames, halo.ts:18); tabs announce per navigation; layout apply per resize - nothing real"},
+  {"key": "ux-reviewer", "checked": "tab close mid-call stalls the run 35 s (built 16a7cbd); tray menu and left-click show; companion snap/drop flow arithmetic (tested)"},
+  {"key": "visual-craft", "checked": "the card's capture showing chrome at 112.5 % (built d09dd09); companion STATES vs lib/companion.ts (pinned by test)"},
+  {"key": "state-coverage", "checked": "in-flight calls on a closed tab (built 16a7cbd); daemon Stopped/Starting/Ready/Failed transitions incl. late ready after timeout; first launch with unreadable store"},
+  {"key": "copy-auditor", "checked": "every refusal/format! literal in src-tauri/src (built 4c97cc8); tray tooltip and menu labels; SidecarError Display sentences"},
+  {"key": "accessibility-checker", "checked": "hands describe roles/labels (capped, string-only); global chords documented; tray menu items have text labels - nothing real"},
+  {"key": "test-strategist", "checked": "hand-kept lists: hands.rs vs hands.js FLAGS/descriptions/schemas (3-way parity tests exist); store.rs mint had none (added); supervise had no test (added)"},
+  {"key": "security-auditor", "checked": "tabs_create/navigate scheme bound (card, native-side-owns-the-target-set rule two); relay nonce/id namespace; token never on argv; ui_emit never broadcasts to pages"},
+  {"key": "documentation-auditor", "checked": "hands prose counts nine/eight hands (card); lib.rs registration comments; store.rs KeyMode::Caller citing a nonexistent ids.ts (fixed in a4ef2d1)"},
+  {"key": "dependency-auditor", "checked": "Cargo.toml dependencies (tauri unstable, global-hotkey 0.8, getrandom 0.3, png 0.17, rusqlite bundled) each justified in place - nothing real"},
+  {"key": "tech-debt-tracker", "checked": "grep TODO/FIXME/HACK/todo!/unimplemented! in src-tauri/src and hands.js: 0 hits"},
+  {"key": "architecture-analyst", "checked": "lib.rs registration blocks and module seams; ui_emit as the one privileged emit path; bridge/hands/tabs dependency direction - nothing real"},
+  {"key": "integration-planner", "checked": "daemon health probe (hand-written HTTP/1.1, Connection: close, body drained); dev_origin CORS widening - nothing real"},
+  {"key": "devops-optimizer", "checked": "sidecar_path triple resolution and the debug-only uv fallback (release refuses without ATHENA_DEV_FALLBACK) - nothing real"},
+  {"key": "registry-conformance", "checked": "native-shell-integration techniques against companion/halo/tabs: the recorded show_no_activate deviation left as recorded; tabs scheme bound filed as the one new deviation"},
+  {"key": "analytics-planner", "checked": "activity rows are the panel's (run.ts:458); the shell's HandResult carries tier/ms/reason for them - nothing real"},
+  {"key": "feature-scout", "checked": "placeholders/TODO grep (0); non-Windows capture refusal is stated, not hidden - nothing real"},
+  {"key": "onboarding-designer", "checked": "lib.rs is_first_launch: unreadable store counts as first launch, Main built hidden, companion at welcome - nothing real"},
+  {"key": "innovation-catalyst", "checked": "the hands catalogue and tabs_read shell hand - no in-scope gap beyond the built items"}
+ ],
+ "lens_no_surface": [
+  {"key": "mobile-specialist", "why": "native desktop shell; no viewport or touch code in these files"},
+  {"key": "monetization-advisor", "why": "no billing, plan or pricing code"},
+  {"key": "growth-hacker", "why": "no sharing, invite or referral surface"},
+  {"key": "business-strategist", "why": "plumbing for windows, tabs and the sidecar; no product funnel in these files"},
+  {"key": "ui-perfectionist", "why": "no CSS or components in this context; window sizes are a table pinned to lib/companion.ts by an existing test"}
+ ],
+ "findings": 13,
+ "lanes": "A:6/B:3/C:1",
+ "fp": 0,
+ "gates": {
+  "cargo check (src-tauri)": 0,
+  "cargo clippy --all-targets (src-tauri)": 0,
+  "cargo test (src-tauri, 140 passed)": 0,
+  "pnpm typecheck (apps/desktop)": 0,
+  "pnpm lint (apps/desktop)": 0,
+  "pnpm test (apps/desktop, 1505 passed)": 0,
+  "uv run ruff check tests/contracts/test_ids.py src/athena/contracts/ids.py": 0,
+  "uv run ruff format --check (same two files)": 0,
+  "uv run mypy": 0,
+  "uv run pytest tests/contracts tests/daemon/test_gated_origins.py tests/harness/test_capture_on_card.py -m 'not provider and not eval'": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "6 built incl. assigned; 4 cards (3 B, 1 C); 3 rejected",
+ "notes": "Findings and round files are left uncommitted for the wave ledger commit. Capture-id direction: the shell moved to 12 hex (contracts first; nothing orphaned). Sibling WIP seen uncommitted in examples/demo-kit (not mine); tests/daemon/test_ready.py and tests/test_wiring.py were dirty at my first commit (not mine, not staged). None of the six fixes was seen in the real Tauri window. Consult line: {\"bundle\":\"software-engineering\",\"subjects\":[\"native-shell-integration\",\"agent-browser-control\"],\"techniques\":[\"native-side-owns-the-target-set\",\"native-owned-stream\",\"non-stealing-overlay\",\"capability-presence-contract\"],\"deviations\":1}. No registry lead filed."
+}

@@ -1,0 +1,70 @@
+{
+  "context": "demo-kit-template",
+  "files_read": 20,
+  "loc": 951,
+  "registry": "software-engineering/templates-scaffolding",
+  "techniques": ["template-portability"],
+  "deviations": 1,
+  "assigned": [],
+  "built": [
+    {"sha": "18742dd", "title": "navigate refuses a record id whose page is another view (.., ., activity); viewFor stops calling /activity-* the log", "lens": "bounty-hunter", "red_before": "demo-kit-template.test.ts: 2 of 3 failed - navigate({view:'detail',id:'..'}) answered ok and pushed /.., which lands on list; viewFor('/activity-log') returned 'activity'", "after": "0 of 7 probed ids answer a view they do not land on (was 3 of 7); 3 of 3 pass, template-navigate.test.ts still green"},
+    {"sha": "34ccc7b", "title": "Template comments name the kit's seam instead of listing and counting sibling apps; dangling README-appendix pointer removed", "lens": "copy-auditor", "red_before": "5 lines name or count siblings (globals.css:13,:15, providers.tsx:9, HostCapabilities.tsx:8, constants.ts:7; 'three of the four' was already false, atlas uses the same seam); providers.tsx points at a README appendix that does not exist", "after": "0 hits, 0 pointers; sibling names derived from examples/*/app/layout.tsx"},
+    {"sha": "c870d9e", "title": "Template spends the kit's spacing scale instead of re-typing --dk-gap as 12px", "lens": "visual-craft", "red_before": "2 offenders: '--dk-gap: 12px', 'gap: calc(var(--dk-gap) / 2)'", "after": "0 offenders; rendered values identical (step 6 = 12px, step 3 = 6px)"},
+    {"sha": "2589947", "title": "Template drops the .dk-flight rule whose element a8e5116 replaced with the echo", "lens": "code-optimizer", "red_before": "orphan classes: ['dk-flight'] (git grep: no consumer outside the stylesheet and KIT-GAPS.md)", "after": "[]"},
+    {"sha": "2da93fb", "title": "L2 overlay centred by insets and auto margins instead of left:50% + translate:+50%", "lens": "ui-perfectionist", "red_before": "ltr at 375px: the 300px overlay starts at 338px, centred is 38px (right edge 638px)", "after": "centred within 0.5px at 375/768/1280px, ltr and rtl"},
+    {"sha": "8641e26", "title": "Overlay's focus-return selector escapes the record id, as the echo's selector in the same file does", "lens": "parity-auditor", "red_before": "1 raw site: components/Levels.tsx [data-record=\"${record.id}\"] button (escaped echo selector already passed)", "after": "0 raw sites"},
+    {"sha": "95fd34c", "title": "Level rows take a pointer cursor and the kit's hover ground", "lens": "ui-perfectionist", "red_before": "'.dk-level-row has no pointer cursor', '.dk-level-row has no :hover state'", "after": "none missing"}
+  ],
+  "rejected": [
+    {"title": "Levels' owner grouping copies each group's array on every row (O(n^2) spread)", "before": "24 rows/23 owners (the template's data): spread 0.2 ms", "after": "push 0.5 ms - not-better at the template's scale; the gap (225 ms vs 1.3 ms) appears only at 20k rows, where rendering 20k DOM rows dominates"}
+  ],
+  "lens_keys": [
+    {"key": "bounty-hunter", "checked": "routeFor over 7 hostile ids through new URL() (built 18742dd); resolveGroup vs the kit's zoomAt with the pointer on each of 23 rows (1 of 23 right, card); selector interpolation (built 8641e26)"},
+    {"key": "parity-auditor", "checked": "viewFor in HostCapabilities vs its hand copy in template-navigate.test.ts and routeFor (built); CSS.escape at Levels.tsx:163 vs :291 (built); template --dk-gap vs kit scale (built); atlas's .at-echo fix vs template .dk-echo (card); template package.json vs a3fecd5's version move (card)"},
+    {"key": "error-handler", "checked": "undoAction/applyUndo: an unknown undo shape throws through withTx as a server-action rejection; the kit's ActivityLog catches and shows err.message (redacted to a generic line in prod) - impact 2, not emitted; navigate refusals return {ok:false,error} (pinned)"},
+    {"key": "observability-auditor", "checked": "actions.ts: a failed undo rolls back and writes no activity row, the success path writes one - matches the kit's undoActivity contract, user-caused refusals; seed writes its system row - no finding"},
+    {"key": "risk-assessor", "checked": "template reached by no gate (workspace glob and kit tsconfig both skip it) while the sibling round changes useWebMCPTool's types - card; out-of-tree tsc/eslint built in scratch, seeded red"},
+    {"key": "code-optimizer", "checked": ".dk-flight dead rule (built 2589947); owner grouping spread timed at 24/2000/20000 rows (rejected); camera subscribe writes transform without React state (sound)"},
+    {"key": "ux-reviewer", "checked": "Levels L1/L2 rendered under the L0 camera pose (card C); no on-screen up control (card); seed gives 23 owners for 24 records (card)"},
+    {"key": "visual-craft", "checked": "globals.css token block vs kit demo-kit.css scale (built c870d9e); overlay uses --dk-shadow (card shadow) where the kit's drawer takes --dk-shadow-lg - folded into the Levels direction card's redesign, not emitted"},
+    {"key": "state-coverage", "checked": "Levels with rows=[] renders an empty list while RecordsTable shows EmptyState; focus.group that vanished on revalidate leaves a blank level>0 (Escape still works) - low, not emitted; RecordsTable empty/selection states read"},
+    {"key": "copy-auditor", "checked": "every comment in the 17 files vs the tree: sibling names/counts and README appendix (built 34ccc7b); Levels header 'nine rules' and 'live layer mounts at its final size' (in card C); README check script, clonedeck, 'hundred lines' (card, out of paths); activity lede"},
+    {"key": "accessibility-checker", "checked": "Overlay role=dialog, aria-modal, aria-label, tabIndex -1 focus-in and focus return (escape fix built); scene section focusable via bind.tabIndex with aria-label 'Levels'; buttons are real buttons - no further finding"},
+    {"key": "test-strategist", "checked": "template-navigate.test.ts keeps a hand copy of viewFor (now stale-shaped, cannot edit); new demo-kit-template.test.ts pins 9 template promises; template typecheck gate absent (card)"},
+    {"key": "security-auditor", "checked": "routeFor href: '//evil.com' encodes to /%2F%2Fevil.com (no open redirect), '..' now refused; read_selection bounded with announced count; no innerHTML/eval/env/fetch in the template; server-only modules not imported from 'use client' files"},
+    {"key": "ui-perfectionist", "checked": "overlay geometry (built 2da93fb); level-row hover/cursor vs kit controls (built 95fd34c); overlay ink vs box timing, rule 3 (card); page jump of ~1230px on level change (in card C)"},
+    {"key": "mobile-specialist", "checked": "touch-action:none and non-passive wheel over a 1282px in-flow scene (card C); overlay at 375px (built)"},
+    {"key": "architecture-analyst", "checked": "Levels mixes a swapping layout with a camera over it, formula rules 1/10/11 (card C)"},
+    {"key": "dependency-auditor", "checked": "template package.json vs the four apps and the kit: @types/react 19.2.18/@types/react-dom 19.2.7 vs 19.3.0 (card); other pins equal"},
+    {"key": "registry-conformance", "checked": "templates-scaffolding golden path and template-portability: payload prose naming the author's sibling apps (built 34ccc7b)"},
+    {"key": "integration-planner", "checked": "the three WebMCP registrations (navigate, read_current_view, read_selection): enums, reversible/sideEffects annotations, refusal shape - sound after 18742dd"},
+    {"key": "documentation-auditor", "checked": "template README against the tree: check-template.mjs never existed, clonedeck, Levels line count (folded into the test-strategist card; README out of paths)"},
+    {"key": "tech-debt-tracker", "checked": "hand-kept mirrors: STEP=72 mirrors the CSS row (card), viewFor mirror in the old test (note)"},
+    {"key": "onboarding-designer", "checked": "the README's copy-and-rename procedure for a new app: its first gate would meet the @types duplicate (card); activity page lede"}
+  ],
+  "lens_no_surface": [
+    {"key": "monetization-advisor", "why": "no billing, plans or pricing in a demo-app skeleton"},
+    {"key": "growth-hacker", "why": "no sharing, invites or notifications"},
+    {"key": "business-strategist", "why": "a developer scaffold with no end-user business surface"},
+    {"key": "innovation-catalyst", "why": "stabilize run; the template calls no model by rule"},
+    {"key": "analytics-planner", "why": "the template forbids telemetry (README rules); nothing to instrument"},
+    {"key": "devops-optimizer", "why": "no pipeline, deploy or container in the template; its missing gate is recorded under test-strategist"},
+    {"key": "feature-scout", "why": "stabilize strategy; no forward-building surface in a scaffold beyond what the cards cover"}
+  ],
+  "findings": 16,
+  "lanes": "A:7/B:6/C:2",
+  "fp": 0,
+  "gates": {
+    "pnpm --filter @athena/demo-kit typecheck (tsc + node --test)": 0,
+    "pnpm --filter @athena/demo-kit lint": 0,
+    "pnpm --filter @athena/demo-kit test (181 pass)": 0,
+    "pnpm typecheck (root, final run)": 0,
+    "pnpm --filter atlas/hirelane/ledgerbox/tidycrm/@athena/demo-kit typecheck": 0,
+    "template tsc --noEmit, out of tree against atlas node_modules (seeded error -> 2)": 0,
+    "template eslint ., out of tree": 0
+  },
+  "leads": [],
+  "degraded": false,
+  "note": "7 built; the Levels camera model is the headline card (C)",
+  "notes": "Sibling reds seen: root pnpm typecheck exit 2 mid-round on apps/desktop/src/lib/manifest.test.ts (not mine; final run 0); one demo-kit typecheck run failed a ui-webmcp.test.ts seed-handle case while src/db/index.ts was mid-edit by the demo-kit-ui-webmcp round (re-run 0). The template is reached by no gate: I typechecked and linted it out of tree (scratch tplcheck.sh: junctions for node_modules and examples/demo-kit so pnpm's relative links resolve); the director should re-run that after the webmcp round lands, since it changes useWebMCPTool's types the template consumes. test/template-navigate.test.ts (existing, not mine to edit) still keeps a hand copy of the OLD viewFor (startsWith); it stays green but should import viewFor from template/lib/constants.ts now. Consult line: {\"bundle\":\"software-engineering\",\"subjects\":[\"templates-scaffolding\"],\"techniques\":[\"template-portability\"],\"deviations\":1}. No lead: the prose rule is already in template-portability. Lane B open +6."
+}

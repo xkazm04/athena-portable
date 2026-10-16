@@ -1,0 +1,217 @@
+{
+ "context": "demo-kit-ui-webmcp",
+ "files_read": 22,
+ "loc": 2411,
+ "registry": "software-engineering/mcp-tools, software-engineering/demo-data-plane, software-engineering/agent-addressable-ui (no surface: click-to-source)",
+ "techniques": [
+  "tool-schema-design",
+  "server-composition",
+  "untrusted-result-handling",
+  "client-integration",
+  "seeded-determinism"
+ ],
+ "deviations": 3,
+ "assigned": [],
+ "built": [
+  {
+   "sha": "1c9d7fd",
+   "title": "The WebMCP door refuses an array longer than the maxItems its schema publishes",
+   "lens": "parity-auditor",
+   "red_before": "ui-webmcp.test.ts: validateArgs returned null ('') for 3 ids against maxItems 2",
+   "after": "refused naming the argument and cap, top level and nested; demo-kit 163 pass, 4 apps green"
+  },
+  {
+   "sha": "b76fb2b",
+   "title": "The athena block says internal where the kit says data, so the gate reads it",
+   "lens": "parity-auditor",
+   "red_before": "ui-webmcp.test.ts: 'reversible data: data is not a contract value'; block alone gave GATED where classifyTool says AUTO",
+   "after": "6 of 6 claims read with basis athena; block, hints and classifyTool agree; root typecheck + 4 apps green"
+  },
+  {
+   "sha": "3dff1de",
+   "title": "Every object a WebMCP tool schema publishes is closed, as the door enforces",
+   "lens": "parity-auditor",
+   "red_before": "ui-webmcp.test.ts: open objects ['(top)','row','rows[]']",
+   "after": "[] open objects; root typecheck + 4 apps green"
+  },
+  {
+   "sha": "9647e1b",
+   "title": "A DataTable sort control is named by its visible header, and says its order",
+   "lens": "accessibility-checker",
+   "red_before": "ui-webmcp.test.ts (new .tsx render hook): accessible name 'Sort by updated_at' does not contain 'Updated'",
+   "after": "name is the header 'Updated'; aria-sort on the sorted th (click state pinned by code only)"
+  },
+  {
+   "sha": "584b2bc",
+   "title": "withTx rolls back only an open transaction, so the original error surfaces",
+   "lens": "error-handler",
+   "red_before": "ui-webmcp.test.ts: 'cannot rollback - no transaction is active' instead of /the real cause/",
+   "after": "original error, handle usable, live tx still rolls back; 4 apps green"
+  },
+  {
+   "sha": "36e2350",
+   "title": "openDb closes the connection a throwing seed opened",
+   "lens": "risk-assessor",
+   "red_before": "ui-webmcp.test.ts: rmSync EPERM on the temp dir (leaked handle's lock, Windows)",
+   "after": "dir removed, no -wal left; 4 apps green"
+  },
+  {
+   "sha": "1f33236",
+   "title": "A WebMCP handler that throws leaves its stack in the page console",
+   "lens": "observability-auditor",
+   "red_before": "ui-webmcp.test.ts: console.error called 0 times, expected 1",
+   "after": "1 call with the thrown object; refused arguments log nothing"
+  },
+  {
+   "sha": "7d3cf3d",
+   "title": "The stylesheet drops the manifest drawer rules nothing has ever drawn",
+   "lens": "ui-perfectionist",
+   "red_before": "ui-webmcp.test.ts: 9 dk-manifest classes styled, never drawn",
+   "after": "0 unused; seeded .dk-seeded-unused goes red; 11 rules removed (210 -> 199 lines)"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "relativeTime calls any future timestamp 'just now'",
+   "before": "future ts within clock skew read 'just now' (desired); no producer writes a far-future ts (seeds use fixed past dates, logActivity uses server now)",
+   "after": "Math.abs would turn a 2-minute skew into 'in 2 minutes' - worse on the only reachable case"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "bounty-hunter",
+   "checked": "ActivityLog busy slot (carded), modelContext polyfill abort-by-name vs same-name re-registration (0 duplicate tool names in any app: latent), relativeTime future branch (rejected), Rng.sample negative n (no caller)"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "athena side_effects vs manifest.py/gate.js SIDE_EFFECTS (built), door subset vs published keywords maxItems/additionalProperties (built x2), zoomTools listing sites vs bounded (carded), types.ts manifest mirror vs manifest.py (carded), annotationsFor vs flagsOf branches (pinned by test)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "db withTx catch (built), openDb seed failure (built under risk), door catch (built under observability), ActivityLog undo catch/finally (ok), theme localStorage try/catch (ok)"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "door handler fault discarded its stack (built); undoActivity returns reasons in-band; logActivity is the audit row for every mutation"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "openDb handle leak on seed failure (built), no busy_timeout on node:sqlite (single-process dev server: no trigger), OPEN cache keyed by file"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "useWebMCPTool re-registration deps and paramsKey memo, zoomTools text memo against the four call sites (constant levels, string nouns), DataTable sort memo, asText full stringify - nothing real"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "Toast Undo lifetime (carded), DataTable rows clickable by mouse only (tr onClick, no key path; folded out for budget), ActivityLog undo feedback"
+  },
+  {
+   "key": "visual-craft",
+   "checked": "demo-kit.css against its own token scale: raw widths 36px/1200px/180px remain (widths, not the spacing the header promise covers), chip and badge ranks, toast tone ranks - nothing beyond the dead drawer"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "ActivityLog empty/undone/error states, DataTable rows=0 without `empty` renders a header-only table, listActivity cut (carded), EmptyState"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "hooks docblock 'FOUR branches' listing five (fixed in b76fb2b), README signatures (carded), door refusal sentences, Toast 'dismiss' label"
+  },
+  {
+   "key": "accessibility-checker",
+   "checked": "DataTable sort name and aria-sort (built), Toast live region and timing (carded), ActivityLog error line without live region (carded with busy), EmptyState role=status, select-all lacks indeterminate"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "no UI test existed: built a .tsx transpile load hook so the kit's components render under node --test; db had no test: added two; door tests extended"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "SQL all parameterised (listActivity limit bound), door echoes the caller's own argument, polyfill exposes tools page-wide by design, undo_json parsed from the app's own DB - nothing"
+  },
+  {
+   "key": "ui-perfectionist",
+   "checked": "demo-kit.css transitions: the only one was the dead drawer's raw 160ms ease (removed); hover states without transition match siblings; AppShell header has no flex-wrap (needs a 375px viewport to judge)"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "mcp-tools deviation in .ai/registry-map.json: maxItems half closed by 1c9d7fd, signal half already fixed (ADR 0101); demo-data-plane seeded-determinism holds (rngFor streams)"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "package.json runtime deps: 5 of 6 imported by nothing (carded)"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "examples/demo-kit/README.md WebMCP and Signatures sections against the exports (carded); module docblocks cite their sections"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "src/index.ts barrel exports only pure types/functions (server-only modules stay on subpaths) - holds"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "modelContext.ts surface vs the July 2026 draft it quotes, and the bridge's describeTool reading athena/annotations - aligned after b76fb2b"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "slug() in seed/companies.ts duplicates Rng.slug: identical today, merging is churn"
+  },
+  {
+   "key": "feature-scout",
+   "checked": "WebMCPToolSpec cannot declare untrustedContentHint; core fences every host result anyway - no gap worth a card"
+  },
+  {
+   "key": "devops-optimizer",
+   "checked": "package.json typecheck runs node --test too, so the root gate runs the kit's tests twice (~1 s); not carded"
+  },
+  {
+   "key": "mobile-specialist",
+   "checked": "dk-table-wrap scrolls horizontally; AppShell header has no wrap at narrow widths - needs a viewport, not carded"
+  },
+  {
+   "key": "onboarding-designer",
+   "checked": "EmptyState takes title/description/action so a list can say what fills it; the template's copy is the other context's"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "monetization-advisor",
+   "why": "a demo scaffold with no billing, plans or pricing"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no sharing, invites or notifications beyond in-page toasts"
+  },
+  {
+   "key": "business-strategist",
+   "why": "the kit is shared plumbing for example apps; product value lives in the apps"
+  },
+  {
+   "key": "analytics-planner",
+   "why": "no product telemetry by design (no network at runtime); the activity log is provenance, judged under observability"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "the agent door is a standard surface; a paradigm proposal is challenge-mode work"
+  }
+ ],
+ "findings": 16,
+ "lanes": "A:8/B:7/C:0",
+ "fp": 0,
+ "gates": {
+  "pnpm --filter @athena/demo-kit typecheck": 0,
+  "pnpm --filter @athena/demo-kit lint": 0,
+  "pnpm --filter @athena/demo-kit test": 0,
+  "pnpm typecheck (root)": 0,
+  "pnpm --filter atlas test": 0,
+  "pnpm --filter hirelane test": 0,
+  "pnpm --filter ledgerbox test": 0,
+  "pnpm --filter tidycrm test": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "8 built (door schema parity x3, gate vocab, a11y, db x2, dead CSS); 7 B",
+ "notes": "Root pnpm typecheck went red once on examples/demo-kit/test/demo-kit-template.test.ts (the template round's in-flight globals.css); green on re-run 60 s later. .ai/registry-map.json mcp-tools 'deviation' for this context is now fully closed (maxItems by 1c9d7fd; signal by ADR 0101) - the director may re-judge it with /conform. New instrument in examples/demo-kit/test/ui-webmcp.test.ts: a load hook that transpiles .tsx with the kit's TypeScript, so UI primitives render under node --test (static only; no DOM). Consult line: {\"bundle\":\"software-engineering\",\"subjects\":[\"mcp-tools\",\"demo-data-plane\"],\"techniques\":[\"tool-schema-design\",\"server-composition\",\"seeded-determinism\"],\"deviations\":3}. No registry lead filed."
+}

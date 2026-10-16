@@ -1,0 +1,223 @@
+{
+ "context": "daemon-service",
+ "files_read": 25,
+ "loc": 6667,
+ "registry": "software-engineering/agent-browser-control, software-engineering/error-handling, software-engineering/agent-runtime-assembly, software-engineering/voice-io, software-engineering/agent-memory",
+ "techniques": [
+  "socket-scoped-surface",
+  "crash-capture",
+  "error-doors",
+  "structured-propagation",
+  "docs-sync"
+ ],
+ "deviations": 2,
+ "assigned": [
+  {
+   "title": "The daemon composes turns with no law when the constitution is missing",
+   "verdict": "built 43ec360"
+  },
+  {
+   "title": "A page_origin of http://localhost.evil.example passes the https-or-localhost rule",
+   "verdict": "built 518fc33"
+  }
+ ],
+ "built": [
+  {
+   "sha": "43ec360",
+   "title": "The daemon is not built when no law is on file; athena serve refuses on its failure line",
+   "lens": "parity-auditor",
+   "red_before": "tests/test_wiring.py: DID NOT RAISE ConstitutionMissing; tests/daemon/test_ready.py: the daemon printed a ready line and served until the 60 s timeout",
+   "after": "build_local raises ConstitutionMissing (brain closed); serve prints {ok:false, detail:'ConstitutionMissing: no law.md ... $ATHENA_CONSTITUTION'}; desktop shows 'the daemon refused to start', no respawn"
+  },
+  {
+   "sha": "518fc33",
+   "title": "A page origin is read off its parsed host (ADR 0119), one table on both sides",
+   "lens": "security-auditor",
+   "red_before": "old validate on the table: 4 of 5 refuse rows admitted, 1 of 3 accept rows refused; vitest with the old predicate: 'http://127.0.0.1:3001: expected false to be true' and the evil origin offered",
+   "after": "0 of 5 refuse rows admitted, 3 of 3 accept rows admitted on both sides; 0 manifests in the tree newly refused"
+  },
+  {
+   "sha": "6c119b7",
+   "title": "A damaged or locked brain index fails on the failure line with the reconcile remedy",
+   "lens": "error-handler",
+   "red_before": "tests/daemon/test_ready.py: stdout empty (JSONDecodeError); probe: exit 1, IndexDamagedError traceback on stderr only",
+   "after": "{ok:false, detail:'IndexDamagedError: ... run `athena brain reconcile` ...'}, exit 1"
+  },
+  {
+   "sha": "3794082",
+   "title": "The daemon's port is its own on Windows (SO_EXCLUSIVEADDRUSE)",
+   "lens": "bounty-hunter",
+   "red_before": "tests/daemon/test_server.py: 'a second daemon bound port 53692 beside the first'",
+   "after": "second make_server raises OSError; a SO_REUSEADDR socket cannot bind the port; a closed daemon's port rebinds at once"
+  },
+  {
+   "sha": "aa474d6",
+   "title": "A decision naming too many switched-off origins is refused 400 like a run, not 500",
+   "lens": "parity-auditor",
+   "red_before": "tests/daemon/test_decisions.py: assert 500 == 400 (detail ListTooLong)",
+   "after": "400 validator_failed naming disabled_origins; card stays pending"
+  },
+  {
+   "sha": "38b2a45",
+   "title": "A route or socket that raises leaves one line in the daemon's log, quoting nothing",
+   "lens": "observability-auditor",
+   "red_before": "tests/daemon/test_server.py: [] == ['[daemon] POST /boom raised RuntimeError']",
+   "after": "exactly that line on stderr; body text absent; stdout empty"
+  },
+  {
+   "sha": "bfc391d",
+   "title": "The package and routes docstrings name every module and base route, held by a test",
+   "lens": "copy-auditor",
+   "red_before": "tests/daemon/test_routes.py: ['GET /engines'] missing; ['connectors','voice'] missing",
+   "after": "0 missing on both"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "decide appends the typed answer episode outside the writer lock",
+   "before": "Brain.append_episode runs under the brain's own _write_lock (store.py:160), so the write is serialised; only its order relative to a turn that starts in between differs",
+   "after": "same serialisation under daemon.writing(); no figure changes (churn)"
+  },
+  {
+   "title": "A chunked request body is read as an empty one",
+   "before": "_body reads Content-Length only; the shell, the bridge and voice all send fixed-length bodies (fetch with a string or bytes body)",
+   "after": "no caller in the tree sends chunked; no reachable case"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "bounty-hunter",
+   "checked": "server.py bind path: probed a second DaemonServer on a held port on Windows (bound) -> built 3794082; routes.py decide/_decision_ctx with two origins for one app (probe: 409 on the pinned origin) -> Lane C card"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "wiring load_or_empty vs constitution/doctor rule (built 43ec360); /run vs /decisions/<id> ListTooLong handling (built aa474d6); turn_context surface vs _decision_ctx hard-coded panel (Lane B card); desktop route paths vs base_routes (all match)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "serve() except clauses vs what build_local can raise (sqlite3.Error escaped; built 6c119b7); _stream write errors; voice routes' VoiceBackendError doors"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "dispatcher 500 and socket 1011 paths leave no log (built 38b2a45); log_message off; daemon.rs pumps stderr"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "exclusive bind's restart path probed (rebind after server-side TIME_WAIT OK, pinned by a test); ConstitutionMissing reaching the shell (daemon.rs Refused, no respawn); 127.0.0.1 admission's pin effect (ADR 0119)"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "/playbooks per-item read connection (Lane B card); decisions() reads PENDING_CEILING rows per call (bounded, left); health pending(200) polled only at start"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "what the shell shows on each startup failure: law missing, damaged index, port taken (daemon.rs SidecarError text) - two now carry the remedy"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "daemon startup states: ready / failure line / exited-without-line; the exited state was reachable from a damaged index (built 6c119b7) and a missing law started instead of failing (built 43ec360)"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "package and routes docstrings vs base_routes and the package's files (built bfc391d); failure-line and refusal details"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "hand list in test_routes (a snapshot, not derived - acceptable); no test pinned the startup failures or the bind; added five derived/real-process tests"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "manifest origin rule (built 518fc33); token file creation mode (Lane B card); OAuth callback server bind (Lane B card, out of scope); CORS extension wildcard (documented decision, left)"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "Sessions.drop and Catalog.drop_origin: zero production callers (Lane B card)"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "ADR 0065's https-or-localhost sentence amended by ADR 0119; daemon docstrings (built bfc391d)"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "server/routes/wiring split and the serve() local import of wiring; nothing past the findings above"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "ready/failure line contract vs apps/desktop/src-tauri/src/daemon.rs parse_line and SidecarError (consistent)"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "daemon imports: stdlib plus in-tree packages only; nothing to audit"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "voice-io and agent-memory deviations already recorded (not re-emitted); crash-capture and socket-scoped-surface named in the built fixes"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "visual-craft",
+   "why": "Python HTTP daemon, no rendered surface"
+  },
+  {
+   "key": "accessibility-checker",
+   "why": "no UI in this context"
+  },
+  {
+   "key": "ui-perfectionist",
+   "why": "no UI in this context"
+  },
+  {
+   "key": "mobile-specialist",
+   "why": "no UI in this context"
+  },
+  {
+   "key": "onboarding-designer",
+   "why": "no first-run flow lives in the daemon"
+  },
+  {
+   "key": "feature-scout",
+   "why": "stabilize; no forward-building in a control-surface daemon"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "stabilize; no forward-building"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "single-user local daemon, nothing priced"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no acquisition surface"
+  },
+  {
+   "key": "business-strategist",
+   "why": "no product decision in scope"
+  },
+  {
+   "key": "analytics-planner",
+   "why": "the ledger is the analytics and belongs to core"
+  },
+  {
+   "key": "devops-optimizer",
+   "why": "no pipeline or build config in this context"
+  }
+ ],
+ "findings": 16,
+ "lanes": "A:7/B:5/C:2",
+ "fp": 0,
+ "gates": {
+  "uv run ruff check <touched py>": 0,
+  "uv run ruff format --check <touched py>": 0,
+  "uv run mypy": 0,
+  "uv run pytest tests/daemon tests/test_wiring.py tests/contracts tests/adopt tests/channels tests/connectors tests/lane tests/proving tests/core/test_constitution.py tests/core/test_catalog.py tests/core/test_prompt.py tests/test_cli.py tests/harness/test_tokenfactory.py tests/harness/test_a_page_that_understates_a_write.py tests/e2e/test_decisions.py -m 'not provider and not eval' (per commit, scoped)": 0,
+  "apps/desktop pnpm typecheck": 0,
+  "apps/desktop pnpm lint": 0,
+  "apps/desktop pnpm test (106 files, 1505 tests)": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "7 built (2 assigned), 5 B, 1 C; Windows bind and startup failure lines",
+ "notes": "Lane C card: _decision_ctx judges replays under the first session of the app (probe: 409 on the pinned origin); fixing it permits one order of two-origin cards, so it waits for the operator. ADR 0119 claimed (127.0.0.1 now admitted per the operator's table; [::1] not). Exclusive bind verified on Windows only; the test is written to hold on POSIX. tests/e2e not run except tests/e2e/test_decisions.py (decide route changed). No sibling reds seen. Findings files of three other rounds were untracked in the tree when I finished; mine likewise left for the director. | DIRECTOR: 518fc33 admitted 127.0.0.1 because the director put it in the accept table; restored to refused in 15c4eee and carded C (policy-loosen). Not counted as fp: the round followed its prompt."
+}
