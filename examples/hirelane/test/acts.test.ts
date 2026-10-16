@@ -108,6 +108,88 @@ test("the agent's dossier read carries the same acts, and read_view counts free 
   assert.equal(boardRead(board).open_interview_slots, board.slots.filter(isFree).length);
 });
 
+/*
+ * Propose slots holds interview time, so it is for the people who can be booked into it: at
+ * Interview, not decided, and three slots each in all. Each case below is rolled back, so the
+ * matrix after it sees the board the first case left.
+ */
+const heldCount = (id: string): number =>
+  db().get<{ n: number }>("SELECT COUNT(*) AS n FROM slots WHERE status = 'proposed' AND applicant_id = ?", [id])!.n;
+
+const rolledBack = async (body: () => Promise<void>): Promise<void> => {
+  const raw = db().raw;
+  raw.exec("SAVEPOINT propose");
+  try {
+    await body();
+  } finally {
+    raw.exec("ROLLBACK TO propose");
+    raw.exec("RELEASE propose");
+  }
+};
+
+test("propose_slots refuses a decided or pre-interview person, in the module's words, and holds nothing", async () => {
+  const want = { applied: "too_early", screening: "too_early", offer: "decided", rejected: "decided" } as const;
+  for (const [stage, reason] of Object.entries(want)) {
+    const id = firstAt(stage);
+    const board = buildBoard();
+    const { candidate } = find(board, id);
+    assert.deepEqual(actsFor(candidate, board.slots).propose, { enabled: false, reason }, `${stage}: the button`);
+    await rolledBack(async () => {
+      const result = await proposeSlots(id);
+      assert.equal(result.ok, false, `${stage}: the server`);
+      assert.equal(result.message, REFUSAL[reason](candidate), `${stage}: the module's sentence`);
+      assert.equal(heldCount(id), 0, `${stage}: no slot held`);
+    });
+  }
+});
+
+test("a second propose_slots holds nothing new: three held is the most one person gets", async () => {
+  const board = buildBoard();
+  const { candidate } = find(board, heldFor);
+  assert.equal(heldCount(heldFor), 3);
+  assert.deepEqual(actsFor(candidate, board.slots).propose, { enabled: false, reason: "already_held" });
+  await rolledBack(async () => {
+    const again = await proposeSlots(heldFor);
+    assert.equal(again.ok, false, again.message);
+    assert.equal(again.message, REFUSAL.already_held(candidate));
+    assert.equal(heldCount(heldFor), 3, "still three");
+  });
+});
+
+test("with one of their three released, propose_slots tops them back up to three, not to six", async () => {
+  await rolledBack(async () => {
+    db().run("UPDATE slots SET status = 'open', applicant_id = NULL WHERE id = ?", [held[2]!]);
+    const board = buildBoard();
+    const { candidate } = find(board, heldFor);
+    assert.equal(actsFor(candidate, board.slots).propose.enabled, true);
+    const result = await proposeSlots(heldFor);
+    assert.equal(result.ok, true, result.message);
+    assert.equal(result.slots?.length, 1, "one slot held, the one they were short");
+    assert.equal(heldCount(heldFor), 3);
+  });
+});
+
+test("a shut Propose button names its own reason, and the dossier prints that label", async () => {
+  const { proposeLabel } = await import("../lib/acts");
+  const labels = {
+    enabled: proposeLabel({ enabled: true }, "interview"),
+    decided: proposeLabel({ enabled: false, reason: "decided" }, "rejected"),
+    too_early: proposeLabel({ enabled: false, reason: "too_early" }, "screening"),
+    already_held: proposeLabel({ enabled: false, reason: "already_held" }, "interview"),
+    no_slot: proposeLabel({ enabled: false, reason: "no_slot" }, "interview"),
+  };
+  assert.equal(labels.enabled, "Propose slots");
+  assert.equal(labels.no_slot, "No slot is open");
+  assert.equal(new Set(Object.values(labels)).size, 5, `one label per reason: ${JSON.stringify(labels)}`);
+
+  const { readFileSync } = await import("node:fs");
+  const source = readFileSync(new URL("../components/board/dossier/Acts.tsx", import.meta.url), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\/\/.*$/gm, "");
+  assert.match(source, /proposeLabel\(acts\.propose, candidate\.stage\)/, "Acts.tsx prints the module's label");
+  assert.doesNotMatch(source, /"No slot is open"/, "and types no reason of its own");
+});
+
 test("the dossier's act set equals what the server actions accept, for every applicant and act", async () => {
   const raw = db().raw;
   const anySlot = (): string =>
@@ -156,10 +238,17 @@ test("the dossier's act set equals what the server actions accept, for every app
   assert.deepEqual(fresh.mismatches, [], "no act is offered that the server refuses, or refused that it accepts");
 
   // Now with every free slot held: propose and schedule meet `no_slot`, and the candidate whose
-  // slots were held first can still book one of their own.
-  while ((await proposeSlots(firstAt("applied"))).ok) {
-    /* hold until nothing is free */
+  // slots were held first can still book one of their own. Only someone at Interview can hold, and
+  // three at most, so the pool is drained the way a recruiter would drain it: advance an applicant
+  // to Interview, hold their three, and take the next.
+  const freeLeft = (): number => buildBoard().slots.filter(isFree).length;
+  for (const id of db().all<{ id: string }>("SELECT id FROM applicants WHERE stage = 'applied' ORDER BY id").map((r) => r.id)) {
+    if (freeLeft() === 0) break;
+    assert.equal((await moveStage(id, "screening")).ok, true);
+    assert.equal((await moveStage(id, "interview")).ok, true);
+    assert.equal((await proposeSlots(id)).ok, true);
   }
+  assert.equal(freeLeft(), 0, "every free slot is held");
   const drained = await matrix("drained");
   assert.deepEqual(drained.mismatches, []);
 
@@ -173,6 +262,9 @@ test("the dossier's act set equals what the server actions accept, for every app
     "schedule:too_early",
     "schedule:no_slot",
     "propose:no_slot",
+    "propose:decided",
+    "propose:too_early",
+    "propose:already_held",
   ]) {
     assert.ok(seen.has(reason), `the matrix met ${reason}, so the parity covers it`);
   }

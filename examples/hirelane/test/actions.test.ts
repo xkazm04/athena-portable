@@ -79,7 +79,8 @@ test("a slot held for one candidate cannot be re-targeted at another", async () 
   );
   assert.ok(first && second, "the seed carries two applicants at interview");
 
-  assert.equal((await proposeSlots(first.id)).ok, true);
+  const proposed = await proposeSlots(first.id);
+  assert.equal(proposed.ok, true, proposed.message);
   const held = db().get<Row>(
     "SELECT id, status, applicant_id FROM slots WHERE applicant_id = ? AND status = 'proposed' ORDER BY id LIMIT 1",
     [first.id],
@@ -97,6 +98,10 @@ test("a slot held for one candidate cannot be re-targeted at another", async () 
   const kept = await sendSchedulingEmail(first.id, held.id);
   assert.equal(kept.ok, true, kept.message);
   assert.equal(slot(held.id).status, "booked");
+
+  // Hand the two still held back: a person holds three at most, and the cases after this one
+  // propose for the same candidate from an empty hand.
+  assert.equal((await undoAction(proposed.undoId!)).ok, true);
 });
 
 test("an AUTO move cannot walk a decided candidate back into the pipeline", async () => {
@@ -266,6 +271,7 @@ test("propose_slots hands back the ids it held and when each one starts", async 
       `${slot.id}: held, not sent`,
     );
   }
+  assert.equal((await undoAction(result.undoId!)).ok, true, "handed back for the cases after this one");
 });
 
 /*

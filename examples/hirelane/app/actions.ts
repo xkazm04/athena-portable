@@ -13,9 +13,11 @@ import type { Db } from "@athena/demo-kit/db";
 import {
   canBook,
   decidedReason,
-  isFree,
+  proposeReason,
   REFUSAL,
+  refusalFor,
   scheduleReason,
+  slotsToHold,
   type ActSlot,
 } from "@/lib/acts";
 import {
@@ -218,15 +220,20 @@ export async function decideStage(applicantId: string, stage: Stage): Promise<Ac
 }
 
 /**
- * AUTO. Holds up to three free slots for an applicant. Nothing leaves the building yet.
+ * AUTO. Tops an applicant at Interview up to three held slots. Nothing leaves the building yet.
  *
- * Free is `isFree` from `lib/acts.ts`, the predicate the dossier's Propose button is enabled by.
+ * A held slot is one nobody else can be booked into, so it is held only for someone who can be:
+ * at Interview and not decided, three each in all, never three more per call. The rule is
+ * `proposeReason` and the slots are `slotsToHold`, both `lib/acts.ts`'s, which is what the
+ * dossier's Propose button is enabled by.
  */
 export async function proposeSlots(applicantId: string): Promise<ActionResult> {
   const applicant = getApplicant(applicantId);
   if (!applicant) return missing(applicantId);
-  const open = allSlots().filter(isFree).slice(0, 3);
-  if (open.length === 0) return { ok: false, message: REFUSAL.no_slot() };
+  const slots = allSlots();
+  const refused = proposeReason(applicant, slots);
+  if (refused) return { ok: false, message: refusalFor(refused, applicant) };
+  const open = slotsToHold(slots, applicantId);
   const ids = open.map((s) => s.id);
   const held: HeldSlot[] = open.map((s) => ({
     id: s.id,

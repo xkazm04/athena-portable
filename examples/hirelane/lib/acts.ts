@@ -21,7 +21,7 @@
 import { isDecisionStage, nextMoveFor, STAGE_LABEL, STAGES, type MoveStage, type Stage } from "./constants";
 
 /** Why an act is not on offer. One vocabulary for the dossier's labels and the server's refusals. */
-export type ActReason = "decided" | "too_early" | "no_slot" | "next_is_a_decision";
+export type ActReason = "decided" | "too_early" | "no_slot" | "already_held" | "next_is_a_decision";
 
 /** Who an act is for: the three fields every rule here reads. */
 export interface ActPerson {
@@ -62,6 +62,12 @@ export interface Acts {
 export const FREE_SLOTS_LISTED = 12;
 
 /**
+ * How many slots Propose slots holds for one person, in all. A call tops the person up to this;
+ * it never adds this many again, because every held slot is one nobody else can be booked into.
+ */
+export const SLOTS_HELD_EACH = 3;
+
+/**
  * The refusal sentences, keyed by reason, plus the few that refuse an argument rather than a
  * person. The server returns these words and the agent's read quotes them, so a reason means one
  * thing wherever it is read.
@@ -72,6 +78,8 @@ export const REFUSAL = {
   too_early: (p: Pick<ActPerson, "name" | "stage">) =>
     `${STAGE_LABEL[p.stage]} is too early to book a time. Move ${p.name} to Interview first.`,
   no_slot: () => "No open slots left in the next two weeks.",
+  already_held: (p: Pick<ActPerson, "name">) =>
+    `${SLOTS_HELD_EACH} slots are already held for ${p.name}. Book one of them, or undo the hold to choose again.`,
   next_is_a_decision: (p: Pick<ActPerson, "stage">): string => REFUSAL.not_a_move(ladderNext(p.stage) ?? p.stage),
   /**
    * A move asked of a decided person. It says what a move cannot do, and names no other way back:
@@ -124,6 +132,39 @@ export function bookableSlots(slots: readonly ActSlot[], personId: string): ActS
   return [...own, ...free];
 }
 
+/** The slots Propose slots is holding for this person and nobody has booked yet. */
+export function heldFor(slots: readonly ActSlot[], personId: string): ActSlot[] {
+  return slots.filter((s) => s.status === "proposed" && s.applicantId === personId);
+}
+
+/**
+ * Why Propose slots would refuse this person, or null. Holding time is for someone who can be
+ * booked into it, so the stage rule is scheduling's; past that, three held each, and a free slot.
+ */
+export function proposeReason(
+  person: Pick<ActPerson, "id" | "stage">,
+  slots: readonly ActSlot[],
+): "decided" | "too_early" | "already_held" | "no_slot" | null {
+  return (
+    scheduleReason(person.stage) ??
+    (heldFor(slots, person.id).length >= SLOTS_HELD_EACH ? "already_held" : slots.some(isFree) ? null : "no_slot")
+  );
+}
+
+/** The free slots one Propose would hold now: enough to top the person up to three, in order. */
+export function slotsToHold(slots: readonly ActSlot[], personId: string): ActSlot[] {
+  return slots.filter(isFree).slice(0, Math.max(0, SLOTS_HELD_EACH - heldFor(slots, personId).length));
+}
+
+/** The short form the dossier's Propose button has room for: what it does, or why it is shut. */
+export function proposeLabel(act: Act, stage: Stage): string {
+  if (act.enabled) return "Propose slots";
+  if (act.reason === "decided") return `${STAGE_LABEL[stage]} is decided`;
+  if (act.reason === "too_early") return "Slots open at Interview";
+  if (act.reason === "already_held") return `${SLOTS_HELD_EACH} slots held`;
+  return "No slot is open";
+}
+
 function open(reason: ActReason | null): Act {
   return reason ? { enabled: false, reason } : { enabled: true };
 }
@@ -137,7 +178,7 @@ export function actsFor(person: ActPerson, slots: readonly ActSlot[]): Acts {
   return {
     score: open(null),
     move: { ...open(to ? null : (decided ?? "next_is_a_decision")), to },
-    propose: open(slots.some(isFree) ? null : "no_slot"),
+    propose: open(proposeReason(person, slots)),
     offer: open(decided),
     reject: open(decided),
     schedule: { ...open(early ?? (bookable.length > 0 ? null : "no_slot")), slots: bookable },

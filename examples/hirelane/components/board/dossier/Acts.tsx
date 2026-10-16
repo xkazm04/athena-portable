@@ -21,7 +21,7 @@
 import { useState } from "react";
 
 import { addNote, moveStage, proposeSlots, scoreAgainstRubric } from "@/app/actions";
-import type { Acts } from "@/lib/acts";
+import { proposeLabel, type Acts } from "@/lib/acts";
 import { STAGE_LABEL } from "@/lib/constants";
 import type { BdCandidate } from "../model";
 import { useRun } from "../useRun";
@@ -39,8 +39,8 @@ export function DossierActs({ candidate, acts }: { candidate: BdCandidate; acts:
    * cleanly, `decide_stage` ends somebody's application. The ladder is not
    * re-typed here - `acts.move.to` is `nextMoveFor`, the same declaration
    * `moveStage` enforces against, so the button and the server cannot drift
-   * apart. Propose slots reads `lib/acts.ts` the same way: shut when no slot
-   * is free, because the action would refuse it.
+   * apart. Propose slots reads `lib/acts.ts` the same way: shut, and saying
+   * why, whenever the action would refuse it.
    */
   const nextMove = acts.move.to;
 
@@ -118,7 +118,7 @@ export function DossierActs({ candidate, acts }: { candidate: BdCandidate; acts:
             disabled={pending || !acts.propose.enabled}
             onClick={() => run(() => proposeSlots(candidate.id))}
           >
-            {acts.propose.enabled ? "Propose slots" : "No slot is open"}
+            {proposeLabel(acts.propose, candidate.stage)}
           </button>
           <button type="button" className="bd-btn" onClick={() => setNoting(true)}>
             Note…
