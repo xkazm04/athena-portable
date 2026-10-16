@@ -17,7 +17,7 @@ is decoded, the way :data:`~athena.daemon.server.MAX_BODY_BYTES` bounds a reques
 microphone sends kilobytes; a megabyte is nonsense and is refused as such.
 
 The client half — :func:`connect` — exists so the gateway can be tested over a real socket with no
-dependency, and so ``athena voice`` can be a shell-free client of the same channel.
+dependency. Its only callers are tests; the CLI has no voice command.
 """
 
 from __future__ import annotations
