@@ -138,3 +138,38 @@ test("every role the token file declares is spent somewhere", () => {
   );
   assert.deepEqual(unspent, [], "a token nothing reads is a decision nobody is making");
 });
+
+/* ---------------------------------------------------------------- name, role, value -- */
+
+/** Every `<button …>` opening tag in a source, read to its closing `>` at brace depth 0. */
+function buttons(src: string): string[] {
+  const out: string[] = [];
+  let at = src.indexOf("<button");
+  while (at !== -1) {
+    let depth = 0;
+    let i = at;
+    for (; i < src.length; i += 1) {
+      const ch = src[i];
+      if (ch === "{") depth += 1;
+      else if (ch === "}") depth -= 1;
+      else if (ch === ">" && depth === 0) break;
+    }
+    out.push(src.slice(at, i + 1));
+    at = src.indexOf("<button", i);
+  }
+  return out;
+}
+
+const buttonWithClass = (src: string, cls: string): string => {
+  const hit = buttons(src).filter((b) => new RegExp(`className="${cls}"`).test(b));
+  assert.equal(hit.length, 1, `expected one .${cls} button, found ${hit.length}`);
+  return hit[0]!;
+};
+
+test("both controls that toggle the lens say whether it is on (WCAG 4.1.2)", () => {
+  /* The claims rail and the pane's chips call the same toggling setLens with the same id. */
+  const claim = buttonWithClass(source("chrome/Claims.tsx"), "at-claim");
+  const chip = buttonWithClass(source("pane/Pane.tsx"), "at-chip");
+  assert.match(claim, /aria-pressed=\{/);
+  assert.match(chip, /aria-pressed=\{/, `the pane's chip shows the lens by colour only: ${chip}`);
+});

@@ -158,12 +158,15 @@ export function Pane({
                 {component.concepts.map((id) => {
                   const concept = conceptById(id);
                   if (!concept) return null;
+                  /* A toggle, like the claims rail's row for the same concept: pressed is the lens. */
+                  const lit = lens.concept?.id === id;
                   return (
                     <li key={id}>
                       <button
                         type="button"
                         className="at-chip"
-                        data-lit={lens.concept?.id === id ? "true" : "false"}
+                        data-lit={lit ? "true" : "false"}
+                        aria-pressed={lit}
                         onClick={() => setLens(id)}
                       >
                         <span className="at-part">{concept.part}</span> {concept.name}
