@@ -20,7 +20,8 @@
     with its detail. A surface polls this after ``connect``.
 
 ``POST /connectors/<id>/disconnect``, ``.../probe``, ``.../settings``
-    Revoke and destroy; re-check the credential; ``{"enabled", "writes_enabled", "allowlist"}``.
+    Revoke and destroy; re-check the credential; ``{"enabled", "writes_enabled", "allowlist"}``,
+    the two switches JSON booleans (anything else is a 409 and changes nothing).
 
 Every write here takes the writer lock and re-merges the connector's tools into the catalog, so
 a connect is visible to the very next turn and a disconnect refuses the very next call. An OAuth
@@ -102,11 +103,24 @@ def _connect(daemon: AthenaDaemon, vault: Vault, connector_id: str, body: Any) -
     return 200, {"ok": True, "flow": flow.view(), "connector": vault.view(connector_id)}
 
 
+def _switch(body: Any, key: str) -> bool | None:
+    """A switch is JSON ``true`` or ``false``, nothing else: ``bool("false")`` is ``True``, and a
+    sloppy client must not turn writes on by saying no."""
+    if key not in body:
+        return None
+    value = body[key]
+    if not isinstance(value, bool):
+        raise VaultError(f"{key} must be true or false, got {value!r}")
+    return value
+
+
 def _settings(vault: Vault, connector_id: str, body: Any) -> None:
-    if "enabled" in body:
-        vault.set_enabled(connector_id, bool(body["enabled"]))
-    if "writes_enabled" in body:
-        vault.set_writes(connector_id, bool(body["writes_enabled"]))
+    # Every switch is read before any is set, so a refused body changes nothing.
+    enabled, writes = _switch(body, "enabled"), _switch(body, "writes_enabled")
+    if enabled is not None:
+        vault.set_enabled(connector_id, enabled)
+    if writes is not None:
+        vault.set_writes(connector_id, writes)
     if "allowlist" in body:
         raw = body["allowlist"]
         values = (

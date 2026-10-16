@@ -269,3 +269,21 @@ def test_an_oauth_admission_waits_for_the_writer_lock_like_every_other_act(
         assert not routed.is_live("gmail")
     assert flow.wait(5) and flow.phase == "done", flow.detail
     assert "connector.gmail.search_mail" in live.daemon.catalog
+
+
+@pytest.mark.parametrize("value", ["false", "no", 0, 1, None, []])
+def test_a_switch_that_is_not_true_or_false_is_refused_and_changes_nothing(
+    live: Live, routed: Vault, value: Any
+) -> None:
+    live.request("/connectors/notion/connect", method="POST", json_body={"token": NTN})
+    reply = live.request(
+        "/connectors/notion/settings",
+        method="POST",
+        json_body={"allowlist": "a1", "writes_enabled": value},
+    )
+    assert reply.status == 409 and reply.body["reason"] == "validator_failed"
+    assert "writes_enabled" in reply.body["detail"]
+    record = routed.record("notion")
+    assert record.writes_enabled is False and record.allowlist == []
+    refused = live.request("/connectors/notion/settings", method="POST", json_body={"enabled": "0"})
+    assert refused.status == 409 and routed.record("notion").enabled is True
