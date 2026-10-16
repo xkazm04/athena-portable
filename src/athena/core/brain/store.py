@@ -193,6 +193,9 @@ class Brain:
                     "VALUES ('schema_version', ?)",
                     (str(SCHEMA_VERSION),),
                 )
+            # Inside the guard: the schema reads only the catalog, so this upsert can be the first
+            # statement to meet a damaged page, and it must close the handle and name it the same.
+            self.ensure_session(session_id)
         except BaseException as exc:
             self._con.close()
             if (
@@ -204,7 +207,6 @@ class Brain:
                     "run `athena brain reconcile` to set it aside and rebuild it"
                 ) from exc
             raise
-        self.ensure_session(session_id)
 
     # -- lifecycle -----------------------------------------------------------------------------
 

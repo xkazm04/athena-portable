@@ -639,3 +639,28 @@ def test_a_commit_that_fails_does_not_leave_every_later_write_uncommitted(tmp_pa
         assert flaky.failed
         assert not brain.writer.in_transaction
         assert brain.node(later.id) is not None, "a reader sees the next write"
+
+
+def test_damage_first_met_by_the_session_row_is_named_and_lets_go_of_the_file(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The schema reads only the catalog; a damaged page can first be met by the session upsert
+    the constructor runs last. It is the same damage, named the same way, and the handle on the
+    file is closed so ``athena brain reconcile`` can set it aside (a rename Windows refuses while
+    a handle is open)."""
+    root = tmp_path / "brain"
+    Brain(root).close()
+
+    def damaged(self: Brain, session_id: str, title: str = "Athena") -> None:
+        exc = sqlite3.DatabaseError("database disk image is malformed")
+        exc.sqlite_errorcode = sqlite3.SQLITE_CORRUPT
+        raise exc
+
+    monkeypatch.setattr(Brain, "ensure_session", damaged)
+
+    with pytest.raises(IndexDamagedError, match="athena brain reconcile") as raised:
+        Brain(root)
+
+    # The traceback still holds the half-built Brain, so a handle it leaked would still be open.
+    assert raised.value.__cause__ is not None
+    (root / "index.sqlite").rename(root / "index.sqlite.set-aside")
