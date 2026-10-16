@@ -89,14 +89,19 @@
   display: none;
 }
 
-/* The disclosure's own state, said by the glyph rather than by a hue. */
+/* The disclosure's own state, said by the glyph rather than by a hue. Seen, not read: generated
+   text is part of the summary's accessible name, and the disclosure already announces expanded
+   and collapsed, so the glyph takes an empty alternative. The plain line first is for an engine
+   that does not know the `/ ""` syntax and would otherwise drop the glyph altogether. */
 .bd-register > summary::after {
   content: "▸";
+  content: "▸" / "";
   color: var(--bd-ink-4);
 }
 
 .bd-register[open] > summary::after {
   content: "▾";
+  content: "▾" / "";
 }
 
 /* The gated count is the half of the sentence that has to survive a glance, so it carries the

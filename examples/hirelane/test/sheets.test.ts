@@ -209,6 +209,24 @@ test("a transform a state sets is eased by the element at rest", () => {
   assert.deepEqual(jumps, []);
 });
 
+test("a glyph drawn into a control is kept out of the control's name", () => {
+  // Generated content is part of an element's accessible name (accname 2F), so a state glyph
+  // drawn with ::after inside the register's <summary> was read as the last word of the button:
+  // "... 3 gated, black right-pointing small triangle". The disclosure already announces
+  // expanded and collapsed itself. A glyph inside a control gives an empty alternative
+  // (`content: "x" / ""`), after a plain declaration for engines without the syntax.
+  const named: string[] = [];
+  for (const rule of RULES) {
+    const contents = [...rule.body.matchAll(/(?:^|;)\s*content\s*:\s*([^;]+)/g)].map((m) => m[1]!.trim());
+    if (!contents.some((c) => /^"[^"]+"/.test(c))) continue;
+    for (const selector of rule.selectors) {
+      if (!/summary[^ ]*::(?:before|after)/.test(selector)) continue;
+      if (!contents.some((c) => /^"[^"]*"\s*\/\s*""$/.test(c))) named.push(`${rule.file}: ${selector}`);
+    }
+  }
+  assert.deepEqual(named, []);
+});
+
 test("the room's focus ring names every focusable tag the board renders", () => {
   // The tags are read out of the components, not listed here: a disclosure added to a component
   // is a tag this list did not know about, which is how the foot's <summary> was missed.
