@@ -83,9 +83,16 @@ export function toggleState(filter: LnFilter, state: StateFilter): LnFilter {
   return { ...filter, state: filter.state === state ? "all" : state };
 }
 
-/** The sentence the panel's live region says after a press. */
+/**
+ * The sentence the panel's live region says after a press.
+ *
+ * "All" is only all when nothing else narrows the sheet. With a client chosen, Everything lights
+ * that client's invoices and dims the rest, and the sentence says so in the same words the other
+ * entries use - it used to say "Showing all 125 invoices." over 9 lit and 116 dimmed.
+ */
 export function legendSay(state: StateFilter, lit: number, of: number): string {
   const entry = LEGEND.find((e) => e.state === state);
-  if (!entry || state === "all") return `Showing all ${of} invoices.`;
-  return `${entry.label}: ${lit} of ${of} invoices lit, the rest dimmed.`;
+  if (!entry || (state === "all" && lit === of)) return `Showing all ${of} invoices.`;
+  const label = state === "all" ? "Every state, one client" : entry.label;
+  return `${label}: ${lit} of ${of} invoices lit, the rest dimmed.`;
 }

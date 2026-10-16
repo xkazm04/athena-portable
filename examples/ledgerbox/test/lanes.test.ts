@@ -203,3 +203,14 @@ test("the panel says what it did, and says it in invoices", () => {
   assert.match(legendSay("all", 124, 124), /all 124/);
   assert.match(legendSay("overdue", 54, 124), /54 of 124/);
 });
+
+test("with a client chosen, Everything says how many it lit, not that it shows them all", () => {
+  // `legendSay(filter.state, counts[filter.state], total)` is the live region under the panel.
+  // With one client chosen, `counts.all` is that client's invoices, and the sentence used to read
+  // "Showing all 125 invoices." over a sheet with 9 lit and 116 dimmed.
+  const said = legendSay("all", 9, 125);
+  assert.match(said, /9 of 125/, said);
+  assert.doesNotMatch(said, /all 125/);
+  // Nothing chosen, nothing narrowed: the short sentence still holds.
+  assert.equal(legendSay("all", 125, 125), "Showing all 125 invoices.");
+});
