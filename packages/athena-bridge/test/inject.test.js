@@ -13,6 +13,8 @@ import { fileURLToPath } from "node:url";
 
 import { JSDOM } from "jsdom";
 
+import { REFUSAL_REASONS } from "../gate.js";
+
 const SOURCE = readFileSync(fileURLToPath(new URL("../inject.js", import.meta.url)), "utf8");
 const ORIGIN = "https://app.example";
 const NS = "athena-webmcp";
@@ -194,6 +196,26 @@ test("a throw inside execute is a result, not a dropped promise", async () => {
   assert.equal(p.replyTo("e2").error, "async no");
   assert.equal(p.replyTo("e3").error, "No tool named nope");
   assert.equal(p.replyTo("e4").error, "Unknown request wat");
+});
+
+test("a missing tool and an unknown request carry their own reason; a handler fault carries none", async () => {
+  // README 3.3 and ADR 0009: the reason is a member of the one refusal vocabulary, so the surface
+  // and the ledger can tell "nothing by that name" and "not a request this bridge speaks" from a
+  // tool that ran and failed. The catalog already says unknown_ref for a name it does not hold
+  // (src/athena/core/catalog.py) and so does the hands script for a hand it does not have.
+  const p = page();
+  register(p.window, "explode", () => {
+    throw new Error("the invoice is locked");
+  });
+  p.send({ id: "r1", type: "call", name: "nope" });
+  p.send({ id: "r2", type: "wat" });
+  p.send({ id: "r3", type: "call", name: "explode" });
+  await p.until(() => ["r1", "r2", "r3"].every((id) => p.replyTo(id) !== undefined));
+
+  assert.deepEqual(p.replyTo("r1"), { __ns: NS, dir: "to-ext", id: "r1", ok: false, reason: "unknown_ref", error: "No tool named nope" });
+  assert.deepEqual(p.replyTo("r2"), { __ns: NS, dir: "to-ext", id: "r2", ok: false, reason: "validator_failed", error: "Unknown request wat" });
+  assert.equal("reason" in p.replyTo("r3"), false, "a fault inside the tool is the tool's outcome, not a refusal");
+  for (const id of ["r1", "r2"]) assert.ok(REFUSAL_REASONS.includes(p.replyTo(id).reason), `${id}: a vocabulary member`);
 });
 
 test("a call is given its input and its output is rendered as text", async () => {

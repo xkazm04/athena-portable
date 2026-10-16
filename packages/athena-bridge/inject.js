@@ -24,8 +24,16 @@
   /** The page's deadline for one `call`. The relay's own timer is deliberately longer. */
   const CALL_TIMEOUT_MS = 30_000;
 
-  /** The only refusal reason this half mints. The vocabulary itself lives in gate.js. */
+  /**
+   * The refusal reasons this half mints, each a member of the one vocabulary in gate.js
+   * (`REFUSAL_REASONS`, which is `ERROR_REASONS` in src/athena/contracts/harness.py). A throw
+   * inside a tool carries none: that is the tool's own outcome, not a refusal by the bridge.
+   */
   const TIMEOUT = "timeout";
+  /** A `call` naming a tool this page has not registered: the catalog's answer for a name it does not hold. */
+  const UNKNOWN_REF = "unknown_ref";
+  /** A request this bridge does not speak. */
+  const VALIDATOR_FAILED = "validator_failed";
 
   try {
     install();
@@ -83,7 +91,7 @@
       if (request.type === "call") {
         return call(String(request.name ?? ""), request.input, request.timeout_ms, request.id ?? null);
       }
-      return { ok: false, error: `Unknown request ${String(request.type)}` };
+      return { ok: false, reason: VALIDATOR_FAILED, error: `Unknown request ${String(request.type)}` };
     }
 
     /**
@@ -97,7 +105,7 @@
     async function call(name, input, requestedMs, requestId) {
       const tools = await toolsOf();
       const tool = tools.find((t) => t && t.name === name);
-      if (!tool) return { ok: false, error: `No tool named ${name}` };
+      if (!tool) return { ok: false, reason: UNKNOWN_REF, error: `No tool named ${name}` };
 
       const budgetMs = deadline(requestedMs);
       const controller = new AbortController();

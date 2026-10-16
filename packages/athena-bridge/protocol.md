@@ -44,12 +44,16 @@ so an advertisement in an iframe cannot register tools that reach the surface.
 | `type` | Fields | Answer |
 |---|---|---|
 | `list` | — | `{ ok: true, page, tools }` |
-| `call` | `name`, `input` (object, may be omitted), `timeout_ms` (optional) | `{ ok: true, output }` or `{ ok: false, error }` |
+| `call` | `name`, `input` (object, may be omitted), `timeout_ms` (optional) | `{ ok: true, output }` or `{ ok: false, reason?, error }` |
 
-An unknown `type` is answered `{ ok: false, error: "Unknown request <type>" }`. A `call` for a name
-the page has not registered is answered `{ ok: false, error: "No tool named <name>" }`. A throw
-inside the tool becomes `{ ok: false, error }`: a refusal is a result, never a dropped promise,
-because a relay with a pending entry that never clears is a surface that hangs.
+An unknown `type` is answered `{ ok: false, reason: "validator_failed", error: "Unknown request
+<type>" }`. A `call` for a name the page has not registered is answered `{ ok: false, reason:
+"unknown_ref", error: "No tool named <name>" }`, the reason the catalog gives for a name it does
+not hold. A throw inside the tool becomes `{ ok: false, error }` with no `reason`: that is the
+tool's own outcome, not a refusal by the bridge. Every `reason` this half sends is a member of
+`REFUSAL_REASONS` (gate.js), and `error` is always the human sentence. A refusal is a result,
+never a dropped promise, because a relay with a pending entry that never clears is a surface that
+hangs.
 
 ### `page`
 
@@ -144,10 +148,11 @@ Two, layered, so a page that never answers cannot wedge the surface:
 `timeout_ms` is clamped into `1 … 30000`: the relay may shorten the page's deadline and can never
 extend it. The abort is passed to the tool as `options.signal`, but the *race* is what guarantees
 the reply — a tool that ignores its signal and never settles must not be able to hold the surface
-open. `"timeout"` is the only refusal reason this half mints, and it is a member of the one
-vocabulary the ledger stores (`ERROR_REASONS`, `src/athena/contracts/harness.py`). The surface
-records a `timeout` on any call that is not a read (reversible with no side effects) as
-`outcome_unknown`, because the call may have run, and posts the tool's `late` answer if it comes.
+open. `"timeout"`, `"unknown_ref"` and `"validator_failed"` are the refusal reasons this half
+mints, and each is a member of the one vocabulary the ledger stores (`ERROR_REASONS`,
+`src/athena/contracts/harness.py`). The surface records a `timeout` on any call that is not a
+read (reversible with no side effects) as `outcome_unknown`, because the call may have run, and
+posts the tool's `late` answer if it comes.
 
 The relay's window is deliberately the longer of the two, so the page's own abort wins and produces
 a real error; the relay's timer only covers a page that is gone, frozen, or has no bridge at all.
