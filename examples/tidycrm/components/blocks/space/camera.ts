@@ -27,16 +27,19 @@
  * is why this paragraph is here. It is logged as a kit gap.
  */
 
+import { angleDelta } from "@athena/demo-kit/zoom";
+
 import { CAMERA_FOV, CAMERA_Z, DATABASE_IDS, DB_OCTANT } from "../model";
 import { boxOf, slotOf, slotWorld, type Basis, type CellBox, type Vec3 } from "./geometry";
 
 /**
  * The kit's `CameraPose`, restated structurally.
  *
- * Not imported, deliberately: this module is `node --test`-able and the kit's
- * `zoom` barrel is React. The two are structurally identical, so a `CameraPose`
- * is a `Pose` and back without a cast, and the day they diverge every consumer
- * stops compiling — which is the notice we want.
+ * Not imported, deliberately: the two are structurally identical, so a
+ * `CameraPose` is a `Pose` and back without a cast, and the day they diverge
+ * every consumer stops compiling — which is the notice we want. (The barrel
+ * itself loads under `node --test`; `angleDelta` comes from it, so the yaw wrap
+ * below is the kit's tested one and not a second copy of it.)
  */
 export interface Pose {
   yaw: number;
@@ -332,8 +335,8 @@ export function snapNear(pose: Pose, inside: boolean): Pose {
   let best: NamedPose | null = null;
   let bestOff = Infinity;
   for (const p of POSES) {
-    // Yaw is free and wraps, so the distance is around the circle.
-    const dy = Math.abs(((pose.yaw - p.yaw + Math.PI) % (2 * Math.PI)) - Math.PI);
+    // Yaw is free and wraps, so the distance is around the circle, either way round.
+    const dy = Math.abs(angleDelta(pose.yaw, p.yaw));
     const off = Math.hypot(dy, pose.pitch - p.pitch);
     if (off < bestOff) {
       bestOff = off;
@@ -347,7 +350,7 @@ export function snapNear(pose: Pose, inside: boolean): Pose {
 /** Which named pose the caption may claim, or null if the reader is between them. */
 export function poseName(pose: Pose): string | null {
   for (const p of POSES) {
-    const dy = Math.abs(((pose.yaw - p.yaw + Math.PI) % (2 * Math.PI)) - Math.PI);
+    const dy = Math.abs(angleDelta(pose.yaw, p.yaw));
     if (Math.hypot(dy, pose.pitch - p.pitch) <= SNAP_NEAR) return p.label;
   }
   return null;

@@ -300,6 +300,17 @@ test("yaw wraps, so a pose a full turn away is still near", () => {
   assert.equal(c.snapNear(round, false).yaw, front.yaw);
   assert.equal(c.poseName(round), "front");
   assert.equal(c.poseName({ ...c.REST, yaw: front.yaw + 0.4 }), null);
+
+  // Both ways round, and more than once: yaw is free, so a reader who orbits left keeps going
+  // negative, and JS `%` keeps the dividend's sign.
+  for (const turns of [-3, -2, -1, 1, 2, 3]) {
+    for (const p of c.POSES) {
+      const away = { ...c.REST, yaw: p.yaw + turns * 2 * Math.PI + 0.03, pitch: p.pitch };
+      assert.equal(c.poseName(away), p.label, `${p.id}, ${turns} turns`);
+      assert.equal(c.snapNear(away, false).yaw, p.yaw, `${p.id} snaps after ${turns} turns`);
+      assert.equal(c.poseName({ ...away, yaw: away.yaw + 0.4 }), null, `${p.id} + 0.4, ${turns} turns`);
+    }
+  }
 });
 
 test("the four poses are far enough apart that the magnet is unambiguous", () => {
