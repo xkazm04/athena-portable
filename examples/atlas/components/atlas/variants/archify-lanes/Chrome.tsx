@@ -17,6 +17,7 @@
 import { memo } from "react";
 
 import { COPY } from "./copy";
+import { zoomRoom } from "./poses";
 import { LANES, type Role } from "./workflow";
 import { BEAT_VIEWS, type BeatView, type ChapterView } from "./story";
 
@@ -141,6 +142,8 @@ export const Toolbar = memo(function Toolbar({
   onHome,
   level,
 }: ToolbarProps) {
+  /* The rig clamps to its bounds, so a zoom past one does nothing; the button says so instead. */
+  const room = zoomRoom(zoom);
   return (
     <div className="al-toolbar" role="toolbar" aria-label="The lane sheet's controls">
       {/* What `data-on` paints, `aria-pressed` says; a button whose visible text is a state or a
@@ -163,7 +166,13 @@ export const Toolbar = memo(function Toolbar({
         {theme === "dark" ? "Dark" : "Light"}
       </button>
       <span className="al-tool-sep" aria-hidden />
-      <button type="button" className="al-tool" onClick={() => onZoom(-1)} aria-label="Zoom out">
+      <button
+        type="button"
+        className="al-tool"
+        onClick={() => (room.out ? onZoom(-1) : undefined)}
+        aria-disabled={!room.out}
+        aria-label="Zoom out"
+      >
         −
       </button>
       <button
@@ -174,7 +183,13 @@ export const Toolbar = memo(function Toolbar({
       >
         {`L${level} · ${Math.round(zoom * 100)}%`}
       </button>
-      <button type="button" className="al-tool" onClick={() => onZoom(1)} aria-label="Zoom in">
+      <button
+        type="button"
+        className="al-tool"
+        onClick={() => (room.in ? onZoom(1) : undefined)}
+        aria-disabled={!room.in}
+        aria-label="Zoom in"
+      >
         +
       </button>
     </div>

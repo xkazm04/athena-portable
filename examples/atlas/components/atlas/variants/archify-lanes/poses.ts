@@ -50,6 +50,17 @@ export const L2_ZOOM = 3;
 /** Zoom-out below home is disabled — archify's own rule, and the round-6 correction. */
 export const ZOOM_BOUNDS: readonly [number, number] = [HOME_MIN, 6];
 
+/**
+ * Whether a zoom button can still move the camera. The rig clamps to `ZOOM_BOUNDS`, so a press
+ * past a bound is a press that does nothing — and home on a canvas narrower than the world IS the
+ * floor, so the first thing such a reader sees would offer a "Zoom out" that cannot. The tolerance
+ * absorbs a fly that lands a hair off the bound.
+ */
+export function zoomRoom(zoom: number): { out: boolean; in: boolean } {
+  const eps = 1e-3;
+  return { out: zoom > ZOOM_BOUNDS[0] + eps, in: zoom < ZOOM_BOUNDS[1] - eps };
+}
+
 export interface Frame {
   w: number;
   h: number;

@@ -62,6 +62,18 @@ test("the home control is named for what it does, and keeps its readout in the n
   assert.match(home, /aria-label=\{`Home[^`]*\$\{/, "the home button is named only by its readout");
 });
 
+/* `aria-disabled` and a guarded handler rather than `disabled`: a keyboard reader pressing Zoom
+   out down to the floor keeps focus on the button instead of being dropped to the document. */
+test("a zoom button at the camera's bound says it is inert, not a press that does nothing", () => {
+  const out = byOnClick(/onZoom\(-1\)/);
+  const zin = byOnClick(/onZoom\(1\)/);
+  assert.match(out, /aria-disabled=\{!room\.out\}/);
+  assert.match(out, /room\.out \? onZoom\(-1\)/, "Zoom out still fires at the floor");
+  assert.match(zin, /aria-disabled=\{!room\.in\}/);
+  assert.match(zin, /room\.in \? onZoom\(1\)/, "Zoom in still fires at the ceiling");
+  assert.match(SOURCE, /const room = zoomRoom\(zoom\)/, "the room is not read from the camera's own bounds");
+});
+
 test("the theme control is named for what it does, and keeps its visible word in the name", () => {
   const theme = byOnClick(/onClick=\{onTheme\}/);
   assert.match(theme, /aria-label=/, "the theme button is named only by the theme it is in");

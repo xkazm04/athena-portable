@@ -736,8 +736,13 @@
   cursor: pointer;
   transition: color var(--al-dur-hair) var(--al-ease);
 }
-.al-tool:hover {
+.al-tool:not([aria-disabled="true"]):hover {
   color: var(--al-ink);
+}
+/* A zoom button at the camera's bound: present, so the strip does not shift, and plainly inert. */
+.al-tool[aria-disabled="true"] {
+  opacity: var(--at-op-next);
+  cursor: default;
 }
 .al-tool[data-on] {
   color: var(--al-emphasis);

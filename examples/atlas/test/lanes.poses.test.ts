@@ -27,6 +27,7 @@ import {
   poseFor,
   resolveGroup,
   resolveItem,
+  zoomRoom,
 } from "../components/atlas/variants/archify-lanes/poses";
 import { NODES, PHASES } from "../components/atlas/variants/archify-lanes/workflow";
 import {
@@ -106,6 +107,24 @@ test("the six band inequalities hold, with the kit's 8% hysteresis", () => {
   assert.equal(ZOOM_BOUNDS[0], 1, "the camera may not pull out past the authored scale");
   assert.ok(ZOOM_BOUNDS[1] > L2_ZOOM, "the camera cannot reach L2");
   assert.ok(homeZoom({ w: 400, h: 300 }) >= 1, "a small frame still may not zoom out");
+});
+
+test("a zoom button is live only while the camera can still move that way", () => {
+  /* A canvas narrower than the world clamps home to the floor, so there Zoom out has nowhere to go
+     at the first view; on the 1440 canvas home stands a hair above it, and one press reaches it. */
+  const narrow = poseFor({ level: 0, group: null, item: null }, { w: 1100, h: 600 }).zoom!;
+  assert.equal(narrow, ZOOM_BOUNDS[0]);
+  assert.deepEqual(zoomRoom(narrow), { out: false, in: true }, `home at ${narrow}`);
+  const home = poseFor({ level: 0, group: null, item: null }, FRAME).zoom!;
+  assert.deepEqual(zoomRoom(home), { out: home > ZOOM_BOUNDS[0] + 1e-3, in: true });
+  assert.deepEqual(zoomRoom(Math.max(ZOOM_BOUNDS[0], home * 0.8)), { out: false, in: true });
+  assert.deepEqual(zoomRoom(ZOOM_BOUNDS[0] + 1e-6), { out: false, in: true }, "a fly a hair off");
+  for (const phase of PHASES) {
+    const z = poseFor({ level: 1, group: phase.id, item: null }, FRAME).zoom!;
+    assert.deepEqual(zoomRoom(z), { out: true, in: true }, `L1 ${phase.id} at ${z}`);
+  }
+  assert.deepEqual(zoomRoom(L2_ZOOM), { out: true, in: true });
+  assert.deepEqual(zoomRoom(ZOOM_BOUNDS[1]), { out: true, in: false });
 });
 
 test("the twelve stops each stand on a node this drawing has", () => {
