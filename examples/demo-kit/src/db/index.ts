@@ -169,11 +169,18 @@ export function openDb(appId: string, opts: OpenDbOptions): Db {
   );
   const seeded = db.get<{ value: string }>("SELECT value FROM meta WHERE key = ?", ["seeded_at"]);
   if (!seeded) {
-    db.withTx((tx) => {
-      opts.seed(tx);
-      tx.run("INSERT INTO meta (key, value) VALUES (?, ?)", ["app_id", appId]);
-      tx.run("INSERT INTO meta (key, value) VALUES (?, ?)", ["seeded_at", new Date().toISOString()]);
-    });
+    try {
+      db.withTx((tx) => {
+        opts.seed(tx);
+        tx.run("INSERT INTO meta (key, value) VALUES (?, ?)", ["app_id", appId]);
+        tx.run("INSERT INTO meta (key, value) VALUES (?, ?)", ["seeded_at", new Date().toISOString()]);
+      });
+    } catch (err) {
+      // Not memoised yet, so the next request opens its own handle: close this one, or every
+      // request leaks a connection and (on Windows) the file the READMEs say to delete stays locked.
+      raw.close();
+      throw err;
+    }
   }
 
   OPEN.set(file, db);

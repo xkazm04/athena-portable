@@ -179,3 +179,30 @@ test("a transaction SQLite already ended does not hide the error that ended it",
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+test("a seed that throws closes the handle it opened, so the next request starts clean", async () => {
+  // openDb is called per request until a seed succeeds. A throwing seed used to leave its
+  // connection open: one more handle per request, and on Windows a data file that cannot be
+  // deleted to reseed (the apps' READMEs say to delete it) while the dev server runs.
+  const { existsSync } = await import("node:fs");
+  const dir = mkdtempSync(join(tmpdir(), "dk-ui-webmcp-"));
+  const file = join(dir, "s.sqlite");
+  try {
+    assert.throws(
+      () =>
+        openDb("s", {
+          file,
+          seed: () => {
+            throw new Error("seed bug");
+          },
+        }),
+      /seed bug/,
+    );
+    const db = openDb("s", { file, seed: (d) => d.exec("CREATE TABLE y (v INTEGER)") });
+    db.close();
+    // WAL keeps its side files while any connection is open; the last close removes them.
+    assert.equal(existsSync(`${file}-wal`), false, "a connection from the failed seed is still open");
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+});
