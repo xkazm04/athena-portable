@@ -57,7 +57,14 @@ export function startDepth(): () => void {
   started = true;
 
   const fromHash = parseHash(window.location.hash);
-  useDepth.setState({ path: fromHash, from: null, move: "none" });
+  // The stage is already on screen at the surface when this runs (the app root starts it from an
+  // effect), and the stage redraws its layers when `seq` changes, so a new place counts as a change
+  // of place, with no move to play. Without the count the bar would name the depth over the
+  // surface's scene.
+  const now = useDepth.getState();
+  if (!samePath(fromHash, now.path)) {
+    useDepth.setState({ path: fromHash, from: null, move: "none", seq: now.seq + 1 });
+  }
   // A hash the grammar did not write (a stale link, a typo, odd case) is rewritten to the place it
   // resolved to, so the bar's URL and the store never disagree about where the window is. No hash at
   // all is the surface already and is left alone.

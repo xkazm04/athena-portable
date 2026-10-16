@@ -61,6 +61,8 @@ describe("the hash mirror", () => {
       sub: { kind: "run", arg: "2" },
     });
     expect(useDepth.getState().move).toBe("none");
+    // A change of place the stage must redraw for (it keys its layers on `seq`); the surface is not.
+    expect(useDepth.getState().seq).toBe(1);
     stop();
   });
 
