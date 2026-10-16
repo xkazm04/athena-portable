@@ -78,8 +78,10 @@ class ApiHarness(RoundHarness):
             return "", ("timeout", "the model did not answer in time")
         except Exception as exc:
             # A ModelFn should turn every failure into an ``error`` chunk; one that raises still
-            # gets a row, because a turn with no row is a turn the ledger cannot see.
-            return "", ("engine_error", f"{type(exc).__name__}: {exc}")
+            # gets a row, because a turn with no row is a turn the ledger cannot see. The type name
+            # only, as the round loop's own catch-all does: a raise from an HTTP layer can quote
+            # the request it refused, its headers and the key among them.
+            return "", ("engine_error", f"the model call raised {type(exc).__name__}")
         return "".join(segments), None
 
 

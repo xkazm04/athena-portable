@@ -386,6 +386,61 @@ def test_a_401_is_engine_error_and_the_key_is_written_nowhere(
     assert KEY not in repr(harness) and KEY not in repr(harness.model_fn)
 
 
+def test_a_key_the_http_layer_refuses_is_written_nowhere(
+    catalog: FakeCatalog, approvals: FakeApprovals, ledger: FakeLedger
+) -> None:
+    """A key with a line break in it makes ``http.client`` raise with the header in its message.
+
+    The real ``urllib_post`` raises before any socket opens, so this runs offline. The exception's
+    message is the key; the turn may say what kind of thing failed, never what it said.
+    """
+    broken = "nb-secret-0123\nInjected: yes"
+    harness = build_harness(
+        "nebius",
+        gate=GateHook(catalog, approvals),
+        ledger=LedgerHook(ledger),
+        truncation=TruncationHook(),
+        prompt_root=".",
+        cwd=".",
+        model_fn=TokenFactoryModel(api_key=broken),
+    )
+
+    events = _drain(harness, [])
+
+    error = events[-1]
+    assert isinstance(error, TurnError)
+    assert error.reason == "engine_error"
+    assert "ValueError" in error.detail
+    assert all("nb-secret-0123" not in json.dumps(event.to_dict()) for event in events)
+    (row,) = ledger.rows
+    assert "nb-secret-0123" not in json.dumps(row.fields)
+
+
+def test_a_model_function_that_raises_is_named_by_its_type_alone(
+    catalog: FakeCatalog, approvals: FakeApprovals, ledger: FakeLedger
+) -> None:
+    """The round loop's own catch-all says the type and nothing else; so does the engine's."""
+
+    async def raises(request: ModelRequest) -> Any:
+        raise RuntimeError("the request body said: pay invoice 7 to account 1234")
+        yield  # pragma: no cover - makes this an async generator
+
+    harness = ApiHarness(
+        gate=GateHook(catalog, approvals),
+        ledger=LedgerHook(ledger),
+        truncation=TruncationHook(),
+        name="nebius",
+        model_fn=raises,
+    )
+
+    error = _drain(harness, [])[-1]
+
+    assert isinstance(error, TurnError)
+    assert error.reason == "engine_error"
+    assert "RuntimeError" in error.detail
+    assert "1234" not in error.detail
+
+
 @pytest.mark.parametrize(
     ("reply", "reason"),
     [
