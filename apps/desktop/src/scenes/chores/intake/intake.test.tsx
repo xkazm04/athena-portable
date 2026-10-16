@@ -23,6 +23,7 @@ import type { AdoptDeps, Dictation } from "../adopt/deps";
 import { fixtures } from "../fixtures";
 import { adoptPath, chorePath, newChorePath } from "../model";
 import ChoresView from "../view";
+import { forgetChores } from "../memory";
 
 (
   globalThis as { IS_REACT_ACT_ENVIRONMENT?: boolean }
@@ -176,6 +177,18 @@ function render() {
   });
 }
 
+/**
+ * The app moves the place: the stage mounts a fresh layer, so a fresh view, at every move (ADR
+ * 0090). Re-rendering the same root would keep the view's state and prove nothing about the app.
+ */
+async function move(path: Path) {
+  act(() => root.unmount());
+  root = createRoot(host);
+  current.path = path;
+  render();
+  await flush();
+}
+
 async function show(
   over: {
     path?: Path;
@@ -282,6 +295,7 @@ const CUSTOM: Unseq<Extract<AdoptEvent, { kind: "adopt.verdict" }>> = {
 };
 
 beforeEach(() => {
+  forgetChores();
   host = document.createElement("div");
   document.body.append(host);
   root = createRoot(host);
@@ -336,9 +350,7 @@ describe("a template verdict", () => {
     expect(go).toHaveBeenCalledWith(adoptPath(FIT));
 
     // The app moves the place; the studio's session start carries the need.
-    current.path = adoptPath(FIT);
-    render();
-    await flush();
+    await move(adoptPath(FIT));
     expect(adopt.starts).toEqual([{ playbookId: FIT, intro: NEED }]);
   });
 
@@ -354,9 +366,7 @@ describe("a template verdict", () => {
     );
     await click(alt ?? null);
     expect(go).toHaveBeenLastCalledWith(adoptPath(ALT));
-    current.path = adoptPath(ALT);
-    render();
-    await flush();
+    await move(adoptPath(ALT));
     expect(adopt.starts).toEqual([{ playbookId: ALT, intro: NEED }]);
   });
 
@@ -364,15 +374,9 @@ describe("a template verdict", () => {
     await show();
     await feed(TEMPLATE);
     await click(button("Make it yours"));
-    current.path = adoptPath(FIT);
-    render();
-    await flush();
-    current.path = chorePath(FIT);
-    render();
-    await flush();
-    current.path = adoptPath(FIT);
-    render();
-    await flush();
+    await move(adoptPath(FIT));
+    await move(chorePath(FIT));
+    await move(adoptPath(FIT));
     expect(adopt.starts.map((s) => s.intro)).toEqual([NEED, undefined]);
   });
 

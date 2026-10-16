@@ -4,13 +4,14 @@
  * A pure function of `{ model, path, go }`: the place says which level is drawn. The root is the
  * catalogue (`catalogue.tsx`), a chore is its topic page (`topic.tsx`), a turn of its run is the
  * replay (`replay.tsx`), and its "Make it yours" is the Adopt studio (`adopt/studio.tsx`, ADR 0097),
- * the one level that talks to the daemon, through the deps it is handed. The catalogue's filters, order and last pick live here, so coming back
- * from a topic finds them as they were. A load that failed, a set on its way, an empty build, an id
- * this build does not ship, a chore with no recorded run, a turn that is not in the run: each is
- * said in words with the way back, never a crash and never a blank. Nothing here fetches or
- * reaches a store.
+ * the one level that talks to the daemon, through the deps it is handed. The stage mounts a fresh
+ * view at every move, so the catalogue's filters, order and last pick, the front door's words and
+ * each topic's scroll are kept in `memory.ts`, and coming back finds them as they were. A load that
+ * failed, a set on its way, an empty build, an id this build does not ship, a chore with no
+ * recorded run, a turn that is not in the run: each is said in words with the way back, never a
+ * crash and never a blank. Nothing here fetches.
  */
-import { useCallback, useState } from "react";
+import { useCallback, useEffect } from "react";
 
 import Button from "@/components/Button";
 import EmptyState from "@/components/EmptyState";
@@ -21,9 +22,10 @@ import type { PlaybooksModel } from "@/modules/playbooks/model";
 import type { AdoptDeps } from "./adopt/deps";
 import Studio from "./adopt/studio";
 import Intake from "./intake/intake";
-import Catalogue, { type CatalogueState } from "./catalogue";
+import Catalogue from "./catalogue";
 import "./chores.css";
-import { EDGE_ORDER, NEW_ITEM, adoptPath, choreAt, chorePath, newChorePath, runPath, turnAt } from "./model";
+import { NEW_ITEM, adoptPath, choreAt, chorePath, newChorePath, runPath, turnAt } from "./model";
+import { rememberCatalogue, rememberIntro, scrolls, useChoresMemory } from "./memory";
 import Replay from "./replay";
 import Topic from "./topic";
 
@@ -38,22 +40,29 @@ export interface ChoresViewProps {
 }
 
 export default function ChoresView({ model, path, go, adopt, offer }: ChoresViewProps) {
-  const [state, setState] = useState<CatalogueState>({ category: "all", job: "all", sort: EDGE_ORDER, last: null });
-  const set = useCallback((s: Partial<CatalogueState>) => setState((old) => ({ ...old, ...s })), []);
+  // The stage mounts a fresh view at every move, so what must outlive one lives in `memory.ts`.
+  const { catalogue: state, intro } = useChoresMemory();
   const back = useCallback(() => go({ root: "chores" }), [go]);
-  // What the person said at the front door, for the one studio it opens (ADR 0098).
-  const [intro, setIntro] = useState<{ id: string; text: string } | null>(null);
   const openAdopt = useCallback(
     (id: string, text: string) => {
-      setIntro({ id, text });
+      rememberIntro({ id, text });
       go(adoptPath(id));
     },
     [go],
   );
-  const openChore = useCallback((id: string) => go(chorePath(id)), [go]);
+  // Opening a chore afresh (from a row, or from the front door) starts its page at the top.
+  const openChore = useCallback(
+    (id: string) => {
+      scrolls.delete(id);
+      go(chorePath(id));
+    },
+    [go],
+  );
   // Back on the catalogue or a chore's page, what was said is spent: a later studio starts clean.
   const spent = path.item === undefined || (path.item !== NEW_ITEM && path.sub === undefined);
-  if (spent && intro !== null) setIntro(null);
+  useEffect(() => {
+    if (spent) rememberIntro(null);
+  }, [spent]);
 
   if (model.problem !== null) {
     return (
@@ -90,11 +99,11 @@ export default function ChoresView({ model, path, go, adopt, offer }: ChoresView
       <Catalogue
         model={model}
         state={state}
-        set={set}
+        set={rememberCatalogue}
         create={() => go(newChorePath())}
         open={(v) => {
-          set({ last: v.id });
-          go(chorePath(v.id));
+          rememberCatalogue({ last: v.id });
+          openChore(v.id);
         }}
       />
     );

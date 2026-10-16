@@ -5,7 +5,7 @@
  * its first still and three figures), the run drawn as a blueprint, every still of the run large,
  * and what to do with it. Escape, or the crumb, goes back to the catalogue.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import Button from "@/components/Button";
 import type { Path } from "@/depth/model";
@@ -14,6 +14,7 @@ import type { PlaybookView, PlaybooksModel } from "@/modules/playbooks/model";
 
 import { adoptPath, beforeAfterOf, blueprintOf, lowerFirst, runPath, valueCell } from "./model";
 import Lightbox from "./lightbox";
+import { scrolls } from "./memory";
 import Rich from "./rich";
 import { stillsOf } from "./facts";
 import Flow from "./flow";
@@ -59,10 +60,16 @@ export default function Topic({
     return () => document.removeEventListener("keydown", onKey);
   }, [back, open]);
 
+  // Back from the studio or the replay, the page is where the person left it, not at its top.
+  useLayoutEffect(() => {
+    const top = scrolls.get(p.id);
+    if (top && root.current) root.current.scrollTop = top;
+  }, [p.id]);
+
   const hero = stills[0];
 
   return (
-    <div className="pa-page" ref={root}>
+    <div className="pa-page" ref={root} onScroll={(e) => scrolls.set(p.id, e.currentTarget.scrollTop)}>
       <div className="pa-wrap pa-topic">
         <button type="button" className="pa-crumb focus-ring" onClick={back}>
           <span aria-hidden="true">←</span> All playbooks

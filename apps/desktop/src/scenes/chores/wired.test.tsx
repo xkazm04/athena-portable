@@ -18,6 +18,7 @@ import type { Path } from "@/depth/model";
 import { type PlaybookActions, type PlaybooksModel } from "@/modules/playbooks/model";
 
 import { fixtures } from "./fixtures";
+import { forgetChores } from "./memory";
 import { adoptPath, chorePath, runPath } from "./model";
 import { REPLAY_STEP_MS, stopPlaying } from "./replay";
 import ChoresView from "./view";
@@ -48,6 +49,13 @@ function show(model: PlaybooksModel, path: Path) {
   });
 }
 
+/** A move as the app makes it: the stage mounts a fresh layer, so a fresh view (ADR 0090). */
+function move(model: PlaybooksModel, path: Path) {
+  act(() => root.unmount());
+  root = createRoot(host);
+  show(model, path);
+}
+
 const q = <T extends Element = HTMLElement>(sel: string) => host.querySelector<T>(sel);
 const qa = (sel: string) => [...host.querySelectorAll<HTMLElement>(sel)];
 const click = (el: Element | null) => {
@@ -64,6 +72,7 @@ const key = (k: string, target: EventTarget = document.body) =>
   });
 
 beforeEach(() => {
+  forgetChores();
   host = document.createElement("div");
   document.body.append(host);
   root = createRoot(host);
@@ -151,9 +160,9 @@ describe("the catalogue", () => {
     click(tab("Freight & trade"));
     click(rows()[0]!);
     expect(go).toHaveBeenLastCalledWith(chorePath("carrier-refunds"));
-    show(ledger(), chorePath("carrier-refunds"));
+    move(ledger(), chorePath("carrier-refunds"));
     expect(q(".pa-title")!.textContent).toBe("Late-parcel refunds");
-    show(ledger(), { root: "chores" });
+    move(ledger(), { root: "chores" });
     expect(titles()).toEqual(["Late-parcel refunds"]);
     expect(rows()[0]!.getAttribute("aria-selected")).toBe("true");
     expect(document.activeElement).toBe(rows()[0]);
@@ -187,6 +196,33 @@ describe("a chore's topic page", () => {
     key("Escape", input);
     input.remove();
     expect(go).not.toHaveBeenCalled();
+  });
+
+  it("comes back from its studio or its replay where it was left, and opens from the catalogue at the top", () => {
+    const page = () => q(".pa-page")!;
+    const scrollTo = (top: number) =>
+      act(() => {
+        page().scrollTop = top;
+        page().dispatchEvent(new Event("scroll"));
+      });
+    show(fixtures.ledger!, at);
+    scrollTo(900);
+    move(fixtures.ledger!, adoptPath("carrier-refunds"));
+    move(fixtures.ledger!, at);
+    expect(page().scrollTop).toBe(900);
+    scrollTo(640);
+    move(fixtures.ledger!, runPath("carrier-refunds", 0));
+    move(fixtures.ledger!, at);
+    expect(page().scrollTop).toBe(640);
+    // Back to the catalogue and in again from its row: a fresh visit starts at the top.
+    move(fixtures.ledger!, { root: "chores" });
+    act(() => {
+      qa("tbody tr[aria-selected]")
+        .find((r) => r.textContent?.includes(refunds().shortTitle))!
+        .dispatchEvent(new MouseEvent("click", { bubbles: true }));
+    });
+    move(fixtures.ledger!, at);
+    expect(page().scrollTop).toBe(0);
   });
 
   it("does not answer Escape while it is a leaving layer (inert)", () => {
