@@ -16,8 +16,8 @@
   position: relative;
   isolation: isolate;
   /*
-   * The sheet IS the frame, not a document inside one. Masthead, toolbar and
-   * the footer legend are furniture; only the stage between them scrolls, and
+   * The sheet IS the frame, not a document inside one. The masthead and the
+   * footer legend are furniture; only the stage between them scrolls, and
    * only when the level genuinely does not fit. That is what keeps the glyph
    * legend on screen beside the glyphs it explains.
    */

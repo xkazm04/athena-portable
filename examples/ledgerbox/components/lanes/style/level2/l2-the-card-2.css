@@ -153,13 +153,6 @@
   flex: none;
 }
 
-.ln-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: var(--ln-s2);
-  align-items: center;
-}
-
 .ln-btn {
   min-block-size: 44px;
   padding: var(--ln-s2) var(--ln-s4);

@@ -25,14 +25,3 @@
   border-color: var(--ln-accent);
   box-shadow: 0 0 0 2px var(--ln-accent);
 }
-
-/* The count, beside the filter count on the toolbar. It is the only place a
-   person can see how big the working set is without counting rings. */
-.ln-picked {
-  font-family: var(--ln-font-mono);
-  font-size: var(--ln-label);
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: var(--ln-accent);
-  white-space: nowrap;
-}

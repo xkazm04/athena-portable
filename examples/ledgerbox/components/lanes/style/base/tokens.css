@@ -36,8 +36,8 @@
  */
 
 [data-variant="lanes"] {
-  /* The UA draws three things this sheet does not: the option list of the
-     toolbar's client select and of the card's two pickers. Without this they
+  /* The UA draws what this sheet does not: the option lists of the decision
+     dialog's two pickers. Without this they
      are painted on the light default surface while their text inherits
      `--ln-ink` (#f4fafa) — near-white on white, about 1.05:1. The kit's own
      surfaces state the same declaration for the same reason. */

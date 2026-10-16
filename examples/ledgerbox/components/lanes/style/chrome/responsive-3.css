@@ -102,10 +102,6 @@
     gap: var(--ln-s3) var(--ln-s5);
   }
 
-  .ln-actions {
-    align-items: stretch;
-  }
-
   .ln-card-aside {
     position: static;
   }

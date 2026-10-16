@@ -120,6 +120,50 @@ test("every state's text ink clears 4.5:1 on every ground, at the dimming the sh
   assert.deepEqual(short, [], "text below 4.5:1");
 });
 
+/* -------------------------------------------------------------- readers */
+
+const APP = fileURLToPath(new URL("../", import.meta.url));
+
+function sources(dir: string): string[] {
+  return readdirSync(dir, { withFileTypes: true }).flatMap((e) =>
+    e.name === "node_modules" || e.name.startsWith(".")
+      ? []
+      : e.isDirectory()
+        ? sources(join(dir, e.name))
+        : /\.(ts|tsx)$/.test(e.name)
+          ? [join(dir, e.name)]
+          : [],
+  );
+}
+
+/** The TypeScript that renders the page, block and line comments stripped. */
+const RENDERERS = ["components", "app", "lib"]
+  .flatMap((d) => sources(join(APP, d)))
+  .map((f) =>
+    readFileSync(f, "utf8")
+      .replace(/\/\*[\s\S]*?\*\//g, "")
+      .replace(/^\s*\/\/.*$/gm, ""),
+  )
+  .join("\n");
+
+test("every class the sheet styles is drawn by some component", () => {
+  // The toolbar (rail, chips, client select, view switch, picked count) left with the operator
+  // chrome in 616762b and the AUTO/GATED bands with the decision dialog in a8200ae; their rules
+  // stayed, shipped on every page load, and read as live design to whoever edited the sheet next.
+  const styled = new Map<string, Set<string>>();
+  for (const [name, css] of SHEET) {
+    for (const m of css.matchAll(/\.(ln-[a-z0-9-]+)/g)) {
+      if (!styled.has(m[1]!)) styled.set(m[1]!, new Set());
+      styled.get(m[1]!)!.add(name);
+    }
+  }
+  assert.ok(styled.size > 50, `read ${styled.size} classes - the sheet did not load`);
+  const unread = [...styled]
+    .filter(([cls]) => !new RegExp(`(^|[^a-z0-9-])${cls}([^a-z0-9-]|$)`).test(RENDERERS))
+    .map(([cls, files]) => `.${cls} (${[...files].join(", ")})`);
+  assert.deepEqual(unread, [], "styled, and drawn by nothing");
+});
+
 test("text in the state's colour reads the ink, never the swatch", () => {
   const swatchText: string[] = [];
   for (const [name, css] of SHEET) {
