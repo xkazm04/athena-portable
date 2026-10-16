@@ -38,6 +38,10 @@
   border-radius: var(--bk-radius-0);
   color: var(--bk-graphite);
   cursor: pointer;
+  /* The foot's buttons ease their inversion over --bk-dur-1; this one cut it. */
+  transition:
+    background-color var(--bk-dur-1) var(--bk-ease),
+    color var(--bk-dur-1) var(--bk-ease);
 }
 
 .bk-close:hover {

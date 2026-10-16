@@ -332,3 +332,27 @@ test("the values the TypeScript restates from base/tokens.css agree with it", as
   assert.ok(Object.keys(INK).length >= 7, "the scene's ink table shrank; revisit this");
   assert.deepEqual(drift, []);
 });
+
+test("every hover state eases, as its siblings do", () => {
+  // Every control on the sheet that answers a pointer answers it over a motion token, except the
+  // one that did not: a hover that cuts while its neighbours ease reads as a different control.
+  const parts = RULES.flatMap((r) => r.selector.split(",").map((s) => s.trim()));
+  const eased = (key: string): boolean =>
+    RULES.some(
+      (r) =>
+        r.decls.has("transition") &&
+        r.selector.split(",").some((s) => {
+          const t = s.trim();
+          return t === key || t.endsWith(` ${key}`);
+        }),
+    );
+  const hovers = parts.filter((p) => /:hover/.test(p) && !/::-webkit/.test(p));
+  assert.ok(hovers.length >= 8, `only ${hovers.length} hover states read off the sheet`);
+  const cut: string[] = [];
+  for (const p of hovers) {
+    const [before, after] = p.split(/:hover(?::not\([^)]*\))?/);
+    const key = after!.trim() || before!.split(" ").at(-1)!.replace(/\[[^\]]*\]/g, "");
+    if (!eased(key)) cut.push(`${p} (nothing transitions ${key})`);
+  }
+  assert.deepEqual(cut, []);
+});
