@@ -2,7 +2,7 @@
 //
 // Run by `pnpm --filter @athena/demo-kit typecheck`, which CI reaches through `pnpm typecheck`
 // over `./examples/*`. Node strips the types; the module under test imports nothing, which is why
-// it is a module of its own rather than a branch inside `three/nav.ts`.
+// it is a module of its own rather than a branch inside the React hook in `zoom/nav.ts`.
 
 import assert from "node:assert/strict";
 import { test } from "node:test";

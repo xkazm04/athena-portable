@@ -6,14 +6,12 @@
  *   L1  one group — the working set, spread so its members compare
  *   L2  one item — the thing you act on, with the evidence and the buttons
  *
- * The model already existed for the WebGL worlds and lives in `../three/nav`. It
- * is pure React with no `three` import, but the only path to it was the
- * `@athena/demo-kit/three` barrel, which does pull `three` and
- * `@react-three/fiber` in behind it. A direction whose L0 is a DOM swimlane or a
- * DOM kanban would have paid for a renderer it never mounts, and would therefore
- * have forked its own reducer — after which "open a group" means something
- * slightly different in every app, which is the one thing the round has to hold
- * still. NOTHING HERE MAY IMPORT `three`.
+ * This barrel is the model's only home. It began inside a WebGL barrel that pulled `three` and
+ * `@react-three/fiber` in behind it (that barrel is gone from the kit), and the reason it moved
+ * out still stands: a direction whose L0 is a DOM swimlane or a DOM kanban would have paid for a
+ * renderer it never mounts, and would therefore have forked its own reducer — after which "open
+ * a group" means something slightly different in every app, which is the one thing the round
+ * has to hold still. NOTHING HERE MAY IMPORT `three`.
  *
  * No chrome and no stylesheet: the level rail, the breadcrumb and the back affordance are where
  * a direction earns its identity, so each one draws its own and they agree only about state.
