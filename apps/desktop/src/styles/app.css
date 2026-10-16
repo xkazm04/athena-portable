@@ -69,14 +69,6 @@
   --glow: rgba(34, 211, 238, 0.22);
   --scrim: rgba(3, 8, 10, 0.55);
   --shadow-elevation-1: 0 1px 2px rgba(0, 0, 0, 0.35);
-
-  /* A foreign page inside Main: someone else's content, deliberately not ours. */
-  --page-bg: #1c2226;
-  --page-ink: #dfe6ea;
-  --page-ink-2: #9aa8b1;
-  --page-rule: rgba(223, 230, 234, 0.13);
-  --page-accent: #6aa3c7;
-  --page-row: rgba(223, 230, 234, 0.05);
 }
 
 [data-theme="light"] {
@@ -121,13 +113,6 @@
   --glow: rgba(8, 145, 178, 0.2);
   --scrim: rgba(236, 238, 242, 0.6);
   --shadow-elevation-1: 0 1px 2px rgba(15, 23, 42, 0.12);
-
-  --page-bg: #ffffff;
-  --page-ink: #1b2430;
-  --page-ink-2: #5a6674;
-  --page-rule: rgba(27, 36, 48, 0.12);
-  --page-accent: #2f6f97;
-  --page-row: rgba(27, 36, 48, 0.04);
 }
 
 :root {
@@ -265,12 +250,6 @@ button {
 
 .muted {
   color: var(--muted-foreground);
-}
-
-.truncate {
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
 
 /* -- Focus ---------------------------------------------------------------------------------
@@ -842,33 +821,6 @@ select:focus-visible {
   user-select: text;
 }
 
-/* -- Two columns where there is room, one where there is not (c21) -----------------------------
- *
- * The window is 1440 wide and its minimum is 900, so a module that is one column at every width
- * throws away the fold the module-first window was built to get back (README section 3.5). One
- * breakpoint, at 60rem, and everything below it stacks — which is also the shape the preview
- * harness is checked in at 700px.
- */
-.split {
-  display: grid;
-  gap: var(--density-gap);
-  grid-template-columns: minmax(0, 1fr);
-}
-
-@media (min-width: 60rem) {
-  .split {
-    align-items: start;
-    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
-  }
-
-  /* Prose keeps its measure, so the rail is placed against the letter rather than at the far
-     edge of a 120rem shell. A line of 66 characters is where reading stops being comfortable. */
-  .split--letter {
-    grid-template-columns: minmax(0, 66ch) minmax(0, 20rem);
-    column-gap: calc(var(--density-gap) * 2);
-  }
-}
-
 /* The two rhythms inside a card or a passage. Nothing writes a one-off gap. */
 .stack {
   display: flex;
@@ -890,14 +842,6 @@ select:focus-visible {
 }
 
 /* -- The preview harness's own chrome --------------------------------------------------------- */
-.harness {
-  display: flex;
-  flex-direction: column;
-  height: 100vh;
-  background: var(--background);
-  color: var(--foreground);
-}
-
 .harness__bar {
   display: flex;
   flex-wrap: wrap;
@@ -912,12 +856,6 @@ select:focus-visible {
   display: inline-flex;
   align-items: center;
   gap: 4px;
-}
-
-.harness__body {
-  flex: 1 1 auto;
-  min-height: 0;
-  overflow-y: auto;
 }
 
 /* A 1 ms duration alone turns an `infinite` loop (the bell's breathing, the shafts, a scene's
@@ -990,19 +928,6 @@ select:focus-visible {
 
 .close-confirm__btn:hover {
   background: var(--hover-wash);
-}
-
-@keyframes layer-sheet {
-  from {
-    transform: translateX(48px);
-    opacity: 0;
-  }
-}
-
-@keyframes layer-scrim {
-  from {
-    opacity: 0;
-  }
 }
 
 /* A depth's lazy chunk is on its way (the Suspense fallback in each depth's live.tsx). Silent for the first
