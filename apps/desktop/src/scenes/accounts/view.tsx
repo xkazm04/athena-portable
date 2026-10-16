@@ -451,11 +451,26 @@ export function Allowlist({ row, model, go }: { row: ConnectorRow; model: Connec
   const keys = parsed.map(same);
   const fresh = parsed.filter((_, i) => !saved.has(keys[i]!) && keys.indexOf(keys[i]!) === i);
 
+  // The box empties on Add, before the daemon answers; what was typed is held until the save
+  // lands (every entry is on the list) and given back if it is refused, unless something new has
+  // been typed since.
+  const sent = useRef<{ text: string; entries: string[] } | null>(null);
   const add = () => {
     if (locked || busy || fresh.length === 0) return;
+    sent.current = { text: draft, entries: fresh.map(same) };
     actions.setAllowlist(row.id, [...row.allowlist, ...fresh]);
     setDraft("");
   };
+  useEffect(() => {
+    const held = sent.current;
+    if (held === null || busy) return;
+    if (row.error) {
+      sent.current = null;
+      setDraft((now) => (now === "" ? held.text : now));
+    } else if (held.entries.every((e) => row.allowlist.some((x) => same(x) === e))) {
+      sent.current = null;
+    }
+  }, [busy, row.error, row.allowlist]);
 
   // A pressed Remove leaves with its row once the save lands (and is re-drawn disabled while it is
   // in flight), so focus would fall to the document. It goes to the Remove now in that place, or

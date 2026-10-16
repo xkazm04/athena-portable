@@ -340,6 +340,31 @@ describe("the allow-list is a draft until Add", () => {
     expect(document.activeElement).toBe(input());
   });
 
+  it("gives the typed entries back when the save is refused, and keeps the box empty when it lands", () => {
+    // The box was emptied the moment Add was pressed, before the daemon answered, so a refused
+    // save (the daemon gone, a write lock) took what was typed with it.
+    const a = spies();
+    const draw = (busy: string, error: string, extra: string[] = []) => {
+      const source = fixtures.heavy!;
+      const rows = source.rows.map((r) =>
+        r.id === "notion" ? { ...r, busy, error, allowlist: [...r.allowlist, ...extra] } : { ...r, busy: "" },
+      );
+      act(() => root.render(<AccountsView model={{ ...source, rows, actions: a }} path={list("notion")} go={() => {}} />));
+    };
+    draw("", "");
+    type(input(), "x1, x2");
+    key(input(), "Enter");
+    expect(a.setAllowlist).toHaveBeenCalledTimes(1);
+    draw("saving", "");
+    draw("", "the daemon is not ready");
+    expect(input().value).toBe("x1, x2");
+
+    key(input(), "Enter");
+    draw("saving", "");
+    draw("", "", ["x1", "x2"]);
+    expect(input().value).toBe("");
+  });
+
   it("Add is refused with a reason when the draft is empty or already listed", () => {
     mount("heavy", list("notion"));
     expect(host.querySelector('[aria-label="Type something first."]')).toBeTruthy();
