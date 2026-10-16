@@ -132,15 +132,19 @@ class FrameBuilder:
     def __post_init__(self) -> None:
         #: conversation id → the ``host_state`` of the last frame that was actually run.
         self._shown: dict[str, HostState] = {}
-        #: conversation id -> the switched-off origins its last frame was composed under.
+        #: conversation id -> the switched-off origins of the last frame that was actually run.
         self._disabled: dict[str, frozenset[str]] = {}
+        #: conversation id -> the switched-off origins of the frame built and not yet remembered.
+        self._building: dict[str, frozenset[str]] = {}
 
     def build(self, conversation_id: str, turn: SurfaceTurn) -> Composed:
         """The two halves of one turn. Nothing is remembered until :meth:`remember` is called."""
         # A changed switch changes the static half, which opens a new CLI session; a session that
-        # has been shown nothing must get the whole picture, not a delta against the old one.
+        # has been shown nothing must get the whole picture, not a delta against the old one. The
+        # switch is compared with the last frame that ran, like the host state is: a turn that
+        # carried a change and failed may never have reached the new session at all.
         before = self._disabled.get(conversation_id)
-        self._disabled[conversation_id] = turn.disabled_origins
+        self._building[conversation_id] = turn.disabled_origins
         previous = self._shown.get(conversation_id)
         if before is not None and before != turn.disabled_origins:
             previous = None
@@ -160,6 +164,8 @@ class FrameBuilder:
     def remember(self, conversation_id: str, frame: TurnFrame) -> None:
         """This frame reached the model; the next delta is measured against it."""
         self._shown[conversation_id] = dict(frame.host_state)
+        if conversation_id in self._building:
+            self._disabled[conversation_id] = self._building.pop(conversation_id)
 
     def shown(self, conversation_id: str) -> HostState | None:
         """What the model was last shown, or ``None`` if this conversation has had no turn yet."""

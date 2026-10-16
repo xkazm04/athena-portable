@@ -126,6 +126,51 @@ def test_a_frame_that_was_never_remembered_is_composed_against_nothing(tmp_path:
     assert frames.shown(CONVERSATION) is None
 
 
+def test_a_switch_change_whose_turn_failed_still_makes_the_next_frame_whole(
+    tmp_path: Path,
+) -> None:
+    """A changed switch opens a new CLI session, which has been shown nothing.
+
+    The turn that carried the change failed, so that session may never have run. The next turn
+    under the same switch is still the first one a new session sees, and it must get the whole
+    picture rather than a delta against what the *old* session was shown.
+    """
+    frames, _, _ = _builder(tmp_path)
+    first = frames.build(CONVERSATION, SurfaceTurn(message="hi", host_state={"tabs": ["a"]}))
+    frames.remember(CONVERSATION, first.frame)
+    off = frozenset({"host:support"})
+
+    frames.build(  # the switch changes, and this turn fails: nothing is remembered
+        CONVERSATION,
+        SurfaceTurn(message="again", host_state={"tabs": ["a"]}, disabled_origins=off),
+    )
+    retry = frames.build(
+        CONVERSATION,
+        SurfaceTurn(message="again", host_state={"tabs": ["a"]}, disabled_origins=off),
+    )
+
+    assert retry.frame.delta.first is True
+
+
+def test_a_switch_change_whose_turn_finished_moves_the_baseline_with_it(tmp_path: Path) -> None:
+    frames, _, _ = _builder(tmp_path)
+    off = frozenset({"host:support"})
+    first = frames.build(CONVERSATION, SurfaceTurn(message="hi", host_state={"tabs": ["a"]}))
+    frames.remember(CONVERSATION, first.frame)
+    changed = frames.build(
+        CONVERSATION, SurfaceTurn(message="hi", host_state={"tabs": ["a"]}, disabled_origins=off)
+    )
+    frames.remember(CONVERSATION, changed.frame)
+
+    after = frames.build(
+        CONVERSATION,
+        SurfaceTurn(message="hi", host_state={"tabs": ["a", "b"]}, disabled_origins=off),
+    )
+
+    assert changed.frame.delta.first is True
+    assert after.frame.delta.first is False
+
+
 def test_forget_makes_the_next_frame_whole_again(tmp_path: Path) -> None:
     frames, _, _ = _builder(tmp_path)
     first = frames.build(CONVERSATION, SurfaceTurn(message="hi", host_state={"tabs": ["a"]}))
