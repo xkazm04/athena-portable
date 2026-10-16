@@ -3,8 +3,9 @@
  *
  * Pure, and in the model rather than beside either caller, because two levels
  * now lay cells out in a grid and both owe the reader the same answer: left and
- * right step one, up and down step a row, Home and End go to the ends, and
- * nothing wraps off the end of the grid. Round 1's review named "no arrow-key
+ * right step one, up and down step a row (and stay put where there is no row
+ * straight above or below), Home and End go to the ends, and nothing wraps off
+ * the end of the grid. Round 1's review named "no arrow-key
  * navigation at L1" as carried work; this is the half that can be tested without
  * a renderer, and `L1`'s roving tabindex and L0's plate both call it.
  *
@@ -25,10 +26,12 @@ export function gridStep(
       return clamp(at + 1);
     case "ArrowLeft":
       return clamp(at - 1);
+    // Straight down or up, or nowhere: clamping a row step into range moved the focus
+    // sideways, so Down then Up did not come back to where it started.
     case "ArrowDown":
-      return clamp(at + cols);
+      return at + cols < count ? at + cols : at;
     case "ArrowUp":
-      return clamp(at - cols);
+      return at - cols >= 0 ? at - cols : at;
     case "Home":
       return 0;
     case "End":

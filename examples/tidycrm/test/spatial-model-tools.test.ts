@@ -336,6 +336,32 @@ test("a write that throws is toasted and disarms its gate, rather than escaping 
   assert.equal(after.length, 2);
 });
 
+test("up and down step a row and never a column, so down then up comes back", async () => {
+  // L1's roving focus (`Field.tsx`) walks a database's tables with `gridStep`, three across. A
+  // key at an edge is still spent - the rig's own arrows orbit - so where there is no row it stays.
+  const { gridStep } = await import("../components/blocks/model");
+  const cols = 3;
+  const sideways: string[] = [];
+  const lost: string[] = [];
+  for (let count = 1; count <= 7; count += 1) {
+    for (let at = 0; at < count; at += 1) {
+      for (const key of ["ArrowUp", "ArrowDown"]) {
+        const next = gridStep(key, at, count, cols)!;
+        if (next % cols !== at % cols) sideways.push(`${key} from ${at} of ${count} -> ${next}`);
+      }
+      const down = gridStep("ArrowDown", at, count, cols)!;
+      if (down !== at && gridStep("ArrowUp", down, count, cols) !== at) lost.push(`${at} of ${count}`);
+    }
+  }
+  assert.deepEqual(sideways, []);
+  assert.deepEqual(lost, [], "down then up did not come back");
+  // Left, right, Home and End are unchanged: one step, the ends, nothing off the end.
+  assert.equal(gridStep("ArrowRight", 2, 5, cols), 3);
+  assert.equal(gridStep("ArrowLeft", 0, 5, cols), 0);
+  assert.equal(gridStep("End", 1, 5, cols), 4);
+  assert.equal(gridStep("Tab", 1, 5, cols), null);
+});
+
 test("the check catches a read that writes, a read that moves, and a write wearing the read class", async () => {
   // Negative controls, through the same drive and the same disagreements, on a copy of the sheet.
   const copy = structuredClone(sheet);
