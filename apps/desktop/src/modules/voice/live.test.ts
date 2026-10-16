@@ -31,6 +31,8 @@ function daemon(initial: VoiceConfig) {
   let config = initial;
   let installs: InstallState[] = [];
   let previewGate: Promise<void> = Promise.resolve();
+  /** Held for the next transcribe call only, which then answers "the older take". */
+  let transcribeGate: Promise<void> | null = null;
   const json = (body: unknown, status = 200) => new Response(JSON.stringify(body), { status });
   const fetchImpl = async (input: string, init?: RequestInit) => {
     const path = input.replace(AT.url, "");
@@ -52,6 +54,12 @@ function daemon(initial: VoiceConfig) {
     }
     if (path.startsWith("/voice/transcribe")) {
       const engine = new URL(input).searchParams.get("engine");
+      const gate = transcribeGate;
+      transcribeGate = null;
+      if (gate) {
+        await gate;
+        return json({ engine, text: "the older take", elapsed_ms: 5 });
+      }
       return json({ engine, text: ` heard by ${engine} `, elapsed_ms: engine === "whisper" ? 300 : 900 });
     }
     if (path === "/voice/install" && method === "POST") {
@@ -71,6 +79,11 @@ function daemon(initial: VoiceConfig) {
     holdPreviews: () => {
       let release = () => {};
       previewGate = new Promise((r) => (release = r));
+      return () => release();
+    },
+    holdTranscribe: () => {
+      let release = () => {};
+      transcribeGate = new Promise((r) => (release = r));
       return () => release();
     },
   };
@@ -272,6 +285,23 @@ describe("the takes", () => {
     await settle();
     const paths = d.calls.filter((c) => c.path.startsWith("/voice/transcribe")).map((c) => c.path);
     expect(paths).toEqual(["/voice/transcribe?engine=whisper"]);
+  });
+
+  it("an older take's answer that lands after a newer take's never replaces it", async () => {
+    const { d } = wire(READY_CONFIG, { done: true });
+    await S().connect(AT);
+    const release = d.holdTranscribe();
+    S().actions.recordStart();
+    S().actions.recordStop();
+    await settle();
+    expect(S().hear.takes.whisper?.state).toBe("pending");
+    S().actions.recordStart();
+    S().actions.recordStop();
+    await settle();
+    expect(S().hear.takes.whisper).toMatchObject({ state: "done", text: "heard by whisper" });
+    release();
+    await settle();
+    expect(S().hear.takes.whisper).toMatchObject({ state: "done", text: "heard by whisper" });
   });
 });
 

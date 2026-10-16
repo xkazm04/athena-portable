@@ -8,12 +8,14 @@
  * source of truth: the config is re-read after every act that could change it, and "is voice
  * ready" is the config's `ready`.
  *
- * Three rules it keeps:
+ * Four rules it keeps:
  *
  * - **Previews never overlap.** A play stops the clip before it; a reply that arrives after a
  *   newer play (or a stop) is dropped by its token; leaving the pick step stops playback.
  * - **The first preview that plays chooses her voice** (`previewed`, then `PUT /voice/config`),
  *   and says a greeting for the hour; every later one says the test line.
+ * - **A column shows the newest take.** A transcript of an older take that lands after a newer
+ *   take began is dropped, as an older preview's reply is.
  * - **An install is polled every 250 ms while it runs**, and only while it runs. The poll ends on
  *   any settled phase and the config is read again, so "installed" is the daemon's word.
  *
@@ -139,6 +141,8 @@ interface Runtime {
   recording: boolean;
   /** Bumped by every play and stop; a reply carrying an older one is dropped. */
   token: number;
+  /** Bumped by every take and by a fresh studio; a transcript of an older take is dropped. */
+  take: number;
   polling: boolean;
 }
 
@@ -148,6 +152,7 @@ const freshRuntime = (): Runtime => ({
   recorder: null,
   recording: false,
   token: 0,
+  take: 0,
   polling: false,
 });
 
@@ -273,8 +278,10 @@ export const useVoiceSetup = create<VoiceSetupState>((set, get) => {
     const ready = readySttEngines(config);
     const engines: SttEngineId[] =
       studioDone && !reopened ? (config && ready.includes(config.stt.engine) ? [config.stt.engine] : []) : ready;
+    // Taken before the await: a take that ends while this one is still being written down is newer.
+    const mine = ++rt.take;
     const pcm = await rt.recorder.stop();
-    if (!rt.api || engines.length === 0) return;
+    if (!rt.api || engines.length === 0 || mine !== rt.take) return;
     if (pcm.length === 0) {
       set((s) => ({ hear: { ...s.hear, micError: "The take was empty — hold a little longer." } }));
       return;
@@ -285,6 +292,8 @@ export const useVoiceSetup = create<VoiceSetupState>((set, get) => {
     await Promise.all(
       engines.map(async (engine) => {
         const out = await at.transcribe(engine, pcm);
+        // An older take's answer that lands after a newer take began is not what the column heard.
+        if (mine !== rt.take) return;
         const take: Take = out.ok
           ? { state: "done", text: out.value.text.trim(), ms: out.value.elapsed_ms, error: null }
           : { state: "failed", text: "", ms: null, error: refusalText(out) };
@@ -350,6 +359,7 @@ export const useVoiceSetup = create<VoiceSetupState>((set, get) => {
     },
     reopenStudio: () => {
       stopPreview();
+      rt.take += 1;
       set({ studio: STUDIO_START, hear: HEAR_IDLE, reopened: true });
     },
   };
