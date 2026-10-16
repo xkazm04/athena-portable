@@ -2481,6 +2481,73 @@
           "evidence": "examples/hirelane/components/board/style/level0/l0-board-2.css:105 This explanation retains the stretch behavior; l0-board.css:33 sets align-items: start and its line 21 explicitly says the five feet are ragged."
         }
       ]
+    },
+    "f152c182-5811-458c-a43b-56fbce7a81e5/retrieval": {
+      "context": "browser-lane",
+      "subject": "retrieval",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T02:12:10.904Z",
+      "worker": "24cbbc56-6fcc-4aea-badc-ae91af2e21e7",
+      "techniques": [
+        {
+          "technique": "retrieval-triggering",
+          "verdict": "deviation",
+          "evidence": "src/athena/lane/turn_frame.py:151 Attached recall always runs on the raw message; a turn that does not point outward is not a recorded skip."
+        }
+      ],
+      "registryProposal": "retrieval-triggering's use_when includes wiring a retrieval call into a turn, while the golden path gives the finished slice to agent-memory recall-injection, so a port that only exposes as_prompt_blocks and a builder that always calls recall(message) have no stated owner for the skip-versus-empty decision."
+    },
+    "f4f6bafa-bef4-426d-9731-16357fffa1ee/retrieval": {
+      "context": "ledgerbox-lanes-ui",
+      "subject": "retrieval",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T02:12:10.904Z",
+      "techniques": [],
+      "withdrawn": {
+        "worker": "24cbbc56-6fcc-4aea-badc-ae91af2e21e7",
+        "state": "not-applicable",
+        "at": "2026-10-16T02:12:41.540844+00:00",
+        "reason": "reviewer (sonnet): The anchor model.ts:6 is only a doc comment, so it does not show the precondition is absent. The lanes tree also contains tools/search.ts, which searches the books, and the seat never examined it."
+      }
+    },
+    "6c17278c-ed66-4d70-8a4f-4202662f1613/retrieval": {
+      "context": "hirelane-model-and-lib",
+      "subject": "retrieval",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T02:12:10.904Z",
+      "techniques": [],
+      "withdrawn": {
+        "worker": "24cbbc56-6fcc-4aea-badc-ae91af2e21e7",
+        "state": "not-applicable",
+        "at": "2026-10-16T02:12:41.570069+00:00",
+        "reason": "reviewer (sonnet): The anchor shows search.ts is a retrieval path (text filter, rank(), bounded page of 25 with a leftover count), so it does not show retrieval is absent. The embedding/cosine/chunk/rerank/overfetch terms miss lexical filtering, ranking and paging."
+      }
+    },
+    "f9349ce6-a48d-4abe-9bb1-412a99b45907/retrieval": {
+      "context": "ledgerbox-style-design",
+      "subject": "retrieval",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T02:12:10.904Z",
+      "worker": "24cbbc56-6fcc-4aea-badc-ae91af2e21e7",
+      "techniques": []
+    },
+    "736379fb-8f9b-4617-be12-64b20b25e73c/retrieval": {
+      "context": "atlas-lanes-drawing",
+      "subject": "retrieval",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T02:12:10.904Z",
+      "worker": "24cbbc56-6fcc-4aea-badc-ae91af2e21e7",
+      "techniques": []
     }
   }
 }

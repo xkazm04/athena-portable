@@ -966,7 +966,11 @@
           "revision": 17,
           "changedAt": "2026-09-30",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/geometry.ts:13 This variant is a measured blueprint whose corridors are named on the grid; embedding, cosine, chunk, rerank, and overfetch do not appear under archify-lanes or examples/atlas/test, and recall appears only as a node sublabel.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:a49d27f889212d3f",
+          "evaluatedRevision": 19
         }
       ],
       "governance": "governed"
@@ -1220,7 +1224,11 @@
           "revision": 17,
           "changedAt": "2026-09-30",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/lane/turn_frame.py:151 Whenever a recall callback is attached, every surface message is sent to it as the query, with no skip and no reason code.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:a49d27f889212d3f",
+          "evaluatedRevision": 19
         },
         {
           "subject": "prompt-assembly",
@@ -7350,7 +7358,11 @@
           "revision": 17,
           "changedAt": "2026-09-30",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/base/tokens.css:27 These files are stylesheets and a retired token build that paint server-supplied geometry; embedding, cosine, chunk, rerank, and overfetch are absent from the style and design files.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:a49d27f889212d3f",
+          "evaluatedRevision": 19
         },
         {
           "subject": "docs-sync",

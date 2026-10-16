@@ -1,0 +1,131 @@
+{
+  "schema": "conform-run/1",
+  "worker": "24cbbc56-6fcc-4aea-badc-ae91af2e21e7",
+  "subject": "retrieval",
+  "evaluatedAt": "2026-10-16T02:12:10.904146+00:00",
+  "provider": "grok",
+  "model": "grok-4.7",
+  "pairs": [
+    {
+      "context": "browser-lane",
+      "subject": "retrieval",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "src/athena/lane/turn_frame.py:151 Whenever a recall callback is attached, every surface message is sent to it as the query, with no skip and no reason code.",
+      "techniques": [
+        {
+          "technique": "retrieval-triggering",
+          "verdict": "deviation",
+          "evidence": "src/athena/lane/turn_frame.py:151 Attached recall always runs on the raw message; a turn that does not point outward is not a recorded skip."
+        }
+      ],
+      "registryProposal": "retrieval-triggering's use_when includes wiring a retrieval call into a turn, while the golden path gives the finished slice to agent-memory recall-injection, so a port that only exposes as_prompt_blocks and a builder that always calls recall(message) have no stated owner for the skip-versus-empty decision."
+    },
+    {
+      "context": "ledgerbox-style-design",
+      "subject": "retrieval",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evidence": "examples/ledgerbox/components/lanes/style/base/tokens.css:27 These files are stylesheets and a retired token build that paint server-supplied geometry; embedding, cosine, chunk, rerank, and overfetch are absent from the style and design files.",
+      "techniques": [],
+      "absenceTerms": [
+        "embedding",
+        "cosine",
+        "chunk",
+        "rerank",
+        "overfetch"
+      ]
+    },
+    {
+      "context": "atlas-lanes-drawing",
+      "subject": "retrieval",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evidence": "examples/atlas/components/atlas/variants/archify-lanes/geometry.ts:13 This variant is a measured blueprint whose corridors are named on the grid; embedding, cosine, chunk, rerank, and overfetch do not appear under archify-lanes or examples/atlas/test, and recall appears only as a node sublabel.",
+      "techniques": [],
+      "absenceTerms": [
+        "embedding",
+        "cosine",
+        "chunk",
+        "rerank",
+        "overfetch"
+      ]
+    }
+  ],
+  "declined": [
+    {
+      "subject": "retrieval",
+      "context": "ledgerbox-lanes-ui",
+      "reason": "withdrawn after review: reviewer (sonnet): The anchor model.ts:6 is only a doc comment, so it does not show the precondition is absent. The lanes tree also contains tools/search.ts, which searches the books, and the seat never examined it."
+    },
+    {
+      "subject": "retrieval",
+      "context": "hirelane-model-and-lib",
+      "reason": "withdrawn after review: reviewer (sonnet): The anchor shows search.ts is a retrieval path (text filter, rank(), bounded page of 25 with a leftover count), so it does not show retrieval is absent. The embedding/cosine/chunk/rerank/overfetch terms miss lexical filtering, ranking and paging."
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-16T02:12:10.904146+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "retrieval"
+      ],
+      "techniques": [
+        "retrieval-triggering"
+      ],
+      "deviations": 1,
+      "context": "browser-lane",
+      "via": "curator-multi:grok",
+      "model": "grok-4.7"
+    },
+    {
+      "ts": "2026-10-16T02:12:10.904146+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "retrieval"
+      ],
+      "techniques": [],
+      "deviations": 0,
+      "context": "ledgerbox-lanes-ui",
+      "via": "curator-multi:grok",
+      "model": "grok-4.7"
+    },
+    {
+      "ts": "2026-10-16T02:12:10.904146+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "retrieval"
+      ],
+      "techniques": [],
+      "deviations": 0,
+      "context": "hirelane-model-and-lib",
+      "via": "curator-multi:grok",
+      "model": "grok-4.7"
+    },
+    {
+      "ts": "2026-10-16T02:12:10.904146+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "retrieval"
+      ],
+      "techniques": [],
+      "deviations": 0,
+      "context": "ledgerbox-style-design",
+      "via": "curator-multi:grok",
+      "model": "grok-4.7"
+    },
+    {
+      "ts": "2026-10-16T02:12:10.904146+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "retrieval"
+      ],
+      "techniques": [],
+      "deviations": 0,
+      "context": "atlas-lanes-drawing",
+      "via": "curator-multi:grok",
+      "model": "grok-4.7"
+    }
+  ]
+}
