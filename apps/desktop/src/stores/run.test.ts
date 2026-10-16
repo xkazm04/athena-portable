@@ -575,6 +575,29 @@ describe("answering a card", () => {
     expect(paths.indexOf("/manifest")).toBeLessThan(paths.indexOf("/decisions/apr_0000000000a1"));
   });
 
+  it("leaves a trace when that registration is refused, as another tab's refused manifest does", async () => {
+    const daemon = fakeDaemon({ resolutions: { apr_0000000000a1: APPROVED } });
+    const fetchImpl = async (url: string, init: RequestInit = {}): Promise<Response> =>
+      url.endsWith("/manifest")
+        ? new Response(JSON.stringify({ reason: "manifest_invalid", detail: "two tools named chase" }), { status: 400 })
+        : daemon.fetchImpl(url, init);
+    setRunDeps({
+      ...wire(daemon, fakePage()),
+      api: () => new DaemonApi({ url: "http://daemon", token: "t" }, fetchImpl),
+      manifest: () => ({ app_id: "ledgerbox", tools: [] }),
+    });
+    useRun.setState({ cards: [CARD as never] });
+    const logged = vi.spyOn(console, "error").mockImplementation(() => {});
+    try {
+      await useRun.getState().answer("apr_0000000000a1", "approve");
+      // The answer still goes: the daemon may hold a session from before. But the refusal that
+      // explains a later "a different app" is written down, not swallowed.
+      expect(logged.mock.calls.map((c) => String(c[0]))).toEqual([expect.stringMatching(/manifest.*two tools named chase/)]);
+    } finally {
+      logged.mockRestore();
+    }
+  });
+
   it("keeps the card when the daemon refuses, says why in plain words, and never records an approval", async () => {
     const daemon = fakeDaemon({
       resolutions: {

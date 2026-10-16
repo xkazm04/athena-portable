@@ -1513,7 +1513,11 @@ export const useRun = create<RunState>((set, get) => {
     const taking = snapshotFrom(deps);
     read = taking;
     if (taking.manifest !== null) {
-      await api.manifest(taking.manifest).catch(() => undefined);
+      // The answer goes either way (the daemon may still hold a session), but a refusal here is
+      // what explains a later "a different app", so it is written down as `publishOthers` does.
+      await api
+        .manifest(taking.manifest)
+        .catch((error: unknown) => console.error(`[athena] manifest of the focused tab: ${String(error)}`));
       await publishOthers(api, taking);
     }
     // The page that answers is the tab the card is bound to (ADR 0103, 0106): a card proposed on
