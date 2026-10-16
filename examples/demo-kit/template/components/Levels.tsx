@@ -287,7 +287,8 @@ function Overlay({
   const overlay = useOverlayEscape({
     onClose,
     prefer: "origin",
-    returnFocusTo: () => document.querySelector<HTMLElement>(`[data-record="${record.id}"] button`),
+    returnFocusTo: () =>
+      document.querySelector<HTMLElement>(`[data-record="${CSS.escape(record.id)}"] button`),
   });
 
   /* The hook returns focus; taking it is the pane's own decision, because where it should land

@@ -179,6 +179,21 @@ test("the L2 overlay is centred in its containing block, in either direction, at
   }
 });
 
+test("every id the template interpolates into a selector goes through CSS.escape", () => {
+  // `[data-record="${id}"]` with a quote or a backslash in the id is a SyntaxError from
+  // querySelector; in Levels' focus return it throws inside a frame callback and focus is lost.
+  const raw: string[] = [];
+  for (const { file, text } of payload().filter(({ file }) => file.endsWith(".tsx"))) {
+    const code = text.replace(/\/\*[\s\S]*?\*\//g, "").replace(/^\s*\/\/.*$/gm, "");
+    for (const m of code.matchAll(/querySelector(?:All)?(?:<[^>]*>)?\(\s*`([^`]*)`/g)) {
+      for (const slot of m[1]!.matchAll(/\$\{([^}]*)\}/g)) {
+        if (!/^\s*CSS\.escape\(/.test(slot[1]!)) raw.push(`${file}: ${m[1]}`);
+      }
+    }
+  }
+  assert.deepEqual(raw, [], "an id pasted into a selector unescaped");
+});
+
 test("a template file that sends the reader to a README appendix sends them to one that exists", () => {
   const readme = readFileSync(join(TEMPLATE, "README.md"), "utf8");
   const hasAppendix = /^#+\s.*appendix/im.test(readme);
