@@ -216,6 +216,14 @@ test("the placeholder centres itself in the stage instead of asking a block pare
   assert.match(card, /margin\s*:\s*auto/);
 });
 
+test("the mast's model counts reach a screen reader, as they reach the eye", () => {
+  /* Systems and edges are counted nowhere else on the surface; the claims rail repeats the other two. */
+  const mast = source("Mast.tsx");
+  const counts = /<div className="at-mast-counts"[^>]*>/.exec(mast);
+  assert.ok(counts, "no .at-mast-counts in Mast.tsx");
+  assert.doesNotMatch(counts[0], /aria-hidden/, `visible figures hidden from assistive tech: ${counts[0]}`);
+});
+
 /* ---------------------------------------------------------------------- the motion -- */
 
 test("every control the shell restyles on hover eases into it on the hair clock, as its siblings do", () => {

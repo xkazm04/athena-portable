@@ -193,7 +193,8 @@ export function Mast({
         )}
       </div>
 
-      <div className="at-mast-counts" aria-hidden>
+      {/* Read aloud as well as seen: systems and edges are counted nowhere else on the surface. */}
+      <div className="at-mast-counts">
         <span>{counts.systems} systems</span>
         <span>{counts.components} components</span>
         <span>{counts.edges} edges</span>
