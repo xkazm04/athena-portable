@@ -76,6 +76,15 @@ test("a gated-panel ink retuned below its floor on the panel's own sheet fails",
   assert.match(out, /--bd-gate-ink-2.*gated sheet/);
 });
 
+test("the panel's 12px class sentence at AA fails the AAA its size is owed", () => {
+  // #8a5c52 was the shipped ink: 4.76:1 on the sheet's foot stop. It clears AA, and the floor rule
+  // at the top of the check gives every ink carrying 12px text AAA, so on the panel holding the
+  // irreversible acts it is under, exactly as a 12px room label at 4.76:1 would be.
+  const { code, out } = contrastWith("  --bd-gate-ink-2: #8a5c52;");
+  assert.equal(code, 1, `the gated panel's 12px label at 4.76:1 passed:\n${out}`);
+  assert.match(out, /--bd-gate-ink-2.*gated sheet/);
+});
+
 test("the fire button's label is scored against the fire it sits on", () => {
   const { code, out } = contrastWith("  --bd-gate-fire: #d9725e;");
   assert.equal(code, 1, `white on a light coral fire button passed:\n${out}`);

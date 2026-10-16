@@ -134,7 +134,10 @@
   --bd-gate-wash-3: rgb(255 255 255 / 55%);
   --bd-gate-lit: #ffffff;
   --bd-gate-ink: #1b1416;
-  --bd-gate-ink-2: #8a5c52;
+  /* The panel's 12px labels and its class sentence, so AAA like every 12px label in the room. It
+     was #8a5c52, 4.76:1 on the sheet's foot stop; this is the same hue and saturation, darker, at
+     7.49:1, and still a 2:1 step under --bd-gate-ink so the label tier stays legible as a tier. */
+  --bd-gate-ink-2: #63423b;
   --bd-gate-edge: #d8b3a9;
   --bd-gate-edge-2: #b8776a;
   --bd-gate-fire: #8f3423;

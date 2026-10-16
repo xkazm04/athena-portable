@@ -78,12 +78,12 @@ const FLOORS = {
    * ground a token is set on, and the room is the default.
    *
    * `--bd-gate-ink-2` carries the panel's 12px class sentence and labels, and the rule above gives
-   * 12px text AAA. It measures 4.76:1 on the sheet's foot stop, so its floor is AA until it is
-   * retuned in `base/tokens.css` (a recorded gap in the stabilize backlog, not a decision that AA
-   * is enough here). Raising this number to 7.0 is how the retune is checked.
+   * 12px text AAA. It shipped at 4.76:1 on the sheet's foot stop with an AA floor here; the token
+   * was retuned in `base/tokens.css` and the floor raised with it, so the sentence that says an act
+   * reaches a person is held to the same AAA as every other 12px label in the room.
    */
   "--bd-gate-ink": { floor: 7.0, role: "the panel's voice: button and select text", on: "gated" },
-  "--bd-gate-ink-2": { floor: 4.5, role: "the panel's labels and class sentence (AAA owed)", on: "gated" },
+  "--bd-gate-ink-2": { floor: 7.0, role: "the panel's labels and class sentence", on: "gated" },
   "--bd-gate-lit": { floor: 7.0, role: "the fire button's label", on: "fire" },
 };
 
