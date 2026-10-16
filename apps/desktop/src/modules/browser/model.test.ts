@@ -13,7 +13,7 @@ import type { TabTools } from "@/stores/tools";
 
 import type { OriginRow } from "@/lib/store";
 
-import { appOf, monogramOf, selectBrowser, tabOn, type BrowserActions, type OriginsSnapshot } from "./model";
+import { appOf, monogramOf, originOf, selectBrowser, tabOn, type BrowserActions, type OriginsSnapshot } from "./model";
 
 const INERT: BrowserActions = {
   open: () => {},
@@ -212,4 +212,16 @@ test("the tools cell is filled only by a page that answered with tools", () => {
     transport: "webmcp-native",
   });
   expect(appOf(row, [], UNASKED).monogram).toBe("T");
+});
+
+test("an address with no web origin has none: about:blank, file: and data: are never the origin \"null\"", () => {
+  // `new URL(u).origin` is the string "null" for an opaque origin. Registering that string would
+  // write one origins row that every blank, file and data page shares, and trust them all.
+  for (const url of ["about:blank", "file:///C:/Users/me/report.html", "data:text/html,<p>hi</p>", "not a url"]) {
+    expect(originOf(url), url).toBe("");
+  }
+  expect(originOf("https://a.test/x?y=1")).toBe("https://a.test");
+  expect(originOf("http://localhost:3004/invoices")).toBe("http://localhost:3004");
+  // A blank tab is not the tab on a registered origin, whatever the table holds.
+  expect(tabOn("null", [tab(1, "about:blank", "", true)])).toBeNull();
 });

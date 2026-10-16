@@ -231,9 +231,15 @@ export function monogramOf(host: string): string {
   return letter ? letter.toUpperCase() : "?";
 }
 
+/**
+ * The web origin of `url`, or "" when it has none. An opaque origin (`about:blank`, `file:`,
+ * `data:`) is the string "null" to `URL`, and it is "" here: registering that string would write
+ * one origins row shared by every such page, and `register` refuses an address with no origin.
+ */
 export function originOf(url: string): string {
   try {
-    return new URL(url).origin;
+    const origin = new URL(url).origin;
+    return origin === "null" ? "" : origin;
   } catch {
     return "";
   }
