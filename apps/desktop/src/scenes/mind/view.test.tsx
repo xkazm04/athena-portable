@@ -128,9 +128,11 @@ describe("the brain, the data and the microphone", () => {
     expect(h).toContain("Nothing has been typed that is not stored.");
     expect(h).toContain("Memory is markdown on disk");
   });
-  it("the data names its file, or says the shell has not answered", () => {
+  it("the data names its file, or says in words that it is not known yet, never the shell's command name", () => {
     expect(html("typical", PATHS.data)).toContain("athena.sqlite");
-    expect(html("empty", PATHS.data)).toContain("the shell has not answered store_path yet");
+    const unknown = html("empty", PATHS.data);
+    expect(unknown).toContain("Not known yet: the app has not said where the file is.");
+    expect(unknown).not.toContain("store_path");
   });
   it("the microphone asks once, and keeps the old words", () => {
     const h = html("empty", PATHS.mic);

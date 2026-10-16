@@ -75,9 +75,9 @@ Status: `todo` until its phase lands, then `proved: <test or hand check>`, `chan
 | Restart notice when the stored engine differs from the running one; Restart | `pendingEngine` | D2 engine | proved: mind/interact.test (the field's Restart on X reaches restart); shared EngineSection in the first act and the engine level |
 | Start-failure card with the reason and Try again on X | `StartFailure` | D2 engine | proved: mind/interact.test (Try again on X reaches restart), mind/view.test (the reason verbatim) |
 | Theme: system, light, dark; text size; miniatures | `ThemePreview` | D2 look | proved: mind/interact.test (theme, text size and the new Calm motion choice each reach their action by value), mind/view.test (the old hints, the two previews, the system sentence) |
-| Brain path | `setBrainPath` | D2 brain | proved: mind/interact.test (a draft until committed; Enter writes the trimmed path; Escape drops the draft; the button commits it) |
+| Brain path | `setBrainPath` | D2 brain | proved: mind/interact.test (a draft until committed; Enter and the button write the trimmed path, only when it differs from the stored one; Escape drops the draft) |
 | Microphone check (getUserMedia) | `checkMic` | D2 / voice | proved: mind/interact.test (asks once when pressed), mind/view.test (the old words) |
-| Store path | `view.tsx` Data | D2 data | proved: mind/view.test (the file, or "the shell has not answered store_path yet") |
+| Store path | `view.tsx` Data | D2 data | proved: mind/view.test (the file, or "Not known yet: the app has not said where the file is.", never the command name) |
 
 ## Voice
 

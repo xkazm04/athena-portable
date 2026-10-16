@@ -318,7 +318,11 @@ function Data({ model }: { model: SetupModel }) {
       <p className="typo-body">
         One SQLite file: settings, origins, projects, activity and captures. Copy it to move this machine&apos;s Athena.
       </p>
-      <code className="mind__path">{model.storePath ?? "the shell has not answered store_path yet"}</code>
+      {model.storePath ? (
+        <code className="mind__path">{model.storePath}</code>
+      ) : (
+        <p className="typo-caption">Not known yet: the app has not said where the file is.</p>
+      )}
     </section>
   );
 }
