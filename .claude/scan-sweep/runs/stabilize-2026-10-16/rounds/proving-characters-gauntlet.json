@@ -1,0 +1,225 @@
+{
+ "context": "proving-characters-gauntlet",
+ "files_read": 24,
+ "loc": 9661,
+ "registry": "software-engineering/quality-gates, software-engineering/test-harness, software-engineering/hitl-approval, software-engineering/eval-harness, software-engineering/conformance-checking",
+ "techniques": [
+  "vacuous-by-evaluation",
+  "gate-liveness",
+  "unmeasurable-criteria",
+  "mutation-lane-with-a-triaged-baseline",
+  "negative-control-tests",
+  "consent-gates",
+  "eval-economics"
+ ],
+ "deviations": 4,
+ "assigned": [],
+ "built": [
+  {
+   "sha": "eb21cc8",
+   "title": "The approve-path probe holds an approval to its action and parameters by the grant's own refusal (validator_failed), not by any refusal",
+   "lens": "test-strategist, bounty-hunter",
+   "red_before": "test_an_approval_bound_to_nothing_is_caught_though_single_use_still_holds: assert 'ok' == 'violated' (ApprovalGrant.matches -> True still read ok, both asks refused as approval_spent)",
+   "after": "violated, altered_refused False, both violations named; mutant 'refused_other = True' now killed; tests/proving 604 passed"
+  },
+  {
+   "sha": "67c05d5",
+   "title": "A Gauntlet run against a gate that waves everything through fails proof 1, keeps each breach and prints it",
+   "lens": "test-strategist",
+   "red_before": "new run-level test killed both surviving mutants: proof 1 always passes; _capture never runs",
+   "after": "proof 1 FAIL 2 breached 0 held, breaches/<row>-<attack>/record.json + world kept, Breaches section printed; 602 passed"
+  },
+  {
+   "sha": "b6cd928",
+   "title": "A breach whose world cannot be copied out is still a breach; the failed copy is reported beside it",
+   "lens": "error-handler, observability-auditor",
+   "red_before": "test_a_breach_whose_evidence_cannot_be_kept_is_still_a_breach: proof 1 pass True with both breached turns counted as errors",
+   "after": "proof 1 FAIL, 2 breached, 0 errors, capture 'failed: PermissionError' on each run and in report.md; 603 passed"
+  },
+  {
+   "sha": "63e71de",
+   "title": "Every Gauntlet detector has a planted bug that makes it speak: approval-table instrument, executed-without-approval-id rule, approve-path execute-row parameters",
+   "lens": "test-strategist",
+   "red_before": "three new tests each killed its mutant (all three SURVIVED the suite before)",
+   "after": "3 of 3 mutants killed; tests/proving 607 passed"
+  },
+  {
+   "sha": "67499c2",
+   "title": "A film of a run benched with --approve all no longer says every card waited unsigned and nothing was sent",
+   "lens": "copy-auditor",
+   "red_before": "test_a_run_that_approved_its_cards_never_says_they_waited_unsigned: 'nothing was sent' in the approve-all narration",
+   "after": "green; 100 shipped benches are approve none, narrations unchanged; 734 passed (proving+adopt)"
+  },
+  {
+   "sha": "1cf8e53",
+   "title": "The playbook loader classes tools by manifests.FLAGS itself and its period table is pinned to rank.PERIODS (the accepted-per test had left out week)",
+   "lens": "parity-auditor",
+   "red_before": "KINDS is FLAGS failed on HEAD's spec.py; a seeded 'fortnight' in PER_TABLE broke no test before, now fails the period test",
+   "after": "green; 737 passed (proving+adopt)"
+  },
+  {
+   "sha": "6b6eee9",
+   "title": "A forbidden tool must be one a card could name: registered, gated, not also a target, and forbidden must be a list",
+   "lens": "parity-auditor, bounty-hunter",
+   "red_before": "test_a_forbidden_tool_must_be_one_a_card_could_name: 4 failed (each loaded)",
+   "after": "4 passed; playbooks check exit 0 over 100 shipped; 741 passed (proving+adopt)"
+  },
+  {
+   "sha": "2a8b496",
+   "title": "evidence --verify reads a narration entry that is not an object as a fault, not a crash",
+   "lens": "error-handler, state-coverage",
+   "red_before": "test_verify_reads_a_narration_that_is_not_an_object_as_a_fault_not_a_crash: AttributeError for str, None, list",
+   "after": "3 passed; tests/proving 618 passed"
+  },
+  {
+   "sha": "df1cf12",
+   "title": "A malformed app, phase, target, eligible item or nudges is reported with the other problems, not raised",
+   "lens": "error-handler",
+   "red_before": "test_a_malformed_entry_is_reported_with_the_rest_not_raised: 5 failed with AttributeError/ValueError/TypeError",
+   "after": "5 passed; check exit 0; 749 passed (proving+adopt)"
+  },
+  {
+   "sha": "4382f65",
+   "title": "The bench's and the Characters' copies of the desktop run loop's continuation line and bound are read against apps/desktop/src/stores/run.ts",
+   "lens": "parity-auditor",
+   "red_before": "seeded: MAX_CONTINUATIONS 9 -> assert [8] == [9]; changed CONTINUE -> line assertion fails",
+   "after": "green on committed run.ts; 624 passed"
+  }
+ ],
+ "rejected": [],
+ "lens_keys": [
+  {
+   "key": "test-strategist",
+   "checked": "mutation probe (scratchpad mutate.py) of 7 mutants over verdict.py, run.py, approve.py against the gauntlet/cards/cross-tab/hosted/world_and_verdict tests: 6 survived; all now killed (67c05d5, 63e71de, eb21cc8)"
+  },
+  {
+   "key": "bounty-hunter",
+   "checked": "approve.py step order vs single use: probe with ApprovalGrant.matches patched True read ok (eb21cc8); truth.forbidden typo/ungated/targeted/string cases (6b6eee9)"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "spec.KINDS vs manifests.FLAGS, spec.PER_TABLE vs rank.PERIODS (1cf8e53); scene.CONTINUE / bench.MAX_CONTINUATIONS vs stores/run.ts (4382f65); targets vs forbidden validation (6b6eee9); bench cap vs proving purse (card)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "drive() catch-all swallowing _capture (b6cd928); verify() narration read (2a8b496); load_playbook item shapes and nudges (df1cf12); converse()/drive() world and driver failure paths read"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "breach evidence failure now reported (b6cd928); escalation drops first-pass Athena spend from rows (card, probed); world-error path logs a ledger row and the driver-error path does not, but no reachable driver fault loses a model invocation's row - not raised"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "purse reserves per purse in characters converse_all: Claude share only, Nemotron judge starved at cap 0.03 (card, probed)"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "proof 1 with zero observed turns reads PASS (card, probed); verify on non-object narration (2a8b496); fidelity/agreement None states read"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "narration closing line vs bench approve mode (67499c2); gauntlet _NOTES and CLAIM vs code; 'not used (kill below 0.3)' wording for a never-run judge (in the reserve card); approve.py violation wording rewritten (eb21cc8)"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "sample_attacks list membership, judge/generate pools, rank sort, verify hashing (once per file): nothing measurable at these sizes; extract_json cost already carded by proving-core"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "fences in judge_prompt, fidelity_prompt, rubric_prompt, user_prompt (payload, goal, Athena lines, card params and rationale fenced; persona card is repo text; cards_block outside fences carries catalog names and record statuses); generator prompt; evidence verify joins committed index paths for hashing only - nothing real"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "report.md renderers (gauntlet and characters) and the playbooks CLI lines: the Breaches line now says when a world was not kept; nothing else"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "registry-map rows for both contexts: hitl-approval deviation (persona.py:380 truncated params) and eval-harness deviations (rubric digest; single-run ranking) are recorded and were not re-emitted; new technique-named gaps routed to the lenses above"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "characters/run.py borrows Engines/Row/default_engines from gauntlet/run.py: one shared seam for two prototypes, deliberate; nothing"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "approve.py module docstring (altered_refused) corrected with the fix; spec.py KINDS comment now true by construction; scene.CONTINUE 'verbatim' claim pinned"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "attacks._TOOL_LINES is a hand list beside the derived GATED_TARGETS; prompt description only (targets are derived), impact too low to raise"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "imports of the 13+11 modules: stdlib plus athena; evidence.py's voice imports are in-tree; nothing"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "TS transcriptions the Python relies on: tool-classes.ts (already pinned), stores/run.ts (pinned in 4382f65)"
+  },
+  {
+   "key": "devops-optimizer",
+   "checked": "rank --check byte determinism and playbooks check exit codes read; nothing"
+  },
+  {
+   "key": "analytics-planner",
+   "checked": "cost_by_role and validity counters in both reports; the escalation gap is the observability card"
+  },
+  {
+   "key": "feature-scout",
+   "checked": "DEFERRED_SURFACES foreign_agent_mcp and LC_SCENES coverage: documented deferrals; nothing new under stabilize"
+  },
+  {
+   "key": "innovation-catalyst",
+   "checked": "judge/generator roles and rung ladder: nothing to raise under stabilize"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "visual-craft",
+   "why": "no UI in these 24 files (Python harness and tests)"
+  },
+  {
+   "key": "accessibility-checker",
+   "why": "no rendered surface in the context; the trigger page belongs to proving-hosted-server"
+  },
+  {
+   "key": "mobile-specialist",
+   "why": "no viewport or touch surface"
+  },
+  {
+   "key": "ui-perfectionist",
+   "why": "project UI lens; no CSS or component in the context"
+  },
+  {
+   "key": "onboarding-designer",
+   "why": "no first-run surface; a CLI harness for operators"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "no pricing or plan surface"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no sharing or invite surface"
+  },
+  {
+   "key": "business-strategist",
+   "why": "a proving harness with no product funnel"
+  }
+ ],
+ "findings": 14,
+ "lanes": "A:10/B:4/C:0",
+ "fp": 0,
+ "gates": {
+  "uv run ruff check <touched files> (each commit)": 0,
+  "uv run ruff format --check <touched files> (each commit)": 0,
+  "uv run mypy (each commit)": 0,
+  "uv run pytest tests/proving -m \"not provider and not eval\" (each commit; last 624 passed)": 0,
+  "uv run pytest tests/proving tests/adopt -m \"not provider and not eval\" (playbooks commits; last 749 passed)": 0,
+  "uv run python -m athena.proving.playbooks check": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "paired round; 10 built (4 instrument-only), 4 B cards; gauntlet mutants 6/7 alive -> 0",
+ "notes": "Paired with proving-playbooks-bench (11 files): its lens results are in lens_keys and built (67499c2 copy-auditor narration; 1cf8e53 parity KINDS/PER_TABLE; 6b6eee9 forbidden; 2a8b496 verify; df1cf12 loader shapes; 4382f65 run.ts parity, which also covers characters/scene.py) and one B card (bench cap with no price). Highest-value: the approve-path probe could not fail on a gate whose grant binds nothing (SKILL 4.7 / quality-gates vacuous-by-evaluation) - eb21cc8. No assigned items. Not re-emitted: proving-core's purse-None, bench world leak, extract_json cards (the bench-cap card is a second site of the purse rule, named as such). proving-core's tests/proving/test_world_and_verdict.py and test_cards.py were not touched; the new planted cases live in test_gauntlet.py. Consult line for the director: {bundle: software-engineering, subjects: [quality-gates, test-harness, hitl-approval, eval-harness], techniques: [vacuous-by-evaluation, gate-liveness, unmeasurable-criteria, mutation-lane-with-a-triaged-baseline, consent-gates, eval-economics], deviations: 4}. Line endings: a Python text-mode rewrite left CRLF in approve.py and test_gauntlet.py working copies once; both converted back to LF before eb21cc8, blobs LF. Sibling uncommitted files seen and not touched: apps/desktop/src/scenes/{accounts,apps}/*, apps/desktop/src/stores/run.ts and run.test.ts (4382f65 reads run.ts; its working copy still holds both pinned lines), examples/hirelane/*. No sibling reds in my scoped runs. Probes (mutate.py, probe_mask.py, probe_reason.py, probe_vacuous.py, probe_reserve.py, probe_escalate.py) are in the scratchpad, nothing in the repo. Nothing verified in a browser or the Tauri window."
+}

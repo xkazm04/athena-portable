@@ -1,0 +1,240 @@
+{
+ "context": "hirelane-app-and-tests",
+ "files_read": 21,
+ "loc": 2776,
+ "registry": "software-engineering/test-harness, software-engineering/app-shell, software-engineering/quality-gates, software-engineering/design-tokens",
+ "techniques": [
+  "quality-gates",
+  "design-tokens",
+  "test-harness"
+ ],
+ "deviations": 6,
+ "assigned": [],
+ "built": [
+  {
+   "sha": "6f07b22",
+   "title": "every server action lands its change and its activity row together",
+   "lens": "risk-assessor",
+   "red_before": "test/atomic.test.ts 8 of 8 failed: a TEMP trigger failing the activity insert left add_note's note (notes 16 vs 15) and every other act's write behind",
+   "after": "acts leaving a write behind a failed log 0 of 7 (was 7 of 7); 115 pass"
+  },
+  {
+   "sha": "2a052a5",
+   "title": "undoing an older move after a newer one leaves the newer move standing",
+   "lens": "bounty-hunter",
+   "red_before": "actions.test 'undoing an older move after a newer one' failed: stage applied, expected interview",
+   "after": "moves silently reversed by an out-of-order undo 0 (was 1); decision guard now pinned; 118 pass"
+  },
+  {
+   "sha": "8018171",
+   "title": "check-law fails a negative px length; test/law.test.ts seeds each rule",
+   "lens": "bounty-hunter",
+   "red_before": "law.test 'positive or negative' failed: margin-block-start: -12px exited 0",
+   "after": "seeded lengths caught 4 of 4 (was 2 of 4); real tree rawPx 0"
+  },
+  {
+   "sha": "ea206f1",
+   "title": "colour lock reads every CSS colour notation; exempt stops no longer exempt their line",
+   "lens": "parity-auditor",
+   "red_before": "law.test: hsl(347 77% 50%) exited 0; box-shadow ... #e11d48 exited 0",
+   "after": "notations caught 7 of 7 (was 2 of 7); hues beside an exempt literal 3 of 3 (was 0 of 3)"
+  },
+  {
+   "sha": "40db1f6",
+   "title": "colour lock reads the direction's TypeScript",
+   "lens": "bounty-hunter",
+   "red_before": "law.test: style={{ color: \"#e11d48\" }} in a .tsx exited 0",
+   "after": "seeded TS colours caught 2 of 2 (was 0 of 2); real tree offLockColours 0"
+  },
+  {
+   "sha": "2a8de6a",
+   "title": "contrast check fails an unfloored ink or hue token",
+   "lens": "parity-auditor",
+   "red_before": "contrast-gate.test: an unfloored --bd-ink-5 (#3a3a40) exited 0",
+   "after": "exits 1 naming the token; real tree 8 ok"
+  },
+  {
+   "sha": "f832bf4",
+   "title": "contrast check scores the gated panel's inks on its own sheet and fire",
+   "lens": "accessibility-checker",
+   "red_before": "contrast-gate.test 3 of 3 failed: #b88a80 label ink (2.54:1) and #d9725e fire (3.22:1) and an unfloored --bd-gate-ink-3 all exited 0",
+   "after": "gated tokens scored 3 of 3 (was 0); gate-ink 15.34, gate-ink-2 4.76 (AA, AAA carded), gate-lit 7.83"
+  },
+  {
+   "sha": "cef8952",
+   "title": "brief type-voice check reads the faces the layout imports",
+   "lens": "test-strategist",
+   "red_before": "brief.test 'a face the layout names only in a comment' failed: layoutLoads('Caveat') true",
+   "after": "a seeded Caveat claim in board-brief.md fails the check (restored byte-identical); 6 of 6 pass"
+  },
+  {
+   "sha": "0969502",
+   "title": "send_rejection refuses an unknown wording instead of throwing",
+   "lens": "error-handler",
+   "red_before": "actions.test threw TypeError: REJECTION_BODY[args.template] is not a function",
+   "after": "refusal naming the three wordings; throws 0 (was 1); 132 pass"
+  },
+  {
+   "sha": "a278fb1",
+   "title": "globals.css comment points at the wrapper that exists, not app/v",
+   "lens": "documentation-auditor",
+   "red_before": "n/a: comment; git grep app/v in app/components/lib found 1",
+   "after": "0"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "Delete design/build-tokens.mjs as dead code",
+   "before": "zero consumers by grep (only registry-map, context-map and its own token JSON name it); the file declares itself NOT WIRED and kept as the vendored method",
+   "after": "the 2026-10-15 challenge scout already judged it (kept as the upstream of record for two vendored copies); deleting breaks the citations it documents and changes nothing that runs - not-better, and not re-emitted"
+  },
+  {
+   "title": "nav.test's link regex misses single-quoted and JSX-expression hrefs and router.replace",
+   "before": "0 such hrefs or calls in app/components/lib; the route set is one page",
+   "after": "a widened regex would assert the same on the real tree - coverage of a shape the tree does not use, not-better"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "ui-perfectionist",
+   "checked": "app/globals.css focus ring vs the-room.css:87 (offset 2px vs 4px; summary in neither - card), reduced-motion block vs board's reduced-motion.css (delays handled there), layout.tsx font loading"
+  },
+  {
+   "key": "bounty-hunter",
+   "checked": "applyUndo stage branch under out-of-order undo (built 2a052a5); RAW_PX on negative lengths (built 8018171); TS colours unseen by check-law (built 40db1f6); slots undo re-targeting a slot held for another (no path: undo marks the row once)"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "ledgerbox actions' withTx vs hirelane's autocommits (built 6f07b22); check-law header vs NOT_PALETTE (built ea206f1); check-contrast header 'fails on an unknown token' vs its FLOORS loop (built 2a8de6a); send_rejection vs move/decide enum guards (built 0969502)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "every throw path in app/actions.ts: mail built before writes, unknown template threw (built 0969502); undoAction refresh on refusal; withTx rollback rethrows to useRun's settle"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "activity row written after the change in 7 actions, no transaction - failure left unrecorded writes (built 6f07b22); partial-undo rows in applyUndo (stage and slots branches) present"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "multi-statement writes outside a transaction in actions.ts (built 6f07b22); acts.test SAVEPOINT harness vs BEGIN (coupled fix)"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "allSlots() full-table read per propose/schedule (36 rows, not worth it); getApplicant read twice in moveStage via writeStage; check-law walks only the direction tree - nothing real"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "History band's any-order Undo against applyUndo's semantics (built 2a052a5: the partial row explains the declined undo)"
+  },
+  {
+   "key": "visual-craft",
+   "checked": "check-law colour lock across CSS notations and TS (built ea206f1, 40db1f6); hl-scales.css --hl-text-* use vw though build-tokens bans vw - zero consumers of --hl-text-*, no finding"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "app/page.tsx failure state: no app/error.tsx (card C); zero rows impossible from the seed"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "missing()/REFUSAL messages in actions.ts; the new partial-undo sentence; globals.css stale app/v comment (built a278fb1); metadata description"
+  },
+  {
+   "key": "accessibility-checker",
+   "checked": "contrast of the gated panel's inks (built f832bf4; gate-ink-2 AAA card B); focus-visible coverage of summary (card B)"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "gates never seen failing: check-law, check-contrast (built law.test.ts, contrast-gate.test.ts); brief.test comment-blind matcher (built cef8952); decision undo guard had no test (pinned in 2a052a5)"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "server actions as public POST endpoints: all SQL parameterised; enum args validated (template now too); add_note text unbounded but stored and rendered escaped by React - no finding"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "check-law header 'clean on all three' -> four (in 8018171); check-contrast header WHAT IT CHECKS updated with the rules built; globals.css app/v comment (built)"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "quality-gates (a gate seen failing on what it names) against check-law/check-contrast: 5 deviations, all built; design-tokens (component names no palette value) against TS colours: built"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "importer grep for every package.json dependency: openai, three, @react-three/fiber, @react-three/drei, clsx, lucide-react have none (card B, package.json outside the context)"
+  },
+  {
+   "key": "devops-optimizer",
+   "checked": "lint chains eslint, check-law, check-contrast; test runs node --test with register.mjs - each now has a test watching it fail"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "writeStage now takes the tx handle; applyUndo per-kind branches - no structural finding"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "build-tokens.mjs NOT WIRED (rejected, already judged by the challenge scout)"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "mobile-specialist",
+   "why": "the app shell files carry no layout; responsive.css is hirelane-board-ui's"
+  },
+  {
+   "key": "onboarding-designer",
+   "why": "a seeded single-route demo with no first-run flow in these files"
+  },
+  {
+   "key": "feature-scout",
+   "why": "stabilize strategy; the shell and tests offer no capability gap inside scope"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "no billing or pricing surface"
+  },
+  {
+   "key": "analytics-planner",
+   "why": "no product analytics in the app; the activity log is audit, covered by observability-auditor"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no sharing or invite surface"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "stabilize strategy; no AI call in these files"
+  },
+  {
+   "key": "integration-planner",
+   "why": "the only outward seam (the mail connector) is carried outside the app by design"
+  },
+  {
+   "key": "business-strategist",
+   "why": "a demo app with no conversion surface"
+  }
+ ],
+ "findings": 16,
+ "lanes": "A:10/B:3/C:1",
+ "fp": 0,
+ "gates": {
+  "pnpm --filter hirelane typecheck": 0,
+  "pnpm --filter hirelane lint": 0,
+  "pnpm --filter hirelane test": 0
+ },
+ "leads": [
+  {
+   "ts": "2026-10-16T19:30:00Z",
+   "bundle": "software-engineering",
+   "nearest": "quality-gates",
+   "kind": "technique",
+   "claim": "When a lint-style checker exempts a literal (an alpha stop, a marker), strip the exempt literal from the line and still test the rest, because a per-line exemption lets any violation that shares the line pass with it.",
+   "because": "hirelane's check-law exempted whole lines naming box-shadow/mask-image or holding one white plane; seeded `box-shadow: ... #e11d48` passed until the literals were stripped instead (ea206f1).",
+   "confidence": "medium",
+   "from": "scan-sweep@4.6.1"
+  }
+ ],
+ "degraded": false,
+ "note": "10 built; design-law gates now seeded red by tests; 3 B, 1 C",
+ "notes": "hirelane-design-law lens results: check-law gained a fixture root and test/law.test.ts (negative px, every colour notation, exemption scope, TS colours - 8018171, ea206f1, 40db1f6); check-contrast gained a fixture root, NOFLOOR for unlisted text tokens and a gated-panel model (2a8de6a, f832bf4) with --bd-gate-ink-2 floored at AA (4.76:1) and the AAA retune carded B (tokens.css is hirelane-board-ui's); hl-scales.css read, unused --hl-* steps are a scale, not dead; build-tokens.mjs rejected (challenge scout already judged). Coupled path outside the context: test/acts.test.ts (model-and-lib) - its SAVEPOINT roll-back could not wrap an action that now BEGINs, so it restores the written tables from TEMP copies (6f07b22). design/board-brief.md was seeded and restored byte-identical to watch the type-voice check fail. No sibling reds seen; CHANGELOG taken under the lock for every commit."
+}
