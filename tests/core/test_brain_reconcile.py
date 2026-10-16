@@ -253,7 +253,7 @@ def test_a_fact_with_no_sources_is_indexed_and_named(tmp_path: Path) -> None:
         assert brain.node(bare.id) is not None
 
 
-def test_cmd_reconcile_reports_a_bad_file_and_still_exits_zero(
+def test_cmd_reconcile_reports_a_bad_file_and_exits_non_zero(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     with Brain(tmp_path / "brain") as brain:
@@ -265,7 +265,7 @@ def test_cmd_reconcile_reports_a_bad_file_and_still_exits_zero(
     code = cmd_reconcile(argparse.Namespace(brain=tmp_path / "brain"))
 
     out = json.loads(capsys.readouterr().out)
-    assert code == 0
+    assert code == 1  # the exit code says what "ok" says (cli.cmd_reconcile)
     assert out["ok"] is False
     assert f"{victim.path}: confidence high is not a number" in out["skipped"]
 
@@ -314,7 +314,7 @@ def test_a_fact_file_with_an_expires_at_line_is_indexed_and_the_key_is_ignored(
         assert row == (None,)
 
 
-def test_cmd_reconcile_names_a_non_utf8_file_and_still_exits_zero(
+def test_cmd_reconcile_names_a_non_utf8_file_and_exits_non_zero(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
     with Brain(tmp_path / "brain") as brain:
@@ -325,7 +325,7 @@ def test_cmd_reconcile_names_a_non_utf8_file_and_still_exits_zero(
     code = cmd_reconcile(argparse.Namespace(brain=tmp_path / "brain"))
 
     out = json.loads(capsys.readouterr().out)
-    assert code == 0
+    assert code == 1  # the exit code says what "ok" says (cli.cmd_reconcile)
     assert out["ok"] is False
     assert "semantic/world/raw.md: not UTF-8" in out["skipped"]
 
