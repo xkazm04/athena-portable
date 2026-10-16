@@ -150,6 +150,14 @@
   color: var(--bd-gate-ink-2);
 }
 
+/* The focus ring inverts with the ground. The room's ring is --bd-accent, light on dark, and on
+   this sheet it measured 1.46:1 - under the 3:1 a focus indicator owes, on the one zone whose
+   controls cannot be taken back. The panel's own ink is the ring here; the room's rule still sets
+   its width and offset, so only the colour changes. */
+.bd-zone[data-class="GATED"] :where(button, select, input, a, summary, [tabindex]):focus-visible {
+  outline-color: var(--bd-gate-ink);
+}
+
 .bd-zone[data-class="GATED"] .bd-btn {
   background: var(--bd-gate-wash);
   border-color: var(--bd-gate-edge);

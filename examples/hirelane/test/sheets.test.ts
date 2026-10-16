@@ -72,6 +72,80 @@ function roomFocusList(): string[] {
     .map((s) => s.trim());
 }
 
+/* --- Colour, read from the token block the way design/check-contrast.mjs reads it. --- */
+
+const TOKENS = new Map(
+  [...blank(readFileSync(join(STYLE, "base", "tokens.css"), "utf8")).matchAll(/(--[a-z0-9-]+)\s*:\s*([^;]+);/g)].map(
+    (m) => [m[1]!, m[2]!.trim()] as const,
+  ),
+);
+
+const hex = (h: string): number[] => {
+  const s = h.replace("#", "");
+  const full = s.length === 3 ? [...s].map((c) => c + c).join("") : s;
+  return [0, 2, 4].map((i) => parseInt(full.slice(i, i + 2), 16) / 255);
+};
+const lum = (rgb: number[]): number => {
+  const [r, g, b] = rgb.map((c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4)) as [number, number, number];
+  return 0.2126 * r + 0.7152 * g + 0.0722 * b;
+};
+const ratio = (a: number[], b: number[]): number => {
+  const [hi, lo] = [lum(a), lum(b)].sort((x, y) => y - x) as [number, number];
+  return (hi + 0.05) / (lo + 0.05);
+};
+/** A token's colour: a hex, or a white/black plane at an alpha laid over `on`. */
+function colour(name: string, on?: number[]): number[] {
+  const value = TOKENS.get(name);
+  assert.ok(value, `${name} is not declared in base/tokens.css`);
+  if (value.startsWith("#")) return hex(value);
+  const plane = /rgb\(\s*(\d+)\s+(\d+)\s+(\d+)\s*\/\s*([\d.]+)%\s*\)/.exec(value);
+  assert.ok(plane && on, `${name}: ${value} is not a colour this test can read`);
+  const alpha = Number(plane[4]) / 100;
+  return [plane[1], plane[2], plane[3]].map((n, i) => (Number(n) / 255) * alpha + on[i]! * (1 - alpha));
+}
+
+/** The token a focus-visible rule draws its ring in, from `outline` or `outline-color`. */
+function ringToken(rule: Rule): string | undefined {
+  return /outline(?:-color)?\s*:[^;]*var\((--bd-[a-z0-9-]+)\)\s*(?:;|$)/.exec(rule.body.trim())?.[1];
+}
+
+test("a focus ring clears 3:1 on every ground the board draws one on", () => {
+  // WCAG 1.4.11: a focus indicator is a UI component and owes 3:1 against what it sits on. The
+  // room's ring is `--bd-accent`, light on dark. The gated zone is the one LIGHT surface in the
+  // room, and the room's own sheet says accent measures 1.9:1 on it - so the ring on the
+  // irreversible acts, of all controls, was the one a keyboard user could barely see.
+  const room = RULES.find((r) => r.selectors.some((s) => s.startsWith(".bd-root :where(") && s.endsWith(":focus-visible")))!;
+  const roomRing = ringToken(room);
+  assert.ok(roomRing, "the room's focus rule names no ring token");
+  const gated = RULES.find((r) =>
+    r.selectors.some((s) => s.startsWith('.bd-zone[data-class="GATED"]') && s.endsWith(":focus-visible")),
+  );
+  const gatedRing = (gated && ringToken(gated)) ?? roomRing;
+
+  const ground = colour("--bd-ground");
+  const void_ = colour("--bd-void");
+  const roomGrounds = {
+    void: void_,
+    ground,
+    "glass on ground": colour("--bd-glass", ground),
+    "glass-2 on ground": colour("--bd-glass-2", ground),
+  };
+  const sheet = TOKENS.get("--bd-gate-sheet") ?? "";
+  const stops = [...sheet.matchAll(/#[0-9a-f]{3,8}\b/gi)].map((m) => m[0]);
+  assert.ok(stops.length >= 2, `--bd-gate-sheet has no stops this test can read: ${sheet}`);
+
+  const under: string[] = [];
+  for (const [name, bg] of Object.entries(roomGrounds)) {
+    const r = ratio(colour(roomRing), bg);
+    if (r < 3) under.push(`room ring ${roomRing} on ${name}: ${r.toFixed(2)}:1`);
+  }
+  for (const stop of stops) {
+    const r = ratio(colour(gatedRing), hex(stop));
+    if (r < 3) under.push(`gated ring ${gatedRing} on ${stop}: ${r.toFixed(2)}:1`);
+  }
+  assert.deepEqual(under, []);
+});
+
 test("the room's focus ring names every focusable tag the board renders", () => {
   // The tags are read out of the components, not listed here: a disclosure added to a component
   // is a tag this list did not know about, which is how the foot's <summary> was missed.
