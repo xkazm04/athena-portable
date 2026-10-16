@@ -65,12 +65,15 @@ export function listSlots(): Slot[] {
   return db().all<Slot>("SELECT * FROM slots ORDER BY start_ts");
 }
 
-export function listMessages(applicantId?: string): Message[] {
-  return applicantId
-    ? db().all<Message>("SELECT * FROM messages WHERE applicant_id = ? ORDER BY id DESC", [
-        applicantId,
-      ])
-    : db().all<Message>("SELECT * FROM messages ORDER BY id DESC LIMIT 50");
+/**
+ * Every message the app has sent, newest first: the board files each under the person it reached.
+ *
+ * Not capped. It used to keep the newest fifty in the whole app, and `buildBoard` is its only
+ * reader, so past fifty sends a person's own letters fell off their card with nothing to say so -
+ * "Already sent: nothing" over a rejection that had gone out (test/board.test.ts).
+ */
+export function listMessages(): Message[] {
+  return db().all<Message>("SELECT * FROM messages ORDER BY id DESC");
 }
 
 /** Latest stored scorecard per applicant of a role. Unscored applicants are simply absent. */

@@ -45,3 +45,42 @@ test("every candidate's score and its sentence come from the same scorecard", ()
     }
   }
 });
+
+/*
+ * What has reached a person is every message they were sent, however many the app has sent since.
+ *
+ * `buildBoard` read the messages through `listMessages()`, which kept the newest fifty in the whole
+ * app. Past fifty sends, the oldest letters fell off every card without a word: the dossier's
+ * "Already sent" read "nothing" and the agent's `already_sent` was empty for a person who had been
+ * rejected in writing.
+ */
+test("a person's sent letters stay on their card after fifty newer sends to somebody else", async () => {
+  const { db } = await import("../lib/db");
+  const find = (id: string) =>
+    buildBoard()
+      .roles.flatMap((r) => r.columns.flatMap((c) => c.candidates))
+      .find((c) => c.id === id)!;
+  const rejected = db().get<{ id: string }>(
+    "SELECT applicant_id AS id FROM messages WHERE kind = 'rejection' ORDER BY id LIMIT 1",
+  )!.id;
+  assert.equal(find(rejected).meta.sent.length, 1, "the seed wrote them one letter");
+
+  const other = db().get<{ id: string; email: string }>(
+    "SELECT id, email FROM applicants WHERE stage = 'interview' ORDER BY id LIMIT 1",
+  )!;
+  const raw = db().raw;
+  raw.exec("SAVEPOINT sends");
+  try {
+    for (let n = 0; n < 50; n++) {
+      db().run(
+        "INSERT INTO messages (applicant_id, ts, kind, to_email, subject, body) VALUES (?, ?, 'scheduling', ?, ?, ?)",
+        [other.id, "2026-09-07T10:00:00.000Z", other.email, `Interview ${n}`, "-"],
+      );
+    }
+    assert.equal(find(rejected).meta.sent.length, 1, "their letter is still on their card");
+    assert.equal(find(other.id).meta.sent.length, 50, "and every one of the fifty is on the other's");
+  } finally {
+    raw.exec("ROLLBACK TO sends");
+    raw.exec("RELEASE sends");
+  }
+});
