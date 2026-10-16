@@ -21,7 +21,7 @@
  */
 import { afterEach, describe, expect, it, vi } from "vitest";
 
-import { DaemonApi } from "./api";
+import { DaemonApi, sseFrames } from "./api";
 
 const ENDPOINT = { url: "http://127.0.0.1:17490", token: "t" };
 
@@ -70,5 +70,62 @@ describe("the default fetch", () => {
 
     expect(injected).toHaveBeenCalledOnce();
     expect(global).not.toHaveBeenCalled();
+  });
+});
+
+describe("a stream nobody reads to the end", () => {
+  /** Two frames, then a body that stays open, as a turn still running would. */
+  function openBody(onCancel: () => void): ReadableStream<Uint8Array> {
+    const bytes = new TextEncoder().encode('data: {"n":1}\n\ndata: {"n":2}\n\n');
+    return new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(bytes);
+      },
+      cancel() {
+        onCancel();
+      },
+    });
+  }
+
+  it("is cancelled when the reader stops early, so the connection does not stay open unread", async () => {
+    let cancelled = 0;
+    const body = openBody(() => (cancelled += 1));
+    for await (const frame of sseFrames(body)) {
+      expect(frame).toBe('{"n":1}');
+      break;
+    }
+    expect(cancelled).toBe(1);
+    expect(body.locked).toBe(false);
+  });
+
+  it("is not cancelled when it ended on its own", async () => {
+    let cancelled = 0;
+    const bytes = new TextEncoder().encode('data: {"n":1}\n\n');
+    const body = new ReadableStream<Uint8Array>({
+      start(controller) {
+        controller.enqueue(bytes);
+        controller.close();
+      },
+      cancel() {
+        cancelled += 1;
+      },
+    });
+    const frames: string[] = [];
+    for await (const frame of sseFrames(body)) frames.push(frame);
+    expect(frames).toEqual(['{"n":1}']);
+    expect(cancelled).toBe(0);
+  });
+
+  it("a stream that errored still rejects with its own error, not a cancel's", async () => {
+    const body = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        controller.error(new Error("the connection dropped"));
+      },
+    });
+    await expect(
+      (async () => {
+        for await (const frame of sseFrames(body)) void frame;
+      })(),
+    ).rejects.toThrow("the connection dropped");
   });
 });

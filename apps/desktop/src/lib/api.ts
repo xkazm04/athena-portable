@@ -378,10 +378,14 @@ export async function* sseFrames(body: ReadableStream<Uint8Array>): AsyncGenerat
   const reader = body.getReader();
   const decoder = new TextDecoder();
   let buffer = "";
+  let ended = false;
   try {
     for (;;) {
       const { done, value } = await reader.read();
-      if (done) break;
+      if (done) {
+        ended = true;
+        break;
+      }
       buffer += decoder.decode(value, { stream: true });
       for (;;) {
         // The boundary is a blank line under any of the three terminators. Searched on the whole
@@ -396,6 +400,10 @@ export async function* sseFrames(body: ReadableStream<Uint8Array>): AsyncGenerat
     const last = dataOf(buffer);
     if (last !== null) yield last;
   } finally {
+    // A reader that stopped early (a `break` after the terminal event, a throw in its loop) leaves
+    // a body nobody will read: cancel it, so the connection closes instead of buffering unread
+    // until the server ends it. An errored body rejects the cancel with its own error, ignored here.
+    if (!ended) await reader.cancel().catch(() => undefined);
     reader.releaseLock();
   }
 }
