@@ -87,16 +87,43 @@ test("a brief that specifies software which is not here says so at the top", () 
   }
 });
 
-test("the type voice the brief claims is the type the route loads", () => {
+/**
+ * The faces app/layout.tsx loads: the names it imports from `next/font/google`, read with the
+ * comments out. A substring test over the whole file was satisfied by the sentence recording a
+ * face's removal, which is the matcher-on-prose failure a source-scanning check has to strip for.
+ */
+const LOADED = ((): string[] => {
+  const code = read("app/layout.tsx")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/^\s*\/\/.*$/gm, "");
+  const names = /import\s*\{([^}]*)\}\s*from\s*["']next\/font\/google["']/.exec(code)?.[1] ?? "";
+  return names
+    .split(",")
+    .map((n) => n.trim().replace(/_/g, " "))
+    .filter(Boolean);
+})();
+const layoutLoads = (face: string): boolean => LOADED.includes(face);
+
+test("the type voice the brief claims is the type the route loads, no more and no fewer", () => {
   const row = /\| Type voice \| ([^|]+)\|/.exec(read(BRIEF).split("## 5b.")[1] ?? "");
   assert.ok(row, "§5b states a type voice");
-  const layout = read("app/layout.tsx");
-  const faces = row[1]!.match(/\b(?:Sora|Plus Jakarta Sans|JetBrains Mono|Caveat|Fraunces|Manrope|Space Mono|Archivo|Literata|Martian Mono)\b/g);
-  assert.ok(faces && faces.length > 0, "and names faces");
+  assert.ok(LOADED.length > 0, "app/layout.tsx imports its faces from next/font/google, or this asserts nothing");
+  const known = new Set([
+    ...LOADED,
+    ...["Caveat", "Fraunces", "Manrope", "Space Mono", "Archivo", "Literata", "Martian Mono"],
+  ]);
+  const faces = [...known].filter((face) => new RegExp(`\\b${face}\\b`).test(row[1]!));
+  assert.ok(faces.length > 0, "and names faces");
   for (const face of faces) {
-    assert.ok(
-      layout.includes(face.replace(/ /g, "_")),
-      `${face} is loaded by app/layout.tsx, not just claimed in the brief`,
-    );
+    assert.ok(layoutLoads(face), `${face} is loaded by app/layout.tsx, not just claimed in the brief`);
   }
+  for (const face of LOADED) {
+    assert.ok(faces.includes(face), `${face} is loaded by app/layout.tsx and missing from the brief's type voice`);
+  }
+});
+
+test("a face the layout names only in a comment is not a face it loads", () => {
+  // `Caveat` was retired, and app/layout.tsx says so in prose. A brief that claimed it again must
+  // fail the check above, not pass it on the strength of the sentence recording its removal.
+  assert.equal(layoutLoads("Caveat"), false, "the retired face reads as loaded");
 });
