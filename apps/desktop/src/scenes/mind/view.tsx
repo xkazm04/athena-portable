@@ -282,7 +282,15 @@ function Look({ model }: { model: SetupModel }) {
 function Brain({ model }: { model: SetupModel }) {
   const [draft, setDraft] = useState<string | null>(null);
   const value = draft ?? model.brainPath;
-  const dirty = draft !== null && draft !== model.brainPath;
+  // One rule for Enter and the button: what would be written is the trimmed draft, and only a
+  // path that differs from the stored one is written. Once written it is no longer a draft.
+  const typed = draft === null ? null : draft.trim();
+  const dirty = typed !== null && typed !== model.brainPath;
+  const commit = () => {
+    if (typed === null || !dirty) return;
+    model.actions.setBrainPath(typed);
+    setDraft(null);
+  };
   return (
     <section className="mind__section" aria-labelledby="mind-brain">
       <h2 id="mind-brain">Where she remembers</h2>
@@ -295,7 +303,7 @@ function Brain({ model }: { model: SetupModel }) {
           spellCheck={false}
           onChange={(e) => setDraft(e.target.value)}
           onKeyDown={(e) => {
-            if (e.key === "Enter") model.actions.setBrainPath(value.trim());
+            if (e.key === "Enter") commit();
             if (e.key === "Escape") setDraft(null);
           }}
         />
@@ -303,7 +311,7 @@ function Brain({ model }: { model: SetupModel }) {
           size="sm"
           variant={dirty ? "primary" : "secondary"}
           disabledReason={dirty ? undefined : "Nothing has been typed that is not stored."}
-          onClick={() => model.actions.setBrainPath(value.trim())}
+          onClick={commit}
         >
           Use this
         </Button>

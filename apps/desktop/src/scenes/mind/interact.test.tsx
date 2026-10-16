@@ -180,6 +180,27 @@ describe("the brain", () => {
     expect(a.setBrainPath).toHaveBeenCalledExactlyOnceWith("~/athena/other");
   });
 
+  it("Enter and the button agree: a path that is already stored, spaces aside, is not written by either", () => {
+    const a = mount("typical", PATHS.brain!);
+    type(input(), "  ~/athena/brain  ");
+    expect(button("Use this")?.disabled).toBe(true);
+    key(input(), "Enter");
+    expect(a.setBrainPath).not.toHaveBeenCalled();
+  });
+
+  it("is no longer a draft once committed, so the stored path reads as stored", () => {
+    const actions = spies();
+    const at = (brainPath: string) =>
+      act(() => root.render(<MindView model={{ ...fixtures.typical!, brainPath, actions }} path={PATHS.brain!} go={() => {}} />));
+    at("~/athena/brain");
+    type(input(), "  ~/athena/other  ");
+    key(input(), "Enter");
+    expect(actions.setBrainPath).toHaveBeenCalledExactlyOnceWith("~/athena/other");
+    at("~/athena/other");
+    expect(input().value).toBe("~/athena/other");
+    expect(button("Use this")?.disabled).toBe(true);
+  });
+
   it("drops the draft on Escape, and the button commits it too", () => {
     const a = mount("typical", PATHS.brain!);
     type(input(), "~/elsewhere");
