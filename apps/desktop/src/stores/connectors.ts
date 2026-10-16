@@ -96,9 +96,21 @@ const EMPTY = {
   errors: {} as Record<string, string>,
 };
 
+/**
+ * Ordering between the list and the rows (async-ui-states state-model): every row a reply writes
+ * is stamped, and a list read keeps any row written after it was asked; only the newest list read
+ * may write at all.
+ */
+let stamp = 0;
+const rowStamps = new Map<string, number>();
+let newestList = 0;
+
 export function resetConnectorsForTests(): void {
   deps = LIVE;
   asked.clear();
+  stamp = 0;
+  rowStamps.clear();
+  newestList = 0;
   useConnectors.setState({ ...EMPTY });
 }
 
@@ -127,13 +139,15 @@ function problemOf(error: unknown): ConnectorProblem {
 export const useConnectors = create<ConnectorsState>((set, get) => {
   // The reply's view replaces the item whole — its `connection.health_detail` included, which
   // is how a connect's own word reaches the layer — and its notice is the vault's current one.
-  const replace = (row: ConnectorView) =>
+  const replace = (row: ConnectorView) => {
+    rowStamps.set(row.id, ++stamp);
     set((s) => ({
       items: s.items.some((c) => c.id === row.id)
         ? s.items.map((c) => (c.id === row.id ? row : c))
         : [...s.items, row],
       recordsNotice: typeof row.records_notice === "string" ? row.records_notice : s.recordsNotice,
     }));
+  };
 
   const mark = (id: string, what: string | null) =>
     set((s) => {
@@ -188,15 +202,23 @@ export const useConnectors = create<ConnectorsState>((set, get) => {
         set({ loaded: false, problem: null });
         return;
       }
+      const mine = ++newestList;
+      const askedAt = stamp;
       try {
         const page = await api.connectors();
-        set({
-          items: page.connectors,
+        // A newer read was asked meanwhile: its answer is the one that may write.
+        if (mine !== newestList) return;
+        set((s) => ({
+          // A row an act or the flow poll wrote after this read was asked is newer than the list.
+          items: page.connectors.map((c) =>
+            (rowStamps.get(c.id) ?? 0) > askedAt ? (s.items.find((x) => x.id === c.id) ?? c) : c,
+          ),
           loaded: true,
           problem: null,
           recordsNotice: typeof page.records_notice === "string" ? page.records_notice : "",
-        });
+        }));
       } catch (error) {
+        if (mine !== newestList) return;
         // Verbatim: an unreadable list must not render as an empty one.
         set({ loaded: true, problem: problemOf(error) });
       }

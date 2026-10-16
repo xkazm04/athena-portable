@@ -225,6 +225,60 @@ describe("the consent flow", () => {
   });
 });
 
+describe("a list read that lands late", () => {
+  /** A daemon whose GET /connectors answers are held until the test lets each one go. */
+  function heldLists(connected: () => boolean) {
+    const held: (() => void)[] = [];
+    const notion = () =>
+      row("notion", {
+        connection: { ...row("notion").connection, status: connected() ? "connected" : "disconnected", identity: connected() ? "Test User" : "" },
+      });
+    const fetchImpl = async (url: string): Promise<Response> => {
+      const path = url.replace("http://daemon", "");
+      const answer = (body: unknown) => new Response(JSON.stringify(body), { status: 200, headers: { "content-type": "application/json" } });
+      if (path === "/connectors") {
+        // The daemon reads the vault when the request arrives; the answer is only delivered late.
+        const snapshot = { ok: true, connectors: [notion()], showing: 1, total: 1, footer: "" };
+        await new Promise<void>((resolve) => held.push(resolve));
+        return answer(snapshot);
+      }
+      return answer({ ok: true, connector: notion() });
+    };
+    setConnectorDeps({ api: () => new DaemonApi({ url: "http://daemon", token: "t" }, fetchImpl), wait: async () => {} });
+    return held;
+  }
+
+  it("does not put back a row an act answered after the list was asked", async () => {
+    let connected = false;
+    const held = heldLists(() => connected);
+    const listed = useConnectors.getState().load();
+    await settle();
+    connected = true;
+    await useConnectors.getState().connect("notion", { token: "ntn_x" });
+    expect(useConnectors.getState().items[0]?.connection.status).toBe("connected");
+    held.shift()?.();
+    await listed;
+    expect(useConnectors.getState().items[0].connection.status).toBe("connected");
+    expect(useConnectors.getState().loaded).toBe(true);
+  });
+
+  it("an older list answered after a newer one does not overwrite it", async () => {
+    let connected = false;
+    const held = heldLists(() => connected);
+    const older = useConnectors.getState().load();
+    await settle();
+    connected = true;
+    const newer = useConnectors.getState().load();
+    await settle();
+    held[1]?.();
+    await newer;
+    expect(useConnectors.getState().items[0].connection.status).toBe("connected");
+    held[0]?.();
+    await older;
+    expect(useConnectors.getState().items[0].connection.status).toBe("connected");
+  });
+});
+
 describe("a consent flow whose poll fails once", () => {
   const flow = (phase: "awaiting_consent" | "done") => ({ id: "flow_3", connector: "gmail", phase, detail: phase, authorize_url: "" });
 
