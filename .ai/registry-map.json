@@ -8368,7 +8368,11 @@
           "revision": 2,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/Field.tsx:113 The UI renders CRM tables through React components, and searches found no directive, callout or MDX constructs in its files or enclosing component directories.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:2a061e427ef67238",
+          "evaluatedRevision": 2
         },
         {
           "subject": "workflow-property-contracts",
@@ -8718,7 +8722,11 @@
           "revision": 2,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/model.ts:7 The blocks are CRM domain cohorts consumed by spatial views and tools, and searches found no directive, callout or MDX constructs in this context.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:2a061e427ef67238",
+          "evaluatedRevision": 2
         },
         {
           "subject": "test-input-generation",
@@ -8979,7 +8987,11 @@
           "revision": 2,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/level1/l1-cells.css:4 These styles present CRM tables and their spatial scene, and searches found no directive, callout or MDX constructs anywhere in the stylesheet context.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:2a061e427ef67238",
+          "evaluatedRevision": 2
         }
       ],
       "governance": "governed"

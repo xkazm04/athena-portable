@@ -3382,6 +3382,114 @@
         "at": "2026-10-16T23:05:56.314471+00:00",
         "reason": "reviewer (sonnet): The main claim says wiring has no permission stance enforcement, but wiring.py:307 passes `_default_args(dialect)`, which returns CLAUDE_EXTRA_ARGS for the Claude CLI, and tests/test_wiring.py:96 asserts that is `('--restricted','--permission-mode','dontAsk')`. The constants at wiring.py:433 are als"
       }
+    },
+    "b96add2f-57d0-4373-8741-748e5560658e/authoring-block-vocabulary": {
+      "context": "tidycrm-spatial-model-tools",
+      "subject": "authoring-block-vocabulary",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T23:27:07.278Z",
+      "worker": "f5450ef4-c9e9-44f1-9666-ffb72114f87a",
+      "techniques": [
+        {
+          "technique": "blocks-as-machine-readable-source",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/tools/read.ts:33 The machine reader serializes model records rather than extracting structure from authored prose."
+        },
+        {
+          "technique": "closed-directive-set",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/tools/BlocksTools.tsx:81 Tool items derive from database tables; these names are not markup directives."
+        },
+        {
+          "technique": "enum-guarded-block-payloads",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/tools/read.ts:35 Labels describe CRM deviations; there is no authored directive payload to recognize."
+        },
+        {
+          "technique": "per-block-line-grammar",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/tools/search.ts:39 Text is a substring search over model fields, not a custom block's authored line grammar."
+        },
+        {
+          "technique": "vocabulary-as-translation-invariant",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/model/vocabulary.ts:29 These are interface labels shared with tools; no prose corpus copied per locale was found."
+        }
+      ]
+    },
+    "0769ade7-991a-4984-b4ec-0fc87a1ac287/authoring-block-vocabulary": {
+      "context": "tidycrm-blocks-ui",
+      "subject": "authoring-block-vocabulary",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T23:27:07.278Z",
+      "worker": "f5450ef4-c9e9-44f1-9666-ffb72114f87a",
+      "techniques": [
+        {
+          "technique": "blocks-as-machine-readable-source",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/shell/HostCapabilities.tsx:134 The export obtains a database-derived summary; tracing its implementation showed generated CommonMark rather than extraction from authored blocks."
+        },
+        {
+          "technique": "closed-directive-set",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/Blocks.tsx:314 The dossier is composed directly in application JSX; no custom markup directive dispatcher was found."
+        },
+        {
+          "technique": "enum-guarded-block-payloads",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/Stat.tsx:53 Tone is a React component prop used for presentation, not a semantic label parsed from an authored block."
+        },
+        {
+          "technique": "per-block-line-grammar",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/dossier/Checks.tsx:76 Rows arrive as structured model data and render directly; there is no prose block syntax to design."
+        },
+        {
+          "technique": "vocabulary-as-translation-invariant",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/dossier/parts.tsx:12 The inspected locale handling formats dates; no translated copies of authored block bodies were found."
+        }
+      ]
+    },
+    "67f42245-132f-4a4e-bef9-35f7748e9fea/authoring-block-vocabulary": {
+      "context": "tidycrm-style",
+      "subject": "authoring-block-vocabulary",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T23:27:07.278Z",
+      "worker": "f5450ef4-c9e9-44f1-9666-ffb72114f87a",
+      "techniques": [
+        {
+          "technique": "blocks-as-machine-readable-source",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/level0/l0.css:104 This consumes projected coordinates for presentation; the stylesheet context contains no authored-body extractor."
+        },
+        {
+          "technique": "closed-directive-set",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:19 The manifest assembles CSS for application views, not extensions to a prose markup language."
+        },
+        {
+          "technique": "enum-guarded-block-payloads",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/level1/l1-cells.css:96 The selector styles a record-state attribute; it is not a label inside an authored directive payload."
+        },
+        {
+          "technique": "per-block-line-grammar",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/level1/l1-dress.css:26 The syntax controls animation timing in CSS; no custom authored-content grammar was found."
+        },
+        {
+          "technique": "vocabulary-as-translation-invariant",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:4 This context maintains an ordered stylesheet cascade, with no locale-specific authored bodies to compare."
+        }
+      ]
     }
   }
 }
