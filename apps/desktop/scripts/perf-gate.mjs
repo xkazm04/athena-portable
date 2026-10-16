@@ -5,6 +5,8 @@
  *   pnpm perf --url <url> --drive <module.mjs>    run a scenario against a page
  *   pnpm perf:stage | perf:bell                   build, serve and drive a preview scene
  *                                                 (scripts/perf-<scene>.drive.mjs)
+ *   pnpm perf:all                                 the self-test, then every scene with a drive
+ *                                                 from one build, each judged even when one fails
  *
  * A scenario module's default export is `async (page) => void`: it performs the one fixed path
  * (dive, rise, interrupt) and returns when the motion has finished. The gate watches the page
@@ -16,8 +18,9 @@
  * still not the shipped shell, so the cutover phase adds a hand pass in the real window.
  */
 import { spawn, spawnSync } from "node:child_process";
+import { readdirSync } from "node:fs";
 import { createServer } from "node:net";
-import { pathToFileURL } from "node:url";
+import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 
 import { chromium } from "playwright-core";
@@ -154,6 +157,35 @@ async function serveBuild() {
 
 const wait = (ms) => async (page) => page.waitForTimeout(ms);
 
+/** Every scene with a drive in `dir` (`perf-<scene>.drive.mjs`), so `--all` keeps no list of its own. */
+export function drivesIn(dir) {
+  return readdirSync(dir instanceof URL ? fileURLToPath(dir) : dir)
+    .map((f) => /^perf-([a-z]+)\.drive\.mjs$/.exec(f)?.[1])
+    .filter(Boolean)
+    .sort();
+}
+
+/**
+ * Judge each scene in turn. A scene that fails, or whose drive throws (a control it presses is
+ * gone), is shown as a failure and the next scene still runs, so one red never hides the verdicts
+ * after it. Returns whether any failed.
+ */
+export async function runScenes(scenes, runOne, report) {
+  let failed = false;
+  for (const name of scenes) {
+    let r;
+    try {
+      r = await runOne(name);
+    } catch (error) {
+      const line = String(error instanceof Error ? error.message : error).split("\n")[0];
+      r = { ok: false, metrics: {}, failures: [`the drive did not finish: ${line}`] };
+    }
+    report(name, r);
+    if (!r.ok) failed = true;
+  }
+  return failed;
+}
+
 async function main() {
   const args = process.argv.slice(2);
   const arg = (name) => {
@@ -165,13 +197,20 @@ async function main() {
   try {
     const url = arg("--url");
     const scene = args.includes("--stage") ? "stage" : arg("--scene");
-    if (scene) {
+    const scenes = args.includes("--all") ? drivesIn(path.resolve("scripts")) : scene ? [scene] : [];
+    if (scenes.length) {
       const { base, stop } = await serveBuild();
+      const titles = new Map();
       try {
-        const drive = (await import(pathToFileURL(path.resolve(`scripts/perf-${scene}.drive.mjs`)).href)).default;
-        const r = await runPage(browser, (page) => page.goto(`${base}/preview.html?scene=${scene}${drive.query ?? ""}`), drive);
-        show(`${scene} (${drive.title ?? "scenario"})`, r);
-        failed = !r.ok;
+        failed = await runScenes(
+          scenes,
+          async (name) => {
+            const drive = (await import(pathToFileURL(path.resolve(`scripts/perf-${name}.drive.mjs`)).href)).default;
+            titles.set(name, drive.title ?? "scenario");
+            return runPage(browser, (page) => page.goto(`${base}/preview.html?scene=${name}${drive.query ?? ""}`), drive);
+          },
+          (name, r) => show(`${name} (${titles.get(name) ?? "scenario"})`, r),
+        );
       } finally {
         stop();
       }
