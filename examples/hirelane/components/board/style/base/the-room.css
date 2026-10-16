@@ -67,8 +67,12 @@
 }
 
 /* And except the foot while its register is open: the disclosure opens upward,
-   over the board, because there is nothing under the foot but the page's edge. */
-.bd-root:has(.bd-register[open]) > .bd-foot:not(.bd-blooms) {
+   over the board, because there is nothing under the foot but the page's edge.
+   Never over a dossier, though. The dossier and its scrim are fixed layers INSIDE the
+   stage, so a foot raised past the stage painted its row and the open register on
+   top of the modal, the list over the gated zone; with a dossier mounted the foot
+   stays under the stage and the scrim covers it like the rest of the room. */
+.bd-root:has(.bd-register[open]):not(:has(.bd-dossier-layer)) > .bd-foot:not(.bd-blooms) {
   z-index: 3;
 }
 

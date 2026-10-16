@@ -146,6 +146,32 @@ test("a focus ring clears 3:1 on every ground the board draws one on", () => {
   assert.deepEqual(under, []);
 });
 
+test("nothing outside the stage is raised over the dossier while it is open", () => {
+  // The dossier and its scrim are `position: fixed` but live inside `.bd-stage`, which is z-index
+  // 2 in the room's own stacking context, so they can never paint above a sibling of the stage
+  // that is raised past 2. The foot is raised to 3 while its register is open, and nothing closed
+  // the register when a dossier opened: the foot row and the register's list then sat on top of
+  // the modal and its scrim, the list over the action bar's gated zone.
+  const z = (body: string): number | null => {
+    const m = /(?:^|;)\s*z-index\s*:\s*(-?\d+)/.exec(body);
+    return m ? Number(m[1]) : null;
+  };
+  const stage = RULES.filter((r) => r.selectors.some((s) => /^\.bd-root > \.bd-stage\b/.test(s)))
+    .map((r) => z(r.body))
+    .find((v) => v !== null);
+  assert.ok(stage, "no z-index for `.bd-root > .bd-stage` in the sheets");
+  const over: string[] = [];
+  for (const rule of RULES) {
+    const level = z(rule.body);
+    if (level === null || level <= stage) continue;
+    for (const s of rule.selectors) {
+      if (!/^\.bd-root\b[^>]*> \.bd-(?!stage)/.test(s)) continue;
+      if (!s.includes(":not(:has(.bd-dossier-layer))")) over.push(`${rule.file}: ${s} { z-index: ${level} }`);
+    }
+  }
+  assert.deepEqual(over, []);
+});
+
 test("the room's focus ring names every focusable tag the board renders", () => {
   // The tags are read out of the components, not listed here: a disclosure added to a component
   // is a tag this list did not know about, which is how the foot's <summary> was missed.
