@@ -10,7 +10,7 @@
  * gate the last step and explain themselves, and nothing here stores a verdict. The words are the
  * letter's: the engine's remedy comes from `remedyFor`, the failure to start from the model.
  */
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Bell from "@/bell/Bell";
 import Button from "@/components/Button";
@@ -62,6 +62,18 @@ function factLine(fact: Fact): string {
 export default function WakingView({ model, onLater, initialStep = 0 }: WakingProps) {
   const [step, setStep] = useState<0 | 1 | 2>(initialStep);
   const [url, setUrl] = useState("");
+  // Next on the second step turns into Wake her. When she is not ready that button is a different
+  // element (the reason's focusable wrapper around a disabled button), so the one that was pressed
+  // leaves the page and the keyboard with it: put it on the way forward that replaced it.
+  const foot = useRef<HTMLDivElement | null>(null);
+  const forward = useRef(false);
+  useEffect(() => {
+    if (!forward.current) return;
+    forward.current = false;
+    const at = foot.current;
+    if (!at || at.contains(document.activeElement)) return;
+    at.querySelector<HTMLElement>("[tabindex], button")?.focus();
+  }, [step]);
   // What the apps register opens, this opens: a bare host gets its scheme (Rust's parser refuses
   // one without, and that refusal was only logged), and text that names no origin stays here with
   // the reason, as the register keeps it.
@@ -191,9 +203,15 @@ export default function WakingView({ model, onLater, initialStep = 0 }: WakingPr
           </>
         )}
 
-        <div className="waking__foot">
+        <div className="waking__foot" ref={foot}>
           {step < 2 ? (
-            <Button variant="primary" onClick={() => setStep((step + 1) as 1 | 2)}>
+            <Button
+              variant="primary"
+              onClick={() => {
+                forward.current = true;
+                setStep((step + 1) as 1 | 2);
+              }}
+            >
               Next: {STEPS[step + 1].name}
             </Button>
           ) : (

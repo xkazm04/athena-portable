@@ -81,3 +81,24 @@ describe("the address field opens what the apps register opens", () => {
     expect(host.querySelector('[title="Type an address first."]')).not.toBeNull();
   });
 });
+
+describe("the keyboard keeps its place on the way forward", () => {
+  it("Next into a step whose Wake her is not ready lands on Wake her and its reason, not on the page", () => {
+    mount("no-page", 1);
+    const next = [...host.querySelectorAll("button")].find((b) => b.textContent?.includes("Next: Voice"))!;
+    act(() => next.focus());
+    act(() => void next.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    expect(host.textContent).toContain("Wake her");
+    expect(document.activeElement).not.toBe(document.body);
+    expect(host.querySelector(".waking__foot")!.contains(document.activeElement)).toBe(true);
+    expect(document.activeElement?.getAttribute("title")).toBe("Open a page first — Athena works inside one.");
+  });
+
+  it("Next into a step whose Wake her is ready keeps the same button focused", () => {
+    mount("ready", 1);
+    const next = [...host.querySelectorAll("button")].find((b) => b.textContent?.includes("Next: Voice"))!;
+    act(() => next.focus());
+    act(() => void next.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    expect(document.activeElement?.textContent).toContain("Wake her");
+  });
+});
