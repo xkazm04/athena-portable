@@ -9,8 +9,8 @@
  *     `nav.openGroup` / `nav.openItem` / `nav.up`, so tools, Escape, focus and the flight go on
  *     seeing one truth. The nav is still the model; the camera is just another way to press it.
  *   · the NAV — a click, an agent tool, Escape, a breadcrumb. The hook calls
- *     `rig.flyTo(poseFor(focus))`, so the reader is carried to the new depth instead of being
- *     cut to it.
+ *     `rig.flyTo(poseFor(focus, rig.frame()))`, so the reader is carried to the new depth
+ *     instead of being cut to it.
  *
  * THE LOOP THIS AVOIDS, since it is the whole reason the hook exists. Each of those causes the
  * other: dispatching from the camera changes the nav, which would fly the camera, which crosses
@@ -30,9 +30,9 @@
  */
 import { useEffect, useRef, useState } from "react";
 
-import type { CameraPose } from "./camera";
+import type { CameraFrame, CameraPose } from "./camera";
 import type { CameraRig } from "./useCameraRig";
-import { SEMANTIC_HYSTERESIS, levelForZoom } from "./semantic";
+import { SEMANTIC_HYSTERESIS, cameraMove, levelForZoom } from "./semantic";
 import type { Nav } from "./nav";
 import type { Focus, Level } from "./state";
 import { ARMING_FLIGHT } from "./flight";
@@ -41,12 +41,18 @@ import type { LevelFlight } from "./useLevelFlight";
 export interface SemanticZoomOptions {
   /** Zoom thresholds: at or above `l1` the camera is in a group, at or above `l2` in an item. */
   bands: readonly [l1: number, l2: number];
+  /*
+   * The three callbacks are handed the FRAME — the scene element's size, `rig.frame()` — after
+   * their contract arguments, because "which group fits" and "the zoom that fits the whole
+   * sheet" depend on the canvas as much as on the camera (atlas KIT-GAPS R4-5). A callback that
+   * takes only the contract arguments is still a valid one.
+   */
   /** Which group is under the camera at this pose. `null` when the answer is "none of them". */
-  resolveGroup(pose: CameraPose): string | null;
+  resolveGroup(pose: CameraPose, frame: CameraFrame): string | null;
   /** Which item, once the group is known. `null` leaves the camera at L1. */
-  resolveItem(pose: CameraPose, group: string): string | null;
+  resolveItem(pose: CameraPose, group: string, frame: CameraFrame): string | null;
   /** Where the camera goes for a focus the nav arrived at some other way. */
-  poseFor(focus: Focus): Partial<CameraPose>;
+  poseFor(focus: Focus, frame: CameraFrame): Partial<CameraPose>;
   /** Fraction of a band a crossing must overshoot. Default `SEMANTIC_HYSTERESIS` (0.08). */
   hysteresis?: number;
   /**
@@ -147,40 +153,17 @@ export function useSemanticZoom(
     });
     return off;
 
+    /* The decision is `cameraMove` (pure, `./semantic.ts`, pinned by `test/semantic.test.ts`);
+       this carries it out and remembers which level it asked for, so the echo is recognisable. */
     function drive(next: Level, pose: CameraPose) {
-      const o = opts.current;
       const n = navRef.current;
-      const focus = n.state.focus;
-
-      if (next < focus.level) {
-        asked.current = next;
-        setLead("camera");
-        n.up();
-        return;
-      }
-      const group = o.resolveGroup(pose);
-      if (!group) return;
-      if (next === 1) {
-        if (focus.level === 1 && focus.group === group) return;
-        asked.current = 1;
-        setLead("camera");
-        n.openGroup(group);
-        return;
-      }
-      const item = o.resolveItem(pose, group);
-      if (!item) {
-        // Close enough for an item but the surface cannot say which one: stop at the group
-        // rather than guessing, and let the reader's next movement decide.
-        if (focus.level === 1 && focus.group === group) return;
-        asked.current = 1;
-        setLead("camera");
-        n.openGroup(group);
-        return;
-      }
-      if (focus.level === 2 && focus.group === group && focus.item === item) return;
-      asked.current = 2;
+      const move = cameraMove(next, n.state.focus, pose, rig.frame(), opts.current);
+      if (!move) return;
+      asked.current = move.type === "up" ? next : move.type === "open-group" ? 1 : 2;
       setLead("camera");
-      n.openItem(group, item);
+      if (move.type === "up") n.up();
+      else if (move.type === "open-group") n.openGroup(move.group);
+      else n.openItem(move.group, move.item);
     }
   }, [rig]);
 
@@ -222,7 +205,7 @@ export function useSemanticZoom(
       release();
       if (lead.current === "nav") setLead(null);
     };
-    const cancel = rig.flyTo(o.poseFor(focus), {
+    const cancel = rig.flyTo(o.poseFor(focus, rig.frame()), {
       onDone: () => {
         letGo();
         o.flight?.settle(flightNo);

@@ -65,6 +65,7 @@ import {
   stepInertia,
   zoomAt,
   type CameraBounds,
+  type CameraFrame,
   type CameraPose,
   type CameraVelocity,
 } from "./camera";
@@ -147,6 +148,12 @@ export interface CameraRig {
   subscribe(cb: (pose: CameraPose, moving: boolean) => void): () => void;
   /** True during a drag, inertia or a fly. A getter: always current when read. */
   readonly moving: boolean;
+  /**
+   * The scene element's size in CSS pixels, measured now: the same box the anchored zoom reads.
+   * `{ w: 0, h: 0 }` before the rig has seen its element. `useSemanticZoom` hands it to
+   * `poseFor` and the resolvers, so a fit-to-frame answer needs no `ResizeObserver` of its own.
+   */
+  frame(): CameraFrame;
   bind: CameraBind;
 }
 
@@ -671,8 +678,12 @@ export function useCameraRig(options: CameraRigOptions): CameraRig {
       get moving() {
         return moving.current;
       },
+      frame: () => {
+        const box = frame();
+        return { w: box.w, h: box.h };
+      },
       bind,
     };
     return rig;
-  }, [apply, bind, flyTo, stopInertia]);
+  }, [apply, bind, flyTo, frame, stopInertia]);
 }

@@ -17,7 +17,8 @@
  *
  * `test/semantic.test.ts` pins it; `useSemanticZoom.ts` is the wiring to the nav.
  */
-import type { Level } from "./state";
+import type { CameraFrame, CameraPose } from "./camera";
+import type { Focus, Level } from "./state";
 
 /** The kit's default: a band has to be overshot by 8% before the level follows. */
 export const SEMANTIC_HYSTERESIS = 0.08;
@@ -76,4 +77,49 @@ export function bandProgress(zoom: number, bands: readonly [number, number], lev
   if (level === 0) return span(0, l1);
   if (level === 1) return span(l1, l2);
   return span(l2, l2 * 2);
+}
+
+/** What the camera asks the nav for when it crosses a band. `useSemanticZoom` dispatches it. */
+export type CameraMove =
+  | { type: "up" }
+  | { type: "open-group"; group: string }
+  | { type: "open-item"; group: string; item: string };
+
+/**
+ * The surface's two answers about what is under the camera.
+ *
+ * Both are handed the FRAME with the pose — the scene element's size, which the rig measures
+ * anyway for the anchored zoom (`rig.frame()`). "Which group fits the view" is a question about
+ * the canvas as much as the camera, and a resolver that had to close over a `ResizeObserver` ref
+ * to answer it was neither pure nor testable without faking one (atlas KIT-GAPS R4-5).
+ */
+export interface SemanticResolvers {
+  resolveGroup(pose: CameraPose, frame: CameraFrame): string | null;
+  resolveItem(pose: CameraPose, group: string, frame: CameraFrame): string | null;
+}
+
+/**
+ * The camera implies level `next` and the nav is at `focus`: what should the nav do? `null` is
+ * nothing — over no group, or already where the camera says.
+ *
+ * Down a level asks the surface which group, then which item; a surface that cannot say which
+ * item stops at the group rather than guessing, and the reader's next movement decides. Up is
+ * always one `nav.up()`.
+ */
+export function cameraMove(
+  next: Level,
+  focus: Focus,
+  pose: CameraPose,
+  frame: CameraFrame,
+  resolve: SemanticResolvers,
+): CameraMove | null {
+  if (next < focus.level) return { type: "up" };
+  const group = resolve.resolveGroup(pose, frame);
+  if (!group) return null;
+  const inGroup = focus.level === 1 && focus.group === group;
+  if (next === 1) return inGroup ? null : { type: "open-group", group };
+  const item = resolve.resolveItem(pose, group, frame);
+  if (!item) return inGroup ? null : { type: "open-group", group };
+  if (focus.level === 2 && focus.group === group && focus.item === item) return null;
+  return { type: "open-item", group, item };
 }

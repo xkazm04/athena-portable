@@ -174,7 +174,14 @@ export {
 } from "./gesture";
 
 /* §3: camera distance is the level. */
-export { SEMANTIC_HYSTERESIS, bandProgress, levelForZoom } from "./semantic";
+export {
+  SEMANTIC_HYSTERESIS,
+  bandProgress,
+  cameraMove,
+  levelForZoom,
+  type CameraMove,
+  type SemanticResolvers,
+} from "./semantic";
 export {
   useSemanticZoom,
   type SemanticNav,

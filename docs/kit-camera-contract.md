@@ -184,6 +184,13 @@ Everything else, briefly:
   TypeScript refuses two files differing only in case. Import from `@athena/demo-kit/zoom`; the
   path is only visible to a test.
 
+**(stabilize, 2026-10-16) the three semantic-zoom callbacks get the frame.** `resolveGroup(pose,
+frame)`, `resolveItem(pose, group, frame)` and `poseFor(focus, frame)`, where `frame` is
+`rig.frame()`: the scene element's `{ w, h }`, measured when the hook calls, the same box the
+anchored zoom reads (`{ w: 0, h: 0 }` before the rig has an element). A callback written to the
+§3 signatures is still valid. The decision the hook carries out is `cameraMove(next, focus, pose,
+frame, resolvers)` in `zoom/semantic.ts`, tested (atlas KIT-GAPS R4-5).
+
 **(round 5) `flyTo` takes `onCancel`, and exactly one of `onDone` / `onCancel` fires.** A flight
 cancelled by `set`, a drag, a wheel or another `flyTo` used to tell nobody; `useSemanticZoom` kept
 its lead at `"nav"` and the wheel then changed the band but never the level (found by the atlas

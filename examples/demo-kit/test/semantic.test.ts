@@ -8,7 +8,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { SEMANTIC_HYSTERESIS, bandProgress, levelForZoom } from "../src/zoom/semantic.ts";
+import { SEMANTIC_HYSTERESIS, bandProgress, cameraMove, levelForZoom } from "../src/zoom/semantic.ts";
 
 const BANDS = [2, 6] as const;
 
@@ -94,4 +94,51 @@ test("band progress is where in the level the camera stands", () => {
   assert.equal(bandProgress(2, BANDS, 0), 1);
   assert.equal(bandProgress(4, BANDS, 1), 0.5);
   assert.equal(bandProgress(99, BANDS, 2), 1);
+});
+
+/* ------------------------------------------- what the camera asks the nav for, given the frame */
+
+const FRAME = { w: 1280, h: 720 };
+const AT = { yaw: 0, pitch: 0, zoom: 7, pan: { x: 10, y: -4 } };
+
+/** Resolvers that answer fixed ids and remember what they were asked with. */
+function resolvers(group: string | null, item: string | null) {
+  const asked: unknown[][] = [];
+  return {
+    asked,
+    resolveGroup(pose: typeof AT, frame: typeof FRAME) {
+      asked.push(["group", pose, frame]);
+      return group;
+    },
+    resolveItem(pose: typeof AT, g: string, frame: typeof FRAME) {
+      asked.push(["item", pose, g, frame]);
+      return item;
+    },
+  };
+}
+
+test("the resolvers are handed the frame with the pose, so a fit-to-frame answer needs no ref", () => {
+  // atlas KIT-GAPS R4-5 (third round): `poseFor` and `resolve*` need the canvas size to answer
+  // "which group fits", and were handed a pose and nothing else.
+  const r = resolvers("a", "a1");
+  cameraMove(2, { level: 0, group: null, item: null }, AT, FRAME, r);
+  assert.deepEqual(r.asked, [
+    ["group", AT, FRAME],
+    ["item", AT, "a", FRAME],
+  ]);
+});
+
+test("the camera's ask is the rule useSemanticZoom carries out", () => {
+  const home = { level: 0, group: null, item: null } as const;
+  const inA = { level: 1, group: "a", item: null } as const;
+  const onA1 = { level: 2, group: "a", item: "a1" } as const;
+
+  assert.deepEqual(cameraMove(0, inA, AT, FRAME, resolvers("a", null)), { type: "up" });
+  assert.deepEqual(cameraMove(1, home, AT, FRAME, resolvers("a", null)), { type: "open-group", group: "a" });
+  assert.deepEqual(cameraMove(2, inA, AT, FRAME, resolvers("a", "a1")), { type: "open-item", group: "a", item: "a1" });
+  // Close enough for an item, but the surface cannot say which: stop at the group, never guess.
+  assert.deepEqual(cameraMove(2, home, AT, FRAME, resolvers("a", null)), { type: "open-group", group: "a" });
+  assert.equal(cameraMove(2, inA, AT, FRAME, resolvers("a", null)), null, "already there");
+  assert.equal(cameraMove(2, onA1, AT, FRAME, resolvers("a", "a1")), null, "already there");
+  assert.equal(cameraMove(1, home, AT, FRAME, resolvers(null, null)), null, "over nothing, nothing opens");
 });

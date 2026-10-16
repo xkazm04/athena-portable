@@ -26,7 +26,7 @@ kit file hot-reloads in a running app. `pnpm --filter @athena/demo-kit typecheck
 | | | the formula: `useLevelFlight` (+ `advanceFlight`, `settleFlight`, `isMoving`, `initialFlight`, `FLIGHT_FALLBACK_MS`, `ARMING_FLIGHT`), `emphasis`, `presenceOf`, `presenceStyle`, `PRESENCE_DEPTH`, `useSharedIdentity`, `sharedIdentity`, `UNCLAIMED`, `useTokens`, `cssMs`, `cssEase`, `parseMs`, `parseEase`, `parseBezier`, `readTokens`, `styleOf`, `tokenValue`, `secs`, `useOverlayEscape`, `escapeClosesOverlay`, `focusReturnTarget`, `isOpener`, `useRoving`, `rovingIndex`, `isRovingKey`, `ROVING_KEYS`, types `LevelFlight`, `FlightState`, `Presence`, `PresenceOpacity`, `SharedIdentity`, `TokenValue`, `StyleSource`, `OverlayEscape`, `FocusPreference`, `Roving`, `RovingOptions` |
 | | | the camera (round 3): `useCameraRig`, `REST_POSE`, `clampPose`, `zoomAt`, `stepInertia`, `nearestSnap`, `orbitDelta`, `panDelta`, `poseToTransform`, `mergePose`, `lerpPose`, `samePose`, `poseDistance`, `angleDelta`, `isNegligible`, `easeFromCss`, `FLY_MS`, `FLY_EASE`, `FRAME_MS`, `NEGLIGIBLE`, `ORBIT_SENSITIVITY`, `SNAP_WEIGHTS`, `ZERO_VELOCITY`, `WHEEL_SENSITIVITY`, `KEY_ORBIT`, `KEY_PAN`, `KEY_ZOOM`, `SNAP_IDLE_MS`, types `CameraPose`, `CameraBounds`, `CameraVelocity`, `CameraFrame`, `CameraRig`, `CameraRigOptions`, `CameraBind` |
 | | | the rig's pointer: `gestureStep`, `initialGesture`, `swallowsClick`, `DRAG_SLOP`, types `GestureState`, `GestureInput`, `GestureEffect`, `GestureOptions`, `GestureStep`, `GesturePoint`, `GesturePointer` |
-| | | semantic zoom: `useSemanticZoom`, `levelForZoom`, `bandProgress`, `SEMANTIC_HYSTERESIS`, types `SemanticZoom`, `SemanticZoomOptions`, `SemanticNav` |
+| | | semantic zoom: `useSemanticZoom`, `levelForZoom`, `bandProgress`, `cameraMove`, `SEMANTIC_HYSTERESIS`, types `SemanticZoom`, `SemanticZoomOptions`, `SemanticNav`, `SemanticResolvers`, `CameraMove` |
 | | | the echo (rule 1): `useEcho`, `echoStages`, `echoOrigin`, `echoOriginVars`, `echoDirection`, `echoKey`, `levelChanged`, types `EchoState`, `EchoOptions`, `EchoHandle`, `EchoDirection`, `EchoOriginUnit`, `RectLike` |
 | `@athena/demo-kit/zoom/echo` | client | `Echo`, `ECHO_GRACE_MS`, type `EchoProps` — the component alone, on its own entry so the `zoom` barrel stays a `.ts` module that `node --test` can load |
 | `@athena/demo-kit/seed` | any | `Rng`, `rngFor`, and the shared world: `STUDIO`, `COMPANIES`, `companyByName`, `companyByDomain`, `companyDomain`, `KESTREL_APPLICANT`, `PINEGROVE_ALIAS`, `QUIET_CLIENT` |
@@ -204,11 +204,11 @@ useRoving(ref, { selector: string; columns?: number | (() => number) }): { onKey
 useCameraRig({ bounds, initial?, drag?, wheel?, inertia?, snap?, keyboard?, reducedMotion?,
                flyToken?, easeToken?, sensitivity? })
   : { get(), set(partial), flyTo(partial, { ms?, onDone?, onCancel? }): cancel, reset(), subscribe(cb),
-      moving, bind }
+      moving, frame(): { w, h }, bind }
 poseToTransform(pose, { perspective? }): string
 zoomAt(pose, factor, anchor: {x,y}, frame: {w,h}, zoom?: [min, max]): CameraPose   // anchor is frame-relative px; pass the bounds' zoom so a zoom past a bound never slides the scene
 useSemanticZoom(nav, rig, { bands, resolveGroup, resolveItem, poseFor, hysteresis?, flight? })
-  : { level, driving }
+  : { level, driving }      // resolveGroup(pose, frame), resolveItem(pose, group, frame), poseFor(focus, frame); frame = rig.frame()
 levelForZoom(zoom, bands, hysteresis = 0.08, current: Level = 0): Level
 useEcho(nav, flight, { measure, stages?, container?, origin? })
   : { echo, liveProps }
