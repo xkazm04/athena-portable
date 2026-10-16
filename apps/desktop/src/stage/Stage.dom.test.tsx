@@ -137,6 +137,37 @@ it("a reload at the surface leaves the one surface layer as it was", () => {
   expect(useDepth.getState().seq).toBe(0);
 });
 
+it("mounts a crumb afresh when the place it names changes, so it fades in on the move like a dived one", () => {
+  const at = (path: Path, seq: number) => (
+    <Stage
+      state={{ ...INITIAL, path, seq, move: seq === 0 ? "none" : "across" }}
+      calm={false}
+      renderScene={() => <p>scene</p>}
+      presence={{ pose: "resting", text: "resting", waiting: 0 }}
+      onGo={() => {}}
+      onRise={() => {}}
+      onSurface={() => {}}
+      onSettle={() => {}}
+    />
+  );
+  host = document.createElement("div");
+  document.body.append(host);
+  root = createRoot(host);
+  const crumbAt = (i: number) => host!.querySelectorAll(".stage__crumb")[i]!;
+  act(() => root!.render(at({ root: "apps", item: "host-1" }, 0)));
+  const apps = crumbAt(0);
+  const host1 = crumbAt(1);
+  // Across, one level down: the Apps crumb names the same place and stays; host-2 is a new place.
+  act(() => root!.render(at({ root: "apps", item: "host-2" }, 1)));
+  expect(crumbAt(0)).toBe(apps);
+  expect(crumbAt(1)).not.toBe(host1);
+  expect(crumbAt(1).textContent).toBe("/host-2");
+  // Across at the first level: Apps to Chores is a new place too.
+  act(() => root!.render(at({ root: "chores" }, 2)));
+  expect(crumbAt(0)).not.toBe(apps);
+  expect(crumbAt(0).textContent).toBe("/Chores");
+});
+
 /**
  * A scene that claims Escape for itself (a chore's topic closes its lightbox, the studio asks before
  * dropping a draft) listens on the document, as `scenes/chores/topic.tsx` does, and marks the key

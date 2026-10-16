@@ -21,6 +21,7 @@ import {
   ROOTS,
   crumbs,
   depthOf,
+  formatHash,
   riseLabel,
   shapeOf,
   type DepthState,
@@ -167,7 +168,10 @@ export default function Stage(props: StageProps) {
         ) : (
           <nav className="stage__crumbs" aria-label="Where you are" data-tauri-drag-region>
             {trail.slice(1).map((c, i, rest) => (
-              <span key={c.depth} className="stage__crumb">
+              // Keyed by the place it names: a crumb whose place changed (an across move) is a new
+              // crumb and fades in with the move, as a dive's new crumb does; one that still names
+              // the same place stays put.
+              <span key={formatHash(c.path)} className="stage__crumb">
                 <span aria-hidden="true">/</span>
                 {i === rest.length - 1 ? (
                   <b aria-current="location">{c.label}</b>
