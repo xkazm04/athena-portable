@@ -8,6 +8,7 @@ because a line printed by a function that never bound a socket would look exactl
 from __future__ import annotations
 
 import json
+import os
 import subprocess
 import sys
 from http.client import HTTPConnection
@@ -128,6 +129,49 @@ def test_an_unknown_engine_fails_before_the_ready_line(tmp_path: Path) -> None:
     payload = json.loads(stdout.strip())
     assert payload["ok"] is False
     assert "no_such_engine" in payload["detail"]
+
+
+def test_a_daemon_with_no_law_fails_on_its_failure_line_and_names_the_remedy(
+    tmp_path: Path,
+) -> None:
+    """No constitution, no daemon: the shell shows "the daemon refused to start" with the
+    loader's own sentence (where it looked, and ``$ATHENA_CONSTITUTION``), rather than a daemon
+    that answers ``/health`` and composes every turn under "(no law on file)"."""
+    empty = tmp_path / "no-law"
+    empty.mkdir()
+    process = subprocess.Popen(
+        [
+            sys.executable,
+            "-c",
+            _ENTRY,
+            "--port",
+            "0",
+            "--brain",
+            str(tmp_path / "brain"),
+            "--token-file",
+            str(tmp_path / "daemon.json"),
+            "--no-connectors",
+        ],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        encoding="utf-8",
+        cwd=str(tmp_path),
+        env={**os.environ, "ATHENA_CONSTITUTION": str(empty)},
+    )
+    try:
+        stdout, _ = process.communicate(timeout=60)
+    except subprocess.TimeoutExpired:
+        # A daemon that started anyway serves forever; it is the failure, and it is not left
+        # running behind the test.
+        process.kill()
+        stdout, _ = process.communicate()
+
+    assert process.returncode != 0
+    payload = json.loads(stdout.strip())
+    assert payload["ok"] is False
+    assert payload["detail"].startswith("ConstitutionMissing: no law.md")
+    assert "$ATHENA_CONSTITUTION" in payload["detail"]
 
 
 def test_the_ready_line_is_one_line_even_when_a_value_contains_a_newline() -> None:

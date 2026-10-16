@@ -22,6 +22,7 @@ from athena.contracts.registry import Lane, ToolClass, TurnContext
 from athena.core.brain import Brain, reconcile_from_disk
 from athena.core.brain.store import ProvenanceError
 from athena.core.catalog import RECALL_CAP, CoreServices
+from athena.core.constitution import ConstitutionMissing
 from athena.core.recall import ALWAYS_BLOCK, UNAVAILABLE_PREFIX, recall
 from athena.harness.policy import Policy
 from athena.harness.transports import ScriptedTransport, SubprocessTransport
@@ -137,6 +138,35 @@ def test_a_composition_that_fails_after_the_brain_opened_closes_it(
 
     assert len(recorded) == 1
     assert recorded[0].closed
+
+
+def test_a_missing_constitution_stops_the_build_and_closes_the_brain(
+    tmp_path: Path, recorded: list[_Recorded]
+) -> None:
+    """A turn with no law is a turn that should not have started (``core/constitution.py``), so
+    the daemon is not built at all: ``athena serve`` prints the loader's whole message on its
+    failure line, where the doctor's constitution stage already says ``fail``. The empty
+    fallback is the doctor's and the fixtures', never the composer's."""
+    empty = tmp_path / "no-law"
+    empty.mkdir()
+
+    with pytest.raises(ConstitutionMissing, match=r"law\.md") as raised:
+        build_local(
+            brain_root=tmp_path / "brain",
+            transport=lambda dialect: ScriptedTransport([]),
+            workspace=tmp_path / "engine",
+            constitution_dir=empty,
+        )
+
+    assert str(empty) in str(raised.value)
+    assert len(recorded) == 1
+    assert recorded[0].closed
+
+
+def test_the_daemon_composes_every_turn_under_the_law_it_found(local: AthenaLocal) -> None:
+    """The other half: a build that succeeded carries a law, never the "(no law on file)" stub."""
+    assert local.constitution.section("law")
+    assert "(no law on file)" not in local.constitution.block("law").text
 
 
 def test_closing_an_athena_closes_the_brain_even_when_a_studio_will_not_close(

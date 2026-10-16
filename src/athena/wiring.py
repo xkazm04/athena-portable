@@ -43,7 +43,7 @@ from athena.contracts.registry import ExecResult, ExecutorFn, TurnContext
 from athena.core.approvals import Approvals
 from athena.core.brain.store import DEFAULT_CONFIDENCE, Brain, ProvenanceError
 from athena.core.catalog import RECALL_CAP, Catalog, CoreServices, build_catalog
-from athena.core.constitution import Constitution, load_or_empty
+from athena.core.constitution import Constitution, load
 from athena.core.ledger import Ledger
 from athena.core.recall import recall, recall_whole
 from athena.daemon.server import AthenaDaemon
@@ -265,6 +265,10 @@ def build_local(
 
     ``adopt`` is the adopt studio behind ``/adopt`` (ADR 0097); ``None`` builds the real one, its
     legs on the ``claude`` CLI whatever ``engine`` is, its sessions under ``$ATHENA_HOME/adopt``.
+
+    ``constitution_dir`` names the law's directory; ``None`` resolves it as the loader does. No
+    ``law.md`` anywhere raises :class:`~athena.core.constitution.ConstitutionMissing` naming every
+    place it looked, with the brain closed again: Athena runs without law only on purpose.
     """
     dialect = DIALECTS.get(engine)
     if dialect is None and engine not in API_ENGINES:
@@ -277,7 +281,9 @@ def build_local(
     try:
         approvals = Approvals(brain)
         ledger = Ledger(brain)
-        constitution = load_or_empty(constitution_dir)
+        # ``load``, never ``load_or_empty``: a turn with no law should not have started, so a
+        # missing law stops the build here and ``athena serve`` says so on its failure line.
+        constitution = load(constitution_dir)
 
         services = CoreServices(
             # The brain's own answer to "is this a live episode of this brain", which is the half of
