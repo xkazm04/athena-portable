@@ -80,7 +80,15 @@ export function createClock(env: ClockEnv): Clock {
     if (env.hidden()) return; // resumes through onVisible; no work while nobody can see it
     for (const [fn, last] of [...subs]) {
       if (!subs.has(fn)) continue; // dropped by an earlier subscriber this frame
-      const keep = fn(time, last < 0 ? 0 : time - last);
+      let keep: boolean | void;
+      try {
+        keep = fn(time, last < 0 ? 0 : time - last);
+      } catch (error) {
+        // One broken subscriber is dropped, said once, and does not stop the window's other motion:
+        // a throw that escaped here would leave the loop unscheduled for every subscriber.
+        console.error(`[athena] frame subscriber dropped: ${error instanceof Error ? error.message : String(error)}`);
+        keep = false;
+      }
       if (keep === false) subs.delete(fn);
       else subs.set(fn, time);
     }

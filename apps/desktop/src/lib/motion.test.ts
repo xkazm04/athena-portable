@@ -130,4 +130,28 @@ describe("the clock", () => {
     f.tick(16);
     expect(second).toBe(0);
   });
+
+  it("drops a subscriber that throws and keeps every other one moving", () => {
+    const f = fakeEnv();
+    const clock = createClock(f.env);
+    const errors: unknown[] = [];
+    const log = console.error;
+    console.error = (...args: unknown[]) => void errors.push(args);
+    try {
+      let after = 0;
+      clock.subscribe(() => {
+        throw new Error("a broken meter");
+      });
+      clock.subscribe(() => void after++);
+      expect(() => f.tick(16)).not.toThrow();
+      expect(after).toBe(1);
+      expect(clock.size).toBe(1);
+      expect(clock.running).toBe(true);
+      f.tick(32);
+      expect(after).toBe(2);
+      expect(errors).toHaveLength(1);
+    } finally {
+      console.error = log;
+    }
+  });
 });
