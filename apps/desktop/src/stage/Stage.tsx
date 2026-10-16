@@ -14,7 +14,7 @@
  * Escape is the one way back. It rises a level, it is never a way to close the window, and it
  * leaves a text field to the field's own Escape.
  */
-import { useEffect, useReducer, useRef, useState, type ReactNode } from "react";
+import { memo, useEffect, useReducer, useRef, useState, type ReactNode } from "react";
 
 import {
   ROOT_LABEL,
@@ -203,7 +203,7 @@ export default function Stage(props: StageProps) {
                 topRef={top}
                 onEnded={() => dispatch({ type: "ended", key: l.key })}
               >
-                {renderScene(l.path)}
+                <SceneOf path={l.path} render={renderScene} />
               </SceneLayer>
             ))}
           </main>
@@ -240,6 +240,15 @@ export default function Stage(props: StageProps) {
     </div>
   );
 }
+
+/**
+ * A layer's scene, drawn again only when its place or the way scenes are drawn changes. The chrome
+ * around it re-renders the stage on every change of her presence, a tab or a crumb name, and a scene
+ * reads its own stores; without this each of those redrew every layer's whole view.
+ */
+const SceneOf = memo(function SceneOf({ path, render }: { path: Path; render: (path: Path) => ReactNode }) {
+  return <>{render(path)}</>;
+});
 
 function SceneLayer({
   layer,

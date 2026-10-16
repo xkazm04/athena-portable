@@ -76,6 +76,57 @@ it("a reload at a depth draws that depth's scene, not the surface the stage was 
   expect(scenes(h)).toEqual(["#/mind/engine"]);
 });
 
+it("redraws no scene when only the chrome changes (her presence, the bar's controls)", () => {
+  const draw = vi.fn();
+  function Scene() {
+    draw();
+    return <p>scene</p>;
+  }
+  const renderScene = () => <Scene />;
+  const props = (text: string) => ({
+    state: { ...INITIAL, path: { root: "mind" as const } },
+    calm: false,
+    renderScene,
+    presence: { pose: "resting" as const, text, waiting: 0 },
+    onGo: () => {},
+    onRise: () => {},
+    onSurface: () => {},
+    onSettle: () => {},
+  });
+  host = document.createElement("div");
+  document.body.append(host);
+  root = createRoot(host);
+  act(() => root!.render(<Stage {...props("resting")} />));
+  expect(draw).toHaveBeenCalledTimes(1);
+  act(() => root!.render(<Stage {...props("reading the page")} />));
+  act(() => root!.render(<Stage {...props("resting")} />));
+  expect(draw).toHaveBeenCalledTimes(1);
+});
+
+it("redraws the scene when the way it is drawn changes", () => {
+  const seen: string[] = [];
+  const props = (tag: string) => ({
+    state: { ...INITIAL, path: { root: "mind" as const } },
+    calm: false,
+    renderScene: () => {
+      seen.push(tag);
+      return <p>{tag}</p>;
+    },
+    presence: { pose: "resting" as const, text: "resting", waiting: 0 },
+    onGo: () => {},
+    onRise: () => {},
+    onSurface: () => {},
+    onSettle: () => {},
+  });
+  host = document.createElement("div");
+  document.body.append(host);
+  root = createRoot(host);
+  act(() => root!.render(<Stage {...props("before")} />));
+  act(() => root!.render(<Stage {...props("hydrated")} />));
+  expect(seen).toEqual(["before", "hydrated"]);
+  expect(host.querySelector(".stage__layer")!.textContent).toBe("hydrated");
+});
+
 it("a reload at the surface leaves the one surface layer as it was", () => {
   window.history.replaceState(null, "", "#/");
   const h = mount();
