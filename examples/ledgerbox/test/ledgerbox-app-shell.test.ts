@@ -218,3 +218,42 @@ test("a bank line of money paid out cannot be applied to an invoice as money rec
   assert.match(matched.message, /paid out/);
   assert.deepEqual(moneyOn(owed.id), before, "no payment and no match for a debit");
 });
+
+test("send_reminder re-checks the books: a letter the books no longer stand behind is not sent", async () => {
+  // The rule `draft_reminder` applies was asked once, at drafting. A letter drafted, then paid in
+  // full, then sent went out as "LB-...: $25,350.00 outstanding, 70 days past due" to a client who
+  // owed nothing - on the act the person approves and cannot take back.
+  const sentRows = (id: string) =>
+    db().get<{ n: number }>("SELECT COUNT(*) AS n FROM reminders WHERE invoice_id = ? AND sent_at IS NOT NULL", [id])!.n;
+
+  const paidUp = fresh("overdue");
+  assert.equal((await actions.draftReminderAction(paidUp.id, "firm")).ok, true);
+  assert.equal((await actions.markPaidAction(paidUp.id, paidUp.balance_cents)).ok, true);
+  const afterPaid = await actions.sendReminderAction(paidUp.id);
+  assert.equal(afterPaid.ok, false, afterPaid.message);
+  assert.match(afterPaid.message, new RegExp(`${paidUp.number} is settled`));
+
+  // Part paid since the draft: the letter names a balance that is no longer owed.
+  const partPaid = fresh("overdue");
+  assert.equal((await actions.draftReminderAction(partPaid.id, "gentle")).ok, true);
+  assert.equal((await actions.markPaidAction(partPaid.id, Math.floor(partPaid.balance_cents / 2))).ok, true);
+  const stale = await actions.sendReminderAction(partPaid.id);
+  assert.equal(stale.ok, false, stale.message);
+  assert.match(stale.message, /no longer hold - .* is owed now. Draft it again/);
+
+  // Disputed since the draft.
+  const contested = fresh("overdue");
+  assert.equal((await actions.draftReminderAction(contested.id, "gentle")).ok, true);
+  db().run("UPDATE invoices SET status = 'disputed' WHERE id = ?", [contested.id]);
+  const onDispute = await actions.sendReminderAction(contested.id);
+  assert.equal(onDispute.ok, false, onDispute.message);
+  assert.match(onDispute.message, /disputed/);
+
+  for (const id of [paidUp.id, partPaid.id, contested.id]) assert.equal(sentRows(id), 0, `nothing sent for ${id}`);
+
+  // And a letter whose figures still hold goes out: the seed's own unsent draft, untouched.
+  const seeded = db().get<{ invoice_id: string }>("SELECT invoice_id FROM reminders WHERE sent_at IS NULL AND id NOT LIKE 'rem_inv_%' AND id <> 'rem_probe_draft' LIMIT 1");
+  assert.ok(seeded, "the seed carries an unsent draft");
+  const sent = await actions.sendReminderAction(seeded.invoice_id);
+  assert.equal(sent.ok, true, sent.message);
+});

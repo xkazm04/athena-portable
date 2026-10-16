@@ -337,23 +337,24 @@ export async function markPaidAction(ref: string, amountCents: number): Promise<
   return { ok: true, message: `Recorded ${formatMoney(amount)} against ${invoice.number}.` };
 }
 
-/** AUTO - writes a draft. Nothing leaves the building until `send_reminder`. */
-export async function draftReminderAction(ref: string, tone: Tone): Promise<DraftResult> {
-  const resolved = resolveInvoice(ref);
-  if (!resolved.ok) return fail(resolved.error);
-  const invoiceId = resolved.id;
-  const invoice = getInvoice(invoiceId)!;
+/**
+ * Why this invoice cannot be chased, or null. Asked when the letter is drafted AND again when it
+ * is sent: the draft can wait any length of time for its gate, and the books keep moving - a
+ * payment, a void, a dispute - while it waits.
+ */
+function whyNotChase(invoice: InvoiceRow): string | null {
   // Before the balance: a void's balance reads 0, and "settled" is not why it cannot be chased.
   const unowed = notADebt(invoice, "there is nothing to chase");
-  if (unowed) return fail(unowed);
-  if (invoice.balance_cents <= 0) return fail(`${invoice.number} is settled - nothing to chase.`);
+  if (unowed) return unowed;
+  if (invoice.balance_cents <= 0) return `${invoice.number} is settled - nothing to chase.`;
   // Stated where it is meant. This used to be an accident of the days_overdue arithmetic.
-  if (invoice.state === "disputed") {
-    return fail(`${invoice.number} is disputed - resolve the dispute before chasing.`);
-  }
+  if (invoice.state === "disputed") return `${invoice.number} is disputed - resolve the dispute before chasing.`;
+  return null;
+}
 
-  const id = `rem_${invoiceId}_${Date.now()}`;
-  const draft = composeReminder({
+/** The letter the books stand behind today. `send_reminder` compares the stored draft with it. */
+function letterFor(invoice: InvoiceRow, tone: Tone): ReminderDraft {
+  return composeReminder({
     number: invoice.number,
     clientName: invoice.client_name,
     contactName: invoice.client_contact,
@@ -363,6 +364,19 @@ export async function draftReminderAction(ref: string, tone: Tone): Promise<Draf
     balanceCents: invoice.balance_cents,
     amountCents: invoice.amount_cents,
   });
+}
+
+/** AUTO - writes a draft. Nothing leaves the building until `send_reminder`. */
+export async function draftReminderAction(ref: string, tone: Tone): Promise<DraftResult> {
+  const resolved = resolveInvoice(ref);
+  if (!resolved.ok) return fail(resolved.error);
+  const invoiceId = resolved.id;
+  const invoice = getInvoice(invoiceId)!;
+  const why = whyNotChase(invoice);
+  if (why) return fail(why);
+
+  const id = `rem_${invoiceId}_${Date.now()}`;
+  const draft = letterFor(invoice, tone);
 
   db().withTx((tx) => {
     tx.run(
@@ -408,14 +422,22 @@ export async function sendReminderAction(ref: string): Promise<SendResult> {
   const invoiceId = resolved.id;
   const invoice = getInvoice(invoiceId)!;
   const handle = db();
-  const draft = handle.get<{ id: string; tone: Tone; recipient: string; subject: string }>(
-    "SELECT id, tone, recipient, subject FROM reminders WHERE invoice_id = ? AND sent_at IS NULL ORDER BY created_at DESC LIMIT 1",
+  const draft = handle.get<{ id: string; tone: Tone; recipient: string; subject: string; body: string }>(
+    "SELECT id, tone, recipient, subject, body FROM reminders WHERE invoice_id = ? AND sent_at IS NULL ORDER BY created_at DESC LIMIT 1",
     [invoiceId],
   );
   if (!draft) return fail("Draft a reminder first - there is nothing to send.");
-  // The draft may predate the invoice being voided; a letter about a debt that is not one stays.
-  const unowed = notADebt(invoice, "the reminder was not sent");
-  if (unowed) return fail(unowed);
+  // The verdict on the draft pinned its words, not the world. Paid, voided or disputed since it
+  // was written, it is not sent; nor is a letter whose figures the books no longer hold - a part
+  // payment since the draft would otherwise ask the client for money already received.
+  const why = whyNotChase(invoice);
+  if (why) return fail(`${why} The reminder was not sent.`);
+  const today = letterFor(invoice, draft.tone);
+  if (today.subject !== draft.subject || today.body !== draft.body) {
+    return fail(
+      `The ${draft.tone} reminder for ${invoice.number} states figures the books no longer hold - ${formatMoney(invoice.balance_cents)} is owed now. Draft it again; it was not sent.`,
+    );
+  }
 
   const sentAt = new Date().toISOString();
   handle.withTx((tx) => {
