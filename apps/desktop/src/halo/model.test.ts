@@ -104,6 +104,28 @@ describe("the caption", () => {
     expect(captionHideAt(s)).toBe(1000 + CAPTION_LINGER_MS);
   });
 
+  it("does not bring back a line that has already gone when the next turn starts", () => {
+    const gone = 10_000 + CAPTION_LINGER_MS + 60_000;
+    const after = (phase: HaloPhase) =>
+      run([
+        [0, sig("speaking", her)],
+        [10_000, sig("idle", null)],
+        [gone, sig(phase, null)],
+      ]);
+    // a typed turn or any run in flight is thinking with no words; a fresh press is listening
+    // before its first partial: neither may put her old reply back over the person's screen
+    for (const phase of ["thinking", "listening", "speaking"] as const) {
+      expect(captionView(after(phase), gone + 1), phase).toMatchObject({ visible: false });
+    }
+    // a line still lingering is held as before
+    const s = run([
+      [0, sig("speaking", her)],
+      [10_000, sig("idle", null)],
+      [12_000, sig("thinking", null)],
+    ]);
+    expect(captionView(s, 60_000)).toEqual({ who: "athena", text: her.text, visible: true });
+  });
+
   it("is empty before anyone has said anything", () => {
     expect(captionView(CAPTION_START, 0)).toEqual({ who: null, text: "", visible: false });
   });

@@ -75,7 +75,8 @@ function chase() {
 
 function paintCaption(now: number) {
   const view = captionView(caption, now);
-  if (view.text !== shown.text || view.who !== shown.who) {
+  // A line the timer has taken is left in the DOM under its fade; only new words are written.
+  if (view.text && (view.text !== shown.text || view.who !== shown.who)) {
     whoEl.textContent = view.who === "you" ? "You" : view.who === "athena" ? "Athena" : "";
     textEl.textContent = view.text;
   }

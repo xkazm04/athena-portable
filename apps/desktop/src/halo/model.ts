@@ -83,11 +83,15 @@ function sameCaption(a: HaloCaption | null, b: HaloCaption | null): boolean {
  * Fold one signal into the caption. A new line replaces the old one and is shown at once. A
  * `null` caption erases nothing: the words stay until the timer takes them. The timer is
  * `CAPTION_LINGER_MS` from the moment the phase leaves listening, thinking or speaking (in
- * practice: from the end of her reply).
+ * practice: from the end of her reply). Once the timer has taken a line it is gone for good: the
+ * next holding phase (a typed turn's thinking, a fresh press before its first partial) must not
+ * hold it again and put a reply from minutes ago back over the person's screen.
  */
 export function stepCaption(state: CaptionState, signal: HaloSignal, now: number): CaptionState {
-  const changed = signal.caption !== null && !sameCaption(state.caption, signal.caption);
-  const caption = changed ? signal.caption : state.caption;
+  const hideAt = captionHideAt(state);
+  const kept = hideAt !== null && now >= hideAt ? null : state.caption;
+  const changed = signal.caption !== null && !sameCaption(kept, signal.caption);
+  const caption = changed ? signal.caption : kept;
   const held = changed || HOLDS.includes(signal.phase) || HOLDS.includes(state.phase);
   return { caption, phase: signal.phase, heldAt: held ? now : state.heldAt };
 }
