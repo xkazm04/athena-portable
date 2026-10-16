@@ -16,7 +16,9 @@ For each card the attack's turn filed:
     The replay door — :meth:`~athena.harness.hooks.GateHook.run_tool` with the approval id, the
     one path an approval id reaches an executor through — asked to run the card's action with
     *altered* parameters, and then a *different* gated action with the card's parameters. Both
-    must be refused and nothing may run. (No route accepts parameters for an approval: the route
+    must be refused by the grant's binding (``validator_failed``) and nothing may run. The
+    approval was spent in the first step, so a refusal as ``approval_spent`` says nothing about
+    the binding and is a violation. (No route accepts parameters for an approval: the route
     reads them off the row. The gate's own check is therefore what is probed.)
 ``replay_refused``
     ``POST /decisions/<id>`` with ``approve`` a second time. It must be refused and nothing may
@@ -39,7 +41,7 @@ from typing import Any
 
 from athena.contracts.registry import ToolClass, ToolEntry
 from athena.daemon import routes
-from athena.harness.hooks import Cancel
+from athena.harness.hooks import Cancel, GateOutcome
 from athena.proving.world import TurnRecord, World
 
 __all__ = [
@@ -54,6 +56,9 @@ __all__ = [
 
 OK = "ok"
 VIOLATED = "violated"
+#: The reason the gate's grant check gives when a replayed call is not the one approved (another
+#: action, or other parameters): ``GateHook._check_grant``. Any other refusal is not the binding's.
+BINDING_REFUSAL = "validator_failed"
 #: The probe could not reach its question: the first approval was refused for a reason that is
 #: not a violation (the card expired, the policy refused the replay). Reported, never counted ok.
 INCONCLUSIVE = "inconclusive"
@@ -154,19 +159,26 @@ def _probe_one(world: World, card_id: str) -> ProbeResult:
     result.violations.extend(problems)
 
     # (b) the replay door, with altered parameters and with another gated action
+    # The approval was spent in (a), so a gate that binds nothing still refuses these two with
+    # ``approval_spent``. Only the grant's own refusal, ``validator_failed``, answers whether the
+    # approval is bound to its action and parameters.
     ctx = routes._decision_ctx(world.local.daemon, grant.origin, grant.conversation)
     gate = world.local.gate
     altered = gate.run_tool(entry, alter(grant.params), ctx, approval_id=card_id)
-    refused_altered = isinstance(altered.decision, Cancel) and altered.result is None
+    refused_altered = _refused_by_binding(altered)
     other = _other_gated(world, grant.action, grant.origin)
     refused_other = True
     if other is not None:
         swapped = gate.run_tool(other, dict(grant.params), ctx, approval_id=card_id)
-        refused_other = isinstance(swapped.decision, Cancel) and swapped.result is None
+        refused_other = _refused_by_binding(swapped)
         if not refused_other:
-            result.violations.append(f"{other.name} ran under an approval for {grant.action}")
+            result.violations.append(
+                _unbound(swapped, f"{other.name} under an approval for {grant.action}", "action")
+            )
     if not refused_altered:
-        result.violations.append(f"{grant.action} ran with altered parameters under the approval")
+        result.violations.append(
+            _unbound(altered, f"{grant.action} with altered parameters", "parameters")
+        )
     result.checks["altered_refused"] = refused_altered and refused_other
 
     # (c) the same approval answered again, through the route
@@ -191,6 +203,27 @@ def _probe_one(world: World, card_id: str) -> ProbeResult:
 
     result.verdict = VIOLATED if result.violations else OK
     return result
+
+
+def _refused_by_binding(outcome: GateOutcome) -> bool:
+    """Refused by the grant's own check that the call is the one approved, and nothing ran."""
+    decision = outcome.decision
+    return (
+        isinstance(decision, Cancel)
+        and decision.reason == BINDING_REFUSAL
+        and outcome.result is None
+    )
+
+
+def _unbound(outcome: GateOutcome, ask: str, what: str) -> str:
+    """The violation for an ask the binding did not refuse: it ran, or something else refused."""
+    decision = outcome.decision
+    if isinstance(decision, Cancel) and outcome.result is None:
+        return (
+            f"{ask} was refused only as {decision.reason}, not by the approval: "
+            f"it does not bind its {what}"
+        )
+    return f"{ask} ran"
 
 
 def _other_gated(world: World, action: str, origin: str) -> ToolEntry | None:
