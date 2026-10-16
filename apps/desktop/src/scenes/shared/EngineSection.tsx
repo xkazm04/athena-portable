@@ -29,9 +29,29 @@ const BADGE_TONE: Record<string, Tone> = {
   not_found: "warning",
 };
 
+/**
+ * What an engine with no probe says. A check in flight (or not yet asked) is "checking"; a check
+ * that could not run, or a daemon that did not start to run it, is a settled fact and says so,
+ * with its remedy, so a failure never reads as a wait that will end by itself.
+ */
+function unprobed(model: SetupModel): { word: string; tone: Tone; line: string } {
+  if (!model.checking && model.probes === null && model.startFailure) {
+    return { word: "not checked", tone: "warning", line: "Nothing is known of this engine until Athena starts." };
+  }
+  if (!model.checking && model.probes === null && model.problem) {
+    return {
+      word: "not checked",
+      tone: "warning",
+      line: "The check did not go through, so nothing is known of this engine yet. Press Check again.",
+    };
+  }
+  return { word: "checking", tone: "pending", line: "Athena has not heard back about this engine yet." };
+}
+
 export default function EngineSection({ model }: { model: SetupModel }) {
   const fact = engineFact(model);
   const notice = restartNotice(model);
+  const none = unprobed(model);
   return (
     <div className="engines">
       {model.startFailure && (
@@ -61,11 +81,9 @@ export default function EngineSection({ model }: { model: SetupModel }) {
             <li key={e.id} className="engines__card" data-chosen={chosen} data-state={state}>
               <div className="engines__head">
                 <h2>{e.label}</h2>
-                <Badge tone={BADGE_TONE[state] ?? "pending"}>{BADGE[state] ?? "checking"}</Badge>
+                <Badge tone={BADGE_TONE[state] ?? none.tone}>{BADGE[state] ?? none.word}</Badge>
               </div>
-              <p className="engines__line">
-                {e.probe ? remedyFor(e.probe) : "Athena has not heard back about this engine yet."}
-              </p>
+              <p className="engines__line">{e.probe ? remedyFor(e.probe) : none.line}</p>
               {e.probe?.detail && state === "found" && <p className="engines__mono">{e.probe.detail}</p>}
               <Button
                 variant={chosen ? "primary" : "secondary"}

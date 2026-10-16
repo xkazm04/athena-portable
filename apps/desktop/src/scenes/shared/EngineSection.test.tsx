@@ -30,6 +30,31 @@ describe("an engine's standing (house style 4b)", () => {
   });
 });
 
+describe("a check that failed is not a check in flight", () => {
+  it("names each unprobed engine as not checked, with a warning, when the check could not run", () => {
+    const h = html("degraded"); // probes null, problem kept, nothing in flight
+    expect(h).not.toMatch(/status-dot--pending[^>]*><\/span>checking</);
+    expect(h).not.toContain("has not heard back about this engine yet");
+    expect(h).toMatch(/status-dot--warning[^>]*><\/span>not checked</);
+    expect(h).toContain("The check did not go through, so nothing is known of this engine yet. Press Check again.");
+  });
+
+  it("says nothing is known until Athena starts, when she failed to start and so never checked", () => {
+    const failed = {
+      ...fixtures.degraded!,
+      problem: null,
+      startFailure: { engine: "claude_code", title: "Athena could not start on Claude Code.", reason: "spawn failed", actionLabel: "Try again on Claude Code" },
+    };
+    const h = renderToStaticMarkup(<EngineSection model={failed} />);
+    expect(h).toMatch(/status-dot--warning[^>]*><\/span>not checked</);
+    expect(h).toContain("Nothing is known of this engine until Athena starts.");
+  });
+
+  it("still says checking while one is in flight", () => {
+    expect(html("checking")).toMatch(/status-dot--pending[^>]*><\/span>checking</);
+  });
+});
+
 describe("copy", () => {
   it("uses the ellipsis character like every other busy label", () => {
     expect(html("checking")).toContain("Checking…");
