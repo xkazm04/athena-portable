@@ -11,6 +11,8 @@ import asyncio
 import sys
 from pathlib import Path
 
+import pytest
+
 from athena.harness.transports import STDERR_TAIL, CliRequest, SubprocessTransport
 
 
@@ -60,6 +62,45 @@ def test_a_cli_that_floods_stderr_before_its_stdout_does_not_stall_the_round(
 
     assert [line.rstrip("\r") for line in lines] == ["after"]
     assert request.exit.status.returncode == 0
+
+
+#: Every variable that would bill a CLI child to a key, or hand one CLI the other's key (ADR 0007:
+#: both CLIs run on the person's plan). Written out here rather than read from ``transports``, so
+#: the test is not the list it checks. ``NEBIUS_API_KEY`` is not here yet: the Proving Ground's
+#: own child still needs it through this door (``transports.ENGINE_KEYS``).
+ENGINE_KEYS = (
+    "ANTHROPIC_API_KEY",
+    "ANTHROPIC_AUTH_TOKEN",
+    "CLAUDE_CODE_USE_BEDROCK",
+    "CLAUDE_CODE_USE_VERTEX",
+    "OPENAI_API_KEY",
+    "CODEX_API_KEY",
+)
+
+
+def test_no_engine_key_reaches_a_spawned_cli_and_the_child_still_starts(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    for name in ENGINE_KEYS:
+        monkeypatch.setenv(name, f"sentinel-{name.lower()}")
+    monkeypatch.setenv("ATHENA_TEST_KEPT", "kept")
+    request = CliRequest(
+        argv=["-c", "import os\nfor name in sorted(os.environ):\n    print(name.upper())"],
+        stdin="",
+        cwd=str(tmp_path),
+        # A request's own env goes through the same door, whatever case it is spelled in.
+        env={"openai_api_key": "sentinel-request", "ATHENA_TEST_EXTRA": "1"},
+        timeout_s=20.0,
+    )
+
+    async def collect() -> list[str]:
+        return [line async for line in SubprocessTransport(sys.executable).run(request)]
+
+    seen = {line.rstrip("\r") for line in asyncio.run(collect())}
+
+    assert request.exit.status.returncode == 0
+    assert {"ATHENA_TEST_KEPT", "ATHENA_TEST_EXTRA"} <= seen
+    assert sorted(seen & set(ENGINE_KEYS)) == []
 
 
 def test_the_stderr_tail_keeps_only_the_end_of_what_was_written(tmp_path: Path) -> None:

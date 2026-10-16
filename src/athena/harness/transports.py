@@ -39,6 +39,8 @@ STDERR_TAIL = 4096
 STDERR_GRACE_S = 5.0
 
 __all__ = [
+    "ENGINE_KEYS",
+    "STRIPPED",
     "CliRequest",
     "ExitHandle",
     "ExitStatus",
@@ -59,18 +61,43 @@ COMMENT = "#"
 #: Set, the ``claude`` CLI bills this key instead of the subscription (ADR 0007).
 API_KEY_ENV = "ANTHROPIC_API_KEY"
 
+#: Per CLI engine, the variables that bill it to a key or route it to another cloud, as of
+#: 2026-10-16 (``claude`` 2.1, ``codex-cli`` 0.160). Dated: a CLI release can add a switch. No CLI
+#: engine here owns a key: ``claude`` runs on the Claude subscription and ``codex`` on the ChatGPT
+#: plan, both signed in through the CLI itself, so :func:`child_env` strips every one of them from
+#: every child, whichever CLI it is (ADR 0007). ``OPENAI_API_KEY`` is in the daemon's environment
+#: whenever the OpenAI voice backend is configured from it, which is how it would reach ``codex``.
+#:
+#: ``nebius`` names none, and that is a known gap rather than a decision: the Proving Ground runs
+#: its own Python child through this door (``proving/server/runner.py``) and that child needs
+#: ``NEBIUS_API_KEY``. Until it builds its own environment, the key still reaches CLI children.
+ENGINE_KEYS: dict[str, tuple[str, ...]] = {
+    "claude_code": (
+        API_KEY_ENV,
+        "ANTHROPIC_AUTH_TOKEN",
+        "CLAUDE_CODE_USE_BEDROCK",
+        "CLAUDE_CODE_USE_VERTEX",
+    ),
+    "codex": ("OPENAI_API_KEY", "CODEX_API_KEY"),
+    "nebius": (),
+}
+
+#: What :func:`child_env` never lets through, compared in upper case: a Windows child reads its
+#: environment case-insensitively, so ``openai_api_key`` is the same variable there.
+STRIPPED: frozenset[str] = frozenset(name for names in ENGINE_KEYS.values() for name in names)
+
 
 def child_env(base: Mapping[str, str], extra: Mapping[str, str] | None = None) -> dict[str, str]:
-    """The environment for a spawned engine CLI: ``base`` then ``extra``, without the API key.
+    """The environment for a spawned engine CLI: ``base`` then ``extra``, without any engine key.
 
     The operator's rule (README §3.1, ADR 0007): model runs go only through the engine CLI on the
-    subscription, never a paid API. A key in either mapping would move billing off the
-    subscription and contradict what the engine probe reported, so neither is allowed through.
-    Everything else (``PATH`` included) is kept. Pure: neither input is mutated.
+    person's plan, never a paid API. A key in either mapping would move billing off the plan and
+    contradict what the engine probe reported, and a key the child does not own is one more secret
+    in a process that reads untrusted pages. So none of :data:`STRIPPED` is let through, in any
+    case. Everything else (``PATH`` included) is kept. Pure: neither input is mutated.
     """
     merged = {**base, **(extra or {})}
-    merged.pop(API_KEY_ENV, None)
-    return merged
+    return {name: value for name, value in merged.items() if name.upper() not in STRIPPED}
 
 
 class TransportError(OSError):

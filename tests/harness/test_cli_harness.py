@@ -507,3 +507,13 @@ def test_a_spawned_cli_never_inherits_the_api_key() -> None:
     assert "ANTHROPIC_API_KEY" not in child_env(base)
     assert base == {"PATH": "/bin", "ANTHROPIC_API_KEY": "sk-base"}  # inputs not mutated
     assert extra == {"ANTHROPIC_API_KEY": "sk-request", "MINE": "1"}
+
+
+def test_every_engine_names_its_keys_and_no_cli_child_gets_another_engines_key() -> None:
+    """The strip is one table keyed by engine, so an engine added without its keys is red here."""
+    from athena.harness.engines import ENGINES
+    from athena.harness.transports import ENGINE_KEYS
+
+    assert set(ENGINE_KEYS) == set(ENGINES)
+    base = {"PATH": "/bin", "OPENAI_API_KEY": "sk-o", "Codex_Api_Key": "c"}
+    assert child_env(base) == {"PATH": "/bin"}
