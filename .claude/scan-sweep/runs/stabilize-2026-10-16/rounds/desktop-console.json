@@ -1,0 +1,218 @@
+{
+ "context": "desktop-console",
+ "files_read": 20,
+ "loc": 2729,
+ "registry": "software-engineering/test-harness, software-engineering/page-load-pipeline, software-engineering/client-state, software-engineering/async-ui-states (mapped subjects for desktop-console: sql-console (lexical-only on 'console', not applicable), module-design, hitl-approval, standards-layered-runtime; for desktop-playbooks-panel: agent-memory, mcp-tools, companion-runtime, test-harness and others; the four named govern better)",
+ "techniques": [
+  "negative-control-tests",
+  "unreached-decisions-pin-nothing",
+  "field-measured-load-budget",
+  "script-cost-is-main-thread-time",
+  "singleton-lifecycle",
+  "state-model",
+  "failure-states"
+ ],
+ "deviations": 6,
+ "assigned": [],
+ "built": [
+  {
+   "sha": "baf04fd",
+   "title": "the first-paint graph test walks from the module chrome.html loads, so a static import added to the entry itself is caught",
+   "lens": "test-strategist",
+   "red_before": "graph.test.ts: `import \"@/scenes/mind/view\"` and `import \"@/scenes/apps/fixtures\"` seeded into src/chrome.tsx left 3 of 3 green",
+   "after": "same seed fails 2 of 3 (mind/view.tsx; apps + browser fixtures); seed reverted; 1664 desktop tests green"
+  },
+  {
+   "sha": "077a72e",
+   "title": "the first-paint test knows a depth's chunk by its import(), so a static import of any file in it fails",
+   "lens": "test-strategist",
+   "red_before": "voice/studio and chores/catalogue imported statically from console/scenes.tsx: graph 81 -> 97 files, 3 of 3 green",
+   "after": "same seed fails the depth-files test naming 7 files; a static chores/live-view import fails 2 tests; 1666 green"
+  },
+  {
+   "sha": "cf23320",
+   "title": "the layout listener asks for a shell, says a failed listen, and takes down one that lands after unmount",
+   "lens": "error-handler",
+   "red_before": "follow.hook.test.tsx 3 of 4 red plus an Unhandled Rejection (listen with no shell, late listener kept, rejection unhandled)",
+   "after": "4 of 4; 1670 green"
+  },
+  {
+   "sha": "ab98760",
+   "title": "the view-model stops computing the deleted map and grid and nine totals nothing reads",
+   "lens": "code-optimizer",
+   "red_before": "zero-consumer proof by git grep -w and tsc; the first cut went red on view.speed (scenes/chores/model.ts:158), which stayed",
+   "after": "model.ts 454 -> 354 lines; layoutPoints, arrange, onTheEdge, manual/measured/onEdge/point and 9 totals gone; 1668 green"
+  },
+  {
+   "sha": "65d7c0a",
+   "title": "the store's failed load and its retry are pinned, as the test file's header already claimed",
+   "lens": "test-strategist",
+   "red_before": "deleting `inflight = null` from the rejection branch left the old store and hook suites 9 of 9 green",
+   "after": "the new retry test fails on that seed; 1670 green"
+  },
+  {
+   "sha": "ac9eff9",
+   "title": "a retry of the shipped set reads as loading while it is on its way, not as the failure it is retrying",
+   "lens": "state-coverage",
+   "red_before": "stores/playbooks.test.ts: problem still the old sentence while a held retry was in flight",
+   "after": "problem cleared when a new fetch starts, set again on a second failure; 1671 green"
+  },
+  {
+   "sha": "c097101",
+   "title": "four headers stop describing the app before the cutover: an eager bundle, no store, app.tsx and ?module=",
+   "lens": "copy-auditor",
+   "red_before": "probe: 4 sentences naming a deleted file, flag or mechanism (ls src/app.tsx fails; preview.tsx reads no module=)",
+   "after": "0; comments only; 1673 green"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "Preview harness hard-codes the resting presence word Console takes from POSE_WORDS",
+   "before": "console/preview.tsx:88 text \"resting\" equals bell/pose.ts POSE_WORDS.resting \"resting\": 0 drift",
+   "after": "0 drift; importing the constant is churn"
+  },
+  {
+   "title": "evidenceCurrent reads 'Current' when the bench and the film both lack a run date",
+   "before": "0 of 100 shipped benches lack run_at; lib test pins every shipped evidence names its run",
+   "after": "0 shipped cases either way; the Stale sentence would read 'of an unknown date ... the latest is of ,' which is worse copy"
+  },
+  {
+   "title": "Keep a playbook's portal url only when it is http(s), as its sources are",
+   "before": "parser admits any scheme in apps[].url, but actions.open has no caller (Lane C card), so no url reaches tabsCreate; 0 non-https shipped",
+   "after": "0 reachable sinks either way; becomes real only if the portal open is wired"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "ui-perfectionist",
+   "checked": "console/console.css frame, Console presence text swap, preview harness bar (styles/app.css:846 6px 10px literal, harness-only, not ours), Calm path into Stage (card)"
+  },
+  {
+   "key": "bounty-hunter",
+   "checked": "followLayout/followFocus on null focus, same id, blank origin; evidenceCurrent with empty run dates (rejected); minutes(0) on a bench with no wall_s (card)"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "layout listener vs stores/tabs.ts:54, depth/shape.ts:22, companion/live.tsx:229 (built); per-unit lists in PER, annualValue and chores valueCell (card); sources vs apps url scheme filter (rejected); preview presence vs POSE_WORDS (rejected)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "follow.ts listen promise (built); stores/playbooks rejection branch (built test); hook copy/hand/open catches log"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "stores/playbooks failure kept as the sentence the view and surface show; hook's three console.error sites; no swallowed catch found"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "first-paint budget: one vite build into temp, gzip walk of the chrome.html manifest = 155.4 kB vs recorded 125 (card)"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "selectPlaybooks per-call work (built); Console useLabeller identity per render (no figure, not proposed); surface totalsOf is memoized (scenes/surface/live.tsx:80)"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "every model.actions call under src/scenes: open has none (card, direction)"
+  },
+  {
+   "key": "visual-craft",
+   "checked": "console.css tokens (var(--background)); preview harness chrome classes resolve in styles/app.css"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "PlaybooksModel loading/problem across store, hook, fixtures and chores view: retry state (built), no fixture for either (card)"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "headers of all 20 files against ADR 0095: 4 stale (built)"
+  },
+  {
+   "key": "accessibility-checker",
+   "checked": "preview Picker (label wraps select, focus-ring), Console calm from the OS preference (card)"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "graph.test.ts seeded twice (built x2); stores/playbooks.test.ts header claims vs tests (built); follow.test.ts pure-only (hook test added)"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "parseEvidence videoUrl and STILL_PATH regexes (tests pin traversal and absolute paths); apps[].url scheme (rejected: no sink); evidence film served only under evidence/"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "console/scenes.tsx LIVE_SCENES vs scenes/registry.ts, typed by Root; Console as the one store-to-stage seam: nothing"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "ADR 0095 and docs/redesign/parity.md first-paint figure vs a build (in the risk card); file headers (built)"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "post-cutover leftovers in the playbooks view-model (built)"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "Rust layout:changed contract consumed by follow.ts (built)"
+  },
+  {
+   "key": "devops-optimizer",
+   "checked": "vite build time 1.7 s, cheap enough for a byte gate (in the risk card)"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "imports of the 20 files: @tauri-apps/api via lib/ipc only, no new package; nothing"
+  },
+  {
+   "key": "onboarding-designer",
+   "checked": "sceneFor first-act vs surface by hydrated/onboarded/reopened (scenes.test pins); nothing"
+  },
+  {
+   "key": "feature-scout",
+   "checked": "the portal open path with no trigger (same card as ux-reviewer)"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "6 deviations named above against test-harness, page-load-pipeline, client-state, async-ui-states"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "mobile-specialist",
+   "why": "a fixed-size desktop webview console and a model; no viewport or touch surface here"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "no billing, plan or pricing surface"
+  },
+  {
+   "key": "analytics-planner",
+   "why": "no product analytics or event tracking in these files"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no sharing, invite or notification surface"
+  },
+  {
+   "key": "business-strategist",
+   "why": "infrastructure of the depth console and a view-model; no product pricing or funnel"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "no model or agent call in these files; the playbooks are data"
+  }
+ ],
+ "findings": 16,
+ "lanes": "A:7/B:5/C:1",
+ "fp": 0,
+ "gates": {
+  "pnpm typecheck (apps/desktop)": 0,
+  "pnpm lint (apps/desktop)": 0,
+  "pnpm test (apps/desktop)": 0,
+  "vite build --manifest into temp (experiment, not a gate)": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "graph.test seeded red twice; 7 built; first paint measures 155 kB, not 125",
+ "notes": "Paired round: desktop-console + desktop-playbooks-panel. Playbooks-panel lens results: built ab98760 (code-optimizer, dead map/grid/totals), 65d7c0a (test-strategist), ac9eff9 (state-coverage), c097101 (copy-auditor, 3 of its 4 headers are playbooks files); cards: annualValue quarter (parity, B), no loading/failed fixture (state-coverage, B), portal open has no caller (ux-reviewer, C direction), minutes(0) '1 s' (bounty-hunter, B). Console: baf04fd, 077a72e (graph.test, both seeded red then reverted), cf23320 (follow.ts listener); cards: first paint 155.4 kB gz by a build today vs the 125 kB ADR 0095 and parity.md record (B, the instrument is a manifest walk; scratch script fp-bytes.mjs), Console calm vs the OS preference (B). perf:* not run: no motion or first-paint code changed, only the first-paint test. Sibling red seen once: src/stores/connectors.test.ts (2 tests, the connectors round's in-flight file), green on re-run. A seed in src/chrome.tsx (outside our paths) was applied and reverted within one command; the file is unchanged. Commit ab98760's body says '4 tests removed'; it was 2 removed and 1 replaced (1670 -> 1668). No registry lead filed."
+}

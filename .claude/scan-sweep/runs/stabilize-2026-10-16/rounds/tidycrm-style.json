@@ -1,0 +1,184 @@
+{
+ "context": "tidycrm-style",
+ "files_read": 29,
+ "loc": 2347,
+ "registry": "software-engineering/accessibility, software-engineering/design-tokens, software-engineering/motion",
+ "techniques": [
+  "preference-respect",
+  "keyboard-navigation-models",
+  "primitive-level-a11y",
+  "token-taxonomy",
+  "token-enforcement",
+  "cross-language-token-parity",
+  "reduced-motion-mechanics",
+  "preset-vocabulary"
+ ],
+ "deviations": 6,
+ "assigned": [],
+ "built": [
+  {
+   "sha": "2fe468b",
+   "title": "the focus ring on the title block's irreversible acts is drawn in the sheet's colour",
+   "lens": "accessibility-checker",
+   "red_before": "tidycrm-style.test.ts: nothing redraws the ring inside the title block, base ring 2.61:1 on --bk-graphite; seeded redline override -> red",
+   "after": "15.09:1 on graphite; base ring 5.79/5.06:1 unchanged"
+  },
+  {
+   "sha": "a55f701",
+   "title": "a figure or a word set in gold reads an ink that clears 4.5:1",
+   "lens": "accessibility-checker",
+   "red_before": "8 site/ground pairs at 4.48:1 (sheet) and 3.91:1 (vellum); seeded ink=swatch -> red",
+   "after": "gold ink 5.79/5.05:1; lowest state-colour text 4.93:1"
+  },
+  {
+   "sha": "38b8f9c",
+   "title": "the L1 card's focus ring is drawn inside the card, where its clip lets it paint",
+   "lens": "ui-perfectionist",
+   "red_before": "ring reaches 3px outside a box clipped at its edge: 0 of 2px paints",
+   "after": "reach 0px, 2 of 2px inside the clip"
+  },
+  {
+   "sha": "7bd95fa",
+   "title": "the dossier's pair picker chips are 44px targets with a pressed state, in a spaced strip",
+   "lens": "ux-reviewer",
+   "red_before": "4 misses on bk-zone-chip / bk-zone-strip (floor, pointer, pressed, gap)",
+   "after": "0 misses over 2 button chips"
+  },
+  {
+   "sha": "16db743",
+   "title": "a legend key keeps its fault stripe while hovered, focused or opening",
+   "lens": "visual-craft",
+   "red_before": "hover/on rule declares border-color after the stripe rules at equal weight",
+   "after": "0 later declarations reach the stripe edge (9 of 9 seed keys were affected)"
+  },
+  {
+   "sha": "6f4b272",
+   "title": "the sheet drops fourteen rules for eight classes nothing renders",
+   "lens": "code-optimizer",
+   "red_before": "8 unrendered classes (repo-wide zero-consumer grep each)",
+   "after": "0 unrendered; 14 rule blocks removed; 19,731 -> 17,624 B over six parts"
+  },
+  {
+   "sha": "14d4411",
+   "title": "a quiet nought is set in the label's ink, 7.48:1, not graphite-3",
+   "lens": "accessibility-checker",
+   "red_before": "quiet figure 3.79:1 sheet / 3.31:1 vellum, the only 2 misses of every color: in the sheet",
+   "after": "0 misses; quiet figure 7.48/6.53:1"
+  },
+  {
+   "sha": "735b7c4",
+   "title": "the scene's inks and the label width the TypeScript restates are held to tokens.css",
+   "lens": "parity-auditor",
+   "red_before": "seeded drift (goldline #8a6a13, label-w 133px): 114/114 other tests green; new case red naming both",
+   "after": "8 restated values pinned (was 0)"
+  },
+  {
+   "sha": "908e207",
+   "title": "the dossier's close button eases its hover inversion like the foot's buttons",
+   "lens": "ui-perfectionist",
+   "red_before": ".bk-close:hover (nothing transitions .bk-close)",
+   "after": "0 of 9 hover states cut (was 1)"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "transition .bk-btn's colour with its background so the hover text does not snap",
+   "before": "background eases over 90ms, colour cuts: text sheet-on-near-sheet for the first frames, ~1:1",
+   "after": "both easing in opposite directions cross at the midpoint at 1:1 as well - no contrast gained, not-better"
+  },
+  {
+   "title": "drop level2/foot-2.css's `.bk-verdict b { font-size: var(--bk-text-md) }`",
+   "before": "it equals the figure's default size where it applies and loses to responsive.css's (0,2,1) rule at the phone step",
+   "after": "identical render either way - pure churn, not-better"
+  },
+  {
+   "title": "drop the 34rem step's repeat of `.bk-grid-head` one-column",
+   "before": "chrome/responsive.css sets it at 62rem and again at 34rem (inside 62rem)",
+   "after": "identical render either way, 3 lines - not-better"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "ui-perfectionist",
+   "checked": "every :hover/:focus-visible rule and its transition; ring geometry vs overflow clips (.bk-cell-at); chip padding/targets; spacing tokens in all 20 parts"
+  },
+  {
+   "key": "accessibility-checker",
+   "checked": "contrast of every color: in the sheet on sheet/vellum/graphite grounds; every focus ring on its ground; 44px floors on button chips; forced-colors grep"
+  },
+  {
+   "key": "visual-craft",
+   "checked": "cascade order of .bk-db-key fill vs hover/on rules; gold/red/green as swatch vs ink; dossier head/foot grounds"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "pressed/hover/disabled/quiet states for seg, chips, db-key, btn, title-block btn, quiet figure"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "pair picker reachability (17 of 46 seed tables), dossier close, legend key hover"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "every comment's claims: contrast figures (3.8, 7.5, 6.9:1), file refs (pass3-law-brief.md, geometry.ts, globals.css), the rail/bar notes"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "INK in l0/contract.ts and LABEL_W in field/useProjector.ts vs tokens.css; beats tokens already pinned by beats.test.ts"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "which style facts any test reads (tokens/beats/motion-tokens/l0-fill/space tests); wrote test/tidycrm-style.test.ts (9 cases)"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "zero-consumer classes by repo-wide grep; :root:has / :has selectors; per-frame properties on .bk-cell-at (transform only)"
+  },
+  {
+   "key": "bounty-hunter",
+   "checked": "equal-specificity cascade collisions (db-key stripe, seg pressed vs hover, quiet vs tone), reduced-motion vs data-ink order in index.css"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "index.css import order as cascade; specificity of each fix kept equal to what it replaced"
+  },
+  {
+   "key": "mobile-specialist",
+   "checked": "the 34rem/36rem container steps, 44px floors at the phone step, dossier phone scroll"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "file banners and section notes vs the rules beneath them (rail-and-bar.css, responsive.css phone note)"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "preference-respect contrast/focus floors, token-taxonomy swatch vs ink, cross-language-token-parity mirrors, reduced-motion epsilon (0.01ms, conformant)"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "observability-auditor",
+   "why": "stylesheets emit no logs, errors or audit rows"
+  },
+  {
+   "key": "error-handler",
+   "why": "no error paths in CSS"
+  },
+  {
+   "key": "security-auditor",
+   "why": "no content: injection, url() or external fetch in the 20 parts"
+  }
+ ],
+ "findings": 14,
+ "lanes": "A:9/B:1/C:1",
+ "fp": 0,
+ "gates": {
+  "pnpm --filter tidycrm typecheck": 0,
+  "pnpm --filter tidycrm lint": 0,
+  "pnpm --filter tidycrm test": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "9 built (contrast, rings, chips, dead CSS, parity); no assigned items",
+ "notes": "No assigned backlog items for this context; the six tidycrm-* cards are TS fixes or another context's (tc-scales.css). New test file examples/tidycrm/test/tidycrm-style.test.ts (9 cases, 123 tidycrm tests pass). No sibling reds seen. Nothing verified in a browser."
+}
