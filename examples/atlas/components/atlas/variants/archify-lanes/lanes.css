@@ -10,7 +10,7 @@
  *     from tested numbers and never appears here.
  *   · DURATIONS ALIAS THE APP'S CLOCK. `--al-dur-*` point at the five `--at-dur-*` tokens and the
  *     story's beat is a multiple of `--at-dur-view`, computed in `calc()` here and by the same
- *     multiplication in `index.tsx`, so the CSS and the JS cannot disagree.
+ *     multiplication in `Drawing.tsx`, so the CSS and the JS cannot disagree.
  *
  * TYPE IS NOT COUNTER-SCALED HERE, AND THAT IS A DELIBERATE DEPARTURE FROM RULE 13. The formula
  * says type is screen-space and geometry world-space, which round 3 earned on a surface whose home

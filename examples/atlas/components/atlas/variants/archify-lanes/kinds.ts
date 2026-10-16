@@ -24,9 +24,10 @@
  * because they are the findings the colour makes visible:
  *
  *   1. THE GATE IS NOT A LAYER. `security` lands on the bridge (surfaces), the hooks (harness) and
- *      the catalog (core) — three layers apart. The `trust` boundary below is the rose
- *      `security-group` drawn around them plus the record, and it crosses four layer regions. That
- *      is the single most useful thing this drawing says about this repository.
+ *      the catalog (core) — three layers apart. The round-5 sheet drew a rose `security-group`
+ *      around them plus the record; the lane drawing says it by position instead, with the three
+ *      on one exception lane (`workflow.ts`). That is the single most useful thing this drawing
+ *      says about this repository.
  *   2. CONTRACTS ARE `external`. Not because they are third-party — they are ours — but because
  *      they are the only part of the model a turn cannot EXECUTE. `external` is archify's slate:
  *      the kind for a thing you depend on and never run. ADR 0002 says the contracts import
@@ -70,7 +71,7 @@ export const KIND_RULE: Record<Kind, string> = {
 /**
  * Every system, by the rule. Nineteen entries, all seven kinds used.
  *
- * `test/archify.model.test.ts` asserts this covers SYSTEMS exactly — a system added to the model
+ * `test/lanes.model.test.ts` asserts this covers SYSTEMS exactly — a system added to the model
  * with no kind fails the build rather than rendering in a default colour nobody chose.
  */
 export const SYSTEM_KIND: Record<string, Kind> = {
@@ -147,8 +148,8 @@ export interface KindCount {
 /**
  * The counted legend (study §2: "`auto` shows only kinds present, with counts").
  *
- * One measurement, shared by the legend, the LENS filter and the tests, so a chip that says 4 and
- * a filter that reveals 3 cannot both be right.
+ * One measurement, so a count that says 4 and a filter that reveals 3 cannot both be right. The
+ * lane drawing prints no kind legend; `test/lanes.model.test.ts` holds it to the mapping.
  */
 export function countKinds(): KindCount[] {
   const systems = new Map<Kind, number>();

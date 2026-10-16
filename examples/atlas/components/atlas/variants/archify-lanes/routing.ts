@@ -25,7 +25,7 @@
  * order is archify's: move the label along its segment, then take the authored segment, then —
  * and only then — let the label stand down at THIS plan and be revealed at the plan where its
  * phase is open and the column has room. That last step is this variant's answer to the one thing
- * a fixed 1180-unit world cannot have: a 52-unit column gap will not hold a twenty-character mask,
+ * a fixed 1170-unit world cannot have: a 52-unit column gap will not hold a twenty-character mask,
  * and archify's own answer ("repair overflow by removing content, never with overflow hidden, a
  * scroller or smaller type") has a third option when the reader owns a camera.
  */

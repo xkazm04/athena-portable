@@ -22,7 +22,7 @@
  *      went with the sheet, were dropped.
  */
 import assert from "node:assert/strict";
-import { readFileSync } from "node:fs";
+import { existsSync, readFileSync, readdirSync } from "node:fs";
 import { test } from "node:test";
 
 import { COMPONENTS, COMPONENT_BY_ID, LAYER_ORDER, SYSTEMS, componentById } from "../data";
@@ -202,6 +202,26 @@ test("the legend reads the role words and the label advance from their owners, n
   }
   assert.ok(!/\b5\.4\b/.test(scene), "Scene.tsx re-types the 9-unit monospace advance");
   assert.equal(LABEL_ADVANCE, ADVANCE * TIERS.sublabel.base, "the run label advance is not the text's");
+});
+
+/** Every `test/<name>.test.ts` a lanes module cites in its prose. */
+const citedTests = (source: string): string[] =>
+  [...source.matchAll(/test\/([\w.-]+\.test\.ts)/g)].map((m) => m[1]!);
+
+test("every test file the lanes modules cite exists, so a header never points at a deleted guard", () => {
+  const dir = new URL("../components/atlas/variants/archify-lanes/", import.meta.url);
+  const here = new URL("./", import.meta.url);
+  const missing: string[] = [];
+  let cited = 0;
+  for (const name of readdirSync(dir)) {
+    for (const file of citedTests(readFileSync(new URL(name, dir), "utf8"))) {
+      cited += 1;
+      if (!existsSync(new URL(file, here))) missing.push(`${name} cites test/${file}`);
+    }
+  }
+  assert.ok(cited > 3, `only ${cited} test citations found — the scan is not reading the folder`);
+  assert.deepEqual(missing, []);
+  assert.deepEqual(citedTests("see `test/gone.test.ts`"), ["gone.test.ts"]);
 });
 
 test("a node's accessible name says which lane owns it and which phase it happens in", () => {

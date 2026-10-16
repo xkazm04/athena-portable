@@ -11,7 +11,7 @@
  * THE SCRIPT IS ROUND 4'S, AS DATA. Twelve stops read straight off README §3.2, each naming a real
  * module and carrying the section it came from. It is copied rather than imported because it now
  * lives inside a sibling variant's folder and the contract forbids reaching across — and copying
- * twelve rows of cited data is the cheaper mistake. `test/archify.model.test.ts` fails if a stop
+ * twelve rows of cited data is the cheaper mistake. `test/lanes.model.test.ts` fails if a stop
  * names a component the model does not have, and fails again if the twelve do not touch all six
  * layers, which is the same guard round 4 put on it.
  *

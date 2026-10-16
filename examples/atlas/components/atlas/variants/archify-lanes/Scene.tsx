@@ -4,9 +4,9 @@
  * WHAT IS DRAWN: lane bands, phase bands, nodes, runs, the trail, the legend.
  *
  * TWO LAYERS AND ONE RULE ABOUT WHICH IS WHICH. The chrome and the runs are SVG, because they are
- * geometry the router measured and nothing operates them. The nodes are HTML BUTTONS on top,
- * because a node is focusable, has a name, opens on Enter and roves under the arrows — and an SVG
- * `<g role="button">` is a worse button in every browser. Interactions read `data-node-id`,
+ * geometry the router measured and nothing operates them. The nodes are HTML on top — a focusable
+ * `<div role="button">` each — because a node is focusable, has a name, opens on Enter and Space
+ * and roves under the arrows, and an SVG `<g role="button">` is a worse button in every browser. Interactions read `data-node-id`,
  * `data-role`, `data-edge-from/-to` off the DOM and never a parallel graph, which is archify's §4
  * and the reason the legend, the story and the keyboard compose without knowing about each other.
  *
