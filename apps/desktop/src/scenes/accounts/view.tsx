@@ -595,9 +595,11 @@ function Connect({ row, model }: { row: ConnectorRow; model: ConnectorsModel }) 
     </ol>
   );
 
+  // Enter and the button share one door: a key press is refused for the reason the button shows,
+  // so nothing is sent a second time while a connect or a consent page is in flight.
   if (!oauth) {
     const send = () => {
-      if (!token.trim()) return;
+      if (busy || !token.trim()) return;
       actions.connect(row.id, { token: token.trim() });
       setToken("");
     };
@@ -636,7 +638,7 @@ function Connect({ row, model }: { row: ConnectorRow; model: ConnectorsModel }) 
   }
 
   const start = () => {
-    if (!clientId.trim()) return;
+    if (consentOpen || !clientId.trim()) return;
     actions.connect(row.id, { client_id: clientId.trim(), client_secret: clientSecret.trim() });
     setClientSecret("");
   };

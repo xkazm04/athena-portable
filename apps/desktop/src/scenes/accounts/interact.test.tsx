@@ -138,6 +138,31 @@ describe("connect", () => {
     expect(host.querySelector('[aria-label="Paste the token first."]')).toBeTruthy();
   });
 
+  it("Enter in a field is refused exactly where the button is: nothing is sent while a connect is in flight", () => {
+    // The button disarms on `busy`; Enter called the same send without asking, so a second
+    // probe (a token) or a second consent page (a pair) went out behind a disabled button.
+    const source = fixtures.empty!;
+    const a = spies();
+    const rows = source.rows.map((r) => ({ ...r, busy: "connecting" }));
+    act(() => root.render(<AccountsView model={{ ...source, rows, actions: a }} path={item("notion")} go={() => {}} />));
+    type(input(), "ntn_again");
+    key(input(), "Enter");
+    expect(a.connect).not.toHaveBeenCalled();
+  });
+
+  it("Enter in the client secret starts nothing while a consent page is already open", () => {
+    const source = fixtures.consenting!;
+    const a = spies();
+    const rows = source.rows.map((r) => ({ ...r, busy: "" }));
+    act(() => root.render(<AccountsView model={{ ...source, rows, actions: a }} path={item("gmail")} go={() => {}} />));
+    const [id, secret] = [...host.querySelectorAll("input.input")] as HTMLInputElement[];
+    type(id!, "abc.apps.googleusercontent.com");
+    type(secret!, "shh");
+    key(secret!, "Enter");
+    expect(a.connect).not.toHaveBeenCalled();
+    expect(host.querySelector('[aria-label="A consent page is open; finish it in the browser first."]')).toBeTruthy();
+  });
+
   it("the OAuth pair is sent as client_id and client_secret, and the secret is cleared", () => {
     const a = mount("empty", item("gmail"));
     const [id, secret] = [...host.querySelectorAll("input.input")] as HTMLInputElement[];
