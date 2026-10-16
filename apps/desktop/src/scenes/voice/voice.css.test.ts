@@ -46,6 +46,14 @@ test("the hero waveform arrives on the same rise as the head and the card, and i
   expect(css).toMatch(/\.vsc-head__words,\s*\.vsc-hero,\s*\.vsc-card \{\s*animation: none/);
 });
 
+test("the wave's quiet line fades out as the wave starts, rather than vanishing in one frame", () => {
+  expect(rule(".vsc-wave__idle")).toMatch(/transition:\s*opacity var\(--duration-fast\) var\(--ease-fast\)/);
+  const active = rule('.vsc-wave[data-active="true"] .vsc-wave__idle');
+  expect(active).toMatch(/opacity:\s*0/);
+  expect(active).not.toMatch(/display:\s*none/);
+  expect(css).toMatch(/:root\[data-motion="calm"\] \.vsc-wave__idle/);
+});
+
 test("the take card pads like its twin, the voice card", () => {
   const pad = (selector: string) => /padding:\s*([^;]+);/.exec(rule(selector))?.[1];
   expect(pad(".vsc-take")).toBe("14px 16px");

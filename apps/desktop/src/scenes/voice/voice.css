@@ -304,9 +304,11 @@ li[data-status="done"] > .vsc-step > span:first-child {
   text-align: center;
   font-size: 0.8125rem;
   color: var(--muted-foreground);
+  transition: opacity var(--duration-fast) var(--ease-fast);
 }
+/* The quiet line gives way to the bars as they rise: a fade, not a one-frame swap. */
 .vsc-wave[data-active="true"] .vsc-wave__idle {
-  display: none;
+  opacity: 0;
 }
 .vsc-wave .vs-wave {
   height: 64px;
@@ -534,6 +536,9 @@ li[data-status="done"] > .vsc-step > span:first-child {
 :root[data-motion="calm"] .vsc-card,
 :root[data-motion="calm"] .voice-art {
   animation: none;
+  transition: none;
+}
+:root[data-motion="calm"] .vsc-wave__idle {
   transition: none;
 }
 :root[data-motion="calm"] .voice-art[data-speaking="true"] {
