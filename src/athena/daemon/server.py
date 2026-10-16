@@ -51,6 +51,7 @@ from __future__ import annotations
 import argparse
 import json
 import secrets
+import sqlite3
 import sys
 import threading
 import time
@@ -800,7 +801,9 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
             vault=vault,
             voice_off=args.voice_backend == "none",
         )
-    except (OSError, ValueError) as exc:
+    except (OSError, ValueError, sqlite3.Error) as exc:
+        # ``sqlite3.Error`` is the brain's: a damaged index (``IndexDamagedError``, which names
+        # ``athena brain reconcile``) or one another process holds locked past the busy timeout.
         announce(failure_line("unknown", f"{type(exc).__name__}: {exc}"), stream)
         return 1
     try:

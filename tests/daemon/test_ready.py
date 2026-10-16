@@ -15,6 +15,7 @@ from http.client import HTTPConnection
 from io import StringIO
 from pathlib import Path
 
+from athena.core.brain import paths as brain_paths
 from athena.daemon.ready import announce, failure_line, ready_line
 from athena.daemon.server import TOKEN_HEADER
 
@@ -172,6 +173,34 @@ def test_a_daemon_with_no_law_fails_on_its_failure_line_and_names_the_remedy(
     assert payload["ok"] is False
     assert payload["detail"].startswith("ConstitutionMissing: no law.md")
     assert "$ATHENA_CONSTITUTION" in payload["detail"]
+
+
+def test_a_daemon_whose_index_is_damaged_names_the_repair_on_its_failure_line(
+    tmp_path: Path,
+) -> None:
+    """A damaged ``index.sqlite`` raises ``IndexDamagedError``, a ``sqlite3.DatabaseError``
+    rather than an ``OSError``. It still fails on the failure line, with the brain's own remedy,
+    so the shell shows "run `athena brain reconcile`" and not "exited without a ready line"."""
+    brain = tmp_path / "brain"
+    brain.mkdir()
+    (brain / brain_paths.INDEX_FILENAME).write_bytes(b"this is not a database" * 512)
+    process = _spawn(
+        tmp_path,
+        "--port",
+        "0",
+        "--brain",
+        str(brain),
+        "--token-file",
+        str(tmp_path / "daemon.json"),
+        "--no-connectors",
+    )
+    stdout, _ = process.communicate(timeout=60)
+
+    assert process.returncode != 0
+    payload = json.loads(stdout.strip())
+    assert payload["ok"] is False
+    assert payload["detail"].startswith("IndexDamagedError: ")
+    assert "athena brain reconcile" in payload["detail"]
 
 
 def test_the_ready_line_is_one_line_even_when_a_value_contains_a_newline() -> None:
