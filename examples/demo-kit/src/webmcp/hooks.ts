@@ -9,9 +9,11 @@
  *
  * Design 5.1's `reversible` / `side_effects` flags are carried two ways: as the standard WebMCP
  * annotations (`readOnlyHint`, `consequentialHint`) that a native browser preserves, and, for the
- * manifest, as the `athena` block a consumer may read when it is there.
+ * manifest, as the `athena` block a consumer may read when it is there. The block speaks the
+ * contract's vocabulary (`athenaFor`): the kit's `data` goes out as `internal`, because a consumer
+ * that does not recognise the value discards the whole block as unknown.
  *
- * The gate rule a consumer applies has FOUR branches, in this order — it is the rule the shipped
+ * The gate rule a consumer applies has FIVE branches, in this order — it is the rule the shipped
  * consumer runs (`packages/athena-bridge/gate.js`, `flagsOf`), and `classifyTool`
  * (./types.ts) agrees with it:
  *
@@ -28,7 +30,13 @@
  * shapes capability — invisible.
  */
 import { useEffect, useMemo, useRef } from "react";
-import { parametersToJsonSchema, type HostParameter, type SideEffects } from "./types";
+import {
+  parametersToJsonSchema,
+  wireSideEffects,
+  type HostParameter,
+  type SideEffects,
+  type WireSideEffects,
+} from "./types";
 import { runTool, type ToolContext } from "./door";
 import { ensureModelContext, type JsonSchemaObject, type WebMCPAnnotations } from "./modelContext";
 
@@ -64,6 +72,17 @@ export function annotationsFor(spec: Pick<WebMCPToolSpec, "reversible" | "sideEf
   };
 }
 
+/**
+ * The non-standard `athena` block (README section 3.3), in the contract's `side_effects` words.
+ * Exported for tests. Branch 1 above reads it only when both flags are values it knows.
+ */
+export function athenaFor(spec: Pick<WebMCPToolSpec, "reversible" | "sideEffects">): {
+  reversible: boolean;
+  side_effects: WireSideEffects;
+} {
+  return { reversible: spec.reversible, side_effects: wireSideEffects(spec.sideEffects) };
+}
+
 export function useWebMCPTool(spec: WebMCPToolSpec): void {
   // The handler closes over live state (the 3D nav, the router). Read it through a ref so the
   // registration is stable and the latest closure still runs; re-register only when the schema
@@ -88,7 +107,7 @@ export function useWebMCPTool(spec: WebMCPToolSpec): void {
         inputSchema,
         annotations: annotationsFor(spec),
         // Non-standard, ignored by a native implementation, read by the polyfill and the panel.
-        ...({ athena: { reversible: spec.reversible, side_effects: spec.sideEffects } } as object),
+        ...({ athena: athenaFor(spec) } as object),
         // The caller's signal reaches the handler (ADR 0101); dropping it left a call with no limit.
         execute: (params, options) =>
           runTool(inputSchema, params, (args, context) => handler.current(args, context), options?.signal),

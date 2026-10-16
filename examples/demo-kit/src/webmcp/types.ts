@@ -8,6 +8,20 @@
 /** How far a tool reaches: nowhere, the app's own data, or the outside world. */
 export type SideEffects = "none" | "data" | "external";
 
+/**
+ * The same three answers in the contract's words (`SIDE_EFFECTS` in src/athena/contracts/
+ * manifest.py and packages/athena-bridge/gate.js): the app's own data is `internal` there. The
+ * kit's `data` is what an app author writes; anything that leaves the page speaks this one, or the
+ * consumer reads the claim as unknown.
+ */
+export type WireSideEffects = "none" | "internal" | "external";
+
+const WIRE: Record<SideEffects, WireSideEffects> = { none: "none", data: "internal", external: "external" };
+
+export function wireSideEffects(sideEffects: SideEffects): WireSideEffects {
+  return WIRE[sideEffects];
+}
+
 /** Design 5.1: `AUTO` = reversible with no side effects beyond the app; everything else `GATED`. */
 export type ToolClass = "AUTO" | "GATED";
 
@@ -37,7 +51,7 @@ export interface ManifestTool {
   description: string;
   input_schema: JsonSchema;
   reversible: boolean;
-  side_effects: SideEffects;
+  side_effects: WireSideEffects;
   transport: "webmcp";
 }
 
@@ -73,7 +87,7 @@ export interface JsonSchema {
  * The design 5.1 rule, in one place: a tool that is not reversible, or that reaches outside the
  * app, is `GATED` no matter what the host would prefer.
  */
-export function classifyTool(tool: Pick<ManifestTool, "reversible" | "side_effects">): ToolClass {
+export function classifyTool(tool: { reversible: boolean; side_effects: SideEffects | WireSideEffects }): ToolClass {
   return tool.reversible && tool.side_effects !== "external" ? "AUTO" : "GATED";
 }
 
