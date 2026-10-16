@@ -552,11 +552,18 @@
 }
 
 /* THE DETAIL TIERS (study §4). The band sets the default; INTENT OVERRIDES THE BAND, so a node
-   under the pointer, in focus, or on the active beat shows every tier at any distance. */
+   under the pointer, in focus, or on the active beat shows every tier at any distance.
+
+   The transition lives on the tier itself and the band sets only the opacity: a transition runs
+   on the style the element changes TO, so one declared under `data-band="0"` alone faded the
+   detail out on the way home and popped it in at L1, the reverse of "box, then ink" (§7). */
+.al-node-tag,
+.al-run-label {
+  transition: opacity var(--al-dur-ink) var(--al-ease);
+}
 .al-stage[data-band="0"] .al-node-tag,
 .al-stage[data-band="0"] .al-run-label[data-detail="fine"] {
   opacity: 0;
-  transition: opacity var(--al-dur-ink) var(--al-ease);
 }
 .al-stage[data-band="0"] .al-node[data-intent] .al-node-tag {
   opacity: 1;
