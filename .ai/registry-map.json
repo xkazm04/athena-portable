@@ -681,7 +681,11 @@
           "revision": 14,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/atlas/data/components.ts:149 Atlas cites a directory that no longer exists, while its citation test checks only for a nonempty string, allowing broken architectural documentation to persist.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:fd96220db75846a1",
+          "evaluatedRevision": 14
         },
         {
           "subject": "quality-gates",
@@ -6453,7 +6457,11 @@
           "revision": 14,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/hirelane/components/board/style/level0/l0-board-2.css:105 The footer explanation still promises equally stretched columns, while the board uses start alignment and explicitly documents ragged feet, leaving contradictory design documentation.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:fd96220db75846a1",
+          "evaluatedRevision": 14
         }
       ],
       "governance": "governed"
@@ -7358,7 +7366,11 @@
           "revision": 14,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/ledgerbox/components/lanes/style/level0/l0-swarm.css:292 The stylesheet documents a three-line clamp while its declaration and nearby explanation specify two lines, leaving contradictory copies of the same design fact.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:fd96220db75846a1",
+          "evaluatedRevision": 14
         },
         {
           "subject": "motion",
@@ -9041,7 +9053,11 @@
           "revision": 14,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "uat/README.md:19 The hand-maintained journey index omits the existing J6 journey, so readers receive an incomplete copy of the overlay's live journey inventory.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:fd96220db75846a1",
+          "evaluatedRevision": 14
         }
       ],
       "governance": "governed"
