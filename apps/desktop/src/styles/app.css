@@ -7,10 +7,11 @@
  * surface, a recessed one, a hairline, a hover wash, a focus ring — are derived from its values
  * and named below so they can be audited.
  *
- * This is the whole stylesheet of the app. Nothing is painted through a filter, so a ratio
- * computed from these values is the ratio that reaches the screen. The Athena window's housing
- * and paper are physical objects that do not change with the theme; they live in that window's
- * own sheet, not here.
+ * This sheet is the tokens and the shared primitives, loaded by Main, Athena's window and the
+ * preview harness. Each surface keeps its own sheet beside its view (the stage, the bell, the
+ * scenes) and spends these tokens there; the halo is its own window with its own sheet. Nothing here is painted through a filter, so a ratio computed from these values
+ * is the ratio that reaches the screen. The Athena window's housing and paper are physical objects
+ * that do not change with the theme; they live in that window's own sheet, not here.
  *
  *   1. **Tokens, never literals.** A component spells `var(--card-bg)`, never a hex. The two
  *      themes are the only place a colour is chosen.
