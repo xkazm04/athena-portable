@@ -870,29 +870,20 @@ pub fn start(app: &AppHandle, engine: &str) -> Result<(), String> {
 fn supervise(app: AppHandle, generation: u64, lines: Receiver<String>) {
     let stale = |app: &AppHandle| app.state::<Daemon>().current_generation() != generation;
 
-    let ready = match await_ready(&lines, Some(READY_LINE_BUDGET)) {
-        Ok(ready) => Some(ready),
-        Err(e @ SidecarError::ReadyTimeout(_)) => {
-            if stale(&app) {
-                return;
-            }
-            // Reported, not killed: a cold `uv run` is slow, not broken. Keep reading.
+    let waited = wait_for_ready(&lines, READY_LINE_BUDGET, |e| {
+        if !stale(&app) {
             app.state::<Daemon>().edit(&app, |s| {
                 s.health = Health::Failed;
                 s.error = e.to_string();
             });
-            await_ready(&lines, None).ok()
         }
-        Err(e) => {
-            if stale(&app) {
-                return;
-            }
-            app.state::<Daemon>().edit(&app, |s| {
-                s.health = Health::Failed;
-                s.error = e.to_string();
-            });
-            None
-        }
+    });
+    if stale(&app) {
+        return;
+    }
+    let (ready, ended) = match waited {
+        Ok(ready) => (Some(ready), None),
+        Err(e) => (None, Some(e)),
     };
 
     if let Some(ready) = ready {
@@ -929,8 +920,44 @@ fn supervise(app: AppHandle, generation: u64, lines: Receiver<String>) {
     state.edit(&app, |s| {
         s.url = None;
         s.health = Health::Failed;
-        s.error = "the daemon exited".to_string();
+        s.error = exit_error(ended.as_ref());
     });
+}
+
+/// Wait for the ready line the way the supervisor does, telling `report` about every failure on
+/// the way. A missed budget is reported and the wait goes on, because a cold `uv run` is slow,
+/// not broken; what ends the wait is the line, a refusal, or a closed pipe.
+fn wait_for_ready(
+    lines: &Receiver<String>,
+    budget: Duration,
+    mut report: impl FnMut(&SidecarError),
+) -> Result<Ready, SidecarError> {
+    match await_ready(lines, Some(budget)) {
+        Ok(ready) => Ok(ready),
+        Err(e @ SidecarError::ReadyTimeout(_)) => {
+            report(&e);
+            // The second wait has no budget, so it ends in the line, a refusal or an exit, and a
+            // refusal that arrives late is as much the user's answer as one that arrives early.
+            await_ready(lines, None).inspect_err(|e| report(e))
+        }
+        Err(e) => {
+            report(&e);
+            Err(e)
+        }
+    }
+}
+
+/// What the status says once the daemon's stdout has closed.
+///
+/// A daemon that refused prints why and then exits, so the close always follows the refusal by a
+/// moment. Writing "the daemon exited" over it would leave the panel holding the one sentence that
+/// explains nothing; the wait's own ending is kept instead. Only a daemon that was ready and then
+/// went has nothing more to say than that it went.
+fn exit_error(ended: Option<&SidecarError>) -> String {
+    match ended {
+        Some(e) => e.to_string(),
+        None => "the daemon exited".to_string(),
+    }
 }
 
 /// Poll `GET /health` with the token until it answers 200, or give up and say so.
@@ -1194,6 +1221,49 @@ mod tests {
             await_ready(&rx, Some(Duration::from_secs(5))),
             Err(SidecarError::Exited)
         );
+    }
+
+    // -- what the status keeps once the daemon is gone -------------------------------------------
+
+    /// A daemon that refuses prints its reason and exits, so the pipe closes a moment later. The
+    /// status the panel is left holding is the one written on that close, and it must still say
+    /// why: "the daemon exited" over "port in use" is a user told nothing.
+    #[test]
+    fn a_refusal_survives_the_exit_that_follows_it() {
+        let rx = channel(&[
+            "Resolved 41 packages",
+            r#"{"ok": false, "reason": "unknown", "detail": "OSError: port in use"}"#,
+        ]);
+        let mut reported = Vec::new();
+        let ended = wait_for_ready(&rx, Duration::from_secs(5), |e| reported.push(e.clone()))
+            .expect_err("a refusal");
+        assert!(matches!(ended, SidecarError::Refused { .. }), "{ended:?}");
+        assert_eq!(reported, vec![ended.clone()]);
+        let left = exit_error(Some(&ended));
+        assert!(left.contains("port in use"), "{left}");
+        // A daemon that was ready and then died has no refusal to keep.
+        assert_eq!(exit_error(None), "the daemon exited");
+    }
+
+    /// A cold start that misses the budget and then refuses: both are reported, in order, and the
+    /// refusal is what the wait ends with.
+    #[test]
+    fn a_refusal_after_a_slow_start_is_reported_and_not_dropped() {
+        let (tx, rx) = mpsc::channel::<String>();
+        let late = std::thread::spawn(move || {
+            std::thread::sleep(Duration::from_millis(150));
+            let line = r#"{"ok": false, "reason": "engine_error", "detail": "no claude on PATH"}"#;
+            tx.send(line.to_string()).expect("send");
+        });
+        let mut reported = Vec::new();
+        let ended = wait_for_ready(&rx, Duration::from_millis(20), |e| reported.push(e.clone()))
+            .expect_err("a refusal");
+        late.join().expect("sender");
+        assert_eq!(reported.len(), 2, "{reported:?}");
+        assert_eq!(reported[0], SidecarError::ReadyTimeout(Duration::from_millis(20)));
+        assert!(matches!(&reported[1], SidecarError::Refused { detail, .. } if detail == "no claude on PATH"));
+        assert_eq!(ended, reported[1]);
+        assert!(exit_error(Some(&ended)).contains("no claude on PATH"));
     }
 
     // -- the argv contract ---------------------------------------------------------------------
