@@ -65,9 +65,10 @@ def test_a_cli_that_floods_stderr_before_its_stdout_does_not_stall_the_round(
 
 
 #: Every variable that would bill a CLI child to a key, or hand one CLI the other's key (ADR 0007:
-#: both CLIs run on the person's plan). Written out here rather than read from ``transports``, so
-#: the test is not the list it checks. ``NEBIUS_API_KEY`` is not here yet: the Proving Ground's
-#: own child still needs it through this door (``transports.ENGINE_KEYS``).
+#: both CLIs run on the person's plan), and the Token Factory key no CLI owns. Written out here
+#: rather than read from ``transports``, so the test is not the list it checks. The Proving
+#: Ground's own Python child gets ``NEBIUS_API_KEY`` by name, outside this door
+#: (``tests/proving/test_server.py``).
 ENGINE_KEYS = (
     "ANTHROPIC_API_KEY",
     "ANTHROPIC_AUTH_TOKEN",
@@ -75,6 +76,7 @@ ENGINE_KEYS = (
     "CLAUDE_CODE_USE_VERTEX",
     "OPENAI_API_KEY",
     "CODEX_API_KEY",
+    "NEBIUS_API_KEY",
 )
 
 

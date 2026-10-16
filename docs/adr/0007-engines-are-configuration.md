@@ -92,3 +92,7 @@ Note, 2026-10-10: a spawned engine CLI never inherits `ANTHROPIC_API_KEY`. `chil
 `harness/transports.py` drops it from both the inherited environment and the request's own, so a key
 in the environment cannot silently move billing off the subscription (robustness-4: f653d1c closed
 the proving role runner, and bd41162, the commit that added `child_env`, closed the product transport).
+
+Note, 2026-10-16: nor `NEBIUS_API_KEY`, which no CLI owns (`ENGINE_KEYS["nebius"]`). The one child
+that calls Token Factory, the Proving Ground's run (`proving/server/runner.py`), is handed the key by
+name after the door, so no claude or codex child holds it.

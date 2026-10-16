@@ -255,9 +255,10 @@ def claude_env(environ: Mapping[str, str]) -> dict[str, str]:
     The operator's rule: model runs go only through the ``claude`` CLI on the subscription, never
     a paid API. With ``ANTHROPIC_API_KEY`` (or another switch in
     :data:`~athena.harness.transports.ENGINE_KEYS`) in its environment the CLI bills the key
-    instead of the subscription, so no child inherits one. Everything else (``PATH`` and
-    ``NEBIUS_API_KEY`` included) is kept: the hosted runner's own Python child needs the Nemotron
-    key. The rule lives in :func:`~athena.harness.transports.child_env`.
+    instead of the subscription, so no child inherits one. ``NEBIUS_API_KEY`` is stripped too: no
+    CLI owns it, and the hosted runner's own Python child is handed it by name
+    (:mod:`athena.proving.server.runner`). Everything else (``PATH`` included) is kept. The rule
+    lives in :func:`~athena.harness.transports.child_env`.
     """
     return child_env(environ)
 

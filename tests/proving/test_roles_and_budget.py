@@ -329,7 +329,7 @@ def test_the_control_child_sees_no_nemotron_key_although_every_proving_run_holds
     leaked = sorted(name for name, value in env.items() if value == KEY or name.upper() in keys)
     assert leaked == []
     assert "PATH" in {name.upper() for name in env}
-    assert claude_env({"NEBIUS_API_KEY": KEY}) == {"NEBIUS_API_KEY": KEY}  # the shared door
+    assert claude_env({"NEBIUS_API_KEY": KEY}) == {}  # the shared door strips it too now
 
 
 def test_the_claude_child_never_inherits_the_paid_api_key() -> None:

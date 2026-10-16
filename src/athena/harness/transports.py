@@ -74,9 +74,9 @@ API_KEY_ENV = "ANTHROPIC_API_KEY"
 #: every child, whichever CLI it is (ADR 0007). ``OPENAI_API_KEY`` is in the daemon's environment
 #: whenever the OpenAI voice backend is configured from it, which is how it would reach ``codex``.
 #:
-#: ``nebius`` names none, and that is a known gap rather than a decision: the Proving Ground runs
-#: its own Python child through this door (``proving/server/runner.py``) and that child needs
-#: ``NEBIUS_API_KEY``. Until it builds its own environment, the key still reaches CLI children.
+#: ``nebius`` is not a CLI: the daemon calls Token Factory in process, so its key has no business
+#: in any child. The one child that does call Nemotron, the Proving Ground's own run
+#: (``proving/server/runner.py``), is handed ``NEBIUS_API_KEY`` by name after this door.
 ENGINE_KEYS: dict[str, tuple[str, ...]] = {
     "claude_code": (
         API_KEY_ENV,
@@ -85,7 +85,7 @@ ENGINE_KEYS: dict[str, tuple[str, ...]] = {
         "CLAUDE_CODE_USE_VERTEX",
     ),
     "codex": ("OPENAI_API_KEY", "CODEX_API_KEY"),
-    "nebius": (),
+    "nebius": ("NEBIUS_API_KEY",),
 }
 
 #: What :func:`child_env` never lets through, compared in upper case: a Windows child reads its

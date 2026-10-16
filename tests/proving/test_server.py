@@ -51,6 +51,9 @@ print(f"gauntlet run -> {run.as_posix()}", flush=True)
 print("generating: the key is " + os.environ.get("NEBIUS_API_KEY", ""), flush=True)
 print("judge token in child env: " + str("PROVING_JUDGE_TOKEN" in os.environ), flush=True)
 print("api key in child env: " + str("ANTHROPIC_API_KEY" in os.environ), flush=True)
+cli_keys = sorted(k for k in os.environ if k.upper() in ("OPENAI_API_KEY", "CODEX_API_KEY"))
+print("cli keys in child env: " + (",".join(cli_keys) or "none"), flush=True)
+print("token factory key in child env: " + str("NEBIUS_API_KEY" in os.environ), flush=True)
 rows = [
     {"role": "attacker", "engine": "nemotron", "model": "nvidia/x", "cost_usd": 0.01,
      "is_error": False, "excerpt": "model output " + os.environ.get("NEBIUS_API_KEY", "")},
@@ -344,6 +347,25 @@ def test_the_child_never_sees_the_anthropic_api_key(
         assert "api key in child env: False" in events
     finally:
         served.close()
+
+
+def test_the_run_child_gets_the_token_factory_key_by_name_and_no_cli_key(
+    tmp_path: Path, script: Path
+) -> None:
+    """The one child that calls Nemotron is handed the key by name; the shared CLI door strips it
+    (``transports.ENGINE_KEYS``), so this is the only spawn that may see it."""
+    spawn = FakeSpawn(script, "20261007T120000Z", None)
+    environ = {**_environ(), "OPENAI_API_KEY": "sk-o-test", "codex_api_key": "c-test"}
+    runner = Runner(tmp_path / "runs", spawn=spawn, environ=environ, clock=lambda: NOW)
+    job = runner.start("gauntlet", "small")
+    with job.cond:
+        job.cond.wait_for(lambda: job.done, timeout=20)
+    _, env = spawn.calls[0]
+    assert env["NEBIUS_API_KEY"] == KEY
+    assert sorted(k for k in env if k.upper() in ("OPENAI_API_KEY", "CODEX_API_KEY")) == []
+    lines = [e["data"].get("text", "") for e in job.events if e["kind"] == "line"]
+    assert "token factory key in child env: True" in lines
+    assert "cli keys in child env: none" in lines
 
 
 def test_a_no_claude_runner_never_runs_the_claude_row(tmp_path: Path, script: Path) -> None:

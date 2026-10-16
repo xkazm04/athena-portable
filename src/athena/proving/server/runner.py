@@ -15,7 +15,9 @@ server forgets nothing, and nothing here keeps a second set of books. A run may 
 by the one call in flight when the purse ran dry (:mod:`athena.proving.budget`); the day may
 overshoot by the same.
 
-**Nothing secret leaves.** The child gets the environment minus the judge token; every line it
+**Nothing secret leaves.** The child gets the shared spawn door's environment
+(:func:`~athena.harness.transports.child_env`, no engine key) minus the judge token, plus
+``NEBIUS_API_KEY`` by name, since it is the one child that calls Nemotron; every line it
 prints is passed through :meth:`Runner.redact` before it becomes an event, and the ledger rows
 are forwarded field by field (sizes, costs, outcomes — never an excerpt of model output).
 
@@ -43,9 +45,11 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import IO, Any, Protocol
 
+from athena.harness.tokenfactory import API_KEY_ENV as NEBIUS_KEY_ENV
+from athena.harness.transports import child_env
 from athena.proving.budget import CLAUDE, DEFAULT_CAPS, ENGINES, NEMOTRON
 from athena.proving.report import announce
-from athena.proving.roles import HOSTED_ENV, claude_env, hosted_flag
+from athena.proving.roles import HOSTED_ENV, hosted_flag
 
 __all__ = [
     "CANCELLED",
@@ -536,7 +540,12 @@ class Runner:
                 raise Busy("a run is already in progress; one run at a time")
             caps = self.caps_for_run()
             job = Job(kind, preset, row, caps, self.clock().isoformat(), hosted=self.hosted)
-            env = {k: v for k, v in claude_env(self.environ).items() if k != TOKEN_ENV}
+            env = {k: v for k, v in child_env(self.environ).items() if k != TOKEN_ENV}
+            # The shared door strips the Token Factory key from every child; this one calls
+            # Nemotron, so it is handed the key by name (and only it).
+            key = self.environ.get(NEBIUS_KEY_ENV, "")
+            if key:
+                env[NEBIUS_KEY_ENV] = key
             if self.hosted:
                 env[HOSTED_ENV] = "1"  # the child decides the same way, whatever is on PATH
             env["PYTHONUNBUFFERED"] = "1"
