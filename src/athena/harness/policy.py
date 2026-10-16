@@ -297,21 +297,36 @@ class Policy:
         parts += ["", "// 2. origin_enabled: an origin the surface switched off may not act"]
         for origin in sorted(self.disabled_origins):
             parts.append(f'forbid (principal, action, resource in Origin::"{_cedar(origin)}");')
+        parts.append(
+            "// The switch the surface sends with each turn rides on the context (ADR 0011).\n"
+            "forbid (principal, action, resource)\n"
+            "when { context.disabled_origins.contains(resource.origin) };"
+        )
         parts += ["", "// 3. origin_pinning for host tools (README §3.4)"]
         parts.append(
             "forbid (principal, action, resource)\n"
             "when { resource has app_id && context has app_id && "
             "context.app_id != resource.app_id && "
-            "!(resource.app_id in context.open_apps) };"
+            "(!(resource.app_id in context.open_apps) || "
+            "context.gated_origins.contains(resource.origin)) };"
         )
         parts.append(
             "// A call of an app in context.open_apps passes only to be proposed: the gate\n"
-            "// files it as a card bound to that app's tab (ADR 0106)."
+            "// files it as a card bound to that app's tab (ADR 0106). An app the same turn sees\n"
+            "// first (context.gated_origins) is not open, nor is one listed twice."
         )
         for app_id, origin in sorted(self.pinned_origins.items()):
+            app, page = _cedar(app_id), _cedar(origin)
             parts.append(
-                f'forbid (principal, action, resource in App::"{_cedar(app_id)}")\n'
-                f'when {{ context has page_origin && context.page_origin != "{_cedar(origin)}" }};'
+                f'forbid (principal, action, resource in App::"{app}")\n'
+                f'when {{ context has page_origin && context.page_origin != "{page}" && '
+                f'(!(context has app_id) || context.app_id == "{app}") }};'
+            )
+            parts.append(
+                f'forbid (principal, action, resource in App::"{app}")\n'
+                f'when {{ context has app_id && context.app_id != "{app}" && '
+                f'context.open_tab_origins has "{app}" && '
+                f'context.open_tab_origins["{app}"] != "{page}" }};'
             )
         parts += [
             "",

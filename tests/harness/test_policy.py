@@ -8,7 +8,7 @@ the module is. The fakes come from ``tests/harness/conftest.py``, which is the s
 from __future__ import annotations
 
 import threading
-from typing import Any
+from typing import Any, cast
 
 import pytest
 
@@ -16,6 +16,7 @@ from athena.contracts.harness import ERROR_REASONS
 from athena.contracts.registry import (
     ExecResult,
     Lane,
+    OpenApp,
     ToolClass,
     ToolEntry,
     TurnContext,
@@ -248,6 +249,88 @@ def test_to_cedar_names_every_rule_and_every_configured_fact() -> None:
     assert 'Origin::"host:support"' in cedar
     assert 'Action::"core.recall"' in cedar
     assert cedar.count("forbid") >= len(RULES)
+
+
+class _Reads:
+    """A value that records which of its fields a rule read, and answers with the real one."""
+
+    def __init__(self, value: Any, read: set[str], prefix: str) -> None:
+        object.__setattr__(self, "_value", value)
+        object.__setattr__(self, "_read", read)
+        object.__setattr__(self, "_prefix", prefix)
+
+    def __getattr__(self, name: str) -> Any:
+        self._read.add(f"{self._prefix}{name}")
+        found = getattr(self._value, name)
+        if name == "open_apps":
+            return tuple(_Reads(app, self._read, "open_app.") for app in found)
+        return found
+
+
+#: The name each input :meth:`Policy.authorize` reads goes by in the Cedar text: a field of the
+#: turn's context is ``context.<field>``, and the open tab a call is proposed on is read off
+#: ``context.open_apps`` (which apps) and ``context.open_tab_origins`` (where each tab is now).
+_CEDAR_NAME = {
+    "open_app.origin": "context.open_apps",
+    "open_app.page_origin": "context.open_tab_origins",
+}
+
+
+def test_every_input_authorize_reads_has_a_clause_in_the_cedar_text() -> None:
+    """Two hand-kept renderings of four rules: what one reads, the other must name.
+
+    Drives :meth:`Policy.authorize` through every branch of every rule with a context that
+    records what was read, then asks the Cedar text for each of those inputs. A rule that reads a
+    per-turn field the rendering never mentions is a forbid the docs do not have.
+    """
+    crm = OpenApp("host:tidycrm", "https://tidycrm.local", tab_id=7)
+    policy = Policy.build(
+        pinned_origins={"invoices": "https://invoices.example", "tidycrm": "https://tidycrm.local"},
+        disabled_origins=["host:support"],
+        # Everything the cases call is on the list but ``core.write_fact``, which it refuses.
+        lane_tools={
+            Lane.BROWSER: [
+                "core.recall",
+                "host.invoices.mark_paid",
+                "host.tidycrm.add_note",
+                "connector.gmail.search_mail",
+                "connector.notion.search",
+            ]
+        },
+        connectors=FakeVault({"gmail"}),
+    )
+    on_invoices = {"app_id": "invoices", "page_origin": "https://invoices.example"}
+    cases = [
+        (make_entry("core.recall"), {}),
+        (make_entry("core.write_fact"), {}),
+        (host_entry(), {**on_invoices, "disabled_origins": frozenset({"host:invoices"})}),
+        (host_entry(), {**on_invoices, "page_origin": "https://elsewhere.example"}),
+        (host_entry(), on_invoices),
+        (host_entry(), {}),
+        (host_entry("host.tidycrm.add_note", "tidycrm"), {**on_invoices, "open_apps": (crm,)}),
+        (
+            host_entry("host.tidycrm.add_note", "tidycrm"),
+            {**on_invoices, "open_apps": (crm,), "gated_origins": frozenset({"host:tidycrm"})},
+        ),
+        (
+            host_entry("host.tidycrm.add_note", "tidycrm"),
+            {**on_invoices, "open_apps": (OpenApp("host:tidycrm", "https://evil.example", 7),)},
+        ),
+        (connector_entry(), {}),
+        (make_entry("connector.notion.search", origin="connector:notion", executor=_ran), {}),
+    ]
+    read: set[str] = set()
+    for entry, overrides in cases:
+        ctx = _Reads(make_ctx(**overrides), read, "")
+        policy.authorize(entry, {}, cast(TurnContext, ctx))
+    cedar = policy.to_cedar()
+
+    missing = sorted(
+        name
+        for name in (_CEDAR_NAME.get(field, f"context.{field}") for field in read)
+        if name not in cedar
+    )
+    assert missing == []
 
 
 # -- the hook -------------------------------------------------------------------------------------
