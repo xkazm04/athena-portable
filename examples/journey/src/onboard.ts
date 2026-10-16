@@ -101,15 +101,30 @@ export function runDoctor(engine: string, timeoutMs = 180_000): DoctorReport {
   });
   const out = `${run.stdout ?? ""}`;
   const start = out.indexOf("{");
+  // Why there is no report, when the process itself is the reason: `uv` not on PATH (ENOENT) or
+  // the doctor killed at `timeoutMs` (ETIMEDOUT). Without it the refusal reads "printed no JSON: "
+  // with nothing after the colon, and the person filming has to guess which of the two it was.
+  const cause = run.error ? ` (${run.error.message})` : "";
   if (start < 0) {
-    throw new Error(`athena doctor --engine ${engine} printed no JSON: ${(run.stderr ?? "").trim().slice(0, 300)}`);
+    throw new Error(`athena doctor --engine ${engine} printed no JSON${cause}: ${(run.stderr ?? "").trim().slice(0, 300)}`);
   }
-  const parsed = JSON.parse(out.slice(start)) as DoctorReport;
+  let parsed: DoctorReport;
+  try {
+    parsed = JSON.parse(out.slice(start)) as DoctorReport;
+  } catch (error) {
+    throw new Error(`athena doctor --engine ${engine} printed JSON that does not parse${cause}: ${(error as Error).message}`);
+  }
   if (!Array.isArray(parsed.stages)) throw new Error(`athena doctor --engine ${engine}: no stages in the report`);
   return parsed;
 }
 
-/** One report per engine, in `ENGINES` order. A run that throws is left out of the letter. */
+/**
+ * One report per engine, in `ENGINES` order.
+ *
+ * A doctor that cannot be run, or prints nothing a report can be read from, throws, and the take
+ * stops before its first page: the letter is built only from a doctor that answered for every
+ * engine it lists, never from the engines that happened to work.
+ */
 export function runDoctors(engines: readonly string[] = ENGINES): EngineReport[] {
   const reports: EngineReport[] = [];
   for (const engine of engines) {
