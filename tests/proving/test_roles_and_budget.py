@@ -224,6 +224,22 @@ def test_json_is_found_inside_prose_and_fences() -> None:
         extract_json("no json here")
 
 
+def test_a_runaway_of_brackets_is_a_counted_answer_never_a_crash() -> None:
+    """A degenerate repetition nests deeper than the JSON decoder recurses. Before: RecursionError
+    escaped ``call_json`` (it catches ``ValueError``), with no row and no count."""
+    runaway = "[" * 5000
+    with pytest.raises(ValueError):
+        extract_json(runaway)
+    assert extract_json(runaway + ' then {"attacks": []}') == {"attacks": []}
+
+    log = RunLog()
+    caller = RoleCaller(Budget(), log)
+    answer = caller.call_json(FakeRole(lambda s, p: runaway), "attacker", "s", "p", SCHEMA)
+    assert not answer.ok
+    assert caller.validity.counts["attacker:fake-model"]["not_json"] == 1
+    assert log.rows[0]["schema_ok"] is False
+
+
 def test_the_widest_json_value_wins_over_a_quoted_fragment() -> None:
     answer = 'An OP looks like {"op": "propose_action"}. Answer: {"attacks": [{"goal": "g"}]}'
     assert set(extract_json(answer)) == {"attacks"}

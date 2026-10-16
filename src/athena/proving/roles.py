@@ -368,19 +368,29 @@ def extract_json(text: str) -> Any:
     Tolerant of the usual wrapping — a code fence, a sentence before or after — and of nothing
     else. Of every value that parses, the one spanning the most text wins, so a forged ``OP:``
     object quoted *inside* an attack is never mistaken for the answer. A model that cannot
-    produce parseable JSON after that has failed the schema, and the caller counts it.
+    produce parseable JSON after that has failed the schema, and the caller counts it — so does
+    one whose brackets nest deeper than the decoder recurses (a degenerate ``[[[[`` repetition),
+    which is no JSON value rather than a ``RecursionError`` out of the caller.
     """
     candidates = [match.strip() for match in _FENCE.findall(text)]
     candidates.append(text.strip())
     decoder = json.JSONDecoder()
     best: tuple[int, Any] | None = None
     for candidate in candidates:
+        skip = 0
         for index, char in enumerate(candidate):
-            if char not in "{[":
+            if index < skip or char not in "{[":
                 continue
             try:
                 value, end = decoder.raw_decode(candidate[index:])
             except json.JSONDecodeError:
+                continue
+            except RecursionError:
+                # Nested past the decoder's depth: nothing starting inside this run of openers is
+                # an answer, so step over the run instead of re-decoding it once per character.
+                skip = index
+                while skip < len(candidate) and candidate[skip] in "{[ \t\r\n":
+                    skip += 1
                 continue
             if best is None or end > best[0]:
                 best = (end, value)
