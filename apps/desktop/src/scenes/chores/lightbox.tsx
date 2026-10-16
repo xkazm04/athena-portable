@@ -2,7 +2,8 @@
  * The expandable screenshot — README section 3.5, ADR 0096.
  *
  * A still opened over everything: dimmed backdrop, the image as large as fits, its caption and
- * "n / N", Left/Right step, Escape or a click on the backdrop closes, focus returns to the opener.
+ * "n / N", Left/Right step, Escape or a click on the backdrop closes, focus returns to the opener,
+ * and Tab wraps around its own controls.
  * The caller owns which still is open (`at`, or null when closed).
  */
 import { useEffect, useRef } from "react";
@@ -50,6 +51,20 @@ export default function Lightbox({
         if (e.target === e.currentTarget) onClose();
       }}
       onKeyDown={(e) => {
+        if (e.key === "Tab") {
+          // A modal keeps the keyboard: Tab wraps around its own controls instead of leaving for
+          // the page and the stage chrome under the scrim.
+          const stops = [...e.currentTarget.querySelectorAll<HTMLElement>("button")];
+          const first = stops[0];
+          const last = stops[stops.length - 1];
+          if (!first || !last) return;
+          const here = document.activeElement;
+          if (e.shiftKey && (here === first || here === e.currentTarget)) last.focus();
+          else if (!e.shiftKey && here === last) first.focus();
+          else return;
+          e.preventDefault();
+          return;
+        }
         if (e.key === "Escape") onClose();
         else if (e.key === "ArrowRight") step(1);
         else if (e.key === "ArrowLeft") step(-1);

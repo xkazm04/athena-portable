@@ -216,6 +216,33 @@ describe("a chore's topic page", () => {
     expect(go).toHaveBeenLastCalledWith({ root: "chores" });
   });
 
+  it("keeps Tab inside an open lightbox, and an Escape from outside it closes the still, not the page", () => {
+    show(fixtures.ledger!, at);
+    click(qa(".pa-frame")[0]!);
+    const box = q('.lbx[role="dialog"]')!;
+    const close = q<HTMLButtonElement>(".lbx__close")!;
+    const prev = q<HTMLButtonElement>(".lbx__nav--prev")!;
+    // Tab on the last control wraps to the first; Shift+Tab on the first wraps to the last.
+    close.focus();
+    const tab = (target: HTMLElement, shiftKey = false) => {
+      const e = new KeyboardEvent("keydown", { key: "Tab", shiftKey, bubbles: true, cancelable: true });
+      act(() => {
+        target.dispatchEvent(e);
+      });
+      return e;
+    };
+    expect(tab(close).defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(prev);
+    expect(tab(prev, true).defaultPrevented).toBe(true);
+    expect(document.activeElement).toBe(close);
+    expect(box.contains(document.activeElement)).toBe(true);
+    // Focus taken elsewhere by the pointer: Escape still closes the still and leaves the page be.
+    document.body.focus();
+    key("Escape");
+    expect(q(".lbx")).toBeNull();
+    expect(go).not.toHaveBeenCalled();
+  });
+
   it("opens the hero still too, and closes the lightbox from its Close and its backdrop", () => {
     show(fixtures.ledger!, at);
     click(q(".pa-shot"));

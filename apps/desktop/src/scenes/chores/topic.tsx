@@ -40,8 +40,11 @@ export default function Topic({
   const trace = p.bench?.trace ?? [];
 
   // Escape goes back, unless the lightbox holds it (it stops the key itself), a field is typed in,
-  // or this is a leaving layer (inert). It claims the key, so the stage does not rise a second time.
+  // or this is a leaving layer (inert). An open lightbox that has lost the focus (a click on the
+  // stage's chrome) is closed by it, never left open over the catalogue. It claims the key, so the
+  // stage does not rise a second time.
   const root = useRef<HTMLDivElement>(null);
+  const open = at !== null;
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if (e.key !== "Escape" || e.defaultPrevented) return;
@@ -49,11 +52,12 @@ export default function Topic({
       if (t && (t.tagName === "INPUT" || t.tagName === "TEXTAREA" || t.tagName === "SELECT")) return;
       if (root.current?.closest("[inert]")) return;
       e.preventDefault();
-      back();
+      if (open) setAt(null);
+      else back();
     };
     document.addEventListener("keydown", onKey);
     return () => document.removeEventListener("keydown", onKey);
-  }, [back]);
+  }, [back, open]);
 
   const hero = stills[0];
 
