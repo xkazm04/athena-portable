@@ -190,6 +190,21 @@ test("every class the sheet styles is drawn by some component", () => {
   assert.deepEqual(unread, [], "styled, and drawn by nothing");
 });
 
+test("every --ln-* token the TypeScript names is declared in the sheet", () => {
+  // motion.ts reads the level change's duration, easing and stagger back off the root through the
+  // kit's cssMs/cssEase, which answer 0 (or the keyword) for a name nothing declares. A token
+  // renamed in tokens.css therefore made every move instant with every gate green.
+  const declared = new Set<string>();
+  for (const css of SHEET.values()) for (const m of css.matchAll(/(--ln-[a-z0-9-]+)\s*:/g)) declared.add(m[1]!);
+  const named = new Set([...RENDERERS.matchAll(/["'`](--ln-[a-z0-9-]+)["'`]/g)].map((m) => m[1]!));
+  assert.ok(named.has("--ln-dur-move"), "the TypeScript no longer names --ln-dur-move - re-read motion.ts");
+  assert.deepEqual(
+    [...named].filter((name) => !declared.has(name)),
+    [],
+    "named in the TypeScript, declared nowhere in the sheet",
+  );
+});
+
 test("text in the state's colour reads the ink, never the swatch", () => {
   const swatchText: string[] = [];
   for (const [name, css] of SHEET) {
