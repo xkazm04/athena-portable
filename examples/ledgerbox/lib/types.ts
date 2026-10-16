@@ -134,7 +134,8 @@ export interface MatchCandidate {
   confidence: "strong" | "likely" | "weak";
   /** One clause per signal, e.g. "exact amount". */
   evidence: string[];
-  /** Cents the credit falls short of the balance. Absent when it covers it exactly, or over. */
+  /** Cents the credit falls short of the balance. Absent when it covers it exactly; a credit
+   *  larger than the balance is never a candidate, since applying it is refused. */
   short_by_cents?: number;
   /** The trading name the memo used instead of the name on the invoice, when it did. */
   counterparty_alias?: string;

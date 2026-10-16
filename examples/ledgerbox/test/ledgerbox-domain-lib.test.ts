@@ -20,6 +20,7 @@ const { summarize } = await import("../lib/db");
 const { parseDollars } = await import("../lib/format");
 const { composeReminder } = await import("../lib/reminder");
 const { buildSheet } = await import("../lib/lanes");
+const { scoreCandidate } = await import("../lib/match");
 
 test("on every period, what was invoiced is what was collected plus what is still owed", () => {
   // All three figures describe one set of invoices (issued in the period, drafts and voids out),
@@ -112,4 +113,31 @@ test("the lanes add up to the totals the mast prints beside them", () => {
   assert.equal(sum((l) => l.invoicedCents), sheet.totals.invoicedCents, "invoiced");
   assert.equal(sum((l) => l.owedCents), sheet.totals.outstandingCents, "still open");
   assert.equal(sum((l) => l.collectedCents), sheet.totals.collectedCents, "collected");
+});
+
+test("no credit is offered for an invoice it is larger than, because applying it is refused", () => {
+  // `matchAction` refuses a line larger than the balance (a negative balance reads as paid and the
+  // export's two figures stop agreeing). The scorer offered such a line anyway - "over by $10.00,
+  // about a wire fee" - so the card's one-click match was a button that could only fail.
+  const input = {
+    invoice: { number: "LB-2026-0042", amount_cents: 100_000, due_at: "2026-08-10T23:59:00.000Z" },
+    clientName: "Halcyon Works",
+    balanceCents: 100_000,
+  };
+  const line = (amount_cents: number) => ({
+    id: "bl_test",
+    posted_at: "2026-08-12T10:00:00.000Z",
+    memo: "HALCYON WORKS PAYMENT",
+    amount_cents,
+    direction: "in" as const,
+    source_file: "statement-2026-08.csv",
+  });
+  for (const over of [100_001, 101_000, 102_500]) {
+    assert.equal(scoreCandidate(input, line(over)), null, `${over} is more than the 100000 owed`);
+  }
+  // At or under the balance, it still scores, and says by how much it falls short.
+  assert.equal(scoreCandidate(input, line(100_000))?.short_by_cents, undefined);
+  const short = scoreCandidate(input, line(99_000));
+  assert.equal(short?.short_by_cents, 1_000);
+  assert.ok(short?.evidence.includes("short by $10.00, about a wire fee"));
 });

@@ -40,17 +40,16 @@ interface Signal {
   alias?: string;
 }
 
+/** Only ever asked about a line at or under what is owed: `scoreCandidate` drops the rest first. */
 function amountSignal(invoiceCents: number, lineCents: number): Signal | null {
   if (lineCents === invoiceCents) return { score: 60, why: "exact amount" };
-  const diff = Math.abs(lineCents - invoiceCents);
-  const ratio = diff / invoiceCents;
-  const short = lineCents < invoiceCents ? { shortBy: diff } : {};
-  if (diff <= 5000 && ratio <= 0.05) {
-    const direction = lineCents < invoiceCents ? "short by" : "over by";
-    return { score: 46, why: `${direction} $${(diff / 100).toFixed(2)}, about a wire fee`, ...short };
+  const shortBy = invoiceCents - lineCents;
+  const ratio = shortBy / invoiceCents;
+  if (shortBy <= 5000 && ratio <= 0.05) {
+    return { score: 46, why: `short by $${(shortBy / 100).toFixed(2)}, about a wire fee`, shortBy };
   }
-  if (ratio <= 0.01) return { score: 40, why: "within 1% of the invoice total", ...short };
-  if (ratio <= 0.03) return { score: 30, why: "within 3% of the invoice total", ...short };
+  if (ratio <= 0.01) return { score: 40, why: "within 1% of the invoice total", shortBy };
+  if (ratio <= 0.03) return { score: 30, why: "within 3% of the invoice total", shortBy };
   return null;
 }
 
@@ -105,6 +104,10 @@ export interface ScoreInput {
 export function scoreCandidate(input: ScoreInput, line: BankLine): MatchCandidate | null {
   if (line.direction !== "in") return null;
   const target = input.balanceCents > 0 ? input.balanceCents : input.invoice.amount_cents;
+  // `matchAction` refuses a credit larger than the balance, so offering one is offering a button
+  // that can only fail. The scorer used to accept up to 5% over ("over by $10.00, about a wire
+  // fee" - which a wire fee never is); the offer and the act now draw the same line.
+  if (line.amount_cents > target) return null;
   const signals = [
     amountSignal(target, line.amount_cents),
     nameSignal(input.clientName, line.memo, input.alias),
