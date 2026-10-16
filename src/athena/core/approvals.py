@@ -461,16 +461,20 @@ class Approvals:
         status = ApprovalStatus.APPROVED if choice == APPROVE_TOKEN else ApprovalStatus.DECLINED
         with self.brain.write_txn() as con:
             # Conditional on ``pending``: two processes that both read the card race here and
-            # exactly one of them changes a row. The loser's read below sees the winner's answer.
-            con.execute(
+            # exactly one of them changes a row. The loser is refused below exactly as a second
+            # click is, never handed the winner's row as though its own answer had landed.
+            cursor = con.execute(
                 """UPDATE companion_approval
                    SET status = ?, choice = ?, answer = ?, resolved_at = ?
                    WHERE id = ? AND status = 'pending'""",
                 (str(status), choice, answer, _iso(moment), approval_id),
             )
+            landed = cursor.rowcount == 1
         resolved = self.get(approval_id)
         if resolved is None:  # pragma: no cover - the row cannot vanish under its own writer
             raise ApprovalError(f"unknown approval {approval_id}")
+        if not landed:
+            raise ApprovalError(f"approval {approval_id} is {resolved.status}, not pending")
         return resolved
 
     def expire_due(self, now: datetime | None = None) -> list[str]:

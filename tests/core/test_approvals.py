@@ -170,6 +170,37 @@ def test_resolving_twice_is_refused_and_the_first_answer_stands(approvals: Appro
     assert stored.choice == "decline"
 
 
+def test_the_loser_of_two_answers_racing_on_one_card_is_refused_like_a_second_click(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Two surfaces read the card while it was pending; one answer lands first. The other is the
+    same second answer the test above refuses, and it must not come back as a success carrying
+    the winner's row: the lane would replay the gate for a surface whose user said decline
+    (hitl-approval/resume-after-decision: a conflicting verdict is a loud conflict)."""
+    first = Approvals(Brain(tmp_path / "brain"))
+    second = Approvals(Brain(tmp_path / "brain"))
+    row = _create(first)
+    stale = second.get(row.id)
+    assert stale is not None and stale.pending
+    first.resolve(row.id, APPROVE_TOKEN, now=T0 + timedelta(minutes=1))
+
+    reads = iter([stale])
+    real_get = second.get
+
+    def get_after_a_stale_read(approval_id: str) -> ApprovalRow | None:
+        return next(reads, None) or real_get(approval_id)
+
+    monkeypatch.setattr(second, "get", get_after_a_stale_read)
+
+    with pytest.raises(ApprovalError, match="is approved, not pending"):
+        second.resolve(row.id, "decline", now=T0 + timedelta(minutes=1))
+
+    stored = first.get(row.id)
+    assert stored is not None
+    assert stored.status == ApprovalStatus.APPROVED
+    assert stored.choice == APPROVE_TOKEN
+
+
 def test_the_answer_text_rides_along_with_the_token(approvals: Approvals) -> None:
     row = _create(approvals)
 
