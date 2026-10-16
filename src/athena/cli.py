@@ -24,7 +24,7 @@ Three verbs, because three are what this build has a person do from a terminal.
     corrupt or not a database is renamed to ``index.sqlite.damaged-<UTC time>`` (with its ``-wal``
     and ``-shm`` files), never deleted, and a fresh index is rebuilt (ADR 0081). The approvals and
     ledger rows in that file were never on disk and are not rebuilt. Deleting the index by hand
-    still works.
+    still works. It exits non-zero when it skipped a file, as its report's ``ok`` does.
 
 Every command prints one JSON object on stdout and nothing else, so a shell, a test and the
 desktop shell all read the same answer. It is ASCII-escaped, so a path the pipe's code page cannot
@@ -265,7 +265,11 @@ def cmd_doctor(args: argparse.Namespace) -> int:
 
 
 def cmd_reconcile(args: argparse.Namespace) -> int:
-    """Rebuild the index from the markdown tree, setting a damaged one aside (ADR 0003, 0081)."""
+    """Rebuild the index from the markdown tree, setting a damaged one aside (ADR 0003, 0081).
+
+    Non-zero when the report is not ``ok``: a file the rebuild skipped is a memory the index no
+    longer holds, and the exit code says what the report says.
+    """
     from athena.core.brain import paths, reconcile
     from athena.core.brain.store import Brain, IndexDamagedError
 
@@ -302,7 +306,7 @@ def cmd_reconcile(args: argparse.Namespace) -> int:
                 "they were never on disk"
             )
         _emit(report)
-    return 0
+    return 0 if report["ok"] else 1
 
 
 # --- the parser ---------------------------------------------------------------------------------

@@ -212,6 +212,28 @@ def test_reconcile_rebuilds_the_index_from_the_tree(
         assert rebuilt.sources_of(_only_fact(rebuilt)) == [episode.id]
 
 
+def test_a_rebuild_that_skipped_a_file_says_so_in_the_exit_code_too(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """A skipped file is a memory the index no longer holds. The report says ``ok: false`` and
+    names it; a script reading only the exit code must hear the same verdict."""
+    root = tmp_path / "brain"
+    with Brain(root) as brain:
+        episode = brain.append_episode("Northwind paid 40 days late", role="user")
+        node = brain.node(episode.id)
+        assert node is not None
+    stray = (root / node.file_path).parent / "no-frontmatter.md"
+    stray.write_text("a note somebody dropped in by hand\n", encoding="utf-8")
+    (root / "index.sqlite").unlink()
+
+    code, report = _run(capsys, "brain", "reconcile", "--brain", str(root))
+
+    assert report["ok"] is False
+    assert any("no-frontmatter.md" in skipped for skipped in report["skipped"])
+    assert report["by_kind"] == {"episode": 1}
+    assert code == 1
+
+
 @pytest.mark.parametrize("case", ["pages", "not_a_database"])
 def test_reconcile_sets_a_damaged_index_aside_and_rebuilds(
     tmp_path: Path, capsys: pytest.CaptureFixture[str], case: str
