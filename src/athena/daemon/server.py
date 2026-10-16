@@ -51,6 +51,7 @@ from __future__ import annotations
 import argparse
 import json
 import secrets
+import socket
 import sqlite3
 import sys
 import threading
@@ -354,6 +355,17 @@ class DaemonServer(ThreadingHTTPServer):
 
     daemon_threads = True
     block_on_close = False
+    #: The port is this daemon's alone. On POSIX ``SO_REUSEADDR`` only lets a restart rebind a port
+    #: its predecessor left in TIME_WAIT. On Windows it lets a second socket bind a port another is
+    #: *listening* on: a second daemon would print a ready line beside the first, and any process
+    #: asking for reuse could take the shell's requests, token header and all. So Windows binds
+    #: with ``SO_EXCLUSIVEADDRUSE`` instead, and the two options cannot be combined.
+    allow_reuse_address = sys.platform != "win32"
+
+    def server_bind(self) -> None:
+        if sys.platform == "win32":
+            self.socket.setsockopt(socket.SOL_SOCKET, socket.SO_EXCLUSIVEADDRUSE, 1)
+        super().server_bind()
 
 
 def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRequestHandler]:

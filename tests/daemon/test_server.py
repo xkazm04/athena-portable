@@ -25,8 +25,10 @@ import json
 import socket
 import threading
 import time
+from http.client import HTTPConnection
 
 from athena.daemon.routes import Reply, Request, Route
+from athena.daemon.server import TOKEN_HEADER, AthenaDaemon, DaemonConfig, make_server
 
 from .conftest import EXTENSION_ORIGIN, FAST_S, PATIENT_S, SHELL_ORIGIN, TOKEN, Live, Response
 
@@ -311,3 +313,62 @@ def test_a_route_that_raises_is_a_500_that_quotes_nothing(live: Live) -> None:
 def test_an_unknown_path_is_404_and_a_known_path_with_the_wrong_verb_is_405(live: Live) -> None:
     assert live.request("/nope").status == 404
     assert live.request("/health", method="POST", body="{}").status == 405
+
+
+# -- the port is this daemon's alone -----------------------------------------------------------
+
+
+def test_a_port_a_daemon_holds_cannot_be_bound_again_even_by_a_socket_that_asks_to_share(
+    daemon: AthenaDaemon,
+) -> None:
+    """``athena serve`` on a port already taken fails on its failure line (README §3.5). On
+    Windows, ``SO_REUSEADDR`` lets a second socket bind a port another socket is listening on,
+    so a second daemon printed a ready line on the same port and requests went to either one;
+    and any process asking for reuse could take the shell's requests, token header and all."""
+    first = make_server(daemon, DaemonConfig(port=0, token=TOKEN))
+    try:
+        port = first.server_address[1]
+        try:
+            second = make_server(daemon, DaemonConfig(port=port, token=TOKEN))
+        except OSError:
+            pass
+        else:
+            second.server_close()
+            raise AssertionError(f"a second daemon bound port {port} beside the first")
+        stranger = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        try:
+            stranger.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                stranger.bind(("127.0.0.1", port))
+            except OSError:
+                pass
+            else:
+                raise AssertionError(f"a socket asking for reuse bound port {port}")
+        finally:
+            stranger.close()
+    finally:
+        first.server_close()
+
+
+def test_a_daemon_that_answered_and_closed_can_be_bound_again_on_its_port_at_once(
+    daemon: AthenaDaemon,
+) -> None:
+    """The other half of the exclusive bind: the connections it closed (``Connection: close``,
+    so this side is the one in TIME_WAIT) do not keep a restart off the port."""
+    first = make_server(daemon, DaemonConfig(port=0, token=TOKEN))
+    port = first.server_address[1]
+    thread = threading.Thread(target=first.serve_forever, daemon=True)
+    thread.start()
+    try:
+        for _ in range(3):
+            connection = HTTPConnection("127.0.0.1", port, timeout=PATIENT_S)
+            connection.request("GET", "/health", headers={TOKEN_HEADER: TOKEN})
+            assert connection.getresponse().status == 200
+            connection.close()
+    finally:
+        first.shutdown()
+        first.server_close()
+        thread.join(timeout=10)
+
+    again = make_server(daemon, DaemonConfig(port=port, token=TOKEN))
+    again.server_close()
