@@ -1,0 +1,249 @@
+{
+ "context": "desktop-scenes-mind-surface",
+ "files_read": 22,
+ "loc": 2381,
+ "registry": "software-engineering/voice-io, software-engineering/test-harness, software-engineering/async-ui-states, software-engineering/motion",
+ "techniques": [
+  "voice-ux-integration",
+  "pin-the-call-not-the-name",
+  "failure-states",
+  "action-busy-states",
+  "state-model",
+  "continuity-across-change"
+ ],
+ "deviations": 7,
+ "assigned": [],
+ "built": [
+  {
+   "sha": "c6bdf88",
+   "title": "the Mind light stands the engine by the Setup module's rule (engineFact), not the probe alone",
+   "lens": "parity-auditor",
+   "red_before": "surface/live.test.tsx: 3 of 5 red (failed daemon and pending restart read 'Claude Code is ready'; failed check read 'checking the engine')",
+   "after": "5 of 5 green; surface/Mind disagreements on the 3 walked states 3 -> 0"
+  },
+  {
+   "sha": "af1ada7",
+   "title": "the Engine instrument's line no longer says the chosen engine runs the turns before the daemon is on it",
+   "lens": "parity-auditor",
+   "red_before": "mind/view.test.tsx: heavy contained 'Codex runs the turns' beside a 'not yet' badge",
+   "after": "green; the line is engineFact's summary"
+  },
+  {
+   "sha": "7ec50a9",
+   "title": "the field's Voice card says which rung failed (voiceReason), not 'not installed'",
+   "lens": "registry-conformance",
+   "red_before": "mind/view.test.tsx: heavy contained 'Voice is not installed'",
+   "after": "green; reason shown verbatim"
+  },
+  {
+   "sha": "a7b6442",
+   "title": "the field's failed-check note carries the Check again it tells the person to press",
+   "lens": "copy-auditor",
+   "red_before": "mind/interact.test.tsx: 'the control exists: expected undefined to be truthy'",
+   "after": "green; checkEngines called once"
+  },
+  {
+   "sha": "06f4d69",
+   "title": "the Chores light says it could not count when the playbooks failed to load",
+   "lens": "state-coverage",
+   "red_before": "surface/live.test.tsx: failed fetch read 'counting…'",
+   "after": "green; in-flight control unchanged"
+  },
+  {
+   "sha": "9989cd6",
+   "title": "'Open her window to answer' tells a window that did not come forward in the error colour",
+   "lens": "error-handler",
+   "red_before": "surface/interact.test.tsx: note kept its idle sentence",
+   "after": "green; note says 'Her window did not come forward: <reason>', tone error"
+  },
+  {
+   "sha": "4f909a4",
+   "title": "Enter and 'Use this' on the brain path follow one rule; a written path stops reading as a draft",
+   "lens": "parity-auditor",
+   "red_before": "mind/interact.test.tsx: 2 red (button enabled for padded stored path; field kept the padded draft after commit)",
+   "after": "2 of 2 green"
+  },
+  {
+   "sha": "0aa4388",
+   "title": "an engine card says 'not checked' with its remedy when the check could not run",
+   "lens": "state-coverage",
+   "red_before": "shared/EngineSection.test.tsx: degraded matched the pending 'checking' badge",
+   "after": "3 cases green; in-flight still 'checking'"
+  },
+  {
+   "sha": "cb04e14",
+   "title": "the Mind and surface stylesheet pins read a hover rule's declaration on comment-stripped CSS",
+   "lens": "test-strategist",
+   "red_before": "seeded: hover rules replaced by comments naming them; old predicate true on both, new tests 2 red",
+   "after": "green on the real CSS; pins now bite"
+  },
+  {
+   "sha": "dd92499",
+   "title": "the field's restart notice is the engine section's own (RestartNoticeBar): density tokens and fade",
+   "lens": "parity-auditor",
+   "red_before": "mind/view.test.tsx and mind.css.test.ts: field rendered class mind__notice (2 red)",
+   "after": "green; off-token values in the notice 2 -> 0; perf:mind pass (p95 16.8 ms, idle requests 0)"
+  },
+  {
+   "sha": "4390158",
+   "title": "the Data level says the file's place is not known yet instead of naming store_path",
+   "lens": "copy-auditor",
+   "red_before": "mind/view.test.tsx: rendered 'store_path'",
+   "after": "green; parity.md rows updated"
+  },
+  {
+   "sha": "7e11b0e",
+   "title": "the crumb's names for the Mind levels are pinned to the names the levels show",
+   "lens": "test-strategist",
+   "red_before": "seeded: live.tsx mic name 'Mic' -> red ('expected Mic to be Microphone')",
+   "after": "pinned pairs 0 of 5 -> 5 of 5"
+  },
+  {
+   "sha": "05fc32f",
+   "title": "the Voice light says 'not known yet' while the daemon is not up, as the Mind Voice card does",
+   "lens": "parity-auditor",
+   "red_before": "surface/live.test.tsx: starting daemon read 'not set up'",
+   "after": "green; ready control unchanged"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "Surface live subscribes to the whole athena store (re-renders on a visible-only status)",
+   "before": "useAthena() in scenes/surface/live.tsx:56 re-renders the surface when only `visible` changes",
+   "after": "selecting state/cards/line saves nothing: console/Console.tsx:51 also reads useAthena() whole and re-renders the tree that holds the surface on the same event; renders per visible-only status 1 -> 1"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "ui-perfectionist",
+   "checked": "mind.css, surface.css, engine.css against tokens and twins: notice twin (built dd92499), summon row jump (card C), off-token spacing (card B)"
+  },
+  {
+   "key": "bounty-hunter",
+   "checked": "brain path draft/commit boundaries (whitespace, unchanged path, after commit): built 4f909a4; ask submit double-fire guard (sent==='sending') holds"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "surface Mind light vs engineFact (c6bdf88), engineSentence vs engineFact (af1ada7), Enter vs button (4f909a4), surface voice light vs voiceSentence (05fc32f), two restart notices (dd92499)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "summon catch in surface/live.tsx (built 9989cd6); ask rejection path (interact test, already handled); ProblemNote retries on the field"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "console-only catches in surface/live.tsx summon (built 9989cd6); setup actions' report() lives in modules/setup (out of scope, logs)"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "brain path write is read by the daemon at start: an unchanged or padded path rewritten by Enter (fixed in 4f909a4); empty path = default is intended"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "useAthena() whole-store in surface/live.tsx (rejected: Console.tsx re-renders anyway); lineOf double call in mind/view.tsx Field (negligible); useMemo deps complete after c6bdf88"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "field failed-check note without its button (built a7b6442); level navigation and Back; welcome reopen path"
+  },
+  {
+   "key": "visual-craft",
+   "checked": "notice chrome twins (built dd92499), badge tones per standing, spacing scale across mind/surface/engine (card B)"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "each data source's zero/fail/never: engines probe (c6bdf88, 0aa4388), playbooks (06f4d69), voice before daemon (05fc32f), store path null (4390158)"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "every sentence in shared.tsx, view.tsx, model.ts: runs-the-turns claim (af1ada7), not installed (7ec50a9), Press Check again (a7b6442), store_path (4390158); Ctrl+Space claim verified still true (stores/voice.ts:617)"
+  },
+  {
+   "key": "accessibility-checker",
+   "checked": "Stage focus on level change (stage/Stage.tsx:118), Button disabledReason wrapper, lights' aria-label with needs you, role=status/alert on the new failure lines; aria-live hover lines are backlog"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "css pins on raw text (built cb04e14), labeller vs NAME hand-kept lists (built 7e11b0e), live.tsx had no test (new surface/live.test.tsx)"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "ask text to athenaOffer and brain path to settingWrite: user's own text, React-escaped render, no HTML sink, no credential in this context"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "registry-map deviations voice-io (built 7ec50a9) and test-harness (built cb04e14); async-ui-states failure-states across lights"
+  },
+  {
+   "key": "mobile-specialist",
+   "checked": "the 899px media queries in mind.css and surface.css (one column, auto-fit lights 110px); nothing below the desktop window's floor"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "live.tsx/view lazy split vs first-paint graph (console/graph.test.ts); RestartNoticeBar extraction keeps one rendering"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "duplicated NAMES/NAME lists (pinned 7e11b0e), duplicated notice markup (dd92499)"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "module docstrings of surface/live.tsx and mind/shared.tsx (updated with their fixes), docs/redesign/parity.md Mind rows (updated 4390158)"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "the hand-over athenaOffer (lib/companion.ts:135-139): emitTo then show; a lost-event lead is noted for the director, out of this context"
+  },
+  {
+   "key": "onboarding-designer",
+   "checked": "'Show the welcome again' (mind/live.tsx reopen flag) and the first act's use of EngineSection after 0aa4388 (waking tests green)"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "monetization-advisor",
+   "why": "no billing, plan or pricing surface in a settings field and a status mirror"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "single-user desktop app; no sharing, invite or notification surface here"
+  },
+  {
+   "key": "business-strategist",
+   "why": "stabilize round over settings and a mirror; no value-prop or conversion surface"
+  },
+  {
+   "key": "analytics-planner",
+   "why": "no event tracking or telemetry in these 22 files"
+  },
+  {
+   "key": "dependency-auditor",
+   "why": "no manifest or dependency in the context; imports are in-tree"
+  },
+  {
+   "key": "devops-optimizer",
+   "why": "no build, CI or deploy file in the context"
+  },
+  {
+   "key": "feature-scout",
+   "why": "stabilize strategy; no capability gap claimed beyond the remedies built"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "no model, agent or automation logic lives in these views"
+  }
+ ],
+ "findings": 16,
+ "lanes": "A:13/B:1/C:1",
+ "fp": 0,
+ "gates": {
+  "pnpm typecheck": 0,
+  "pnpm lint": 0,
+  "pnpm test": 0,
+  "pnpm perf:mind": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "13 built (engine/voice/chores truth on surface and Mind), 2 cards, 1 rejected",
+ "notes": "Sibling reds seen and not mine: scenes/waking/view.test.tsx and interact.test.tsx (first commit, scoped gate used), scenes/voice/live.test.tsx typecheck (re-run green). Lead outside this context: lib/companion.ts:135-139 athenaOffer resolves once emitTo returns, so 'Handed to her window' is said even if her window has no listener yet (not verified; an ack event would decide it). Registry-map: voice-io (7ec50a9) and test-harness (cb04e14) deviations are fixed; the director owns .ai/registry-map.json. perf:surface not run: the surface changes touched no motion."
+}
