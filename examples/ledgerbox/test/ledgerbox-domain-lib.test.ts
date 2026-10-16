@@ -17,6 +17,7 @@ tempHome("ledgerbox-domain-lib-");
 
 const { PERIODS } = await import("../lib/constants");
 const { summarize } = await import("../lib/db");
+const { parseDollars } = await import("../lib/format");
 
 test("on every period, what was invoiced is what was collected plus what is still owed", () => {
   // All three figures describe one set of invoices (issued in the period, drafts and voids out),
@@ -32,3 +33,34 @@ test("on every period, what was invoiced is what was collected plus what is stil
     );
   }
 });
+
+test("an amount the gate cannot read one way only is refused, not read the other way", () => {
+  // `mark_paid` is PERMANENT, and `parseDollars` is the reading it applies to what an agent or a
+  // person typed. A separator in the wrong place is not noise: `1,25` is a decimal comma (1.25),
+  // and stripping it recorded $125.00; `1.250,00` recorded $1.25 against a $1,250 intention.
+  const refused = ["1,25", "1.250,00", "12,34,567", "1,2,3", "12.345", "1.005", ",250", "1 250,"];
+  for (const ambiguous of refused) {
+    assert.equal(parseDollars(ambiguous), null, `${JSON.stringify(ambiguous)} is refused`);
+  }
+  // A cent is the smallest thing the books hold; a fraction of one is a guess, from either side.
+  assert.equal(parseDollars(1250.555), null, "a sub-cent number is refused");
+  // What the app prints, and what a person writes in the usual groupings, still reads exactly.
+  const reads: [string | number, number][] = [
+    ["$1,250.00", 125_000],
+    ["1,250", 125_000],
+    [" 42.50 ", 4_250],
+    ["1 250.00", 125_000],
+    ["1 250.00", 125_000],
+    ["12,345,678.9", 1_234_567_890],
+    ["1'250.00", 125_000],
+    ["$ 1,250", 125_000],
+    [".5", 50],
+    ["-42", -4_200],
+    [1250.5, 125_050],
+    [19.99, 1_999],
+  ];
+  for (const [input, cents] of reads) {
+    assert.equal(parseDollars(input), cents, `${JSON.stringify(input)} reads as ${cents} cents`);
+  }
+});
+
