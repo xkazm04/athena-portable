@@ -87,6 +87,14 @@
   color: var(--bd-ink-2);
   cursor: pointer;
   flex: none;
+  /* The carousel arrow's hover on the arrow's clock: the same round glass control, so it brightens
+     the same way rather than being the one pill in the family that gives a pointer no answer. */
+  transition: color var(--bd-dur-2) var(--bd-ease), border-color var(--bd-dur-2) var(--bd-ease);
+}
+
+.bd-close:hover {
+  color: var(--bd-ink);
+  border-color: var(--bd-rule-2);
 }
 
 /* The verdict band: the numbers that decide, on one line. */

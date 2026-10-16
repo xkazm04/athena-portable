@@ -172,6 +172,23 @@ test("nothing outside the stage is raised over the dossier while it is open", ()
   assert.deepEqual(over, []);
 });
 
+test("every control cut from the round-pill recipe answers a hover", () => {
+  // The recipe is read from the sheets: a pointer control at the reach target with round corners.
+  // The Back pill, the register summary, the carousel arrows and the bar's buttons each brighten
+  // on hover; the dossier's close button, drawn from the arrows' exact declarations, did not, so it
+  // was the one control in the family a pointer got no answer from.
+  const pills = RULES.filter(
+    (r) =>
+      /cursor\s*:\s*pointer/.test(r.body) &&
+      /border-radius\s*:\s*var\(--bd-radius-round\)/.test(r.body) &&
+      /min-block-size\s*:\s*var\(--bd-control\)/.test(r.body),
+  ).flatMap((r) => r.selectors);
+  assert.ok(pills.length >= 4, `found ${pills.join(", ")}`);
+  const hovered = RULES.flatMap((r) => r.selectors).filter((s) => s.includes(":hover"));
+  const silent = pills.filter((pill) => !hovered.some((h) => h.replace(/:hover.*$/, "") === pill));
+  assert.deepEqual(silent, []);
+});
+
 test("the room's focus ring names every focusable tag the board renders", () => {
   // The tags are read out of the components, not listed here: a disclosure added to a component
   // is a tag this list did not know about, which is how the foot's <summary> was missed.
