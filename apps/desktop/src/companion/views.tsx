@@ -99,8 +99,11 @@ export default function CompanionView({ model }: { model: CompanionModel }) {
           </div>
         ) : null}
       </div>
-      <div key={`say-${model.say.n}`} className="aw-sr" role="status" aria-live="polite">
-        {model.say.text}
+      {/* One region for her whole life: a reader voices a change inside a region it already watches,
+          and a region mounted with its text in it is silent. Keying the words, not the region, makes
+          the same sentence said twice a new node, so it is heard twice. */}
+      <div className="aw-sr" role="status" aria-live="polite">
+        <span key={model.say.n}>{model.say.text}</span>
       </div>
     </div>
   );
