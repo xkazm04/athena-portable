@@ -18,7 +18,7 @@
  * alone. A pure function of `{ model, path, go }` plus the view's own state (what is hovered, what
  * is typed).
  */
-import { useEffect, useRef, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type KeyboardEvent, type ReactNode } from "react";
 
 import { AccountArt, StandingMark } from "@/art/accounts";
 import Button from "@/components/Button";
@@ -554,6 +554,17 @@ export function Allowlist({ row, model, go }: { row: ConnectorRow; model: Connec
 // -- the way in -----------------------------------------------------------------------------------------------
 
 /**
+ * A field's own Escape, as the allow-list's draft has it: the first drops what was typed, and with
+ * nothing to drop the field lets go, so the next Escape is the stage's and rises a level (the stage
+ * leaves a text field's Escape to the field, so a field that never lets go holds the way back).
+ */
+function escapeDrops(e: KeyboardEvent<HTMLInputElement>, value: string, drop: () => void) {
+  if (e.key !== "Escape") return;
+  if (value !== "") drop();
+  else e.currentTarget.blur();
+}
+
+/**
  * Connecting as a short staged act: get the credential, give it, and (for OAuth) consent. The rail
  * shows where the person is; the stage underneath is only the step in front of them. The guide for
  * getting the credential is one tap away on the account's own scene.
@@ -621,6 +632,7 @@ function Connect({ row, model }: { row: ConnectorRow; model: ConnectorsModel }) 
                 onChange={(e) => setToken(e.target.value)}
                 onKeyDown={(e) => {
                   if (e.key === "Enter") send();
+                  escapeDrops(e, token, () => setToken(""));
                 }}
               />
             )}
@@ -692,6 +704,7 @@ function Connect({ row, model }: { row: ConnectorRow; model: ConnectorsModel }) 
                   value={clientId}
                   placeholder="….apps.googleusercontent.com"
                   onChange={(e) => setClientId(e.target.value)}
+                  onKeyDown={(e) => escapeDrops(e, clientId, () => setClientId(""))}
                 />
               )}
             </FormField>
@@ -705,6 +718,7 @@ function Connect({ row, model }: { row: ConnectorRow; model: ConnectorsModel }) 
                   onChange={(e) => setClientSecret(e.target.value)}
                   onKeyDown={(e) => {
                     if (e.key === "Enter") start();
+                    escapeDrops(e, clientSecret, () => setClientSecret(""));
                   }}
                 />
               )}

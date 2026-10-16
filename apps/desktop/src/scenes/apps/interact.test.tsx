@@ -148,6 +148,24 @@ describe("the field", () => {
     expect(input.value).toBe("");
   });
 
+  it("keeps the allow-list's Escape: the first drops the typed address, the next lets the field go", () => {
+    // The stage never takes a text field's Escape, and the empty field focuses this box itself, so
+    // a box that never lets go leaves Escape unable to rise out of Apps.
+    mount("typical", PATHS.field!);
+    const input = host.querySelector<HTMLInputElement>('input[aria-label="Address of the app to register"]')!;
+    act(() => input.focus());
+    type(input, "half-typed.example");
+    const escape = () =>
+      act(() => {
+        input.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+      });
+    escape();
+    expect(input.value).toBe("");
+    expect(document.activeElement).toBe(input);
+    escape();
+    expect(document.activeElement).not.toBe(input);
+  });
+
   it("will not register an empty address, and says why on the button", () => {
     const a = mount("typical", PATHS.field!);
     const press = host.querySelector<HTMLInputElement>('input[aria-label="Address of the app to register"]')!;

@@ -139,7 +139,12 @@ function UrlField({ url, onGo }: { url: string; onGo: (typed: string) => void })
       onChange={(e) => setEdit(e.target.value)}
       onKeyDown={(e) => {
         if (e.key === "Enter") onGo(value);
-        if (e.key === "Escape") setEdit(null);
+        // The first Escape puts the address back; with nothing typed the field lets go, so the
+        // next Escape is the stage's (it never takes a text field's Escape).
+        if (e.key === "Escape") {
+          if (edit !== null) setEdit(null);
+          else e.currentTarget.blur();
+        }
       }}
     />
   );

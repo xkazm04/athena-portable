@@ -163,6 +163,26 @@ describe("connect", () => {
     expect(host.querySelector('[aria-label="A consent page is open; finish it in the browser first."]')).toBeTruthy();
   });
 
+  it("each connect field keeps the allow-list's Escape: the first drops what was typed, the next lets go", () => {
+    // The stage leaves a text field's Escape to the field, so a field that never lets go holds
+    // the way back: Escape in it could not rise a level however often it was pressed.
+    const fields = (): HTMLInputElement[] => [...host.querySelectorAll("input.input")] as HTMLInputElement[];
+    for (const [id, count] of [["notion", 1], ["gmail", 2]] as const) {
+      mount("empty", item(id));
+      expect(fields()).toHaveLength(count);
+      for (let i = 0; i < count; i++) {
+        const field = fields()[i]!;
+        act(() => field.focus());
+        type(field, "typed");
+        key(field, "Escape");
+        expect(fields()[i]!.value, `${id} field ${i}: the first Escape drops the text`).toBe("");
+        expect(document.activeElement).toBe(fields()[i]);
+        key(fields()[i]!, "Escape");
+        expect(document.activeElement, `${id} field ${i}: the second Escape lets go`).not.toBe(fields()[i]);
+      }
+    }
+  });
+
   it("the OAuth pair is sent as client_id and client_secret, and the secret is cleared", () => {
     const a = mount("empty", item("gmail"));
     const [id, secret] = [...host.querySelectorAll("input.input")] as HTMLInputElement[];

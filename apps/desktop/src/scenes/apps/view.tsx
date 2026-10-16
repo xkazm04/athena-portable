@@ -223,6 +223,12 @@ function Register({
           onChange={(e) => setTyped(e.target.value)}
           onKeyDown={(e) => {
             if (e.key === "Enter") register();
+            // The field's own Escape: the first drops what was typed, the next lets go, so the
+            // one after that is the stage's and rises (the stage never takes a field's Escape).
+            if (e.key === "Escape") {
+              if (typed !== "") setTyped("");
+              else e.currentTarget.blur();
+            }
           }}
         />
         <Button variant="primary" disabledReason={typed.trim() ? undefined : "Type an address first."} onClick={register}>

@@ -52,3 +52,27 @@ describe("the tools pill counts as the field does", () => {
     expect(pill().textContent).toBe("3 tools");
   });
 });
+
+describe("the address field", () => {
+  it("puts the address back on the first Escape and lets go on the next, so the stage's Escape can rise", () => {
+    mount(fixtures.typical!);
+    const field = host.querySelector<HTMLInputElement>('input[aria-label="Address"]')!;
+    const address = field.value;
+    expect(address).not.toBe("");
+    act(() => field.focus());
+    const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")!.set!;
+    act(() => {
+      set.call(field, "half typed");
+      field.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+    const escape = () =>
+      act(() => {
+        field.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape", bubbles: true, cancelable: true }));
+      });
+    escape();
+    expect(field.value).toBe(address);
+    expect(document.activeElement).toBe(field);
+    escape();
+    expect(document.activeElement).not.toBe(field);
+  });
+});
