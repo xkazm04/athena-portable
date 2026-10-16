@@ -100,6 +100,18 @@ describe("the steps say what is done in more than a colour", () => {
   });
 });
 
+describe("a fact says only what is true of it", () => {
+  it("a microphone nobody has asked about is not said to be checking", () => {
+    const h = html("empty", 2);
+    expect(h).toContain("not asked yet");
+    expect(h).not.toContain("checking · not asked yet");
+    expect(h).not.toMatch(/checking ·/);
+  });
+  it("an answered microphone keeps its badge", () => {
+    expect(html("no-mic", 2)).toContain("not ready · none on this machine");
+  });
+});
+
 describe("the way forward names the step, not a clipped question", () => {
   it("says Next and the next step's name", () => {
     expect(html("ready", 0)).toContain("Next: Reach");

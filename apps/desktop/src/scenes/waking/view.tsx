@@ -45,12 +45,19 @@ export interface WakingProps {
   initialStep?: 0 | 1 | 2;
 }
 
-const BADGE: Record<Fact["standing"], string> = {
+const BADGE: Record<Exclude<Fact["standing"], "unknown">, string> = {
   done: "ready",
   todo: "not yet",
   missing: "not ready",
-  unknown: "checking",
 };
+
+/**
+ * A fact as one line. An unknown fact has no badge: on this act it is a microphone nobody has asked
+ * about ("not asked yet"), and a "checking" badge in front of that said something was running.
+ */
+function factLine(fact: Fact): string {
+  return fact.standing === "unknown" ? fact.summary : `${BADGE[fact.standing]} · ${fact.summary}`;
+}
 
 export default function WakingView({ model, onLater, initialStep = 0 }: WakingProps) {
   const [step, setStep] = useState<0 | 1 | 2>(initialStep);
@@ -159,7 +166,7 @@ export default function WakingView({ model, onLater, initialStep = 0 }: WakingPr
               </div>
             </form>
             <p className="waking__fact" data-standing={page.standing}>
-              {BADGE[page.standing]} · {page.summary}
+              {factLine(page)}
             </p>
           </>
         )}
@@ -175,7 +182,7 @@ export default function WakingView({ model, onLater, initialStep = 0 }: WakingPr
                 Check my microphone
               </Button>
               <span className="waking__fact" data-standing={mic.standing}>
-                {BADGE[mic.standing]} · {mic.summary}
+                {factLine(mic)}
               </span>
             </div>
             <p className="waking__fact" data-standing={voice.standing}>
