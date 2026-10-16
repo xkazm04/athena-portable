@@ -145,6 +145,8 @@ def build_handler(
             self.send_header("X-Accel-Buffering", "no")
             self.end_headers()
             self.close_connection = True
+            if self.command == "HEAD":
+                return  # headers only: a live stream would otherwise hold this thread for the run
             try:
                 for frame in frames:
                     self.wfile.write(runner.redact(frame).encode("utf-8"))

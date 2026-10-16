@@ -14,6 +14,7 @@ import http.client
 import json
 import os
 import re
+import socket
 import subprocess
 import sys
 import threading
@@ -480,6 +481,29 @@ def test_a_past_run_replays_from_its_ledger(make: Any, tmp_path: Path) -> None:
     end = frames[-1]
     assert end["event"] == "end" and end["data"]["replay"] is True
     assert end["data"]["footer"] == f"(showing {MAX_CALL_EVENTS} of {MAX_CALL_EVENTS + 5})"
+
+
+def _raw(s: Served, request: bytes) -> bytes:
+    """Send ``request`` on a bare socket and read until the server closes (or 10 s pass)."""
+    with socket.create_connection(("127.0.0.1", s.port), timeout=10) as sock:
+        sock.sendall(request)
+        chunks = []
+        try:
+            while chunk := sock.recv(65536):
+                chunks.append(chunk)
+        except TimeoutError:
+            pass
+    return b"".join(chunks)
+
+
+def test_head_on_an_event_stream_answers_headers_and_no_frames(make: Any, tmp_path: Path) -> None:
+    rows = [{"engine": "nemotron", "role": "attacker", "cost_usd": 0.001}] * 3
+    _past_run(tmp_path / "runs", "20261006T010000Z", report={"run_id": "x"}, ledger=rows)
+    s, _ = make()
+    raw = _raw(s, b"HEAD /runs/20261006T010000Z/events HTTP/1.1\r\nHost: x\r\n\r\n")
+    head, _, body = raw.partition(b"\r\n\r\n")
+    assert head.startswith(b"HTTP/1.1 200") and b"text/event-stream" in head
+    assert body == b""  # a HEAD response has no body, and holds no thread for a run's length
 
 
 # --- reading ---------------------------------------------------------------------------------
