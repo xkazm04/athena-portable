@@ -321,3 +321,19 @@ test("mark_paid refuses a fraction of a cent rather than rounding it into a perm
   assert.deepEqual(moneyOn(owed.id), before, "no payment row");
   assert.equal((await actions.markPaidAction(owed.id, 1000)).ok, true, "a whole number of cents still records");
 });
+
+test("the page's identity tags are the app's constants, not a second copy of them", async () => {
+  // The bridge reads `athena:app` / `athena:app-version` off the page (packages/athena-bridge
+  // inject.js) and the books are filed under APP_ID (lib/db.ts openDb). layout.tsx typed both out
+  // again as literals, so the one place that renamed or versioned the app would leave the page
+  // announcing the old one. tidycrm's layout already imports them.
+  const { APP_ID, APP_VERSION } = await import("../lib/constants");
+  const raw = readFileSync(new URL("../app/layout.tsx", import.meta.url), "utf8");
+  const code = raw.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+  const tags = /other:\s*\{([^}]*)\}/.exec(code)?.[1] ?? "";
+  assert.match(tags, /"athena:app":\s*APP_ID\b/, "athena:app is APP_ID");
+  assert.match(tags, /"athena:app-version":\s*APP_VERSION\b/, "athena:app-version is APP_VERSION");
+  for (const literal of [APP_ID, APP_VERSION]) {
+    assert.ok(!tags.includes(`"${literal}"`) && !tags.includes(`'${literal}'`), `no literal ${literal}`);
+  }
+});

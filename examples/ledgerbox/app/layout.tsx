@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { Anton, IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
+import { APP_ID, APP_VERSION } from "@/lib/constants";
 import "./globals.css";
 import { Providers } from "./providers";
 
@@ -7,8 +8,9 @@ export const metadata: Metadata = {
   title: "Ledgerbox — the Lanes",
   description:
     "Six chronological swimlanes, one per area of the practice, over three zoom levels: the swarm, one lane spread, one invoice lifted. Ships without Athena; every capability is registered and waiting.",
-  // App identity for a WebMCP consumer: origin comes from the page, app_id and version from here.
-  other: { "athena:app": "ledgerbox", "athena:app-version": "0.1.0" },
+  // App identity for a WebMCP consumer: origin comes from the page, app_id and version from here -
+  // the same constants the books are filed under, so the page cannot announce a name it is not.
+  other: { "athena:app": APP_ID, "athena:app-version": APP_VERSION },
 };
 
 // The books are read per request; nothing here is prerendered.
