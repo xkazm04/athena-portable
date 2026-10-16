@@ -16,7 +16,7 @@ import { test } from "node:test";
 import { tempHome } from "./tmp-home";
 
 // Own scratch cwd, own seeded copy: `openDb` resolves the file from `process.cwd()/data`.
-tempHome("ledgerbox-lanes-ui-");
+const home = tempHome("ledgerbox-lanes-ui-");
 
 /* ------------------------------------------------------------------- the stand-ins */
 
@@ -50,8 +50,28 @@ const moduleOf = (source: string) => `data:text/javascript,${encodeURIComponent(
   },
 };
 
+/*
+ * EVERY IMPORT IS AWAITED HERE, before the first `test()`. `tempHome`'s `after` hook puts the
+ * working directory back and closes the books when the file's tests have run - and a top-level
+ * `await` between two `test()` calls lets the runner finish the tests declared so far, fire that
+ * hook, and run the rest in the APP's directory, on the dev server's own `data/ledgerbox.sqlite`.
+ * An earlier version of this file did exactly that. `books()` below refuses to run a write
+ * anywhere but the scratch home.
+ */
 // Renamed: it is called here as a plain function over stand-ins, not as a hook inside a render.
 const { ACT_THREW, useRun: cardRun } = await import("../components/lanes/useRun");
+const { buildSheet } = await import("../lib/lanes");
+const actions = await import("../app/actions");
+const { db, COUNTED_OUT } = await import("../lib/db");
+const { CATEGORIES } = await import("../lib/constants");
+const { actRefusal, gateSubject, stillArmed, NOT_A_DEBT } = await import("../components/lanes/card/read");
+
+/** The scratch books, or a failed test - never the app's own database. */
+function books(): ReturnType<typeof buildSheet> {
+  assert.equal(process.cwd(), home, "the books under test are the scratch copy");
+  assert.ok(db().file.startsWith(home), `writing to ${db().file}`);
+  return buildSheet();
+}
 
 /** A source file under `components/lanes/`, comments stripped, so prose about a rule cannot pass for it. */
 const source = (path: string) =>
@@ -95,10 +115,6 @@ test("an act that answers is toasted in its own tone, and leaves the refresh to 
 
 /* ------------------------------------------- a gate is armed on what it showed, not on the row */
 
-const { buildSheet } = await import("../lib/lanes");
-const actions = await import("../app/actions");
-const { gateSubject, stillArmed } = await import("../components/lanes/card/read");
-
 type Sheet = ReturnType<typeof buildSheet>;
 const markIn = (sheet: Sheet, id: string) => sheet.lanes.flatMap((l) => l.marks).find((m) => m.id === id)!;
 
@@ -106,15 +122,15 @@ test("an armed gate closes when what it disclosed changes under it, and when its
   // hitl-approval/gate-state-machines, "approved content swapped before execution": a person arms
   // Send it having read one letter; an agent redrafts in the meantime; `sendReminderAction` sends
   // the NEWEST draft. Approval of version N is not approval of version N+1.
-  let sheet = buildSheet();
+  let sheet = books();
   const marks = sheet.lanes.flatMap((l) => l.marks);
   const chase = marks.find((m) => m.state === "overdue" && !m.hasDraft && m.candidateCount === 0)!;
   assert.ok((await actions.draftReminderAction(chase.id, "gentle")).ok);
-  sheet = buildSheet();
+  sheet = books();
   const read = gateSubject("send_reminder", markIn(sheet, chase.id), sheet.details[chase.id]);
   assert.ok(stillArmed(read, read, false), "nothing moved: the gate stays armed");
   assert.ok((await actions.draftReminderAction(chase.id, "firm")).ok);
-  sheet = buildSheet();
+  sheet = books();
   const now = gateSubject("send_reminder", markIn(sheet, chase.id), sheet.details[chase.id]);
   assert.equal(stillArmed(read, now, false), false, "a redrafted letter re-closes the send gate");
 
@@ -126,7 +142,7 @@ test("an armed gate closes when what it disclosed changes under it, and when its
   const paidOn = gateSubject("mark_paid", markIn(sheet, owed.id), sheet.details[owed.id]);
   const voidOn = gateSubject("void_invoice", markIn(sheet, owed.id), sheet.details[owed.id]);
   assert.ok((await actions.matchAction(owed.id, credit.lineId)).ok);
-  sheet = buildSheet();
+  sheet = books();
   const after = markIn(sheet, owed.id);
   assert.equal(stillArmed(paidOn, gateSubject("mark_paid", after, sheet.details[owed.id]), false), false);
   // Void it is refused once a credit is applied, and the row says so; an armed confirm must not outlive that.
@@ -151,11 +167,9 @@ test("every act the decision list offers on an open invoice is one the books tak
   // the act goes through. On the seed the list offered Draft it on both disputed invoices and Draft
   // it and Record it on the unsent draft LB-2026-0055 - four presses that could only come back as
   // an error toast. Each act runs for real on the scratch books and is rolled back.
-  const { db, COUNTED_OUT } = await import("../lib/db");
-  const { actRefusal, NOT_A_DEBT } = await import("../components/lanes/card/read");
   assert.deepEqual([...NOT_A_DEBT].sort(), [...COUNTED_OUT].sort(), "the card's copy of the books' COUNTED_OUT");
 
-  const sheet = buildSheet();
+  const sheet = books();
   const open = sheet.lanes.flatMap((l) => l.marks).filter((m) => m.balanceCents > 0 || m.state === "disputed");
   assert.ok(open.length > 50, "the seed's open invoices");
   const newest = () => db().get<{ n: number }>("SELECT COALESCE(MAX(id), 0) AS n FROM activity")!.n;
