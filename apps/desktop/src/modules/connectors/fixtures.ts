@@ -263,28 +263,5 @@ export const fixtures: Record<string, ConnectorsModel> = {
   "needs-reauth": needsReauth,
   "flow-failed": flowFailed,
   "records-unreadable": recordsUnreadable,
-  "open-notion": typical,
-  "open-gmail": typical,
-  "open-reauth": needsReauth,
-  "open-flow-failed": flowFailed,
-  "open-records-unreadable": recordsUnreadable,
   "open-reconnected": reconnected,
 };
-
-export const fixtureIds = [
-  "empty",
-  "typical",
-  "heavy",
-  "degraded",
-  "unreadable",
-  "unreachable",
-  "needs-reauth",
-  "flow-failed",
-  "records-unreadable",
-  "open-notion",
-  "open-gmail",
-  "open-reauth",
-  "open-flow-failed",
-  "open-records-unreadable",
-  "open-reconnected",
-] as const;

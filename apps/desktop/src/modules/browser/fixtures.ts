@@ -187,14 +187,4 @@ export const fixtures: Record<string, BrowserModel> = {
   ),
 };
 
-export const fixtureIds = [
-  "empty",
-  "first-run",
-  "typical",
-  "heavy",
-  "degraded",
-  "no-bridge",
-  "apps-unread",
-] as const;
-
 export type { BrowserTab };

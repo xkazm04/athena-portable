@@ -142,14 +142,3 @@ export const fixtures: Record<string, SetupModel> = {
   onboarding,
   settings,
 };
-
-export const fixtureIds = [
-  "empty",
-  "typical",
-  "heavy",
-  "degraded",
-  "notFound",
-  "checking",
-  "onboarding",
-  "settings",
-] as const;
