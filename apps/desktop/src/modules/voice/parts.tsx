@@ -68,12 +68,24 @@ export function InstallBlock({
 }) {
   if (view.busy) {
     return (
-      <div className="stack" role="status" aria-live="polite">
+      <div className="stack">
+        {/* Only the phase is live: the figure moves on every 250 ms poll and would be read out each
+         * time. The bar carries the value for whoever asks. */}
         <span className="row row--baseline">
-          <span className="typo-body">{view.label}</span>
+          <span className="typo-body" role="status" aria-live="polite">
+            {view.label}
+          </span>
           <span className="typo-data vs-push">{view.figure}</span>
         </span>
-        <span className="vs-progress" data-indeterminate={view.percent === null ? "true" : "false"}>
+        <span
+          className="vs-progress"
+          data-indeterminate={view.percent === null ? "true" : "false"}
+          role="progressbar"
+          aria-label={view.label}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-valuenow={view.percent ?? undefined}
+        >
           <span
             style={view.percent === null ? undefined : { transform: `scaleX(${Math.min(1, Math.max(0, view.percent / 100))})` }}
           />
