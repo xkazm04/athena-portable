@@ -2,7 +2,7 @@
  * `blocks` — the view model of The Blocks, in seven parts and one door.
  *
  * Client-safe: types and pure functions only, no `lib/db` import. The server
- * builds one `BkSheet` per request in `lib/blocks.ts`.
+ * builds one `BkSheet` per request in `lib/blocks/index.ts`.
  *
  * THE VOCABULARY. the `law` direction established that a **block** is one email domain:
  * the natural cohort in this schema, the column `contacts_domain` is indexed

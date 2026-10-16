@@ -1,13 +1,13 @@
 /**
  * Where an arrow key moves inside a grid of cells.
  *
- * Pure, and in the model rather than beside either caller, because two levels
- * now lay cells out in a grid and both owe the reader the same answer: left and
- * right step one, up and down step a row (and stay put where there is no row
- * straight above or below), Home and End go to the ends, and nothing wraps off
- * the end of the grid. Round 1's review named "no arrow-key
- * navigation at L1" as carried work; this is the half that can be tested without
- * a renderer, and `L1`'s roving tabindex and L0's plate both call it.
+ * Pure, and in the model rather than beside its caller, so the answer can be
+ * pinned without a renderer: left and right step one, up and down step a row
+ * (and stay put where there is no row straight above or below), Home and End go
+ * to the ends, and nothing wraps off the end of the grid. Round 1's review named
+ * "no arrow-key navigation at L1" as carried work; L1's roving focus
+ * (`Field.tsx`) is the one caller. Round 2's flat L0 plate called it too, and
+ * round 3's cube has no grid of cells to walk.
  *
  * Returns `null` for a key that is not the grid's business, so the caller knows
  * not to `preventDefault` — a component that swallows every key is one a

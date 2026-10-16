@@ -16,9 +16,10 @@
  * `open_group`'s `id` parameter says it wants — the tool's NAME, its class and
  * its shape are untouched, which is the rule this repo holds tools to.
  *
- * OPENING A DATABASE IS NOT INSTANT HERE, and the tool says so. The picture
- * spends about four hundred milliseconds turning its table dots into the grid,
- * and the arrival takes about as long again, so an agent that called
+ * OPENING A DATABASE IS NOT INSTANT HERE, and the tool says so. The camera
+ * spends about six hundred milliseconds flying into the database's octant, and
+ * the tables take most of half a second more to write their names and figures
+ * on (`../beats.ts`: flight, then dress), so an agent that called
  * `open_group` and then immediately `read_view` would be reading a level that is
  * still assembling. `open_group` therefore reports the level it is heading to
  * and how long the move takes.
