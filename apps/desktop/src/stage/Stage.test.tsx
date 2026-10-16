@@ -31,6 +31,13 @@ describe("the surface", () => {
     expect(html).not.toContain("stage__crumb ");
     expect(html).not.toContain("stage__dock");
   });
+  it("names no breadcrumb landmark, because there is no crumb in it", () => {
+    // An empty "Where you are" navigation is one more stop in a screen reader's landmark list
+    // that leads nowhere; the space it holds in the bar (and the drag region) stays.
+    expect(html).not.toContain("<nav");
+    expect(html).toContain('class="stage__crumbs" data-tauri-drag-region');
+    expect(render({ root: "apps" })).toContain('<nav class="stage__crumbs" aria-label="Where you are"');
+  });
   it("draws the water, the gauge and the scene", () => {
     expect(html).toContain("backdrop");
     expect(html).toContain("stage__gauge");

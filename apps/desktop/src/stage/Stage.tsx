@@ -158,9 +158,13 @@ export default function Stage(props: StageProps) {
           </svg>
           <span>Athena</span>
         </button>
-        <nav className="stage__crumbs" aria-label="Where you are" data-tauri-drag-region>
-          {trail.length > 1 &&
-            trail.slice(1).map((c, i, rest) => (
+        {/* At the surface there is no crumb, so the space stays (and drags the window) but names no
+            landmark: an empty navigation is a stop in a screen reader's list that leads nowhere. */}
+        {trail.length === 1 ? (
+          <div className="stage__crumbs" data-tauri-drag-region />
+        ) : (
+          <nav className="stage__crumbs" aria-label="Where you are" data-tauri-drag-region>
+            {trail.slice(1).map((c, i, rest) => (
               <span key={c.depth} className="stage__crumb">
                 <span aria-hidden="true">/</span>
                 {i === rest.length - 1 ? (
@@ -172,7 +176,8 @@ export default function Stage(props: StageProps) {
                 )}
               </span>
             ))}
-        </nav>
+          </nav>
+        )}
         <div className="stage__trailing">{trailing}</div>
       </header>
 
