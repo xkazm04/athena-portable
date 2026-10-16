@@ -3,8 +3,9 @@
 /**
  * What may be done to this block, in two regions that look nothing alike.
  *
- * The bar above is AUTO: everything in it writes a revision, so undo can replay
- * it — which is what buys the class, not harmlessness. The inverted block below
+ * The bar above is AUTO: everything in it is logged with what undo needs to put
+ * it back — revision rows for a tidy, the flagged ids for a stale flag, the pair
+ * for a verdict — which is what buys the class, not harmlessness. The inverted block below
  * is GATED and holds the two acts that destroy something. Greyscale the page
  * and it is still the only inverted region on it, so the class is a PLACE
  * rather than a badge on a button.
@@ -50,12 +51,12 @@ export function DossierGate({
 }) {
   return (
     <>
-  {/* Everything here writes a revision, so undo can replay it — which is
-      what buys the AUTO class, not harmlessness. */}
+  {/* Everything here can be put back by undo, which is what buys the AUTO
+      class, not harmlessness. Only the two tidies write revision rows. */}
   <div className="bk-foot-bar">
     {/* The same band that titles every region of the body above, so the two classes are one
         device read twice rather than two kinds of heading. */}
-    <Band label="Auto" note="— every change lands in `revisions`, and undo replays it" />
+    <Band label="Auto" note="— every change is logged, and undo can put it back" />
     <div className="bk-actions">
       <button
         type="button"

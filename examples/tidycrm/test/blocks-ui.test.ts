@@ -19,8 +19,9 @@ tempHome("tidycrm-test-");
 const { wheelPose } = await import("../components/blocks/space/useWheelZoom");
 const { BOUNDS, REST } = await import("../components/blocks/space/camera");
 const { clampPose } = await import("@athena/demo-kit/zoom");
-const { getContact, listOpenPairs } = await import("../lib/db");
-const { mergeContacts } = await import("../lib/mutations");
+const { db, getContact, listOpenPairs } = await import("../lib/db");
+const { flagStale, mergeContacts, resolvePair } = await import("../lib/mutations");
+const { buildSheet } = await import("../lib/blocks");
 
 const from = (path: string): string => fileURLToPath(new URL(`../${path}`, import.meta.url));
 
@@ -117,4 +118,27 @@ test("the merge's consent says so, at the gate and in the tool an agent reads", 
     assert.match(text, /phone/i, `${where} names the phone the merge can carry over`);
     assert.match(text, /activity/i, `${where} names the activity date the merge can carry over`);
   }
+});
+
+/* ------------------------------------------------------------- the auto bar */
+
+test("the auto bar's note claims nothing two of its four acts do not do", () => {
+  const revisions = () => db().get<{ n: number }>("SELECT COUNT(*) AS n FROM revisions")!.n;
+  const table = buildSheet()
+    .databases.flatMap((d) => d.tables)
+    .find((t) => t.staleIds.length > 0 && t.pairs.length > 0);
+  assert.ok(table, "the seed holds a table with stale rows and an open pair");
+
+  // Flag stale and keep both are AUTO because undo can put them back, not because they write a
+  // revision row: neither does.
+  const before = revisions();
+  assert.equal(flagStale(table.staleIds).ok, true);
+  assert.equal(resolvePair(table.pairs[0]!.id, "kept_both").ok, true);
+  assert.equal(revisions(), before, "flag stale and keep both write no revision row");
+
+  const gate = words("components/blocks/dossier/Gate.tsx");
+  const note = /label="Auto" note="([^"]*)"/.exec(gate)?.[1];
+  assert.ok(note !== undefined, "the auto band's note was found");
+  assert.doesNotMatch(note, /revisions/, "the note says every change lands in the revisions table");
+  assert.doesNotMatch(note, /`/, "the note prints Markdown backticks as literal characters");
 });
