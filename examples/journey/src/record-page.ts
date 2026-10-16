@@ -152,6 +152,27 @@ function factCards(ledger: Ledger, brain: Brain): string {
     .join("")}</div>`;
 }
 
+const COUNT_WORDS = ["No", "One", "Two", "Three", "Four", "Five", "Six", "Seven", "Eight", "Nine", "Ten"];
+
+/**
+ * The declines view's headline, from the ledger's own count.
+ *
+ * It printed "Two declines" whatever the record held, beside a counter that said otherwise; this
+ * page exists so that no number on screen is one the record does not hold (the header above).
+ */
+export function declinesHeading(count: number): string {
+  return `${COUNT_WORDS[count] ?? String(count)} decline${count === 1 ? "" : "s"}`;
+}
+
+/** The sentence under it. Two reads exactly as the long take narrates it ("Both recorded as ..."). */
+export function declinesSub(count: number): string {
+  const vocabulary = "<code>user_denied</code> is a reason from the closed set";
+  if (count === 0) return "Nothing was declined in this run.";
+  if (count === 1) return `Recorded as the user's decision, not as an error — ${vocabulary}, and nothing moved on the page.`;
+  if (count === 2) return `Both recorded as the user's decision, not as errors — ${vocabulary}, and nothing moved on either page.`;
+  return `Each recorded as the user's decision, not as an error — ${vocabulary}, and nothing moved on any of the pages.`;
+}
+
 /** One of the five views of the record, as a whole document the runner sets on the page. */
 export function recordPage(view: RecordView, ledger: Ledger, brain: Brain): string {
   const denied = ledger.withReason("user_denied");
@@ -189,8 +210,8 @@ export function recordPage(view: RecordView, ledger: Ledger, brain: Brain): stri
                )
                .join("")}</div></main>`
         : view === "declines"
-          ? `<main><h1>Two declines</h1>
-               <p class="sub">Both recorded as the user's decision, not as errors — <code>user_denied</code> is a reason from the closed set, and nothing moved on either page.</p>
+          ? `<main><h1>${declinesHeading(denied.length)}</h1>
+               <p class="sub">${declinesSub(denied.length)}</p>
                <div class="counts">
                  <div><b>${denied.length}</b>declined</div>
                  <div><b>${gated.length}</b>gated calls</div>
