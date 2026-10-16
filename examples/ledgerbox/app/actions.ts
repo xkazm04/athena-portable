@@ -189,6 +189,22 @@ export async function categorizeAction(ids: string[], category: Category): Promi
   };
 }
 
+/**
+ * Why a line is not in the unapplied pool. It used to be "already applied elsewhere" for every
+ * case, which sent a caller with a mistyped id hunting for another invoice, and told one whose
+ * line was already on THIS invoice that it was on a different one.
+ */
+function whyNotInPool(lineId: unknown): string {
+  const handle = db();
+  const exists = handle.get<{ id: string }>("SELECT id FROM bank_lines WHERE id = ?", [String(lineId)]);
+  if (!exists) return `No bank line ${JSON.stringify(String(lineId))} in the books.`;
+  const on = handle.all<{ number: string }>(
+    "SELECT i.number FROM matches m JOIN invoices i ON i.id = m.invoice_id WHERE m.line_id = ? ORDER BY i.number",
+    [String(lineId)],
+  );
+  return `That bank line is already applied to ${on.map((r) => r.number).join(", ")}.`;
+}
+
 /** AUTO - apply a bank line to an invoice and record the payment it represents. */
 export async function matchAction(ref: string, lineId: string): Promise<MatchResult> {
   const resolved = resolveInvoice(ref);
@@ -200,7 +216,7 @@ export async function matchAction(ref: string, lineId: string): Promise<MatchRes
   const unowed = notADebt(invoice, "no credit can be applied to it");
   if (unowed) return fail(unowed);
   const line = unappliedLines().find((l) => l.id === lineId);
-  if (!line) return fail("That bank line is already applied elsewhere.");
+  if (!line) return fail(whyNotInPool(lineId));
   // The pool is every line nobody matched, debits included, and a debit's amount is stored
   // positive: without this the studio's own subscription settled part of a client's invoice.
   if (line.direction !== "in") {

@@ -286,3 +286,25 @@ test("a server action refuses a value outside its own vocabulary, from any calle
   assert.match(exported.message, /1999-01/);
   assert.equal(db().get<{ n: number }>("SELECT COUNT(*) AS n FROM exports")!.n, exportsBefore, "no export row");
 });
+
+test("match_bank_line says why a line is not in the pool: no such line, or applied - and to which invoice", async () => {
+  // Every line outside the unapplied pool was "already applied elsewhere", so a mistyped id sent
+  // an agent hunting for another invoice, and a line already on THIS invoice was said to be on a
+  // different one.
+  const target = fresh("open");
+  const typo = await actions.matchAction(target.id, "bl_nope");
+  assert.equal(typo.ok, false);
+  assert.match(typo.message, /No bank line "bl_nope"/);
+
+  const applied = db().get<{ invoice_id: string; line_id: string; number: string }>(
+    "SELECT m.invoice_id, m.line_id, i.number FROM matches m JOIN invoices i ON i.id = m.invoice_id LIMIT 1",
+  )!;
+  const here = await actions.matchAction(applied.invoice_id, applied.line_id);
+  assert.equal(here.ok, false);
+  assert.match(here.message, new RegExp(`already applied to ${applied.number}`));
+  assert.doesNotMatch(here.message, /elsewhere/);
+
+  const there = await actions.matchAction(target.id, applied.line_id);
+  assert.equal(there.ok, false);
+  assert.match(there.message, new RegExp(`already applied to ${applied.number}`));
+});
