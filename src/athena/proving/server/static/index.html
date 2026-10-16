@@ -259,7 +259,7 @@ details.item > summary::-webkit-details-marker { display: none; }
       </svg>
       <span>Athena &middot; Proving Ground</span>
     </div>
-    <button class="theme" id="theme" type="button" aria-label="Switch colour theme">Theme</button>
+    <button class="theme" id="theme" type="button" title="Switch colour theme">Theme</button>
   </div>
 </header>
 
@@ -394,7 +394,9 @@ details.item > summary::-webkit-details-marker { display: none; }
   function applyTheme(t) {
     if (t) document.documentElement.setAttribute("data-theme", t);
     else document.documentElement.removeAttribute("data-theme");
-    themeBtn.textContent = t === "dark" ? "Dark" : t === "light" ? "Light" : "Auto";
+    const label = t === "dark" ? "Dark" : t === "light" ? "Light" : "Auto";
+    themeBtn.textContent = label;
+    themeBtn.setAttribute("aria-label", `Colour theme: ${label}`);  // holds the visible word (WCAG 2.5.3)
   }
   let theme = ""; try { theme = localStorage.getItem("pg-theme") || ""; } catch { theme = ""; }
   applyTheme(theme);

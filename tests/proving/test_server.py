@@ -782,6 +782,17 @@ def test_the_page_greys_out_what_the_host_cannot_run() -> None:
 # --- the page reads (WCAG 2.2 AA) --------------------------------------------------------------
 
 
+def test_the_theme_buttons_name_carries_what_it_shows() -> None:
+    """WCAG 2.5.3 Label in Name: the button shows Auto, Light or Dark, so its accessible name
+    must contain that word (a speech user says what they see), and it says the current state."""
+    source = page_html()
+    button = re.search(r'<button class="theme"[^>]*>', source)
+    assert button is not None and "aria-label" not in button.group(0)
+    script = source.split("<script", 1)[1]
+    assert re.search(r'themeBtn\.setAttribute\("aria-label", `Colour theme: \$\{label\}`\)', script)
+    assert re.search(r"themeBtn\.textContent = label", script)
+
+
 def test_the_verdict_strip_is_a_group_of_buttons_not_an_image() -> None:
     """``role="img"`` makes its children presentational (WAI-ARIA 1.2), so the strip's verdict
     buttons would be focusable with no role a screen reader announces. A group keeps its label."""
