@@ -160,13 +160,6 @@ body {
   }
 }
 
-/* The completion signal. Zero size, keyed on the flight: it runs the move and reports the end. */
-.dk-flight {
-  position: absolute;
-  width: 0;
-  height: 0;
-}
-
 .dk-overlay {
   position: fixed;
   inset: 10% 50% auto;

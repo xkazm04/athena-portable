@@ -110,6 +110,25 @@ test("the template spends the kit's spacing scale and never re-types a step of i
   assert.deepEqual(offenders, [], "a spacing value that is not a step of the kit's scale");
 });
 
+test("every class the template's stylesheet defines is drawn by the template or the kit", () => {
+  // A rule with no element is copied into every new app and explained there as if it ran.
+  const sources = payload()
+    .filter(({ file }) => /\.tsx?$/.test(file))
+    .map(({ text }) => text);
+  const walk = (dir: string): void => {
+    for (const entry of readdirSync(dir, { withFileTypes: true })) {
+      const path = join(dir, entry.name);
+      if (entry.isDirectory()) walk(path);
+      else if (/\.tsx?$/.test(entry.name)) sources.push(readFileSync(path, "utf8"));
+    }
+  };
+  walk(join(KIT, "src"));
+  const drawn = sources.join("\n");
+  const defined = new Set([...templateCss().matchAll(/\.(dk-[a-z0-9-]+)/g)].map((m) => m[1]!));
+  const orphans = [...defined].filter((name) => !new RegExp(String.raw`["'\s\`]${name}["'\s\`]`).test(drawn));
+  assert.deepEqual(orphans, [], "a class the stylesheet styles and nothing renders");
+});
+
 test("a template file that sends the reader to a README appendix sends them to one that exists", () => {
   const readme = readFileSync(join(TEMPLATE, "README.md"), "utf8");
   const hasAppendix = /^#+\s.*appendix/im.test(readme);
