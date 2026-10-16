@@ -145,7 +145,7 @@
 }
 
 .bk-stat[data-tone="goldline"] > b {
-  color: var(--bk-goldline);
+  color: var(--bk-goldline-ink);
 }
 
 .bk-stat[data-tone="greenline"] > b {

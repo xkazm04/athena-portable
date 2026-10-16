@@ -135,6 +135,15 @@
    */
   --bk-label-ink: var(--bk-graphite-2);
 
+  /*
+   * GOLD AS TEXT. --bk-goldline is a swatch first (the pair panel's stripe, the scene's dots),
+   * and as the colour of a word or a figure it was 4.48:1 on the sheet and 3.91:1 on the vellum
+   * the dossier's verdict stands on. Its ink is the same gold taken a fifth of the way to
+   * graphite: 5.79:1 and 5.05:1, which is where redline already sits. Mixed from the ramp, not a
+   * new hex, so the colour lock's list above is still the whole list.
+   */
+  --bk-goldline-ink: color-mix(in srgb, var(--bk-goldline) 80%, var(--bk-graphite));
+
   /* --- Motion. law's durations and easings verbatim. --- */
   --bk-dur-1: 90ms;
   --bk-dur-2: 160ms;

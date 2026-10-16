@@ -157,3 +157,23 @@ test("every focus ring clears 3:1 against the ground it is drawn on, the title b
     assert.match(rule.selector, /^\.bk-title-block :where\([^)]*\):focus-visible$/);
   }
 });
+
+test("text set in a state's colour clears 4.5:1 on the sheet and on the vellum", () => {
+  // The three hue tokens are SWATCHES first - a stripe, a dot, a rule - where 3:1 is the floor.
+  // Where one becomes the colour of a word or a figure it is text, and the floor is 4.5:1 on both
+  // grounds a figure stands on: the sheet, and the vellum of the dossier's head, the pair panel
+  // and a hovered key. Rules that set their own background are measured on that instead.
+  const tone = /var\(--bk-(redline|greenline|goldline)[a-z-]*\)/;
+  const sites = RULES.filter((r) => tone.test(r.decls.get("color") ?? ""));
+  assert.ok(sites.length >= 8, `only ${sites.length} rules set text in a state's colour`);
+  const low: string[] = [];
+  for (const rule of sites) {
+    const own = rule.decls.get("background") ?? rule.decls.get("background-color");
+    const grounds = own && own !== "none" ? [own] : SHEET_GROUNDS;
+    for (const ground of grounds) {
+      const r = ratio(rule.decls.get("color")!, ground);
+      if (r < 4.5) low.push(`${rule.selector} on ${ground}: ${r.toFixed(2)}:1`);
+    }
+  }
+  assert.deepEqual(low, [], `text in a state's colour under 4.5:1:\n  ${low.join("\n  ")}`);
+});

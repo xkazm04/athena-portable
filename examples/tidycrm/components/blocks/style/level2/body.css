@@ -88,7 +88,7 @@
 }
 
 .bk-check[data-kind="duplicate"][data-failed="true"] .bk-check-mark {
-  color: var(--bk-goldline);
+  color: var(--bk-goldline-ink);
 }
 
 .bk-check-text {

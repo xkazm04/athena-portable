@@ -89,7 +89,7 @@
 }
 
 .bk-chip > b[data-tone="goldline"] {
-  color: var(--bk-goldline);
+  color: var(--bk-goldline-ink);
 }
 
 .bk-chip > b[data-tone="greenline"] {

@@ -79,7 +79,7 @@
 }
 
 .bk-legend span[data-tone="goldline"] {
-  color: var(--bk-goldline);
+  color: var(--bk-goldline-ink);
 }
 
 .bk-legend span[data-tone="ink"] {
