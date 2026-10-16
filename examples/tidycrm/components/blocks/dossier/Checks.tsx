@@ -26,7 +26,7 @@ export function DossierChecks({
 }) {
   return (
       <div className="bk-dossier-main">
-        <Band label="The four checks on this block" />
+        <Band label="The four checks on this table" />
         <div className="bk-checks">
           {DEVIATION_KINDS.map((kind) => {
             const hit = failed.get(kind);

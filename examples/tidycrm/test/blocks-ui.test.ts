@@ -142,3 +142,45 @@ test("the auto bar's note claims nothing two of its four acts do not do", () => 
   assert.doesNotMatch(note, /revisions/, "the note says every change lands in the revisions table");
   assert.doesNotMatch(note, /`/, "the note prints Markdown backticks as literal characters");
 });
+
+/* ------------------------------------------------------------ the vocabulary */
+
+/** This context's components; the level words they print are `BK_LEVELS`' (model/vocabulary.ts). */
+const COMPONENTS = [
+  "components/blocks/Blocks.tsx",
+  "components/blocks/Cluster.tsx",
+  "components/blocks/Dossier.tsx",
+  "components/blocks/Field.tsx",
+  "components/blocks/Stat.tsx",
+  "components/blocks/World.tsx",
+  "components/blocks/dossier/Checks.tsx",
+  "components/blocks/dossier/Gate.tsx",
+  "components/blocks/dossier/Head.tsx",
+  "components/blocks/dossier/Pair.tsx",
+  "components/blocks/dossier/parts.tsx",
+  "components/blocks/field/Head.tsx",
+  "components/blocks/l0/Keys.tsx",
+  "components/blocks/l0/L0.tsx",
+  "components/blocks/sheet/Foot.tsx",
+  "components/blocks/sheet/Head.tsx",
+];
+
+test("the table a dossier opens is called a table and its parent a database, as BK_LEVELS has it", async () => {
+  const { BK_LEVELS } = await import("../components/blocks/model");
+  assert.deepEqual([...BK_LEVELS].slice(1), ["One database", "One table"]);
+  for (const file of COMPONENTS) {
+    // Class names keep their history (`bk-zone-strip`); what is checked is what a reader is told.
+    const told = words(file).replace(/className="[^"]*"/g, "").replace(/\bbk-[\w-]+/g, "");
+    assert.doesNotMatch(told, /\bzones?\b/i, `${file} still calls a database a zone`);
+  }
+  assert.doesNotMatch(
+    words("components/blocks/dossier/Head.tsx"),
+    /aria-label="[^"]*\bblock\b/,
+    "the dossier's close button calls the table a block",
+  );
+  assert.doesNotMatch(
+    words("components/blocks/dossier/Checks.tsx"),
+    /label="[^"]*\bblock\b/,
+    "the checks band calls the table a block",
+  );
+});

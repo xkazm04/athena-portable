@@ -51,7 +51,7 @@ export function DossierHead({
           className="bk-close"
           onClick={onClose}
           ref={closeRef}
-          aria-label="Close this block and return to the zone"
+          aria-label="Close this table and return to the database"
         >
           ✕
         </button>
