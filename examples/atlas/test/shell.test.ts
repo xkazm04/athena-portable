@@ -59,6 +59,16 @@ test("the boundary's card is the failed state, and it offers the retry", () => {
   assert.match(boundary[1]!, /retry=\{/);
 });
 
+test("switching variant clears a failed card by remounting the boundary, its one reset path", () => {
+  const shell = source("variants/Shell.tsx");
+  const mount = /<VariantBoundary\s+key=\{`([^`]*)`\}/.exec(shell);
+  assert.ok(mount, "the boundary is not keyed");
+  assert.match(mount[1]!, /\$\{variant\}/, "a slug change must mount a fresh boundary");
+  assert.match(mount[1]!, /\$\{attempt\}/, "Try again must mount a fresh boundary");
+  /* With the slug in the key, a prop-change reset inside one instance can never run. */
+  assert.doesNotMatch(shell, /componentDidUpdate/, "a reset branch the key makes unreachable");
+});
+
 /* --------------------------------------------------------------- the stylesheets -- */
 
 const STYLE = new URL("../components/atlas/style/", import.meta.url);

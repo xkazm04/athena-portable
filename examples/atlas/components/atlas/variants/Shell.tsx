@@ -165,11 +165,9 @@ class VariantBoundary extends Component<
     return { failed: true };
   }
 
-  componentDidUpdate(prev: { slug: VariantSlug }) {
-    /* A reader switching away from a variant that threw must not be stuck looking at its card. */
-    if (prev.slug !== this.props.slug && this.state.failed) this.setState({ failed: false });
-  }
-
+  /* A reader switching away from a variant that threw must not be stuck looking at its card. That is
+     the KEY's job, not this class's: the shell keys the boundary by slug and attempt, so a new
+     variant or a Try again is a fresh boundary with `failed: false`, and there is no reset to write. */
   render() {
     if (this.state.failed) {
       return (
