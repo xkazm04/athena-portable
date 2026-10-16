@@ -28,6 +28,13 @@ export interface EnginesState {
   check: () => Promise<void>;
 }
 
+/**
+ * The latest check. "Check again" can be pressed, and the daemon can become ready, while a check
+ * is running: only the latest may write its answer, and only its end ends `checking`, or an older
+ * answer replaces a newer one and the button reads "Check again" while a probe still runs.
+ */
+let latest = 0;
+
 export const useEngines = create<EnginesState>((set) => ({
   probes: null,
   checking: false,
@@ -38,15 +45,18 @@ export const useEngines = create<EnginesState>((set) => ({
       set({ problem: "The daemon is not ready yet." });
       return;
     }
+    const mine = ++latest;
     set({ checking: true });
     try {
       const page = await new DaemonApi(found).engines();
+      if (mine !== latest) return;
       const probes = page.engines.filter((e) => isEngineId(e.id));
       set({ probes: probes.map((e) => ({ id: e.id, state: e.state, detail: e.detail })), problem: null });
     } catch (e) {
+      if (mine !== latest) return;
       set({ problem: String(e instanceof Error ? e.message : e) });
     } finally {
-      set({ checking: false });
+      if (mine === latest) set({ checking: false });
     }
   },
 }));
