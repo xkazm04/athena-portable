@@ -32,6 +32,8 @@
   "include": [
     "src",
     "e2e",
+    "scripts/*.test.ts",
+    "src-tauri/src/*.test.ts",
     "vite.config.ts",
     "eslint.config.js"
   ]
