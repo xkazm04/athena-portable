@@ -382,16 +382,7 @@ fn screenshot(app: &AppHandle, tab: u32, ms: u64) -> HandResult {
     if focused != Some(tab) {
         // `validator_failed`: the call is well formed and the hand exists, but the state it needs
         // is not the state the window is in. The detail names what to do about it.
-        return HandResult::refused(
-            "validator_failed",
-            match focused {
-                Some(other) => format!(
-                    "a capture is of the page on screen, which is tab {other}, not tab {tab};                      focus tab {tab} first"
-                ),
-                None => "no tab is focused, so there is no page to capture".to_string(),
-            },
-            ms,
-        );
+        return HandResult::refused("validator_failed", not_on_screen(focused, tab), ms);
     }
 
     let shot = match capture::capture(app) {
@@ -429,6 +420,18 @@ fn screenshot(app: &AppHandle, tab: u32, ms: u64) -> HandResult {
         capture_id: Some(id),
         source_tab: None,
         source_origin: None,
+    }
+}
+
+/// Why `page_screenshot` cannot photograph `tab`: it is not the one on screen. A sentence the
+/// model reads and a person may see on the card, so it is one line with single spaces.
+fn not_on_screen(focused: Option<u32>, tab: u32) -> String {
+    match focused {
+        Some(other) => format!(
+            "a capture is of the page on screen, which is tab {other}, not tab {tab}; \
+             focus tab {tab} first"
+        ),
+        None => "no tab is focused, so there is no page to capture".to_string(),
     }
 }
 
@@ -1309,6 +1312,22 @@ mod tests {
             assert!(!result.ok);
             assert_eq!(result.tier, 2);
             assert!(result.capture_id.is_none());
+        }
+    }
+
+    #[test]
+    fn a_capture_of_a_tab_not_on_screen_says_so_in_one_plain_sentence() {
+        // The refusal is read by the model and can reach a card, so it is spelled the way every
+        // other refusal is: one line, single spaces, naming the tab to focus.
+        let detail = not_on_screen(Some(2), 3);
+        assert_eq!(
+            detail,
+            "a capture is of the page on screen, which is tab 2, not tab 3; focus tab 3 first"
+        );
+        let none = not_on_screen(None, 3);
+        for text in [&detail, &none] {
+            assert!(!text.contains("  "), "a run of spaces in {text:?}");
+            assert!(!text.contains('\n'), "a line break in {text:?}");
         }
     }
 
