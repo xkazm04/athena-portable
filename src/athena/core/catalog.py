@@ -473,9 +473,13 @@ class Catalog:
         the next one would pass the bound, and every one after it is cut; a sentence and the
         ``(showing N of M)`` footer say so. The cut is the prompt's only: a name left out keeps
         its class and its registration, and the gate treats it exactly as before.
+
+        The footer's ``M`` counts the names this render could address: an entry not enabled in
+        ``lane``, or of a switched-off origin, is not one, so it is neither listed nor counted as
+        left out.
         """
         entries = [e for e in self.for_lane(lane) if str(e.parsed_origin) not in exclude_origins]
-        total = len(self.entries)
+        total = len(entries)
         lines = [
             "## Capabilities",
             "",

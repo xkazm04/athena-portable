@@ -561,6 +561,31 @@ def test_a_block_under_the_bound_says_nothing_about_a_cut() -> None:
     assert "did not fit" not in text
 
 
+def test_the_footer_counts_only_the_names_this_render_could_address() -> None:
+    """A switched-off app's names are not addressable this turn, so they are not "left out"
+    (prompt-assembly/capability-documentation: render what is active, not what exists)."""
+    catalog = build_catalog(services(), manifest())
+    block = catalog.render_capabilities(Lane.BROWSER, frozenset({"host:invoices"}))
+
+    assert "host.invoices" not in block.text
+    assert block.shown == block.total == len(catalog.core)
+    assert f"(showing {block.shown} of {block.shown})" in block.text
+    assert "did not fit" not in block.text
+
+
+def test_a_cut_and_a_switched_off_app_add_up_to_the_footer() -> None:
+    catalog = build_catalog(services(), manifest())
+    for app_id in ("sigma", "tau", "upsilon"):
+        catalog.merge_manifest(_wide_manifest(app_id, 8))
+
+    block = catalog.render_capabilities(Lane.BROWSER, frozenset({"host:invoices"}))
+
+    cut = re.search(r"(\d+) more names from pages and connectors did not fit", block.text)
+    assert cut is not None and block.shown is not None
+    assert block.total == block.shown + int(cut.group(1))
+    assert block.total == len(catalog) - 2, "the two invoices names are off, not cut"
+
+
 # --- every_turn: the gated path into the always tier (ADR 0071) ---------------------------------
 
 
