@@ -19,6 +19,16 @@ export const VARIANT = "plain";
 export const VIEWS = ["list", "detail", "activity"] as const;
 export type View = (typeof VIEWS)[number];
 
+/**
+ * The view a pathname shows: what `read_current_view` answers. The routes are `/`, `/activity`
+ * and `app/[id]`, so `/activity-log` is a record page; a prefix test would call it the log.
+ */
+export function viewFor(pathname: string): View {
+  if (pathname === "/") return "list";
+  if (pathname === "/activity" || pathname === "/activity/") return "activity";
+  return "detail";
+}
+
 /** What `navigate` answers: a push target, or a refusal that explains itself. */
 export type NavDecision =
   | { ok: true; view: View; href: string; id?: string }
@@ -28,8 +38,8 @@ export type NavDecision =
  * The enum/handler agreement, as a pure function so it can be tested without a router: given what
  * the agent asked for, either a route to push or a refusal. `components/HostCapabilities.tsx` does
  * the pushing and nothing else, so there is no path on which the return value and the navigation
- * can disagree - which is the whole point. It also matches `viewFor()` in that file: every href
- * below maps back to the view it claims.
+ * can disagree - which is the whole point. Every href it answers with is read back through
+ * `viewFor()` above, the function `read_current_view` uses, so it maps back to the view it claims.
  */
 export function routeFor(view: unknown, id?: unknown): NavDecision {
   const asked = String(view);
@@ -47,7 +57,18 @@ export function routeFor(view: unknown, id?: unknown): NavDecision {
         hint: "read_selection returns the ids the user has ticked in the list.",
       };
     }
-    return { ok: true, view: target, href: `/${encodeURIComponent(recordId)}`, id: recordId };
+    const href = `/${encodeURIComponent(recordId)}`;
+    // Escaping is not enough: the browser collapses `/.` and `/..` to the list, and a static
+    // route (`/activity`) wins over `app/[id]`. Read the href back the way the router will, and
+    // refuse an id whose page is some other view rather than answer "detail" from the wrong one.
+    const lands = viewFor(new URL(href, "http://app.invalid").pathname);
+    if (lands !== "detail") {
+      return {
+        ok: false,
+        error: `"${recordId}" cannot be a record id here: its page is the ${lands} view.`,
+      };
+    }
+    return { ok: true, view: target, href, id: recordId };
   }
 
   return { ok: true, view: target, href: target === "activity" ? "/activity" : "/" };

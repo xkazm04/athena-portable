@@ -13,13 +13,7 @@
  */
 import { usePathname, useRouter } from "next/navigation";
 import { useWebMCPTool } from "@athena/demo-kit/webmcp";
-import { VIEWS, routeFor, type View } from "@/lib/constants";
-
-function viewFor(pathname: string): View {
-  if (pathname.startsWith("/activity")) return "activity";
-  if (pathname === "/") return "list";
-  return "detail";
-}
+import { VIEWS, routeFor, viewFor } from "@/lib/constants";
 
 export function HostCapabilities() {
   const router = useRouter();
