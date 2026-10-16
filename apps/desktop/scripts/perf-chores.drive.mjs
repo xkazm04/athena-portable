@@ -1,11 +1,25 @@
 /**
  * The scenario for the Chores depth — README section 3.5, ADR 0089 and 0096. The person walks the
  * catalogue's rows with the arrows, narrows it by an area and a job, orders it by value and by time,
- * opens a playbook's topic page from its row, enlarges a still and steps the lightbox, opens the fit
- * and closes it, dives into the replay, steps through it by arrow, and rises back to the catalogue.
+ * opens a playbook's topic page from its row, enlarges a still and steps the lightbox, presses the
+ * page's first "Make it yours" control (the Adopt studio, ADR 0097, where the inline fit form was
+ * until it was replaced) and closes it, dives into the replay, steps through it by arrow, and rises
+ * back to the catalogue.
  * The gate then holds that the settled scene asks for no frames and that no step, pick or dive ran a
  * long task.
  */
+
+/**
+ * Every control the drive presses by its name, by the level it is pressed on. `perf-chores.drive.test.ts`
+ * renders each level of the scene from the drive's own fixture and holds that every name is there,
+ * so a renamed or removed control fails `pnpm test` instead of a perf run half an hour later.
+ */
+export const CONTROLS = {
+  catalogue: ["Recover money", "All jobs", "Most value", "Most time saved", "Best edge"],
+  topic: ["Talk it through with her", "Watch the run turn by turn"],
+  adopt: ["Close"],
+};
+
 export default async function drive(page) {
   await page.waitForSelector("tbody tr[aria-selected]");
   await page.waitForTimeout(400);
@@ -29,7 +43,7 @@ export default async function drive(page) {
   }
   await tabs[0].click();
   await page.waitForTimeout(200);
-  for (const name of ["Recover money", "All jobs", "Most value", "Most time saved", "Best edge"]) {
+  for (const name of CONTROLS.catalogue) {
     await page.getByRole("button", { name, exact: true }).click();
     await page.waitForTimeout(200);
   }
@@ -56,14 +70,17 @@ export default async function drive(page) {
     await page.waitForTimeout(300);
   }
 
-  // The fit opens at the page's foot and closes.
-  await page.getByRole("button", { name: "Fit it to me" }).click();
+  // Make it yours: the studio opens from the page's foot and closes back to the page. The preview
+  // hands the shipped fixture no daemon, so the studio draws its own "needs the daemon" note.
+  await page.getByRole("button", { name: CONTROLS.topic[0], exact: true }).click();
+  await page.waitForSelector(".ad-page");
   await page.waitForTimeout(300);
-  await page.getByRole("button", { name: "Cancel" }).click();
+  await page.getByRole("button", { name: CONTROLS.adopt[0], exact: true }).click();
+  await page.waitForSelector(".pa-topic");
   await page.waitForTimeout(300);
 
   // Dive into the replay. Not every chore has a run to watch; the fixture's first does.
-  await page.getByRole("button", { name: "Watch the run turn by turn" }).click();
+  await page.getByRole("button", { name: CONTROLS.topic[1], exact: true }).click();
   await page.waitForSelector(".ch-dot", { timeout: 4000 });
   await page.waitForTimeout(500);
   await page.keyboard.press("ArrowRight");
@@ -82,6 +99,6 @@ export default async function drive(page) {
   await page.waitForTimeout(300);
 }
 
-drive.title = "walk the catalogue, filter and order it, open a topic, enlarge a still, replay its run, rise";
+drive.title = "walk the catalogue, filter and order it, open a topic, enlarge a still, open and close the studio, replay its run, rise";
 // The shipped set: a hundred rows is the case the budget is for, and its first chore has a run.
 drive.query = "&fixture=shipped";
