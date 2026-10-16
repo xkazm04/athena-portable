@@ -305,6 +305,22 @@ export function gestureStep(state: GestureState, input: GestureInput, opts: Gest
 export interface KeyInput {
   key: string;
   shiftKey?: boolean;
+  ctrlKey?: boolean;
+  metaKey?: boolean;
+  altKey?: boolean;
+  defaultPrevented?: boolean;
+  /** The element the key was pressed in. Read for its `tagName` and `isContentEditable` only. */
+  target?: unknown;
+}
+
+/** Elements that own the keys typed into them: the camera never takes one of theirs. */
+const EDITABLE = new Set(["INPUT", "TEXTAREA", "SELECT"]);
+
+function editable(target: unknown): boolean {
+  const el = target as { tagName?: unknown; isContentEditable?: unknown } | null | undefined;
+  if (!el || typeof el !== "object") return false;
+  if (el.isContentEditable === true) return true;
+  return typeof el.tagName === "string" && EDITABLE.has(el.tagName.toUpperCase());
 }
 
 /**
@@ -315,6 +331,13 @@ export interface KeyInput {
  * asked for, so the hook halts whatever was moving the camera first — inertia, the idle snap and
  * a fly in progress alike — exactly as a drag, a wheel and `set` do. A key that left the fly
  * running had its zoom overwritten by the fly's next frame.
+ *
+ * OWNERSHIP FIRST, as the nav's Escape rule has it (`escape.ts`): the handler sits on the scene
+ * root, so every key pressed anywhere inside the scene reaches it. A key some child already used
+ * (`defaultPrevented` — a roving list moving its focus), a key typed into a field (an input, a
+ * textarea, a select, a contenteditable), and a chord with Ctrl, Meta or Alt (Ctrl+= is the
+ * browser's page zoom, which a reader who needs larger text relies on) are not the camera's, and
+ * `null` here means the hook neither moves nor calls `preventDefault`.
  */
 export type KeyAction =
   | { type: "orbit"; dx: number; dy: number }
@@ -330,6 +353,8 @@ const ARROWS: Record<string, [number, number]> = {
 };
 
 export function keyAction(input: KeyInput, drag: GestureOptions["drag"]): KeyAction | null {
+  if (input.defaultPrevented || input.ctrlKey || input.metaKey || input.altKey) return null;
+  if (editable(input.target)) return null;
   const arrow = ARROWS[input.key];
   if (arrow) {
     const [dx, dy] = arrow;

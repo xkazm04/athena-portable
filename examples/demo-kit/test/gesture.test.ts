@@ -185,3 +185,22 @@ test("each key the rig answers is a move, and every other key is not the camera'
   assert.deepEqual(keyAction({ key: "Home" }, "orbit"), { type: "home" });
   for (const key of ["Enter", " ", "a", "Escape", "Tab", "End"]) assert.equal(keyAction({ key }, "orbit"), null, key);
 });
+
+test("a key the page already owns is not the camera's: a text field, a used key, a browser chord", () => {
+  // The rig's onKeyDown is on the scene root, so every key pressed inside the scene reaches it:
+  // a "-" typed into a field was a zoom and never reached the field, an arrow a roving list had
+  // already moved focus with also orbited, and Ctrl+= (the browser's page zoom) was swallowed.
+  // The ownership rule is the nav's Escape rule (escape.ts): ask before preventDefault.
+  const field = { tagName: "INPUT" };
+  for (const target of [field, { tagName: "TEXTAREA" }, { tagName: "SELECT" }, { tagName: "DIV", isContentEditable: true }]) {
+    assert.equal(keyAction({ key: "-", target }, "orbit"), null, `${target.tagName} keeps its keys`);
+    assert.equal(keyAction({ key: "ArrowLeft", target }, "orbit"), null, `${target.tagName} keeps its caret`);
+  }
+  assert.equal(keyAction({ key: "ArrowRight", defaultPrevented: true }, "orbit"), null, "a key a child used");
+  for (const chord of [{ ctrlKey: true }, { metaKey: true }, { altKey: true }]) {
+    assert.equal(keyAction({ key: "=", ...chord }, "orbit"), null, JSON.stringify(chord));
+  }
+  // A focused button or the scene itself is still the camera's: keyboard reach is the point.
+  assert.deepEqual(keyAction({ key: "ArrowRight", target: { tagName: "BUTTON" } }, "orbit"), { type: "orbit", dx: 1, dy: 0 });
+  assert.deepEqual(keyAction({ key: "+", shiftKey: true, target: { tagName: "DIV" } }, "orbit"), { type: "zoom", direction: "in" });
+});
