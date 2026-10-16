@@ -27,6 +27,7 @@ from athena.proving.roles import (
     claude_env,
     extract_json,
     load_env_file,
+    subprocess_runner,
 )
 from athena.proving.runlog import EXCERPT_CHARS, RunLog
 
@@ -276,6 +277,30 @@ def test_the_env_file_sets_names_never_returns_values_and_never_overrides(tmp_pa
     assert names == ["NEBIUS_API_KEY"]
     assert environ == {"OTHER": "kept", "NEBIUS_API_KEY": "abc123"}
     assert load_env_file(tmp_path / "missing", environ) == []
+
+
+def test_the_control_child_sees_no_nemotron_key_although_every_proving_run_holds_one(
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    """``main`` refuses to start without ``NEBIUS_API_KEY``, so it is always in a run's
+    environment, and the Haiku judge reads hostile attack text. Before: the child inherited it."""
+    seen: dict[str, Any] = {}
+
+    def run(argv: Sequence[str], **kwargs: Any) -> subprocess.CompletedProcess[bytes]:
+        seen["env"] = kwargs["env"]
+        return subprocess.CompletedProcess(argv, 0, b"{}", b"")
+
+    monkeypatch.setattr(subprocess, "run", run)
+    monkeypatch.setenv("NEBIUS_API_KEY", KEY)
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "sk-ant-secret")
+    subprocess_runner(["claude", "-p"], "grade", 5.0, None)
+
+    env = seen["env"]  # compared by name only, so a failure never prints the environment
+    keys = {"NEBIUS_API_KEY", "ANTHROPIC_API_KEY"}
+    leaked = sorted(name for name, value in env.items() if value == KEY or name.upper() in keys)
+    assert leaked == []
+    assert "PATH" in {name.upper() for name in env}
+    assert claude_env({"NEBIUS_API_KEY": KEY}) == {"NEBIUS_API_KEY": KEY}  # the shared door
 
 
 def test_the_claude_child_never_inherits_the_paid_api_key() -> None:

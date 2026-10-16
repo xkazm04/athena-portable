@@ -40,6 +40,7 @@ from typing import Any, ClassVar, Protocol
 from athena.contracts.harness import normalize_reason
 from athena.core.validators import check_schema
 from athena.harness.ports import ModelChunk, ModelMessage, ModelRequest
+from athena.harness.tokenfactory import API_KEY_ENV as NEBIUS_KEY_ENV
 from athena.harness.tokenfactory import (
     DEFAULT_MODEL,
     LIGHTNING_MODEL,
@@ -249,14 +250,26 @@ The seam the tests replace: nothing under ``tests/`` spawns ``claude``.
 
 
 def claude_env(environ: Mapping[str, str]) -> dict[str, str]:
-    """``environ`` without ``ANTHROPIC_API_KEY``, for a ``claude -p`` child.
+    """``environ`` without any CLI engine's billing key, for a child of this process.
 
     The operator's rule: model runs go only through the ``claude`` CLI on the subscription, never
-    a paid API. With the key in its environment the CLI bills the key instead of the subscription,
-    so a control role never inherits it. Everything else (``PATH`` included) is kept. The rule
-    lives in :func:`~athena.harness.transports.child_env`.
+    a paid API. With ``ANTHROPIC_API_KEY`` (or another switch in
+    :data:`~athena.harness.transports.ENGINE_KEYS`) in its environment the CLI bills the key
+    instead of the subscription, so no child inherits one. Everything else (``PATH`` and
+    ``NEBIUS_API_KEY`` included) is kept: the hosted runner's own Python child needs the Nemotron
+    key. The rule lives in :func:`~athena.harness.transports.child_env`.
     """
     return child_env(environ)
+
+
+def control_env(environ: Mapping[str, str]) -> dict[str, str]:
+    """:func:`claude_env` without ``NEBIUS_API_KEY`` too: what a ``claude -p`` control child gets.
+
+    A proving run always holds the Nemotron key (``main`` refuses to start without it) and the
+    Haiku control reads attacker-written text, so the one child that has no use for the key never
+    sees it. Compared in upper case, as a Windows child reads its environment.
+    """
+    return {k: v for k, v in claude_env(environ).items() if k.upper() != NEBIUS_KEY_ENV}
 
 
 def subprocess_runner(
@@ -269,7 +282,7 @@ def subprocess_runner(
             capture_output=True,
             timeout=timeout,
             cwd=cwd,
-            env=claude_env(os.environ),
+            env=control_env(os.environ),
             check=False,
         )
     except subprocess.TimeoutExpired:
