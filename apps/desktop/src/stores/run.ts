@@ -1155,7 +1155,14 @@ export const useRun = create<RunState>((set, get) => {
   let generation = 0;
 
   /** The request in flight: what Stop aborts, and the origin it asks the daemon to stop. */
-  let inFlight: { origin: string; controller: AbortController } | null = null;
+  let inFlight: {
+    origin: string;
+    controller: AbortController;
+    /** The page results this request carries: back to `outstanding` if the daemon never took them. */
+    carried: Array<Record<string, unknown>>;
+    /** The request has left: from here a Stop cannot tell whether the daemon took what it carried. */
+    sent: boolean;
+  } | null = null;
 
   async function apply(event: ChannelEvent): Promise<void> {
     switch (event.kind) {
@@ -1234,11 +1241,20 @@ export const useRun = create<RunState>((set, get) => {
     outstanding = [];
     request += 1;
     const mine = generation;
-    const flight = { origin: focused.origin, controller: new AbortController() };
+    const flight = { origin: focused.origin, controller: new AbortController(), carried, sent: false };
     inFlight = flight;
     // One capture of the focused tab per request. It never blocks the request and never fails it.
     const taken = await captureOf(deps.capture, focused.tabId, focused.origin);
     set({ captureNow: taken.why });
+    // Stopped while the screenshot was taken: the request never left, so the page results it was
+    // to carry are still unheard and go with the person's next message (ADR 0115).
+    if (flight.controller.signal.aborted) {
+      outstanding = [...carried, ...outstanding];
+      if (inFlight === flight) inFlight = null;
+      return false;
+    }
+    flight.sent = true;
+    let opened = false;
     try {
       for await (const event of api.run({
         origin: focused.origin,
@@ -1265,11 +1281,16 @@ export const useRun = create<RunState>((set, get) => {
         ...activeProject(get().project),
       }, flight.controller.signal)) {
         // The daemon's turn ends at its last frame; what follows is the page's, with nothing to abort.
+        opened = true;
         if (isTerminal(event) && inFlight === flight) inFlight = null;
         await apply(event);
         if (isTerminal(event)) break;
       }
     } catch (error) {
+      // A refusal is answered before any stream opens (`POST /run` refuses everything it can
+      // before its headers), so the daemon took nothing this request carried: a write that ran on
+      // the page is still unheard, and it goes with the next request (ADR 0115).
+      if (!opened && error instanceof ApiError && error.status >= 400) outstanding = [...carried, ...outstanding];
       // Stopped: the abort is the person's, not a failure to show them (ADR 0115).
       if (mine !== generation) return false;
       fail(error);
@@ -1519,7 +1540,8 @@ export const useRun = create<RunState>((set, get) => {
       flight?.controller.abort();
       // A call the turn proposed and never released was not run: the turn it belonged to ended.
       proposed = new Map();
-      const kept = outstanding.length > 0;
+      // A request still taking its screenshot has not left: what it carries is kept, too.
+      const kept = outstanding.length > 0 || (flight !== null && !flight.sent && flight.carried.length > 0);
       set({ phase: "idle", error: null });
       push(
         {

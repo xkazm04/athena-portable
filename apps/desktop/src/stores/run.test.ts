@@ -2181,3 +2181,54 @@ describe("Clear", () => {
     expect(carried.map((r) => [r.call_id, r.output])).toEqual([["c1", "marked"]]);
   });
 });
+
+// -- a page result the daemon never received ---------------------------------------------------------
+
+describe("a continuation that never reached the daemon", () => {
+  it("keeps the page result it was carrying when the daemon refuses it, for the next message", async () => {
+    const daemon = fakeDaemon({
+      runs: [
+        [hostCall("c1", "host.ledgerbox.mark_paid"), finished()],
+        { refuse: { reason: "engine_error", detail: "the daemon is restarting" }, status: 503 },
+        [finished("Noted.")],
+      ],
+    });
+    wire(daemon, fakePage({ mark_paid: { ok: true, output: "marked" } }));
+
+    await useRun.getState().send("mark it paid");
+    expect(useRun.getState().error?.reason).toBe("engine_error");
+
+    // The write ran on the page and the refused request never opened a turn: the model hears it next.
+    await useRun.getState().send("did it work?");
+    const carried = daemon.runs()[2].body!.tool_results as Array<Record<string, unknown>>;
+    expect(carried.map((r) => [r.call_id, r.output])).toEqual([["c1", "marked"]]);
+  });
+
+  it("keeps it when Stop lands while the continuation's screenshot is being taken, and says so", async () => {
+    let shot: (taken: { id: null; why: string }) => void = () => {};
+    let captures = 0;
+    const daemon = fakeDaemon({
+      runs: [[hostCall("c1", "host.ledgerbox.mark_paid"), finished()], [finished("Noted.")]],
+    });
+    const deps = wire(daemon, fakePage({ mark_paid: { ok: true, output: "marked" } }));
+    setRunDeps({
+      ...deps,
+      capture: () => {
+        captures += 1;
+        return captures === 2 ? new Promise((resolve) => (shot = resolve)) : Promise.resolve({ id: null, why: "none" });
+      },
+    });
+
+    const sending = useRun.getState().send("mark it paid");
+    await until(() => captures === 2);
+    await useRun.getState().stop();
+    shot({ id: null, why: "late" });
+    await sending;
+
+    expect(daemon.runs()).toHaveLength(1);
+    expect(useRun.getState().transcript.at(-1)?.text).toMatch(/goes with your next message/);
+    await useRun.getState().send("what happened?");
+    const carried = daemon.runs()[1].body!.tool_results as Array<Record<string, unknown>>;
+    expect(carried.map((r) => [r.call_id, r.output])).toEqual([["c1", "marked"]]);
+  });
+});
