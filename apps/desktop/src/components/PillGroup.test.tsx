@@ -6,7 +6,7 @@
 import { act, type ReactNode } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
-import { afterEach, expect, it } from "vitest";
+import { afterEach, expect, it, vi } from "vitest";
 
 import PillGroup, { type PillOption } from "./PillGroup";
 
@@ -31,6 +31,10 @@ function mount(node: ReactNode): HTMLElement {
 }
 
 const radios = (h: HTMLElement) => [...h.querySelectorAll<HTMLButtonElement>('[role="radio"]')];
+const press = (el: Element, key: string) =>
+  act(() => {
+    el.dispatchEvent(new KeyboardEvent("keydown", { key, bubbles: true, cancelable: true }));
+  });
 
 const THREE: PillOption<"a" | "b" | "c">[] = [
   { value: "a", label: "A" },
@@ -61,4 +65,37 @@ it("puts the tab stop on the first option that can be picked when the chosen one
 it("keeps the tab stop on the chosen option", () => {
   const h = mount(<PillGroup ariaLabel="Model" value="b" onChange={() => undefined} options={THREE} />);
   expect(radios(h).map((r) => r.tabIndex)).toEqual([-1, 0, -1]);
+});
+
+it("steps over an option that cannot be picked, in both directions, and wraps", () => {
+  const options: PillOption<"a" | "b" | "c">[] = [
+    { value: "a", label: "A" },
+    { value: "b", label: "B", disabledReason: "Not installed" },
+    { value: "c", label: "C" },
+  ];
+  const onChange = vi.fn();
+  const h = mount(<PillGroup ariaLabel="Model" value="a" onChange={onChange} options={options} />);
+  press(radios(h)[0]!, "ArrowRight");
+  expect(onChange).toHaveBeenLastCalledWith("c");
+  expect(document.activeElement).toBe(radios(h)[2]);
+  press(radios(h)[2]!, "ArrowLeft");
+  expect(onChange).toHaveBeenLastCalledWith("a");
+  press(radios(h)[0]!, "ArrowLeft");
+  expect(onChange).toHaveBeenLastCalledWith("c");
+  expect(onChange).not.toHaveBeenCalledWith("b");
+});
+
+it("sends Home and End to the first and last option that can be picked", () => {
+  const options: PillOption<"a" | "b" | "c">[] = [
+    { value: "a", label: "A", disabledReason: "Not installed" },
+    { value: "b", label: "B" },
+    { value: "c", label: "C", disabledReason: "Not installed" },
+  ];
+  const onChange = vi.fn();
+  const h = mount(<PillGroup ariaLabel="Model" value="b" onChange={onChange} options={options} />);
+  press(radios(h)[1]!, "Home");
+  press(radios(h)[1]!, "End");
+  expect(onChange).toHaveBeenCalledTimes(2);
+  expect(onChange).toHaveBeenNthCalledWith(1, "b");
+  expect(onChange).toHaveBeenNthCalledWith(2, "b");
 });

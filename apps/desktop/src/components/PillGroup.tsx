@@ -45,16 +45,25 @@ export default function PillGroup<T extends string>({
 
   const onKeyDown = useCallback(
     (e: KeyboardEvent<HTMLButtonElement>, i: number) => {
-      let to: number | null = null;
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") to = (i + 1) % options.length;
-      if (e.key === "ArrowLeft" || e.key === "ArrowUp") to = (i - 1 + options.length) % options.length;
-      if (e.key === "Home") to = 0;
-      if (e.key === "End") to = options.length - 1;
-      if (to === null) return;
+      // Where the walk starts and which way it goes. An option that cannot be picked cannot take
+      // focus either, so the walk steps over it: landing on one would strand the arrow there.
+      const n = options.length;
+      let from: number | null = null;
+      let step = 1;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") from = i + 1;
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") [from, step] = [i - 1, -1];
+      if (e.key === "Home") from = 0;
+      if (e.key === "End") [from, step] = [n - 1, -1];
+      if (from === null) return;
       e.preventDefault();
-      refs.current[to]?.focus();
-      const next = options[to];
-      if (next && !next.disabledReason) onChange(next.value);
+      for (let k = 0; k < n; k++) {
+        const to = (((from + k * step) % n) + n) % n;
+        const next = options[to];
+        if (!next || next.disabledReason) continue;
+        refs.current[to]?.focus();
+        onChange(next.value);
+        return;
+      }
     },
     [options, onChange],
   );
