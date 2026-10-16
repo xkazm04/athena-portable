@@ -1,15 +1,23 @@
 // demo-kit-ui-webmcp: the page's tool door (webmcp/), the UI primitives (ui/), the activity log
 // and the database handle, pinned where a scan-sweep round found one rule with two readings.
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
 import { registerHooks } from "node:module";
 import { test } from "node:test";
+import { fileURLToPath } from "node:url";
+
+import { createElement } from "react";
+import { renderToStaticMarkup } from "react-dom/server";
+import ts from "typescript";
 
 import { validateArgs } from "../src/webmcp/door.ts";
 import { classifyTool, parametersToJsonSchema, type SideEffects } from "../src/webmcp/types.ts";
 
-// The modules under test import their siblings without an extension (Next resolves those) and
-// the server half imports the `server-only` build marker. Supply both, and nothing else, so the
-// code under test is the source the apps ship. Registered before any dynamic import below.
+// The modules under test import their siblings without an extension (Next resolves those), the
+// server half imports the `server-only` build marker, and the UI is `.tsx`, which node's type
+// stripping does not take. Supply those three - the JSX through the TypeScript the kit already
+// depends on - and nothing else, so the code under test is the source the apps ship. Registered
+// before any dynamic import below.
 registerHooks({
   resolve(specifier, context, next) {
     if (specifier === "server-only") return { url: "data:text/javascript,export{}", shortCircuit: true };
@@ -17,8 +25,19 @@ registerHooks({
       return next(specifier, context);
     } catch (err) {
       if ((err as { code?: string }).code !== "ERR_MODULE_NOT_FOUND" || !specifier.startsWith(".")) throw err;
-      return next(`${specifier}.ts`, context);
+      try {
+        return next(`${specifier}.ts`, context);
+      } catch {
+        return next(`${specifier}.tsx`, context);
+      }
     }
+  },
+  load(url, context, next) {
+    if (!url.endsWith(".tsx")) return next(url, context);
+    const { outputText } = ts.transpileModule(readFileSync(fileURLToPath(url), "utf8"), {
+      compilerOptions: { jsx: ts.JsxEmit.ReactJSX, module: ts.ModuleKind.ESNext, target: ts.ScriptTarget.ES2022 },
+    });
+    return { format: "module", source: outputText, shortCircuit: true };
   },
 });
 
@@ -98,4 +117,33 @@ test("an array over the maxItems its schema publishes is refused at the door, na
     { name: "rows", type: "object[]", attributes: [{ name: "tags", type: "string[]", maxItems: 1 }] },
   ]);
   assert.match(validateArgs({ rows: [{ tags: ["x", "y"] }] }, nested) ?? "", /"rows\[0\]\.tags" has 2 items/);
+});
+
+/* ------------------------------------------------------------ the UI primitives -- */
+
+const { DataTable } = await import("../src/ui/DataTable.tsx");
+
+test("a sortable header's accessible name is the header a reader sees, not the column key", () => {
+  // WCAG 2.5.3 (label in name): a voice user says what is on screen. The sort button used to be
+  // named `Sort by updated_at` over a header that reads "Updated".
+  type Row = { id: string; updated_at: string };
+  const html = renderToStaticMarkup(
+    createElement(DataTable<Row>, {
+      rows: [{ id: "r1", updated_at: "2026-09-01" }],
+      rowId: (r: Row) => r.id,
+      columns: [
+        { key: "updated_at", header: "Updated", render: (r: Row) => r.updated_at, sortValue: (r: Row) => r.updated_at },
+        { key: "id", header: "Id", render: (r: Row) => r.id },
+      ],
+    }),
+  );
+  const buttons = [...html.matchAll(/<button[^>]*class="dk-table-sort"[^>]*>([\s\S]*?)<\/button>/g)];
+  assert.equal(buttons.length, 1, "one sortable column, one sort control");
+  const [tag, body] = [buttons[0]![0].slice(0, buttons[0]![0].indexOf(">") + 1), buttons[0]![1]!];
+  const label = /aria-label="([^"]*)"/.exec(tag)?.[1];
+  const visible = body.replace(/<span aria-hidden="true">[\s\S]*?<\/span>/g, "").replace(/<[^>]+>/g, "").trim();
+  assert.equal(visible, "Updated");
+  if (label !== undefined) assert.ok(label.includes(visible), `accessible name "${label}" does not contain "${visible}"`);
+  // The unsorted header claims no order; the sorted one says which (aria-sort, set on click).
+  assert.doesNotMatch(html, /aria-sort=/);
 });

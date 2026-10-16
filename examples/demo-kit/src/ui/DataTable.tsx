@@ -111,14 +111,16 @@ export function DataTable<T>({
                 key={col.key}
                 style={col.width ? { width: col.width } : undefined}
                 data-align={col.align ?? "start"}
+                // The order is a property of the column header (WAI-ARIA sortable table), so a
+                // screen reader announces it with the column rather than reading an arrow glyph.
+                aria-sort={
+                  sort?.key === col.key ? (sort.dir === "asc" ? "ascending" : "descending") : undefined
+                }
               >
                 {col.sortValue ? (
-                  <button
-                    type="button"
-                    className="dk-table-sort"
-                    onClick={() => toggleSort(col.key)}
-                    aria-label={`Sort by ${col.key}`}
-                  >
+                  // Named by its own content - the header the reader sees (WCAG 2.5.3) - not by
+                  // the column key, which is a programmer's word (`updated_at` over "Updated").
+                  <button type="button" className="dk-table-sort" onClick={() => toggleSort(col.key)}>
                     {col.header}
                     <span aria-hidden="true">
                       {sort?.key === col.key ? (sort.dir === "asc" ? " ▲" : " ▼") : " ↕"}
