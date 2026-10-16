@@ -378,7 +378,12 @@ export const useVoiceSetup = create<VoiceSetupState>((set, get) => {
     async connect(at) {
       rt.api = at ? deps.api(at) : null;
       if (get().studioDone === null) {
-        const done = await deps.readDone().catch(() => null);
+        // Unreadable, the studio opens (the safe mood: it only re-asks what is already chosen), and
+        // the log says why a person who finished it is seeing it again.
+        const done = await deps.readDone().catch((e: unknown) => {
+          report("studio row unreadable")(e);
+          return null;
+        });
         set({ studioDone: done ?? false });
       }
       if (!rt.api) return;

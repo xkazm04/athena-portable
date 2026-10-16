@@ -7,7 +7,7 @@
  * is polled until it settles, a take goes to every ready listener, and the studio remembers it was
  * finished.
  */
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { VoiceSetupApi, type InstallState, type VoiceConfig } from "@/lib/voice-setup";
 
@@ -125,7 +125,7 @@ const settle = async () => {
   for (let i = 0; i < 8; i += 1) await tick();
 };
 
-function wire(config: VoiceConfig, over: { done?: boolean | null } = {}) {
+function wire(config: VoiceConfig, over: { done?: boolean | null; readFails?: string } = {}) {
   const d = daemon(config);
   const p = fakePlayer();
   const waits: number[] = [];
@@ -133,7 +133,10 @@ function wire(config: VoiceConfig, over: { done?: boolean | null } = {}) {
   const published: boolean[] = [];
   setVoiceSetupDeps({
     api: (at) => new VoiceSetupApi(at, d.fetchImpl),
-    readDone: async () => (over.done === undefined ? false : over.done),
+    readDone: async () => {
+      if (over.readFails) throw new Error(over.readFails);
+      return over.done === undefined ? false : over.done;
+    },
     writeDone: async (done) => void written.push(done),
     player: () => p.player,
     recorder: () => fakeRecorder(new Int16Array([1, 2, 3])),
@@ -339,6 +342,19 @@ describe("the studio row", () => {
     S().actions.reopenStudio();
     expect(S().reopened).toBe(true);
     expect(S().studio.step).toBe("engine");
+  });
+
+  it("a studio row that cannot be read opens the studio and says why in the log, not silently", async () => {
+    wire(READY_CONFIG, { readFails: "settings store locked" });
+    const errors: string[] = [];
+    const spy = vi.spyOn(console, "error").mockImplementation((line: unknown) => void errors.push(String(line)));
+    try {
+      await S().connect(AT);
+    } finally {
+      spy.mockRestore();
+    }
+    expect(S().studioDone).toBe(false);
+    expect(errors.some((e) => e.includes("[voice]") && e.includes("settings store locked"))).toBe(true);
   });
 
   it("a stored row opens on settings", async () => {
