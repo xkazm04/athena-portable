@@ -103,6 +103,16 @@ export function exportSummary(segment: Segment): ExportSummary {
 }
 
 /**
+ * One table cell's text, escaped for the page it lands on. A company name is whatever
+ * `resolve_company` was told, so a `|` would split the row and `[..](..)` or `*..*` would arrive
+ * as a live link or emphasis on somebody else's signed-off page. Only the characters that change a
+ * table cell's meaning are escaped, so a plain name - every name the seed holds - prints unchanged.
+ */
+function cellText(text: string): string {
+  return text.replace(/[\\|`*_[\]<>]/g, (ch) => `\\${ch}`);
+}
+
+/**
  * The Markdown body. Plain CommonMark - a heading, a list and one table - because the destination
  * is somebody else's editor and anything cleverer arrives as literal punctuation.
  */
@@ -135,7 +145,7 @@ function markdownFor(
     "",
     "| Company | Domain | Contacts |",
     "| --- | --- | --- |",
-    ...items.map((i) => `| ${i.company} | ${i.domain} | ${i.contacts} |`),
+    ...items.map((i) => `| ${cellText(i.company)} | ${cellText(i.domain)} | ${i.contacts} |`),
     "",
     `${total} compan${total === 1 ? "y" : "ies"} in this segment ${footer}.`,
   ];

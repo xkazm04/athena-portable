@@ -27,6 +27,7 @@ const {
   segmentRows,
 } = await import("../lib/db");
 const { CSV_COLUMNS, toCsv } = await import("../lib/csv");
+const { exportSummary } = await import("../lib/summary");
 const { deleteContacts, mergeContacts, normalizeFields, resolveCompany, resolvePair, undoWrite } =
   await import("../lib/mutations");
 
@@ -197,4 +198,27 @@ test("the write door checks at run time what the types only promise", () => {
     assert.equal(result.ok, false, `${JSON.stringify(name)} is refused`);
     assert.match(result.error ?? "", /line break|control/);
   }
+});
+
+test("a company name prints as one Markdown table cell, whatever punctuation it carries", () => {
+  // Every seeded company is plain words, so the escape is the identity on the demo's own page.
+  assert.ok(
+    segmentRows("all").every((c) => !/[\\|`*_[\]<>]/.test(c.company)),
+    "the seed spells no company with Markdown punctuation",
+  );
+
+  const target = segmentRows("all").find((c) => c.in_open_pair === 0 && c.conflict === 0);
+  assert.ok(target);
+  const name = "Acme | [Pay here](http://evil.example) *now* \\";
+  assert.equal(resolveCompany(target.domain, name).ok, true);
+
+  const row = exportSummary("all").markdown.split("\n").find((l) => l.includes("Acme"));
+  assert.ok(row, "the company is in the table");
+  // The row is `| company | domain | contacts |`: three cells between unescaped pipes, the domain
+  // in the middle one, and the bracket that would open a link escaped.
+  const cells = row.split(/(?<!\\)\|/).slice(1, -1).map((c) => c.trim());
+  assert.equal(cells.length, 3, row);
+  assert.equal(cells[1], target.domain);
+  assert.match(cells[0] ?? "", /\\\[Pay here\\\]/, "the link is text, not a link");
+  assert.match(cells[0] ?? "", /\\\*now\\\*/, "and the emphasis is text");
 });
