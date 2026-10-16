@@ -1,0 +1,229 @@
+{
+ "context": "ledgerbox-lanes-ui",
+ "files_read": 24,
+ "loc": 3150,
+ "registry": "software-engineering/hitl-approval, software-engineering/test-harness",
+ "techniques": [
+  "gate-state-machines",
+  "decision-records",
+  "resume-after-decision",
+  "fixture-economics",
+  "pin-the-call-not-the-name"
+ ],
+ "deviations": 4,
+ "assigned": [],
+ "built": [
+  {
+   "sha": "b1cddd9",
+   "title": "an act that throws under a person's click still tells them, re-reads the sheet and closes the gate",
+   "lens": "parity-auditor",
+   "red_before": "useRun over stand-ins: the run rejected 'database is locked', the person saw nothing",
+   "after": "toast:error, router.refresh, after(null); the tool path's source carries the same sentence"
+  },
+  {
+   "sha": "9fc4636",
+   "title": "an armed gate closes when the letter, the amount or the state it showed changes, and when its act becomes refused",
+   "lens": "bounty-hunter",
+   "red_before": "gateSubject is not a function / Gate had no stillArmed",
+   "after": "redraft, applied credit and refused void each close the gate on scratch books; unchanged stays armed"
+  },
+  {
+   "sha": "409b393",
+   "title": "the decision list holds back, and says why, every act the books would refuse",
+   "lens": "parity-auditor",
+   "red_before": "seeded old rules: 4 offered-then-refused (Draft it on 2 disputed, Draft it and Record it on draft LB-2026-0055)",
+   "after": "0 of 296 presses disagree (4 acts x 74 open invoices, each pressed for real and rolled back)"
+  },
+  {
+   "sha": "3460add",
+   "title": "the lanes-ui tests write only to their scratch books (own defect from 9fc4636/409b393)",
+   "lens": "test-strategist",
+   "red_before": "seeded 50 ms top-level await between tests: 3 book tests red on the new books() guard",
+   "after": "live data/ledgerbox.sqlite activity max id unchanged across a full run; 95 rows written earlier reversed, diff vs fresh seed clean"
+  },
+  {
+   "sha": "7e5f857",
+   "title": "a lane that loses the invoice its tab stop was on keeps one tab stop, at L0 and L1",
+   "lens": "accessibility-checker",
+   "red_before": "tabStop is not a function / Spread.tsx asks tabStop; old rule: 6 of 6 lanes lost their stop after refiling the latest-due mark",
+   "after": "each lane keeps exactly 1 stop"
+  },
+  {
+   "sha": "9387f3c",
+   "title": "an armed gate's confirm is described by its own question",
+   "lens": "accessibility-checker",
+   "red_before": "source check: the question carries no id (0 of 3 confirms described)",
+   "after": "3 of 3"
+  },
+  {
+   "sha": "08c702d",
+   "title": "the lanes UI's comments state the labelling rule, the counts and the refs the code has",
+   "lens": "documentation-auditor",
+   "red_before": "probe: 7 present-tense claims the code contradicts",
+   "after": "0; comments only"
+  },
+  {
+   "sha": "a09c7a4",
+   "title": "the decision list draws a Gate exactly where the class table says GATED",
+   "lens": "parity-auditor",
+   "red_before": "HEAD Decide: 3 hand-placed <Gate>s; seeded control draft_reminder -> REACHES_A_PERSON turns the subject test red",
+   "after": "one <Gate> in a branch keyed on isAuto(TOOL_CLASSES[tool]); gated set derived from the table"
+  },
+  {
+   "sha": "d793b12",
+   "title": "the decision list says whether Athena is connected from the page's own reading",
+   "lens": "copy-auditor",
+   "red_before": "talkSay is not a function / 'Athena is not connected' in ink",
+   "after": "2 of 2 presence states said right"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "the void row prescribes 'unapply them first' on an invoice with nothing to unapply",
+   "before": "probe: 0 of 15 void-blocked open invoices lack an Unapply control (all 15 have matched credits on the card)",
+   "after": "unchanged; not-better on the seed (reachable only through an agent's partial mark_paid)"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "bounty-hunter",
+   "checked": "Gate arming vs live re-render (built 9fc4636); send row vs 32ccf40's stale-letter refusal (card); candidate credits larger than the balance (probe: 0)"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "useRun vs BooksTools settle (built); Decide's enabled rows vs app/actions refusals over 296 presses (built); badge vs hand-typed control (built); Decide talk slot vs PresenceLine (built)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "useRun's transition: no catch on a throwing action (built b1cddd9); Gate after-callback on throw"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "useRun throw path left no toast, no refresh (built); console.error kept for the stack"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "tempHome root after hook firing mid-file -> live dev books written (reproduced, repaired, own file guarded; harness card)"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "Swarm raf per mark enter, byDate/rowsAll memoised; Spread rove measures offsetTop per keypress only; legendCounts memo in shell/Foot.tsx - nothing real"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "Decide rows offering refused acts (built); send decided without the letter (card C); refile leaves card in the old lane (card)"
+  },
+  {
+   "key": "visual-craft",
+   "checked": "Gate idle data-kind=gate vs danger confirm vs ghost cancel; Head lead figure vs stat row; Decide badge Auto/Gated per row - consistent, nothing real"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "refile from L2 (card); lane shrink under roving index (built); disputed/draft/void rows in Decide (built); settled card's empty evidence (copy present)"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "static 'Athena is not connected' (built); draft invoice 'Still owed' (card); send row naming a recipient with no draft (fixed inside 409b393)"
+  },
+  {
+   "key": "accessibility-checker",
+   "checked": "roving tab stops at L0/L1 (built); gate confirm description (built); focus after Cancel (card); Tip role=tooltip not dismissable (noted)"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "no test imported any components/lanes UI module except model/ and swarm/marks; new test/ledgerbox-lanes-ui.test.ts, 12 cases, each seeded red"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "grep dangerouslySetInnerHTML/innerHTML/eval over components/lanes (0); dispute notes and draft bodies rendered as React text"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "present-tense comment claims vs code and seed (7 false, built 08c702d); Gate/Card docstrings vs Decide (true after a09c7a4)"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "Card -> Foot -> Decide prop threading of run/pending; pure judgements moved to card/read.ts so the runner can load them"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "Act.disabled read by nothing (removed in a09c7a4); owed prop threaded with no reader (removed in 409b393)"
+  },
+  {
+   "key": "mobile-specialist",
+   "checked": "swarm/Tip.tsx x clamp [170, innerWidth-170] inverts under 340px; responsive CSS is style/** (not this context) - nothing to build here"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "Gate.tsx against hitl-approval: gate-state-machines (built), golden path's decision surface (card C), failure-not-empty-success (built)"
+  },
+  {
+   "key": "ui-perfectionist",
+   "checked": "Gate armed/idle swap fades via fade() token; Spread 'showing n of m' motion.p enters with fade and leaves with a cut (no AnimatePresence) - noted, not carded (budget)"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "imports of components/lanes: lucide-react, motion/react, @athena/demo-kit/*; nothing unused added"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "presence.ts bridge detection via window.__athenaBridge and toolchange listener; Decide now reads it"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "monetization-advisor",
+   "why": "no billing, plan or pricing surface in a demo bookkeeping UI"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no sharing, invite or notification surface"
+  },
+  {
+   "key": "business-strategist",
+   "why": "a demo app's view layer; no conversion or retention surface"
+  },
+  {
+   "key": "analytics-planner",
+   "why": "no product analytics in the lanes UI by design"
+  },
+  {
+   "key": "onboarding-designer",
+   "why": "no first-run or setup flow; the sheet opens on seeded books"
+  },
+  {
+   "key": "feature-scout",
+   "why": "stabilize strategy; no forward-building items proposed"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "stabilize strategy; the agent integration lives in tools/** (other context)"
+  },
+  {
+   "key": "devops-optimizer",
+   "why": "no build or deploy config in these paths"
+  }
+ ],
+ "findings": 16,
+ "lanes": "A:9/B:5/C:1",
+ "fp": 0,
+ "gates": {
+  "pnpm --filter ledgerbox typecheck": 0,
+  "pnpm --filter ledgerbox lint": 0,
+  "pnpm --filter ledgerbox test": 0
+ },
+ "leads": [
+  {
+   "bundle": "software-engineering",
+   "nearest": "test-harness",
+   "kind": "technique",
+   "claim": "When a test file's scratch fixture is reaped by a file-level after hook that also restores process state (working directory, env), prove at each use that the resource resolved is the scratch copy, because the runner may fire that hook as soon as the tests declared so far drain, and a cwd-resolved handle then silently re-opens the live one.",
+   "because": "node:test ran tempHome's root after() between two test() calls separated by a top-level await; later tests wrote 95 rows to the dev server's SQLite file over eight runs; a books() assertion on cwd and db().file caught the seeded repeat",
+   "confidence": "medium",
+   "from": "scan-sweep@4.6.1"
+  }
+ ],
+ "degraded": false,
+ "note": "9 built; Gate armed on its subject, list mirrors refusals; live dev DB repaired",
+ "notes": "Own defect found and repaired: test/ledgerbox-lanes-ui.test.ts (9fc4636..409b393) ran its book tests on examples/ledgerbox/data/ledgerbox.sqlite (tempHome's after fired mid-file); 95 activity rows (drafts, credits, refiles) were reversed on the live file after a VACUUM INTO backup in the scratchpad, and a table diff against a fresh seed shows none left (6 remaining diffs are the seed's own drift since 2026-09-12: meta seeded_at, two seeded reminder bodies). The dev server on 3001 was not touched otherwise. Sibling reds seen and waited out: app-shell's in-flight app/actions.ts and its tests (whyNotChase TS error, two new red cases) - none in this context's paths; 409b393 mirrors app-shell's 32ccf40 send re-check. Not carded for budget: Spread's 'showing n of m' line has no exit (Spread.tsx:283), swarm Tip outlives L0 for the flight and has no Escape dismiss (Swarm.tsx:226), each Gate keeps its own useRun pending so acts can overlap on one invoice. Lane B open from this round: 5."
+}

@@ -1,0 +1,236 @@
+{
+ "context": "desktop-voice-ui",
+ "files_read": 18,
+ "loc": 6306,
+ "registry": "software-engineering/voice-io, software-engineering/test-harness",
+ "techniques": [
+  "duplex-agent-sessions",
+  "stt-pipeline",
+  "voice-setup-experience",
+  "voice-ux-integration",
+  "bounded-playback-wait"
+ ],
+ "deviations": 3,
+ "assigned": [],
+ "built": [
+  {
+   "sha": "459505a",
+   "title": "a line the daemon began speaking as the key went down no longer takes the key, so the release still sends stop",
+   "lens": "bounty-hunter",
+   "red_before": "stores/voice.test.ts new case: phase 'speaking' after a voice.speaking while listening (expected 'listening'); release sent no stop",
+   "after": "green: phase stays listening, release sends stop, barge_in leaves thinking; full desktop suite 0"
+  },
+  {
+   "sha": "f4b051a",
+   "title": "a take's column shows the newest take; an older take's transcript that lands late is dropped",
+   "lens": "parity-auditor",
+   "red_before": "live.test.ts new case: column read 'the older take' after the held first transcript landed (expected 'heard by whisper')",
+   "after": "green; full desktop suite 0 (1634)"
+  },
+  {
+   "sha": "cc3181a",
+   "title": "one install read that fails no longer ends the poll and freezes the install bar",
+   "lens": "state-coverage",
+   "red_before": "live.test.ts: install.state stuck 'downloading_engine' after one 500 (expected 'completed'); parts.test.tsx: refusal absent from the running block's markup",
+   "after": "green: poll rides the failure, settles completed, installError cleared; full suite 0 (1638)"
+  },
+  {
+   "sha": "14aa764",
+   "title": "a voice-setup answer whose body cannot be read is a refusal, never a throw",
+   "lens": "error-handler",
+   "red_before": "voice-setup.test.ts 2 new cases threw (TypeError: network error; SyntaxError: Unexpected token '<')",
+   "after": "green: offline 'did not arrive whole' / refused 'could not be read'; full suite 0 (1642) on re-run"
+  },
+  {
+   "sha": "7a3d562",
+   "title": "her reply's player resumes a suspended audio context, as the preview player does",
+   "lens": "parity-auditor",
+   "red_before": "lib/voice.test.ts: resume called 0 times on a suspended context (expected 1)",
+   "after": "green; running context asks nothing; full suite 0 (1644)"
+  },
+  {
+   "sha": "3bbdeca",
+   "title": "a running install is a progress bar with its value; its live region says the phase, not the moving figure",
+   "lens": "accessibility-checker",
+   "red_before": "parts.test.tsx: no role=progressbar in the markup; the polite live region held the figure",
+   "after": "green: one live region ('Downloading the engine'), progressbar aria-valuenow=40; full suite 0 (1647)"
+  },
+  {
+   "sha": "bc22800",
+   "title": "Enter in the OpenAI key field sends nothing while a key is being saved",
+   "lens": "parity-auditor",
+   "red_before": "pieces.test.tsx (new, jsdom): saveKey called with 'sk-second' while keyBusy (expected none)",
+   "after": "green; draft kept; full suite 0 (1649)"
+  },
+  {
+   "sha": "c16a785",
+   "title": "inside a button the key chip and the hold dot sit the button's 6px gap from the label, not 12 and 14",
+   "lens": "ui-perfectionist",
+   "red_before": "voice.css.test.ts: a .btn .vs-kbd rule with margin-right 6px on top of .btn gap 6px",
+   "after": "green: chip/dot/trailing chip all 6px by gap arithmetic; full suite 0 (1651); no motion touched"
+  },
+  {
+   "sha": "3be0702",
+   "title": "the studio's last line is pinned to the hotkey the Voice scene shows",
+   "lens": "test-strategist",
+   "red_before": "seeded: model.ts chord changed to Ctrl+Space, the new model.test.ts case failed; restored",
+   "after": "green, model.ts unchanged; full suite 0 (1652) on re-run"
+  },
+  {
+   "sha": "8372232",
+   "title": "a studio row that cannot be read is logged with its reason, not swallowed",
+   "lens": "observability-auditor",
+   "red_before": "live.test.ts: no console.error with '[voice]' and the error's words when readDone rejects",
+   "after": "green, fallback unchanged; full suite 0 (1655)"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "press sends start before learning the webview has no microphone (stores/voice.ts start then openMic null check)",
+   "before": "start sent, phase error 'this webview offers no microphone', daemon utterance open until the next start replaces it (gateway.py _start)",
+   "after": "reordered: same phase, same sentence, no start; nothing a person or the daemon's next turn sees changes - not-better"
+  },
+  {
+   "title": ".vs-meter__fill transition 80ms linear is off the motion tokens",
+   "before": "80ms linear smoothing on a per-frame level readout",
+   "after": "the only duration token, --duration-fast 150ms, makes the live meter trail ~9 frames at 60 Hz instead of ~5; Calm cannot still a live data readout - not-better"
+  },
+  {
+   "title": "Player.playing() and Player.holds() have zero production callers",
+   "before": "grep: callers only in stores/voice.test.ts (holds x3, playing x1)",
+   "after": "removing them deletes the barge-in tests' instrument; test probes, not dead code - not-better"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "bounty-hunter",
+   "checked": "stores/voice.ts onEvent phases vs the gateway's speaker thread (gateway.py _speak_loop/_start): voice.speaking while listening (built 459505a); turn.finished/voice.stopped only move their own phases; press/release token races already pinned"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "PreviewPlayer vs Player (resume, built 7a3d562), preview token vs takes (built f4b051a), KeyField button vs Enter (built bc22800), HoldToTalk vs scenes HoldButton keys (recording guards differ, store guards both: clean)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "every await in lib/voice-setup.ts (body reads outside the Outcome: built 14aa764), live.ts void-called actions, VoiceSocket.connect reject+close order"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "live.ts catches: readDone swallowed (built 8372232), writeDone reported, recordStart reported to micError; Player resume refusal now logged"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "each fix's blast radius: voice.speaking-while-listening against the barge-in tests (650-705), the poll retry bounded by endpoint()==null when the daemon is not ready (stores/daemon.ts:77)"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "Waveform per-frame querySelectorAll over <=56 spans and clientHeight read (below perf-gate resolution, not pursued); both AudioContexts never suspended (card, Lane C)"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "studio dock/primary table (pieces.tsx primary vs model dockFor: agree), manual-install links target=_blank (card, Lane C), KeyField Enter while busy (built)"
+  },
+  {
+   "key": "visual-craft",
+   "checked": "voice.css tokens: colours all tokens/color-mix; .vs-kbd radius 4px and .vs-hold padding 10px 12px off-scale but the latter is the backlog's .btn density decision; nothing new built"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "install poll failure (built cc3181a); spoken-turn end states vs her window (card, Lane B); preview synth stuck on a thrown body (closed by 14aa764)"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "model.ts lines and receipts read; reason codes in voice failure strings (card, Lane B); offline refusalText prefers 'Failed to fetch'"
+  },
+  {
+   "key": "accessibility-checker",
+   "checked": "InstallBlock live region and bar (built 3bbdeca), HoldToTalk aria-pressed + label swap (fine), Waveform/MicMeter aria-hidden (fine), KeyField aria-label (fine)"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "hand-kept chord in model.ts vs scenes HOTKEY (built 3be0702); live.test fake daemon gained holdTranscribe and an install 'fail'"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "OpenAI key path: password input, draft cleared, never echoed, putKey body only; token in subprotocol per ADR; console reports carry no key - nothing real"
+  },
+  {
+   "key": "ui-perfectionist",
+   "checked": "voice.css spacing vs .btn gap (built c16a785); .vs-meter__fill 80ms (rejected); waveform height per frame is on backlog-2026-10-13 (not re-emitted)"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "voice-io deviation recorded in registry-map (no global mute; Player not resuming; refused playback shows speaking): resume half fixed 7a3d562, the rest left recorded, not re-emitted"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "module headers vs code: live.ts rules list (updated to four), voice-setup.ts never-a-throw (now true), stores/voice.ts 'Ctrl+Space' hotkey doc matches its keydown listener"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "useVoice.close and PreviewPlayer.close only test/zero production callers (grep); Player.playing/holds test probes (rejected)"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "modules/voice may not import scenes (HOTKEY pinned by test instead); stores/voice -> companion/plain would invert layers (noted on the copy card)"
+  },
+  {
+   "key": "mobile-specialist",
+   "checked": "voice.css at narrow widths: .vs-hold flex-wrap, .vs-wave flex 1 1 8rem, scenes' 600px rule shrinks bars; nothing breaks"
+  },
+  {
+   "key": "onboarding-designer",
+   "checked": "studio step machine (model.ts studioReduce/advance/canContinue) and first-preview-chooses rule against voice-setup-experience sections 2-5: conformant"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "lib/voice-setup.ts types vs the daemon's /voice routes (config, preview headers, install phases): field for field, ACTIVE_INSTALL matches install phases"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "dependency-auditor",
+   "why": "no dependency declared or added in this context's files"
+  },
+  {
+   "key": "devops-optimizer",
+   "why": "no CI, build or release surface in these files"
+  },
+  {
+   "key": "feature-scout",
+   "why": "stabilize run; no forward-building budget"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "stabilize run; no forward-building budget"
+  },
+  {
+   "key": "monetization-advisor",
+   "why": "nothing paid for in the voice UI"
+  },
+  {
+   "key": "analytics-planner",
+   "why": "the app records no product analytics; nothing to instrument here"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "single-user desktop app; no growth surface"
+  },
+  {
+   "key": "business-strategist",
+   "why": "no business surface in a settings/studio module"
+  }
+ ],
+ "findings": 17,
+ "lanes": "A:10/B:2/C:2",
+ "fp": 0,
+ "gates": {
+  "pnpm typecheck": 0,
+  "pnpm lint": 0,
+  "pnpm test": 0
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "10 built; 2 B (her window misses spoken-turn ends; codes in copy), 2 C",
+ "notes": "Sibling reds seen (not mine, desktop-stage-depth in flight): src/stage/Stage.dom.test.tsx lint error react-hooks/globals at :82 (two runs) and two vitest failures in the same file; both cleared on re-run. Final full desktop run after 8372232: typecheck 0, lint 0, test 0 (1655). No motion touched; perf not run. Test files read in part (the cases near each change); fixtures.ts read in part. The voice-channel Lane C card (useVoice.say has no production caller) was left alone as instructed. Consult line: {\"bundle\":\"software-engineering\",\"subjects\":[\"voice-io\",\"async-ui-states\",\"accessibility\",\"form\",\"design-tokens\",\"error-handling\"],\"techniques\":[\"duplex-agent-sessions\",\"stt-pipeline\",\"voice-setup-experience\",\"voice-ux-integration\"],\"deviations\":3}. No registry lead filed."
+}

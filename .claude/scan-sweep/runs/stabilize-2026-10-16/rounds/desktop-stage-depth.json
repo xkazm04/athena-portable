@@ -1,0 +1,222 @@
+{
+ "context": "desktop-stage-depth",
+ "files_read": 15,
+ "loc": 2184,
+ "registry": "software-engineering/module-design, software-engineering/app-shell, software-engineering/motion, software-engineering/accessibility, software-engineering/render-mount-pipeline",
+ "techniques": [
+  "io-free-core",
+  "navigation-model",
+  "continuity-across-change",
+  "engine-selection",
+  "name-and-description-wiring",
+  "mount-binders-versus-attach-binders"
+ ],
+ "deviations": 3,
+ "assigned": [],
+ "built": [
+  {
+   "sha": "28ba41a",
+   "title": "a reload at a depth draws that depth's scene, not the surface the stage was mounted on",
+   "lens": "bounty-hunter",
+   "red_before": "Stage.dom.test.tsx: layer drew ['#/'] under data-depth=2; store.test seq 0 not 1",
+   "after": "layer ['#/mind/engine'], seq 1"
+  },
+  {
+   "sha": "1e4a356",
+   "title": "the water's snow is repainted in the new accent when the theme changes",
+   "lens": "parity-auditor",
+   "red_before": "Backdrop.dom.test.tsx: last fill '#22d3ee' after switching to light",
+   "after": "'#0891b2'; unmount case seeded red"
+  },
+  {
+   "sha": "7aacd40",
+   "title": "the surface names no empty 'Where you are' landmark",
+   "lens": "accessibility-checker",
+   "red_before": "Stage.test.tsx: surface markup contained '<nav'",
+   "after": "no nav at the surface, nav at a depth"
+  },
+  {
+   "sha": "a66fdab",
+   "title": "a change in her presence or the bar no longer redraws every scene layer",
+   "lens": "code-optimizer",
+   "red_before": "Stage.dom.test.tsx: scene drawn 3 times over 3 presence-only renders",
+   "after": "1 draw; perf:stage pass"
+  },
+  {
+   "sha": "824184d",
+   "title": "a hash that changes to one that is not a place is rewritten, as at start",
+   "lens": "parity-auditor",
+   "red_before": "store.test.ts: hash stayed '#/nowhere/at/all'",
+   "after": "'#/'"
+  },
+  {
+   "sha": "a8f37e8",
+   "title": "Escape is left to a scene that claims it instead of the stage rising first",
+   "lens": "bounty-hunter",
+   "red_before": "Stage.dom.test.tsx: scene claim 0 calls, onRise called",
+   "after": "claim 1, onRise 0; perf:stage rises with real Escape"
+  },
+  {
+   "sha": "52ee6e2",
+   "title": "a crumb whose place changes on an across move fades in with the move",
+   "lens": "ui-perfectionist",
+   "red_before": "Stage.dom.test.tsx: host-2 crumb was host-1's element",
+   "after": "new element per new place, same for Apps; perf:stage pass"
+  },
+  {
+   "sha": "75cbc59",
+   "title": "the safety flush and its settle are pinned by a test",
+   "lens": "test-strategist",
+   "red_before": "seeded: timer dispatching nothing left ['#/','#/apps']",
+   "after": "one resting layer and onSettle(1) at 900 ms"
+  },
+  {
+   "sha": "649e87d",
+   "title": "the model drops ROOT_MODULE, a map nothing reads",
+   "lens": "tech-debt-tracker",
+   "red_before": "git grep ROOT_MODULE: 1 hit (its definition)",
+   "after": "0 hits; typecheck 0"
+  }
+ ],
+ "rejected": [
+  {
+   "title": "Escape at the surface is marked taken although the rise there is a no-op",
+   "before": "stage preventDefaults Escape at depth 0; listeners after it (window, registered later) read defaultPrevented: 0 such Escape readers (git grep of window keydown listeners: companion/live.tsx is another window, stores/voice.ts handles Ctrl+Space only)",
+   "after": "same 0 readers affected; with the stage now on the window every document listener already ran first, so not-better (pure churn)"
+  }
+ ],
+ "lens_keys": [
+  {
+   "key": "bounty-hunter",
+   "checked": "Stage mount order vs startDepth (reload bug, built); Escape listener order vs scene document listeners (built); layers reducer interrupt and ended races"
+  },
+  {
+   "key": "parity-auditor",
+   "checked": "start vs hashchange canonicalisation (built); Backdrop canvas vs CSS theme (built); GRAMMAR vs mind/voice lists (card); SHAPE_ID vs layout.rs and --bar/--strip-height (pinned, clean)"
+  },
+  {
+   "key": "error-handler",
+   "checked": "parseHash try/catch, shape.ts refusal catch (card), Backdrop null 2D context path"
+  },
+  {
+   "key": "observability-auditor",
+   "checked": "shape.ts:27 console.error is the only trace of a refused re-lay (in the card); SAFETY flush is normal for a hidden window, no trace owed"
+  },
+  {
+   "key": "risk-assessor",
+   "checked": "module singletons store.ts started and shape.ts last reset on stop; StrictMode double start resends layout_select once, harmless"
+  },
+  {
+   "key": "code-optimizer",
+   "checked": "renderScene per layer per stage render (built SceneOf); Backdrop frame loop stops after COAST; useAthena() unselected in console/Console.tsx (out of scope, now cheap)"
+  },
+  {
+   "key": "ux-reviewer",
+   "checked": "Escape semantics: repeat (card C), surface no-op; crumb buttons and dock roots"
+  },
+  {
+   "key": "visual-craft",
+   "checked": "stage.css tokens: colours all var()/color-mix; snow accent vs theme (built); dock and rise pill chrome"
+  },
+  {
+   "key": "state-coverage",
+   "checked": "reload at a depth (built), page shape over a refused re-lay (card), surface before hydration (scene null, sceneFor owns it)"
+  },
+  {
+   "key": "copy-auditor",
+   "checked": "layers.ts header 'leaving from wherever it got to' vs CSS restart (in the B card); Rise/brand/dock names (card)"
+  },
+  {
+   "key": "accessibility-checker",
+   "checked": "empty nav landmark (built); status live region per move; gauge aria-hidden; dock button name (card); leaving layers inert+aria-hidden"
+  },
+  {
+   "key": "test-strategist",
+   "checked": "Stage safety flush and onSettle untested (built); model.test everyPath hand list (theatre question, left); Stage.test static only, so a DOM file was added"
+  },
+  {
+   "key": "security-auditor",
+   "checked": "parseHash is the only untrusted input: decode in try, isValid on result, hasOwn on subs, __proto__/constructor cases tested; ids rendered as React text"
+  },
+  {
+   "key": "ui-perfectionist",
+   "checked": "crumb keyed by depth swapped text on across moves (built); interrupted layer restart (card); bar-in/dock-in under Calm (0 ms, ok); backlog items dock exit, dock-h slack, brand shift not re-proposed"
+  },
+  {
+   "key": "tech-debt-tracker",
+   "checked": "ROOT_MODULE zero-consumer grep (built); preview.tsx identity go() trivial"
+  },
+  {
+   "key": "architecture-analyst",
+   "checked": "model/store/shape/stage seams: pure reducer, one store writer, one Rust seam; module-design deviation for preview.tsx GRAMMAR already recorded, not re-proposed"
+  },
+  {
+   "key": "documentation-auditor",
+   "checked": "file headers vs behaviour: store.ts reload promise (was false, built), layers.ts interrupt claim (card), Stage.tsx Escape doc updated"
+  },
+  {
+   "key": "dependency-auditor",
+   "checked": "imports of the 15 files: react, zustand, @/lib/ipc, @/lib/motion, @/bell; no unused or new dependency"
+  },
+  {
+   "key": "mobile-specialist",
+   "checked": "stage.css @media (max-width: 760px): dock-h 132 px, gauge hidden, roots wrap; crumbs have no truncation at narrow widths (not measured, not filed)"
+  },
+  {
+   "key": "integration-planner",
+   "checked": "the layout_select IPC seam in depth/shape.ts: ids pinned to layout.rs by test; refusal handling (card)"
+  },
+  {
+   "key": "registry-conformance",
+   "checked": "module-design pair state deviation (recorded, not restated); no new conformance verdicts written (director owns .ai)"
+  },
+  {
+   "key": "feature-scout",
+   "checked": "ADR 0087 promises checked against code: link, reload (broken, built), Escape never closes, three moves max (tested)"
+  }
+ ],
+ "lens_no_surface": [
+  {
+   "key": "monetization-advisor",
+   "why": "no billing, plan or pricing surface in a navigation model"
+  },
+  {
+   "key": "growth-hacker",
+   "why": "no sharing, invite or notification surface here"
+  },
+  {
+   "key": "business-strategist",
+   "why": "a desktop navigation stage has no business-value surface of its own"
+  },
+  {
+   "key": "innovation-catalyst",
+   "why": "no AI or agent logic in these files"
+  },
+  {
+   "key": "onboarding-designer",
+   "why": "the first act is scenes/waking, chosen by console/scenes.tsx, outside this context"
+  },
+  {
+   "key": "analytics-planner",
+   "why": "no product events or telemetry are emitted or expected from these files"
+  },
+  {
+   "key": "devops-optimizer",
+   "why": "no pipeline or build config in this context; perf-gate scripts belong to the build context"
+  }
+ ],
+ "findings": 15,
+ "lanes": "A:9/B:4/C:1",
+ "fp": 0,
+ "gates": {
+  "pnpm typecheck": 0,
+  "pnpm lint": 0,
+  "pnpm test": 0,
+  "pnpm perf:stage": 0,
+  "pnpm perf:chores": 1
+ },
+ "leads": [],
+ "degraded": false,
+ "note": "9 built: reload-at-depth, Escape order, scene memo, snow theme",
+ "notes": "perf:chores fails on a 55-96 ms long task with this round's Stage.tsx AND with HEAD's (58 ms, measured by swapping the file back), under sibling load: not this round; director's combined run should re-check. Sibling desktop-voice-ui reds seen twice in modules/voice/live.test.ts mid-round (in-flight, not mine); every commit here landed on a fully green pnpm test. New jsdom files: stage/Stage.dom.test.tsx, stage/Backdrop.dom.test.tsx. Registry map pairs judged none (director owns .ai). Consult line: {\"bundle\":\"software-engineering\",\"subjects\":[\"module-design\",\"app-shell\",\"motion\",\"accessibility\",\"render-mount-pipeline\"],\"techniques\":[\"io-free-core\",\"navigation-model\",\"continuity-across-change\",\"engine-selection\",\"name-and-description-wiring\",\"mount-binders-versus-attach-binders\"],\"deviations\":3}"
+}
