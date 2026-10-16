@@ -149,14 +149,16 @@ def _constitution_stage() -> Stage:
     """Where the law was found, and which copy it is (ADR 0006).
 
     A ``fail``: a turn with no law is a turn that should not have started, so the doctor says so
-    with the exit code and not only in a sentence.
+    with the exit code and not only in a sentence. The detail is the loader's whole message: where
+    it looked, and how to point it at a copy. Cutting it at the first ". " cut a home such as
+    ``J. Smith`` in half and dropped the remedy.
     """
     from athena.core import constitution
 
     try:
         law = constitution.load()
     except constitution.ConstitutionMissing as exc:
-        return Stage("constitution", "fail", str(exc).split(". ")[0])
+        return Stage("constitution", "fail", str(exc))
     return Stage("constitution", "ok", f"{law.source.kind}: {law.directory} v{law.version}")
 
 

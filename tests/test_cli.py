@@ -93,6 +93,24 @@ def test_a_missing_law_is_a_fail_and_sets_the_exit_code(
     assert law["ok"] is False
 
 
+def test_a_missing_law_says_where_it_looked_and_how_to_point_at_one(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """The detail is the only place the doctor tells a person how to fix a ``fail``. A directory
+    with ". " in its name (a home like ``C:\\Users\\J. Smith``) is still named whole, and the
+    remedy the loader states - set ``$ATHENA_CONSTITUTION`` - is still there."""
+    empty = tmp_path / "J. Smith" / "law"
+    empty.mkdir(parents=True)
+    monkeypatch.setenv("ATHENA_CONSTITUTION", str(empty))
+
+    code, report = _run(capsys, "doctor", "--brain", str(tmp_path / "brain"))
+
+    assert code == 1
+    law = next(stage for stage in report["stages"] if stage["name"] == "constitution")
+    assert str(empty) in law["detail"]
+    assert "$ATHENA_CONSTITUTION" in law["detail"]
+
+
 def test_a_brain_that_will_not_open_fails_and_the_index_stage_is_skipped(
     tmp_path: Path, capsys: pytest.CaptureFixture[str]
 ) -> None:
