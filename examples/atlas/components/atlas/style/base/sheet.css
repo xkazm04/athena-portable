@@ -60,29 +60,6 @@
   );
 }
 
-/* ------------------------------------- the reading line ------------------------------------- */
-
-.at-readout {
-  position: absolute;
-  inset-inline-start: var(--at-space-5);
-  inset-block-end: var(--at-space-4);
-  margin: 0;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  gap: var(--at-space-1);
-  max-width: var(--at-measure);
-  pointer-events: none;
-}
-
-.at-readout-level {
-  font-size: var(--at-text-lg);
-  line-height: var(--at-leading-tight);
-  letter-spacing: var(--at-track-tight);
-  color: var(--at-line-0);
-  font-weight: 700;
-}
-
 /* ---------------------------------------- vocabulary ---------------------------------------- */
 
 .at-part {
@@ -120,25 +97,6 @@
   font-size: var(--at-text-micro);
   color: var(--at-line-2);
   margin: 0;
-}
-
-/* The reading line's third slot: the name of the thing under the pointer, and only while it is. */
-.at-readout-hover {
-  font-family: var(--at-font-fig);
-  font-size: var(--at-text-micro);
-  color: var(--at-line-0);
-  border-inline-start: var(--at-rule-2) solid var(--at-cyan);
-  padding-inline-start: var(--at-space-2);
-}
-
-.at-sr,
-.at-vh {
-  position: absolute;
-  width: var(--at-rule-1);
-  height: var(--at-rule-1);
-  overflow: hidden;
-  clip-path: inset(50%);
-  white-space: nowrap;
 }
 
 /* Focus is one ring everywhere, and it is the white line rather than the accent: the accent
@@ -263,24 +221,6 @@
 }
 
 /* ----------------------------------- the variant stage ----------------------------------- */
-
-/*
- * A VARIANT'S STAGE. The shell owns `.at-stage`; everything inside it belongs to whichever drawing
- * is mounted, and this is the box a variant may opt into: the full cell, two rows, the second one
- * for a control strip a variant may or may not have.
- *
- * Absolutely positioned chrome — a reading line, a legend — anchors to THIS box rather than to the
- * stage, so a variant with a control strip does not have its legend float over it.
- */
-.at-stage-in {
-  position: relative;
-  display: grid;
-  grid-template-rows: minmax(0, 1fr) auto;
-  width: 100%;
-  height: 100%;
-  min-width: 0;
-  min-height: 0;
-}
 
 /*
  * THE HONEST PLACEHOLDER. A variant whose module is missing or threw gets this — and it says which

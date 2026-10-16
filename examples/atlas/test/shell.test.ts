@@ -90,3 +90,33 @@ test("every @container query in the shell's stylesheets names a container the ap
   }
   assert.deepEqual(dangling, [], "a query on a container nothing declares never matches");
 });
+
+/** Script source with its comments removed, so a class a comment mentions does not count as spent. */
+const uncode = (ts: string): string =>
+  ts.replace(/\/\*[\s\S]*?\*\//g, "").replace(/(^|[^:])\/\/.*$/gm, "$1");
+
+/** Every .ts/.tsx file of the app's source, joined: where a class name is spent. */
+function markup(): string {
+  const out: string[] = [];
+  for (const dir of ["../app/", "../components/", "../lib/"]) {
+    const root = new URL(dir, import.meta.url);
+    for (const entry of readdirSync(root, { withFileTypes: true, recursive: true })) {
+      if (entry.isFile() && /\.tsx?$/.test(entry.name)) {
+        out.push(uncode(readFileSync(join(entry.parentPath, entry.name), "utf8")));
+      }
+    }
+  }
+  return out.join("\n");
+}
+
+test("every class the shell's stylesheets style is one some component renders", () => {
+  const source = markup();
+  const unused = new Set<string>();
+  for (const [path, css] of sheets(STYLE)) {
+    for (const m of uncomment(css).matchAll(/\.(at-[\w-]+)/g)) {
+      const cls = m[1]!;
+      if (!new RegExp(`(?<![\w-])${cls}(?![\w-])`).test(source)) unused.add(`${path}: .${cls}`);
+    }
+  }
+  assert.deepEqual([...unused], [], "a rule for a class nothing renders is a rule nobody can see");
+});

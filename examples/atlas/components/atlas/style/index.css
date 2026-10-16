@@ -9,13 +9,13 @@
  * Tokens first and always: every file below reads them and none of them declares a value.
  * `design/check-tokens.mjs` enforces that, and `app/globals.css` imports this file once.
  *
- * WHAT IS HERE IS THE SHELL AND NOTHING ELSE: the tokens, the scaffold, the mast, the rails and
- * the L2 pane. Round 5's `canvas/canvas.css` drew one variant's stage and went with it; a stage
- * stylesheet belongs inside the variant folder, imported by its `index.tsx`, so that deleting a
- * drawing deletes its CSS.
+ * WHAT IS HERE IS THE SHELL AND NOTHING ELSE: the tokens, the scaffold, the mast and the L2 pane.
+ * Round 5's `canvas/canvas.css` drew one variant's stage and went with it; a stage stylesheet
+ * belongs inside the variant folder, imported by its `index.tsx`, so that deleting a drawing
+ * deletes its CSS. (`chrome/rails.css`, the round-4 legend and turn bar, outlived the drawing that
+ * rendered them and is gone; `test/shell.test.ts` fails on a class no component renders.)
  */
 @import "./base/tokens.css";
 @import "./base/sheet.css";
 @import "./chrome/mast.css";
-@import "./chrome/rails.css";
 @import "./level2/l2-pane.css";
