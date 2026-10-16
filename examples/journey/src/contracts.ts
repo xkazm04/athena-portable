@@ -1,5 +1,5 @@
 /**
- * README section 1 â€” the four acts, expressed as field access over what the apps answer.
+ * README section 1 — the four acts, expressed as field access over what the apps answer.
  *
  * Every read of an application's answer goes through a small named function here and nowhere
  * else, so a field that moves is one edit in this file and none in `tests/journey.spec.ts`. The
@@ -12,7 +12,7 @@
  *
  * Two rules keep this honest. An adapter accepts more than one spelling of the field it wants,
  * and an adapter that cannot find its field throws with the value it was given rather than
- * returning a plausible default â€” a silent `?? 0` is a beat that passes while asserting nothing.
+ * returning a plausible default — a silent `?? 0` is a beat that passes while asserting nothing.
  *
  * The cross-app constants come from the shared seed the three apps read
  * (`examples/demo-kit/src/seed/companies.ts`), so the journey checks the apps against the registry
@@ -132,7 +132,7 @@ export const invoice = {
   daysOverdue: (row: Row): number => num(pick(row, ["days_overdue", "overdue_days", "age_days"], "days overdue")),
   balance: (row: Row): number => num(pick(row, ["balance", "outstanding", "amount"], "balance")),
   state: (row: Row): string => str(pick(row, ["state", "status"], "invoice state")),
-  /** How much of it is paid, 0â€¦1. The signal act 1 skips a chase on. */
+  /** How much of it is paid, 0…1. The signal act 1 skips a chase on. */
   paidRatio: (row: Row): number => {
     const held = row.paid_ratio;
     if (held !== undefined && held !== null) return num(held);
@@ -148,7 +148,7 @@ export const invoice = {
   },
 };
 
-/** The registry contact for a client name â€” the address act 1's chases are allowed to reach. */
+/** The registry contact for a client name — the address act 1's chases are allowed to reach. */
 export function contactEmailFor(clientName: string): string {
   const company = companyByName(clientName) ?? COMPANIES.find((c) => clientName.includes(c.name));
   if (!company) throw new Error(`no company named ${clientName} in the shared registry`);
@@ -375,5 +375,5 @@ export const contact = {
   },
 };
 
-/** The segment act 3 exports for the campaign â€” the fifteen registry domains. */
+/** The segment act 3 exports for the campaign — the fifteen registry domains. */
 export const CAMPAIGN_SEGMENT = "clients";

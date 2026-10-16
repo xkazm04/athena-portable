@@ -1,5 +1,5 @@
 /**
- * README section 1 â€” the three host applications the four acts move between.
+ * README section 1 — the three host applications the four acts move between.
  *
  * One row per app: the port it serves on, the workspace directory `next dev` is spawned in, and
  * the tool names the journey asserts the gate's class for. The names are the stable half of the
@@ -11,7 +11,7 @@ import { dirname, resolve } from "node:path";
 
 const here = dirname(fileURLToPath(import.meta.url));
 
-/** `examples/` â€” the parent of this package and of the three apps. */
+/** `examples/` — the parent of this package and of the three apps. */
 export const EXAMPLES = resolve(here, "..", "..");
 
 /**
