@@ -11,7 +11,7 @@
  */
 import type { ToolRow } from "@/lib/api";
 import type { BridgeTool } from "@/lib/bridge";
-import { handTools } from "@/lib/hands";
+import { isMarkedHand, withHands } from "@/lib/hands";
 import { catalogIdOf } from "@/lib/manifest";
 import type { GatedLists } from "@/stores/run";
 import type { TabTools } from "@/stores/tools";
@@ -39,13 +39,9 @@ export function toolRows(found: TabTools | undefined, gated: GatedLists = NO_TIG
       description: tool.description ?? "",
     };
   };
-  const named = new Set(found.tools.map((tool) => tool.name));
-  return [
-    ...found.tools.map((tool) => row(tool, 1)),
-    ...handTools()
-      .filter((hand) => !named.has(hand.name))
-      .map((hand) => row(hand, 2)),
-  ];
+  // The manifest's own list (`withHands`), so the rows and what the daemon is sent cannot disagree:
+  // a page tool named like a hand keeps the page's, except `tabs_read`, which is the shell's alone.
+  return withHands(found.tools).map((tool) => row(tool, isMarkedHand(tool) ? 2 : 1));
 }
 
 const NO_TIGHTENING: GatedLists = { gated_origins: [], gated_tools: [] };
