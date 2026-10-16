@@ -8,11 +8,11 @@
  * CI, and no emitted CSS anywhere in the repo. `[data-variant="token"]` and `[data-density]` are
  * emitted by this file and mounted by nothing.
  *
- * THE LIVE VALUE AUTHORITY IS NOT THIS PIPELINE. The two directions that ship hand-write their
- * tokens: `components/edge/edge.css` (the `[data-variant="edge"]` block, `--e-*`) for the Strip,
- * and `components/lanes/style/base/tokens.css`, pulled in by `components/lanes/style/index.css`,
- * for the Lanes. The variant index at `/v` gets its own set in `app/globals.css`. Change a value
- * there; changing one here changes nothing. Same call the sibling apps made for their own cut
+ * THE LIVE VALUE AUTHORITY IS NOT THIS PIPELINE. The one surface that ships, the Lanes,
+ * hand-writes its tokens in `components/lanes/style/base/tokens.css`, pulled in by
+ * `components/lanes/style/index.css`. (The Strip's `components/edge/edge.css` and the `/v` variant
+ * index went when the Lanes shipped, 8a8b052.) Change a value there; changing one here changes
+ * nothing. Same call the sibling apps made for their own cut
  * `token` direction - see `examples/hirelane/design/build-tokens.mjs` and
  * `examples/tidycrm/design/SITE.md` - so the three copies read the same way.
  *

@@ -4,18 +4,19 @@
  * RETIRED (2026-09), and this is the first thing to know about it. No route mounts
  * `[data-variant="scale"]`, so not one declaration below applies to any rendered page; nothing
  * imports this file, and `components/scale/scale.css`, which the LAW clause at the end of this
- * header names, was never created. THE LIVE VALUE AUTHORITY IS `components/edge/edge.css` for the
- * shipped `edge` direction and `components/lanes/style/base/tokens.css` for `lanes`. This file is
- * kept as the type study those two were argued against — `components/edge/edge.css:27` and `:252`
- * and `components/edge/README.md:42` cite it by line for decisions that DID ship, which is why it
- * stays. Read it as a record; change a value in it and nothing moves.
+ * header names, was never created. THE LIVE VALUE AUTHORITY IS
+ * `components/lanes/style/base/tokens.css`: the Lanes are the one surface this app ships. The
+ * `edge` direction this file was argued against, and whose `edge.css` cited it by line, went when
+ * the Lanes shipped (8a8b052), so nothing in the repo cites it now. It is kept as the record of the
+ * type study: read it as one, and change a value in it and nothing moves.
  *
  * WHY THIS FILE EXISTS
- * The shared contract in @athena/demo-kit is 15 custom properties: one radius, one gap, one
- * shadow, and no spacing, type or motion scale at all. It is a theming hook, not a design system.
+ * The shared contract in @athena/demo-kit was 15 custom properties when this was written: one
+ * radius, one gap, one shadow, and no spacing, type or motion scale at all - a theming hook, not a
+ * design system. (It has since gained a spacing and a type scale, `--dk-space-*` and `--dk-text-*`.)
  * The hirelane pass built the missing layer. This is that layer, carried across to ledgerbox with
  * three corrections. It is NOT imported from `app/globals.css` — every declaration below is scoped
- * to `[data-variant="scale"]`, so it cannot leak into `/`, `/v/waterline` or `/v/law`.
+ * to `[data-variant="scale"]`, so it cannot leak into the Lanes at `/`.
  *
  * WHAT CHANGED FROM THE ORIGINAL, AND WHY
  *
