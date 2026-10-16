@@ -98,9 +98,11 @@ export const useOrigins = create<OriginsState>((set, get) => ({
     const cached = get().records[origin];
     if (cached) return cached;
     const stored = hasShell() ? await originRead(origin) : null;
-    const record: OriginRow = stored
-      ? { ...blankOrigin(origin), ...stored, overrides: stored.overrides ?? {} }
-      : blankOrigin(origin);
+    // A blank is the base a first answer is written on, not a row: kept in `records` it would read
+    // as `enabled: false` - switched off - to every reader of the map, and a write that then fails
+    // would leave a first-sight app refused instead of carded (ADR 0063).
+    if (!stored) return blankOrigin(origin);
+    const record: OriginRow = { ...blankOrigin(origin), ...stored, overrides: stored.overrides ?? {} };
     set((s) => ({ records: { ...s.records, [origin]: record } }));
     return record;
   },
@@ -111,7 +113,10 @@ export const useOrigins = create<OriginsState>((set, get) => ({
         originList(),
         settingRead<Record<string, Record<string, ToolContract>>>(SETTING_KEYS.toolContracts),
       ]);
-      const records: Record<string, OriginRow> = { ...get().records };
+      // The table is the answer, whole: a row the other window forgot leaves `records` too, or a
+      // reader of the map alone (`disabledOriginsOf`) would keep refusing an app that is first
+      // sight again everywhere else (ADR 0026, 0063).
+      const records: Record<string, OriginRow> = {};
       for (const stored of page.rows) {
         records[stored.origin] = {
           ...blankOrigin(stored.origin),
