@@ -16,8 +16,9 @@ Every call goes through :class:`RoleCaller`, which is the only place a role is i
 the engine's purse first (:mod:`~athena.proving.budget`), writes one :mod:`~athena.proving.runlog`
 row whatever happened, and — for :meth:`RoleCaller.call_json` — parses and schema-checks the
 answer. **NVIDIA output is assumed mediocre until measured**: an answer that is not JSON, or JSON
-of the wrong shape, is *counted* (:class:`Validity`) and returned as ``None``. Nothing here
-raises on a bad answer, because a bad answer is a result.
+of the wrong shape, is *counted* (:class:`Validity`) and returned as ``None``. An answer the
+role's own token ceiling cut is counted apart, as ``cut``: it is no evidence about the model.
+Nothing here raises on a bad answer, because a bad answer is a result.
 """
 
 from __future__ import annotations
@@ -98,6 +99,9 @@ class RoleReply:
     ms: int = 0
     error_reason: str | None = None
     detail: str = ""
+    #: ``"length"`` when the call was stopped by the caller's own token ceiling: a *void*, which
+    #: says nothing about the model and is never counted as its bad answer.
+    stopped: str = ""
 
     @property
     def ok(self) -> bool:
@@ -164,8 +168,11 @@ class NebiusRole:
         input_tokens = output_tokens = 0
         cost: float | None = None
         served = self.model
+        finish = ""
         for chunk in chunks:
-            if chunk.kind == "text":
+            if chunk.kind == "done":
+                finish = chunk.reason
+            elif chunk.kind == "text":
                 text.append(chunk.text)
             elif chunk.kind == "usage":
                 input_tokens += chunk.input_tokens
@@ -192,6 +199,20 @@ class NebiusRole:
             cost_usd=cost,
             ms=_ms(started),
         )
+        if finish == "length":
+            # Read before the text: a reply the ceiling ended is unattempted, not malformed.
+            return RoleReply(
+                said,
+                NEMOTRON,
+                served,
+                input_tokens,
+                output_tokens,
+                cost,
+                reply.ms,
+                error_reason="engine_error",
+                detail=f"stopped at the {self.max_tokens}-token ceiling (NebiusRole.max_tokens)",
+                stopped="length",
+            )
         if not said:
             return RoleReply(
                 "",
@@ -401,7 +422,11 @@ def extract_json(text: str) -> Any:
 
 @dataclass
 class Validity:
-    """Schema outcomes per ``(role, model)``: how often a model's answer was usable."""
+    """Schema outcomes per ``(role, model)``: how often a model's answer was usable.
+
+    ``ok``, ``not_json`` and ``bad_shape`` are the model's; ``cut`` (present once it happens) is an
+    answer the role's own ``max_tokens`` ended, which no rate of the model's may count.
+    """
 
     counts: dict[str, dict[str, int]] = field(default_factory=dict)
 
@@ -464,6 +489,8 @@ class RoleCaller:
         reply = self._invoke(client, system, prompt)
         key = f"{role}:{client.model}"
         if not reply.ok:
+            if reply.stopped:
+                self.validity.count(key, "cut")  # a void, beside the model's own outcomes
             self._row(role, reply)
             return JsonAnswer(reply, problem=reply.detail or str(reply.error_reason))
         try:
@@ -496,6 +523,7 @@ class RoleCaller:
             error_reason=reply.error_reason,
             schema_ok=schema_ok,
             excerpt=excerpt,
+            extra={"stopped": reply.stopped} if reply.stopped else None,
         )
 
 

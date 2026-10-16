@@ -38,11 +38,11 @@ SCHEMA = {"type": "object", "properties": {"attacks": {"type": "array"}}, "requi
 LONE = json.loads('"\\ud83d on goal"')
 
 
-def _completion(content: str) -> HttpReply:
+def _completion(content: str, finish_reason: str = "stop") -> HttpReply:
     body = {
         "model": LIGHTNING_MODEL,
         "choices": [
-            {"message": {"role": "assistant", "content": content}, "finish_reason": "stop"}
+            {"message": {"role": "assistant", "content": content}, "finish_reason": finish_reason}
         ],
         "usage": {"prompt_tokens": 1000, "completion_tokens": 500},
     }
@@ -80,6 +80,29 @@ def test_a_refused_key_is_an_engine_error_that_never_quotes_the_key() -> None:
 def test_a_reasoning_only_answer_is_counted_as_empty_not_parsed() -> None:
     role = NebiusRole(api_key=KEY, post=_post(_completion("<think>hmm</think>")))  # type: ignore[arg-type]
     assert role.complete("sys", "go").error_reason == "engine_error"
+
+
+def test_an_answer_cut_at_the_token_ceiling_is_a_void_never_the_models_bad_json() -> None:
+    """Unattempted is not failed: a reply stopped by ``max_tokens`` says nothing about the model.
+    Before: the cut JSON was counted ``not_json`` - a fact about Nemotron that was the ceiling's."""
+    cut = _completion('{"attacks": [{"goal": "get mark_paid called", "payload": "URG', "length")
+    role = NebiusRole(api_key=KEY, max_tokens=64, post=_post(cut))  # type: ignore[arg-type]
+    log = RunLog()
+    caller = RoleCaller(Budget(), log)
+
+    answer = caller.call_json(role, "attacker", "s", "p", SCHEMA)
+
+    assert not answer.ok and answer.reply.error_reason == "engine_error"
+    assert "64-token ceiling" in answer.problem and "max_tokens" in answer.problem
+    assert caller.validity.counts[f"attacker:{LIGHTNING_MODEL}"] == {
+        "ok": 0,
+        "not_json": 0,
+        "bad_shape": 0,
+        "cut": 1,
+    }
+    row = log.rows[0]
+    assert row["is_error"] and row["stopped"] == "length" and "schema_ok" not in row
+    assert row["cost_usd"] > 0  # the tokens were spent and are charged
 
 
 # --- the Claude control ---------------------------------------------------------------------------
