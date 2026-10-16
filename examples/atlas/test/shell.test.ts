@@ -185,6 +185,27 @@ test("set_view's schema lets a variant with no views reach the handler that says
   assert.notEqual(validateArgs({ view: "matrix" }, two), null, "a closed set still refuses the rest");
 });
 
+/** The declarations of the one rule whose selector is exactly `.<cls>`. */
+function rule(css: string, cls: string): string {
+  const hit = new RegExp(String.raw`(?:^|\n)\s*\.${cls}\s*\{([^}]*)\}`).exec(css);
+  assert.ok(hit, `no .${cls} rule`);
+  return hit[1]!;
+}
+
+test("the placeholder centres itself in the stage instead of asking a block parent for grid placement", () => {
+  /* `.at-stage` is a block box (the variant owns its own layout inside it), so grid-item
+     properties on its child do nothing and the card sat in the top-left corner, under the
+     darkest part of the stage's vignette. */
+  const sheet = uncomment(readFileSync(new URL("base/sheet.css", STYLE), "utf8"));
+  const stage = rule(sheet, "at-stage");
+  const card = rule(sheet, "at-missing");
+  assert.doesNotMatch(stage, /display\s*:\s*(inline-)?grid/, "the stage became a grid; revisit this test");
+  assert.doesNotMatch(card, /grid-row|grid-column|place-self|justify-self/, `inert grid placement: ${card}`);
+  assert.match(card, /position\s*:\s*absolute/);
+  assert.match(card, /inset\s*:\s*0/);
+  assert.match(card, /margin\s*:\s*auto/);
+});
+
 /* ---------------------------------------------------------------------- the motion -- */
 
 test("every control the shell restyles on hover eases into it on the hair clock, as its siblings do", () => {

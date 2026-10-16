@@ -229,10 +229,17 @@
  * than as an absence. The same box holds the wait while the variant's chunk loads, without the
  * dashed rule: a wait is not an absence and must not be drawn as one.
  */
+/* Centred by its own box, not by grid placement: `.at-stage` is a block (the variant owns the
+   layout inside it), so `place-self` and `grid-row` here did nothing and the card sat in the
+   top-left corner under the darkest part of the vignette. */
 .at-missing {
-  place-self: center;
-  grid-row: 1 / -1;
-  max-width: var(--at-measure);
+  position: absolute;
+  z-index: 1;
+  inset: 0;
+  margin: auto;
+  width: fit-content;
+  height: fit-content;
+  max-width: min(var(--at-measure), calc(100% - var(--at-space-6)));
   padding: var(--at-space-6);
   border: var(--at-rule-1) dashed var(--at-line-3);
   text-align: center;
