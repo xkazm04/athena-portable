@@ -143,17 +143,35 @@ export const Toolbar = memo(function Toolbar({
 }: ToolbarProps) {
   return (
     <div className="al-toolbar" role="toolbar" aria-label="The lane sheet's controls">
-      <button type="button" className="al-tool" data-on={story ? "" : undefined} onClick={onStory}>
+      {/* What `data-on` paints, `aria-pressed` says; a button whose visible text is a state or a
+          readout is named for what pressing it does, with that text kept in the name. */}
+      <button
+        type="button"
+        className="al-tool"
+        data-on={story ? "" : undefined}
+        aria-pressed={story}
+        onClick={onStory}
+      >
         TURN
       </button>
-      <button type="button" className="al-tool" onClick={onTheme}>
+      <button
+        type="button"
+        className="al-tool"
+        aria-label={theme === "dark" ? "Dark theme, switch to light" : "Light theme, switch to dark"}
+        onClick={onTheme}
+      >
         {theme === "dark" ? "Dark" : "Light"}
       </button>
       <span className="al-tool-sep" aria-hidden />
       <button type="button" className="al-tool" onClick={() => onZoom(-1)} aria-label="Zoom out">
         −
       </button>
-      <button type="button" className="al-tool al-tool-home" onClick={onHome}>
+      <button
+        type="button"
+        className="al-tool al-tool-home"
+        aria-label={`Home, the whole sheet. Now L${level} · ${Math.round(zoom * 100)}%`}
+        onClick={onHome}
+      >
         {`L${level} · ${Math.round(zoom * 100)}%`}
       </button>
       <button type="button" className="al-tool" onClick={() => onZoom(1)} aria-label="Zoom in">
@@ -203,6 +221,7 @@ export const StoryBar = memo(function StoryBar({
             type="button"
             className="al-story-chapter"
             data-on={i === chapter ? "" : undefined}
+            aria-current={i === chapter ? "step" : undefined}
             onClick={() => onChapter(i)}
             title={c.note}
           >
