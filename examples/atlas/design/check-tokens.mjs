@@ -27,7 +27,10 @@ import { fileURLToPath } from "node:url";
 
 const ROOT = fileURLToPath(new URL("..", import.meta.url));
 const TOKEN_FILE = join(ROOT, "components/atlas/style/base/tokens.css");
-const SKIP_DIRS = new Set(["node_modules", ".next", "data", "design", "test"]);
+/** Skipped wherever they appear: installed and built output. */
+const SKIP_ANYWHERE = new Set(["node_modules", ".next"]);
+/** Skipped only at the app's root, where they hold no styles; a nested folder of the same name is source. */
+const SKIP_AT_ROOT = new Set(["data", "design", "test"]);
 
 /*
  * ROUND 4 HAS NO EXEMPTION FROM THE `px` BAN, and that is a finding rather than a tidy-up.
@@ -47,10 +50,11 @@ const RAW = /(?<![\w-])(\d*\.?\d+)(px|ms)\b/g;
 function walk(dir) {
   const out = [];
   for (const name of readdirSync(dir)) {
-    if (SKIP_DIRS.has(name)) continue;
     const full = join(dir, name);
-    if (statSync(full).isDirectory()) out.push(...walk(full));
-    else if (EXTS.some((e) => name.endsWith(e))) out.push(full);
+    if (statSync(full).isDirectory()) {
+      if (SKIP_ANYWHERE.has(name) || (dir === ROOT && SKIP_AT_ROOT.has(name))) continue;
+      out.push(...walk(full));
+    } else if (EXTS.some((e) => name.endsWith(e))) out.push(full);
   }
   return out;
 }

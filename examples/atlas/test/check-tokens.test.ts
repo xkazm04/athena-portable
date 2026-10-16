@@ -44,6 +44,15 @@ test("control: a clean tree passes, and a raw px in a stylesheet fails", () => {
   assert.equal(raw.status, 1, raw.out);
 });
 
+test("a stylesheet in a nested folder named data, design or test is still checked", () => {
+  /* The top-level `data/`, `design/` and `test/` hold no styles and are skipped; a component
+     folder that happens to share one of those names is source like any other. */
+  for (const dir of ["data", "design", "test"]) {
+    const r = run({ [`components/atlas/${dir}/x.css`]: ".x { padding: 12px; }\n" });
+    assert.equal(r.status, 1, `components/atlas/${dir}/ was not read: ${r.out}`);
+  }
+});
+
 test("a mistyped --at-* token inside the token file's own alias layer fails the gate", () => {
   /* The alias layer is where every kit `--dk-*` hook is re-pointed at an `--at-*` value; a typo
      there resolves to nothing in CSS, silently, exactly like a typo anywhere else. */
