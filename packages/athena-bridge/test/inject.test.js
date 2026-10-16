@@ -62,6 +62,18 @@ function page(options = {}) {
   };
 
   /**
+   * Wait for a condition rather than for a length of time. A loaded machine delays every timer
+   * and every delivery, never their order, so a test that sleeps a fixed 5 or 80 ms and then
+   * asserts an answer is a test that fails when the machine is busy. `capMs` is a ceiling on a
+   * hang, not a clock the assertion depends on.
+   * @param {() => boolean} done
+   * @param {number} [capMs]
+   */
+  const until = async (done, capMs = 3000) => {
+    for (let waited = 0; !done() && waited < capMs; waited += 5) await settle(5);
+  };
+
+  /**
    * The reply to one request, as a plain object: a structured clone from jsdom's realm has
    * jsdom's `Object.prototype`, which `deepStrictEqual` counts as a difference.
    * @param {unknown} id
@@ -71,7 +83,17 @@ function page(options = {}) {
     return found === undefined ? undefined : JSON.parse(JSON.stringify(found));
   };
 
-  return { window, replies, send, settle, replyTo, dom };
+  /**
+   * The reply to one request, waited for until it arrives (or the cap passes, and the assertion
+   * that reads it fails on `undefined`).
+   * @param {unknown} id
+   */
+  const answer = async (id) => {
+    await until(() => replies.some((r) => r.id === id));
+    return replyTo(id);
+  };
+
+  return { window, replies, send, settle, until, answer, replyTo, dom };
 }
 
 /**
@@ -98,9 +120,8 @@ test("the polyfill is installed, and list reports it as the transport", async ()
   register(p.window, "archive", () => "done", { athena: { reversible: true, side_effects: "internal" } });
 
   p.send({ id: "1", type: "list" });
-  await p.settle();
 
-  const reply = p.replyTo("1");
+  const reply = await p.answer("1");
   assert.ok(reply, "list must answer");
   assert.equal(reply.ok, true);
   assert.equal(reply.page.transport, "webmcp-polyfill");
@@ -133,7 +154,7 @@ test("a page that already had document.modelContext keeps it, and list says webm
 
   p.send({ id: "n1", type: "list" });
   p.send({ id: "n2", type: "call", name: "native_tool" });
-  await p.settle();
+  await p.until(() => p.replyTo("n1") !== undefined && p.replyTo("n2") !== undefined);
 
   assert.equal(p.replyTo("n1").page.transport, "webmcp-native");
   assert.equal(p.replyTo("n1").page.deprecated_navigator, false);
@@ -146,13 +167,11 @@ test("an inline manifest is parsed, and an unparseable one is simply absent", as
   const html = `<!doctype html><meta name="athena:app-manifest" content='${JSON.stringify(inline)}'>`;
   const p = page({ html });
   p.send({ id: "m", type: "list" });
-  await p.settle();
-  assert.deepEqual(p.replyTo("m").page.manifest, { source: "inline", value: inline });
+  assert.deepEqual((await p.answer("m")).page.manifest, { source: "inline", value: inline });
 
   const broken = page({ html: `<!doctype html><meta name="athena:app-manifest" content='{"app_id":'>` });
   broken.send({ id: "m", type: "list" });
-  await broken.settle();
-  assert.equal(broken.replyTo("m").page.manifest, null, "a broken manifest is not an exception");
+  assert.equal((await broken.answer("m")).page.manifest, null, "a broken manifest is not an exception");
 });
 
 test("a throw inside execute is a result, not a dropped promise", async () => {
@@ -168,7 +187,7 @@ test("a throw inside execute is a result, not a dropped promise", async () => {
   p.send({ id: "e2", type: "call", name: "reject_later" });
   p.send({ id: "e3", type: "call", name: "nope" });
   p.send({ id: "e4", type: "wat" });
-  await p.settle();
+  await p.until(() => ["e1", "e2", "e3", "e4"].every((id) => p.replyTo(id) !== undefined));
 
   assert.deepEqual(p.replyTo("e1"), { __ns: NS, dir: "to-ext", id: "e1", ok: false, error: "the invoice is locked" });
   assert.equal(p.replyTo("e2").ok, false);
@@ -186,7 +205,7 @@ test("a call is given its input and its output is rendered as text", async () =>
 
   p.send({ id: "c1", type: "call", name: "categorise", input: { id: "inv-3", label: "travel" } });
   p.send({ id: "c2", type: "call", name: "count" });
-  await p.settle();
+  await p.until(() => p.replyTo("c1") !== undefined && p.replyTo("c2") !== undefined);
 
   assert.equal(p.replyTo("c1").output, "filed inv-3 under travel");
   assert.equal(p.replyTo("c2").output, "12");
@@ -199,9 +218,10 @@ test("a call past the deadline is a timeout refusal, even when the tool ignores 
   register(p.window, "hangs", () => new Promise(() => {}));
 
   p.send({ id: "t1", type: "call", name: "hangs", timeout_ms: 20 });
-  await p.settle(80);
 
-  const reply = p.replyTo("t1");
+  // Waited for, not slept on: the tool never settles, so the only reply that can ever arrive is
+  // the deadline's, and how long a busy machine takes to deliver it is not what is under test.
+  const reply = await p.answer("t1");
   assert.ok(reply, "the deadline must produce an answer");
   assert.equal(reply.ok, false);
   assert.equal(reply.reason, "timeout");
@@ -218,9 +238,7 @@ test("a call that settles after its deadline is answered timeout, then posted as
   p.send({ id: "l1", type: "call", name: "sends", timeout_ms: 50 });
   p.send({ id: "l2", type: "call", name: "breaks", timeout_ms: 50 });
   // Polled rather than slept: a loaded machine delays both timers, never their order.
-  for (let waited = 0; p.replies.filter((r) => r.type === "late").length < 2 && waited < 2000; waited += 10) {
-    await p.settle(10);
-  }
+  await p.until(() => p.replies.filter((r) => r.type === "late").length >= 2);
   assert.equal(p.replyTo("l1").reason, "timeout");
   assert.equal(p.replyTo("l2").reason, "timeout");
   const at = (/** @type {(r: any) => boolean} */ match) => p.replies.findIndex(match);
@@ -244,8 +262,9 @@ test("a call answered in time posts no late event", async () => {
   const p = page();
   register(p.window, "quick", () => "ok");
   p.send({ id: "q1", type: "call", name: "quick", timeout_ms: 50 });
+  assert.equal((await p.answer("q1")).ok, true);
+  // Past the deadline, where a late event would have been posted had the reply been a timeout.
   await p.settle(100);
-  assert.equal(p.replyTo("q1").ok, true);
   assert.equal(p.replies.some((r) => r.type === "late"), false);
 });
 
@@ -264,10 +283,10 @@ test("the tool is handed a signal that aborts at the deadline, and 0 is not 'no 
   );
 
   p.send({ id: "a1", type: "call", name: "watches", timeout_ms: 0 });
-  await p.settle(60);
+  const reply = await p.answer("a1");
 
   assert.equal(aborted, true, "the abort is the courtesy the race does not replace");
-  assert.equal(p.replyTo("a1").reason, "timeout", "0 clamps to a real deadline, not to the ceiling");
+  assert.equal(reply.reason, "timeout", "0 clamps to a real deadline, not to the ceiling");
 });
 
 test("a message from a frame is ignored, and so is one from another origin", async () => {
@@ -285,15 +304,14 @@ test("a message from a frame is ignored, and so is one from another origin", asy
   }
 
   p.send({ id: "ok", type: "list" });
-  await p.settle();
-  assert.equal(p.replyTo("ok").ok, true, "the page's own message is still answered");
+  assert.equal((await p.answer("ok")).ok, true, "the page's own message is still answered");
 });
 
 test("toolchange is posted when the registry moves, and carries no payload", async () => {
   const p = page();
   register(p.window, "a", () => "a");
   p.window.document.modelContext.unregisterTool("a");
-  await p.settle();
+  await p.until(() => p.replies.filter((r) => r.type === "toolchange").length >= 2);
 
   const events = p.replies.filter((r) => r.type === "toolchange");
   assert.equal(events.length, 2, "one for the registration, one for the removal");
@@ -328,6 +346,8 @@ test("injecting twice leaves one bridge and one answer per request", async () =>
   p.window.eval(SOURCE);
   register(p.window, "read_inbox", () => "12 invoices");
   p.send({ id: "one", type: "list" });
-  await p.settle();
+  await p.answer("one");
+  // A second bridge would answer on the same task as the first; give it room to show itself.
+  await p.settle(20);
   assert.equal(p.replies.filter((r) => r.id === "one").length, 1);
 });
