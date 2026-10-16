@@ -20,7 +20,8 @@
  *
  * WHAT IT CHECKS, per direction (a `components/<slug>/style/` tree with a `base/tokens.css`):
  *
- *   1. Every token in FLOORS is at or above its floor against the worst composited surface.
+ *   1. Every token in FLOORS is at or above its floor against the worst composited surface of the
+ *      ground it is set on: the room's glass, or the inverted gated panel's sheet and fire.
  *   2. Every token in FLOORS still exists in the token block. A floor for a token somebody deleted
  *      is a check that passes by not looking, which §9.2's post-mortem is about.
  *   3. Every token in a text-carrying family (TEXT_TOKEN) has a floor in FLOORS. The mirror of 2:
@@ -71,6 +72,19 @@ const FLOORS = {
   "--bd-gate": { floor: 4.5, role: "GATED, an act that reaches a person" },
   "--bd-accent": { floor: 4.5, role: "structure: the level rail, a region title" },
   "--bd-mark": { floor: 4.5, role: "the borderline flag and the named gap" },
+  /*
+   * The inverted panel (§7.1): the one light surface in the room, holding the irreversible acts.
+   * Its inks are scored against its own sheet and fire, not the room's glass - `on` names the
+   * ground a token is set on, and the room is the default.
+   *
+   * `--bd-gate-ink-2` carries the panel's 12px class sentence and labels, and the rule above gives
+   * 12px text AAA. It measures 4.76:1 on the sheet's foot stop, so its floor is AA until it is
+   * retuned in `base/tokens.css` (a recorded gap in the stabilize backlog, not a decision that AA
+   * is enough here). Raising this number to 7.0 is how the retune is checked.
+   */
+  "--bd-gate-ink": { floor: 7.0, role: "the panel's voice: button and select text", on: "gated" },
+  "--bd-gate-ink-2": { floor: 4.5, role: "the panel's labels and class sentence (AAA owed)", on: "gated" },
+  "--bd-gate-lit": { floor: 7.0, role: "the fire button's label", on: "fire" },
 };
 
 /**
@@ -80,7 +94,7 @@ const FLOORS = {
  * it could only ever score the tokens somebody had already listed - a fifth rung at 2:1 went
  * unscored and `lint` stayed green. Every declared token matching this is asked for its floor.
  */
-const TEXT_TOKEN = /^--bd-(?:ink(?:-\d+)?|auto|gate|accent|mark)$/;
+const TEXT_TOKEN = /^--bd-(?:ink(?:-\d+)?|auto|gate|accent|mark|gate-ink(?:-\d+)?|gate-lit)$/;
 
 /**
  * The grounds, and the translucent planes laid over them.
@@ -100,6 +114,12 @@ const SURFACES = [
      unkind one, and it is read by name like every other plane here. It used to be `alpha: 0.08`,
      typed in this file beside a comment saying it was read from the stylesheet. */
   { name: "card top on void", over: "--bd-slide-top", on: "--bd-void" },
+  /* The inverted panel's ground: every stop of `--bd-gate-sheet`, read out of the gradient. The
+     washes laid on it are lighter still, so a dark ink's worst case is the darker stop. */
+  { name: "gated sheet", stops: "--bd-gate-sheet", ground: "gated" },
+  /* The fire button, armed and hovered. */
+  { name: "fire", solid: "--bd-gate-fire", ground: "fire" },
+  { name: "fire, hovered", solid: "--bd-gate-fire-2", ground: "fire" },
 ];
 
 const parseHex = (hex) => {
@@ -167,6 +187,18 @@ for (const slug of found) {
   // Build the surface set first: a missing ground is a broken model, not a failing token.
   const surfaces = [];
   for (const surface of SURFACES) {
+    const ground = surface.ground ?? "room";
+    if (surface.stops) {
+      // A gradient is as many surfaces as it has stops; a stop this file cannot read is a broken model.
+      const stops = [...(tokens.get(surface.stops) ?? "").matchAll(/#[0-9a-fA-F]{3,8}\b/g)].map((m) => m[0]);
+      if (stops.length < 2) {
+        console.log(`  MODEL  ${surface.name}: ${surface.stops} has no gradient stops this file can read`);
+        failed = true;
+        continue;
+      }
+      stops.forEach((hex, i) => surfaces.push({ name: `${surface.name} ${i + 1}/${stops.length}`, rgb: parseHex(hex), ground }));
+      continue;
+    }
     const base = parsePlane(tokens.get(surface.on ?? surface.solid) ?? "");
     if (!base) {
       console.log(`  MODEL  ${surface.name}: ${surface.on ?? surface.solid} is not a colour this file can read`);
@@ -174,7 +206,7 @@ for (const slug of found) {
       continue;
     }
     if (surface.solid) {
-      surfaces.push({ name: surface.name, rgb: base.rgb });
+      surfaces.push({ name: surface.name, rgb: base.rgb, ground });
       continue;
     }
     const plane = parsePlane(tokens.get(surface.over) ?? "");
@@ -183,7 +215,7 @@ for (const slug of found) {
       failed = true;
       continue;
     }
-    surfaces.push({ name: surface.name, rgb: composite(plane.rgb, plane.alpha, base.rgb) });
+    surfaces.push({ name: surface.name, rgb: composite(plane.rgb, plane.alpha, base.rgb), ground });
   }
   if (surfaces.length === 0) {
     failed = true;
@@ -196,7 +228,7 @@ for (const slug of found) {
     console.log(`  NOFLOOR ${name.padEnd(width)}  carries text and has no floor here: give it one in FLOORS`);
     failed = true;
   }
-  for (const [name, { floor, role }] of Object.entries(FLOORS)) {
+  for (const [name, { floor, role, on = "room" }] of Object.entries(FLOORS)) {
     const declared = tokens.get(name);
     if (!declared) {
       console.log(`  GONE   ${name.padEnd(width)}  has a floor here and no declaration in the token block`);
@@ -209,10 +241,15 @@ for (const slug of found) {
       failed = true;
       continue;
     }
-    let worst = { ratio: Infinity, on: "" };
-    for (const surface of surfaces) {
+    let worst = { ratio: Infinity, on: `no ${on} surface` };
+    for (const surface of surfaces.filter((s) => s.ground === on)) {
       const ratio = contrast(rgb, surface.rgb);
       if (ratio < worst.ratio) worst = { ratio, on: surface.name };
+    }
+    if (worst.ratio === Infinity) {
+      console.log(`  MODEL  ${name.padEnd(width)}  is set on "${on}" and no surface in SURFACES is one`);
+      failed = true;
+      continue;
     }
     const over = worst.ratio < floor;
     if (over) failed = true;
