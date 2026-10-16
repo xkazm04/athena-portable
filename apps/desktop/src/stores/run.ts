@@ -1255,6 +1255,7 @@ export const useRun = create<RunState>((set, get) => {
     }
     flight.sent = true;
     let opened = false;
+    let errored = false;
     try {
       for await (const event of api.run({
         origin: focused.origin,
@@ -1282,6 +1283,7 @@ export const useRun = create<RunState>((set, get) => {
       }, flight.controller.signal)) {
         // The daemon's turn ends at its last frame; what follows is the page's, with nothing to abort.
         opened = true;
+        if (event.kind === "turn.error") errored = true;
         if (isTerminal(event) && inFlight === flight) inFlight = null;
         await apply(event);
         if (isTerminal(event)) break;
@@ -1298,7 +1300,9 @@ export const useRun = create<RunState>((set, get) => {
     } finally {
       if (inFlight === flight) inFlight = null;
     }
-    return true;
+    // A turn that ended in `turn.error` failed exactly as a refused request did: the phase stays
+    // `error` (set by `apply`) and nothing continues, rather than the exchange calling it idle.
+    return !errored;
   }
 
   /**

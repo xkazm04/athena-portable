@@ -1198,6 +1198,8 @@ describe("refusals", () => {
     await useRun.getState().send("go");
 
     expect(useRun.getState().error?.reason).toBe("engine_error");
+    // The same failure a refused request is: the line under the conversation says stopped, not ready.
+    expect(useRun.getState().phase).toBe("error");
   });
 
   it("says so rather than hanging when no page is open", async () => {
