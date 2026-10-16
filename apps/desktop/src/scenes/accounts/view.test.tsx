@@ -358,6 +358,12 @@ describe("the scene's own rules", () => {
     expect(css).not.toMatch(/filter\s*:|backdrop-filter|animation:[^;]*(width|height|top|left)/);
     expect(source).not.toMatch(/requestAnimationFrame|setInterval/);
   });
+  it("lets the consent ring breathe in and out rather than snap back from its widest each cycle", () => {
+    // From scale 0.7 at full opacity to 1.25 at 0.35 and then a jump straight back: a visible
+    // pop every 1.6s for as long as the consent page is open. `alternate` plays the way back.
+    const pulse = css.slice(css.indexOf(".consent__pulse {"), css.indexOf("}", css.indexOf(".consent__pulse {")));
+    expect(pulse).toMatch(/animation:\s*consent-pulse\b[^;]*\binfinite\b[^;]*\balternate\b|animation:\s*consent-pulse\b[^;]*\balternate\b[^;]*\binfinite\b/);
+  });
   it("eases the connect rail's steps as they pass, with no rule that styles nothing", () => {
     const step = css.slice(css.indexOf(".stages__step {"), css.indexOf("}", css.indexOf(".stages__step {")));
     expect(step).toMatch(/transition:[^;]*border-color var\(--duration-fast\)/);

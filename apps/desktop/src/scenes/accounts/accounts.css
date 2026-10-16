@@ -485,7 +485,9 @@
   height: 22px;
   border-radius: 50%;
   border: 2px solid var(--accent);
-  animation: consent-pulse 1.6s ease-in-out infinite;
+  /* `alternate` plays the way back too: without it the ring jumped from its widest, faintest frame
+     to its smallest, brightest one every cycle. */
+  animation: consent-pulse 1.6s ease-in-out infinite alternate;
 }
 @keyframes consent-pulse {
   from { transform: scale(0.7); opacity: 1; }
