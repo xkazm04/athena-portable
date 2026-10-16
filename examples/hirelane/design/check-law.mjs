@@ -32,7 +32,7 @@
  *                       number may be typed in, exactly as `style/base/tokens.css` is for CSS, and
  *                       the same `§9.4 exception:` marker exempts a line anywhere else.
  *
- * The tree is clean on all three today, so every count is an absolute zero rather than a baseline
+ * The tree is clean on all four today, so every count is an absolute zero rather than a baseline
  * to ratchet down. If a direction ever lands with debt, give it a `design/law-baseline.json` of
  * `{ "<slug>": { "rawPx": n, "dkOverrides": 0, "offLockColours": n } }` and this will compare
  * against that instead - but `dkOverrides` is never allowed above zero, because §1.6 admits no
@@ -42,7 +42,9 @@ import { readdirSync, readFileSync, statSync, existsSync } from "node:fs";
 import { dirname, join, relative, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
-const APP = resolve(dirname(fileURLToPath(import.meta.url)), "..");
+/* The app root, or a fixture tree in its shape: `test/law.test.ts` seeds each violation into one
+   and watches this go red, because a check nobody has seen fail is not yet a check. */
+const APP = process.argv[2] ? resolve(process.argv[2]) : resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const COMPONENTS = join(APP, "components");
 const BASELINE_FILE = join(APP, "design", "law-baseline.json");
 
@@ -50,11 +52,13 @@ const EXEMPTION = "§9.4 exception";
 /**
  * A px literal that is a length.
  *
- * The leading class excludes letters, digits and `-` so the match cannot start inside an
+ * The leading class excludes letters, digits, `.` and `-` so the match cannot start inside an
  * identifier or a custom-property name. It deliberately does NOT exclude `(`: a number written
- * inside `min()`, `clamp()` or `blur()` is still a number somebody typed.
+ * inside `min()`, `clamp()` or `blur()` is still a number somebody typed. A sign is part of the
+ * number: `margin-block-start: -12px` used to pass, because the `-` that excluded `--name-12px`
+ * also stood between the space and the digits of every negative length.
  */
-const RAW_PX = /[^-a-z0-9]\d+(\.\d+)?px/;
+const RAW_PX = /(?:^|[^-a-z0-9.])-?(?:\d+(?:\.\d+)?|\.\d+)px/i;
 /** A `.dk-*` class selector opening a rule. The brace is what separates a selector from prose. */
 const DK_RULE = /(^|[^-a-zA-Z0-9_`])\.dk-[a-zA-Z0-9_-]+[^{]*\{/;
 const COLOUR = /#[0-9a-fA-F]{3,8}\b|\brgba?\(/;
