@@ -1,10 +1,10 @@
 """Parameter validation — the last line of the gate (README §3.3, ADR 0004).
 
-A hand-written subset of JSON Schema, stdlib only (ADR 0002): ``type``, ``required``, ``enum``,
-``additionalProperties: false``, ``maxLength``, ``minItems``, ``maxItems``, ``minimum``,
-``maximum`` and nested ``items``. That subset is exactly what the manifests in this repository
-declare — an enum and a ``maxItems`` on every parameter that addresses a page — and refusing to
-grow it is what keeps ``core`` dependency-free.
+A hand-written subset of JSON Schema, stdlib only (ADR 0002): ``type`` (one name or a list of
+them), ``required``, ``enum``, ``additionalProperties: false``, ``maxLength``, ``minItems``,
+``maxItems``, ``minimum``, ``maximum`` and nested ``items``. That subset is exactly what the
+manifests in this repository declare — an enum and a ``maxItems`` on every parameter that
+addresses a page — and refusing to grow it is what keeps ``core`` dependency-free.
 
 Every rejection carries a reason from ``ERROR_REASONS`` and puts the human sentence in ``detail``:
 the ledger groups by the reason, and the model reads the detail on its next turn. A validator that
@@ -34,7 +34,8 @@ __all__ = [
 #: module stays free of the brain; a test pins it equal to ``frontmatter._LINE_BREAKS``.
 FACT_KEY_LINE_BREAKS: frozenset[str] = frozenset("\n\r\x0b\x0c\x1c\x1d\x1e\x85\u2028\u2029")
 
-#: JSON Schema's type names, mapped onto what ``isinstance`` understands.
+#: JSON Schema's type names, mapped onto what ``isinstance`` understands. A ``type`` naming
+#: anything else is a type the gate cannot check, and a call against it is refused, not waved by.
 _TYPES: dict[str, type | tuple[type, ...]] = {
     "string": str,
     "number": (int, float),
@@ -42,7 +43,40 @@ _TYPES: dict[str, type | tuple[type, ...]] = {
     "boolean": bool,
     "array": list,
     "object": dict,
+    "null": type(None),
 }
+
+
+def _type_check(path: str, value: Any, declared: Any) -> ValidationResult:
+    """``type`` as one name or a list of names, each one checked (ADR 0004).
+
+    The manifest door accepts both spellings, so the gate enforces both. A name outside
+    :data:`_TYPES`, an empty list or a value of any other shape fails closed: skipping it would
+    let a schema that says ``"strng"`` admit an object where the page meant a string.
+    """
+    names = [declared] if isinstance(declared, str) else declared
+    if (
+        not isinstance(names, list)
+        or not names
+        or not all(isinstance(n, str) and n in _TYPES for n in names)
+    ):
+        return ValidationResult.reject(
+            "validator_failed",
+            f"this tool's params_schema declares a type the gate cannot check at {path}: "
+            f"{declared!r}",
+        )
+    # ``True`` is an ``int`` in Python and is not a number in any manifest that ever meant one,
+    # so the two numeric types refuse a bool before isinstance would wave it through.
+    if isinstance(value, bool):
+        matched = "boolean" in names
+    else:
+        matched = any(isinstance(value, _TYPES[n]) for n in names)
+    if matched:
+        return ValidationResult.accept()
+    got = "boolean" if isinstance(value, bool) else type(value).__name__
+    return ValidationResult.reject(
+        "validator_failed", f"{path}: expected {' or '.join(names)}, got {got}"
+    )
 
 
 def check_schema(params: dict[str, Any], schema: dict[str, Any]) -> ValidationResult:
@@ -86,18 +120,10 @@ def check_schema(params: dict[str, Any], schema: dict[str, Any]) -> ValidationRe
 
 
 def _check_value(path: str, value: Any, schema: dict[str, Any]) -> ValidationResult:
-    expected = schema.get("type")
-    if isinstance(expected, str) and expected in _TYPES:
-        # ``True`` is an ``int`` in Python and is not a number in any manifest that ever meant
-        # one, so the two numeric types refuse a bool before isinstance would wave it through.
-        if expected in ("integer", "number") and isinstance(value, bool):
-            return ValidationResult.reject(
-                "validator_failed", f"{path}: expected {expected}, got boolean"
-            )
-        if not isinstance(value, _TYPES[expected]):
-            return ValidationResult.reject(
-                "validator_failed", f"{path}: expected {expected}, got {type(value).__name__}"
-            )
+    if schema.get("type") is not None:
+        typed = _type_check(path, value, schema["type"])
+        if not typed.ok:
+            return typed
 
     if "enum" in schema:
         allowed = schema["enum"]

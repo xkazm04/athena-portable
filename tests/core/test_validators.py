@@ -73,6 +73,45 @@ def test_the_wrong_type_is_refused_and_a_bool_is_not_an_integer() -> None:
     assert "boolean" in result.detail
 
 
+def test_a_list_of_types_is_enforced_and_not_skipped() -> None:
+    """The door accepts ``type: [..]`` (``params_schema_problems``), so the gate must check it:
+    a property typed ``["string", "null"]`` used to take an object, a number or a list."""
+    schema = {
+        "type": "object",
+        "properties": {"note": {"type": ["string", "null"], "maxLength": 4}},
+    }
+    assert check_schema({"note": "ok"}, schema).ok
+    assert check_schema({"note": None}, schema).ok
+    for wrong in ({"a": 1}, 7, ["x"], True):
+        result = check_schema({"note": wrong}, schema)
+        assert not result.ok, wrong
+        assert result.reason == "validator_failed"
+        assert "expected string or null" in result.detail
+    assert not check_schema({"note": "far too long"}, schema).ok
+
+
+def test_a_bool_is_not_a_number_inside_a_list_of_types_either() -> None:
+    schema = {"type": "object", "properties": {"n": {"type": ["integer", "null"]}}}
+    assert check_schema({"n": 3}, schema).ok
+    result = check_schema({"n": True}, schema)
+    assert not result.ok and "boolean" in result.detail
+
+
+@pytest.mark.parametrize("declared", ["strng", "any", ["string", "uuid"], [], 5])
+def test_a_type_the_gate_cannot_check_refuses_every_call_instead_of_passing_it(
+    declared: Any,
+) -> None:
+    """Fail closed: an unknown type name used to be skipped, so ``"strng"`` admitted anything."""
+    schema = {
+        "type": "object",
+        "properties": {"to": {"type": "array", "items": {"type": declared}}},
+    }
+    result = check_schema({"to": ["a@example.com"]}, schema)
+    assert not result.ok
+    assert result.reason == "validator_failed"
+    assert "params_schema" in result.detail
+
+
 def test_an_enum_refuses_a_value_it_does_not_list() -> None:
     result = check_schema({"key": "a", "scope": "world"}, SCHEMA)
     assert not result.ok
