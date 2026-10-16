@@ -28,7 +28,7 @@ import {
   type MotionChoice,
 } from "@/lib/motion";
 import { DEFAULT_ENGINE, isEngineId, type EngineId } from "@/lib/engines";
-import { SETTING_KEYS, settingRead, settingWrite, storePath } from "@/lib/store";
+import { SETTING_KEYS, settingRead, settingWrite, storePath, type SettingKey } from "@/lib/store";
 import { useDaemon } from "@/stores/daemon";
 import { applyTheme, useShell, type Theme } from "@/stores/shell";
 
@@ -82,6 +82,12 @@ export interface SettingsState {
   onboarded: boolean;
   /** Where the store file is, for the read-only line in Settings. `null` until it has answered. */
   storePath: string | null;
+  /**
+   * The rows the last read could not get, with the store's own words, or `null`. Such a row keeps
+   * the value the store already held (the default, at launch): an unreadable row is its own fact,
+   * never a reason to stay unhydrated (README section 3.5).
+   */
+  problem: string | null;
   setEngine: (engine: EngineId) => Promise<void>;
   setTheme: (theme: ThemeChoice) => Promise<void>;
   setTypeScale: (scale: TypeScale) => Promise<void>;
@@ -101,6 +107,7 @@ export const useSettings = create<SettingsState>((set, get) => ({
   brainPath: "",
   onboarded: false,
   storePath: null,
+  problem: null,
 
   setEngine: async (engine) => {
     set({ engine });
@@ -203,14 +210,27 @@ export async function startSettings(): Promise<void> {
 
 /** Read every row, paint the resolved theme and publish. Startup and `store:changed` share it. */
 export async function readRows(): Promise<void> {
+  // Each row on its own: one that cannot be read keeps what the store held and is named in
+  // `problem`, and the rest still arrive. A single rejected read used to reject them all, and
+  // `hydrated` - which Main's first scene and her window's first draw wait on - stayed false.
+  const failed: string[] = [];
+  const current = useSettings.getState();
+  const row = async <T>(key: SettingKey, held: T | null): Promise<T | null> => {
+    try {
+      return await settingRead<T>(key);
+    } catch (e) {
+      failed.push(`${key}: ${e instanceof Error ? e.message : String(e)}`);
+      return held;
+    }
+  };
   const [engine, theme, typeScale, motionRow, activeProjectId, brainPath, onboarded, path] = await Promise.all([
-    settingRead<string>(SETTING_KEYS.engine),
-    settingRead<string>(SETTING_KEYS.theme),
-    settingRead<string>(SETTING_KEYS.typeScale),
-    settingRead<string>(SETTING_KEYS.motion),
-    settingRead<string>(SETTING_KEYS.activeProjectId),
-    settingRead<string>(SETTING_KEYS.brainPath),
-    settingRead<boolean>(SETTING_KEYS.onboarded),
+    row<string>(SETTING_KEYS.engine, current.engine),
+    row<string>(SETTING_KEYS.theme, current.theme),
+    row<string>(SETTING_KEYS.typeScale, current.typeScale),
+    row<string>(SETTING_KEYS.motion, current.motion),
+    row<string>(SETTING_KEYS.activeProjectId, current.activeProjectId),
+    row<string>(SETTING_KEYS.brainPath, current.brainPath),
+    row<boolean>(SETTING_KEYS.onboarded, current.onboarded),
     storePath().catch(() => null),
   ]);
 
@@ -231,6 +251,7 @@ export async function readRows(): Promise<void> {
     brainPath: brainPath ?? "",
     onboarded: onboarded ?? false,
     storePath: path,
+    problem: failed.length ? `could not read ${failed.join("; ")}` : null,
   });
 }
 

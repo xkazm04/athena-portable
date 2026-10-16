@@ -17,7 +17,9 @@ import { beforeEach, expect, test, vi } from "vitest";
 const harness = vi.hoisted(() => {
   const rows = new Map<string, unknown>();
   const calls: { command: string; args: Record<string, unknown> }[] = [];
-  return { rows, calls };
+  /** `table/key` reads that reject, as a locked or unreadable store does. */
+  const failing = new Set<string>();
+  return { rows, calls, failing };
 });
 
 vi.mock("@tauri-apps/api/core", () => ({
@@ -25,7 +27,10 @@ vi.mock("@tauri-apps/api/core", () => ({
     harness.calls.push({ command, args });
     if (command === "store_path") return "C:\\fake\\athena.sqlite";
     const key = `${String(args.table)}/${String(args.key)}`;
-    if (command === "store_get") return harness.rows.has(key) ? harness.rows.get(key) : null;
+    if (command === "store_get") {
+      if (harness.failing.has(key)) throw new Error("database is locked");
+      return harness.rows.has(key) ? harness.rows.get(key) : null;
+    }
     if (command === "store_set") {
       harness.rows.set(key, args.value);
       return String(args.key);
@@ -186,4 +191,30 @@ test("a store:changed for settings re-reads the rows, so two windows cannot disa
   listener?.({ payload: { table: "origins", key: "x" } });
   await new Promise((r) => setTimeout(r, 5));
   expect(useSettings.getState().engine).toBe("codex");
+});
+
+test("a row that cannot be read still hydrates the store, keeps what it had, and says why", async () => {
+  harness.rows.set("settings/theme", "light");
+  harness.rows.set("settings/engine", "codex");
+  await readRows();
+  harness.rows.set("settings/theme", "dark");
+  harness.failing.add("settings/engine");
+  useSettings.setState({ hydrated: false });
+
+  try {
+    // Before: one rejected read rejected the whole read, so `hydrated` stayed false and every
+    // window that waits on it (Main's first scene, her window's first draw) waited for ever.
+    await readRows();
+  } finally {
+    harness.failing.clear();
+  }
+
+  const state = useSettings.getState();
+  expect(state.hydrated).toBe(true);
+  expect(state.theme).toBe("dark");
+  expect(state.engine).toBe("codex");
+  expect(state.problem).toMatch(/engine.*database is locked/);
+
+  await readRows();
+  expect(useSettings.getState().problem).toBeNull();
 });
