@@ -84,7 +84,9 @@
   color: inherit;
 }
 
-.bd-root :where(button, select, textarea, input, a, [tabindex]):focus-visible {
+/* `summary` is the foot's register disclosure, the twin of the Back pill beside it; left off this
+   list it was the one control in the room that fell back to the browser's own ring. */
+.bd-root :where(button, select, textarea, input, a, summary, [tabindex]):focus-visible {
   outline: var(--bd-rule-w2) solid var(--bd-accent);
   outline-offset: var(--bd-s1);
 }
