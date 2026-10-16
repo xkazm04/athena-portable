@@ -37,7 +37,7 @@ import type { ZoomNav } from "@athena/demo-kit/zoom";
 
 import { registration } from "@/lib/manifest";
 import { candidateOf, columnOf, groupId, splitGroup, type BdBoard } from "../model";
-import { boardRead, candidateRead, dossierRead, groupRead, roleRead } from "./read";
+import { boardGroups, boardRead, candidateRead, dossierRead, groupRead, roleRead } from "./read";
 import { readApplicants, readShortlist } from "./roster";
 import { searchBoard, type BoardQuery } from "./search";
 
@@ -64,16 +64,9 @@ export function BoardTools({
   onlyBorderline: boolean;
   setOnlyBorderline: (next: boolean) => void;
 }) {
-  const groups = () =>
-    board.roles.flatMap((role) =>
-      role.columns
-        .filter((column) => column.candidates.length > 0)
-        .map((column) => ({
-          id: groupId(column.id, role.id),
-          label: `${role.title} · ${column.label}`,
-          count: column.candidates.length,
-        })),
-    );
+  // The groups the board is drawing under its filters, not every non-empty column: read_view calls
+  // this "every group on the surface", open_group opens only these, set_filter counts them.
+  const groups = () => boardGroups(board, { roleFilter, onlyBorderline });
 
   useZoomTools({
     nav,

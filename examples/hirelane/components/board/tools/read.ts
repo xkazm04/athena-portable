@@ -16,9 +16,11 @@ import { companyByName } from "@athena/demo-kit/seed";
 
 import { actsFor, isFree, refusalFor, type Act, type ActPerson, type ActSlot } from "@/lib/acts";
 import { DECISION_STAGES, STAGES } from "@/lib/constants";
+import { keepsCandidate, keepsRole, type BoardFilter } from "../columns/filter";
 import {
   BAND_LABEL,
   FIT_LABEL,
+  groupId,
   STAGE_WAIT,
   type BdBoard,
   type BdCandidate,
@@ -126,6 +128,26 @@ export function boardRead(board: BdBoard) {
     // Counted by `isFree`, the predicate Propose slots takes from, not by a capped display list.
     open_interview_slots: board.slots.filter(isFree).length,
   };
+}
+
+/**
+ * Every group the board is drawing, under the board's own filters: what `read_view` lists,
+ * `open_group` may open and `set_filter` counts. The rows are `columns/filter.ts`'s, the module
+ * the columns draw with, so an agent is never told about a row the reader cannot see.
+ */
+export function boardGroups(board: BdBoard, filter: BoardFilter) {
+  return board.roles
+    .filter((role) => keepsRole(role, filter))
+    .flatMap((role) =>
+      role.columns
+        .map((column) => ({ column, count: column.candidates.filter((c) => keepsCandidate(c, filter)).length }))
+        .filter(({ count }) => count > 0)
+        .map(({ column, count }) => ({
+          id: groupId(column.id, role.id),
+          label: `${role.title} · ${column.label}`,
+          count,
+        })),
+    );
 }
 
 /** One role's slice of one stage: the thing the board opens. */
