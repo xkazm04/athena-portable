@@ -39,6 +39,8 @@ import {
   type LnSheet,
 } from "../components/lanes/model";
 import { flagOf } from "../components/lanes/swarm/marks";
+import { HEAT_LABEL } from "../components/lanes/model";
+import { HEAT_LABEL as BOOKS_HEAT_LABEL } from "../lib/lanes/heat";
 
 const ALL: LnFilter = { state: "all", client: "all" };
 
@@ -213,4 +215,11 @@ test("with a client chosen, Everything says how many it lit, not that it shows t
   assert.doesNotMatch(said, /all 125/);
   // Nothing chosen, nothing narrowed: the short sentence still holds.
   assert.equal(legendSay("all", 125, 125), "Showing all 125 invoices.");
+});
+
+test("the five heat words are one table, the one the books' heat rule sits beside", () => {
+  // `lib/lanes/heat.ts` holds `heatOf` and the five words it is read in; the view model kept a
+  // second, hand-typed copy of the words, and every surface and the agent's read layer used that
+  // one. Two tables for one vocabulary agree only until one of them is edited.
+  assert.equal(HEAT_LABEL, BOOKS_HEAT_LABEL, "the view model re-exports the books' table");
 });

@@ -8,7 +8,6 @@
  */
 
 import type { LnLane, LnMark, LnSheet } from "./sheet";
-import type { Heat } from "@/lib/lanes/heat";
 
 /* ----------------------------------------------------------------- filters */
 
@@ -74,13 +73,12 @@ export function matches(mark: LnMark, filter: LnFilter): boolean {
 
 /* -------------------------------------------------------------- vocabulary */
 
-export const HEAT_LABEL: Record<Heat, string> = {
-  good: "settled",
-  watch: "within terms",
-  risk: "late",
-  alert: "long overdue",
-  inert: "not in play",
-};
+/**
+ * The five heat words, from where `heatOf` decides the heat. Re-exported rather than restated:
+ * this file kept its own hand-typed copy while `lib/lanes/heat.ts` held the same table beside the
+ * rule, and every surface and the agent's read layer read the copy.
+ */
+export { HEAT_LABEL } from "@/lib/lanes/heat";
 
 /** Lanes worth opening, worst first — the L0 to L1 recommendation. */
 export function laneOrder(lanes: readonly LnLane[]): LnLane[] {
