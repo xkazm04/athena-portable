@@ -106,6 +106,13 @@ describe("Space", () => {
     expect(key("recording", " ").done).toBe(false); // already recording: a repeat does not restart
     expect(key("recording", " ", "up").calls).toEqual(["recordStop"]);
   });
+  it("does not open the microphone on hear while no listener is ready, as the Hold button will not", () => {
+    // The take would be recorded and thrown away (live.ts recordStop returns with no engines).
+    const muted = key("hear-muted", " ");
+    expect(muted.done).toBe(false);
+    expect(muted.calls).toEqual([]);
+    expect(fixtures["hear-muted"]!.columns.some((c) => c.ready)).toBe(false);
+  });
   it("up means nothing on other steps", () => {
     expect(key("pick", " ", "up").act).toBeNull();
   });

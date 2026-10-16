@@ -62,7 +62,8 @@ export function perform(model: VoiceModel, act: Exclude<KeyAction, null>): boole
       actions.togglePreview(model.voice.id);
       return true;
     case "record_start":
-      if (model.hear.recording) return false;
+      // As the Hold button: with no listener ready a take would be recorded and thrown away.
+      if (model.hear.recording || !model.columns.some((c) => c.ready)) return false;
       actions.recordStart();
       return true;
     case "record_stop":

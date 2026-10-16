@@ -201,6 +201,18 @@ describe("the studio", () => {
     expect(out).toContain("Pick one");
     // The not-ready key field is offered where the key is the way in.
     expect(out).toContain('aria-label="OpenAI API key"');
+    // The hero does not invite a key that cannot record.
+    expect(out).not.toContain("Hold Space and speak");
+    expect(draw("stt-compare", STUDIO)).toContain("Quiet. Hold Space and speak.");
+  });
+
+  it("pick: the hero does not invite Space while her voice is not installed", () => {
+    expect(draw("pick", STUDIO)).toContain("Quiet. Press Space or Play to hear her.");
+    const pick = fixtures.pick!;
+    const absent = { ...pick, kokoro: pick.kokoro && { ...pick.kokoro, state: "absent" as const } };
+    const out = renderToStaticMarkup(<VoiceScene model={absent} path={STUDIO} go={go} />);
+    expect(out).not.toContain("Press Space or Play");
+    expect(out).toContain("Her voice is not installed yet.");
   });
 
   it("ready: Start talking, the facts, and the chord", () => {

@@ -94,6 +94,10 @@ export default function StudioAct({ model }: { model: VoiceModel }) {
   const recording = step === "hear";
   const speakingStep = step === "pick";
   const kokoroDone = studio.done.includes("install") || model.kokoro?.state === "ready";
+  // Space plays only an installed voice and records only when a listener can hear the take
+  // (keys.ts), so the hero's quiet line names Space only when it acts.
+  const canHear = model.columns.some((c) => c.ready);
+  const canPlay = model.voice !== null && model.kokoro?.state === "ready";
 
   return (
     <div className="vsc vsc--studio" data-step={step} ref={root}>
@@ -127,7 +131,15 @@ export default function StudioAct({ model }: { model: VoiceModel }) {
               source={recording ? "mic" : "voice"}
               active={recording ? model.hear.recording : model.preview.phase === "playing"}
               meters={model.meters}
-              idle={recording ? "Quiet. Hold Space and speak." : "Quiet. Press Space or Play to hear her."}
+              idle={
+                recording
+                  ? canHear
+                    ? "Quiet. Hold Space and speak."
+                    : "Quiet. No listener is ready to hear a take yet."
+                  : canPlay
+                    ? "Quiet. Press Space or Play to hear her."
+                    : "Quiet. Her voice is not installed yet."
+              }
             />
             <p className="vsc-hero__note">
               {recording
