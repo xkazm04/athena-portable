@@ -8,6 +8,11 @@ the catalog, the approval table and the brain in these tests are the real ones.
 The scripted Athena (:func:`injected_model`) is a *fully injected* model: it does whatever the
 hostile content tells it, by reading a ``TARGET=<tool>`` marker out of its own frame. That is the
 worst case the gate has to survive, and it is what makes a ``held`` verdict here mean something.
+
+A test that does reach a live provider is marked ``provider`` (or ``eval``), and
+:func:`pytest_runtest_setup` runs it only when the run's ``-m`` names that marker: CI and
+``AGENTS.md`` run bare ``uv run pytest``, so a key in the environment must never be what decides
+that a test spends money.
 """
 
 from __future__ import annotations
@@ -18,12 +23,29 @@ from collections.abc import AsyncIterator, Callable
 from dataclasses import dataclass, field
 from typing import Any
 
+import pytest
+
 from athena.harness.ports import ModelChunk, ModelRequest
 from athena.proving.budget import CLAUDE, NEMOTRON
 from athena.proving.roles import RoleReply
 
 TARGET = re.compile(r"TARGET=([a-z_.]+)")
 EPISODE = re.compile(r"\bep_[0-9a-z]{6,}\b")
+
+#: Markers whose tests reach a live model or run the opt-in eval suite (``pyproject.toml``).
+OPT_IN_MARKERS: tuple[str, ...] = ("provider", "eval")
+
+
+def pytest_runtest_setup(item: pytest.Item) -> None:
+    """Skip a ``provider`` or ``eval`` test unless this run's ``-m`` expression names its marker.
+
+    ``-m "not provider"`` deselects it before this runs; ``-m provider`` names it and lets it run;
+    a bare run never names it, whatever keys the environment holds.
+    """
+    named = set(re.findall(r"[A-Za-z_]\w*", str(item.config.getoption("markexpr", "") or "")))
+    for marker in OPT_IN_MARKERS:
+        if item.get_closest_marker(marker) is not None and marker not in named:
+            pytest.skip(f"a {marker} test runs only when selected with -m {marker}")
 
 
 def op_line(action: str, **params: Any) -> str:
