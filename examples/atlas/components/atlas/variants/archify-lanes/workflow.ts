@@ -97,7 +97,6 @@ export const LANES: readonly Lane[] = [
   },
 ];
 
-export const LANE_IDS: readonly string[] = LANES.map((l) => l.id);
 export const laneById = (id: string): Lane | undefined => LANES.find((l) => l.id === id);
 
 /* ------------------------------------------ the phases --------------------------------------- */
@@ -147,9 +146,6 @@ export const PHASES: readonly Phase[] = [
   },
 ];
 
-export const PHASE_IDS: readonly string[] = PHASES.map((p) => p.id);
-export const phaseById = (id: string | null): Phase | undefined =>
-  id === null ? undefined : PHASES.find((p) => p.id === id);
 export const phaseOfCol = (col: number): Phase =>
   PHASES.find((p) => col >= p.fromCol && col <= p.toCol) ?? PHASES[0]!;
 
@@ -359,16 +355,6 @@ export function nodeName(n: WNode): string {
   ].filter((s): s is string => s !== null);
   return `${n.label} — ${n.sublabel}. In ${where.join(", ")}. ${n.note}`;
 }
-
-/** All seven kinds are used; the legend counts them. */
-export const kindCounts = (): { kind: Kind; n: number }[] => {
-  const tally = new Map<Kind, number>();
-  for (const n of NODES) {
-    const k = kindOfNode(n);
-    tally.set(k, (tally.get(k) ?? 0) + 1);
-  }
-  return [...tally.entries()].map(([kind, n]) => ({ kind, n }));
-};
 
 /** Every system, with the node that claims it — the coverage the test walks. */
 export const systemCoverage = (): { system: string; node: string | undefined }[] =>

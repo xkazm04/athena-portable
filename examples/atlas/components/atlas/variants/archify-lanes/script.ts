@@ -181,6 +181,3 @@ export const TRAIL_COUNTS = {
   authored: HOPS.filter((h) => h.authored).length,
   derived: HOPS.filter((h) => !h.authored).length,
 };
-
-export const stopAt = (index: number): Beat =>
-  BEATS[Math.min(BEATS.length - 1, Math.max(0, index))]!;

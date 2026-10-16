@@ -33,7 +33,7 @@ import {
   type Role,
 } from "./workflow";
 import { fitTier, rem } from "./text";
-import type { LaneBand, NodeBox, PhaseBand, Plan } from "./geometry";
+import type { LaneBand, NodeBox, PhaseBand } from "./geometry";
 import { LABEL_ADVANCE, type Run } from "./routing";
 import { Sigil } from "./Sigil";
 
@@ -395,5 +395,3 @@ export const Node = memo(function Node({
     </div>
   );
 });
-
-export const planKey = (plan: Plan): string => plan.open ?? "closed";

@@ -39,7 +39,7 @@
  * THIS FILE MOVED HERE, UNCHANGED, WHEN `variants/archify/**` WAS DELETED after the round-6 verdict
  * — the lanes variant is the only drawing left and the contract forbids importing from a sibling.
  */
-import { COMPONENTS, SYSTEMS, systemById, type Component, type System } from "@/data";
+import { COMPONENTS, SYSTEMS, type Component } from "@/data";
 
 /** Archify's closed seven-set, in the legend's canonical order. Nothing may be added. */
 export const KINDS = [
@@ -54,17 +54,7 @@ export const KINDS = [
 
 export type Kind = (typeof KINDS)[number];
 
-/** The legend's own words for each kind — the rule above, in one clause each. */
-export const KIND_LABEL: Record<Kind, string> = {
-  frontend: "Frontend",
-  messagebus: "Message bus",
-  backend: "Backend",
-  security: "Security",
-  database: "Database",
-  cloud: "Cloud",
-  external: "External",
-};
-
+/** The rule above, in one clause per kind. */
 export const KIND_RULE: Record<Kind, string> = {
   frontend: "a human looks at it",
   messagebus: "it carries a turn across a process boundary",
@@ -74,11 +64,6 @@ export const KIND_RULE: Record<Kind, string> = {
   cloud: "it reaches a service we do not own",
   external: "a declared shape, or a binary we do not ship",
 };
-
-/** Column order on the sheet: the order above. `index` is the kind's lane in the `sheet` view. */
-export const KIND_COL: Record<Kind, number> = Object.fromEntries(
-  KINDS.map((k, i) => [k, i]),
-) as Record<Kind, number>;
 
 /* --------------------------------------- the mapping ---------------------------------------- */
 
@@ -137,11 +122,12 @@ export const kindOfComponent = (c: Component): Kind =>
 /* ------------------------------------- the trust boundary ------------------------------------ */
 
 /**
- * The rose `security-group`: the gate and its receipt.
+ * The gate and its receipt: the systems the round-5 sheet framed as its rose `security-group`.
  *
- * Membership is authored (it is a claim about this repository, not a fold over a field) and the
- * FRAME IS DERIVED FROM IT — archify study §7.4, "groups derived from membership, never authored
- * rectangles". `layout.ts` takes the bounding box of exactly these nodes; nobody draws a rectangle.
+ * Membership is authored (it is a claim about this repository, not a fold over a field). The lane
+ * drawing draws no frame around it — the `policy` exception lane in `workflow.ts` says the same
+ * thing by position — so this list survives as the claim `test/lanes.model.test.ts` checks: real
+ * systems, more than one layer apart.
  */
 export const TRUST_SYSTEMS: readonly string[] = [
   "sys-bridge", // the gate in the page (tier 1)
@@ -149,13 +135,6 @@ export const TRUST_SYSTEMS: readonly string[] = [
   "sys-catalog", // where the class is decided, once
   "sys-record", // the approval row and the ledger row the decision leaves behind
 ];
-
-export const TRUST = new Set(TRUST_SYSTEMS);
-
-export const inTrust = (systemId: string): boolean => TRUST.has(systemId);
-
-/** The label the group's corner prints — the membership, counted, never a guess at the frame. */
-export const TRUST_LABEL = `trust boundary · ${TRUST_SYSTEMS.length} systems`;
 
 /* ------------------------------------------ counts ------------------------------------------- */
 
@@ -190,42 +169,3 @@ export function countKinds(): KindCount[] {
 }
 
 export const KIND_COUNTS: readonly KindCount[] = countKinds();
-
-/* --------------------------------------- node text ------------------------------------------- */
-
-/**
- * The three text tiers of an archify node (study §2: centred label, muted sublabel, tiny tag).
- *
- * `label` is the thing's name; `sublabel` is where it lives (the citation this app exists to make);
- * `tag` is the kind accent line — the status when it is not `built`, because a map that omits what
- * was designed and not built is a brochure (`data/types.ts`), otherwise the kind's own word.
- */
-export interface NodeText {
-  label: string;
-  sublabel: string;
-  tag: string;
-}
-
-const tail = (path: string): string => {
-  const cut = path.lastIndexOf("/");
-  return cut === -1 ? path : path.slice(cut + 1);
-};
-
-export function systemText(s: System): NodeText {
-  return {
-    label: s.name.replace(/^The /, ""),
-    sublabel: s.home,
-    tag: s.status === "built" ? KIND_LABEL[kindOfSystem(s.id)] : s.status,
-  };
-}
-
-export function componentText(c: Component): NodeText {
-  return {
-    label: c.name,
-    sublabel: tail(c.file.replace(/\/[^/]+$/, "")),
-    tag: c.status === "built" ? c.part : `${c.part} · ${c.status}`,
-  };
-}
-
-/** The layer a system sits in — the row. Kept here so layout reads one module for both axes. */
-export const layerOfSystem = (id: string): string => systemById(id)?.layer ?? "contracts";

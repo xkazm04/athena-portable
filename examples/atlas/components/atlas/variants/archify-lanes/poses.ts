@@ -28,7 +28,7 @@
  */
 import type { CameraPose, Focus } from "@athena/demo-kit/zoom";
 
-import { HEADER_Y, centreOf, contains, planOf, type Plan, type Rect } from "./geometry";
+import { HEADER_Y, centreOf, contains, planOf, type Plan } from "./geometry";
 import { NODES, PHASES, nodeById } from "./workflow";
 
 /**
@@ -200,25 +200,3 @@ export function clampLook(
 /** The phase a node belongs to — the group the shell is told about when a node is opened. */
 export const phaseOfNode = (id: string): string =>
   planOf(null).byId.get(id)?.phase ?? PHASES[0]!.id;
-
-/**
- * The quantised inverse scale (rule 13). Steps of a cube root of two — smaller than a reader
- * notices in a label, and fifty times fewer relayouts than counter-scaling every wheel tick.
- */
-export const QUANT_STEPS_PER_OCTAVE = 3;
-
-export function quantise(zoom: number): number {
-  const z = Number.isFinite(zoom) && zoom > 0 ? zoom : 1;
-  const stepped = Math.round(Math.log2(z) * QUANT_STEPS_PER_OCTAVE) / QUANT_STEPS_PER_OCTAVE;
-  return clamp(2 ** stepped, 0.25, 8);
-}
-
-/** The viewport rectangle in world units, for the receipt and the phase-under-camera readout. */
-export function viewportOf(pose: CameraPose, frame: Frame): Rect {
-  return {
-    x: -pose.pan.x - frame.w / (2 * pose.zoom),
-    y: -pose.pan.y - frame.h / (2 * pose.zoom),
-    w: frame.w / pose.zoom,
-    h: frame.h / pose.zoom,
-  };
-}

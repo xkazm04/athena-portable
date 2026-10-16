@@ -21,11 +21,11 @@
  * already on them; this module maps them onto THIS drawing's twelve nodes and asks the one
  * question the archify sheet could not: does an edge of the lane grid carry this hop?
  */
-import { BEATS, CHAPTERS, beatState, chapterOf, deltaOf, stopAt, type Beat } from "./script";
+import { BEATS, CHAPTERS, beatState, chapterOf, deltaOf, type Beat } from "./script";
 
 import { EDGES, nodeById, nodeOfSystem, type Role } from "./workflow";
 
-export { BEATS, beatState, chapterOf, deltaOf, stopAt };
+export { BEATS, beatState, chapterOf, deltaOf };
 export type { Beat };
 
 /** Which node each stop happens in — derived from the stop's system, never typed twice. */
