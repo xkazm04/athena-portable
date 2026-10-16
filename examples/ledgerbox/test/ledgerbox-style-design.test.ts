@@ -120,6 +120,32 @@ test("every state's text ink clears 4.5:1 on every ground, at the dimming the sh
   assert.deepEqual(short, [], "text below 4.5:1");
 });
 
+/* ---------------------------------------------------------------- toast */
+
+test("the toast is painted from the token block, not from copies of it", () => {
+  // `ToastProvider` mounts its stack beside the shell, outside `[data-variant="lanes"]`, so no
+  // `--ln-*` reached it and toast.css painted it from the hex and px it carried as fallbacks - seven
+  // hand copies of five tokens that a retuned token would leave behind.
+  const block = rules(part("base/tokens.css")).find(({ body }) => /--ln-raise:/.test(body));
+  assert.ok(block, "no rule in tokens.css declares --ln-raise");
+  const selector = block.selector.replace(/\s+/g, " ");
+  assert.ok(
+    selector.split(",").some((s) => /\.dk-toasts\s*\)?$/.test(s.trim())),
+    `the token block's selector (${selector}) does not reach the toast stack`,
+  );
+  // A `:has()` in a plain selector list makes the whole rule invalid where `:has()` is not
+  // supported - every token on the sheet with it. Only `:where()`'s forgiving list is safe.
+  if (selector.includes(":has(")) {
+    assert.match(selector, /^:where\(.*\)$/, `the token block's :has() is outside a :where(): ${selector}`);
+  }
+  // A fallback that is a VALUE (a colour, a length) is a copy of the token; a generic family
+  // behind the face token is not.
+  const copies = [...part("chrome/toast.css").matchAll(/var\((--ln-[a-z0-9-]+),\s*([^)]+)\)/g)]
+    .filter((m) => /#[0-9a-f]{3,8}|\d(px|rem|em|ms|s)|rgb|hsl/i.test(m[2]!))
+    .map((m) => `${m[1]} -> ${m[2]}`);
+  assert.deepEqual(copies, [], "toast.css carries its own copy of a token");
+});
+
 /* -------------------------------------------------------------- readers */
 
 const APP = fileURLToPath(new URL("../", import.meta.url));

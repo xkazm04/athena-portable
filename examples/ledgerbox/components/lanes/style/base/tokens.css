@@ -35,7 +35,20 @@
  *    shading and stops reading as a surface.
  */
 
-[data-variant="lanes"] {
+/*
+ * The second selector is the kit's toast stack. `ToastProvider` mounts it beside
+ * the shell rather than inside the direction, so it inherits none of this, and
+ * `chrome/toast.css` used to paint it from hex copies of five of these tokens.
+ * It reads the real ones now; selected from the root and conditioned on the
+ * Lanes being on the page, so it reaches no other route.
+ *
+ * `:where()` on purpose, twice over. Its list is FORGIVING: an engine without
+ * `:has()` drops that one selector and keeps the block, where a plain selector
+ * list would drop every token on the sheet. And it scores zero, so the
+ * overrides below - the flat view, reduced motion, the narrow steps' `.ln-root`
+ * - keep winning as they did against the bare attribute.
+ */
+:where([data-variant="lanes"], :root:has(.ln-root) .dk-toasts) {
   /* The UA draws what this sheet does not: the option lists of the decision
      dialog's two pickers. Without this they
      are painted on the light default surface while their text inherits
