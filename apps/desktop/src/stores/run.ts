@@ -1030,7 +1030,7 @@ export const useRun = create<RunState>((set, get) => {
    * rather than run when the target tab's app is not the row's: an approval is granted for one
    * origin, and the user may have moved tabs between the card and the answer.
    */
-  async function onPage(row: ExecuteRow, approved = false): Promise<Ran> {
+  async function onPage(row: ExecuteRow, approved = false, from: Snapshot | null = snap): Promise<Ran> {
     const mine = generation;
     const bound = row.tab_id !== undefined && row.tab_id !== null;
     const focused = deps.focused();
@@ -1085,12 +1085,12 @@ export const useRun = create<RunState>((set, get) => {
         target.tabId,
         bareName(row.name),
         row.params,
-        routingTools(snap, target.tabId),
+        routingTools(from, target.tabId),
       );
     } catch (error) {
       answer = { ok: false, output: "", error: error instanceof Error ? error.message : String(error) };
     }
-    const listedTools = routingTools(snap, target.tabId) ?? useTools.getState().byTab[target.tabId]?.tools ?? [];
+    const listedTools = routingTools(from, target.tabId) ?? useTools.getState().byTab[target.tabId]?.tools ?? [];
     const { timeout, error, line } = settleHostCall(row.name, answer, listedTools);
     if (timeout !== null) {
       if (timedOut.size >= TIMED_OUT_CAP) {
@@ -1110,7 +1110,7 @@ export const useRun = create<RunState>((set, get) => {
     // The user approved this call and it ran: the contract it ran under is now the accepted one
     // (ADR 0100). A declined, refused or failed call leaves the old one in force.
     if (approved && answer.ok && deps.accept) {
-      const listed = routingTools(snap, target.tabId) ?? useTools.getState().byTab[target.tabId]?.tools ?? [];
+      const listed = routingTools(from, target.tabId) ?? useTools.getState().byTab[target.tabId]?.tools ?? [];
       const tool = listed.find((t) => t.name === bareName(row.name));
       if (tool) {
         await deps
@@ -1357,7 +1357,30 @@ export const useRun = create<RunState>((set, get) => {
     return took;
   }
 
+  /**
+   * Exchanges in progress. An answer whose call ran while one is going does not start another
+   * beside it: the running exchange carries what is outstanding on its own next request, so one
+   * conversation never has two turns in flight and a result never rides two requests.
+   */
+  let exchanging = 0;
+
+  /** Continue with what is outstanding, unless an exchange already in progress will carry it. */
+  async function carryOn(): Promise<void> {
+    if (outstanding.length === 0 || exchanging > 0) return;
+    set({ phase: "running" });
+    await exchange(CONTINUE);
+  }
+
   async function exchange(first: string): Promise<void> {
+    exchanging += 1;
+    try {
+      await exchangeOnce(first);
+    } finally {
+      exchanging -= 1;
+    }
+  }
+
+  async function exchangeOnce(first: string): Promise<void> {
     // One read of the tab per exchange; the manifest, every request's lists and the routing of the
     // calls it releases all come from it (ADR 0067).
     const taking = snapshotFrom(deps);
@@ -1419,6 +1442,8 @@ export const useRun = create<RunState>((set, get) => {
     if (before.answered.some((a) => a.id === id && a.result !== "refused")) return null;
     const card = before.cards.find((c) => c.id === id);
     set((s) => ({ answering: { ...s.answering, [id]: choice }, refusals: without(s.refusals, id) }));
+    /** The tab as this answer read it; the exchange's snapshot until then. */
+    let read: Snapshot | null = snap;
 
     const note = (result: AnswerResult, reason: string | null) => {
       const row: AnsweredDecision = {
@@ -1436,7 +1461,7 @@ export const useRun = create<RunState>((set, get) => {
           origin: row.origin,
           tool: row.action,
           // Where it would have run, as the card said it (ADR 0099): a hand is tier 2.
-          tier: card ? tierOf(card.origin, card.action, [], snap?.tools ?? []) : 1,
+          tier: card ? tierOf(card.origin, card.action, [], read?.tools ?? []) : 1,
           class: "GATED",
           outcome: result === "approved" ? "approved" : result === "user_denied" ? "declined" : "refused",
           ms: 0,
@@ -1479,9 +1504,10 @@ export const useRun = create<RunState>((set, get) => {
     // A decision restored from a previous daemon process has no session behind it until the page
     // has been registered (UAT r2: it was refused as "a different app" on the right tab). Register
     // the focused page first, exactly as a turn does; a failure here is the answer's to report.
-    // The republish, the resolve and the routing of the rows it releases read the tab once.
+    // The republish, the resolve and the routing of the rows it releases read the tab once. That
+    // read is the answer's own: a turn still streaming keeps the snapshot its gate was told (ADR 0067).
     const taking = snapshotFrom(deps);
-    snap = taking;
+    read = taking;
     if (taking.manifest !== null) {
       await api.manifest(taking.manifest).catch(() => undefined);
       await publishOthers(api, taking);
@@ -1516,7 +1542,7 @@ export const useRun = create<RunState>((set, get) => {
       return { taken: true, result, reason: "user_denied", sentence: "", ran: [] };
     }
     const ran: Ran[] = [];
-    for (const row of resolution.execute) ran.push(await onPage(row, true));
+    for (const row of resolution.execute) ran.push(await onPage(row, true, taking));
     return { taken: true, result, reason: null, sentence: "", ran };
   }
 
@@ -1569,10 +1595,7 @@ export const useRun = create<RunState>((set, get) => {
         set({ phase: "idle" });
         return;
       }
-      if (outstanding.length) {
-        set({ phase: "running" });
-        await exchange(CONTINUE);
-      }
+      await carryOn();
     },
 
     tick(id) {
@@ -1647,10 +1670,7 @@ export const useRun = create<RunState>((set, get) => {
         return;
       }
       // One continuation for every row that ran, instead of one per row (ADR 0104).
-      if (outstanding.length) {
-        set({ phase: "running" });
-        await exchange(CONTINUE);
-      }
+      await carryOn();
     },
 
     async reconcile() {

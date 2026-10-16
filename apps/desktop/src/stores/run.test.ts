@@ -2232,3 +2232,105 @@ describe("a continuation that never reached the daemon", () => {
     expect(carried.map((r) => [r.call_id, r.output])).toEqual([["c1", "marked"]]);
   });
 });
+
+// -- an answer while the turn that filed the card still streams --------------------------------------
+
+describe("an answer while a turn is still streaming", () => {
+  const EXEC = { call_id: "x1", name: "host.ledgerbox.chase", params: { invoice: "INV-118" }, origin: "host:ledgerbox", tier: 1 };
+
+  /** The first `POST /run` streams the card, then holds until `release`; the rest are the fake's. */
+  function heldTurn(after: Event[] = [finished("I have asked.")]) {
+    let release: () => void = () => {};
+    const gate = new Promise<void>((resolve) => (release = resolve));
+    let held = true;
+    let duringHeld = 0;
+    const daemon = fakeDaemon({
+      runs: [[finished("Sent.")], [finished("again")]],
+      resolutions: { apr_0000000000a1: { ...APPROVED, execute: [EXEC] } },
+    });
+    let first = true;
+    const fetchImpl = async (url: string, init: RequestInit = {}): Promise<Response> => {
+      if (!url.endsWith("/run")) return daemon.fetchImpl(url, init);
+      if (!first) {
+        if (held) duringHeld += 1;
+        return daemon.fetchImpl(url, init);
+      }
+      first = false;
+      const encoder = new TextEncoder();
+      const frame = (event: Event) => encoder.encode(`event: ${String(event.kind)}\ndata: ${JSON.stringify(event)}\n\n`);
+      const body = new ReadableStream<Uint8Array>({
+        async start(controller) {
+          controller.enqueue(frame(CARD));
+          await gate;
+          for (const event of after) controller.enqueue(frame(event));
+          controller.close();
+        },
+      });
+      return new Response(body, { status: 200, headers: { "content-type": "text/event-stream" } });
+    };
+    return {
+      daemon,
+      fetchImpl,
+      release: () => {
+        held = false;
+        release();
+      },
+      duringHeld: () => duringHeld,
+    };
+  }
+
+  it("rides that turn's own continuation: no second request runs beside it, and the result is carried once", async () => {
+    const turn = heldTurn();
+    const page = fakePage({ chase: { ok: true, output: "sent to INV-118" } });
+    setRunDeps({ ...wire(turn.daemon, page), api: () => new DaemonApi({ url: "http://daemon", token: "t" }, turn.fetchImpl) });
+
+    const sending = useRun.getState().send("chase INV-118");
+    await until(() => useRun.getState().cards.length === 1);
+    await useRun.getState().answer("apr_0000000000a1", "approve");
+    expect(page.calls).toEqual([{ name: "chase", params: { invoice: "INV-118" } }]);
+
+    turn.release();
+    await sending;
+
+    expect(turn.duringHeld()).toBe(0);
+    const carried = turn.daemon.runs().flatMap((r) => r.body!.tool_results as Array<Record<string, unknown>>);
+    expect(carried.map((r) => r.call_id)).toEqual(["x1"]);
+    expect(useRun.getState().phase).toBe("idle");
+  });
+
+  it("leaves the turn routing the calls it releases by its own snapshot, not the answer's later read (ADR 0067)", async () => {
+    const turn = heldTurn([hostCall("c2", "host.ledgerbox.list_overdue"), finished()]);
+    const listed = (marker: string): BridgeTool[] => [
+      { name: "list_overdue", title: marker, description: "", inputSchema: {}, annotations: null, athena: null },
+      { name: "chase", title: marker, description: "", inputSchema: {}, annotations: null, athena: null },
+    ];
+    let reads = 0;
+    const routed: string[] = [];
+    setRunDeps({
+      ...wire(turn.daemon, fakePage()),
+      api: () => new DaemonApi({ url: "http://daemon", token: "t" }, turn.fetchImpl),
+      snapshot: () => {
+        reads += 1;
+        return {
+          focused: { tabId: 1, origin: "https://ledgerbox.local", appId: "ledgerbox" },
+          manifest: null,
+          disabledOrigins: [],
+          gated: { gated_origins: [], gated_tools: [] },
+          tools: listed(reads === 1 ? "the turn's" : "the answer's"),
+        };
+      },
+      call: async (_tab, name, _input, tools) => {
+        routed.push(`${name}:${tools?.[0]?.title ?? "live"}`);
+        return { ok: true, output: `${name} ran` };
+      },
+    });
+
+    const sending = useRun.getState().send("chase INV-118");
+    await until(() => useRun.getState().cards.length === 1);
+    await useRun.getState().answer("apr_0000000000a1", "approve");
+    turn.release();
+    await sending;
+
+    expect(routed).toEqual(["chase:the answer's", "list_overdue:the turn's"]);
+  });
+});
