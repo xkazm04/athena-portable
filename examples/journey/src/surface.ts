@@ -24,7 +24,7 @@ import {
   type PageIdentity,
 } from "@athena/bridge/gate";
 import type { Page } from "@playwright/test";
-import { originOf, type AppSpec } from "./apps.ts";
+import { envInt, originOf, type AppSpec } from "./apps.ts";
 import { ApprovalError, type Approvals, type Card } from "./approvals.ts";
 import type { Ledger, LedgerRow } from "./ledger.ts";
 import { call, hand, handTools, installBridge, list } from "./relay.ts";
@@ -52,9 +52,10 @@ export class Surface {
    * The per-origin ceiling for this window. The gate's default is 50, which is a *window* of a
    * browsing session; the journey's window is one run that matches fourteen credits and chases a
    * strip of overdue invoices, so the ceiling is stated here rather than the budget being
-   * bypassed. `Budget.take` still refuses, and still refuses with `budget_exhausted`.
+   * bypassed. `Budget.take` still refuses, and still refuses with `budget_exhausted` - which is
+   * why a `JOURNEY_CALL_BUDGET` that is not a whole number is refused rather than read as `NaN`.
    */
-  readonly budget = new Budget(Number(process.env.JOURNEY_CALL_BUDGET ?? 250));
+  readonly budget = new Budget(envInt("JOURNEY_CALL_BUDGET", 250, 0));
   /** One nonce for the whole session, which is exactly why `fence` neutralises replayed markers. */
   readonly nonce = freshNonce();
 

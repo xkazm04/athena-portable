@@ -22,7 +22,25 @@ export const EXAMPLES = resolve(here, "..", "..");
  * developer needs when the port is already held by a dev server somebody else started, since
  * adopting that one means asserting against whatever code it happens to be running.
  */
-export const PORT_OFFSET = Number(process.env.JOURNEY_PORT_OFFSET ?? 0);
+export const PORT_OFFSET = envInt("JOURNEY_PORT_OFFSET", 0);
+
+/**
+ * A whole-number setting from the environment, or `fallback` when it is not set at all.
+ *
+ * `Number()` alone turns a typo into `NaN` and an empty value into `0`, and both are worse than a
+ * refusal: a `NaN` offset boots Next on port `NaN` and reports that it exited, and a `NaN` call
+ * budget is a ceiling no call ever reaches (`Budget.take` compares `used >= NaN`). So anything
+ * set that is not a whole number at or above `min` is refused here, naming the variable.
+ */
+export function envInt(name: string, fallback: number, min = Number.NEGATIVE_INFINITY): number {
+  const raw = process.env[name];
+  if (raw === undefined) return fallback;
+  const value = raw.trim() === "" ? Number.NaN : Number(raw);
+  if (!Number.isInteger(value) || value < min) {
+    throw new Error(`${name}=${JSON.stringify(raw)} is not a whole number${min > Number.NEGATIVE_INFINITY ? ` of at least ${min}` : ""}`);
+  }
+  return value;
+}
 
 /**
  * How a spec is served.
