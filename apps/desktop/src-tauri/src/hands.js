@@ -257,7 +257,18 @@
 
   /** A row before its ref is minted, so a row that will not fit does not get one. */
   function describeRow(el) {
-    return { role: roleOf(el), label: labelOf(el), disabled: Boolean(el.disabled) };
+    return { role: roleOf(el), label: labelOf(el), disabled: inert(el) };
+  }
+
+  /**
+   * Whether the page has switched a control off, as the browser decides it.
+   *
+   * The `disabled` property alone misses a control inside a `<fieldset disabled>`, which the
+   * browser disables all the same: `click()` on it does nothing, so a hand that read only the
+   * property reported a press that never happened. Every acting hand asks this one question.
+   */
+  function inert(el) {
+    return Boolean(el.disabled) || Boolean(el.matches?.(":disabled"));
   }
 
   /** One match as the model reads it. A ref is always `ref_<generation>_<12 hex>`, so the length
@@ -554,7 +565,7 @@
       if (found.error) return no(found.error, found.detail);
       const moved = mislabelled(found.el, input);
       if (moved) return moved;
-      if (found.el.disabled) return no("validator_failed", "that control is disabled");
+      if (inert(found.el)) return no("validator_failed", "that control is disabled");
       found.el.scrollIntoView({ block: "center", behavior: "instant" });
       found.el.click();
       return ok(`clicked ${labelOf(found.el) || roleOf(found.el)}`);
@@ -574,7 +585,7 @@
       const moved = mislabelled(el, input);
       if (moved) return moved;
       const value = String(input.value ?? "");
-      if (el.disabled || el.readOnly) return no("validator_failed", "that field cannot be typed in");
+      if (inert(el) || el.readOnly) return no("validator_failed", "that field cannot be typed in");
       // A select has a `value` and assigning an option it does not hold silently deselects it, so
       // this hand would report success and do nothing — the one failure a hand must never have.
       // Found on a real page whose "Filter by client" control is a select, not a text field.
@@ -601,6 +612,7 @@
       const moved = mislabelled(el, input);
       if (moved) return moved;
       if (el.tagName !== "SELECT") return no("validator_failed", "that element is not a select");
+      if (inert(el)) return no("validator_failed", "that select is disabled");
       const wanted = squash(input.value).toLowerCase();
       const options = Array.from(el.options);
       const match =

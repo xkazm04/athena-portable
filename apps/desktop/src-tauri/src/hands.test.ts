@@ -479,6 +479,48 @@ describe("acting", () => {
     expect((document.getElementById("tone") as HTMLSelectElement).value).toBe("s");
   });
 
+  it("refuses a disabled select rather than changing what the page has locked", async () => {
+    // page_click and page_fill already refuse a control the page switched off; a select that the
+    // page disabled is the same refusal, or the hand changes a value no person could have changed.
+    const tone = document.getElementById("tone") as HTMLSelectElement;
+    tone.disabled = true;
+    const changed: string[] = [];
+    tone.addEventListener("change", () => changed.push(tone.value));
+
+    const answer = await ask("page_select", { ref: await refFor("", "select"), value: "Firm" });
+
+    expect(answer.ok).toBe(false);
+    expect(answer.reason).toBe("validator_failed");
+    expect(tone.value).toBe("f");
+    expect(changed).toEqual([]);
+  });
+
+  it("treats a control inside a disabled fieldset as disabled, as the browser does", async () => {
+    // `el.disabled` is false for a button whose fieldset is disabled, but the browser will not
+    // press it: `click()` does nothing. A hand that read only the property reported a click that
+    // never happened, and filled a field no person could type in.
+    document.body.innerHTML = `<form><fieldset disabled>
+        <label for="memo">Memo</label><input id="memo" type="text">
+        <button type="button" id="locked">Approve payment</button>
+      </fieldset></form>`;
+    let pressed = 0;
+    document.getElementById("locked")?.addEventListener("click", () => {
+      pressed += 1;
+    });
+
+    const found = await ask("page_find", { query: "approve payment" });
+    expect(found.output).toContain("(disabled)");
+    const click = await ask("page_click", { ref: found.matches?.[0]?.ref ?? "" });
+    const fill = await ask("page_fill", { ref: await refFor("memo"), value: "paid" });
+
+    expect(click.ok).toBe(false);
+    expect(click.reason).toBe("validator_failed");
+    expect(pressed).toBe(0);
+    expect(fill.ok).toBe(false);
+    expect(fill.reason).toBe("validator_failed");
+    expect((document.getElementById("memo") as HTMLInputElement).value).toBe("");
+  });
+
   it("names the options it does have when the one asked for is not there", async () => {
     const answer = await ask("page_select", { ref: await refFor("", "select"), value: "Furious" });
 
