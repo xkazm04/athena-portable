@@ -1898,7 +1898,11 @@
           "revision": 7,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/core/brain/reconcile.py:198 Rebuilding resets index-only demotions, making previously suppressed memories live again and violating the prohibition on meaningful state existing only in the index.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:ff529a6dc44bf233",
+          "evaluatedRevision": 7
         },
         {
           "subject": "agent-instruction-files",
@@ -3523,7 +3527,11 @@
           "revision": 7,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/companion/model.ts:622 The capability inventory exposes registration metadata without exercise evidence or status, leaving working, broken and unexercised capabilities indistinguishable on this surface.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:ff529a6dc44bf233",
+          "evaluatedRevision": 7
         },
         {
           "subject": "mcp-tools",

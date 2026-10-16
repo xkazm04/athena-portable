@@ -3140,6 +3140,38 @@
           "evidence": "src/athena/proving/playbooks/evidence.py:9 The presentation generator is deterministic, which this technique explicitly excludes."
         }
       ]
+    },
+    "045f6ffb-7c64-4cbd-8925-89d25221d459/companion-identity": {
+      "context": "core-brain-memory",
+      "subject": "companion-identity",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T21:27:09.764Z",
+      "worker": "9625c46d-3021-4492-840e-c1e799d6d887",
+      "techniques": [
+        {
+          "technique": "disk-truth-db-index",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/brain/reconcile.py:198 Demotion controls recall and live provenance, but rebuild restores defaults; test_brain_store.py:103 demonstrates index-only demotion, and reconcile.py:12 explicitly documents its loss."
+        }
+      ]
+    },
+    "8eda71be-d611-4429-8363-be69f12b3c83/companion-identity": {
+      "context": "desktop-companion-pane",
+      "subject": "companion-identity",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T21:27:09.764Z",
+      "worker": "9625c46d-3021-4492-840e-c1e799d6d887",
+      "techniques": [
+        {
+          "technique": "capability-exercise-ledger",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/companion/model.ts:622 OfferView and Origins render name, gate class, description and tier; neither carries exercise state, exercise date or evidence."
+        }
+      ]
     }
   }
 }
