@@ -11,9 +11,12 @@ is either a usable attack or a *counted* schema failure.
 
 from __future__ import annotations
 
+import asyncio
 import os
+import socket
 import subprocess
 import sys
+import urllib.request
 from pathlib import Path
 
 import pytest
@@ -57,25 +60,33 @@ _spec = importlib.util.spec_from_file_location("proving_conftest", {path!r})
 _module = importlib.util.module_from_spec(_spec)
 sys.modules[_spec.name] = _module
 _spec.loader.exec_module(_module)
-globals().update({{k: v for k, v in vars(_module).items() if k.startswith("pytest_")}})
+globals().update(
+    {{k: v for k, v in vars(_module).items() if k.startswith(("pytest_", "offline_"))}}
+)
 """
 
 _INNER_TESTS = """\
+import socket
+
 import pytest
+
+
+def _guarded():
+    return getattr(socket.getaddrinfo, "offline_guard", False)
 
 
 @pytest.mark.provider
 def test_spends():
-    pass
+    assert not _guarded()
 
 
 @pytest.mark.eval
 def test_grades():
-    pass
+    assert not _guarded()
 
 
 def test_offline():
-    pass
+    assert _guarded()
 """
 
 
@@ -111,4 +122,37 @@ def test_a_bare_run_with_a_key_set_skips_every_provider_and_eval_test(tmp_path: 
 
 def test_a_run_whose_marker_expression_names_provider_runs_it(tmp_path: Path) -> None:
     out = _inner_pytest(tmp_path, "-m", "provider")
-    assert "1 passed, 2 deselected" in out, out
+    assert "1 passed, 2 deselected" in out, out  # and it ran with the network open
+
+
+# --- every other test is offline, by refusal rather than by convention ---------------------------
+#
+# The fakes stand at the seams, but nothing stopped a test that forgot one: a default NebiusRole
+# or a world on the real engine reached Token Factory or spawned the user's claude CLI as soon as a
+# key or a CLI was present. The autouse ``offline_lane`` fixture refuses both.
+
+
+def test_an_offline_test_cannot_reach_a_host_resolve_a_name_or_spawn_a_model_cli() -> None:
+    # TEST-NET-3: a documentation address no packet is routed to.
+    with pytest.raises(OSError, match="offline"):
+        socket.create_connection(("203.0.113.9", 443), timeout=0.2)
+    with pytest.raises(OSError, match="offline"):
+        socket.getaddrinfo("api.tokenfactory.nebius.com", 443)
+    with pytest.raises(OSError, match="offline"):
+        subprocess.run(["claude", "--version"], check=False, capture_output=True)
+    with pytest.raises(OSError, match="offline"):
+        asyncio.run(_spawn("codex.exe", "--version"))
+    with pytest.raises(OSError, match="offline"):
+        urllib.request.urlopen("https://api.tokenfactory.nebius.com/v1/models", timeout=0.2)
+
+
+def test_the_machine_itself_stays_reachable() -> None:
+    """The hosted server's tests talk to a child on loopback, and spawn Python."""
+    assert socket.getaddrinfo("127.0.0.1", 80) and socket.getaddrinfo("localhost", 80)
+    done = subprocess.run([sys.executable, "-c", "print(1)"], capture_output=True, check=True)
+    assert done.stdout.strip() == b"1"
+
+
+async def _spawn(*argv: str) -> None:
+    process = await asyncio.create_subprocess_exec(*argv)
+    await process.wait()
