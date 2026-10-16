@@ -23,7 +23,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from athena.core.brain import frontmatter, text
+from athena.core.brain import frontmatter, paths, text
 from athena.core.brain.schema import INDEX_TABLES
 from athena.core.brain.store import (
     ALWAYS_IMPORTANCE,
@@ -36,15 +36,12 @@ from athena.core.brain.store import (
 
 #: Which directory yields which kind, walked in this order. A directory absent from this table is
 #: not indexed, so adding a kind to the tree is a visible change here rather than a silent one.
+#: The fact and procedural rows come from the scope lists the writers accept, so a scope cannot be
+#: written and then left out of the rebuild.
 WALK: tuple[tuple[str, str], ...] = (
     ("episodes", "episode"),
-    ("semantic/user", "fact"),
-    ("semantic/project", "fact"),
-    ("semantic/world", "fact"),
-    ("procedurals/chat", "procedural"),
-    ("procedurals/action", "procedural"),
-    ("procedurals/memory", "procedural"),
-    ("procedurals/build", "procedural"),
+    *((f"semantic/{scope}", "fact") for scope in paths.FACT_SCOPES),
+    *((f"procedurals/{scope}", "procedural") for scope in paths.PROCEDURAL_SCOPES),
     ("goals", "goal"),
     ("backlog/self_promise", "backlog_item"),
     ("backlog/capability_gap", "backlog_item"),

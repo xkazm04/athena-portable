@@ -11,19 +11,21 @@ from __future__ import annotations
 import os
 from pathlib import Path
 
+#: The scopes each distilled kind may be filed under. A scope is a directory on disk, so these are
+#: the one list the writers' guard (``store``), the tree below and the rebuild's walk
+#: (``reconcile.WALK``) are all built from: a scope in one and not the others was a memory that
+#: was written and then vanished on the next rebuild.
+FACT_SCOPES: tuple[str, ...] = ("user", "project", "world")
+PROCEDURAL_SCOPES: tuple[str, ...] = ("chat", "action", "memory", "build")
+
 #: Every directory the tree has, in the order ref §8 lists them. Created eagerly so that a fresh
 #: brain looks the same as a full one and no writer has to invent a layout on the fly.
 TREE: tuple[str, ...] = (
     "episodes",
     "semantic",
-    "semantic/user",
-    "semantic/project",
-    "semantic/world",
+    *(f"semantic/{scope}" for scope in FACT_SCOPES),
     "procedurals",
-    "procedurals/chat",
-    "procedurals/action",
-    "procedurals/memory",
-    "procedurals/build",
+    *(f"procedurals/{scope}" for scope in PROCEDURAL_SCOPES),
     "goals",
     "backlog",
     "backlog/self_promise",

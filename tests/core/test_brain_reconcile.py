@@ -16,7 +16,13 @@ import pytest
 
 from athena.cli import cmd_reconcile
 from athena.core.brain import Brain, index_fingerprint, reconcile_from_disk
-from athena.core.brain.store import DEFAULT_CONFIDENCE, DEFAULT_IMPORTANCE, sha256
+from athena.core.brain.store import (
+    DEFAULT_CONFIDENCE,
+    DEFAULT_IMPORTANCE,
+    FACT_SCOPES,
+    PROCEDURAL_SCOPES,
+    sha256,
+)
 from athena.core.recall import ALWAYS_BLOCK, recall
 
 
@@ -499,3 +505,26 @@ def test_a_fact_file_saved_with_a_byte_order_mark_is_indexed_not_skipped(tmp_pat
         ).fetchone()
         assert row == ("bom-key",)
         assert brain.read_body(fact.id) == "Acme pays late"
+
+
+def test_every_scope_a_writer_accepts_is_in_the_tree_and_survives_a_rebuild(tmp_path: Path) -> None:
+    """Derived from the writers' own scope lists, not from the walk's, so a scope added to one
+    and not the other is a red test rather than a memory that vanishes on the next rebuild."""
+    with Brain(tmp_path / "brain") as brain:
+        for scope in FACT_SCOPES:
+            assert (brain.root / "semantic" / scope).is_dir(), scope
+        for scope in PROCEDURAL_SCOPES:
+            assert (brain.root / "procedurals" / scope).is_dir(), scope
+        source = brain.append_episode("evidence", role="user").id
+        written = [
+            brain.write_fact(f"key {scope}", f"a fact under {scope}", scope=scope, sources=[source])
+            for scope in FACT_SCOPES
+        ] + [
+            brain.write_procedural(f"when {scope}", "say so", scope=scope, sources=[source])
+            for scope in PROCEDURAL_SCOPES
+        ]
+
+        stats = reconcile_from_disk(brain)
+
+        assert stats.skipped == []
+        assert [ref.id for ref in written if brain.node(ref.id) is None] == []

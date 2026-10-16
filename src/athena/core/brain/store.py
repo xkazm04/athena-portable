@@ -59,9 +59,10 @@ from athena.core.brain.schema import SCHEMA, SCHEMA_VERSION
 
 #: The scopes each distilled kind may be filed under. A scope is a directory on disk, so an
 #: unknown one would write outside the tree a reconcile walks and the memory would vanish on
-#: rebuild — which is why these are refused rather than created.
-FACT_SCOPES: tuple[str, ...] = ("user", "project", "world")
-PROCEDURAL_SCOPES: tuple[str, ...] = ("chat", "action", "memory", "build")
+#: rebuild — which is why these are refused rather than created. They live in :mod:`paths`,
+#: which builds the tree and the rebuild's walk from the same two lists.
+FACT_SCOPES: tuple[str, ...] = paths.FACT_SCOPES
+PROCEDURAL_SCOPES: tuple[str, ...] = paths.PROCEDURAL_SCOPES
 
 #: The only SQLite result codes that mean the index file itself is damaged (ADR 0081). A locked or
 #: read-only brain is a different failure and must never be called damaged.
