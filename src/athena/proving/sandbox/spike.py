@@ -383,8 +383,8 @@ def _one_round(
             errors.append(_op_error(f"branch {index}", op))
             markers.append("")
             continue
-        markers.append(client.read_file(op.result_image, "/state/marker").decode().strip())
-    parent_marker = client.read_file(parent, "/state/marker").decode().strip()
+        markers.append(_text(client.read_file(op.result_image, "/state/marker")))
+    parent_marker = _text(client.read_file(parent, "/state/marker"))
     expected = [f"branch-{i}" for i in indices]
     images = [op.result_image for _, op in runs]
     diverged = (
@@ -536,6 +536,12 @@ def _branch_script(index: int) -> str:
 
 
 # --- helpers -----------------------------------------------------------------------------------
+
+
+def _text(raw: bytes) -> str:
+    """A file read out of an image, as text. Not UTF-8 is a marker that does not match, never a
+    ``UnicodeDecodeError`` past the probes' guard."""
+    return raw.decode("utf-8", "replace").strip()
 
 
 def _tagged(stdout: str, tag: str) -> dict[str, str]:

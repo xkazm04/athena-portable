@@ -29,6 +29,8 @@ announced — and the HTTP status.
 
 from __future__ import annotations
 
+import base64
+import binascii
 import json
 import os
 import time
@@ -190,13 +192,11 @@ class SandboxClient:
         body: dict[str, Any] = {"registry": {"url": registry_url}, "timeout": timeout}
         if tag:
             body["tag"] = tag
-        reply = self._json("import", "POST", "/images/import", body)
-        return str(reply["uuid"])
+        return _uuid("import", self._json("import", "POST", "/images/import", body))
 
     def upload(self, content: bytes) -> str:
         """Upload a blob; returns the file uuid a run's ``files`` map can name."""
-        reply = self._json("upload", "POST", "/files", raw=content)
-        return str(reply["uuid"])
+        return _uuid("upload", self._json("upload", "POST", "/files", raw=content))
 
     def spawn(
         self,
@@ -225,8 +225,7 @@ class SandboxClient:
             body["cwd"] = cwd
         if files:
             body["files"] = {path: {"uuid": uuid} for path, uuid in files.items()}
-        reply = self._json("spawn", "POST", "/instances", body)
-        return str(reply["uuid"])
+        return _uuid("spawn", self._json("spawn", "POST", "/instances", body))
 
     def status(self, op_id: str) -> dict[str, Any]:
         return self._json("status", "GET", f"/operations/{urllib.parse.quote(op_id)}")
@@ -329,6 +328,15 @@ class SandboxClient:
         return bounded(text.strip(), limit)
 
 
+def _uuid(call: str, reply: Mapping[str, Any]) -> str:
+    """The id an accepted call names. A reply without one is the service's failure, raised as
+    :class:`SandboxError` so a probe answers ``no`` with it instead of crashing the spike."""
+    uuid = reply.get("uuid")
+    if not isinstance(uuid, str) or not uuid:
+        raise SandboxError(call, 0, "the reply had no uuid")
+    return uuid
+
+
 def bounded(text: str, limit: int) -> str:
     """``text`` cut to ``limit`` characters, and the cut announced (AGENTS.md)."""
     if len(text) <= limit:
@@ -346,9 +354,10 @@ def _stream(value: Any) -> str:
     if not isinstance(raw, str):
         return ""
     if value.get("encoding") == "base64":
-        import base64
-
-        return base64.b64decode(raw).decode("utf-8", "replace")
+        try:
+            return base64.b64decode(raw, validate=True).decode("utf-8", "replace")
+        except binascii.Error:
+            return f"(not decodable as base64: {len(raw)} chars)"
     return raw
 
 

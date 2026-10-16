@@ -25,7 +25,7 @@ from athena.proving.sandbox.spike import (
     write_report,
 )
 
-from .fakes import FakeSandboxes
+from .fakes import FakeSandboxes, _ok
 
 FIXED = datetime(2026, 10, 7, 12, 0, 0, tzinfo=UTC)
 PROBES = ["boot", "daemon", "network", "fork", "timing"]
@@ -197,6 +197,42 @@ def test_a_dead_daemon_is_a_no_with_the_evidence(
     result = _spike(client, repeats=1)
     assert result.probe("daemon").answer == "no"
     assert result.probe("daemon").evidence["health"] == {"status": "none"}
+
+
+def test_a_reply_without_its_uuid_is_a_no_with_the_evidence_not_a_crash(
+    client: SandboxClient, fake: FakeSandboxes
+) -> None:
+    fake._import = lambda request: _ok({"status": "accepted"})  # type: ignore[method-assign]
+    result = _spike(client, repeats=1)  # a probe never raises (the spike's own rule)
+    assert result.probe("boot").answer == "no"
+    assert any("no uuid" in e for e in result.probe("boot").errors)
+    assert result.verdict.startswith("REJECTED")
+
+
+def test_a_stream_that_is_not_base64_is_kept_as_nothing_not_a_crash(
+    client: SandboxClient, fake: FakeSandboxes
+) -> None:
+    original = fake._spawn
+
+    def garbled(request: dict[str, Any]) -> Any:
+        reply = original(request)
+        op = fake.ops[json.loads(reply.body)["uuid"]]
+        op["metadata"]["result"]["stdout"] = {"value": "not*base64!", "encoding": "base64"}
+        return reply
+
+    fake._spawn = garbled  # type: ignore[method-assign]
+    result = _spike(client, repeats=1)
+    assert result.probe("boot").answer == "no"  # no VERSION lines could be read
+    assert all(p.answer in ("yes", "no", "blocked") for p in result.probes)
+
+
+def test_a_marker_that_is_not_utf8_is_a_divergence_answer_not_a_crash(
+    client: SandboxClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(client, "read_file", lambda image, path: b"\xffbranch")
+    result = _spike(client, repeats=1)
+    assert result.probe("fork").answer == "no"
+    assert result.probe("fork").evidence["parent_marker"] == "�branch"
 
 
 def test_summarize_omits_an_absent_measurement() -> None:
