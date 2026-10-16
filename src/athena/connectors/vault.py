@@ -756,12 +756,22 @@ class Vault:
         refresh: str = "",
         expires_in: int | None = None,
         client: tuple[str, str] | None = None,
+        admit_if: Callable[[], bool] | None = None,
     ) -> str:
         """Probe, then seal: the token, the refresh token and the OAuth client pair are all put
-        together, after the provider accepted the grant, so a refused one leaves the last intact."""
+        together, after the provider accepted the grant, so a refused one leaves the last intact.
+
+        ``admit_if`` is asked under the lock, last, before anything is sealed (a consent flow's
+        :meth:`~athena.connectors.oauth.OAuthFlow.claim`): a flow cancelled meanwhile keeps
+        nothing."""
         identity, account = self._probe_with(spec, token)
         self._seal_or_refuse()
         with self._lock:
+            if admit_if is not None and not admit_if():
+                raise VaultError(
+                    f"the {spec.label} consent was cancelled before it was admitted; "
+                    "nothing was kept"
+                )
             self._next_generation(spec.id)
             self._put(spec.id, "token", token)
             if refresh:
@@ -927,6 +937,7 @@ class Vault:
                 refresh=str(grant.get("refresh_token", "") or ""),
                 expires_in=_expires_in(grant, spec.label, VaultError),
                 client=(flow.client_id, flow.client_secret),
+                admit_if=flow.claim,
             )
 
     def probe(self, connector_id: str) -> ConnectionRecord:

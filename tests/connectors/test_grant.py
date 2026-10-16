@@ -625,3 +625,25 @@ def test_a_pasted_pair_wins_over_the_kept_one_in_the_vault(lost: Vault, google: 
 def test_a_reconnect_with_no_kept_client_asks_for_the_client_id(vault: Vault) -> None:
     with pytest.raises(VaultError, match="client id"):
         vault.connect_oauth("gmail", client_id="", client_secret="", reuse_client=True)
+
+
+def test_a_flow_cancelled_while_its_code_is_exchanged_admits_nothing(
+    tmp_path: Path, specs: dict[str, ConnectorSpec], google: Google
+) -> None:
+    vault = _vault(tmp_path, specs, google)
+    vault._admit(specs["gmail"], "ya29.live", refresh="1//r", expires_in=3600, client=("A", "a"))
+    google.token = (200, {"access_token": "ya29.late", "refresh_token": "1//l", "expires_in": 60})
+    google.block = True
+    try:
+        flow = vault.connect_oauth("gmail", client_id="B", client_secret="b", open_browser=False)
+        _callback(flow.port, flow.state, "the-code")
+        assert google.entered.wait(5), "the exchange never started"
+        flow.cancel("replaced by a newer flow")
+        google.release.set()
+        assert flow.wait(5) and flow._finisher is not None
+        flow._finisher.join(5)  # the exchange thread runs on past the cancel
+        assert flow.phase == "failed" and flow.detail == "replaced by a newer flow"
+        assert vault._get("gmail", "token") == "ya29.live"
+        assert _kept_pair(vault) == ("A", "a")
+    finally:
+        vault.close()

@@ -116,6 +116,10 @@ class OAuthFlow:
         )
         self._junk = 0
         self._done = threading.Event()
+        #: Guards the one move from ``exchanging`` to admitted against a cancel (:meth:`claim`).
+        self._phase_lock = threading.Lock()
+        self._claimed = False
+        self._finisher: threading.Thread | None = None
         self._thread = threading.Thread(target=self._run, name=f"oauth-{connector_id}", daemon=True)
 
     @property
@@ -136,9 +140,21 @@ class OAuthFlow:
         return self
 
     def cancel(self, detail: str = "cancelled") -> None:
-        if self.phase in ("done", "failed"):
-            return
-        self._set("failed", detail)
+        """Fail the flow, unless it is already settled or its admission has been claimed: a
+        cancel that lands while the code is being exchanged keeps the grant from being sealed."""
+        with self._phase_lock:
+            if self.phase in ("done", "failed") or self._claimed:
+                return
+            self._set("failed", detail)
+
+    def claim(self) -> bool:
+        """The vault's last question before it seals: is this flow still exchanging? A yes is
+        final — a later cancel is too late and is ignored — and a no means nothing is sealed."""
+        with self._phase_lock:
+            if self.phase != "exchanging":
+                return False
+            self._claimed = True
+            return True
 
     def wait(self, timeout: float | None = None) -> bool:
         return self._done.wait(timeout)
@@ -160,22 +176,30 @@ class OAuthFlow:
             self._set("failed", f"the provider refused: {error or 'no code'}")
             return True
         self._set("exchanging", "exchanging the code for a grant")
-        threading.Thread(target=self._finish, args=(code,), daemon=True).start()
+        self._finisher = threading.Thread(target=self._finish, args=(code,), daemon=True)
+        self._finisher.start()
         return True
 
     def _finish(self, code: str) -> None:
         try:
             identity = self._on_code(self, code)
         except Exception as exc:  # the vault's refusal is the detail; never a value
-            self._set("failed", str(exc) or type(exc).__name__)
+            with self._phase_lock:
+                if self.phase == "exchanging":  # a cancel's own detail is kept
+                    self._set("failed", str(exc) or type(exc).__name__)
             return
         self._set("done", f"connected as {identity}" if identity else "connected")
 
     def _run(self) -> None:
         try:
             while not self._done.is_set():
-                if time.monotonic() - self.started > self.ttl_s:
-                    self._set("failed", "the consent page was not answered in time")
+                # Only an unanswered consent page runs out; an exchange in progress (which may be
+                # waiting for the daemon's writer lock) settles the flow itself.
+                if (
+                    self.phase == "awaiting_consent"
+                    and time.monotonic() - self.started > self.ttl_s
+                ):
+                    self.cancel("the consent page was not answered in time")
                     break
                 self._server.handle_request()
         finally:
