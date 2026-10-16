@@ -8,7 +8,8 @@
  *
  * **Every answer is an `Outcome`, never a throw.** A route that answers 503 ("that engine is not
  * ready") or 409 ("an install is already running") is a *state* the studio renders, not an
- * exception it has to remember to catch; a network failure is the state `offline`. The one thing a
+ * exception it has to remember to catch; a network failure is the state `offline`, and so is a body
+ * the connection dropped after its status; a 200 that is not the JSON it promised is `refused`. The one thing a
  * caller does with a refusal is show it, so a refusal is a value.
  *
  * The absent-value convention is the wire's: `null`, never omitted. Nothing here fills a field the
@@ -178,6 +179,50 @@ export function availabilityOf(config: Pick<VoiceConfig, "ready" | "reason">): {
   return { available: false, reason: config.reason || "voice is not set up yet" };
 }
 
+/**
+ * A body the status promised and the connection did not deliver: the answer is `offline` with the
+ * status it came under, as a fetch that never answered is — a value, never a throw.
+ */
+function cutOff(response: Response, error: unknown): Extract<Outcome<never>, { ok: false }> {
+  const why = error instanceof Error ? error.message : String(error);
+  return {
+    ok: false,
+    refusal: "offline",
+    status: response.status,
+    reason: "daemon_offline",
+    detail: `the daemon's answer did not arrive whole (${why})`,
+  };
+}
+
+async function bytesOf(response: Response): Promise<Outcome<Uint8Array>> {
+  try {
+    return { ok: true, value: new Uint8Array(await response.arrayBuffer()) };
+  } catch (error) {
+    return cutOff(response, error);
+  }
+}
+
+/** The body as the JSON the route promised; one that arrived and is not JSON is `refused`. */
+async function jsonOf<T>(response: Response): Promise<Outcome<T>> {
+  let text: string;
+  try {
+    text = await response.text();
+  } catch (error) {
+    return cutOff(response, error);
+  }
+  try {
+    return { ok: true, value: JSON.parse(text) as T };
+  } catch {
+    return {
+      ok: false,
+      refusal: "refused",
+      status: response.status,
+      reason: "unknown",
+      detail: `the daemon's answer could not be read (${response.status}, not JSON)`,
+    };
+  }
+}
+
 /** The same global `fetch`, called with its own receiver, for the reason `lib/api.ts` gives. */
 const globalFetch: FetchLike = (input, init) => fetch(input, init);
 
@@ -206,11 +251,13 @@ export class VoiceSetupApi {
     });
     if (!response.ok) return response;
     const res = response.value;
+    const body = await bytesOf(res);
+    if (!body.ok) return body;
     const elapsed = Number(res.headers.get("X-Tts-Elapsed-Ms"));
     return {
       ok: true,
       value: {
-        pcm: new Uint8Array(await res.arrayBuffer()),
+        pcm: body.value,
         sampleRate: rateOf(res.headers.get("Content-Type")),
         provider: res.headers.get("X-Tts-Provider"),
         voice: res.headers.get("X-Tts-Voice"),
@@ -226,7 +273,7 @@ export class VoiceSetupApi {
       contentType: "application/octet-stream",
     });
     if (!response.ok) return response;
-    return { ok: true, value: (await response.value.json()) as Transcript };
+    return jsonOf<Transcript>(response.value);
   }
 
   /** Start an install. 202 with the state; 409 while another one runs. */
@@ -258,7 +305,7 @@ export class VoiceSetupApi {
       contentType: "application/json",
     });
     if (!response.ok) return response;
-    return { ok: true, value: (await response.value.json()) as T };
+    return jsonOf<T>(response.value);
   }
 
   private async send(

@@ -230,6 +230,37 @@ describe("failure states", () => {
     expect(out).toMatchObject({ ok: false, refusal: "refused", status: 502, reason: "unknown" });
     if (!out.ok) expect(refusalText(out)).toBe("the daemon answered 502");
   });
+
+  it("a 200 whose body cannot be read is a refusal too, never a throw", async () => {
+    // The connection drops after the headers: the status said yes, and the body never arrives.
+    const broken = () =>
+      new Response(
+        new ReadableStream({
+          start(controller) {
+            controller.error(new TypeError("network error"));
+          },
+        }),
+        { status: 200, headers: { "Content-Type": "audio/L16;rate=24000" } },
+      );
+    const { api } = fake(broken);
+    const outs = [
+      await api.preview("hello", "af_heart"),
+      await api.config(),
+      await api.transcribe("whisper", new Int16Array([1])),
+      await api.installState(),
+    ];
+    for (const out of outs) {
+      expect(out).toMatchObject({ ok: false, refusal: "offline", status: 200 });
+      if (!out.ok) expect(refusalText(out)).toMatch(/did not arrive whole/);
+    }
+  });
+
+  it("a 200 that is not the JSON it promised is a refusal, never a throw", async () => {
+    const { api } = fake(() => new Response("<html>proxy</html>", { status: 200 }));
+    const out = await api.config();
+    expect(out).toMatchObject({ ok: false, refusal: "refused", status: 200 });
+    if (!out.ok) expect(refusalText(out)).toMatch(/could not be read/);
+  });
 });
 
 describe("pure helpers", () => {
