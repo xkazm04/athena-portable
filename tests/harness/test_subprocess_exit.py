@@ -103,6 +103,25 @@ def test_no_engine_key_reaches_a_spawned_cli_and_the_child_still_starts(
     assert sorted(seen & set(ENGINE_KEYS)) == []
 
 
+def test_a_cli_that_exits_before_reading_its_input_still_reports_its_exit(tmp_path: Path) -> None:
+    """A CLI that refuses at startup (a flag a release removed, no sign-in) exits unread.
+
+    The frame is larger than a pipe's buffer, so writing it meets a closed pipe. That is not the
+    run's failure: the CLI's exit code and its stderr are, and they are what ADR 0109 classifies.
+    """
+    script = "import sys\nsys.stderr.write('error: unknown option --restricted\\n')\nsys.exit(2)\n"
+    request = CliRequest(
+        argv=["-c", script], stdin="x" * (4 * 1024 * 1024), cwd=str(tmp_path), timeout_s=20.0
+    )
+
+    async def collect() -> list[str]:
+        return [line async for line in SubprocessTransport(sys.executable).run(request)]
+
+    assert asyncio.run(collect()) == []
+    assert request.exit.status.returncode == 2
+    assert "unknown option" in request.exit.status.stderr_tail
+
+
 def test_the_stderr_tail_keeps_only_the_end_of_what_was_written(tmp_path: Path) -> None:
     script = "import sys\nsys.stderr.write('HEAD' + 'y' * 100000 + 'THE-LAST-WORDS')\nsys.exit(1)\n"
     _, request = _run(script, tmp_path)

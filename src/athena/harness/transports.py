@@ -202,11 +202,18 @@ class SubprocessTransport:
             raise TransportError(f"{self.executable}: {exc}") from exc
         if proc.stdin is None or proc.stdout is None:
             raise TransportError(f"{self.executable}: no pipes on the spawned process")
-        proc.stdin.write(request.stdin.encode("utf-8"))
-        await proc.stdin.drain()
-        proc.stdin.close()
         said = asyncio.create_task(_tail(proc.stderr)) if proc.stderr is not None else None
         try:
+            try:
+                proc.stdin.write(request.stdin.encode("utf-8"))
+                await proc.stdin.drain()
+            except (BrokenPipeError, ConnectionResetError):
+                # The CLI exited, or shut its input, before reading all it was sent: one that
+                # refused at startup. That is not how the run failed; its exit code and its stderr
+                # are, and they are read below like any other run's (ADR 0109).
+                pass
+            finally:
+                proc.stdin.close()
             while True:
                 raw = await asyncio.wait_for(proc.stdout.readline(), timeout=request.timeout_s)
                 if not raw:
