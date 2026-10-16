@@ -108,11 +108,23 @@ STOPWORDS: frozenset[str] = frozenset(
 )
 
 
+#: What a word is wrapped in rather than made of: the punctuation at either end of it.
+_EDGE_PUNCTUATION = re.compile(r"^\W+|\W+$")
+
+
 def fts_terms(query: str) -> list[str]:
     """The words of ``query`` a match is made of: short words and :data:`STOPWORDS` dropped, unless
-    nothing else is left. Control characters are dropped first; whitespace ones still split."""
-    terms = [term for term in _no_controls(query).split() if term.strip()]
-    meaningful = [t for t in terms if len(t) > 2 and t.lower().strip("?.,!:;") not in STOPWORDS]
+    nothing else is left. Control characters are dropped first; whitespace ones still split.
+
+    Each word loses the punctuation at its ends before anything is asked of it, as the FTS5
+    tokenizer drops it: ``deadline?`` is ``deadline``. Kept, the window around a match searched the
+    body for ``deadline?`` and showed the head instead, and ``it?`` passed the short-word filter
+    as a three-letter word and matched nearly every turn.
+    """
+    terms = [
+        bare for term in _no_controls(query).split() if (bare := _EDGE_PUNCTUATION.sub("", term))
+    ]
+    meaningful = [t for t in terms if len(t) > 2 and t.lower() not in STOPWORDS]
     return meaningful or terms
 
 

@@ -998,3 +998,44 @@ def test_a_word_that_only_names_a_role_or_a_kind_matches_no_memory(tmp_path: Pat
     assert episodes.total == 1, "M counts what matched the words, not every user turn"
     assert [m.lane for m in frame.block(EPISODE_BLOCK).items].count(KEYWORD_BLOCK) == 0
     assert facts.block(KEYWORD_BLOCK).total == 1, "the word 'fact' is not in either fact"
+
+
+# -- a question's punctuation is not part of its words (ADR 0042) --------------------------------
+
+
+@pytest.mark.parametrize(
+    "query", ["deadline", "when is the deadline?", "deadline, please", "(deadline)"]
+)
+def test_a_long_episode_shows_its_match_whatever_punctuation_the_question_ends_with(
+    tmp_path: Path, query: str
+) -> None:
+    body = "filler text. " * 80 + "The deadline is Friday the 14th."
+    with Brain(tmp_path / "brain") as brain:
+        brain.append_episode(body, "user")
+
+        (memory,) = recall(brain, query).block(EPISODE_BLOCK).items
+
+    assert "Friday the 14th" in memory.excerpt
+
+
+def test_a_short_word_with_a_question_mark_does_not_crowd_out_the_recent_turns(
+    tmp_path: Path,
+) -> None:
+    """``it?`` is the two-letter word ``it``, which the filter drops; kept, it matched it all."""
+    with Brain(tmp_path / "brain") as brain:
+        for n in range(30):
+            brain.append_episode(
+                f"old note {n}: it was filed", "user", created=BASE + timedelta(minutes=n)
+            )
+        recent = [
+            brain.append_episode(
+                f"recent turn {n}: the Northstar claim",
+                "user",
+                created=BASE + timedelta(days=1, minutes=n),
+            ).id
+            for n in range(5)
+        ]
+
+        window = recall(brain, "did Acme pay it?").block(EPISODE_BLOCK)
+
+    assert set(recent) <= {memory.id for memory in window.items}
