@@ -116,3 +116,10 @@ def test_a_bare_nan_is_a_float_and_not_text() -> None:
 
     assert isinstance(meta["key"], float)
     assert math.isnan(meta["key"])
+
+
+def test_a_byte_order_mark_before_the_fence_is_not_part_of_the_header() -> None:
+    meta, body = frontmatter.parse('\ufeff---\nid: "fact_0a1b2c3d"\n---\n\nAcme pays late\n')
+
+    assert meta == {"id": "fact_0a1b2c3d"}
+    assert body == "Acme pays late\n"

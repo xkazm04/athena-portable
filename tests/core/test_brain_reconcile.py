@@ -480,3 +480,22 @@ def test_a_fact_file_saved_with_crlf_throughout_is_indexed_with_lf_key_and_body(
         ).fetchone()
         assert row == ("crlf-key",)
         assert brain.read_body(fact.id) == "first line\nsecond line"
+
+
+def test_a_fact_file_saved_with_a_byte_order_mark_is_indexed_not_skipped(tmp_path: Path) -> None:
+    """PowerShell 5.1's ``Set-Content -Encoding UTF8`` writes one; the file still has its id."""
+    with Brain(tmp_path / "brain") as brain:
+        source = brain.append_episode("evidence", role="user")
+        fact = brain.write_fact("bom-key", "Acme pays late", sources=[source.id])
+        path = brain.root / fact.path
+        path.write_bytes(b"\xef\xbb\xbf" + path.read_bytes())
+
+        stats = reconcile_from_disk(brain)
+
+        assert stats.skipped == []
+        assert stats.by_kind == {"episode": 1, "fact": 1}
+        row = brain.writer.execute(
+            "SELECT fact_key FROM companion_fact WHERE id = ?", (fact.id,)
+        ).fetchone()
+        assert row == ("bom-key",)
+        assert brain.read_body(fact.id) == "Acme pays late"

@@ -82,7 +82,12 @@ def parse(text: str) -> tuple[dict[str, Any], str]:
 
     A file with no header is not an error: the whole text is the body and the reconcile walk
     records it as skipped, by name, rather than guessing an id for it.
+
+    A byte order mark before the fence is not text. No writer emits one, but an editor that saves
+    "UTF-8" with one (PowerShell 5.1's ``Set-Content -Encoding UTF8``) put it before the ``---``,
+    and the rebuild then skipped the file as having "no id in frontmatter".
     """
+    text = text.removeprefix("﻿")
     head_fence = f"{FENCE}\n"
     if not text.startswith(head_fence):
         return {}, text
