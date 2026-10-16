@@ -272,6 +272,21 @@ test("every type size outside the token block reads a token", () => {
   assert.deepEqual(raw, []);
 });
 
+test("a floor counted in lines is counted in the rule's own line-height", () => {
+  // `.bd-column-foot` floors itself at "two lines" and set its line-height from --bd-leading-snug
+  // (1.2), but multiplied by a typed 1.35: two lines that were 2.25 of its own. A rule that sizes
+  // a box in lines of its own text has to read the leading it sets, or the two drift apart.
+  const drift: string[] = [];
+  for (const rule of RULES) {
+    const leading = /(?:^|;)\s*line-height\s*:\s*(var\(--bd-leading-[a-z]+\))/.exec(rule.body)?.[1];
+    if (!leading) continue;
+    for (const m of rule.body.matchAll(/(?:^|;)\s*((?:min-|max-)?block-size)\s*:\s*(calc\([^;]*var\(--bd-(?:label|text-[a-z0-9]+)\)[^;]*)/g)) {
+      if (!m[2]!.includes(leading)) drift.push(`${rule.file}: ${rule.selectors.join(", ")} { ${m[1]}: ${m[2]} } sets line-height ${leading}`);
+    }
+  }
+  assert.deepEqual(drift, []);
+});
+
 test("the room's focus ring names every focusable tag the board renders", () => {
   // The tags are read out of the components, not listed here: a disclosure added to a component
   // is a tag this list did not know about, which is how the foot's <summary> was missed.

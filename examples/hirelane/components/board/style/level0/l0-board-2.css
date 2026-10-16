@@ -101,18 +101,18 @@
 /*
  * The column's foot: the one fact true in this stage and in no other, in the
  * vocabulary the level below uses for the same thing. `margin-block-start:auto`
- * pins it to the bottom of the column, and because every column stretches to
- * the tallest, the five facts land on one line across the board.
+ * pins it to the bottom of the column. The columns no longer stretch to the
+ * tallest (`level0/l0-board.css`, "every column ends where its rows end"), so
+ * the five feet are ragged by design and each closes its own column.
  */
 .bd-column-foot {
   margin: auto 0 0;
   padding-block-start: var(--bd-s2);
   border-block-start: var(--bd-rule-1) solid var(--bd-rule);
-  /* Two lines of floor. A narrow column wraps its fact and a wide one does not,
-     and without a floor the five hairlines above the five feet sat at five
-     different heights — the one place on this board where a ragged line is
-     obvious, because the feet are the only thing all five columns share. */
-  min-block-size: calc(2 * var(--bd-label) * 1.35);
+  /* Two lines of floor, counted in this rule's own leading. A narrow column wraps its fact and a
+     wide one does not; with the floor a one-line foot and a wrapped one are the same box, so every
+     foot's hairline sits the same distance above its column's edge. */
+  min-block-size: calc(2 * var(--bd-label) * var(--bd-leading-snug));
   font-size: var(--bd-label);
   line-height: var(--bd-leading-snug);
   /* The text face with lining figures, not the mono face. The whole line used to be wrapped in
