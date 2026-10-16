@@ -13,8 +13,20 @@ import { tempHome } from "./tmp-home";
 
 tempHome("tidycrm-test-");
 
-const { domainSpellings, getContact, listConflicts, listOpenPairs, segmentRows } = await import("../lib/db");
-const { mergeContacts, resolveCompany } = await import("../lib/mutations");
+const { getActivity } = await import("@athena/demo-kit/activity");
+const {
+  countOpenPairs,
+  db,
+  defectCounts,
+  domainSpellings,
+  getContact,
+  getPair,
+  listConflicts,
+  listOpenPairs,
+  segmentRows,
+} = await import("../lib/db");
+const { deleteContacts, mergeContacts, normalizeFields, resolveCompany, resolvePair, undoWrite } =
+  await import("../lib/mutations");
 
 test("a merge that carries a recent activity date over clears the survivor's stale flag", () => {
   // The seed holds pairs whose keeper went quiet while its duplicate stayed in touch.
@@ -69,4 +81,50 @@ test("a record merged away no longer counts as a spelling, so settling the domai
     "so no survivor is still marked",
   );
   assert.ok(!listConflicts().some((c) => c.domain === domain), "and read_conflicts drops the domain");
+});
+
+/** The newest activity row's id: the entry a write just logged. */
+function lastActivityId(): number {
+  const row = db().get<{ id: number }>("SELECT MAX(id) AS id FROM activity");
+  assert.ok(row);
+  return row.id;
+}
+
+test("undo refuses to put back a field a later write has changed since", () => {
+  const dirty = segmentRows("all").find((c) => c.company !== c.company.trim());
+  assert.ok(dirty, "the seed carries a whitespace-dirty company");
+  const original = dirty.company;
+
+  assert.equal(normalizeFields([dirty.id], ["trim_whitespace"]).ok, true);
+  const tidied = lastActivityId();
+  assert.equal(resolveCompany(dirty.domain, "Undo Probe Ltd").ok, true);
+  const settled = lastActivityId();
+
+  // Replaying the older write would hand the field back its pre-tidy value over the newer
+  // decision, and leave that decision's revision counted as live in the export summary.
+  const refused = undoWrite(tidied);
+  assert.equal(refused.ok, false);
+  assert.match(refused.reason ?? "", /changed again/);
+  assert.equal(getContact(dirty.id)?.company, "Undo Probe Ltd", "the newer write stands");
+  assert.equal(getActivity(db(), tidied)?.undone, false, "and the refused entry can still be undone later");
+
+  // Newest first, both go back, and the record ends where it started.
+  assert.equal(undoWrite(settled).ok, true);
+  assert.equal(undoWrite(tidied).ok, true);
+  assert.equal(getContact(dirty.id)?.company, original);
+});
+
+test("undo does not reopen a pair whose record has left the working list", () => {
+  const pair = listOpenPairs(200)[5];
+  assert.ok(pair);
+  assert.equal(resolvePair(pair.id, "skipped").ok, true);
+  const skipped = lastActivityId();
+  assert.equal(deleteContacts([pair.drop_id]).ok, true);
+
+  const refused = undoWrite(skipped);
+  assert.equal(refused.ok, false, "a pair with a deleted member cannot be adjudicated again");
+  assert.match(refused.reason ?? "", /no longer in the list/);
+  assert.equal(getPair(pair.id)?.status, "skipped");
+  assert.equal(getContact(pair.keep_id)?.in_open_pair, 0, "so the survivor is not held in the duplicates segment");
+  assert.equal(defectCounts().pairs_open, countOpenPairs(), "and the two open-pair figures agree");
 });

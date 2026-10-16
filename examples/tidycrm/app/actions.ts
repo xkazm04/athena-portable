@@ -1,11 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { undoActivity } from "@athena/demo-kit/activity";
 
 import {
   countOpenPairs,
-  db,
   listOpenPairs,
   previewPair,
   readConflicts,
@@ -13,7 +11,6 @@ import {
 } from "@/lib/db";
 import { exportSummary, type ExportSummary } from "@/lib/summary";
 import {
-  applyUndo,
   deleteContacts,
   flagStale,
   mergeContacts,
@@ -22,6 +19,7 @@ import {
   planCompany,
   resolveCompany,
   resolvePair,
+  undoWrite,
   type CompanyPlan,
   type MutationResult,
   type NormalizePlan,
@@ -72,10 +70,11 @@ export async function listPairsAction(
   };
 }
 
+/** `undo`: refused with a reason, not thrown, when a later write owns what it would put back. */
 export async function undoAction(id: number): Promise<{ ok: boolean; reason?: string }> {
-  const result = undoActivity(db(), id, applyUndo);
+  const result = undoWrite(id);
   refresh();
-  return { ok: result.ok, ...(result.reason ? { reason: result.reason } : {}) };
+  return result;
 }
 
 export async function previewNormalizeAction(

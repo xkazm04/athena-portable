@@ -1,5 +1,5 @@
 import "server-only";
-import { logActivity, type ActivityEntry } from "@athena/demo-kit/activity";
+import { logActivity, undoActivity, type ActivityEntry } from "@athena/demo-kit/activity";
 import type { Db } from "@athena/demo-kit/db";
 
 import { MAX_IDS, MAX_REWRITES } from "./constants";
@@ -14,7 +14,15 @@ import {
   isStaleAt,
   WORKING,
 } from "./db";
-import { isE164, planChanges, type FieldChange, type NormalizeRule } from "./normalize";
+import {
+  fieldLabel,
+  isE164,
+  NORMALIZABLE_FIELDS,
+  planChanges,
+  type FieldChange,
+  type NormalizableField,
+  type NormalizeRule,
+} from "./normalize";
 import type { Contact, PairStatus } from "./types";
 
 export interface NormalizePlan {
@@ -444,6 +452,26 @@ export function resolvePair(pairId: string, status: Exclude<PairStatus, "open" |
 
 /* ------------------------------------------------------------------ undo */
 
+/**
+ * Thrown from inside `applyUndo` when the world has moved since the write being reversed. The
+ * throw rolls the whole undo back (`withTx`), and `undoWrite` turns it into a refusal with a reason.
+ */
+class UndoRefused extends Error {}
+
+/**
+ * `undo`, as the server action calls it: `undoActivity` with this app's strategies, and a refusal
+ * instead of an exception when a strategy finds that replaying the entry would overwrite newer work.
+ */
+export function undoWrite(id: number): { ok: boolean; reason?: string } {
+  try {
+    const result = undoActivity(db(), id, applyUndo);
+    return result.ok ? { ok: true } : { ok: false, reason: result.reason };
+  } catch (err) {
+    if (err instanceof UndoRefused) return { ok: false, reason: err.message };
+    throw err;
+  }
+}
+
 interface UndoNormalize { kind: "normalize"; revisions: number[] }
 interface UndoFlagStale { kind: "flag_stale"; ids: string[] }
 interface UndoResolvePair { kind: "resolve_pair"; pair_id: string }
@@ -455,11 +483,29 @@ export function applyUndo(tx: Db, entry: ActivityEntry): void {
   switch (undo?.kind) {
     case "normalize": {
       for (const id of [...undo.revisions].reverse()) {
-        const rev = tx.get<{ contact_id: string; field: string; old_value: string; reverted: number }>(
-          "SELECT contact_id, field, old_value, reverted FROM revisions WHERE id = ?",
-          [id],
-        );
+        const rev = tx.get<{
+          contact_id: string;
+          field: string;
+          old_value: string;
+          new_value: string;
+          reverted: number;
+        }>("SELECT contact_id, field, old_value, new_value, reverted FROM revisions WHERE id = ?", [id]);
         if (!rev || rev.reverted === 1) continue;
+        // Entries can be undone in any order, so the field may have been rewritten since. Putting
+        // the old value back then would overwrite the newer write and leave its revision counted
+        // as live. The field is only ours to restore while it still holds what we wrote.
+        if (!NORMALIZABLE_FIELDS.includes(rev.field as NormalizableField)) {
+          throw new Error(`revision ${id} names a field no rule writes: ${rev.field}`);
+        }
+        const now = tx.get<Record<string, string>>(`SELECT ${rev.field} AS value FROM contacts WHERE id = ?`, [
+          rev.contact_id,
+        ])?.value;
+        if (now !== rev.new_value) {
+          throw new UndoRefused(
+            `#${entry.id} cannot be undone: ${fieldLabel(rev.field).toLowerCase()} on ${rev.contact_id} ` +
+              `was changed again after it. Undo the later change first.`,
+          );
+        }
         tx.run(`UPDATE contacts SET ${rev.field} = ? WHERE id = ?`, [rev.old_value, rev.contact_id]);
         if (rev.field === "phone") {
           tx.run("UPDATE contacts SET phone_ok = ? WHERE id = ?", [
@@ -484,6 +530,23 @@ export function applyUndo(tx: Db, entry: ActivityEntry): void {
         "SELECT keep_id, drop_id FROM merge_pairs WHERE id = ?",
         [undo.pair_id],
       );
+      // A reopened pair is only work while both records are still in the working list; one whose
+      // member was deleted or merged away since cannot be adjudicated, and reopening it would hold
+      // the survivor in the duplicates segment with nothing to act on.
+      const gone = pair
+        ? [pair.keep_id, pair.drop_id].find((id) => {
+            const c = tx.get<{ deleted_at: string | null; merged_into: string | null }>(
+              "SELECT deleted_at, merged_into FROM contacts WHERE id = ?",
+              [id],
+            );
+            return !c || c.deleted_at !== null || c.merged_into !== null;
+          })
+        : undefined;
+      if (gone) {
+        throw new UndoRefused(
+          `#${entry.id} cannot be undone: ${gone} is no longer in the list, so ${undo.pair_id} has nothing left to decide.`,
+        );
+      }
       tx.run("UPDATE merge_pairs SET status = 'open' WHERE id = ?", [undo.pair_id]);
       if (pair) {
         refreshPairFlag(tx, pair.keep_id);
