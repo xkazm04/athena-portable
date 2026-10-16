@@ -27,6 +27,9 @@ export function plainReason(reason: string): string {
       return "the details no longer match what was asked";
     case "user_denied":
       return "it was already declined";
+    case "approval_spent":
+      // ADR 0038: an approval runs at most once, and this one already has.
+      return "that approval was already used once";
     case "disabled_origin":
     case "origin_disabled":
       return "Athena was told not to act on this app";
@@ -104,6 +107,8 @@ export function plainFailure(reason: string, engine: string): string {
       return "That request was cancelled.";
     case "unknown_ref":
       return "Athena could not find what that request pointed at.";
+    case "approval_spent":
+      return "That approval was already used once, so Athena did not run it again. Ask again if you want it done again.";
     default:
       return "Something went wrong and Athena stopped. The technical detail is in the record.";
   }
