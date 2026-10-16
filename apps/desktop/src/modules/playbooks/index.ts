@@ -1,8 +1,8 @@
 /**
  * The Playbooks model hook — the one file here that knows a store exists.
  *
- * The playbooks themselves need no store: they ship in the bundle (`lib/playbooks.ts`). What the
- * module reaches is the clipboard and Athena's composer, for the command, and the Browser's tabs,
+ * The playbooks themselves ship with the build and are fetched on first ask (`stores/playbooks.ts`,
+ * ADR 0095), so the hook reads that store and asks it to load. What else the module reaches is the clipboard and Athena's composer, for the command, and the Browser's tabs,
  * for a portal or a source — opening one makes the tab and tells the scene, which decides where the
  * person goes (the Chores depth moves to the page).
  */

@@ -10,10 +10,11 @@
  * result that is committed beside it. Schema 2 adds the storyboard (ADR 0096): up to six stills of
  * the run under `story/`, also committed, each with a caption and the turn it shows.
  *
- * The files are bundled at build time (`import.meta.glob`, eager), so the module needs no daemon
- * and no route: a playbook is something the app ships, like the constitution. `parsePlaybook`
- * reads one leniently and says what it dropped, because a showcase that blanks on one missing
- * field is worse than one that shows the rest and names the gap.
+ * The files are bundled at build time (`import.meta.glob`, as chunks fetched on first ask by
+ * `loadShipped`, ADR 0095), so the module needs no daemon and no route: a playbook is something the
+ * app ships, like the constitution. `parsePlaybook` reads one leniently and says what it dropped,
+ * because a showcase that blanks on one missing field is worse than one that shows the rest and
+ * names the gap.
  */
 
 import { isCategoryId, isJobId, type CategoryId, type JobId } from "./playbook-taxonomy";

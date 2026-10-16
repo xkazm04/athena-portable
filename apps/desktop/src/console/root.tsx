@@ -1,10 +1,10 @@
 /**
  * The console's app root — README section 3.1 and 3.5, ADR 0026 and 0087.
  *
- * The same job `app.tsx` has and for the same reason (the day-zero rule of 3.5): the stores that
- * must stay true while the person is looking at something else are started here and by nothing
- * else. The set is exactly the module bar's, plus the two the stage adds: where the window is
- * (`depth`) and the seam that tells Rust which shape it is in (`depth/shape`).
+ * The job the old app root had until the cutover (ADR 0095), for the same reason (the day-zero rule
+ * of 3.5): the stores that must stay true while the person is looking at something else are started
+ * here and by nothing else. The set is the one ADR 0026 gives Main, plus the two the stage adds:
+ * where the window is (`depth`) and the seam that tells Rust which shape it is in (`depth/shape`).
  */
 import { useEffect } from "react";
 

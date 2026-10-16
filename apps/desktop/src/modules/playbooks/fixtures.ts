@@ -1,5 +1,6 @@
 /**
- * The Playbooks module's fixtures — view-models for `preview.html?module=playbooks&fixture=`.
+ * The Playbooks module's fixtures — view-models the Chores depth reuses (`scenes/chores/fixtures.ts`),
+ * drawn by `preview.html?scene=chores&fixture=`.
  *
  * Built from raw JSON through `parsePlaybook`, the same reader the shipped set goes through, so a
  * fixture cannot drift into a shape no real `playbook.json` could produce. They are invented and
