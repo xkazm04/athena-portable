@@ -1,0 +1,83 @@
+// @vitest-environment jsdom
+/**
+ * Tests for what the first act does when touched — README section 3.1 and 3.4, ADR 0085 and 0087.
+ *
+ * A DOM is needed for these and only these: what the address field opens, and where the keyboard
+ * is after the way forward changes under it.
+ */
+import { act } from "react";
+import { createRoot, type Root } from "react-dom/client";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+import { INERT_ACTIONS, type SetupModel } from "@/modules/setup/model";
+
+import { fixtures } from "./fixtures";
+import WakingView from "./view";
+
+Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
+
+let host: HTMLDivElement;
+let root: Root;
+
+beforeEach(() => {
+  host = document.createElement("div");
+  document.body.append(host);
+  root = createRoot(host);
+});
+afterEach(() => {
+  act(() => root.unmount());
+  host.remove();
+});
+
+function mount(fixture: string, step: 0 | 1 | 2) {
+  const openPage = vi.fn();
+  const model: SetupModel = { ...fixtures[fixture]!, actions: { ...INERT_ACTIONS, openPage } };
+  act(() => root.render(<WakingView model={model} onLater={() => {}} initialStep={step} />));
+  return { openPage };
+}
+
+function type(input: HTMLInputElement, value: string) {
+  const set = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, "value")?.set;
+  act(() => {
+    set?.call(input, value);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  });
+}
+
+const submit = (form: HTMLFormElement) =>
+  act(() => void form.dispatchEvent(new Event("submit", { bubbles: true, cancelable: true })));
+
+describe("the address field opens what the apps register opens", () => {
+  it("a bare host is opened as an address, as the register would open it", () => {
+    const { openPage } = mount("no-page", 1);
+    const input = host.querySelector<HTMLInputElement>("#waking-url")!;
+    type(input, "  mail.example.com ");
+    submit(host.querySelector("form")!);
+    // Rust's `Url::parse` refuses "mail.example.com" (no scheme), and the refusal was only logged.
+    expect(openPage.mock.calls).toEqual([["http://mail.example.com"]]);
+  });
+
+  it("an address with its scheme is opened as typed", () => {
+    const { openPage } = mount("no-page", 1);
+    type(host.querySelector<HTMLInputElement>("#waking-url")!, "https://mail.example.com/inbox");
+    submit(host.querySelector("form")!);
+    expect(openPage.mock.calls).toEqual([["https://mail.example.com/inbox"]]);
+  });
+
+  it("text that names no origin stays in the field and the button says why", () => {
+    const { openPage } = mount("no-page", 1);
+    const input = host.querySelector<HTMLInputElement>("#waking-url")!;
+    for (const typed of ["my invoicing tool", "about:blank"]) {
+      type(input, typed);
+      submit(host.querySelector("form")!);
+      expect(openPage).not.toHaveBeenCalled();
+      expect(input.value).toBe(typed);
+      expect(host.querySelector('[title="That is not an address an app can live at."]')).not.toBeNull();
+    }
+  });
+
+  it("an empty field says why Open it waits, rather than a silent disabled button", () => {
+    mount("no-page", 1);
+    expect(host.querySelector('[title="Type an address first."]')).not.toBeNull();
+  });
+});

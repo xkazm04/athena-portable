@@ -15,6 +15,8 @@ import { useState } from "react";
 import Bell from "@/bell/Bell";
 import Button from "@/components/Button";
 import { engineLabel } from "@/lib/engines";
+import { normaliseUrl } from "@/lib/url";
+import { originOf } from "@/modules/browser/model";
 import {
   engineFact,
   isReady,
@@ -53,6 +55,17 @@ const BADGE: Record<Fact["standing"], string> = {
 export default function WakingView({ model, onLater, initialStep = 0 }: WakingProps) {
   const [step, setStep] = useState<0 | 1 | 2>(initialStep);
   const [url, setUrl] = useState("");
+  // What the apps register opens, this opens: a bare host gets its scheme (Rust's parser refuses
+  // one without, and that refusal was only logged), and text that names no origin stays here with
+  // the reason, as the register keeps it.
+  const address = normaliseUrl(url);
+  const origin = address ? originOf(address) : "";
+  const openable = origin !== "" && origin !== "null";
+  const openReason = !url.trim()
+    ? "Type an address first."
+    : openable
+      ? undefined
+      : "That is not an address an app can live at.";
 
   const engine = engineFact(model);
   const page = pageFact(model);
@@ -126,7 +139,7 @@ export default function WakingView({ model, onLater, initialStep = 0 }: WakingPr
               className="waking__open"
               onSubmit={(e) => {
                 e.preventDefault();
-                if (url.trim() !== "") model.actions.openPage(url.trim());
+                if (address && openable) model.actions.openPage(address);
               }}
             >
               <label htmlFor="waking-url">Address of an app</label>
@@ -140,7 +153,7 @@ export default function WakingView({ model, onLater, initialStep = 0 }: WakingPr
                   onChange={(e) => setUrl(e.target.value)}
                   autoComplete="off"
                 />
-                <Button variant="primary" size="sm" type="submit" disabled={url.trim() === ""}>
+                <Button variant="primary" size="sm" type="submit" disabledReason={openReason}>
                   Open it
                 </Button>
               </div>
