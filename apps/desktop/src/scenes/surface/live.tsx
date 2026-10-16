@@ -64,6 +64,7 @@ export function useSurfaceModel(): SurfaceModel {
   const daemonLoaded = useDaemon((s) => s.loaded);
   const daemonError = useDaemon((s) => s.lastError);
   const playbooks = usePlaybooks((s) => s.items);
+  const playbooksProblem = usePlaybooks((s) => s.problem);
   // Counting the chores needs the shipped set; fetched once, after the first frame has been drawn.
   useEffect(() => {
     const ask = () => void usePlaybooks.getState().load();
@@ -109,7 +110,7 @@ export function useSurfaceModel(): SurfaceModel {
           attention: s === "needs-reauth" || s === "broken" || s === "unconfirmed",
         };
       }),
-      chores: { ...totalsOf(playbooks), loaded: playbooks !== null },
+      chores: { ...totalsOf(playbooks), loaded: playbooks !== null, failed: playbooks === null && playbooksProblem !== null },
       voiceAvailable,
       engine: {
         label: engineLabel(engine),
@@ -136,6 +137,7 @@ export function useSurfaceModel(): SurfaceModel {
     daemonLoaded,
     daemonError,
     playbooks,
+    playbooksProblem,
   ]);
 }
 

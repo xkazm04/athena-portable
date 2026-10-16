@@ -29,8 +29,11 @@ export interface SurfaceSources {
   apps: readonly { id: string; host: string; enabled: boolean }[];
   openTabs: number;
   accounts: readonly { id: string; label: string; connected: boolean; attention: boolean }[];
-  /** `loaded` is false while the shipped playbooks are still being fetched (they load lazily). */
-  chores: { total: number; benched: number; foundUsd: number; loaded: boolean };
+  /**
+   * `loaded` is false while the shipped playbooks are still being fetched (they load lazily);
+   * `failed` is true when that fetch failed, which is not the same fact as one still on its way.
+   */
+  chores: { total: number; benched: number; foundUsd: number; loaded: boolean; failed: boolean };
   voiceAvailable: boolean;
   /**
    * The chosen engine as the Setup module's `engineFact` stands it, so the light and the Mind
@@ -109,7 +112,9 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
     chores: {
       label: ROOT_LABEL.chores,
       stat: !s.chores.loaded
-        ? "counting…"
+        ? s.chores.failed
+          ? "could not be counted"
+          : "counting…"
         : s.chores.total === 0
           ? "none in this build"
           : `${s.chores.benched} of ${s.chores.total} benched · ${usd(s.chores.foundUsd)} found`,

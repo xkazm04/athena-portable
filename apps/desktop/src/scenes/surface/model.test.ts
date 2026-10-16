@@ -95,7 +95,7 @@ function src(): SurfaceSources {
     apps: [],
     openTabs: 0,
     accounts: [],
-    chores: { total: 0, benched: 0, foundUsd: 0, loaded: true },
+    chores: { total: 0, benched: 0, foundUsd: 0, loaded: true, failed: false },
     voiceAvailable: false,
     engine: { label: "Claude Code", standing: "done", checkFailed: false },
     inShell: true,

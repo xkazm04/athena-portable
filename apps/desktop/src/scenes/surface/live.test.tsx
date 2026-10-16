@@ -24,10 +24,15 @@ import { useSurfaceModel } from "./live";
 let host: HTMLDivElement;
 let root: Root;
 
-/** The live model's Mind light, written where the test can read it. */
+/** The live model's lights, written where the test can read them. */
 function Probe() {
-  const light = useSurfaceModel().lights.find((l) => l.root === "mind")!;
-  return <p data-stat={light.stat} data-attention={String(light.attention)} />;
+  return (
+    <>
+      {useSurfaceModel().lights.map((l) => (
+        <p key={l.root} data-root={l.root} data-stat={l.stat} data-attention={String(l.attention)} />
+      ))}
+    </>
+  );
 }
 
 beforeEach(() => {
@@ -49,11 +54,12 @@ afterEach(() => {
   host.remove();
 });
 
-function mindLight() {
+function lightOf(which: string) {
   act(() => root.render(<Probe />));
-  const p = host.querySelector("p")!;
+  const p = host.querySelector<HTMLElement>(`p[data-root="${which}"]`)!;
   return { stat: p.dataset.stat, attention: p.dataset.attention === "true" };
 }
+const mindLight = () => lightOf("mind");
 
 describe("the Mind light stands the engine as the Mind depth does", () => {
   it("is ready only when the daemon is running on the chosen engine", () => {
@@ -78,5 +84,17 @@ describe("the Mind light stands the engine as the Mind depth does", () => {
   it("is checking while a check is in flight", () => {
     useEngines.setState({ probes: null, checking: true, problem: null });
     expect(mindLight()).toEqual({ stat: "checking the engine", attention: false });
+  });
+});
+
+describe("the Chores light", () => {
+  it("counts while the shipped set is on its way", () => {
+    usePlaybooks.setState({ items: null, problem: null });
+    expect(lightOf("chores").stat).toBe("counting…");
+  });
+
+  it("says it could not count when the shipped set failed to load, instead of counting for ever", () => {
+    usePlaybooks.setState({ items: null, problem: "the playbooks could not be read: 404" });
+    expect(lightOf("chores").stat).toBe("could not be counted");
   });
 });
