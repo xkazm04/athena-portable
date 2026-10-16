@@ -349,6 +349,64 @@ def test_a_native_tool_call_still_meets_the_gate(
     assert len(approvals.rows) == 1
 
 
+def _native(name: str, arguments: str) -> HttpReply:
+    """A reply that calls a tool natively, with ``arguments`` exactly as the provider wrote them."""
+    call = {"id": "call_1", "type": "function", "function": {"name": name, "arguments": arguments}}
+    body = {
+        "model": DEFAULT_MODEL,
+        "choices": [
+            {
+                "index": 0,
+                "message": {"role": "assistant", "content": "", "tool_calls": [call]},
+                "finish_reason": "tool_calls",
+            }
+        ],
+        "usage": {"prompt_tokens": 10, "completion_tokens": 5},
+    }
+    return HttpReply(200, json.dumps(body).encode("utf-8"))
+
+
+def test_native_arguments_with_a_trailing_comma_get_the_grammars_repair(
+    catalog: FakeCatalog, approvals: FakeApprovals, ledger: FakeLedger
+) -> None:
+    """Native arguments meet the same repair ladder an ``OP:`` line does, not a guess of ``{}``."""
+    ran: list[dict[str, Any]] = []
+    entry = catalog.add(
+        make_entry(
+            "core.step",
+            ToolClass.AUTO,
+            executor=lambda params, ctx: ran.append(params) or ExecResult(ok=True, output="ok"),
+        )
+    )
+    http = FakeHttp([_native("core.step", '{"n": 1,}'), _ok("Done.")])
+
+    _drain(_harness(catalog, approvals, ledger, http), [entry])
+
+    assert ran == [{"n": 1}]
+
+
+def test_native_arguments_no_repair_reads_are_dropped_and_told_never_run_empty(
+    catalog: FakeCatalog, approvals: FakeApprovals, ledger: FakeLedger
+) -> None:
+    ran: list[dict[str, Any]] = []
+    entry = catalog.add(
+        make_entry(
+            "core.step",
+            ToolClass.AUTO,
+            executor=lambda params, ctx: ran.append(params) or ExecResult(ok=True, output="ok"),
+        )
+    )
+    http = FakeHttp([_native("core.step", "n=1, then the rest"), _ok("Sorry.")])
+
+    events = _drain(_harness(catalog, approvals, ledger, http), [entry])
+
+    assert ran == [], "a call whose arguments could not be read never runs with none"
+    dropped = [e for e in events if isinstance(e, ToolResult) and e.error == "parse_error"]
+    assert len(dropped) == 1
+    assert "op dropped" in dropped[0].output
+    assert len(http.calls) == 2, "the model is told in the same turn"
+
+
 # --- failure -------------------------------------------------------------------------------------
 
 

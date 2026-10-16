@@ -215,7 +215,9 @@ ChunkKind = Literal["text", "thinking", "tool_call", "usage", "error", "done"]
 class ModelChunk:
     """One unit of provider output, normalised.
 
-    ``tool_call`` carries ``call_id`` / ``name`` / ``params``; ``usage`` carries the token and cost
+    ``tool_call`` carries ``call_id`` / ``name`` / ``params``, and ``text`` only when the
+    provider's arguments were not a JSON object: then they ride there as written and ``params`` is
+    empty, so the grammar can repair or refuse them; ``usage`` carries the token and cost
     fields; ``done`` ends the stream. A provider adapter's whole job is to produce these, which is
     what keeps the gate and the ledger identical behind every engine (ADR 0007).
     """

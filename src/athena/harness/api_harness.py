@@ -96,7 +96,16 @@ def _messages(history: Sequence[str], replies: Sequence[str]) -> list[ModelMessa
 
 
 def _as_op(chunk: ModelChunk) -> str:
-    """A native tool call, spoken in the grammar so the one parser reads it."""
+    """A native tool call, spoken in the grammar so the one parser reads it.
+
+    Arguments the adapter could not read as an object arrive as ``chunk.text`` and are written in
+    as they came, on one line, so the grammar's repairs apply to them exactly as to an ``OP:``
+    line the model typed, and what no repair reads is dropped and told rather than run with none.
+    """
+    if chunk.text:
+        raw = " ".join(chunk.text.splitlines())
+        action = json.dumps(chunk.name, ensure_ascii=False)
+        return f'OP: {{"op":"propose_action","action":{action},"params":{raw}}}'
     envelope = {"op": "propose_action", "action": chunk.name, "params": dict(chunk.params)}
     return "OP: " + json.dumps(envelope, ensure_ascii=False)
 

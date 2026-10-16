@@ -291,16 +291,21 @@ def _tool_calls(raw: Any) -> list[ModelChunk]:
         function = call.get("function") if isinstance(call, Mapping) else None
         if not isinstance(function, Mapping):
             continue
+        arguments = str(function.get("arguments") or "{}")
         try:
-            params = json.loads(str(function.get("arguments") or "{}"))
+            params = json.loads(arguments)
         except json.JSONDecodeError:
-            params = {}
+            params = None
+        # Arguments that are not a JSON object travel as written, for the ``OP:`` grammar to repair
+        # or refuse: a call is never run with ``{}`` in place of what the model meant.
+        readable = isinstance(params, Mapping)
         chunks.append(
             ModelChunk(
                 "tool_call",
                 call_id=str(call.get("id") or ""),
                 name=str(function.get("name") or ""),
-                params=params if isinstance(params, Mapping) else {},
+                params=params if readable else {},
+                text="" if readable else arguments,
             )
         )
     return chunks
