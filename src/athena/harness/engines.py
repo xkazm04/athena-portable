@@ -54,7 +54,7 @@ from athena.harness.tokenfactory import (
 from athena.harness.tokenfactory import (
     ENGINE as NEBIUS,
 )
-from athena.harness.transports import SubprocessTransport, child_env
+from athena.harness.transports import NO_WINDOW, SubprocessTransport, child_env
 
 __all__ = [
     "API_ENGINES",
@@ -134,6 +134,7 @@ def probe(
             text=True,
             timeout=PROBE_TIMEOUT_S,
             check=False,
+            creationflags=NO_WINDOW,
         )
     except (OSError, subprocess.SubprocessError) as exc:
         return EngineStatus(name, False, f"{binary} --version failed: {type(exc).__name__}")
@@ -204,6 +205,7 @@ def _signed_in(name: str, path: str, version: str, home: Path | None) -> bool | 
             check=False,
             stdin=subprocess.DEVNULL,
             env=child_env(os.environ),
+            creationflags=NO_WINDOW,
         )
     except (OSError, subprocess.SubprocessError):
         return None

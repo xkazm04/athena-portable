@@ -34,12 +34,18 @@ STREAM_LIMIT = 8 * 1024 * 1024
 #: stopped. Read only to classify the exit; never shown, never stored (ADR 0109).
 STDERR_TAIL = 4096
 
+#: ``CREATE_NO_WINDOW`` on Windows, nothing elsewhere. The daemon runs as a windowless sidecar, and
+#: every console child it starts without this flashes a window on a machine the user is
+#: demonstrating. Every spawn of an engine CLI passes it: a turn's here, a probe's in ``engines``.
+NO_WINDOW = 0x08000000 if os.name == "nt" else 0
+
 #: How long the stderr tail is waited for once the child has exited. A grandchild that inherited
 #: the pipe can hold it open; the exit is reported without the tail rather than not at all.
 STDERR_GRACE_S = 5.0
 
 __all__ = [
     "ENGINE_KEYS",
+    "NO_WINDOW",
     "STRIPPED",
     "CliRequest",
     "ExitHandle",
@@ -183,9 +189,6 @@ class SubprocessTransport:
         return shutil.which(self.executable) or self.executable
 
     async def run(self, request: CliRequest) -> AsyncIterator[str]:  # pragma: no cover - real I/O
-        # CREATE_NO_WINDOW: the daemon runs as a sidecar and a console flashing on every turn is
-        # a visible defect on a machine the user is demonstrating.
-        creationflags = 0x08000000 if os.name == "nt" else 0
         try:
             proc = await asyncio.create_subprocess_exec(
                 self.resolve(),
@@ -195,7 +198,7 @@ class SubprocessTransport:
                 stdin=asyncio.subprocess.PIPE,
                 stdout=asyncio.subprocess.PIPE,
                 stderr=asyncio.subprocess.PIPE,
-                creationflags=creationflags,
+                creationflags=NO_WINDOW,
                 limit=STREAM_LIMIT,
             )
         except OSError as exc:

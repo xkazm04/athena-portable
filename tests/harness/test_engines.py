@@ -7,6 +7,7 @@ status a person can read.
 
 from __future__ import annotations
 
+import os
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -163,6 +164,26 @@ def test_a_sign_in_check_that_cannot_be_read_is_unknown_never_yes(
 
     assert status.available is True
     assert status.logged_in is None
+
+
+def test_every_probe_spawn_opens_no_console_window_like_a_turns_spawn(
+    on_path: None, monkeypatch: pytest.MonkeyPatch, tmp_path: Path
+) -> None:
+    """The daemon is a windowless sidecar: a console child it starts flashes a window on Windows.
+
+    The turn's spawn says so and passes ``CREATE_NO_WINDOW``; the probe is the same kind of child,
+    started by the same process, every time setup's Check again is pressed.
+    """
+    from athena.harness.transports import NO_WINDOW
+
+    calls = _cli(monkeypatch, "2.1.301 (Claude Code)", _Completed(0, stdout='{"loggedIn": true}'))
+
+    probe("claude_code", home=tmp_path)
+
+    assert len(calls) == 2
+    assert [kwargs.get("creationflags") for _, kwargs in calls] == [NO_WINDOW, NO_WINDOW]
+    expected = 0x08000000 if os.name == "nt" else 0
+    assert expected == NO_WINDOW
 
 
 def test_the_sign_in_check_runs_in_the_environment_the_spawn_builds(
