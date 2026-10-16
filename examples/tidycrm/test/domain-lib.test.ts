@@ -8,6 +8,8 @@
  *   node --experimental-transform-types --import ./test/register.mjs --test "test/**\/*.test.ts"
  */
 import assert from "node:assert/strict";
+import { readFileSync } from "node:fs";
+import { fileURLToPath } from "node:url";
 import { test } from "node:test";
 import { tempHome } from "./tmp-home";
 import type { Contact } from "../lib/types";
@@ -27,6 +29,7 @@ const {
   readConflicts,
   segmentRows,
 } = await import("../lib/db");
+const { APP_VERSION } = await import("../lib/constants");
 const { CSV_COLUMNS, toCsv } = await import("../lib/csv");
 const { exportSummary } = await import("../lib/summary");
 const { deleteContacts, flagStale, mergeContacts, normalizeFields, resolveCompany, resolvePair, undoWrite } =
@@ -241,6 +244,15 @@ test("read_conflicts on a domain nobody in the list is on answers with nothing, 
   const one = readConflicts(settled.domain, 5);
   assert.equal(one.total, 1);
   assert.equal(one.domains[0]?.spellings.length, 1);
+});
+
+test("the version the page declares to a WebMCP consumer is the app's one version constant", () => {
+  const source = (path: string): string =>
+    readFileSync(fileURLToPath(new URL(`../${path}`, import.meta.url)), "utf8");
+  const code = source("app/layout.tsx").replace(/\/\*[\s\S]*?\*\/|\/\/.*$/gm, "");
+  assert.match(code, /"athena:app-version":\s*APP_VERSION/, "the layout declares the constant");
+  assert.doesNotMatch(code, /"\d+\.\d+\.\d+"/, "and no second, hand-typed copy of it");
+  assert.equal(APP_VERSION, (JSON.parse(source("package.json")) as { version: string }).version);
 });
 
 test("a company name prints as one Markdown table cell, whatever punctuation it carries", () => {

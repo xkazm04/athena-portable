@@ -4,7 +4,7 @@ import "./globals.css";
 import { Providers } from "./providers";
 import { HostCapabilities } from "@/components/shell/HostCapabilities";
 import { defectCounts } from "@/lib/db";
-import { APP_ID } from "@/lib/constants";
+import { APP_ID, APP_VERSION } from "@/lib/constants";
 
 export const dynamic = "force-dynamic";
 
@@ -20,7 +20,7 @@ export const metadata: Metadata = {
    * layout; this one belongs on the root layout because `HostCapabilities` is mounted there and
    * the identity has to cover every segment beneath it.
    */
-  other: { "athena:app": APP_ID, "athena:app-version": "0.1.0" },
+  other: { "athena:app": APP_ID, "athena:app-version": APP_VERSION },
 };
 
 /*
