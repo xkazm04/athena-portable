@@ -258,6 +258,20 @@ test("the scrollbar thumb is one token per ground, in both scrollbar models", ()
   assert.deepEqual(problems, []);
 });
 
+test("every type size outside the token block reads a token", () => {
+  // design/check-law.mjs reads px and colours, so a size typed in rem passes it - which is how
+  // `.bd-band` carried 0.8125rem, --bd-text-xs's value, as a literal (the registry's recorded
+  // design-tokens deviation for this context). The type scale is closed (DESIGN-LAW §1.2).
+  const raw: string[] = [];
+  for (const rule of RULES) {
+    if (rule.file === "base/tokens.css") continue;
+    for (const m of rule.body.matchAll(/(?:^|;)\s*font-size\s*:\s*([^;]+)/g)) {
+      if (!/^var\(--bd-[a-z0-9-]+\)$/.test(m[1]!.trim())) raw.push(`${rule.file}: ${rule.selectors.join(", ")} { font-size: ${m[1]!.trim()} }`);
+    }
+  }
+  assert.deepEqual(raw, []);
+});
+
 test("the room's focus ring names every focusable tag the board renders", () => {
   // The tags are read out of the components, not listed here: a disclosure added to a component
   // is a tag this list did not know about, which is how the foot's <summary> was missed.

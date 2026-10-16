@@ -24,7 +24,7 @@
 }
 
 .bd-band {
-  font-size: 0.8125rem;
+  font-size: var(--bd-text-xs);
   color: var(--bd-ink-4);
   margin-inline-start: auto;
 }
