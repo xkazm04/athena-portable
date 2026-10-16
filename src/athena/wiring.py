@@ -196,12 +196,20 @@ class AthenaLocal:
     adopt: AdoptStudio | None = None
 
     def close(self) -> None:
-        """Close the brain, cancel any consent flow, end every adopt session."""
-        if self.adopt is not None:
-            self.adopt.close()
-        if self.vault is not None:
-            self.vault.close()
-        self.brain.close()
+        """Close the brain, cancel any consent flow, end every adopt session.
+
+        Each is closed whatever the one before it raised, the brain last; the first error still
+        reaches the caller.
+        """
+        try:
+            if self.adopt is not None:
+                self.adopt.close()
+        finally:
+            try:
+                if self.vault is not None:
+                    self.vault.close()
+            finally:
+                self.brain.close()
 
     def __enter__(self) -> AthenaLocal:
         return self
@@ -263,98 +271,105 @@ def build_local(
         raise ValueError(f"unknown engine {engine!r}; expected one of {', '.join(ENGINES)}")
 
     brain = Brain(brain_root, session_id=session_id)
-    approvals = Approvals(brain)
-    ledger = Ledger(brain)
-    constitution = load_or_empty(constitution_dir)
+    # Everything below runs with the brain open. A step that raises closes it before the error
+    # leaves: ``athena serve`` exits anyway, but the proving world builds an Athena in a process
+    # that lives on, and an index held open there is a file nothing can move until it ends.
+    try:
+        approvals = Approvals(brain)
+        ledger = Ledger(brain)
+        constitution = load_or_empty(constitution_dir)
 
-    services = CoreServices(
-        # The brain's own answer to "is this a live episode of this brain", which is the half of
-        # README §2 invariant 2 the catalog states and the brain enforces.
-        sources_alive=lambda sources: set(sources) <= brain.live_episode_ids(list(sources)),
-        recall=recall_executor(brain),
-        write_fact=write_fact_executor(brain),
-        checkpoint=checkpoint_executor(brain),
-    )
-    catalog = build_catalog(services)
-    if vault is not None and policy is None:
-        policy = Policy(connectors=vault)
-    gate = PolicyHook(catalog, approvals, policy or Policy())
-
-    ledger_hook = LedgerHook(ledger)
-    truncation_hook = TruncationHook(ledger_hook)
-    run_dir = Path(workspace) if workspace is not None else brain.root.parent / ENGINE_DIRNAME
-    run_dir.mkdir(parents=True, exist_ok=True)
-    harness: RoundHarness
-    if dialect is None:
-        harness = build_api_harness(
-            gate=gate,
-            ledger=ledger_hook,
-            truncation=truncation_hook,
-            model=model,
-            model_fn=model_fn,
+        services = CoreServices(
+            # The brain's own answer to "is this a live episode of this brain", which is the half of
+            # README §2 invariant 2 the catalog states and the brain enforces.
+            sources_alive=lambda sources: set(sources) <= brain.live_episode_ids(list(sources)),
+            recall=recall_executor(brain),
+            write_fact=write_fact_executor(brain),
+            checkpoint=checkpoint_executor(brain),
         )
-    else:
-        make_transport = transport or (lambda chosen: SubprocessTransport(chosen.executable))
-        harness = CliHarness(
-            gate=gate,
-            ledger=ledger_hook,
-            truncation=truncation_hook,
-            transport=make_transport(dialect),
-            dialect=dialect,
-            prompt_root=str(run_dir),
-            cwd=str(run_dir),
-            model=model,
-            extra_args=extra_args if extra_args is not None else _default_args(dialect),
-        )
+        catalog = build_catalog(services)
+        if vault is not None and policy is None:
+            policy = Policy(connectors=vault)
+        gate = PolicyHook(catalog, approvals, policy or Policy())
 
-    frames = FrameBuilder(
-        constitution=constitution,
-        catalog=catalog,
-        recall=lambda query: recall(brain, query),
-    )
-    lane = BrowserLane(
-        harness=harness,
-        catalog=catalog,
-        gate=gate,
-        approvals=approvals,
-        brain=brain,
-        ledger=ledger,
-        frames=frames,
-    )
-    daemon = AthenaDaemon(
-        brain=brain,
-        catalog=catalog,
-        approvals=approvals,
-        ledger=ledger,
-        gate=gate,
-        lane=lane,
-        engine=engine,
-        model=harness.model,
-    )
-    studio = voice_studio or VoiceStudio(brain.root.parent / VOICE_DIRNAME)
-    _wire_voice(daemon, studio, voice, voice_off)
-    if vault is not None:
-        _wire_connectors(daemon, catalog, vault)
-    adopt_studio = _wire_adopt(
-        daemon, adopt, brain.root.parent / ADOPT_DIRNAME, ledger, brain=brain, vault=vault
-    )
-    return AthenaLocal(
-        brain=brain,
-        catalog=catalog,
-        approvals=approvals,
-        ledger=ledger,
-        constitution=constitution,
-        gate=gate,
-        ledger_hook=ledger_hook,
-        truncation_hook=truncation_hook,
-        harness=harness,
-        frames=frames,
-        lane=lane,
-        daemon=daemon,
-        vault=vault,
-        voice=studio,
-        adopt=adopt_studio,
-    )
+        ledger_hook = LedgerHook(ledger)
+        truncation_hook = TruncationHook(ledger_hook)
+        run_dir = Path(workspace) if workspace is not None else brain.root.parent / ENGINE_DIRNAME
+        run_dir.mkdir(parents=True, exist_ok=True)
+        harness: RoundHarness
+        if dialect is None:
+            harness = build_api_harness(
+                gate=gate,
+                ledger=ledger_hook,
+                truncation=truncation_hook,
+                model=model,
+                model_fn=model_fn,
+            )
+        else:
+            make_transport = transport or (lambda chosen: SubprocessTransport(chosen.executable))
+            harness = CliHarness(
+                gate=gate,
+                ledger=ledger_hook,
+                truncation=truncation_hook,
+                transport=make_transport(dialect),
+                dialect=dialect,
+                prompt_root=str(run_dir),
+                cwd=str(run_dir),
+                model=model,
+                extra_args=extra_args if extra_args is not None else _default_args(dialect),
+            )
+
+        frames = FrameBuilder(
+            constitution=constitution,
+            catalog=catalog,
+            recall=lambda query: recall(brain, query),
+        )
+        lane = BrowserLane(
+            harness=harness,
+            catalog=catalog,
+            gate=gate,
+            approvals=approvals,
+            brain=brain,
+            ledger=ledger,
+            frames=frames,
+        )
+        daemon = AthenaDaemon(
+            brain=brain,
+            catalog=catalog,
+            approvals=approvals,
+            ledger=ledger,
+            gate=gate,
+            lane=lane,
+            engine=engine,
+            model=harness.model,
+        )
+        studio = voice_studio or VoiceStudio(brain.root.parent / VOICE_DIRNAME)
+        _wire_voice(daemon, studio, voice, voice_off)
+        if vault is not None:
+            _wire_connectors(daemon, catalog, vault)
+        adopt_studio = _wire_adopt(
+            daemon, adopt, brain.root.parent / ADOPT_DIRNAME, ledger, brain=brain, vault=vault
+        )
+        return AthenaLocal(
+            brain=brain,
+            catalog=catalog,
+            approvals=approvals,
+            ledger=ledger,
+            constitution=constitution,
+            gate=gate,
+            ledger_hook=ledger_hook,
+            truncation_hook=truncation_hook,
+            harness=harness,
+            frames=frames,
+            lane=lane,
+            daemon=daemon,
+            vault=vault,
+            voice=studio,
+            adopt=adopt_studio,
+        )
+    except BaseException:
+        brain.close()
+        raise
 
 
 def _wire_voice(

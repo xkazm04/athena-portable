@@ -101,6 +101,65 @@ def test_an_engine_no_dialect_answers_to_is_refused_by_name(tmp_path: Path) -> N
         build_local(brain_root=tmp_path / "brain", engine="no_such_engine")
 
 
+class _Recorded(Brain):
+    """The real brain, remembering every one that was opened and whether it was closed."""
+
+    opened: list[_Recorded] = []
+
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.closed = False
+        _Recorded.opened.append(self)
+
+    def close(self) -> None:
+        self.closed = True
+        super().close()
+
+
+@pytest.fixture
+def recorded(monkeypatch: pytest.MonkeyPatch) -> list[_Recorded]:
+    _Recorded.opened = []
+    monkeypatch.setattr("athena.wiring.Brain", _Recorded)
+    return _Recorded.opened
+
+
+def test_a_composition_that_fails_after_the_brain_opened_closes_it(
+    tmp_path: Path, recorded: list[_Recorded]
+) -> None:
+    """``athena serve`` reports the failure and exits; the proving world builds an Athena inside
+    a process that lives on. Either way the brain this call opened is closed by this call, or
+    its index stays held - on Windows, a file nothing can move or delete until the process ends."""
+    in_the_way = tmp_path / "engine"
+    in_the_way.write_text("a file where the engine's directory goes", encoding="utf-8")
+
+    with pytest.raises(OSError):
+        build_local(brain_root=tmp_path / "brain", workspace=in_the_way)
+
+    assert len(recorded) == 1
+    assert recorded[0].closed
+
+
+def test_closing_an_athena_closes_the_brain_even_when_a_studio_will_not_close(
+    tmp_path: Path, recorded: list[_Recorded]
+) -> None:
+    class Stuck:
+        def close(self) -> None:
+            raise RuntimeError("a session would not end")
+
+    built = build_local(
+        brain_root=tmp_path / "brain",
+        transport=lambda dialect: ScriptedTransport([]),
+        workspace=tmp_path / "engine",
+    )
+    built.adopt.close()  # type: ignore[union-attr]
+    built.adopt = Stuck()  # type: ignore[assignment]
+
+    with pytest.raises(RuntimeError, match="would not end"):
+        built.close()
+
+    assert recorded[0].closed
+
+
 def test_the_engine_runs_beside_the_brain_and_never_inside_it(tmp_path: Path) -> None:
     """A CLI engine has no business in the user's memory: the prompts it is handed live next
     door, and the default is a sibling of the brain rather than the brain itself."""
