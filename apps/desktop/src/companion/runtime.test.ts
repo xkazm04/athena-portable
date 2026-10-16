@@ -12,10 +12,10 @@ import type { DecisionRequested } from "@/lib/events";
 
 import type { Clock } from "./driver";
 import { SETTLE_MS, SHRINK_MS } from "./machine";
-import { choiceFor, createRuntime, lineOf, LINE_MAX, type RuntimeDeps } from "./runtime";
+import { choiceFor, createRuntime, lineOf, LINE_MAX, UNSETTLED, type RuntimeDeps } from "./runtime";
 import { CARDS } from "./fixtures";
 
-function harness(opts: { visible?: boolean } = {}) {
+function harness(opts: { visible?: boolean; returns?: () => Promise<unknown> } = {}) {
   let now = 0;
   let next = 0;
   const timers = new Map<number, { at: number; run: () => void }>();
@@ -42,6 +42,7 @@ function harness(opts: { visible?: boolean } = {}) {
       log.push(`answer ${id} ${choice}`);
       answered = id;
       verdict = settled;
+      return opts.returns?.();
     },
     onboard: () => log.push("onboard"),
     focus: (target) => log.push(`focus ${target}`),
@@ -189,4 +190,45 @@ test("a turn that is running is work in any form; the ledger with nothing runnin
   expect(lineOf("welcome", step)).toBe("");
   expect(lineOf("tab", step, true)).toBe("Athena: thinking");
   expect(lineOf("ledger", null, true)).toBe("");
+});
+
+test("a store call that fails before its verdict lets the card be answered again, instead of Sending for good", async () => {
+  const h = harness({ returns: () => Promise.reject(new Error("the store threw before it settled")) });
+  await h.setCards([CARDS[0]]);
+  h.rt.dispatch({ t: "decide", kind: "approve", by: "click" });
+  await h.rt.idle();
+  await Promise.resolve();
+  await Promise.resolve();
+  const s = h.rt.getSnapshot();
+  expect(s.machine.decided).toBeNull();
+  expect(s.machine.form).toBe("slip");
+  expect(s.machine.say.text).toBe(UNSETTLED);
+  h.rt.dispatch({ t: "decide", kind: "approve", by: "click" });
+  expect(h.log.filter((l) => l.startsWith("answer"))).toHaveLength(2);
+});
+
+test("a store call that ends without a verdict (the card was already on its way) gives the buttons back", async () => {
+  const h = harness({ returns: () => Promise.resolve() });
+  await h.setCards([CARDS[0]]);
+  h.rt.dispatch({ t: "decide", kind: "decline", by: "key" });
+  await h.rt.idle();
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(h.rt.getSnapshot().machine.decided).toBeNull();
+  expect(h.rt.getSnapshot().machine.say.text).toBe(UNSETTLED);
+});
+
+test("a verdict given before the store call ends is the one that counts, and is heard once", async () => {
+  let release: () => void = () => {};
+  const h = harness({ returns: () => new Promise<void>((done) => (release = done)) });
+  await h.setCards([CARDS[0]]);
+  h.rt.dispatch({ t: "decide", kind: "approve", by: "click" });
+  await h.rt.idle();
+  await h.accept();
+  expect(h.rt.getSnapshot().machine.say.text).toBe("Approved. Stamped and sent to the record.");
+  release();
+  await Promise.resolve();
+  await Promise.resolve();
+  expect(h.rt.getSnapshot().machine.decided).toMatchObject({ sending: false });
+  expect(h.rt.getSnapshot().machine.say.text).toBe("Approved. Stamped and sent to the record.");
 });

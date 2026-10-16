@@ -82,7 +82,8 @@ function liveDeps(): RuntimeDeps {
     },
     cards: () => useRun.getState().cards,
     // A card that heads a sheet answers the sheet in one press; any other card is answered alone (ADR 0104).
-    answer: (id, choice, settled) => void useRun.getState().answerSheet(id, choice, settled).catch(report("answer")),
+    // The promise goes back to the runtime, which hears one that ends without a verdict as not sent.
+    answer: (id, choice, settled) => useRun.getState().answerSheet(id, choice, settled).catch(report("answer")),
     // "Open your first app" sets `onboarded` and nothing else: Rust shows Main (ADR 0026).
     onboard: () => void useSettings.getState().setOnboarded(true).catch(report("onboard")),
     focus: (target) => {

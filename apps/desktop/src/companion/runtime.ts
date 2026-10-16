@@ -35,8 +35,12 @@ export interface RuntimeDeps {
   pin: (on: boolean) => void;
   /** The run store's waiting cards, now. */
   cards: () => readonly DecisionRequested[];
-  /** Send the answer. `settled` is called once, when the daemon has taken it or refused it. */
-  answer: (id: string, choice: string, settled: (result: Settled) => void) => void;
+  /**
+   * Send the answer. `settled` is called once, when the daemon has taken it or refused it. A store
+   * call may return its promise: one that ends, or fails, without having called `settled` is heard
+   * as an answer that did not go through ({@link UNSETTLED}), so the buttons never stay on Sending.
+   */
+  answer: (id: string, choice: string, settled: (result: Settled) => void) => void | Promise<unknown>;
   onboard: () => void;
   focus: (target: "approve" | "seal") => void;
   /** Is her window on screen? The page may have put her away, but the tray may have too. */
@@ -99,16 +103,30 @@ export function createRuntime(deps: RuntimeDeps): Runtime {
       case "answer": {
         const card = deps.cards()[0];
         // The machine's `sent` is delivered on a later turn of the loop, never inside the effect.
-        const settle = (r: Settled) =>
+        // The first verdict is the one that counts; a later one is the same answer heard twice.
+        let told = false;
+        const settle = (r: Settled) => {
+          if (told) return;
+          told = true;
           void Promise.resolve().then(() =>
             driver.dispatch({ t: "sent", ok: r.ok, text: r.ok ? undefined : r.sentence }),
           );
+        };
         if (!card) {
           settle({ ok: false, sentence: "That decision is no longer waiting." });
           break;
         }
         held = card;
-        deps.answer(card.id, choiceFor(card, effect.kind), settle);
+        const unsettled = () => settle({ ok: false, sentence: UNSETTLED });
+        let pending: void | Promise<unknown>;
+        try {
+          pending = deps.answer(card.id, choiceFor(card, effect.kind), settle);
+        } catch {
+          unsettled();
+          break;
+        }
+        // A store call that ends, or fails, before it gave a verdict leaves the card waiting (UAT B1).
+        if (pending instanceof Promise) pending.then(unsettled, unsettled);
         break;
       }
     }
@@ -156,6 +174,9 @@ export function createRuntime(deps: RuntimeDeps): Runtime {
     dispose: () => driver.dispose(),
   };
 }
+
+/** What she says when the store's call ended without the daemon's verdict: the card is still the card. */
+export const UNSETTLED = "That answer did not go through. The decision is still waiting.";
 
 /** The option id the daemon knows the choice by; the card's own options are the authority. */
 export function choiceFor(card: DecisionRequested, kind: Choice): string {
