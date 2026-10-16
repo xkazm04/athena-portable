@@ -91,13 +91,22 @@ function staleCutoff(): string {
   return d.toISOString();
 }
 
+const STALE_CUTOFF = staleCutoff();
+
+/**
+ * The one rule `is_stale` is stamped from. The flag is stored, so every write that moves
+ * `last_activity_at` restamps it through here, as a phone write restamps `phone_ok` via `isE164`.
+ */
+export function isStaleAt(lastActivityAt: string): boolean {
+  return lastActivityAt < STALE_CUTOFF;
+}
+
 function seed(db: Db): void {
   db.exec(SCHEMA);
   createActivityTable(db);
 
   const { contacts, pairs, conflictDomains } = buildSeed();
   const conflicted = new Set(conflictDomains);
-  const cutoff = staleCutoff();
   const inPair = new Set(pairs.flatMap((p) => [p.keep_id, p.drop_id]));
 
   for (const c of contacts) {
@@ -110,7 +119,7 @@ function seed(db: Db): void {
         c.id, c.first_name, c.last_name, c.email, c.phone, c.company, c.domain, c.title, c.city,
         c.last_activity_at, c.created_at,
         isE164(c.phone) ? 1 : 0,
-        c.last_activity_at < cutoff ? 1 : 0,
+        isStaleAt(c.last_activity_at) ? 1 : 0,
         conflicted.has(c.domain) ? 1 : 0,
         inPair.has(c.id) ? 1 : 0,
       ],

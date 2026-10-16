@@ -3,7 +3,16 @@ import { logActivity, type ActivityEntry } from "@athena/demo-kit/activity";
 import type { Db } from "@athena/demo-kit/db";
 
 import { MAX_IDS, MAX_REWRITES } from "./constants";
-import { db, displayName, domainContacts, domainSpellings, getContact, getContacts, getPair } from "./db";
+import {
+  db,
+  displayName,
+  domainContacts,
+  domainSpellings,
+  getContact,
+  getContacts,
+  getPair,
+  isStaleAt,
+} from "./db";
 import { isE164, planChanges, type FieldChange, type NormalizeRule } from "./normalize";
 import type { Contact, PairStatus } from "./types";
 
@@ -341,6 +350,11 @@ export function mergeContacts(keepId: string, dropId: string): MutationResult {
     for (const a of taken) tx.run(`UPDATE contacts SET ${a.field} = ? WHERE id = ?`, [a.value, keep.id]);
     if (taken.some((a) => a.field === "phone")) {
       tx.run("UPDATE contacts SET phone_ok = 1 WHERE id = ?", [keep.id]);
+    }
+    // `is_stale` is stored too, so carrying a newer activity date over restamps it.
+    const activity = taken.find((a) => a.field === "last_activity_at");
+    if (activity) {
+      tx.run("UPDATE contacts SET is_stale = ? WHERE id = ?", [isStaleAt(activity.value) ? 1 : 0, keep.id]);
     }
     tx.run("UPDATE contacts SET merged_into = ?, in_open_pair = 0 WHERE id = ?", [keep.id, drop.id]);
     tx.run("UPDATE merge_pairs SET status = 'merged' WHERE id = ?", [pair.id]);
