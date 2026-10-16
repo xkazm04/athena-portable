@@ -13,8 +13,8 @@ import { tempHome } from "./tmp-home";
 
 tempHome("tidycrm-test-");
 
-const { getContact, listOpenPairs, segmentRows } = await import("../lib/db");
-const { mergeContacts } = await import("../lib/mutations");
+const { domainSpellings, getContact, listConflicts, listOpenPairs, segmentRows } = await import("../lib/db");
+const { mergeContacts, resolveCompany } = await import("../lib/mutations");
 
 test("a merge that carries a recent activity date over clears the survivor's stale flag", () => {
   // The seed holds pairs whose keeper went quiet while its duplicate stayed in touch.
@@ -37,4 +37,36 @@ test("a merge that carries a recent activity date over clears the survivor's sta
     !segmentRows("stale").some((c) => c.id === pair.keep_id),
     "and it has left the stale segment",
   );
+});
+
+test("a record merged away no longer counts as a spelling, so settling the domain clears it", () => {
+  const conflicted = new Set(listConflicts().map((c) => c.domain));
+  const pair = listOpenPairs(200).find((p) => {
+    const keep = getContact(p.keep_id);
+    return keep !== undefined && conflicted.has(keep.domain) && getContact(p.drop_id)?.domain === keep.domain;
+  });
+  assert.ok(pair, "the seed holds identity pairs on domains spelled more than one way");
+  const drop = getContact(pair.drop_id);
+  assert.ok(drop);
+  const domain = drop.domain;
+
+  // The demo's own order: clear the duplicates, then settle the name. The merged-away record is
+  // out of every working segment and out of `resolve_company`'s write set, so it keeps its
+  // spelling - and must not keep the domain in conflict with it.
+  assert.equal(mergeContacts(pair.keep_id, pair.drop_id).ok, true);
+  const other = domainSpellings(domain).find((s) => s.company !== drop.company.trim());
+  assert.ok(other, "a second spelling to settle on");
+  assert.equal(resolveCompany(domain, other.company).ok, true);
+
+  assert.deepEqual(
+    domainSpellings(domain).map((s) => s.company),
+    [other.company],
+    "one spelling among the records still in the list",
+  );
+  assert.equal(
+    segmentRows("all").filter((c) => c.domain === domain && c.conflict === 1).length,
+    0,
+    "so no survivor is still marked",
+  );
+  assert.ok(!listConflicts().some((c) => c.domain === domain), "and read_conflicts drops the domain");
 });

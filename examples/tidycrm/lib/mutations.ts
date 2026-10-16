@@ -12,6 +12,7 @@ import {
   getContacts,
   getPair,
   isStaleAt,
+  WORKING,
 } from "./db";
 import { isE164, planChanges, type FieldChange, type NormalizeRule } from "./normalize";
 import type { Contact, PairStatus } from "./types";
@@ -62,7 +63,7 @@ function refreshPairFlag(tx: Db, contactId: string): void {
  */
 function refreshConflict(tx: Db, domain: string): void {
   const row = tx.get<{ n: number }>(
-    "SELECT COUNT(DISTINCT TRIM(company)) AS n FROM contacts WHERE domain = ? AND deleted_at IS NULL",
+    `SELECT COUNT(DISTINCT TRIM(company)) AS n FROM contacts WHERE domain = ? AND ${WORKING}`,
     [domain],
   );
   tx.run("UPDATE contacts SET conflict = ? WHERE domain = ?", [(row?.n ?? 0) > 1 ? 1 : 0, domain]);
@@ -361,6 +362,8 @@ export function mergeContacts(keepId: string, dropId: string): MutationResult {
     // The settled pair is already 'merged', so this closes only the others the drop stood in.
     closeDependentPairs(tx, drop.id);
     refreshPairFlag(tx, keep.id);
+    // The dropped record leaves the working list, and with it possibly its domain's last odd spelling.
+    refreshConflict(tx, drop.domain);
   });
 
   const carried = taken.length === 0 ? "nothing carried over" : `carried over ${taken.map((a) => a.field).join(" and ")}`;

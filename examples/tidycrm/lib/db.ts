@@ -156,6 +156,14 @@ export function db(): Db {
 const LIVE = "deleted_at IS NULL";
 
 /**
+ * The working list: live and not merged away. A company spelling is counted over this set and
+ * nothing wider, because it is the set `resolve_company` rewrites - a merged-away record keeps its
+ * old spelling forever, and counting it would hold its domain in conflict after every survivor
+ * agrees (lib/mutations.ts `refreshConflict` uses the same predicate).
+ */
+export const WORKING = `${LIVE} AND merged_into IS NULL`;
+
+/**
  * The studio's fifteen client domains, as a SQL list.
  *
  * The registry is the authority (`COMPANIES`, @athena/demo-kit/seed) and this is the only place
@@ -375,7 +383,7 @@ export function defectCounts(): DefectCounts {
 export function domainSpellings(domain: string): { company: string; n: number }[] {
   return db().all<{ company: string; n: number }>(
     `SELECT TRIM(company) AS company, COUNT(*) AS n FROM contacts
-     WHERE domain = ? AND ${LIVE} GROUP BY TRIM(company) ORDER BY n DESC, company ASC`,
+     WHERE domain = ? AND ${WORKING} GROUP BY TRIM(company) ORDER BY n DESC, company ASC`,
     [domain],
   );
 }
@@ -390,7 +398,7 @@ export function domainSpellings(domain: string): { company: string; n: number }[
 export function allDomainSpellings(): Record<string, { company: string; n: number }[]> {
   const rows = db().all<{ domain: string; company: string; n: number }>(
     `SELECT domain, TRIM(company) AS company, COUNT(*) AS n FROM contacts
-     WHERE ${LIVE} GROUP BY domain, TRIM(company) ORDER BY domain, n DESC, company ASC`,
+     WHERE ${WORKING} GROUP BY domain, TRIM(company) ORDER BY domain, n DESC, company ASC`,
   );
   const out: Record<string, { company: string; n: number }[]> = {};
   for (const row of rows) {
@@ -469,7 +477,7 @@ export function readConflicts(domain: string | undefined, limit: number): Confli
 /** Live contacts on one domain, in id order. `resolve_company`'s write set. */
 export function domainContacts(domain: string): Contact[] {
   return db().all<Contact>(
-    `SELECT * FROM contacts WHERE domain = ? AND ${LIVE} AND merged_into IS NULL ORDER BY id ASC`,
+    `SELECT * FROM contacts WHERE domain = ? AND ${WORKING} ORDER BY id ASC`,
     [domain],
   );
 }
