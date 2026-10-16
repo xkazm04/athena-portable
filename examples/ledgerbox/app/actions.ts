@@ -345,7 +345,10 @@ export async function markPaidAction(ref: string, amountCents: number): Promise<
   // NaN is false on both comparisons below, so without this it passes every guard and reaches the
   // INSERT, where `amount_cents INTEGER NOT NULL` throws mid-action instead of answering the user.
   if (!Number.isFinite(amountCents)) return fail("That is not an amount.");
-  const amount = Math.round(amountCents);
+  // `parseDollars`, the reading the tool and the card apply, refuses a sub-cent amount as a guess;
+  // rounding one here recorded 1000.5 cents as $10.01, permanently.
+  if (!Number.isInteger(amountCents)) return fail("That amount has a fraction of a cent - the books hold whole cents.");
+  const amount = amountCents;
   if (amount <= 0) return fail("Enter an amount above zero.");
   if (amount > invoice.balance_cents) {
     return fail(`That is more than the ${formatMoney(invoice.balance_cents)} still owed.`);

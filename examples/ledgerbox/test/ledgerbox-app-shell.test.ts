@@ -308,3 +308,16 @@ test("match_bank_line says why a line is not in the pool: no such line, or appli
   assert.equal(there.ok, false);
   assert.match(there.message, new RegExp(`already applied to ${applied.number}`));
 });
+
+test("mark_paid refuses a fraction of a cent rather than rounding it into a permanent payment", async () => {
+  // `parseDollars` - the reading the tool and the card apply - refuses a sub-cent amount ("a
+  // fraction of one is a guess, from either side"); the action itself rounded it, so 1000.5 cents
+  // was recorded as $10.01 on the act nobody can take back.
+  const owed = fresh("overdue");
+  const before = moneyOn(owed.id);
+  const paid = await actions.markPaidAction(owed.id, 1000.5);
+  assert.equal(paid.ok, false, paid.message);
+  assert.match(paid.message, /fraction of a cent/);
+  assert.deepEqual(moneyOn(owed.id), before, "no payment row");
+  assert.equal((await actions.markPaidAction(owed.id, 1000)).ok, true, "a whole number of cents still records");
+});
