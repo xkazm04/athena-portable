@@ -67,8 +67,8 @@ function stateOf(row: RawRow, balance: number, overdueDays: number): InvoiceStat
  * scoring pass below - twice over, six reads each. `cache()` is scoped to the request, these are
  * synchronous side-effect-free reads of a per-request-consistent handle, and every server action
  * writes and returns without reading again, so memoising is behaviour-preserving. It also closes a
- * smaller gap: the props StripTools registers on document.modelContext and the props EdgeHome
- * renders now come from one read of the database rather than two.
+ * smaller gap: the books BooksTools registers on document.modelContext (`buildBooks`) and the
+ * sheet the Lanes render (`buildSheet`) now come from one read of the database rather than two.
  */
 export const unappliedLines = cache((): BankLine[] =>
   db().all<BankLine>(
@@ -82,7 +82,7 @@ function toRow(raw: RawRow, pool: BankLine[]): InvoiceRow {
   // The AGE OF THE DEBT, not a chase flag. Gating this on `sent` meant a disputed invoice 72 days
   // past due reported 0, so the aging report filed it under "Within terms", the overdue filter
   // could not see it and overdue_cents excluded it. Whether to chase is a separate question, and
-  // it is now asked where chasing happens (Chase.tsx, draftReminderAction) against `state`.
+  // it is now asked where chasing happens (`draftReminderAction`) against `state`.
   const overdueDays =
     raw.status !== "void" && raw.status !== "draft" && balance > 0
       ? Math.max(0, daysPast(raw.due_at))
@@ -220,7 +220,8 @@ function takesCredit(row: { state: InvoiceState; balance_cents: number }): boole
 }
 
 /**
- * The numbers `export_summary` and the reports view both read from. Memoised per period.
+ * The numbers `export_summary`, `read_books` and the mast's close readout all read from. Memoised
+ * per period.
  *
  * All four figures are ACCRUAL and describe the same set of invoices: those issued in the period,
  * excluding COUNTED_OUT. `collected_cents` used to be the odd one - a cash-basis sum of every
@@ -294,7 +295,7 @@ export interface CreditView {
 
 /**
  * The other direction of the same heuristic: for every credit nobody has applied, which invoices
- * could it belong to? The statement view needs this to offer a one-click match, and it is where the
+ * could it belong to? `read_credits` needs this to offer a match per credit, and it is where the
  * deliberately ambiguous seed rows show up - two open invoices tying for the same credit.
  */
 export const lineSuggestions = cache((): Record<string, LineSuggestion[]> => {

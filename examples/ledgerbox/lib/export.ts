@@ -1,7 +1,7 @@
 /**
  * The summary `export_summary` writes - design 4.6.1's close - in the two forms it is asked for.
  *
- * Plain text is what the reports view prints and a person pastes into a spreadsheet. Markdown is
+ * Plain text is what the close readout prints and a person pastes into a spreadsheet. Markdown is
  * what leaves the app: act 1 ends with the close becoming a page somewhere else, and a page needs
  * a title and a body, not a monospaced block whose columns collapse the moment they are rendered.
  * Both are rendered from the same `SummaryInput`, so the two can never say different numbers.
