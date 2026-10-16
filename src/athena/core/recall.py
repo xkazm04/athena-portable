@@ -439,16 +439,16 @@ def around(body: str, query: str) -> str:
     A short body is itself. A long one is the :data:`EXCERPT_BYTES` window around its first match
     (ADR 0042), with :data:`ELLIPSIS` where it was cut — so the row a person asked about is shown
     even when it sits past the head of a page of results. No match in the body (the index can
-    match a stem the text spells differently) falls back to the head, as before.
+    match a stem the text spells differently), or no query at all, gives the head, and the head of
+    a long body is marked where it was cut like any other window: an unmarked head read as the
+    whole turn.
     """
     if len(body.encode("utf-8")) <= EXCERPT_BYTES:
         return body
     hits = [
         m.start() for t in fts_terms(query) if (m := re.search(re.escape(t), body, re.IGNORECASE))
     ]
-    if not hits:
-        return excerpt(body)
-    start = max(0, min(hits) - EXCERPT_BYTES // 4)
+    start = max(0, min(hits) - EXCERPT_BYTES // 4) if hits else 0
     window = excerpt(body[start:])
     head = ELLIPSIS.lstrip() + " " if start > 0 else ""
     tail = ELLIPSIS.rstrip() if start + len(window) < len(body) else ""
@@ -612,16 +612,21 @@ def _episode_block(con: sqlite3.Connection, query: str, budget: int) -> RecallBl
 
     remaining = budget - len(chosen)
     if remaining > 0:
+        # The body, not the stored excerpt, so a turn longer than an excerpt is cut by
+        # :func:`around` and marked where it was cut. The FTS row shares its node's rowid
+        # (ADR 0077); without one, the excerpt is all there is.
         for row in _rows(
             con,
-            f"""{_NODE_SELECT} FROM companion_node n
+            """SELECT n.id, n.kind, COALESCE(f.body, n.body_excerpt), n.file_path, n.created_at,
+                    n.machine
+                FROM companion_node n LEFT JOIN companion_fts f ON f.rowid = n.rowid
                 WHERE n.kind = 'episode' AND n.importance > 0 AND n.machine = 0
                 ORDER BY n.created_at DESC, n.id DESC LIMIT ?""",
             (remaining + len(chosen),),
         ):
             if len(chosen) >= budget:
                 break
-            memory = _memory(row, "recency")
+            memory = _memory((row[0], row[1], around(str(row[2] or ""), ""), *row[3:]), "recency")
             if memory.id not in chosen:
                 chosen[memory.id] = memory
 

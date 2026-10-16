@@ -1075,3 +1075,29 @@ def test_a_whole_recall_that_found_no_distilled_memory_still_fits_its_cap(
 
     assert trace.notes == ["no distilled memory matched the query"]
     assert len(_rendered(trace)) <= 4800
+
+
+# -- a window cut short says so, whichever lane brought the episode (AGENTS.md: announce truncation)
+
+
+def test_a_long_turn_in_the_recency_tail_is_marked_where_it_was_cut(tmp_path: Path) -> None:
+    body = "Compsmith summary for the duplex. " + "filler text. " * 80 + "D-2 adjusted $604,000."
+    with Brain(tmp_path / "brain") as brain:
+        brain.append_episode(body, "assistant")
+        brain.append_episode("a short turn", "user", created=datetime.now(UTC))
+
+        items = recall(brain, "helicopter maintenance").block(EPISODE_BLOCK).items
+
+    long_turn, short_turn = sorted(items, key=lambda m: len(m.excerpt), reverse=True)
+    assert long_turn.lane == "recency"
+    assert long_turn.excerpt.startswith("Compsmith summary") and long_turn.excerpt.endswith(" …")
+    assert short_turn.excerpt == "a short turn", "an uncut turn carries no mark"
+
+
+def test_a_long_body_with_no_literal_match_shows_its_head_marked_as_cut() -> None:
+    """The index can match a stem the text spells differently; the head is then shown, marked."""
+    body = "filler text. " * 80
+    shown = around(body, "zebra")
+
+    assert shown.startswith("filler text.") and shown.endswith(" …")
+    assert len(shown.encode("utf-8")) <= EXCERPT_BYTES + len(" …".encode())
