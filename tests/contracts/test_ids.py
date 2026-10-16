@@ -5,6 +5,9 @@ contracts/ids.py, README §3.5 (the `conv_proj_proj_<id>` lesson).
 
 from __future__ import annotations
 
+import re
+from pathlib import Path
+
 import pytest
 
 from athena.contracts import (
@@ -115,3 +118,73 @@ def test_an_app_conversation_is_the_app_slug_once() -> None:
 def test_kind_of_says_nothing_about_a_string_that_is_not_an_id() -> None:
     assert kind_of("hello") is None
     assert kind_of("ep_notthehex") is None
+
+
+STORE_RS = (
+    Path(__file__).resolve().parents[2] / "apps" / "desktop" / "src-tauri" / "src" / "store.rs"
+)
+
+
+def _rust_code(source: str) -> str:
+    """``source`` with its ``//`` and ``/* */`` comments blanked, string literals kept.
+
+    store.rs explains its mint in prose right above the mint, so a match over raw text would be
+    satisfied by a comment that names the right width while the code formats another. Strings are
+    walked rather than regexed because ``"https://a.test"`` holds a ``//`` that is not a comment.
+    """
+    out: list[str] = []
+    i, n = 0, len(source)
+    while i < n:
+        ch = source[i]
+        if source.startswith("//", i):
+            end = source.find("\n", i)
+            i = n if end == -1 else end
+        elif source.startswith("/*", i):
+            end = source.find("*/", i + 2)
+            i = n if end == -1 else end + 2
+            out.append(" ")
+        elif raw := re.match(r'r(#*)"', source[i:]):
+            close = '"' + raw.group(1)
+            end = source.find(close, i + raw.end())
+            stop = n if end == -1 else end + len(close)
+            out.append(source[i:stop])
+            i = stop
+        elif ch == '"':
+            j = i + 1
+            while j < n and source[j] != '"':
+                j += 2 if source[j] == "\\" else 1
+            out.append(source[i : j + 1])
+            i = j + 1
+        elif char := re.match(r"'(?:\\.|[^\\'])'", source[i:]):
+            out.append(char.group(0))
+            i += char.end()
+        else:
+            out.append(ch)
+            i += 1
+    return "".join(out)
+
+
+def test_comment_stripping_keeps_strings_and_drops_comments() -> None:
+    code = _rust_code(
+        'let a = "https://a.test"; // format!("{:016x}")\n/* {:016x} */ let b = \'"\';'
+    )
+    assert '"https://a.test"' in code
+    assert "016x" not in code
+    assert "'\"'" in code
+
+
+def test_the_shells_capture_id_is_the_shape_this_table_accepts() -> None:
+    # The desktop shell mints the one id that crosses this seam from Rust: a capture, filed by
+    # store.rs and handed to POST /run as capture_id. The daemon keeps it only when is_id says so,
+    # so a width that differs here is a card that never shows its screenshot.
+    code = _rust_code(STORE_RS.read_text(encoding="utf-8"))
+    table = re.search(
+        r'name:\s*"captures".*?key_mode:\s*KeyMode::Minted\("([a-z]+)"\)', code, re.DOTALL
+    )
+    assert table, "store.rs files captures under a minted key"
+    assert table.group(1) + "_" == ID_PREFIXES["capture"]
+
+    body = re.search(r"fn mint_id\(.*?\n\}", code, re.DOTALL)
+    assert body, "store.rs mints its ids in mint_id"
+    widths = re.findall(r'format!\(\s*"\{prefix\}_\{:0(\d+)x\}"', body.group(0))
+    assert widths == [str(ID_SUFFIX_HEX["capture"])], widths

@@ -7,7 +7,7 @@ instead of a bare slug. :data:`ID_PREFIXES` is a plain dict of strings and nothi
 that another language can read it as text. None does yet: the desktop has no ``lib/ids.ts``
 (AGENTS.md names it as later work, with a parity test), and the one id it mints that crosses this
 seam - the shell's capture id, in ``apps/desktop/src-tauri/src/store.rs`` - is held to this table
-by no test.
+by ``tests/contracts/test_ids.py``, which reads that file's prefix and hex width.
 
 Episode ids are ``ep_`` plus **eight** hex digits rather than the twelve every other kind uses.
 That is not tidiness: the brain's markdown and frontmatter stay byte-compatible with the Personas

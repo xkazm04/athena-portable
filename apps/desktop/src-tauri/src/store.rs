@@ -56,8 +56,8 @@ const LIST_DEFAULT_LIMIT: i64 = 200;
 #[derive(Clone, Copy, PartialEq, Eq)]
 enum KeyMode {
     /// The caller names the row. Ids that cross the Python/TypeScript seam are minted by
-    /// `ids.ts` (plan §3, "ids minted in exactly one place per kind"), so the store must not
-    /// mint a second spelling of one.
+    /// `src/athena/contracts/ids.py` (AGENTS.md, "ids in one place per language"), so the store
+    /// must not mint a second spelling of one.
     Caller,
     /// `INTEGER PRIMARY KEY AUTOINCREMENT`: an empty key means "append", and the new id comes
     /// back from `store_set`.
@@ -798,9 +798,11 @@ fn sqlite_ts(value: &str) -> String {
     truncated.replacen('T', " ", 1)
 }
 
-/// `<prefix>_<16 hex chars>`. Opaque, and minted here for exactly one kind of row — a capture,
-/// which the shell produces. Every id that crosses the Python/TypeScript seam is minted by
-/// `ids.ts` instead, so this can never become the second place a `proj_` comes from.
+/// `<prefix>_<12 hex chars>`. Opaque, and minted here for exactly one kind of row — a capture,
+/// which the shell produces. Every other id is minted by `src/athena/contracts/ids.py`, and this
+/// one still crosses that seam (`POST /run` carries it as `capture_id`, which the daemon keeps only
+/// when `ids.is_id("capture", ...)` says so), so its width is that table's: twelve hex digits.
+/// `tests/contracts/test_ids.py` reads this function and holds it to the table.
 fn mint_id(prefix: &str) -> String {
     use std::sync::atomic::{AtomicU64, Ordering};
     static SEQ: AtomicU64 = AtomicU64::new(0);
@@ -816,7 +818,8 @@ fn mint_id(prefix: &str) -> String {
         .build_hasher()
         .finish()
         .hash(&mut hasher);
-    format!("{prefix}_{:016x}", hasher.finish())
+    // 48 bits of the 64-bit hash, so the id is exactly twelve digits and never more.
+    format!("{prefix}_{:012x}", hasher.finish() & 0xffff_ffff_ffff)
 }
 
 // -- base64, because JSON has no spelling for a blob -------------------------------------------
@@ -1213,6 +1216,14 @@ mod tests {
             .put_capture(7, "https://a.test", &png)
             .expect("a capture is filed");
         assert!(id.starts_with("cap_"), "minted id was {id}");
+        // `contracts/ids.py` accepts a capture id only as `cap_` plus exactly twelve lowercase
+        // hex digits; any other width is dropped by the daemon and the card has no shot.
+        let suffix = &id["cap_".len()..];
+        assert_eq!(suffix.len(), 12, "minted id was {id}");
+        assert!(
+            suffix.bytes().all(|b| b.is_ascii_digit() || (b'a'..=b'f').contains(&b)),
+            "minted id was {id}"
+        );
 
         let row = t.store.get("captures", &id).unwrap();
         assert_eq!(row["tab_id"], json!(7));
