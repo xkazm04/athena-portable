@@ -3,9 +3,10 @@
 Two purses, because two different people pay: every Token Factory call — a Nemotron attacker,
 user or judge, and Athena-under-test on Nemotron — is charged to ``nemotron``; the Claude Haiku
 control and Athena-under-test on Claude are charged to ``claude``. A cap is checked *before* a
-call, so a run can overshoot by at most the one call that was already in flight when the purse
-ran dry; after that the engine's remaining work is skipped, cleanly, and the report says how much
-of the planned work it shows — ``(showing N of M)``, never a silent short run.
+call and charged after it, so a run can overshoot by the calls already in flight when the purse
+ran dry — at most one per worker sharing the purse (``--workers``, 4 by default), not one in all;
+after that the engine's remaining work is skipped, cleanly, and the report says how much of the
+planned work it shows — ``(showing N of M)``, never a silent short run.
 
 Thread-safe: the Gauntlet runs its worlds on a small thread pool and they share one purse.
 """

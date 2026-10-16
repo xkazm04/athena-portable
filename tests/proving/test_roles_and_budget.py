@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import subprocess
+import threading
 from collections.abc import Mapping, Sequence
 from pathlib import Path
 from typing import Any
@@ -177,6 +178,34 @@ def test_a_spent_purse_makes_no_call_and_writes_a_budget_row() -> None:
     assert [r.error_reason for r in replies] == [None, None, "budget_exhausted"]
     assert len(role.prompts) == 2
     assert log.rows[-1]["error_reason"] == "budget_exhausted" and log.rows[-1]["is_error"]
+
+
+def test_a_shared_purse_overshoots_by_one_call_per_worker_in_flight_and_no_more() -> None:
+    """The purse is checked before a call and charged after it, so every worker already past the
+    check when it ran dry still spends. The bound is one call per worker, not one call."""
+    workers = 4
+    budget = Budget({NEMOTRON: 1.0, CLAUDE: 1.0})
+    budget.charge(NEMOTRON, 0.99)
+    in_flight = threading.Barrier(workers)
+
+    def answer(system: str, prompt: str) -> str:
+        in_flight.wait(timeout=10)  # all four are past the check before any is charged
+        return "{}"
+
+    role = FakeRole(answer, cost=0.5)
+    caller = RoleCaller(budget, RunLog())
+    threads = [
+        threading.Thread(target=caller.call, args=(role, "attacker", "s", "p"))
+        for _ in range(workers)
+    ]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(timeout=10)
+
+    assert len(role.prompts) == workers
+    assert budget.spent(NEMOTRON) == pytest.approx(0.99 + workers * 0.5)
+    assert caller.call(role, "attacker", "s", "p").error_reason == "budget_exhausted"
 
 
 def test_the_budget_refuses_an_unknown_purse_and_raises_when_spent() -> None:
