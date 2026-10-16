@@ -65,7 +65,13 @@ export function DossierActs({ candidate, acts }: { candidate: BdCandidate; acts:
               autoFocus
               onChange={(event) => setNote(event.target.value)}
               onKeyDown={(event) => {
-                if (event.key === "Escape") close();
+                /* One press, one layer: the draft is the innermost thing open, and an
+                   un-prevented Escape bubbles on to the dossier's overlay and closes the
+                   candidate too. `preventDefault` is the kit's "handled" (test/note.test.ts). */
+                if (event.key === "Escape") {
+                  event.preventDefault();
+                  close();
+                }
               }}
               aria-label={`A note on ${candidate.name}`}
             />
