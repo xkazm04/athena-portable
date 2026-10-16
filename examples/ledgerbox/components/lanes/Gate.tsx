@@ -15,7 +15,7 @@
  * a balance moved or a credit applied under an armed gate closes it, and the
  * person arms again on what is now there.
  */
-import { useState, type ReactNode } from "react";
+import { useId, useState, type ReactNode } from "react";
 import { AnimatePresence, motion } from "motion/react";
 
 import type { ActionResult } from "@/lib/types";
@@ -40,6 +40,10 @@ export function Gate({
   disabled?: boolean;
 }) {
   const [armedOn, setArmedOn] = useState<string | null>(null);
+  /* The confirm takes focus as the gate arms, so the question is its description:
+     otherwise a screen reader says "Record it, button" and never the sentence that
+     says what the yes writes. */
+  const questionId = useId();
   const { pending, run } = useRun();
   const armed = stillArmed(armedOn, subject, disabled);
   // Forget a subject that has moved on, so the same text coming back later (an undo)
@@ -58,11 +62,14 @@ export function Gate({
           exit={{ opacity: 0 }}
           transition={fade()}
         >
-          <span className="ln-gate-q">{question}</span>
+          <span className="ln-gate-q" id={questionId}>
+            {question}
+          </span>
           <button
             type="button"
             className="ln-btn"
             data-kind="danger"
+            aria-describedby={questionId}
             autoFocus
             disabled={pending}
             onClick={() => run(onConfirm, () => setArmedOn(null))}

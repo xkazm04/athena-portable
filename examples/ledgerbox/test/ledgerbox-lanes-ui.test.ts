@@ -246,3 +246,17 @@ test("both rows of peers, the swarm's lanes and the spread's field, pick their s
     assert.doesNotMatch(code, /index === \(?roving/, `${path} no longer compares the index to the remembered stop`);
   }
 });
+
+/* ------------------------------------------ the confirm carries the disclosure it is a yes to */
+
+test("an armed gate's confirm is described by its own question, so a screen reader hears what it agrees to", () => {
+  // The confirm takes focus the moment the gate arms (`autoFocus`), so its accessible name and
+  // description are all a screen reader says: "Record it, button" without the sentence beside it
+  // ("This writes $95,100.00 against the books and cannot be replayed backwards") is a yes to a
+  // disclosure that was never read out. hitl-approval: the human decides on the real thing.
+  const gate = source("Gate.tsx");
+  const id = gate.match(/className="ln-gate-q"[^>]*\bid=\{(\w+)\}/)?.[1];
+  assert.ok(id, "the question carries an id");
+  const confirm = gate.match(/<button[^>]*data-kind="danger"[^>]*>/s)?.[0] ?? "";
+  assert.match(confirm, new RegExp(`aria-describedby=\{${id}\}`), "the confirm is described by the question");
+});
