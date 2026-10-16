@@ -160,12 +160,14 @@ body {
   }
 }
 
+/* Centred by its two insets and auto inline margins: `left: 50%` with a `translate` is centred
+   in one writing direction only, and here it was the wrong one (+50%) in both. */
 .dk-overlay {
   position: fixed;
-  inset: 10% 50% auto;
+  inset: 10% 0 auto;
   z-index: 60;
   width: min(32rem, 80vw);
-  translate: 50% 0;
+  margin-inline: auto;
   padding: var(--dk-gap);
   border-radius: var(--dk-radius);
   background: var(--dk-surface);

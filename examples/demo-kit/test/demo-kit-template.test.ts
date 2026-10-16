@@ -129,6 +129,56 @@ test("every class the template's stylesheet defines is drawn by the template or 
   assert.deepEqual(orphans, [], "a class the stylesheet styles and nothing renders");
 });
 
+/**
+ * The overlay's horizontal box, from its declarations, by the CSS 2 rules for an absolutely
+ * positioned box with a fixed width: both insets set and `auto` inline margins centre it;
+ * otherwise `direction` picks which inset wins and the other is ignored. Then `translate`.
+ */
+function overlayLeft(css: string, cb: number, dir: "ltr" | "rtl"): { x: number; w: number } {
+  const body = /\.dk-overlay\s*\{([^}]*)\}/.exec(css)?.[1];
+  assert.ok(body, "app/globals.css has no .dk-overlay rule");
+  const decl = new Map([...body.matchAll(/([a-z-]+)\s*:\s*([^;]+);/g)].map((m) => [m[1]!, m[2]!.trim()]));
+  const px = (v: string | undefined, of: number): number | null => {
+    if (v === undefined || v === "auto") return null;
+    const min = /^min\((.+),(.+)\)$/.exec(v);
+    if (min) return Math.min(px(min[1]!.trim(), of)!, px(min[2]!.trim(), of)!);
+    const n = Number.parseFloat(v);
+    if (v.endsWith("rem")) return n * 16;
+    if (v.endsWith("vw")) return (n / 100) * cb;
+    if (v.endsWith("%")) return (n / 100) * of;
+    return n;
+  };
+  const inset = (decl.get("inset") ?? "").split(/\s+(?![^(]*\))/).filter(Boolean);
+  // inset: t | t lr | t lr b | t r b l
+  const [, r = inset[0], , l = r] = inset;
+  const inline = decl.get("inset-inline")?.split(/\s+/);
+  let left = px(decl.get("left") ?? inline?.[dir === "ltr" ? 0 : 1] ?? l, cb);
+  let right = px(decl.get("right") ?? inline?.[dir === "ltr" ? 1 : 0] ?? r, cb);
+  const w = px(decl.get("width"), cb)!;
+  const margins = decl.get("margin-inline") ?? decl.get("margin") ?? "0";
+  let x: number;
+  if (left !== null && right !== null && /auto/.test(margins)) x = left + (cb - left - right - w) / 2;
+  else {
+    if (left !== null && right !== null) (dir === "ltr" ? (right = null) : (left = null));
+    x = left !== null ? left : cb - (right ?? 0) - w;
+  }
+  const tx = (decl.get("translate") ?? "0").split(/\s+/)[0]!;
+  return { x: x + (tx.endsWith("%") ? (Number.parseFloat(tx) / 100) * w : Number.parseFloat(tx) || 0), w };
+}
+
+test("the L2 overlay is centred in its containing block, in either direction, at any width", () => {
+  const css = templateCss();
+  for (const cb of [375, 768, 1280]) {
+    for (const dir of ["ltr", "rtl"] as const) {
+      const { x, w } = overlayLeft(css, cb, dir);
+      assert.ok(
+        Math.abs(x - (cb - w) / 2) < 0.5,
+        `${dir} at ${cb}px: the ${Math.round(w)}px overlay starts at ${Math.round(x)}px, centred is ${Math.round((cb - w) / 2)}px (its right edge at ${Math.round(x + w)}px)`,
+      );
+    }
+  }
+});
+
 test("a template file that sends the reader to a README appendix sends them to one that exists", () => {
   const readme = readFileSync(join(TEMPLATE, "README.md"), "utf8");
   const hasAppendix = /^#+\s.*appendix/im.test(readme);
