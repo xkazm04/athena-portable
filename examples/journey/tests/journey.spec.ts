@@ -512,11 +512,12 @@ test("the demo journey: four acts, one studio, one record", async () => {
 
     // Beat 2. Preview the phone normalisation, then run it on exactly what the preview named.
     // `read_view` is the survey sheet — databases and tables, not rows — so the ids come from the
-    // record search, which is the read that answers with contacts.
-    const ids = itemsOf(await crm.read<Row>("search_records", { text: "", limit: 500 }))
+    // record search, which is the read that answers with contacts. It publishes `text` and
+    // `database` and nothing else, and the door refuses a key its schema does not name, so this
+    // sends exactly what the take's beat 3.2 sends and works on the page the search answers with.
+    const ids = itemsOf(await crm.read<Row>("search_records", { text: "" }))
       .map((row) => safe(() => contact.id(row), ""))
-      .filter((id) => id.length > 0)
-      .slice(0, 500);
+      .filter((id) => id.length > 0);
     expect(ids.length, "contact ids to normalise").toBeGreaterThan(0);
     const preview = await crm.read<Row[]>("preview_normalize", { ids, rules: ["phone_e164"] });
     const pending = itemsOf(preview);
