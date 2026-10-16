@@ -37,14 +37,10 @@ import { sharedIdentity, type Presence } from "@athena/demo-kit/zoom";
 
 import { STAGES } from "@/lib/constants";
 import { Face } from "./marks/Face";
-import {
-  groupId,
-  type BdBoard,
-  type BdCandidate,
-  type BdRole,
-} from "./model";
+import { groupId, type BdBoard } from "./model";
 import { ARRIVE, useBoardMotion } from "./motion";
 import { GroupRead, stageFact } from "./columns/facts";
+import { groupsAt } from "./columns/filter";
 import {
   FACE,
   PILE_CAP,
@@ -97,15 +93,9 @@ export function Columns({
     <div className="bd-board">
       {STAGES.map((stage) => {
         const label = board.stageLabel[stage];
-        const groups = board.roles
-          .map((role): { role: BdRole; candidates: BdCandidate[] } => ({
-            role,
-            candidates: (role.columns.find((c) => c.id === stage)?.candidates ?? []).filter(
-              (c) => !onlyBorderline || c.borderline,
-            ),
-          }))
-          .filter((g) => roleFilter === "all" || g.role.id === roleFilter)
-          .filter((g) => g.candidates.length > 0);
+        /* The same groups `Board.tsx` totals, from the same module: a column and the
+           headline cannot disagree about who the filters left on the board. */
+        const groups = groupsAt(board, stage, { roleFilter, onlyBorderline });
 
         const here = groups.reduce((n, g) => n + g.candidates.length, 0);
         const scored = groups.reduce((n, g) => n + g.candidates.filter((c) => c.scored).length, 0);

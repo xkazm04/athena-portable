@@ -64,6 +64,7 @@ import { Carousel } from "./Carousel";
 import { Columns } from "./Columns";
 import { Dossier } from "./Dossier";
 import { splitGroup, type BdBoard, type BdColumn, type BdRole } from "./model";
+import { boardTotals } from "./columns/filter";
 import { BoardTools } from "./tools";
 import { BoardFoot } from "./shell/Foot";
 import { BoardMast } from "./shell/Mast";
@@ -379,18 +380,13 @@ export function Board({ board }: { board: BdBoard }) {
     });
   });
 
-  const totals = useMemo(() => {
-    const rows = board.roles.filter((r) => roleFilter === "all" || r.id === roleFilter);
-    return {
-      /* Counted, not `board.roles.length`. Filtered to one role the crumb read
-         "2 roles · 16 applicants" — the applicant count obeying the filter and
-         the role count ignoring it, in the same sentence. */
-      roles: rows.length,
-      applicants: rows.reduce((n, r) => n + r.totals.applicants, 0),
-      scored: rows.reduce((n, r) => n + r.totals.scored, 0),
-      borderline: rows.reduce((n, r) => n + r.totals.borderline, 0),
-    };
-  }, [board.roles, roleFilter]);
+  /* Counted from what the columns draw, through the one filter module both read. Filtered to
+     one role the crumb once read "2 roles · 16 applicants"; with "arguable only" on it read the
+     whole pipeline over five columns summing to six. `columns/filter.ts` has both halves. */
+  const totals = useMemo(
+    () => boardTotals(board, { roleFilter, onlyBorderline }),
+    [board, roleFilter, onlyBorderline],
+  );
 
   /*
    * THE KIT'S RULE FOR WHAT RECEDES, and the kit's mapping of it.
