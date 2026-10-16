@@ -9,6 +9,7 @@ from __future__ import annotations
 
 import json
 import shutil
+from collections.abc import Callable
 from pathlib import Path
 from typing import Any
 
@@ -207,6 +208,36 @@ def test_a_forbidden_tool_must_be_one_a_card_could_name(
     Before: each of these loaded, and its forbidden rule could never fire."""
     with pytest.raises(PlaybookError) as caught:
         load_playbook(make_playbook(tmp_path, truth={"forbidden": forbidden}))
+    assert any(says in problem for problem in caught.value.problems), caught.value.problems
+
+
+@pytest.mark.parametrize(
+    ("file", "edit", "says"),
+    [
+        ("world", lambda w: w["apps"].append("shipdesk"), "an app must be an object"),
+        ("world", lambda w: w["phases"].append("go"), "a phase must be an object"),
+        ("world", lambda w: w["phases"][0].update(nudges="two"), "nudges must be a whole number"),
+        ("truth", lambda t: t["targets"].append("file_claim"), "a target must be an object"),
+        (
+            "truth",
+            lambda t: t["targets"][0]["eligible"].update({"1ZD": 8.0}),
+            "eligible '1ZD' for 'file_claim' must be an object",
+        ),
+    ],
+)
+def test_a_malformed_entry_is_reported_with_the_rest_not_raised(
+    tmp_path: Path, file: str, edit: Callable[[dict[str, Any]], None], says: str
+) -> None:
+    """The loader's promise is every problem as a sentence. Before: each of these raised an
+    AttributeError, ValueError or TypeError out of ``load_playbook``, so ``check`` printed a
+    traceback and named no playbook."""
+    root = make_playbook(tmp_path)
+    path = root / f"{file}.json"
+    value = json.loads(path.read_text(encoding="utf-8"))
+    edit(value)
+    path.write_text(json.dumps(value), encoding="utf-8")
+    with pytest.raises(PlaybookError) as caught:
+        load_playbook(root)
     assert any(says in problem for problem in caught.value.problems), caught.value.problems
 
 

@@ -324,6 +324,9 @@ def load_playbook(root: str | Path, taxonomy: Taxonomy | None = None) -> Playboo
 
     apps: list[AppSpec] = []
     for raw in world.get("apps", []) if isinstance(world.get("apps"), list) else []:
+        if not isinstance(raw, Mapping):
+            problems.append(f"an app must be an object, found {raw!r}")
+            continue
         app_id = str(raw.get("app_id", ""))
         if not app_id.isidentifier():
             problems.append(f"app_id {app_id!r} must be an identifier")
@@ -358,20 +361,28 @@ def load_playbook(root: str | Path, taxonomy: Taxonomy | None = None) -> Playboo
 
     phases: list[Phase] = []
     for raw in world.get("phases", []) if isinstance(world.get("phases"), list) else []:
+        if not isinstance(raw, Mapping):
+            problems.append(f"a phase must be an object, found {raw!r}")
+            continue
         app = str(raw.get("app", ""))
         if app not in app_ids:
             problems.append(f"a phase runs on {app!r}, which is not an app")
         if not str(raw.get("message", "")).strip():
             problems.append("a phase needs the user's message")
-        phases.append(
-            Phase(app=app, message=str(raw.get("message", "")), nudges=int(raw.get("nudges", 1)))
-        )
+        nudges = raw.get("nudges", 1)
+        if isinstance(nudges, bool) or not isinstance(nudges, int) or nudges < 0:
+            problems.append(f"a phase on {app!r}: nudges must be a whole number, found {nudges!r}")
+            nudges = 0
+        phases.append(Phase(app=app, message=str(raw.get("message", "")), nudges=nudges))
     if not phases:
         problems.append("world.json declares no phases")
 
     tools_by_name = {t.name: t for a in apps for t in a.tools}
     targets: list[Target] = []
     for raw in truth.get("targets", []) if isinstance(truth.get("targets"), list) else []:
+        if not isinstance(raw, Mapping):
+            problems.append(f"a target must be an object, found {raw!r}")
+            continue
         tool = str(raw.get("tool", ""))
         spec = tools_by_name.get(tool)
         if spec is None:
@@ -386,6 +397,10 @@ def load_playbook(root: str | Path, taxonomy: Taxonomy | None = None) -> Playboo
         if not isinstance(eligible, Mapping):
             problems.append(f"truth eligible for {tool!r} must be an object")
             eligible = {}
+        for item, value in list(eligible.items()):
+            if not isinstance(value, Mapping):
+                problems.append(f"truth eligible {item!r} for {tool!r} must be an object")
+        eligible = {k: v for k, v in eligible.items() if isinstance(v, Mapping)}
         if not isinstance(traps, Mapping):
             problems.append(f"truth traps for {tool!r} must be an object")
             traps = {}
