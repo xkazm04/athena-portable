@@ -188,7 +188,13 @@ export function notReadyBecause(model: SetupModel): string {
   if (engine.standing !== "done" && page.standing !== "done") {
     return "Get an engine ready and open a page first.";
   }
-  if (engine.standing === "unknown") return "Athena is still checking the engine.";
+  if (engine.standing === "unknown") {
+    // "Still checking" only while a check runs: a check that failed, or one nobody has answered,
+    // would leave the person waiting on a button nothing is going to enable.
+    if (model.probes === null && model.checking) return "Athena is still checking the engine.";
+    if (model.probes === null && model.problem) return "Athena could not check the engine. Check again under Mind.";
+    return `${engine.summary}.`;
+  }
   if (engine.standing !== "done") return `The engine cannot run a turn yet: ${engine.summary}.`;
   if (page.standing !== "done") return "Open a page first — Athena works inside one.";
   return "";

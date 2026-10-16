@@ -112,6 +112,23 @@ test("readiness is derived: take the page away and it goes with it", () => {
   expect(notReadyBecause(nothing)).toContain("Get an engine ready");
 });
 
+test("the disabled Wake her says Athena is checking only while a check runs", () => {
+  const page = { tabs: [{ id: 1, title: "Invoices", url: "https://a.test/x" }] };
+  expect(notReadyBecause(model({ ...page, probes: null, checking: true }))).toBe("Athena is still checking the engine.");
+  // The check failed: nothing is running, so the reason says so and where to ask again.
+  const failed = notReadyBecause(model({ ...page, probes: null, problem: "The daemon is not ready yet." }));
+  expect(failed).toBe("Athena could not check the engine. Check again under Mind.");
+  // Nobody has answered yet, and the daemon has not said which engine it is on: each its own fact.
+  expect(notReadyBecause(model({ ...page, probes: null }))).toBe("Athena has not heard back about the engine yet.");
+  expect(notReadyBecause(model({ ...page, daemonLoaded: false, daemonHealth: "stopped" }))).toBe(
+    "Claude Code is chosen, but Athena has not yet said which engine she is on.",
+  );
+  const idle: Partial<SetupSources>[] = [{ probes: null, problem: "boom" }, { probes: null }, { daemonLoaded: false }];
+  for (const over of idle) {
+    expect(notReadyBecause(model({ ...page, ...over })), JSON.stringify(over)).not.toContain("still checking");
+  }
+});
+
 test("the microphone and the voice are never required", () => {
   expect(micFact(model()).standing).toBe("unknown");
   expect(micFact(model({ mic: "granted", micDetail: "Headset" })).summary).toBe("Headset");
