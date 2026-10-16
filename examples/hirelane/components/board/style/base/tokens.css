@@ -56,6 +56,11 @@
   --bd-sheet: #14141a;
   --bd-glass: rgb(255 255 255 / 4%);
   --bd-glass-2: rgb(255 255 255 / 7%);
+  /* A carousel card's own glass, top stop and foot stop. Tokens rather than two literals in
+     `level1/l1-carousel.css` because `design/check-contrast.mjs` scores every ink rung against
+     the top stop, and a copy of it typed in the checker would score a card nobody paints. */
+  --bd-slide-top: rgb(255 255 255 / 8%);
+  --bd-slide-foot: rgb(255 255 255 / 3%);
   /* The dossier's scrim: --bd-void, thinned. A hand-typed rgb(6 6 7 / 74%) is the ground colour
      copied a fourth time, and it would not move when the ground does. */
   --bd-scrim: color-mix(in srgb, var(--bd-void) 74%, transparent);

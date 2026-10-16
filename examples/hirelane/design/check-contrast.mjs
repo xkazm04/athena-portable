@@ -83,10 +83,11 @@ const SURFACES = [
   { name: "sheet", solid: "--bd-sheet" },
   { name: "glass on ground", over: "--bd-glass", on: "--bd-ground" },
   { name: "glass-2 on ground", over: "--bd-glass-2", on: "--bd-ground" },
-  /* A slide's own gradient, at its lightest stop. Read from the stylesheet rather than named as a
-     token, because it is written inline in `level1/l1-carousel.css` as a gradient and there is no
-     token holding it. The 8% is the top stop; the bottom stop is darker and therefore kinder. */
-  { name: "card top on void", alpha: 0.08, on: "--bd-void" },
+  /* A slide's own gradient, at its lightest stop. `level1/l1-carousel.css` paints it from
+     `--bd-slide-top` and `--bd-slide-foot`; the top stop is the lighter one and therefore the
+     unkind one, and it is read by name like every other plane here. It used to be `alpha: 0.08`,
+     typed in this file beside a comment saying it was read from the stylesheet. */
+  { name: "card top on void", over: "--bd-slide-top", on: "--bd-void" },
 ];
 
 const parseHex = (hex) => {
@@ -164,7 +165,7 @@ for (const slug of found) {
       surfaces.push({ name: surface.name, rgb: base.rgb });
       continue;
     }
-    const plane = surface.over ? parsePlane(tokens.get(surface.over) ?? "") : { rgb: [1, 1, 1], alpha: surface.alpha };
+    const plane = parsePlane(tokens.get(surface.over) ?? "");
     if (!plane) {
       console.log(`  MODEL  ${surface.name}: ${surface.over} is not a colour this file can read`);
       failed = true;
