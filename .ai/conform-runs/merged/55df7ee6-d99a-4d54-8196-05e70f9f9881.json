@@ -1,0 +1,125 @@
+{
+ "schema": "conform-run/1",
+ "worker": "55df7ee6-d99a-4d54-8196-05e70f9f9881",
+ "subject": "model-routing",
+ "evaluatedAt": "2026-10-17T21:12:48.859323+00:00",
+ "provider": "agy",
+ "model": "gemini-3.8-flash-high",
+ "pairs": [
+  {
+   "context": "proving-playbooks-bench",
+   "subject": "model-routing",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "src/athena/proving/playbooks/bench.py:78 BenchConfig configures playbook bench runs by hardcoding a model string ('sonnet') at the call site with no call-class classification, no reasoning effort parameter, and no routing policy evaluation door.",
+   "techniques": [
+    {
+     "technique": "turn-classification",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/bench.py:78 BenchConfig hardcodes a model string default at the call site rather than asserting a call class mapped through a calibrated tier-and-effort table."
+    },
+    {
+     "technique": "effort-calibration",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/__main__.py:79 The CLI exposes a raw model flag without any effort parameter, dropping the effort half of the tier-and-effort pair."
+    },
+    {
+     "technique": "consumer-overrides",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/__main__.py:226 Model overrides passed by the user are accepted directly into BenchConfig without reaper condition or precedence validation."
+    },
+    {
+     "technique": "routing-policy",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/bench.py:141 Direct instantiation of World with caller-specified engine and model lacks a single policy evaluation door."
+    },
+    {
+     "technique": "model-identity",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/bench.py:192 The report records the caller-supplied model string verbatim without resolving it through grouping or distinguishing group from member endpoint."
+    },
+    {
+     "technique": "failover-horizon",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/bench.py:283 Errors immediately abort the phase without checking whether substitution is still possible before the failover horizon."
+    },
+    {
+     "technique": "failover-path-liveness",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/bench.py:284 Errors are logged directly without any fallback path or live fault injection mechanism to test failover transitions."
+    },
+    {
+     "technique": "candidate-ranking",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/rank.py:1 Ranking ranks playbook domain utility rather than dynamically ordering candidate model endpoints based on live operational and reliability measurements."
+    },
+    {
+     "technique": "quality-axis-separation",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/bench.py:187 The bench evaluates application task output without feeding back distinct operational and semantic quality axes to a model candidate ranker."
+    },
+    {
+     "technique": "cache-continuity",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/bench.py:272 Multi-turn conversation runs do not monitor prompt prefix caching, cache key invalidations, or continuity pricing across turns."
+    },
+    {
+     "technique": "policy-governance",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/bench.py:327 Turn audit logs capture basic dialogue without recording routing policy versions, rule chains, or model selection reasons."
+    },
+    {
+     "technique": "capability-floors",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/spec.py:86 Playbook authoring floors constrain portal and trap counts but define no model capability floors to prevent under-routing."
+    },
+    {
+     "technique": "admission-is-not-a-tier",
+     "verdict": "deviation",
+     "evidence": "tests/proving/test_playbooks.py:402 Bench configurations specify arbitrary backend engines like 'nebius' without pre-flight admission checks of wire dialect, identifier syntax, or transport contracts."
+    }
+   ],
+   "registryProposal": "Clarify how evaluation and benchmarking harnesses should interface with model routing layers, especially when running headless test suites that mock or script provider backends."
+  }
+ ],
+ "declined": [
+  {
+   "subject": "model-routing",
+   "context": "atlas-lanes-drawing",
+   "reason": "Subject precondition does not hold: atlas-lanes-drawing is an interactive 2D diagram architecture drawing with geometric wire corridor routing and lane layout; it contains no LLM model routing, provider dispatch, or model invocation."
+  },
+  {
+   "subject": "model-routing",
+   "context": "hirelane-model-and-lib",
+   "reason": "Subject precondition does not hold: hirelane-model-and-lib is an applicant tracking board demo application (managing job candidate cards, interview stages, and resume scoring rubrics) exposing WebMCP tools on document.modelContext; it does not route or invoke language models."
+  }
+ ],
+ "consults": [
+  {
+   "ts": "2026-10-17T21:12:48.859323+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "model-routing"
+   ],
+   "techniques": [
+    "admission-is-not-a-tier",
+    "cache-continuity",
+    "candidate-ranking",
+    "capability-floors",
+    "consumer-overrides",
+    "effort-calibration",
+    "failover-horizon",
+    "failover-path-liveness",
+    "model-identity",
+    "policy-governance",
+    "quality-axis-separation",
+    "routing-policy",
+    "turn-classification"
+   ],
+   "deviations": 1,
+   "context": "proving-playbooks-bench",
+   "via": "curator-multi:agy",
+   "model": "gemini-3.8-flash-high"
+  }
+ ]
+}

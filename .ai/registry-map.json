@@ -8198,7 +8198,11 @@
           "revision": 21,
           "changedAt": "2026-09-29",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/proving/playbooks/bench.py:78 BenchConfig configures playbook bench runs by hardcoding a model string ('sonnet') at the call site with no call-class classification, no reasoning effort parameter, and no routing policy evaluation door.",
+          "evaluatedAt": "2026-10-17",
+          "evaluatedAgainst": "sha256-b2:5484901d8df95b15",
+          "evaluatedRevision": 21
         },
         {
           "subject": "codebase-scanning",
