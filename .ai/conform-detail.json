@@ -3609,6 +3609,36 @@
           "evidence": "examples/tidycrm/design/build-tokens.mjs:74 This standalone synchronous Node CLI has no request-scoped execution context or shared completion handle."
         }
       ]
+    },
+    "fe808407-91f4-4b85-8688-1125db0aec71/conformance-checking": {
+      "context": "desktop-scenes-accounts-apps",
+      "subject": "conformance-checking",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T01:04:27.869Z",
+      "techniques": [],
+      "withdrawn": {
+        "worker": "8d719312-d5bc-4940-9f85-f40b35069576",
+        "state": "not-applicable",
+        "at": "2026-10-17T01:04:42.801723+00:00",
+        "reason": "reviewer (sonnet): The anchor types.ts:6 is the shared depth-scene contract comment. It sits outside the context's files, never mentions Accounts or Apps, and says nothing about whether a conformance checker is absent, so the anchor is incidental."
+      }
+    },
+    "63aafb7d-7b5c-4d41-a254-fe57017fdb35/conformance-checking": {
+      "context": "proving-characters-gauntlet",
+      "subject": "conformance-checking",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T01:04:27.869Z",
+      "techniques": [],
+      "withdrawn": {
+        "worker": "8d719312-d5bc-4940-9f85-f40b35069576",
+        "state": "not-applicable",
+        "at": "2026-10-17T01:04:42.828969+00:00",
+        "reason": "reviewer (sonnet): The anchor gauntlet/__init__.py:4 is the docstring's claim statement about gate approval. It does not show that a conformance checker is absent, and a grep for the terms is not enough to establish that, so the anchor is incidental."
+      }
     }
   }
 }
