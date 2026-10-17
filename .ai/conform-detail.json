@@ -3945,6 +3945,114 @@
           "evidence": "examples/demo-kit/src/zoom/tokens.ts:94 The engine uses a public browser API; searches found no private native symbol lookup or address scanning."
         }
       ]
+    },
+    "ec3c6a55-2ad9-47a0-8616-02544fcd0f1e/search": {
+      "context": "desktop-scenes-mind-surface",
+      "subject": "search",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T22:46:43.436Z",
+      "worker": "248266eb-a7ed-4d4b-8d30-4f30a75ac7b0",
+      "techniques": [
+        {
+          "technique": "command-surface",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:149 Navigation renders the fixed instruments as buttons; the inspected scenes contain no searchable command palette."
+        },
+        {
+          "technique": "faceting-and-filters",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/surface/model.ts:98 This internal availability count is not a user-selected facet over search results."
+        },
+        {
+          "technique": "full-text-indexing",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:70 The settings destinations are a fixed enumeration, with no text-search execution over them."
+        },
+        {
+          "technique": "query-parsing",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/surface/view.tsx:46 The text input hands over a request; this scene does not translate it into a search predicate."
+        },
+        {
+          "technique": "ranking-and-excerpts",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/surface/model.ts:159 The displayed destinations follow the fixed root order, rather than a ranked result set."
+        },
+        {
+          "technique": "saved-views",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:284 The inspected text-setting write persists a directory path, not a named search predicate."
+        },
+        {
+          "technique": "typed-filter-language",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:295 The editable setting is a directory; no user-authored predicate language is exposed."
+        }
+      ]
+    },
+    "6c17278c-ed66-4d70-8a4f-4202662f1613/search": {
+      "context": "hirelane-model-and-lib",
+      "subject": "search",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T22:46:43.436Z",
+      "worker": "248266eb-a7ed-4d4b-8d30-4f30a75ac7b0",
+      "techniques": [
+        {
+          "technique": "faceting-and-filters",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/tools/read.ts:146 Group counts apply the candidate predicate after role filtering; buildBoard obtains applicants through an uncapped query."
+        },
+        {
+          "technique": "full-text-indexing",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/tools/search.ts:87 A linear substring scan fits the seeded 40-person corpus and its literal-match contract; bounding occurs after matching."
+        },
+        {
+          "technique": "query-parsing",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/components/board/tools/search.ts:50 Literal matching avoids engine-syntax injection, but normalization only lowercases and does not fold diacritics."
+        },
+        {
+          "technique": "ranking-and-excerpts",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/components/board/tools/search.ts:69 Equal scored candidates compare as zero; the comparator has no final stable identity key."
+        }
+      ]
+    },
+    "3c4969f8-b87d-4ccd-bcab-2ebbcf35526c/search": {
+      "context": "ledgerbox-domain-lib",
+      "subject": "search",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T22:46:43.436Z",
+      "worker": "248266eb-a7ed-4d4b-8d30-4f30a75ac7b0",
+      "techniques": [
+        {
+          "technique": "faceting-and-filters",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/model/legend.ts:69 Each state count retains the client selection while substituting that state's predicate over the complete sheet."
+        },
+        {
+          "technique": "full-text-indexing",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/lib/db.ts:121 The small seeded invoice book is loaded without a limit and scanned for literal matches; search limits are applied afterward."
+        },
+        {
+          "technique": "query-parsing",
+          "verdict": "deviation",
+          "evidence": "examples/ledgerbox/components/lanes/tools/search.ts:52 Input remains literal and engine-safe, but matching omits diacritic folding."
+        },
+        {
+          "technique": "ranking-and-excerpts",
+          "verdict": "deviation",
+          "evidence": "examples/ledgerbox/components/lanes/tools/search.ts:74 Invoices tying on lateness and balance have no stable identity tiebreaker before result truncation."
+        }
+      ]
     }
   }
 }

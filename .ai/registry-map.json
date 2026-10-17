@@ -4824,7 +4824,11 @@
           "revision": 5,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/surface/live.tsx:39 Searching for search, facet and fuzzy found no hits in these scene directories; the inspected scenes expose settings, navigation and a request handoff rather than corpus search.",
+          "evaluatedAt": "2026-10-17",
+          "evaluatedAgainst": "sha256-b2:395e660a5e607abe",
+          "evaluatedRevision": 6
         },
         {
           "subject": "demo-data-plane",
@@ -6391,7 +6395,11 @@
           "revision": 5,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/hirelane/components/board/tools/search.ts:50 Candidate search lowercases text without folding diacritics, so an unaccented query cannot reliably find the corresponding accented name.",
+          "evaluatedAt": "2026-10-17",
+          "evaluatedAgainst": "sha256-b2:395e660a5e607abe",
+          "evaluatedRevision": 6
         }
       ],
       "governance": "governed"
@@ -7077,7 +7085,11 @@
           "revision": 5,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/ledgerbox/components/lanes/tools/search.ts:52 The search published by Ledgerbox's manifest uses lowercase-only substring matching, leaving accented and unaccented spellings unmatched.",
+          "evaluatedAt": "2026-10-17",
+          "evaluatedAgainst": "sha256-b2:395e660a5e607abe",
+          "evaluatedRevision": 6
         }
       ],
       "governance": "governed"
