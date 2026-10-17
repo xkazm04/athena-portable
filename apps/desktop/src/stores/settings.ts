@@ -82,6 +82,11 @@ export interface SettingsState {
   onboarded: boolean;
   /** Where the store file is, for the read-only line in Settings. `null` until it has answered. */
   storePath: string | null;
+  /**
+   * Why the rows could not be read, verbatim, or null. Before the first read goes through,
+   * `hydrated` stays false and the stage shows this with a retry rather than a blank window.
+   */
+  problem: string | null;
   setEngine: (engine: EngineId) => Promise<void>;
   setTheme: (theme: ThemeChoice) => Promise<void>;
   setTypeScale: (scale: TypeScale) => Promise<void>;
@@ -101,6 +106,7 @@ export const useSettings = create<SettingsState>((set, get) => ({
   brainPath: "",
   onboarded: false,
   storePath: null,
+  problem: null,
 
   setEngine: async (engine) => {
     set({ engine });
@@ -141,10 +147,12 @@ export const useSettings = create<SettingsState>((set, get) => ({
     await settingWrite(SETTING_KEYS.brainPath, path);
   },
 
+  // The row first, unlike the look: this flag closes the first act, and a refused write must leave
+  // the person on the act with the reason, not on a surface that forgets them at the next launch.
   setOnboarded: async (onboarded) => {
     if (get().onboarded === onboarded) return;
-    set({ onboarded });
     await settingWrite(SETTING_KEYS.onboarded, onboarded);
+    set({ onboarded });
   },
 }));
 
@@ -201,9 +209,13 @@ export async function startSettings(): Promise<void> {
   });
 }
 
-/** Read every row, paint the resolved theme and publish. Startup and `store:changed` share it. */
+/**
+ * Read every row, paint the resolved theme and publish. Startup, `store:changed` and the stage's
+ * retry share it. A refused read is published as `problem` and never thrown: before the first read
+ * `hydrated` stays false, and after it the rows already shown stay (they were true a moment ago).
+ */
 export async function readRows(): Promise<void> {
-  const [engine, theme, typeScale, motionRow, activeProjectId, brainPath, onboarded, path] = await Promise.all([
+  const rows = await Promise.all([
     settingRead<string>(SETTING_KEYS.engine),
     settingRead<string>(SETTING_KEYS.theme),
     settingRead<string>(SETTING_KEYS.typeScale),
@@ -212,7 +224,12 @@ export async function readRows(): Promise<void> {
     settingRead<string>(SETTING_KEYS.brainPath),
     settingRead<boolean>(SETTING_KEYS.onboarded),
     storePath().catch(() => null),
-  ]);
+  ]).catch((e: unknown) => {
+    useSettings.setState({ problem: e instanceof Error ? e.message : String(e) });
+    return null;
+  });
+  if (rows === null) return;
+  const [engine, theme, typeScale, motionRow, activeProjectId, brainPath, onboarded, path] = rows;
 
   const choice: ThemeChoice = isThemeChoice(theme) ? theme : "system";
   applyTheme(resolveTheme(choice));
@@ -223,6 +240,7 @@ export async function readRows(): Promise<void> {
   applyMotion(resolveMotion(motion, systemPrefersReduced()));
   useSettings.setState({
     hydrated: true,
+    problem: null,
     engine: isEngineId(engine) ? engine : DEFAULT_ENGINE,
     theme: choice,
     typeScale: scale,

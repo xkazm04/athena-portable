@@ -50,6 +50,7 @@ export function useVoiceModel(): VoiceModel {
     hear: state.hear,
     keyBusy: state.keyBusy,
     saveError: state.saveError,
+    finishError: state.finishError,
     now: new Date(),
     actions: state.actions,
     meters: state.meters,

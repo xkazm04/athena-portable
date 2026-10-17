@@ -456,8 +456,11 @@ export interface VoiceActions {
   chooseStt: (engine: SttEngineId, model: string | null) => void;
   saveKey: (key: string) => void;
   removeKey: () => void;
-  /** Mark the studio done and open settings. */
-  finish: () => void;
+  /**
+   * Mark the studio done and open settings. The live store answers whether the row was stored
+   * (`false`: refused, the reason is `finishError`); a model that cannot say returns nothing.
+   */
+  finish: () => void | Promise<boolean>;
   reopenStudio: () => void;
 }
 
@@ -492,6 +495,8 @@ export interface VoiceSources {
   keyBusy: boolean;
   /** The last refusal of a save — a choice, a key — in the daemon's words, or `null`. */
   saveError: string | null;
+  /** Why the "studio done" row was not stored; absent or `null` when it was, or was not tried. */
+  finishError?: string | null;
   now: Date;
   actions: VoiceActions;
   meters: VoiceMeters;
@@ -556,6 +561,7 @@ export interface VoiceModel {
   dock: Dock;
   keyBusy: boolean;
   saveError: string | null;
+  finishError: string | null;
   actions: VoiceActions;
   meters: VoiceMeters;
 }
@@ -741,6 +747,7 @@ export function selectVoice(source: VoiceSources): VoiceModel {
     dock: dockFor(source, ctx, install, kokoro),
     keyBusy: source.keyBusy,
     saveError: source.saveError,
+    finishError: source.finishError ?? null,
     actions: source.actions,
     meters: source.meters,
   };

@@ -16,12 +16,14 @@ import { resolveMotion, systemPrefersReduced } from "@/lib/motion";
 import Stage from "@/stage/Stage";
 import { pillText, useAthena } from "@/stores/athena";
 import { useReopened } from "@/scenes/waking/reopen";
-import { useSettings } from "@/stores/settings";
+import { readRows, useSettings } from "@/stores/settings";
 
 import { useFollowShell } from "./follow";
 import { LIVE_SCENES, sceneFor } from "./scenes";
 
 const SCENES = Object.values(LIVE_SCENES);
+
+const retryRead = () => void readRows();
 
 /**
  * Every scene's crumb names, in one labeller. The hooks are called for every scene on every render
@@ -51,6 +53,7 @@ export default function Console() {
   const athena = useAthena();
   const hydrated = useSettings((s) => s.hydrated);
   const onboarded = useSettings((s) => s.onboarded);
+  const problem = useSettings((s) => s.problem);
   const motion = useSettings((s) => s.motion);
   const reopened = useReopened((s) => s.on);
   const label = useLabeller();
@@ -58,8 +61,8 @@ export default function Console() {
 
   const pose = poseOf(athena);
   const render = useCallback(
-    (p: Path) => sceneFor(p, { hydrated, onboarded, reopened, go }),
-    [hydrated, onboarded, reopened, go],
+    (p: Path) => sceneFor(p, { hydrated, onboarded, reopened, go, problem, retry: retryRead }),
+    [hydrated, onboarded, reopened, go, problem],
   );
   const Band = shapeOf(path) === "page" && path.root !== null ? LIVE_SCENES[path.root].Band : undefined;
 

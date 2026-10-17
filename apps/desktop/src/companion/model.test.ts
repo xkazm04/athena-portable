@@ -210,6 +210,20 @@ test("the Origins tab says when it cut the list", () => {
   expect(selectCompanion(inputs({ tools: many.slice(0, 2) })).origins.offersFooter).toBe("");
 });
 
+test("the Origins tab says a page could not be read, and a page with no bridge is silent, not failed", () => {
+  const hand = { ...tool("page_read", "READ", "Read the page"), tier: 2 as const };
+  const failed = selectCompanion(inputs({ tools: [hand], toolsProblem: "bridge_error: the webview went away" }));
+  expect(failed.origins.pageProblem).toBe("bridge_error: the webview went away");
+  expect(failed.origins.pageSilent).toBe(false);
+  expect(failed.origins.offers.map((o) => o.tier)).toEqual([2]);
+  const silent = selectCompanion(inputs({ tools: [hand], toolsProblem: "timeout" }));
+  expect(silent.origins.pageProblem).toBeNull();
+  expect(silent.origins.pageSilent).toBe(true);
+  const read = selectCompanion(inputs({ tools: [hand] }));
+  expect(read.origins.pageProblem).toBeNull();
+  expect(read.origins.pageSilent).toBe(false);
+});
+
 test("the daemon's ledger reply is read defensively and its footer is kept verbatim", () => {
   const snap = ledgerFrom({
     rows: [

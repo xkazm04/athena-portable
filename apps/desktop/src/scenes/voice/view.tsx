@@ -43,8 +43,11 @@ export function withMoves(model: VoiceModel, go: (to: Path) => void): VoiceModel
     actions: {
       ...model.actions,
       finish: () => {
-        model.actions.finish();
-        go(SETTINGS);
+        // Settings only once the row is stored: a refused write keeps the person in the studio,
+        // where the reason is shown. A model that cannot say (a fixture) moves at once.
+        const stored = model.actions.finish();
+        if (stored instanceof Promise) void stored.then((ok) => ok && go(SETTINGS));
+        else go(SETTINGS);
       },
       reopenStudio: () => {
         model.actions.reopenStudio();
