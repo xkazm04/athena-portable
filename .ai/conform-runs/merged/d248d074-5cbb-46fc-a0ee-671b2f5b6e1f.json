@@ -1,0 +1,65 @@
+{
+  "schema": "conform-run/1",
+  "worker": "d248d074-5cbb-46fc-a0ee-671b2f5b6e1f",
+  "subject": "knowledge-registry",
+  "evaluatedAt": "2026-10-17T01:15:19.899005+00:00",
+  "provider": "codex",
+  "model": "gpt-6.1-sol",
+  "pairs": [],
+  "declined": [
+    {
+      "subject": "knowledge-registry",
+      "context": "contracts-seam",
+      "reason": "withdrawn after review: reviewer (sonnet): The anchor manifest.py:155 is only the HostManifest class docstring header, so it doesn't show that no shared knowledge repository exists; the 'no repository' claim rests on a search whose terms (contributor, digest) were not chosen for this subject."
+    },
+    {
+      "subject": "knowledge-registry",
+      "context": "ledgerbox-lanes-ui",
+      "reason": "withdrawn after review: reviewer (sonnet): The anchor Lane.tsx:123 is an invoice-lane aria-label line, which is incidental and doesn't show that a knowledge publication or catalog path is absent; the absence search used the wrong terms (contributor, digest)."
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-17T01:15:19.899005+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "knowledge-registry"
+      ],
+      "techniques": [
+        "catalog-as-sync-key",
+        "consumer-overlays",
+        "deterministic-seeding",
+        "lane-contracts",
+        "per-contributor-aggregation",
+        "propose-then-adopt",
+        "standard-versus-consumer-split",
+        "verification-is-contributed"
+      ],
+      "deviations": 0,
+      "context": "contracts-seam",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    },
+    {
+      "ts": "2026-10-17T01:15:19.899005+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "knowledge-registry"
+      ],
+      "techniques": [
+        "catalog-as-sync-key",
+        "consumer-overlays",
+        "deterministic-seeding",
+        "lane-contracts",
+        "per-contributor-aggregation",
+        "propose-then-adopt",
+        "standard-versus-consumer-split",
+        "verification-is-contributed"
+      ],
+      "deviations": 0,
+      "context": "ledgerbox-lanes-ui",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    }
+  ]
+}
