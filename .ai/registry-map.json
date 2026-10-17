@@ -2922,7 +2922,11 @@
           "revision": 4,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/useCameraRig.ts:530 Context and repository searches found native integration elsewhere but no listed native integration identifiers in this engine, whose input listeners attach to DOM elements.",
+          "evaluatedAt": "2026-10-17",
+          "evaluatedAgainst": "sha256-b2:0ab230f2977430e7",
+          "evaluatedRevision": 4
         }
       ],
       "governance": "governed"

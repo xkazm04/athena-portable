@@ -3828,6 +3828,123 @@
         }
       ],
       "registryProposal": "Clarify how evaluation and benchmarking harnesses should interface with model routing layers, especially when running headless test suites that mock or script provider backends."
+    },
+    "d3ab2f33-be6a-482d-ad36-b6dae11d2ea0/native-shell-integration": {
+      "context": "demo-kit-template",
+      "subject": "native-shell-integration",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T22:04:39.698Z",
+      "techniques": [
+        {
+          "technique": "capability-presence-contract",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/template/package.json:18 The searched template is a Next.js application without a native host capability matrix."
+        },
+        {
+          "technique": "layout-resolved-input-synthesis",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/template/components/RecordsTable.tsx:37 Interaction navigates the application's own routes without synthesizing foreign-application input."
+        },
+        {
+          "technique": "native-owned-stream",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/template/app/page.tsx:9 The page reads a request-time snapshot; searches found no persistent network stream in the template."
+        },
+        {
+          "technique": "native-side-owns-the-target-set",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/template/app/actions.ts:15 The mutation is an application server database operation, without a presentation-to-native privileged command boundary."
+        },
+        {
+          "technique": "non-stealing-overlay",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/template/components/Levels.tsx:298 This interactive DOM dialog deliberately receives focus inside the application."
+        },
+        {
+          "technique": "observer-perturbation",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/template/components/Levels.tsx:163 Measurements select the application's own DOM groups rather than observing a foreign application's structural provider."
+        },
+        {
+          "technique": "permission-gate-vector",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/template/components/HostCapabilities.tsx:42 Published navigation capabilities operate within the page; searches found no separately granted native permission dependencies."
+        },
+        {
+          "technique": "query-transparent-overlay",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/template/components/Levels.tsx:291 Focus restoration queries the same document rather than a global OS element-under-cursor interface."
+        },
+        {
+          "technique": "unexported-capability-ladder",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/template/next.config.ts:6 The template consumes framework packages through Next; searches found no unexported native entry-point access."
+        }
+      ],
+      "withdrawn": {
+        "worker": "08fda95d-93e3-4e00-be2f-a8af8ea4ffce",
+        "state": "not-applicable",
+        "at": "2026-10-17T22:05:04.780813+00:00",
+        "reason": "reviewer (sonnet): The anchors are incidental: package.json:8 is just the \"start\" script and package.json:18 is a dependency line, so neither shows a capability matrix is absent. The context also contains components/HostCapabilities.tsx, which registers agent-callable capabilities (navigate, read_current_view) through"
+      }
+    },
+    "caa9de8e-e922-457c-9839-14cf7fa6b2e2/native-shell-integration": {
+      "context": "demo-kit-zoom-engine",
+      "subject": "native-shell-integration",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T22:04:39.698Z",
+      "worker": "08fda95d-93e3-4e00-be2f-a8af8ea4ffce",
+      "techniques": [
+        {
+          "technique": "capability-presence-contract",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/tokens.ts:91 This distinguishes browser rendering from server rendering, without exposing native host capabilities."
+        },
+        {
+          "technique": "layout-resolved-input-synthesis",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/nav.ts:114 The engine consumes document keyboard events and does not inject chords into foreign applications."
+        },
+        {
+          "technique": "native-owned-stream",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/useCameraRig.ts:214 Its subscriptions distribute local camera state; searches found no persistent network connection."
+        },
+        {
+          "technique": "native-side-owns-the-target-set",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/state.ts:83 Target identities update navigation state rather than naming filesystem or process targets for native execution."
+        },
+        {
+          "technique": "non-stealing-overlay",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/useOverlayEscape.ts:119 The overlay restores focus to an element within its own document, where foreign-application focus custody does not apply."
+        },
+        {
+          "technique": "observer-perturbation",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/useEcho.ts:105 The observer measures an owned DOM element rather than a foreign application's accessibility tree."
+        },
+        {
+          "technique": "permission-gate-vector",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/useCameraRig.ts:238 The host preference read requires no grant, and searches found no native permission vector."
+        },
+        {
+          "technique": "query-transparent-overlay",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/useRoving.ts:51 Queries are scoped to a DOM root rather than performed through a global OS structural interface."
+        },
+        {
+          "technique": "unexported-capability-ladder",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/tokens.ts:94 The engine uses a public browser API; searches found no private native symbol lookup or address scanning."
+        }
+      ]
     }
   }
 }

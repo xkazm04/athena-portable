@@ -1,0 +1,129 @@
+{
+  "schema": "conform-run/1",
+  "worker": "08fda95d-93e3-4e00-be2f-a8af8ea4ffce",
+  "subject": "native-shell-integration",
+  "evaluatedAt": "2026-10-17T22:04:39.698541+00:00",
+  "provider": "codex",
+  "model": "gpt-6.1-sol",
+  "pairs": [
+    {
+      "context": "demo-kit-zoom-engine",
+      "subject": "native-shell-integration",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evidence": "examples/demo-kit/src/zoom/useCameraRig.ts:530 Context and repository searches found native integration elsewhere but no listed native integration identifiers in this engine, whose input listeners attach to DOM elements.",
+      "techniques": [
+        {
+          "technique": "capability-presence-contract",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/tokens.ts:91 This distinguishes browser rendering from server rendering, without exposing native host capabilities."
+        },
+        {
+          "technique": "layout-resolved-input-synthesis",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/nav.ts:114 The engine consumes document keyboard events and does not inject chords into foreign applications."
+        },
+        {
+          "technique": "native-owned-stream",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/useCameraRig.ts:214 Its subscriptions distribute local camera state; searches found no persistent network connection."
+        },
+        {
+          "technique": "native-side-owns-the-target-set",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/state.ts:83 Target identities update navigation state rather than naming filesystem or process targets for native execution."
+        },
+        {
+          "technique": "non-stealing-overlay",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/useOverlayEscape.ts:119 The overlay restores focus to an element within its own document, where foreign-application focus custody does not apply."
+        },
+        {
+          "technique": "observer-perturbation",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/useEcho.ts:105 The observer measures an owned DOM element rather than a foreign application's accessibility tree."
+        },
+        {
+          "technique": "permission-gate-vector",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/useCameraRig.ts:238 The host preference read requires no grant, and searches found no native permission vector."
+        },
+        {
+          "technique": "query-transparent-overlay",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/useRoving.ts:51 Queries are scoped to a DOM root rather than performed through a global OS structural interface."
+        },
+        {
+          "technique": "unexported-capability-ladder",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/tokens.ts:94 The engine uses a public browser API; searches found no private native symbol lookup or address scanning."
+        }
+      ],
+      "absenceTerms": [
+        "@tauri-apps",
+        "WebSocket",
+        "EventSource",
+        "SendInput",
+        "UIAutomation"
+      ]
+    }
+  ],
+  "declined": [
+    {
+      "subject": "native-shell-integration",
+      "context": "desktop-app-shell-ui",
+      "reason": "the seat returned unknown"
+    },
+    {
+      "subject": "native-shell-integration",
+      "context": "demo-kit-template",
+      "reason": "withdrawn after review: reviewer (sonnet): The anchors are incidental: package.json:8 is just the \"start\" script and package.json:18 is a dependency line, so neither shows a capability matrix is absent. The context also contains components/HostCapabilities.tsx, which registers agent-callable capabilities (navigate, read_current_view) through"
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-17T22:04:39.698541+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "native-shell-integration"
+      ],
+      "techniques": [
+        "capability-presence-contract",
+        "layout-resolved-input-synthesis",
+        "native-owned-stream",
+        "native-side-owns-the-target-set",
+        "non-stealing-overlay",
+        "observer-perturbation",
+        "permission-gate-vector",
+        "query-transparent-overlay",
+        "unexported-capability-ladder"
+      ],
+      "deviations": 0,
+      "context": "demo-kit-template",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    },
+    {
+      "ts": "2026-10-17T22:04:39.698541+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "native-shell-integration"
+      ],
+      "techniques": [
+        "capability-presence-contract",
+        "layout-resolved-input-synthesis",
+        "native-owned-stream",
+        "native-side-owns-the-target-set",
+        "non-stealing-overlay",
+        "observer-perturbation",
+        "permission-gate-vector",
+        "query-transparent-overlay",
+        "unexported-capability-ladder"
+      ],
+      "deviations": 0,
+      "context": "demo-kit-zoom-engine",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    }
+  ]
+}
