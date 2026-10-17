@@ -4079,7 +4079,11 @@
           "revision": 3,
           "changedAt": "2026-09-03",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:134 Searches found no Authorization, import.meta.env, security_invoker or service_role in this context; these files derive local tab/origin models and dispatch shell actions rather than implement a browser credential boundary.",
+          "evaluatedAt": "2026-10-17",
+          "evaluatedAgainst": "sha256-b2:d3eef10e9ed8459f",
+          "evaluatedRevision": 3
         },
         {
           "subject": "codebase-scanning",

@@ -1,0 +1,115 @@
+{
+  "schema": "conform-run/1",
+  "worker": "279368e2-75f0-4d8a-80cf-15518b14d7e4",
+  "subject": "browser-credential-boundary",
+  "evaluatedAt": "2026-10-17T23:35:19.223965+00:00",
+  "provider": "codex",
+  "model": "gpt-6.1-sol",
+  "pairs": [
+    {
+      "context": "desktop-modules-registry",
+      "subject": "browser-credential-boundary",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evidence": "apps/desktop/src/modules/browser/model.ts:134 Searches found no Authorization, import.meta.env, security_invoker or service_role in this context; these files derive local tab/origin models and dispatch shell actions rather than implement a browser credential boundary.",
+      "techniques": [
+        {
+          "technique": "aggregate-view-not-base-table",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:177 Counts an existing tool array, without publishing an aggregate over identifying database rows."
+        },
+        {
+          "technique": "allowlisted-operator-stream",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:60 Reports shell-command failures; this context does not construct a credential-bearing request inspector."
+        },
+        {
+          "technique": "broker-proxy-attaches-secret",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:65 Delegates tab navigation to the tabs store, without attaching an upstream credential."
+        },
+        {
+          "technique": "default-deny-plus-defaulted-owner",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:71 Writes local origin trust through a store action, without a browser-facing database role or session-derived row owner."
+        },
+        {
+          "technique": "omit-the-column-not-the-value",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:165 Projects local origin records into display models; no secret-bearing public database schema is defined here."
+        },
+        {
+          "technique": "opaque-upstream-errors",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:166 Carries a local origins-store failure, rather than an upstream failure from a credential broker."
+        },
+        {
+          "technique": "outbound-fetch-destination-validation",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:62 Opens a browser tab; this is not a server fetching a data-supplied destination."
+        },
+        {
+          "technique": "public-vs-server-env-split",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:94 Builds engine display text from store snapshots; these files introduce no browser-consumed environment configuration."
+        }
+      ],
+      "absenceTerms": [
+        "Authorization",
+        "import.meta.env",
+        "security_invoker",
+        "service_role"
+      ]
+    }
+  ],
+  "declined": [
+    {
+      "subject": "browser-credential-boundary",
+      "context": "browser-lane",
+      "reason": "withdrawn after review: reviewer (sonnet): The not-applicable anchor, browser_lane.py:98, sits at the blank line and section-marker comment after assert_no_host_executor, so it does not itself show that credentialed networking or database grants are absent. The 'no executor for a host tool' claim sits in the module docstring (line ~21), and "
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-17T23:35:19.223965+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "browser-credential-boundary"
+      ],
+      "techniques": [
+        "aggregate-view-not-base-table",
+        "allowlisted-operator-stream",
+        "broker-proxy-attaches-secret",
+        "default-deny-plus-defaulted-owner",
+        "omit-the-column-not-the-value",
+        "opaque-upstream-errors",
+        "outbound-fetch-destination-validation",
+        "public-vs-server-env-split"
+      ],
+      "deviations": 0,
+      "context": "desktop-modules-registry",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    },
+    {
+      "ts": "2026-10-17T23:35:19.223965+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "browser-credential-boundary"
+      ],
+      "techniques": [
+        "aggregate-view-not-base-table",
+        "allowlisted-operator-stream",
+        "broker-proxy-attaches-secret",
+        "default-deny-plus-defaulted-owner",
+        "omit-the-column-not-the-value",
+        "outbound-fetch-destination-validation",
+        "public-vs-server-env-split"
+      ],
+      "deviations": 0,
+      "context": "browser-lane",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    }
+  ]
+}

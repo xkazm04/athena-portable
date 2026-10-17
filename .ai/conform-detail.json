@@ -4201,6 +4201,108 @@
           "evidence": "apps/desktop/src/stage/Backdrop.tsx:128 The animation stops after its remaining drift time; it has no agent failures or repair attempts."
         }
       ]
+    },
+    "16e21bc2-d34a-4cae-95d3-2a7234889176/browser-credential-boundary": {
+      "context": "desktop-modules-registry",
+      "subject": "browser-credential-boundary",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T23:35:19.223Z",
+      "worker": "279368e2-75f0-4d8a-80cf-15518b14d7e4",
+      "techniques": [
+        {
+          "technique": "aggregate-view-not-base-table",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:177 Counts an existing tool array, without publishing an aggregate over identifying database rows."
+        },
+        {
+          "technique": "allowlisted-operator-stream",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:60 Reports shell-command failures; this context does not construct a credential-bearing request inspector."
+        },
+        {
+          "technique": "broker-proxy-attaches-secret",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:65 Delegates tab navigation to the tabs store, without attaching an upstream credential."
+        },
+        {
+          "technique": "default-deny-plus-defaulted-owner",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:71 Writes local origin trust through a store action, without a browser-facing database role or session-derived row owner."
+        },
+        {
+          "technique": "omit-the-column-not-the-value",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:165 Projects local origin records into display models; no secret-bearing public database schema is defined here."
+        },
+        {
+          "technique": "opaque-upstream-errors",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:166 Carries a local origins-store failure, rather than an upstream failure from a credential broker."
+        },
+        {
+          "technique": "outbound-fetch-destination-validation",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:62 Opens a browser tab; this is not a server fetching a data-supplied destination."
+        },
+        {
+          "technique": "public-vs-server-env-split",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:94 Builds engine display text from store snapshots; these files introduce no browser-consumed environment configuration."
+        }
+      ]
+    },
+    "f152c182-5811-458c-a43b-56fbce7a81e5/browser-credential-boundary": {
+      "context": "browser-lane",
+      "subject": "browser-credential-boundary",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T23:35:19.223Z",
+      "techniques": [
+        {
+          "technique": "aggregate-view-not-base-table",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/lane/ports.py:62 Reads catalog tool entries, without exposing identifying rows or a public aggregate."
+        },
+        {
+          "technique": "allowlisted-operator-stream",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/lane/browser_lane.py:407 Records returned tool content as an episode, rather than assembling an inspector record from credential-bearing HTTP requests."
+        },
+        {
+          "technique": "broker-proxy-attaches-secret",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/lane/browser_lane.py:21 Host operations execute on the page; this lane does not attach an upstream secret or forward HTTP headers."
+        },
+        {
+          "technique": "default-deny-plus-defaulted-owner",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/lane/ports.py:121 Approval changes use an application port, without browser-role row policies or a database owner default."
+        },
+        {
+          "technique": "omit-the-column-not-the-value",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/lane/browser_lane.py:431 Persists episodes through a brain port; this context defines no public-role table containing a secret."
+        },
+        {
+          "technique": "outbound-fetch-destination-validation",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/lane/browser_lane.py:348 Delegates host execution to the page and contains no server fetch of a model-supplied URL."
+        },
+        {
+          "technique": "public-vs-server-env-split",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/lane/browser_lane.py:244 Invokes an injected harness; these Python files neither build a browser bundle nor read environment credentials."
+        }
+      ],
+      "withdrawn": {
+        "worker": "279368e2-75f0-4d8a-80cf-15518b14d7e4",
+        "state": "not-applicable",
+        "at": "2026-10-17T23:35:53.891480+00:00",
+        "reason": "reviewer (sonnet): The not-applicable anchor, browser_lane.py:98, sits at the blank line and section-marker comment after assert_no_host_executor, so it does not itself show that credentialed networking or database grants are absent. The 'no executor for a host tool' claim sits in the module docstring (line ~21), and "
+      }
     }
   }
 }
