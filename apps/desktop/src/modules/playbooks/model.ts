@@ -32,8 +32,9 @@ import {
 import { CATEGORIES, type CategoryId, type JobId } from "@/lib/playbook-taxonomy";
 
 export interface PlaybookActions {
-  /** Put the command on the clipboard. */
-  copy: (text: string) => void;
+  /** Put the command on the clipboard. Resolves once the write landed; rejects when there is no
+   *  clipboard or the write was refused, so the caller says what happened, not what was tried. */
+  copy: (text: string) => Promise<void>;
   /** Open a portal or a source in a Browser tab. */
   open: (url: string) => void;
   /** Put the command in Athena's composer and make the playbook her active project; the person

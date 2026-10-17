@@ -16,8 +16,10 @@ import { selectPlaybooks, type PlaybookActions, type PlaybooksModel } from "./mo
 
 const BASE = {
   copy: (text: string) => {
-    void navigator.clipboard?.writeText(text).catch((error: unknown) => {
+    const write = navigator.clipboard?.writeText(text) ?? Promise.reject(new Error("no clipboard here"));
+    return write.catch((error: unknown) => {
       console.error(`[playbooks] copy: ${String(error)}`);
+      throw error;
     });
   },
   hand: (text: string, playbook: { id: string; title: string }) => {

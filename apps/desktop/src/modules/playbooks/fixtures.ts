@@ -14,7 +14,7 @@ import { PLAYBOOKS } from "@/lib/playbooks.shipped";
 
 import { selectPlaybooks, type FacetId, type PlaybookActions, type PlaybooksModel } from "./model";
 
-const NOOP: PlaybookActions = { copy: () => {}, open: () => {}, hand: () => {} };
+const NOOP: PlaybookActions = { copy: () => Promise.resolve(), open: () => {}, hand: () => {} };
 
 function book(
   raw: Record<string, unknown>,

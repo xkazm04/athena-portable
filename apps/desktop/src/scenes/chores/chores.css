@@ -913,6 +913,20 @@
 .pa-said:empty {
   display: none;
 }
+/* The command, shown when the clipboard refused it: wrapped, never scrolled, one click selects it. */
+.pa-command {
+  margin: 0;
+  padding: 12px 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: var(--card-bg);
+  color: var(--foreground);
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  user-select: all;
+}
 
 /* -- Narrow ---------------------------------------------------------------------------------- */
 @container (max-width: 1080px) {
