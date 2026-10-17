@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>t4 A/B</title>
+<style>
+  html, body { margin: 0; background: #0f0f12; color: #ccc; font: 13px system-ui, sans-serif; }
+  #faces { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; padding: 8px; }
+  .pane { position: relative; background: #17171c; aspect-ratio: 1 / 1; }
+  .pane canvas { width: 100%; height: 100%; display: block; }
+  .pane b { position: absolute; left: 10px; top: 8px; color: #eee; font-weight: 600; }
+  #bar { display: flex; gap: 12px; align-items: center; padding: 0 8px; }
+  #plot { width: calc(100% - 16px); height: 360px; margin: 8px; display: block; background: #141418; }
+  button { background: #2a2a33; color: #eee; border: 1px solid #444; padding: 6px 14px; cursor: pointer; }
+  @media (max-width: 700px) { #faces { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<div id="bar"><button id="play">play</button><span id="status">loading</span></div>
+<div id="faces">
+  <div class="pane"><canvas id="ca"></canvas><b id="la">A</b></div>
+  <div class="pane"><canvas id="cb"></canvas><b id="lb">B</b></div>
+</div>
+<canvas id="plot"></canvas>
+<script type="module" src="./ab.js"></script>
+</body>
+</html>
