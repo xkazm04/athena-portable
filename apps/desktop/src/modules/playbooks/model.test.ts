@@ -103,7 +103,7 @@ test("every shipped playbook has a fixture that opens its layer, generated from 
 
 // -- the ledger (ADR 0096) -------------------------------------------------------------------------
 
-const NOOP: PlaybookActions = { copy: () => {}, open: () => {}, hand: () => {} };
+const NOOP: PlaybookActions = { copy: () => Promise.resolve(), open: () => {}, hand: () => {} };
 
 /** Views through the same reader and selector the shipped set goes through, in the edge's order. */
 function ledger(...raws: Record<string, unknown>[]): PlaybookView[] {

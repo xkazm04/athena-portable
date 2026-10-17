@@ -1,0 +1,130 @@
+{
+ "schema": "conform-run/1",
+ "worker": "9adc2487-ca09-4bb1-b501-0f3b49cd56c2",
+ "subject": "settings",
+ "evaluatedAt": "2026-10-16T22:38:52.072119+00:00",
+ "provider": "agy",
+ "model": "gemini-3.8-flash-high",
+ "pairs": [
+  {
+   "context": "desktop-stores",
+   "subject": "settings",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "apps/desktop/src/stores/settings.ts:206 The desktop settings store fans out into seven separate IPC read commands at startup instead of batching, performs optimistic UI mutations without rollback on write failure, and lacks store-side key validation, setting kind classification, or audit recording.",
+   "techniques": [
+    {
+     "technique": "key-registry",
+     "verdict": "deviation",
+     "evidence": "apps/desktop/src/stores/settings.ts:107 Write path delegates to generic key-value store without a store-side allowlist, orphan detection, or retirement reaping."
+    },
+    {
+     "technique": "typed-accessors",
+     "verdict": "conformant",
+     "evidence": "apps/desktop/src/stores/settings.ts:220 Typed read boundary parses and validates stored string values via type guard, falling back to declared default without persisting it."
+    },
+    {
+     "technique": "read-batching",
+     "verdict": "deviation",
+     "evidence": "apps/desktop/src/stores/settings.ts:206 Startup fans out into seven separate single-key store_get IPC calls across the boundary instead of executing a bulk read or batched query."
+    },
+    {
+     "technique": "setting-kinds",
+     "verdict": "deviation",
+     "evidence": "apps/desktop/src/stores/settings.ts:70 Settings are aggregated as a flat interface without declaring kinds (preference, operational config, ceiling, flag) or per-kind contracts."
+    },
+    {
+     "technique": "inherited-default-override",
+     "verdict": "conformant",
+     "evidence": "apps/desktop/src/stores/settings.ts:52 Resolves theme against the live OS source continuously via media query listeners, storing the system choice rather than the resolved value."
+    },
+    {
+     "technique": "settings-audit-and-history",
+     "verdict": "deviation",
+     "evidence": "apps/desktop/src/stores/settings.ts:117 Setting mutations write directly to the store without producing audit records of old/new values, timestamps, categories, or origins."
+    },
+    {
+     "technique": "save-experience",
+     "verdict": "deviation",
+     "evidence": "apps/desktop/src/stores/settings.ts:114 State and UI attributes are updated optimistically before write, with no rollback or error recovery to restore truth if settingWrite fails."
+    },
+    {
+     "technique": "cross-source-precedence-chain",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/stores/settings.ts:207 Settings resolve from a single SQLite store rather than a declared multi-source precedence chain across CLI, env, and files."
+    },
+    {
+     "technique": "presence-decides-precedence",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/stores/settings.ts:208 The store is read-write with singular key access, without read-only multi-name grace period fallbacks."
+    },
+    {
+     "technique": "applied-defaults-ledger",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/stores/settings.ts:96 Defaults are scalar values rather than user-editable collections of shipped items requiring an applied-defaults ledger."
+    },
+    {
+     "technique": "config-backup-and-restore",
+     "verdict": "deviation",
+     "evidence": "apps/desktop/src/stores/settings.ts:226 Corrupted or unreadable local store state silently falls back to hardcoded defaults without bounded backup rotation or a boot-time restore prompt."
+    },
+    {
+     "technique": "author-declared-include-graph",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/stores/settings.ts:2 Configuration is held in database rows rather than author-authored hierarchical include graphs."
+    },
+    {
+     "technique": "in-place-document-patch",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/stores/settings.test.ts:131 Store granularity is individual key rows rather than a single structural document."
+    }
+   ],
+   "registryProposal": "In settings.md, author-declared-include-graph is listed in the frontmatter techniques array and exists as a technique file, but is omitted from the markdown summary list under ## The techniques."
+  }
+ ],
+ "declined": [
+  {
+   "subject": "settings",
+   "context": "desktop-scenes-voice-waking",
+   "reason": "The context consists of UI presentation scene components for the Voice studio/settings and Waking arrival screens; it does not implement, own, or manage an application settings store (ADR 0085/0087; waking/reopen.ts:4 notes the UI avoids touching store rows, and API keys are delegated to the credential vault)."
+  },
+  {
+   "subject": "settings",
+   "context": "desktop-build-config",
+   "reason": "Desktop build and packaging configuration (Vite, ESLint, Tauri build.rs, and dev scripts) provides application bundling and tooling, containing no application settings store substrate, accessors, or consumers."
+  },
+  {
+   "subject": "settings",
+   "context": "workspace-build-config",
+   "reason": "Workspace and CI scripts (scripts/build-sidecar.py and scripts/sidecar_entry.py) package the Python sidecar binary and do not define, manage, or persist application settings."
+  }
+ ],
+ "consults": [
+  {
+   "ts": "2026-10-16T22:38:52.072119+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "settings"
+   ],
+   "techniques": [
+    "applied-defaults-ledger",
+    "author-declared-include-graph",
+    "config-backup-and-restore",
+    "cross-source-precedence-chain",
+    "in-place-document-patch",
+    "inherited-default-override",
+    "key-registry",
+    "presence-decides-precedence",
+    "read-batching",
+    "save-experience",
+    "setting-kinds",
+    "settings-audit-and-history",
+    "typed-accessors"
+   ],
+   "deviations": 1,
+   "context": "desktop-stores",
+   "via": "curator-multi:agy",
+   "model": "gemini-3.8-flash-high"
+  }
+ ]
+}

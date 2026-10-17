@@ -193,17 +193,16 @@ test("a store:changed for settings re-reads the rows, so two windows cannot disa
   expect(useSettings.getState().engine).toBe("codex");
 });
 
-test("a row that cannot be read still hydrates the store, keeps what it had, and says why", async () => {
+test("a row that cannot be read on a re-read keeps what it had, lets the rest arrive, and says why", async () => {
   harness.rows.set("settings/theme", "light");
   harness.rows.set("settings/engine", "codex");
   await readRows();
   harness.rows.set("settings/theme", "dark");
   harness.failing.add("settings/engine");
-  useSettings.setState({ hydrated: false });
 
   try {
-    // Before: one rejected read rejected the whole read, so `hydrated` stayed false and every
-    // window that waits on it (Main's first scene, her window's first draw) waited for ever.
+    // Before: one rejected read rejected the whole read, so no row arrived. A refused FIRST read
+    // stays unhydrated with a retry instead (console/settings-problem.test.tsx).
     await readRows();
   } finally {
     harness.failing.clear();

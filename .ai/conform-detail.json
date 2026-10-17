@@ -1300,6 +1300,2457 @@
           "evidence": "examples/tidycrm/components/blocks/l0/octants/Scene.tsx:293 The scene colors current attention and defect state rather than elapsed approval age, and searches found no severity-indexed urgency/deadline tables in these components."
         }
       ]
+    },
+    "9e179811-457d-4d43-865e-87faad968f56/demo-data-plane": {
+      "context": "demo-kit-ui-webmcp",
+      "subject": "demo-data-plane",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T21:28:46.065Z",
+      "worker": "48ac98e7-8d73-4029-a847-e6f2a4d6649c",
+      "techniques": [
+        {
+          "technique": "seeded-determinism",
+          "verdict": "conformant",
+          "evidence": "examples/demo-kit/src/seed/index.ts:198 Mulberry32 PRNG seeded deterministically per stream via rngFor, ensuring identical fixture rows across demo runs."
+        },
+        {
+          "technique": "fixture-self-consistency",
+          "verdict": "conformant",
+          "evidence": "examples/demo-kit/src/seed/companies.ts:70 Defines one root declaration of shared entities and contacts so cross-app demo threads share identities and domains."
+        },
+        {
+          "technique": "fake-surface-honesty-contract",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/src/ui/AppShell.tsx:61 AppShell renders action badges unconditionally without provenance gating, lacks persistent demo chrome markers, and state is persisted to disk in SQLite."
+        },
+        {
+          "technique": "runtime-dispatch-not-build-flag",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/src/db/index.ts:55 Data access is statically bound to local SQLite files without session-based runtime dispatch between real and demo planes."
+        },
+        {
+          "technique": "network-faithful-mocks",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/src/db/index.ts:130 Database operations execute synchronously via DatabaseSync with zero simulated latency and no provocable failure modes."
+        },
+        {
+          "technique": "one-interface-many-planes",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/src/db/index.ts:16 Exposes a direct SQLite driver wrapper rather than a shared business data interface implemented by real, fake, and mirror planes."
+        }
+      ],
+      "registryProposal": "The standard assumes a client application that serves both real tenants and demo visitors from the same artifact (e.g. via a /demo route), but does not explicitly address architectural guidance for standalone demo companion apps built specifically to exercise an external agent host environment."
+    },
+    "d3ab2f33-be6a-482d-ad36-b6dae11d2ea0/demo-data-plane": {
+      "context": "demo-kit-template",
+      "subject": "demo-data-plane",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T21:28:46.065Z",
+      "worker": "48ac98e7-8d73-4029-a847-e6f2a4d6649c",
+      "techniques": [
+        {
+          "technique": "seeded-determinism",
+          "verdict": "conformant",
+          "evidence": "examples/demo-kit/template/lib/db.ts:28 Uses a fixed reference date and a seeded RNG stream (rngFor) to ensure deterministic fixture generation across all runs."
+        },
+        {
+          "technique": "fixture-self-consistency",
+          "verdict": "conformant",
+          "evidence": "examples/demo-kit/template/app/page.tsx:9 Both the Levels semantic zoom hierarchy and RecordsTable project consistently from the single collection fetched via listRecords()."
+        },
+        {
+          "technique": "fake-surface-honesty-contract",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/template/components/Shell.tsx:10 Mounts AppShell without persistent demo disclosure chrome and stores state in a persistent disk database across sessions."
+        },
+        {
+          "technique": "runtime-dispatch-not-build-flag",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/template/lib/db.ts:58 Directly accesses a local SQLite database without per-call runtime dispatch from session state."
+        },
+        {
+          "technique": "one-interface-many-planes",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/template/lib/db.ts:61 Directly queries local database functions rather than implementing a shared data plane interface."
+        },
+        {
+          "technique": "network-faithful-mocks",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/template/lib/db.ts:63 Data access runs synchronously with zero simulated latency and no reachable fault modes."
+        }
+      ]
+    },
+    "c43e44e3-3408-409e-821f-ccdb2ebe8f50/demo-data-plane": {
+      "context": "journey-stage-src",
+      "subject": "demo-data-plane",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T21:28:46.065Z",
+      "worker": "48ac98e7-8d73-4029-a847-e6f2a4d6649c",
+      "techniques": [
+        {
+          "technique": "seeded-determinism",
+          "verdict": "conformant",
+          "evidence": "examples/journey/src/connectors/fake-mail.ts:43 Seed methods generate deterministic message identifiers from sequential indexes."
+        },
+        {
+          "technique": "fixture-self-consistency",
+          "verdict": "conformant",
+          "evidence": "examples/journey/src/stage.ts:20 Maintains consistent shared identifiers (such as STUDIO_NOTES) across journey test acts."
+        },
+        {
+          "technique": "network-faithful-mocks",
+          "verdict": "deviation",
+          "evidence": "examples/journey/src/connectors/fake-mail.ts:67 FakeMail and FakeNotes execute synchronously with zero latency and accept mutations without validating inputs against real service schemas."
+        },
+        {
+          "technique": "one-interface-many-planes",
+          "verdict": "deviation",
+          "evidence": "examples/journey/src/connectors/port.ts:18 ConnectorPort is implemented only by test doubles (FakeMail, FakeNotes) while the real connector service lives in an external repository."
+        },
+        {
+          "technique": "runtime-dispatch-not-build-flag",
+          "verdict": "deviation",
+          "evidence": "examples/journey/src/connector-surface.ts:33 Connector instances are injected directly into the test surface without runtime session-based plane dispatch."
+        },
+        {
+          "technique": "fake-surface-honesty-contract",
+          "verdict": "deviation",
+          "evidence": "examples/journey/src/connector-surface.ts:76 Faked connector surfaces enforce egress gating but do not present persistent demo disclosure markers."
+        }
+      ]
+    },
+    "6c17278c-ed66-4d70-8a4f-4202662f1613/structured-output": {
+      "context": "hirelane-model-and-lib",
+      "subject": "structured-output",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:19:58.619Z",
+      "worker": "47e27b05-a0fe-4fb9-a6a8-f73de23654eb",
+      "techniques": [
+        {
+          "technique": "extraction-strategies",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/lib/scoring.ts:12 Sentence split is for keyword evidence in the CV, not a ladder over settled model text."
+        },
+        {
+          "technique": "schema-validation-and-repair",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/tools/search.ts:56 An unscored candidate is excluded from a score filter rather than treated as zero; there is no model-artifact door or repair loop here."
+        },
+        {
+          "technique": "answer-coverage-gating",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/lib/board/read.ts:6 The band counts how many criteria the application mentioned; the file says that figure is not model output, so there is no asked-versus-answered model set."
+        },
+        {
+          "technique": "output-budget-signal",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/tools/search.ts:21 Search results stop at a fixed page; nothing measures a model generation ceiling."
+        },
+        {
+          "technique": "op-grammar-allowlisting",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/lib/manifest.ts:265 This throw is registration-time for an app author naming a tool; this file does not dispatch a model-proposed operation."
+        },
+        {
+          "technique": "artifact-lifecycle",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/useRun.ts:12 useRun arms a UI action and disarms on a timer; it is not an extract-and-validate state machine."
+        },
+        {
+          "technique": "enumerable-domain-decoding",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/lib/manifest.ts:79 The enum is a tool-parameter vocabulary; this file builds no tokenizer prefix tree and runs no constrained decoder."
+        },
+        {
+          "technique": "graded-span-grounding",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/lib/scoring.ts:36 Evidence is the CV sentence the heuristic selected, not a model-returned quote to align."
+        }
+      ]
+    },
+    "a4c21bac-6dbe-41a3-b6ad-e7bec7001865/structured-output": {
+      "context": "voice-channel",
+      "subject": "structured-output",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:19:58.619Z",
+      "techniques": [
+        {
+          "technique": "extraction-strategies",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/whisper.py:174 Whisper stdout is cleaned into a transcript string; there is no ordered ladder from prose to a candidate object."
+        },
+        {
+          "technique": "schema-validation-and-repair",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/backends.py:387 The OpenAI call returns a transcript string; a missing text field becomes empty speech, and this function has no artifact schema or repair loop."
+        },
+        {
+          "technique": "output-budget-signal",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/tts.py:10 Spoken text is cut to a fixed cap and the cut is announced; that is not a measurement of a model output-token ceiling."
+        },
+        {
+          "technique": "op-grammar-allowlisting",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/commands.py:3 The closed word lists classify a person's utterance, not an operation the model proposed."
+        },
+        {
+          "technique": "artifact-lifecycle",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/install.py:5 The install phases including extracting unpack pinned engine archives; they are not a model-artifact run."
+        },
+        {
+          "technique": "display-vs-machine-channels",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/tts.py:3 Both products are human-facing prose; this module does not separate a validated machine artifact from display text."
+        },
+        {
+          "technique": "enumerable-domain-decoding",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/commands.py:13 Membership is exact string match on a person's words, not a constrained decoder over a value domain."
+        }
+      ],
+      "withdrawn": {
+        "worker": "47e27b05-a0fe-4fb9-a6a8-f73de23654eb",
+        "state": "not-applicable",
+        "at": "2026-10-15T22:22:26.067539+00:00",
+        "reason": "reviewer (sonnet): The anchor (__init__.py:26, 'voice is a transport and not a feature') does not show the precondition is absent. tts.py:1-10 shows the context consumes a model-authored `TTS:` first-line artifact and caps it, so the 'never extracts a machine artifact from model text' claim is not supported. The parse"
+      }
+    },
+    "3c4969f8-b87d-4ccd-bcab-2ebbcf35526c/structured-output": {
+      "context": "ledgerbox-domain-lib",
+      "subject": "structured-output",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:19:58.619Z",
+      "worker": "47e27b05-a0fe-4fb9-a6a8-f73de23654eb",
+      "techniques": [
+        {
+          "technique": "schema-validation-and-repair",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/lib/format.ts:48 Unusable money becomes null rather than a guessed amount; the parser is for typed amounts, not a model artifact at a repair loop."
+        },
+        {
+          "technique": "answer-coverage-gating",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/lib/match.ts:12 Matches under a fixed score floor are not offered; nothing enumerates units a model was asked to answer."
+        },
+        {
+          "technique": "op-grammar-allowlisting",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/lib/tool-classes.ts:2 The table records reversible and side-effect class; it does not dispatch model-proposed operations."
+        },
+        {
+          "technique": "enumerable-domain-decoding",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/lib/manifest.ts:175 period is a closed enum on a tool parameter; this file builds no tokenizer prefix tree."
+        }
+      ]
+    },
+    "046526ec-f0cc-4de8-b68b-37271969bd74/structured-output": {
+      "context": "tidycrm-domain-lib",
+      "subject": "structured-output",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:19:58.619Z",
+      "worker": "47e27b05-a0fe-4fb9-a6a8-f73de23654eb",
+      "techniques": [
+        {
+          "technique": "extraction-strategies",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/lib/normalize.ts:2 Field cleanup is four pure string rules, not a payload ladder over model text."
+        },
+        {
+          "technique": "schema-validation-and-repair",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/lib/csv.ts:14 CSV export renders a null cell as empty text; it is not a validation door for a model artifact."
+        },
+        {
+          "technique": "answer-coverage-gating",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/app/actions.ts:34 The pair list has a fixed page size; there is no set of units a model was asked to answer."
+        },
+        {
+          "technique": "output-budget-signal",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/app/actions.ts:33 The ceiling keeps a listing short for a caller; it does not record share of a model output-token ceiling."
+        },
+        {
+          "technique": "graded-span-grounding",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/lib/matching.ts:19 Duplicate evidence is a hand-weighted rule, not a model quote to locate in a source."
+        }
+      ]
+    },
+    "9e179811-457d-4d43-865e-87faad968f56/structured-output": {
+      "context": "demo-kit-ui-webmcp",
+      "subject": "structured-output",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:19:58.619Z",
+      "worker": "47e27b05-a0fe-4fb9-a6a8-f73de23654eb",
+      "techniques": [
+        {
+          "technique": "extraction-strategies",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/webmcp/modelContext.ts:113 Tool arguments arrive as a JSON string and are parsed once; the prose fence-and-span ladder has no input here."
+        },
+        {
+          "technique": "schema-validation-and-repair",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/src/webmcp/door.ts:29 The door returns the first failure as prose, and door.ts:34 iterates an array by its length while types.ts:104 publishes maxItems, which check() never reads."
+        },
+        {
+          "technique": "answer-coverage-gating",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/webmcp/hooks.ts:6 This module does not call a model, so there is no enumerated answer set to cover."
+        },
+        {
+          "technique": "output-budget-signal",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/webmcp/bounded.ts:2 The helper slices deterministic tool-result lists and states showing and of; it does not measure a model output ceiling."
+        },
+        {
+          "technique": "op-grammar-allowlisting",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/src/webmcp/modelContext.ts:112 An unregistered tool name is thrown; it is not left unexecuted, counted, and sampled as data."
+        },
+        {
+          "technique": "constrained-decoding-is-a-shared-budget",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/webmcp/index.ts:3 No model request is assembled here, so there is no shared constrained-decoding budget to shed."
+        },
+        {
+          "technique": "extraction-observability",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/activity/index.ts:2 The shared log records UI actions; it does not count extraction outcomes, strategy rungs, or repair depth."
+        },
+        {
+          "technique": "enumerable-domain-decoding",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/webmcp/types.ts:102 A closed set is copied onto the JSON schema for the argument door; this module builds no token-id prefix tree."
+        }
+      ],
+      "registryProposal": "Say whether a host that receives tool arguments as already-parsed JSON is inside this subject: the validation door and op-grammar fit that host, and the prose extraction ladder, repair loop, and constrained-decoding budget do not."
+    },
+    "046526ec-f0cc-4de8-b68b-37271969bd74/table": {
+      "context": "tidycrm-domain-lib",
+      "subject": "table",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:41:51.481Z",
+      "worker": "f16e07c4-2955-49bc-afaa-0a4e063da695",
+      "techniques": [
+        {
+          "technique": "client-server-split",
+          "verdict": "conformant",
+          "evidence": "examples/tidycrm/lib/db.ts:188 The contact-page query filters, orders, counts and windows on the server, returning the answered segment and page."
+        },
+        {
+          "technique": "compressed-scroll-space",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/lib/constants.ts:57 The documented dataset and bounded samples do not approach the browser scroll-size ceiling."
+        },
+        {
+          "technique": "export-escapes-for-its-consumer",
+          "verdict": "deviation",
+          "evidence": "examples/tidycrm/lib/csv.ts:15 The complete cell encoder only quotes CSV syntax; it has no formula-trigger guard before quoting."
+        }
+      ]
+    },
+    "97da7e8d-8b3a-41fd-bcfe-326d41a66565/table": {
+      "context": "desktop-app-shell-ui",
+      "subject": "table",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:41:51.481Z",
+      "worker": "f16e07c4-2955-49bc-afaa-0a4e063da695",
+      "techniques": [
+        {
+          "technique": "compressed-scroll-space",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/components/Table.tsx:121 The primitive renders all supplied rows directly rather than using a virtual spacer."
+        },
+        {
+          "technique": "grid-keyboard-model",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/components/Table.tsx:124 Cells have no navigation focus target; the handler moves between rows and implements no horizontal cell traversal."
+        }
+      ]
+    },
+    "b5d94170-12ef-41ee-af0a-902add774f7d/table": {
+      "context": "proving-hosted-server",
+      "subject": "table",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:41:51.481Z",
+      "worker": "f16e07c4-2955-49bc-afaa-0a4e063da695",
+      "techniques": [
+        {
+          "technique": "client-server-split",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/server/runs.py:164 The server orders the complete run-id set before truncation, and the browser renders that order unchanged."
+        },
+        {
+          "technique": "compressed-scroll-space",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/server/runs.py:27 Server listings are clamped to at most 100 rows and rendered without a virtual spacer."
+        },
+        {
+          "technique": "filtering",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/server/static/index.html:843 The history table has a fixed recent-run request; the page's attack filters operate a separate detail list."
+        },
+        {
+          "technique": "loading-and-empty-states",
+          "verdict": "deviation",
+          "evidence": "src/athena/proving/server/static/index.html:844 Refresh failure discards populated content and chrome, uses empty-state styling, and supplies no retry."
+        },
+        {
+          "technique": "one-door-for-range-writes",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/server/static/index.html:690 History rows open reports or replays; their cells do not provide editable range-write gestures."
+        },
+        {
+          "technique": "sorting",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/server/runs.py:120 The fixed default order uses unique run-directory identities, producing a deterministic total order."
+        }
+      ]
+    },
+    "3c4969f8-b87d-4ccd-bcab-2ebbcf35526c/table": {
+      "context": "ledgerbox-domain-lib",
+      "subject": "table",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T22:41:51.481Z",
+      "worker": "f16e07c4-2955-49bc-afaa-0a4e063da695",
+      "techniques": [
+        {
+          "technique": "client-server-split",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/lib/lanes/index.ts:194 The client books payload carries the complete invoice collection rather than a server-truncated page."
+        },
+        {
+          "technique": "compressed-scroll-space",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/lib/db.ts:115 The documented 120-row dataset does not approach the massive virtual-table precondition."
+        },
+        {
+          "technique": "export-escapes-for-its-consumer",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/lib/export.ts:119 The reviewed summary exporter produces fixed-width text and Markdown tables, not CSV cells."
+        },
+        {
+          "technique": "sorting",
+          "verdict": "deviation",
+          "evidence": "examples/ledgerbox/lib/db.ts:121 Due date is the only ordering term; distinct invoices with equal dates lack the required identity tiebreaker."
+        }
+      ]
+    },
+    "82024321-4b38-4a9a-b360-154b5349e47b/fleet-orchestration": {
+      "context": "proving-core",
+      "subject": "fleet-orchestration",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T23:10:51.254Z",
+      "techniques": [
+        {
+          "technique": "parallel-dispatch",
+          "verdict": "deviation",
+          "evidence": "src/athena/proving/roles.py:435 Admission checks settled monetary spend, not shared concurrency capacity; the inspected Gauntlet caller starts two generators, each with its own workers-sized pool, instead of enforcing one cap at this invocation door."
+        }
+      ],
+      "withdrawn": {
+        "worker": "189c57f6-dc0d-4c82-84d8-64c1f7b2b06a",
+        "state": "deviation",
+        "at": "2026-10-15T23:11:10.843487+00:00",
+        "reason": "reviewer (sonnet): roles.py:440 does call client.complete with only a spend check, but the 'two generators each with a workers-sized pool' claim rests on gauntlet/run.py:583 and :238, which is not among this context's files and does not get called by them."
+      }
+    },
+    "9773ec7e-b7ea-4dda-a063-fd912a72a012/fleet-orchestration": {
+      "context": "desktop-setup-module",
+      "subject": "fleet-orchestration",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T23:10:51.254Z",
+      "techniques": [],
+      "withdrawn": {
+        "worker": "189c57f6-dc0d-4c82-84d8-64c1f7b2b06a",
+        "state": "not-applicable",
+        "at": "2026-10-15T23:11:10.868774+00:00",
+        "reason": "reviewer (sonnet): The anchor index.ts:71 is one daemon-restart line that does not show worker dispatch is absent, and the searched terms (fleet, hibernat, sweeper) are too narrow to prove absence for this subject."
+      }
+    },
+    "fe808407-91f4-4b85-8688-1125db0aec71/fleet-orchestration": {
+      "context": "desktop-scenes-accounts-apps",
+      "subject": "fleet-orchestration",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-15",
+      "evaluatedTs": "2026-10-15T23:10:51.254Z",
+      "techniques": [],
+      "withdrawn": {
+        "worker": "189c57f6-dc0d-4c82-84d8-64c1f7b2b06a",
+        "state": "not-applicable",
+        "at": "2026-10-15T23:11:10.889549+00:00",
+        "reason": "reviewer (sonnet): The anchor view.tsx:12 is a doc-comment line that only describes the scene, so it is incidental. The same narrow search terms cannot prove absence of worker or session management."
+      }
+    },
+    "83c99463-f300-42a8-b1a4-7b8e1c5c06f0/motion": {
+      "context": "desktop-art-bell",
+      "subject": "motion",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T00:00:02.982Z",
+      "worker": "ae78fcab-d55d-41d8-8e21-b0dd85be6297",
+      "techniques": [
+        {
+          "technique": "performance-discipline",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/art/glyphs.css:22 Account ink also transitions stroke and fill; only the bell keyframes stay on transform, rotate, and opacity."
+        },
+        {
+          "technique": "preset-vocabulary",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/art/chore.css:10 Hero float inlines 7s and the glyph float inlines 6s, two nudged copies rather than one duration class."
+        },
+        {
+          "technique": "taste-budgets",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/bell/bell.css:68 Hearing and asking ripples scale to 1.7, far past an ambient travel of a few pixels, and each tendril adds two more infinite sways."
+        },
+        {
+          "technique": "unprompted-motion-lifecycle",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/bell/bell.css:25 Pulse, glow, ripple, sway, and the glyph floats run indefinitely; Bell.tsx and the preview expose no visible stop."
+        },
+        {
+          "technique": "content-bearing-degradation",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/art/voice.tsx:139 The ring's markup is the real progress; Calm only drops the transition, and the drawings stay painted while floats stop."
+        },
+        {
+          "technique": "engine-selection",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/bell/bell.css:4 Fire-and-forget motion is platform keyframes; the bell test forbids a frame loop."
+        },
+        {
+          "technique": "continuity-across-change",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/bell/bell.css:16 A pose retunes variables on the same svg instead of swapping in another drawing."
+        },
+        {
+          "technique": "gesture-decomposition",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/bell/bell.css:73 Lean is a separate rotate track from the sway transform, with its own transition."
+        },
+        {
+          "technique": "reduced-motion-mechanics",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/art/glyphs.css:28 Calm stops the decorative float and the ring and ink transitions, leaving the settled drawing."
+        }
+      ],
+      "registryProposal": "A few-pixel infinite float is the ambient class taste-budgets already caps, but unprompted-motion-lifecycle's five-second rule still demands a visible stop, so every decorative loop fails the same test as an autoplay carousel."
+    },
+    "ec3c6a55-2ad9-47a0-8616-02544fcd0f1e/motion": {
+      "context": "desktop-scenes-mind-surface",
+      "subject": "motion",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T00:00:02.982Z",
+      "worker": "ae78fcab-d55d-41d8-8e21-b0dd85be6297",
+      "techniques": [
+        {
+          "technique": "performance-discipline",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/mind/mind.css:84 Surface controls likewise transition background, border-color, and color; the engine glow is the only opacity-only piece."
+        },
+        {
+          "technique": "reduced-motion-mechanics",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/surface/surface.css:66 Mind's own calm copy says moves land at once, but surface.css and mind.css have no data-motion rule; the notice fade is specified as 0ms, not an epsilon."
+        },
+        {
+          "technique": "content-bearing-degradation",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/scenes/shared/EngineSection.tsx:49 The notice text is in the element; opacity 0 lives only in the keyframe from-state, so a fade that never runs still shows the warning."
+        },
+        {
+          "technique": "continuity-across-change",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/scenes/shared/engine.css:26 Choosing an engine fades a layer on the same card instead of swapping cards."
+        },
+        {
+          "technique": "engine-selection",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/scenes/shared/engine.css:23 Hover, selection, and the notice fade are declarative stylesheet motion with no library switch."
+        },
+        {
+          "technique": "preset-vocabulary",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/scenes/mind/mind.css:170 These sheets reference duration and easing tokens and do not inline milliseconds."
+        },
+        {
+          "technique": "taste-budgets",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/scenes/surface/surface.css:124 Hover and error color use the fast feedback step; the notice uses the depth token, under a second."
+        }
+      ]
+    },
+    "89c7e4c9-2ecd-4131-9ac7-7ff647d041c1/motion": {
+      "context": "hirelane-board-ui",
+      "subject": "motion",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T00:00:02.982Z",
+      "worker": "ae78fcab-d55d-41d8-8e21-b0dd85be6297",
+      "techniques": [
+        {
+          "technique": "one-shot-guarding",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/components/board/Columns.tsx:221 Board renders Columns only at level 0, so a return remounts every face; there is no surface seen-set."
+        },
+        {
+          "technique": "reduced-motion-mechanics",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/components/board/motion.ts:80 The scrim exit uses exact zero inside AnimatePresence; the stylesheet side correctly uses 0.01ms."
+        },
+        {
+          "technique": "content-bearing-degradation",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/motion.ts:141 Reduced motion skips the echo and collapses both dossier beats onto the shown state, with initial false."
+        },
+        {
+          "technique": "continuity-across-change",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/Columns.tsx:193 candidate-<id> is held by the pile, the card, or the dossier, and the echo carries no layoutId."
+        },
+        {
+          "technique": "engine-selection",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/Board.tsx:40 Layout morphs sit on motion/react, the reducedMotion switch is named in reduced-motion.css, and a second navigation replaces the echo."
+        },
+        {
+          "technique": "performance-discipline",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/Board.tsx:505 The camera echo moves opacity and scale; the vocabulary is not written through per-frame React state."
+        },
+        {
+          "technique": "preset-vocabulary",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/motion.ts:176 Zoom, settle, lift, fade, and leave take duration and easing from the cascade tokens, with DOSSIER_STILL as the fallback."
+        },
+        {
+          "technique": "taste-budgets",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/motion.ts:84 The level change is held to 350ms, under the stated 400ms ceiling, and nothing in this module loops."
+        },
+        {
+          "technique": "gesture-decomposition",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/motion.ts:123 The dossier is two sequenced beats: the box lands, then the regions stagger in."
+        },
+        {
+          "technique": "loop-pause-governance",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/motion.ts:8 There is no looping gesture for a merged pause signal to govern."
+        }
+      ]
+    },
+    "f9349ce6-a48d-4abe-9bb1-412a99b45907/motion": {
+      "context": "ledgerbox-style-design",
+      "subject": "motion",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T00:00:02.982Z",
+      "worker": "ae78fcab-d55d-41d8-8e21-b0dd85be6297",
+      "techniques": [
+        {
+          "technique": "performance-discipline",
+          "verdict": "deviation",
+          "evidence": "examples/ledgerbox/components/lanes/style/level0/l0-swarm-2.css:59 The mast headline was moved off font-size onto transform and opacity, but the mark still eases its shadow."
+        },
+        {
+          "technique": "one-shot-guarding",
+          "verdict": "deviation",
+          "evidence": "examples/ledgerbox/components/lanes/style/chrome/mast.css:37 Levels 1 and 2 override animation-name, so returning to level 0 restarts the open entrance; no seen-set exists in the sheet."
+        },
+        {
+          "technique": "reduced-motion-mechanics",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/style/base/reduced-motion.css:11 They rejected a 0.01ms duration because fill-mode still painted the from pose, and none leaves the stylesheet's end state."
+        },
+        {
+          "technique": "content-bearing-degradation",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/style/base/reduced-motion.css:4 Tilt and perspective go away; lane position is grid and inset, and opacity 0 for arrivals lives in keyframes that no longer apply."
+        },
+        {
+          "technique": "preset-vocabulary",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/style/level1/l1-spread.css:29 Arrival timing names --ln-dur and --ln-ease tokens instead of raw milliseconds."
+        },
+        {
+          "technique": "taste-budgets",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/style/base/tokens.css:218 The level move is 300ms and stagger is capped so a long lane still finishes in the same 140ms tail."
+        },
+        {
+          "technique": "continuity-across-change",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/style/level0/l0-swarm.css:262 The stationary lane name hides while the one matched word travels, so the label is not drawn twice."
+        },
+        {
+          "technique": "engine-selection",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/style/level1/l1-spread.css:32 These sheets own their gestures as declarative keyframes; nothing here installs a library kill switch."
+        },
+        {
+          "technique": "gesture-decomposition",
+          "verdict": "conformant",
+          "evidence": "examples/ledgerbox/components/lanes/style/level1/l1-spread.css:26 Figures are a later track, held one duration step behind the traveling title."
+        }
+      ],
+      "registryProposal": "A near-zero duration still runs a fill-mode keyframe, so the from pose flashes; for a stylesheet whose resting rule is already the end state, animation none is the settled fallback, and the global-kill section treats that removal as the failure."
+    },
+    "67f42245-132f-4a4e-bef9-35f7748e9fea/motion": {
+      "context": "tidycrm-style",
+      "subject": "motion",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T00:00:02.982Z",
+      "techniques": [
+        {
+          "technique": "reduced-motion-mechanics",
+          "verdict": "deviation",
+          "evidence": "examples/tidycrm/components/blocks/style/base/reduced-motion.css:7 animation none is only on the cell ink; bk-dossier-fill keeps its 260ms translate after the delay is zeroed."
+        },
+        {
+          "technique": "content-bearing-degradation",
+          "verdict": "deviation",
+          "evidence": "examples/tidycrm/components/blocks/style/level2/l2-dossier.css:71 Dossier body, verdict, and foot start hidden in the keyframe and are not forced to the shown state the way the cell ink is."
+        },
+        {
+          "technique": "preset-vocabulary",
+          "verdict": "deviation",
+          "evidence": "examples/tidycrm/components/blocks/style/base/tokens.css:155 Beat durations are a second copy of beats.ts, kept honest by a test instead of one ladder."
+        },
+        {
+          "technique": "taste-budgets",
+          "verdict": "deviation",
+          "evidence": "examples/tidycrm/components/blocks/style/level1/l1-dress.css:22 Stagger is index times 12ms with no count cap, so a long grid's last card can outrun the entrance budget."
+        },
+        {
+          "technique": "performance-discipline",
+          "verdict": "deviation",
+          "evidence": "examples/tidycrm/components/blocks/style/level0/l0.css:327 The same rule also eases border-color; the file's own comment says transform is the only animated property."
+        },
+        {
+          "technique": "continuity-across-change",
+          "verdict": "conformant",
+          "evidence": "examples/tidycrm/components/blocks/style/level1/l1-dress.css:33 Flight hides the same cluster, name, and figures by opacity and transform instead of swapping in other elements."
+        },
+        {
+          "technique": "engine-selection",
+          "verdict": "conformant",
+          "evidence": "examples/tidycrm/components/blocks/style/level1/l1-grid.css:95 Ink and dossier entrances in this sheet are platform keyframes, not a library timeline."
+        },
+        {
+          "technique": "gesture-decomposition",
+          "verdict": "conformant",
+          "evidence": "examples/tidycrm/components/blocks/style/level1/l1-dress.css:26 Dots, names, and figures are sequenced on separate delays rather than one fused fade."
+        }
+      ],
+      "withdrawn": {
+        "worker": "ae78fcab-d55d-41d8-8e21-b0dd85be6297",
+        "state": "deviation",
+        "at": "2026-10-16T00:00:46.870563+00:00",
+        "reason": "reviewer (sonnet): The claim that nothing sets animation-duration is contradicted: examples/tidycrm/app/globals.css:37 sets `animation-duration: 0.01ms !important` on all elements under prefers-reduced-motion, and the sheet's reduced-motion.css adds the delay reset. Under reduced motion the dossier fill therefore land"
+      }
+    },
+    "97da7e8d-8b3a-41fd-bcfe-326d41a66565/ui-controls": {
+      "context": "desktop-app-shell-ui",
+      "subject": "ui-controls",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T00:36:26.152Z",
+      "worker": "cd69db8c-8756-438c-a053-f321d3dcc0ff",
+      "techniques": [
+        {
+          "technique": "adoption-enforcement",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/components/CATALOG.md:4 The only do-not-hand-roll rule in this context is that sentence. apps/desktop/eslint.config.js enables only react-hooks recommended rules, and no component test fails the build on a raw button or a clipboard call."
+        },
+        {
+          "technique": "call-site-ownership",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/components/Button.tsx:16 Only className is removed from the attribute type, so style and the rest of the button attributes still pass through and can restyle the control. The token checks in source-guards.test.ts do not read property family."
+        },
+        {
+          "technique": "composition-contracts",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/components/Button.tsx:33 disabledReason's disabled flag and the variant class are set before {...rest}, so a caller prop replaces them instead of merging, and can turn the button back on."
+        },
+        {
+          "technique": "control-inventory-and-discovery",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/components/CATALOG.md:26 Tags exist on the primitives, but the routing table is hand-written. PushToTalk.tsx has @catalog and is not a row in this table. WindowControls.tsx imports useSettings while the catalog says primitives must not read a store."
+        },
+        {
+          "technique": "micro-interaction-contracts",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/components/PillGroup.tsx:74 A reason natively disables the option, and the next line puts that reason on title. PushToTalk.test.tsx also treats title as the tooltip. Button's disabledReason wrapper is focusable but still explains itself with title."
+        },
+        {
+          "technique": "variant-discipline",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/components/Button.tsx:14 Tone is a closed intent enum and size is sm|md, mapped once by the .btn--* rules in app.css. No prefers pointer: coarse rule in app.css, so the size axis does not add a coarse-pointer hit area; the open style channel is judged under call-site-ownership."
+        }
+      ]
+    },
+    "f9349ce6-a48d-4abe-9bb1-412a99b45907/ui-controls": {
+      "context": "ledgerbox-style-design",
+      "subject": "ui-controls",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T00:36:26.152Z",
+      "worker": "cd69db8c-8756-438c-a053-f321d3dcc0ff",
+      "techniques": [
+        {
+          "technique": "adoption-enforcement",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/index.css:4 No primitive module and no signature detector; the file is an ordered CSS cascade."
+        },
+        {
+          "technique": "call-site-ownership",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/base/tokens.css:2 Skin tokens for one data-variant, not a shared control with a class or style passthrough prop."
+        },
+        {
+          "technique": "composition-contracts",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/design/build-tokens.mjs:3 A retired token emitter, not a controlled-component API."
+        },
+        {
+          "technique": "control-inventory-and-discovery",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/index.css:11 Adding a rule means editing a CSS part, not generating a primitive catalog."
+        },
+        {
+          "technique": "micro-interaction-contracts",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/base/reduced-motion.css:13 Motion timing is declared here and the behavior is named as living in motion.ts, which is not in this context. .ln-toggle only paints aria-pressed."
+        },
+        {
+          "technique": "variant-discipline",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/chrome/rail-and-toolbar.css:140 A length on a .ln-toggle button stylesheet rule, not a closed variant enum on a shared control."
+        }
+      ],
+      "registryProposal": "Say explicitly that a stylesheet-only context is out of scope even when it paints button, toggle, and aria-pressed, because the ownership technique already assigns those stylesheet rules to a style-layer linter."
+    },
+    "645f955f-74d6-44ae-a966-70f6ed2ece17/ui-controls": {
+      "context": "contracts-seam",
+      "subject": "ui-controls",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T00:36:26.152Z",
+      "worker": "cd69db8c-8756-438c-a053-f321d3dcc0ff",
+      "techniques": [
+        {
+          "technique": "adoption-enforcement",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/__init__.py:3 No UI primitive and no shadow-copy detector; the package forbids forking these Python types, which is a different seam."
+        },
+        {
+          "technique": "call-site-ownership",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/channel.py:1 Turn event dataclasses, not a control that accepts a class or style passthrough."
+        },
+        {
+          "technique": "composition-contracts",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/harness.py:1 A Protocol for a model turn, not controlled or uncontrolled UI state."
+        },
+        {
+          "technique": "control-inventory-and-discovery",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/manifest.py:1 The manifest's catalog is host tools with GATED/READ/AUTO, not a generated UI primitive list."
+        },
+        {
+          "technique": "micro-interaction-contracts",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/registry.py:1 Tool-execution classes, not copy, tooltip, toggle, stepper or tab state machines."
+        },
+        {
+          "technique": "variant-discipline",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/ids.py:1 One id-prefix table, not a control's enumerated visual variants."
+        }
+      ]
+    },
+    "67f42245-132f-4a4e-bef9-35f7748e9fea/ui-controls": {
+      "context": "tidycrm-style",
+      "subject": "ui-controls",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T00:36:26.152Z",
+      "worker": "cd69db8c-8756-438c-a053-f321d3dcc0ff",
+      "techniques": [
+        {
+          "technique": "adoption-enforcement",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:4 No component module whose adopters or shadow copies could be counted."
+        },
+        {
+          "technique": "call-site-ownership",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/base/the-sheet.css:29 A stylesheet reset on native controls. The ownership technique assigns stylesheet rules to a style-layer linter, and there is no component passthrough here."
+        },
+        {
+          "technique": "composition-contracts",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/base/tokens.css:2 A token scope, not a controlled or slotted component API."
+        },
+        {
+          "technique": "control-inventory-and-discovery",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:11 The inventory is CSS parts in import order, not annotated primitives."
+        },
+        {
+          "technique": "micro-interaction-contracts",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/base/reduced-motion.css:7 A reduced-motion duration override, not a copy, tooltip, toggle, stepper or tab state machine."
+        },
+        {
+          "technique": "variant-discipline",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/base/tokens.css:11 Palette and type tokens, which this subject says belong to design-tokens, not a control variant enum."
+        }
+      ]
+    },
+    "5f577ad0-7081-4566-be34-04f5b359bb2e/ui-controls": {
+      "context": "hirelane-style",
+      "subject": "ui-controls",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T00:36:26.152Z",
+      "worker": "cd69db8c-8756-438c-a053-f321d3dcc0ff",
+      "techniques": [
+        {
+          "technique": "adoption-enforcement",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/style/index.css:4 No primitive module and no adoption detector."
+        },
+        {
+          "technique": "call-site-ownership",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/style/base/tokens.css:5 A token-value rule for the sheet, not a gate on who may set appearance props on a shared control."
+        },
+        {
+          "technique": "composition-contracts",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/style/base/reduced-motion.css:11 The file says the meaningful motion is motion/react in Board.tsx, which is not in this context."
+        },
+        {
+          "technique": "control-inventory-and-discovery",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/style/index.css:11 CSS part ownership, not a generated component catalog."
+        },
+        {
+          "technique": "micro-interaction-contracts",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/style/base/reduced-motion.css:15 Reduced-motion policy is delegated to JS outside this context; no copy, tooltip, stepper or tab contract is defined here."
+        },
+        {
+          "technique": "variant-discipline",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/style/base/tokens.css:6 Scale aliases for the board skin, not enumerated tone and size props on a control."
+        }
+      ]
+    },
+    "645f955f-74d6-44ae-a966-70f6ed2ece17/companion-runtime": {
+      "context": "contracts-seam",
+      "subject": "companion-runtime",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T01:21:18.690Z",
+      "worker": "c7e336de-d2d7-4359-bcc0-9ab0cf073dcc",
+      "techniques": [
+        {
+          "technique": "action-catalog-single-source",
+          "verdict": "deviation",
+          "evidence": "tests/contracts/test_manifest.py:33 The test explicitly preserves unattended execution for reversible internal side effects, contrary to the standard's read/mutate approval distinction."
+        },
+        {
+          "technique": "headless-turn-stream",
+          "verdict": "deviation",
+          "evidence": "src/athena/contracts/harness.py:203 The terminal contract offers success or error, without the distinct interrupted verdict required by the standard; cancellation is instead included among error reasons."
+        },
+        {
+          "technique": "metered-llm-seam",
+          "verdict": "deviation",
+          "evidence": "src/athena/contracts/harness.py:159 The contract aggregates a turn into one ledger row, explicitly allowing up to eight provider rounds, whereas the standard requires one row per model invocation."
+        }
+      ]
+    },
+    "8eda71be-d611-4429-8363-be69f12b3c83/companion-runtime": {
+      "context": "desktop-companion-pane",
+      "subject": "companion-runtime",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T01:21:18.690Z",
+      "worker": "c7e336de-d2d7-4359-bcc0-9ab0cf073dcc",
+      "techniques": [
+        {
+          "technique": "metered-llm-seam",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/companion/model.ts:1058 Null or missing usage cost is rendered as “no cost” rather than unknown; model.test.ts also expects this fallback."
+        },
+        {
+          "technique": "signal-economy-contract",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/companion/views.tsx:296 For the applicable count-placement rule, the waiting count appears on the decision slip containing Approve and Decline controls; the seal's badge opens that same resolution surface."
+        }
+      ]
+    },
+    "42ac1c25-8a07-450d-a03a-c3ac5d50f5fe/companion-runtime": {
+      "context": "desktop-halo",
+      "subject": "companion-runtime",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T01:21:18.690Z",
+      "worker": "c7e336de-d2d7-4359-bcc0-9ab0cf073dcc",
+      "techniques": [
+        {
+          "technique": "action-catalog-single-source",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/halo.ts:175 The producer projects existing state into a display signal rather than accepting model-generated actions."
+        },
+        {
+          "technique": "autonomous-cycle-hosting",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/halo-rehearsal.test.ts:65 The timed rehearsal is a user-triggered display script, not an autonomous maintenance cycle."
+        },
+        {
+          "technique": "headless-turn-stream",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/halo/main.ts:96 This adapter consumes display frames and does not execute conversation turns."
+        },
+        {
+          "technique": "host-seam-contracts",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/halo-signal.ts:6 The overlay is explicitly a signal consumer rather than a host for the companion brain."
+        },
+        {
+          "technique": "metered-llm-seam",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/halo.ts:81 Captions use already-produced speech text; this context does not initiate model legs."
+        },
+        {
+          "technique": "operative-working-set",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/halo/main.ts:100 The retained value is the latest presentation frame, not a companion working set used for autonomous decisions."
+        },
+        {
+          "technique": "signal-economy-contract",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/halo.ts:137 The producer relays existing pending-card state; it produces no autonomous outcome requiring a report-or-absorb decision and displays no standing numeral."
+        }
+      ]
+    },
+    "ed8d99d2-56e3-402c-898b-a4a6c4b73c7b/docs-sync": {
+      "context": "atlas-data-and-app",
+      "subject": "docs-sync",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T01:42:30.517Z",
+      "worker": "48f6e3a5-d5eb-43aa-9202-1b0b7bc40d9c",
+      "techniques": [
+        {
+          "technique": "doc-rot-detection",
+          "verdict": "deviation",
+          "evidence": "examples/atlas/test/model.test.ts:80 Citation validation tests string presence rather than resolution; the panel directory cited by components.ts:149 is absent."
+        },
+        {
+          "technique": "named-duplication-points",
+          "verdict": "deviation",
+          "evidence": "examples/atlas/data/systems.ts:2 The hand-written count says eighteen, but the same file declares nineteen systems and the app README states nineteen."
+        }
+      ]
+    },
+    "f9349ce6-a48d-4abe-9bb1-412a99b45907/docs-sync": {
+      "context": "ledgerbox-style-design",
+      "subject": "docs-sync",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T01:42:30.517Z",
+      "worker": "48f6e3a5-d5eb-43aa-9202-1b0b7bc40d9c",
+      "techniques": [
+        {
+          "technique": "named-duplication-points",
+          "verdict": "deviation",
+          "evidence": "examples/ledgerbox/components/lanes/style/level0/l0-swarm.css:292 This prose copy says three lines; line 328 sets line-clamp: 2, and the nearby arithmetic explanation also describes two lines."
+        }
+      ]
+    },
+    "ba5a181a-6d9e-4738-9ee3-81470d93525b/docs-sync": {
+      "context": "workspace-build-config",
+      "subject": "docs-sync",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T01:42:30.517Z",
+      "techniques": [
+        {
+          "technique": "same-change-enforcement",
+          "verdict": "deviation",
+          "evidence": "AGENTS.md:25 The requirement is prose; the workflow runs language checks and tests without evaluating documentation obligations from changed paths."
+        }
+      ],
+      "withdrawn": {
+        "worker": "48f6e3a5-d5eb-43aa-9202-1b0b7bc40d9c",
+        "state": "deviation",
+        "at": "2026-10-16T01:42:53.907009+00:00",
+        "reason": "reviewer (sonnet): The claim is about repo-wide CI automation and rests on AGENTS.md and .github/workflows/ci.yml, which are not among the context's files (scripts/build-sidecar.py and scripts/sidecar_entry.py), and nothing in those two scripts shows a documentation-obligation check is absent."
+      }
+    },
+    "d282a392-f7cb-4a89-886a-f7401e0583e6/docs-sync": {
+      "context": "uat-characters-journeys",
+      "subject": "docs-sync",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T01:42:30.517Z",
+      "worker": "48f6e3a5-d5eb-43aa-9202-1b0b7bc40d9c",
+      "techniques": [
+        {
+          "technique": "named-duplication-points",
+          "verdict": "deviation",
+          "evidence": "uat/README.md:19 The copied inventory stops at J5, while uat/journeys/J6-connect-and-use.md declares id: J6 and names its executable walkthrough."
+        }
+      ]
+    },
+    "5f577ad0-7081-4566-be34-04f5b359bb2e/docs-sync": {
+      "context": "hirelane-style",
+      "subject": "docs-sync",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T01:42:30.517Z",
+      "worker": "48f6e3a5-d5eb-43aa-9202-1b0b7bc40d9c",
+      "techniques": [
+        {
+          "technique": "named-duplication-points",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/components/board/style/level0/l0-board-2.css:105 This explanation retains the stretch behavior; l0-board.css:33 sets align-items: start and its line 21 explicitly says the five feet are ragged."
+        }
+      ]
+    },
+    "f152c182-5811-458c-a43b-56fbce7a81e5/retrieval": {
+      "context": "browser-lane",
+      "subject": "retrieval",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T02:12:10.904Z",
+      "worker": "24cbbc56-6fcc-4aea-badc-ae91af2e21e7",
+      "techniques": [
+        {
+          "technique": "retrieval-triggering",
+          "verdict": "deviation",
+          "evidence": "src/athena/lane/turn_frame.py:151 Attached recall always runs on the raw message; a turn that does not point outward is not a recorded skip."
+        }
+      ],
+      "registryProposal": "retrieval-triggering's use_when includes wiring a retrieval call into a turn, while the golden path gives the finished slice to agent-memory recall-injection, so a port that only exposes as_prompt_blocks and a builder that always calls recall(message) have no stated owner for the skip-versus-empty decision."
+    },
+    "f4f6bafa-bef4-426d-9731-16357fffa1ee/retrieval": {
+      "context": "ledgerbox-lanes-ui",
+      "subject": "retrieval",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T02:12:10.904Z",
+      "techniques": [],
+      "withdrawn": {
+        "worker": "24cbbc56-6fcc-4aea-badc-ae91af2e21e7",
+        "state": "not-applicable",
+        "at": "2026-10-16T02:12:41.540844+00:00",
+        "reason": "reviewer (sonnet): The anchor model.ts:6 is only a doc comment, so it does not show the precondition is absent. The lanes tree also contains tools/search.ts, which searches the books, and the seat never examined it."
+      }
+    },
+    "6c17278c-ed66-4d70-8a4f-4202662f1613/retrieval": {
+      "context": "hirelane-model-and-lib",
+      "subject": "retrieval",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T02:12:10.904Z",
+      "techniques": [],
+      "withdrawn": {
+        "worker": "24cbbc56-6fcc-4aea-badc-ae91af2e21e7",
+        "state": "not-applicable",
+        "at": "2026-10-16T02:12:41.570069+00:00",
+        "reason": "reviewer (sonnet): The anchor shows search.ts is a retrieval path (text filter, rank(), bounded page of 25 with a leftover count), so it does not show retrieval is absent. The embedding/cosine/chunk/rerank/overfetch terms miss lexical filtering, ranking and paging."
+      }
+    },
+    "f9349ce6-a48d-4abe-9bb1-412a99b45907/retrieval": {
+      "context": "ledgerbox-style-design",
+      "subject": "retrieval",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T02:12:10.904Z",
+      "worker": "24cbbc56-6fcc-4aea-badc-ae91af2e21e7",
+      "techniques": []
+    },
+    "736379fb-8f9b-4617-be12-64b20b25e73c/retrieval": {
+      "context": "atlas-lanes-drawing",
+      "subject": "retrieval",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T02:12:10.904Z",
+      "worker": "24cbbc56-6fcc-4aea-badc-ae91af2e21e7",
+      "techniques": []
+    },
+    "16e21bc2-d34a-4cae-95d3-2a7234889176/agent-browser-control": {
+      "context": "desktop-modules-registry",
+      "subject": "agent-browser-control",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T02:34:32.959Z",
+      "worker": "13a692a2-468b-48fc-b9a2-347e86800748",
+      "techniques": [
+        {
+          "technique": "agent-actionable-errors",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:60 This reports UI callback failures to the console, rather than browser-command errors to a model."
+        },
+        {
+          "technique": "effect-classed-commands",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:62 These are view-model callbacks to stores, not the agent's command dispatcher."
+        },
+        {
+          "technique": "persistent-browser-daemon",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:38 The module consumes tab state; browser process ownership is outside this context."
+        },
+        {
+          "technique": "references-over-selectors",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:161 This selects the focused tab's tool-display model, rather than resolving page elements."
+        },
+        {
+          "technique": "socket-scoped-surface",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/types.ts:15 This is a presentation and preview contract, not a browser listener."
+        }
+      ]
+    },
+    "a4c21bac-6dbe-41a3-b6ad-e7bec7001865/agent-browser-control": {
+      "context": "voice-channel",
+      "subject": "agent-browser-control",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T02:34:32.959Z",
+      "techniques": [
+        {
+          "technique": "agent-actionable-errors",
+          "verdict": "deviation",
+          "evidence": "src/athena/channels/voice/gateway.py:954 The synthetic error gives neither outcome uncertainty nor a next command; test_voice_gateway.py:610 confirms the timeout reaches the next model request."
+        },
+        {
+          "technique": "persistent-browser-daemon",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/whisper.py:3 The subprocess lifecycle here belongs to speech engines, not browser sessions."
+        },
+        {
+          "technique": "references-over-selectors",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/gateway.py:892 The voice gateway forwards page results into the lane rather than minting or resolving element references."
+        }
+      ],
+      "withdrawn": {
+        "worker": "13a692a2-468b-48fc-b9a2-347e86800748",
+        "state": "deviation",
+        "at": "2026-10-16T02:35:02.505974+00:00",
+        "reason": "reviewer (sonnet): The gateway.py:954 timeout row and the test at line 610 concern host-app tool calls (`host.invoices.chase`, ADR 0010), not browser-control commands, so a browser-control deviation is not shown for this context."
+      }
+    },
+    "29de8ade-bf7f-481c-9aa7-94bef87aab94/agent-browser-control": {
+      "context": "desktop-shell-rust",
+      "subject": "agent-browser-control",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T02:34:32.959Z",
+      "worker": "13a692a2-468b-48fc-b9a2-347e86800748",
+      "techniques": [
+        {
+          "technique": "agent-actionable-errors",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src-tauri/src/bridge.rs:392 The relay timeout lacks a structured reason, command-specific explanation and literal recovery command."
+        },
+        {
+          "technique": "effect-classed-commands",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src-tauri/src/hands.rs:354 Dispatch distinguishes page versus shell execution, not read/write/meta effects; the separate effect flags do not drive the required class-based routing."
+        },
+        {
+          "technique": "references-over-selectors",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src-tauri/src/hands.js:106 References hold concrete DOM elements in the injected page closure, rather than lazy role/name/index locators outside the page; detached-node checks and navigation invalidation only partially realize the technique."
+        },
+        {
+          "technique": "socket-scoped-surface",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src-tauri/capabilities/page.json:8 Pages receive a narrowly scoped native IPC reply command, so the loopback reply fallback is not used; searches found no browser tunnel implementation."
+        }
+      ]
+    },
+    "a4c21bac-6dbe-41a3-b6ad-e7bec7001865/chat-transcript": {
+      "context": "voice-channel",
+      "subject": "chat-transcript",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T04:23:55.380Z",
+      "worker": "8e74edf3-6b52-433f-8f50-a775ba3ed36a",
+      "techniques": [
+        {
+          "technique": "composer-turn-queue",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/gateway.py:3 No send control or rendered composer in this context."
+        },
+        {
+          "technique": "immutable-model-cached-layout",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/gateway.py:3 No rendered message rows."
+        },
+        {
+          "technique": "inline-structured-rows",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/gateway.py:3 Events are forwarded, not drawn as transcript rows."
+        },
+        {
+          "technique": "markdown-and-code-rendering",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/gateway.py:3 No model-markup renderer."
+        },
+        {
+          "technique": "progress-narration",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/gateway.py:3 No live narration surface."
+        },
+        {
+          "technique": "transcript-scroll",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/gateway.py:3 No viewport."
+        },
+        {
+          "technique": "turn-metadata",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/gateway.py:3 No turn strip."
+        },
+        {
+          "technique": "turn-model",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/gateway.py:3 Turns are lane jobs, not rendered elements."
+        },
+        {
+          "technique": "virtual-filtered-channel",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/gateway.py:3 No transcript panes."
+        }
+      ],
+      "registryProposal": "composer-turn-queue is written for a send control; a socket admission cap is easy to score as that technique even when nothing is rendered."
+    },
+    "8eda71be-d611-4429-8363-be69f12b3c83/chat-transcript": {
+      "context": "desktop-companion-pane",
+      "subject": "chat-transcript",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T04:23:55.380Z",
+      "worker": "8e74edf3-6b52-433f-8f50-a775ba3ed36a",
+      "techniques": [
+        {
+          "technique": "composer-turn-queue",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/companion/model.ts:1143 views.tsx:801 and :810 disable the textarea and Send when blocked is set; submit returns at views.tsx:725."
+        },
+        {
+          "technique": "immutable-model-cached-layout",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/companion/model.ts:1079 Every selection allocates a new block per row, and Block is not memoized, so the settled prefix is rebuilt with the tail."
+        },
+        {
+          "technique": "inline-structured-rows",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/companion/views.tsx:777 Pending cards after the first are a count, and a resolved card leaves the log instead of staying as the decision record."
+        },
+        {
+          "technique": "progress-narration",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/companion/model.ts:831 The tape trail exists only while lingering (LINGER_MS 2500) or on error; Talk's working line unmounts, and activity steps stay fully listed."
+        },
+        {
+          "technique": "transcript-scroll",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/companion/views.tsx:717 The effect follows block count and working with no pin test, ready gate, or unseen count."
+        },
+        {
+          "technique": "turn-metadata",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/companion/model.ts:1058 Cost is a Record-tab ledger field (views.tsx:909), not a strip on the Talk turn, and a missing cost_usd is the words no cost."
+        },
+        {
+          "technique": "turn-model",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/companion/model.ts:1082 Later assistant deltas keep the first block id. A failed run stays in the log as The turn stopped (views.tsx:760). No edit or regenerate path in this pane."
+        },
+        {
+          "technique": "virtual-filtered-channel",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/companion/model.ts:847 Talk is one log of every block. Record projects tool rows into a call list. No channel type in this directory; the technique treats a static filtered list as out of scope."
+        }
+      ],
+      "registryProposal": "markdown-and-code-rendering should say whether a single inert text node, with no fence parsing, is the whole sanitizing door or a deviation for missing code-block copy."
+    },
+    "ed8d99d2-56e3-402c-898b-a4a6c4b73c7b/chat-transcript": {
+      "context": "atlas-data-and-app",
+      "subject": "chat-transcript",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T04:23:55.380Z",
+      "techniques": [
+        {
+          "technique": "composer-turn-queue",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/app/page.tsx:9 Catalog label for the prompt composer, not a send control."
+        },
+        {
+          "technique": "immutable-model-cached-layout",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/app/page.tsx:9 No transcript rows."
+        },
+        {
+          "technique": "inline-structured-rows",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/app/page.tsx:9 No conversation rows."
+        },
+        {
+          "technique": "markdown-and-code-rendering",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/app/page.tsx:9 No model-output renderer."
+        },
+        {
+          "technique": "progress-narration",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/app/page.tsx:9 No working-turn narration."
+        },
+        {
+          "technique": "transcript-scroll",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/app/page.tsx:9 No transcript viewport."
+        },
+        {
+          "technique": "turn-metadata",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/app/page.tsx:9 No turn strip."
+        },
+        {
+          "technique": "turn-model",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/app/page.tsx:9 No rendered turns."
+        },
+        {
+          "technique": "virtual-filtered-channel",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/app/page.tsx:9 No transcript channel."
+        }
+      ],
+      "withdrawn": {
+        "worker": "8e74edf3-6b52-433f-8f50-a775ba3ed36a",
+        "state": "not-applicable",
+        "at": "2026-10-16T04:24:39.710013+00:00",
+        "reason": "reviewer (sonnet): The anchor page.tsx:9 is only `return <Atlas />` and shows no absence of transcript code. The 'composer' hits are in components/atlas/variants/archify-lanes/kinds.ts and workflow.ts, not the data catalog the evidence names. The context files are only app/ and data/, and the real UI under components/"
+      }
+    },
+    "82024321-4b38-4a9a-b360-154b5349e47b/codebase-scanning": {
+      "context": "proving-core",
+      "subject": "codebase-scanning",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T21:04:00.363Z",
+      "worker": "ea9386ab-9eaf-434a-a7f0-f69cf76ff8a8",
+      "techniques": [
+        {
+          "technique": "causes-beside-the-finding-count",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/__main__.py:192 The published count concerns driven runtime attacks and breaches, rather than code-scan findings or remediation causes."
+        },
+        {
+          "technique": "dead-code-detection",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/manifests.py:43 The manifest exposes simulated invoicing operations, with no code-reference or reachability analysis."
+        },
+        {
+          "technique": "evidence-scoping",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/world.py:252 The evaluated input is application host state, rather than unfamiliar repository evidence."
+        },
+        {
+          "technique": "finding-lifecycle",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/world.py:277 These records track action approvals from a turn, rather than scanner findings awaiting remediation."
+        },
+        {
+          "technique": "incremental-scanning",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/world.py:176 World construction creates an isolated runtime environment, rather than maintaining a code-scan ledger."
+        },
+        {
+          "technique": "ingestion-budget",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/budget.py:75 The budget controls model spending, rather than selection or fetching of foreign repository files."
+        },
+        {
+          "technique": "llm-assisted-scanning",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/roles.py:4 Models play attack, user and evaluation roles; they do not emit findings about source code."
+        },
+        {
+          "technique": "precision-trades-have-a-direction",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/__main__.py:49 This command exercises the runtime gate, rather than offering an optimized static-analysis backend."
+        },
+        {
+          "technique": "rule-precision-discipline",
+          "verdict": "not-applicable",
+          "evidence": "tests/proving/test_world_and_verdict.py:128 The planted defect tests runtime breach detection, outside the standard's code-at-rest scanner scope."
+        },
+        {
+          "technique": "sensor-pipeline",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/world.py:274 The observation collects gate execution records, rather than gathering a source snapshot for finding emission."
+        },
+        {
+          "technique": "the-broad-root-is-the-unaudited-one",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/__main__.py:50 The declared scope consists of attack surfaces, rather than source roots or entry-point globs."
+        },
+        {
+          "technique": "the-narrowest-view-owns-the-number",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/roles.py:146 Role invocation supplies a prompt without a repository-coverage figure used to weight a scanning judgment."
+        },
+        {
+          "technique": "the-tree-is-not-the-population",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/manifests.py:103 The manifest identifies an application origin, rather than an enumerated and filtered source tree."
+        },
+        {
+          "technique": "verify-after-generate",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/report.py:59 The report is deterministically serialized run data, rather than a model-generated codebase inventory consumed as authority."
+        }
+      ]
+    },
+    "9773ec7e-b7ea-4dda-a063-fd912a72a012/codebase-scanning": {
+      "context": "desktop-setup-module",
+      "subject": "codebase-scanning",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T21:04:00.363Z",
+      "worker": "ea9386ab-9eaf-434a-a7f0-f69cf76ff8a8",
+      "techniques": [
+        {
+          "technique": "causes-beside-the-finding-count",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/readiness.ts:111 The count describes usable engines, rather than findings or independent remediation causes."
+        },
+        {
+          "technique": "dead-code-detection",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/index.ts:69 The check probes installed engines, rather than proving source declarations unreachable."
+        },
+        {
+          "technique": "evidence-scoping",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/readiness.ts:55 Selection concerns the user's chosen engine probe, rather than evidence permitted for a repository detector."
+        },
+        {
+          "technique": "finding-lifecycle",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/model.ts:200 Pending state represents an engine choice awaiting daemon alignment, rather than a persisted scanner finding."
+        },
+        {
+          "technique": "incremental-scanning",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/model.ts:176 The selector derives the current interface mode without tracking examined source units."
+        },
+        {
+          "technique": "ingestion-budget",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/model.ts:187 Inputs are existing tab state, rather than files fetched from a metered foreign repository."
+        },
+        {
+          "technique": "llm-assisted-scanning",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/index.ts:67 Choosing an execution engine does not invoke a model to inspect code or produce findings."
+        },
+        {
+          "technique": "precision-trades-have-a-direction",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/index.ts:71 The backend change restarts the application daemon, rather than replacing a scanner's analysis backend."
+        },
+        {
+          "technique": "rule-precision-discipline",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/readiness.ts:97 This is a runtime readiness determination, rather than an advisory source-code detection rule."
+        },
+        {
+          "technique": "sensor-pipeline",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/index.ts:48 The hook subscribes to engine state without implementing a code-scan gather and emission pipeline."
+        },
+        {
+          "technique": "the-broad-root-is-the-unaudited-one",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/fixtures.ts:14 The fixture roster names execution engines, rather than scan roots or inclusion patterns."
+        },
+        {
+          "technique": "the-narrowest-view-owns-the-number",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/readiness.ts:133 The number describes open tabs and does not license a judgment over sampled repository evidence."
+        },
+        {
+          "technique": "the-tree-is-not-the-population",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/index.ts:43 The observed population is browser tabs, with no source-tree traversal or inherited file filters."
+        },
+        {
+          "technique": "verify-after-generate",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/model.ts:192 The model is assembled directly from application state, rather than consumed from a model-generated artifact."
+        }
+      ]
+    },
+    "16e21bc2-d34a-4cae-95d3-2a7234889176/codebase-scanning": {
+      "context": "desktop-modules-registry",
+      "subject": "codebase-scanning",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T21:04:00.363Z",
+      "worker": "ea9386ab-9eaf-434a-a7f0-f69cf76ff8a8",
+      "techniques": [
+        {
+          "technique": "causes-beside-the-finding-count",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:177 The number counts page-registered tools, rather than findings that could share remediation."
+        },
+        {
+          "technique": "dead-code-detection",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/types.ts:8 The module contract describes state selectors, rather than a code-reachability analyzer."
+        },
+        {
+          "technique": "evidence-scoping",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:217 The determination concerns a web application's offered capabilities, rather than evidence of repository practices."
+        },
+        {
+          "technique": "finding-lifecycle",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:211 Disabled state expresses user permission for an app, rather than suppression of a scanner finding."
+        },
+        {
+          "technique": "incremental-scanning",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:149 The selector maps current tabs without maintaining source digests or prior scan results."
+        },
+        {
+          "technique": "ingestion-budget",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:38 The input comes from an application store, rather than remote repository ingestion."
+        },
+        {
+          "technique": "llm-assisted-scanning",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:71 Registration saves application trust state and does not request model-generated code findings."
+        },
+        {
+          "technique": "precision-trades-have-a-direction",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:79 This action opens an application tab, rather than selecting an alternative analysis backend."
+        },
+        {
+          "technique": "rule-precision-discipline",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.test.ts:56 Tests verify browser-state selection, rather than calibrating a source-code detector against matches."
+        },
+        {
+          "technique": "sensor-pipeline",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:46 The hook reads per-tab tool state without operating a code-scanning sensor roster."
+        },
+        {
+          "technique": "the-broad-root-is-the-unaudited-one",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:47 The registry consists of web origins, rather than source roots or entry-point patterns."
+        },
+        {
+          "technique": "the-narrowest-view-owns-the-number",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:222 The summary reports page capabilities without a coverage coefficient for a repository judgment."
+        },
+        {
+          "technique": "the-tree-is-not-the-population",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:186 Filtering selects tabs by web origin, rather than excluding files from a scanner's population."
+        },
+        {
+          "technique": "verify-after-generate",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/fixtures.ts:166 Fixtures derive from explicitly authored application state, rather than a model-generated authoritative inventory."
+        }
+      ]
+    },
+    "97743df6-7a6a-4c80-94c5-75d8872b6e12/codebase-scanning": {
+      "context": "proving-playbooks-bench",
+      "subject": "codebase-scanning",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T21:04:00.363Z",
+      "worker": "ea9386ab-9eaf-434a-a7f0-f69cf76ff8a8",
+      "techniques": [
+        {
+          "technique": "causes-beside-the-finding-count",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/bench.py:472 The population consists of eligible simulated tasks, rather than code-defect findings and remediation causes."
+        },
+        {
+          "technique": "dead-code-detection",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/page.py:67 Portal reads answer from simulated tables and do not analyze source references."
+        },
+        {
+          "technique": "evidence-scoping",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/bench.py:274 Agent evidence comes from a simulated portal, rather than an unfamiliar source repository."
+        },
+        {
+          "technique": "finding-lifecycle",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/bench.py:315 The collected items are action approval cards, rather than scanner findings with remediation histories."
+        },
+        {
+          "technique": "incremental-scanning",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/bench.py:161 Execution advances through authored world phases, rather than changed source units."
+        },
+        {
+          "technique": "ingestion-budget",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/bench.py:157 The bench instantiates a local simulated world instead of fetching a foreign codebase."
+        },
+        {
+          "technique": "llm-assisted-scanning",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/bench.py:272 The model performs an application task under evaluation, rather than scanning source for defects."
+        },
+        {
+          "technique": "precision-trades-have-a-direction",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/rank.py:3 Ranking computes use-case economics from saved data, rather than replacing a static-analysis backend."
+        },
+        {
+          "technique": "rule-precision-discipline",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/spec.py:423 These checks enforce playbook authoring contracts, a validation boundary rather than advisory code scanning."
+        },
+        {
+          "technique": "sensor-pipeline",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/page.py:65 Read accounting observes simulated portal operations, rather than source-scanning collectors."
+        },
+        {
+          "technique": "the-broad-root-is-the-unaudited-one",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/spec.py:561 Discovery selects playbook data directories, without declaring source reachability roots."
+        },
+        {
+          "technique": "the-narrowest-view-owns-the-number",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/page.py:167 Paging discloses simulated portal rows; no code-scan coverage figure weights the agent's judgment."
+        },
+        {
+          "technique": "the-tree-is-not-the-population",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/spec.py:304 The loader reads an explicitly named world specification, rather than traversing and filtering source files."
+        },
+        {
+          "technique": "verify-after-generate",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/evidence.py:9 The presentation generator is deterministic, which this technique explicitly excludes."
+        }
+      ]
+    },
+    "045f6ffb-7c64-4cbd-8925-89d25221d459/companion-identity": {
+      "context": "core-brain-memory",
+      "subject": "companion-identity",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T21:27:09.764Z",
+      "worker": "9625c46d-3021-4492-840e-c1e799d6d887",
+      "techniques": [
+        {
+          "technique": "disk-truth-db-index",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/brain/reconcile.py:198 Demotion controls recall and live provenance, but rebuild restores defaults; test_brain_store.py:103 demonstrates index-only demotion, and reconcile.py:12 explicitly documents its loss."
+        }
+      ]
+    },
+    "8eda71be-d611-4429-8363-be69f12b3c83/companion-identity": {
+      "context": "desktop-companion-pane",
+      "subject": "companion-identity",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T21:27:09.764Z",
+      "worker": "9625c46d-3021-4492-840e-c1e799d6d887",
+      "techniques": [
+        {
+          "technique": "capability-exercise-ledger",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/companion/model.ts:622 OfferView and Origins render name, gate class, description and tier; neither carries exercise state, exercise date or evidence."
+        }
+      ]
+    },
+    "645f955f-74d6-44ae-a966-70f6ed2ece17/data-access": {
+      "context": "contracts-seam",
+      "subject": "data-access",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T21:52:56.915Z",
+      "worker": "63c06f3b-8cec-4cd0-973c-985e541a3c21",
+      "techniques": [
+        {
+          "technique": "capability-declared-in-the-type",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/harness.py:185 The implementation family described here consists of inference harnesses, not storage backends."
+        },
+        {
+          "technique": "cross-driver-invariant-parity",
+          "verdict": "not-applicable",
+          "evidence": "tests/contracts/test_ids.py:41 The parity concern here is a shared identifier vocabulary, not behavioral equivalence between storage drivers."
+        },
+        {
+          "technique": "layering-rules",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/__init__.py:4 This is the shared contract leaf below implementations, rather than the repository layer that owns statements and connections."
+        },
+        {
+          "technique": "operator-defined-tables",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/manifest.py:54 These schemas describe tool parameters consumed by rendering and validation, not operator-defined database tables."
+        },
+        {
+          "technique": "repo-testing",
+          "verdict": "not-applicable",
+          "evidence": "tests/contracts/test_channel.py:84 This exercises serialization of contract values, rather than a repository against a storage engine."
+        },
+        {
+          "technique": "row-mapping",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/channel.py:244 This decoder reconstructs transport events; it is not a mapper for stored rows."
+        }
+      ]
+    },
+    "a7dc73bb-f8b4-4b57-8fb0-f8032842f356/data-access": {
+      "context": "desktop-stores",
+      "subject": "data-access",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T21:52:56.915Z",
+      "worker": "63c06f3b-8cec-4cd0-973c-985e541a3c21",
+      "techniques": [
+        {
+          "technique": "operator-defined-tables",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stores/origins.ts:26 The origin store explicitly operates against fixed columns; its tool contracts are settings data rather than runtime table definitions."
+        },
+        {
+          "technique": "repo-testing",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/settings.test.ts:173 This test requires a subscription established by an earlier test; beforeEach only clears recorded calls, violating independent test isolation."
+        },
+        {
+          "technique": "row-mapping",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/run.ts:1004 Malformed persisted data returns an untainted empty collection; malformed individual entries are also filtered without reporting their loss."
+        },
+        {
+          "technique": "transactions-and-units-of-work",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/origins.ts:145 Every save resends enabled from a cached read, including override-only changes; per-webview queues cannot prevent another window's concurrent disable from being overwritten without a spanning transaction or compare-and-set."
+        }
+      ]
+    },
+    "a7dc73bb-f8b4-4b57-8fb0-f8032842f356/settings": {
+      "context": "desktop-stores",
+      "subject": "settings",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T22:38:52.072Z",
+      "worker": "9adc2487-ca09-4bb1-b501-0f3b49cd56c2",
+      "techniques": [
+        {
+          "technique": "key-registry",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/settings.ts:107 Write path delegates to generic key-value store without a store-side allowlist, orphan detection, or retirement reaping."
+        },
+        {
+          "technique": "typed-accessors",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/stores/settings.ts:220 Typed read boundary parses and validates stored string values via type guard, falling back to declared default without persisting it."
+        },
+        {
+          "technique": "read-batching",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/settings.ts:206 Startup fans out into seven separate single-key store_get IPC calls across the boundary instead of executing a bulk read or batched query."
+        },
+        {
+          "technique": "setting-kinds",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/settings.ts:70 Settings are aggregated as a flat interface without declaring kinds (preference, operational config, ceiling, flag) or per-kind contracts."
+        },
+        {
+          "technique": "inherited-default-override",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/stores/settings.ts:52 Resolves theme against the live OS source continuously via media query listeners, storing the system choice rather than the resolved value."
+        },
+        {
+          "technique": "settings-audit-and-history",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/settings.ts:117 Setting mutations write directly to the store without producing audit records of old/new values, timestamps, categories, or origins."
+        },
+        {
+          "technique": "save-experience",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/settings.ts:114 State and UI attributes are updated optimistically before write, with no rollback or error recovery to restore truth if settingWrite fails."
+        },
+        {
+          "technique": "cross-source-precedence-chain",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stores/settings.ts:207 Settings resolve from a single SQLite store rather than a declared multi-source precedence chain across CLI, env, and files."
+        },
+        {
+          "technique": "presence-decides-precedence",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stores/settings.ts:208 The store is read-write with singular key access, without read-only multi-name grace period fallbacks."
+        },
+        {
+          "technique": "applied-defaults-ledger",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stores/settings.ts:96 Defaults are scalar values rather than user-editable collections of shipped items requiring an applied-defaults ledger."
+        },
+        {
+          "technique": "config-backup-and-restore",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/settings.ts:226 Corrupted or unreadable local store state silently falls back to hardcoded defaults without bounded backup rotation or a boot-time restore prompt."
+        },
+        {
+          "technique": "author-declared-include-graph",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stores/settings.ts:2 Configuration is held in database rows rather than author-authored hierarchical include graphs."
+        },
+        {
+          "technique": "in-place-document-patch",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stores/settings.test.ts:131 Store granularity is individual key rows rather than a single structural document."
+        }
+      ],
+      "registryProposal": "In settings.md, author-declared-include-graph is listed in the frontmatter techniques array and exists as a technique file, but is omitted from the markdown summary list under ## The techniques."
+    },
+    "5059ed32-0465-4c97-bf66-5d4c9442e96f/agent-cli-transport": {
+      "context": "cli-and-wiring",
+      "subject": "agent-cli-transport",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T23:05:42.657Z",
+      "techniques": [
+        {
+          "technique": "availability-probe",
+          "verdict": "deviation",
+          "evidence": "src/athena/cli.py:175 The engine health check stage relies on credential file existence rather than a zero-token auth status command executed through the constructed spawn environment."
+        },
+        {
+          "technique": "child-observed-posture",
+          "verdict": "deviation",
+          "evidence": "tests/test_wiring.py:94 Wiring tests check host instantiation intent without verifying child-observed argv preservation, runtime sandbox readiness, or prompt injection arrival tokens."
+        },
+        {
+          "technique": "dated-capability-matrix",
+          "verdict": "deviation",
+          "evidence": "src/athena/wiring.py:433 CLI capability flags and options are baked into source code as timeless constants rather than maintained in a dated capability matrix with verification dates and methods."
+        },
+        {
+          "technique": "fallback-ladder",
+          "verdict": "deviation",
+          "evidence": "src/athena/wiring.py:262 Engine selection fails immediately on unknown or missing engines without a tiered degradation ladder to an alternate provider or a labeled deterministic floor."
+        },
+        {
+          "technique": "host-routed-approval-round-trip",
+          "verdict": "not-applicable",
+          "evidence": "tests/test_wiring.py:96 The child agent CLI runs with native tools suppressed via dontAsk; because Athena exposes only its own gated tools, there are no child native approvals to route."
+        },
+        {
+          "technique": "output-normalization",
+          "verdict": "deviation",
+          "evidence": "src/athena/wiring.py:298 The wiring layer delegates process output handling to CliHarness without configuring envelope dialect parsing, error stream separation, or a multi-rung extraction ladder."
+        },
+        {
+          "technique": "permission-stance-enforcement",
+          "verdict": "deviation",
+          "evidence": "src/athena/wiring.py:307 Applies static CLI arguments rather than implementing the contract's closed mode vocabulary (generate, readonly-scan, edit) or verifying backing OS sandbox classes."
+        },
+        {
+          "technique": "subscription-auth-selection",
+          "verdict": "deviation",
+          "evidence": "src/athena/wiring.py:285 Environment construction at the composition root sets working directory without defining or enforcing the stripping of metered billing keys or cloud routing switches."
+        },
+        {
+          "technique": "thread-custody-across-resume",
+          "verdict": "deviation",
+          "evidence": "tests/test_wiring.py:86 Wiring binds dialects without defining thread custody unbinding rules, plan folding, or state reseeding upon thread failure across resumes."
+        }
+      ],
+      "withdrawn": {
+        "worker": "34b0761e-cc6e-409c-850c-a0bc521f5872",
+        "state": "deviation",
+        "at": "2026-10-16T23:05:56.314471+00:00",
+        "reason": "reviewer (sonnet): The main claim says wiring has no permission stance enforcement, but wiring.py:307 passes `_default_args(dialect)`, which returns CLAUDE_EXTRA_ARGS for the Claude CLI, and tests/test_wiring.py:96 asserts that is `('--restricted','--permission-mode','dontAsk')`. The constants at wiring.py:433 are als"
+      }
+    },
+    "b96add2f-57d0-4373-8741-748e5560658e/authoring-block-vocabulary": {
+      "context": "tidycrm-spatial-model-tools",
+      "subject": "authoring-block-vocabulary",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T23:27:07.278Z",
+      "worker": "f5450ef4-c9e9-44f1-9666-ffb72114f87a",
+      "techniques": [
+        {
+          "technique": "blocks-as-machine-readable-source",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/tools/read.ts:33 The machine reader serializes model records rather than extracting structure from authored prose."
+        },
+        {
+          "technique": "closed-directive-set",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/tools/BlocksTools.tsx:81 Tool items derive from database tables; these names are not markup directives."
+        },
+        {
+          "technique": "enum-guarded-block-payloads",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/tools/read.ts:35 Labels describe CRM deviations; there is no authored directive payload to recognize."
+        },
+        {
+          "technique": "per-block-line-grammar",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/tools/search.ts:39 Text is a substring search over model fields, not a custom block's authored line grammar."
+        },
+        {
+          "technique": "vocabulary-as-translation-invariant",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/model/vocabulary.ts:29 These are interface labels shared with tools; no prose corpus copied per locale was found."
+        }
+      ]
+    },
+    "0769ade7-991a-4984-b4ec-0fc87a1ac287/authoring-block-vocabulary": {
+      "context": "tidycrm-blocks-ui",
+      "subject": "authoring-block-vocabulary",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T23:27:07.278Z",
+      "worker": "f5450ef4-c9e9-44f1-9666-ffb72114f87a",
+      "techniques": [
+        {
+          "technique": "blocks-as-machine-readable-source",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/shell/HostCapabilities.tsx:134 The export obtains a database-derived summary; tracing its implementation showed generated CommonMark rather than extraction from authored blocks."
+        },
+        {
+          "technique": "closed-directive-set",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/Blocks.tsx:314 The dossier is composed directly in application JSX; no custom markup directive dispatcher was found."
+        },
+        {
+          "technique": "enum-guarded-block-payloads",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/Stat.tsx:53 Tone is a React component prop used for presentation, not a semantic label parsed from an authored block."
+        },
+        {
+          "technique": "per-block-line-grammar",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/dossier/Checks.tsx:76 Rows arrive as structured model data and render directly; there is no prose block syntax to design."
+        },
+        {
+          "technique": "vocabulary-as-translation-invariant",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/dossier/parts.tsx:12 The inspected locale handling formats dates; no translated copies of authored block bodies were found."
+        }
+      ]
+    },
+    "67f42245-132f-4a4e-bef9-35f7748e9fea/authoring-block-vocabulary": {
+      "context": "tidycrm-style",
+      "subject": "authoring-block-vocabulary",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T23:27:07.278Z",
+      "worker": "f5450ef4-c9e9-44f1-9666-ffb72114f87a",
+      "techniques": [
+        {
+          "technique": "blocks-as-machine-readable-source",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/level0/l0.css:104 This consumes projected coordinates for presentation; the stylesheet context contains no authored-body extractor."
+        },
+        {
+          "technique": "closed-directive-set",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:19 The manifest assembles CSS for application views, not extensions to a prose markup language."
+        },
+        {
+          "technique": "enum-guarded-block-payloads",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/level1/l1-cells.css:96 The selector styles a record-state attribute; it is not a label inside an authored directive payload."
+        },
+        {
+          "technique": "per-block-line-grammar",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/level1/l1-dress.css:26 The syntax controls animation timing in CSS; no custom authored-content grammar was found."
+        },
+        {
+          "technique": "vocabulary-as-translation-invariant",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:4 This context maintains an ordered stylesheet cascade, with no locale-specific authored bodies to compare."
+        }
+      ]
+    },
+    "6099214d-afb1-49fe-b67b-346df665a89f/build-economics": {
+      "context": "desktop-build-config",
+      "subject": "build-economics",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T23:53:49.560Z",
+      "techniques": [
+        {
+          "technique": "cache-budgeting",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src-tauri/Cargo.toml:69 Incremental state is enabled; searches found no byte-budget enforcement, routine pruner or cache hit-rate instrument for this build directory."
+        },
+        {
+          "technique": "declinable-capability-split",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src-tauri/Cargo.toml:9 This shell crate is unpublished; no declining downstream library consumer was identified."
+        }
+      ],
+      "withdrawn": {
+        "worker": "4d12a39d-61ec-4e42-877c-b49a16375f09",
+        "state": "deviation",
+        "at": "2026-10-16T23:54:22.348896+00:00",
+        "reason": "reviewer (sonnet): Cargo.toml:69 is `[profile.dev] incremental = true`, which only restates Cargo's default dev setting. It doesn't show that the disk cost is unbounded or that a policy is missing, and the 'no pruner' claim rests only on a negative search I couldn't tie to this build directory."
+      }
+    },
+    "2c7d08b8-f9aa-4b85-908f-99e34042a011/build-economics": {
+      "context": "hirelane-design-law",
+      "subject": "build-economics",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-16",
+      "evaluatedTs": "2026-10-16T23:53:49.560Z",
+      "worker": "4d12a39d-61ec-4e42-877c-b49a16375f09",
+      "techniques": [
+        {
+          "technique": "build-measurement",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/check-contrast.mjs:197 The measured quantity is visual contrast, not build time, compiler work or build memory."
+        },
+        {
+          "technique": "cache-budgeting",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/check-law.mjs:144 The checker reads source files directly; inspection and searches found no persistent build cache in this context."
+        },
+        {
+          "technique": "capability-feature-gating",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/build-tokens.mjs:68 The standalone token generator uses Node builtins; no heavy optional compiled capability was identified."
+        },
+        {
+          "technique": "compilation-unit-splitting",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/check-law.mjs:113 This traverses files for textual design checks rather than compiling a large unit or changing an invalidation frontier."
+        },
+        {
+          "technique": "debug-artifact-economics",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/hl-scales.css:20 The scale layer defines CSS values; these files configure no debug artifacts or linker settings."
+        },
+        {
+          "technique": "declinable-capability-split",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/package.json:4 Hirelane is a private example application, and these design files expose no separately consumed published capability."
+        },
+        {
+          "technique": "dev-variant-design",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/build-tokens.mjs:326 The variant parameter selects a CSS scope for a visual direction, not a development build profile."
+        }
+      ]
+    },
+    "97da7e8d-8b3a-41fd-bcfe-326d41a66565/concurrency-guards": {
+      "context": "desktop-app-shell-ui",
+      "subject": "concurrency-guards",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T00:32:32.689Z",
+      "worker": "5f0078e1-96b2-49e6-be6e-0e748c94c518",
+      "techniques": [
+        {
+          "technique": "atomic-file-publish",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/styles/motion-tokens.test.ts:5 The stylesheet checks read existing files; searches found no file publisher in the listed UI files."
+        },
+        {
+          "technique": "attempt-attribution",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/engines.ts:45 athena.tsx:43 starts this watcher; check() has neither exclusion nor an incumbent-attempt check, so a probe from an earlier daemon endpoint can publish after its successor."
+        },
+        {
+          "technique": "idempotency-by-design",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/stores/run.ts:1777 For startRun(), called at athena.tsx:42, repeated starts return the existing cleanup function without duplicating subscriptions or timers."
+        }
+      ]
+    },
+    "8a40a6b6-386e-4a37-a60e-595a898ba5f9/concurrency-guards": {
+      "context": "tidycrm-design",
+      "subject": "concurrency-guards",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T00:32:32.689Z",
+      "worker": "5f0078e1-96b2-49e6-be6e-0e748c94c518",
+      "techniques": [
+        {
+          "technique": "atomic-file-publish",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/design/build-tokens.mjs:10 The retained emitter writes scratch output with no concurrent consumer; package scripts, consumer searches and the retirement test source support this applicability boundary."
+        },
+        {
+          "technique": "cache-value-not-handle",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/design/build-tokens.mjs:74 This standalone synchronous Node CLI has no request-scoped execution context or shared completion handle."
+        }
+      ]
+    },
+    "fe808407-91f4-4b85-8688-1125db0aec71/conformance-checking": {
+      "context": "desktop-scenes-accounts-apps",
+      "subject": "conformance-checking",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T01:04:27.869Z",
+      "techniques": [],
+      "withdrawn": {
+        "worker": "8d719312-d5bc-4940-9f85-f40b35069576",
+        "state": "not-applicable",
+        "at": "2026-10-17T01:04:42.801723+00:00",
+        "reason": "reviewer (sonnet): The anchor types.ts:6 is the shared depth-scene contract comment. It sits outside the context's files, never mentions Accounts or Apps, and says nothing about whether a conformance checker is absent, so the anchor is incidental."
+      }
+    },
+    "63aafb7d-7b5c-4d41-a254-fe57017fdb35/conformance-checking": {
+      "context": "proving-characters-gauntlet",
+      "subject": "conformance-checking",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T01:04:27.869Z",
+      "techniques": [],
+      "withdrawn": {
+        "worker": "8d719312-d5bc-4940-9f85-f40b35069576",
+        "state": "not-applicable",
+        "at": "2026-10-17T01:04:42.828969+00:00",
+        "reason": "reviewer (sonnet): The anchor gauntlet/__init__.py:4 is the docstring's claim statement about gate approval. It does not show that a conformance checker is absent, and a grep for the terms is not enough to establish that, so the anchor is incidental."
+      }
+    },
+    "645f955f-74d6-44ae-a966-70f6ed2ece17/knowledge-registry": {
+      "context": "contracts-seam",
+      "subject": "knowledge-registry",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T01:15:19.899Z",
+      "techniques": [
+        {
+          "technique": "catalog-as-sync-key",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/harness.py:54 This hashes prompt-block text; it does not compare copies of shared knowledge items."
+        },
+        {
+          "technique": "consumer-overlays",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/registry.py:221 The configuration describes runtime turn policy, not a consumer's relationship to a shared knowledge repository."
+        },
+        {
+          "technique": "deterministic-seeding",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/ids.py:58 These are runtime entity identifiers; no registry-seeding proposal is implemented here."
+        },
+        {
+          "technique": "lane-contracts",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/registry.py:40 Lanes select where executable tools are available, rather than partitioning shared knowledge into content shapes."
+        },
+        {
+          "technique": "per-contributor-aggregation",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/harness.py:159 The reporting unit is a model turn, not a contributor-owned registry telemetry file."
+        },
+        {
+          "technique": "propose-then-adopt",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/channel.py:172 Decision tokens resolve runtime action approvals; they do not govern adoption of knowledge through repository merges."
+        },
+        {
+          "technique": "standard-versus-consumer-split",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/__init__.py:3 This package defines API contracts, with no publication boundary between shared guidance and consumer-local proof."
+        },
+        {
+          "technique": "verification-is-contributed",
+          "verdict": "not-applicable",
+          "evidence": "tests/contracts/test_channel.py:97 The checked coverage concerns channel event kinds, not contributed verification of published knowledge claims."
+        }
+      ],
+      "withdrawn": {
+        "worker": "d248d074-5cbb-46fc-a0ee-671b2f5b6e1f",
+        "state": "not-applicable",
+        "at": "2026-10-17T01:15:33.370067+00:00",
+        "reason": "reviewer (sonnet): The anchor manifest.py:155 is only the HostManifest class docstring header, so it doesn't show that no shared knowledge repository exists; the 'no repository' claim rests on a search whose terms (contributor, digest) were not chosen for this subject."
+      }
+    },
+    "f4f6bafa-bef4-426d-9731-16357fffa1ee/knowledge-registry": {
+      "context": "ledgerbox-lanes-ui",
+      "subject": "knowledge-registry",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T01:15:19.899Z",
+      "techniques": [
+        {
+          "technique": "catalog-as-sync-key",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/model.ts:5 The UI receives a request-built invoice view model, not a catalog for comparing knowledge copies."
+        },
+        {
+          "technique": "consumer-overlays",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/Lanes.tsx:76 Consumer-specific state here means selected invoices; no shared registry declaration or consumer overlay is involved."
+        },
+        {
+          "technique": "deterministic-seeding",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/useRun.ts:25 This hook executes UI server actions; no organization-registry creation or repeatable seeding proposal is exposed."
+        },
+        {
+          "technique": "lane-contracts",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/Swarm.tsx:6 These lanes group invoices by practice area, not heterogeneous knowledge artifacts by specification and gate."
+        },
+        {
+          "technique": "per-contributor-aggregation",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/shell/Foot.tsx:67 Counts derive from the displayed invoice sheet, not independently owned contributor files."
+        },
+        {
+          "technique": "propose-then-adopt",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/Gate.tsx:54 Confirmation executes a bookkeeping action; it does not adopt a knowledge contribution through a merge."
+        },
+        {
+          "technique": "standard-versus-consumer-split",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/card/Aside.tsx:48 The component renders local invoice contact data, with no mechanism publishing it as reusable organizational guidance."
+        },
+        {
+          "technique": "verification-is-contributed",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/presence.ts:52 The observation measures bridge presence in this page, not the truth of a shared knowledge claim."
+        }
+      ],
+      "withdrawn": {
+        "worker": "d248d074-5cbb-46fc-a0ee-671b2f5b6e1f",
+        "state": "not-applicable",
+        "at": "2026-10-17T01:15:33.397888+00:00",
+        "reason": "reviewer (sonnet): The anchor Lane.tsx:123 is an invoice-lane aria-label line, which is incidental and doesn't show that a knowledge publication or catalog path is absent; the absence search used the wrong terms (contributor, digest)."
+      }
     }
   }
 }

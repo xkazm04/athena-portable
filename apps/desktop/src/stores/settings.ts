@@ -83,9 +83,11 @@ export interface SettingsState {
   /** Where the store file is, for the read-only line in Settings. `null` until it has answered. */
   storePath: string | null;
   /**
-   * The rows the last read could not get, with the store's own words, or `null`. Such a row keeps
-   * the value the store already held (the default, at launch): an unreadable row is its own fact,
-   * never a reason to stay unhydrated (README section 3.5).
+   * Why rows could not be read, in the store's own words, or `null`. Before the first read goes
+   * through, a refused row keeps `hydrated` false and the stage shows this with a retry, because
+   * a default `onboarded` would show a returning person the first act. After it, a refused row
+   * keeps the value already shown and is named here, and the other rows still arrive (README
+   * section 3.5).
    */
   problem: string | null;
   setEngine: (engine: EngineId) => Promise<void>;
@@ -148,10 +150,12 @@ export const useSettings = create<SettingsState>((set, get) => ({
     await settingWrite(SETTING_KEYS.brainPath, path);
   },
 
+  // The row first, unlike the look: this flag closes the first act, and a refused write must leave
+  // the person on the act with the reason, not on a surface that forgets them at the next launch.
   setOnboarded: async (onboarded) => {
     if (get().onboarded === onboarded) return;
-    set({ onboarded });
     await settingWrite(SETTING_KEYS.onboarded, onboarded);
+    set({ onboarded });
   },
 }));
 
@@ -208,18 +212,21 @@ export async function startSettings(): Promise<void> {
   });
 }
 
-/** Read every row, paint the resolved theme and publish. Startup and `store:changed` share it. */
+/**
+ * Read every row, paint the resolved theme and publish. Startup, `store:changed` and the stage's
+ * retry share it. A refused read is published as `problem` and never thrown: before the first read
+ * `hydrated` stays false, and after it the rows already shown stay (they were true a moment ago).
+ */
 export async function readRows(): Promise<void> {
-  // Each row on its own: one that cannot be read keeps what the store held and is named in
-  // `problem`, and the rest still arrive. A single rejected read used to reject them all, and
-  // `hydrated` - which Main's first scene and her window's first draw wait on - stayed false.
-  const failed: string[] = [];
+  // Each row on its own: one that cannot be read keeps what the store held, and the rest still
+  // arrive. A single rejected read used to reject them all.
+  const failed: { key: SettingKey; reason: string }[] = [];
   const current = useSettings.getState();
   const row = async <T>(key: SettingKey, held: T | null): Promise<T | null> => {
     try {
       return await settingRead<T>(key);
     } catch (e) {
-      failed.push(`${key}: ${e instanceof Error ? e.message : String(e)}`);
+      failed.push({ key, reason: e instanceof Error ? e.message : String(e) });
       return held;
     }
   };
@@ -233,6 +240,11 @@ export async function readRows(): Promise<void> {
     row<boolean>(SETTING_KEYS.onboarded, current.onboarded),
     storePath().catch(() => null),
   ]);
+  if (failed.length && !current.hydrated) {
+    // Nothing has been read yet, so a held value is only a default: stay unread and say why.
+    useSettings.setState({ problem: [...new Set(failed.map((x) => x.reason))].join("; ") });
+    return;
+  }
 
   const choice: ThemeChoice = isThemeChoice(theme) ? theme : "system";
   applyTheme(resolveTheme(choice));
@@ -251,7 +263,7 @@ export async function readRows(): Promise<void> {
     brainPath: brainPath ?? "",
     onboarded: onboarded ?? false,
     storePath: path,
-    problem: failed.length ? `could not read ${failed.join("; ")}` : null,
+    problem: failed.length ? `could not read ${failed.map((x) => `${x.key}: ${x.reason}`).join("; ")}` : null,
   });
 }
 

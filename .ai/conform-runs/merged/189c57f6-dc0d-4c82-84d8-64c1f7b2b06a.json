@@ -1,0 +1,76 @@
+{
+  "schema": "conform-run/1",
+  "worker": "189c57f6-dc0d-4c82-84d8-64c1f7b2b06a",
+  "subject": "fleet-orchestration",
+  "evaluatedAt": "2026-10-15T23:10:51.254119+00:00",
+  "provider": "codex",
+  "model": "gpt-6.1-sol",
+  "pairs": [],
+  "declined": [
+    {
+      "subject": "fleet-orchestration",
+      "context": "daemon-service",
+      "reason": "the seat returned unknown"
+    },
+    {
+      "subject": "fleet-orchestration",
+      "context": "tidycrm-design",
+      "reason": "pair anchor refused: examples/tidycrm/design/pass3-law-brief.md:170 does not contain the quoted text"
+    },
+    {
+      "subject": "fleet-orchestration",
+      "context": "proving-core",
+      "reason": "withdrawn after review: reviewer (sonnet): roles.py:440 does call client.complete with only a spend check, but the 'two generators each with a workers-sized pool' claim rests on gauntlet/run.py:583 and :238, which is not among this context's files and does not get called by them."
+    },
+    {
+      "subject": "fleet-orchestration",
+      "context": "desktop-setup-module",
+      "reason": "withdrawn after review: reviewer (sonnet): The anchor index.ts:71 is one daemon-restart line that does not show worker dispatch is absent, and the searched terms (fleet, hibernat, sweeper) are too narrow to prove absence for this subject."
+    },
+    {
+      "subject": "fleet-orchestration",
+      "context": "desktop-scenes-accounts-apps",
+      "reason": "withdrawn after review: reviewer (sonnet): The anchor view.tsx:12 is a doc-comment line that only describes the scene, so it is incidental. The same narrow search terms cannot prove absence of worker or session management."
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-15T23:10:51.254119+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "fleet-orchestration"
+      ],
+      "techniques": [
+        "parallel-dispatch"
+      ],
+      "deviations": 1,
+      "context": "proving-core",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    },
+    {
+      "ts": "2026-10-15T23:10:51.254119+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "fleet-orchestration"
+      ],
+      "techniques": [],
+      "deviations": 0,
+      "context": "desktop-setup-module",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    },
+    {
+      "ts": "2026-10-15T23:10:51.254119+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "fleet-orchestration"
+      ],
+      "techniques": [],
+      "deviations": 0,
+      "context": "desktop-scenes-accounts-apps",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    }
+  ]
+}

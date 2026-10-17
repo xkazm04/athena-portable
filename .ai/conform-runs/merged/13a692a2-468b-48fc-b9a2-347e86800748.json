@@ -1,0 +1,143 @@
+{
+  "schema": "conform-run/1",
+  "worker": "13a692a2-468b-48fc-b9a2-347e86800748",
+  "subject": "agent-browser-control",
+  "evaluatedAt": "2026-10-16T02:34:32.959510+00:00",
+  "provider": "codex",
+  "model": "gpt-6.1-sol",
+  "pairs": [
+    {
+      "context": "desktop-modules-registry",
+      "subject": "agent-browser-control",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evidence": "apps/desktop/src/modules/browser/model.ts:149 This context builds browser UI models; searches found no page_click, page_fill or locator here, while repository searches located browser execution in the native shell.",
+      "techniques": [
+        {
+          "technique": "agent-actionable-errors",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:60 This reports UI callback failures to the console, rather than browser-command errors to a model."
+        },
+        {
+          "technique": "effect-classed-commands",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:62 These are view-model callbacks to stores, not the agent's command dispatcher."
+        },
+        {
+          "technique": "persistent-browser-daemon",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:38 The module consumes tab state; browser process ownership is outside this context."
+        },
+        {
+          "technique": "references-over-selectors",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:161 This selects the focused tab's tool-display model, rather than resolving page elements."
+        },
+        {
+          "technique": "socket-scoped-surface",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/types.ts:15 This is a presentation and preview contract, not a browser listener."
+        }
+      ],
+      "absenceTerms": [
+        "page_click",
+        "page_fill",
+        "locator"
+      ]
+    },
+    {
+      "context": "desktop-shell-rust",
+      "subject": "agent-browser-control",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "apps/desktop/src-tauri/src/hands.js:106 The browser hands retain DOM elements inside page memory instead of external lazy locators, so they do not satisfy the required reference implementation.",
+      "techniques": [
+        {
+          "technique": "agent-actionable-errors",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src-tauri/src/bridge.rs:392 The relay timeout lacks a structured reason, command-specific explanation and literal recovery command."
+        },
+        {
+          "technique": "effect-classed-commands",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src-tauri/src/hands.rs:354 Dispatch distinguishes page versus shell execution, not read/write/meta effects; the separate effect flags do not drive the required class-based routing."
+        },
+        {
+          "technique": "references-over-selectors",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src-tauri/src/hands.js:106 References hold concrete DOM elements in the injected page closure, rather than lazy role/name/index locators outside the page; detached-node checks and navigation invalidation only partially realize the technique."
+        },
+        {
+          "technique": "socket-scoped-surface",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src-tauri/capabilities/page.json:8 Pages receive a narrowly scoped native IPC reply command, so the loopback reply fallback is not used; searches found no browser tunnel implementation."
+        }
+      ]
+    }
+  ],
+  "declined": [
+    {
+      "subject": "agent-browser-control",
+      "context": "daemon-service",
+      "reason": "the seat returned unknown"
+    },
+    {
+      "subject": "agent-browser-control",
+      "context": "voice-channel",
+      "reason": "withdrawn after review: reviewer (sonnet): The gateway.py:954 timeout row and the test at line 610 concern host-app tool calls (`host.invoices.chase`, ADR 0010), not browser-control commands, so a browser-control deviation is not shown for this context."
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-16T02:34:32.959510+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "agent-browser-control"
+      ],
+      "techniques": [
+        "agent-actionable-errors",
+        "effect-classed-commands",
+        "persistent-browser-daemon",
+        "references-over-selectors",
+        "socket-scoped-surface"
+      ],
+      "deviations": 0,
+      "context": "desktop-modules-registry",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    },
+    {
+      "ts": "2026-10-16T02:34:32.959510+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "agent-browser-control"
+      ],
+      "techniques": [
+        "agent-actionable-errors",
+        "persistent-browser-daemon",
+        "references-over-selectors"
+      ],
+      "deviations": 1,
+      "context": "voice-channel",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    },
+    {
+      "ts": "2026-10-16T02:34:32.959510+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "agent-browser-control"
+      ],
+      "techniques": [
+        "agent-actionable-errors",
+        "effect-classed-commands",
+        "references-over-selectors",
+        "socket-scoped-surface"
+      ],
+      "deviations": 1,
+      "context": "desktop-shell-rust",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    }
+  ]
+}

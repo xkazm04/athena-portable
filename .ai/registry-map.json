@@ -681,7 +681,11 @@
           "revision": 14,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/atlas/data/components.ts:149 Atlas cites a directory that no longer exists, while its citation test checks only for a nonempty string, allowing broken architectural documentation to persist.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:fd96220db75846a1",
+          "evaluatedRevision": 14
         },
         {
           "subject": "quality-gates",
@@ -962,7 +966,11 @@
           "revision": 17,
           "changedAt": "2026-09-30",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/geometry.ts:13 This variant is a measured blueprint whose corridors are named on the grid; embedding, cosine, chunk, rerank, and overfetch do not appear under archify-lanes or examples/atlas/test, and recall appears only as a node sublabel.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:a49d27f889212d3f",
+          "evaluatedRevision": 19
         }
       ],
       "governance": "governed"
@@ -1216,7 +1224,11 @@
           "revision": 17,
           "changedAt": "2026-09-30",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/lane/turn_frame.py:151 Whenever a recall callback is attached, every surface message is sent to it as the query, with no skip and no reason code.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:a49d27f889212d3f",
+          "evaluatedRevision": 19
         },
         {
           "subject": "prompt-assembly",
@@ -1686,7 +1698,11 @@
           "revision": 4,
           "changedAt": "2026-09-23",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/contracts/manifest.py:129 Reversible internal mutations become AUTO, whereas the standard requires mutations to be proposed for approval.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:7a0b336cac31d173",
+          "evaluatedRevision": 4
         },
         {
           "subject": "test-harness",
@@ -1755,7 +1771,11 @@
           "revision": 18,
           "changedAt": "2026-10-06",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/contracts/__init__.py:3 Searches found no storage execution terms in the contract source or tests, while repository-wide matches locate persistence elsewhere, consistent with this package's explicit no-I/O boundary.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:2dba94be6400dea1",
+          "evaluatedRevision": 19
         },
         {
           "subject": "quality-gates",
@@ -1819,7 +1839,11 @@
           "revision": 4,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/contracts/__init__.py:3 This package is frozen dataclasses and protocols for ids, channel events, harness turns and tool manifests; a search of src/athena/contracts and tests/contracts for disabledReason, className, clipboard and forwardRef found no hits.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:a6af68867a07fdfa",
+          "evaluatedRevision": 4
         }
       ],
       "governance": "governed"
@@ -1878,7 +1902,11 @@
           "revision": 7,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/core/brain/reconcile.py:198 Rebuilding resets index-only demotions, making previously suppressed memories live again and violating the prohibition on meaningful state existing only in the index.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:ff529a6dc44bf233",
+          "evaluatedRevision": 7
         },
         {
           "subject": "agent-instruction-files",
@@ -2499,7 +2527,11 @@
           "revision": 4,
           "changedAt": "2026-09-05",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/demo-kit/template/lib/db.ts:58 The demo template statically connects to a local SQLite database without runtime plane dispatch or honesty contract markers, resolving queries synchronously without simulated network latency.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:952fe6652c22027d",
+          "evaluatedRevision": 4
         },
         {
           "subject": "templates-scaffolding",
@@ -2650,7 +2682,11 @@
           "revision": 4,
           "changedAt": "2026-09-05",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/demo-kit/src/db/index.ts:55 The demo kit hardcodes a standalone local SQLite database and unmarked shell instead of routing fake data through a shared client interface with session-based runtime dispatch and explicit demo disclosure markers.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:952fe6652c22027d",
+          "evaluatedRevision": 4
         },
         {
           "subject": "mcp-tools",
@@ -2739,7 +2775,11 @@
           "revision": 15,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/demo-kit/src/webmcp/door.ts:29 The only argument door returns the first mismatch as one prose sentence, so a caller never receives a list of typed path-addressed errors.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:d51aec71411ccb2b",
+          "evaluatedRevision": 15
         },
         {
           "subject": "embedded-db",
@@ -2940,7 +2980,11 @@
           "revision": 14,
           "changedAt": "2026-09-17",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/stores/engines.ts:45 The engine watcher started by athena.tsx permits overlapping checks and publishes each response without attempt attribution, allowing an older response to overwrite newer probe state.",
+          "evaluatedAt": "2026-10-17",
+          "evaluatedAgainst": "sha256-b2:ccc991958e998a93",
+          "evaluatedRevision": 16
         },
         {
           "subject": "test-harness",
@@ -3004,7 +3048,11 @@
           "revision": 4,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/components/CATALOG.md:26 The shell catalog is a hand-edited table, so a primitive can carry @catalog and still be missing from the list callers are told to check before building.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:a6af68867a07fdfa",
+          "evaluatedRevision": 4
         },
         {
           "subject": "native-shell-integration",
@@ -3052,7 +3100,11 @@
           "revision": 14,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/components/Table.tsx:83 Selectable tables declare grid semantics while implementing row-only focus, preventing the cell traversal required by the grid keyboard model.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:c587a204413d5373",
+          "evaluatedRevision": 14
         },
         {
           "subject": "mcp-tools",
@@ -3134,11 +3186,14 @@
           "bundle": "software-engineering",
           "source": "conform",
           "confidence": "strong",
-          "state": "unknown",
-          "evidence": "added by /conform: the context is ambient self-starting CSS motion (Bell pulse, tendril sway, glyph/chore float) that Calm turns off (apps/desktop/src/art/chore.tsx:15); the matcher ranked narrative-scroll-surface on art/illustration vocabulary instead",
+          "state": "deviation",
+          "evidence": "apps/desktop/src/art/glyphs.css:22 The install ring eases progress by transitioning stroke-dasharray, a paint property the vocabulary is not allowed to animate.",
           "digest": "sha256-b2:8d9b3eabe2f3b534",
           "revision": 10,
-          "changedAt": "2026-09-24"
+          "changedAt": "2026-09-24",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:8d9b3eabe2f3b534",
+          "evaluatedRevision": 10
         }
       ],
       "governance": "governed"
@@ -3439,7 +3494,11 @@
           "revision": 4,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/companion/model.ts:1058 The ledger view translates unavailable cost into “no cost,” losing the explicit unknown-cost state required by the metered seam.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:7a0b336cac31d173",
+          "evaluatedRevision": 4
         },
         {
           "subject": "conversation-orchestration",
@@ -3476,7 +3535,11 @@
           "revision": 7,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/companion/model.ts:622 The capability inventory exposes registration metadata without exercise evidence or status, leaving working, broken and unexercised capabilities indistinguishable on this surface.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:ff529a6dc44bf233",
+          "evaluatedRevision": 7
         },
         {
           "subject": "mcp-tools",
@@ -3556,7 +3619,11 @@
           "revision": 5,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/companion/model.ts:1143 While a turn runs the composer is blocked, so Send is disabled and a follow-up cannot be accepted as a queue, an interjection, or a cancel.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:5b4e7d399a4d924e",
+          "evaluatedRevision": 5
         }
       ],
       "governance": "governed"
@@ -3922,7 +3989,11 @@
           "revision": 4,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/halo/main.ts:110 Searches found neither run_turn nor run_cycle throughout the halo and lib directories, while repository-wide results locate turn execution in Python and the halo code only projects and receives display signals.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:7a0b336cac31d173",
+          "evaluatedRevision": 4
         },
         {
           "subject": "prompt-assembly",
@@ -3984,7 +4055,11 @@
           "revision": 3,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:149 This context builds browser UI models; searches found no page_click, page_fill or locator here, while repository searches located browser execution in the native shell.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:0d439bfcafe8cabd",
+          "evaluatedRevision": 3
         },
         {
           "subject": "browser-credential-boundary",
@@ -4016,7 +4091,11 @@
           "revision": 12,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:161 This context presents browser tabs and their registered application tools; searches found no scanner, ruleset or unused_exports references in its files and directories.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:06416fce13bc2342",
+          "evaluatedRevision": 12
         },
         {
           "subject": "prompt-assembly",
@@ -4689,7 +4768,11 @@
           "revision": 10,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/scenes/mind/mind.css:84 Instrument hover eases background and border-color, which repaint, and the Mind and Surface sheets never settle those transitions under Calm.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:8d9b3eabe2f3b534",
+          "evaluatedRevision": 10
         },
         {
           "subject": "quality-gates",
@@ -4990,7 +5073,11 @@
           "revision": 12,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/readiness.ts:181 This context derives first-run readiness from engine and page state; searches found no scanner, ruleset or unused_exports references in its files and directories.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:06416fce13bc2342",
+          "evaluatedRevision": 12
         },
         {
           "subject": "prompt-assembly",
@@ -5129,7 +5216,11 @@
           "revision": 3,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src-tauri/src/hands.js:106 The browser hands retain DOM elements inside page memory instead of external lazy locators, so they do not satisfy the required reference implementation.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:0d439bfcafe8cabd",
+          "evaluatedRevision": 3
         }
       ],
       "governance": "governed"
@@ -5386,7 +5477,11 @@
           "revision": 18,
           "changedAt": "2026-10-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/stores/run.ts:1004 A malformed persisted collection of uncertain tool outcomes becomes an empty successful read, silently losing the holds that should survive reload.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:2dba94be6400dea1",
+          "evaluatedRevision": 19
         },
         {
           "subject": "agent-memory",
@@ -5418,7 +5513,11 @@
           "revision": 13,
           "changedAt": "2026-09-05",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/stores/settings.ts:206 The desktop settings store fans out into seven separate IPC read commands at startup instead of batching, performs optimistic UI mutations without rollback on write failure, and lacks store-side key validation, setting kind classification, or audit recording.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:85c48ec5bdb5581f",
+          "evaluatedRevision": 13
         }
       ],
       "governance": "governed"
@@ -5848,7 +5947,11 @@
           "revision": 10,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/hirelane/components/board/Columns.tsx:221 Live pile faces enter from invisible on every mount, and leaving level 0 unmounts the columns so the same candidates play that entrance again.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:8d9b3eabe2f3b534",
+          "evaluatedRevision": 10
         },
         {
           "subject": "eval-harness",
@@ -6089,7 +6192,11 @@
           "revision": 7,
           "changedAt": "2026-09-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/hirelane/design/build-tokens.mjs:6 Searches found no cache, incremental, debuginfo or sccache references in the design directory; its active scripts check visual rules and its token generator is documented as unwired.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:2dc0e92ddb23f674",
+          "evaluatedRevision": 7
         }
       ],
       "governance": "governed"
@@ -6180,7 +6287,11 @@
           "revision": 15,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/hirelane/lib/scoring.ts:2 Rubric scores are a keyword heuristic over the applicant's own writing, so this context never extracts a structured artifact from model text.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:d51aec71411ccb2b",
+          "evaluatedRevision": 15
         },
         {
           "subject": "prompt-assembly",
@@ -6368,7 +6479,11 @@
           "revision": 4,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/hirelane/components/board/style/index.css:4 This context is the Board cascade sheet and its token block; a search of examples/hirelane/components/board/style for disabledReason, className, clipboard and forwardRef found no hits, and reduced-motion.css says the motion paths are motion/react in Board.tsx, outside these files.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:a6af68867a07fdfa",
+          "evaluatedRevision": 4
         },
         {
           "subject": "quality-gates",
@@ -6398,7 +6513,11 @@
           "revision": 14,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/hirelane/components/board/style/level0/l0-board-2.css:105 The footer explanation still promises equally stretched columns, while the board uses start alignment and explicitly documents ragged feet, leaving contradictory design documentation.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:fd96220db75846a1",
+          "evaluatedRevision": 14
         }
       ],
       "governance": "governed"
@@ -6576,7 +6695,11 @@
           "revision": 4,
           "changedAt": "2026-09-05",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/journey/src/connectors/fake-mail.ts:67 The journey fakes execute synchronously with zero simulated network latency and no fault injection, deviating from network-faithful mock requirements.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:952fe6652c22027d",
+          "evaluatedRevision": 4
         },
         {
           "subject": "quality-gates",
@@ -6878,7 +7001,11 @@
           "revision": 15,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/ledgerbox/lib/match.ts:2 Invoice matching is a pure heuristic over bank lines and invoices, not extraction of a model-produced artifact.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:d51aec71411ccb2b",
+          "evaluatedRevision": 15
         },
         {
           "subject": "quality-gates",
@@ -6910,7 +7037,11 @@
           "revision": 14,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/ledgerbox/lib/db.ts:121 Invoice ordering omits an immutable unique tiebreaker, leaving rows with equal due dates without a guaranteed relative order.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:c587a204413d5373",
+          "evaluatedRevision": 14
         },
         {
           "subject": "prompt-assembly",
@@ -7255,7 +7386,11 @@
           "revision": 4,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/index.css:4 This context is the Lanes cascade sheet and a retired token build; a search of examples/ledgerbox/components/lanes/style and examples/ledgerbox/design for disabledReason, className, clipboard and forwardRef found no hits, and reduced-motion.css points the motion behavior at motion.ts and Lanes.tsx outside these files.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:a6af68867a07fdfa",
+          "evaluatedRevision": 4
         },
         {
           "subject": "retrieval",
@@ -7271,7 +7406,11 @@
           "revision": 17,
           "changedAt": "2026-09-30",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/base/tokens.css:27 These files are stylesheets and a retired token build that paint server-supplied geometry; embedding, cosine, chunk, rerank, and overfetch are absent from the style and design files.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:a49d27f889212d3f",
+          "evaluatedRevision": 19
         },
         {
           "subject": "docs-sync",
@@ -7287,7 +7426,11 @@
           "revision": 14,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/ledgerbox/components/lanes/style/level0/l0-swarm.css:292 The stylesheet documents a three-line clamp while its declaration and nearby explanation specify two lines, leaving contradictory copies of the same design fact.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:fd96220db75846a1",
+          "evaluatedRevision": 14
         },
         {
           "subject": "motion",
@@ -7303,7 +7446,11 @@
           "revision": 10,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/ledgerbox/components/lanes/style/level0/l0-swarm-2.css:59 A mark's hover transitions box-shadow, so the pointer response repaints instead of staying on transform and opacity.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:8d9b3eabe2f3b534",
+          "evaluatedRevision": 10
         },
         {
           "subject": "test-input-generation",
@@ -7733,7 +7880,11 @@
           "revision": 12,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/proving/world.py:260 This context evaluates running agent turns through daemon routes; searches found no scanner, ruleset or unused_exports references in its directories.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:06416fce13bc2342",
+          "evaluatedRevision": 12
         },
         {
           "subject": "fleet-orchestration",
@@ -7910,7 +8061,11 @@
           "revision": 14,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/proving/server/static/index.html:844 A failed history refresh removes existing table rows and headers and replaces them with an empty-styled error without a retry action.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:c587a204413d5373",
+          "evaluatedRevision": 14
         }
       ],
       "governance": "governed"
@@ -8058,7 +8213,11 @@
           "revision": 12,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/bench.py:187 This context scores agent action cards against simulated-world truth and produces deterministic presentation artifacts; searches found no scanner, ruleset or unused_exports references in its directories.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:06416fce13bc2342",
+          "evaluatedRevision": 12
         },
         {
           "subject": "eval-harness",
@@ -8217,7 +8376,11 @@
           "revision": 2,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/Field.tsx:113 The UI renders CRM tables through React components, and searches found no directive, callout or MDX constructs in its files or enclosing component directories.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:2a061e427ef67238",
+          "evaluatedRevision": 2
         },
         {
           "subject": "workflow-property-contracts",
@@ -8314,7 +8477,11 @@
           "revision": 14,
           "changedAt": "2026-09-17",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/design/build-tokens.mjs:10 Context searches found none of the listed concurrency terms, repository searches located exclusion machinery elsewhere, and consumer searches confirmed that this retired emitter and unimported stylesheet establish no shared operation requiring concurrency guards.",
+          "evaluatedAt": "2026-10-17",
+          "evaluatedAgainst": "sha256-b2:ccc991958e998a93",
+          "evaluatedRevision": 16
         },
         {
           "subject": "module-design",
@@ -8367,7 +8534,11 @@
           "revision": 14,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/tidycrm/lib/csv.ts:15 Contact exports apply CSV quoting without spreadsheet-formula guarding, allowing trigger-leading text to reach spreadsheet consumers unchanged.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:c587a204413d5373",
+          "evaluatedRevision": 14
         },
         {
           "subject": "structured-output",
@@ -8383,7 +8554,11 @@
           "revision": 15,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/lib/matching.ts:5 Duplicate confidence is the sum of named hand-set rules, so this context does not extract a structured model artifact.",
+          "evaluatedAt": "2026-10-15",
+          "evaluatedAgainst": "sha256-b2:d51aec71411ccb2b",
+          "evaluatedRevision": 15
         },
         {
           "subject": "quality-gates",
@@ -8559,7 +8734,11 @@
           "revision": 2,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/model.ts:7 The blocks are CRM domain cohorts consumed by spatial views and tools, and searches found no directive, callout or MDX constructs in this context.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:2a061e427ef67238",
+          "evaluatedRevision": 2
         },
         {
           "subject": "test-input-generation",
@@ -8754,7 +8933,11 @@
           "revision": 4,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:4 This context is the Blocks cascade sheet; a search of examples/tidycrm/components/blocks/style for disabledReason, className, clipboard and forwardRef found no hits, and the button rule is a :where() font reset rather than a component contract.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:a6af68867a07fdfa",
+          "evaluatedRevision": 4
         },
         {
           "subject": "persistent-batch-mutation",
@@ -8816,7 +8999,11 @@
           "revision": 2,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/level1/l1-cells.css:4 These styles present CRM tables and their spatial scene, and searches found no directive, callout or MDX constructs anywhere in the stylesheet context.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:2a061e427ef67238",
+          "evaluatedRevision": 2
         }
       ],
       "governance": "governed"
@@ -8950,7 +9137,11 @@
           "revision": 14,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "uat/README.md:19 The hand-maintained journey index omits the existing J6 journey, so readers receive an incomplete copy of the overlay's live journey inventory.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:fd96220db75846a1",
+          "evaluatedRevision": 14
         }
       ],
       "governance": "governed"
@@ -9057,7 +9248,11 @@
           "revision": 5,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/channels/voice/gateway.py:3 This socket runs a lane turn and emits voice.transcript frames; it does not render a conversation document, and composer, markdown, scrollIntoView, and bubble are absent from src/athena/channels and tests/channels.",
+          "evaluatedAt": "2026-10-16",
+          "evaluatedAgainst": "sha256-b2:5b4e7d399a4d924e",
+          "evaluatedRevision": 5
         },
         {
           "subject": "agent-browser-control",

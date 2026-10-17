@@ -81,6 +81,13 @@ export default function EngineSection({ model }: { model: SetupModel }) {
           retryLabel={model.startFailure.actionLabel}
         />
       )}
+      {model.refusals.engine && (
+        <ProblemNote
+          title="That engine choice was not stored. The stored engine is shown again."
+          reason={model.refusals.engine}
+          tone="error"
+        />
+      )}
       <RestartNoticeBar model={model} />
       <ul className="engines__list">
         {model.engines.map((e) => {

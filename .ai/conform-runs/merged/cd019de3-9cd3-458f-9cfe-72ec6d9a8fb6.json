@@ -1,0 +1,32 @@
+{
+ "schema": "conform-run/1",
+ "worker": "cd019de3-9cd3-458f-9cfe-72ec6d9a8fb6",
+ "subject": "repository-landing-document",
+ "evaluatedAt": "2026-10-16T22:13:23.073353+00:00",
+ "provider": "agy",
+ "model": "gemini-3.8-flash-high",
+ "pairs": [],
+ "declined": [
+  {
+   "subject": "repository-landing-document",
+   "context": "tidycrm-style",
+   "reason": "The subject repository-landing-document governs repository front pages and landing document composition (README routing, badges, figure captions, visual cadence). The tidycrm-style context consists entirely of CSS stylesheets for TidyCRM UI components under examples/tidycrm/components/blocks/style/; it contains no repository landing document or repository-level front page."
+  },
+  {
+   "subject": "repository-landing-document",
+   "context": "ledgerbox-style-design",
+   "reason": "The subject repository-landing-document governs repository front pages and landing document composition (README routing, badges, figure captions, visual cadence). The ledgerbox-style-design context consists exclusively of CSS stylesheets and a design token compilation script for Ledgerbox UI components; it contains no repository landing document or repository-level front page."
+  },
+  {
+   "subject": "repository-landing-document",
+   "context": "hirelane-style",
+   "reason": "The subject repository-landing-document governs repository front pages and landing document composition (README routing, badges, figure captions, visual cadence). The hirelane-style context consists entirely of CSS stylesheets for Hirelane board UI components; it contains no repository landing document or repository-level front page."
+  },
+  {
+   "subject": "repository-landing-document",
+   "context": "atlas-shell-and-styles",
+   "reason": "The subject repository-landing-document governs repository front pages and landing document composition (README routing, badges, figure captions, visual cadence). The atlas-shell-and-styles context consists of React shell components, TypeScript utilities, and stylesheets for the Atlas interactive architectural diagram; it contains no repository landing document or repository-level front page."
+  }
+ ],
+ "consults": []
+}

@@ -1,0 +1,151 @@
+{
+  "schema": "conform-run/1",
+  "worker": "48f6e3a5-d5eb-43aa-9202-1b0b7bc40d9c",
+  "subject": "docs-sync",
+  "evaluatedAt": "2026-10-16T01:42:30.517178+00:00",
+  "provider": "codex",
+  "model": "gpt-6.1-sol",
+  "pairs": [
+    {
+      "context": "atlas-data-and-app",
+      "subject": "docs-sync",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "examples/atlas/data/components.ts:149 Atlas cites a directory that no longer exists, while its citation test checks only for a nonempty string, allowing broken architectural documentation to persist.",
+      "techniques": [
+        {
+          "technique": "doc-rot-detection",
+          "verdict": "deviation",
+          "evidence": "examples/atlas/test/model.test.ts:80 Citation validation tests string presence rather than resolution; the panel directory cited by components.ts:149 is absent."
+        },
+        {
+          "technique": "named-duplication-points",
+          "verdict": "deviation",
+          "evidence": "examples/atlas/data/systems.ts:2 The hand-written count says eighteen, but the same file declares nineteen systems and the app README states nineteen."
+        }
+      ]
+    },
+    {
+      "context": "ledgerbox-style-design",
+      "subject": "docs-sync",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "examples/ledgerbox/components/lanes/style/level0/l0-swarm.css:292 The stylesheet documents a three-line clamp while its declaration and nearby explanation specify two lines, leaving contradictory copies of the same design fact.",
+      "techniques": [
+        {
+          "technique": "named-duplication-points",
+          "verdict": "deviation",
+          "evidence": "examples/ledgerbox/components/lanes/style/level0/l0-swarm.css:292 This prose copy says three lines; line 328 sets line-clamp: 2, and the nearby arithmetic explanation also describes two lines."
+        }
+      ]
+    },
+    {
+      "context": "uat-characters-journeys",
+      "subject": "docs-sync",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "uat/README.md:19 The hand-maintained journey index omits the existing J6 journey, so readers receive an incomplete copy of the overlay's live journey inventory.",
+      "techniques": [
+        {
+          "technique": "named-duplication-points",
+          "verdict": "deviation",
+          "evidence": "uat/README.md:19 The copied inventory stops at J5, while uat/journeys/J6-connect-and-use.md declares id: J6 and names its executable walkthrough."
+        }
+      ]
+    },
+    {
+      "context": "hirelane-style",
+      "subject": "docs-sync",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "examples/hirelane/components/board/style/level0/l0-board-2.css:105 The footer explanation still promises equally stretched columns, while the board uses start alignment and explicitly documents ragged feet, leaving contradictory design documentation.",
+      "techniques": [
+        {
+          "technique": "named-duplication-points",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/components/board/style/level0/l0-board-2.css:105 This explanation retains the stretch behavior; l0-board.css:33 sets align-items: start and its line 21 explicitly says the five feet are ragged."
+        }
+      ]
+    }
+  ],
+  "declined": [
+    {
+      "subject": "docs-sync",
+      "context": "workspace-build-config",
+      "reason": "withdrawn after review: reviewer (sonnet): The claim is about repo-wide CI automation and rests on AGENTS.md and .github/workflows/ci.yml, which are not among the context's files (scripts/build-sidecar.py and scripts/sidecar_entry.py), and nothing in those two scripts shows a documentation-obligation check is absent."
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-16T01:42:30.517178+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "docs-sync"
+      ],
+      "techniques": [
+        "doc-rot-detection",
+        "named-duplication-points"
+      ],
+      "deviations": 1,
+      "context": "atlas-data-and-app",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    },
+    {
+      "ts": "2026-10-16T01:42:30.517178+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "docs-sync"
+      ],
+      "techniques": [
+        "named-duplication-points"
+      ],
+      "deviations": 1,
+      "context": "ledgerbox-style-design",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    },
+    {
+      "ts": "2026-10-16T01:42:30.517178+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "docs-sync"
+      ],
+      "techniques": [
+        "same-change-enforcement"
+      ],
+      "deviations": 1,
+      "context": "workspace-build-config",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    },
+    {
+      "ts": "2026-10-16T01:42:30.517178+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "docs-sync"
+      ],
+      "techniques": [
+        "named-duplication-points"
+      ],
+      "deviations": 1,
+      "context": "uat-characters-journeys",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    },
+    {
+      "ts": "2026-10-16T01:42:30.517178+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "docs-sync"
+      ],
+      "techniques": [
+        "named-duplication-points"
+      ],
+      "deviations": 1,
+      "context": "hirelane-style",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    }
+  ]
+}

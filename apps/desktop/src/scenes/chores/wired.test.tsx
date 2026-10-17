@@ -33,7 +33,7 @@ type Spies = { [K in keyof PlaybookActions]: Mock<PlaybookActions[K]> };
 
 function actions(): Spies {
   return {
-    copy: vi.fn<PlaybookActions["copy"]>(),
+    copy: vi.fn<PlaybookActions["copy"]>(() => Promise.resolve()),
     open: vi.fn<PlaybookActions["open"]>(),
     hand: vi.fn<PlaybookActions["hand"]>(),
   };
@@ -298,14 +298,52 @@ describe("a chore's topic page", () => {
     expect(go).toHaveBeenLastCalledWith(adoptPath("carrier-refunds"));
   });
 
-  it("copies the playbook's own command, and goes down to the replay at its first turn", () => {
+  it("copies the playbook's own command, says so once the clipboard took it, and goes down to the replay at its first turn", async () => {
     const a = actions();
+    let land: () => void = () => {};
+    a.copy.mockImplementation(() => new Promise<void>((resolve) => (land = resolve)));
     show(withActions(fixtures.ledger!, a), at);
     click(button("Copy the command"));
     expect(a.copy).toHaveBeenCalledWith(refunds().command);
+    expect(q(".pa-said")!.textContent, "nothing is claimed before the write lands").toBe("");
+    await act(async () => land());
     expect(q(".pa-said")!.textContent).toBe("Sent the command to the clipboard.");
+    expect(q(".pa-command")).toBeNull();
     click(button("Watch the run turn by turn"));
     expect(go).toHaveBeenLastCalledWith(runPath("carrier-refunds", 0));
+  });
+
+  it("says a refused copy did not work and shows the command to copy by hand, never the success line", async () => {
+    const a = actions();
+    a.copy.mockRejectedValue(new Error("Write permission denied."));
+    show(withActions(fixtures.ledger!, a), at);
+    click(button("Copy the command"));
+    await act(async () => {});
+    expect(q(".pa-said")!.textContent).toBe(
+      "Copying did not work here. Select the command below and copy it yourself.",
+    );
+    expect(q(".pa-command")!.textContent).toBe(refunds().command);
+
+    // A second press copies again and its answer replaces the line.
+    a.copy.mockResolvedValue(undefined);
+    click(button("Copy the command"));
+    await act(async () => {});
+    expect(q(".pa-said")!.textContent).toBe("Sent the command to the clipboard.");
+    expect(q(".pa-command")).toBeNull();
+  });
+
+  it("lets only the latest press answer, so a slow refusal never overwrites a later success", async () => {
+    const a = actions();
+    let refuse: (e: Error) => void = () => {};
+    a.copy.mockImplementationOnce(() => new Promise<void>((_, reject) => (refuse = reject)));
+    show(withActions(fixtures.ledger!, a), at);
+    click(button("Copy the command"));
+    click(button("Copy the command"));
+    await act(async () => {});
+    expect(q(".pa-said")!.textContent).toBe("Sent the command to the clipboard.");
+    await act(async () => refuse(new Error("late")));
+    expect(q(".pa-said")!.textContent).toBe("Sent the command to the clipboard.");
+    expect(q(".pa-command")).toBeNull();
   });
 
   it("offers the way back from a place that is not there", () => {

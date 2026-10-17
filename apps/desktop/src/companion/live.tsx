@@ -318,6 +318,7 @@ export default function Live() {
   const tools = focused ? toolRows(byTab[focused.id], gatedListsOf(trust, tabs, byTab)) : [];
   // What a card about a rewritten tool shows beside the new contract (ADR 0100).
   const drifts = contractDriftsOf(trust, tabs, byTab);
+  const toolsProblem = focused ? (byTab[focused.id]?.problem ?? null) : null;
   const ready = endpoint(daemon) !== null;
 
   // The record: what the daemon says it spent, read when her Record tab is open and again when a
@@ -411,6 +412,7 @@ export default function Live() {
     daemonReady: ready,
     origin,
     tools,
+    toolsProblem,
     held: snap.held,
     drifts,
     tabs,
