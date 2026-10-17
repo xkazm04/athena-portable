@@ -120,6 +120,7 @@ export function model(over: Partial<VoiceSources>): VoiceModel {
     hear: HEAR_IDLE,
     keyBusy: false,
     saveError: null,
+    finishError: null,
     now: MORNING,
     actions: INERT_ACTIONS,
     meters: SILENT_METERS,

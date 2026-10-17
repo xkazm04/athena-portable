@@ -109,6 +109,8 @@ export interface VoiceSetupState {
   hear: HearState;
   keyBusy: boolean;
   saveError: string | null;
+  /** The "studio done" row was refused, in the store's words; the studio stays open. */
+  finishError: string | null;
   /** Point the module at a daemon (or at none). Reads the config and any running install. */
   connect: (at: Endpoint | null) => Promise<void>;
   actions: VoiceActions;
@@ -127,9 +129,8 @@ const FRESH = {
   hear: HEAR_IDLE,
   keyBusy: false,
   saveError: null as string | null,
+  finishError: null as string | null,
 };
-
-const report = (what: string) => (e: unknown) => console.error(`[voice] ${what}: ${String(e)}`);
 
 /** What the store holds that is not state: the client, the devices, the preview token. */
 interface Runtime {
@@ -294,7 +295,16 @@ export const useVoiceSetup = create<VoiceSetupState>((set, get) => {
   }
 
   const actions: VoiceActions = {
-    refresh: () => void refresh(),
+    refresh: () => {
+      // A refused poll leaves an install that may still be running, so Check again asks it again
+      // (and the poll reads the config once it settles), rather than re-reading the config alone.
+      if (get().installError !== null && ACTIVE_INSTALL.has(get().install?.state ?? "idle")) {
+        set({ installError: null });
+        void poll();
+        return;
+      }
+      void refresh();
+    },
     studio: (event) => {
       if (event.t === "choose_voice") {
         void choose({ tts: { engine: "kokoro", voice: event.voice } }).then((ok) => ok && dispatch(event));
@@ -343,10 +353,19 @@ export const useVoiceSetup = create<VoiceSetupState>((set, get) => {
         if (out.ok) void refresh();
       });
     },
-    finish: () => {
+    finish: async () => {
       stopPreview();
+      // The row first: a studio marked done that was never stored comes back on the next launch with
+      // no word why, so a refusal keeps the studio open with the reason where Enter was pressed.
+      set({ finishError: null });
+      try {
+        await deps.writeDone(true);
+      } catch (e) {
+        set({ finishError: e instanceof Error ? e.message : String(e) });
+        return false;
+      }
       set({ studioDone: true, reopened: false });
-      void deps.writeDone(true).catch(report("studio done"));
+      return true;
     },
     reopenStudio: () => {
       stopPreview();

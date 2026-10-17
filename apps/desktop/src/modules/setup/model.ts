@@ -25,6 +25,14 @@ import type { ThemeChoice, TypeScale } from "@/stores/settings";
 
 export type SetupMode = "onboarding" | "settings";
 
+/** The setting writes a person makes here whose refusal is shown where the choice was made. */
+export type SetupWrite = "engine" | "theme" | "typeScale" | "motion" | "brainPath" | "wake";
+
+/** A refused write, by which one, in the store's own words. Absent means it was not refused. */
+export type SetupRefusals = Readonly<Partial<Record<SetupWrite, string>>>;
+
+const NO_REFUSALS: SetupRefusals = {};
+
 /** A tab, as this surface needs it: enough to say one is open on something. */
 export interface SetupTab {
   id: number;
@@ -108,6 +116,10 @@ export interface SetupModel {
   pendingEngine: string | null;
   /** Non-null when the daemon failed or stopped on the stored engine. Restart is its action. */
   startFailure: StartFailure | null;
+  /** The writes that were refused; the control shows its own, and the stored row is shown again. */
+  refusals: SetupRefusals;
+  /** "Wake her" is being stored: the act stays until the row lands. */
+  waking: boolean;
   actions: SetupActions;
 }
 
@@ -140,6 +152,9 @@ export interface SetupSources {
   daemonLoaded?: boolean;
   /** `true` for one visit after "Show the welcome again", whatever the stored row says. */
   reopened?: boolean;
+  /** None where a fixture does not say. */
+  refusals?: SetupRefusals;
+  waking?: boolean;
   actions: SetupActions;
 }
 
@@ -199,6 +214,8 @@ export function selectSetup(source: SetupSources): SetupModel {
     loaded: source.daemonLoaded ?? true,
     pendingEngine: pendingEngineOf(source.engine, daemonEngine, health),
     startFailure,
+    refusals: source.refusals ?? NO_REFUSALS,
+    waking: source.waking ?? false,
     actions: source.actions,
   };
 }

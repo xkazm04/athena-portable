@@ -28,7 +28,7 @@ import { useVoice } from "@/stores/voice";
 import { selectSurface, type SurfaceActions, type SurfaceModel } from "./model";
 import SurfaceView from "./view";
 
-const NO_ACTIONS = { copy: () => {}, open: () => {}, hand: () => {} };
+const NO_ACTIONS = { copy: () => Promise.resolve(), open: () => {}, hand: () => {} };
 
 const ACTIONS: SurfaceActions = {
   // The mirror's hand-over (decision D1): the sentence goes to her own window, which answers.

@@ -6,9 +6,9 @@
  * (which engine is running, and the restart), and `voice` (whether the daemon can hear). The
  * engine answer is read from `engines` (started by the app root); `null` means it has not answered.
  *
- * Two facts are React state rather than stored rows, because they are facts about *this* visit:
- * the microphone's answer (a permission is the browser's fact, not the store's) and whether the
- * welcome was reopened.
+ * Some facts are React state rather than stored rows, because they are facts about *this* visit:
+ * the microphone's answer (a permission is the browser's fact, not the store's), whether the
+ * welcome was reopened, and which writes the store refused (each shown beside its own control).
  */
 import { useMemo, useState } from "react";
 
@@ -17,11 +17,11 @@ import type { MotionChoice } from "@/lib/motion";
 import { checkMicrophone, type MicStanding } from "@/lib/voice";
 import { useDaemon } from "@/stores/daemon";
 import { useEngines } from "@/stores/engines";
-import { chooseSetupEngine, useSettings, type ThemeChoice, type TypeScale } from "@/stores/settings";
+import { chooseSetupEngine, readRows, useSettings, type ThemeChoice, type TypeScale } from "@/stores/settings";
 import { useTabs } from "@/stores/tabs";
 import { useVoice } from "@/stores/voice";
 
-import { selectSetup, type SetupActions, type SetupModel } from "./model";
+import { selectSetup, type SetupActions, type SetupModel, type SetupRefusals, type SetupWrite } from "./model";
 
 /**
  * The model, built from the stores. A hook so the Setup module and the depth scenes that carry its
@@ -56,39 +56,58 @@ export function useSetupModel(
     detail: "",
   });
   const [reopened, setReopened] = useState(false);
+  const [refusals, setRefusals] = useState<SetupRefusals>({});
+  const [waking, setWaking] = useState(false);
 
   const actions: SetupActions = useMemo(() => {
     // A rejected command is reported and not thrown: a directory the store will not take must
     // not take the module down with it.
     const report = (what: string) => (e: unknown) => console.error(`[setup] ${what}: ${String(e)}`);
+    // A write the person made here: its refusal is kept beside its control, and the rows are read
+    // again, so a choice painted before its write (the theme's rule) settles back to the stored one.
+    const attempt = (what: SetupWrite, write: () => Promise<void>): Promise<boolean> => {
+      setRefusals((now) => (what in now ? withoutKey(now, what) : now));
+      return write().then(
+        () => true,
+        (e: unknown) => {
+          report(what)(e);
+          setRefusals((now) => ({ ...now, [what]: e instanceof Error ? e.message : String(e) }));
+          void readRows().catch(report("re-read"));
+          return false;
+        },
+      );
+    };
     return {
       chooseEngine: (id) => {
         if (!isEngineId(id)) return;
-        void chooseSetupEngine(id).catch(report("engine"));
+        void attempt("engine", () => chooseSetupEngine(id));
       },
       checkEngines: () => void useEngines.getState().check(),
       restart: () => {
         void useDaemon.getState().restart(useSettings.getState().engine).catch(report("restart"));
       },
-      setTheme: (next: ThemeChoice) =>
-        void useSettings.getState().setTheme(next).catch(report("theme")),
+      setTheme: (next: ThemeChoice) => void attempt("theme", () => useSettings.getState().setTheme(next)),
       setTypeScale: (next: TypeScale) =>
-        void useSettings.getState().setTypeScale(next).catch(report("text size")),
-      setMotion: (next: MotionChoice) =>
-        void useSettings.getState().setMotion(next).catch(report("motion")),
-      setBrainPath: (path) =>
-        void useSettings.getState().setBrainPath(path).catch(report("brain path")),
+        void attempt("typeScale", () => useSettings.getState().setTypeScale(next)),
+      setMotion: (next: MotionChoice) => void attempt("motion", () => useSettings.getState().setMotion(next)),
+      setBrainPath: (path) => void attempt("brainPath", () => useSettings.getState().setBrainPath(path)),
       openPage: (url) => void useTabs.getState().create(url).catch(report("open")),
       checkMic: () => {
         const media = typeof navigator === "undefined" ? undefined : navigator.mediaDevices;
         void checkMicrophone(media ? (c) => media.getUserMedia(c) : undefined).then(setMic);
       },
       finish: () => {
-        setReopened(false);
-        void useSettings.getState().setOnboarded(true).catch(report("onboarded"));
-        // Where waking her leaves to is the scene's to say: a `browser` selection would tell Rust a
-        // page is wanted under a scene (ADR 0088), so this module selects nothing itself.
-        afterFinish?.();
+        // The act closes only once the row is stored: a refused wake keeps the act, its reason
+        // and the button, rather than leaving a person on a surface that will not remember them.
+        setWaking(true);
+        void attempt("wake", () => useSettings.getState().setOnboarded(true)).then((stored) => {
+          setWaking(false);
+          if (!stored) return;
+          setReopened(false);
+          // Where waking her leaves to is the scene's to say: a `browser` selection would tell Rust
+          // a page is wanted under a scene (ADR 0088), so this module selects nothing itself.
+          afterFinish?.();
+        });
       },
       // The module bar re-shows its own welcome; a scene says where the first act is shown instead.
       reopenOnboarding: () => (onReopen ? onReopen() : setReopened(true)),
@@ -120,6 +139,8 @@ export function useSetupModel(
         daemonLoaded,
         daemonError,
         reopened,
+        refusals,
+        waking,
         actions,
       }),
     [
@@ -143,9 +164,17 @@ export function useSetupModel(
       checking,
       problem,
       reopened,
+      refusals,
+      waking,
       actions,
     ],
   );
 
   return model;
+}
+
+function withoutKey(refusals: SetupRefusals, what: SetupWrite): SetupRefusals {
+  const next = { ...refusals };
+  delete next[what];
+  return next;
 }

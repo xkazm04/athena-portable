@@ -269,9 +269,13 @@ export function Decide({
     {
       tool: "send_reminder",
       label: detail?.draft ? "Send the drafted reminder" : "Send a reminder",
-      reaches: email
-        ? `Reaches ${to} at ${email} by email. You cannot un-send it.`
-        : `Reaches ${to} by email. You cannot un-send it.`,
+      /* Sending needs a draft to send, so a row with none says what unlocks it before the dead
+         button is pressed, in the slot the void row uses for its own block. */
+      reaches: !detail?.draft
+        ? "Blocked: there is no draft yet. Draft a reminder above first, then send it."
+        : email
+          ? `Reaches ${to} at ${email} by email. You cannot un-send it.`
+          : `Reaches ${to} by email. You cannot un-send it.`,
       take: (
         <Gate
           label="Send it"

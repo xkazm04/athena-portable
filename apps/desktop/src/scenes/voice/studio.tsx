@@ -393,6 +393,11 @@ function ReadyCard({ model }: { model: VoiceModel }) {
       <p className="typo-body">
         Hold <Kbd>{HOTKEY}</Kbd> anywhere to talk to her; let go and she answers.
       </p>
+      {model.finishError ? (
+        <p className="typo-caption vs-error" role="alert">
+          Not kept: {model.finishError}. The studio stays open; press Enter to try again.
+        </p>
+      ) : null}
     </div>
   );
 }

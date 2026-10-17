@@ -8,6 +8,7 @@
  */
 import { createElement, type ReactNode } from "react";
 
+import ProblemNote from "@/components/ProblemNote";
 import type { Path, Root } from "@/depth/model";
 import { live as accounts } from "@/scenes/accounts/live";
 import { live as apps } from "@/scenes/apps/live";
@@ -35,6 +36,10 @@ export const LIVE_SCENES: Readonly<Record<Root, LiveScene>> = {
 export interface SceneContext {
   /** The settings have been read: before that the first act and the surface are both unknown. */
   hydrated: boolean;
+  /** Why the settings could not be read, or null. Only shown while they have never been read. */
+  problem?: string | null;
+  /** Read the settings again. */
+  retry?: () => void;
   onboarded: boolean;
   /** The first act is being shown again from the Mind depth, though the machine is set up. */
   reopened: boolean;
@@ -44,7 +49,22 @@ export interface SceneContext {
 
 export function sceneFor(path: Path, ctx: SceneContext): ReactNode {
   if (path.root === null) {
-    if (!ctx.hydrated) return null; // a returning person must not see the first act flash by
+    if (!ctx.hydrated) {
+      // A returning person must not see the first act flash by, so the wait is blank. A refused
+      // read is not a wait: it says so, in the store's words, with a retry.
+      if (!ctx.problem) return null;
+      return createElement(
+        "div",
+        { className: "settings-problem" },
+        createElement(ProblemNote, {
+          title: "Athena could not read her settings, so she cannot tell yet whether to wake or to show her surface.",
+          reason: ctx.problem,
+          tone: "error",
+          onRetry: ctx.retry,
+          retryLabel: "Read them again",
+        }),
+      );
+    }
     return createElement(ctx.onboarded && !ctx.reopened ? Surface : Waking);
   }
   return createElement(LIVE_SCENES[path.root].Live, { path, go: ctx.go });
