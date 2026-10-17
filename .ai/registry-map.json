@@ -2980,7 +2980,11 @@
           "revision": 14,
           "changedAt": "2026-09-17",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/stores/engines.ts:45 The engine watcher started by athena.tsx permits overlapping checks and publishes each response without attempt attribution, allowing an older response to overwrite newer probe state.",
+          "evaluatedAt": "2026-10-17",
+          "evaluatedAgainst": "sha256-b2:ccc991958e998a93",
+          "evaluatedRevision": 16
         },
         {
           "subject": "test-harness",
@@ -8473,7 +8477,11 @@
           "revision": 14,
           "changedAt": "2026-09-17",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/design/build-tokens.mjs:10 Context searches found none of the listed concurrency terms, repository searches located exclusion machinery elsewhere, and consumer searches confirmed that this retired emitter and unimported stylesheet establish no shared operation requiring concurrency guards.",
+          "evaluatedAt": "2026-10-17",
+          "evaluatedAgainst": "sha256-b2:ccc991958e998a93",
+          "evaluatedRevision": 16
         },
         {
           "subject": "module-design",

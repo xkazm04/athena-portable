@@ -3562,6 +3562,53 @@
           "evidence": "examples/hirelane/design/build-tokens.mjs:326 The variant parameter selects a CSS scope for a visual direction, not a development build profile."
         }
       ]
+    },
+    "97da7e8d-8b3a-41fd-bcfe-326d41a66565/concurrency-guards": {
+      "context": "desktop-app-shell-ui",
+      "subject": "concurrency-guards",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T00:32:32.689Z",
+      "worker": "5f0078e1-96b2-49e6-be6e-0e748c94c518",
+      "techniques": [
+        {
+          "technique": "atomic-file-publish",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/styles/motion-tokens.test.ts:5 The stylesheet checks read existing files; searches found no file publisher in the listed UI files."
+        },
+        {
+          "technique": "attempt-attribution",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/stores/engines.ts:45 athena.tsx:43 starts this watcher; check() has neither exclusion nor an incumbent-attempt check, so a probe from an earlier daemon endpoint can publish after its successor."
+        },
+        {
+          "technique": "idempotency-by-design",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/stores/run.ts:1777 For startRun(), called at athena.tsx:42, repeated starts return the existing cleanup function without duplicating subscriptions or timers."
+        }
+      ]
+    },
+    "8a40a6b6-386e-4a37-a60e-595a898ba5f9/concurrency-guards": {
+      "context": "tidycrm-design",
+      "subject": "concurrency-guards",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-17",
+      "evaluatedTs": "2026-10-17T00:32:32.689Z",
+      "worker": "5f0078e1-96b2-49e6-be6e-0e748c94c518",
+      "techniques": [
+        {
+          "technique": "atomic-file-publish",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/design/build-tokens.mjs:10 The retained emitter writes scratch output with no concurrent consumer; package scripts, consumer searches and the retirement test source support this applicability boundary."
+        },
+        {
+          "technique": "cache-value-not-handle",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/design/build-tokens.mjs:74 This standalone synchronous Node CLI has no request-scoped execution context or shared completion handle."
+        }
+      ]
     }
   }
 }

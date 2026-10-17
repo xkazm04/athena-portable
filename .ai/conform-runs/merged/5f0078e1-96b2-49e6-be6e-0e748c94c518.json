@@ -1,0 +1,94 @@
+{
+ "schema": "conform-run/1",
+ "worker": "5f0078e1-96b2-49e6-be6e-0e748c94c518",
+ "subject": "concurrency-guards",
+ "evaluatedAt": "2026-10-17T00:32:32.689010+00:00",
+ "provider": "codex",
+ "model": "gpt-6.1-sol",
+ "pairs": [
+  {
+   "context": "desktop-app-shell-ui",
+   "subject": "concurrency-guards",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "apps/desktop/src/stores/engines.ts:45 The engine watcher started by athena.tsx permits overlapping checks and publishes each response without attempt attribution, allowing an older response to overwrite newer probe state.",
+   "techniques": [
+    {
+     "technique": "atomic-file-publish",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/styles/motion-tokens.test.ts:5 The stylesheet checks read existing files; searches found no file publisher in the listed UI files."
+    },
+    {
+     "technique": "attempt-attribution",
+     "verdict": "deviation",
+     "evidence": "apps/desktop/src/stores/engines.ts:45 athena.tsx:43 starts this watcher; check() has neither exclusion nor an incumbent-attempt check, so a probe from an earlier daemon endpoint can publish after its successor."
+    },
+    {
+     "technique": "idempotency-by-design",
+     "verdict": "conformant",
+     "evidence": "apps/desktop/src/stores/run.ts:1777 For startRun(), called at athena.tsx:42, repeated starts return the existing cleanup function without duplicating subscriptions or timers."
+    }
+   ]
+  },
+  {
+   "context": "tidycrm-design",
+   "subject": "concurrency-guards",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "examples/tidycrm/design/build-tokens.mjs:10 Context searches found none of the listed concurrency terms, repository searches located exclusion machinery elsewhere, and consumer searches confirmed that this retired emitter and unimported stylesheet establish no shared operation requiring concurrency guards.",
+   "techniques": [
+    {
+     "technique": "atomic-file-publish",
+     "verdict": "not-applicable",
+     "evidence": "examples/tidycrm/design/build-tokens.mjs:10 The retained emitter writes scratch output with no concurrent consumer; package scripts, consumer searches and the retirement test source support this applicability boundary."
+    },
+    {
+     "technique": "cache-value-not-handle",
+     "verdict": "not-applicable",
+     "evidence": "examples/tidycrm/design/build-tokens.mjs:74 This standalone synchronous Node CLI has no request-scoped execution context or shared completion handle."
+    }
+   ],
+   "absenceTerms": [
+    "mutex",
+    "semaphore",
+    "singleflight",
+    "idempotency",
+    "flock"
+   ]
+  }
+ ],
+ "declined": [],
+ "consults": [
+  {
+   "ts": "2026-10-17T00:32:32.689010+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "concurrency-guards"
+   ],
+   "techniques": [
+    "atomic-file-publish",
+    "attempt-attribution",
+    "idempotency-by-design"
+   ],
+   "deviations": 1,
+   "context": "desktop-app-shell-ui",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  },
+  {
+   "ts": "2026-10-17T00:32:32.689010+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "concurrency-guards"
+   ],
+   "techniques": [
+    "atomic-file-publish",
+    "cache-value-not-handle"
+   ],
+   "deviations": 0,
+   "context": "tidycrm-design",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  }
+ ]
+}
