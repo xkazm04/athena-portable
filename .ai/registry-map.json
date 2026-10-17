@@ -5399,7 +5399,11 @@
           "revision": 8,
           "changedAt": "2026-10-09",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/stage/Stage.tsx:256 Stage renders scene callbacks and depth manages navigation, while context searches found no continuation, stop_gate, compaction or pending_stop controls and repository searches located continuation machinery outside these directories.",
+          "evaluatedAt": "2026-10-17",
+          "evaluatedAgainst": "sha256-b2:b0eabf78abd856a4",
+          "evaluatedRevision": 8
         },
         {
           "subject": "agent-runtime-assembly",
@@ -5702,7 +5706,11 @@
           "revision": 8,
           "changedAt": "2026-10-09",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/harness/rounds.py:187 The final permitted round dispatches tools without a subsequent reasoning call to consume their results, violating the requirement to refuse a batch whose results nobody will read.",
+          "evaluatedAt": "2026-10-17",
+          "evaluatedAgainst": "sha256-b2:b0eabf78abd856a4",
+          "evaluatedRevision": 8
         },
         {
           "subject": "agent-cli-transport",
@@ -8822,7 +8830,11 @@
           "revision": 8,
           "changedAt": "2026-10-09",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/tools/BlocksTools.tsx:70 The inspected registrations expose CRM navigation and searches, while context searches found no continuation, stop_gate, compaction or pending_stop controls and repository searches located continuation machinery elsewhere.",
+          "evaluatedAt": "2026-10-17",
+          "evaluatedAgainst": "sha256-b2:b0eabf78abd856a4",
+          "evaluatedRevision": 8
         },
         {
           "subject": "windowed-inference-over-oversized-inputs",

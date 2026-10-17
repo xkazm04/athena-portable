@@ -1,0 +1,227 @@
+{
+ "schema": "conform-run/1",
+ "worker": "fa9f5696-922e-4bfa-bc57-3957a5dd1022",
+ "subject": "session-continuation",
+ "evaluatedAt": "2026-10-17T23:15:15.035461+00:00",
+ "provider": "codex",
+ "model": "gpt-6.1-sol",
+ "pairs": [
+  {
+   "context": "harness-engines",
+   "subject": "session-continuation",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "src/athena/harness/rounds.py:187 The final permitted round dispatches tools without a subsequent reasoning call to consume their results, violating the requirement to refuse a batch whose results nobody will read.",
+   "techniques": [
+    {
+     "technique": "advisory-guard-fail-mode",
+     "verdict": "deviation",
+     "evidence": "src/athena/harness/hooks.py:525 The advisory truncation check invokes its diagnostic sink without fault isolation; a sink exception reaches run_turn's exception handler and terminates the turn instead of passing with a diagnostic."
+    },
+    {
+     "technique": "boundary-applied-stop",
+     "verdict": "deviation",
+     "evidence": "tests/harness/test_cli_harness.py:298 This test explicitly requires execution on all eight rounds while line 299 permits only eight model requests, leaving the eighth execution's result unread rather than refusing that execution."
+    },
+    {
+     "technique": "stuck-loop-detection",
+     "verdict": "deviation",
+     "evidence": "src/athena/harness/rounds.py:360 Executed-tool failures are fed back unconditionally, allowing identical failed operations to continue until the round cap without normalized failure signatures, a repetition halt or a root-cause handoff."
+    }
+   ]
+  },
+  {
+   "context": "tidycrm-spatial-model-tools",
+   "subject": "session-continuation",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "examples/tidycrm/components/blocks/tools/BlocksTools.tsx:70 The inspected registrations expose CRM navigation and searches, while context searches found no continuation, stop_gate, compaction or pending_stop controls and repository searches located continuation machinery elsewhere.",
+   "techniques": [
+    {
+     "technique": "advisory-guard-fail-mode",
+     "verdict": "not-applicable",
+     "evidence": "examples/tidycrm/components/blocks/tools/BlocksTools.tsx:163 This handler changes a displayed breakdown; it does not intercept an agent turn boundary."
+    },
+    {
+     "technique": "boundary-applied-stop",
+     "verdict": "not-applicable",
+     "evidence": "examples/tidycrm/components/blocks/useRun.ts:30 The hook awaits an individual mutation rather than scheduling model rounds and tool batches."
+    },
+    {
+     "technique": "compaction-checkpoint",
+     "verdict": "not-applicable",
+     "evidence": "examples/tidycrm/components/blocks/tools/search.ts:48 The model helpers select CRM data and have no conversation-compaction boundary."
+    },
+    {
+     "technique": "continuation-as-state",
+     "verdict": "not-applicable",
+     "evidence": "examples/tidycrm/components/blocks/tools/BlocksTools.tsx:130 The registered capability returns search results without arming or enforcing a keep-working mode."
+    },
+    {
+     "technique": "gate-state-lifetimes",
+     "verdict": "not-applicable",
+     "evidence": "examples/tidycrm/components/blocks/useRun.ts:68 This timeout disarms a local mutation control, not a shared session stop gate."
+    },
+    {
+     "technique": "ordered-teardown",
+     "verdict": "not-applicable",
+     "evidence": "examples/tidycrm/components/blocks/useArrival.ts:152 The teardown clears animation timers rather than continuation guards."
+    },
+    {
+     "technique": "ordered-yield-composition",
+     "verdict": "not-applicable",
+     "evidence": "examples/tidycrm/components/blocks/useArrival.ts:142 The claim holds a camera arrival open; it does not consume an agent's candidate yield."
+    },
+    {
+     "technique": "sealed-stage-advance",
+     "verdict": "not-applicable",
+     "evidence": "examples/tidycrm/components/blocks/useArrival.ts:147 The staged state describes animation beats, not resumable autonomous execution stages."
+    },
+    {
+     "technique": "single-loop-authority",
+     "verdict": "not-applicable",
+     "evidence": "examples/tidycrm/components/blocks/useRun.ts:67 Arming selects a mutation confirmation control, not a continuation authority."
+    },
+    {
+     "technique": "stuck-loop-detection",
+     "verdict": "not-applicable",
+     "evidence": "examples/tidycrm/components/blocks/space/camera.ts:334 Camera snapping operates on geometry and does not perform agent repair attempts."
+    }
+   ],
+   "absenceTerms": [
+    "continuation",
+    "compaction",
+    "pending_stop"
+   ]
+  },
+  {
+   "context": "desktop-stage-depth",
+   "subject": "session-continuation",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "apps/desktop/src/stage/Stage.tsx:256 Stage renders scene callbacks and depth manages navigation, while context searches found no continuation, stop_gate, compaction or pending_stop controls and repository searches located continuation machinery outside these directories.",
+   "techniques": [
+    {
+     "technique": "advisory-guard-fail-mode",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/stage/Stage.tsx:71 The predicate handles keyboard navigation, not an agent boundary interceptor."
+    },
+    {
+     "technique": "boundary-applied-stop",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/stage/Stage.tsx:100 The limit flushes animation layers rather than stopping model reasoning or tool batches."
+    },
+    {
+     "technique": "compaction-checkpoint",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/depth/store.ts:73 Persistence mirrors a navigation path into the URL; it does not checkpoint conversation control state."
+    },
+    {
+     "technique": "continuation-as-state",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/depth/model.ts:223 The reducer moves between UI destinations without enforcing task continuation."
+    },
+    {
+     "technique": "gate-state-lifetimes",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/stage/Stage.tsx:85 Component state owns visual layers, not counters shared by session stop gates."
+    },
+    {
+     "technique": "ordered-teardown",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/depth/shape.ts:35 This cleanup unsubscribes window-shape synchronization rather than clearing continuation guards."
+    },
+    {
+     "technique": "ordered-yield-composition",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/stage/Stage.tsx:109 Event ordering respects a scene's keyboard handling; it does not arbitrate agent candidate yields."
+    },
+    {
+     "technique": "sealed-stage-advance",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/depth/model.ts:230 The sequence check rejects stale animation completion events, not unauthenticated autonomous-stage completion."
+    },
+    {
+     "technique": "single-loop-authority",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/depth/model.ts:112 The choice governs the window's shape, not which loop may end an agent session."
+    },
+    {
+     "technique": "stuck-loop-detection",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/stage/Backdrop.tsx:128 The animation stops after its remaining drift time; it has no agent failures or repair attempts."
+    }
+   ],
+   "absenceTerms": [
+    "continuation",
+    "compaction",
+    "pending_stop"
+   ]
+  }
+ ],
+ "declined": [],
+ "consults": [
+  {
+   "ts": "2026-10-17T23:15:15.035461+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "session-continuation"
+   ],
+   "techniques": [
+    "advisory-guard-fail-mode",
+    "boundary-applied-stop",
+    "stuck-loop-detection"
+   ],
+   "deviations": 1,
+   "context": "harness-engines",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  },
+  {
+   "ts": "2026-10-17T23:15:15.035461+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "session-continuation"
+   ],
+   "techniques": [
+    "advisory-guard-fail-mode",
+    "boundary-applied-stop",
+    "compaction-checkpoint",
+    "continuation-as-state",
+    "gate-state-lifetimes",
+    "ordered-teardown",
+    "ordered-yield-composition",
+    "sealed-stage-advance",
+    "single-loop-authority",
+    "stuck-loop-detection"
+   ],
+   "deviations": 0,
+   "context": "tidycrm-spatial-model-tools",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  },
+  {
+   "ts": "2026-10-17T23:15:15.035461+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "session-continuation"
+   ],
+   "techniques": [
+    "advisory-guard-fail-mode",
+    "boundary-applied-stop",
+    "compaction-checkpoint",
+    "continuation-as-state",
+    "gate-state-lifetimes",
+    "ordered-teardown",
+    "ordered-yield-composition",
+    "sealed-stage-advance",
+    "single-loop-authority",
+    "stuck-loop-detection"
+   ],
+   "deviations": 0,
+   "context": "desktop-stage-depth",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  }
+ ]
+}
