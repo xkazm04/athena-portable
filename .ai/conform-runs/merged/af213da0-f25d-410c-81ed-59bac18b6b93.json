@@ -1,0 +1,22 @@
+{
+ "schema": "conform-run/1",
+ "worker": "af213da0-f25d-410c-81ed-59bac18b6b93",
+ "subject": "persistent-batch-mutation",
+ "evaluatedAt": "2026-10-18T21:43:11.380939+00:00",
+ "provider": "agy",
+ "model": "gemini-3.8-flash-high",
+ "pairs": [],
+ "declined": [
+  {
+   "subject": "persistent-batch-mutation",
+   "context": "tidycrm-style",
+   "reason": "Precondition of persistent-batch-mutation does not hold for tidycrm-style: this context consists of CSS stylesheets (base tokens, reduced-motion overrides, chrome layout, and level 0/1/2 views) for the TidyCRM Blocks demo application; it does not implement, embed, or interface with an inference batching scheduler, slot-indexed parallel state arrays, or batch mutation protocols. As not-applicable is barred from this seat, the pair is declined."
+  },
+  {
+   "subject": "persistent-batch-mutation",
+   "context": "atlas-shell-and-styles",
+   "reason": "Precondition of persistent-batch-mutation does not hold for atlas-shell-and-styles: this context implements the interactive frontend web shell, React navigation components, WebMCP tool projections, view bus pub-sub, and CSS styles for exploring the repository architecture atlas; it does not maintain an inference batch, slot-indexed parallel state arrays, in-place batch mutations, or scheduling extensions. As not-applicable is barred from this seat, the pair is declined."
+  }
+ ],
+ "consults": []
+}
