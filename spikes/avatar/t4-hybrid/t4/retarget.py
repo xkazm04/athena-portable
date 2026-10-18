@@ -108,7 +108,7 @@ def viseme_weights(t: float, vis: list, lead=0.035, R=0.045) -> dict:
 
 
 def build(motion: dict, dec: dict, timeline: dict | None, head_gain=1.0, gaze_gain=4.0,
-          jaw_mod=0.5, brow_gain=0.6, head_hz=2.0, question_overlay=True) -> tuple[dict, dict]:
+          jaw_mod=0.5, brow_gain=0.6, head_hz=2.0, question_overlay=True, lid_max=0.6, overlay_gain=1.0) -> tuple[dict, dict]:
     fs = float(motion["fps"])
     n_in = len(motion["exp"])
     dur = float(timeline["duration_s"]) if timeline else n_in / fs
@@ -122,8 +122,13 @@ def build(motion: dict, dec: dict, timeline: dict | None, head_gain=1.0, gaze_ga
         x = motion[k].astype(np.float64)
         x = (x - np.median(x)) * dec["pose"][k]["sign_to_rig"] * head_gain
         head[k] = resample(lowpass(x, hz, fs), fs, t)
+    # JoyVASA's first ~0.3 s is a start transient (pitch -2.6 deg sliding to 0 on 'long'), which
+    # reads as a head drop at the clip start: ease the head in from neutral over 0.5 s
+    ease = smoothstep(t / 0.5)
+    for k in head:
+        head[k] = head[k] * ease
 
-    blink, events = blink_track(decode(motion["exp"], C["blink"]), fs, t, C["blink"])
+    blink, events = blink_track(decode(motion["exp"], C["blink"]), fs, t, C["blink"], lid_max=lid_max)
 
     b = decode(motion["exp"], C["brow"])
     # centred on this clip's median (the neutral brow is the one held most of the time)
@@ -153,10 +158,10 @@ def build(motion: dict, dec: dict, timeline: dict | None, head_gain=1.0, gaze_ga
         s0, s1 = vis[0]["start"], vis[-1]["end"]
         q0 = s1 - min(1.6, (s1 - s0) * 0.4)
         qq = smoothstep((t - q0) / 0.7) * (1 - smoothstep((t - (s1 + 1.4)) / 0.8))
-        head["roll"] = head["roll"] + 4.2 * qq
-        head["pitch"] = head["pitch"] - 1.6 * qq
-        head["yaw"] = head["yaw"] + 1.2 * qq
-        brow = np.clip(brow + 0.45 * qq, -1, 1)
+        head["roll"] = head["roll"] + 4.2 * overlay_gain * qq
+        head["pitch"] = head["pitch"] - 1.6 * overlay_gain * qq
+        head["yaw"] = head["yaw"] + 1.2 * overlay_gain * qq
+        brow = np.clip(brow + 0.45 * overlay_gain * qq, -1, 1)
 
     frames, open_prev = [], 0.0
     a_open = 1 - np.exp(-1 / (FPS * 0.022))
@@ -200,7 +205,13 @@ def main() -> int:
     ap.add_argument("--decoder", required=True)
     ap.add_argument("--timeline")
     ap.add_argument("--out", required=True)
-    ap.add_argument("--head-gain", type=float, default=1.0)
+    ap.add_argument("--profile", choices=["human", "glow"], default="human",
+                    help="glow = t1's glow-being rigs (b04-owl, d08-origami): calm non-human presence. "
+                         "head x0.55 (neural head std ~1.9 deg -> ~1 deg, near t1's 0.7x procedural), "
+                         "question overlay x0.7 (as t1), lid drops capped at 0.2 because D08's eye facets "
+                         "switch dark at blink 0.25-0.65 and the owl's eye-lights squash: a 0.6 partial lid "
+                         "would read as a full blink every second")
+    ap.add_argument("--head-gain", type=float)
     ap.add_argument("--gaze-gain", type=float, default=4.0)
     ap.add_argument("--no-question-overlay", action="store_true")
     ap.add_argument("--head-hz", type=float, default=2.0, help="yaw low-pass; pitch x1.25, roll x0.8")
@@ -209,7 +220,10 @@ def main() -> int:
     motion = dict(np.load(a.motion))
     dec = json.loads(Path(a.decoder).read_text())
     tl = json.loads(Path(a.timeline).read_text(encoding="utf-8")) if a.timeline else None
-    rp, stats = build(motion, dec, tl, a.head_gain, a.gaze_gain, a.jaw_mod, head_hz=a.head_hz,
+    glow = a.profile == "glow"
+    head_gain = a.head_gain if a.head_gain is not None else (0.55 if glow else 1.0)
+    rp, stats = build(motion, dec, tl, head_gain, a.gaze_gain, a.jaw_mod, head_hz=a.head_hz,
+                      lid_max=0.2 if glow else 0.6, overlay_gain=0.7 if glow else 1.0,
                       question_overlay=not a.no_question_overlay)
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(json.dumps(rp, separators=(",", ":")))

@@ -1,6 +1,6 @@
 # t4-hybrid: neural motion driving t1's 2D rig (WP-T4)
 
-**Status: ready-for-portrait.** Audio goes through JoyVASA motion and a learned decoder to CONTRACT RigParams v1 at 60 fps. RigParams exist for all 3 bench lines. The A/B page renders through t1's runtime. Bench clips need the operator's portrait (only `_rigtest` and `_smoke` exist so far).
+**Status: done** - bench clips rendered on the operator's two portraits (b04-owl, d08-origami); see "Operator portraits" below. The original human-face notes follow.
 
 ## Pipeline: what comes from where
 
@@ -54,6 +54,44 @@ On B, the head bobbing at syllable rate (about 1-1.5 Hz) needed a 2 Hz low-pass.
 Coupling to the audio envelope is not clearly better than A's (0.08-0.28 against -0.04 to 0.30), so do not sell the neural head as "speech-synchronised". It is mainly natural, non-repeating drift with beat-like nods.
 
 Verdict: use the hybrid. Neural motion for head drift, lids and brows. The Timeline for mouth shape and text-level gestures (question). Procedural saccades would be the next layer to borrow.
+
+## Operator portraits (glow-being rigs): b04-owl, d08-origami
+
+**Status: done.** Bench clips: `~/.athena-avatar/bench/t4-hybrid/{b04-owl,d08-origami}/{calm,question,long}.mp4` + `.metrics.json`. They were captured with t1's `capture.mjs` (port 5183, GPU lock). t4's licences and motion stats were added by `t4/patch_metrics.py`.
+
+What each RigParams channel drives in t1's `glow.js`:
+
+| channel | b04-owl | d08-origami |
+|---|---|---|
+| head yaw/pitch/roll | sphere warp, depth parallax and roll; the glint does not apply | the same, plus the facet glint sweep, which follows yaw |
+| blinkL/R | eye-light closes like an iris (squash and radial fade) and dims by up to 60 % | eye facets switch crisply to dark crystal between blink 0.25 and 0.65 |
+| gazeX/Y | eye-light offset (3.5 / 2 px per unit) | the same |
+| brow.raise | **no target** (ignored) | **no target** (ignored) |
+| mouth.open + visemes | seam brightness, with closures dipping | two-half hinge plus the slit light. The WAV envelope adds on top in both rigs. |
+
+The retarget profile is `--profile glow` (auto-selected by `bench.sh` from `rig_type`):
+- **Head ×0.55.** The neural head std goes from about 1.9 to about 1 degree, which is level with t1's ×0.7 procedural.
+- **Question overlay ×0.7**, the same as t1.
+- **Lid drops capped at 0.2.** On D08, a 0.6 partial lid would cross the crisp facet switch and read as a full blink about once a second. Now partials only gently squash and dim the owl's eye-light and leave D08's facets lit. Full blinks are unchanged.
+- **Head eased in over the first 0.5 s.** JoyVASA has a start transient. This also applies to the human profile.
+
+A/B on the `question` line, t1 procedural ×0.7 vs t4 glow. Frames were compared at 0.2, 1.0, 1.8, 2.4, 3.2 and 3.7 s.
+
+| | head std yaw,pitch,roll (deg) | head speed p50 (deg/s) | jerk (deg/s³) | nod-on-stress | frame-diff energy, owl / D08 |
+|---|---|---|---|---|---|
+| t1 | 0.54, 0.66, 1.27 | 2.1 | 549 | 1/5 | 0.40 / 0.15 |
+| t4 | 0.48, 0.54, 1.35 | 4.2 | 336 | 3/5 | 0.73 / 0.26 |
+
+- t4 reads more alive on both rigs:
+  - The head never parks: it drifts continuously and smoothly, with about 1.8x the visible frame-to-frame change.
+  - Small nods land on stressed syllables.
+  - The blinks are placed differently (0.2 and 3.2 s, against t1's 0.2 and 1.8 s).
+- On the stills alone the two are close, because the motion amplitude is about the same and the differences are in timing.
+- t1 reads calmer. Its stillness between gestures suits a "presence" better: owl frame-diff in the first half of the clip is 0.25 for t1 against 0.67 for t4.
+- On the owl, t4's constant drift together with the rig's own shimmer and tuft motion borders on restless.
+- On D08, the crisper and stiffer solid shape benefits more from t4's drift.
+
+Suggestion: D08 with t4 as is; owl with t4 at head ×0.4, or t1. This is a taste call for the operator.
 
 ## Dead ends
 

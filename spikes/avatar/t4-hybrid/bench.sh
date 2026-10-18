@@ -22,7 +22,16 @@ done
 [ $# -ge 1 ] || { echo "RigParams in $H/voice/t4-hybrid/ (no portrait id given: no bench clips)"; exit 0; }
 P="$1"
 mkdir -p "$H/portraits/$P/t4-hybrid"
-for l in $LINES; do cp "$H/voice/t4-hybrid/$l.rigparams.json" "$H/portraits/$P/t4-hybrid/"; done
-node spikes/avatar/web/capture.mjs --portrait "$P" --track t4-hybrid --port 5183 \
+PROFILE=human
+grep -q '"rig_type": *"glow"' "$H/portraits/$P/t1-rig/layers/layers.json" && PROFILE=glow
+[ $PROFILE = glow ] && node $T/ab/procedural.mjs --scale 0.7 $LINES
+for l in $LINES; do
+  "$PY" $T/t4/retarget.py --profile $PROFILE --motion "$H/voice/t4-hybrid/$l.motion.npz" --decoder $T/t4/decoder.json     --timeline "$H/voice/$l.timeline.json" --out "$H/portraits/$P/t4-hybrid/$l.rigparams.json"
+  if [ $PROFILE = glow ]; then
+    cp "$H/portraits/$P/t4-hybrid/$l.rigparams.json" "$H/voice/t4-hybrid/$l.glow.rigparams.json"
+    "$PY" $T/t4/compare.py --line $l --a "$H/voice/t4-hybrid/$l.procedural-glow.rigparams.json"       --b "$H/voice/t4-hybrid/$l.glow.rigparams.json" --wav "$H/voice/$l.wav" --json "$H/voice/t4-hybrid/$l.glow.ab.json" > /dev/null
+  fi
+done
+python spikes/avatar/tools/gpulock.py --label "t4-hybrid: bench $P" -- node spikes/avatar/web/capture.mjs --portrait "$P" --track t4-hybrid --port 5183 \
   --params-dir "/home/portraits/$P/t4-hybrid"
 "$PY" $T/t4/patch_metrics.py --portrait "$P"
