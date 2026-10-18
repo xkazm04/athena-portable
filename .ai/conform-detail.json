@@ -4303,6 +4303,68 @@
         "at": "2026-10-17T23:35:53.891480+00:00",
         "reason": "reviewer (sonnet): The not-applicable anchor, browser_lane.py:98, sits at the blank line and section-marker comment after assert_no_host_executor, so it does not itself show that credentialed networking or database grants are absent. The 'no executor for a host tool' claim sits in the module docstring (line ~21), and "
       }
+    },
+    "89c7e4c9-2ecd-4131-9ac7-7ff647d041c1/i18n": {
+      "context": "hirelane-board-ui",
+      "subject": "i18n",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-18",
+      "evaluatedTs": "2026-10-18T21:06:10.497Z",
+      "worker": "27a437ab-6729-4fbb-bd39-768e9382038c",
+      "techniques": [
+        {
+          "technique": "catalog-architecture",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/components/board/dossier/Evidence.tsx:25 The section heading is authored at the component call site instead of resolved through a typed catalog key."
+        },
+        {
+          "technique": "interpolation-and-plurals",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/components/board/carousel/StageMeta.tsx:20 The count is attached to a fixed English plural instead of selecting a complete catalog message using locale plural rules."
+        },
+        {
+          "technique": "string-extraction-enforcement",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/components/board/dossier/Verdict.tsx:108 User-facing accessibility copy remains hardcoded; the inspected app ESLint configuration adds only Next presets."
+        },
+        {
+          "technique": "token-label-separation",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/components/board/carousel/StageMeta.tsx:52 The known scheduling/rejection kind token is rendered directly without a category-to-catalog-label mapping."
+        }
+      ]
+    },
+    "736379fb-8f9b-4617-be12-64b20b25e73c/i18n": {
+      "context": "atlas-lanes-drawing",
+      "subject": "i18n",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-18",
+      "evaluatedTs": "2026-10-18T21:06:10.497Z",
+      "worker": "27a437ab-6729-4fbb-bd39-768e9382038c",
+      "techniques": [
+        {
+          "technique": "catalog-architecture",
+          "verdict": "deviation",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Chrome.tsx:80 A rendered card title is embedded in component-owned data rather than referenced by a catalog key."
+        },
+        {
+          "technique": "interpolation-and-plurals",
+          "verdict": "deviation",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/workflow.ts:356 The accessible sentence assembles fragments using fixed English grammar instead of a complete catalog message with typed placeholders."
+        },
+        {
+          "technique": "string-extraction-enforcement",
+          "verdict": "deviation",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Chrome.tsx:174 User-facing accessibility copy remains hardcoded; the inspected app ESLint configuration adds only Next presets."
+        },
+        {
+          "technique": "token-label-separation",
+          "verdict": "deviation",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Chrome.tsx:58 Drawing passes the open phase identifier here, so known tokens such as compose appear instead of their authored display labels."
+        }
+      ]
     }
   }
 }

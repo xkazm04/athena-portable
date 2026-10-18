@@ -1,0 +1,105 @@
+{
+ "schema": "conform-run/1",
+ "worker": "27a437ab-6729-4fbb-bd39-768e9382038c",
+ "subject": "i18n",
+ "evaluatedAt": "2026-10-18T21:06:10.497007+00:00",
+ "provider": "codex",
+ "model": "gpt-6.1-sol",
+ "pairs": [
+  {
+   "context": "hirelane-board-ui",
+   "subject": "i18n",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "examples/hirelane/components/board/Columns.tsx:124 The board renders English empty-state messages directly from JSX, bypassing the required catalog.",
+   "techniques": [
+    {
+     "technique": "catalog-architecture",
+     "verdict": "deviation",
+     "evidence": "examples/hirelane/components/board/dossier/Evidence.tsx:25 The section heading is authored at the component call site instead of resolved through a typed catalog key."
+    },
+    {
+     "technique": "interpolation-and-plurals",
+     "verdict": "deviation",
+     "evidence": "examples/hirelane/components/board/carousel/StageMeta.tsx:20 The count is attached to a fixed English plural instead of selecting a complete catalog message using locale plural rules."
+    },
+    {
+     "technique": "string-extraction-enforcement",
+     "verdict": "deviation",
+     "evidence": "examples/hirelane/components/board/dossier/Verdict.tsx:108 User-facing accessibility copy remains hardcoded; the inspected app ESLint configuration adds only Next presets."
+    },
+    {
+     "technique": "token-label-separation",
+     "verdict": "deviation",
+     "evidence": "examples/hirelane/components/board/carousel/StageMeta.tsx:52 The known scheduling/rejection kind token is rendered directly without a category-to-catalog-label mapping."
+    }
+   ]
+  },
+  {
+   "context": "atlas-lanes-drawing",
+   "subject": "i18n",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Chrome.tsx:163 The drawing renders English theme-control messages directly from component code, bypassing the required catalog.",
+   "techniques": [
+    {
+     "technique": "catalog-architecture",
+     "verdict": "deviation",
+     "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Chrome.tsx:80 A rendered card title is embedded in component-owned data rather than referenced by a catalog key."
+    },
+    {
+     "technique": "interpolation-and-plurals",
+     "verdict": "deviation",
+     "evidence": "examples/atlas/components/atlas/variants/archify-lanes/workflow.ts:356 The accessible sentence assembles fragments using fixed English grammar instead of a complete catalog message with typed placeholders."
+    },
+    {
+     "technique": "string-extraction-enforcement",
+     "verdict": "deviation",
+     "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Chrome.tsx:174 User-facing accessibility copy remains hardcoded; the inspected app ESLint configuration adds only Next presets."
+    },
+    {
+     "technique": "token-label-separation",
+     "verdict": "deviation",
+     "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Chrome.tsx:58 Drawing passes the open phase identifier here, so known tokens such as compose appear instead of their authored display labels."
+    }
+   ]
+  }
+ ],
+ "declined": [],
+ "consults": [
+  {
+   "ts": "2026-10-18T21:06:10.497007+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "i18n"
+   ],
+   "techniques": [
+    "catalog-architecture",
+    "interpolation-and-plurals",
+    "string-extraction-enforcement",
+    "token-label-separation"
+   ],
+   "deviations": 1,
+   "context": "hirelane-board-ui",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  },
+  {
+   "ts": "2026-10-18T21:06:10.497007+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "i18n"
+   ],
+   "techniques": [
+    "catalog-architecture",
+    "interpolation-and-plurals",
+    "string-extraction-enforcement",
+    "token-label-separation"
+   ],
+   "deviations": 1,
+   "context": "atlas-lanes-drawing",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  }
+ ]
+}

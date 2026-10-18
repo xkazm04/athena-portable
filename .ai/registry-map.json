@@ -904,7 +904,11 @@
           "revision": 7,
           "changedAt": "2026-09-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Chrome.tsx:163 The drawing renders English theme-control messages directly from component code, bypassing the required catalog.",
+          "evaluatedAt": "2026-10-18",
+          "evaluatedAgainst": "sha256-b2:13f1a2698a82c874",
+          "evaluatedRevision": 7
         },
         {
           "subject": "versioning-snapshots",
@@ -5935,7 +5939,11 @@
           "revision": 7,
           "changedAt": "2026-09-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/hirelane/components/board/Columns.tsx:124 The board renders English empty-state messages directly from JSX, bypassing the required catalog.",
+          "evaluatedAt": "2026-10-18",
+          "evaluatedAgainst": "sha256-b2:13f1a2698a82c874",
+          "evaluatedRevision": 7
         },
         {
           "subject": "test-input-generation",
