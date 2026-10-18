@@ -23,3 +23,21 @@ export async function athenaFace(signal: FaceSignal): Promise<void> {
 export function mainFaceSource(): FaceSource {
   return { subscribe: () => () => {} };
 }
+
+/**
+ * The athena window's own view of her face: the producer's signals, every frame, without the
+ * 30 Hz cap (her companion window draws from this, not from the mirror).
+ */
+export function localFaceSource(): FaceSource {
+  return { subscribe: () => () => {} };
+}
+
+/**
+ * A face driven by a preview played inside Main (the voice studio, Adopt): `level` is polled from
+ * the preview player's analyser while it plays, the phase is `speaking` while it plays and `idle`
+ * otherwise. No visemes or motion in v1.
+ */
+export function previewFaceSource(player: { level(): number; playing(): boolean }): FaceSource {
+  void player;
+  return { subscribe: () => () => {} };
+}
