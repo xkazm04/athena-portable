@@ -3,7 +3,7 @@
 Question: how good does an open talking-head model get on this RTX 4090 (Windows 11, CUDA 12.8
 wheels, Python 3.10 venvs), and does any of it run in realtime?
 
-Status: **ready-for-portrait.** Three models (four variants) installed, smoke-tested on their repos' own sample
+Status: **done** (portraits landed 2026-10-18; see "The operator's portraits are not human"). Earlier status was ready-for-portrait. Three models (four variants) installed, smoke-tested on their repos' own sample
 images + WP-L's `voice/calm.wav`, measured, and wired to one bench command each. No operator
 portrait existed at the end of the run (`portraits/` held only `_smoke*` folders), so no bench
 clip was rendered.
@@ -80,6 +80,36 @@ Ditto 10 + 7 s). A live app has to keep the process warm.
   second; InfiniteTalk when motion naturalness matters more than detail and 3 min per second is
   acceptable.
 - Bench the 3 lines with `ditto` and `flashhead-pro` first; then `infinitetalk` if there is time.
+
+## The operator's portraits are not human (2026-10-18, bounded check)
+
+Portraits: `b04-owl` (owl of glowing fibre strands, two eye-lights, no mouth) and `d08-origami`
+(faceted crystal bust, diamond-slit eyes, hexagonal mouth facet). Evidence frames under
+`~/.athena-avatar/portraits/<id>/t2-neural/eval/`.
+
+| portrait x model | face found? | usable? | why |
+|---|---|---|---|
+| d08 x Ditto (patched) | InsightFace box yes (score 0.77, threshold irrelevant); MediaPipe 478-mesh **no** -> stock run crashes in `EyeAttrUtilsByMP` (IndexError) | **yes, modest** | with `--eye-fallback` (eye conditioning taken from the repo's human sample): facets and glow kept, gentle head tilt/nod, the mouth slit *is* driven (splits into two glowing lines on open syllables) but small and a little smeared; facet lines inside the 512 face crop are softer than the untouched frame around it. `ditto_face.png`, `ditto_mouth_seq.png`, `ditto_long_mouth.png` |
+| d08 x FlashHead Pro 768 | its MediaPipe face crop: none (not needed, it centre-crops) | **no** | look kept perfectly but nearly static (mean frame difference 0.25 vs 1.40 for Ditto's face) and the mouth facet never moves - the model does not read the facet as a mouth. `fh_sheet.png`, `fh_mouth_seq.png` |
+| b04 x Ditto | InsightFace: no box at any threshold; MediaPipe: none | **no** | workaround tried once, a hand-placed face box (`--force-box 744 270 1194 720`): renders and keeps the strands with head motion, but the left eye-light dims and smears out in most frames - breaks the character's main feature. `b04-owl/.../ditto_box_sheet.png` |
+| b04 x FlashHead Pro 768 | none (not needed) | **no** | look kept, almost static (diff 0.47), no mouth to drive; at best a faint idle. `b04-owl/.../fh_sheet.png` |
+
+InfiniteTalk was skipped (nothing on the other two was promising enough to justify ~30 min a line).
+
+Bench: `ditto` on `d08-origami`, 3 lines, promoted to the contract path:
+`~/.athena-avatar/bench/t2-neural/d08-origami/{calm,question,long}.mp4` (+ `ditto/` with natives).
+Command: `python spikes/avatar/t2-neural/bench.py --model ditto --portrait d08-origami --extra=--eye-fallback --promote`.
+That run shared the GPU with t1-rig's renderer, so its figures are contended: paced 22/19 fps,
+lag 2.4/3.1 s, 1.19 s per output second (uncontended smoke: 26/21 fps, ~1.0 s lag, 0.94 s/s).
+
+Lessons:
+- When the avatar is not human, test the face detector and the face mesh separately, because
+  Ditto's box detector accepted the crystal face while the MediaPipe mesh (only used for eye
+  conditioning) rejected it and crashed the run - a neutral fallback for that one input was enough.
+- When a whole-frame talking-head model meets a stylised non-human face, expect it to keep the
+  style and drop the speech (FlashHead: mouth facet static), because its audio-to-motion prior is
+  tied to human mouths; a keypoint-warping model (Ditto) moves whatever sits where the mouth
+  landmarks land.
 
 ## Streaming to a webview (note + prototype)
 

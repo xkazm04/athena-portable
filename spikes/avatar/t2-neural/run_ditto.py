@@ -50,6 +50,8 @@ def main() -> int:
     ap.add_argument("--emo", type=int, help="emotion id 0..7 (repo default mixes 4)")
     ap.add_argument("--gpu-resident", action="store_true",
                     help="keep warp->decode tensors on the GPU (our patch; stock path copies via numpy)")
+    ap.add_argument("--force-box", type=float, nargs=4, metavar=("X1", "Y1", "X2", "Y2"))
+    ap.add_argument("--eye-fallback", action="store_true", help="human reference eye values when MediaPipe finds no face mesh")
     ap.add_argument("--overlap", type=int, help="online: LMDM overlap frames (stock 70 -> 10 new frames per diffusion call)")
     ap.add_argument("--lmdm-compile-mode", default=None)
     ap.add_argument("--lmdm-fp16", action="store_true", help="autocast the motion diffusion (LMDM) to fp16")
@@ -73,6 +75,34 @@ def main() -> int:
 
         sdk.putback = PutBackNumpy()
         stats["putback"] = f"numpy (cython build failed: {type(e).__name__})"
+    if args.eye_fallback:
+        # Non-human portraits: InsightFace finds a face box (d08-origami: score 0.77) but the
+        # MediaPipe 478-point mesh, used only for the eye-open / eyeball conditioning, finds none
+        # and the SDK crashes in EyeAttrUtilsByMP. Fall back to the eye values of a human
+        # reference (the repo's own sample image: eyes open, looking ahead).
+        import cv2
+
+        s2i = sdk.avatar_registrar.source2info
+        ref = cv2.cvtColor(cv2.imread(str(MODELS / "ditto" / "repo" / "example" / "image.png")), cv2.COLOR_BGR2RGB)
+        ref_info = s2i(ref)
+        ref_eye = [ref_info["eye_open"], ref_info["eye_ball"]]
+        orig_eye = s2i._get_eye_info
+
+        def eye_info(img):
+            try:
+                return orig_eye(img)
+            except Exception:  # noqa: BLE001
+                stats["eye_fallback_used"] = True
+                return [x.copy() for x in ref_eye]
+
+        s2i._get_eye_info = eye_info
+    if args.force_box:
+        # Workaround for portraits the face detector rejects (b04-owl: no box at any threshold):
+        # hand the landmark stages a fixed face box (x1 y1 x2 y2 in source pixels) instead.
+        s2i = sdk.avatar_registrar.source2info
+        box = np.array([[*args.force_box, 0.99]], dtype=np.float32)
+        s2i.insightface_det = lambda img, *a, **k: (box, None)
+        stats["force_box"] = args.force_box
     if args.gpu_resident:
         # The stock PyTorch path round-trips every frame through numpy: the 8 MB source feature
         # volume goes host->device each frame, the warped feature device->host->device between
