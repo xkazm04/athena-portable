@@ -45,6 +45,11 @@ export interface FaceSignal {
   phase: FacePhase;
   level: number;
   viseme: Viseme | null;
+  /**
+   * The producer's mouth opening 0..1 (smoothed; closures dip). A face shapes its own mouth from
+   * `viseme` and `level` when a viseme is set, and falls back to `open` (with its level-derived
+   * opening, whichever is larger) when it is not - so a surface without the timeline still speaks.
+   */
   open: number;
   /** `blink` is `null` when the motion track does not drive the eyelids: the face keeps its own blinks. */
   motion: { yaw: number; pitch: number; roll: number; blink: number | null; gazeX: number; gazeY: number } | null;

@@ -1,0 +1,528 @@
+{
+ "version": 1,
+ "portrait_id": "d08-origami",
+ "source": "glow",
+ "width": 1024,
+ "height": 1024,
+ "layers": [
+  {
+   "name": "background",
+   "z": 1,
+   "kind": "static",
+   "file": "background.png",
+   "bbox": [
+    0,
+    0,
+    1024,
+    1024
+   ],
+   "anchor": [
+    512.0,
+    512.0
+   ]
+  },
+  {
+   "name": "torso",
+   "z": 2,
+   "kind": "body",
+   "file": "torso.png",
+   "bbox": [
+    0,
+    46,
+    1024,
+    978
+   ],
+   "anchor": [
+    512.0,
+    535.0
+   ],
+   "mode": "cut",
+   "glint": true
+  },
+  {
+   "name": "head",
+   "z": 3,
+   "kind": "head",
+   "file": "head.png",
+   "bbox": [
+    346,
+    220,
+    332,
+    367
+   ],
+   "anchor": [
+    512.0,
+    403.5
+   ],
+   "mode": "cut",
+   "glint": true
+  },
+  {
+   "name": "mouth_glow",
+   "z": 4,
+   "kind": "aperture_glow",
+   "depth": 0.07,
+   "bbox": [
+    0,
+    0,
+    1024,
+    1024
+   ],
+   "anchor": [
+    512.0,
+    512.0
+   ],
+   "mode": "none",
+   "bloom": 0.0
+  },
+  {
+   "name": "mouth_lower",
+   "z": 5,
+   "kind": "aperture_lower",
+   "depth": 0.08,
+   "file": "mouth_lower.png",
+   "bbox": [
+    465,
+    483,
+    94,
+    55
+   ],
+   "anchor": [
+    512.0,
+    510.5
+   ],
+   "mode": "cut",
+   "occl": 1.0,
+   "glint": true
+  },
+  {
+   "name": "mouth_upper",
+   "z": 6,
+   "kind": "aperture_upper",
+   "depth": 0.08,
+   "file": "mouth_upper.png",
+   "bbox": [
+    465,
+    436,
+    94,
+    59
+   ],
+   "anchor": [
+    512.0,
+    465.5
+   ],
+   "mode": "cut",
+   "occl": 1.0,
+   "glint": true
+  },
+  {
+   "name": "shard_8",
+   "z": 7,
+   "kind": "float",
+   "file": "shard_8.png",
+   "bbox": [
+    599,
+    666,
+    117,
+    87
+   ],
+   "anchor": [
+    657.5,
+    709.5
+   ],
+   "mode": "cut",
+   "follow": 0.05,
+   "float": {
+    "amp": [
+     1.5,
+     4.0
+    ],
+    "freq": 0.165,
+    "rot_deg": 2.5
+   },
+   "occl": 0.95,
+   "glint": true
+  },
+  {
+   "name": "shard_7",
+   "z": 8,
+   "kind": "float",
+   "file": "shard_7.png",
+   "bbox": [
+    571,
+    620,
+    100,
+    119
+   ],
+   "anchor": [
+    621.0,
+    679.5
+   ],
+   "mode": "cut",
+   "follow": 0.1,
+   "float": {
+    "amp": [
+     1.2,
+     3.5
+    ],
+    "freq": 0.12,
+    "rot_deg": 2.0
+   },
+   "occl": 0.95,
+   "glint": true
+  },
+  {
+   "name": "shard_6",
+   "z": 9,
+   "kind": "float",
+   "file": "shard_6.png",
+   "bbox": [
+    662,
+    574,
+    76,
+    105
+   ],
+   "anchor": [
+    700.0,
+    626.5
+   ],
+   "mode": "cut",
+   "follow": 0.1,
+   "float": {
+    "amp": [
+     1.5,
+     4.0
+    ],
+    "freq": 0.14,
+    "rot_deg": 3.0
+   },
+   "occl": 0.95,
+   "glint": true
+  },
+  {
+   "name": "shard_5",
+   "z": 10,
+   "kind": "float",
+   "file": "shard_5.png",
+   "bbox": [
+    627,
+    527,
+    66,
+    107
+   ],
+   "anchor": [
+    660.0,
+    580.5
+   ],
+   "mode": "cut",
+   "follow": 0.15,
+   "float": {
+    "amp": [
+     1.5,
+     4.5
+    ],
+    "freq": 0.18,
+    "rot_deg": 2.5
+   },
+   "occl": 0.95,
+   "glint": true
+  },
+  {
+   "name": "shard_4",
+   "z": 11,
+   "kind": "float",
+   "file": "shard_4.png",
+   "bbox": [
+    309,
+    666,
+    117,
+    87
+   ],
+   "anchor": [
+    367.5,
+    709.5
+   ],
+   "mode": "cut",
+   "follow": 0.05,
+   "float": {
+    "amp": [
+     1.5,
+     4.0
+    ],
+    "freq": 0.17,
+    "rot_deg": 2.5
+   },
+   "occl": 0.95,
+   "glint": true
+  },
+  {
+   "name": "shard_3",
+   "z": 12,
+   "kind": "float",
+   "file": "shard_3.png",
+   "bbox": [
+    354,
+    620,
+    100,
+    119
+   ],
+   "anchor": [
+    404.0,
+    679.5
+   ],
+   "mode": "cut",
+   "follow": 0.1,
+   "float": {
+    "amp": [
+     1.2,
+     3.5
+    ],
+    "freq": 0.13,
+    "rot_deg": 2.0
+   },
+   "occl": 0.95,
+   "glint": true
+  },
+  {
+   "name": "shard_2",
+   "z": 13,
+   "kind": "float",
+   "file": "shard_2.png",
+   "bbox": [
+    287,
+    574,
+    76,
+    105
+   ],
+   "anchor": [
+    325.0,
+    626.5
+   ],
+   "mode": "cut",
+   "follow": 0.1,
+   "float": {
+    "amp": [
+     1.5,
+     4.0
+    ],
+    "freq": 0.15,
+    "rot_deg": 3.0
+   },
+   "occl": 0.95,
+   "glint": true
+  },
+  {
+   "name": "shard_1",
+   "z": 14,
+   "kind": "float",
+   "file": "shard_1.png",
+   "bbox": [
+    332,
+    527,
+    66,
+    107
+   ],
+   "anchor": [
+    365.0,
+    580.5
+   ],
+   "mode": "cut",
+   "follow": 0.15,
+   "float": {
+    "amp": [
+     1.5,
+     4.5
+    ],
+    "freq": 0.19,
+    "rot_deg": 2.5
+   },
+   "occl": 0.95,
+   "glint": true
+  },
+  {
+   "name": "crest",
+   "z": 15,
+   "kind": "float",
+   "depth": 0.12,
+   "file": "crest.png",
+   "bbox": [
+    383,
+    39,
+    258,
+    242
+   ],
+   "anchor": [
+    512.0,
+    160.0
+   ],
+   "mode": "cut",
+   "follow": 1.0,
+   "float": {
+    "amp": [
+     0.0,
+     5.0
+    ],
+    "freq": 0.16,
+    "rot_deg": 0.6,
+    "pivot": [
+     512,
+     160
+    ]
+   },
+   "occl": 1.0,
+   "glint": true
+  },
+  {
+   "name": "star",
+   "z": 16,
+   "kind": "pulse",
+   "file": "star.png",
+   "bbox": [
+    449,
+    701,
+    127,
+    127
+   ],
+   "anchor": [
+    512.5,
+    764.5
+   ],
+   "mode": "light",
+   "gain": 1.0,
+   "voice_gain": 0.25,
+   "bloom": 0.5,
+   "pulse": {
+    "amp": 0.18,
+    "freq": 0.21
+   },
+   "meta": {
+    "center": [
+     511.6,
+     763.9
+    ],
+    "core_r": 33.9
+   }
+  },
+  {
+   "name": "seam",
+   "z": 17,
+   "kind": "seam",
+   "depth": 0.08,
+   "file": "seam.png",
+   "bbox": [
+    468,
+    470,
+    89,
+    40
+   ],
+   "anchor": [
+    512.5,
+    490.0
+   ],
+   "mode": "light",
+   "gain": 1.0,
+   "voice_gain": 2.0,
+   "bloom": 0.6,
+   "aperture_follow": true
+  },
+  {
+   "name": "eye_r",
+   "z": 18,
+   "kind": "eye",
+   "depth": 0.06,
+   "file": "eye_r.png",
+   "bbox": [
+    520,
+    345,
+    137,
+    71
+   ],
+   "anchor": [
+    588.5,
+    380.5
+   ],
+   "mode": "light",
+   "blink": "dim",
+   "gain": 1.0,
+   "bloom": 0.5
+  },
+  {
+   "name": "eye_l",
+   "z": 19,
+   "kind": "eye",
+   "depth": 0.06,
+   "file": "eye_l.png",
+   "bbox": [
+    368,
+    345,
+    137,
+    71
+   ],
+   "anchor": [
+    436.5,
+    380.5
+   ],
+   "mode": "light",
+   "blink": "dim",
+   "gain": 1.0,
+   "bloom": 0.5
+  }
+ ],
+ "rig": {
+  "head": {
+   "center": [
+    512,
+    400
+   ],
+   "radius": [
+    160,
+    175
+   ],
+   "pivot_y": 575,
+   "chin_y": 575,
+   "crown_y": 0
+  },
+  "glint": {
+   "gain": 0.45,
+   "width_px": 70
+  },
+  "aperture": {
+   "poly": [
+    [
+     512,
+     441
+    ],
+    [
+     471,
+     471
+    ],
+    [
+     471,
+     507
+    ],
+    [
+     512,
+     532
+    ],
+    [
+     552,
+     507
+    ],
+    [
+     552,
+     471
+    ]
+   ],
+   "seam_y": 489,
+   "open_frac": 0.24,
+   "top": 441.0,
+   "bottom": 532.0,
+   "x0": 471.0,
+   "x1": 552.0
+  }
+ },
+ "rig_type": "glow",
+ "timing_s": {
+  "total": 19.2
+ }
+}

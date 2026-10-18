@@ -1,0 +1,278 @@
+{
+ "version": 1,
+ "portrait_id": "b04-owl",
+ "source": "glow",
+ "width": 1024,
+ "height": 1024,
+ "layers": [
+  {
+   "name": "background",
+   "z": 1,
+   "kind": "static",
+   "file": "background.png",
+   "bbox": [
+    0,
+    0,
+    1024,
+    1024
+   ],
+   "anchor": [
+    512.0,
+    512.0
+   ]
+  },
+  {
+   "name": "halo",
+   "z": 2,
+   "kind": "halo",
+   "depth": -0.35,
+   "bbox": [
+    0,
+    0,
+    1024,
+    1024
+   ],
+   "anchor": [
+    512.0,
+    512.0
+   ],
+   "mode": "erase",
+   "follow": 0.55,
+   "meta": {
+    "center": [
+     512.0,
+     424.0
+    ],
+    "radius": 280.0,
+    "color": [
+     0.256,
+     0.607,
+     0.664
+    ],
+    "profile": [
+     0.329,
+     0.255,
+     0.188,
+     0.145,
+     0.114,
+     0.086,
+     0.067,
+     0.055,
+     0.047,
+     0.043,
+     0.035,
+     0.031
+    ]
+   }
+  },
+  {
+   "name": "mantle",
+   "z": 3,
+   "kind": "body",
+   "file": "mantle.png",
+   "bbox": [
+    46,
+    238,
+    932,
+    786
+   ],
+   "anchor": [
+    512.0,
+    631.0
+   ],
+   "mode": "cut",
+   "bloom": 0.12,
+   "shimmer": true
+  },
+  {
+   "name": "disc",
+   "z": 4,
+   "kind": "head",
+   "depth": 0.1,
+   "file": "disc.png",
+   "bbox": [
+    263,
+    270,
+    499,
+    446
+   ],
+   "anchor": [
+    512.5,
+    493.0
+   ],
+   "mode": "cut",
+   "bloom": 0.15,
+   "shimmer": true
+  },
+  {
+   "name": "tuft_r",
+   "z": 5,
+   "kind": "float",
+   "depth": 0.08,
+   "file": "tuft_r.png",
+   "bbox": [
+    497,
+    59,
+    243,
+    257
+   ],
+   "anchor": [
+    618.5,
+    187.5
+   ],
+   "mode": "cut",
+   "follow": 1.0,
+   "float": {
+    "amp": [
+     1.2,
+     1.6
+    ],
+    "freq": 0.097,
+    "rot_deg": 1.6,
+    "pivot": [
+     554,
+     292
+    ]
+   },
+   "occl": 0.9
+  },
+  {
+   "name": "tuft_l",
+   "z": 6,
+   "kind": "float",
+   "depth": 0.08,
+   "file": "tuft_l.png",
+   "bbox": [
+    285,
+    59,
+    243,
+    257
+   ],
+   "anchor": [
+    406.5,
+    187.5
+   ],
+   "mode": "cut",
+   "follow": 1.0,
+   "float": {
+    "amp": [
+     1.2,
+     1.6
+    ],
+    "freq": 0.11,
+    "rot_deg": 1.6,
+    "pivot": [
+     470,
+     292
+    ]
+   },
+   "occl": 0.9
+  },
+  {
+   "name": "seam",
+   "z": 7,
+   "kind": "seam",
+   "depth": 0.22,
+   "file": "seam.png",
+   "bbox": [
+    489,
+    404,
+    47,
+    175
+   ],
+   "anchor": [
+    512.5,
+    491.5
+   ],
+   "mode": "light",
+   "gain": 1.0,
+   "voice_gain": 2.4,
+   "bloom": 0.6
+  },
+  {
+   "name": "eye_r",
+   "z": 8,
+   "kind": "eye",
+   "depth": 0.16,
+   "file": "eye_r.png",
+   "bbox": [
+    535,
+    388,
+    101,
+    101
+   ],
+   "anchor": [
+    585.5,
+    438.5
+   ],
+   "mode": "light",
+   "blink": "iris",
+   "gain": 1.0,
+   "bloom": 0.55,
+   "meta": {
+    "center": [
+     585.0,
+     438.0
+    ],
+    "core_r": 13.6
+   }
+  },
+  {
+   "name": "eye_l",
+   "z": 9,
+   "kind": "eye",
+   "depth": 0.16,
+   "file": "eye_l.png",
+   "bbox": [
+    388,
+    388,
+    100,
+    100
+   ],
+   "anchor": [
+    438.0,
+    438.0
+   ],
+   "mode": "light",
+   "blink": "iris",
+   "gain": 1.0,
+   "bloom": 0.55,
+   "meta": {
+    "center": [
+     437.5,
+     437.7
+    ],
+    "core_r": 13.6
+   }
+  }
+ ],
+ "rig": {
+  "head": {
+   "center": [
+    512,
+    470
+   ],
+   "radius": [
+    225,
+    220
+   ],
+   "pivot_y": 690,
+   "chin_y": 690,
+   "crown_y": 0
+  },
+  "shimmer": {
+   "center": [
+    512,
+    470
+   ],
+   "speed_px_s": 280,
+   "wavelength_px": 120,
+   "gain": 1.5
+  },
+  "tip_pulse": 0.12
+ },
+ "rig_type": "glow",
+ "timing_s": {
+  "total": 61.0
+ }
+}

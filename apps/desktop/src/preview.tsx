@@ -11,7 +11,8 @@
  *
  * `scene` is the surface, the first act or any of the five depths (see `console/preview.tsx`), or
  * `stage`, `bell` or `console` for the pieces they are built from and the whole thing on the live
- * stores; `?surface=athena` is her own window. No Tauri, no IPC, no daemon — that is the point, not
+ * stores, or `avatar` for her face driven by a scripted signal (`avatar/preview.tsx`, ADR 0120);
+ * `?surface=athena` is her own window. No Tauri, no IPC, no daemon — that is the point, not
  * a limitation. Only one shell can run at a time (a WebView2 profile belongs to one process), so
  * this is how a surface is checked against every fixture in both themes while somebody else has the
  * window. It works for one reason: a view is a pure function of its view-model and a fixture is a
@@ -23,6 +24,7 @@
  */
 import ReactDOM from "react-dom/client";
 
+import AvatarPreview from "@/avatar/preview";
 import BellPreview from "@/bell/preview";
 import AthenaPreview from "@/companion/preview";
 import { ScenePreview, isSceneName } from "@/console/preview";
@@ -41,6 +43,7 @@ function Preview() {
   if (scene === "console") return <ConsoleRoot />;
   if (scene === "stage") return <StagePreview />;
   if (scene === "bell") return <BellPreview />;
+  if (scene === "avatar") return <AvatarPreview />;
   // An unknown name is the surface, so no query can blank the page.
   return <ScenePreview name={isSceneName(scene) ? scene : "surface"} />;
 }
