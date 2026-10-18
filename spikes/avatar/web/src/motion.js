@@ -140,6 +140,7 @@ export function generateRigParams(timeline, opts = {}) {
   const rnd = mulberry32(opts.seed ?? 1);
   const P = plan(timeline, duration, rnd);
   const env = opts.envelope || null;
+  const ms = opts.motionScale ?? 1; // <1: calmer presence (smaller sway and nods)
   const ph = P.phase;
   const n = Math.max(1, Math.round(duration * fps) + 1);
   const frames = [];
@@ -193,6 +194,7 @@ export function generateRigParams(timeline, opts = {}) {
     open = openPrev;
     void speaking;
 
+    yaw *= ms; pitch *= ms; roll *= ms;
     const r3 = (x) => Math.round(x * 1000) / 1000;
     const vOut = {};
     for (const k in visemes) if (visemes[k] > 0.005) vOut[k] = r3(visemes[k]);

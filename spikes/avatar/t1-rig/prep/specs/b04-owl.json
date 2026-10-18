@@ -1,0 +1,412 @@
+{
+ "rig_type": "glow",
+ "note": "Fibre-optic owl. Elements are listed front to back; each is lifted off a working copy of the portrait, which is then LaMa-filled under it so what lies behind continues. 'light' elements are additive deltas (alpha 0), 'cut' elements carry occlusion alpha.",
+ "head": {
+  "center": [
+   512,
+   470
+  ],
+  "radius": [
+   225,
+   220
+  ],
+  "pivot_y": 690
+ },
+ "shimmer": {
+  "center": [
+   512,
+   470
+  ],
+  "speed_px_s": 280,
+  "wavelength_px": 120,
+  "gain": 1.5
+ },
+ "tip_pulse": 0.12,
+ "elements": [
+  {
+   "name": "eye_l",
+   "mode": "light",
+   "kind": "eye",
+   "blink": "iris",
+   "region": {
+    "blob": [
+     437,
+     435
+    ],
+    "radius": 50
+   },
+   "depth": 0.16,
+   "gain": 1.0,
+   "bloom": 0.55
+  },
+  {
+   "name": "eye_r",
+   "mode": "light",
+   "kind": "eye",
+   "blink": "iris",
+   "region": {
+    "blob": [
+     588,
+     435
+    ],
+    "radius": 50
+   },
+   "depth": 0.16,
+   "gain": 1.0,
+   "bloom": 0.55
+  },
+  {
+   "name": "seam",
+   "mode": "light",
+   "kind": "seam",
+   "region": {
+    "poly": [
+     [
+      503,
+      418
+     ],
+     [
+      521,
+      418
+     ],
+     [
+      520,
+      520
+     ],
+     [
+      515,
+      560
+     ],
+     [
+      512,
+      566
+     ],
+     [
+      509,
+      560
+     ],
+     [
+      504,
+      520
+     ]
+    ],
+    "feather": 4,
+    "dilate": 3
+   },
+   "depth": 0.22,
+   "gain": 1.0,
+   "voice_gain": 2.4,
+   "bloom": 0.6
+  },
+  {
+   "name": "tuft_l",
+   "mode": "cut",
+   "kind": "float",
+   "region": {
+    "poly": [
+     [
+      300,
+      102
+     ],
+     [
+      352,
+      72
+     ],
+     [
+      392,
+      140
+     ],
+     [
+      440,
+      205
+     ],
+     [
+      496,
+      248
+     ],
+     [
+      512,
+      262
+     ],
+     [
+      512,
+      300
+     ],
+     [
+      470,
+      300
+     ],
+     [
+      420,
+      292
+     ],
+     [
+      372,
+      300
+     ],
+     [
+      330,
+      296
+     ],
+     [
+      318,
+      240
+     ],
+     [
+      302,
+      170
+     ]
+    ],
+    "feather": 6,
+    "lit": false
+   },
+   "depth": 0.08,
+   "follow": 1.0,
+   "float": {
+    "amp": [
+     1.2,
+     1.6
+    ],
+    "freq": 0.11,
+    "rot_deg": 1.6,
+    "pivot": [
+     470,
+     292
+    ]
+   },
+   "occl": 0.9
+  },
+  {
+   "name": "tuft_r",
+   "mode": "cut",
+   "kind": "float",
+   "region": {
+    "poly": [
+     [
+      724,
+      102
+     ],
+     [
+      672,
+      72
+     ],
+     [
+      632,
+      140
+     ],
+     [
+      584,
+      205
+     ],
+     [
+      528,
+      248
+     ],
+     [
+      512,
+      262
+     ],
+     [
+      512,
+      300
+     ],
+     [
+      554,
+      300
+     ],
+     [
+      604,
+      292
+     ],
+     [
+      652,
+      300
+     ],
+     [
+      694,
+      296
+     ],
+     [
+      706,
+      240
+     ],
+     [
+      722,
+      170
+     ]
+    ],
+    "feather": 6,
+    "lit": false
+   },
+   "depth": 0.08,
+   "follow": 1.0,
+   "float": {
+    "amp": [
+     1.2,
+     1.6
+    ],
+    "freq": 0.097,
+    "rot_deg": 1.6,
+    "pivot": [
+     554,
+     292
+    ]
+   },
+   "occl": 0.9
+  },
+  {
+   "name": "disc",
+   "mode": "cut",
+   "kind": "head",
+   "region": {
+    "poly": [
+     [
+      512,
+      352
+     ],
+     [
+      480,
+      312
+     ],
+     [
+      440,
+      296
+     ],
+     [
+      395,
+      293
+     ],
+     [
+      350,
+      302
+     ],
+     [
+      314,
+      330
+     ],
+     [
+      292,
+      375
+     ],
+     [
+      286,
+      430
+     ],
+     [
+      298,
+      490
+     ],
+     [
+      324,
+      540
+     ],
+     [
+      362,
+      580
+     ],
+     [
+      410,
+      615
+     ],
+     [
+      460,
+      645
+     ],
+     [
+      496,
+      676
+     ],
+     [
+      512,
+      694
+     ],
+     [
+      528,
+      676
+     ],
+     [
+      564,
+      645
+     ],
+     [
+      614,
+      615
+     ],
+     [
+      662,
+      580
+     ],
+     [
+      700,
+      540
+     ],
+     [
+      726,
+      490
+     ],
+     [
+      738,
+      430
+     ],
+     [
+      732,
+      375
+     ],
+     [
+      710,
+      330
+     ],
+     [
+      674,
+      302
+     ],
+     [
+      629,
+      293
+     ],
+     [
+      584,
+      296
+     ],
+     [
+      544,
+      312
+     ]
+    ],
+    "feather": 7,
+    "dilate": 6
+   },
+   "depth": 0.1,
+   "shimmer": true,
+   "bloom": 0.15
+  },
+  {
+   "name": "halo",
+   "mode": "erase",
+   "kind": "halo",
+   "region": {
+    "ring": [
+     512,
+     422,
+     280
+    ],
+    "width": 18
+   },
+   "depth": -0.35,
+   "follow": 0.55,
+   "draw_first": true
+  },
+  {
+   "name": "mantle",
+   "mode": "cut",
+   "kind": "body",
+   "region": {
+    "rest": true,
+    "y_min": 230,
+    "close": 61
+   },
+   "shimmer": true,
+   "bloom": 0.12
+  }
+ ]
+}

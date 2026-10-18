@@ -1,0 +1,3 @@
+{"neutral": {"head": {"yaw": 0, "pitch": 0, "roll": 0}, "eyes": {"blinkL": 0, "blinkR": 0}, "mouth": {"open": 0, "visemes": {}}},
+ "blink": {"head": {"yaw": 0, "pitch": 0, "roll": 0}, "eyes": {"blinkL": 1, "blinkR": 1}, "mouth": {"open": 0, "visemes": {}}},
+ "mid-speech": {"head": {"yaw": 1.5, "pitch": 1.0, "roll": 0.5}, "eyes": {"blinkL": 0, "blinkR": 0}, "mouth": {"open": 0.7, "visemes": {"aa": 0.7, "E": 0.3}}}}

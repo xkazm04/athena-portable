@@ -54,11 +54,14 @@ mkdirSync(outDir, { recursive: true });
 
 const licence = [
   { component: 't1-rig runtime + motion (our code)', licence: 'repo', commercial_ok: true },
-  ...(JSON.parse(readFileSync(join(HOME, 'portraits', portrait, 't1-rig/layers/layers.json'), 'utf8')).source === 'see-through'
-    ? [{ component: 'See-through code', licence: 'Apache-2.0', commercial_ok: true },
-       { component: 'See-through LayerDiff3D weights (offline prep only; finetune of Animagine XL 4.0)', licence: 'OpenRAIL++-M', commercial_ok: true }]
-    : [{ component: 'MediaPipe face landmarker + selfie multiclass (offline prep only)', licence: 'Apache-2.0', commercial_ok: true },
-       { component: 'BiRefNet (offline prep only)', licence: 'MIT', commercial_ok: true }]),
+  ...(() => {
+    const src = JSON.parse(readFileSync(join(HOME, 'portraits', portrait, 't1-rig/layers/layers.json'), 'utf8')).source;
+    if (src === 'glow') return [];  // glow split: authored regions + luminance + LaMa only
+    if (src === 'see-through') return [{ component: 'See-through code', licence: 'Apache-2.0', commercial_ok: true },
+      { component: 'See-through LayerDiff3D weights (offline prep only; finetune of Animagine XL 4.0)', licence: 'OpenRAIL++-M', commercial_ok: true }];
+    return [{ component: 'MediaPipe face landmarker + selfie multiclass (offline prep only)', licence: 'Apache-2.0', commercial_ok: true },
+      { component: 'BiRefNet (offline prep only)', licence: 'MIT', commercial_ok: true }];
+  })(),
   { component: 'big-LaMa (offline prep only)', licence: 'Apache-2.0', commercial_ok: true },
 ];
 
@@ -163,7 +166,7 @@ try {
       ...(rt ? { realtime: realtimeM } : {}),
       licence,
       notes: `t1 rig in Chromium ${browserVersion} (${rt ? (_headed ? 'headed' : 'headless') : 'no realtime pass'}), WebGL2, ${paramsDir ? 'RigParams from ' + paramsDir : 'procedural motion'}. ` +
-        (rt ? `cpu_pct is the share of all ${cpus().length} logical cores (${_cpu_one_core_pct}% of one core), all browser processes; vram/gpu from Windows GPU counters of the browser's GPU process when available. ` : '') +
+        (rt ? `cpu_pct is the share of all ${cpus().length} logical cores (${_cpu_one_core_pct}% of one core), all browser processes; vram_mb is the browser GPU process's dedicated memory (Windows GPU counter, mean of 3 s while playing; not a peak), gpu_util_pct its 3D-engine share. ` : '') +
         `Clip ${results[line].duration.toFixed(2)} s rendered deterministically at ${fps} fps.`,
     };
     writeFileSync(join(outDir, `${line}.metrics.json`), JSON.stringify(m, null, 2));

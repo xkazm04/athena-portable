@@ -1,5 +1,6 @@
 // Page glue: URL params -> rig + motion source + clock. One rAF loop, none when paused, hidden or calm.
 import { createRig } from './rig.js';
+import { createGlowRig } from './glow.js';
 import { generateRigParams, sampleTrack, loudnessEnvelope } from './motion.js';
 
 const q = new URLSearchParams(location.search);
@@ -20,10 +21,12 @@ async function main() {
   const w = Number(q.get('w')) || Math.round(innerWidth * devicePixelRatio);
   const h = Number(q.get('h')) || Math.round(innerHeight * devicePixelRatio);
   canvas.width = w; canvas.height = h;
-  const rig = await createRig(canvas, {
-    layersUrl: `/home/portraits/${encodeURIComponent(portrait)}/t1-rig/layers/layers.json`,
-    zoom: q.get('zoom') || 'auto', offsetY: Number(q.get('oy')) || 0,
-  });
+  const layersUrl = `/home/portraits/${encodeURIComponent(portrait)}/t1-rig/layers/layers.json`;
+  const spec = await json(layersUrl);
+  const glow = spec.rig_type === 'glow';
+  const rig = glow
+    ? await createGlowRig(canvas, { layersUrl, spec, zoom: q.get('zoom') && q.get('zoom') !== 'auto' ? Number(q.get('zoom')) : 1, offsetY: Number(q.get('oy')) || 0 })
+    : await createRig(canvas, { layersUrl, zoom: q.get('zoom') || 'auto', offsetY: Number(q.get('oy')) || 0 });
 
   let timeline = null;
   if (line) { try { timeline = await json(`/home/voice/${line}.timeline.json`); } catch (e) { console.warn('no timeline', e); } }
@@ -36,7 +39,8 @@ async function main() {
       envelope = loudnessEnvelope(buf.getChannelData(0), buf.sampleRate);
     } catch (e) { console.warn('no loudness envelope', e); }
   }
-  const procedural = generateRigParams(timeline, { duration, fps: 60, seed: Number(q.get('seed')) || 7, envelope });
+  if (envelope && rig.setEnvelope) rig.setEnvelope(envelope, 100);
+  const procedural = generateRigParams(timeline, { duration, fps: 60, seed: Number(q.get('seed')) || 7, envelope, motionScale: glow ? 0.7 : 1 });
   let track = procedural;
   if (paramsUrl) {
     track = await json(paramsUrl);

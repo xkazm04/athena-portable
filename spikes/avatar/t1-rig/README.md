@@ -4,9 +4,9 @@ Route: portrait -> semantic layers (offline, once) -> our own WebGL2 rig in the 
 idle and speech motion. The runtime is ~1,000 lines of plain ESM (rig 609, motion 260, glue 105) with no dependencies and no GPU
 compute beyond a few textured draw calls, so it is the candidate that ships to laptops.
 
-Status: **ready-for-portrait**. Everything is built and smoke-tested on sample images shipped in
-model repos (See-through's `test_image1.png`, Ditto's `example/image.png`); no operator portrait
-existed when this was written, so no bench clip was rendered.
+Status: **done** for the operator's two portraits (`b04-owl`, `d08-origami`, glowing beings on black,
+not human faces). They use the **glow-being path** below; the human-face path (MediaPipe, lip split,
+eyelid sheet) stays for human art and was smoke-tested on See-through's and Ditto's sample images.
 
 ## Runtime API (for t4-hybrid)
 
@@ -77,6 +77,48 @@ python spikes/avatar/tools/gpulock.py --label "t1-rig: bench capture" -- node sp
 
 Outputs: `~/.athena-avatar/portraits/<id>/t1-rig/layers/` (PNG per layer + `layers.json`),
 `bench/t1-rig/<id>/<line>.mp4` + `.metrics.json`.
+
+
+## Glow-being path (the operator's portraits)
+
+```
+# layers (CPU, ~30-60 s each): authored regions in prep/specs/<id>.json, refined from luminance, LaMa fills
+T1_DEVICE=cpu ~/.athena-avatar/venvs/t1-rig/Scripts/python.exe spikes/avatar/t1-rig/prep/split_glow.py --portrait b04-owl
+T1_DEVICE=cpu ~/.athena-avatar/venvs/t1-rig/Scripts/python.exe spikes/avatar/t1-rig/prep/split_glow.py --portrait d08-origami
+# bench (3 lines, 1920x1080 30 fps, WAV muxed, metrics) + stills
+python spikes/avatar/tools/gpulock.py --label "t1-rig: bench" -- node spikes/avatar/web/capture.mjs --portrait <id>
+node spikes/avatar/web/shot.mjs --portrait <id> --out ~/.athena-avatar/bench/t1-rig/<id>/stills --w 1920 --h 1080 --zoom 1 --poses spikes/avatar/web/stills.poses.json --port 5182
+```
+
+Prep reads the portrait as light. Elements are lifted front to back off a working copy that is then
+LaMa-filled under them, so whatever lies behind continues (strands, facets, black): `light` elements
+(eye-lights, seams, star) are additive deltas `max(0, work - filled)` with alpha 0; `cut` elements
+(disc, tufts, crest, shards, aperture halves, head, mantle/torso) carry soft coverage alpha; `erase`
+removes the halo ring, which the runtime redraws analytically so it stays whole behind a moving head.
+Runtime (`web/src/glow.js`, chosen by `rig_type: "glow"`): premultiplied light, `ONE, ONE_MINUS_SRC_ALPHA`
+so light adds and solids occlude; per-layer bloom from mip levels; head turn = sphere warp + depth
+parallax; owl eye-lights iris-close (squash + radial fade) and dim, D08 eye facets switch to dark
+crystal crisply; seam brightness and D08 two-half hinge + slit light from `mouth.open` (visemes,
+closures dip) and the WAV loudness envelope; radial shimmer wave across the owl's fibre tips driven
+by the level history (wave speed 280 px/s, wavelength 120 px); tip pulse and breathing; floating parts
+(crest, 8 shards, tufts) on independent slow sines with a small rotation; D08 facet glint sweep;
+motion scale 0.7 for a calm presence. Same RigParams API as the human rig (`params=` works).
+
+Bench: `~/.athena-avatar/bench/t1-rig/{b04-owl,d08-origami}/{calm,question,long}.mp4` + `.metrics.json`,
+stills `.../stills/{neutral,blink,mid-speech}.png`. Realtime (headless Chromium, 1080p, GPU lock):
+fps p50 59.9 / p5 59.5-59.9, CPU 0.5-0.8 % of 16 cores, GPU process 128-130 MB, 3D engine 0.4-2.9 %,
+first frame 214-299 ms. Capture ~18 frames/s.
+
+Glow lessons:
+- When the art is light on black, split it as light: lift each moving part as an additive delta over a
+  LaMa-filled copy and blend premultiplied (rgb = light, alpha = occlusion), because overlapping glow
+  then sums like light and solid parts still hide what is behind them.
+- When a light blob closes (blink), window it radially in prep and fade beyond the closing radius in
+  the shader, because a squashed rectangular delta collapses into a long visible streak.
+- When a thin ring sits behind a moving head, erase it and redraw it analytically, because the
+  pixels it hid behind the head do not exist in the portrait.
+- When a sparse body (strands) must occlude, take its silhouette from the original light with holes
+  filled, never from fill noise, because LaMa noise around erased parts swallows them into the body.
 
 ## Layer format (`layers.json`)
 

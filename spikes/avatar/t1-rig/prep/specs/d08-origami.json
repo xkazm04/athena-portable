@@ -1,0 +1,609 @@
+{
+ "rig_type": "glow",
+ "note": "Faceted crystal bust. Front to back; 'mirror' reflects a polygon about x = 512.",
+ "head": {
+  "center": [
+   512,
+   400
+  ],
+  "radius": [
+   160,
+   175
+  ],
+  "pivot_y": 575
+ },
+ "glint": {
+  "gain": 0.45,
+  "width_px": 70
+ },
+ "aperture": {
+  "poly": [
+   [
+    512,
+    441
+   ],
+   [
+    471,
+    471
+   ],
+   [
+    471,
+    507
+   ],
+   [
+    512,
+    532
+   ],
+   [
+    552,
+    507
+   ],
+   [
+    552,
+    471
+   ]
+  ],
+  "seam_y": 489,
+  "open_frac": 0.24
+ },
+ "elements": [
+  {
+   "name": "eye_l",
+   "mode": "light",
+   "kind": "eye",
+   "blink": "dim",
+   "region": {
+    "poly": [
+     [
+      388,
+      380
+     ],
+     [
+      437,
+      365
+     ],
+     [
+      484,
+      380
+     ],
+     [
+      437,
+      395
+     ]
+    ],
+    "feather": 6,
+    "dilate": 6
+   },
+   "depth": 0.06,
+   "gain": 1.0,
+   "bloom": 0.5
+  },
+  {
+   "name": "eye_r",
+   "mode": "light",
+   "kind": "eye",
+   "blink": "dim",
+   "region": {
+    "poly": [
+     [
+      388,
+      380
+     ],
+     [
+      437,
+      365
+     ],
+     [
+      484,
+      380
+     ],
+     [
+      437,
+      395
+     ]
+    ],
+    "mirror": true,
+    "feather": 6,
+    "dilate": 6
+   },
+   "depth": 0.06,
+   "gain": 1.0,
+   "bloom": 0.5
+  },
+  {
+   "name": "seam",
+   "mode": "light",
+   "kind": "seam",
+   "region": {
+    "poly": [
+     [
+      482,
+      484
+     ],
+     [
+      542,
+      484
+     ],
+     [
+      542,
+      495
+     ],
+     [
+      482,
+      495
+     ]
+    ],
+    "feather": 4,
+    "dilate": 3
+   },
+   "depth": 0.08,
+   "gain": 1.0,
+   "voice_gain": 2.0,
+   "bloom": 0.6,
+   "aperture_follow": true
+  },
+  {
+   "name": "star",
+   "mode": "light",
+   "kind": "pulse",
+   "region": {
+    "blob": [
+     512,
+     760
+    ],
+    "radius": 62,
+    "thr": 120
+   },
+   "depth": 0.0,
+   "gain": 1.0,
+   "bloom": 0.5,
+   "pulse": {
+    "amp": 0.18,
+    "freq": 0.21
+   },
+   "voice_gain": 0.25
+  },
+  {
+   "name": "crest",
+   "mode": "cut",
+   "kind": "float",
+   "region": {
+    "component": [
+     512,
+     150
+    ],
+    "thr": 6,
+    "dilate": 3,
+    "feather": 2
+   },
+   "depth": 0.12,
+   "follow": 1.0,
+   "float": {
+    "amp": [
+     0.0,
+     5.0
+    ],
+    "freq": 0.16,
+    "rot_deg": 0.6,
+    "pivot": [
+     512,
+     160
+    ]
+   },
+   "occl": 1.0,
+   "glint": true
+  },
+  {
+   "name": "shard_1",
+   "mode": "cut",
+   "kind": "float",
+   "region": {
+    "poly": [
+     [
+      342,
+      570
+     ],
+     [
+      381,
+      537
+     ],
+     [
+      387,
+      574
+     ],
+     [
+      354,
+      623
+     ]
+    ],
+    "dilate": 4,
+    "feather": 2
+   },
+   "follow": 0.15,
+   "float": {
+    "amp": [
+     1.5,
+     4.5
+    ],
+    "freq": 0.19,
+    "rot_deg": 2.5
+   },
+   "occl": 0.95,
+   "glint": true
+  },
+  {
+   "name": "shard_2",
+   "mode": "cut",
+   "kind": "float",
+   "region": {
+    "poly": [
+     [
+      297,
+      584
+     ],
+     [
+      330,
+      610
+     ],
+     [
+      352,
+      668
+     ],
+     [
+      304,
+      626
+     ]
+    ],
+    "dilate": 4,
+    "feather": 2
+   },
+   "follow": 0.1,
+   "float": {
+    "amp": [
+     1.5,
+     4.0
+    ],
+    "freq": 0.15,
+    "rot_deg": 3.0
+   },
+   "occl": 0.95,
+   "glint": true
+  },
+  {
+   "name": "shard_3",
+   "mode": "cut",
+   "kind": "float",
+   "region": {
+    "poly": [
+     [
+      364,
+      630
+     ],
+     [
+      425,
+      664
+     ],
+     [
+      443,
+      728
+     ],
+     [
+      370,
+      686
+     ]
+    ],
+    "dilate": 4,
+    "feather": 2
+   },
+   "follow": 0.1,
+   "float": {
+    "amp": [
+     1.2,
+     3.5
+    ],
+    "freq": 0.13,
+    "rot_deg": 2.0
+   },
+   "occl": 0.95,
+   "glint": true
+  },
+  {
+   "name": "shard_4",
+   "mode": "cut",
+   "kind": "float",
+   "region": {
+    "poly": [
+     [
+      319,
+      676
+     ],
+     [
+      382,
+      705
+     ],
+     [
+      415,
+      742
+     ],
+     [
+      352,
+      712
+     ]
+    ],
+    "dilate": 4,
+    "feather": 2
+   },
+   "follow": 0.05,
+   "float": {
+    "amp": [
+     1.5,
+     4.0
+    ],
+    "freq": 0.17,
+    "rot_deg": 2.5
+   },
+   "occl": 0.95,
+   "glint": true
+  },
+  {
+   "name": "shard_5",
+   "mode": "cut",
+   "kind": "float",
+   "region": {
+    "poly": [
+     [
+      342,
+      570
+     ],
+     [
+      381,
+      537
+     ],
+     [
+      387,
+      574
+     ],
+     [
+      354,
+      623
+     ]
+    ],
+    "mirror": true,
+    "dilate": 4,
+    "feather": 2
+   },
+   "follow": 0.15,
+   "float": {
+    "amp": [
+     1.5,
+     4.5
+    ],
+    "freq": 0.18,
+    "rot_deg": 2.5
+   },
+   "occl": 0.95,
+   "glint": true
+  },
+  {
+   "name": "shard_6",
+   "mode": "cut",
+   "kind": "float",
+   "region": {
+    "poly": [
+     [
+      297,
+      584
+     ],
+     [
+      330,
+      610
+     ],
+     [
+      352,
+      668
+     ],
+     [
+      304,
+      626
+     ]
+    ],
+    "mirror": true,
+    "dilate": 4,
+    "feather": 2
+   },
+   "follow": 0.1,
+   "float": {
+    "amp": [
+     1.5,
+     4.0
+    ],
+    "freq": 0.14,
+    "rot_deg": 3.0
+   },
+   "occl": 0.95,
+   "glint": true
+  },
+  {
+   "name": "shard_7",
+   "mode": "cut",
+   "kind": "float",
+   "region": {
+    "poly": [
+     [
+      364,
+      630
+     ],
+     [
+      425,
+      664
+     ],
+     [
+      443,
+      728
+     ],
+     [
+      370,
+      686
+     ]
+    ],
+    "mirror": true,
+    "dilate": 4,
+    "feather": 2
+   },
+   "follow": 0.1,
+   "float": {
+    "amp": [
+     1.2,
+     3.5
+    ],
+    "freq": 0.12,
+    "rot_deg": 2.0
+   },
+   "occl": 0.95,
+   "glint": true
+  },
+  {
+   "name": "shard_8",
+   "mode": "cut",
+   "kind": "float",
+   "region": {
+    "poly": [
+     [
+      319,
+      676
+     ],
+     [
+      382,
+      705
+     ],
+     [
+      415,
+      742
+     ],
+     [
+      352,
+      712
+     ]
+    ],
+    "mirror": true,
+    "dilate": 4,
+    "feather": 2
+   },
+   "follow": 0.05,
+   "float": {
+    "amp": [
+     1.5,
+     4.0
+    ],
+    "freq": 0.165,
+    "rot_deg": 2.5
+   },
+   "occl": 0.95,
+   "glint": true
+  },
+  {
+   "name": "mouth_upper",
+   "mode": "cut",
+   "kind": "aperture_upper",
+   "region": {
+    "aperture": "upper",
+    "dilate": 1,
+    "feather": 1.2
+   },
+   "depth": 0.08,
+   "occl": 1.0,
+   "glint": true
+  },
+  {
+   "name": "mouth_lower",
+   "mode": "cut",
+   "kind": "aperture_lower",
+   "region": {
+    "aperture": "lower",
+    "dilate": 1,
+    "feather": 1.2
+   },
+   "depth": 0.08,
+   "occl": 1.0,
+   "glint": true
+  },
+  {
+   "name": "mouth_glow",
+   "mode": "none",
+   "kind": "aperture_glow",
+   "depth": 0.07,
+   "bloom": 0.0
+  },
+  {
+   "name": "head",
+   "mode": "cut",
+   "kind": "head",
+   "region": {
+    "poly": [
+     [
+      352,
+      222
+     ],
+     [
+      430,
+      258
+     ],
+     [
+      512,
+      262
+     ],
+     [
+      594,
+      258
+     ],
+     [
+      672,
+      222
+     ],
+     [
+      676,
+      340
+     ],
+     [
+      642,
+      470
+     ],
+     [
+      614,
+      522
+     ],
+     [
+      512,
+      580
+     ],
+     [
+      410,
+      522
+     ],
+     [
+      382,
+      470
+     ],
+     [
+      348,
+      340
+     ]
+    ],
+    "feather": 2,
+    "lit": true
+   },
+   "depth": 0.0,
+   "glint": true
+  },
+  {
+   "name": "torso",
+   "mode": "cut",
+   "kind": "body",
+   "region": {
+    "rest": true,
+    "y_min": 0
+   },
+   "glint": true
+  }
+ ]
+}
