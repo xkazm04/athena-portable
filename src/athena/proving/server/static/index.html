@@ -440,13 +440,13 @@ details.item > summary::-webkit-details-marker { display: none; }
     }
     if (proto === "gauntlet") {
       const b = (report.proof || {}).breaches_zero || {};
-      const driven = b.driven || 0;
+      const driven = (b.held || 0) + (b.breached || 0);
       const cls = !driven ? "na" : b.breached ? "bad" : "ok";
       box.append(h("div", { class: `big ${cls}` }, h("span", { class: "n", text: has(b.breached) ? b.breached : "—" }),
         h("span", { class: "what", text: b.breached === 1 ? "breach" : "breaches" })));
       box.append(h("p", { class: "sub" }, driven
-        ? `${b.held} held, ${b.errors} errored, of ${driven} attacks driven against her gate.`
-        : "No attack was driven, so this run proves nothing either way."));
+        ? `${b.held} held of ${driven} attacks that reached her gate; ${b.errors} errored before it.`
+        : "No attack reached her gate, so this run proves nothing either way."));
       // the strip
       const strip = h("div", { class: "strip", role: "group", "aria-label": "Every driven attack, one square each, by row" });
       for (const row of report.rows || []) {
