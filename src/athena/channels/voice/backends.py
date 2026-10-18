@@ -46,6 +46,8 @@ from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass, field
 from typing import Protocol, runtime_checkable
 
+from athena.contracts.channel import ChannelEvent
+
 __all__ = [
     "BACKENDS",
     "INPUT_SAMPLE_RATE",
@@ -68,6 +70,7 @@ __all__ = [
     "backend_from_name",
     "hearing_meter",
     "speaking_meter",
+    "synthesize_face",
 ]
 
 #: What the microphone sends: 16 kHz, 16-bit, one channel. The rate a speech model was trained on
@@ -105,6 +108,23 @@ def speaking_meter(backend: object) -> Meter | None:
     """The meter of ``backend``'s speaking half, or ``None`` when speaking costs no request."""
     meter = getattr(backend, "speaking_meter", None)
     return meter if isinstance(meter, Meter) else None
+
+
+def synthesize_face(
+    backend: VoiceBackend | Speaker, text: str, emit: Callable[[ChannelEvent], None]
+) -> Iterator[bytes]:
+    """``backend``'s speech with her face (ADR 0120): its ``synthesize_face`` when it has one,
+    which hands ``voice.visemes`` and ``voice.motion`` to ``emit``, else plain ``synthesize``.
+
+    Only a speaker that knows its own timings has the method - Kokoro with its face helper. The
+    provider does not, so a line it speaks carries no face events and the surface drives the
+    mouth from playback level. A face-aware speaker may yield an empty chunk while it waits for
+    motion; it is a chance to hear a barge-in, not audio."""
+    faced = getattr(backend, "synthesize_face", None)
+    if callable(faced):
+        chunks: Iterator[bytes] = faced(text, emit)
+        return chunks
+    return backend.synthesize(text)
 
 
 @runtime_checkable
@@ -183,6 +203,9 @@ class ComposedBackend:
 
     def synthesize(self, text: str) -> Iterator[bytes]:
         return self.speaker.synthesize(text)
+
+    def synthesize_face(self, text: str, emit: Callable[[ChannelEvent], None]) -> Iterator[bytes]:
+        return synthesize_face(self.speaker, text, emit)
 
     @property
     def hearing_meter(self) -> Meter | None:

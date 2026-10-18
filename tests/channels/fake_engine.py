@@ -11,7 +11,12 @@ Modes:
 
 - ``kokoro``: write a 24 kHz mono 16-bit WAV to ``--output-filename=`` whose frames *are* the
   UTF-8 text, padded to whole samples — so the PCM a test reads back says which sentence it was.
+- ``kokoro-pause``: the text, 0.3 s of silence, the text again - cut to a fifth as sherpa's
+  ``ScaleSilence`` would, unless ``--tts-silence-scale=1`` asks for it uncut.
+- ``kokoro-long``: the text, then one second of steady sound, so a line takes time to play.
 - ``kokoro-fail``: complain on stderr and exit 2.
+
+Every ``kokoro`` mode prints a sherpa-style token line on stderr when given ``--debug=1``.
 - ``kokoro-badwav``: write a WAV at the wrong rate.
 - ``hang``: sleep far longer than any test's timeout.
 - ``whisper``: check ``-f`` is a 16 kHz mono WAV and print a transcript with a non-speech marker.
@@ -27,6 +32,8 @@ import wave
 from pathlib import Path
 
 HERE = Path(__file__).resolve()
+#: The pause ``kokoro-pause`` speaks: 0.3 s at 24 kHz, past sherpa's 0.2 s pause threshold.
+PAUSE_SAMPLES = 7200
 
 
 def command(mode: str, log: Path, delay_s: float = 0.0) -> list[str]:
@@ -86,11 +93,19 @@ def kokoro(mode: str, args: list[str]) -> int:
     text = b"" if args[-1].startswith("--") else args[-1].encode("utf-8")
     if len(text) % 2:
         text += b" "
+    frames = text
+    if mode == "kokoro-pause":
+        pause = PAUSE_SAMPLES if flags.get("tts-silence-scale") == "1" else PAUSE_SAMPLES // 5
+        frames = text + bytes(2 * pause) + text
+    elif mode == "kokoro-long":
+        frames = text + (1000).to_bytes(2, "little") * 24_000
+    if flags.get("debug") == "1":
+        sys.stderr.write("Generate:158 \n0 46 156 63 158 16 52 0\n\nSplit it into 1 batches.\n")
     with wave.open(flags["output-filename"], "wb") as wav:
         wav.setnchannels(1)
         wav.setsampwidth(2)
         wav.setframerate(16_000 if mode == "kokoro-badwav" else 24_000)
-        wav.writeframes(text)
+        wav.writeframes(frames)
     return 0
 
 

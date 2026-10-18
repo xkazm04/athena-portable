@@ -67,6 +67,7 @@ def test_the_default_is_kokoro_heart_and_local_base_en() -> None:
     assert DEFAULT_CHOICE.to_dict() == {
         "tts": {"engine": "kokoro", "voice": "af_heart"},
         "stt": {"engine": "whisper", "model": "base.en"},
+        "face": {"python": None},
     }
 
 
@@ -126,7 +127,9 @@ def test_an_empty_home_is_not_ready_and_says_the_first_reason(tmp_path: Path) ->
     assert view["home"] == str(tmp_path / "personas")
     # The null convention: every key of every engine is present, absent values are None.
     keys = {"id", "direction", "kind", "state", "reason", "size_mb", "voices", "models"}
-    assert all(set(engine) == keys for engine in view["engines"])
+    assert all(set(engine) == keys for engine in view["engines"] if engine["id"] != "face")
+    face = next(e for e in view["engines"] if e["id"] == "face")
+    assert set(face) == keys | {"visemes", "motion"}
     whisper = next(e for e in view["engines"] if e["id"] == "whisper")
     assert whisper["size_mb"] is None
     assert {"id": "base.en", "size_mb": 142, "installed": False} in whisper["models"]

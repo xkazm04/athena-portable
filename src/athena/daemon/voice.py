@@ -7,7 +7,9 @@ error shape, and an absent value on the wire is ``null``, never a missing key.
 ``GET /voice/config``, ``PUT /voice/config``
     The choice with every engine's probe, ``ready`` and the first ``reason`` it is not. A PUT
     validates against the catalogs (``validator_failed`` for an unknown id), persists, and swaps
-    the socket's backend at once.
+    the socket's backend at once. ``face.python`` points at the environment her face helper runs
+    in (ADR 0120), and the ``face`` row of ``engines`` says whether her face is live; a PUT
+    without ``face`` keeps the one that was saved.
 
 ``POST /voice/preview``
     ``{"text", "voice"}`` → raw PCM16LE mono, ``Content-Type: audio/L16;rate=<n>``, with

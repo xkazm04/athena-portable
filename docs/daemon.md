@@ -364,6 +364,68 @@ for the generation to drop.
 `python -c "from athena.channels.voice import connect; …"` is a client with no shell; the tests in
 `tests/channels/` are the reference for one.
 
+### Her face on the socket
+
+When a *face helper* is set up (ADR 0120), a spoken line carries two more voice events, both
+timed in samples so a client maps them through its own playback schedule and an underrun cannot
+drift them:
+
+```
+{"kind": "voice.visemes", "generation": 1, "sentence": 0, "offset": 0, "sample_rate": 24000,
+ "visemes": [["sil", 0, 1440], ["DD", 1440, 2400], ["ou", 2400, 4800], …]}      before the sentence's audio
+<binary>  0x00000001 + PCM16 …
+{"kind": "voice.motion", "generation": 1, "sentence": 0, "offset": 0, "fps": 60,
+ "frames": [{"t": 0.0, "head": {"yaw": 0.0, "pitch": 0.0, "roll": 0.0},
+             "eyes": {"blinkL": 0.09, "blinkR": 0.09, "gazeX": 0.0, "gazeY": -0.25},
+             "brow": {"raise": -0.2}}, …]}                                       whenever it is ready
+```
+
+`offset` is where the sentence starts, in samples from the line's first audio sample; each viseme
+is an Oculus-15 shape with its start and end in samples from `offset`, ordered, gap-free and
+covering the sentence exactly. A sentence's visemes always precede its first audio frame; its
+motion may arrive after the sentence started (a surface crossfades it in). Neither is ever sent
+after the line's `voice.stopped`, and a barge-in drops both along with the audio. With no helper
+neither is sent at all — never an empty array — and the surface drives the mouth from playback
+level. A line spoken by the OpenAI speaker has no face events: it has no durations.
+
+**Setting it up.** `PUT /voice/config` with `{"face": {"python": "<absolute path>"}}` (or `null`
+to remove it) names the interpreter of an environment that has numpy and onnxruntime for the
+mouth shapes, and torch, scipy, librosa and a JoyVASA checkout for motion
+(`--joyvasa`/`ATHENA_FACE_JOYVASA`, else `~/.athena-avatar/models/joyvasa`). Nothing is detected.
+A `PUT` without `face` keeps the saved one. `GET /voice/config` answers `face` beside `tts` and
+`stt`, and one more `engines` row, `{"id": "face", "direction": "face", "kind": "local",
+"state", "reason", "visemes", "motion", …}`: `absent` (not set up, its Python missing, or still
+starting), `broken` with the reason, or `ready` with what it does.
+
+**How it works.** The daemon stays stdlib. It starts the helper once — the Python it was given,
+`-I`, the package `channels/voice/face_helper/` loaded from its directory, `CREATE_NO_WINDOW` —
+and speaks JSON lines with it: `hello` (`visemes`, `motion`) first, then one `sentence` per
+sentence (token ids, the audio, the time map) answered by `visemes` at once and `motion` later,
+and `cancel` when a line is cut off. While the helper is ready, Kokoro runs with `--debug=1
+--tts-silence-scale=1`: the token ids come from the engine's own frontend, and the daemon replays
+sherpa's `ScaleSilence` (every pause over 0.2 s kept to a fifth) sample for sample, keeping a map
+from the uncut audio to what is played. The helper runs Kokoro's durations-only subgraph (56 MB,
+cut from `model.onnx` into `ATHENA_HOME/voice/face/` the first time, about 15 s) on those tokens,
+moves each edge 55 ms earlier (the decoder's measured lead), maps it through the time map and
+reduces the phones to visemes. Motion is JoyVASA on the sentence's audio, decoded to RigParams v1
+and retargeted for the glow forms (head x0.55 at 2 Hz, eased in over 0.5 s; lid drops capped at
+0.2 with crisp blinks at least 2.2 s apart), kept warm between sentences.
+
+**Fallbacks.** The audio never waits on the face for more than a deadline and never depends on
+it: a sentence waits at most 1 s for its visemes (the first sentence of a line directly, the rest
+inside the render that runs ahead of playback), and plays without them past that. Two misses in
+a row, a crash, or no `hello` within 180 s make the helper `broken`; it is started again on a
+later line behind a backoff of 2 s doubling to 60 s. After its last audio a line waits for motion
+still being computed only as long as the line takes to play, at most 2 s, and stays open to a
+barge-in while it does. With the helper absent or broken the engine gets exactly the arguments it
+always had and the line's bytes are unchanged.
+
+**Costs** (one 3-sentence line, 7.2 s of audio, Kokoro on CPU, JoyVASA on an RTX 4090): visemes
+40-100 ms per sentence; the daemon's cut and map about 10 ms per 4 s of audio; motion 0.55-0.75 s
+per 2.5 s sentence warm; the first sentence's audio is later by the visemes' time, under
+0.1 s against a render of about 3.5 s. The first start pays the subgraph extraction once and
+JoyVASA's load and warm-up on every start; until motion is warm a line plays with visemes only.
+
 ## The connectors
 
 A connector is one JSON spec under `src/athena/connectors/builtin/` (Gmail and Notion ship) whose

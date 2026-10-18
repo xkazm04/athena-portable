@@ -13,8 +13,15 @@ page origin, the host state and a project id), binary frames of PCM16 for as lon
 spoken, for a client with no microphone) and ``tool_result`` (the page's answer to a
 ``tool.call``). From the server: every channel event of the turn, one frame each, exactly the
 JSON ``/run`` puts on an SSE frame — plus the voice family: ``voice.transcript``,
-``voice.speaking`` and ``voice.stopped``. Audio comes back as binary frames of a 4-byte
+``voice.speaking`` and ``voice.stopped``, and her face's ``voice.visemes`` and ``voice.motion``
+when the speaker has a face helper (ADR 0120). Audio comes back as binary frames of a 4-byte
 big-endian generation number followed by PCM16 at the backend's rate.
+
+**A face event belongs to its line.** The speaker hands each to the gateway without a generation;
+the gateway stamps the line's, sends a sentence's visemes in order before its audio (they come out
+of the same iterator), and lets motion through from the helper's thread only while the line is
+open and not barged in. The line is shut before its ``voice.stopped`` is sent, under the same lock
+a face event is sent under, so nothing of a line follows its ``voice.stopped``.
 
 **Three threads per connection, and why.** The handler thread only reads the socket, because a
 barge-in arrives *while* a reply is playing and a reader that was busy, speaking or transcribing,
@@ -65,6 +72,7 @@ from athena.channels.voice.backends import (
     VoiceBackendError,
     hearing_meter,
     speaking_meter,
+    synthesize_face,
 )
 from athena.channels.voice.commands import Card, Spoken, outcome_of, recognise
 from athena.channels.voice.tts import SpokenLine, spoken_line
@@ -77,9 +85,11 @@ from athena.contracts.channel import (
     ToolResult,
     TurnError,
     TurnFinished,
+    VoiceMotion,
     VoiceSpeaking,
     VoiceStopped,
     VoiceTranscript,
+    VoiceVisemes,
     now_iso,
 )
 from athena.contracts.registry import is_origin
@@ -364,6 +374,29 @@ def _frame_label(message: Any) -> str:
     except Exception:  # a label must never raise inside the error door
         return "text"
     return f"text:{kind[:24]}" if isinstance(kind, str) and kind.isidentifier() else "text"
+
+
+class _FaceLine:
+    """One spoken line's door for face events (ADR 0120): stamped with the line's generation,
+    sent while the line is open and not barged in, and shut before its ``voice.stopped``."""
+
+    def __init__(self, session: VoiceSession, generation: int) -> None:
+        self._session = session
+        self._generation = generation
+        self._lock = threading.Lock()
+        self._open = True
+
+    def emit(self, event: ChannelEvent) -> None:
+        if not isinstance(event, VoiceVisemes | VoiceMotion):
+            return  # a speaker hands this door its face and nothing else
+        with self._lock:
+            if not self._open or self._session._stale(self._generation):
+                return
+            self._session.send(replace(event, generation=self._generation))
+
+    def shut(self) -> None:
+        with self._lock:
+            self._open = False
 
 
 @dataclass
@@ -713,6 +746,7 @@ class VoiceSession:
                     continue
                 self._playing = generation
             reason = "done"
+            face = _FaceLine(self, generation)
             # Taken per line: a swap lands between two lines, never inside one.
             backend, _ = self.gateway.current()
             meter = speaking_meter(backend)
@@ -733,7 +767,7 @@ class VoiceSession:
                 # Closed below however the loop ends, so a cut-off line stops its synthesis (and the
                 # process behind it) now, not when the generator happens to be collected.
                 started = time.monotonic()
-                chunks = backend.synthesize(line.text)
+                chunks = synthesize_face(backend, line.text, face.emit)
                 try:
                     for chunk in chunks:
                         with self._lock:
@@ -741,11 +775,13 @@ class VoiceSession:
                         if stale or self._closed:
                             reason = "barge_in"
                             break
-                        self._send_audio(generation, chunk)
+                        if chunk:  # an empty chunk is a face speaker waiting, not audio
+                            self._send_audio(generation, chunk)
                 finally:
                     close = getattr(chunks, "close", None)
                     if close is not None:
                         close()
+                    face.shut()
                     ms = int((time.monotonic() - started) * 1000)
             except VoiceBackendError:
                 reason, failure = "error", "engine_error"
@@ -763,7 +799,12 @@ class VoiceSession:
             if meter is not None and started is not None:
                 # A line cut off by barge-in is not an error: it is billed up to its close.
                 self._record(meter, bill, ms, failure)
+            face.shut()
             self.send(VoiceStopped(generation=generation, reason=reason))
+
+    def _stale(self, generation: int) -> bool:
+        with self._lock:
+            return generation <= self._cutoff
 
     # -- the worker ------------------------------------------------------------------------------
 

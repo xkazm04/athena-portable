@@ -29,14 +29,23 @@ import subprocess
 import sys
 import tempfile
 import threading
+import time
 import unicodedata
 import wave
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
 from athena.channels.voice.backends import VoiceBackendError
+from athena.channels.voice.face import (
+    FACE_ARGS,
+    MOTION_TAIL_S,
+    FaceHelper,
+    FaceJob,
+    scale_silence,
+    token_lines,
+)
 from athena.channels.voice.home import (
     EXE_SUFFIX,
     EngineHomes,
@@ -46,6 +55,7 @@ from athena.channels.voice.home import (
     dry_run,
 )
 from athena.channels.voice.speech import sentences
+from athena.contracts.channel import ChannelEvent, VoiceMotion, VoiceVisemes
 
 __all__ = [
     "ANSI_CODE_PAGE",
@@ -305,8 +315,12 @@ def build_args(
     output: Path,
     text: str,
     code_page: int | None = ANSI_CODE_PAGE,
+    extra: Sequence[str] = (),
 ) -> list[str]:
-    """The engine's flags, exactly Personas', text last and positional. No executable."""
+    """The engine's flags, exactly Personas', text last and positional. No executable.
+
+    ``extra`` goes just before the text: the face path's ``FACE_ARGS``, and nothing at all when
+    her face helper is not ready."""
     args = [
         f"--kokoro-model={paths.model}",
         f"--kokoro-voices={paths.voices}",
@@ -319,6 +333,7 @@ def build_args(
         "--num-threads=2",
         f"--sid={sid}",
         f"--output-filename={output}",
+        *extra,
         spoken_entry(text, code_page),
     ]
     return args
@@ -345,10 +360,17 @@ def read_pcm(wav_path: Path) -> bytes:
 #: How many started sentences ``KokoroTTS.started`` keeps.
 STARTED_KEPT = 32
 
+#: Where a line's face events go: the gateway stamps the generation and sends them, or not.
+FaceEmit = Callable[[ChannelEvent], None]
+
 
 @dataclass
 class _Render:
-    """One sentence on its own thread: the process, its WAV, and a way to stop it early."""
+    """One sentence on its own thread: the process, its WAV, and a way to stop it early.
+
+    With ``face`` set it is also the sentence's face: the helper's job, its mouth shapes, and the
+    motion that may come later. Nothing is emitted until :meth:`begin` says where the sentence
+    starts in the line, and nothing after :meth:`close`."""
 
     run: Any
     sentence: str
@@ -357,6 +379,16 @@ class _Render:
     proc: subprocess.Popen[bytes] | None = None
     cancelled: bool = False
     done: threading.Event = field(default_factory=threading.Event)
+    face: FaceHelper | None = None
+    face_job: FaceJob | None = None
+    visemes: list[tuple[str, int, int]] | None = None
+    motion: tuple[int, list[dict[str, Any]]] | None = None
+    index: int = 0
+    offset: int | None = None
+    sample_rate: int = 0
+    emit: FaceEmit | None = None
+    closed: bool = False
+    face_lock: threading.Lock = field(default_factory=threading.Lock)
 
     def start(self) -> _Render:
         threading.Thread(target=self._go, name="kokoro-render", daemon=True).start()
@@ -386,6 +418,57 @@ class _Render:
         proc = self.proc
         if proc is not None and proc.poll() is None:
             proc.kill()
+        self.close()
+
+    # -- the face --------------------------------------------------------------------------------
+
+    def begin(self, index: int, offset: int, sample_rate: int, emit: FaceEmit) -> None:
+        """The sentence is about to be played at ``offset``: its visemes go out now, ahead of its
+        first audio, and its motion with them if it is already here."""
+        with self.face_lock:
+            if self.closed:
+                return
+            self.index, self.offset, self.sample_rate, self.emit = index, offset, sample_rate, emit
+            if self.visemes is not None:
+                emit(
+                    VoiceVisemes(
+                        sentence=index,
+                        offset=offset,
+                        sample_rate=sample_rate,
+                        visemes=tuple(self.visemes),
+                    )
+                )
+            self._emit_motion()
+
+    def on_motion(self, fps: int, frames: list[dict[str, Any]]) -> None:
+        """The helper's motion for this sentence, on the helper's reading thread."""
+        with self.face_lock:
+            if self.closed:
+                return
+            self.motion = (fps, frames)
+            self._emit_motion()
+
+    def _emit_motion(self) -> None:
+        if self.motion is None or self.offset is None or self.emit is None:
+            return
+        fps, frames = self.motion
+        self.motion = None
+        self.emit(
+            VoiceMotion(sentence=self.index, offset=self.offset, fps=fps, frames=tuple(frames))
+        )
+
+    @property
+    def awaiting_motion(self) -> bool:
+        job = self.face_job
+        return job is not None and not job.settled.is_set() and not self.closed
+
+    def close(self) -> None:
+        """No more face events from this sentence, and the helper may drop its work on it."""
+        with self.face_lock:
+            self.closed = True
+            job = self.face_job
+        if job is not None:
+            job.cancel()
 
 
 @dataclass
@@ -402,6 +485,9 @@ class KokoroTTS:
     #: a test's evidence that sentence n+1 began before sentence n was finished being played. It
     #: is bounded because one engine serves a daemon for as long as it runs.
     started: list[str] = field(default_factory=list)
+    #: Her face helper (ADR 0120). Only :meth:`synthesize_face` uses it, and only while it is
+    #: ready; :meth:`synthesize` - the studio's preview - never does.
+    face: FaceHelper | None = None
 
     @property
     def name(self) -> str:
@@ -412,11 +498,18 @@ class KokoroTTS:
 
     def _render(self, job: _Render) -> bytes:
         paths = paths_for(self.homes)
+        face = job.face
         with tempfile.TemporaryDirectory(prefix="athena-kokoro-") as tmp:
             output = Path(tmp) / "out.wav"
             argv = [
                 *self._command(paths),
-                *build_args(paths, self.voice.sid, output, job.sentence),
+                *build_args(
+                    paths,
+                    self.voice.sid,
+                    output,
+                    job.sentence,
+                    extra=FACE_ARGS if face is not None else (),
+                ),
             ]
             if job.cancelled:
                 return b""
@@ -424,7 +517,7 @@ class KokoroTTS:
                 job.proc = subprocess.Popen(
                     argv,
                     stdin=subprocess.DEVNULL,
-                    stdout=subprocess.DEVNULL,
+                    stdout=subprocess.PIPE if face is not None else subprocess.DEVNULL,
                     stderr=subprocess.PIPE,
                     creationflags=creation_flags(),
                 )
@@ -434,7 +527,7 @@ class KokoroTTS:
                 # A cancel that ran between the check above and the assignment found no process.
                 job.proc.kill()
             try:
-                _, stderr = job.proc.communicate(timeout=self.timeout_s)
+                stdout, stderr = job.proc.communicate(timeout=self.timeout_s)
             except subprocess.TimeoutExpired:
                 job.proc.kill()
                 job.proc.communicate()
@@ -444,7 +537,46 @@ class KokoroTTS:
             if job.proc.returncode != 0:
                 snippet = stderr.decode("utf-8", "replace").strip()[:STDERR_SNIPPET]
                 raise VoiceBackendError(f"kokoro exited with {job.proc.returncode}: {snippet}")
-            return read_pcm(output)
+            pcm = read_pcm(output)
+        if face is None:
+            return pcm
+        return self._faced(job, face, pcm, (stdout or b"") + stderr)
+
+    def _faced(self, job: _Render, face: FaceHelper, raw: bytes, output: bytes) -> bytes:
+        """The uncut sentence cut as the engine would have cut it, and its face asked for.
+
+        The audio is decided first and never depends on the helper: whatever the helper does -
+        answers, is slow, dies - the sentence plays the same samples."""
+        pcm, time_map = scale_silence(raw, self.sample_rate)
+        if job.cancelled:
+            return pcm
+        try:
+            tokens = token_lines(output.decode("utf-8", "replace"))
+            if not tokens:
+                return pcm
+            face_job = face.submit(
+                tokens=tokens,
+                raw_samples=len(raw) // 2,
+                time_map=time_map,
+                pcm=pcm,
+                sample_rate=self.sample_rate,
+                sid=self.voice.sid,
+                on_motion=job.on_motion,
+            )
+            if face_job is None:
+                return pcm
+            with job.face_lock:
+                job.face_job = face_job
+                closed = job.closed
+            if closed:
+                face_job.cancel()
+                return pcm
+            visemes = face_job.wait_visemes(face.visemes_timeout_s)
+            if visemes is not None and visemes[-1][2] == len(pcm) // 2:
+                job.visemes = visemes
+        except Exception:  # the face is never worth the sentence
+            logging.getLogger(__name__).exception("voice: a sentence's face failed")
+        return pcm
 
     def synthesize(self, text: str) -> Iterator[bytes]:
         """PCM16 at 24 kHz, sentence by sentence, the next one rendering while this one plays.
@@ -468,7 +600,60 @@ class KokoroTTS:
             if pending is not None:
                 pending.cancel()
 
-    def _start(self, sentence: str) -> _Render:
+    def synthesize_face(self, text: str, emit: FaceEmit) -> Iterator[bytes]:
+        """:meth:`synthesize`, with her face: each sentence's ``voice.visemes`` handed to ``emit``
+        before its first chunk, and its ``voice.motion`` whenever the helper has it.
+
+        While the helper is not ready this *is* :meth:`synthesize` - the same arguments, the same
+        process, the same bytes. After the last chunk the line may wait, yielding empty chunks so
+        a barge-in is still heard, for motion still being computed, but never past the time the
+        line takes to play nor :data:`~athena.channels.voice.face.MOTION_TAIL_S`.
+        """
+        face = self.face
+        if face is None or not face.ready:
+            yield from self.synthesize(text)
+            return
+        if len(text) > MAX_CHARS:
+            raise VoiceBackendError(f"kokoro speaks at most {MAX_CHARS} characters at once")
+        sentences = split_sentences(text)
+        if not sentences:
+            return
+        jobs: list[_Render] = []
+
+        def start(sentence: str) -> _Render:
+            job = self._start(sentence, face)
+            jobs.append(job)
+            return job
+
+        pending: _Render | None = start(sentences[0])
+        offset = 0
+        first_audio: float | None = None
+        try:
+            for index in range(len(sentences)):
+                assert pending is not None
+                job = pending
+                pcm = job.result()
+                pending = start(sentences[index + 1]) if index + 1 < len(sentences) else None
+                job.begin(index, offset, self.sample_rate, emit)
+                if first_audio is None:
+                    first_audio = time.monotonic()
+                for at in range(0, len(pcm), CHUNK_BYTES):
+                    yield pcm[at : at + CHUNK_BYTES]
+                offset += len(pcm) // 2
+            if first_audio is not None:
+                heard_by = first_audio + offset / self.sample_rate
+                deadline = min(heard_by, time.monotonic() + MOTION_TAIL_S)
+                waiting = threading.Event()
+                while any(job.awaiting_motion for job in jobs) and time.monotonic() < deadline:
+                    waiting.wait(0.05)
+                    yield b""
+        finally:
+            if pending is not None:
+                pending.cancel()
+            for job in jobs:
+                job.close()
+
+    def _start(self, sentence: str, face: FaceHelper | None = None) -> _Render:
         self.started.append(sentence)
         del self.started[:-STARTED_KEPT]
-        return _Render(self._render, sentence).start()
+        return _Render(self._render, sentence, face=face).start()

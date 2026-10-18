@@ -25,6 +25,13 @@ And the studio that picks the backend (ADR 0028):
 - :mod:`athena.channels.voice.config` — the saved choice, the probes, the sealed key, and the
   live swap of the gateway's backend.
 
+And her face (ADR 0120):
+
+- :mod:`athena.channels.voice.face` — the stdlib client of the face helper, and the replay of
+  the engine's silence cut that makes a sentence's mouth shapes exact.
+- ``face_helper/`` — the helper itself, run in the environment the person points at and never
+  imported by the daemon.
+
 Voice is a transport and not a feature. Nothing here decides policy, and a spoken "approve"
 answers a card through the same route as a button.
 """

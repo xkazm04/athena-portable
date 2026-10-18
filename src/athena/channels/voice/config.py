@@ -23,6 +23,13 @@ either way the choice is still saved, and applies when the daemon is next starte
 While the slot is empty the gateway asks again on every press, so an engine installed beside a
 running daemon is heard without anyone opening the studio first.
 
+**Her face is a third, optional pick** (ADR 0120). ``{"face": {"python": <path> | null}}`` names
+the interpreter of an environment that can run the face helper
+(:mod:`athena.channels.voice.face`); nothing is detected, a person points at one. A body without
+``face`` leaves the saved pick as it is, so the studio's speaker and listener picker never clears
+it. The helper's standing is one more row of ``engines``: ``direction`` ``face``, its ``state``,
+and whether it gives ``visemes`` and ``motion``. Without it Athena speaks exactly as before.
+
 **The provider key is sealed.** ``PUT /voice/key`` seals it with the connectors' seal
 (:mod:`athena.connectors.seal`) under ``voice.openai``; the environment variable is the fallback.
 The key is read when a backend is composed and is never in a view, a reason or an error.
@@ -34,7 +41,7 @@ import json
 import os
 import threading
 from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
@@ -47,6 +54,7 @@ from athena.channels.voice.backends import (
     Speaker,
     VoiceBackend,
 )
+from athena.channels.voice.face import FaceHelper
 from athena.channels.voice.home import EngineHomes, EngineProbe, resolve_homes
 from athena.channels.voice.install import Installer, Sources
 from athena.connectors.seal import SealPort, SealUnavailable, select_seal
@@ -77,6 +85,11 @@ OPENAI_SEAL_NAME = "voice.openai"
 OFF_REASON = "Voice was switched off when the daemon started (--voice-backend none)."
 #: A key longer than this is not a key.
 MAX_KEY_CHARS = 512
+#: A path longer than this is not an interpreter's.
+MAX_PATH_CHARS = 1024
+#: Where the face helper keeps what it derives once (the durations subgraph), under the studio's
+#: own directory.
+FACE_CACHE_DIRNAME = "face"
 
 
 class ConfigError(ValueError):
@@ -90,11 +103,14 @@ class VoiceChoice:
     stt_engine: str = "whisper"
     #: The whisper model; ``None`` for a listener that has no local model.
     stt_model: str | None = whisper.DEFAULT_MODEL
+    #: The interpreter her face helper runs in (ADR 0120); ``None`` when she has none.
+    face_python: str | None = None
 
     def to_dict(self) -> dict[str, Any]:
         return {
             "tts": {"engine": self.tts_engine, "voice": self.tts_voice},
             "stt": {"engine": self.stt_engine, "model": self.stt_model},
+            "face": {"python": self.face_python},
         }
 
     @classmethod
@@ -122,7 +138,24 @@ class VoiceChoice:
             if whisper.find_model(model) is None:
                 names = ", ".join(m.id for m in whisper.MODELS)
                 raise ConfigError(f"unknown whisper model {model!r}; one of {names}")
-        return cls(tts_engine, voice, stt_engine, model)
+        return cls(tts_engine, voice, stt_engine, model, face_python_from(raw.get("face")))
+
+
+def face_python_from(raw: Any) -> str | None:
+    """``face.python`` checked: absent, null or blank is none; else one absolute path."""
+    if raw is None:
+        return None
+    if not isinstance(raw, Mapping):
+        raise ConfigError("face is an object with python")
+    python = raw.get("python")
+    if python is None or (isinstance(python, str) and not python.strip()):
+        return None
+    if not isinstance(python, str) or len(python) > MAX_PATH_CHARS:
+        raise ConfigError(f"face.python is a path of at most {MAX_PATH_CHARS} characters")
+    python = python.strip()
+    if any(ch in python for ch in "\0\n\r") or not Path(python).is_absolute():
+        raise ConfigError("face.python is the absolute path of a Python executable")
+    return python
 
 
 DEFAULT_CHOICE = VoiceChoice()
@@ -161,6 +194,7 @@ class VoiceStudio:
         sources: Sources | None = None,
         platform: str | None = None,
         openai_factory: Callable[[str], OpenAIBackend] | None = None,
+        face_command: Sequence[str] | None = None,
     ) -> None:
         self.root = Path(root)
         self.environ: Mapping[str, str] = os.environ if environ is None else environ
@@ -172,6 +206,14 @@ class VoiceStudio:
         self.openai_factory = openai_factory or (lambda key: OpenAIBackend(api_key=key))
         self._lock = threading.RLock()
         self.choice = load_choice(self.root)
+        #: Her face helper: one per studio, so one per daemon. ``face_command`` replaces the
+        #: interpreter and the bootstrap - a test's fake helper.
+        self.face = FaceHelper(
+            self.choice.face_python,
+            kokoro_dir=self.homes.kokoro_dir,
+            cache_dir=self.root / FACE_CACHE_DIRNAME,
+            command=face_command,
+        )
         self.gateway: VoiceGateway | None = None
         #: A backend the daemon was started with, which outranks the choice (``--voice-backend``).
         self.pinned: VoiceBackend | None = None
@@ -245,7 +287,8 @@ class VoiceStudio:
         found = self.probe_kokoro()
         if not found.ready:
             return None, found.reason
-        return kokoro.KokoroTTS(self.homes, voice, command=self.kokoro_command), None
+        speaker = kokoro.KokoroTTS(self.homes, voice, command=self.kokoro_command, face=self.face)
+        return speaker, None
 
     def listener(self, engine: str, model: str | None = None) -> tuple[Listener | None, str | None]:
         if engine == "openai":
@@ -315,7 +358,24 @@ class VoiceStudio:
                 "voices": [],
                 "models": [],
             },
+            self.face_engine(),
         ]
+
+    def face_engine(self) -> dict[str, Any]:
+        """Her face helper as an ``engines`` row: whether her face is live, and what it does."""
+        found = self.face.probe()
+        return {
+            "id": "face",
+            "direction": "face",
+            "kind": "local",
+            "state": found.state,
+            "reason": found.reason,
+            "size_mb": None,
+            "voices": [],
+            "models": [],
+            "visemes": found.visemes,
+            "motion": found.motion,
+        }
 
     def view(self) -> dict[str, Any]:
         """``VoiceConfig`` on the wire. Refreshes the gateway as a side effect, so a file that
@@ -334,11 +394,16 @@ class VoiceStudio:
         }
 
     def update(self, raw: Any) -> dict[str, Any]:
-        """Validate, persist, swap. :class:`ConfigError` for an unknown id, before anything."""
+        """Validate, persist, swap. :class:`ConfigError` for an unknown id, before anything.
+
+        A body without ``face`` keeps the face helper that was picked."""
         choice = VoiceChoice.from_dict(raw)
         with self._lock:
+            if isinstance(raw, Mapping) and "face" not in raw:
+                choice = replace(choice, face_python=self.choice.face_python)
             save_choice(self.root, choice)
             self.choice = choice
+            self.face.configure(choice.face_python)
         return self.view()
 
     # -- the key -----------------------------------------------------------------------------------

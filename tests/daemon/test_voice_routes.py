@@ -97,7 +97,11 @@ def test_the_config_is_the_whole_shape_with_nulls_not_omissions(live: Live) -> N
         ("kokoro", "tts", "local"),
         ("whisper", "stt", "local"),
         ("openai", "stt", "cloud"),
+        ("face", "face", "local"),
     ]
+    assert body["face"] == {"python": None}
+    face = body["engines"][3]
+    assert (face["state"], face["visemes"], face["motion"]) == ("absent", False, False)
     openai = body["engines"][2]
     assert openai["size_mb"] is None and openai["voices"] == [] and openai["models"] == []
     assert "size_mb" in body["engines"][1] and body["engines"][1]["size_mb"] is None
