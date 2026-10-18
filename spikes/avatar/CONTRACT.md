@@ -27,6 +27,11 @@ Data home: `ATHENA_AVATAR_HOME`, default `~/.athena-avatar/`. Never commit anyth
 A track's derived art (layer PSDs, rig files, keypoints) goes under
 `portraits/<portrait-id>/<track-id>/`.
 
+A track that benches several models keeps each under
+`bench/<track-id>/<portrait-id>/<model>/<line-id>.mp4` (+ metrics.json), and copies the clips of the
+model it puts forward to the contract path above, so the comparison page reads one clip per track.
+In metrics.json, `realtime.vram_mb` is the process's peak reserved memory, not a device-wide figure.
+
 Ids: `line-id` in `calm | question | long` (bench/lines.json). `track-id` in
 `t1-rig | t2-neural | t4-hybrid`. `portrait-id` is the folder name the operator chose.
 
