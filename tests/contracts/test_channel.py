@@ -21,9 +21,11 @@ from athena.contracts import (
     TurnError,
     TurnFinished,
     TurnSummary,
+    VoiceMotion,
     VoiceSpeaking,
     VoiceStopped,
     VoiceTranscript,
+    VoiceVisemes,
     event_from_dict,
     event_from_json,
     family_of,
@@ -79,6 +81,22 @@ EVENTS: list[ChannelEvent] = [
     VoiceTranscript(text="approve", final=True, outcome="answer", peak_dbfs=-18.5),
     VoiceSpeaking(generation=3, text="Drafted three chases.", truncated=False, sample_rate=24000),
     VoiceStopped(generation=3, reason="barge_in"),
+    VoiceVisemes(
+        generation=3,
+        sentence=1,
+        offset=92346,
+        sample_rate=24000,
+        visemes=(("sil", 0, 1555), ("DD", 1555, 2515), ("ou", 2515, 6252)),
+    ),
+    VoiceMotion(
+        generation=3,
+        sentence=1,
+        offset=92346,
+        fps=60,
+        frames=(
+            {"t": 0.0, "head": {"yaw": 0.4, "pitch": -0.2, "roll": 0.1}, "eyes": {"blinkL": 0.0}},
+        ),
+    ),
 ]
 
 

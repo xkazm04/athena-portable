@@ -1,7 +1,7 @@
 /**
  * The channel events, as the panel reads them — `src/athena/contracts/channel.py`.
  *
- * Eleven events, one stream, one decoder. The daemon writes each event's own JSON into an SSE
+ * Thirteen events, one stream, one decoder. The daemon writes each event's own JSON into an SSE
  * frame; this file names the shapes and does nothing else. A second encoder is how two surfaces
  * end up disagreeing about what a decision card said. The shapes are a hand-written mirror, so
  * `events.test.ts` reads `channel.py` and holds the kinds, the families, every field and which
@@ -10,6 +10,7 @@
  * An unknown `kind` throws rather than being skipped. A surface that silently drops
  * `decision.requested` is a gate that never asked.
  */
+import type { RigFrame } from "../avatar/types";
 
 export type EventKind =
   | "text.delta"
@@ -22,7 +23,9 @@ export type EventKind =
   | "decision.resolved"
   | "voice.transcript"
   | "voice.speaking"
-  | "voice.stopped";
+  | "voice.stopped"
+  | "voice.visemes"
+  | "voice.motion";
 
 export interface TextDelta {
   kind: "text.delta";
@@ -147,6 +150,37 @@ export interface VoiceStopped {
   reason: string;
 }
 
+/** One mouth shape: an Oculus-15 viseme and its start and end, in samples from the sentence's `offset`. */
+export type VisemeSegment = [v: string, start: number, end: number];
+
+/**
+ * The mouth shapes of one sentence of `generation`, sent before its audio. `offset` is where the
+ * sentence starts, in samples from the line's first audio sample. Only sent when the daemon's face
+ * helper is ready; without them a surface drives the mouth from playback level.
+ */
+export interface VoiceVisemes {
+  kind: "voice.visemes";
+  generation: number;
+  sentence: number;
+  offset: number;
+  sample_rate: number;
+  visemes: VisemeSegment[];
+}
+
+/**
+ * Head and eye motion for one sentence of `generation`, predicted from its audio and sent when
+ * ready (possibly after the sentence started). `frames` are RigParams v1 frames at `fps`, timed
+ * from `offset`; a channel the model does not predict is omitted.
+ */
+export interface VoiceMotion {
+  kind: "voice.motion";
+  generation: number;
+  sentence: number;
+  offset: number;
+  fps: number;
+  frames: RigFrame[];
+}
+
 export type ChannelEvent =
   | TextDelta
   | ToolCall
@@ -158,14 +192,16 @@ export type ChannelEvent =
   | DecisionResolved
   | VoiceTranscript
   | VoiceSpeaking
-  | VoiceStopped;
+  | VoiceStopped
+  | VoiceVisemes
+  | VoiceMotion;
 
 /** The families a surface may subscribe to, exactly as `contracts/channel.py` groups them. */
 export const FAMILIES: Readonly<Record<string, readonly EventKind[]>> = Object.freeze({
   stream: ["text.delta", "tool.call", "tool.result", "turn.finished", "turn.error"],
   record: ["turn.summary"],
   decisions: ["decision.requested", "decision.resolved"],
-  voice: ["voice.transcript", "voice.speaking", "voice.stopped"],
+  voice: ["voice.transcript", "voice.speaking", "voice.stopped", "voice.visemes", "voice.motion"],
 });
 
 const KNOWN = new Set<string>(Object.values(FAMILIES).flat());

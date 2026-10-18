@@ -186,6 +186,44 @@ class VoiceStopped(ChannelEvent):
     reason: str = "done"
 
 
+@dataclass(frozen=True)
+class VoiceVisemes(ChannelEvent):
+    """The mouth shapes of one sentence of ``generation``, sent before that sentence's audio.
+
+    ``offset`` is where the sentence starts, in samples from the line's first audio sample, and
+    each viseme is ``(v, start, end)`` in samples from ``offset``: ``v`` is one of the Oculus 15
+    (``sil PP FF TH DD kk CH SS nn RR aa E ih oh ou``), and the segments are ordered, do not
+    overlap and cover the sentence. Times are taken from the speech model's own durations, so they
+    match the audio that follows (ADR on Athena's face). Only sent when the face helper is ready;
+    a surface without them drives the mouth from playback level."""
+
+    kind: ClassVar[str] = "voice.visemes"
+    generation: int = 0
+    sentence: int = 0
+    offset: int = 0
+    sample_rate: int = 24000
+    visemes: tuple[tuple[str, int, int], ...] = ()
+
+
+@dataclass(frozen=True)
+class VoiceMotion(ChannelEvent):
+    """Head and eye motion for one sentence of ``generation``, predicted from its audio, sent
+    whenever it is ready (it may arrive after the sentence started; a surface crossfades it in).
+
+    ``frames`` are RigParams v1 frames at ``fps``, timed from ``offset`` (samples from the line's
+    first audio sample): ``{"t", "head": {"yaw","pitch","roll"}, "eyes": {"blinkL","blinkR",
+    "gazeX","gazeY"}, "brow": {"raise"}}`` - head in degrees, blink 0..1, gaze -1..1. A channel the
+    model does not predict is omitted, never zero. Only sent when the face helper has a motion
+    model."""
+
+    kind: ClassVar[str] = "voice.motion"
+    generation: int = 0
+    sentence: int = 0
+    offset: int = 0
+    fps: int = 60
+    frames: tuple[dict[str, Any], ...] = ()
+
+
 # ------------------------------------------------------------------------------------------
 # the decisions family
 # ------------------------------------------------------------------------------------------
@@ -248,6 +286,8 @@ EVENT_KINDS: dict[str, type[ChannelEvent]] = {
         VoiceTranscript,
         VoiceSpeaking,
         VoiceStopped,
+        VoiceVisemes,
+        VoiceMotion,
     )
 }
 
@@ -255,7 +295,13 @@ FAMILIES: dict[str, tuple[str, ...]] = {
     "stream": ("text.delta", "tool.call", "tool.result", "turn.finished", "turn.error"),
     "record": ("turn.summary",),
     "decisions": ("decision.requested", "decision.resolved"),
-    "voice": ("voice.transcript", "voice.speaking", "voice.stopped"),
+    "voice": (
+        "voice.transcript",
+        "voice.speaking",
+        "voice.stopped",
+        "voice.visemes",
+        "voice.motion",
+    ),
 }
 
 
@@ -278,6 +324,10 @@ def event_from_dict(data: dict[str, Any]) -> ChannelEvent:
     kwargs = {k: v for k, v in payload.items() if k in names}
     if event_cls is DecisionRequested and "options" in kwargs:
         kwargs["options"] = tuple(_option_from(o) for o in kwargs["options"])
+    if event_cls is VoiceVisemes and "visemes" in kwargs:
+        kwargs["visemes"] = tuple((str(v), int(s), int(e)) for v, s, e in kwargs["visemes"])
+    if event_cls is VoiceMotion and "frames" in kwargs:
+        kwargs["frames"] = tuple(dict(f) for f in kwargs["frames"])
     ctor = cast(Any, event_cls)
     return cast(ChannelEvent, ctor(**kwargs))
 

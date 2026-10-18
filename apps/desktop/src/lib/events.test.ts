@@ -101,9 +101,9 @@ function tsKinds(): string[] {
 
 const sorted = (xs: Iterable<string>) => [...xs].sort();
 
-test("both reads found the eleven events, so an empty answer cannot pass for agreement", () => {
-  expect(pythonEvents().size).toBe(11);
-  expect(tsEvents().size).toBe(11);
+test("both reads found the thirteen events, so an empty answer cannot pass for agreement", () => {
+  expect(pythonEvents().size).toBe(13);
+  expect(tsEvents().size).toBe(13);
 });
 
 test("the EventKind union and the event interfaces name exactly the contract's kinds", () => {
