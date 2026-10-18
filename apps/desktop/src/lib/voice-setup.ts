@@ -58,6 +58,14 @@ export interface VoiceEngine {
   /** The face helper only: whether it gives mouth shapes and head motion. */
   visemes?: boolean;
   motion?: boolean;
+  /** The face helper only, each left out until it says: what its motion model measured of
+   * itself on this machine at start. The sampler steps it chose (50, 25 or 10), one 4 s window's
+   * median time in seconds (when motion is off for slowness: at the fewest steps tried), where it
+   * runs, and why motion is not on. */
+  motion_steps?: number;
+  motion_window_s?: number;
+  motion_device?: "cpu" | "cuda";
+  motion_reason?: string;
 }
 
 export interface VoiceChoice {

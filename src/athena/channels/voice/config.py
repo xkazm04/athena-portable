@@ -362,7 +362,10 @@ class VoiceStudio:
         ]
 
     def face_engine(self) -> dict[str, Any]:
-        """Her face helper as an ``engines`` row: whether her face is live, and what it does."""
+        """Her face helper as an ``engines`` row: whether her face is live, and what it does.
+
+        The helper's motion measurements (``motion_steps``, ``motion_window_s``, ``motion_device``,
+        ``motion_reason``) are added when it gave them and left out when it did not."""
         found = self.face.probe()
         return {
             "id": "face",
@@ -375,6 +378,7 @@ class VoiceStudio:
             "models": [],
             "visemes": found.visemes,
             "motion": found.motion,
+            **found.motion_fields(),
         }
 
     def view(self) -> dict[str, Any]:

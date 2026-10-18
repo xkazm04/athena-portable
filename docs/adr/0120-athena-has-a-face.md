@@ -99,3 +99,43 @@ would use T4."
   settling at a 16.8 ms frame p95, one callback a frame, no long task, and no frame request in the
   quiet second after (Chrome 155 on Windows, 2026-10-18; the gate's default Edge was not installed).
 - A window holds a WebGL2 context per visible face; Main shows at most one face at a time.
+
+## Measured, 2026-10-18: her motion runs on a CPU, and turns itself on where it keeps up
+
+"Where a GPU allows" turned out to be literal, by accident: JoyVASA's wrapper picks `cuda:0`
+whenever MPS is absent, so on a machine without CUDA the helper's motion never loaded. The
+follow-up spike, [`spikes/avatar-measure/README.md`](../../spikes/avatar-measure/README.md), timed
+the shipped path on one machine (Ryzen 7 7800X3D, RTX 4090, Windows 11; the box was 92-100 % busy
+with other work throughout, so its CPU figures lean pessimistic) and found the cost is a step
+function of 4 s windows, so one warm window predicts every sentence. The share of her speech that
+got neural motion in a 5-sentence line, Kokoro rendering live / rendering ahead:
+
+| config | warm window, isolated | coverage, live / ahead |
+|---|---|---|
+| RTX 4090, 50 steps | 0.58 s | 82 / 96 % |
+| CPU 4 threads, lean + 10 DDIM steps | 0.63 s (8 threads) | 80 / 96 % |
+| CPU 16 threads, 50 steps | 1.32 s | 67 / 92 % |
+| CPU 8 threads, 50 steps | 1.80 s | 44 / 77 % |
+| CPU 4 threads, 50 steps | 2.64 s | 2 / 0 % |
+
+A 10-step DDIM sampler over the model's own schedule (no retraining: it predicts the clean sample)
+is 3.1x faster for a head error to the 50-step track of 0.66 deg, against 0.53 deg between two seeds
+of the unchanged model, and some roll amplitude (0.66x). Not loading LivePortrait's renderer
+modules saves 600 MB.
+
+So the helper now:
+
+- runs on CUDA when torch has it and on the CPU otherwise (`ATHENA_FACE_DEVICE` overrides it), loads
+  only the motion generator, and leaves two logical cores to Kokoro;
+- after its warm-up, times one window twice at 10, 25 and 50 steps, cheapest first, and keeps the
+  **largest step count whose median window is at most 1.0 s**. Every configuration at or under
+  that line covered at least 80 % of her speech live; the next one up covered 67 %, which reads as
+  "sometimes neural, sometimes not", worse than consistent procedural motion. Nothing fits:
+  motion is off and says why ("too slow here"), and the face keeps its visemes and procedural
+  motion;
+- reports the verdict (`motion_steps`, `motion_window_s`, `motion_device`, `motion_reason`) on the
+  face's `engines` row of `GET /voice/config` (docs/daemon.md, "Her face on the socket").
+
+The title's "where a GPU allows" now reads "where the machine keeps up". Not verified: a real 4-core
+laptop (predicted to sit near the line, about 10 steps at 0.7-1.1 s), and how the 10-step motion
+looks on the owl and origami next to the 50-step track.

@@ -1,9 +1,13 @@
 """voice-io / ADR 0120 (Athena has a face): the face helper's protocol, JSON lines on stdio.
 
-Out, first: ``{"type": "hello", "protocol": 1, "visemes": bool, "motion": bool, "reason"}``, as
-soon as the durations model is warm (extracting it from Kokoro's model the first time takes about
-15 s); motion loads after the hello, on its own thread, and a load that fails is reported as
-``{"type": "caps", "motion": false, "reason": ...}``.
+Out, first: ``{"type": "hello", "protocol": 1, "visemes": bool, "motion": false, "reason",
+"motion_pending": bool, "motion_reason"}``, as soon as the durations model is warm (extracting it
+from Kokoro's model the first time takes about 15 s). Motion is never on in the hello: it loads
+after it, on its own thread, warms up, and times itself on this machine (:mod:`.probe`), then says
+``{"type": "caps", "motion": true, "steps", "window_s", "device", "warm": true}`` or
+``{"type": "caps", "motion": false, "motion_reason", "device"?, "window_s"?}`` - a load that fails,
+or a machine too slow for it. ``motion_pending`` is true in the hello while that is under way;
+``motion_reason`` says why motion is not on.
 
 In: ``{"type": "sentence", "id", "sid", "sample_rate", "tokens": [[...]], "raw_samples",
 "time_map": [[raw_a, raw_b, out_a, out_b]], "pcm": base64 PCM16LE, "visemes": bool,
@@ -31,6 +35,7 @@ import os
 import queue
 import sys
 import threading
+import time
 from pathlib import Path
 from typing import IO, Any
 
@@ -97,13 +102,15 @@ def _joyvasa_dir(asked: str | None) -> Path:
 
 
 WARMUP_RATE = 24_000
+#: The probe's sentence: one window of JoyVASA's 4 s (it pads 0.12 s), like most sentences.
+PROBE_S = 3.5
 
 
-def _warmup_tone() -> bytes:
-    """One second of a quiet 220 Hz tone, PCM16 at :data:`WARMUP_RATE`."""
+def _warmup_tone(seconds: float = 1.0) -> bytes:
+    """``seconds`` of a quiet 220 Hz tone, PCM16 at :data:`WARMUP_RATE`."""
     return b"".join(
         int(3000 * math.sin(2 * math.pi * 220 * i / WARMUP_RATE)).to_bytes(2, "little", signed=True)
-        for i in range(WARMUP_RATE)
+        for i in range(round(WARMUP_RATE * seconds))
     )
 
 
@@ -129,24 +136,65 @@ class MotionWorker:
         with self.lock:
             return ident in self.cancelled
 
+    def _refuse(self, reason: str) -> None:
+        """Motion is off for good: refuse whatever is still sent, until the end."""
+        while True:
+            item = self.jobs.get()
+            if item is None:
+                return
+            self.out.send({"type": "error", "id": item[0], "op": "motion", "reason": reason})
+
     def _run(self) -> None:
         from .motion import FPS, Motion
+        from .probe import run_probe
 
+        device: str | None = None
         try:
             model = Motion(self.joyvasa)
+            device = model.device
             # One throwaway second first: the first sentence through a cold model pays the audio
             # loader's and the GPU kernels' first-use cost (measured: about 7 s), a warm one not.
             model.frames(_warmup_tone(), WARMUP_RATE)
-            self.out.send({"type": "caps", "motion": True, "warm": True})
+            tone = _warmup_tone(PROBE_S)
+
+            def window(steps: int) -> float:
+                model.set_steps(steps)
+                start = time.perf_counter()
+                model.frames(tone, WARMUP_RATE)
+                return time.perf_counter() - start
+
+            found = run_probe(window)
         except Exception as exc:
             reason = f"JoyVASA would not load ({type(exc).__name__}: {exc})"[:300]
             print(f"face: {reason}", file=sys.stderr, flush=True)
-            self.out.send({"type": "caps", "motion": False, "reason": reason})
-            while True:  # refuse whatever is still queued
-                item = self.jobs.get()
-                if item is None:
-                    return
-                self.out.send({"type": "error", "id": item[0], "op": "motion", "reason": reason})
+            caps: dict[str, Any] = {"type": "caps", "motion": False, "motion_reason": reason}
+            if device is not None:
+                caps["device"] = device
+            self.out.send(caps)
+            self._refuse(reason)
+            return
+        timings = {k: [round(t, 3) for t in v] for k, v in found.windows.items()}
+        print(f"face: motion on {device}, probe {timings}", file=sys.stderr, flush=True)
+        if found.steps is None or found.window_s is None:
+            reason = found.reason or "too slow here"
+            caps = {"type": "caps", "motion": False, "motion_reason": reason, "device": device}
+            if found.window_s is not None:
+                caps["window_s"] = round(found.window_s, 3)
+            self.out.send(caps)
+            self._refuse(reason)
+            return
+        model.set_steps(found.steps)
+        self.out.send(
+            {
+                "type": "caps",
+                "motion": True,
+                "warm": True,
+                "steps": found.steps,
+                "window_s": round(found.window_s, 3),
+                "device": device,
+                "probe": {str(k): v for k, v in timings.items()},
+            }
+        )
         while True:
             item = self.jobs.get()
             if item is None:
@@ -196,6 +244,7 @@ def main(argv: list[str] | None = None) -> int:
         reasons.append(f"visemes: {type(exc).__name__}: {exc}"[:300])
 
     worker: MotionWorker | None = None
+    motion_reason = "it was turned off (--no-motion)"
     if not args.no_motion:
         from .motion import available
 
@@ -203,14 +252,18 @@ def main(argv: list[str] | None = None) -> int:
         why = available(joyvasa)
         if why is None:
             worker = MotionWorker(out, joyvasa)
+            motion_reason = "loading, then timing itself on this machine"
         else:
+            motion_reason = why
             reasons.append(f"motion: {why}")
     out.send(
         {
             "type": "hello",
             "protocol": PROTOCOL,
             "visemes": durations is not None,
-            "motion": worker is not None,
+            "motion": False,
+            "motion_pending": worker is not None,
+            "motion_reason": motion_reason,
             "reason": "; ".join(reasons) or None,
         }
     )

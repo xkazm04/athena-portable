@@ -34,6 +34,12 @@ from athena.channels.voice.face import (
     scale_silence,
     token_lines,
 )
+from athena.channels.voice.face_helper.probe import (
+    choose_device,
+    choose_steps,
+    cpu_threads,
+    run_probe,
+)
 from athena.channels.voice.gateway import VoiceSession, _FaceLine
 from athena.channels.voice.home import EngineHomes
 from athena.connectors.seal import FileSeal
@@ -608,6 +614,132 @@ def test_a_put_without_face_keeps_the_helper_and_the_engines_say_whether_her_fac
     view = studio.update({"tts": HEART, "stt": BASE, "face": {"python": None}})
     row = next(e for e in view["engines"] if e["id"] == "face")
     assert row["state"] == "absent"
+    assert not {k for k in row if k.startswith("motion_")}  # never said: left out
+
+
+def _face_row(studio: VoiceStudio) -> dict[str, Any]:
+    return next(e for e in studio.view()["engines"] if e["id"] == "face")
+
+
+def _until(check: Any, timeout: float = 10.0) -> None:
+    deadline = time.monotonic() + timeout
+    while not check():
+        assert time.monotonic() < deadline, "timed out"
+        time.sleep(0.02)
+
+
+def test_the_engine_row_carries_what_her_motion_measured_of_itself_once_it_has(
+    tmp_path: Path,
+) -> None:
+    lay_out_kokoro(tmp_path / "personas")
+    studio = _studio(tmp_path, fake_face.command("probed", tmp_path / "face.jsonl"))
+    absolute = str(Path(os.path.abspath(os.sep)) / "envs" / "face" / "python.exe")
+    studio.update({"tts": HEART, "stt": BASE, "face": {"python": absolute}})
+
+    _ready(studio.face)  # visemes at once; motion still timing itself
+    row = _face_row(studio)
+    assert (row["state"], row["visemes"], row["motion"]) == ("ready", True, False)
+    assert row["motion_reason"] == "loading, then timing itself on this machine"
+    assert "motion_steps" not in row and "motion_window_s" not in row
+
+    (tmp_path / "face.jsonl.go").touch()  # the probe ends
+    _until(lambda: _face_row(studio)["motion"])
+    row = _face_row(studio)
+    assert {k: v for k, v in row.items() if k.startswith("motion")} == {
+        "motion": True,
+        "motion_steps": 25,
+        "motion_window_s": 0.62,
+        "motion_device": "cpu",
+    }
+    studio.face.stop()
+
+
+def test_a_machine_too_slow_for_her_motion_keeps_her_mouth_and_says_why(tmp_path: Path) -> None:
+    helper, log = _helper(tmp_path, "tooslow", 0.1)
+    _ready(helper)
+    _until(lambda: helper.probe().motion_device is not None)
+    found = helper.probe()
+    assert (found.state, found.visemes, found.motion) == ("ready", True, False)
+    assert found.motion_steps is None
+    assert (found.motion_window_s, found.motion_device) == (1.4, "cpu")
+    assert found.motion_reason == "too slow here (window 1.40 s > 1.0 s at 10 steps)"
+    assert found.motion_fields() == {
+        "motion_window_s": 1.4,
+        "motion_device": "cpu",
+        "motion_reason": "too slow here (window 1.40 s > 1.0 s at 10 steps)",
+    }
+    job = helper.submit(
+        tokens=[[0, 1, 0]],
+        raw_samples=4,
+        time_map=[(0, 4, 0, 4)],
+        pcm=b"\0" * 8,
+        sample_rate=SR,
+        sid=3,
+        on_motion=lambda fps, frames: None,
+    )
+    assert job is not None and job.settled.is_set()  # no motion asked of a helper without it
+    _until(lambda: any(m.get("type") == "sentence" for m in fake_face.received(log)))
+    sent = next(m for m in fake_face.received(log) if m.get("type") == "sentence")
+    assert sent["motion"] is False
+    helper.stop()
+
+
+# -- the motion probe's decisions (face_helper.probe, stdlib only) -------------------------------
+
+
+def test_the_largest_step_count_whose_median_window_fits_the_budget_is_chosen() -> None:
+    assert choose_steps({50: [0.6, 0.58], 25: [0.4, 0.4], 10: [0.2, 0.2]}) == (50, 0.59)
+    assert choose_steps({50: [1.3, 1.35], 25: [0.75, 0.8], 10: [0.3, 0.3]}) == (25, 0.775)
+    assert choose_steps({25: [1.04, 1.1], 10: [0.56, 0.63]}) == (10, 0.595)
+    assert choose_steps({10: [1.0, 1.0]}) == (10, 1.0)  # the line itself is in
+    # one slow outlier of three does not move the median
+    assert choose_steps({25: [0.8, 3.0, 0.9], 10: [0.3]}) == (25, 0.9)
+    assert choose_steps({10: [1.4, 1.42]}) == (None, 1.41)
+    assert choose_steps({25: [2.0], 10: [1.5, 1.7]}) == (None, 1.6)  # quoted at the fewest
+    assert choose_steps({}) == (None, None)
+    assert choose_steps({50: []}) == (None, None)
+
+
+def test_the_probe_times_the_cheapest_first_and_stops_at_the_first_over_budget() -> None:
+    cost = {10: 0.3, 25: 0.7, 50: 1.3}
+    asked: list[int] = []
+
+    def window(steps: int) -> float:
+        asked.append(steps)
+        return cost[steps]
+
+    found = run_probe(window)
+    assert asked == [10, 10, 25, 25, 50, 50]
+    assert (found.motion, found.steps, found.window_s, found.reason) == (True, 25, 0.7, None)
+    assert found.windows == {10: [0.3, 0.3], 25: [0.7, 0.7], 50: [1.3, 1.3]}
+
+    asked.clear()
+    cost = {10: 0.9, 25: 1.6, 50: 3.0}
+    found = run_probe(window)
+    assert asked == [10, 10, 25, 25]  # 25 is over: 50 cannot fit, never run
+    assert found.steps == 10
+
+    asked.clear()
+    cost = {10: 4.6, 25: 9.0, 50: 18.0}
+    found = run_probe(window)
+    assert asked == [10]  # over twice the budget once: the median of two is already over
+    assert (found.motion, found.steps, found.window_s) == (False, None, 4.6)
+    assert found.reason == "too slow here (window 4.60 s > 1.0 s at 10 steps)"
+
+
+def test_her_motion_runs_on_cuda_when_torch_has_it_on_the_cpu_otherwise_or_as_overridden() -> None:
+    assert choose_device(None, True) == "cuda"
+    assert choose_device(None, False) == "cpu"
+    assert choose_device("", True) == "cuda"
+    assert choose_device("cpu", True) == "cpu"
+    assert choose_device(" CUDA ", False) == "cuda"  # honoured: the load then says why it failed
+    with pytest.raises(ValueError, match="ATHENA_FACE_DEVICE"):
+        choose_device("mps", True)
+
+
+def test_her_motion_leaves_two_logical_cores_to_kokoro() -> None:
+    assert [cpu_threads(n) for n in (16, 8, 4, 3, 2, 1)] == [14, 6, 2, 1, 1, 1]
+    assert cpu_threads(None) == 1
 
 
 # -- the real helper, when one is set up -----------------------------------------------------------

@@ -180,16 +180,61 @@ def scale_silence(
 
 @dataclass(frozen=True)
 class FaceProbe:
-    """What the helper is now. ``reason`` is one sentence for a person, ``None`` when ready."""
+    """What the helper is now. ``reason`` is one sentence for a person, ``None`` when ready.
+
+    The ``motion_*`` fields are what the helper measured of its motion model on this machine
+    (``spikes/avatar-measure/README.md``): the sampler steps it chose, one 4 s window's median time
+    at those steps (or, when off for slowness, at the fewest steps tried), the device, and why
+    motion is not on. ``None`` when the helper did not say."""
 
     state: ProbeState
     reason: str | None = None
     visemes: bool = False
     motion: bool = False
+    motion_steps: int | None = None
+    motion_window_s: float | None = None
+    motion_device: str | None = None
+    motion_reason: str | None = None
 
     @property
     def ready(self) -> bool:
         return self.state == "ready" and (self.visemes or self.motion)
+
+    def motion_fields(self) -> dict[str, Any]:
+        """The ``motion_*`` fields that are known, for an ``engines`` row; unknown ones are left
+        out."""
+        return {
+            key: value
+            for key, value in (
+                ("motion_steps", self.motion_steps),
+                ("motion_window_s", self.motion_window_s),
+                ("motion_device", self.motion_device),
+                ("motion_reason", self.motion_reason),
+            )
+            if value is not None
+        }
+
+
+def _motion_caps(caps: dict[str, Any]) -> dict[str, Any]:
+    """The helper's motion measurements, type-checked: anything malformed is dropped."""
+    steps, window, device, why = (
+        caps.get("steps"),
+        caps.get("window_s"),
+        caps.get("device"),
+        caps.get("motion_reason"),
+    )
+    return {
+        "motion_steps": steps if isinstance(steps, int) and not isinstance(steps, bool) else None,
+        "motion_window_s": (
+            float(window)
+            if isinstance(window, (int, float)) and not isinstance(window, bool)
+            else None
+        ),
+        "motion_device": device if device in ("cpu", "cuda") else None,
+        "motion_reason": (
+            str(why)[:300] if isinstance(why, str) and why and not caps.get("motion") else None
+        ),
+    }
 
 
 MotionSink = Callable[[int, list[dict[str, Any]]], None]
@@ -334,12 +379,19 @@ class FaceHelper:
                 return FaceProbe("absent", "Her face helper is starting.")
             caps = self._caps
         visemes, motion = bool(caps.get("visemes")), bool(caps.get("motion"))
+        measured = _motion_caps(caps)
         if not (visemes or motion):
-            why = caps.get("reason")
-            return FaceProbe(
-                "broken", str(why) if why else "The face helper can do neither visemes nor motion."
+            if caps.get("motion_pending"):
+                return FaceProbe("absent", "Her face helper is starting.", **measured)
+            why = "; ".join(
+                str(part) for part in (caps.get("reason"), measured["motion_reason"]) if part
             )
-        return FaceProbe("ready", None, visemes, motion)
+            return FaceProbe(
+                "broken",
+                why or "The face helper can do neither visemes nor motion.",
+                **measured,
+            )
+        return FaceProbe("ready", None, visemes, motion, **measured)
 
     @property
     def ready(self) -> bool:
@@ -477,6 +529,8 @@ class FaceHelper:
     def _on_message(self, proc: subprocess.Popen[bytes], message: dict[str, Any]) -> None:
         kind = message.get("type")
         if kind in ("hello", "caps"):
+            if kind == "caps":  # the motion verdict is in: no longer pending
+                message = {**message, "motion_pending": False}
             with self._lock:
                 if self._proc is proc:
                     self._caps = {**(self._caps or {}), **message}

@@ -395,11 +395,33 @@ mouth shapes, and torch, scipy, librosa and a JoyVASA checkout for motion
 A `PUT` without `face` keeps the saved one. `GET /voice/config` answers `face` beside `tts` and
 `stt`, and one more `engines` row, `{"id": "face", "direction": "face", "kind": "local",
 "state", "reason", "visemes", "motion", …}`: `absent` (not set up, its Python missing, or still
-starting), `broken` with the reason, or `ready` with what it does.
+starting), `broken` with the reason, or `ready` with what it does. Once the helper has measured its
+motion model the row also carries `motion_steps` (50, 25 or 10), `motion_window_s` (the median
+time of one 4 s window at those steps, in seconds), `motion_device` (`cpu` or `cuda`) and, while
+motion is not on, `motion_reason` (`"loading, then timing itself on this machine"`, `"too slow
+here (window 1.40 s > 1.0 s at 10 steps)"`, a load failure); a field the helper has not given is
+left out, never `null`.
+
+**Where her motion runs, and whether it is on.** The helper runs JoyVASA on CUDA when torch has
+it and on the CPU otherwise (`ATHENA_FACE_DEVICE=cpu|cuda` in the helper's environment overrides
+that, for testing). It loads only the motion generator, not LivePortrait's renderer modules
+(600 MB less), and gives torch every logical core but two (`cpu_count - 2`, at least one; two
+inter-op threads), leaving Kokoro's two threads their cores. After the cold warm-up it times one
+4 s window twice at 10 sampler steps, then 25, then 50 (the model's own sampler; fewer steps are a
+deterministic DDIM over the same schedule), stopping at the first count whose median is over
+1.0 s, and keeps the largest count within it. Nothing within it: motion is off with the reason and
+the face uses procedural motion; the mouth shapes are unaffected either way. The hello never says
+`motion: true`; the helper's `caps` turns it on once the probe has chosen, so until then a line
+plays with visemes only. The line is from `spikes/avatar-measure/README.md`: on the machine
+measured, every configuration whose live window was 0.85 s or less gave at least 80 % of her speech
+neural motion, the next (1.36 s) 67 %. The probe runs only when the helper starts, so a machine on
+battery or throttled measures itself slower and falls back by itself; it costs about two windows
+per count tried (2-7 s) on top of a 10-20 s load.
 
 **How it works.** The daemon stays stdlib. It starts the helper once — the Python it was given,
 `-I`, the package `channels/voice/face_helper/` loaded from its directory, `CREATE_NO_WINDOW` —
-and speaks JSON lines with it: `hello` (`visemes`, `motion`) first, then one `sentence` per
+and speaks JSON lines with it: `hello` (`visemes`, motion pending) first, `caps` (`motion`,
+`steps`, `window_s`, `device`) when the motion probe is done, then one `sentence` per
 sentence (token ids, the audio, the time map) answered by `visemes` at once and `motion` later,
 and `cancel` when a line is cut off. While the helper is ready, Kokoro runs with `--debug=1
 --tts-silence-scale=1`: the token ids come from the engine's own frontend, and the daemon replays
@@ -420,11 +442,12 @@ still being computed only as long as the line takes to play, at most 2 s, and st
 barge-in while it does. With the helper absent or broken the engine gets exactly the arguments it
 always had and the line's bytes are unchanged.
 
-**Costs** (one 3-sentence line, 7.2 s of audio, Kokoro on CPU, JoyVASA on an RTX 4090): visemes
-40-100 ms per sentence; the daemon's cut and map about 10 ms per 4 s of audio; motion 0.55-0.75 s
-per 2.5 s sentence warm; the first sentence's audio is later by the visemes' time, under
-0.1 s against a render of about 3.5 s. The first start pays the subgraph extraction once and
-JoyVASA's load and warm-up on every start; until motion is warm a line plays with visemes only.
+**Costs** (one 3-sentence line, 7.2 s of audio, Kokoro on CPU, JoyVASA on an RTX 4090 at 50
+steps): visemes 40-100 ms per sentence; the daemon's cut and map about 10 ms per 4 s of audio;
+motion 0.55-0.75 s per 2.5 s sentence warm; the first sentence's audio is later by the visemes'
+time, under 0.1 s against a render of about 3.5 s. The first start pays the subgraph extraction
+once and JoyVASA's load, warm-up and probe on every start; until the probe has chosen a line
+plays with visemes only.
 
 ## The connectors
 

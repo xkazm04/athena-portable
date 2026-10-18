@@ -15,11 +15,22 @@ v1 at 60 fps with the *glow* profile the operator's two forms were tuned with:
 
 The mouth is not here: it comes from the sentence's visemes. Nor is the question tilt the spike
 borrowed from the text: this track is predicted from the audio alone. Runs in the face helper's
-interpreter, on the GPU when torch has one.
+interpreter, on the GPU when torch has one and on the CPU otherwise (:mod:`.probe` decides the
+device, the threads and the sampler's step count).
+
+Two departures from JoyVASA's own setup, both measured in ``spikes/avatar-measure/README.md``:
+
+- **Lean.** LivePortrait's renderer modules (appearance, motion extractor, warping, generator,
+  stitching) are never loaded: motion uses only the motion generator (-600 MB of RAM).
+- **Fewer steps when needed.** At :data:`.probe.TRAINED_STEPS` the model's own 50-step sampler runs
+  unchanged; at fewer, a deterministic DDIM over the same schedule (:func:`_ddim_sampler`). At 10
+  steps that is 3.1x faster for a head error to the 50-step track of 0.66 deg against 0.53 deg
+  between two seeds of the unchanged model.
 """
 
 from __future__ import annotations
 
+import contextlib
 import json
 import os
 import sys
@@ -27,6 +38,8 @@ import tempfile
 import wave
 from pathlib import Path
 from typing import Any
+
+from .probe import TRAINED_STEPS
 
 FPS = 60
 HEAD_GAIN = 0.55
@@ -54,19 +67,30 @@ def available(joyvasa: Path) -> str | None:
 
 
 class Motion:
-    """JoyVASA loaded once and kept warm between sentences."""
+    """JoyVASA loaded once, lean, on :attr:`device`, and kept warm between sentences."""
 
     def __init__(self, joyvasa: Path) -> None:
         os.environ.setdefault("TORCH_FORCE_NO_WEIGHTS_ONLY_LOAD", "1")
+        import torch
+
+        from .probe import DEVICE_ENV, INTEROP_THREADS, choose_device, cpu_threads
+
+        # Both: with CUDA_VISIBLE_DEVICES empty, torch 2.7 on Windows says available with 0 devices.
+        cuda = torch.cuda.is_available() and torch.cuda.device_count() > 0
+        self.device = choose_device(os.environ.get(DEVICE_ENV), cuda)
+        torch.set_num_threads(cpu_threads(os.cpu_count()))
+        # Settable only before the first inter-op work: a second Motion in one process keeps it.
+        with contextlib.suppress(RuntimeError):
+            torch.set_num_interop_threads(INTEROP_THREADS)
         sys.path.insert(0, str(joyvasa))
         import pathlib
         import platform
 
         if platform.system() == "Windows":  # JoyVASA's checkpoints pickle PosixPath objects
             pathlib.PosixPath = pathlib.WindowsPath  # type: ignore[misc, assignment]
+        import src.live_portrait_wmg_wrapper as lpw
         from src.config.argument_config import ArgumentConfig
         from src.config.inference_config import InferenceConfig
-        from src.live_portrait_wmg_wrapper import LivePortraitWrapper
 
         args = ArgumentConfig()
         args.animation_mode = "human"
@@ -82,11 +106,38 @@ class Motion:
             animation_region="exp",
             driving_option="pose-friendly",
             driving_multiplier=1.0,
+            # The wrapper picks cuda:0 whenever MPS is absent; this is its only way to the CPU.
+            flag_force_cpu=self.device == "cpu",
+            device_id=0,
         )
         inference = InferenceConfig(**{k: v for k, v in kw.items() if hasattr(InferenceConfig, k)})
-        self.wrapper = LivePortraitWrapper(inference_cfg=inference)
+        load_model = lpw.load_model
+
+        def lean(ckpt: Any, cfg: Any, device: Any, model_type: str) -> Any:
+            """Only the motion generator: the renderer modules are never used for motion."""
+            if model_type == "motion_generator":
+                return load_model(ckpt, cfg, device, model_type)
+            return None
+
+        lpw.load_model = lean  # the wrapper module's own global, for this construction only
+        try:
+            self.wrapper = lpw.LivePortraitWrapper(inference_cfg=inference)
+        finally:
+            lpw.load_model = load_model
         self.args = args
         self.decoder: dict[str, Any] = json.loads(DECODER.read_text(encoding="utf-8"))
+        self.steps = TRAINED_STEPS
+
+    def set_steps(self, steps: int) -> None:
+        """Sample with ``steps`` steps: the model's own sampler at :data:`TRAINED_STEPS`, else
+        DDIM over the same schedule."""
+        gen = self.wrapper.motion_generator
+        if steps >= TRAINED_STEPS:
+            gen.__dict__.pop("sample", None)  # back to the class's own method
+            self.steps = TRAINED_STEPS
+        else:
+            gen.sample = _ddim_sampler(gen, steps)
+            self.steps = steps
 
     def frames(self, pcm: bytes, sample_rate: int) -> list[dict[str, Any]]:
         """RigParams v1 frames (head, eyes, brow) for one sentence's played audio."""
@@ -114,6 +165,103 @@ class Motion:
             "roll": np.array([float(f["roll"].ravel()[0]) for f in m], np.float32),
         }
         return retarget(motion, self.decoder, (len(pcm) // 2) / sample_rate)
+
+
+def _ddim_sampler(gen: Any, steps: int) -> Any:
+    """JoyVASA's ``DitTalkingHead.sample`` with only its loop changed: ``steps`` evenly spaced
+    timesteps of the trained schedule, each a deterministic DDIM update (eta 0) from the predicted
+    clean sample. The model predicts the clean sample, so this needs no retraining. Ported from
+    ``spikes/avatar-measure/bench_motion.py``."""
+    import torch
+
+    sched = gen.diffusion_sched
+    total = sched.num_steps
+    ts = sorted({max(1, round(total - i * total / steps)) for i in range(steps)}, reverse=True)
+
+    def sample(
+        audio_or_feat: Any,
+        prev_motion_feat: Any = None,
+        prev_audio_feat: Any = None,
+        motion_at_T: Any = None,
+        indicator: Any = None,
+        cfg_mode: Any = None,
+        cfg_cond: Any = None,
+        cfg_scale: Any = 1.15,
+        flexibility: Any = 0,
+        dynamic_threshold: Any = None,
+        ret_traj: Any = False,
+    ) -> tuple[Any, Any, Any]:
+        with torch.no_grad():
+            return _ddim(
+                gen,
+                sched,
+                ts,
+                audio_or_feat,
+                prev_motion_feat,
+                prev_audio_feat,
+                motion_at_T,
+                indicator,
+                cfg_mode,
+                cfg_cond,
+                cfg_scale,
+            )
+
+    return sample
+
+
+def _ddim(
+    gen: Any,
+    sched: Any,
+    ts: list[int],
+    audio_or_feat: Any,
+    prev_motion_feat: Any,
+    prev_audio_feat: Any,
+    motion_at_T: Any,
+    indicator: Any,
+    cfg_mode: Any,
+    cfg_cond: Any,
+    cfg_scale: Any,
+) -> tuple[Any, Any, Any]:
+    import torch
+
+    b = audio_or_feat.shape[0]
+    cfg_mode = cfg_mode or gen.cfg_mode
+    cfg_cond = gen.guiding_conditions if cfg_cond is None else cfg_cond
+    cfg_cond = [c for c in cfg_cond if c == "audio"]
+    scales = cfg_scale if isinstance(cfg_scale, list) else [cfg_scale] * len(cfg_cond)
+    audio_feat = (
+        gen.extract_audio_feature(audio_or_feat) if audio_or_feat.ndim == 2 else audio_or_feat
+    )
+    if prev_motion_feat is None:
+        prev_motion_feat = gen.start_motion_feat.expand(b, -1, -1)
+    if prev_audio_feat is None:
+        prev_audio_feat = gen.start_audio_feat.expand(b, -1, -1)
+    if motion_at_T is None:
+        motion_at_T = torch.randn((b, gen.n_motions, gen.motion_feat_dim)).to(gen.device)
+    feats = [gen.null_audio_feat.expand(b, gen.n_motions, -1) if cfg_cond else audio_feat]
+    feats += [audio_feat for _ in cfg_cond]
+    n = len(feats)
+    a_in = torch.cat(feats, 0)
+    pm_in = torch.cat([prev_motion_feat] * n, 0)
+    pa_in = torch.cat([prev_audio_feat] * n, 0)
+    ind_in = torch.cat([indicator] * n, 0) if indicator is not None else None
+    tail = -gen.n_motions
+    x = motion_at_T
+    for k, t in enumerate(ts):
+        step = torch.tensor([t] * (b * n), device=gen.device)
+        res = gen.denoising_net(torch.cat([x] * n, 0), a_in, pm_in, pa_in, step, ind_in).chunk(n)
+        x0 = res[0][:, tail:]
+        for i in range(n - 1):
+            ref = res[i][:, tail:] if cfg_mode == "incremental" else res[0][:, tail:]
+            x0 = x0 + scales[i] * (res[i + 1][:, tail:] - ref)
+        ab = sched.alpha_bars[t]
+        if k + 1 < len(ts):
+            ab_prev = sched.alpha_bars[ts[k + 1]]
+            eps = (x - ab.sqrt() * x0) / (1 - ab).sqrt()
+            x = ab_prev.sqrt() * x0 + (1 - ab_prev).sqrt() * eps
+        else:
+            x = x0
+    return x, motion_at_T, audio_feat
 
 
 # --- the retarget (CPU) ---------------------------------------------------------------------------

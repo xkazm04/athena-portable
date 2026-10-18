@@ -15,6 +15,10 @@ Modes:
 - ``crash2``: answers the first sentence, then exits 3 on the second.
 - ``fatal``: says it cannot run, and exits.
 - ``mute``: never says hello.
+- ``probed``: hello with visemes and motion pending, then, once a file ``<log>.go`` exists, the
+  caps of a motion model that timed itself on this machine and kept up (25 steps, 0.62 s, CPU).
+- ``tooslow``: hello as ``probed``, then ``<delay_s>`` later the caps of a model that did not keep
+  up: motion is off, and says why.
 """
 
 from __future__ import annotations
@@ -59,7 +63,47 @@ def main() -> int:
     if mode == "fatal":
         send({"type": "fatal", "reason": "the face environment has no onnxruntime"})
         return 2
-    send({"type": "hello", "protocol": 1, "visemes": True, "motion": mode != "visemes"})
+    if mode in ("probed", "tooslow"):
+        send(
+            {
+                "type": "hello",
+                "protocol": 1,
+                "visemes": True,
+                "motion": False,
+                "motion_pending": True,
+                "motion_reason": "loading, then timing itself on this machine",
+                "reason": None,
+            }
+        )
+        go = log.with_name(log.name + ".go")
+        deadline = time.monotonic() + 30
+        while mode == "probed" and not go.exists() and time.monotonic() < deadline:
+            time.sleep(0.01)
+        time.sleep(delay)
+        if mode == "probed":
+            send(
+                {
+                    "type": "caps",
+                    "motion": True,
+                    "warm": True,
+                    "steps": 25,
+                    "window_s": 0.62,
+                    "device": "cpu",
+                    "probe": {"10": [0.31, 0.3], "25": [0.62, 0.63], "50": [1.21, 1.2]},
+                }
+            )
+        else:
+            send(
+                {
+                    "type": "caps",
+                    "motion": False,
+                    "device": "cpu",
+                    "window_s": 1.4,
+                    "motion_reason": "too slow here (window 1.40 s > 1.0 s at 10 steps)",
+                }
+            )
+    else:
+        send({"type": "hello", "protocol": 1, "visemes": True, "motion": mode != "visemes"})
     seen = 0
     for raw in sys.stdin:
         message = json.loads(raw)
