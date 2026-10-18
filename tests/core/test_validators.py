@@ -183,6 +183,58 @@ def test_additional_properties_false_names_the_unknown_parameters() -> None:
     assert "nope" in result.detail
 
 
+NESTED: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "filter": {
+            "type": "object",
+            "properties": {"status": {"type": "string", "enum": ["open"]}},
+            "required": ["status"],
+            "additionalProperties": False,
+        }
+    },
+}
+
+
+def test_a_nested_object_is_held_to_its_declared_required_enum_and_extras() -> None:
+    """ADR 0120: the gate enforces what a nested object schema declares."""
+    assert check_schema({"filter": {"status": "open"}}, NESTED).ok
+    missing = check_schema({"filter": {}}, NESTED)
+    assert not missing.ok
+    assert "filter" in missing.detail
+    assert "status" in missing.detail
+    miss = check_schema({"filter": {"status": "closed"}}, NESTED)
+    assert not miss.ok
+    assert "filter.status" in miss.detail
+    extra = check_schema({"filter": {"status": "open", "anything": 1}}, NESTED)
+    assert not extra.ok
+    assert "anything" in extra.detail
+
+
+def test_a_nested_schema_of_the_wrong_shape_refuses_instead_of_raising() -> None:
+    bad_required = {"properties": {"f": {"type": "object", "required": "status"}}}
+    bad_props = {"properties": {"f": {"type": "object", "properties": ["x"]}}}
+    for schema in (bad_required, bad_props):
+        result = check_schema({"f": {"status": "open"}}, schema)
+        assert not result.ok
+        assert result.reason == "validator_failed"
+
+
+def test_a_nested_object_inside_an_array_is_checked_too() -> None:
+    schema = {
+        "properties": {
+            "rows": {
+                "type": "array",
+                "items": {"type": "object", "required": ["id"]},
+            }
+        }
+    }
+    assert check_schema({"rows": [{"id": 1}]}, schema).ok
+    result = check_schema({"rows": [{"id": 1}, {}]}, schema)
+    assert not result.ok
+    assert "rows[1]" in result.detail
+
+
 def test_schema_validator_has_the_shape_the_registry_wants() -> None:
     validator = schema_validator(SCHEMA)
     assert validator({"key": "a"}, CTX).ok
