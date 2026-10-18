@@ -85,6 +85,11 @@ LIBRARY_FILES = ("taxonomy.json",)
 PACKAGE_DATA = "*.json"
 PACKAGE_EXCLUDED = ("proving",)
 
+#: Her face helper's scripts (ADR 0120) run in ANOTHER interpreter - the one ``face.python`` names -
+#: loaded by path, never imported by the daemon, so PyInstaller's import graph never finds them.
+#: They ship as data beside their package, or a frozen daemon reports the helper broken.
+HELPER_SCRIPTS = ("channels/voice/face_helper/*.py",)
+
 
 def package_files(root: Path = ROOT) -> list[tuple[Path, str]]:
     """Every package data file, ``(source, its package's directory in the bundle)``."""
@@ -95,6 +100,10 @@ def package_files(root: Path = ROOT) -> list[tuple[Path, str]]:
         if rel.parts[0] in PACKAGE_EXCLUDED or "__pycache__" in rel.parts:
             continue
         files.append((source, (Path("athena") / rel.parent).as_posix()))
+    for pattern in HELPER_SCRIPTS:
+        for source in sorted(package.glob(pattern)):
+            rel = source.relative_to(package)
+            files.append((source, (Path("athena") / rel.parent).as_posix()))
     return files
 
 

@@ -77,3 +77,17 @@ def test_the_frozen_layout_loads_the_same_builtin_connectors_as_source(tmp_path:
 def test_nothing_from_the_proving_ground_ships() -> None:
     shipped = [src.relative_to(REPO).as_posix() for src, _ in build_script().data_files()]
     assert not [s for s in shipped if s.startswith("src/athena/proving/")]
+
+
+def test_her_face_helpers_scripts_ship_beside_their_package() -> None:
+    """The helper runs in another interpreter, loaded by path (ADR 0120): no import reaches it."""
+    shipped = {
+        (src.relative_to(REPO).as_posix(), dest) for src, dest in build_script().data_files()
+    }
+    helper = REPO / "src" / "athena" / "channels" / "voice" / "face_helper"
+    expected = {
+        (p.relative_to(REPO).as_posix(), "athena/channels/voice/face_helper")
+        for p in helper.glob("*.py")
+    }
+    assert any(s.endswith("face_helper/main.py") for s, _ in expected)
+    assert sorted(expected - shipped) == []

@@ -45,7 +45,8 @@ export interface SttModel {
 
 export interface VoiceEngine {
   id: EngineId;
-  direction: "tts" | "stt";
+  /** `face` is her face helper (ADR 0120): not a voice, but read and set in the same config. */
+  direction: "tts" | "stt" | "face";
   kind: "local" | "cloud";
   state: EngineState;
   reason: string | null;
@@ -54,11 +55,16 @@ export interface VoiceEngine {
   voices: VoiceOption[];
   /** Whisper only; `[]` for every other engine. */
   models: SttModel[];
+  /** The face helper only: whether it gives mouth shapes and head motion. */
+  visemes?: boolean;
+  motion?: boolean;
 }
 
 export interface VoiceChoice {
   tts: { engine: "kokoro"; voice: string };
   stt: { engine: SttEngineId; model: string | null };
+  /** The interpreter her face helper runs in (ADR 0120); left out, the saved one is kept. */
+  face?: { python: string | null };
 }
 
 export interface VoiceConfig extends VoiceChoice {
