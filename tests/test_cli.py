@@ -93,6 +93,24 @@ def test_a_missing_law_is_a_fail_and_sets_the_exit_code(
     assert law["ok"] is False
 
 
+def test_a_law_that_cannot_be_read_is_a_fail_not_a_traceback(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """law.md present but not UTF-8: the doctor still prints its one JSON object and exits 1."""
+    law_dir = tmp_path / "law"
+    law_dir.mkdir()
+    (law_dir / "law.md").write_bytes(bytes([0xFF, 0xFE, 0x00]) + b"bad")
+    monkeypatch.setenv("ATHENA_CONSTITUTION", str(law_dir))
+
+    code, report = _run(capsys, "doctor", "--brain", str(tmp_path / "brain"))
+
+    assert code == 1
+    assert report["cause"] == "constitution"
+    law = next(stage for stage in report["stages"] if stage["name"] == "constitution")
+    assert law["status"] == "fail"
+    assert "could not be read" in law["detail"]
+
+
 def test_a_missing_law_says_where_it_looked_and_how_to_point_at_one(
     tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:

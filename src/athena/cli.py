@@ -159,6 +159,12 @@ def _constitution_stage() -> Stage:
         law = constitution.load()
     except constitution.ConstitutionMissing as exc:
         return Stage("constitution", "fail", str(exc))
+    except (OSError, UnicodeDecodeError) as exc:
+        # A law.md that is there and cannot be read (not UTF-8, a permission) is the same failure
+        # as one that is not there; a traceback would break "one JSON object on stdout".
+        return Stage(
+            "constitution", "fail", f"the law could not be read: {type(exc).__name__}: {exc}"
+        )
     return Stage("constitution", "ok", f"{law.source.kind}: {law.directory} v{law.version}")
 
 
