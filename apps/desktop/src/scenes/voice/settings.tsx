@@ -13,6 +13,7 @@
 import { useState, type ReactNode } from "react";
 
 import VoiceArt from "@/art/voice";
+import type { AvatarId } from "@/avatar/types";
 import Badge from "@/components/Badge";
 import Button from "@/components/Button";
 import Facts, { Fact } from "@/components/Facts";
@@ -24,6 +25,7 @@ import { EngineState, HoldToTalk, InstallBlock, Kbd } from "@/modules/voice/part
 import { KeyField, WhisperModels } from "@/modules/voice/pieces";
 import { Waveform } from "@/modules/voice/waveform";
 
+import { FacePicker } from "./face";
 import { HOTKEY, useTakeEndsWithPlace } from "./parts";
 
 const STT_HINT: Record<SttEngineId, string> = {
@@ -31,7 +33,15 @@ const STT_HINT: Record<SttEngineId, string> = {
   openai: "OpenAI listens in the cloud: each take is sent to OpenAI.",
 };
 
-export default function SettingsAct({ model }: { model: VoiceModel }) {
+export default function SettingsAct({
+  model,
+  avatar = "halo",
+  onAvatar = () => {},
+}: {
+  model: VoiceModel;
+  avatar?: AvatarId;
+  onAvatar?: (avatar: AvatarId) => void;
+}) {
   const { actions } = model;
   // The test take is held from the keyboard too: alt-tab or Escape mid-take must not leave it open.
   useTakeEndsWithPlace(model);
@@ -66,7 +76,7 @@ export default function SettingsAct({ model }: { model: VoiceModel }) {
       ) : null}
 
       <div className="vsc-instruments">
-        <Output model={model} />
+        <Output model={model} avatar={avatar} onAvatar={onAvatar} />
         <Input model={model} />
       </div>
     </div>
@@ -100,7 +110,7 @@ function Row({ label, fact, children }: { label: string; fact: string; children:
   );
 }
 
-function Output({ model }: { model: VoiceModel }) {
+function Output({ model, avatar, onAvatar }: { model: VoiceModel; avatar: AvatarId; onAvatar: (avatar: AvatarId) => void }) {
   const { kokoro, voice, preview } = model;
   const kokoroInstalling = model.installComponent === "kokoro" && model.install.busy;
   const mine = voice !== null && preview.voice === voice.id;
@@ -151,6 +161,9 @@ function Output({ model }: { model: VoiceModel }) {
         ) : (
           <span className="typo-caption">Kokoro lists no voices until it is installed.</span>
         )}
+      </Row>
+      <Row label="Her face" fact="How she appears while she listens and speaks, here and in her window.">
+        <FacePicker avatar={avatar} onAvatar={onAvatar} />
       </Row>
       <Row label="Engine home" fact="Shared with Personas: one install serves both apps.">
         <code className="typo-code vs-home">{model.config?.home}</code>

@@ -49,10 +49,11 @@ const OWN_MOVE: Duration = Duration::from_millis(300);
 
 /// The named sizes of ADR 0026, in logical pixels. The page mirrors this table in
 /// `src/lib/companion.ts` and a test there pins the two together.
-pub const STATES: [(&str, f64, f64); 7] = [
+pub const STATES: [(&str, f64, f64); 8] = [
     ("seal", 92.0, 92.0),
     ("tape", 440.0, 92.0),
     ("hear", 440.0, 92.0),
+    ("face", 240.0, 300.0),
     ("slip", 488.0, 316.0),
     ("welcome", 488.0, 432.0),
     ("ledger", 488.0, 656.0),
@@ -956,6 +957,7 @@ mod tests {
             }
         }
         assert_eq!(size_of("slip"), Some((488.0, 316.0)));
+        assert_eq!(size_of("face"), Some((240.0, 300.0)));
         assert_eq!(size_of("nonsense"), None);
     }
 

@@ -10,17 +10,27 @@
  */
 import { createElement, lazy, Suspense, useEffect, useRef } from "react";
 
+import type { AvatarId } from "@/avatar/types";
 import type { Labeller } from "@/depth/model";
 import { useVoiceModel } from "@/modules/voice/index";
 import type { LiveScene, SceneProps } from "@/scenes/types";
+import { useSettings } from "@/stores/settings";
 
 const VoiceScene = lazy(() => import("./view"));
 
 export const NAMES: Labeller = (path) =>
   path.item === "studio" ? "Studio" : path.item === "settings" ? "Settings" : undefined;
 
+/** Choosing her face writes the `avatar` setting; a refused write keeps the choice on screen and is logged. */
+const chooseAvatar = (id: AvatarId) =>
+  void useSettings
+    .getState()
+    .setAvatar(id)
+    .catch((e: unknown) => console.warn("[voice] could not store her face:", e));
+
 function Live({ path, go }: SceneProps) {
   const model = useVoiceModel();
+  const avatar = useSettings((s) => s.avatar);
   const studio = path.item === "studio";
   // The "studio done" row can be read after the scene is on screen, so the arrival is not judged
   // until the model stops loading. Once reopened for this arrival, the scene leaves it alone.
@@ -35,7 +45,7 @@ function Live({ path, go }: SceneProps) {
     if (model.mode === "settings") model.actions.reopenStudio();
   }, [studio, model.loading, model.mode, model.actions]);
   const waiting = createElement("div", { className: "depth-pending typo-caption", role: "status" }, "Opening…");
-  return createElement(Suspense, { fallback: waiting }, createElement(VoiceScene, { model, path, go }));
+  return createElement(Suspense, { fallback: waiting }, createElement(VoiceScene, { model, path, go, avatar, onAvatar: chooseAvatar }));
 }
 
 export const live: LiveScene = { root: "voice", Live, useLabeller: () => NAMES };

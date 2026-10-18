@@ -9,7 +9,7 @@
  * The ask box is the mirror's hand-over (decision D1): it gives the sentence to her own window, and
  * says so. It never claims an answer.
  */
-import { useState, type FormEvent } from "react";
+import { lazy, Suspense, useState, type FormEvent } from "react";
 
 import Glyph from "@/art/glyphs";
 import Bell from "@/bell/Bell";
@@ -20,6 +20,9 @@ import type { SurfaceModel } from "./model";
 import "./surface.css";
 
 type Sent = "idle" | "sending" | "sent" | { problem: string };
+
+/** Her face, in its own chunk: fetched only when a face is chosen (`./face`). */
+const SurfaceFace = lazy(() => import("./face"));
 
 const SurfaceView: View<SurfaceModel> = ({ model }) => {
   const [focused, setFocused] = useState<Root | null>(null);
@@ -52,10 +55,18 @@ const SurfaceView: View<SurfaceModel> = ({ model }) => {
     );
   };
 
+  const bell = <Bell pose={model.pose} reach={model.reach} lean={lean} size={420} label="Athena" />;
+
   return (
     <div className="surface" data-pose={model.pose}>
       <div className="surface__bell">
-        <Bell pose={model.pose} reach={model.reach} lean={lean} size={420} label="Athena" />
+        {model.avatar === "halo" ? (
+          bell
+        ) : (
+          <Suspense fallback={bell}>
+            <SurfaceFace avatar={model.avatar} size={420} label={`Athena, ${model.poseWord}`} />
+          </Suspense>
+        )}
       </div>
 
       <div className="surface__words">

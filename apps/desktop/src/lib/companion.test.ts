@@ -20,11 +20,12 @@ import {
 } from "./companion";
 
 test("the named states and their sizes are the ADR's table", () => {
-  expect(ATHENA_STATES).toEqual(["seal", "tape", "hear", "slip", "welcome", "ledger", "tab"]);
+  expect(ATHENA_STATES).toEqual(["seal", "tape", "hear", "face", "slip", "welcome", "ledger", "tab"]);
   expect(SIZES).toEqual({
     seal: { w: 92, h: 92 },
     tape: { w: 440, h: 92 },
     hear: { w: 440, h: 92 },
+    face: { w: 240, h: 300 },
     slip: { w: 488, h: 316 },
     welcome: { w: 488, h: 432 },
     ledger: { w: 488, h: 656 },

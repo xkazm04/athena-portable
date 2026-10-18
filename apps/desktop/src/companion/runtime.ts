@@ -228,11 +228,12 @@ export function lineOf(
   form: AthenaState,
   step: { app: string; what: string } | null,
   running = false,
+  listening = false,
 ): string {
-  if (form === "hear") return "listening";
-  // The tape is work on its own; any other form is work only while a turn is running (UAT backlog B8),
-  // and then it says so, so Main's pill never reads "working" over an idle ledger.
-  if ((form !== "tape" && !running) || !step) return "";
+  if (form === "hear" || (form === "face" && listening)) return "listening";
+  // The tape and her face are work on their own; any other form is work only while a turn is running
+  // (UAT backlog B8), and then it says so, so Main's pill never reads "working" over an idle ledger.
+  if ((form !== "tape" && form !== "face" && !running) || !step) return "";
   const text = `${step.app}: ${step.what}`;
   return text.length > LINE_MAX ? `${text.slice(0, LINE_MAX)} (showing ${LINE_MAX} of ${text.length})` : text;
 }

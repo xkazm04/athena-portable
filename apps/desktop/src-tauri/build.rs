@@ -71,6 +71,9 @@ fn main() {
             // halo.rs (ADR 0027) - her window hands the halo its one signal; the `halo-*`
             // overlays themselves are granted no command at all.
             "athena_halo",
+            // face.rs (the ADR on Athena's face) - her window mirrors her face to Main, which
+            // hears it as `athena:face`; only her window is granted the command.
+            "athena_face",
         ])),
     )
     .expect("failed to run tauri-build");

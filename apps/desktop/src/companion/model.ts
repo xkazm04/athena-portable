@@ -14,6 +14,7 @@
  * Nothing here decides anything. The class on a tool, the cards and every refusal arrive already
  * decided by the gate; the companion renders what it is told (README section 3.3).
  */
+import type { AvatarId } from "@/avatar/types";
 import type { DaemonHealth } from "@/lib/daemon";
 import type { AthenaState } from "@/lib/companion";
 import type { Side, Valign } from "@/lib/companion";
@@ -373,8 +374,10 @@ export interface EngineView {
 }
 
 export interface CompanionModel {
-  /** The form she is drawn in: one of the ADR's seven named states. */
+  /** The form she is drawn in: one of the ADR's named states. */
   form: AthenaState;
+  /** How she appears (the `avatar` setting); the `face` form draws this one. */
+  avatar: AvatarId;
   side: Side;
   valign: Valign;
   docked: Dock | null;
@@ -542,6 +545,7 @@ const CAPTION: Record<AthenaState, string> = {
   seal: "resting",
   tape: "working",
   hear: "hearing",
+  face: "talking",
   slip: "waiting",
   welcome: "hello",
   ledger: "ledger",
@@ -591,10 +595,11 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
 
   return {
     form,
+    avatar: m.avatar,
     side: m.side,
     valign: m.valign,
     docked: m.docked,
-    tone: n > 0 ? "human" : form === "tape" || form === "hear" ? "work" : "idle",
+    tone: n > 0 ? "human" : form === "tape" || form === "hear" || form === "face" ? "work" : "idle",
     lit: n > 0 ? 12 : form === "tape" && !m.working ? 12 : working ? Math.min(11, 1 + steps.length * 3) : 0,
     attn: m.attn,
     quiet: m.quiet,

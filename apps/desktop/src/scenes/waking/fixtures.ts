@@ -18,10 +18,10 @@ export const fixtures: Record<string, SetupModel> = {
 };
 
 /** Which step each fixture opens on: the one its story is about. */
-export const INITIAL_STEPS: Record<string, 0 | 1 | 2> = {
+export const INITIAL_STEPS: Record<string, 0 | 1 | 2 | 3> = {
   "engine-missing": 0,
   "no-page": 1,
-  ready: 2,
+  ready: 3,
   "no-mic": 2,
 };
 

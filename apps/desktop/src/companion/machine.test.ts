@@ -459,6 +459,52 @@ test("formOf is the priority list: stamp, card, hear, tape, peek, home", () => {
   expect(formOf({ ...base, docked: "left" })).toBe("tab");
 });
 
+test("with a face chosen, a spoken turn shows her face where the held key and the tape would be", () => {
+  const r = rig();
+  const base = { ...r.s(), avatar: "b04-owl" as const, talking: true };
+  // the face takes the places of hear and tape
+  expect(formOf({ ...base, listening: true })).toBe("face");
+  expect(formOf({ ...base, working: true })).toBe("face");
+  expect(formOf(base)).toBe("face");
+  // a chosen mode, a stamp and a card keep their priority over it
+  expect(formOf({ ...base, mode: "welcome" })).toBe("welcome");
+  expect(formOf({ ...base, mode: "ledger" })).toBe("ledger");
+  expect(formOf({ ...base, cards: 1 })).toBe("slip");
+  expect(formOf({ ...base, decided: { kind: "approve", by: "click", sending: true, tearing: false, dropped: false } })).toBe("slip");
+  // a put-away card still waits: no face over it, as no hear tape over it
+  expect(formOf({ ...base, cards: 1, snoozed: true, working: true })).toBe("tape");
+  // the halo chosen, or no spoken turn: exactly the old list
+  expect(formOf({ ...base, avatar: "halo", listening: true })).toBe("hear");
+  expect(formOf({ ...base, avatar: "halo", working: true })).toBe("tape");
+  expect(formOf({ ...base, talking: false, working: true })).toBe("tape");
+  expect(formOf({ ...base, talking: false })).toBe("seal");
+});
+
+test("the face grows at once, the tape's linger follows the turn unchanged, and the seal stays the rest form", () => {
+  const r = rig();
+  r.d.dispatch({ t: "avatar", id: "d08-origami" });
+  expect(r.s().form).toBe("seal");
+  r.d.dispatch({ t: "talk", on: true });
+  r.d.dispatch({ t: "listen", on: true });
+  expect(r.s().form).toBe("face");
+  expect(r.sizes().at(-1)).toMatchObject({ name: "face", at: 0 });
+  r.d.dispatch({ t: "listen", on: false });
+  r.d.dispatch({ t: "work", on: true });
+  expect(r.s().form).toBe("face");
+  r.d.dispatch({ t: "work", on: false });
+  r.d.dispatch({ t: "talk", on: false });
+  expect(r.s().form).toBe("tape");
+  r.advance(LINGER_MS);
+  expect(r.s().form).toBe("seal");
+
+  // switching to the halo mid-turn falls back to the hear tape at once
+  r.d.dispatch({ t: "talk", on: true });
+  r.d.dispatch({ t: "listen", on: true });
+  expect(r.s().form).toBe("face");
+  r.d.dispatch({ t: "avatar", id: "halo" });
+  expect(r.s().form).toBe("hear");
+});
+
 test("while a collapse waits for its smaller size, she remembers the form the window still has", () => {
   const r = rig();
   r.d.dispatch({ t: "seal" });

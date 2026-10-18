@@ -14,12 +14,13 @@
 import { useMemo, useState } from "react";
 
 import VoiceArt from "@/art/voice";
-import Bell from "@/bell/Bell";
+import type { AvatarId } from "@/avatar/types";
 import type { Pose } from "@/bell/pose";
 import type { Path } from "@/depth/model";
 import { STEP_LABEL, STEP_ORDER, type VoiceModel } from "@/modules/voice/model";
 import { Kbd } from "@/modules/voice/parts";
 
+import { Her, useMainFace } from "./face";
 import { Gate, HOTKEY, gateKind } from "./parts";
 import SettingsAct from "./settings";
 import StudioAct from "./studio";
@@ -34,7 +35,13 @@ export interface VoiceSceneProps {
   model: VoiceModel;
   path: Path;
   go: (to: Path) => void;
+  /** How she appears (the `avatar` setting); the halo when not given. */
+  avatar?: AvatarId;
+  /** Choose how she appears, from settings: writes the `avatar` setting. */
+  onAvatar?: (avatar: AvatarId) => void;
 }
+
+const NO_CHOICE = () => {};
 
 /** Finishing the studio lands in settings; reopening it lands in the studio. Nothing else changes. */
 export function withMoves(model: VoiceModel, go: (to: Path) => void): VoiceModel {
@@ -57,11 +64,11 @@ export function withMoves(model: VoiceModel, go: (to: Path) => void): VoiceModel
   };
 }
 
-export default function VoiceScene({ model: raw, path, go }: VoiceSceneProps) {
+export default function VoiceScene({ model: raw, path, go, avatar = "halo", onAvatar = NO_CHOICE }: VoiceSceneProps) {
   const model = useMemo(() => withMoves(raw, go), [raw, go]);
   const gate = gateKind(model);
 
-  if (path.item === undefined) return <Field model={model} gate={gate} go={go} />;
+  if (path.item === undefined) return <Field model={model} gate={gate} go={go} avatar={avatar} />;
 
   if (path.item !== "studio" && path.item !== "settings") {
     return (
@@ -95,7 +102,11 @@ export default function VoiceScene({ model: raw, path, go }: VoiceSceneProps) {
       </div>
     );
   }
-  return path.item === "studio" ? <StudioAct model={model} /> : <SettingsAct model={model} />;
+  return path.item === "studio" ? (
+    <StudioAct model={model} avatar={avatar} />
+  ) : (
+    <SettingsAct model={model} avatar={avatar} onAvatar={onAvatar} />
+  );
 }
 
 // -- the field --------------------------------------------------------------------------------
@@ -160,8 +171,19 @@ function standing(model: VoiceModel, gate: ReturnType<typeof gateKind>): { word:
   }
 }
 
-function Field({ model, gate, go }: { model: VoiceModel; gate: ReturnType<typeof gateKind>; go: (to: Path) => void }) {
+function Field({
+  model,
+  gate,
+  go,
+  avatar,
+}: {
+  model: VoiceModel;
+  gate: ReturnType<typeof gateKind>;
+  go: (to: Path) => void;
+  avatar: AvatarId;
+}) {
   const [focused, setFocused] = useState<Place["id"] | null>(null);
+  const face = useMainFace();
   const places = placesOf(model);
   const place = places.find((p) => p.id === focused) ?? null;
   const now = standing(model, gate);
@@ -169,7 +191,7 @@ function Field({ model, gate, go }: { model: VoiceModel; gate: ReturnType<typeof
   return (
     <div className="vsc vsc--field" data-standing={gate ?? (model.available ? "ready" : "off")}>
       <div className="vsc-field__bell">
-        <Bell pose={poseOf(model)} reach={[]} lean={lean} size={400} label="Athena" />
+        <Her avatar={avatar} pose={poseOf(model)} reach={[]} lean={lean} size={400} source={face} />
       </div>
 
       <div className="vsc-field__words">

@@ -57,6 +57,8 @@ export const SETTING_KEYS = {
    * (ADR 0100). A settings row, not an `origins` column: the store ships no migrations.
    */
   toolContracts: "tool_contracts",
+  /** `halo` | `b04-owl` | `d08-origami`: how she appears (`AVATAR_IDS`). `halo` draws no face. */
+  avatar: "avatar",
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];

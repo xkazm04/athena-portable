@@ -21,6 +21,7 @@
  * is still sized for, so a collapse to the seal can be drawn as one motion inside the old rectangle
  * instead of an empty one.
  */
+import type { AvatarId } from "@/avatar/types";
 import { SIZES, type AthenaState, type Side, type Valign } from "@/lib/companion";
 
 export type Dock = "left" | "right";
@@ -72,6 +73,10 @@ export interface MachineState {
   snoozed: boolean;
   working: boolean;
   listening: boolean;
+  /** Her voice is listening, thinking or speaking: a spoken turn is in progress. */
+  talking: boolean;
+  /** How she appears (the `avatar` setting); anything but `halo` talks with a face. */
+  avatar: AvatarId;
   decided: Decided | null;
   /** Clicked out from the tab; tucks back after `PEEK_MS`. */
   peek: boolean;
@@ -104,6 +109,9 @@ export type Event =
   | { t: "cards"; n: number; hidden?: boolean }
   | { t: "work"; on: boolean }
   | { t: "listen"; on: boolean }
+  /** The voice entered (`on`) or left the listening, thinking and speaking phases. */
+  | { t: "talk"; on: boolean }
+  | { t: "avatar"; id: AvatarId }
   | { t: "decide"; kind: Choice; by: By }
   /** The daemon's verdict on the answer. `text` is what a screen reader is told when it was refused. */
   | { t: "sent"; ok: boolean; text?: string }
@@ -154,6 +162,8 @@ export const INITIAL: MachineState = {
   snoozed: false,
   working: false,
   listening: false,
+  talking: false,
+  avatar: "halo",
   decided: null,
   peek: false,
   lingering: false,
@@ -183,7 +193,8 @@ export function shown(s: Pick<MachineState, "cards" | "decided">): number {
 /**
  * What she looks like, in priority order. A stamp in progress outranks everything but a chosen
  * mode, so the slip is never pulled out from under the stamp; a card outranks a turn because the
- * turn can wait and the person cannot be asked twice.
+ * turn can wait and the person cannot be asked twice. With a face chosen, a spoken turn shows her
+ * face where the held key and the tape would be; the tape's linger after the turn is unchanged.
  */
 export function formOf(s: MachineState): AthenaState {
   if (s.mode === "welcome") return "welcome";
@@ -191,6 +202,7 @@ export function formOf(s: MachineState): AthenaState {
   if (s.decided) return "slip";
   const waiting = shown(s) > 0;
   if (waiting && !s.snoozed && !s.hidden) return "slip";
+  if (s.talking && s.avatar !== "halo" && !waiting) return "face";
   if (s.listening && !waiting) return "hear";
   if (s.working || s.lingering) return "tape";
   if (s.peek && s.docked) return "seal";
@@ -289,6 +301,15 @@ function step(s: MachineState, prev: MachineState, event: Event, fx: Effect[]): 
         // Speaking to a card that is put away brings the slip back, so the answer can be seen.
         if (shown(s) > 0) s.snoozed = false;
       }
+      return;
+    }
+    case "talk": {
+      s.talking = event.on;
+      if (event.on) s.quiet = false;
+      return;
+    }
+    case "avatar": {
+      s.avatar = event.id;
       return;
     }
     case "decide": {

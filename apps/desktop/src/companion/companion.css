@@ -594,7 +594,8 @@ body.athena {
 
 .aw[data-state="seal"] .aw-cap,
 .aw[data-state="tape"] .aw-cap,
-.aw[data-state="hear"] .aw-cap {
+.aw[data-state="hear"] .aw-cap,
+.aw[data-state="face"] .aw-cap {
   color: var(--house-ink);
 }
 .aw:not([data-cards="0"]) .aw-cap {
@@ -620,7 +621,8 @@ body.athena {
 }
 .aw[data-state="seal"] .aw-rail,
 .aw[data-state="tape"] .aw-rail,
-.aw[data-state="hear"] .aw-rail {
+.aw[data-state="hear"] .aw-rail,
+.aw[data-state="face"] .aw-rail {
   display: none;
 }
 .rl-slip {
@@ -1555,6 +1557,73 @@ body.athena {
     background-position-x: -14px;
   }
 }
+/* ---------------------------------------------------------------- her face (while she talks) */
+/* The face form is the seal beside a panel of the housing's own material: her face is light drawn
+ * on the dark housing, not ink on paper, so the panel takes the housing's gradient and rim. Only
+ * the seal is housing on the side; the panel carries the rest. */
+.aw[data-state="face"] .aw-house {
+  align-self: flex-start;
+}
+.aw[data-state="face"][data-valign="up"] .aw-house {
+  align-self: flex-end;
+}
+.aw-paper[data-kind="face"] {
+  margin-left: 4px;
+  padding: 12px 10px 14px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  color: var(--house-ink);
+  background: linear-gradient(168deg, var(--house-1), var(--house-2) 52%, var(--house-3));
+  box-shadow: inset 0 0 0 1px var(--house-rim-out), inset 0 1.5px 0 var(--house-rim), inset 0 -12px 20px rgba(0, 0, 0, 0.34);
+  border-radius: var(--r-house);
+  -webkit-mask: none;
+  mask: none;
+}
+.aw[data-side="right"] .aw-paper[data-kind="face"] {
+  margin-left: 0;
+  margin-right: 4px;
+  padding: 12px 10px 14px;
+  border-radius: var(--r-house);
+  -webkit-mask: none;
+  mask: none;
+}
+.fc {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+}
+.fc-face {
+  flex: none;
+}
+.fc-txt {
+  width: 100%;
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+  text-align: center;
+}
+.fc-lbl {
+  font-size: var(--t-label);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--house-glow);
+}
+.fc-line {
+  font-size: calc(14px + var(--type-step));
+  line-height: 20px;
+  color: var(--house-ink);
+  overflow-wrap: anywhere;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
 .tape {
   width: 100%;
   display: grid;

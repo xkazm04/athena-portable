@@ -61,6 +61,7 @@ export function useSurfaceModel(): SurfaceModel {
   const notice = useConnectors((s) => s.recordsNotice);
   const voiceAvailable = useVoice((s) => s.available);
   const engine = useSettings((s) => s.engine);
+  const avatar = useSettings((s) => s.avatar);
   const probes = useEngines((s) => s.probes);
   const checking = useEngines((s) => s.checking);
   const problem = useEngines((s) => s.problem);
@@ -124,10 +125,12 @@ export function useSurfaceModel(): SurfaceModel {
         checkFailed: !setup.checking && setup.problem !== null,
       },
       inShell: hasShell(),
+      avatar,
       actions: ACTIONS,
     });
   }, [
     athena,
+    avatar,
     records,
     known,
     tabs,

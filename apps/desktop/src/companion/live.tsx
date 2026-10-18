@@ -147,11 +147,14 @@ function connect(rt: Runtime): () => void {
     rt.cardsChanged(useRun.getState().cards);
     rt.dispatch({ t: "work", on: busy() });
     rt.dispatch({ t: "listen", on: useVoice.getState().phase === "listening" });
+    rt.dispatch({ t: "talk", on: TURN_PHASES.has(useVoice.getState().phase) });
+    rt.dispatch({ t: "avatar", id: settings.avatar });
   };
   off.push(
     useSettings.subscribe((s, prev) => {
       start();
       if (started && s.onboarded !== prev.onboarded) rt.dispatch({ t: "onboarded", value: s.onboarded });
+      if (started && s.avatar !== prev.avatar) rt.dispatch({ t: "avatar", id: s.avatar });
     }),
   );
   start();
@@ -177,12 +180,19 @@ function connect(rt: Runtime): () => void {
     }),
   );
   let listening = useVoice.getState().phase === "listening";
+  let talking = TURN_PHASES.has(useVoice.getState().phase);
   const hear = () => {
     if (!started || ambient) return;
-    const now = useVoice.getState().phase === "listening";
+    const phase = useVoice.getState().phase;
+    const now = phase === "listening";
     if (now !== listening) {
       listening = now;
       rt.dispatch({ t: "listen", on: now });
+    }
+    // A spoken turn: with a face chosen, she shows it while the voice listens, thinks or speaks.
+    if (TURN_PHASES.has(phase) !== talking) {
+      talking = !talking;
+      rt.dispatch({ t: "talk", on: talking });
     }
   };
   off.push(
@@ -440,7 +450,7 @@ export default function Live() {
   const { form, cards } = model;
   // A turn that is running is work whatever form she is drawn in; the ledger with nothing running rests.
   const running = run.phase === "running" || run.phase === "acting";
-  const line = lineOf(form, model.tape.cur, running);
+  const line = lineOf(form, model.tape.cur, running, model.listening);
   const ready0 = snap.machine.ready;
   useEffect(() => {
     if (!ready0 || !hasShell()) return;

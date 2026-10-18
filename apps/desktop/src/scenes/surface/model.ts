@@ -9,6 +9,7 @@
  * Pure, as every module model is: `selectSurface` takes plain facts and returns what to draw, and
  * the selector's caller (`index.tsx`) is the only file that knows a store exists.
  */
+import type { AvatarId } from "@/avatar/types";
 import type { Reach } from "@/bell/Bell";
 import { POSE_WORDS, poseOf, type Pose } from "@/bell/pose";
 import { ROOTS, ROOT_LABEL, type Root } from "@/depth/model";
@@ -48,6 +49,8 @@ export interface SurfaceSources {
   engine: { label: string; standing: Standing; checkFailed: boolean };
   /** False in a plain browser, where there is no window of hers to hand anything to. */
   inShell: boolean;
+  /** How she appears (the `avatar` setting); the halo when not given. */
+  avatar?: AvatarId;
   actions: SurfaceActions;
 }
 
@@ -64,6 +67,8 @@ export interface Light {
 
 export interface SurfaceModel {
   pose: Pose;
+  /** `halo` draws the Bell; a face draws her `<Avatar>` in the Bell's place, at the Bell's size. */
+  avatar: AvatarId;
   /** What she is doing, in a line. */
   headline: string;
   /** The pose in words, for a screen reader. */
@@ -152,6 +157,7 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
   const pose = poseOf(s.athena);
   return {
     pose,
+    avatar: s.avatar ?? "halo",
     headline: s.athena.cards > 0 || pose !== "resting" ? pillText(s.athena) : "Athena is resting",
     poseWord: POSE_WORDS[pose],
     waiting: s.athena.cards,

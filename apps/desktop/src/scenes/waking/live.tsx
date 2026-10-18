@@ -8,8 +8,10 @@
  */
 import { createElement } from "react";
 
+import type { AvatarId } from "@/avatar/types";
 import { useDepth } from "@/depth/store";
 import { useSetupModel } from "@/modules/setup/index";
+import { useSettings } from "@/stores/settings";
 
 import { useReopened } from "./reopen";
 import WakingView from "./view";
@@ -21,7 +23,11 @@ const later = () => useDepth.getState().go({ root: "apps" });
  */
 const done = () => useReopened.getState().set(false);
 
+/** Choosing her face writes the `avatar` setting; a refused write keeps the choice on screen and is logged. */
+const chooseAvatar = (id: AvatarId) => void useSettings.getState().setAvatar(id).catch(console.warn);
+
 export function Live() {
   const model = useSetupModel({ afterFinish: done });
-  return createElement(WakingView, { model, onLater: later });
+  const avatar = useSettings((s) => s.avatar);
+  return createElement(WakingView, { model, onLater: later, avatar, onAvatar: chooseAvatar });
 }

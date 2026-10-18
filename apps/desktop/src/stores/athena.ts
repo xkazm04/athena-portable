@@ -11,11 +11,11 @@ import { hasShell, onAthenaStatus, type AthenaStatus } from "@/lib/ipc";
 
 export type AthenaState = AthenaStatus;
 
-/** The forms that are work on their own: the tape, a held key, and a card waiting on the user. */
-const WORKING_FORMS: ReadonlySet<string> = new Set(["tape", "hear", "slip"]);
+/** The forms that are work on their own: the tape, a held key, her face while she talks, and a card waiting on the user. */
+const WORKING_FORMS: ReadonlySet<string> = new Set(["tape", "hear", "face", "slip"]);
 
 /**
- * Is she doing nothing? (UAT backlog B8.) She is working only when her form says so (tape, hear,
+ * Is she doing nothing? (UAT backlog B8.) She is working only when her form says so (tape, hear, face,
  * slip) or when a turn is running, which her window reports as a non-empty `line` whatever form
  * she is drawn in. The ledger, the welcome, the seal and the tab with nothing running rest: the
  * old rule counted every state but four as work, so an idle ledger read as "working".

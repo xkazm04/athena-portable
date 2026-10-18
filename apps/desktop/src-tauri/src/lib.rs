@@ -14,6 +14,7 @@
 //! people editing one panel" as a risk, and this is the Rust half of the answer.
 
 mod companion;
+mod face;
 mod halo;
 mod hotkeys;
 mod layout;
@@ -219,6 +220,7 @@ pub fn run() {
             companion::athena_snap_to,
             companion::athena_open_main,
             halo::athena_halo,
+            face::athena_face,
         ])
         .setup(|app| {
             let handle = app.handle().clone();

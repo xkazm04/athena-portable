@@ -13,6 +13,9 @@
  */
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type KeyboardEvent } from "react";
 
+import { Avatar } from "@/avatar/Avatar";
+import { localFaceSource } from "@/lib/face";
+
 import { Chip, Defs, Icon, Mark, Mood, Ring, Sketch, Stamp } from "./drawing";
 import { SHRINK_MS, type LedgerTab } from "./machine";
 import { readCapture, type CaptureRead } from "./capture";
@@ -94,6 +97,7 @@ export default function CompanionView({ model }: { model: CompanionModel }) {
             {form === "slip" ? <Slip model={model} card={model.cards[0]} inline={false} /> : null}
             {form === "tape" ? <Tape model={model} /> : null}
             {form === "hear" ? <Hear model={model} /> : null}
+            {form === "face" ? <Face model={model} /> : null}
             {form === "welcome" ? <Welcome model={model} /> : null}
             {form === "ledger" ? <Ledger model={model} /> : null}
           </div>
@@ -607,6 +611,29 @@ function Hear({ model }: { model: CompanionModel }) {
         <span className="hr-tr" data-tr>
           {model.heard || "…"}
         </span>
+      </div>
+    </div>
+  );
+}
+
+/** Her face in the 240px face form: the panel beside the 76px seal, less its padding. */
+const FACE_SIZE = 120;
+
+/**
+ * Her face while she talks (the ADR on Athena's face): the chosen form, fed by her own window's
+ * signal every frame, with one line under it so what she heard or is doing stays readable.
+ * With the halo chosen there is no face form at all; this draws nothing then, defensively.
+ */
+function Face({ model }: { model: CompanionModel }) {
+  const [source] = useState(localFaceSource);
+  if (model.avatar === "halo") return null;
+  const line = model.listening ? model.heard || "…" : model.talk.working ? `${model.tape.cur.app}: ${model.tape.cur.what}` : "";
+  return (
+    <div className="fc">
+      <Avatar avatar={model.avatar} size={FACE_SIZE} source={source} className="fc-face" />
+      <div className="fc-txt">
+        <span className="fc-lbl">{model.listening ? "listening · release to send" : model.mood === "speak" ? "speaking" : "thinking"}</span>
+        {line ? <span className="fc-line">{line}</span> : null}
       </div>
     </div>
   );

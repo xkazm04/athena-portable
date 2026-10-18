@@ -340,6 +340,20 @@ export const fixtures: Record<string, () => CompanionModel> = {
       voice: true,
       partial: "Find every invoice over 30 days and draft a chase",
     }),
+  /** Her face while she talks (the ADR on Athena's face): the owl hearing, the origami speaking. */
+  face: () =>
+    model({
+      events: [INIT, { t: "avatar", id: "b04-owl" }, { t: "talk", on: true }, { t: "listen", on: true }],
+      voice: true,
+      partial: "Find every invoice over 30 days and draft a chase",
+    }),
+  "face speaking": () =>
+    model({
+      events: [INIT, { t: "avatar", id: "d08-origami" }, { t: "talk", on: true }, { t: "work", on: true }],
+      transcript: TURN.slice(0, 4),
+      phase: "acting",
+      speaking: true,
+    }),
   slip: () => model({ events: [INIT, { t: "cards", n: 1 }], cards: one, capture: true }),
   "slip many": () => model({ events: [INIT, { t: "cards", n: 3 }], cards: all, capture: true }),
   /** A connector's card names the account it acts as (ADR 0116). */

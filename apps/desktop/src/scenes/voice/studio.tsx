@@ -14,7 +14,7 @@
 import { useEffect, useRef, type RefObject } from "react";
 
 import VoiceArt from "@/art/voice";
-import Bell from "@/bell/Bell";
+import type { AvatarId } from "@/avatar/types";
 import type { Pose } from "@/bell/pose";
 import Button from "@/components/Button";
 import Facts, { Fact } from "@/components/Facts";
@@ -31,6 +31,7 @@ import {
 import { EngineState, InstallBlock, Kbd } from "@/modules/voice/parts";
 import { primary, KeyField, WhisperModels } from "@/modules/voice/pieces";
 
+import { Her, useStudioFace } from "./face";
 import { perform, studioKey } from "./keys";
 import { Chip, HOTKEY, HoldButton, Hero, useTakeEndsWithPlace } from "./parts";
 
@@ -78,7 +79,7 @@ function useStudioKeys(model: VoiceModel, root: RefObject<HTMLElement | null>): 
   useTakeEndsWithPlace(model);
 }
 
-export default function StudioAct({ model }: { model: VoiceModel }) {
+export default function StudioAct({ model, avatar = "halo" }: { model: VoiceModel; avatar?: AvatarId }) {
   const { studio, actions, dock } = model;
   const root = useRef<HTMLDivElement | null>(null);
   useStudioKeys(model, root);
@@ -96,7 +97,7 @@ export default function StudioAct({ model }: { model: VoiceModel }) {
 
   return (
     <div className="vsc vsc--studio" data-step={step} ref={root}>
-      <Rail model={model} />
+      <Rail model={model} avatar={avatar} />
 
       <div className="vsc-act">
         <header className="vsc-head">
@@ -163,8 +164,9 @@ export default function StudioAct({ model }: { model: VoiceModel }) {
 
 // -- the rail ----------------------------------------------------------------------------------
 
-function Rail({ model }: { model: VoiceModel }) {
+function Rail({ model, avatar }: { model: VoiceModel; avatar: AvatarId }) {
   const { actions } = model;
+  const face = useStudioFace(model);
   const receipt = (id: StepId) => model.receipts.find((r) => r.step === id)?.text;
   const reach = [
     { id: "engine", lit: model.studio.done.includes("engine") },
@@ -174,7 +176,7 @@ function Rail({ model }: { model: VoiceModel }) {
   return (
     <aside className="vsc-rail" aria-label="The path">
       <div className="vsc-rail__her">
-        <Bell pose={poseOf(model)} reach={reach} size={104} label="Athena" />
+        <Her avatar={avatar} pose={poseOf(model)} reach={reach} size={104} source={face} />
         <div className="stack" style={{ gap: 0 }}>
           <b className="typo-heading">Athena</b>
           <span className="typo-caption" aria-live="polite">

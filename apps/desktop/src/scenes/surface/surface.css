@@ -22,6 +22,9 @@
   width: 100%;
   height: auto;
 }
+.surface__face {
+  max-width: 100%;
+}
 
 .surface__words {
   grid-row: 1;

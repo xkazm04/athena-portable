@@ -16,8 +16,8 @@ import { PTT_EVENT, type PttPayload } from "@/lib/halo-signal";
 import { call, hasShell, on } from "@/lib/ipc";
 import { emitTo, type UnlistenFn } from "@tauri-apps/api/event";
 
-/** The seven named states, in the ADR's order. */
-export const ATHENA_STATES = ["seal", "tape", "hear", "slip", "welcome", "ledger", "tab"] as const;
+/** The eight named states, in the ADR's order; `face` is her face while she talks (the ADR on Athena's face). */
+export const ATHENA_STATES = ["seal", "tape", "hear", "face", "slip", "welcome", "ledger", "tab"] as const;
 
 export type AthenaState = (typeof ATHENA_STATES)[number];
 
@@ -35,6 +35,7 @@ export const SIZES: Readonly<Record<AthenaState, Size>> = {
   seal: { w: 92, h: 92 },
   tape: { w: 440, h: 92 },
   hear: { w: 440, h: 92 },
+  face: { w: 240, h: 300 },
   slip: { w: 488, h: 316 },
   welcome: { w: 488, h: 432 },
   ledger: { w: 488, h: 656 },

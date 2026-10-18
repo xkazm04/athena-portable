@@ -15,9 +15,9 @@ test("a waiting card outranks everything, then the step, then rest", () => {
   expect(pillText({ state: "tape", cards: 2, line: "Reading Invoices" })).toBe("2 waiting");
 });
 
-test("with nothing running, every named state rests except the tape, the held key and the slip", () => {
+test("with nothing running, every named state rests except the tape, the held key, her face and the slip", () => {
   const working = ATHENA_STATES.filter((state) => !isResting(state));
-  expect(working).toEqual(["tape", "hear", "slip"]);
+  expect(working).toEqual(["tape", "hear", "face", "slip"]);
   for (const state of ["seal", "welcome", "ledger", "tab", "rest", "idle", ""]) {
     expect(isResting(state), state).toBe(true);
     expect(pillText({ state, cards: 0, line: "" }), state).toBe("Athena is resting");

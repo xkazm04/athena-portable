@@ -161,12 +161,12 @@ describe("the views say it", () => {
 
   it("the first act shows a refused wake beside Wake her, and Waking her while it stores", () => {
     const refusedWake = renderToStaticMarkup(
-      <WakingView model={{ ...fixtures.onboarding!, refusals: { wake: "store_refused: onboarded" } }} onLater={() => {}} initialStep={2} />,
+      <WakingView model={{ ...fixtures.onboarding!, refusals: { wake: "store_refused: onboarded" } }} onLater={() => {}} initialStep={3} />,
     );
     expect(refusedWake).toContain("She is not awake yet");
     expect(refusedWake).toContain("store_refused: onboarded");
     const storing = renderToStaticMarkup(
-      <WakingView model={{ ...fixtures.onboarding!, waking: true }} onLater={() => {}} initialStep={2} />,
+      <WakingView model={{ ...fixtures.onboarding!, waking: true }} onLater={() => {}} initialStep={3} />,
     );
     expect(storing).toContain("Waking her…");
   });

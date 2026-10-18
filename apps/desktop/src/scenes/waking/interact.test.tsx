@@ -9,6 +9,7 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { AvatarId } from "@/avatar/types";
 import { INERT_ACTIONS, type SetupModel } from "@/modules/setup/model";
 
 import { fixtures } from "./fixtures";
@@ -29,11 +30,14 @@ afterEach(() => {
   host.remove();
 });
 
-function mount(fixture: string, step: 0 | 1 | 2) {
+function mount(fixture: string, step: 0 | 1 | 2 | 3, avatar?: AvatarId) {
   const openPage = vi.fn();
+  const onAvatar = vi.fn();
   const model: SetupModel = { ...fixtures[fixture]!, actions: { ...INERT_ACTIONS, openPage } };
-  act(() => root.render(<WakingView model={model} onLater={() => {}} initialStep={step} />));
-  return { openPage };
+  act(() =>
+    root.render(<WakingView model={model} onLater={() => {}} initialStep={step} avatar={avatar} onAvatar={onAvatar} />),
+  );
+  return { openPage, onAvatar };
 }
 
 function type(input: HTMLInputElement, value: string) {
@@ -84,8 +88,8 @@ describe("the address field opens what the apps register opens", () => {
 
 describe("the keyboard keeps its place on the way forward", () => {
   it("Next into a step whose Wake her is not ready lands on Wake her and its reason, not on the page", () => {
-    mount("no-page", 1);
-    const next = [...host.querySelectorAll("button")].find((b) => b.textContent?.includes("Next: Voice"))!;
+    mount("no-page", 2);
+    const next = [...host.querySelectorAll("button")].find((b) => b.textContent?.includes("Next: Face"))!;
     act(() => next.focus());
     act(() => void next.dispatchEvent(new MouseEvent("click", { bubbles: true })));
     expect(host.textContent).toContain("Wake her");
@@ -95,10 +99,49 @@ describe("the keyboard keeps its place on the way forward", () => {
   });
 
   it("Next into a step whose Wake her is ready keeps the same button focused", () => {
-    mount("ready", 1);
-    const next = [...host.querySelectorAll("button")].find((b) => b.textContent?.includes("Next: Voice"))!;
+    mount("ready", 2);
+    const next = [...host.querySelectorAll("button")].find((b) => b.textContent?.includes("Next: Face"))!;
     act(() => next.focus());
     act(() => void next.dispatchEvent(new MouseEvent("click", { bubbles: true })));
     expect(document.activeElement?.textContent).toContain("Wake her");
+  });
+});
+
+describe("the face step", () => {
+  const card = (id: AvatarId) => host.querySelector<HTMLButtonElement>(`[data-avatar-choice="${id}"]`)!;
+  // The step is its own chunk (first paint, ADR 0095): let it arrive.
+  const arrive = () =>
+    act(async () => {
+      await import("./face-step");
+      await new Promise((r) => setTimeout(r, 0));
+    });
+
+  it("choosing a card hands that form to the setting, the halo included", async () => {
+    const { onAvatar } = mount("ready", 3);
+    await arrive();
+    act(() => void card("d08-origami").dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    act(() => void card("halo").dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    expect(onAvatar.mock.calls).toEqual([["d08-origami"], ["halo"]]);
+  });
+
+  it("is one radio group: one tab stop on the chosen card, and the arrows move the choice", async () => {
+    const { onAvatar } = mount("ready", 3, "b04-owl");
+    await arrive();
+    expect([...host.querySelectorAll('[role="radio"]')].map((r) => r.getAttribute("tabindex"))).toEqual(["0", "-1", "-1"]);
+    const group = host.querySelector('[role="radiogroup"]')!;
+    act(() => void group.dispatchEvent(new KeyboardEvent("keydown", { key: "ArrowLeft", bubbles: true })));
+    expect(onAvatar).toHaveBeenLastCalledWith("halo");
+    expect(document.activeElement).toBe(card("halo"));
+  });
+
+  it("is reached from the steps list, and Voice no longer ends the act", async () => {
+    mount("ready", 2);
+    expect(host.textContent).toContain("Next: Face");
+    const face = [...host.querySelectorAll<HTMLButtonElement>(".waking__step")].find((b) => b.textContent?.includes("Face"))!;
+    act(() => void face.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    await arrive();
+    expect(host.textContent).toContain("How will she appear?");
+    expect(host.textContent).toContain("Owl of light");
+    expect(host.textContent).toContain("Wake her");
   });
 });

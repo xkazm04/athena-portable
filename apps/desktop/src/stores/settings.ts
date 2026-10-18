@@ -27,6 +27,7 @@ import {
   systemPrefersReduced,
   type MotionChoice,
 } from "@/lib/motion";
+import { AVATAR_IDS, type AvatarId } from "@/avatar/types";
 import { DEFAULT_ENGINE, isEngineId, type EngineId } from "@/lib/engines";
 import { SETTING_KEYS, settingRead, settingWrite, storePath, type SettingKey } from "@/lib/store";
 import { useDaemon } from "@/stores/daemon";
@@ -67,6 +68,11 @@ export function applyTypeScale(scale: TypeScale): void {
   document.documentElement.setAttribute("data-type-scale", scale);
 }
 
+/** Is this one of the forms she can take? */
+export function isAvatarId(value: unknown): value is AvatarId {
+  return typeof value === "string" && (AVATAR_IDS as readonly string[]).includes(value);
+}
+
 export interface SettingsState {
   /** True once the store has answered. Before that every value below is a default, not a choice. */
   hydrated: boolean;
@@ -80,6 +86,8 @@ export interface SettingsState {
   /** The brain directory. Empty means the daemon's own default, which is not the same as unset. */
   brainPath: string;
   onboarded: boolean;
+  /** How she appears: `halo` (the Bell and the seal, no face) or a rigged face. */
+  avatar: AvatarId;
   /** Where the store file is, for the read-only line in Settings. `null` until it has answered. */
   storePath: string | null;
   /**
@@ -97,6 +105,7 @@ export interface SettingsState {
   setActiveProject: (id: string | null) => Promise<void>;
   setBrainPath: (path: string) => Promise<void>;
   setOnboarded: (onboarded: boolean) => Promise<void>;
+  setAvatar: (avatar: AvatarId) => Promise<void>;
 }
 
 export const useSettings = create<SettingsState>((set, get) => ({
@@ -108,6 +117,7 @@ export const useSettings = create<SettingsState>((set, get) => ({
   activeProjectId: null,
   brainPath: "",
   onboarded: false,
+  avatar: "halo",
   storePath: null,
   problem: null,
 
@@ -156,6 +166,12 @@ export const useSettings = create<SettingsState>((set, get) => ({
     if (get().onboarded === onboarded) return;
     await settingWrite(SETTING_KEYS.onboarded, onboarded);
     set({ onboarded });
+  },
+
+  // Shown before the write, for the theme's reason: the person is looking at her.
+  setAvatar: async (avatar) => {
+    set({ avatar });
+    await settingWrite(SETTING_KEYS.avatar, avatar);
   },
 }));
 
@@ -230,7 +246,7 @@ export async function readRows(): Promise<void> {
       return held;
     }
   };
-  const [engine, theme, typeScale, motionRow, activeProjectId, brainPath, onboarded, path] = await Promise.all([
+  const [engine, theme, typeScale, motionRow, activeProjectId, brainPath, onboarded, avatar, path] = await Promise.all([
     row<string>(SETTING_KEYS.engine, current.engine),
     row<string>(SETTING_KEYS.theme, current.theme),
     row<string>(SETTING_KEYS.typeScale, current.typeScale),
@@ -238,6 +254,7 @@ export async function readRows(): Promise<void> {
     row<string>(SETTING_KEYS.activeProjectId, current.activeProjectId),
     row<string>(SETTING_KEYS.brainPath, current.brainPath),
     row<boolean>(SETTING_KEYS.onboarded, current.onboarded),
+    row<string>(SETTING_KEYS.avatar, current.avatar),
     storePath().catch(() => null),
   ]);
   if (failed.length && !current.hydrated) {
@@ -262,6 +279,7 @@ export async function readRows(): Promise<void> {
     activeProjectId: activeProjectId ?? null,
     brainPath: brainPath ?? "",
     onboarded: onboarded ?? false,
+    avatar: isAvatarId(avatar) ? avatar : "halo",
     storePath: path,
     problem: failed.length ? `could not read ${failed.map((x) => `${x.key}: ${x.reason}`).join("; ")}` : null,
   });

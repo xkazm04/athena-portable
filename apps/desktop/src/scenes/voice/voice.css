@@ -158,6 +158,11 @@
 .vsc-rail__her .bell {
   flex: none;
 }
+/* her face (the ADR on Athena's face) stands in the Bell's slot at the Bell's size */
+.vsc-face {
+  flex: none;
+  max-width: 100%;
+}
 .vsc-path,
 .vsc-steps {
   list-style: none;

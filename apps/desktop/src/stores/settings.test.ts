@@ -100,7 +100,7 @@ test("a value written is the value read back, under the key store.rs describes",
   // Every read named its table, and every key is one of the named set rather than a spelling
   // invented at the call site.
   const reads = harness.calls.filter((c) => c.command === "store_get");
-  expect(reads).toHaveLength(7);
+  expect(reads).toHaveLength(8);
   const named: string[] = Object.values(SETTING_KEYS);
   for (const read of reads) {
     expect(read.args.table).toBe("settings");
@@ -108,6 +108,19 @@ test("a value written is the value read back, under the key store.rs describes",
   }
   expect(painted.get("data-theme")).toBe("light");
   expect(painted.get("data-type-scale")).toBe("compact");
+});
+
+test("the avatar defaults to the halo, is written under its key, and an unknown row reads as the halo", async () => {
+  expect(useSettings.getState().avatar).toBe("halo");
+  await useSettings.getState().setAvatar("b04-owl");
+  expect(useSettings.getState().avatar).toBe("b04-owl");
+  expect(harness.rows.get("settings/avatar")).toBe("b04-owl");
+  await readRows();
+  expect(useSettings.getState().avatar).toBe("b04-owl");
+
+  harness.rows.set("settings/avatar", "dragon");
+  await readRows();
+  expect(useSettings.getState().avatar).toBe("halo");
 });
 
 test("the text size is painted before it is stored, and an unknown row reads as comfortable", async () => {

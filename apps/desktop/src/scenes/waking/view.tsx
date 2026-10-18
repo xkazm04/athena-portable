@@ -2,16 +2,18 @@
  * The first act: waking her — README section 3.1 and 3.5, ADR 0085 and 0087.
  *
  * Setup is not a page you visit once and abandon; it is the opening of the same scene the person
- * will live in. Three things wake her: a mind (the engine), a reach (the first app) and,
- * if you like, a voice. Each one done lights a tendril, and when the first two are done she wakes.
+ * will live in. Two things wake her: a mind (the engine) and a reach (the first app); a voice and a
+ * face are hers if you like (the ADR on Athena's face). Each one done lights a tendril, and when the
+ * first two are done she wakes.
  *
  * A pure view over the Setup module's own view-model, so every rule the letter had stays where it
  * was: `engineFact`, `pageFact` and `micFact` say what is true, `isReady` and `notReadyBecause`
  * gate the last step and explain themselves, and nothing here stores a verdict. The words are the
  * letter's: the engine's remedy comes from `remedyFor`, the failure to start from the model.
  */
-import { useEffect, useRef, useState } from "react";
+import { lazy, Suspense, useEffect, useRef, useState } from "react";
 
+import type { AvatarId } from "@/avatar/types";
 import Bell from "@/bell/Bell";
 import Button from "@/components/Button";
 import ProblemNote from "@/components/ProblemNote";
@@ -36,14 +38,25 @@ const STEPS = [
   { key: "mind", name: "Mind", ask: "What will she think with?" },
   { key: "reach", name: "Reach", ask: "Where will she work?" },
   { key: "voice", name: "Voice", ask: "Do you want to talk to her?" },
+  { key: "face", name: "Face", ask: "How will she appear?" },
 ] as const;
+
+type Step = 0 | 1 | 2 | 3;
+const LAST: Step = 3;
+
+/** The Face step, in its own chunk: fetched when the step is first drawn (first paint, ADR 0095). */
+const FaceStep = lazy(() => import("./face-step"));
 
 export interface WakingProps {
   model: SetupModel;
   /** Leave the first act for now and look around; the letter is still there from the surface. */
   onLater: () => void;
   /** Open at a step, for the preview and for tests. */
-  initialStep?: 0 | 1 | 2;
+  initialStep?: Step;
+  /** How she appears now (the `avatar` setting); the halo when not given. */
+  avatar?: AvatarId;
+  /** Choose how she appears: writes the `avatar` setting. */
+  onAvatar?: (avatar: AvatarId) => void;
 }
 
 const BADGE: Record<Exclude<Fact["standing"], "unknown">, string> = {
@@ -60,8 +73,8 @@ function factLine(fact: Fact): string {
   return fact.standing === "unknown" ? fact.summary : `${BADGE[fact.standing]} · ${fact.summary}`;
 }
 
-export default function WakingView({ model, onLater, initialStep = 0 }: WakingProps) {
-  const [step, setStep] = useState<0 | 1 | 2>(initialStep);
+export default function WakingView({ model, onLater, initialStep = 0, avatar = "halo", onAvatar }: WakingProps) {
+  const [step, setStep] = useState<Step>(initialStep);
   const [url, setUrl] = useState("");
   // Next on the second step turns into Wake her. When she is not ready that button is a different
   // element (the reason's focusable wrapper around a disabled button), so the one that was pressed
@@ -93,7 +106,12 @@ export default function WakingView({ model, onLater, initialStep = 0 }: WakingPr
   const voice = voiceFact(model);
   const ready = isReady(model);
 
-  const lit = [engine.standing === "done", page.standing === "done", mic.standing === "done" || voice.standing === "done"];
+  const lit = [
+    engine.standing === "done",
+    page.standing === "done",
+    mic.standing === "done" || voice.standing === "done",
+    avatar !== "halo",
+  ];
   const reach = STEPS.map((s, i) => ({ id: s.key, lit: lit[i]! }));
   const caption = !lit[0]
     ? "She has no mind yet."
@@ -108,7 +126,7 @@ export default function WakingView({ model, onLater, initialStep = 0 }: WakingPr
       <aside className="waking__her">
         <Bell pose="resting" reach={reach} size={380} label="Athena" />
         <p className="waking__caption">{caption}</p>
-        <p className="waking__sub">Three things and she wakes. Each one you choose lights a part of her.</p>
+        <p className="waking__sub">Each one you choose lights a part of her.</p>
       </aside>
 
       <section className="waking__act" aria-labelledby="waking-ask">
@@ -121,7 +139,7 @@ export default function WakingView({ model, onLater, initialStep = 0 }: WakingPr
                 aria-current={step === i ? "step" : undefined}
                 aria-label={lit[i] ? `${s.name}, done` : s.name}
                 data-done={lit[i]}
-                onClick={() => setStep(i as 0 | 1 | 2)}
+                onClick={() => setStep(i as Step)}
               >
                 <span className="waking__step-n" aria-hidden="true">
                   {lit[i] ? "✓" : i + 1}
@@ -133,7 +151,7 @@ export default function WakingView({ model, onLater, initialStep = 0 }: WakingPr
         </ol>
 
         <p className="waking__eyebrow">
-          Step {step + 1} of 3 · her {STEPS[step].name.toLowerCase()}
+          Step {step + 1} of {STEPS.length} · her {STEPS[step].name.toLowerCase()}
         </p>
         <h1 id="waking-ask" className="waking__ask">
           {STEPS[step].ask}
@@ -204,13 +222,19 @@ export default function WakingView({ model, onLater, initialStep = 0 }: WakingPr
           </>
         )}
 
+        {step === 3 && (
+          <Suspense fallback={null}>
+            <FaceStep avatar={avatar} onAvatar={onAvatar} />
+          </Suspense>
+        )}
+
         <div className="waking__foot" ref={foot}>
-          {step < 2 ? (
+          {step < LAST ? (
             <Button
               variant="primary"
               onClick={() => {
                 forward.current = true;
-                setStep((step + 1) as 1 | 2);
+                setStep((step + 1) as Step);
               }}
             >
               Next: {STEPS[step + 1].name}
@@ -229,8 +253,8 @@ export default function WakingView({ model, onLater, initialStep = 0 }: WakingPr
           <button type="button" className="waking__later focus-ring" onClick={onLater}>
             Later
           </button>
-          {step === 2 && !ready && <p className="waking__why">{notReadyBecause(model)}</p>}
-          {step === 2 && model.refusals.wake && (
+          {step === LAST && !ready && <p className="waking__why">{notReadyBecause(model)}</p>}
+          {step === LAST && model.refusals.wake && (
             <ProblemNote
               title="She is not awake yet: this could not be stored. Press Wake her to try again."
               reason={model.refusals.wake}

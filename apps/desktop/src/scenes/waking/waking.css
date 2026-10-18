@@ -140,6 +140,38 @@
   border-color: var(--foreground);
 }
 
+/* the Face step: three cards, each her at rest in that form */
+.waking__faces {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+}
+.waking__face {
+  display: grid;
+  justify-items: center;
+  gap: 8px;
+  padding: 12px 12px 10px;
+  font: inherit;
+  color: var(--muted-foreground);
+  background: transparent;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-fast), border-color var(--duration-fast) var(--ease-fast), color var(--duration-fast) var(--ease-fast);
+}
+.waking__face:hover {
+  color: var(--foreground);
+  border-color: var(--line-strong);
+}
+.waking__face[aria-checked="true"] {
+  color: var(--foreground);
+  border-color: var(--accent);
+  background: var(--wash);
+}
+.waking__face-name {
+  font-size: 0.875rem;
+}
+
 .waking__foot {
   display: flex;
   flex-wrap: wrap;

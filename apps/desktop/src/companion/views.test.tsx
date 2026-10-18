@@ -31,9 +31,21 @@ test("every fixture renders without throwing, and carries the state it is named 
 test("the seal and the tab carry no paper; every other state does", () => {
   expect(html("seal")).not.toContain("aw-paper");
   expect(html("tab")).not.toContain("aw-paper");
-  for (const form of ["tape", "hear", "slip", "welcome", "ledger"]) {
+  for (const form of ["tape", "hear", "face", "slip", "welcome", "ledger"]) {
     expect(html(form)).toContain(`data-kind="${form}"`);
   }
+});
+
+test("the face form draws her chosen face with what she heard or is doing under it; no other fixture draws a face", () => {
+  const hearing = html("face");
+  expect(hearing).toContain('data-avatar="b04-owl"');
+  expect(hearing).toContain("listening · release to send");
+  expect(hearing).toContain("Find every invoice over 30 days and draft a chase");
+  const speaking = html("face speaking");
+  expect(speaking).toContain('data-avatar="d08-origami"');
+  expect(speaking).toContain("speaking");
+  expect(speaking).toContain('data-tone="work"');
+  for (const id of fixtureIds.filter((f) => !f.startsWith("face"))) expect(html(id), id).not.toContain("data-avatar");
 });
 
 test("the seal is one button with a label that says what is waiting", () => {

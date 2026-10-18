@@ -15,6 +15,28 @@ describe("every fixture renders", () => {
   }
 });
 
+describe("her face", () => {
+  it("replaces the Bell exactly when a face is chosen, at the Bell's size, naming her pose", async () => {
+    // The face is its own chunk (first paint, ADR 0095): the first render asks for it, the Bell
+    // holds the slot until it has arrived, and the next render draws the face.
+    html("face");
+    await import("./face");
+    await new Promise((r) => setTimeout(r, 0));
+    const face = html("face");
+    expect(face).toContain('data-avatar="b04-owl"');
+    expect(face).not.toContain('class="bell"');
+    expect(face).toContain("width:420px");
+    expect(face).toContain('aria-label="Athena, working"');
+    for (const id of fixtureIds.filter((f) => f !== "face")) {
+      expect(html(id), id).toContain('class="bell"');
+      expect(html(id), id).not.toContain("data-avatar");
+    }
+    const origami = renderToStaticMarkup(<SurfaceView model={{ ...fixtures.typical!, avatar: "d08-origami" }} />);
+    expect(origami).toContain('data-avatar="d08-origami"');
+    expect(origami.match(/data-avatar=/g)).toHaveLength(1);
+  });
+});
+
 describe("the surface", () => {
   it("draws her, and names her pose to a screen reader", () => {
     expect(html("typical")).toContain('aria-label="Athena, resting"');
