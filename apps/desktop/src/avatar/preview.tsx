@@ -10,6 +10,7 @@
  *   &at=1.1                                        hold the line at 1.1 s (a still to look at)
  *   &autoplay=1  &loop=1                           play the line on load / over and over
  *   &size=520  &calm=1                             box size; render under Calm
+ *   &theme=dark|light  &bg=page|black              the page's theme, and its ground or black
  * ```
  *
  * The Play button (`data-avatar-play`) plays the line once; the perf gate's `avatar` drive presses
@@ -18,6 +19,7 @@
 import { useEffect, useMemo, useState } from "react";
 
 import { applyMotion, frames } from "@/lib/motion";
+import { applyTheme, isTheme } from "@/stores/shell";
 
 import { Avatar } from "./Avatar";
 import { fixtureDuration, fixtureSignal, isFixture, type Fixture } from "./fixtures";
@@ -57,7 +59,9 @@ export default function AvatarPreview() {
   const source = useMemo(() => pushSource(), []);
   const [playing, setPlaying] = useState(() => q.get("autoplay") === "1" && fixtureDuration(fixture) > 0);
 
+  const theme = q.get("theme");
   useEffect(() => applyMotion(calm ? "calm" : "full"), [calm]);
+  useEffect(() => applyTheme(isTheme(theme) ? theme : "dark"), [theme]);
 
   // a held state: one signal (a fixture held at `at`, or the phase at rest)
   useEffect(() => {
@@ -87,7 +91,15 @@ export default function AvatarPreview() {
   }, [playing, fixture, phase, source, q]);
 
   return (
-    <div style={{ background: "#000", minHeight: "100vh", padding: 24, color: "#cfe9ee", font: "13px system-ui, sans-serif" }}>
+    <div
+      style={{
+        background: q.get("bg") === "black" ? "#000" : "var(--background)",
+        minHeight: "100vh",
+        padding: 24,
+        color: "var(--foreground)",
+        font: "13px system-ui, sans-serif",
+      }}
+    >
       <div style={{ display: "flex", gap: 12, alignItems: "center", marginBottom: 16 }}>
         <button type="button" data-avatar-play disabled={playing || fixtureDuration(fixture) === 0} onClick={() => setPlaying(true)}>
           Play

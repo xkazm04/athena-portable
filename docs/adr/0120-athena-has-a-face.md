@@ -52,6 +52,18 @@ would use T4."
    as an iris (owl) or dim as a facet (origami), the owl's seam and the ripple that runs along its
    fibre tips with her voice, the origami's hinged hex mouth with light in the slit, floating
    crest, shards and tufts, breathing.
+   **She stands on the page, not in a box.** The canvas is transparent and premultiplied end to
+   end: the art's black is the page. Each layer's light carries alpha equal to its brightest
+   channel and is added, so her glow composites as light over the teal ground and over the light
+   theme alike; a solid part first erases what is behind it by its coverage and then adds its own
+   light (it hides the halo ring behind her head, never the page). The alpha is derived in the
+   shader rather than baked into the PNGs, because the light layers need the same rule at run time
+   and the art stays the spike's. The bodies were cut off at the bottom of both portraits, so the
+   lower figure dissolves (by height, earlier toward the sides) into a ground line the renderer
+   draws: a thin line of house cyan (#22d3ee core, #06b6d4 glow), a little wider than her base,
+   tapering at both ends, with a soft bloom and a pool of light where she meets it. It breathes
+   with her and brightens with her voice; under Calm it is still. Each form tunes it in its
+   `layers.json` (`rig.ground`: y, half_width, fade, curve).
 3. **Motion is layered.** `src/avatar/driver.ts` makes one pose a frame from the signal:
    procedural motion per phase (idle drifts and blinks, listening leans in and steadies, thinking
    slows and looks away with a soft pulse, speaking nods on stressed vowels, the gate holds still),

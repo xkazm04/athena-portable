@@ -519,6 +519,12 @@
    "bottom": 532.0,
    "x0": 471.0,
    "x1": 552.0
+  },
+  "ground": {
+   "y": 880,
+   "half_width": 330,
+   "fade": 280,
+   "curve": 170
   }
  },
  "rig_type": "glow",

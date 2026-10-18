@@ -269,7 +269,13 @@
    "wavelength_px": 120,
    "gain": 1.5
   },
-  "tip_pulse": 0.12
+  "tip_pulse": 0.12,
+  "ground": {
+   "y": 870,
+   "half_width": 300,
+   "fade": 300,
+   "curve": 110
+  }
  },
  "rig_type": "glow",
  "timing_s": {

@@ -78,7 +78,7 @@ export function Avatar({ avatar, size, source, label, className }: AvatarProps) 
       <canvas
         ref={canvasRef}
         aria-hidden="true"
-        style={{ display: "block", width: "100%", height: "100%", visibility: "hidden", borderRadius: "inherit" }}
+        style={{ display: "block", width: "100%", height: "100%", visibility: "hidden", background: "transparent" }}
       />
     </div>
   );

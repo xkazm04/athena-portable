@@ -2,9 +2,15 @@
  * The glow-being renderer - ADR 0120 ("Athena has a face"), the rig.
  *
  * A port of the spike's glow rig (spikes/avatar/web/src/glow.js) to TypeScript: beings made of light
- * on black, drawn in WebGL2 with one program and one draw per layer. Light layers carry alpha 0, so
- * overlapping light adds like light; solid parts (the owl's disc, the origami's facets and shards)
- * occlude by their coverage. On top of the layers: head parallax (an orthographic sphere warp with
+ * drawn in WebGL2 with one program and one draw per layer, on a TRANSPARENT canvas: the art was made
+ * on black, and black is the page. Every layer is premultiplied light whose alpha is its brightest
+ * channel, added (colour and coverage), so it composites as light over any page ground, teal or
+ * light, and the canvas never holds rgb above alpha; the backplate's faint strands fade on a soft
+ * curve. A solid part (the owl's disc, the origami's facets and shards) first takes out what lies
+ * behind it by its coverage, then adds its own light, so it hides her far parts but not the page.
+ * Nothing ends at the canvas border, and the lower figure dissolves into her ground: a thin line of
+ * house cyan the renderer draws itself, tapering at both ends, breathing with her and brightening
+ * with her voice (`rig.ground` in the form's layers.json). On top of the layers: head parallax (an orthographic sphere warp with
  * per-layer depth), the analytic halo ring (whole even when the head moves in front of it), bloom
  * from the textures' mip chain, eye lights that close as an iris (owl) or dim as a facet (origami),
  * the owl's seam and the ripple that runs out along its fibre tips with the voice, the origami's
@@ -29,6 +35,7 @@ const KIND: Record<LayerKind, number> = {
   aperture_glow: 8,
   halo: 9,
   pulse: 10,
+  ground: 11,
 };
 
 const VS = `#version 300 es
@@ -57,7 +64,7 @@ void main() {
   vec2 p = a_src;
   v_src = a_src;
   v_shade = 1.0;
-  if (u_kind == 0) { gl_Position = vec4(p * u_view.xy + u_view.zw, 0.0, 1.0); return; }
+  if (u_kind == 0 || u_kind == 11) { gl_Position = vec4(p * u_view.xy + u_view.zw, 0.0, 1.0); return; }
   if (u_kind == 4) { p.y = u_eye.y + (p.y - u_eye.y) * (1.0 - u_eye.z); p += u_gaze; }
   if (u_kind == 6) p.y -= u_aper.w * clamp((p.y - u_aper.x) / max(1.0, u_aper.y - u_aper.x), 0.0, 1.0);
   if (u_kind == 7) p.y += u_aper.w * clamp((u_aper.z - p.y) / max(1.0, u_aper.z - u_aper.y), 0.0, 1.0);
@@ -108,7 +115,39 @@ uniform vec4 u_aper;
 uniform vec2 u_aperX;
 uniform float u_voice;
 uniform vec4 u_eyeP;
+uniform vec2 u_size;         // the art, source px
+uniform vec4 u_gnd;          // ground: cx y half_width fade (0 fade: no ground)
+uniform float u_gndCurve;
+uniform float u_pxArt;       // source px per device px
+uniform vec3 u_lineCore;
+uniform vec3 u_lineGlow;
+uniform int u_pass;          // 1: a solid's erase pass (coverage only)
+uniform float u_body;        // how much a solid's dark interior still covers the page, 0..1
 out vec4 o;
+
+// Everything the canvas shows is premultiplied light over a transparent ground: rgb is light, alpha
+// is how much of the page behind it is covered. Light carries alpha equal to its brightest channel,
+// so it reads as light over any page colour and the canvas never holds rgb above alpha.
+float lmaxOf(vec3 c) { return max(c.r, max(c.g, c.b)); }
+
+// The figure's own frame: nothing ends at the canvas border, and the lower figure dissolves into
+// the ground line (earlier toward the line's ends, so the shoulders narrow into it).
+float frameMask(vec2 p) {
+  float m = 32.0;
+  float edge = smoothstep(0.0, m, min(min(p.x, u_size.x - p.x), min(p.y, u_size.y - p.y)));
+  if (u_gnd.w <= 0.0) return edge;
+  float dx = (p.x - u_gnd.x) / u_gnd.z;
+  float y = p.y + u_gndCurve * dx * dx;
+  // it ends a touch below the line, so the last of her meets the light rather than stopping short
+  float t = smoothstep(u_gnd.y - u_gnd.w, u_gnd.y + 0.08 * u_gnd.w, y);
+  return edge * (1.0 - t);
+}
+
+void emitLight(vec3 light, vec2 p) {
+  float m = frameMask(p);
+  light = max(light, vec3(0.0)) * m;
+  o = vec4(light, min(1.0, lmaxOf(light)));
+}
 
 float envAt(float delay) {
   float f = clamp(delay * 40.0, 0.0, 46.99);
@@ -121,7 +160,7 @@ void main() {
     float d = abs(length(v_src - u_ring.xy) - u_ring.z);
     float core = exp(-pow(d / u_ring.w, 2.0));
     float halo = 0.22 * exp(-d / (u_ring.w * 5.0));
-    o = vec4(u_ringCol * (1.25 * core + halo) * u_gain, 0.0);
+    emitLight(u_ringCol * (1.25 * core + halo) * u_gain, v_src);
     return;
   }
   if (u_kind == 8) {
@@ -136,12 +175,33 @@ void main() {
     float spill = 0.12 * exp(-dy / (g * 1.5 + 2.0));
     float fill = 0.32 * (1.0 - smoothstep(g * 0.7 * taper, g * 1.0 * taper, dy));
     float k = (core + rims + spill + fill) * across * clamp(u_aper.w / 4.0, 0.0, 1.0) * (0.55 + 0.6 * u_voice);
-    o = vec4(vec3(0.35, 0.95, 1.0) * k * u_gain, 0.0);
+    emitLight(vec3(0.35, 0.95, 1.0) * k * u_gain, v_src);
+    return;
+  }
+  if (u_kind == 11) { // the ground line: thin, tapering to points, a soft bloom, a pool where she meets it
+    float dx = (v_src.x - u_gnd.x) / (u_gnd.z * 1.18);
+    float ax = abs(dx);
+    float span = max(0.0, 1.0 - ax * ax);
+    float taper = pow(span, 1.6);
+    float dy = v_src.y - u_gnd.y;
+    float w = max(1.8, 0.9 * u_pxArt);
+    float core = exp(-pow(dy / w, 2.0)) * taper;
+    float glow = 0.5 * exp(-pow(dy / (w * 4.0), 2.0)) * taper;
+    float bloom = 0.16 * exp(-abs(dy) / (dy < 0.0 ? 34.0 : 16.0)) * span * span;
+    float pool = 0.3 * exp(-pow(dx / 0.42, 2.0)) * (dy < 0.0 ? exp(dy / 46.0) : exp(-dy / 12.0));
+    vec3 light = core * mix(u_lineCore, vec3(1.0), 0.35) + (glow + bloom + pool) * u_lineGlow;
+    float edge = smoothstep(0.0, 32.0, min(min(v_src.x, u_size.x - v_src.x), min(v_src.y, u_size.y - v_src.y)));
+    light = light * u_gain * edge;
+    o = vec4(light, min(1.0, lmaxOf(light)));
     return;
   }
   vec2 uv = (v_src - u_bbox.xy) / u_bbox.zw;
   if (uv.x < 0.0 || uv.y < 0.0 || uv.x > 1.0 || uv.y > 1.0) discard;
   vec4 c = texture(u_tex, uv);
+  if (u_pass == 1) {
+    o = vec4(0.0, 0.0, 0.0, c.a * u_occl * frameMask(v_src));
+    return;
+  }
   float irisFade = 1.0;
   if (u_kind == 4 && u_eyeP.x > 0.0) {
     float d = length(v_src - u_eyeP.yz);
@@ -170,7 +230,18 @@ void main() {
     light += u_bloom * u_gain * irisFade * (b1.rgb * (u_occl > 0.0 ? b1.a : 1.0) + 0.5 * b2.rgb * (u_occl > 0.0 ? b2.a : 1.0));
   }
   light *= edgeWin;
-  o = vec4(light, c.a * u_occl);
+  if (u_kind == 0) {
+    // the backplate: its black is the page; faint strands fade out on a soft curve, never clip
+    light *= smoothstep(0.012, 0.16, lmaxOf(light));
+  }
+  if (u_occl > 0.0) {
+    // a solid occludes by its coverage; alpha is never below its own light
+    float m = frameMask(v_src);
+    light = max(light, vec3(0.0));
+    o = vec4(light * m, min(1.0, max(c.a * u_occl * u_body, lmaxOf(light))) * m);
+  } else {
+    emitLight(light, v_src);
+  }
 }`;
 
 export interface GlowRenderer {
@@ -224,6 +295,58 @@ export function gridMesh(x: number, y: number, w: number, h: number, step: numbe
   return { pos, idx };
 }
 
+/**
+ * The canvas is transparent and premultiplied end to end: the page shows through wherever she is
+ * dark, and her light composites over any page colour (teal or light) as light, not as a black box.
+ */
+export const CONTEXT_ATTRIBUTES: WebGLContextAttributes = Object.freeze({
+  alpha: true,
+  premultipliedAlpha: true,
+  antialias: true,
+  preserveDrawingBuffer: false,
+});
+
+/** House cyan: the line's core (#22d3ee) and its glow (#06b6d4), linear 0..1. */
+export const LINE_CORE: readonly [number, number, number] = [34 / 255, 211 / 255, 238 / 255];
+export const LINE_GLOW: readonly [number, number, number] = [6 / 255, 182 / 255, 212 / 255];
+
+/**
+ * How much of the page a solid's darkest part still covers. The art's solids are dark crystal and
+ * dark fibre between lit edges; at 1 they read as a dark cut-out on the page (a box in all but
+ * shape, and a grey smudge on the light theme), at 0 as light alone. A little keeps them a body.
+ */
+export const BODY_COVER = 0.06;
+
+type Ground = NonNullable<LoadedForm["spec"]["rig"]["ground"]>;
+
+/**
+ * Her ground line this frame: where it lies, the box it is drawn in, and how bright it is. It
+ * breathes with her idle breath and brightens a little with her voice; at rest (activity 0, silent)
+ * it is the same every frame, which is what Calm draws.
+ */
+export function groundLine(ground: Ground, artWidth: number, pose: Pick<Pose, "t" | "activity" | "voice">) {
+  const cx = ground.x ?? artWidth / 2;
+  const reach = ground.half_width * 1.18; // the taper runs a little past the figure's base
+  const breath = 0.5 - 0.5 * Math.cos((2 * Math.PI * pose.t) / 5.2);
+  const gain = 0.85 * (1 + 0.1 * pose.activity * breath) * (1 + 0.35 * Math.min(1.2, Math.max(0, pose.voice)));
+  return {
+    cx,
+    y: ground.y,
+    halfWidth: ground.half_width,
+    gain,
+    box: [cx - reach, ground.y - 120, 2 * reach, 180] as [number, number, number, number],
+  };
+}
+
+/** How much of the figure shows at source point (x, y): the shader's dissolve into the ground, in JS. */
+export function groundMask(ground: Ground, artWidth: number, x: number, y: number): number {
+  const cx = ground.x ?? artWidth / 2;
+  const dx = (x - cx) / ground.half_width;
+  const yy = y + ground.curve * dx * dx;
+  const k = Math.min(1, Math.max(0, (yy - (ground.y - ground.fade)) / (1.08 * ground.fade)));
+  return 1 - k * k * (3 - 2 * k);
+}
+
 const smooth01 = (x: number) => {
   const y = Math.min(1, Math.max(0, x));
   return y * y * (3 - 2 * y);
@@ -249,8 +372,7 @@ export async function createGlowRenderer(
   const R = spec.rig;
   const W = spec.width;
   const H = spec.height;
-  const opts: WebGLContextAttributes = { alpha: false, premultipliedAlpha: true, antialias: true, preserveDrawingBuffer: false };
-  const first = canvas.getContext("webgl2", opts);
+  const first = canvas.getContext("webgl2", CONTEXT_ATTRIBUTES);
   if (!first) throw new Error("WebGL2 unavailable");
   const gl: WebGL2RenderingContext = first;
 
@@ -328,7 +450,9 @@ export async function createGlowRenderer(
     const ap = R.aperture;
     draws = [];
     let fi = 0;
-    for (const l of spec.layers) {
+    const ground = R.ground;
+    const layers: LayerSpec[] = ground ? [...spec.layers, { name: "ground", kind: "ground", mode: "light" }] : spec.layers;
+    for (const l of layers) {
       let bb: [number, number, number, number] = l.bbox ?? [0, 0, W, H];
       if (l.kind === "halo") {
         const m = l.meta ?? {};
@@ -340,8 +464,9 @@ export async function createGlowRenderer(
         if (!ap) continue;
         bb = [ap.x0 - 10, ap.top - 20, ap.x1 - ap.x0 + 20, ap.bottom - ap.top + 40];
       }
+      if (l.kind === "ground" && ground) bb = groundLine(ground, W, { t: 0, activity: 0, voice: 0 }).box;
       if (l.file && !textures.has(l.file)) continue;
-      const step = l.kind === "static" ? 1e6 : l.kind.startsWith("aperture") ? 2 : 8;
+      const step = l.kind === "static" || l.kind === "ground" ? 1e6 : l.kind.startsWith("aperture") ? 2 : 8;
       const { pos, idx } = gridMesh(bb[0], bb[1], bb[2], bb[3], step);
       const vao = gl.createVertexArray();
       const vbo = gl.createBuffer();
@@ -439,7 +564,7 @@ export async function createGlowRenderer(
     const ap = R.aperture;
 
     gl.viewport(0, 0, canvas.width, canvas.height);
-    gl.clearColor(0, 0, 0, 1);
+    gl.clearColor(0, 0, 0, 0);
     gl.clear(gl.COLOR_BUFFER_BIT);
     gl.uniform4fv(loc("u_view"), view);
     gl.uniform2f(loc("u_headC"), head.center[0], head.center[1]);
@@ -473,6 +598,19 @@ export async function createGlowRenderer(
       gl.uniform2f(loc("u_aperX"), ap.x0, ap.x1);
     }
     const pulse = pose.pulse;
+    gl.uniform2f(loc("u_size"), W, H);
+    gl.uniform1i(loc("u_pass"), 0);
+    gl.uniform1f(loc("u_body"), BODY_COVER);
+    const gr = R.ground;
+    const line = gr ? groundLine(gr, W, pose) : null;
+    if (gr && line) {
+      gl.uniform4f(loc("u_gnd"), line.cx, gr.y, gr.half_width, gr.fade);
+      gl.uniform1f(loc("u_gndCurve"), gr.curve);
+    } else gl.uniform4f(loc("u_gnd"), 0, 0, 1, 0);
+    gl.uniform1f(loc("u_pxArt"), W / Math.max(1, Math.min(canvas.width, canvas.height)));
+    gl.uniform3f(loc("u_lineCore"), LINE_CORE[0], LINE_CORE[1], LINE_CORE[2]);
+    gl.uniform3f(loc("u_lineGlow"), LINE_GLOW[0], LINE_GLOW[1], LINE_GLOW[2]);
+    gl.blendFunc(gl.ONE, gl.ONE);
 
     for (const d of draws) {
       const l = d.spec;
@@ -481,9 +619,11 @@ export async function createGlowRenderer(
       gl.uniform1i(loc("u_kind"), kind);
       gl.uniform1f(loc("u_depth"), l.depth ?? 0);
       gl.uniform1f(loc("u_follow"), l.follow ?? (kind === 0 || kind === 1 ? 0 : 1));
-      const isLight = l.mode === "light" || kind === 8 || kind === 9;
+      // the backplate counts as light: its black is the page, not a box
+      const isLight = l.mode === "light" || kind === 0 || kind === 8 || kind === 9 || kind === 11;
       gl.uniform1f(loc("u_occl"), isLight ? 0 : (l.occl ?? 1));
       let gain = l.gain ?? 1;
+      if (kind === 11 && line) gain = line.gain;
       if (kind === 5) gain *= (0.9 + (l.voice_gain ?? 2) * Math.max(voice * 0.8, pose.open) * 0.6) * (1 + 0.25 * pulse);
       if (kind === 10)
         gain *=
@@ -536,6 +676,15 @@ export async function createGlowRenderer(
         gl.uniform4f(loc("u_bbox"), d.bbox[0], d.bbox[1], d.bbox[2], d.bbox[3]);
       }
       gl.bindVertexArray(d.vao);
+      if (!isLight) {
+        // a solid first takes out what lies behind it by its coverage (the ring, the backplate),
+        // then adds its own light like any light: so it hides her far parts, never the page
+        gl.blendFunc(gl.ZERO, gl.ONE_MINUS_SRC_ALPHA);
+        gl.uniform1i(loc("u_pass"), 1);
+        gl.drawElements(gl.TRIANGLES, d.count, gl.UNSIGNED_INT, 0);
+        gl.blendFunc(gl.ONE, gl.ONE);
+        gl.uniform1i(loc("u_pass"), 0);
+      }
       gl.drawElements(gl.TRIANGLES, d.count, gl.UNSIGNED_INT, 0);
     }
     gl.bindVertexArray(null);

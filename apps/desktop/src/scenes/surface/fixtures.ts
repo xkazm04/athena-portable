@@ -46,6 +46,7 @@ export const fixtures: Record<string, SurfaceModel> = {
   hearing: make({ athena: { state: "hear", cards: 0, line: "" } }),
   /** A face chosen (the ADR on Athena's face): her Avatar stands where the Bell would. */
   face: make({ avatar: "b04-owl", athena: { state: "face", cards: 0, line: "listening" } }),
+  "face origami": make({ avatar: "d08-origami", athena: { state: "face", cards: 0, line: "listening" } }),
   asking: make({ athena: { state: "slip", cards: 2, line: "" } }),
   heavy: make({
     apps: Array.from({ length: 9 }, (_, i) => ({

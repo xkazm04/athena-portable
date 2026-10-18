@@ -19,7 +19,9 @@ export type LayerKind =
   | "aperture_lower"
   | "aperture_glow"
   | "halo"
-  | "pulse";
+  | "pulse"
+  /** Not in any layers.json: the ground line the renderer adds when the rig names a `ground`. */
+  | "ground";
 
 export interface LayerSpec {
   name: string;
@@ -50,6 +52,12 @@ export interface RigSpec {
   tip_pulse?: number;
   glint?: { gain: number; width_px: number };
   aperture?: { seam_y: number; open_frac?: number; top: number; bottom: number; x0: number; x1: number };
+  /**
+   * Her ground: a line of light at `y` (source px), `half_width` either side of `x` (default the
+   * art's centre), that the lower figure dissolves into. The figure fades out over `fade` px above
+   * the line, and `curve` px earlier at the line's ends, so the shoulders narrow into it.
+   */
+  ground?: { y: number; half_width: number; x?: number; fade: number; curve: number };
 }
 
 export interface FormSpec {

@@ -27,7 +27,8 @@ describe("her face", () => {
     expect(face).not.toContain('class="bell"');
     expect(face).toContain("width:420px");
     expect(face).toContain('aria-label="Athena, working"');
-    for (const id of fixtureIds.filter((f) => f !== "face")) {
+    expect(html("face origami")).toContain('data-avatar="d08-origami"');
+    for (const id of fixtureIds.filter((f) => !f.startsWith("face"))) {
       expect(html(id), id).toContain('class="bell"');
       expect(html(id), id).not.toContain("data-avatar");
     }
