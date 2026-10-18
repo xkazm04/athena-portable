@@ -50,6 +50,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import os
 import secrets
 import socket
 import sqlite3
@@ -712,11 +713,22 @@ def resolve_token(token: str = "", token_file: str | None = None) -> tuple[str, 
             return str(data["token"]), str(path)
     minted = new_token()
     path.parent.mkdir(parents=True, exist_ok=True)
-    path.write_text(json.dumps({"token": minted}), encoding="utf-8")
-    # A filesystem without modes is not a reason to refuse to start; on Windows the user's home
-    # directory is the protection, as it is for every other credential a CLI keeps there.
+    # Created owner-only and replaced into place, so no other user ever finds it with the umask's
+    # mode, however briefly, and a reader never sees half a token. A filesystem without modes
+    # ignores the 0o600; on Windows the user's home directory is the protection, as it is for
+    # every other credential a CLI keeps there.
+    staging = path.with_name(f"{path.name}.{secrets.token_hex(4)}.tmp")
+    descriptor = os.open(staging, os.O_WRONLY | os.O_CREAT | os.O_EXCL, 0o600)
+    try:
+        with os.fdopen(descriptor, "w", encoding="utf-8") as handle:
+            handle.write(json.dumps({"token": minted}))
+        os.replace(staging, path)
+    except BaseException:
+        with suppress(OSError):
+            staging.unlink()
+        raise
     with suppress(OSError):
-        path.chmod(0o600)
+        path.chmod(0o600)  # belt and braces for a filesystem that ignored the creation mode
     return minted, str(path)
 
 
