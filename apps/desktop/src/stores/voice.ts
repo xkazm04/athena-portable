@@ -29,6 +29,7 @@
 import { create } from "zustand";
 
 import { DaemonApi, type ExecuteRow } from "@/lib/api";
+import { addMotion, addVisemes, beginLine, clearLine, dropLine, stopLine } from "@/lib/face-timeline";
 import type { BridgeTool } from "@/lib/bridge";
 import {
   forgetUnsure,
@@ -323,15 +324,26 @@ export const useVoice = create<VoiceState>((set, get) => {
         // so the release still sends `stop` — the daemon's `barge_in` for it follows.
         if (get().phase === "listening") {
           player?.drop(event.generation);
+          dropLine(event.generation);
           break;
         }
+        beginLine(event.generation, event.sample_rate);
         set({ phase: "speaking", generation: event.generation, speakingText: event.text, heard: "" });
+        break;
+      // Her face's timeline (ADR on Athena's face): held outside the store, read by the producer
+      // against the player's clock. A dropped or older line's events are ignored there.
+      case "voice.visemes":
+        addVisemes(event);
+        break;
+      case "voice.motion":
+        addMotion(event);
         break;
       case "voice.stopped":
         // Nothing of the generation outlives its `voice.stopped`: a barge-in stops its sources
         // first, and `finished` then forgets the generation, drop mark included.
         if (event.reason === "barge_in") player?.drop(event.generation);
         player?.finished(event.generation);
+        stopLine(event.generation, event.reason);
         if (get().generation === event.generation) {
           set({
             generation: null,
@@ -448,6 +460,7 @@ export const useVoice = create<VoiceState>((set, get) => {
         socket = null;
         proposed = new Map();
         endListening();
+        clearLine();
         set((s) => ({
           generation: null,
           speakingText: "",
@@ -490,7 +503,10 @@ export const useVoice = create<VoiceState>((set, get) => {
       if (!(await publish(taking)) || token !== pressToken) return;
       const live = await ensureSocket();
       if (!live || token !== pressToken) return;
-      if (state.generation !== null) player?.drop(state.generation);
+      if (state.generation !== null) {
+        player?.drop(state.generation);
+        dropLine(state.generation);
+      }
       const taken = await captureOf(deps.capture, focused.tabId, focused.origin);
       useRun.setState({ captureNow: taken.why });
       // The key came up while the capture was taken: no start, no microphone.
@@ -544,7 +560,11 @@ export const useVoice = create<VoiceState>((set, get) => {
       const live = await ensureSocket();
       // A refusal or a close that lands during an await leaves its own phase and reason: say stops.
       if (!live || socket !== live || !live.open) return;
-      if (get().generation !== null) player?.drop(get().generation as number);
+      const speaking = get().generation;
+      if (speaking !== null) {
+        player?.drop(speaking);
+        dropLine(speaking);
+      }
       const taken = await captureOf(deps.capture, focused.tabId, focused.origin);
       useRun.setState({ captureNow: taken.why });
       if (socket !== live || !live.open) return;
@@ -563,6 +583,7 @@ export const useVoice = create<VoiceState>((set, get) => {
 
     close() {
       endListening();
+      clearLine();
       socket?.close();
       socket = null;
       player = null;

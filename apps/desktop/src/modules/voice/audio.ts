@@ -17,6 +17,7 @@ export class PreviewPlayer {
   private bins: Uint8Array<ArrayBuffer> | null = null;
   private scratch: Float32Array<ArrayBuffer> | null = null;
   private settle: (() => void) | null = null;
+  private watchers = new Set<() => void>();
 
   constructor(private readonly audioContext: () => AudioContext) {}
 
@@ -40,7 +41,7 @@ export class PreviewPlayer {
     this.source = source;
     // A context created outside a gesture starts suspended in some engines; resuming is harmless.
     void context.resume?.();
-    return new Promise((resolve) => {
+    const done = new Promise<void>((resolve) => {
       this.settle = resolve;
       source.onended = () => {
         if (this.source === source) this.source = null;
@@ -48,6 +49,8 @@ export class PreviewPlayer {
       };
       source.start();
     });
+    this.notify();
+    return done;
   }
 
   stop(): void {
@@ -61,6 +64,20 @@ export class PreviewPlayer {
       }
     }
     this.finish();
+  }
+
+  /** Whether a clip is playing: what a preview face (`previewFaceSource`) runs its loop on. */
+  playing(): boolean {
+    return this.source !== null;
+  }
+
+  /**
+   * Be told when a clip starts or stops, so a preview face starts its frame loop with the clip
+   * instead of polling for one. Returns the unwatch.
+   */
+  watch(listener: () => void): () => void {
+    this.watchers.add(listener);
+    return () => void this.watchers.delete(listener);
   }
 
   /** Byte frequency bins while a clip plays, else `null`. */
@@ -90,6 +107,11 @@ export class PreviewPlayer {
     const settle = this.settle;
     this.settle = null;
     settle?.();
+    if (settle) this.notify();
+  }
+
+  private notify(): void {
+    for (const f of [...this.watchers]) f();
   }
 }
 

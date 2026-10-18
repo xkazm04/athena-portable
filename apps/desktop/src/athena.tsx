@@ -8,7 +8,8 @@
  * is not started here. The connectors store is Main's to act on; here it is a read-only mirror
  * (ADR 0116, amending 0026), read once for each connector card that arrives and again when Main
  * says a connector moved, so the card can name the account it acts as. The halo's producer
- * (ADR 0027) starts here too: it reads the voice and the run, so it lives where they do.
+ * (ADR 0027) starts here too: it reads the voice and the run, so it lives where they do, and so
+ * does her face's (`lib/face-signal.ts`), which also reads the player's clock.
  *
  * A store a *view* starts stops being true (the day-zero rule of 0013), so `Live` only reads.
  */
@@ -16,6 +17,7 @@ import React, { lazy, Suspense, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 
 import Live from "@/companion/live";
+import { startFace } from "@/lib/face-signal";
 import { startHalo } from "@/lib/halo";
 import { followCards, startConnectors } from "@/stores/connectors";
 import { startDaemon } from "@/stores/daemon";
@@ -57,9 +59,12 @@ function Root() {
     void startVoice();
     // The halo has one producer and it is this window, because the voice and the run are (ADR 0027).
     const stopHalo = startHalo();
+    // Her face has one producer too, for the same reason; it mirrors to Main (ADR on Athena's face).
+    const stopFace = startFace();
     return () => {
       stopMirror();
       stopHalo();
+      stopFace();
       stopRun();
     };
   }, []);

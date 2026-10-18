@@ -46,7 +46,8 @@ export interface FaceSignal {
   level: number;
   viseme: Viseme | null;
   open: number;
-  motion: { yaw: number; pitch: number; roll: number; blink: number; gazeX: number; gazeY: number } | null;
+  /** `blink` is `null` when the motion track does not drive the eyelids: the face keeps its own blinks. */
+  motion: { yaw: number; pitch: number; roll: number; blink: number | null; gazeX: number; gazeY: number } | null;
   generation: number;
 }
 

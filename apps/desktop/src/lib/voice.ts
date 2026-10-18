@@ -131,6 +131,20 @@ export function currentLevel(): number {
   return lastPlayer?.level() ?? 0;
 }
 
+/**
+ * Where her voice is in `generation`'s line, in samples from its first audio sample, for the face
+ * (`lib/face-signal.ts`): read the way `currentLevel` is, from the player that played last.
+ * `null` when no player holds a schedule for that line.
+ */
+export function playbackSample(generation: number): number | null {
+  return lastPlayer?.position(generation) ?? null;
+}
+
+/** Whether her voice is still sounding `generation`'s line: true through the tail after its `voice.stopped`. */
+export function playbackSounding(generation: number): boolean {
+  return lastPlayer?.playing(generation) ?? false;
+}
+
 // -- the socket --------------------------------------------------------------------------------
 
 /** The subset of `WebSocket` the client uses, so a test can hand in a fake. */
@@ -367,6 +381,16 @@ export async function checkMicrophone(
 
 // -- the player --------------------------------------------------------------------------------
 
+/** One chunk as the player scheduled it: when it starts, how long it plays, which samples it is. */
+interface ScheduledChunk {
+  /** Start, on the context's clock, in seconds. */
+  at: number;
+  duration: number;
+  /** Its first sample's index in the line. */
+  from: number;
+  count: number;
+}
+
 /**
  * Schedules PCM16 back to back and drops a generation on demand.
  *
@@ -385,6 +409,8 @@ export class Player {
   private sources = new Map<number, AudioBufferSourceNode[]>();
   private ends = new Map<number, number>();
   private dropped = new Set<number>();
+  /** Every chunk of a generation as scheduled: its start on the context clock and its samples. */
+  private chunks = new Map<number, ScheduledChunk[]>();
 
   constructor(private readonly audioContext: () => AudioContext) {}
 
@@ -412,13 +438,22 @@ export class Player {
     const at = Math.max(context.currentTime, this.ends.get(generation) ?? 0);
     source.start(at);
     this.ends.set(generation, at + buffer.duration);
+    const scheduled = this.chunks.get(generation) ?? [];
+    const last = scheduled[scheduled.length - 1];
+    scheduled.push({ at, duration: buffer.duration, from: last ? last.from + last.count : 0, count: samples.length });
+    this.chunks.set(generation, scheduled);
     const list = this.sources.get(generation) ?? [];
     list.push(source);
     this.sources.set(generation, list);
     source.onended = () => {
       const remaining = this.sources.get(generation)?.filter((s) => s !== source) ?? [];
-      if (remaining.length) this.sources.set(generation, remaining);
-      else this.sources.delete(generation);
+      if (remaining.length) {
+        this.sources.set(generation, remaining);
+        return;
+      }
+      this.sources.delete(generation);
+      // The last word of a line the daemon has finished: its schedule goes with it.
+      if (!this.ends.has(generation)) this.chunks.delete(generation);
     };
   }
 
@@ -428,6 +463,33 @@ export class Player {
     this.scratch ??= new Float32Array(this.analyser.fftSize);
     this.analyser.getFloatTimeDomainData(this.scratch);
     return rms(this.scratch);
+  }
+
+  /**
+   * How far `generation`'s line has played, in samples of the line from its first sample: the
+   * context's clock, less the output latency where the engine reports it, mapped onto the chunks
+   * as they were scheduled back to back. Before the first chunk it is 0; in an underrun (a chunk
+   * that started after the one before it ended) it holds at the end of the chunk that played;
+   * after the last chunk it is the samples received so far. `null` with no schedule.
+   */
+  position(generation: number): number | null {
+    const scheduled = this.chunks.get(generation);
+    const context = this.context;
+    if (!scheduled?.length || context === null) return null;
+    const latency = (context as { outputLatency?: number }).outputLatency;
+    const now = context.currentTime - (typeof latency === "number" && latency > 0 && latency < 1 ? latency : 0);
+    // The last chunk that started by now: chunks are in start order, so a binary search finds it.
+    let lo = 0;
+    let hi = scheduled.length - 1;
+    if (now < scheduled[0].at) return 0;
+    while (lo < hi) {
+      const mid = (lo + hi + 1) >> 1;
+      if (scheduled[mid].at <= now) lo = mid;
+      else hi = mid - 1;
+    }
+    const chunk = scheduled[lo];
+    const played = chunk.duration > 0 ? Math.min(1, (now - chunk.at) / chunk.duration) : 1;
+    return chunk.from + Math.round(chunk.count * played);
   }
 
   /** Whether anything of `generation` is still scheduled. */
@@ -446,17 +508,23 @@ export class Player {
     }
     this.sources.delete(generation);
     this.ends.delete(generation);
+    this.chunks.delete(generation);
   }
 
   /**
    * Forget a generation once its `voice.stopped` has been handled, so the set of dropped ones does
    * not grow forever. The daemon sends `voice.stopped` after the generation's last chunk on the
    * same ordered socket, so no chunk of it can arrive after this.
+   *
+   * Synthesis runs ahead of playback, so a line that ended with `done` can still be sounding: its
+   * sources and its schedule stay until the last of them ends, so `level`, `playing` and
+   * `position` follow her voice to its last word (the face reads them; ADR on Athena's face). A
+   * dropped line has no sources left and is forgotten at once.
    */
   finished(generation: number): void {
-    this.sources.delete(generation);
     this.ends.delete(generation);
     this.dropped.delete(generation);
+    if (!this.sources.has(generation)) this.chunks.delete(generation);
   }
 
   /** Whether the player holds anything of `generation`: sources, a schedule or a drop mark. */

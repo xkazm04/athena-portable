@@ -14,6 +14,8 @@ import {
   VoiceSocket,
   currentLevel,
   downsample,
+  playbackSample,
+  playbackSounding,
   int16ToBytes,
   openMicrophone,
   pcm16ToFloat32,
@@ -273,5 +275,97 @@ describe("her reply plays into a context that is running", () => {
     player.play(1, new Uint8Array([0, 1, 0, 2]), 16000);
     player.play(1, new Uint8Array([0, 1, 0, 2]), 16000);
     expect(resume).not.toHaveBeenCalled();
+  });
+});
+
+describe("the player's clock, for her face", () => {
+  /** A context whose clock the test moves, at 1000 Hz so one second is 1000 samples. */
+  function clocked() {
+    const sources: Array<{ at: number; onended: (() => void) | null }> = [];
+    const context = {
+      state: "running",
+      currentTime: 0,
+      destination: {},
+      createAnalyser: () => ({ fftSize: 0, connect: () => {}, getFloatTimeDomainData: () => {} }),
+      createBuffer: (_c: number, length: number, rate: number) => ({ duration: length / rate, copyToChannel: () => {} }),
+      createBufferSource: () => {
+        const source = {
+          at: 0,
+          buffer: null as unknown,
+          connect: () => {},
+          start: (at: number) => {
+            source.at = at;
+          },
+          stop: () => {},
+          onended: null as (() => void) | null,
+        };
+        sources.push(source);
+        return source;
+      },
+    };
+    const player = new Player(() => context as unknown as AudioContext);
+    return { context, player, sources };
+  }
+
+  /** `n` samples of PCM16. */
+  const pcm = (n: number) => new Uint8Array(n * 2);
+
+  it("maps the context's clock onto the line's samples across back-to-back chunks", () => {
+    const { context, player } = clocked();
+    context.currentTime = 1;
+    player.play(3, pcm(100), 1000); // 1.0 .. 1.1
+    player.play(3, pcm(100), 1000); // 1.1 .. 1.2
+    expect(player.position(3)).toBe(0);
+    context.currentTime = 1.05;
+    expect(player.position(3)).toBe(50);
+    context.currentTime = 1.15;
+    expect(player.position(3)).toBe(150);
+    context.currentTime = 5;
+    expect(player.position(3)).toBe(200);
+    expect(player.position(4)).toBeNull();
+  });
+
+  it("holds at the end of what played through an underrun, then goes on from the late chunk", () => {
+    const { context, player } = clocked();
+    player.play(1, pcm(100), 1000); // 0 .. 0.1
+    context.currentTime = 0.3; // the next chunk arrives late
+    player.play(1, pcm(100), 1000); // 0.3 .. 0.4
+    context.currentTime = 0.25;
+    expect(player.position(1)).toBe(100);
+    context.currentTime = 0.35;
+    expect(player.position(1)).toBe(150);
+  });
+
+  it("subtracts the output latency the engine reports, so the mouth matches what is heard", () => {
+    const { context, player } = clocked();
+    player.play(1, pcm(1000), 1000);
+    (context as unknown as { outputLatency: number }).outputLatency = 0.04;
+    context.currentTime = 0.5;
+    expect(player.position(1)).toBe(460);
+  });
+
+  it("keeps a finished line's clock through its tail and forgets it when the last source ends", () => {
+    const { context, player, sources } = clocked();
+    player.play(2, pcm(100), 1000);
+    player.play(2, pcm(100), 1000);
+    player.finished(2); // voice.stopped done, synthesis ahead of playback
+    context.currentTime = 0.15;
+    expect(playbackSample(2)).toBe(150);
+    expect(playbackSounding(2)).toBe(true);
+    sources[0].onended?.();
+    expect(player.position(2)).toBe(150);
+    sources[1].onended?.();
+    expect(player.position(2)).toBeNull();
+    expect(playbackSounding(2)).toBe(false);
+  });
+
+  it("a dropped line has no clock", () => {
+    const { player } = clocked();
+    player.play(2, pcm(100), 1000);
+    player.drop(2);
+    expect(player.position(2)).toBeNull();
+    expect(player.holds(2)).toBe(true);
+    player.finished(2);
+    expect(player.holds(2)).toBe(false);
   });
 });
