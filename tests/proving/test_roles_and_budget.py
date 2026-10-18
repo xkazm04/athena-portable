@@ -180,6 +180,33 @@ def test_a_spent_purse_makes_no_call_and_writes_a_budget_row() -> None:
     assert log.rows[-1]["error_reason"] == "budget_exhausted" and log.rows[-1]["is_error"]
 
 
+def test_a_role_client_that_raises_leaves_an_engine_error_row_and_the_run_goes_on() -> None:
+    def boom(system: str, prompt: str) -> str:
+        raise RuntimeError("temp dir full, key sk-secret")
+
+    log = RunLog()
+    caller = RoleCaller(Budget({NEMOTRON: 1.0, CLAUDE: 1.0}), log)
+    role = FakeRole(boom)
+
+    reply = caller.call(role, "attacker", "s", "p")
+    answer = caller.call_json(role, "attacker", "s", "p", {})
+
+    assert reply.error_reason == "engine_error" and not answer.ok
+    assert [row["error_reason"] for row in log.rows] == ["engine_error", "engine_error"]
+    assert "sk-secret" not in json.dumps(log.rows) + reply.detail
+    assert "RuntimeError" in reply.detail
+    assert caller.budget.calls(NEMOTRON) == 2
+
+
+def test_an_assertion_from_a_role_client_still_propagates() -> None:
+    def tripwire(system: str, prompt: str) -> str:
+        raise AssertionError("a generator was asked to judge")
+
+    caller = RoleCaller(Budget({NEMOTRON: 1.0, CLAUDE: 1.0}), RunLog())
+    with pytest.raises(AssertionError):
+        caller.call(FakeRole(tripwire), "attacker", "s", "p")
+
+
 def test_a_shared_purse_overshoots_by_one_call_per_worker_in_flight_and_no_more() -> None:
     """The purse is checked before a call and charged after it, so every worker already past the
     check when it ran dry still spends. The bound is one call per worker, not one call."""
