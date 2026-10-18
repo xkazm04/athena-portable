@@ -58,3 +58,7 @@ permits:
 overlay's `neverSweep` names tests). Files in no context: `apps/desktop/src/lib/execute.ts`,
 `examples/hirelane/lib/acts.ts`, `src/athena/channels/voice/speech.py` and its test; the map
 also still lists files this run deleted (`rails.css`, PushToTalk). A Personas rescan fixes both.
+
+## Drained 2026-10-18 (Lane B pass over five contexts)
+
+Built, each marked `status: built` in its findings file: core-gate-and-ledger nested params (74e7aa1) and racing decline (a4f8374); contracts-seam connector executor (0c92247); proving-characters-gauntlet proof 1 (9757f7f); proving-core unpriced purse (675b36f) and raising role client (609f0c5); daemon-service token file (e15d64a). Still open from those contexts: daemon-service session/pin/tool pruning (M, the unregister act is a design call), the runner.py hand-kept copies card, the bench/showcase world leak, extract_json cost.
