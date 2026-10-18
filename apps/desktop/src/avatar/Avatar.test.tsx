@@ -20,9 +20,20 @@ const source: FaceSource = {
   },
 };
 
-async function settle() {
-  // the runtime arrives by a dynamic import; let it land and run
-  for (let i = 0; i < 20; i++) await act(async () => new Promise((r) => setTimeout(r, 5)));
+/**
+ * The runtime arrives by a dynamic import, which under a loaded full suite takes far longer than
+ * alone: wait for every face to have answered, not for a fixed time.
+ */
+async function settle(host: HTMLElement) {
+  await vi.waitFor(
+    async () => {
+      await act(async () => new Promise((r) => setTimeout(r, 5)));
+      const boxes = [...host.querySelectorAll("[data-avatar]")];
+      expect(boxes.length).toBeGreaterThan(0);
+      for (const box of boxes) expect(box.getAttribute("data-face")).not.toBe("loading");
+    },
+    { timeout: 10_000, interval: 20 },
+  );
 }
 
 afterEach(() => {
@@ -45,7 +56,7 @@ describe("<Avatar> where WebGL2 is not there", () => {
         </>,
       );
     });
-    await settle();
+    await settle(host);
     const boxes = [...host.querySelectorAll("[data-avatar]")] as HTMLElement[];
     expect(boxes).toHaveLength(2);
     for (const box of boxes) {
