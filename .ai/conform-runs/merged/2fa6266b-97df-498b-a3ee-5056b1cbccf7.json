@@ -1,0 +1,22 @@
+{
+ "schema": "conform-run/1",
+ "worker": "2fa6266b-97df-498b-a3ee-5056b1cbccf7",
+ "subject": "multi-provider-gateway-plane",
+ "evaluatedAt": "2026-10-18T21:26:09.374373+00:00",
+ "provider": "agy",
+ "model": "gemini-3.8-flash-high",
+ "pairs": [],
+ "declined": [
+  {
+   "subject": "multi-provider-gateway-plane",
+   "context": "voice-channel",
+   "reason": "the seat returned unknown"
+  },
+  {
+   "subject": "multi-provider-gateway-plane",
+   "context": "desktop-client-lib",
+   "reason": "the seat returned unknown"
+  }
+ ],
+ "consults": []
+}
