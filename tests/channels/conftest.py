@@ -139,7 +139,10 @@ class VoiceClient:
                     self.matched.add(index)
                     return event
             if self.next(timeout=max(0.01, deadline - time.monotonic())) is None:
-                raise AssertionError(f"the socket closed before {kind}: {self.kinds()}")
+                raise AssertionError(
+                    f"the socket closed before {kind} (close code {self.ws.close_code}): "
+                    f"{self.kinds()}"
+                )
         raise AssertionError(f"no {kind} within {timeout}s: {self.kinds()}")
 
     def kinds(self) -> list[str]:
