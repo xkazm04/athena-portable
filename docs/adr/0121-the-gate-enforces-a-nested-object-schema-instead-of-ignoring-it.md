@@ -1,4 +1,4 @@
-# 0120. The gate enforces a nested object schema instead of ignoring it
+# 0121. The gate enforces a nested object schema instead of ignoring it
 
 Date: 2026-10-18
 

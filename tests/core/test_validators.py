@@ -197,7 +197,7 @@ NESTED: dict[str, Any] = {
 
 
 def test_a_nested_object_is_held_to_its_declared_required_enum_and_extras() -> None:
-    """ADR 0120: the gate enforces what a nested object schema declares."""
+    """ADR 0121: the gate enforces what a nested object schema declares."""
     assert check_schema({"filter": {"status": "open"}}, NESTED).ok
     missing = check_schema({"filter": {}}, NESTED)
     assert not missing.ok

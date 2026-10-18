@@ -236,7 +236,7 @@ def test_a_shared_purse_overshoots_by_one_call_per_worker_in_flight_and_no_more(
 
 
 def test_unpriced_calls_weigh_against_the_cap_but_not_against_the_reported_spend() -> None:
-    """ADR 0121: 1000 calls that came back with no cost used to leave the purse open for ever."""
+    """ADR 0122: 1000 calls that came back with no cost used to leave the purse open for ever."""
     budget = Budget({NEMOTRON: 1.0, CLAUDE: 10.0})
     admitted = 0
     for _ in range(1000):

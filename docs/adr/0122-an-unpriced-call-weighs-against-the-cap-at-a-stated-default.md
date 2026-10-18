@@ -1,4 +1,4 @@
-# 0121. An unpriced call weighs against the cap at a stated default
+# 0122. An unpriced call weighs against the cap at a stated default
 
 Date: 2026-10-18
 

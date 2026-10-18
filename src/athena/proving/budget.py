@@ -35,7 +35,7 @@ ENGINES: tuple[str, ...] = (NEMOTRON, CLAUDE)
 DEFAULT_CAPS: dict[str, float] = {NEMOTRON: 1.00, CLAUDE: 10.00}
 
 
-#: What a call with no known cost is assumed to have cost, for the cap only (ADR 0121). Above the
+#: What a call with no known cost is assumed to have cost, for the cap only (ADR 0122). Above the
 #: dearest call each engine has made in the recorded runs, so an unpriced stretch (an error after
 #: spend, a model missing from the price table, a CLI that printed no total) cannot run past the
 #: cap unseen. It is never booked into ``spent_usd``, which stays the sum of known costs.
@@ -99,7 +99,7 @@ class Budget:
     def charge(self, engine: str, cost_usd: float | None) -> None:
         """Book one call. A call with no known cost is counted and weighed against the cap at
         :data:`UNPRICED_CALL_USD`, but the report does not invent a cost: ``spent_usd`` stays the
-        sum of the known ones and ``unpriced_calls`` says how many were assumed (ADR 0121)."""
+        sum of the known ones and ``unpriced_calls`` says how many were assumed (ADR 0122)."""
         with self._lock:
             self._calls[engine] += 1
             if cost_usd is None:

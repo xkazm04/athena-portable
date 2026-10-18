@@ -3,7 +3,7 @@
 A hand-written subset of JSON Schema, stdlib only (ADR 0002): ``type`` (one name or a list of
 them), ``required``, ``enum``, ``additionalProperties: false``, ``maxLength``, ``minItems``,
 ``maxItems``, ``minimum``, ``maximum`` and nested ``items`` and nested objects (``properties``,
-``required``, ``additionalProperties: false``; ADR 0120). That subset is exactly what the
+``required``, ``additionalProperties: false``; ADR 0121). That subset is exactly what the
 manifests in this repository declare — an enum and a ``maxItems`` on every parameter that
 addresses a page — and refusing to grow it is what keeps ``core`` dependency-free.
 
@@ -118,7 +118,7 @@ def _check_members(path: str, params: dict[str, Any], schema: dict[str, Any]) ->
     """``required``, ``additionalProperties: false`` and each property of one object.
 
     ``path`` is empty for the call's own parameters and names the parameter for a nested object
-    (ADR 0120), so the top-level sentences the model already reads are unchanged. A nested
+    (ADR 0121), so the top-level sentences the model already reads are unchanged. A nested
     ``required`` or ``properties`` of the wrong shape fails closed: the manifest door inspects only
     the top level, so the gate is the one place a nested schema is read at all.
     """
