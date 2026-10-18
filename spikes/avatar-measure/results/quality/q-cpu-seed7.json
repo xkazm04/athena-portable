@@ -1,0 +1,224 @@
+{
+ "label": "q-cpu-seed7",
+ "device": "cpu",
+ "threads": 8,
+ "affinity": "",
+ "variants": [],
+ "seed": 7,
+ "torch": "2.7.1+cu128",
+ "machine": {
+  "cpu": "AMD Ryzen 7 7800X3D 8-Core (16 logical)",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "ram_gb": 64,
+  "os": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.9",
+  "date": "2026-10-18"
+ },
+ "import": {
+  "wall_s": 3.0983,
+  "cpu_s": 2.062,
+  "cores_used": 0.67,
+  "process_cpu_pct_of_machine": 4.2,
+  "machine_busy_pct": 100.0
+ },
+ "cold_load": {
+  "wall_s": 9.5279,
+  "cpu_s": 11.188,
+  "cores_used": 1.17,
+  "process_cpu_pct_of_machine": 7.3,
+  "machine_busy_pct": 100.0
+ },
+ "mem_after_load": {
+  "ws_mb": 2076.9,
+  "peak_ws_mb": 2077.0,
+  "peak_private_mb": 4414.9
+ },
+ "warmup_tone_1s": {
+  "wall_s": 22.0929,
+  "cpu_s": 61.156,
+  "cores_used": 2.77,
+  "process_cpu_pct_of_machine": 17.3,
+  "machine_busy_pct": 100.0,
+  "audio_s": 2.7896,
+  "denoise_s": 15.821,
+  "denoise_calls": 50,
+  "other_s": 3.4824
+ },
+ "first_motion_ready_s": 35.631,
+ "sentences": {
+  "s1_5": {
+   "duration_s": 1.193,
+   "windows": 1,
+   "runs": [
+    {
+     "wall_s": 15.1959,
+     "cpu_s": 51.719,
+     "cores_used": 3.4,
+     "process_cpu_pct_of_machine": 21.3,
+     "machine_busy_pct": 100.0,
+     "audio_s": 0.4416,
+     "denoise_s": 14.6847,
+     "denoise_calls": 50,
+     "other_s": 0.0696,
+     "rtf": 12.7358
+    }
+   ],
+   "wall_s": {
+    "n": 1,
+    "median": 15.1959,
+    "min": 15.1959,
+    "max": 15.1959
+   },
+   "rtf": {
+    "n": 1,
+    "median": 12.7358,
+    "min": 12.7358,
+    "max": 12.7358
+   },
+   "cores_used": {
+    "n": 1,
+    "median": 3.4,
+    "min": 3.4,
+    "max": 3.4
+   },
+   "machine_busy_pct": {
+    "n": 1,
+    "median": 100.0,
+    "min": 100.0,
+    "max": 100.0
+   }
+  },
+  "s3": {
+   "duration_s": 3.262,
+   "windows": 1,
+   "runs": [
+    {
+     "wall_s": 9.7117,
+     "cpu_s": 33.109,
+     "cores_used": 3.41,
+     "process_cpu_pct_of_machine": 21.3,
+     "machine_busy_pct": 100.0,
+     "audio_s": 0.3484,
+     "denoise_s": 9.2474,
+     "denoise_calls": 50,
+     "other_s": 0.1159,
+     "rtf": 2.9773
+    }
+   ],
+   "wall_s": {
+    "n": 1,
+    "median": 9.7117,
+    "min": 9.7117,
+    "max": 9.7117
+   },
+   "rtf": {
+    "n": 1,
+    "median": 2.9773,
+    "min": 2.9773,
+    "max": 2.9773
+   },
+   "cores_used": {
+    "n": 1,
+    "median": 3.41,
+    "min": 3.41,
+    "max": 3.41
+   },
+   "machine_busy_pct": {
+    "n": 1,
+    "median": 100.0,
+    "min": 100.0,
+    "max": 100.0
+   }
+  },
+  "s6": {
+   "duration_s": 6.075,
+   "windows": 2,
+   "runs": [
+    {
+     "wall_s": 19.2396,
+     "cpu_s": 66.516,
+     "cores_used": 3.46,
+     "process_cpu_pct_of_machine": 21.6,
+     "machine_busy_pct": 100.0,
+     "audio_s": 3.0708,
+     "denoise_s": 15.9354,
+     "denoise_calls": 100,
+     "other_s": 0.2334,
+     "rtf": 3.1669
+    }
+   ],
+   "wall_s": {
+    "n": 1,
+    "median": 19.2396,
+    "min": 19.2396,
+    "max": 19.2396
+   },
+   "rtf": {
+    "n": 1,
+    "median": 3.1669,
+    "min": 3.1669,
+    "max": 3.1669
+   },
+   "cores_used": {
+    "n": 1,
+    "median": 3.46,
+    "min": 3.46,
+    "max": 3.46
+   },
+   "machine_busy_pct": {
+    "n": 1,
+    "median": 100.0,
+    "min": 100.0,
+    "max": 100.0
+   }
+  },
+  "s10": {
+   "duration_s": 9.583,
+   "windows": 3,
+   "runs": [
+    {
+     "wall_s": 33.9267,
+     "cpu_s": 120.609,
+     "cores_used": 3.55,
+     "process_cpu_pct_of_machine": 22.2,
+     "machine_busy_pct": 100.0,
+     "audio_s": 1.5607,
+     "denoise_s": 32.0654,
+     "denoise_calls": 150,
+     "other_s": 0.3006,
+     "rtf": 3.5401
+    }
+   ],
+   "wall_s": {
+    "n": 1,
+    "median": 33.9267,
+    "min": 33.9267,
+    "max": 33.9267
+   },
+   "rtf": {
+    "n": 1,
+    "median": 3.5401,
+    "min": 3.5401,
+    "max": 3.5401
+   },
+   "cores_used": {
+    "n": 1,
+    "median": 3.55,
+    "min": 3.55,
+    "max": 3.55
+   },
+   "machine_busy_pct": {
+    "n": 1,
+    "median": 100.0,
+    "min": 100.0,
+    "max": 100.0
+   }
+  }
+ },
+ "mem_end": {
+  "ws_mb": 1786.2,
+  "peak_ws_mb": 2190.0,
+  "peak_private_mb": 4414.9
+ },
+ "background_busy_before_pct": 100.0
+}

@@ -76,6 +76,9 @@ include = [
 line-length = 100
 target-version = "py311"
 src = ["src", "tests"]
+# Spikes are measurement evidence kept beside the product, not product code: their scripts are
+# reproducible, not polished (e.g. spikes/avatar-measure, ADR 0120).
+extend-exclude = ["spikes"]
 
 [tool.ruff.lint]
 select = ["E", "F", "I", "B", "UP", "SIM", "RUF"]

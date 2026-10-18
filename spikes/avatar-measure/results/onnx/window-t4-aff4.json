@@ -1,0 +1,41 @@
+{
+ "threads": 4,
+ "affinity": "0,2,4,6",
+ "audio_feat_max_abs_diff": 2.485513687133789e-05,
+ "audio_feat_abs_mean": 0.7487692832946777,
+ "denoiser_max_abs_diff": 5.245208740234375e-06,
+ "denoiser_abs_mean": 0.4945887625217438,
+ "window_max_abs_diff_different_noise_order": 7.506110668182373,
+ "torch": {
+  "n": 5,
+  "median": 7.9551,
+  "min": 6.0725,
+  "max": 9.7638
+ },
+ "ort": {
+  "n": 5,
+  "median": 3.0917,
+  "min": 1.2139,
+  "max": 6.1978
+ },
+ "ort_audio": {
+  "n": 5,
+  "median": 0.176,
+  "min": 0.17,
+  "max": 0.1897
+ },
+ "torch_audio": {
+  "n": 5,
+  "median": 0.6053,
+  "min": 0.5755,
+  "max": 0.6316
+ },
+ "machine": {
+  "cpu": "AMD Ryzen 7 7800X3D 8-Core (16 logical)",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "ram_gb": 64,
+  "os": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.9",
+  "date": "2026-10-18"
+ }
+}

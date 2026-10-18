@@ -1,0 +1,263 @@
+{
+ "label": "cpu-t8-kokoro-live",
+ "device": "cpu",
+ "threads": 8,
+ "affinity": "",
+ "variant": "",
+ "kokoro": "live",
+ "visemes_s": 0.1,
+ "warmup_tone": {
+  "wall_s": 4.3707,
+  "cpu_s": 12.062,
+  "cores_used": 2.76,
+  "process_cpu_pct_of_machine": 17.2,
+  "machine_busy_pct": 100.0
+ },
+ "lines": [
+  {
+   "sentences": [
+    {
+     "k": 0,
+     "duration_s": 2.3,
+     "render_done_s": 3.641,
+     "play_start_s": 3.741,
+     "motion_start_s": 3.641,
+     "motion_done_s": 5.625,
+     "motion_compute_s": 1.983,
+     "late_s": 1.883,
+     "in_time": false,
+     "covered_frac": 0.181
+    },
+    {
+     "k": 1,
+     "duration_s": 3.761,
+     "render_done_s": 7.742,
+     "play_start_s": 7.842,
+     "motion_start_s": 7.742,
+     "motion_done_s": 9.461,
+     "motion_compute_s": 1.719,
+     "late_s": 1.619,
+     "in_time": false,
+     "covered_frac": 0.57
+    },
+    {
+     "k": 2,
+     "duration_s": 2.363,
+     "render_done_s": 11.232,
+     "play_start_s": 11.603,
+     "motion_start_s": 11.232,
+     "motion_done_s": 13.065,
+     "motion_compute_s": 1.833,
+     "late_s": 1.462,
+     "in_time": false,
+     "covered_frac": 0.381
+    },
+    {
+     "k": 3,
+     "duration_s": 6.707,
+     "render_done_s": 16.333,
+     "play_start_s": 16.433,
+     "motion_start_s": 16.333,
+     "motion_done_s": 20.487,
+     "motion_compute_s": 4.154,
+     "late_s": 4.054,
+     "in_time": false,
+     "covered_frac": 0.396
+    },
+    {
+     "k": 4,
+     "duration_s": 3.219,
+     "render_done_s": 20.002,
+     "play_start_s": 23.14,
+     "motion_start_s": 20.487,
+     "motion_done_s": 22.607,
+     "motion_compute_s": 2.12,
+     "late_s": -0.532,
+     "in_time": true,
+     "covered_frac": 1.0
+    }
+   ],
+   "in_time": 1,
+   "first_sentence_late_s": 1.883,
+   "max_late_after_first_s": 4.054,
+   "audio_gaps_s": [
+    1.801,
+    0.0,
+    2.467,
+    0.0
+   ],
+   "first_audio_s": 3.741,
+   "line_audio_s": 18.349,
+   "machine_busy_pct": 100.0,
+   "process_cores_used": 2.85
+  },
+  {
+   "sentences": [
+    {
+     "k": 0,
+     "duration_s": 2.3,
+     "render_done_s": 3.136,
+     "play_start_s": 3.236,
+     "motion_start_s": 3.137,
+     "motion_done_s": 5.835,
+     "motion_compute_s": 2.698,
+     "late_s": 2.599,
+     "in_time": false,
+     "covered_frac": 0.0
+    },
+    {
+     "k": 1,
+     "duration_s": 3.761,
+     "render_done_s": 6.929,
+     "play_start_s": 7.029,
+     "motion_start_s": 6.93,
+     "motion_done_s": 9.199,
+     "motion_compute_s": 2.27,
+     "late_s": 2.17,
+     "in_time": false,
+     "covered_frac": 0.423
+    },
+    {
+     "k": 2,
+     "duration_s": 2.363,
+     "render_done_s": 10.099,
+     "play_start_s": 10.79,
+     "motion_start_s": 10.099,
+     "motion_done_s": 12.508,
+     "motion_compute_s": 2.409,
+     "late_s": 1.718,
+     "in_time": false,
+     "covered_frac": 0.273
+    },
+    {
+     "k": 3,
+     "duration_s": 6.709,
+     "render_done_s": 15.135,
+     "play_start_s": 15.235,
+     "motion_start_s": 15.135,
+     "motion_done_s": 19.65,
+     "motion_compute_s": 4.515,
+     "late_s": 4.415,
+     "in_time": false,
+     "covered_frac": 0.342
+    },
+    {
+     "k": 4,
+     "duration_s": 3.223,
+     "render_done_s": 18.969,
+     "play_start_s": 21.944,
+     "motion_start_s": 19.65,
+     "motion_done_s": 21.721,
+     "motion_compute_s": 2.071,
+     "late_s": -0.223,
+     "in_time": true,
+     "covered_frac": 1.0
+    }
+   ],
+   "in_time": 1,
+   "first_sentence_late_s": 2.599,
+   "max_late_after_first_s": 4.415,
+   "audio_gaps_s": [
+    1.493,
+    0.0,
+    2.082,
+    0.0
+   ],
+   "first_audio_s": 3.236,
+   "line_audio_s": 18.356,
+   "machine_busy_pct": 100.0,
+   "process_cores_used": 3.28
+  },
+  {
+   "sentences": [
+    {
+     "k": 0,
+     "duration_s": 2.3,
+     "render_done_s": 3.278,
+     "play_start_s": 3.378,
+     "motion_start_s": 3.278,
+     "motion_done_s": 5.352,
+     "motion_compute_s": 2.073,
+     "late_s": 1.974,
+     "in_time": false,
+     "covered_frac": 0.142
+    },
+    {
+     "k": 1,
+     "duration_s": 3.761,
+     "render_done_s": 6.935,
+     "play_start_s": 7.035,
+     "motion_start_s": 6.935,
+     "motion_done_s": 9.504,
+     "motion_compute_s": 2.569,
+     "late_s": 2.469,
+     "in_time": false,
+     "covered_frac": 0.344
+    },
+    {
+     "k": 2,
+     "duration_s": 2.363,
+     "render_done_s": 10.143,
+     "play_start_s": 10.796,
+     "motion_start_s": 10.143,
+     "motion_done_s": 12.341,
+     "motion_compute_s": 2.198,
+     "late_s": 1.545,
+     "in_time": false,
+     "covered_frac": 0.346
+    },
+    {
+     "k": 3,
+     "duration_s": 6.712,
+     "render_done_s": 15.04,
+     "play_start_s": 15.14,
+     "motion_start_s": 15.04,
+     "motion_done_s": 20.048,
+     "motion_compute_s": 5.008,
+     "late_s": 4.908,
+     "in_time": false,
+     "covered_frac": 0.269
+    },
+    {
+     "k": 4,
+     "duration_s": 3.217,
+     "render_done_s": 18.596,
+     "play_start_s": 21.852,
+     "motion_start_s": 20.048,
+     "motion_done_s": 21.95,
+     "motion_compute_s": 1.902,
+     "late_s": 0.098,
+     "in_time": false,
+     "covered_frac": 0.97
+    }
+   ],
+   "in_time": 0,
+   "first_sentence_late_s": 1.974,
+   "max_late_after_first_s": 4.908,
+   "audio_gaps_s": [
+    1.357,
+    0.0,
+    1.981,
+    0.0
+   ],
+   "first_audio_s": 3.378,
+   "line_audio_s": 18.353,
+   "machine_busy_pct": 100.0,
+   "process_cores_used": 3.18
+  }
+ ],
+ "machine": {
+  "cpu": "AMD Ryzen 7 7800X3D 8-Core (16 logical)",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "ram_gb": 64,
+  "os": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.9",
+  "date": "2026-10-18"
+ },
+ "mem_end": {
+  "ws_mb": 1841.2,
+  "peak_ws_mb": 2197.2,
+  "peak_private_mb": 4418.3
+ },
+ "background_busy_before_pct": 100.0
+}

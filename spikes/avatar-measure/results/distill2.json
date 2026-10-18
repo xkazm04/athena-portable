@@ -1,0 +1,192 @@
+{
+ "attempt": 2,
+ "params": 593671,
+ "minutes": 10.0,
+ "steps": 27436,
+ "best_step": 14250,
+ "n_test": 48,
+ "student_vs_teacher_seed7": {
+  "n_sentences": 48,
+  "seconds": 201.45,
+  "yaw_rms": 0.4444,
+  "yaw_ref_rms": 0.7839,
+  "yaw_std_ratio": 0.827,
+  "yaw_corr": 0.808,
+  "pitch_rms": 0.4323,
+  "pitch_ref_rms": 0.845,
+  "pitch_std_ratio": 0.905,
+  "pitch_corr": 0.867,
+  "roll_rms": 0.4122,
+  "roll_ref_rms": 0.5622,
+  "roll_std_ratio": 0.741,
+  "roll_corr": 0.751,
+  "gazeX_rms": 0.0638,
+  "gazeX_ref_rms": 0.082,
+  "gazeX_std_ratio": 0.759,
+  "gazeX_corr": 0.684,
+  "gazeY_rms": 0.0792,
+  "gazeY_ref_rms": 0.1245,
+  "gazeY_std_ratio": 0.776,
+  "gazeY_corr": 0.771,
+  "brow_rms": 0.083,
+  "brow_ref_rms": 0.1214,
+  "brow_std_ratio": 0.966,
+  "brow_corr": 0.86,
+  "head_rms": 0.7445,
+  "head_ref_rms": 1.2824,
+  "lid_rms": 0.1801,
+  "blinks": {
+   "ref": 66,
+   "test": 62,
+   "matched": 38,
+   "recall": 0.576,
+   "precision": 0.613
+  }
+ },
+ "bottleneck_7_on_teacher (upper bound)": {
+  "n_sentences": 48,
+  "seconds": 201.45,
+  "yaw_rms": 0.0,
+  "yaw_ref_rms": 0.7839,
+  "yaw_std_ratio": 1.0,
+  "yaw_corr": 1.0,
+  "pitch_rms": 0.0,
+  "pitch_ref_rms": 0.845,
+  "pitch_std_ratio": 1.0,
+  "pitch_corr": 1.0,
+  "roll_rms": 0.0,
+  "roll_ref_rms": 0.5622,
+  "roll_std_ratio": 1.0,
+  "roll_corr": 1.0,
+  "gazeX_rms": 0.0,
+  "gazeX_ref_rms": 0.082,
+  "gazeX_std_ratio": 1.0,
+  "gazeX_corr": 1.0,
+  "gazeY_rms": 0.0,
+  "gazeY_ref_rms": 0.1245,
+  "gazeY_std_ratio": 1.0,
+  "gazeY_corr": 1.0,
+  "brow_rms": 0.0,
+  "brow_ref_rms": 0.1214,
+  "brow_std_ratio": 1.0,
+  "brow_corr": 1.0,
+  "head_rms": 0.0,
+  "head_ref_rms": 1.2824,
+  "lid_rms": 0.0,
+  "blinks": {
+   "ref": 66,
+   "test": 66,
+   "matched": 66,
+   "recall": 1.0,
+   "precision": 1.0
+  }
+ },
+ "noise_floor_seed7_vs_8_9": {
+  "n_sentences": 96,
+  "seconds": 402.9,
+  "yaw_rms": 0.3079,
+  "yaw_ref_rms": 0.7839,
+  "yaw_std_ratio": 1.023,
+  "yaw_corr": 0.932,
+  "pitch_rms": 0.2744,
+  "pitch_ref_rms": 0.845,
+  "pitch_std_ratio": 1.018,
+  "pitch_corr": 0.96,
+  "roll_rms": 0.3299,
+  "roll_ref_rms": 0.5622,
+  "roll_std_ratio": 1.007,
+  "roll_corr": 0.815,
+  "gazeX_rms": 0.058,
+  "gazeX_ref_rms": 0.082,
+  "gazeX_std_ratio": 0.999,
+  "gazeX_corr": 0.799,
+  "gazeY_rms": 0.0872,
+  "gazeY_ref_rms": 0.1245,
+  "gazeY_std_ratio": 0.983,
+  "gazeY_corr": 0.729,
+  "brow_rms": 0.0535,
+  "brow_ref_rms": 0.1214,
+  "brow_std_ratio": 1.043,
+  "brow_corr": 0.901,
+  "head_rms": 0.5282,
+  "head_ref_rms": 1.2824,
+  "lid_rms": 0.1894,
+  "blinks": {
+   "ref": 132,
+   "test": 144,
+   "matched": 81,
+   "recall": 0.614,
+   "precision": 0.562
+  }
+ },
+ "cpu_speed_threads4": {
+  "s1_5": {
+   "audio_s": 1.193,
+   "hubert_s": {
+    "n": 5,
+    "median": 0.2732,
+    "min": 0.254,
+    "max": 0.2919
+   },
+   "gru_s": {
+    "n": 5,
+    "median": 0.0056,
+    "min": 0.0039,
+    "max": 0.007
+   }
+  },
+  "s3": {
+   "audio_s": 3.262,
+   "hubert_s": {
+    "n": 5,
+    "median": 0.272,
+    "min": 0.2571,
+    "max": 0.2912
+   },
+   "gru_s": {
+    "n": 5,
+    "median": 0.0107,
+    "min": 0.01,
+    "max": 0.0146
+   }
+  },
+  "s6": {
+   "audio_s": 6.075,
+   "hubert_s": {
+    "n": 5,
+    "median": 0.5548,
+    "min": 0.5239,
+    "max": 0.5699
+   },
+   "gru_s": {
+    "n": 5,
+    "median": 0.0193,
+    "min": 0.0149,
+    "max": 0.0433
+   }
+  },
+  "s10": {
+   "audio_s": 9.584,
+   "hubert_s": {
+    "n": 5,
+    "median": 0.801,
+    "min": 0.7829,
+    "max": 0.8662
+   },
+   "gru_s": {
+    "n": 5,
+    "median": 0.0338,
+    "min": 0.0316,
+    "max": 0.038
+   }
+  }
+ },
+ "machine": {
+  "cpu": "AMD Ryzen 7 7800X3D 8-Core (16 logical)",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "ram_gb": 64,
+  "os": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.9",
+  "date": "2026-10-18"
+ }
+}

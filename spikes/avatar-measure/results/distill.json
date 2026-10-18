@@ -1,0 +1,495 @@
+{
+ "n_test_sentences": 48,
+ "params": 629826,
+ "train_minutes": 12.0,
+ "train_steps": 29614,
+ "train_sentences": 408,
+ "teacher_seeds": [
+  7,
+  8
+ ],
+ "student_vs_teacher_seed7": {
+  "n_sentences": 48,
+  "seconds": 201.45,
+  "yaw_rms": 0.7855,
+  "yaw_ref_rms": 0.7839,
+  "yaw_std_ratio": 0.108,
+  "yaw_corr": 0.111,
+  "pitch_rms": 0.8421,
+  "pitch_ref_rms": 0.845,
+  "pitch_std_ratio": 0.116,
+  "pitch_corr": 0.182,
+  "roll_rms": 0.5539,
+  "roll_ref_rms": 0.5622,
+  "roll_std_ratio": 0.113,
+  "roll_corr": 0.285,
+  "gazeX_rms": 0.0778,
+  "gazeX_ref_rms": 0.082,
+  "gazeX_std_ratio": 0.294,
+  "gazeX_corr": 0.343,
+  "gazeY_rms": 0.122,
+  "gazeY_ref_rms": 0.1245,
+  "gazeY_std_ratio": 0.373,
+  "gazeY_corr": 0.316,
+  "brow_rms": 0.1257,
+  "brow_ref_rms": 0.1214,
+  "brow_std_ratio": 0.555,
+  "brow_corr": 0.297,
+  "head_rms": 1.2779,
+  "head_ref_rms": 1.2824,
+  "lid_rms": 0.2003,
+  "blinks": {
+   "ref": 66,
+   "test": 5,
+   "matched": 2,
+   "recall": 0.03,
+   "precision": 0.4
+  }
+ },
+ "teacher_seed7_vs_other_seeds (noise floor)": {
+  "n_sentences": 96,
+  "seconds": 402.9,
+  "yaw_rms": 0.3079,
+  "yaw_ref_rms": 0.7839,
+  "yaw_std_ratio": 1.023,
+  "yaw_corr": 0.932,
+  "pitch_rms": 0.2744,
+  "pitch_ref_rms": 0.845,
+  "pitch_std_ratio": 1.018,
+  "pitch_corr": 0.96,
+  "roll_rms": 0.3299,
+  "roll_ref_rms": 0.5622,
+  "roll_std_ratio": 1.007,
+  "roll_corr": 0.815,
+  "gazeX_rms": 0.058,
+  "gazeX_ref_rms": 0.082,
+  "gazeX_std_ratio": 0.999,
+  "gazeX_corr": 0.799,
+  "gazeY_rms": 0.0872,
+  "gazeY_ref_rms": 0.1245,
+  "gazeY_std_ratio": 0.983,
+  "gazeY_corr": 0.729,
+  "brow_rms": 0.0535,
+  "brow_ref_rms": 0.1214,
+  "brow_std_ratio": 1.043,
+  "brow_corr": 0.901,
+  "head_rms": 0.5282,
+  "head_ref_rms": 1.2824,
+  "lid_rms": 0.1894,
+  "blinks": {
+   "ref": 132,
+   "test": 144,
+   "matched": 81,
+   "recall": 0.614,
+   "precision": 0.562
+  }
+ },
+ "no_motion_vs_teacher": {
+  "n_sentences": 48,
+  "seconds": 201.45,
+  "yaw_rms": 0.7839,
+  "yaw_ref_rms": 0.7839,
+  "yaw_std_ratio": 0.0,
+  "yaw_corr": NaN,
+  "pitch_rms": 0.845,
+  "pitch_ref_rms": 0.845,
+  "pitch_std_ratio": 0.0,
+  "pitch_corr": NaN,
+  "roll_rms": 0.5622,
+  "roll_ref_rms": 0.5622,
+  "roll_std_ratio": 0.0,
+  "roll_corr": NaN,
+  "gazeX_rms": 0.082,
+  "gazeX_ref_rms": 0.082,
+  "gazeX_std_ratio": 0.0,
+  "gazeX_corr": NaN,
+  "gazeY_rms": 0.1245,
+  "gazeY_ref_rms": 0.1245,
+  "gazeY_std_ratio": 0.0,
+  "gazeY_corr": NaN,
+  "brow_rms": 0.1214,
+  "brow_ref_rms": 0.1214,
+  "brow_std_ratio": 0.0,
+  "brow_corr": NaN,
+  "head_rms": 1.2824,
+  "head_ref_rms": 1.2824,
+  "lid_rms": 0.2053,
+  "blinks": {
+   "ref": 66,
+   "test": 0,
+   "matched": 0,
+   "recall": 0.0,
+   "precision": null
+  }
+ },
+ "speed": {
+  "torch-t1-s1_5": {
+   "audio_s": 1.193,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0143,
+    "min": 0.0134,
+    "max": 0.0191
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0038,
+    "min": 0.0024,
+    "max": 0.0048
+   }
+  },
+  "torch-t1-s3": {
+   "audio_s": 3.262,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0257,
+    "min": 0.0249,
+    "max": 0.039
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0085,
+    "min": 0.0083,
+    "max": 0.0104
+   }
+  },
+  "torch-t1-s6": {
+   "audio_s": 6.075,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0454,
+    "min": 0.0417,
+    "max": 0.0593
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0153,
+    "min": 0.0122,
+    "max": 0.0211
+   }
+  },
+  "torch-t1-s10": {
+   "audio_s": 9.583,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0616,
+    "min": 0.0601,
+    "max": 0.0632
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.021,
+    "min": 0.0191,
+    "max": 0.031
+   }
+  },
+  "torch-t2-s1_5": {
+   "audio_s": 1.193,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0153,
+    "min": 0.0133,
+    "max": 0.0194
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0028,
+    "min": 0.0024,
+    "max": 0.0046
+   }
+  },
+  "torch-t2-s3": {
+   "audio_s": 3.262,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0338,
+    "min": 0.0283,
+    "max": 0.1373
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0093,
+    "min": 0.0066,
+    "max": 0.0267
+   }
+  },
+  "torch-t2-s6": {
+   "audio_s": 6.075,
+   "wall_s": {
+    "n": 7,
+    "median": 0.05,
+    "min": 0.0413,
+    "max": 0.0774
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0139,
+    "min": 0.0125,
+    "max": 0.0149
+   }
+  },
+  "torch-t2-s10": {
+   "audio_s": 9.583,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0752,
+    "min": 0.0626,
+    "max": 0.0918
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0195,
+    "min": 0.0183,
+    "max": 0.0228
+   }
+  },
+  "torch-t4-s1_5": {
+   "audio_s": 1.193,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0227,
+    "min": 0.0202,
+    "max": 0.0311
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0027,
+    "min": 0.0024,
+    "max": 0.0042
+   }
+  },
+  "torch-t4-s3": {
+   "audio_s": 3.262,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0513,
+    "min": 0.0331,
+    "max": 0.0911
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0072,
+    "min": 0.0068,
+    "max": 0.0146
+   }
+  },
+  "torch-t4-s6": {
+   "audio_s": 6.075,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0615,
+    "min": 0.0468,
+    "max": 0.0811
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0145,
+    "min": 0.0125,
+    "max": 0.0488
+   }
+  },
+  "torch-t4-s10": {
+   "audio_s": 9.583,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0704,
+    "min": 0.0605,
+    "max": 0.0827
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0186,
+    "min": 0.017,
+    "max": 0.0195
+   }
+  },
+  "onnx-t1-s1_5": {
+   "audio_s": 1.193,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0105,
+    "min": 0.0103,
+    "max": 0.012
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0028,
+    "min": 0.0025,
+    "max": 0.0089
+   }
+  },
+  "onnx-t1-s3": {
+   "audio_s": 3.262,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0177,
+    "min": 0.0166,
+    "max": 0.019
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0073,
+    "min": 0.0068,
+    "max": 0.01
+   }
+  },
+  "onnx-t1-s6": {
+   "audio_s": 6.075,
+   "wall_s": {
+    "n": 7,
+    "median": 0.026,
+    "min": 0.0244,
+    "max": 0.0287
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0123,
+    "min": 0.0104,
+    "max": 0.0273
+   }
+  },
+  "onnx-t1-s10": {
+   "audio_s": 9.583,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0387,
+    "min": 0.0337,
+    "max": 0.0416
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0185,
+    "min": 0.0163,
+    "max": 0.0249
+   }
+  },
+  "onnx-t2-s1_5": {
+   "audio_s": 1.193,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0106,
+    "min": 0.0092,
+    "max": 0.0128
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0046,
+    "min": 0.0028,
+    "max": 0.0063
+   }
+  },
+  "onnx-t2-s3": {
+   "audio_s": 3.262,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0192,
+    "min": 0.0156,
+    "max": 0.0209
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.009,
+    "min": 0.007,
+    "max": 0.0108
+   }
+  },
+  "onnx-t2-s6": {
+   "audio_s": 6.075,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0309,
+    "min": 0.0289,
+    "max": 0.076
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.015,
+    "min": 0.0131,
+    "max": 0.0493
+   }
+  },
+  "onnx-t2-s10": {
+   "audio_s": 9.583,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0386,
+    "min": 0.0371,
+    "max": 0.0425
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0207,
+    "min": 0.0186,
+    "max": 0.0226
+   }
+  },
+  "onnx-t4-s1_5": {
+   "audio_s": 1.193,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0113,
+    "min": 0.0084,
+    "max": 0.0134
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0042,
+    "min": 0.0024,
+    "max": 0.0121
+   }
+  },
+  "onnx-t4-s3": {
+   "audio_s": 3.262,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0182,
+    "min": 0.0156,
+    "max": 0.0265
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.007,
+    "min": 0.0067,
+    "max": 0.0087
+   }
+  },
+  "onnx-t4-s6": {
+   "audio_s": 6.075,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0276,
+    "min": 0.0244,
+    "max": 0.0476
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0132,
+    "min": 0.0115,
+    "max": 0.0297
+   }
+  },
+  "onnx-t4-s10": {
+   "audio_s": 9.583,
+   "wall_s": {
+    "n": 7,
+    "median": 0.0374,
+    "min": 0.0352,
+    "max": 0.0397
+   },
+   "logmel_s": {
+    "n": 7,
+    "median": 0.0238,
+    "min": 0.0198,
+    "max": 0.0349
+   }
+  }
+ },
+ "machine": {
+  "cpu": "AMD Ryzen 7 7800X3D 8-Core (16 logical)",
+  "gpu": "NVIDIA GeForce RTX 4090",
+  "ram_gb": 64,
+  "os": "Windows-11-10.0.26200-SP0",
+  "python": "3.12.9",
+  "date": "2026-10-18"
+ }
+}
