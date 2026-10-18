@@ -66,7 +66,7 @@ def make_entry(
     cap_chars: int | None = None,
 ) -> ToolEntry:
     """One registry row, with the defaults a test that is about something else would repeat."""
-    if origin == "core" and executor is None:
+    if (origin == "core" or origin.startswith("connector:")) and executor is None:
         executor = _ran
     if cls is ToolClass.READ and cap_chars is None:
         cap_chars = 1600

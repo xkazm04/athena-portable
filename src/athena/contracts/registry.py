@@ -305,6 +305,10 @@ class ToolEntry:
         parsed = parse_origin(self.origin)
         if parsed.kind == "core" and self.executor is None:
             raise ValueError(f"core tool {self.name} must have an executor")
+        if parsed.kind == "connector" and self.executor is None:
+            # The gate reads "no executor" as "a host tool, the page runs it"; a connector has no
+            # page, so the call would wait for an answer that never comes.
+            raise ValueError(f"connector tool {self.name} must have an executor")
         if parsed.kind == "host" and self.executor is not None:
             raise ValueError(f"host tool {self.name} must have no executor; the page executes it")
         if self.cls is ToolClass.READ and self.cap_chars is None:

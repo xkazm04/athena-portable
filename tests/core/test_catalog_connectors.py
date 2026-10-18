@@ -112,6 +112,22 @@ def test_a_connector_that_omits_reversible_is_refused_whole() -> None:
     assert catalog.names() == sorted(catalog.core)
 
 
+def test_a_connector_kind_manifest_merged_without_an_executor_is_refused_whole() -> None:
+    """``merge_manifest`` binds no executor; for a connector the gate would then treat every
+    entry as a host tool and wait for a page that does not exist."""
+    from athena.contracts import HostManifest
+
+    catalog = build_catalog(services())
+    manifest = HostManifest(
+        app_id="gmail",
+        origin_kind="connector",
+        tools=[HostTool(name="send_mail", reversible=True, side_effects="external")],
+    )
+    with pytest.raises(CatalogError, match="must have an executor"):
+        catalog.merge_manifest(manifest)
+    assert catalog.names() == sorted(catalog.core)
+
+
 def test_a_connector_re_merge_replaces_its_own_set_and_a_drop_removes_it() -> None:
     catalog = build_catalog(services())
     catalog.merge_connector("gmail", FakeMail())
