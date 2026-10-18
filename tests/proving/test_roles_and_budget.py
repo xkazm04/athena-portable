@@ -17,7 +17,7 @@ from typing import Any
 import pytest
 
 from athena.harness.tokenfactory import LIGHTNING_MODEL, HttpReply
-from athena.proving.budget import CLAUDE, NEMOTRON, Budget, BudgetExhausted
+from athena.proving.budget import CLAUDE, NEMOTRON, UNPRICED_CALL_USD, Budget, BudgetExhausted
 from athena.proving.report import write_report
 from athena.proving.roles import (
     HAIKU_MODEL,
@@ -206,6 +206,24 @@ def test_a_shared_purse_overshoots_by_one_call_per_worker_in_flight_and_no_more(
     assert len(role.prompts) == workers
     assert budget.spent(NEMOTRON) == pytest.approx(0.99 + workers * 0.5)
     assert caller.call(role, "attacker", "s", "p").error_reason == "budget_exhausted"
+
+
+def test_unpriced_calls_weigh_against_the_cap_but_not_against_the_reported_spend() -> None:
+    """ADR 0121: 1000 calls that came back with no cost used to leave the purse open for ever."""
+    budget = Budget({NEMOTRON: 1.0, CLAUDE: 10.0})
+    admitted = 0
+    for _ in range(1000):
+        if not budget.can_spend(NEMOTRON):
+            break
+        budget.charge(NEMOTRON, None)
+        admitted += 1
+    assert admitted == round(1.0 / UNPRICED_CALL_USD[NEMOTRON])
+    assert not budget.can_spend(NEMOTRON)
+    with pytest.raises(BudgetExhausted):
+        budget.require(NEMOTRON)
+    assert budget.spent(NEMOTRON) == 0.0
+    assert budget.summary()[NEMOTRON]["unpriced_calls"] == admitted
+    assert budget.can_spend(CLAUDE)
 
 
 def test_the_budget_refuses_an_unknown_purse_and_raises_when_spent() -> None:
