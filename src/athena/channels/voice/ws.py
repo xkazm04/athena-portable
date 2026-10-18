@@ -271,7 +271,18 @@ class WebSocket:
             payload = _xor_mask(payload, mask)
         with self._write_lock:
             try:
-                self._wfile.write(bytes(head) + payload)
+                # An unbuffered socket file (the client's) sends once and returns how many bytes
+                # went; a megabyte frame under backpressure goes in pieces, and the rest must
+                # follow or the peer reads a torn frame and closes 1002. The server's writer
+                # sends it all and returns None.
+                pending = memoryview(bytes(head) + payload)
+                while pending:
+                    sent = self._wfile.write(pending)
+                    if sent is None:
+                        break
+                    if sent <= 0:
+                        raise OSError("the socket accepted no bytes")
+                    pending = pending[sent:]
                 self._wfile.flush()
             except (OSError, ValueError) as exc:
                 self.closed = True

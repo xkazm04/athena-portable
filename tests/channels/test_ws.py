@@ -167,3 +167,20 @@ def test_the_byte_ceiling_still_raises_across_fragments() -> None:
     buffer.seek(0)
     with pytest.raises(FrameTooLarge):
         WebSocket(buffer, io.BytesIO(), masked=True).recv()
+
+
+class _Dribble(io.BytesIO):
+    """An unbuffered socket file under backpressure: each write takes only a few bytes."""
+
+    def write(self, data: object) -> int:  # type: ignore[override]
+        view = memoryview(data)  # type: ignore[arg-type]
+        return super().write(bytes(view[:1000]))
+
+
+def test_a_frame_the_writer_takes_in_pieces_reaches_the_reader_whole() -> None:
+    pipe = _Pipe()
+    pipe.to_server = _Dribble()
+    payload = bytes(range(256)) * 40
+    pipe.client().send_binary(payload)
+    pipe.rewind(pipe.to_server)
+    assert pipe.server().recv() == Message("binary", payload)
