@@ -23,13 +23,13 @@
 import type { FacePhase, FaceSignal } from "@/avatar/types";
 import { FACE_MIRROR_HZ, athenaFace, publishLocalFace } from "@/lib/face";
 import { mouthTarget, smoothOpen } from "@/lib/face-preview";
-import { clearLine, faceTimeline, motionAt, visemeAt, type FaceTimeline } from "@/lib/face-timeline";
+import { FACE_LINE_SINK, clearLine, faceTimeline, motionAt, visemeAt, type FaceTimeline } from "@/lib/face-timeline";
 import { LEVEL_FRAME_MS } from "@/lib/halo";
 import { haloPhase } from "@/lib/halo-signal";
 import { frames } from "@/lib/motion";
 import { currentLevel, playbackSample, playbackSounding } from "@/lib/voice";
 import { useRun, type RunPhase } from "@/stores/run";
-import { useVoice, type VoicePhase } from "@/stores/voice";
+import { setFaceLineSink, useVoice, type VoicePhase } from "@/stores/voice";
 
 /** How far ahead of the sound the mouth shape is read: the spike's 35 ms. */
 export const VISEME_LEAD_S = 0.035;
@@ -145,6 +145,7 @@ let stopActive: (() => void) | null = null;
  */
 export function startFace(deps: FaceDeps = liveFaceDeps()): () => void {
   if (stopActive) return stopActive;
+  setFaceLineSink(FACE_LINE_SINK);
 
   /** The last line seen playing: its tail may still sound after the store has let it go. */
   let spoken: number | null = null;
@@ -249,7 +250,10 @@ export function startFace(deps: FaceDeps = liveFaceDeps()): () => void {
     unsubscribe();
     stopLoop?.();
     stopLoop = null;
-    if (stopActive === stop) stopActive = null;
+    if (stopActive === stop) {
+      stopActive = null;
+      setFaceLineSink(null);
+    }
   };
   stopActive = stop;
   return stop;

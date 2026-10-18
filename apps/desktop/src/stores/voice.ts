@@ -29,7 +29,7 @@
 import { create } from "zustand";
 
 import { DaemonApi, type ExecuteRow } from "@/lib/api";
-import { addMotion, addVisemes, beginLine, clearLine, dropLine, stopLine } from "@/lib/face-timeline";
+import type { FaceLineSink } from "@/lib/face-timeline";
 import type { BridgeTool } from "@/lib/bridge";
 import {
   forgetUnsure,
@@ -69,6 +69,18 @@ import {
 } from "@/stores/run";
 import { useTabs } from "@/stores/tabs";
 import { useTools } from "@/stores/tools";
+
+/**
+ * Where a line's mouth shapes and motion go. Only the athena window draws her face, so only it
+ * installs a sink (`lib/face-signal.ts` `startFace`); Main's first paint never loads the timeline,
+ * and a store with no sink drops the two events on the floor.
+ */
+let faceLine: FaceLineSink | null = null;
+
+/** Install (or with `null`, remove) the face timeline this store feeds. */
+export function setFaceLineSink(sink: FaceLineSink | null): void {
+  faceLine = sink;
+}
 
 export type VoicePhase = "off" | "idle" | "listening" | "thinking" | "speaking" | "error";
 
@@ -324,26 +336,26 @@ export const useVoice = create<VoiceState>((set, get) => {
         // so the release still sends `stop` — the daemon's `barge_in` for it follows.
         if (get().phase === "listening") {
           player?.drop(event.generation);
-          dropLine(event.generation);
+          faceLine?.dropLine(event.generation);
           break;
         }
-        beginLine(event.generation, event.sample_rate);
+        faceLine?.beginLine(event.generation, event.sample_rate);
         set({ phase: "speaking", generation: event.generation, speakingText: event.text, heard: "" });
         break;
       // Her face's timeline (ADR on Athena's face): held outside the store, read by the producer
       // against the player's clock. A dropped or older line's events are ignored there.
       case "voice.visemes":
-        addVisemes(event);
+        faceLine?.addVisemes(event);
         break;
       case "voice.motion":
-        addMotion(event);
+        faceLine?.addMotion(event);
         break;
       case "voice.stopped":
         // Nothing of the generation outlives its `voice.stopped`: a barge-in stops its sources
         // first, and `finished` then forgets the generation, drop mark included.
         if (event.reason === "barge_in") player?.drop(event.generation);
         player?.finished(event.generation);
-        stopLine(event.generation, event.reason);
+        faceLine?.stopLine(event.generation, event.reason);
         if (get().generation === event.generation) {
           set({
             generation: null,
@@ -460,7 +472,7 @@ export const useVoice = create<VoiceState>((set, get) => {
         socket = null;
         proposed = new Map();
         endListening();
-        clearLine();
+        faceLine?.clearLine();
         set((s) => ({
           generation: null,
           speakingText: "",
@@ -505,7 +517,7 @@ export const useVoice = create<VoiceState>((set, get) => {
       if (!live || token !== pressToken) return;
       if (state.generation !== null) {
         player?.drop(state.generation);
-        dropLine(state.generation);
+        faceLine?.dropLine(state.generation);
       }
       const taken = await captureOf(deps.capture, focused.tabId, focused.origin);
       useRun.setState({ captureNow: taken.why });
@@ -563,7 +575,7 @@ export const useVoice = create<VoiceState>((set, get) => {
       const speaking = get().generation;
       if (speaking !== null) {
         player?.drop(speaking);
-        dropLine(speaking);
+        faceLine?.dropLine(speaking);
       }
       const taken = await captureOf(deps.capture, focused.tabId, focused.origin);
       useRun.setState({ captureNow: taken.why });
@@ -583,7 +595,7 @@ export const useVoice = create<VoiceState>((set, get) => {
 
     close() {
       endListening();
-      clearLine();
+      faceLine?.clearLine();
       socket?.close();
       socket = null;
       player = null;
