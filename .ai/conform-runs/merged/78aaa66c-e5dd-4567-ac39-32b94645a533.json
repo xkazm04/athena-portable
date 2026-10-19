@@ -1,0 +1,71 @@
+{
+ "schema": "conform-run/1",
+ "worker": "78aaa66c-e5dd-4567-ac39-32b94645a533",
+ "subject": "agent-addressable-ui",
+ "evaluatedAt": "2026-10-19T10:23:20.603455+00:00",
+ "provider": "codex",
+ "model": "gpt-6.1-sol",
+ "pairs": [
+  {
+   "context": "desktop-build-config",
+   "subject": "agent-addressable-ui",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "apps/desktop/src/lib/dev/locate.ts:46 The inspector silently presents an innermost library implementation as the call site when no product ancestor exists.",
+   "techniques": [
+    {
+     "technique": "agent-pasteable-reference-format",
+     "verdict": "deviation",
+     "evidence": "apps/desktop/src/lib/dev/inspector.tsx:59 Copies only the location, without a visible-text anchor or secondary implementation location; rejection reports failure but provides neither legacy copy nor selected-text fallback."
+    },
+    {
+     "technique": "build-time-source-stamping",
+     "verdict": "deviation",
+     "evidence": "apps/desktop/scripts/dev-source-loc.mjs:27 The transform infers the root from the last /src/ segment instead of requiring a caller-supplied relative path; emitted src/... references omit this repository's apps/desktop/ prefix."
+    },
+    {
+     "technique": "call-site-vs-implementation-resolution",
+     "verdict": "deviation",
+     "evidence": "apps/desktop/src/lib/dev/locate.ts:46 An entirely library-owned chain selects its innermost entry; the standard requires the outermost stamped ancestor and an explicit warning that no product call site was found."
+    },
+    {
+     "technique": "framework-internals-independence",
+     "verdict": "conformant",
+     "evidence": "apps/desktop/src/lib/dev/locate.ts:38 Resolution follows standard DOM parent links and authored stamp attributes without consulting framework debug metadata."
+    },
+    {
+     "technique": "opt-in-instrumentation-gate",
+     "verdict": "deviation",
+     "evidence": "apps/desktop/vite.config.ts:97 The helper is statically imported and its plugin registered unconditionally, violating registration-level gating; the internal flag check, lazy Babel import, and DEV overlay mounts satisfy only the other gates."
+    },
+    {
+     "technique": "uninstrumented-degradation",
+     "verdict": "deviation",
+     "evidence": "apps/desktop/src/lib/dev/inspector.tsx:209 Idle and hovering an element with no stamped ancestor render the same invitation; partial ancestor fallback is unlabelled, and the armed state has no automatic timeout."
+    }
+   ]
+  }
+ ],
+ "declined": [],
+ "consults": [
+  {
+   "ts": "2026-10-19T10:23:20.603455+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "agent-addressable-ui"
+   ],
+   "techniques": [
+    "agent-pasteable-reference-format",
+    "build-time-source-stamping",
+    "call-site-vs-implementation-resolution",
+    "framework-internals-independence",
+    "opt-in-instrumentation-gate",
+    "uninstrumented-degradation"
+   ],
+   "deviations": 1,
+   "context": "desktop-build-config",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  }
+ ]
+}

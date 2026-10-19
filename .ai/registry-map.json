@@ -3256,7 +3256,11 @@
           "revision": 3,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/lib/dev/locate.ts:46 The inspector silently presents an innermost library implementation as the call site when no product ancestor exists.",
+          "evaluatedAt": "2026-10-19",
+          "evaluatedAgainst": "sha256-b2:eeacc7371e042d65",
+          "evaluatedRevision": 3
         },
         {
           "subject": "agent-instruction-files",
