@@ -6661,7 +6661,11 @@
           "revision": 2,
           "changedAt": "2026-09-03",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/journey/scripts/capture-playbook.mjs:349 Context and repository searches found no replicated, quorum, applied_index, verify_list or modified_since constructs; these files capture and compose media artifacts rather than implement transactions over a replicated log.",
+          "evaluatedAt": "2026-10-19",
+          "evaluatedAgainst": "sha256-b2:230a37319e1dd059",
+          "evaluatedRevision": 2
         },
         {
           "subject": "engine-host-contract",
@@ -8012,7 +8016,11 @@
           "revision": 2,
           "changedAt": "2026-09-03",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/proving/runlog.py:86 Context and repository searches found no replicated, quorum, applied_index, verify_list or modified_since constructs; this context evaluates local agent worlds and appends invocation records to JSONL rather than implementing transactions over consensus.",
+          "evaluatedAt": "2026-10-19",
+          "evaluatedAgainst": "sha256-b2:230a37319e1dd059",
+          "evaluatedRevision": 2
         },
         {
           "subject": "eval-harness",

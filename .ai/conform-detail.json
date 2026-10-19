@@ -4626,6 +4626,98 @@
         "at": "2026-10-19T08:42:42.807767+00:00",
         "reason": "reviewer (sonnet): Every anchor is in scenes/surface/ (model.ts, live.tsx, view.tsx), which is not among this context's listed files (scenes/mind/* and scenes/shared/*). Line 161 only computes the headline from pillText(s.athena); I could not confirm from the context's own code that no age-based fallback exists."
       }
+    },
+    "82024321-4b38-4a9a-b360-154b5349e47b/transactions-over-a-replicated-log": {
+      "context": "proving-core",
+      "subject": "transactions-over-a-replicated-log",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-19",
+      "evaluatedTs": "2026-10-19T09:06:58.886Z",
+      "worker": "afab140b-c80b-41b5-80fc-1552082db6d5",
+      "techniques": [
+        {
+          "technique": "capture-index-before-snapshot",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/world.py:254 This records an invocation-ledger row count before a test turn, not an applied log index associated with a transaction snapshot."
+        },
+        {
+          "technique": "compose-then-conform",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/world.py:337 The wrappers observe gate calls and memory writes; they do not implement a transactional storage interface."
+        },
+        {
+          "technique": "list-verification-by-present-keys",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/world.py:393 This enumeration reads approval records for evaluation, without transactional prefix-list reconciliation or a verification hash."
+        },
+        {
+          "technique": "live-file-is-the-snapshot",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/world.py:425 Preservation copies a world's files as evidence; it is not consensus snapshot creation or installation."
+        },
+        {
+          "technique": "no-writes-no-log",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/roles.py:478 Log rows describe role invocations and budget refusals, not commits of buffered storage writes."
+        },
+        {
+          "technique": "same-value-still-conflicts",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/world.py:381 The observer forwards a local memory write; this context has no competing replicated transactions to arbitrate."
+        },
+        {
+          "technique": "snapshot-read-plus-verify-log",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/world.py:184 World construction supplies a local brain directory, with no consensus proposal or replicated apply step."
+        }
+      ]
+    },
+    "b772acf0-36d8-42d5-9d91-32df4c35ea84/transactions-over-a-replicated-log": {
+      "context": "journey-capture",
+      "subject": "transactions-over-a-replicated-log",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-19",
+      "evaluatedTs": "2026-10-19T09:06:58.886Z",
+      "worker": "afab140b-c80b-41b5-80fc-1552082db6d5",
+      "techniques": [
+        {
+          "technique": "capture-index-before-snapshot",
+          "verdict": "not-applicable",
+          "evidence": "examples/journey/scripts/record-desktop.mjs:339 Recorded positions are media timeline offsets, not applied log indexes labeling transaction snapshots."
+        },
+        {
+          "technique": "compose-then-conform",
+          "verdict": "not-applicable",
+          "evidence": "examples/journey/scripts/compose.mjs:390 The map holds video-take metadata, not a cache or view wrapper above a transactional store."
+        },
+        {
+          "technique": "list-verification-by-present-keys",
+          "verdict": "not-applicable",
+          "evidence": "examples/journey/scripts/narrate.mjs:343 Enumeration expands narration-script beats; it does not perform a transactional key-prefix query."
+        },
+        {
+          "technique": "live-file-is-the-snapshot",
+          "verdict": "not-applicable",
+          "evidence": "examples/journey/scripts/capture-playbook.mjs:214 A still is a rendered-layer screenshot, not a durable state-machine snapshot used for consensus catch-up."
+        },
+        {
+          "technique": "no-writes-no-log",
+          "verdict": "not-applicable",
+          "evidence": "examples/journey/scripts/narrate.mjs:278 Synthesis writes audio bytes directly to an artifact file; there is no transaction commit or replicated entry."
+        },
+        {
+          "technique": "same-value-still-conflicts",
+          "verdict": "not-applicable",
+          "evidence": "examples/journey/scripts/narrate.mjs:441 Existing MP3s control whether synthesis runs; this artifact-reuse check is not transactional conflict detection."
+        },
+        {
+          "technique": "snapshot-read-plus-verify-log",
+          "verdict": "not-applicable",
+          "evidence": "examples/journey/scripts/serve-outside.mjs:46 The fixture server streams static files directly, without transactional write buffering or consensus verification."
+        }
+      ]
     }
   }
 }
