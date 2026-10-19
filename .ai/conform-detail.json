@@ -4993,6 +4993,77 @@
           "evidence": "src/athena/proving/playbooks/bench.py:312 Card parameters enter the persisted report verbatim; the report writer applies no payload allowlist, secret scrubber or parameter size cap."
         }
       ]
+    },
+    "ed8d99d2-56e3-402c-898b-a4a6c4b73c7b/client-fetch-cache": {
+      "context": "atlas-data-and-app",
+      "subject": "client-fetch-cache",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-19",
+      "evaluatedTs": "2026-10-19T10:53:50.400Z",
+      "techniques": [
+        {
+          "technique": "admission-hypothesis",
+          "verdict": "conformant",
+          "evidence": "examples/atlas/data/index.ts:94 The memoization site explicitly identifies repeated rendering as its reuse hypothesis."
+        },
+        {
+          "technique": "cache-key-discipline",
+          "verdict": "deviation",
+          "evidence": "examples/atlas/data/index.ts:115 The cache key is the bare concept identifier, with no key-namespace version for changes to the derived value."
+        },
+        {
+          "technique": "in-flight-dedup",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/data/types.ts:4 These modules use bundled data and synchronous derivations, without concurrent requests to join."
+        },
+        {
+          "technique": "parse-and-derive-caches",
+          "verdict": "deviation",
+          "evidence": "examples/atlas/data/index.ts:99 Lookup uses entity identity rather than the content identity of the model inputs, and includes no derivation version."
+        },
+        {
+          "technique": "plural-policy-claims",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/data/index.ts:97 The synchronous memoized function accepts no consumer cache policies, so competing lifetime claims do not arise."
+        },
+        {
+          "technique": "portable-read-definitions",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/app/page.tsx:5 The model is bundled directly; there is no shared fetched read whose key, fetcher and policies need a portable definition."
+        },
+        {
+          "technique": "prefetch-and-defer",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/README.md:99 The context has no data-fetch launches to prioritize through intent prefetch or idle deferral."
+        },
+        {
+          "technique": "sibling-entry-warmth",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/data/index.ts:44 Component details come directly from the complete bundled model, without a summary cache and subsequent detail request."
+        },
+        {
+          "technique": "similarity-keyed-admission",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/data/index.ts:101 Admission resolves an exact concept identifier; no resemblance metric or similarity threshold is involved."
+        },
+        {
+          "technique": "swr-design",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/data/index.ts:16 The cached derivation reads bundled module data rather than server-owned responses requiring freshness and background revalidation."
+        },
+        {
+          "technique": "warm-remount-caches",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/lib/constants.ts:5 The model already lives in the bundle; there are no fetched view results to preserve and revalidate across remounts."
+        }
+      ],
+      "withdrawn": {
+        "worker": "15f48f22-8bc9-46de-bbd3-917b2c5557de",
+        "state": "deviation",
+        "at": "2026-10-19T10:54:08.718006+00:00",
+        "reason": "reviewer (sonnet): The code supports the cache-key facts, but not the deviation. `LENS_CACHE` at index.ts:89-115 is an in-process memo of a pure derivation over immutable bundled constants, and types.ts:4 says nothing is fetched. The inputs cannot change within a process, so a bare concept id cannot go stale. I did no"
+      }
     }
   }
 }
