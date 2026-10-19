@@ -5282,7 +5282,11 @@
           "revision": 15,
           "changedAt": "2026-09-17",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/depth/model.ts:217 Navigation immediately replaces the destination, and searches found no admission, enqueue, dequeue, backpressure or semaphore constructs in the context directories; repository hits belong to other components.",
+          "evaluatedAt": "2026-10-19",
+          "evaluatedAgainst": "sha256-b2:56e509787bc708cd",
+          "evaluatedRevision": 15
         },
         {
           "subject": "test-input-generation",
