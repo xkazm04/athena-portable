@@ -4365,6 +4365,88 @@
           "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Chrome.tsx:58 Drawing passes the open phase identifier here, so known tokens such as compose appear instead of their authored display labels."
         }
       ]
+    },
+    "8a40a6b6-386e-4a37-a60e-595a898ba5f9/scale-investment-timing": {
+      "context": "tidycrm-design",
+      "subject": "scale-investment-timing",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-19",
+      "evaluatedTs": "2026-10-19T07:11:41.835Z",
+      "worker": "c18fa113-db5c-48ca-9896-343cb2d03e14",
+      "techniques": [
+        {
+          "technique": "ceiling-as-deadline-not-trigger",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/design/build-tokens.mjs:101 This bounds token-reference traversal; no architecture exhaustion or replacement deadline is stated."
+        },
+        {
+          "technique": "execution-model-concurrency-threshold",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/design/build-tokens.mjs:87 The builder reads tokens synchronously and does not adopt cooperative multiplexing."
+        },
+        {
+          "technique": "migration-reason-audit",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/design/build-tokens.mjs:67 The choice concerns CSS mode support in a vendored emitter, rather than a platform migration on growth grounds."
+        },
+        {
+          "technique": "next-order-of-magnitude-only",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/design/tc-scales.css:46 The numbered scale sizes visual spacing, rather than future workload."
+        },
+        {
+          "technique": "size-the-system-to-its-maintainers",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/design/build-tokens.mjs:23 Artifact retention is justified by existing citations; no growth sizing or reduction in operating staff is proposed."
+        },
+        {
+          "technique": "vertical-headroom-before-distribution",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/design/build-tokens.mjs:255 Token groups are emitted locally; no proposal distributes this workload across machines."
+        }
+      ]
+    },
+    "2c7d08b8-f9aa-4b85-908f-99e34042a011/scale-investment-timing": {
+      "context": "hirelane-design-law",
+      "subject": "scale-investment-timing",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-19",
+      "evaluatedTs": "2026-10-19T07:11:41.835Z",
+      "worker": "c18fa113-db5c-48ca-9896-343cb2d03e14",
+      "techniques": [
+        {
+          "technique": "ceiling-as-deadline-not-trigger",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/build-tokens.mjs:299 The threshold is a typography floor, rather than an architecture capacity ceiling."
+        },
+        {
+          "technique": "execution-model-concurrency-threshold",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/build-tokens.mjs:86 Token processing uses synchronous input and introduces no cooperative execution model."
+        },
+        {
+          "technique": "migration-reason-audit",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/build-tokens.mjs:40 The documented change preserves CSS token relationships; it is not a platform migration justified by growth."
+        },
+        {
+          "technique": "next-order-of-magnitude-only",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/hl-scales.css:37 Sizing follows viewport width for typography, rather than a projected workload axis."
+        },
+        {
+          "technique": "size-the-system-to-its-maintainers",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/ui-pass-brief.md:291 The brief removes temporary visual alternatives; it does not size growth against maintainers or respond to shrinking staff."
+        },
+        {
+          "technique": "vertical-headroom-before-distribution",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/check-law.mjs:106 The checker traverses local files synchronously; no distribution or larger-machine decision is proposed."
+        }
+      ]
     }
   }
 }

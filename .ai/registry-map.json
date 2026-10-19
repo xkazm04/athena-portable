@@ -6141,7 +6141,11 @@
           "revision": 7,
           "changedAt": "2026-09-04",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/hirelane/design/hl-scales.css:10 The files implement CSS scales and static design checks, and searches found no headroom, throughput, multiplexing or capacity terms in this context or any applicable growth investment decision.",
+          "evaluatedAt": "2026-10-19",
+          "evaluatedAgainst": "sha256-b2:43b2188e6c19354d",
+          "evaluatedRevision": 7
         },
         {
           "subject": "invariant-placement",
@@ -8485,7 +8489,11 @@
           "revision": 7,
           "changedAt": "2026-09-04",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/design/build-tokens.mjs:28 The files implement visual tokens and CSS scales, and searches found no headroom, throughput, multiplexing or capacity terms in this context or any applicable growth investment decision.",
+          "evaluatedAt": "2026-10-19",
+          "evaluatedAgainst": "sha256-b2:43b2188e6c19354d",
+          "evaluatedRevision": 7
         },
         {
           "subject": "fleet-orchestration",
