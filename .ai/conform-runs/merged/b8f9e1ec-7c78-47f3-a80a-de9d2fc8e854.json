@@ -1,0 +1,95 @@
+{
+ "schema": "conform-run/1",
+ "worker": "b8f9e1ec-7c78-47f3-a80a-de9d2fc8e854",
+ "subject": "audit-logging",
+ "evaluatedAt": "2026-10-19T10:46:38.434219+00:00",
+ "provider": "codex",
+ "model": "gpt-6.1-sol",
+ "pairs": [
+  {
+   "context": "proving-playbooks-bench",
+   "subject": "audit-logging",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "src/athena/proving/playbooks/__main__.py:222 Rescoring writes into the original report directory, replacing previously recorded results instead of preserving the original and appending a referenced correction.",
+   "techniques": [
+    {
+     "technique": "append-only-design",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/bench.py:751 The writer overwrites report.json; the rescore command supplies the original directory, destroying the previous recorded assessment."
+    },
+    {
+     "technique": "audit-querying",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/bench.py:664 The replay reader traverses one report without actor/action/subject/time-window filters; its turn records also lack structured actor and per-action timestamps."
+    },
+    {
+     "technique": "best-effort-with-accounting",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/__main__.py:232 After the simulated actions complete, persistence errors escape this call without a durable failed-write counter or surfaced accounting for lost evidence."
+    },
+    {
+     "technique": "decision-records",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/bench.py:357 The bench mechanically approves cards under approve=all; it does not collect human judgments dismissing regenerated findings."
+    },
+    {
+     "technique": "record-axis-predicate",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/bench.py:327 The inspected storage model accumulates action turns into JSON snapshots, rather than maintaining versioned rows with recorded/invalidated intervals requiring held-at predicates."
+    },
+    {
+     "technique": "retention-and-partitioning",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/bench.py:802 Only summary headlines receive the twelve-entry bound; full run reports have no enforced horizon, and headline retirement produces no surviving trim record."
+    },
+    {
+     "technique": "tamper-evidence",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/evidence.py:561 Verification recomputes unkeyed media checksums against the editable index; it does not authenticate benchmark record content against an operator able to replace both artifacts and hashes."
+    },
+    {
+     "technique": "two-clock-records",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/playbooks/bench.py:190 The bench originates the simulated actions it records; rescored_at separately dates recomputation, rather than representing late arrival of an externally occurring fact."
+    },
+    {
+     "technique": "write-chokepoint",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/bench.py:747 The persistence door accepts arbitrary mappings and writes them without enforcing required audit fields, timestamp assignment, sanitization, retention or failure accounting."
+    },
+    {
+     "technique": "write-path-sanitization",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/playbooks/bench.py:312 Card parameters enter the persisted report verbatim; the report writer applies no payload allowlist, secret scrubber or parameter size cap."
+    }
+   ]
+  }
+ ],
+ "declined": [],
+ "consults": [
+  {
+   "ts": "2026-10-19T10:46:38.434219+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "audit-logging"
+   ],
+   "techniques": [
+    "append-only-design",
+    "audit-querying",
+    "best-effort-with-accounting",
+    "decision-records",
+    "record-axis-predicate",
+    "retention-and-partitioning",
+    "tamper-evidence",
+    "two-clock-records",
+    "write-chokepoint",
+    "write-path-sanitization"
+   ],
+   "deviations": 1,
+   "context": "proving-playbooks-bench",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  }
+ ]
+}

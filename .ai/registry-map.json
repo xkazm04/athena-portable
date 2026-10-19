@@ -8202,7 +8202,11 @@
           "revision": 9,
           "changedAt": "2026-09-05",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/proving/playbooks/__main__.py:222 Rescoring writes into the original report directory, replacing previously recorded results instead of preserving the original and appending a referenced correction.",
+          "evaluatedAt": "2026-10-19",
+          "evaluatedAgainst": "sha256-b2:154304c5d9578971",
+          "evaluatedRevision": 10
         },
         {
           "subject": "agent-memory",
