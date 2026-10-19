@@ -1,0 +1,102 @@
+{
+  "schema": "conform-run/1",
+  "worker": "792bf6ed-4a0c-41e7-a7d1-c6d137b73f10",
+  "subject": "versioning-snapshots",
+  "evaluatedAt": "2026-10-19T09:34:16.090295+00:00",
+  "provider": "codex",
+  "model": "gpt-6.1-sol",
+  "pairs": [
+    {
+      "context": "atlas-shell-and-styles",
+      "subject": "versioning-snapshots",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evidence": "examples/atlas/components/atlas/variants/useChoice.ts:109 Context and repository searches found no lineage, retention, checkpoint, or rollback constructs in this context, whose persistence replaces a current display preference rather than retaining restorable versions.",
+      "techniques": [
+        {
+          "technique": "lineage-and-variants",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/contract.ts:28 The variants are visual finishes of shared geometry, not branches of saved entity history."
+        },
+        {
+          "technique": "promotion-lifecycle",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/tools/AtlasTools.tsx:196 The handler selects a display finish; it does not activate a saved version serving production behavior."
+        },
+        {
+          "technique": "restore-semantics",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/useChoice.ts:115 Replacing the current URL reflects a display choice rather than restoring an entity from durable history."
+        },
+        {
+          "technique": "retention-and-pruning",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/useChoice.ts:109 The preference overwrites one storage key; no version records accumulate for a janitor to prune."
+        },
+        {
+          "technique": "snapshot-scope",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/useChoice.ts:132 Here snapshot is React's current-state reader, not a durable capture with a restoration contract."
+        },
+        {
+          "technique": "version-identity",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/contract.ts:23 The identifiers name fixed rendering components; no historical version identities or sequence numbers are minted."
+        }
+      ],
+      "absenceTerms": [
+        "lineage",
+        "retention",
+        "checkpoint",
+        "rollback"
+      ]
+    }
+  ],
+  "declined": [
+    {
+      "subject": "versioning-snapshots",
+      "context": "atlas-lanes-drawing",
+      "reason": "withdrawn after review: reviewer (sonnet): The primary anchor Tools.tsx:21 is only an `import { useWebMCPTool }` line and shows nothing about missing versioning. The 'writes nothing, no database' comment sits on lines 19-20, which are not the cited line. The technique anchors (copy.ts:7, index.tsx:18, turn.ts:67, geometry.ts:227) are real bu"
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-19T09:34:16.090295+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "versioning-snapshots"
+      ],
+      "techniques": [
+        "lineage-and-variants",
+        "promotion-lifecycle",
+        "restore-semantics",
+        "retention-and-pruning",
+        "snapshot-scope",
+        "version-identity"
+      ],
+      "deviations": 0,
+      "context": "atlas-lanes-drawing",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    },
+    {
+      "ts": "2026-10-19T09:34:16.090295+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "versioning-snapshots"
+      ],
+      "techniques": [
+        "lineage-and-variants",
+        "promotion-lifecycle",
+        "restore-semantics",
+        "retention-and-pruning",
+        "snapshot-scope",
+        "version-identity"
+      ],
+      "deviations": 0,
+      "context": "atlas-shell-and-styles",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    }
+  ]
+}

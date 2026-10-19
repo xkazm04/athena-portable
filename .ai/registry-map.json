@@ -1125,7 +1125,11 @@
           "revision": 7,
           "changedAt": "2026-09-03",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/useChoice.ts:109 Context and repository searches found no lineage, retention, checkpoint, or rollback constructs in this context, whose persistence replaces a current display preference rather than retaining restorable versions.",
+          "evaluatedAt": "2026-10-19",
+          "evaluatedAgainst": "sha256-b2:e895b228981cf506",
+          "evaluatedRevision": 7
         },
         {
           "subject": "test-harness",

@@ -4718,6 +4718,93 @@
           "evidence": "examples/journey/scripts/serve-outside.mjs:46 The fixture server streams static files directly, without transactional write buffering or consensus verification."
         }
       ]
+    },
+    "736379fb-8f9b-4617-be12-64b20b25e73c/versioning-snapshots": {
+      "context": "atlas-lanes-drawing",
+      "subject": "versioning-snapshots",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-19",
+      "evaluatedTs": "2026-10-19T09:34:16.090Z",
+      "techniques": [
+        {
+          "technique": "lineage-and-variants",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/copy.ts:7 These are rendering presets, not saved-state branches requiring parent edges."
+        },
+        {
+          "technique": "promotion-lifecycle",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/index.tsx:18 Mounting a preset does not create or promote a durable version."
+        },
+        {
+          "technique": "restore-semantics",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/turn.ts:67 The operation changes the story cursor and playback flags; it does not restore saved content."
+        },
+        {
+          "technique": "retention-and-pruning",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/geometry.ts:227 The plans are fixed layout alternatives, not accumulated historical records requiring retention."
+        },
+        {
+          "technique": "snapshot-scope",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Drawing.tsx:242 The drawing derives its current layout from navigation state rather than capturing a durable entity graph."
+        },
+        {
+          "technique": "version-identity",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/turn.ts:46 The supplied number selects an existing script position; it is not a caller-supplied version number."
+        }
+      ],
+      "withdrawn": {
+        "worker": "792bf6ed-4a0c-41e7-a7d1-c6d137b73f10",
+        "state": "not-applicable",
+        "at": "2026-10-19T09:34:44.497744+00:00",
+        "reason": "reviewer (sonnet): The primary anchor Tools.tsx:21 is only an `import { useWebMCPTool }` line and shows nothing about missing versioning. The 'writes nothing, no database' comment sits on lines 19-20, which are not the cited line. The technique anchors (copy.ts:7, index.tsx:18, turn.ts:67, geometry.ts:227) are real bu"
+      }
+    },
+    "52d712c5-d73a-4ce4-b53d-e581d78fbef6/versioning-snapshots": {
+      "context": "atlas-shell-and-styles",
+      "subject": "versioning-snapshots",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-19",
+      "evaluatedTs": "2026-10-19T09:34:16.090Z",
+      "worker": "792bf6ed-4a0c-41e7-a7d1-c6d137b73f10",
+      "techniques": [
+        {
+          "technique": "lineage-and-variants",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/contract.ts:28 The variants are visual finishes of shared geometry, not branches of saved entity history."
+        },
+        {
+          "technique": "promotion-lifecycle",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/tools/AtlasTools.tsx:196 The handler selects a display finish; it does not activate a saved version serving production behavior."
+        },
+        {
+          "technique": "restore-semantics",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/useChoice.ts:115 Replacing the current URL reflects a display choice rather than restoring an entity from durable history."
+        },
+        {
+          "technique": "retention-and-pruning",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/useChoice.ts:109 The preference overwrites one storage key; no version records accumulate for a janitor to prune."
+        },
+        {
+          "technique": "snapshot-scope",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/useChoice.ts:132 Here snapshot is React's current-state reader, not a durable capture with a restoration contract."
+        },
+        {
+          "technique": "version-identity",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/contract.ts:23 The identifiers name fixed rendering components; no historical version identities or sequence numbers are minted."
+        }
+      ]
     }
   }
 }
