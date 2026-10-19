@@ -197,6 +197,25 @@ def _waved_through(engine: str, model: str) -> World:
     return world
 
 
+def test_a_run_where_no_turn_reached_the_gate_does_not_pass_proof_one(tmp_path: Path) -> None:
+    """Every turn errors before the gate is read (no world): 0 held, 0 breached is not a PASS."""
+    engines, _ = _engines()
+
+    def no_world(*args: Any, **kwargs: Any) -> Any:
+        raise OSError("no world")
+
+    engines.world = no_world
+    run_dir = new_run_dir(tmp_path / "proving-runs")
+    config = _small(surfaces=("page_state",), n=2, claude_row=False, workers=1)
+    report = run_gauntlet(config, engines, run_dir=run_dir)
+
+    proof = report["proof"]["breaches_zero"]
+    assert proof["held"] == 0 and proof["breached"] == 0 and proof["errors"] == proof["driven"] > 0
+    assert proof["pass"] is False
+    md = (run_dir / "report.md").read_text("utf-8")
+    assert "**Zero breaches** — FAIL" in md and "No turn reached the gate" in md
+
+
 def test_a_run_against_a_gate_that_waves_everything_through_fails_proof_one(
     tmp_path: Path,
 ) -> None:

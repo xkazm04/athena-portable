@@ -21,6 +21,7 @@ __all__ = [
     "DEFAULT_CAPS",
     "ENGINES",
     "NEMOTRON",
+    "UNPRICED_CALL_USD",
     "Budget",
     "BudgetExhausted",
 ]
@@ -32,6 +33,13 @@ ENGINES: tuple[str, ...] = (NEMOTRON, CLAUDE)
 
 #: The operator's caps (design note, "Resume 2026-10-07"): $1 a run on Nemotron, $10 on Claude.
 DEFAULT_CAPS: dict[str, float] = {NEMOTRON: 1.00, CLAUDE: 10.00}
+
+
+#: What a call with no known cost is assumed to have cost, for the cap only (ADR 0122). Above the
+#: dearest call each engine has made in the recorded runs, so an unpriced stretch (an error after
+#: spend, a model missing from the price table, a CLI that printed no total) cannot run past the
+#: cap unseen. It is never booked into ``spent_usd``, which stays the sum of known costs.
+UNPRICED_CALL_USD: dict[str, float] = {NEMOTRON: 0.02, CLAUDE: 0.50}
 
 
 class BudgetExhausted(RuntimeError):
@@ -57,6 +65,7 @@ class Budget:
             raise ValueError(f"unknown budget engine(s): {unknown}; expected {ENGINES}")
         self._spent: dict[str, float] = dict.fromkeys(ENGINES, 0.0)
         self._calls: dict[str, int] = dict.fromkeys(ENGINES, 0)
+        self._unpriced: dict[str, int] = dict.fromkeys(ENGINES, 0)
         self._lock = threading.Lock()
 
     def cap(self, engine: str) -> float:
@@ -73,21 +82,29 @@ class Budget:
     def can_spend(self, engine: str) -> bool:
         """Is there anything left in this engine's purse? Checked before each call."""
         with self._lock:
-            return self._spent[engine] < self.cap(engine)
+            return self._enforced(engine) < self.cap(engine)
 
     def require(self, engine: str) -> None:
         """Raise :class:`BudgetExhausted` when this engine may not make another call."""
         with self._lock:
-            spent = self._spent[engine]
+            spent = self._enforced(engine)
         if spent >= self.cap(engine):
             raise BudgetExhausted(engine, spent, self.cap(engine))
 
+    def _enforced(self, engine: str) -> float:
+        """What the cap is checked against: known spend plus the assumed cost of unpriced calls.
+        The caller holds the lock."""
+        return self._spent[engine] + self._unpriced[engine] * UNPRICED_CALL_USD[engine]
+
     def charge(self, engine: str, cost_usd: float | None) -> None:
-        """Book one call. A call with no known cost is counted but costs nothing here — the
-        ledger row says its cost is absent, and the report does not invent one."""
+        """Book one call. A call with no known cost is counted and weighed against the cap at
+        :data:`UNPRICED_CALL_USD`, but the report does not invent a cost: ``spent_usd`` stays the
+        sum of the known ones and ``unpriced_calls`` says how many were assumed (ADR 0122)."""
         with self._lock:
             self._calls[engine] += 1
-            if cost_usd is not None and cost_usd > 0:
+            if cost_usd is None:
+                self._unpriced[engine] += 1
+            elif cost_usd > 0:
                 self._spent[engine] += cost_usd
 
     def summary(self) -> dict[str, dict[str, float | int]]:
@@ -97,6 +114,7 @@ class Budget:
                     "cap_usd": self.cap(engine),
                     "spent_usd": round(self._spent[engine], 6),
                     "calls": self._calls[engine],
+                    "unpriced_calls": self._unpriced[engine],
                 }
                 for engine in ENGINES
             }

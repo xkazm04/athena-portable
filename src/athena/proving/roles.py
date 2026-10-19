@@ -487,7 +487,21 @@ class RoleCaller:
             return RoleReply(
                 "", client.engine, client.model, error_reason="budget_exhausted", detail=str(exc)
             )
-        reply = client.complete(system, prompt)
+        try:
+            reply = client.complete(system, prompt)
+        except AssertionError:
+            raise  # a test's tripwire ("a generator was asked to judge") must stay loud
+        except Exception as exc:
+            # One row per model invocation, failures included (README 2 invariant 6): a client
+            # that raises (a full temp dir, a dead socket) leaves an engine_error row and the
+            # run's worker lives on. The type is named, never the message, which may quote a key.
+            reply = RoleReply(
+                "",
+                client.engine,
+                client.model,
+                error_reason="engine_error",
+                detail=f"the role client raised {type(exc).__name__}",
+            )
         self.budget.charge(client.engine, reply.cost_usd)
         return reply
 

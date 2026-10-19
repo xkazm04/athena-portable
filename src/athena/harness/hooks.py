@@ -308,6 +308,18 @@ class GateHook:
         # a crash mid-execute leaves a spent grant rather than a replayable one. Fail closed: an
         # action the user approved once may run at most once, never at least once.
         if not self.approvals.consume(approval_id):
+            # ``False`` also means a decline (ADR 0060) or an expiry closed the row between the
+            # read above and this write; the user who said no is not told the action ran.
+            try:
+                now = self.approvals.describe(approval_id)
+            except ValueError:
+                now = None
+            if now is not None and now.status in ("declined", "expired"):
+                return Cancel(
+                    _STATUS_REASONS[now.status],
+                    f"approval {approval_id} is {now.status}, not approved",
+                    approval_id=approval_id,
+                )
             return Cancel(
                 "approval_spent",
                 f"approval {approval_id} has already been spent on {entry.name}",

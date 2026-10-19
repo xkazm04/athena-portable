@@ -2,7 +2,8 @@
 
 A hand-written subset of JSON Schema, stdlib only (ADR 0002): ``type`` (one name or a list of
 them), ``required``, ``enum``, ``additionalProperties: false``, ``maxLength``, ``minItems``,
-``maxItems``, ``minimum``, ``maximum`` and nested ``items``. That subset is exactly what the
+``maxItems``, ``minimum``, ``maximum`` and nested ``items`` and nested objects (``properties``,
+``required``, ``additionalProperties: false``; ADR 0121). That subset is exactly what the
 manifests in this repository declare — an enum and a ``maxItems`` on every parameter that
 addresses a page — and refusing to grow it is what keeps ``core`` dependency-free.
 
@@ -110,27 +111,48 @@ def check_schema(params: dict[str, Any], schema: dict[str, Any]) -> ValidationRe
             "validator_failed", f"this tool's params_schema is malformed: {shape[0]}"
         )
 
-    for name in schema.get("required", []):
+    return _check_members("", params, schema)
+
+
+def _check_members(path: str, params: dict[str, Any], schema: dict[str, Any]) -> ValidationResult:
+    """``required``, ``additionalProperties: false`` and each property of one object.
+
+    ``path`` is empty for the call's own parameters and names the parameter for a nested object
+    (ADR 0121), so the top-level sentences the model already reads are unchanged. A nested
+    ``required`` or ``properties`` of the wrong shape fails closed: the manifest door inspects only
+    the top level, so the gate is the one place a nested schema is read at all.
+    """
+    where = f"{path}: " if path else ""
+    required = schema.get("required", [])
+    if not isinstance(required, list) or not all(isinstance(n, str) for n in required):
+        return ValidationResult.reject(
+            "validator_failed", f"{where}this tool's params_schema has a malformed 'required'"
+        )
+    for name in required:
         if name not in params:
             return ValidationResult.reject(
-                "validator_failed", f"missing required parameter {name!r}"
+                "validator_failed", f"{where}missing required parameter {name!r}"
             )
 
     props = schema.get("properties", {})
     if not isinstance(props, dict):
+        if path:
+            return ValidationResult.reject(
+                "validator_failed", f"{where}this tool's params_schema has malformed 'properties'"
+            )
         props = {}
 
     if schema.get("additionalProperties") is False:
-        extra = sorted(set(params) - set(props))
+        extra = sorted(str(k) for k in set(params) - set(props))
         if extra:
             return ValidationResult.reject(
-                "validator_failed", f"unknown parameter(s): {', '.join(extra)}"
+                "validator_failed", f"{where}unknown parameter(s): {', '.join(extra)}"
             )
 
     for name, value in params.items():
         sub = props.get(name)
         if isinstance(sub, dict):
-            result = _check_value(name, value, sub)
+            result = _check_value(f"{path}.{name}" if path else name, value, sub)
             if not result.ok:
                 return result
     return ValidationResult.accept()
@@ -180,6 +202,13 @@ def _check_value(path: str, value: Any, schema: dict[str, Any]) -> ValidationRes
                 result = _check_value(f"{path}[{index}]", item, items)
                 if not result.ok:
                     return result
+
+    if isinstance(value, dict) and any(
+        k in schema for k in ("properties", "required", "additionalProperties")
+    ):
+        result = _check_members(path, value, schema)
+        if not result.ok:
+            return result
 
     if isinstance(value, int | float) and not isinstance(value, bool):
         # NaN compares False with every bound, so a range check alone lets it through, and a

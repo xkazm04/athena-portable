@@ -253,6 +253,33 @@ def test_an_approval_is_spent_when_the_gate_lets_it_through(
     assert again.decision.approval_id == approval_id
 
 
+def test_a_grant_a_racing_decline_closed_is_refused_as_declined_not_spent(
+    catalog: FakeCatalog, approvals: FakeApprovals, ctx: TurnContext, entry: EntryFactory
+) -> None:
+    """ADR 0060: a decline landing between the gate's read and its spend must not read as
+    "already been spent" (the action did not run)."""
+
+    class _DeclinedMidSpend(FakeApprovals):
+        def consume(self, approval_id: str) -> bool:
+            self.rows[approval_id].status = "declined"
+            return False
+
+    racing = _DeclinedMidSpend()
+    row = catalog.add(
+        entry("core.pay", ToolClass.GATED, executor=lambda p, c: ExecResult(True, ""))
+    )
+    gate = _gate(catalog, racing)
+    first = gate.run_tool(row, {"amount": 40}, ctx)
+    assert isinstance(first.decision, Cancel) and first.decision.approval_id
+    racing.resolve(first.decision.approval_id, "approve")
+
+    out = gate.run_tool(row, {"amount": 40}, ctx, approval_id=first.decision.approval_id)
+
+    assert isinstance(out.decision, Cancel)
+    assert out.decision.reason == "user_denied"
+    assert "spent" not in out.decision.detail
+
+
 def test_a_host_tool_spends_its_approval_on_allow_though_the_page_runs_it(
     catalog: FakeCatalog, approvals: FakeApprovals, ctx: TurnContext, entry: EntryFactory
 ) -> None:

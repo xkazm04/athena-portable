@@ -118,6 +118,15 @@ def test_a_core_tool_needs_an_executor_and_a_host_tool_must_not_have_one() -> No
         )
 
 
+def test_a_connector_tool_needs_an_executor_or_the_gate_would_treat_it_as_a_host_tool() -> None:
+    with pytest.raises(ValueError, match=r"connector tool .* must have an executor"):
+        ToolEntry(name="connector.g.x", origin="connector:g", cls=ToolClass.GATED)
+    ok = ToolEntry(
+        name="connector.g.x", origin="connector:g", cls=ToolClass.GATED, executor=an_executor
+    )
+    assert ok.tier == ok.parsed_origin.tier
+
+
 def test_a_tool_name_must_be_namespaced() -> None:
     with pytest.raises(ValueError, match="namespaced"):
         ToolEntry(name="send", origin="host:inbox", cls=ToolClass.GATED)
