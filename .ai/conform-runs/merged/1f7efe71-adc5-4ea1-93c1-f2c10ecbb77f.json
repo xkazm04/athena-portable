@@ -1,0 +1,62 @@
+{
+  "schema": "conform-run/1",
+  "worker": "1f7efe71-adc5-4ea1-93c1-f2c10ecbb77f",
+  "subject": "streaming-output",
+  "evaluatedAt": "2026-10-19T08:42:18.343337+00:00",
+  "provider": "codex",
+  "model": "gpt-6.1-sol",
+  "pairs": [],
+  "declined": [
+    {
+      "subject": "streaming-output",
+      "context": "desktop-scenes-chores",
+      "reason": "withdrawn after review: reviewer (sonnet): The anchors (adopt/state.ts, adopt/session.ts) are in the chores/adopt/ subdirectory, which is not among this context's listed files, so the verdict is about a different context. state.ts:203 does append to an unbounded feed, but that is a finite adopt conversation rather than streamed output, and I"
+    },
+    {
+      "subject": "streaming-output",
+      "context": "desktop-scenes-mind-surface",
+      "reason": "withdrawn after review: reviewer (sonnet): Every anchor is in scenes/surface/ (model.ts, live.tsx, view.tsx), which is not among this context's listed files (scenes/mind/* and scenes/shared/*). Line 161 only computes the headline from pillText(s.athena); I could not confirm from the context's own code that no age-based fallback exists."
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-19T08:42:18.343337+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "streaming-output"
+      ],
+      "techniques": [
+        "buffering-and-backpressure",
+        "emit-behind-the-revision-window",
+        "mid-turn-steering",
+        "phase-derivation",
+        "render-throttling",
+        "run-attribution",
+        "stream-parsing"
+      ],
+      "deviations": 1,
+      "context": "desktop-scenes-chores",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    },
+    {
+      "ts": "2026-10-19T08:42:18.343337+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "streaming-output"
+      ],
+      "techniques": [
+        "buffering-and-backpressure",
+        "cancellation-and-finalization",
+        "emit-behind-the-revision-window",
+        "phase-derivation",
+        "sink-reversibility-decides-the-commit",
+        "stream-parsing"
+      ],
+      "deviations": 1,
+      "context": "desktop-scenes-mind-surface",
+      "via": "curator-multi:codex",
+      "model": "gpt-6.1-sol"
+    }
+  ]
+}

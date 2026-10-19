@@ -4529,6 +4529,103 @@
           "evidence": "apps/desktop/src/lib/dev/locate.ts:28 The helper parses source coordinates, without model input dimensions or a forward-pass solver."
         }
       ]
+    },
+    "27c95b34-cf14-43fa-9546-1f290fdd7368/streaming-output": {
+      "context": "desktop-scenes-chores",
+      "subject": "streaming-output",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-19",
+      "evaluatedTs": "2026-10-19T08:42:18.343Z",
+      "techniques": [
+        {
+          "technique": "buffering-and-backpressure",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/chores/adopt/state.ts:203 The feed has no dual budget, admission cap, eviction accounting or shedding policy."
+        },
+        {
+          "technique": "emit-behind-the-revision-window",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/scenes/chores/adopt/state.ts:232 Revised briefs replace complete checkpoints rather than incrementally exposing a revisable suffix, matching the standard's checkpoint alternative."
+        },
+        {
+          "technique": "mid-turn-steering",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/chores/adopt/session.ts:174 Messages receive an ordinary local transcript entry without indicating queued versus steered delivery; the server's receive_answers path queues another actor round."
+        },
+        {
+          "technique": "phase-derivation",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/chores/adopt/state.ts:201 Progress relies on explicit marker text without an observation timestamp, dwell filter or silence-based degradation."
+        },
+        {
+          "technique": "render-throttling",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/chores/adopt/conversation.tsx:86 Every new feed key triggers scrolling without checking whether the user disengaged from the tail."
+        },
+        {
+          "technique": "run-attribution",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/chores/adopt/session.ts:93 Events dispatch without a current-session or subscription-generation guard; the abort check occurs only after the iterator exits, leaving buffered late events applicable."
+        },
+        {
+          "technique": "stream-parsing",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/lib/adopt-client.ts:216 Both live clients use this parser, which silently drops well-formed unknown event kinds instead of forwarding explicit unknown events."
+        }
+      ],
+      "withdrawn": {
+        "worker": "1f7efe71-adc5-4ea1-93c1-f2c10ecbb77f",
+        "state": "deviation",
+        "at": "2026-10-19T08:42:42.769098+00:00",
+        "reason": "reviewer (sonnet): The anchors (adopt/state.ts, adopt/session.ts) are in the chores/adopt/ subdirectory, which is not among this context's listed files, so the verdict is about a different context. state.ts:203 does append to an unbounded feed, but that is a finite adopt conversation rather than streamed output, and I"
+      }
+    },
+    "ec3c6a55-2ad9-47a0-8616-02544fcd0f1e/streaming-output": {
+      "context": "desktop-scenes-mind-surface",
+      "subject": "streaming-output",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-19",
+      "evaluatedTs": "2026-10-19T08:42:18.343Z",
+      "techniques": [
+        {
+          "technique": "buffering-and-backpressure",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/surface/live.tsx:104 This scene projects the current status snapshot rather than accumulating an output tail."
+        },
+        {
+          "technique": "cancellation-and-finalization",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/surface/model.ts:5 Run ownership and finalization belong to Athena's window; these scenes provide settings and a status mirror."
+        },
+        {
+          "technique": "emit-behind-the-revision-window",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/surface/view.tsx:74 The marquee replaces a whole activity label, with no revisable output transcript or emission cursor."
+        },
+        {
+          "technique": "phase-derivation",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/surface/model.ts:161 The headline consumes state, cards and line without event age; the inspected mirror and status derivation also provide no silence degradation."
+        },
+        {
+          "technique": "sink-reversibility-decides-the-commit",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/surface/view.tsx:117 This surface acknowledges input handover and does not commit partial answer records."
+        },
+        {
+          "technique": "stream-parsing",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/live.tsx:37 Mind consumes a setup view-model, while Surface consumes decoded status snapshots; neither scene parses transport frames."
+        }
+      ],
+      "withdrawn": {
+        "worker": "1f7efe71-adc5-4ea1-93c1-f2c10ecbb77f",
+        "state": "deviation",
+        "at": "2026-10-19T08:42:42.807767+00:00",
+        "reason": "reviewer (sonnet): Every anchor is in scenes/surface/ (model.ts, live.tsx, view.tsx), which is not among this context's listed files (scenes/mind/* and scenes/shared/*). Line 161 only computes the headline from pillText(s.athena); I could not confirm from the context's own code that no age-based fallback exists."
+      }
     }
   }
 }
