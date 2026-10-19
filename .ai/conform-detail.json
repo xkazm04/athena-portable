@@ -5105,6 +5105,62 @@
           "evidence": "src/athena/connectors/vault.py:287 Definitions load directly from shipped files, while operator settings persist separately as ConnectionRecord values; there is no shared installed catalog table or refresh competing with operator definition edits."
         }
       ]
+    },
+    "42ac1c25-8a07-450d-a03a-c3ac5d50f5fe/conversation-orchestration": {
+      "context": "desktop-halo",
+      "subject": "conversation-orchestration",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-19",
+      "evaluatedTs": "2026-10-19T21:40:41.148Z",
+      "techniques": [
+        {
+          "technique": "two-surface-doctrine",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/halo/halo.css:44 The ambient overlay suppresses all pointer events and provides no keyboard shortcuts or option rendering to answer decisions, forcing users to summon the main window."
+        },
+        {
+          "technique": "layered-avatar-state-machine",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/halo/main.ts:100 State transitions only update root.dataset.phase without an accessible text label or status line for the presence state, failing the legibility floor."
+        },
+        {
+          "technique": "model-proposed-quick-replies",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/halo/halo.css:288 The ambient overlay presents only a two-line spoken caption; suggestion chips are a chat affordance explicitly excluded from ambient surfaces."
+        },
+        {
+          "technique": "narration-promote-on-finish",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/halo/model.ts:58 The halo overlay only displays an ephemeral caption expiring after CAPTION_LINGER_MS and has no durable conversation record or beat promotion pipeline."
+        },
+        {
+          "technique": "progress-beat-grammar",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/halo-signal.ts:56 The halo state is derived from observed store events rather than parsing an in-band model-authored progress beat grammar."
+        },
+        {
+          "technique": "recall-transparency",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/halo.ts:80 The halo caption is reserved for spoken utterances; memory recall disclosure is reading material that the standard explicitly routes to the conversation surface."
+        },
+        {
+          "technique": "show-dont-tell-walkthrough",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/halo/main.ts:4 The halo is a monitor-spanning ambient edge bloom rather than an interactive UI element tracking walkthrough."
+        },
+        {
+          "technique": "structured-visual-replies",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/halo/halo.css:3 Structured visual replies (tables and charts) are reading material that the standard explicitly routes to the conversation rather than ambient overlays."
+        }
+      ],
+      "withdrawn": {
+        "worker": "a5726564-90ff-4253-b9b3-06047b3e9824",
+        "state": "deviation",
+        "at": "2026-10-19T21:41:05.984923+00:00",
+        "reason": "reviewer (sonnet): The anchors confirm that the halo is a pointer-events:none ambient overlay with a 2-line caption that expires after CAPTION_LINGER_MS, and that haloPhase maps cards>0 to a \"gate\" phase. Nothing I opened shows that the two-surface doctrine requires the ambient surface to render choices, take input or"
+      }
     }
   }
 }
