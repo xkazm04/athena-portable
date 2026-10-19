@@ -3385,7 +3385,11 @@
           "revision": 1,
           "changedAt": "2026-09-03",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/package.json:6 The inspected configuration builds a desktop shell and daemon sidecar, while context searches found no weights_path, logits or tensor occurrences and broader model-related hits were voice-download links and avatar animation documentation.",
+          "evaluatedAt": "2026-10-19",
+          "evaluatedAgainst": "sha256-b2:d22f4172adbc5004",
+          "evaluatedRevision": 1
         }
       ],
       "governance": "governed"
@@ -7606,7 +7610,11 @@
           "revision": 1,
           "changedAt": "2026-09-03",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "packages/athena-bridge/package.json:6 The package supplies browser tool infrastructure, and context searches found no weights_path, logits or tensor occurrences or trained-model packaging construct to trigger this subject.",
+          "evaluatedAt": "2026-10-19",
+          "evaluatedAgainst": "sha256-b2:d22f4172adbc5004",
+          "evaluatedRevision": 1
         },
         {
           "subject": "embedded-preview",
