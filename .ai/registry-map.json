@@ -1591,7 +1591,11 @@
           "revision": 4,
           "changedAt": "2026-09-26",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/connectors/providers/notion.py:138 Malformed successful provider responses become successful empty searches, concealing response parsing failures.",
+          "evaluatedAt": "2026-10-19",
+          "evaluatedAgainst": "sha256-b2:d78c2c6c19304554",
+          "evaluatedRevision": 4
         },
         {
           "subject": "agent-runtime-assembly",
