@@ -52,7 +52,7 @@ one rule design 5.1 states and `annotationsFor` (demo-kit `webmcp`) emits: AUTO 
 | `normalize_fields(ids, rules)` | A | true | `data` | `rules` enum: `phone_e164`, `trim_whitespace`, `title_case_names`, `lowercase_email`. `ids` capped at 500. One revision row per field. |
 | `preview_normalize(ids, rules)` | A | true | `none` | The dry run, same parameters. Records already conforming are omitted. |
 | `flag_stale(ids)` | A | true | `data` | Marks records for a human to revisit. `ids` capped at 500. |
-| `read_pairs(limit?)` | A | true | `none` | The open merge queue, most confident first, with the evidence. Bounded; `footer` announces it. |
+| `read_pairs(limit?)` | A | true | `none` | The open merge queue, most confident first, with the evidence. Bounded by `limit` and by what fits in one answer; `footer` announces it. |
 | `preview_merge(pair_id)` | A | true | `none` | Both records, the confidence and the rules that fired. Changes nothing. |
 | `resolve_pair(pair_id, verdict)` | A | true | `data` | `verdict` enum: `kept_both`, `skipped`. Stores an undo payload, so a mis-keyed verdict reopens the pair. |
 | `read_conflicts(domain?, limit?)` | A | true | `none` | Conflicted domains, their spellings and the contacts under each. Bounded at 20; `footer` announces it. |

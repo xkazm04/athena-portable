@@ -45,6 +45,7 @@ import {
   resolvePairAction,
   undoAction,
 } from "@/app/actions";
+import { pairsAnswer } from "./pairs";
 
 /** The two reviewer verdicts that are not a merge (lib/mutations.ts, `resolvePair`). */
 const VERDICTS = ["kept_both", "skipped"] as const;
@@ -261,12 +262,15 @@ function ShippedCapabilities() {
         name: "limit",
         type: "number",
         required: false,
-        description: "How many pairs to return; defaults to 10, capped at 50",
+        description: "How many pairs to return; defaults to 10, capped at 50 and at what fits in one answer",
       },
     ],
     reversible: true,
     sideEffects: "none",
-    handler: async ({ limit }) => listPairsAction(Number(limit) || 0),
+    handler: async ({ limit }) => {
+      const { pairs, total } = await listPairsAction(Number(limit) || 0);
+      return pairsAnswer(pairs, total);
+    },
   });
 
   useWebMCPTool({

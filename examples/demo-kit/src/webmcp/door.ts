@@ -84,6 +84,30 @@ export function asText(result: unknown, max = MAX_RESULT_CHARS): string {
   return `${text.slice(0, max)}\n[truncated: showing ${max} of ${text.length} characters]`;
 }
 
+/**
+ * The longest head of a list whose answer `asText` passes whole, built by `envelope`.
+ *
+ * `asText` cuts any result past `max` and appends a notice, which is right for prose and fatal for
+ * JSON: the cut answer no longer parses, so a caller that asked for a page of rows gets a string,
+ * and the `(showing N of M)` it was promised goes with the tail. A tool that answers a list sizes
+ * its page here instead, so the count its envelope reports is the count it carries and what did
+ * not fit is the difference, as for any other cut. When not even one item fits, the envelope comes
+ * back empty and still says how many there were.
+ */
+export function fitted<E>(count: number, envelope: (kept: number) => E, max = MAX_RESULT_CHARS): E {
+  const fits = (n: number): boolean => asText(envelope(n), Number.POSITIVE_INFINITY).length <= max;
+  let lo = 0;
+  let hi = Math.max(0, Math.floor(count));
+  if (fits(hi)) return envelope(hi);
+  // `lo` fits (or is 0) and `hi` does not: an envelope only grows with what it carries.
+  while (hi - lo > 1) {
+    const mid = (lo + hi) >> 1;
+    if (fits(mid)) lo = mid;
+    else hi = mid;
+  }
+  return envelope(lo);
+}
+
 /** What the door hands a handler beside its arguments: the caller's abort, when it sent one. */
 export interface ToolContext {
   signal?: AbortSignal;

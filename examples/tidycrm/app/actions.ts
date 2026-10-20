@@ -56,18 +56,10 @@ function refresh(): void {
  * Capped and announced, per AGENTS.md: a capped figure that does not say so is how a reader comes
  * to believe the queue holds what it returned.
  */
-export async function listPairsAction(
-  limit: number,
-): Promise<{ pairs: MergePair[]; showing: number; total: number; footer: string }> {
+/** The head of the open queue and its length. `read_pairs` sizes the answer (components/shell/pairs.ts). */
+export async function listPairsAction(limit: number): Promise<{ pairs: MergePair[]; total: number }> {
   const bounded = Math.max(1, Math.min(Math.trunc(limit) || PAIR_PAGE, MAX_PAIRS));
-  const pairs = listOpenPairs(bounded);
-  const total = countOpenPairs();
-  return {
-    pairs,
-    showing: pairs.length,
-    total,
-    footer: `(showing ${pairs.length} of ${total})`,
-  };
+  return { pairs: listOpenPairs(bounded), total: countOpenPairs() };
 }
 
 /** `undo`: refused with a reason, not thrown, when a later write owns what it would put back. */
