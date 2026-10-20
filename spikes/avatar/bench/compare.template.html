@@ -1,0 +1,178 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Athena Avatar Bench</title>
+<style>
+/* Layout: portrait + line pickers on top, the line's blinded entries in a synced grid, ranking under each. */
+:root {
+  --ground: #070d0f; --sheet: #0e1f25; --sunk: #0a171b; --ink: #dcecf0; --soft: #8fb0ba;
+  --line: rgba(148, 197, 212, 0.16); --accent: #22d3ee; --wash: rgba(34, 211, 238, 0.10);
+  --pink: #f472b6; --font: "Segoe UI", system-ui, sans-serif; --mono: ui-monospace, "Cascadia Mono", Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { margin: 0; background: var(--ground); color: var(--ink); font: 15px/1.5 var(--font); }
+.wrap { max-width: 1800px; margin: 0 auto; padding: 24px max(16px, 2vw) 48px; display: grid; gap: 18px; }
+h1 { margin: 0; font-size: 26px; letter-spacing: -0.01em; }
+.sub { margin: 0; color: var(--soft); max-width: 80ch; }
+.bar { display: flex; flex-wrap: wrap; gap: 12px 20px; align-items: center; position: sticky; top: 0; z-index: 3; background: var(--ground); padding-block: 10px; border-bottom: 1px solid var(--line); }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { background: transparent; color: var(--soft); border: 0; padding: 8px 14px; font: 500 14px var(--font); cursor: pointer; }
+.seg button + button { border-left: 1px solid var(--line); }
+.seg button[aria-pressed="true"] { background: var(--wash); color: var(--accent); font-weight: 600; }
+.play { background: var(--accent); color: #04222a; border: 0; border-radius: 8px; padding: 9px 18px; font: 700 14px var(--font); cursor: pointer; }
+.ghost { background: transparent; color: var(--soft); border: 1px solid var(--line); border-radius: 8px; padding: 8px 14px; font: 500 14px var(--font); cursor: pointer; }
+.text { color: var(--soft); font-style: italic; flex-basis: 100%; margin: 0; }
+.grid { display: grid; gap: 16px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 520px), 1fr)); }
+.entry { background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; overflow: hidden; display: grid; }
+.entry video { width: 100%; display: block; background: #000; aspect-ratio: 16 / 9; }
+.meta { padding: 12px 14px; display: grid; gap: 10px; }
+.head { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.letter { font: 700 16px var(--mono); color: var(--accent); border: 1.5px solid var(--accent); border-radius: 6px; padding: 3px 9px; }
+.track { color: var(--pink); font-weight: 600; }
+.rank { margin-left: auto; display: inline-flex; gap: 4px; align-items: center; color: var(--soft); font-size: 13px; }
+.rank button { width: 32px; height: 30px; border-radius: 6px; border: 1px solid var(--line); background: transparent; color: var(--soft); font: 600 14px var(--mono); cursor: pointer; }
+.rank button[aria-pressed="true"] { background: var(--accent); color: #04222a; border-color: var(--accent); }
+textarea { width: 100%; min-height: 54px; background: var(--sunk); color: var(--ink); border: 1px solid var(--line); border-radius: 7px; padding: 8px 10px; font: 14px var(--font); resize: vertical; }
+.metrics { font: 12.5px/1.6 var(--mono); color: var(--soft); white-space: pre-wrap; }
+.ref { display: flex; gap: 14px; align-items: center; }
+.ref img { width: 88px; height: 88px; border-radius: 8px; border: 1px solid var(--line); object-fit: cover; }
+.summary { background: var(--sheet); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: grid; gap: 8px; }
+.summary pre { margin: 0; font: 13px/1.6 var(--mono); white-space: pre-wrap; user-select: all; }
+button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="ref">
+    <img id="ref" alt="The portrait these clips animate">
+    <div>
+      <h1>Athena avatar bench</h1>
+      <p class="sub">Each entry animates the same portrait speaking the same line in Athena's own voice. Entries are blinded by letter. Watch with sound, rank each portrait's entries, write what you see, then press Reveal.</p>
+    </div>
+  </header>
+  <nav class="bar" aria-label="Choose what to compare">
+    <div class="seg" id="portraits" role="group" aria-label="Portrait"></div>
+    <div class="seg" id="lines" role="group" aria-label="Line"></div>
+    <button class="play" id="play" type="button">Play all together</button>
+    <button class="ghost" id="loop" type="button" aria-pressed="false">Loop: off</button>
+    <button class="ghost" id="reveal" type="button" aria-pressed="false">Reveal tracks and numbers</button>
+    <p class="text" id="linetext"></p>
+  </nav>
+  <section class="grid" id="grid" aria-live="polite"></section>
+  <section class="summary">
+    <strong>Your verdict so far</strong>
+    <span class="sub">Copy this back into the chat when you are done.</span>
+    <pre id="verdict"></pre>
+  </section>
+</div>
+<script id="data" type="application/json">__DATA__</script>
+<script>
+(function () {
+  const DATA = JSON.parse(document.getElementById("data").textContent);
+  const KEY = "athena-bench-verdict-v1";
+  let verdict = {};
+  try { verdict = JSON.parse(localStorage.getItem(KEY) || "{}") || {}; } catch (e) { verdict = {}; }
+  const save = () => { try { localStorage.setItem(KEY, JSON.stringify(verdict)); } catch (e) {} };
+  const portraits = Object.keys(DATA.portraits);
+  const state = { p: portraits[0], line: "calm", revealed: false, loop: false };
+  const el = (t, c, x) => { const e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e; };
+
+  function seg(host, items, key, label) {
+    host.textContent = "";
+    items.forEach(v => {
+      const b = el("button", "", label(v)); b.type = "button"; b.id = key + "-" + v;
+      b.setAttribute("aria-pressed", String(state[key] === v));
+      b.addEventListener("click", () => { state[key] = v; render(); });
+      host.append(b);
+    });
+  }
+
+  function fmtMetrics(m) {
+    if (!m) return "no metrics";
+    const rt = m.realtime || {}, r = m.render || {};
+    const rows = [];
+    if (rt.fps_p50 != null) rows.push(`realtime fps p50/p5  ${rt.fps_p50} / ${rt.fps_p5 ?? "-"}`);
+    if (rt.first_frame_ms != null) rows.push(`first frame          ${rt.first_frame_ms} ms`);
+    if (rt.cpu_pct != null) rows.push(`cpu                  ${rt.cpu_pct} %`);
+    if (rt.vram_mb != null) rows.push(`vram                 ${rt.vram_mb} MB`);
+    if (rt.gpu_util_pct != null) rows.push(`gpu util             ${rt.gpu_util_pct} %`);
+    if (r.seconds_per_clip != null) rows.push(`render               ${r.seconds_per_clip} s per clip`);
+    (m.licence || []).forEach(l => rows.push(`licence  ${l.component}: ${l.licence}${l.commercial_ok === false ? "  (NOT commercial)" : l.commercial_ok == null ? "  (unknown)" : ""}`));
+    return rows.join("\n");
+  }
+
+  function render() {
+    seg(document.getElementById("portraits"), portraits, "p", v => v);
+    seg(document.getElementById("lines"), Object.keys(DATA.lines), "line", v => v);
+    document.getElementById("linetext").textContent = "“" + DATA.lines[state.line] + "”";
+    const P = DATA.portraits[state.p];
+    document.getElementById("ref").src = P.portrait;
+    const grid = document.getElementById("grid"); grid.textContent = "";
+    const n = P.entries.length;
+    P.entries.slice().sort((a, b) => a.letter.localeCompare(b.letter)).forEach(e => {
+      const card = el("article", "entry");
+      const v = el("video"); v.src = e.clips[state.line]; v.controls = true; v.preload = "auto"; v.playsInline = true; v.loop = state.loop;
+      const meta = el("div", "meta");
+      const head = el("div", "head");
+      head.append(el("span", "letter", e.letter));
+      if (state.revealed) head.append(el("span", "track", e.name));
+      const rank = el("span", "rank"); rank.append("Rank");
+      const mine = (verdict[state.p] || {})[e.letter] || {};
+      for (let i = 1; i <= n; i++) {
+        const b = el("button", "", String(i)); b.type = "button"; b.id = `rank-${state.p}-${e.letter}-${i}`;
+        b.setAttribute("aria-pressed", String(mine.rank === i));
+        b.setAttribute("aria-label", `Rank ${e.letter} number ${i}`);
+        b.addEventListener("click", () => { setRank(e.letter, i); });
+        rank.append(b);
+      }
+      head.append(rank);
+      const note = el("textarea"); note.id = `note-${state.p}-${e.letter}`; note.placeholder = "What works, what breaks (mouth, eyes, motion, glow)...";
+      note.value = mine.note || "";
+      note.addEventListener("input", () => { ((verdict[state.p] ||= {})[e.letter] ||= {}).note = note.value; save(); writeVerdict(); });
+      meta.append(head, note);
+      if (state.revealed) meta.append(el("div", "metrics", fmtMetrics(e.metrics[state.line])));
+      card.append(v, meta);
+      grid.append(card);
+    });
+    document.getElementById("reveal").setAttribute("aria-pressed", String(state.revealed));
+    writeVerdict();
+  }
+
+  function setRank(letter, i) {
+    const v = (verdict[state.p] ||= {});
+    Object.values(v).forEach(x => { if (x.rank === i) delete x.rank; });
+    (v[letter] ||= {}).rank = i;
+    save(); render();
+  }
+
+  function writeVerdict() {
+    const out = [];
+    for (const p of portraits) {
+      const v = verdict[p] || {};
+      const rows = Object.entries(v).filter(([, x]) => x.rank || x.note)
+        .sort((a, b) => (a[1].rank || 9) - (b[1].rank || 9))
+        .map(([l, x]) => `  ${x.rank ? "#" + x.rank : "--"} ${l}${x.note ? ": " + x.note.replace(/\s+/g, " ") : ""}`);
+      if (rows.length) out.push(p + "\n" + rows.join("\n"));
+    }
+    document.getElementById("verdict").textContent = out.length ? out.join("\n") : "Nothing ranked yet.";
+  }
+
+  document.getElementById("play").addEventListener("click", () => {
+    const vids = [...document.querySelectorAll("#grid video")];
+    vids.forEach(v => { v.pause(); v.currentTime = 0; });
+    vids.forEach((v, i) => { v.muted = i !== 0; v.play().catch(() => {}); });
+  });
+  document.getElementById("loop").addEventListener("click", e => {
+    state.loop = !state.loop; e.currentTarget.textContent = "Loop: " + (state.loop ? "on" : "off");
+    e.currentTarget.setAttribute("aria-pressed", String(state.loop));
+    document.querySelectorAll("#grid video").forEach(v => v.loop = state.loop);
+  });
+  document.getElementById("reveal").addEventListener("click", () => { state.revealed = !state.revealed; render(); });
+  render();
+})();
+</script>
+</body>
+</html>

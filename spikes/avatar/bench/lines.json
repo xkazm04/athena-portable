@@ -1,0 +1,20 @@
+{
+  "voice": {"engine": "kokoro", "model": "kokoro-multi-lang-v1_0", "voice": "af_heart", "sample_rate": 24000},
+  "lines": [
+    {
+      "id": "calm",
+      "why": "short, warm, mostly vowels and soft consonants; the idle-to-speech transition",
+      "text": "Good morning. I read the three invoices that came in overnight, and two of them are ready for you."
+    },
+    {
+      "id": "question",
+      "why": "rising intonation and a pause; head motion should answer the question shape",
+      "text": "Do you want me to send the reminder to Northwind now, or wait until Friday?"
+    },
+    {
+      "id": "long",
+      "why": "fast dense consonants (p, b, m, f, v, th) over ~10 s; where mouth tearing and drift show",
+      "text": "I checked every invoice older than thirty days, matched each one to its customer in the CRM, and drafted a polite chase for the four that are still unpaid; nothing goes out until you approve it."
+    }
+  ]
+}

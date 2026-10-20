@@ -1,0 +1,25 @@
+# t4-hybrid venv: uv venv ~/.athena-avatar/venvs/t4-hybrid --python 3.12
+# uv pip install --python <venv python> torch==2.7.1 torchvision==0.22.1 torchaudio==2.7.1 --index-url https://download.pytorch.org/whl/cu128
+# uv pip install --python <venv python> -r spikes/avatar/t4-hybrid/requirements.txt
+numpy<2.1
+scipy
+librosa
+transformers==4.46.3
+omegaconf
+pyyaml
+einops
+tyro
+rich
+pykalman
+imageio
+imageio-ffmpeg
+opencv-python-headless
+scikit-image
+onnxruntime
+onnx==1.16.2          # newer onnx needs protobuf>=5, which breaks mediapipe 0.10.21
+protobuf>=4.25.3,<5
+mediapipe==0.10.21
+matplotlib
+pillow
+tqdm
+ffmpeg-python
