@@ -5161,6 +5161,52 @@
         "at": "2026-10-19T21:41:05.984923+00:00",
         "reason": "reviewer (sonnet): The anchors confirm that the halo is a pointer-events:none ambient overlay with a 2-line caption that expires after CAPTION_LINGER_MS, and that haloPhase maps cards>0 to a \"gate\" phase. Nothing I opened shows that the two-surface doctrine requires the ambient surface to render choices, take input or"
       }
+    },
+    "f152c182-5811-458c-a43b-56fbce7a81e5/durable-agent-operations": {
+      "context": "browser-lane",
+      "subject": "durable-agent-operations",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-20",
+      "evaluatedTs": "2026-10-20T21:26:23.867Z",
+      "techniques": [
+        {
+          "technique": "close-is-a-controlled-crash",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/lane/ports.py:3 The scoped component exposes turn composition, streaming and approval replay, but no runtime shutdown lifecycle; searches found no local shutdown or close implementation to judge."
+        },
+        {
+          "technique": "intent-mints-the-identity",
+          "verdict": "deviation",
+          "evidence": "src/athena/lane/browser_lane.py:369 The core result identity is constructed after gate execution at line 329; the lane commits neither an output reservation before execution nor an atomic output-and-next-state settlement afterward."
+        },
+        {
+          "technique": "recovery-prefix-enumeration",
+          "verdict": "not-applicable",
+          "evidence": "tests/lane/conftest.py:1 The inspected implementation has no total durable operation-state vocabulary to enumerate; the standard explicitly excludes this testing technique until that prerequisite exists."
+        },
+        {
+          "technique": "settlement-order-is-not-placement-order",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stores/run.ts:1221 Following the lane's delegated host execution found an awaited call inside the sequential calls loop; harness dispatch is also synchronous, so parallel settlement and source placement do not form separate orders here."
+        },
+        {
+          "technique": "total-restart-point-by-reference",
+          "verdict": "deviation",
+          "evidence": "src/athena/lane/browser_lane.py:244 The lane drives the multi-round operation directly and records episodes, without persisting a total operation state naming its next procedure; a successor cannot resume its interrupted phase from those records."
+        },
+        {
+          "technique": "two-cancellations-and-a-synchronous-door",
+          "verdict": "deviation",
+          "evidence": "src/athena/lane/browser_lane.py:256 Execution remains coupled to the caller-consumed generator: daemon disconnect cleanup closes it, and the delegated harness handles generator closure and task cancellation together as cancelled, without a separate durable cancellation marker."
+        }
+      ],
+      "withdrawn": {
+        "worker": "6df35be0-577f-4f4c-a83b-2d40721703fa",
+        "state": "deviation",
+        "at": "2026-10-20T21:26:51.523220+00:00",
+        "reason": "reviewer (sonnet): The claim is contradicted by the code. Before `run_tool` executes, the gate's `_check_grant` calls `approvals.consume(approval_id)`, which spends the single-use approval, so a reservation does exist (hooks.py:310). The result `call_id` is `f'{turn_ctx.turn_id}_exec'` (browser_lane.py:369), built fro"
+      }
     }
   }
 }
