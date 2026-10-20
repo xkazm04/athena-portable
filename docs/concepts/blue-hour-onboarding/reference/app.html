@@ -1,0 +1,55 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Athena on Muse · the roof · Blue Hour</title>
+<link rel="stylesheet" href="roof.css">
+</head>
+<body>
+<div id="status">
+  <span class="live" id="liveLine" aria-live="polite"></span>
+  <span class="sim">Simulated · fixtures · nothing leaves this page · every Muse figure is an estimate</span>
+</div>
+<header id="bar">
+  <span class="brand"><i id="brandLamp"></i>Athena · the roof</span>
+  <nav id="crumbs" aria-label="Where you are"></nav>
+  <svg id="keyplan" viewBox="0 0 2400 1350" role="img" aria-label="Key plan: where the view sits on the whole panel. Click to fly there."></svg>
+  <div id="ladder" role="group" aria-label="Level">
+    <button type="button" data-lv="0" title="The whole panel (Home)">L0 Panel</button>
+    <button type="button" data-lv="1" title="One section">L1 Section</button>
+    <button type="button" data-lv="2" title="One item">L2 Item</button>
+  </div>
+  <button class="tbtn" type="button" id="findBtn" title="Find anything ( / )"><kbd>/</kbd>Find</button>
+  <button class="tbtn" type="button" id="zoomOut" aria-label="Zoom out">−</button>
+  <button class="tbtn" type="button" id="zoomIn" aria-label="Zoom in">+</button>
+  <button class="tbtn" type="button" id="homeBtn" title="Back to the whole panel">Home</button>
+  <a class="toLanding" href="index.html">← The landing</a>
+</header>
+<main id="stage" tabindex="0" aria-label="The illuminated diagram. Arrows walk sections, Enter opens, Escape rises, slash finds.">
+  <div id="world"></div>
+</main>
+<aside id="dossier" aria-label="Item" hidden>
+  <div class="dz-head"><button type="button" id="dzBack" class="dz-back">← <span id="dzBackTo">Back</span></button><span class="dz-kind" id="dzKind"></span></div>
+  <div class="dz-body" id="dzBody"></div>
+</aside>
+<div id="find" hidden>
+  <div class="find-box" role="dialog" aria-label="Find">
+    <input id="findIn" type="search" placeholder="Find an app, tool, card, chore, ledger row…" autocomplete="off" aria-label="Find">
+    <ol id="findOut"></ol>
+    <div class="find-hint">↑ ↓ choose · Enter fly there · Esc close</div>
+  </div>
+</div>
+<footer id="foot">
+  <span class="lg"><i class="lamp red"></i>waits for your hand</span>
+  <span class="lg"><i class="lamp green"></i>clear</span>
+  <span class="lg"><i class="lamp amber"></i>fault, estimate or one witness</span>
+  <span class="lg"><i class="lamp blue"></i>the Muse line</span>
+  <span class="keys"><kbd>←</kbd><kbd>→</kbd> walk · <kbd>Enter</kbd> open · <kbd>Esc</kbd> rise · <kbd>/</kbd> find · <kbd>A</kbd>/<kbd>D</kbd> sign or decline · wheel zooms, drag pans</span>
+</footer>
+<div id="mobile"></div>
+<div id="toast" role="status" aria-live="polite"></div>
+<script src="fixtures.js"></script>
+<script src="roof.js"></script>
+</body>
+</html>

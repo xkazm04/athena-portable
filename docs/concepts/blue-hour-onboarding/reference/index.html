@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Athena on Muse · Blue Hour</title>
+<meta name="description" content="Athena works inside the web apps you already use, runs on Meta's Muse Spark, and stops at a gate outside the model before anything she cannot take back.">
+<link rel="stylesheet" href="landing.css">
+</head>
+<body class="intro">
+<div id="frame">
+<div id="stage">
+  <svg id="scene" viewBox="-600 -300 2800 1500" aria-hidden="true" focusable="false">
+    <defs>
+      <linearGradient id="gSky" gradientUnits="userSpaceOnUse" x1="0" y1="-300" x2="0" y2="600">
+        <stop offset="0" stop-color="#03061a"/><stop offset=".3" stop-color="#0a1640"/><stop offset=".55" stop-color="#18316b"/>
+        <stop offset=".74" stop-color="#2f5a8f"/><stop offset=".86" stop-color="#5d80a6"/><stop offset=".94" stop-color="#a59cad"/><stop offset="1" stop-color="#e2a37a"/>
+      </linearGradient>
+      <linearGradient id="gGround" gradientUnits="userSpaceOnUse" x1="0" y1="575" x2="0" y2="1200">
+        <stop offset="0" stop-color="#151d33"/><stop offset=".22" stop-color="#0b1120"/><stop offset="1" stop-color="#03050b"/>
+      </linearGradient>
+      <radialGradient id="gSpill" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffcf87" stop-opacity=".34"/><stop offset=".55" stop-color="#ffb35a" stop-opacity=".1"/><stop offset="1" stop-color="#ffb35a" stop-opacity="0"/></radialGradient>
+      <radialGradient id="gBloomR" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ff5a48" stop-opacity=".95"/><stop offset=".25" stop-color="#ff4a3d" stop-opacity=".45"/><stop offset="1" stop-color="#ff4a3d" stop-opacity="0"/></radialGradient>
+      <radialGradient id="gBloomG" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#7dffb8" stop-opacity=".95"/><stop offset=".25" stop-color="#46e08f" stop-opacity=".45"/><stop offset="1" stop-color="#46e08f" stop-opacity="0"/></radialGradient>
+      <radialGradient id="gSpot" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff4dc" stop-opacity=".26"/><stop offset=".6" stop-color="#fff4dc" stop-opacity=".07"/><stop offset="1" stop-color="#fff4dc" stop-opacity="0"/></radialGradient>
+      <radialGradient id="gHead" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffffff" stop-opacity=".95"/><stop offset="1" stop-color="#ffffff" stop-opacity="0"/></radialGradient>
+      <linearGradient id="gBeam" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff6dc" stop-opacity=".36"/><stop offset="1" stop-color="#fff6dc" stop-opacity="0"/></linearGradient>
+      <linearGradient id="gWin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffe2a6"/><stop offset="1" stop-color="#ffaa45"/></linearGradient>
+      <linearGradient id="gTrainWin" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffeec6"/><stop offset="1" stop-color="#f2be6a"/></linearGradient>
+      <linearGradient id="gBody" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a78ff"/><stop offset=".55" stop-color="#2452d2"/><stop offset="1" stop-color="#112a74"/></linearGradient>
+      <linearGradient id="gRail" gradientUnits="userSpaceOnUse" x1="-600" y1="0" x2="2200" y2="0">
+        <stop offset="0" stop-color="#6f86ab"/><stop offset=".55" stop-color="#a9bcd8"/><stop offset=".67" stop-color="#ffd9a0"/><stop offset=".8" stop-color="#a9bcd8"/><stop offset="1" stop-color="#6f86ab"/>
+      </linearGradient>
+      <pattern id="pBrick" width="26" height="12" patternUnits="userSpaceOnUse"><rect width="26" height="12" fill="#2a1a1b"/><path d="M0 11.5 H26 M13 0 V6 M0 6 H26 M6 6 V12" stroke="#160d0e" stroke-width="1.2"/></pattern>
+      <filter id="fBlur2" x="-20%" y="-20%" width="140%" height="140%"><feGaussianBlur stdDeviation="2"/></filter>
+      <filter id="fBlur8" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="8"/></filter>
+      <filter id="fBlur20" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="20"/></filter>
+    </defs>
+
+    <rect x="-600" y="-300" width="2800" height="900" fill="url(#gSky)"/>
+    <g opacity=".5" filter="url(#fBlur8)">
+      <ellipse cx="300" cy="120" rx="420" ry="16" fill="#8d8fbf" opacity=".35"/>
+      <ellipse cx="1180" cy="70" rx="520" ry="14" fill="#8d8fbf" opacity=".3"/>
+      <ellipse cx="900" cy="250" rx="380" ry="12" fill="#c49aa8" opacity=".35"/>
+      <ellipse cx="1700" cy="200" rx="460" ry="15" fill="#c49aa8" opacity=".3"/>
+      <ellipse cx="-200" cy="300" rx="400" ry="12" fill="#c49aa8" opacity=".3"/>
+    </g>
+    <path filter="url(#fBlur2)" d="M -600 560 C -400 530, -250 545, -100 525 C 50 505, 200 540, 380 520 C 560 500, 700 535, 900 528 C 1100 520, 1250 545, 1450 530 C 1650 515, 1900 540, 2200 525 V 640 H -600 Z" fill="#3a5378" opacity=".55"/>
+    <!-- the test track, far off on the hill -->
+    <path d="M 30 541 C 120 530, 300 530, 430 539" fill="none" stroke="#6d86a8" stroke-width="2"/>
+    <g id="testLights"></g>
+    <path d="M -600 585 C -380 560, -200 575, 0 562 C 200 549, 330 580, 560 570 C 760 562, 900 582, 1100 575 C 1300 568, 1500 590, 1750 578 C 1950 568, 2100 585, 2200 580 V 660 H -600 Z" fill="#1a2843"/>
+    <g id="town"></g>
+    <rect x="-600" y="590" width="2800" height="910" fill="url(#gGround)"/>
+    <ellipse cx="1270" cy="660" rx="600" ry="140" fill="url(#gSpill)"/>
+    <rect id="skyNight" x="-600" y="-300" width="2800" height="1500" fill="#02040d"/>
+
+    <!-- catenary (masts and wires drawn by the script) -->
+    <g id="catenary"></g>
+
+    <!-- the signal box -->
+    <g id="box">
+      <ellipse cx="1275" cy="420" rx="210" ry="110" fill="#ffb35a" opacity=".16" filter="url(#fBlur20)"/>
+      <rect x="1160" y="470" width="230" height="174" fill="url(#pBrick)"/>
+      <rect x="1160" y="470" width="230" height="174" fill="#000" opacity=".25"/>
+      <rect x="1176" y="560" width="26" height="40" rx="13" fill="#0b0f19"/><rect x="1348" y="560" width="26" height="40" rx="13" fill="#0b0f19"/>
+      <rect x="1150" y="360" width="250" height="114" fill="#141b2b"/>
+      <g id="panes"></g>
+      <rect id="boxGlowL" x="1158" y="368" width="150" height="96" fill="#fff0c8" opacity="0" filter="url(#fBlur8)"/>
+      <circle id="boxGlowR" cx="1358" cy="420" r="46" fill="#fff0c8" opacity="0" filter="url(#fBlur8)"/>
+      <path d="M 1130 366 L 1275 318 L 1420 366 Z" fill="#0b101c"/>
+      <path d="M 1126 366 H 1424" stroke="#2b3550" stroke-width="3"/>
+      <rect x="1330" y="300" width="18" height="40" fill="#0b101c"/>
+      <rect x="1200" y="478" width="150" height="28" fill="#0d1322" stroke="#d2ab62" stroke-opacity=".8"/>
+      <text x="1275" y="499" text-anchor="middle" font-family="Bahnschrift, 'Arial Narrow', sans-serif" font-size="19" letter-spacing="7" fill="#f3e8cf">ATHENA</text>
+    </g>
+
+    <!-- the line -->
+    <g id="track">
+      <rect x="-600" y="640" width="2800" height="34" fill="#141b2c"/>
+      <g id="sleepers"></g>
+      <line x1="-600" y1="649" x2="2200" y2="649" stroke="#4d5d7c" stroke-width="2.5"/>
+      <line x1="-600" y1="664" x2="2200" y2="664" stroke="url(#gRail)" stroke-width="3.5"/>
+      <ellipse id="railRed" cx="1080" cy="664" rx="120" ry="4" fill="#ff4a3d" opacity=".75" filter="url(#fBlur2)"/>
+      <ellipse id="railGreen" cx="1080" cy="664" rx="120" ry="4" fill="#46e08f" filter="url(#fBlur2)"/>
+    </g>
+    <g id="loop">
+      <path d="M 60 664 C 260 664, 300 736, 470 736 L 1330 736 C 1500 736, 1540 664, 1740 664" fill="none" stroke="#111827" stroke-width="30"/>
+      <path d="M 60 664 C 260 664, 300 736, 470 736 L 1330 736 C 1500 736, 1540 664, 1740 664" fill="none" stroke="#0a0e18" stroke-width="22" stroke-dasharray="8 14"/>
+      <path id="loopGlow" d="M 60 664 C 260 664, 300 736, 470 736 L 1330 736 C 1500 736, 1540 664, 1740 664" fill="none" stroke="#ffb547" stroke-width="16" filter="url(#fBlur8)"/>
+      <g id="loopRails" fill="none" stroke-width="2.5">
+        <path class="draw" style="--len:1800" d="M 60 657 C 260 657, 300 729, 470 729 L 1330 729 C 1500 729, 1540 657, 1740 657"/>
+        <path class="draw" style="--len:1800" d="M 60 670 C 260 670, 300 742, 470 742 L 1330 742 C 1500 742, 1540 670, 1740 670"/>
+      </g>
+    </g>
+
+    <!-- the signal G3 and its track circuit -->
+    <g id="signal">
+      <rect x="1066" y="640" width="38" height="14" fill="#1a2233"/>
+      <rect x="1081" y="330" width="9" height="316" fill="#0c1322"/><rect x="1081" y="330" width="2" height="316" fill="#33476b"/>
+      <path d="M 1070 420 V 640 M 1076 420 V 640" stroke="#0c1322" stroke-width="2"/>
+      <path d="M 1070 430 H 1076 M 1070 460 H 1076 M 1070 490 H 1076 M 1070 520 H 1076 M 1070 550 H 1076 M 1070 580 H 1076 M 1070 610 H 1076" stroke="#0c1322" stroke-width="2"/>
+      <circle id="bloomRed2" cx="1085" cy="322" r="230" fill="url(#gBloomR)" opacity=".28"/>
+      <circle id="bloomRed" cx="1085" cy="322" r="86" fill="url(#gBloomR)"/>
+      <circle id="bloomGreen" cx="1085" cy="378" r="96" fill="url(#gBloomG)"/>
+      <rect x="1056" y="290" width="58" height="122" rx="14" fill="#05070d" stroke="#1d2840" stroke-width="2"/>
+      <path d="M 1060 304 Q 1085 292 1110 304" stroke="#1d2840" stroke-width="5" fill="none"/>
+      <path d="M 1060 360 Q 1085 348 1110 360" stroke="#1d2840" stroke-width="5" fill="none"/>
+      <circle id="aspRed" cx="1085" cy="324" r="16" fill="#ff4a3d"/>
+      <circle cx="1080" cy="319" r="5" fill="#fff" opacity=".55"/>
+      <circle id="aspGreen" cx="1085" cy="380" r="16" fill="#0f2a1c"/>
+      <rect x="1060" y="420" width="50" height="22" rx="3" fill="#0d1322" stroke="#d2ab62" stroke-opacity=".7"/>
+      <text x="1085" y="437" text-anchor="middle" font-family="Bahnschrift, 'Arial Narrow', sans-serif" font-size="17" fill="#f3e8cf">G3</text>
+      <rect x="1112" y="604" width="34" height="38" rx="3" fill="#1a2232" stroke="#2b3954"/>
+      <g id="tcLamps"><circle cx="1122" cy="616" r="4.5" fill="#25553a"/><circle cx="1136" cy="616" r="4.5" fill="#25553a"/></g>
+      <path d="M 1129 642 V 662" stroke="#2b3954" stroke-width="2"/>
+    </g>
+
+    <circle id="spot" cx="0" cy="0" r="190" fill="url(#gSpot)"/>
+    <rect x="-600" y="868" width="2800" height="632" fill="#03050b" opacity=".6"/>
+  </svg>
+  <svg id="trainLayer" viewBox="-600 -300 2800 1500" aria-hidden="true" focusable="false">
+    <defs><radialGradient id="gCab" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#9cc0ff" stop-opacity=".7"/><stop offset="1" stop-color="#9cc0ff" stop-opacity="0"/></radialGradient></defs>
+    <!-- the driver: Muse Spark, standing at G3 -->
+    <g id="train" transform="translate(1040 664)">
+      <ellipse cx="-320" cy="3" rx="350" ry="7" fill="#000" opacity=".55"/>
+      <path d="M 6 -36 L 300 -96 L 300 30 L 6 -24 Z" fill="url(#gBeam)"/>
+      <rect x="-648" y="-112" width="314" height="96" rx="12" fill="url(#gBody)"/>
+      <path d="M -326 -112 H -84 Q -26 -112 2 -50 L 10 -30 Q 13 -16 -2 -16 H -326 Z" fill="url(#gBody)"/>
+      <path d="M -640 -111 H -342 M -318 -111 H -86 Q -34 -110 -6 -56" stroke="#a8c6ff" stroke-opacity=".55" stroke-width="2" fill="none"/>
+      <rect x="-334" y="-104" width="8" height="84" fill="#0b1430"/>
+      <g id="trainWins"></g>
+      <path d="M -74 -100 Q -30 -100 -10 -62 L -46 -62 Z" fill="#a8c6ff" opacity=".9"/>
+      <circle id="cabGlow" cx="-40" cy="-80" r="80" fill="url(#gCab)"/>
+      <rect x="-648" y="-44" width="314" height="6" fill="#e9eef7" opacity=".85"/>
+      <path d="M -326 -44 H 4 L 6 -38 H -326 Z" fill="#e9eef7" opacity=".85"/>
+      <rect x="-648" y="-24" width="314" height="8" fill="#0b1840"/>
+      <path d="M -326 -24 H 9 L 6 -16 H -326 Z" fill="#0b1840"/>
+      <text x="-491" y="-50" text-anchor="middle" font-family="Bahnschrift, 'Arial Narrow', sans-serif" font-size="17" letter-spacing="5" fill="#e3ecff">MUSE SPARK</text>
+      <rect x="-100" y="-110" width="54" height="20" rx="3" fill="#0a0f1e"/>
+      <text x="-73" y="-95" text-anchor="middle" font-family="Consolas, monospace" font-size="15" fill="#ffd38a">1A41</text>
+      <g fill="#090d16"><rect x="-624" y="-16" width="96" height="12"/><rect x="-456" y="-16" width="96" height="12"/><rect x="-300" y="-16" width="96" height="12"/><rect x="-128" y="-16" width="96" height="12"/></g>
+      <g fill="#121826" stroke="#3a4660" stroke-width="2"><circle cx="-604" cy="-7" r="8"/><circle cx="-548" cy="-7" r="8"/><circle cx="-436" cy="-7" r="8"/><circle cx="-380" cy="-7" r="8"/><circle cx="-280" cy="-7" r="8"/><circle cx="-224" cy="-7" r="8"/><circle cx="-108" cy="-7" r="8"/><circle cx="-52" cy="-7" r="8"/></g>
+      <g stroke="#141b2b" stroke-width="3" fill="none"><polyline points="-252,-112 -216,-160 -180,-112"/><line x1="-216" y1="-160" x2="-216" y2="-222"/><line x1="-242" y1="-223" x2="-190" y2="-223" stroke-width="4"/></g>
+      <circle cx="-646" cy="-30" r="3.5" fill="#ff4a3d"/>
+      <ellipse cx="8" cy="-30" rx="30" ry="16" fill="url(#gHead)"/>
+      <circle cx="3" cy="-30" r="4.5" fill="#fff"/>
+    </g>
+
+  </svg>
+  <div id="glowR"></div>
+  <div id="grade"></div>
+  <canvas id="motes" width="760" height="480"></canvas>
+  <div id="veil"></div>
+
+  <header class="top">
+    <a class="brand" href="index.html" aria-label="Athena on Muse, the landing"><i></i>Athena <b>on Muse</b></a>
+    <span class="sp"></span>
+    <button class="skip" id="skip" type="button">Skip intro</button>
+    <a class="roofLink" href="app.html"><span class="lamps"><i></i><i></i></span>Open the roof →</a>
+  </header>
+  <div class="artlabel ov">Stylised illustration · not a screenshot · fixtures are fictional</div>
+
+  <div id="scrim" class="ov"></div>
+  <div class="carried ov">
+      <span class="tag keep">carried over</span><span><b>The gate:</b> 0 lines change in the window <span class="tag rule">design rule</span></span>
+      <span class="tag new">new · Oct 26 – Nov 4</span><span><b>The Muse engine:</b> ~320 lines on the existing port <span class="tag est">estimate</span></span>
+  </div>
+  <section id="hero" class="ov" aria-labelledby="hMain">
+    <div class="kick" id="kick">Athena on Muse · a desktop agent for the web apps you already use</div>
+    <div id="hTitleWrap">
+      <h1 class="hT" id="hMain">The driver never<br><em>sets the signal.</em></h1>
+      <div class="hT" id="hItem" aria-live="polite"><span class="num"></span><span class="nm"></span></div>
+    </div>
+    <p class="lede" id="lede">She works inside the invoicing tool, the inbox and the CRM you already use. Meta's Muse Spark drives; a gate outside the model stops her before anything she cannot take back. You pull the lever.</p>
+    <div class="ctas">
+      <a class="btn primary" href="app.html">Open the roof →</a>
+      <button class="btn" type="button" id="pullBtn">Pull the lever</button>
+    </div>
+  </section>
+
+  <div id="card0" class="ov" role="note" aria-label="A decision card waiting for your hand">
+    <span class="pin"></span>
+    <div class="h"><span>Proposed · waits for you</span><span>G3</span></div>
+    <div class="t" id="c0t">Chase INV-118</div>
+    <div class="s" id="c0s">Northwind · $2,400 · 41 days past due</div>
+    <div class="m">host.ledgerbox.chase · GATED</div>
+    <div class="stampS">SIGNED<br>runs once</div>
+  </div>
+  <div id="leverHint" class="ov"><b id="lhB">Lever 1 · G3</b><span id="lhS">Pull it to sign: drag down, or press Enter.</span></div>
+
+  <svg id="leverSvg" class="ov" viewBox="1400 480 220 420" style="position:absolute;left:1378px;top:480px;width:220px;height:420px;z-index:5;overflow:visible">
+    <defs>
+      <linearGradient id="gLever" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#ff8a6a"/><stop offset=".35" stop-color="#d23a2f"/><stop offset="1" stop-color="#6e1712"/></linearGradient>
+      <linearGradient id="gSteel" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#fff3d6"/><stop offset=".4" stop-color="#c9cfd8"/><stop offset="1" stop-color="#59626f"/></linearGradient>
+      <linearGradient id="gBrass" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffe2a0"/><stop offset=".5" stop-color="#c9a35a"/><stop offset="1" stop-color="#6b5226"/></linearGradient>
+      <radialGradient id="gKnobGlow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#ffd38a" stop-opacity=".5"/><stop offset="1" stop-color="#ffd38a" stop-opacity="0"/></radialGradient>
+    </defs>
+    <g id="lever" role="button" tabindex="0" aria-label="Pull lever 1 at signal G3: sign the chase for INV-118">
+      <rect x="1400" y="480" width="220" height="420" fill="transparent"/>
+      <circle cx="1505" cy="545" r="70" fill="url(#gKnobGlow)" id="knobGlow"/>
+      <path d="M 1446 840 A 62 62 0 0 1 1566 840 Z" fill="#141b29" stroke="#2c3850"/>
+      <g id="leverArm" style="transform-origin:1505px 852px;transform:rotate(14deg)">
+        <path d="M 1497 852 L 1500 566 L 1510 566 L 1513 852 Z" fill="url(#gLever)"/>
+        <rect class="grip" x="1493" y="518" width="24" height="56" rx="10" fill="url(#gSteel)"/>
+        <rect x="1514" y="550" width="8" height="38" rx="3" fill="#b9c2cf"/>
+        <rect x="1489" y="690" width="32" height="44" rx="4" fill="url(#gBrass)"/>
+        <text x="1505" y="720" text-anchor="middle" font-family="Bahnschrift, 'Arial Narrow', sans-serif" font-size="24" font-weight="700" fill="#2a1d08">1</text>
+      </g>
+      <rect x="1430" y="838" width="152" height="46" rx="6" fill="#0d121d" stroke="#2a3448"/>
+      <circle cx="1505" cy="852" r="9" fill="#3a4660"/>
+      <rect x="1446" y="852" width="118" height="22" rx="3" fill="url(#gBrass)" opacity=".9"/>
+      <text x="1505" y="869" text-anchor="middle" font-family="Bahnschrift, 'Arial Narrow', sans-serif" font-size="16" letter-spacing="2" fill="#2a1d08" id="plateTxt">INV-118 · G3</text>
+    </g>
+  </svg>
+
+  <nav id="plates" class="ov" aria-label="Six parts of Athena on Muse"></nav>
+  <p class="foot">Every figure on Muse is an estimate until the window measures it. Every app, person and amount here is fictional.</p>
+
+  <section id="item" hidden aria-live="polite"></section>
+  <aside id="detail" hidden aria-label="Detail"></aside>
+</div>
+</div>
+<script src="fixtures.js"></script>
+<script src="landing.js"></script>
+</body>
+</html>
