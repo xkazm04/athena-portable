@@ -28,6 +28,7 @@ from athena.contracts.channel import (
     event_from_dict,
     event_from_json,
     family_of,
+    iso,
     now_iso,
 )
 from athena.contracts.harness import (
@@ -128,6 +129,7 @@ __all__ = [
     "fnv1a_64",
     "is_id",
     "is_origin",
+    "iso",
     "kind_of",
     "mint",
     "normalize_reason",

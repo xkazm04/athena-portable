@@ -19,8 +19,14 @@ from datetime import UTC, datetime
 from typing import Any, ClassVar, Literal, cast
 
 
+def iso(moment: datetime) -> str:
+    """UTC with an explicit offset, so the strings sort the way the instants do and parse back."""
+    aware = moment if moment.tzinfo else moment.replace(tzinfo=UTC)
+    return aware.astimezone(UTC).isoformat()
+
+
 def now_iso() -> str:
-    return datetime.now(UTC).isoformat()
+    return iso(datetime.now(UTC))
 
 
 @dataclass(frozen=True)

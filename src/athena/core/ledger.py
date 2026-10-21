@@ -43,7 +43,7 @@ from dataclasses import dataclass
 from datetime import UTC, datetime
 from typing import Any
 
-from athena.contracts.channel import TurnSummary
+from athena.contracts.channel import TurnSummary, iso
 from athena.contracts.harness import ERROR_REASONS, normalize_reason
 from athena.contracts.registry import is_origin
 from athena.core.brain.store import Brain
@@ -278,7 +278,7 @@ class Ledger:
             reason = "unknown"
         if not is_error:
             reason = None
-        stamp = _iso(now or datetime.now(UTC))
+        stamp = iso(now or datetime.now(UTC))
         with self.brain.write_txn() as con:
             cursor = con.execute(
                 """INSERT INTO companion_turn
@@ -376,9 +376,3 @@ class Ledger:
             for raw in raws
         ]
         return sorted(rows, key=lambda r: (-r.cost_usd, -r.calls, r.key))
-
-
-def _iso(moment: datetime) -> str:
-    """UTC with an explicit offset — the stamp the brain's writer emits, and what parses back."""
-    aware = moment if moment.tzinfo else moment.replace(tzinfo=UTC)
-    return aware.astimezone(UTC).isoformat()

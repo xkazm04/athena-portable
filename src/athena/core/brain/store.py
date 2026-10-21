@@ -54,6 +54,7 @@ from pathlib import Path
 from typing import Any
 
 from athena.contracts import ids
+from athena.contracts.channel import now_iso
 from athena.core.brain import frontmatter, paths, text
 from athena.core.brain.schema import SCHEMA, SCHEMA_VERSION
 
@@ -281,7 +282,7 @@ class Brain:
     # -- sessions ------------------------------------------------------------------------------
 
     def ensure_session(self, session_id: str, title: str = "Athena") -> None:
-        now = _now_iso()
+        now = now_iso()
         with self.write_txn() as con:
             con.execute(
                 """INSERT OR IGNORE INTO companion_session
@@ -434,7 +435,7 @@ class Brain:
         cited = self._require_provenance(sources)
 
         node_id = ids.mint("fact")
-        created_at = _now_iso()
+        created_at = now_iso()
         rel = f"semantic/{scope}/{node_id}_{text.slug(key)}.md"
         header: list[tuple[str, Any]] = [
             ("id", node_id),
@@ -494,7 +495,7 @@ class Brain:
         cited = self._require_provenance(sources)
 
         node_id = ids.mint("procedural")
-        created_at = _now_iso()
+        created_at = now_iso()
         rel = f"procedurals/{scope}/{node_id}_{text.slug(trigger)}.md"
         file_text = frontmatter.render(
             [
@@ -702,8 +703,3 @@ def _rekey_fts(con: sqlite3.Connection) -> None:
         )
     finally:
         con.execute("DROP TABLE temp.athena_fts_rekey")
-
-
-def _now_iso() -> str:
-    """RFC 3339 with an explicit offset — what the Rust writer emits and what parses back."""
-    return datetime.now(UTC).isoformat()

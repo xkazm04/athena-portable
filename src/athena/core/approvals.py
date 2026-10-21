@@ -60,7 +60,7 @@ from enum import StrEnum
 from typing import Any
 
 from athena.contracts import ids
-from athena.contracts.channel import DecisionOption, DecisionRequested, DecisionResolved
+from athena.contracts.channel import DecisionOption, DecisionRequested, DecisionResolved, iso
 from athena.contracts.registry import is_origin
 from athena.core.brain.store import Brain
 
@@ -151,12 +151,6 @@ _ADDED_COLUMNS: tuple[tuple[str, str], ...] = (
 
 def _now() -> datetime:
     return datetime.now(UTC)
-
-
-def _iso(moment: datetime) -> str:
-    """UTC, with an explicit offset — so the strings sort the way the instants do."""
-    aware = moment if moment.tzinfo else moment.replace(tzinfo=UTC)
-    return aware.astimezone(UTC).isoformat()
 
 
 def _is_count(value: object) -> bool:
@@ -397,8 +391,8 @@ class Approvals:
             surface=surface,
             options=tokens,
             status=ApprovalStatus.PENDING,
-            created_at=_iso(moment),
-            expires_at=_iso(moment + ttl),
+            created_at=iso(moment),
+            expires_at=iso(moment + ttl),
             summary=summary,
             capture_id=capture_id,
             tab_id=tab_id,
@@ -467,7 +461,7 @@ class Approvals:
                 """UPDATE companion_approval
                    SET status = ?, choice = ?, answer = ?, resolved_at = ?
                    WHERE id = ? AND status = 'pending'""",
-                (str(status), choice, answer, _iso(moment), approval_id),
+                (str(status), choice, answer, iso(moment), approval_id),
             )
             landed = cursor.rowcount == 1
         resolved = self.get(approval_id)
@@ -479,7 +473,7 @@ class Approvals:
 
     def expire_due(self, now: datetime | None = None) -> list[str]:
         """Mark every pending row past its expiry, with reason ``expired``. Returns their ids."""
-        moment = _iso(now or _now())
+        moment = iso(now or _now())
         with self.brain.write_txn() as con:
             raws = con.execute(
                 "SELECT id FROM companion_approval WHERE status = 'pending' AND expires_at <= ?",
@@ -509,7 +503,7 @@ class Approvals:
             cursor = con.execute(
                 """UPDATE companion_approval SET consumed_at = ?
                    WHERE id = ? AND status = 'approved' AND consumed_at IS NULL""",
-                (_iso(now or _now()), approval_id),
+                (iso(now or _now()), approval_id),
             )
             return cursor.rowcount == 1
 
@@ -535,7 +529,7 @@ class Approvals:
                 """UPDATE companion_approval
                    SET status = 'declined', choice = ?, resolved_at = ?
                    WHERE id = ? AND status = 'approved' AND consumed_at IS NULL""",
-                (choice, _iso(now or _now()), approval_id),
+                (choice, iso(now or _now()), approval_id),
             )
             return cursor.rowcount == 1
 
@@ -592,7 +586,7 @@ class Approvals:
             canonical = _canonical(params)
         except ApprovalError:
             return None
-        cutoff = _iso((now or _now()) - within)
+        cutoff = iso((now or _now()) - within)
         with closing(self.brain.read_connection()) as con:
             raw = con.execute(
                 """SELECT resolved_at FROM companion_approval
@@ -615,7 +609,7 @@ class Approvals:
         A row past its expiry is not listed even before the sweep has run, so the panel and the
         table agree about what is answerable at the same instant.
         """
-        moment = _iso(now or _now())
+        moment = iso(now or _now())
         bound = max(limit, 0)
         with closing(self.brain.read_connection()) as con:
             total = int(
