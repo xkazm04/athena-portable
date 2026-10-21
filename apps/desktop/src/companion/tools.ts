@@ -16,7 +16,6 @@ import { catalogIdOf } from "@/lib/manifest";
 import { originOf } from "@/modules/browser/model";
 import type { GatedLists } from "@/stores/run";
 import type { TabTools } from "@/stores/tools";
-// @ts-expect-error - gate.js is plain JavaScript with a .d.ts that does not cover these two.
 import { classify, flagsOf } from "@athena/bridge/gate";
 
 /**
@@ -31,7 +30,7 @@ export function toolRows(found: TabTools | undefined, gated: GatedLists = NO_TIG
   const firstSight = app !== null && gated.gated_origins.includes(`host:${app}`);
   const row = (tool: BridgeTool, tier: 1 | 2): ToolRow => {
     const name = app ? `host.${app}.${tool.name}` : tool.name;
-    const fromFlags = classify(flagsOf(tool)) as ToolRow["class"];
+    const fromFlags = classify(flagsOf(tool));
     return {
       name,
       origin: app ? `host:${app}` : "",

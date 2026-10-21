@@ -4,7 +4,6 @@
 import { expect, test } from "vitest";
 
 import { ApiError } from "@/lib/api";
-// @ts-expect-error - gate.js is plain JavaScript with a .d.ts that does not cover this export.
 import { REFUSAL_REASONS } from "@athena/bridge/gate";
 
 import { plainFailure, plainReason, reasonOf, refusalSentence, switchedOffSentence } from "./plain";

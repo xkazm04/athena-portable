@@ -15,7 +15,6 @@
  * pushing and the sending, and ask this module what the answer was. The unsure set is module
  * state on purpose. It is the window's: a tool a typed turn left unsure is held for a spoken one.
  */
-// @ts-expect-error - gate.js is plain JavaScript with a .d.ts that does not cover this one.
 import { flagsOf } from "@athena/bridge/gate";
 
 import type { BridgeTool } from "@/lib/bridge";
@@ -59,7 +58,7 @@ export function isReadCall(bare: string, pageTools: readonly BridgeTool[]): bool
   const runs = isHandCall(bare, pageTools) ? handTools() : pageTools;
   const tool = runs.find((t) => t.name === bare);
   if (!tool) return false;
-  const flags = flagsOf(tool) as { reversible: boolean; side_effects: string };
+  const flags = flagsOf(tool);
   return flags.reversible === true && flags.side_effects === "none";
 }
 

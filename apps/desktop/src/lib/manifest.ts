@@ -18,7 +18,6 @@
  * every surface, and the daemon re-derives it anyway and refuses the manifest whole if it does
  * not like it.
  */
-// @ts-expect-error - gate.js is plain JavaScript with a .d.ts that does not cover this export.
 import { manifestOf } from "@athena/bridge/gate";
 
 import type { BridgeTool } from "@/lib/bridge";
@@ -170,7 +169,7 @@ export function manifestBodyOf(source: ManifestSource): Record<string, unknown> 
       transport: source.transport ?? "",
     },
     tools,
-  ) as { tools: Record<string, unknown>[] } & Record<string, unknown>;
+  ) as unknown as { tools: Record<string, unknown>[] } & Record<string, unknown>;
   // `manifestOf` rebuilds each tool from fixed keys, so the marker is carried across here, by
   // position, from the tools `withHands` marked (ADR 0066). A page's tool never carries it.
   body.tools = body.tools.map((entry, index) =>

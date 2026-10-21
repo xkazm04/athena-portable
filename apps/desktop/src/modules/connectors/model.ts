@@ -22,7 +22,6 @@
 import type { ConnectorToolView, ConnectorView, FlowView } from "@/lib/api";
 import type { Tone } from "@/components/StatusDot";
 import { parseStamp } from "@/lib/time";
-// @ts-expect-error - gate.js is plain JavaScript with a .d.ts that does not cover this one.
 import { classify } from "@athena/bridge/gate";
 
 /**
