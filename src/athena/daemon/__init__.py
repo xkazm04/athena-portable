@@ -1,6 +1,6 @@
 """The daemon: one Athena on 127.0.0.1, beside whatever page is open (README §3.1, §3.5).
 
-The environment layer's front door. Six files rather than one long module, because a reviewer
+The environment layer's front door. Seven files rather than one long module, because a reviewer
 should be able to read them one at a time:
 
 - :mod:`athena.daemon.server` — the socket, the token, CORS, one request per connection, and the
@@ -9,6 +9,8 @@ should be able to read them one at a time:
   ``/decisions/<id>`` write and ``/run/stop`` stops; ``/health``, ``/decisions``, ``/ledger``,
   ``/ledger/rollup`` and ``/playbooks`` read, each bounded and off a read connection, and
   ``/engines`` reads the machine (a cached probe, no brain).
+- :mod:`athena.daemon.decisions` — the decision routes, ``POST /decisions/<id>`` and
+  ``GET /decisions``, split out of the route module and re-exported from it.
 - :mod:`athena.daemon.sessions` — who is talking, keyed by origin, in memory.
 - :mod:`athena.daemon.ready` — the one JSON line a spawned daemon prints once it is listening.
 - :mod:`athena.daemon.voice` — the voice studio's routes (ADR 0028), added by wiring.
