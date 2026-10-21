@@ -239,6 +239,8 @@ describe("one spoken utterance", () => {
     expect(said[0]).toMatchObject({ kind: "user", text: "what is overdue?" });
     expect(said[1].kind).toBe("assistant");
     expect(said[1].text).toContain("Three invoices are past thirty days.");
+    // `turn.summary` is the frame after the text: reaching the transcript does not mean it came.
+    await until(() => useRun.getState().summary !== null, "the turn's summary");
     expect(useRun.getState().summary?.engine).toBe("claude_code");
 
     // The spoken line came back as generation-tagged audio, and the generation the player was
