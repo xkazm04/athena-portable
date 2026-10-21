@@ -67,6 +67,7 @@ import {
   type GatedLists,
   type Snapshot,
 } from "@/stores/run";
+import { originOf } from "@/modules/browser/model";
 import { useTabs } from "@/stores/tabs";
 import { useTools } from "@/stores/tools";
 
@@ -696,12 +697,4 @@ function endedBecause(event: VoiceTranscript): string | null {
 function bareName(name: string): string {
   const parts = name.split(".");
   return parts.length > 2 ? parts.slice(2).join(".") : name;
-}
-
-function originOf(url: string): string {
-  try {
-    return new URL(url).origin;
-  } catch {
-    return "";
-  }
 }

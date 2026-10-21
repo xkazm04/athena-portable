@@ -54,6 +54,7 @@ import { hasShell, type StorePage, type Tab } from "@/lib/ipc";
 import { storeList, storeSet, type ActivityRow, type OriginRow } from "@/lib/store";
 import { endpoint, useDaemon } from "@/stores/daemon";
 import { useOrigins, type OriginsState } from "@/stores/origins";
+import { originOf } from "@/modules/browser/model";
 import { useTabs } from "@/stores/tabs";
 import { useTools, type TabTools } from "@/stores/tools";
 import { sheetOf, slotFor, type SheetSlot } from "@/lib/sheet";
@@ -1879,12 +1880,4 @@ function boundTab(tabId: number, focused: TabRef | null): TabRef | null {
 function focusedTab() {
   const { tabs } = useTabs.getState();
   return tabs.find((tab) => tab.focused) ?? tabs[0];
-}
-
-function originOf(url: string): string {
-  try {
-    return new URL(url).origin;
-  } catch {
-    return "";
-  }
 }
