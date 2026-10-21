@@ -22,16 +22,11 @@ from __future__ import annotations
 
 import threading
 from dataclasses import dataclass, replace
-from datetime import UTC, datetime
 
 from athena.contracts import ids
+from athena.contracts.channel import now_iso as _now_iso
 
 __all__ = ["Session", "Sessions", "conversation_for"]
-
-
-def _now_iso() -> str:
-    """UTC with an explicit offset — the stamp the brain's writer emits, and what parses back."""
-    return datetime.now(UTC).isoformat()
 
 
 @dataclass(frozen=True)
