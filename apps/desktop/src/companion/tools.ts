@@ -13,6 +13,7 @@ import type { ToolRow } from "@/lib/api";
 import type { BridgeTool } from "@/lib/bridge";
 import { isMarkedHand, withHands } from "@/lib/hands";
 import { catalogIdOf } from "@/lib/manifest";
+import { originOf } from "@/modules/browser/model";
 import type { GatedLists } from "@/stores/run";
 import type { TabTools } from "@/stores/tools";
 // @ts-expect-error - gate.js is plain JavaScript with a .d.ts that does not cover these two.
@@ -26,7 +27,7 @@ import { classify, flagsOf } from "@athena/bridge/gate";
  */
 export function toolRows(found: TabTools | undefined, gated: GatedLists = NO_TIGHTENING): ToolRow[] {
   if (!found?.tools) return [];
-  const app = catalogIdOf(originOf(found.url) ?? "", found.appId);
+  const app = catalogIdOf(originOf(found.url), found.appId);
   const firstSight = app !== null && gated.gated_origins.includes(`host:${app}`);
   const row = (tool: BridgeTool, tier: 1 | 2): ToolRow => {
     const name = app ? `host.${app}.${tool.name}` : tool.name;
@@ -45,12 +46,3 @@ export function toolRows(found: TabTools | undefined, gated: GatedLists = NO_TIG
 }
 
 const NO_TIGHTENING: GatedLists = { gated_origins: [], gated_tools: [] };
-
-/** A tab's web origin, or `null` when its address is not a URL. */
-export function originOf(url: string): string | null {
-  try {
-    return new URL(url).origin;
-  } catch {
-    return null;
-  }
-}

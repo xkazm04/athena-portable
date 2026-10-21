@@ -41,6 +41,7 @@ import { setHaloOverride } from "@/lib/halo";
 import { createRehearsal, type Rehearsal } from "@/lib/halo-rehearsal";
 import { hasShell } from "@/lib/ipc";
 import { openMicrophone } from "@/lib/voice";
+import { originOf } from "@/modules/browser/model";
 import { useConnectors } from "@/stores/connectors";
 import { endpoint, useDaemon } from "@/stores/daemon";
 import { useEngines } from "@/stores/engines";
@@ -60,7 +61,7 @@ import {
   type OriginView,
 } from "./model";
 import { createRuntime, lineOf, typingIn, type Runtime, type RuntimeDeps } from "./runtime";
-import { originOf, toolRows } from "./tools";
+import { toolRows } from "./tools";
 import CompanionView from "./views";
 
 const report = (what: string) => (error: unknown) => console.error(`[athena] ${what}: ${String(error)}`);
@@ -323,7 +324,8 @@ export default function Live() {
   }, [handedOver]);
 
   const focused = tabs.find((tab) => tab.focused) ?? tabs[0];
-  const origin = focused ? originOf(focused.url) : null;
+  // An opaque tab (`about:blank`, `file:`, `data:`) has no origin: `""` reads as none, like no tab.
+  const origin = focused ? originOf(focused.url) || null : null;
   const trust = { records, known, loaded: originsLoaded, problem: originsProblem, contracts };
   const tools = focused ? toolRows(byTab[focused.id], gatedListsOf(trust, tabs, byTab)) : [];
   // What a card about a rewritten tool shows beside the new contract (ADR 0100).
