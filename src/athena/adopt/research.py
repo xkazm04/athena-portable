@@ -40,7 +40,7 @@ from athena.adopt.lanes import LaneOutcome, LaneTask, run_lanes
 from athena.adopt.prompts import playbook_block
 from athena.adopt.session import AdoptSession, Hooks
 from athena.adopt.showcase import Showcase
-from athena.contracts.adopt import Finding, Slot
+from athena.contracts.adopt import Finding, Slot, cap_text
 from athena.core.fence import fresh_nonce, wrap_untrusted
 
 if TYPE_CHECKING:
@@ -251,7 +251,7 @@ def parse_findings(
     updates: list[dict[str, str]] = []
     unsourced = 0
     for row in rows:
-        text = _cap(_s(row.get("text")), FINDING_CAP)
+        text = cap_text(_s(row.get("text")), FINDING_CAP)
         if not text:
             continue
         url = _s(row.get("source_url"))
@@ -269,14 +269,14 @@ def parse_findings(
         if len(findings) >= MAX_FINDINGS:
             continue
         findings.append(Finding(text=text, source_url=url[:500], slot_ids=slot_ids))
-        settled = _cap(_s(row.get("value")), VALUE_CAP)
+        settled = cap_text(_s(row.get("value")), VALUE_CAP)
         if settled:
             updates.extend({"slot_id": i, "value": settled} for i in slot_ids)
     return Parsed(tuple(findings), tuple(updates), len(rows), unsourced)
 
 
 def _summary(value: Mapping[str, Any] | None, parsed: Parsed, fallback: str) -> str:
-    said = _cap(_s(value.get("summary")) if isinstance(value, Mapping) else "", 200)
+    said = cap_text(_s(value.get("summary")) if isinstance(value, Mapping) else "", 200)
     line = said or fallback
     kept = len(parsed.findings)
     if parsed.total - parsed.unsourced > kept:
@@ -613,7 +613,3 @@ def _thread(fn: Callable[[], None], name: str) -> None:
 
 def _s(value: Any) -> str:
     return " ".join(value.split()) if isinstance(value, str) else ""
-
-
-def _cap(text: str, limit: int) -> str:
-    return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"

@@ -248,3 +248,8 @@ _EVENTS: tuple[type[AdoptEvent], ...] = (
     Error,
 )
 EVENT_KINDS: tuple[str, ...] = tuple(c.kind for c in _EVENTS)
+
+
+def cap_text(text: str, limit: int) -> str:
+    """Cut ``text`` to ``limit`` characters, ending in an ellipsis when it was cut."""
+    return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"

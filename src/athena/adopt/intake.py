@@ -48,6 +48,7 @@ from athena.contracts.adopt import (
     Questions,
     Say,
     Verdict,
+    cap_text,
 )
 
 __all__ = [
@@ -295,7 +296,7 @@ def build_verdict(
     titles = {r["id"]: r.get("title", "") for r in library}
     main = _line(raw.get("playbook_id"))
     template = raw.get("fit") == "template" and main in titles
-    need = _cap(_line(raw.get("need")) or _line(fallback_need), NEED_CAP)
+    need = cap_text(_line(raw.get("need")) or _line(fallback_need), NEED_CAP)
     command = _text(raw.get("command"), COMMAND_CAP)
     alternates: list[Alternate] = []
     seen = {main} if template else set()
@@ -308,14 +309,16 @@ def build_verdict(
             continue
         seen.add(alt)
         alternates.append(
-            Alternate(playbook_id=alt, title=titles[alt], why=_cap(_line(row.get("why")), WHY_CAP))
+            Alternate(
+                playbook_id=alt, title=titles[alt], why=cap_text(_line(row.get("why")), WHY_CAP)
+            )
         )
     if template:
         return Verdict(
             fit="template",
             playbook_id=main,
-            why=_cap(_line(raw.get("why")), WHY_CAP),
-            differs=_cap(_line(raw.get("differs")), WHY_CAP),
+            why=cap_text(_line(raw.get("why")), WHY_CAP),
+            differs=cap_text(_line(raw.get("differs")), WHY_CAP),
             alternates=tuple(alternates),
             need=need,
             command="",
@@ -323,8 +326,8 @@ def build_verdict(
     return Verdict(
         fit="custom",
         playbook_id="",
-        why=_cap(_line(raw.get("why")), WHY_CAP),
-        differs=_cap(_line(raw.get("differs")), WHY_CAP),
+        why=cap_text(_line(raw.get("why")), WHY_CAP),
+        differs=cap_text(_line(raw.get("differs")), WHY_CAP),
         alternates=tuple(alternates),
         need=need,
         command=command or need,
@@ -340,10 +343,6 @@ def _line(value: Any) -> str:
 
 def _text(value: Any, cap: int) -> str:
     return value.strip()[:cap] if isinstance(value, str) else ""
-
-
-def _cap(text: str, limit: int) -> str:
-    return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
 
 
 def _first_sentence(text: str) -> str:

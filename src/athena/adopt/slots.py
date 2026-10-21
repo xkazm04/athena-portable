@@ -27,7 +27,7 @@ from dataclasses import replace
 from pathlib import Path
 from typing import Any
 
-from athena.contracts.adopt import Slot, SlotKind, SlotSource, SlotStatus
+from athena.contracts.adopt import Slot, SlotKind, SlotSource, SlotStatus, cap_text
 
 __all__ = [
     "ENV_VAR",
@@ -135,7 +135,7 @@ def mechanical_slots(playbook: Mapping[str, Any]) -> list[Slot]:
             Slot(
                 id=f"p{_count(slots, 'portal') + 1}",
                 kind="portal",
-                label=_cap(f"Do you use {name} for {role}, or something else?", LABEL_CAP),
+                label=cap_text(f"Do you use {name} for {role}, or something else?", LABEL_CAP),
                 value=name,
                 status="open",
                 source="default",
@@ -149,7 +149,7 @@ def mechanical_slots(playbook: Mapping[str, Any]) -> list[Slot]:
             Slot(
                 id=f"g{_count(slots, 'gate') + 1}",
                 kind="gate",
-                label=_cap(f"Asks you before: {label}", LABEL_CAP),
+                label=cap_text(f"Asks you before: {label}", LABEL_CAP),
                 # A gate is the catalog's policy, never the person's choice or a model's
                 # (AGENTS.md "The gate is the policy"): settled from the start, never asked.
                 status="confirmed",
@@ -224,10 +224,10 @@ def add_slots(slots: Sequence[Slot], proposed: Iterable[Mapping[str, Any]]) -> l
         kind = raw.get("kind")
         if kind not in ("fact", "trap"):
             continue
-        label = _cap(_text(raw.get("label")), LABEL_CAP)
+        label = cap_text(_text(raw.get("label")), LABEL_CAP)
         if not label or label.lower() in seen:
             continue
-        value = _cap(_text(raw.get("value")), VALUE_CAP)
+        value = cap_text(_text(raw.get("value")), VALUE_CAP)
         status: SlotStatus = "guessed" if value and raw.get("status") == "guessed" else "open"
         out.append(
             Slot(
@@ -268,7 +268,7 @@ def apply_updates(
             (slot.status == "confirmed" and slot.source == "user") or status == "open"
         ):
             continue
-        value = _cap(_text(raw.get("value")), VALUE_CAP) if "value" in raw else slot.value
+        value = cap_text(_text(raw.get("value")), VALUE_CAP) if "value" in raw else slot.value
         new_status: SlotStatus = (
             "open" if status == "open" else "confirmed" if status == "confirmed" else "guessed"
         )
@@ -302,10 +302,6 @@ def _text(value: Any) -> str:
 
 def _count(slots: Sequence[Slot], kind: str) -> int:
     return sum(1 for s in slots if s.kind == kind)
-
-
-def _cap(text: str, limit: int) -> str:
-    return text if len(text) <= limit else text[: limit - 1].rstrip() + "…"
 
 
 def _first_sentence(text: str) -> str:
