@@ -25,6 +25,12 @@ import { parseStamp } from "@/lib/time";
 // @ts-expect-error - gate.js is plain JavaScript with a .d.ts that does not cover this one.
 import { classify } from "@athena/bridge/gate";
 
+/**
+ * The busy word the store's flow poll puts up. One definition, so the view can tell a wait for
+ * consent (Reconnect stays pressable) from an act in flight (it does not) without the two drifting.
+ */
+export const WAITING_WORD = "waiting for consent";
+
 export type Standing = "not-connected" | "connected" | "needs-reauth" | "off" | "broken" | "unconfirmed";
 
 export interface ConnectorActions {

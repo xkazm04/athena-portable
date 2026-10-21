@@ -28,6 +28,7 @@ import ProblemNote from "@/components/ProblemNote";
 import type { Path } from "@/depth/model";
 import {
   paragraphsOf,
+  WAITING_WORD,
   type ConnectorRow,
   type ConnectorsModel,
 } from "@/modules/connectors/model";
@@ -41,10 +42,7 @@ export interface AccountsViewProps {
   go: (to: Path) => void;
 }
 
-/** The busy word a flow poll puts up (`WAITING_WORD` in the connectors store, which a view may not import). */
-const WAITING_WORD = "waiting for consent";
-
-const plural =(n: number, noun: string) => `${n} ${noun}${n === 1 ? "" : "s"}`;
+const plural = (n: number, noun: string) => `${n} ${noun}${n === 1 ? "" : "s"}`;
 
 /** What the allow-list is a list of, in the words a person reads. */
 const nounOf = (row: ConnectorRow) => (row.egress === "recipients" ? "recipients" : "page ids");

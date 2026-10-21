@@ -29,7 +29,7 @@ import { create } from "zustand";
 import { ApiError, DaemonApi, type ConnectorView } from "@/lib/api";
 import { emitConnectorsChanged, hasShell, onConnectorsChanged, type ConnectorsChanged } from "@/lib/ipc";
 import { endpoint, useDaemon } from "@/stores/daemon";
-import type { ConnectorProblem } from "@/modules/connectors/model";
+import { WAITING_WORD, type ConnectorProblem } from "@/modules/connectors/model";
 
 /** How often the flow is asked where it stands while a consent page is open. */
 export const FLOW_POLL_MS = 1500;
@@ -105,8 +105,7 @@ let stamp = 0;
 const rowStamps = new Map<string, number>();
 let newestList = 0;
 
-/** The busy word a flow poll puts up; a view reads it to tell a wait from an act in flight. */
-export const WAITING_WORD = "waiting for consent";
+export { WAITING_WORD };
 /** The poll that owns each connector; a newer poll takes it and the older one stops (one flow per connector). */
 const polls = new Map<string, number>();
 let pollSeq = 0;
