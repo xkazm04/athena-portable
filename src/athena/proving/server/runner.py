@@ -210,6 +210,23 @@ def purse_of(engine: str) -> str | None:
     return None
 
 
+def _ledger_rows(run_dir: Path) -> list[dict[str, Any]]:
+    """The dict rows of a run's ``ledger.jsonl``; undecodable bytes, blank and non-JSON lines and
+    non-object rows are skipped, since a stopped run's ledger may end mid-write."""
+    ledger = run_dir / "ledger.jsonl"
+    if not ledger.is_file():
+        return []
+    rows: list[dict[str, Any]] = []
+    for line in ledger.read_text(encoding="utf-8", errors="replace").splitlines():
+        try:
+            row = json.loads(line)
+        except ValueError:
+            continue
+        if isinstance(row, dict):
+            rows.append(row)
+    return rows
+
+
 def run_spend(run_dir: Path) -> dict[str, float]:
     """What one run spent per purse: the report's figure when it finished, else its ledger's."""
     spent = dict.fromkeys(ENGINES, 0.0)
@@ -222,16 +239,7 @@ def run_spend(run_dir: Path) -> dict[str, float]:
             return spent
         except (OSError, ValueError, AttributeError, TypeError):
             pass  # an unreadable report falls back to the ledger, which is the raw record
-    ledger = run_dir / "ledger.jsonl"
-    if not ledger.is_file():
-        return spent
-    for line in ledger.read_text(encoding="utf-8", errors="replace").splitlines():
-        try:
-            row = json.loads(line)
-        except ValueError:
-            continue
-        if not isinstance(row, dict):
-            continue
+    for row in _ledger_rows(run_dir):
         purse = purse_of(str(row.get("engine", "")))
         cost = row.get("cost_usd")
         if purse is not None and isinstance(cost, int | float) and cost > 0:
@@ -248,7 +256,8 @@ def cancelled_report(
     calls = 0
     ledger = run_dir / "ledger.jsonl"
     if ledger.is_file():
-        calls = sum(1 for line in ledger.read_text(encoding="utf-8").splitlines() if line.strip())
+        text = ledger.read_text(encoding="utf-8", errors="replace")
+        calls = sum(1 for line in text.splitlines() if line.strip())
     return {
         "run_id": run_dir.name,
         "prototype": job_kind,
@@ -683,16 +692,7 @@ class Runner:
     def replay(self, run_dir: Path) -> Iterator[str]:
         """A finished run's stream, rebuilt from its ledger: its ``call`` rows, then ``end``."""
         seq = 0
-        rows: list[dict[str, Any]] = []
-        ledger = run_dir / "ledger.jsonl"
-        if ledger.is_file():
-            for line in ledger.read_text(encoding="utf-8", errors="replace").splitlines():
-                try:
-                    row = json.loads(line)
-                except ValueError:
-                    continue
-                if isinstance(row, dict):
-                    rows.append(row)
+        rows = _ledger_rows(run_dir)
         for row in rows[:MAX_CALL_EVENTS]:
             seq += 1
             event = {key: row[key] for key in _CALL_FIELDS if key in row}
