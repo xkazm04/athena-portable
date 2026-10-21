@@ -90,7 +90,7 @@ class Decoded:
     fixtures catch.
     """
 
-    kind: str  # "session" | "text" | "result"
+    kind: str  # "session" | "text" | "result" | "notice"
     text: str = ""
     session_id: str | None = None
     is_error: bool = False
@@ -283,7 +283,13 @@ class CodexDialect(CliDialect):
         if kind in ("turn.failed", "error"):
             error = record.get("error")
             message = error.get("message") if isinstance(error, Mapping) else record.get("message")
-            return Decoded("result", is_error=True, said=_text(message))
+            # ``error`` is a notice mid-stream (a reconnect, a retried request): the turn is
+            # only failed by ``turn.failed``, or by a stream that ends with nothing after it.
+            return Decoded(
+                "result" if kind == "turn.failed" else "notice",
+                is_error=True,
+                said=_text(message),
+            )
         return None
 
 
@@ -372,6 +378,7 @@ class CliHarness(RoundHarness):
         """
         segments: list[str] = []
         outcome: Decoded | None = None
+        notice: Decoded | None = None
         try:
             async for line in self.transport.run(request):
                 record = _decode(line)
@@ -388,6 +395,8 @@ class CliHarness(RoundHarness):
                     # record stays the outcome even if a later one says otherwise.
                     if outcome is None or not outcome.is_error:
                         outcome = decoded
+                elif decoded.kind == "notice":
+                    notice = decoded
         except TimeoutError:
             # The request waits at most what is left of the turn, so a line that never came is
             # the turn's wall (ADR 0115). The cut run reported no usage: the row's cost is a floor.
@@ -402,6 +411,9 @@ class CliHarness(RoundHarness):
             # no secret — and "engine_error" with nothing after it is a bug report nobody can act
             # on. The reason is the fixed-set ledger value; this is the sentence beside it.
             return "", ("engine_error", f"{type(exc).__name__}: {exc}"), None
+        if outcome is None:
+            # No result record at all: the last notice is what the CLI said about why.
+            outcome = notice
         verdict = self.dialect.classify(request.exit.status, outcome)
         if verdict is not None:
             kind, sentence = verdict
