@@ -38,7 +38,9 @@ permits:
 - daemon-service: admit `http://127.0.0.1` as a page origin beside `localhost` (518fc33 built it
   from a director's table; 15c4eee restored the refusal).
 - proving-hosted-server: the judge token can be guessed without limit; no record says who
-  started or cancelled a run.
+  started or cancelled a run. **Owner, 2026-10-21: no lockout for now.** A per-peer throttle
+  (belay wave-7 lane, 405c63a3, rejected) would let a stranger behind the same proxy lock every
+  judge out; keep it here, and if it returns, budget per presented-token prefix, not per peer.
 - connector-service: connector acts that widen what Athena may send leave no record.
 - desktop-build-config: first paint is about 159 kB gz against ADR 0095's 125 kB; 27810da holds
   it at a 161,000 B ratchet and closing the gap is a decision.
