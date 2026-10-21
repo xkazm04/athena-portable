@@ -187,12 +187,15 @@ class Brain:
                     self._con.execute(statement)
                 # Read before the stamp below overwrites it: an older index is migrated in this same
                 # transaction, so no reader ever sees it half re-keyed.
-                if _stored_version(self._con) < 2:
+                stored = _stored_version(self._con)
+                if stored < 2:
                     _rekey_fts(self._con)
+                # Never lower the stamp: an older build opening a newer index must leave it, or the
+                # newer build re-runs its migration.
                 self._con.execute(
                     "INSERT OR REPLACE INTO companion_meta (key, value) "
                     "VALUES ('schema_version', ?)",
-                    (str(SCHEMA_VERSION),),
+                    (str(max(stored, SCHEMA_VERSION)),),
                 )
             # Inside the guard: the schema reads only the catalog, so this upsert can be the first
             # statement to meet a damaged page, and it must close the handle and name it the same.
