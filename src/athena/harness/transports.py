@@ -92,6 +92,20 @@ ENGINE_KEYS: dict[str, tuple[str, ...]] = {
 #: environment case-insensitively, so ``openai_api_key`` is the same variable there.
 STRIPPED: frozenset[str] = frozenset(name for names in ENGINE_KEYS.values() for name in names)
 
+#: The identity of a parent Claude Code session, as of 2026-10-16 (``claude`` 2.1): the five names
+#: the harness-engines scan found leaking into every child. Dated: a CLI release can add one. Not a
+#: ``CLAUDE_CODE_*`` prefix, which would also remove real configuration (``CLAUDE_CODE_OAUTH_TOKEN``
+#: and ``CLAUDE_CODE_GIT_BASH_PATH``), and kept out of :data:`ENGINE_KEYS`, one entry per engine.
+SESSION_MARKERS: tuple[str, ...] = (
+    "CLAUDECODE",
+    "CLAUDE_CODE_SESSION_ID",
+    "CLAUDE_CODE_CHILD_SESSION",
+    "CLAUDE_CODE_MESSAGING_SOCKET",
+    "CLAUDE_CODE_MESSAGING_TOKEN",
+)
+
+_SESSION_MARKERS_UPPER: frozenset[str] = frozenset(SESSION_MARKERS)
+
 
 def child_env(base: Mapping[str, str], extra: Mapping[str, str] | None = None) -> dict[str, str]:
     """The environment for a spawned engine CLI: ``base`` then ``extra``, without any engine key.
@@ -100,10 +114,15 @@ def child_env(base: Mapping[str, str], extra: Mapping[str, str] | None = None) -
     person's plan, never a paid API. A key in either mapping would move billing off the plan and
     contradict what the engine probe reported, and a key the child does not own is one more secret
     in a process that reads untrusted pages. So none of :data:`STRIPPED` is let through, in any
-    case. Everything else (``PATH`` included) is kept. Pure: neither input is mutated.
+    case. A parent Claude Code session's markers (:data:`SESSION_MARKERS`) go the same way.
+    Everything else (``PATH`` included) is kept. Pure: neither input is mutated.
     """
     merged = {**base, **(extra or {})}
-    return {name: value for name, value in merged.items() if name.upper() not in STRIPPED}
+    return {
+        name: value
+        for name, value in merged.items()
+        if name.upper() not in STRIPPED and name.upper() not in _SESSION_MARKERS_UPPER
+    }
 
 
 class TransportError(OSError):
