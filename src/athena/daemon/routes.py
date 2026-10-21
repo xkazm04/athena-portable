@@ -69,7 +69,7 @@ from typing import TYPE_CHECKING, Any
 from urllib.parse import unquote
 
 from athena.contracts import ids
-from athena.contracts.channel import ChannelEvent, DecisionRequested, TurnError
+from athena.contracts.channel import ChannelEvent, DecisionRequested, TurnError, cut_text
 from athena.contracts.harness import normalize_reason
 from athena.contracts.manifest import HostManifest
 from athena.contracts.registry import Lane, OpenApp, TurnContext, parse_origin
@@ -286,10 +286,7 @@ def announced(items: list[dict[str, Any]], total: int, key: str) -> dict[str, An
 
 def capped(text: str, limit: int) -> str:
     """``text`` cut to ``limit`` characters, saying what it cut (README §2 invariant 4)."""
-    total = len(text)
-    if total <= limit:
-        return text
-    return f"{text[:limit]}\n(showing {limit} of {total})"
+    return cut_text(text, limit)
 
 
 def bounded(value: str | None, default: int = DEFAULT_LIMIT) -> int:

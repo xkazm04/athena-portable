@@ -32,6 +32,7 @@ from athena.connectors.addresses import one_address, refusal_reason
 from athena.connectors.providers import gmail, notion
 from athena.connectors.spec import ConnectorSpec, ToolSpec
 from athena.connectors.vault import NeedsReauth, NoAnswer, Vault, VaultError
+from athena.contracts.channel import cut_text
 from athena.contracts.manifest import HostTool
 from athena.contracts.registry import ExecResult, Tier, ToolClass
 from athena.core.fence import wrap_untrusted
@@ -94,10 +95,7 @@ def read_result(text: str, label: str) -> str:
     """Capped inside the fence, so the cut is announced and nothing outside the fence is cut.
     ``label`` is the connector id — the fence's own slug rule — so a reader of the prompt sees
     ``notion`` on the fence and not a display name."""
-    total = len(text)
-    if total > READ_CAP:
-        text = f"{text[:READ_CAP]}\n(showing {READ_CAP} of {total})"
-    return wrap_untrusted(text, label=label)
+    return wrap_untrusted(cut_text(text, READ_CAP), label=label)
 
 
 class Service:

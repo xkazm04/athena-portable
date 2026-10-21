@@ -28,7 +28,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
-from athena.contracts.channel import ToolResult
+from athena.contracts.channel import ToolResult, cut_text
 from athena.contracts.registry import Lane
 from athena.core.constitution import Constitution
 from athena.core.prompt import Composed, TurnFrame, compose
@@ -76,10 +76,8 @@ def tool_results_from(payloads: Sequence[Mapping[str, Any]]) -> tuple[ToolResult
     results: list[ToolResult] = []
     for payload in payloads:
         output = str(payload.get("output", ""))
-        total = len(output)
-        truncated = total > RESULT_CAP
-        if truncated:
-            output = f"{output[:RESULT_CAP]}\n(showing {RESULT_CAP} of {total})"
+        truncated = len(output) > RESULT_CAP
+        output = cut_text(output, RESULT_CAP)
         error = payload.get("error")
         results.append(
             ToolResult(

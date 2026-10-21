@@ -29,6 +29,17 @@ def now_iso() -> str:
     return iso(datetime.now(UTC))
 
 
+def cut_text(text: str, limit: int) -> str:
+    """``text`` cut to ``limit`` characters with ``(showing N of M)`` on a new line, or whole.
+
+    The one announced cut (README §2 invariant 4): text within the limit comes back unchanged.
+    """
+    total = len(text)
+    if total <= limit:
+        return text
+    return f"{text[:limit]}\n(showing {limit} of {total})"
+
+
 @dataclass(frozen=True)
 class ChannelEvent:
     """The base. ``kind`` is a ClassVar, so it is on the wire but never a constructor argument."""

@@ -22,6 +22,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from athena.contracts.channel import cut_text
 from athena.contracts.harness import normalize_reason
 from athena.proving.report import TEXT_ERRORS
 
@@ -89,7 +90,4 @@ class RunLog:
 
 
 def _excerpt(text: str) -> str:
-    total = len(text)
-    if total <= EXCERPT_CHARS:
-        return text
-    return f"{text[:EXCERPT_CHARS]}\n(showing {EXCERPT_CHARS} of {total})"
+    return cut_text(text, EXCERPT_CHARS)
