@@ -1,0 +1,17 @@
+{
+ "schema": "conform-run/1",
+ "worker": "171fd651-85b3-4ca1-9d47-2b39677381f0",
+ "subject": "node-boot-and-declarative-bootstrap",
+ "evaluatedAt": "2026-10-21T21:51:35.836419+00:00",
+ "provider": "codex",
+ "model": "gpt-6.1-sol",
+ "pairs": [],
+ "declined": [
+  {
+   "subject": "node-boot-and-declarative-bootstrap",
+   "context": "connector-service",
+   "reason": "the seat returned unknown"
+  }
+ ],
+ "consults": []
+}
