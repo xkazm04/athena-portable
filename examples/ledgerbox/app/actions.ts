@@ -54,6 +54,13 @@ export interface ExportResult extends ActionResult {
   body?: string;
 }
 
+/**
+ * Who a write is logged as. The tool handlers pass "athena"; a page leaves it off and is "user".
+ * The argument is caller-supplied, so a page could claim to be athena - acceptable in a scratch
+ * example host (ADR 0018), where the Trail is a courtesy and not an audit.
+ */
+type Actor = "user" | "athena";
+
 type Undo =
   | { kind: "categorize"; prior: [string, Category][] }
   | { kind: "match"; invoice_id: string; line_id: string }
@@ -143,7 +150,11 @@ function notADebt(invoice: InvoiceRow, consequence: string): string | null {
 }
 
 /** AUTO - file invoices under a book-keeping category. */
-export async function categorizeAction(ids: string[], category: Category): Promise<ActionResult> {
+export async function categorizeAction(
+  ids: string[],
+  category: Category,
+  actor: Actor = "user",
+): Promise<ActionResult> {
   if (!oneOf(CATEGORIES, category)) return fail(unknown("category", category, CATEGORIES));
   if (!Array.isArray(ids)) return fail("Pass the invoices as a list of ids or numbers.");
   // An id or a number, whichever the caller read; a reference that matches nothing stays in the
@@ -165,7 +176,7 @@ export async function categorizeAction(ids: string[], category: Category): Promi
     // reverses nothing, and the Trail should not carry it.
     if (prior.length === 0) return;
     logActivity(tx, {
-      actor: "user",
+      actor,
       action: "categorize",
       target: `invoice:${prior.length === 1 ? prior[0]![0] : `${prior.length} invoices`}`,
       summary: `Filed ${prior.length} invoice${prior.length === 1 ? "" : "s"} under ${category}.`,
@@ -206,7 +217,7 @@ function whyNotInPool(lineId: unknown): string {
 }
 
 /** AUTO - apply a bank line to an invoice and record the payment it represents. */
-export async function matchAction(ref: string, lineId: string): Promise<MatchResult> {
+export async function matchAction(ref: string, lineId: string, actor: Actor = "user"): Promise<MatchResult> {
   const resolved = resolveInvoice(ref);
   if (!resolved.ok) return fail(resolved.error);
   const invoiceId = resolved.id;
@@ -245,10 +256,11 @@ export async function matchAction(ref: string, lineId: string): Promise<MatchRes
   const alias = scored?.counterparty_alias;
 
   db().withTx((tx) => {
-    tx.run("INSERT INTO matches (invoice_id, line_id, matched_at, actor, evidence) VALUES (?, ?, ?, 'user', ?)", [
+    tx.run("INSERT INTO matches (invoice_id, line_id, matched_at, actor, evidence) VALUES (?, ?, ?, ?, ?)", [
       invoiceId,
       lineId,
       new Date().toISOString(),
+      actor,
       evidence,
     ]);
     tx.run(
@@ -256,7 +268,7 @@ export async function matchAction(ref: string, lineId: string): Promise<MatchRes
       [paymentIdFor(lineId), invoiceId, line.posted_at, line.amount_cents, `Reconciled from ${line.source_file}.`],
     );
     logActivity(tx, {
-      actor: "user",
+      actor,
       action: "match_bank_line",
       target: `invoice:${invoiceId}`,
       summary: `Matched ${formatMoney(line.amount_cents)} from "${line.memo}" to ${invoice.number} (${evidence}).`,
@@ -278,7 +290,7 @@ export async function matchAction(ref: string, lineId: string): Promise<MatchRes
 }
 
 /** AUTO - take a bank line back off an invoice. */
-export async function unmatchAction(ref: string, lineId: string): Promise<ActionResult> {
+export async function unmatchAction(ref: string, lineId: string, actor: Actor = "user"): Promise<ActionResult> {
   const resolved = resolveInvoice(ref);
   if (!resolved.ok) return fail(resolved.error);
   const invoiceId = resolved.id;
@@ -310,7 +322,7 @@ export async function unmatchAction(ref: string, lineId: string): Promise<Action
     tx.run("DELETE FROM matches WHERE invoice_id = ? AND line_id = ?", [invoiceId, lineId]);
     tx.run("DELETE FROM payments WHERE id = ?", [payment.id]);
     logActivity(tx, {
-      actor: "user",
+      actor,
       action: "unmatch",
       target: `invoice:${invoiceId}`,
       summary: `Unapplied ${formatMoney(row.amount_cents)} from ${invoice?.number ?? invoiceId}.`,
@@ -333,7 +345,7 @@ export async function unmatchAction(ref: string, lineId: string): Promise<Action
 }
 
 /** GATED - money. Recording a payment against the books is not something the app takes back. */
-export async function markPaidAction(ref: string, amountCents: number): Promise<ActionResult> {
+export async function markPaidAction(ref: string, amountCents: number, actor: Actor = "user"): Promise<ActionResult> {
   const resolved = resolveInvoice(ref);
   if (!resolved.ok) return fail(resolved.error);
   const invoiceId = resolved.id;
@@ -360,7 +372,7 @@ export async function markPaidAction(ref: string, amountCents: number): Promise<
       [`pay_manual_${invoiceId}_${Date.now()}`, invoiceId, new Date().toISOString(), amount],
     );
     logActivity(tx, {
-      actor: "user",
+      actor,
       action: "mark_paid",
       target: `invoice:${invoiceId}`,
       summary: `Recorded ${formatMoney(amount)} against ${invoice.number}.`,
@@ -402,7 +414,7 @@ function letterFor(invoice: InvoiceRow, tone: Tone): ReminderDraft {
 }
 
 /** AUTO - writes a draft. Nothing leaves the building until `send_reminder`. */
-export async function draftReminderAction(ref: string, tone: Tone): Promise<DraftResult> {
+export async function draftReminderAction(ref: string, tone: Tone, actor: Actor = "user"): Promise<DraftResult> {
   if (!oneOf(TONES, tone)) return fail(unknown("tone", tone, TONES));
   const resolved = resolveInvoice(ref);
   if (!resolved.ok) return fail(resolved.error);
@@ -420,7 +432,7 @@ export async function draftReminderAction(ref: string, tone: Tone): Promise<Draf
       [id, invoiceId, tone, draft.to, draft.subject, draft.body, new Date().toISOString()],
     );
     logActivity(tx, {
-      actor: "user",
+      actor,
       action: "draft_reminder",
       target: `invoice:${invoiceId}`,
       summary: `Drafted a ${tone} reminder for ${invoice.number} to ${draft.to_name} <${draft.to}>. Not sent.`,
@@ -452,7 +464,7 @@ export async function draftReminderAction(ref: string, tone: Tone): Promise<Draf
  * fact the books must keep is which address the letter went to - "sent to Solstice Partners" is
  * not a record of that, and a second derivation could name a different person than the draft did.
  */
-export async function sendReminderAction(ref: string): Promise<SendResult> {
+export async function sendReminderAction(ref: string, actor: Actor = "user"): Promise<SendResult> {
   const resolved = resolveInvoice(ref);
   if (!resolved.ok) return fail(resolved.error);
   const invoiceId = resolved.id;
@@ -483,7 +495,7 @@ export async function sendReminderAction(ref: string): Promise<SendResult> {
     // such a draft's activity row only deletes `WHERE sent_at IS NULL`, so it stays a clean no-op.
     tx.run("DELETE FROM reminders WHERE invoice_id = ? AND sent_at IS NULL AND id <> ?", [invoiceId, draft.id]);
     logActivity(tx, {
-      actor: "user",
+      actor,
       action: "send_reminder",
       target: `invoice:${invoiceId}`,
       summary: `Sent the ${draft.tone} reminder for ${invoice.number} to ${invoice.client_name} <${draft.recipient}>.`,
@@ -501,7 +513,7 @@ export async function sendReminderAction(ref: string): Promise<SendResult> {
 }
 
 /** GATED - voiding is a permanent statement about the books. */
-export async function voidInvoiceAction(ref: string): Promise<ActionResult> {
+export async function voidInvoiceAction(ref: string, actor: Actor = "user"): Promise<ActionResult> {
   const resolved = resolveInvoice(ref);
   if (!resolved.ok) return fail(resolved.error);
   const invoiceId = resolved.id;
@@ -512,7 +524,7 @@ export async function voidInvoiceAction(ref: string): Promise<ActionResult> {
   db().withTx((tx) => {
     tx.run("UPDATE invoices SET status = 'void' WHERE id = ?", [invoiceId]);
     logActivity(tx, {
-      actor: "user",
+      actor,
       action: "void_invoice",
       target: `invoice:${invoiceId}`,
       summary: `Voided ${invoice.number} (${formatMoney(invoice.amount_cents)}, ${invoice.client_name}).`,
@@ -532,7 +544,7 @@ export async function voidInvoiceAction(ref: string): Promise<ActionResult> {
  * document - a wiki page, a note, a mail - wants those two fields, so the app supplies them rather
  * than leaving a caller to invent a heading and reflow a monospaced block into one.
  */
-export async function exportSummaryAction(period: Period): Promise<ExportResult> {
+export async function exportSummaryAction(period: Period, actor: Actor = "user"): Promise<ExportResult> {
   // A period the books do not have summarizes to zeros and would still be filed as an export.
   if (!oneOf(PERIODS, period)) return { ...fail(unknown("period", period, PERIODS)), title: "" };
   const summary = summarize(period);
@@ -551,7 +563,7 @@ export async function exportSummaryAction(period: Period): Promise<ExportResult>
       body,
     ]);
     logActivity(tx, {
-      actor: "user",
+      actor,
       action: "export_summary",
       target: `period:${period}`,
       summary: `Exported the ${period} summary: ${formatMoney(summary.outstanding_cents)} outstanding across ${summary.invoice_count} invoices.`,

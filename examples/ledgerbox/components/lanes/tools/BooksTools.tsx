@@ -477,7 +477,7 @@ export function BooksTools({
     ...registration("categorize"),
     handler: ({ ids, category }) =>
       isOneOf(CATEGORIES, category)
-        ? say(categorizeAction(asIds(ids), category as Category))
+        ? say(categorizeAction(asIds(ids), category as Category, "athena"))
         : refused(`Unknown category ${String(category)}.`),
   });
 
@@ -487,7 +487,7 @@ export function BooksTools({
       "Apply an unapplied bank credit to an invoice and record the payment. The card's balance and its colour change under the open invoice. Reversible with unmatch.",
     ...registration("match_bank_line"),
     handler: async ({ invoice_id, line_id }) => {
-      const result = await settle(matchAction(String(invoice_id), String(line_id)));
+      const result = await settle(matchAction(String(invoice_id), String(line_id), "athena"));
       if (!result.ok) return refused(result.message);
       // The alias travels with the match, so a credit that arrived under a trading name can be
       // remembered as one fact rather than re-derived from the memo next month.
@@ -499,7 +499,7 @@ export function BooksTools({
     name: "unmatch",
     description: "Take a bank credit back off an invoice, restoring the balance.",
     ...registration("unmatch"),
-    handler: ({ invoice_id, line_id }) => say(unmatchAction(String(invoice_id), String(line_id))),
+    handler: ({ invoice_id, line_id }) => say(unmatchAction(String(invoice_id), String(line_id), "athena")),
   });
 
   useWebMCPTool({
@@ -509,7 +509,7 @@ export function BooksTools({
     ...registration("draft_reminder"),
     handler: async ({ id, tone }) => {
       if (!isOneOf(TONES, tone)) return refused(`Unknown tone ${String(tone)}.`);
-      const result = await settle(draftReminderAction(String(id), tone as Tone));
+      const result = await settle(draftReminderAction(String(id), tone as Tone, "athena"));
       if (!result.ok) return refused(result.message);
       // The whole message, not a confirmation that one exists. `send_reminder` is carried by a
       // connector outside the page, and what it carries has to be addressable before the gate.
@@ -527,7 +527,7 @@ export function BooksTools({
       // a non-finite number is refused rather than rounded into a payment.
       const cents = parseDollars(amount as string | number);
       if (cents === null) return refused(`"${String(amount)}" is not an amount.`);
-      return say(markPaidAction(String(id), cents));
+      return say(markPaidAction(String(id), cents, "athena"));
     },
   });
 
@@ -537,7 +537,7 @@ export function BooksTools({
       "Send the saved draft reminder to the client's billing contact. The card's draft block clears and its reminder count goes up. Reaches a person; simulated here and recorded against the invoice.",
     ...registration("send_reminder"),
     handler: async ({ id }) => {
-      const result = await settle(sendReminderAction(String(id)));
+      const result = await settle(sendReminderAction(String(id), "athena"));
       if (!result.ok) return refused(result.message);
       // Who it reached, in the answer as well as in the activity row.
       return result.to
@@ -550,7 +550,7 @@ export function BooksTools({
     name: "void_invoice",
     description: "Void an invoice. Permanent.",
     ...registration("void_invoice"),
-    handler: ({ id }) => say(voidInvoiceAction(String(id))),
+    handler: ({ id }) => say(voidInvoiceAction(String(id), "athena")),
   });
 
   useWebMCPTool({
@@ -561,7 +561,7 @@ export function BooksTools({
     handler: async ({ period: p }) => {
       if (!isOneOf(PERIODS, p)) return refused(`Unknown period ${String(p)}.`);
       setPeriod(p);
-      const result = await settle(exportSummaryAction(p));
+      const result = await settle(exportSummaryAction(p, "athena"));
       if (!result.ok) return refused(result.message);
       // A page, ready to become one somewhere else: a title and a Markdown body. `body` is the
       // plain-text form the close readout prints, kept so the two callers read one result.
