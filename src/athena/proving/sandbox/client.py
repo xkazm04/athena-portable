@@ -76,6 +76,10 @@ ERROR_CHARS = 300
 #: How much of a run's stdout or stderr a record keeps.
 OUTPUT_CHARS = 4000
 
+#: The most of a reply that is read. Replies are small JSON documents or one file read out of an
+#: image; a body past this is refused with an ``OSError`` rather than held whole in memory.
+MAX_REPLY_BYTES = 8 * 1024 * 1024
+
 
 @dataclass(frozen=True)
 class HttpReply:
@@ -100,6 +104,14 @@ class _NoRedirect(urllib.request.HTTPRedirectHandler):
         return None
 
 
+def _read_bounded(response: Any) -> bytes:
+    """The body, or an ``OSError`` when it runs past :data:`MAX_REPLY_BYTES`."""
+    body: bytes = response.read(MAX_REPLY_BYTES + 1)
+    if len(body) > MAX_REPLY_BYTES:
+        raise OSError(f"Sandboxes answered more than {MAX_REPLY_BYTES} bytes")
+    return body
+
+
 def urllib_http(
     method: str, url: str, headers: Mapping[str, str], body: bytes | None, timeout: float
 ) -> HttpReply:
@@ -108,10 +120,10 @@ def urllib_http(
     opener = urllib.request.build_opener(_NoRedirect)
     try:
         with opener.open(request, timeout=timeout) as response:
-            return HttpReply(int(response.status), response.read(), dict(response.headers))
+            return HttpReply(int(response.status), _read_bounded(response), dict(response.headers))
     except urllib.error.HTTPError as exc:
         try:
-            payload = exc.read()
+            payload = _read_bounded(exc)
         finally:
             exc.close()
         return HttpReply(int(exc.code), payload, dict(exc.headers or {}))

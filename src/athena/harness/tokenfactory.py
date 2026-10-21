@@ -95,6 +95,11 @@ THINKING_OFF: Mapping[str, Any] = {"chat_template_kwargs": {"enable_thinking": F
 #: One HTTP round may take this long. A wall for a hung connection, not a thinking budget.
 REQUEST_TIMEOUT_S = 180.0
 
+#: The most of a success reply that is read. A chat completion is a few KB; a body past this is a
+#: runaway or hostile upstream and becomes an ``OSError``, which the model turns into an
+#: ``engine_error`` chunk.
+MAX_REPLY_BYTES = 8 * 1024 * 1024
+
 
 @dataclass(frozen=True)
 class HttpReply:
@@ -116,7 +121,10 @@ def urllib_post(url: str, headers: Mapping[str, str], body: bytes, timeout: floa
     request = urllib.request.Request(url, data=body, headers=dict(headers), method="POST")
     try:
         with urllib.request.urlopen(request, timeout=timeout) as response:
-            return HttpReply(status=int(response.status), body=response.read())
+            body = response.read(MAX_REPLY_BYTES + 1)
+            if len(body) > MAX_REPLY_BYTES:
+                raise OSError(f"Token Factory answered more than {MAX_REPLY_BYTES} bytes")
+            return HttpReply(status=int(response.status), body=body)
     except urllib.error.HTTPError as exc:
         exc.close()
         return HttpReply(status=int(exc.code))
