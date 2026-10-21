@@ -40,11 +40,24 @@ APP_PATHS = (
 _SKIP = {"node_modules", ".next", "__pycache__", ".turbo", ".mypy_cache", ".ruff_cache"}
 
 
+_SECRET_KEPT = {".env.example"}
+
+
+def _is_secret(name: str) -> bool:
+    """``.git`` and ``.env`` / ``.env.*`` entries; ``.env.example`` is source and stays."""
+    if name == ".git":
+        return True
+    return (name == ".env" or name.startswith(".env.")) and name not in _SECRET_KEPT
+
+
 def pack(root: Path, paths: Sequence[str]) -> bytes:
-    """A gzipped tarball of ``paths`` under ``root``, build output and caches left out."""
+    """A gzipped tarball of ``paths`` under ``root``, minus caches, env files, .git."""
 
     def keep(info: tarfile.TarInfo) -> tarfile.TarInfo | None:
-        return None if _SKIP & set(Path(info.name).parts) else info
+        parts = Path(info.name).parts
+        if _SKIP & set(parts) or any(_is_secret(part) for part in parts):
+            return None
+        return info
 
     buffer = io.BytesIO()
     with tarfile.open(fileobj=buffer, mode="w:gz") as archive:
