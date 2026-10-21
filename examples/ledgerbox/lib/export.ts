@@ -79,6 +79,11 @@ export function renderSummary({ summary, outstanding }: SummaryInput): string {
   ].join("\n");
 }
 
+/** A pipe or line break in a cell would split or end the table row, so escape the pipe and flatten breaks. */
+function mdCell(value: string): string {
+  return value.replace(/\|/g, "\\|").replace(/\r\n|\r|\n/g, " ");
+}
+
 /**
  * The same close as Markdown: a heading, the figures as a two-column table, and the capped
  * "Still owed" table under it carrying the same `(showing N of M)` footer the text form does.
@@ -98,7 +103,7 @@ export function renderSummaryMarkdown({ summary, outstanding }: SummaryInput): s
 
   const rows = shown.map(
     (r) =>
-      `| ${r.number} | ${r.client_name} | ${formatMoney(r.balance_cents)} | ${
+      `| ${mdCell(r.number)} | ${mdCell(r.client_name)} | ${formatMoney(r.balance_cents)} | ${
         r.days_overdue > 0 ? `${r.days_overdue}d overdue` : "within terms"
       } |`,
   );
