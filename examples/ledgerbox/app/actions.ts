@@ -344,6 +344,9 @@ export async function unmatchAction(ref: string, lineId: string, actor: Actor = 
   return { ok: true, message: `Unapplied ${formatMoney(row.amount_cents)}.` };
 }
 
+/** An identical manual payment inside this many seconds is a retry, not a second part-payment. */
+const MANUAL_PAYMENT_REPEAT_WINDOW_MS = 10_000;
+
 /** GATED - money. Recording a payment against the books is not something the app takes back. */
 export async function markPaidAction(ref: string, amountCents: number, actor: Actor = "user"): Promise<ActionResult> {
   const resolved = resolveInvoice(ref);
@@ -364,6 +367,17 @@ export async function markPaidAction(ref: string, amountCents: number, actor: Ac
   if (amount <= 0) return fail("Enter an amount above zero.");
   if (amount > invoice.balance_cents) {
     return fail(`That is more than the ${formatMoney(invoice.balance_cents)} still owed.`);
+  }
+
+  // A double click or a retried tool call sends the same payment twice, and two equal part-payments
+  // both pass the balance guard. An identical hand-recorded payment inside the window is a repeat.
+  const since = new Date(Date.now() - MANUAL_PAYMENT_REPEAT_WINDOW_MS).toISOString();
+  const repeat = db().get<{ id: string }>(
+    "SELECT id FROM payments WHERE invoice_id = ? AND amount_cents = ? AND note = 'Recorded by hand.' AND paid_at >= ?",
+    [invoiceId, amount, since],
+  );
+  if (repeat) {
+    return fail(`${formatMoney(amount)} was just recorded against ${invoice.number} - not recording it twice.`);
   }
 
   db().withTx((tx) => {
