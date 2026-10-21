@@ -1145,15 +1145,17 @@ def playbooks(daemon: AthenaDaemon, request: Request) -> Reply:
     limit = bounded(request.query.get("limit"))
     trace = recall_bundle(daemon.brain, origin, episode_budget=0, keyword_slots=MAX_LIMIT)
     found = [memory for memory in trace.items if memory.kind in PLAYBOOK_KINDS]
+    page = found[:limit]
+    citations = daemon.brain.source_counts([memory.id for memory in page])
     items = [
         {
             "id": memory.id,
             "kind": memory.kind,
             "excerpt": memory.excerpt,
             "path": memory.path,
-            "citations": len(daemon.brain.sources_of(memory.id)),
+            "citations": citations[memory.id],
         }
-        for memory in found[:limit]
+        for memory in page
     ]
     reply = announced(items, len(found), "items")
     reply["origin"] = origin

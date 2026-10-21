@@ -403,6 +403,29 @@ class Brain:
             ).fetchall()
         return [str(row[0]) for row in rows]
 
+    def source_counts(self, node_ids: Sequence[str]) -> dict[str, int]:
+        """How many sources each node cites, on one read connection.
+
+        Every asked id is in the answer, with 0 for a node that cites nothing or does not exist,
+        so ``counts[i] == len(sources_of(i))``.
+        """
+        wanted = list(dict.fromkeys(node_ids))
+        counts = {node_id: 0 for node_id in wanted}
+        if not wanted:
+            return counts
+        with closing(self.read_connection()) as con:
+            for start in range(0, len(wanted), 500):
+                batch = wanted[start : start + 500]
+                marks = ",".join("?" * len(batch))
+                rows = con.execute(
+                    f"""SELECT node_id, COUNT(*) FROM companion_provenance
+                        WHERE node_id IN ({marks}) GROUP BY node_id""",
+                    tuple(batch),
+                ).fetchall()
+                for node_id, count in rows:
+                    counts[str(node_id)] = int(count)
+        return counts
+
     # -- distilled memories --------------------------------------------------------------------
 
     def write_fact(
