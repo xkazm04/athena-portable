@@ -139,8 +139,12 @@ def _core_calls(record: TurnRecord) -> list[dict[str, Any]]:
 def _default_world(playbook: Playbook, config: BenchConfig) -> World:
     first, *rest = playbook.apps
     world = World(engine=config.engine, model=config.model, manifest=first.manifest())
-    for app in rest:
-        world.register(app.manifest())
+    try:
+        for app in rest:
+            world.register(app.manifest())
+    except BaseException:
+        world.close()
+        raise
     return world
 
 

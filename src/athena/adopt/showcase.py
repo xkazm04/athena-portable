@@ -599,8 +599,12 @@ def _claude_world(config: BenchConfig) -> WorldMaker:
 
         first, *rest = playbook.apps
         world = World(engine=config.engine, model=config.model, manifest=first.manifest())
-        for app in rest:
-            world.register(app.manifest())
+        try:
+            for app in rest:
+                world.register(app.manifest())
+        except BaseException:
+            world.close()
+            raise
         return world
 
     return make
