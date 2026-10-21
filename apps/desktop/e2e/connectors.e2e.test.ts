@@ -93,7 +93,12 @@ describe("a daemon with the vault", () => {
     for (const item of state.items) {
       expect(Object.keys(item.connection).sort()).toEqual(
         [
+          // ADR 0062: the account the switches were set under, and the identity shown for it.
+          "account",
           "allowlist",
+          // The last connect attempt and what it said, for a connect that did not finish.
+          "attempt_at",
+          "attempt_detail",
           "connected_at",
           "enabled",
           "expires_at",
@@ -103,8 +108,11 @@ describe("a daemon with the vault", () => {
           "id",
           "identity",
           "last_used_at",
+          "notice",
           "seal",
           "status",
+          "switches_account",
+          "switches_identity",
           "writes_enabled",
         ].sort(),
       );

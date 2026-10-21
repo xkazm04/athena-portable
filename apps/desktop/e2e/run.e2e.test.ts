@@ -123,9 +123,9 @@ describe("a whole AUTO turn", () => {
     expect(carried[0].ok).toBe(true);
     expect(carried[0].output).toBe("INV-118, INV-120, INV-131");
     expect(carried[0].tier).toBe(1);
-    // The call id is minted by the harness as `<turn id>_<index>`, so the answer the panel
-    // carries back is provably the answer to the call the daemon made.
-    expect(String(carried[0].call_id)).toMatch(/^turn_[0-9a-f]{12}_\d\d$/);
+    // The call id is minted by the harness as `<turn id>_r<round>_<index>` (harness/rounds.py),
+    // so the answer the panel carries back is provably the answer to the call the daemon made.
+    expect(String(carried[0].call_id)).toMatch(/^turn_[0-9a-f]{12}_r\d+_\d\d$/);
 
     // 5. Both rounds are in the transcript the panel renders, and the tool line between them.
     const said = state.transcript.map((e) => `${e.kind}:${e.text.trim()}`);
@@ -216,7 +216,9 @@ describe("a GATED turn", () => {
 
     const decided = wire.to(`/decisions/${card.id}`);
     expect(decided).toHaveLength(1);
-    expect(decided[0].body).toEqual({ choice: "approve", origin: PAGE_ORIGIN, answer: undefined });
+    // The answer states the apps the user switched off, so the daemon replays the gate against
+    // the same list the panel holds; none are off here.
+    expect(decided[0].body).toEqual({ choice: "approve", origin: PAGE_ORIGIN, disabled_origins: [] });
 
     // The continuation carried the page's answer back, so the turn could finish.
     const runs = wire.to("/run");
@@ -245,7 +247,7 @@ describe("a GATED turn", () => {
     expect(useRun.getState().transcript.at(-1)).toMatchObject({
       kind: "tool",
       ok: false,
-      text: `declined: ${card.id}`,
+      text: `declined: ${card.action}`,
     });
 
     // README invariant 6: one row per invocation, failures included, with a reason from the
@@ -266,11 +268,13 @@ describe("a GATED turn", () => {
     const card = useRun.getState().cards[0];
 
     // The surface states an origin the daemon has no session for. `POST /decisions/<id>` refuses
-    // it with the gate's own word rather than replaying the grant.
+    // it with the gate's own word rather than replaying the grant. Same tab id as the card's:
+    // a different tab is stopped earlier, by the panel's own binding check (ADR 0103), and never
+    // reaches the daemon's origin check this test is about.
     setRunDeps({
       ...({
         api: () => new DaemonApi({ url: running!.url, token: running!.token }),
-        focused: () => ({ tabId: 9, origin: "https://not-ledgerbox.e2e", appId: "crm" }),
+        focused: () => ({ tabId: 7, origin: "https://not-ledgerbox.e2e", appId: "crm" }),
         hostState: () => ({}),
         call: page.call,
         manifest: () => null,
@@ -280,7 +284,12 @@ describe("a GATED turn", () => {
     await useRun.getState().answer(card.id, "approve");
 
     expect(page.calls).toEqual([]);
-    expect(useRun.getState().error?.reason).toBe("foreign_origin");
+    // A refusal is the card's own (it stays, with the sentence under its buttons), not a turn
+    // error: the decision is noted as refused for the gate's word.
+    const state = useRun.getState();
+    expect(state.cards.map((c) => c.id)).toContain(card.id);
+    expect(state.refusals[card.id]).toBeTruthy();
+    expect(state.answered.find((a) => a.id === card.id)).toMatchObject({ result: "refused", reason: "foreign_origin" });
   });
 });
 
