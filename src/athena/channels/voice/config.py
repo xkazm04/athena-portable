@@ -40,6 +40,7 @@ from __future__ import annotations
 import json
 import os
 import threading
+import uuid
 from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, replace
 from pathlib import Path
@@ -159,6 +160,7 @@ def face_python_from(raw: Any) -> str | None:
 
 
 DEFAULT_CHOICE = VoiceChoice()
+_SAVE_LOCK = threading.Lock()
 
 
 def load_choice(root: Path) -> VoiceChoice:
@@ -171,12 +173,22 @@ def load_choice(root: Path) -> VoiceChoice:
 
 
 def save_choice(root: Path, choice: VoiceChoice) -> None:
-    """Written whole and swapped in, so a reader never sees half a file."""
+    """Written whole and swapped in, so a reader never sees half a file.
+
+    Each save stages under its own name, so two overlapping saves never share a staging file; a
+    failed write or swap removes its own.
+    """
     root.mkdir(parents=True, exist_ok=True)
     path = root / CONFIG_FILENAME
-    tmp = path.with_suffix(".json.tmp")
-    tmp.write_text(json.dumps(choice.to_dict(), indent=2), encoding="utf-8")
-    os.replace(tmp, path)
+    tmp = path.with_name(f"{path.name}.{uuid.uuid4().hex}.tmp")
+    try:
+        tmp.write_text(json.dumps(choice.to_dict(), indent=2), encoding="utf-8")
+        # Windows refuses a replace onto a file another replace is swapping, so the swap is serial.
+        with _SAVE_LOCK:
+            os.replace(tmp, path)
+    except BaseException:
+        tmp.unlink(missing_ok=True)
+        raise
 
 
 class VoiceStudio:
