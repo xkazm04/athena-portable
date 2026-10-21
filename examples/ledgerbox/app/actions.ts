@@ -59,7 +59,8 @@ export interface ExportResult extends ActionResult {
  * The argument is caller-supplied, so a page could claim to be athena - acceptable in a scratch
  * example host (ADR 0018), where the Trail is a courtesy and not an audit.
  */
-type Actor = "user" | "athena";
+const ACTORS = ["user", "athena"] as const;
+type Actor = (typeof ACTORS)[number];
 
 type Undo =
   | { kind: "categorize"; prior: [string, Category][] }
@@ -155,6 +156,7 @@ export async function categorizeAction(
   category: Category,
   actor: Actor = "user",
 ): Promise<ActionResult> {
+  if (!oneOf(ACTORS, actor)) return fail(unknown("actor", actor, ACTORS));
   if (!oneOf(CATEGORIES, category)) return fail(unknown("category", category, CATEGORIES));
   if (!Array.isArray(ids)) return fail("Pass the invoices as a list of ids or numbers.");
   // An id or a number, whichever the caller read; a reference that matches nothing stays in the
@@ -218,6 +220,7 @@ function whyNotInPool(lineId: unknown): string {
 
 /** AUTO - apply a bank line to an invoice and record the payment it represents. */
 export async function matchAction(ref: string, lineId: string, actor: Actor = "user"): Promise<MatchResult> {
+  if (!oneOf(ACTORS, actor)) return fail(unknown("actor", actor, ACTORS));
   const resolved = resolveInvoice(ref);
   if (!resolved.ok) return fail(resolved.error);
   const invoiceId = resolved.id;
@@ -291,6 +294,7 @@ export async function matchAction(ref: string, lineId: string, actor: Actor = "u
 
 /** AUTO - take a bank line back off an invoice. */
 export async function unmatchAction(ref: string, lineId: string, actor: Actor = "user"): Promise<ActionResult> {
+  if (!oneOf(ACTORS, actor)) return fail(unknown("actor", actor, ACTORS));
   const resolved = resolveInvoice(ref);
   if (!resolved.ok) return fail(resolved.error);
   const invoiceId = resolved.id;
@@ -349,6 +353,7 @@ const MANUAL_PAYMENT_REPEAT_WINDOW_MS = 10_000;
 
 /** GATED - money. Recording a payment against the books is not something the app takes back. */
 export async function markPaidAction(ref: string, amountCents: number, actor: Actor = "user"): Promise<ActionResult> {
+  if (!oneOf(ACTORS, actor)) return fail(unknown("actor", actor, ACTORS));
   const resolved = resolveInvoice(ref);
   if (!resolved.ok) return fail(resolved.error);
   const invoiceId = resolved.id;
@@ -429,6 +434,7 @@ function letterFor(invoice: InvoiceRow, tone: Tone): ReminderDraft {
 
 /** AUTO - writes a draft. Nothing leaves the building until `send_reminder`. */
 export async function draftReminderAction(ref: string, tone: Tone, actor: Actor = "user"): Promise<DraftResult> {
+  if (!oneOf(ACTORS, actor)) return fail(unknown("actor", actor, ACTORS));
   if (!oneOf(TONES, tone)) return fail(unknown("tone", tone, TONES));
   const resolved = resolveInvoice(ref);
   if (!resolved.ok) return fail(resolved.error);
@@ -479,6 +485,7 @@ export async function draftReminderAction(ref: string, tone: Tone, actor: Actor 
  * not a record of that, and a second derivation could name a different person than the draft did.
  */
 export async function sendReminderAction(ref: string, actor: Actor = "user"): Promise<SendResult> {
+  if (!oneOf(ACTORS, actor)) return fail(unknown("actor", actor, ACTORS));
   const resolved = resolveInvoice(ref);
   if (!resolved.ok) return fail(resolved.error);
   const invoiceId = resolved.id;
@@ -528,6 +535,7 @@ export async function sendReminderAction(ref: string, actor: Actor = "user"): Pr
 
 /** GATED - voiding is a permanent statement about the books. */
 export async function voidInvoiceAction(ref: string, actor: Actor = "user"): Promise<ActionResult> {
+  if (!oneOf(ACTORS, actor)) return fail(unknown("actor", actor, ACTORS));
   const resolved = resolveInvoice(ref);
   if (!resolved.ok) return fail(resolved.error);
   const invoiceId = resolved.id;
@@ -559,6 +567,7 @@ export async function voidInvoiceAction(ref: string, actor: Actor = "user"): Pro
  * than leaving a caller to invent a heading and reflow a monospaced block into one.
  */
 export async function exportSummaryAction(period: Period, actor: Actor = "user"): Promise<ExportResult> {
+  if (!oneOf(ACTORS, actor)) return { ...fail(unknown("actor", actor, ACTORS)), title: "" };
   // A period the books do not have summarizes to zeros and would still be filed as an export.
   if (!oneOf(PERIODS, period)) return { ...fail(unknown("period", period, PERIODS)), title: "" };
   const summary = summarize(period);
