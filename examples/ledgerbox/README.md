@@ -129,7 +129,8 @@ every bounded read states how much it left out through the kit's one envelope â€
 Every mutating action logs to `activity` and stores an `undo` payload when it is reversible;
 `app/actions.ts` holds the matching `applyUndo` branch for each one. `send_reminder` records the
 address it reached, not just the client's name, because in the demo the send itself is carried by a
-connector outside the page.
+connector outside the page. It sends the newest unsent draft and retires any older one it replaced, so a
+second Send never dispatches a letter a newer draft superseded.
 
 ### What each tool moves on screen
 

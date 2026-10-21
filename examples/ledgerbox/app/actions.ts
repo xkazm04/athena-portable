@@ -478,6 +478,10 @@ export async function sendReminderAction(ref: string): Promise<SendResult> {
   const sentAt = new Date().toISOString();
   handle.withTx((tx) => {
     tx.run("UPDATE reminders SET sent_at = ? WHERE id = ?", [sentAt, draft.id]);
+    // The letter that went is the one drafted last. Any older unsent draft of this invoice was
+    // replaced by it; left in place, a second Send would dispatch a letter nobody approved. Undoing
+    // such a draft's activity row only deletes `WHERE sent_at IS NULL`, so it stays a clean no-op.
+    tx.run("DELETE FROM reminders WHERE invoice_id = ? AND sent_at IS NULL AND id <> ?", [invoiceId, draft.id]);
     logActivity(tx, {
       actor: "user",
       action: "send_reminder",
