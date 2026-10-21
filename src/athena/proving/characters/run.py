@@ -31,10 +31,10 @@ import time
 from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from athena.contracts.channel import now_iso
 from athena.proving.budget import CLAUDE, NEMOTRON, Budget
 from athena.proving.characters.judges import (
     FIDELITY_SCHEMA,
@@ -631,7 +631,7 @@ def run_characters(
     """The whole run. Returns the report (unpruned); writes it when ``run_dir`` is given."""
     engines = engines or default_engines()
     started = time.monotonic()
-    started_at = datetime.now(UTC).isoformat()
+    started_at = now_iso()
     budget = Budget({NEMOTRON: config.nemotron_cap, CLAUDE: config.claude_cap})
     log = RunLog(run_dir / "ledger.jsonl" if run_dir is not None else None)
     caller = RoleCaller(budget, log)

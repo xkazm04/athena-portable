@@ -18,11 +18,10 @@ import json
 import threading
 from collections.abc import Mapping
 from dataclasses import dataclass, field
-from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
-from athena.contracts.channel import cut_text
+from athena.contracts.channel import cut_text, now_iso
 from athena.contracts.harness import normalize_reason
 from athena.proving.report import TEXT_ERRORS
 
@@ -61,7 +60,7 @@ class RunLog:
         extra: Mapping[str, Any] | None = None,
     ) -> dict[str, Any]:
         row: dict[str, Any] = {
-            "at": datetime.now(UTC).isoformat(),
+            "at": now_iso(),
             "role": role,
             "engine": engine,
             "model": model,
