@@ -31,6 +31,13 @@ Two named repairs join the four:
   than `op`, `action`, `params`, `rationale`, `name` and `tool`) takes those keys as its
   parameters. An envelope that has `params` keeps them, and a stray key beside them is ignored.
 
+Amendment: `name` and `tool` are envelope keys only while they can name the action. When an
+envelope names an explicit `action`, has no `params` key, and its `name` or `tool` value is not
+shaped like a tool name (`{"op":"propose_action","action":"host.crm.add_contact","name":"Bob",
+"email":"b@x.io"}`), that value is a parameter and `params_at_top` takes it with the other stray
+keys. A tool-shaped value beside an explicit action is still ignored, and the no-action repair
+above is unchanged.
+
 As before, the name must still be in the catalog, the gate still classifies it, and every repair
 is recorded on the op.
 

@@ -185,6 +185,7 @@ def parse_op(payload: str) -> Op | OpError:
     action = data.get("action", "")
     if not isinstance(action, str):
         return OpError(raw, "'action' must be a string")
+    explicit_action = bool(action)
     if not action and _TOOL_NAME.match(op):
         action, op = op, "propose_action"
         repairs = (*repairs, "op_names_tool")
@@ -212,6 +213,16 @@ def parse_op(payload: str) -> Op | OpError:
     if not isinstance(params, Mapping):
         return OpError(raw, "'params' must be an object")
     stray = {k: v for k, v in data.items() if k not in _ENVELOPE_KEYS}
+    if explicit_action and "params" not in data:
+        # The action is already named, so ``name`` / ``tool`` cannot be naming it: a value that
+        # is not shaped like a tool name is a parameter (ADR 0050).
+        stray.update(
+            {
+                k: v
+                for k in ("name", "tool")
+                if k in data and not (isinstance(v := data[k], str) and _TOOL_NAME.match(v))
+            }
+        )
     if stray and "params" not in data:
         params = stray
         repairs = (*repairs, "params_at_top")
