@@ -258,7 +258,8 @@ class CodexDialect(CliDialect):
         resume: str | None,
         extra_args: Sequence[str],
     ) -> list[str]:
-        argv = ["exec", "--json", "--skip-git-repo-check", "-s", "read-only"]
+        # ``--ephemeral``: the thread is never resumed, so keep the prompt off the CLI's disk.
+        argv = ["exec", "--json", "--ephemeral", "--skip-git-repo-check", "-s", "read-only"]
         if model:
             argv += ["-m", model]
         return argv + list(extra_args) + ["-"]
