@@ -105,9 +105,17 @@ let stamp = 0;
 const rowStamps = new Map<string, number>();
 let newestList = 0;
 
+/** The busy word a flow poll puts up; a view reads it to tell a wait from an act in flight. */
+export const WAITING_WORD = "waiting for consent";
+/** The poll that owns each connector; a newer poll takes it and the older one stops (one flow per connector). */
+const polls = new Map<string, number>();
+let pollSeq = 0;
+
 export function resetConnectorsForTests(): void {
   deps = LIVE;
   asked.clear();
+  polls.clear();
+  pollSeq = 0;
   stamp = 0;
   rowStamps.clear();
   newestList = 0;
@@ -242,7 +250,12 @@ export const useConnectors = create<ConnectorsState>((set, get) => {
 
     async pollFlow(id) {
       if (!deps.api()) return;
-      mark(id, "waiting for consent");
+      // Single-flight: the daemon replaces an open flow with a newer one, so a second connect
+      // leaves the older poll watching a flow that is gone. The newest poll owns the connector.
+      const mine = ++pollSeq;
+      polls.set(id, mine);
+      const current = () => polls.get(id) === mine;
+      mark(id, WAITING_WORD);
       // The reason a failed read put up, so the next good read takes down that one and no other.
       let shown: string | null = null;
       try {
@@ -254,6 +267,7 @@ export const useConnectors = create<ConnectorsState>((set, get) => {
           try {
             reply = await api.connectorAct(id, "flow");
           } catch (error) {
+            if (!current()) return;
             fail(id, error);
             // The daemon answered and refused (a 4xx): the flow is not there to wait for. A read
             // that never reached it, or a 5xx, is not the consent ending: the person may be in the
@@ -263,6 +277,7 @@ export const useConnectors = create<ConnectorsState>((set, get) => {
             await deps.wait(FLOW_POLL_MS);
             continue;
           }
+          if (!current()) return;
           if (shown !== null && get().errors[id] === shown) clearError(id);
           shown = null;
           replace(reply.connector);
@@ -272,9 +287,13 @@ export const useConnectors = create<ConnectorsState>((set, get) => {
             return;
           }
           await deps.wait(FLOW_POLL_MS);
+          if (!current()) return;
         }
       } finally {
-        mark(id, null);
+        if (current()) {
+          polls.delete(id);
+          mark(id, null);
+        }
       }
     },
   };

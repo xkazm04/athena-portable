@@ -41,7 +41,10 @@ export interface AccountsViewProps {
   go: (to: Path) => void;
 }
 
-const plural = (n: number, noun: string) => `${n} ${noun}${n === 1 ? "" : "s"}`;
+/** The busy word a flow poll puts up (`WAITING_WORD` in the connectors store, which a view may not import). */
+const WAITING_WORD = "waiting for consent";
+
+const plural =(n: number, noun: string) => `${n} ${noun}${n === 1 ? "" : "s"}`;
 
 /** What the allow-list is a list of, in the words a person reads. */
 const nounOf = (row: ConnectorRow) => (row.egress === "recipients" ? "recipients" : "page ids");
@@ -626,6 +629,10 @@ function Connect({ row, model }: { row: ConnectorRow; model: ConnectorsModel }) 
   const stages = oauth ? ["Register a client", "Give the pair", "Consent"] : ["Get the token", "Paste it", "Probed, then stored"];
   const kept = oauth && row.reconnect && !different;
   const at = waiting || busy || kept ? 2 : 1;
+  // A kept-client flow has no consent link to go back to, so Reconnect stays pressable while it
+  // waits (a new flow replaces the open one); only an act in flight, not the wait, refuses it.
+  const acting = busy && row.busy !== WAITING_WORD;
+  const retryRefusal = acting ? `${row.busy}…` : undefined;
   const consentOpen = busy || waiting ? "A consent page is open; finish it in the browser first." : undefined;
 
   const rail = (
@@ -724,7 +731,7 @@ function Connect({ row, model }: { row: ConnectorRow; model: ConnectorsModel }) 
             The client you connected with is still kept on this machine, so only Google's consent is needed.
           </p>
           <div className="act-row">
-            <Button variant="primary" onClick={() => actions.connect(row.id, { reuse_client: true })} disabledReason={consentOpen}>
+            <Button variant="primary" onClick={() => actions.connect(row.id, { reuse_client: true })} disabledReason={retryRefusal}>
               Reconnect
             </Button>
             <Button size="sm" variant="ghost" onClick={() => setDifferent(true)}>
