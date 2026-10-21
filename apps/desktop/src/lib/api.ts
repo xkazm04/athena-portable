@@ -42,7 +42,7 @@ export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>
  * `stores/run.ts` and `stores/voice.ts` — was the single line in this file no test ever executed.
  * `api.test.ts` now covers it.
  */
-const globalFetch: FetchLike = (input, init) => fetch(input, init);
+export const globalFetch: FetchLike = (input, init) => fetch(input, init);
 
 export interface Endpoint {
   url: string;

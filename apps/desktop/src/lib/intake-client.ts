@@ -8,7 +8,7 @@
  * vocabulary and no endpoint, or a fetch that never got an answer, is `offline`. Nothing here
  * retries: the page's session hook owns the reconnect, because only it knows the last `seq`.
  */
-import { ApiError, sseFrames, type Endpoint, type FetchLike } from "@/lib/api";
+import { ApiError, globalFetch, sseFrames, type Endpoint, type FetchLike } from "@/lib/api";
 import {
   INTAKE_ROUTES,
   type AdoptEvent,
@@ -36,8 +36,6 @@ export interface IntakeClient {
   decide(sid: string): Promise<void>;
   close(sid: string): Promise<void>;
 }
-
-const globalFetch: FetchLike = (input, init) => fetch(input, init);
 
 const offline = (detail: string) => new ApiError(0, "offline", detail);
 

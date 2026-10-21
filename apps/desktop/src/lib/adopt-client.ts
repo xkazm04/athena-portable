@@ -12,7 +12,7 @@
  * answer, is an `ApiError` whose reason is `offline`. Nothing here retries: the studio's session
  * hook owns the reconnect, because only it knows the last `seq` it drew.
  */
-import { ApiError, sseFrames, type Endpoint, type FetchLike } from "@/lib/api";
+import { ApiError, globalFetch, sseFrames, type Endpoint, type FetchLike } from "@/lib/api";
 import {
   ADOPT_EVENT_KINDS,
   ADOPT_ROUTES,
@@ -50,8 +50,6 @@ export interface AdoptClient {
   approve(sid: string, rev: number): Promise<void>;
   close(sid: string): Promise<void>;
 }
-
-const globalFetch: FetchLike = (input, init) => fetch(input, init);
 
 const offline = (detail: string) => new ApiError(0, "offline", detail);
 

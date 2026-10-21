@@ -19,7 +19,7 @@
  * Download URLs are the daemon's constants. Nothing here sends one, and `install` takes only a
  * component name.
  */
-import type { Endpoint, FetchLike } from "@/lib/api";
+import { globalFetch, type Endpoint, type FetchLike } from "@/lib/api";
 import { int16ToBytes } from "@/lib/voice";
 
 // -- the wire ------------------------------------------------------------------------------------
@@ -236,9 +236,6 @@ async function jsonOf<T>(response: Response): Promise<Outcome<T>> {
     };
   }
 }
-
-/** The same global `fetch`, called with its own receiver, for the reason `lib/api.ts` gives. */
-const globalFetch: FetchLike = (input, init) => fetch(input, init);
 
 // -- the client ----------------------------------------------------------------------------------
 
