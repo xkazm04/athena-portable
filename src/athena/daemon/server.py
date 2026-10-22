@@ -74,6 +74,7 @@ from athena.core.brain import Brain
 from athena.core.brain import paths as brain_paths
 from athena.core.catalog import Catalog
 from athena.core.ledger import Ledger
+from athena.core.prompt import SinceLastRun
 from athena.daemon.ready import announce, failure_line, ready_line
 from athena.daemon.routes import (
     ENGINES_TTL_S,
@@ -269,6 +270,10 @@ class AthenaDaemon:
     #: which the turn being stopped holds.
     door_lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
     _door: TurnDoor | None = field(default=None, repr=False)
+    #: The last run of a case's chore, by its ``proj_`` id, from the case file's last receipt, or
+    #: ``None`` (ADR 0126). Bound by wiring to the adopt package's case book, so neither the
+    #: daemon nor the core reads a case file; ``None`` here, no turn has a "since last run".
+    last_run: Callable[[str], SinceLastRun | None] | None = None
 
     def __post_init__(self) -> None:
         self.routes = RouteTable(base_routes(self))

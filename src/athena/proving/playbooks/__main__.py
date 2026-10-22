@@ -5,6 +5,7 @@
     uv run python -m athena.proving.playbooks check              # every playbook loads
     uv run python -m athena.proving.playbooks bench <id> [--model sonnet] [--approve none|all]
         [--cap 5.0] [--engine claude_code] [--out proving-runs] [--no-write] [--project]
+    uv run python -m athena.proving.playbooks bench <id> --second-run [--no-carry] [--model ...]
     uv run python -m athena.proving.playbooks rescore <id> <run>/report.json
     uv run python -m athena.proving.playbooks evidence <id>|--all [--dry] [--verify]
         [--stills-only] [--desktop apps/desktop]
@@ -14,6 +15,12 @@
 report under ``proving-runs/<ts>/playbook-<id>/`` (gitignored) and the summary into the playbook's
 ``bench.json``, which the desktop's Playbooks module shows. Exit 0 when the verdict is ``meets``
 or ``exceeds``, 1 when it is ``short``, 2 when the playbook could not be loaded.
+
+``bench --second-run`` (ADR 0126) runs the playbook twice on one world: run 1 approving every card,
+run 2 with run 1's receipt carried forward (``--no-carry``: without it, the baseline), and reports
+run 2's cards for items run 1 already filed and its recall on the rest. It writes the report
+alone, never ``bench.json``: a two-run result is not comparable with a one-run verdict. ``--cap``
+bounds each run. Exit 1 when run 2 is ``short`` of that bar.
 
 ``evidence`` films a benched playbook (ADR 0055, :mod:`.evidence`): the media under the gitignored
 ``evidence/<id>/``, the index and thumbnail into ``playbooks/<id>/``. ``--dry`` prints the plan and
@@ -42,6 +49,7 @@ from athena.proving.playbooks.bench import (
     BenchConfig,
     rescore,
     run_bench,
+    run_second,
     write_bench,
     write_report,
 )
@@ -83,6 +91,17 @@ def build_parser() -> argparse.ArgumentParser:
         "--project",
         action="store_true",
         help="run under a minted proj_ id, sent as project_id on every turn (ADR 0124)",
+    )
+    b.add_argument(
+        "--second-run",
+        action="store_true",
+        help="run twice on one world, the second starting where the first stopped (ADR 0126)",
+    )
+    b.add_argument(
+        "--no-carry",
+        dest="carry",
+        action="store_false",
+        help="with --second-run: run 2 without run 1's receipt, the baseline",
     )
     b.add_argument("--out", default=RUNS_DIRNAME)
     b.add_argument("--no-write", dest="write", action="store_false", help="leave bench.json alone")
@@ -234,6 +253,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         cap_usd=args.cap,
         project=args.project,
     )
+    if args.second_run:
+        return second_run(book, config, carry=args.carry, out=Path(args.out))
     print(f"bench {book.id} on {config.engine} {config.model}", flush=True)
     report = run_bench(book, config, echo=lambda line: print(line, flush=True))
     run_dir = new_run_dir(Path(args.out)) / f"playbook-{book.id}"
@@ -254,6 +275,29 @@ def main(argv: Sequence[str] | None = None) -> int:
     print(f"verdict: {v['word']}" + (f" - {'; '.join(v['reasons'])}" if v["reasons"] else ""))
     print(f"report: {(run_dir / 'report.json').as_posix()}", flush=True)
     return 1 if v["word"] == "short" else 0
+
+
+def second_run(book: Playbook, config: BenchConfig, *, carry: bool, out: Path) -> int:
+    """``bench --second-run``: two runs on one world, the report written, ``bench.json`` not."""
+    arm = "with carry-forward" if carry else "no carry-forward"
+    print(f"bench {book.id} second run ({arm}) on {config.engine} {config.model}", flush=True)
+    report = run_second(book, config, carry=carry, echo=lambda line: print(line, flush=True))
+    run_dir = new_run_dir(out) / f"second-run-{book.id}-{'carry' if carry else 'no-carry'}"
+    write_report(run_dir, report)
+    s = report["second_run"]
+    first = report["run_1"]["score"]
+    rest = s.get("recall_rest_count")
+    print(
+        f"run 1 found {first['found']}/{first['eligible']}; run 2: "
+        f"{s['duplicates_of_run_1']} duplicates of run 1, "
+        f"found {s['rest_found']}/{s['rest_eligible']} of the rest"
+        + (f" ({rest:.0%})" if rest is not None else "")
+        + f"; ${report.get('cost_usd', '?')}",
+        flush=True,
+    )
+    print(f"second run: {s['word']}" + (f" - {'; '.join(s['reasons'])}" if s["reasons"] else ""))
+    print(f"report: {(run_dir / 'report.json').as_posix()}", flush=True)
+    return 1 if s["word"] == "short" else 0
 
 
 if __name__ == "__main__":

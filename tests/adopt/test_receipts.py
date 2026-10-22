@@ -131,3 +131,86 @@ def test_an_appended_receipt_keeps_the_case_and_says_itself_in_words(tmp_path: P
     assert case == before and list(meta) == ["id", "type", "title", "session", "created"]
     assert [r["closed_by"] for r in extra["receipts"]] == ["done"]
     assert "## Your runs\n\n- run closed 2026-10-01: 0 approved (0 let through)" in body
+
+
+# --- the next run's frame (ADR 0126) ------------------------------------------------------------
+
+
+def _local_day(at: datetime) -> str:
+    local = at.astimezone()
+    return f"{local.strftime('%b')} {local.day}"
+
+
+def test_the_carry_forward_puts_what_is_not_known_first_and_names_keys_and_dates() -> None:
+    noon = datetime(2026, 10, 2, 12, 0, tzinfo=UTC)
+
+    def card(status: str, n: int, *, consumed: bool = False) -> runs.ReceiptCard:
+        return runs.ReceiptCard(
+            id=f"apr_{n:012x}",
+            action="host.invoices.pay",
+            status=status,
+            consumed=consumed,
+            created_at=iso(noon),
+            resolved_at=iso(noon) if status in ("approved", "declined") else "",
+            params={"amount_usd": "120", "invoice": str(n), "memo": "m", "payee": "p"},
+            more_params=2,
+        )
+
+    receipt = runs.Receipt(
+        case_id=ids.mint("project"),
+        conversation_id="conv_x",
+        since="",
+        until=iso(noon + timedelta(days=1)),
+        first_at=iso(noon),
+        last_at=iso(noon),
+        cards=(
+            card("approved", 1, consumed=True),
+            card("declined", 2),
+            card("expired", 3),
+            card("pending", 4),
+            card("approved", 5),
+        ),
+        cards_total=7,
+        notes=(runs.ReceiptNote(episode_id="ep_1", at=iso(noon), text="pay 9 may have completed"),),
+        notes_total=1,
+    )
+    carried = runs.carry_forward(receipt)
+    day = _local_day(noon)
+    assert carried.started == iso(noon), "a first run starts at its first activity"
+    assert carried.total == 8, "every card and note the receipt counted, not the ones it kept"
+    assert carried.window == f"{day} to {_local_day(noon + timedelta(days=1))}"
+    kinds = [line.split(":", 1)[0] for line in carried.lines]
+    assert kinds == [
+        f"expired unanswered (filed {day})",
+        f"still waiting when the run closed (filed {day})",
+        f"may have completed ({day})",
+        f"approved {day}",
+        f"approved {day}, not let through",
+        f"declined {day}",
+    ]
+    assert carried.lines[3] == (
+        f"approved {day}: host.invoices.pay amount_usd=120, invoice=1, memo=m (+3 more)"
+    )
+    assert not any("skip" in line.lower() for line in carried.lines)
+
+    later = runs.carry_forward(
+        runs.Receipt(case_id=receipt.case_id, conversation_id="c", since="x")
+    )
+    assert later.started == "x" and later.lines == () and later.total == 0
+
+
+def test_a_case_with_no_receipt_has_no_last_run_and_one_with_receipts_has_the_latest(
+    tmp_path: Path,
+) -> None:
+    brain, _, _, case_id = _brain(tmp_path)
+    book = CaseBook(brain)
+    assert book.last_run(case_id) is None
+    assert book.last_run(ids.mint("project")) is None
+    first = runs.Receipt(case_id=case_id, conversation_id="c", since="", first_at=iso(T0))
+    second = runs.Receipt(
+        case_id=case_id, conversation_id="c", since=iso(T0 + timedelta(days=30)), first_at=""
+    )
+    book.append_receipt(case_id, first)
+    book.append_receipt(case_id, second)
+    last = book.last_run(case_id)
+    assert last is not None and last.started == iso(T0 + timedelta(days=30))

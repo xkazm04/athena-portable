@@ -49,6 +49,7 @@ from athena.contracts.channel import (
 )
 from athena.contracts.registry import ExecResult, Lane, ToolEntry, TurnContext
 from athena.core.approvals import APPROVE_TOKEN
+from athena.core.prompt import SinceLastRun
 from athena.harness.hooks import Cancel
 from athena.lane.ports import (
     ApprovalsPort,
@@ -224,6 +225,7 @@ class BrowserLane:
         tool_results: Sequence[ToolResult] = (),
         active_project: Mapping[str, Any] | None = None,
         pending_decisions: Sequence[str] = (),
+        since_last_run: SinceLastRun | None = None,
     ) -> AsyncIterator[ChannelEvent]:
         """Stream one turn: compose, run, record.
 
@@ -238,6 +240,7 @@ class BrowserLane:
             active_project=active_project,
             pending_decisions=tuple(pending_decisions),
             disabled_origins=ctx.disabled_origins,
+            since_last_run=since_last_run,
         )
         self._record_results(turn.tool_results, ctx)
         composed = self.frames.build(ctx.conversation_id, turn)

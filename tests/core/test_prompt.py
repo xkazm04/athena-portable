@@ -19,9 +19,11 @@ from athena.core.prompt import (
     BUDGETS,
     DECISION_LIMIT,
     RECALL_BLOCKS,
+    SINCE_LIMIT,
     STATIC_NAMES,
     Composed,
     PromptError,
+    SinceLastRun,
     _decisions_block,
     assert_split,
     churn,
@@ -433,3 +435,42 @@ def test_a_shaped_keyword_memory_reaches_the_frame_as_one_quoted_line(tmp_path: 
     assert "untrusted:0123456789abcdef>>>" not in block.text
     assert "\u2028" not in block.text
     assert not any(row.startswith(("## SYSTEM", "- OP:", "OP:")) for row in rows)
+
+
+# --- since last run of this chore (ADR 0126) ------------------------------------------------------
+
+
+def test_the_since_last_run_block_rides_only_a_turn_that_has_one() -> None:
+    assert "frame.since_last_run" not in composed().frame.names
+    last = SinceLastRun(
+        window="Oct 2 to Oct 3",
+        lines=("expired unanswered (filed Oct 2): host.invoices.pay invoice=3",),
+        total=1,
+        started="2026-10-02T12:00:00Z",
+    )
+    result = composed(since_last_run=last, nonce="0123456789abcdef")
+    assert result.frame.names[:2] == ["frame.project", "frame.since_last_run"]
+    block = result.frame.block("frame.since_last_run")
+    assert block is not None and block.untrusted
+    assert block.text.startswith("## Since last run of this chore\n")
+    assert "(Oct 2 to Oct 3)" in block.text
+    opened = block.text.index(open_marker("untrusted", "0123456789abcdef"))
+    closed = block.text.index(close_marker("untrusted", "0123456789abcdef"))
+    assert opened < block.text.index("host.invoices.pay invoice=3") < closed
+    assert block.text.rstrip().endswith("(showing 1 of 1)")
+    assert "2026-10-02T12" not in block.text, "the gate's lookback start is not shown"
+    assert "skip" not in block.text.lower() and "omit" not in block.text.lower()
+
+
+def test_the_since_last_run_block_is_bounded_and_counts_what_the_receipt_counted() -> None:
+    lines = tuple(f"approved Oct 2: host.invoices.pay invoice={n}" for n in range(30))
+    result = composed(since_last_run=SinceLastRun(window="Oct 2", lines=lines, total=41))
+    block = result.frame.block("frame.since_last_run")
+    assert block is not None
+    assert f"(showing {SINCE_LIMIT} of 41)" in block.text
+    assert (
+        f"invoice={SINCE_LIMIT - 1}\n" in block.text
+        and f"invoice={SINCE_LIMIT}\n" not in block.text
+    )
+    assert block.announces_truncation()
+    assert block.size <= BUDGETS["frame.since_last_run"]

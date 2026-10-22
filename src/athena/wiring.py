@@ -447,6 +447,9 @@ def _wire_adopt(
     if chosen.cases is None:
         # The saved cases are this daemon's brain's goals (ADR 0123), injected studio or not.
         chosen.cases = CaseBook(brain)
+    # A turn under a case gets its last run, read from the case file here and handed through
+    # the daemon, so the core never reads the adopt package (ADR 0126).
+    daemon.last_run = chosen.cases.last_run
     for route in adopt_routes(daemon, chosen):
         daemon.routes.add(route)
     daemon.body_caps.append(BodyCap(ADOPT_PREFIX, DOCUMENT_SUFFIX, DOCUMENT_BODY_BYTES))

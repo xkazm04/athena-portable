@@ -26,14 +26,17 @@ from __future__ import annotations
 
 import json
 import re
+import tempfile
 import time
-from collections.abc import Callable, Mapping, Sequence
-from dataclasses import dataclass, field
+from collections.abc import Callable, Collection, Mapping, Sequence
+from dataclasses import asdict, dataclass, field, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from athena.contracts import ids
+from athena.contracts.channel import now_iso
+from athena.core.prompt import SinceLastRun
 from athena.proving.characters.scene import CONTINUE
 from athena.proving.playbooks.page import SimulatedPortals
 from athena.proving.playbooks.spec import AppSpec, Playbook, Target, _norm
@@ -44,13 +47,16 @@ __all__ = [
     "MAX_CONTINUATIONS",
     "NUDGE",
     "BenchConfig",
+    "RootedWorldFactory",
     "WorldFactory",
     "cards_of",
     "headline",
     "prose_audit",
     "rescore",
     "run_bench",
+    "run_second",
     "score",
+    "second_run_verdict",
     "summary_of",
     "switch_requested",
     "trace_of",
@@ -71,6 +77,8 @@ NUDGE = "Keep going until you have covered every item, then give me the summary.
 SECONDS_PER_CARD = 30
 
 WorldFactory = Callable[[Playbook], World]
+#: A world on a given root, so a second Athena can open the first one's brain (ADR 0126).
+RootedWorldFactory = Callable[[Playbook, Path], World]
 
 
 @dataclass(frozen=True)
@@ -102,6 +110,9 @@ class _Run:
     tokens_out: int = 0
     #: The run's ``proj_`` id under ``BenchConfig.project``, else ``""``.
     project_id: str = ""
+    #: The case the run is a run of, sent as ``case_id`` on every turn (ADR 0126), else ``""``.
+    #: It names the case and routes nothing: each portal keeps its own conversation.
+    case_id: str = ""
 
 
 def _host_calls(record: TurnRecord) -> list[dict[str, Any]]:
@@ -143,9 +154,9 @@ def _core_calls(record: TurnRecord) -> list[dict[str, Any]]:
     return calls
 
 
-def _default_world(playbook: Playbook, config: BenchConfig) -> World:
+def _default_world(playbook: Playbook, config: BenchConfig, root: Path | None = None) -> World:
     first, *rest = playbook.apps
-    world = World(engine=config.engine, model=config.model, manifest=first.manifest())
+    world = World(engine=config.engine, model=config.model, manifest=first.manifest(), root=root)
     try:
         for app in rest:
             world.register(app.manifest())
@@ -169,33 +180,53 @@ def run_bench(
     portals = SimulatedPortals(playbook)
     run = _Run(project_id=ids.mint("project") if config.project else "")
     try:
-        for index, phase in enumerate(playbook.phases, start=1):
-            app = playbook.app(phase.app)
-            world.origin = app.origin
-            echo(f"phase {index}: {app.name}")
-            _phase(world, portals, run, app.app_id, phase.message, phase.nudges, config, echo)
-            if run.errors and run.errors[-1].startswith("cap"):
-                break
-        # After the script, the person does what she asks when she asks them to switch tabs: the
-        # move a person makes when Athena says "switch to MyChart and I'll read the notes". It is
-        # decided from her words alone, never from the truth, and bounded (ADR 0040).
-        current = playbook.phases[-1].app if playbook.phases else ""
-        while run.follow_ups < config.follow_ups and not any(
-            e.startswith("cap") for e in run.errors
-        ):
-            asked = switch_requested(playbook, _last_said(run), current)
-            if asked is None:
-                break
-            run.follow_ups += 1
-            echo(f"follow-up {run.follow_ups}: the person switches to {asked.name}")
-            world.origin = asked.origin
-            message = f"I've switched to {asked.name} as you asked. Go ahead."
-            _phase(world, portals, run, asked.app_id, message, 1, config, echo)
-            current = asked.app_id
+        _script(world, portals, run, config, echo)
     finally:
         world.close()
     wall = round(time.monotonic() - started, 1)
-    scored = score(playbook, run.cards)
+    return _report(playbook, config, run, portals, wall, score(playbook, run.cards))
+
+
+def _script(
+    world: World,
+    portals: SimulatedPortals,
+    run: _Run,
+    config: BenchConfig,
+    echo: Callable[[str], None],
+) -> None:
+    """Every phase of the playbook, then the person's bounded follow-ups, into ``run``."""
+    playbook = portals.playbook
+    for index, phase in enumerate(playbook.phases, start=1):
+        app = playbook.app(phase.app)
+        world.origin = app.origin
+        echo(f"phase {index}: {app.name}")
+        _phase(world, portals, run, app.app_id, phase.message, phase.nudges, config, echo)
+        if run.errors and run.errors[-1].startswith("cap"):
+            break
+    # After the script, the person does what she asks when she asks them to switch tabs: the
+    # move a person makes when Athena says "switch to MyChart and I'll read the notes". It is
+    # decided from her words alone, never from the truth, and bounded (ADR 0040).
+    current = playbook.phases[-1].app if playbook.phases else ""
+    while run.follow_ups < config.follow_ups and not any(e.startswith("cap") for e in run.errors):
+        asked = switch_requested(playbook, _last_said(run), current)
+        if asked is None:
+            break
+        run.follow_ups += 1
+        echo(f"follow-up {run.follow_ups}: the person switches to {asked.name}")
+        world.origin = asked.origin
+        message = f"I've switched to {asked.name} as you asked. Go ahead."
+        _phase(world, portals, run, asked.app_id, message, 1, config, echo)
+        current = asked.app_id
+
+
+def _report(
+    playbook: Playbook,
+    config: BenchConfig,
+    run: _Run,
+    portals: SimulatedPortals,
+    wall: float,
+    scored: dict[str, Any],
+) -> dict[str, Any]:
     report: dict[str, Any] = {
         "playbook": playbook.id,
         "run_at": datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ"),
@@ -203,6 +234,7 @@ def run_bench(
         "model": config.model or None,
         "approve": config.approve,
         "project_id": run.project_id or None,
+        "case_id": run.case_id or None,
         "wall_s": wall,
         "turns": len(run.turns),
         "nudges": run.nudges,
@@ -225,6 +257,129 @@ def run_bench(
     report["verdict"] = verdict(playbook, report)
     pruned: dict[str, Any] = prune(report)
     return pruned
+
+
+# --- the second run (ADR 0126) -------------------------------------------------------------------
+
+
+def run_second(
+    playbook: Playbook,
+    config: BenchConfig | None = None,
+    *,
+    carry: bool = True,
+    world_factory: RootedWorldFactory | None = None,
+    echo: Callable[[str], None] = lambda line: None,
+) -> dict[str, Any]:
+    """Run ``playbook`` twice on one brain, the second run starting where the first stopped.
+
+    Both runs are runs of one case: every turn names it as ``case_id``, which routes nothing, so
+    each portal keeps its own conversation as the desktop's do. Run 1 approves every card
+    (``approve: all``), as a person who signs what she is shown, and its cards become a receipt
+    (:func:`athena.adopt.receipts.of_cards`). Then the daemon restarts on the same brain, the same
+    approval table: run 2 is a fresh Athena, as a run a month later is. With ``carry`` the
+    receipt is the case's last run, so run 2's frames carry "since last run" and the gate looks
+    back to run 1's start; without it run 2 is today's second run. Run 2 is scored with run 1's
+    found items as already seen: a card for one is a ``duplicate`` of run 1, and recall is
+    measured on the rest.
+    """
+    from athena.adopt import receipts as runs  # adopt imports this module; not at import time
+
+    config = replace(config or BenchConfig(), project=False)
+    make = world_factory or (lambda book, root: _default_world(book, config, root=root))
+    case_id = ids.mint("project")
+    first, second = _Run(case_id=case_id), _Run(case_id=case_id)
+    portals_1, portals_2 = SimulatedPortals(playbook), SimulatedPortals(playbook)
+    config_1 = replace(config, approve="all")
+    carried: SinceLastRun | None = None
+    started = time.monotonic()
+    with tempfile.TemporaryDirectory(prefix="athena-second-", ignore_cleanup_errors=True) as tmp:
+        root = Path(tmp)
+        world = make(playbook, root)
+        try:
+            echo("run 1: every card approved")
+            _script(world, portals_1, first, config_1, echo)
+            closed = now_iso()
+            approvals = world.local.approvals
+            rows = [row for c in first.cards if (row := approvals.get(str(c["id"]))) is not None]
+            receipt = runs.of_cards(case_id, rows, until=closed, closed_at=closed)
+        finally:
+            world.close()
+        wall_1 = round(time.monotonic() - started, 1)
+        if carry:
+            carried = runs.carry_forward(receipt)
+        world = make(playbook, root)
+        try:
+            if carried is not None:
+                bound, held = world.local.daemon.last_run, carried
+
+                def last_run(case: str) -> SinceLastRun | None:
+                    if case == case_id:
+                        return held
+                    return bound(case) if bound is not None else None
+
+                world.local.daemon.last_run = last_run
+            echo("run 2: " + ("with the carry-forward" if carry else "no carry-forward"))
+            _script(world, portals_2, second, config, echo)
+        finally:
+            world.close()
+    wall = round(time.monotonic() - started, 1)
+    scored_1 = score(playbook, first.cards)
+    prior = {(r["action"], r["key"]) for r in scored_1["cards"] if r["outcome"] == "correct"}
+    run_1 = _report(playbook, config_1, first, portals_1, wall_1, scored_1)
+    scored_2 = score(playbook, second.cards, prior=prior)
+    run_2 = _report(playbook, config, second, portals_2, round(wall - wall_1, 1), scored_2)
+    costs = [r.get("cost_usd") for r in (run_1, run_2)]
+    known = [float(c) for c in costs if c is not None]
+    report: dict[str, Any] = {
+        "playbook": playbook.id,
+        "mode": "second_run",
+        "carry": carry,
+        "case_id": case_id,
+        "run_at": run_2.get("run_at"),
+        "engine": config.engine,
+        "model": config.model or None,
+        "wall_s": wall,
+        "cost_usd": round(sum(known), 4) if len(known) == len(costs) else None,
+        "receipt": runs.as_dict(receipt),
+        "carried": asdict(carried) if carried is not None else None,
+        "second_run": second_run_verdict(playbook, run_2),
+        "run_1": run_1,
+        "run_2": run_2,
+    }
+    pruned: dict[str, Any] = prune(report)
+    return pruned
+
+
+def second_run_verdict(playbook: Playbook, run_2: Mapping[str, Any]) -> dict[str, Any]:
+    """Run 2 against the bar: no card for an item run 1 already filed, and the playbook's own
+    recall bar on the items run 1 left (``None`` when it left none). Read from cards alone."""
+    scored = run_2["score"]
+    want = float(playbook.expectation.get("recall", 1.0))
+    max_false = int(playbook.expectation.get("false_claims", 0))
+    reasons: list[str] = []
+    if scored["duplicates_of_prior"]:
+        reasons.append(f"{scored['duplicates_of_prior']} cards for items run 1 already filed")
+    rest = scored.get("recall_rest_count")
+    if rest is not None and float(rest) < want:
+        reasons.append(
+            f"found {scored['rest_found']} of the {scored['rest_eligible']} items run 1 left, "
+            f"expected {want:.0%}"
+        )
+    if scored["false_claims"] > max_false:
+        reasons.append(f"{scored['false_claims']} false claims, allowed {max_false}")
+    if run_2.get("errors"):
+        reasons.append("run 2 ended on an error")
+    return {
+        "word": "short" if reasons else "meets",
+        "reasons": reasons,
+        "duplicates_of_run_1": scored["duplicates_of_prior"],
+        "run_1_found": scored["prior"],
+        "rest_eligible": scored["rest_eligible"],
+        "rest_found": scored["rest_found"],
+        "recall_rest_count": rest,
+        "recall_rest_value": scored.get("recall_rest_value"),
+        "expected": {"recall": want, "false_claims": max_false},
+    }
 
 
 #: A request, not a mention: the base form of the verb, then where to ("switch to the X", "go back
@@ -286,7 +441,7 @@ def _phase(
                 host_state=portals.host_state(app_id),
                 tool_results=pending,
                 active_project=project,
-                fields={"project_id": run.project_id} if run.project_id else None,
+                fields=_case_fields(run),
             )
             filed = _absorb(run, record, app_id, message)
             echo(
@@ -313,6 +468,13 @@ def _phase(
         nudges -= 1
         run.nudges += 1
         message = NUDGE
+
+
+def _case_fields(run: _Run) -> dict[str, Any] | None:
+    """The run's case fields on a ``POST /run`` body: ``project_id`` (ADR 0124, it routes the
+    conversation) and ``case_id`` (ADR 0126, it does not), each only when set."""
+    fields = {k: v for k, v in (("project_id", run.project_id), ("case_id", run.case_id)) if v}
+    return fields or None
 
 
 def _absorb(run: _Run, record: TurnRecord, app_id: str, message: str) -> list[dict[str, Any]]:
@@ -408,8 +570,19 @@ def _target_for(playbook: Playbook, tool: str) -> Target | None:
     return next((t for t in playbook.targets if t.tool == tool), None)
 
 
-def score(playbook: Playbook, cards: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
-    """Every card against the truth. Pure: the bench and the tests call the same function."""
+def score(
+    playbook: Playbook,
+    cards: Sequence[Mapping[str, Any]],
+    *,
+    prior: Collection[tuple[str, str]] | None = None,
+) -> dict[str, Any]:
+    """Every card against the truth. Pure: the bench and the tests call the same function.
+
+    ``prior`` is the ``(tool, key)`` of every item an earlier run already found (a second run,
+    ADR 0126): a card for one is a ``duplicate`` marked ``of_prior`` and is not found again, and
+    the score adds how many such cards there were and the recall on the items left.
+    """
+    before = set(prior or ())
     seen: set[tuple[str, str]] = set()
     rows: list[dict[str, Any]] = []
     found_value = 0.0
@@ -430,7 +603,9 @@ def score(playbook: Playbook, cards: Sequence[Mapping[str, Any]]) -> dict[str, A
         # A target whose right answers are worth money recovers it; a payment target does not.
         row["recovers"] = any(float(v.get("value_usd", 0)) > 0 for v in target.eligible.values())
         if key in target.eligible:
-            if (tool, key) in seen:
+            if (tool, key) in before:
+                row.update(outcome="duplicate", of_prior=True)
+            elif (tool, key) in seen:
                 row["outcome"] = "duplicate"
             else:
                 seen.add((tool, key))
@@ -481,7 +656,7 @@ def score(playbook: Playbook, cards: Sequence[Mapping[str, Any]]) -> dict[str, A
         if (t.tool, key) not in seen
     ]
     filed_traps = {(r["action"], r["key"]) for r in rows if r["outcome"] == "trap"}
-    return {
+    scored: dict[str, Any] = {
         "eligible": len(eligible),
         "found": len(seen),
         "exact": exact,
@@ -508,6 +683,26 @@ def score(playbook: Playbook, cards: Sequence[Mapping[str, Any]]) -> dict[str, A
         "cards": rows,
         "missed": missed,
     }
+    if prior is not None:
+        worth = {
+            (t.tool, k): float(v.get("value_usd", 0))
+            for t in playbook.targets
+            for k, v in t.eligible.items()
+        }
+        rest = [item for item in eligible if item not in before]
+        got = [item for item in rest if item in seen]
+        rest_value = sum(worth[item] for item in rest)
+        scored.update(
+            prior=len(before & set(eligible)),
+            duplicates_of_prior=sum(1 for r in rows if r.get("of_prior")),
+            rest_eligible=len(rest),
+            rest_found=len(got),
+            recall_rest_count=round(len(got) / len(rest), 3) if rest else None,
+            recall_rest_value=(
+                round(sum(worth[item] for item in got) / rest_value, 3) if rest_value else None
+            ),
+        )
+    return scored
 
 
 #: The parameters a card names its money in, in the order they are looked for.

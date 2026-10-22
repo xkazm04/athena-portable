@@ -214,6 +214,14 @@ class TurnContext:
     #: a browser tool's origin against it and refuses a mismatch with ``foreign_origin``.
     page_origin: str | None = None
     project_id: str | None = None
+    #: The case (a ``proj_`` id, ADR 0123) whose chore this turn is a run of, or ``None``. The
+    #: surface's ``case_id``, else its ``project_id``. It names the case and routes nothing: the
+    #: conversation is decided by ``project_id`` alone (ADR 0126).
+    case_id: str | None = None
+    #: Where the last run of this case's chore began (an ISO stamp), from its last receipt, or
+    #: ``None`` (ADR 0126). Set by the daemon, never by a model. A card's "you approved this
+    #: exact call" looks back to it instead of a day; it only informs.
+    spent_since: str | None = None
     #: Set when the gate is replayed for a resolved approval, so ``describe`` can prove the
     #: approval was granted for this action and these parameters.
     approval_id: str | None = None

@@ -20,13 +20,19 @@ truth file or claims what came back.
 file's block as a dated ``receipts`` entry (:meth:`~athena.adopt.cases.CaseBook.append_receipt`),
 so it survives deleting ``index.sqlite`` (the approval and ledger tables are not rebuilt from
 disk). A card is in the run it was filed in.
+
+**The next run starts where the last stopped** (ADR 0126): :func:`carry_forward` turns a case's
+last receipt into the ``SinceLastRun`` the daemon hands the next turn's frame (calls whose outcome
+is not known first, then approved, then declined; keys and dates, never an instruction), with the
+start of that run, which the gate's "you approved this exact call" looks back to.
 """
 
 from __future__ import annotations
 
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from contextlib import closing
 from dataclasses import asdict
+from datetime import UTC, datetime
 from typing import Any
 
 from athena.contracts import ids
@@ -34,6 +40,7 @@ from athena.contracts.adopt import RECEIPT_SCHEMA, Receipt, ReceiptCard, Receipt
 from athena.core.approvals import ApprovalRow, Approvals
 from athena.core.brain.store import Brain
 from athena.core.ledger import Ledger
+from athena.core.prompt import SinceLastRun
 from athena.lane.browser_lane import MAY_HAVE_COMPLETED
 
 __all__ = [
@@ -45,8 +52,10 @@ __all__ = [
     "PARAM_TEXT_CAP",
     "as_dict",
     "card_amount",
+    "carry_forward",
     "empty",
     "fold",
+    "of_cards",
     "receipt_line",
     "receipt_of",
     "stored",
@@ -191,6 +200,40 @@ def fold(
     )
 
 
+def of_cards(
+    case_id: str, rows: Sequence[ApprovalRow], *, until: str = "", closed_at: str = ""
+) -> Receipt:
+    """A receipt of a run known by its cards rather than by a conversation (ADR 0126): the
+    bench's second run, whose turns stay in each portal's own conversation. Counts and the first
+    :data:`CARDS_CAP` cards from ``rows`` as the approval table holds them; no ledger, no notes."""
+    states = ("approved", "declined", "expired", "pending")
+    count = {state: sum(1 for r in rows if r.status == state) for state in states}
+    approved = [r for r in rows if r.status == "approved"]
+    amounts = [a for r in approved if (a := card_amount(r.params)) is not None]
+    cards = tuple(_card(row) for row in rows[:CARDS_CAP])
+    stamps = sorted(r.created_at for r in rows if r.created_at)
+    return Receipt(
+        case_id=case_id,
+        conversation_id="",
+        since=stamps[0] if stamps else "",
+        until=until,
+        first_at=stamps[0] if stamps else "",
+        last_at=stamps[-1] if stamps else "",
+        approved=count["approved"],
+        consumed=sum(1 for r in approved if r.consumed_at is not None),
+        declined=count["declined"],
+        expired=count["expired"],
+        pending=count["pending"],
+        asked_usd=round(sum(amounts), 2) if amounts else None,
+        asked_cards=len(amounts),
+        cards=cards,
+        cards_total=len(rows),
+        cards_footer=_footer(len(cards), len(rows)),
+        closed_by="done",
+        closed_at=closed_at,
+    )
+
+
 def empty(receipt: Receipt) -> bool:
     """Nothing ran in the window: no card, no ledger row, no call that may have completed."""
     return receipt.cards_total == 0 and receipt.calls == 0 and receipt.notes_total == 0
@@ -214,6 +257,75 @@ def receipt_line(receipt: Receipt) -> str:
         )
     parts.append(f"${receipt.cost_usd:,.2f} over {receipt.calls} ledger rows")
     return f"- run closed {when}: " + ", ".join(parts)
+
+
+# --- the next run's frame (ADR 0126) -------------------------------------------------------------
+
+#: How many of a card's key parameters a "since last run" line names, and how long each.
+CARRY_PARAMS = 3
+CARRY_PARAM_TEXT = 60
+#: How long one "since last run" line may be.
+CARRY_LINE_CAP = 240
+
+
+def carry_forward(receipt: Receipt) -> SinceLastRun:
+    """What ``receipt``'s run came to, for the next run's frame (``core.prompt.SinceLastRun``).
+
+    Lines in this order: cards that expired or were still waiting when the run closed, then calls
+    that may have completed, then approved cards, then declined ones; each names its action, at
+    most :data:`CARRY_PARAMS` key parameters and a date. The total is every card and every "may
+    have completed" call the receipt counted, so a receipt that kept only its first cards says
+    so. ``started`` is where the run began: the receipt's window start, or its first activity for
+    a case's first run.
+    """
+    unknown = [c for c in receipt.cards if c.status in ("expired", "pending")]
+    approved = [c for c in receipt.cards if c.status == "approved"]
+    declined = [c for c in receipt.cards if c.status == "declined"]
+    lines = [_carry_card(c) for c in unknown]
+    lines += [
+        cap_text(f"may have completed ({_day(n.at)}): {n.text}", CARRY_LINE_CAP)
+        for n in receipt.notes
+    ]
+    lines += [_carry_card(c) for c in (*approved, *declined)]
+    started = receipt.since or receipt.first_at
+    closed = receipt.closed_at or receipt.until or receipt.last_at
+    first, last = _day(started), _day(closed)
+    window = first if first == last else f"{first} to {last}"
+    return SinceLastRun(
+        window=window or "date not recorded",
+        lines=tuple(lines),
+        total=receipt.cards_total + receipt.notes_total,
+        started=started,
+    )
+
+
+def _carry_card(card: ReceiptCard) -> str:
+    keys = list(card.params)[:CARRY_PARAMS]
+    named = ", ".join(f"{k}={cap_text(card.params[k], CARRY_PARAM_TEXT)}" for k in keys)
+    more = len(card.params) - len(keys) + card.more_params
+    if more:
+        named += f" (+{more} more)"
+    if card.status == "approved":
+        how = f"approved {_day(card.resolved_at)}" + ("" if card.consumed else ", not let through")
+    elif card.status == "declined":
+        how = f"declined {_day(card.resolved_at)}"
+    elif card.status == "expired":
+        how = f"expired unanswered (filed {_day(card.created_at)})"
+    else:
+        how = f"still waiting when the run closed (filed {_day(card.created_at)})"
+    return cap_text(f"{how}: {card.action} {named}".rstrip(), CARRY_LINE_CAP)
+
+
+def _day(stamp: str) -> str:
+    """``"Oct 15"`` for an ISO stamp, in local time; ``""`` for none or a stamp that is not one."""
+    if not stamp:
+        return ""
+    try:
+        value = datetime.fromisoformat(stamp)
+    except ValueError:
+        return ""
+    local = (value if value.tzinfo else value.replace(tzinfo=UTC)).astimezone()
+    return f"{local.strftime('%b')} {local.day}"
 
 
 # --- reading a stored receipt --------------------------------------------------------------------

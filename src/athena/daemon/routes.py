@@ -64,7 +64,7 @@ from collections.abc import (
     Mapping,
 )
 from contextlib import suppress
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any
 from urllib.parse import unquote
 
@@ -75,6 +75,7 @@ from athena.contracts.manifest import HostManifest
 from athena.contracts.registry import Lane, OpenApp, TurnContext, parse_origin
 from athena.core.catalog import CatalogError
 from athena.core.ledger import LedgerError
+from athena.core.prompt import SinceLastRun
 from athena.core.recall import recall as recall_bundle
 from athena.daemon.sessions import Session, conversation_for
 from athena.harness.engines import EngineStatus
@@ -114,6 +115,7 @@ __all__ = [
     "error",
     "event_payload",
     "health",
+    "last_run_of",
     "ledger_recent",
     "ledger_rollup",
     "manifest",
@@ -584,12 +586,16 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
     project_id = str(body.get("project_id", "") or "")
     if project_id and not ids.is_id("project", project_id):
         return error(400, "unknown_ref", f"not a project id: {project_id!r}")
+    case_id = str(body.get("case_id", "") or "")
+    if case_id and not ids.is_id("project", case_id):
+        return error(400, "unknown_ref", f"not a case id: {case_id!r}")
 
     try:
         ctx = turn_context(
             daemon,
             session,
             project_id,
+            case_id=case_id,
             surface=str(body.get("surface") or "panel"),
             disabled_origins=disabled_origins_from(body),
             gated_origins=gated_origins_from(body),
@@ -769,6 +775,7 @@ def turn_context(
     tab: tuple[int | None, int | None] = (None, None),
     tainted_by: frozenset[str] = frozenset(),
     open_apps: tuple[OpenApp, ...] = (),
+    case_id: str = "",
 ) -> TurnContext:
     """The context one turn runs under, and the session refreshed for it.
 
@@ -787,6 +794,7 @@ def turn_context(
         app_id=session.app_id,
         page_origin=session.origin,
         project_id=project_id or None,
+        case_id=case_id or project_id or None,
         disabled_origins=disabled_origins,
         gated_origins=gated_origins,
         gated_tools=gated_tools,
@@ -847,6 +855,9 @@ def turn_events(
     """
     with daemon.writing(), daemon.turn_door(ctx.page_origin or "") as door:
         try:
+            last = last_run_of(daemon, ctx.case_id)
+            if last is not None and last.started:
+                ctx = replace(ctx, spent_since=last.started)
             events = daemon.lane.run(
                 message,
                 ctx,
@@ -854,12 +865,29 @@ def turn_events(
                 tool_results=results,
                 active_project=project,
                 pending_decisions=pending_lines(daemon),
+                since_last_run=last,
             )
             yield from drain(events, door)
         except Exception as exc:  # a lane bug ends the stream honestly, never silently
             # The type only: an exception's message can quote a request body, and a body may hold
             # anything the caller put in it.
             yield TurnError(reason="unknown", detail=type(exc).__name__)
+
+
+def last_run_of(daemon: AthenaDaemon, case_id: str | None) -> SinceLastRun | None:
+    """The last run of case ``case_id``'s chore, for this turn's frame (ADR 0126).
+
+    Keyed on the case the turn names (``TurnContext.case_id``), never on its conversation.
+    ``None`` for a turn under no case, a daemon with nothing bound, or a case with no stored
+    receipt; and ``None`` when the case file cannot be read, because what a past run came to is
+    context for this one and a turn never fails for want of it.
+    """
+    if not case_id or daemon.last_run is None:
+        return None
+    try:
+        return daemon.last_run(case_id)
+    except Exception:  # an unreadable case file is no "since last run", never a failed turn
+        return None
 
 
 def pending_lines(daemon: AthenaDaemon, limit: int = PENDING_LINES) -> list[str]:

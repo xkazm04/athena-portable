@@ -22,6 +22,7 @@ from __future__ import annotations
 
 from collections.abc import AsyncIterator, Callable, Mapping, Sequence
 from dataclasses import dataclass, field
+from datetime import timedelta
 from typing import Any, Literal, Protocol, runtime_checkable
 
 from athena.contracts.channel import DecisionRequested
@@ -140,9 +141,13 @@ class SpentLookupPort(Protocol):
 
     ``athena.core.approvals.Approvals.spent_recently``. Optional on purpose: a table that cannot
     answer files the card without the line, and a card is never refused on it (ADR 0101).
+    ``within`` is how far back it looks; a turn under a chore's case looks back to the start of
+    that chore's last run (ADR 0126).
     """
 
-    def spent_recently(self, action: str, params: Mapping[str, Any]) -> str | None: ...
+    def spent_recently(
+        self, action: str, params: Mapping[str, Any], *, within: timedelta = ...
+    ) -> str | None: ...
 
 
 @runtime_checkable

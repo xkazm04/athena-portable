@@ -182,3 +182,12 @@ def test_a_turn_context_tightens_nothing_by_default_and_carries_what_it_is_given
     assert (bare.gated_origins, bare.gated_tools) == (frozenset(), frozenset())
     assert told.gated_origins == frozenset({"host:ledgerbox"})
     assert told.gated_tools == frozenset({"host.invoices.pay"})
+
+
+def test_a_turn_context_names_no_case_and_no_lookback_by_default() -> None:
+    """ADR 0126: ``case_id`` names the case a turn is a run of and routes nothing; ``spent_since``
+    is where its last run began. Neither is set unless the daemon sets it."""
+    bare = TurnContext(conversation_id="conv_x", turn_id="turn_x")
+    assert (bare.case_id, bare.spent_since) == (None, None)
+    told = TurnContext(conversation_id="conv_invoices", turn_id="t", case_id="proj_0123456789ab")
+    assert told.case_id == "proj_0123456789ab" and told.project_id is None

@@ -62,6 +62,7 @@ from athena.contracts.adopt import (
 from athena.contracts.channel import now_iso
 from athena.core.brain import frontmatter
 from athena.core.brain.store import Brain
+from athena.core.prompt import SinceLastRun
 from athena.lane.browser_lane import marked
 
 if TYPE_CHECKING:
@@ -424,6 +425,12 @@ class CaseBook:
     def receipts(self, case_id: str) -> list[Receipt]:
         """The receipts the case file keeps, oldest first (ADR 0124); ``[]`` for no case."""
         return runs.stored(self._extra(case_id))
+
+    def last_run(self, case_id: str) -> SinceLastRun | None:
+        """The case's last stored receipt as the next turn's "since last run" (ADR 0126), or
+        ``None`` for no case or a case with no receipt."""
+        held = self.receipts(case_id)
+        return runs.carry_forward(held[-1]) if held else None
 
     def append_receipt(self, case_id: str, receipt: Receipt) -> Case:
         """Append ``receipt`` to the case file's ``receipts`` and rewrite ``goals/<proj>.md``.

@@ -6,8 +6,9 @@ One composition produces two things that go to two different places:
   catalog, and the always-include memory tier. These become the **system prompt**, and a CLI
   engine keeps the system prompt it was opened with for the life of a resumed conversation.
 - :class:`TurnFrame` — the host-state delta since the last frame, last turn's tool results, the
-  active project, the memory recalled for *this* message and the pending-decisions digest. These
-  ride in the **user message**, every turn, each untrusted part inside a nonce-tagged fence.
+  active project, the last run of its chore when it has one (ADR 0126), the memory recalled for
+  *this* message and the pending-decisions digest. These ride in the **user message**, every
+  turn, each untrusted part inside a nonce-tagged fence.
 
 The split is the fix for the finding in README §3.5: the first build composed one prompt, put
 ``host_state`` in it, and a resumed session then saw the tabs the user had open on turn one
@@ -57,6 +58,7 @@ __all__ = [
     "HostStatePort",
     "PromptError",
     "RecallPort",
+    "SinceLastRun",
     "StaticBlocks",
     "TurnFrame",
     "assert_split",
@@ -140,6 +142,7 @@ BUDGETS: Mapping[str, int] = {
     "frame.memory": 12_000,
     "frame.episodes": 40_000,
     "frame.decisions": 4_000,
+    "frame.since_last_run": 4_000,
 }
 
 #: How much of a host-state payload reaches the prompt before it is cut and announced.
@@ -151,6 +154,9 @@ TOOL_RESULT_LIMIT = 32
 #: How many pending decisions the digest names before it announces the rest. A cross-portal chore
 #: leaves a dozen cards waiting at once, and ten hid the eleventh from her (ADR 0052).
 DECISION_LIMIT = 20
+#: How many of the last run's calls the "since last run" block names before it announces the
+#: rest (ADR 0126). The receipt it is drawn from already holds at most thirty.
+SINCE_LIMIT = 16
 
 
 # --- what came out ----------------------------------------------------------------------------
@@ -403,6 +409,46 @@ def _decisions_block(
     return PromptBlock(name="frame.decisions", text=text, shown=shown, total=total, untrusted=True)
 
 
+@dataclass(frozen=True)
+class SinceLastRun:
+    """ADR 0126: what the last run of the chore this turn belongs to came to, for this frame.
+
+    Built outside the core, from the case's last receipt (``athena.adopt.receipts.carry_forward``),
+    and handed in through the daemon and the lane, so the composer reads no case file. ``lines``
+    are that run's calls, already ordered (expired and may-have-completed first) and each cut;
+    ``total`` is how many calls the receipt counted, so the block says ``(showing N of M)``.
+    ``window`` names the run's dates for the model. ``started`` is where that run began: the
+    gate's "you approved this exact call" looks back to it (``TurnContext.spent_since``), and
+    the block does not show it.
+    """
+
+    window: str
+    lines: tuple[str, ...]
+    total: int
+    started: str = ""
+
+
+def _since_block(
+    last: SinceLastRun, nonce: str | None = None, limit: int = SINCE_LIMIT
+) -> PromptBlock:
+    """The last run of this chore, as a record. Every call's details came from a page, so the
+    lines ride inside the turn's fence; the text around them only says where they came from."""
+    total = max(last.total, len(last.lines))
+    shown = min(len(last.lines), max(limit, 0))
+    body = "\n".join(f"- {line}" for line in last.lines[:shown]) or "(the last run filed no card)"
+    text = (
+        "## Since last run of this chore\n\n"
+        f"The last run of this chore ({last.window}) ended with these calls on record, those "
+        "whose outcome is not known first. Each one's details came from a page; compare them "
+        "with what the pages show now.\n\n"
+        f"{wrap_untrusted(body, nonce=nonce)}\n\n"
+        f"(showing {shown} of {total})\n"
+    )
+    return PromptBlock(
+        name="frame.since_last_run", text=text, shown=shown, total=total, untrusted=True
+    )
+
+
 # --- composition ------------------------------------------------------------------------------
 
 
@@ -456,12 +502,16 @@ def compose(
     active_project: Mapping[str, Any] | None = None,
     pending_decisions: Sequence[str] = (),
     disabled_origins: frozenset[str] = frozenset(),
+    since_last_run: SinceLastRun | None = None,
     nonce: str | None = None,
     tool_result_limit: int = TOOL_RESULT_LIMIT,
     decision_limit: int = DECISION_LIMIT,
     host_state_chars: int = HOST_STATE_CHARS,
 ) -> Composed:
     """Compose one turn into a system prompt and a user-message frame.
+
+    ``since_last_run`` is the last run of the chore this turn belongs to (ADR 0126), or ``None``
+    for a turn under no case or a case with no stored receipt, whose frame has no such block.
 
     ``previous_host_state`` is the ``TurnFrame.host_state`` of the frame before this one, or
     ``None`` on the first turn of a conversation. The composer keeps no state of its own: the
@@ -481,8 +531,12 @@ def compose(
 
     current = _snapshot(host_state)
     delta = _delta(current, previous_host_state)
-    frame_blocks: list[PromptBlock] = [
-        _project_block(active_project),
+    frame_blocks: list[PromptBlock] = [_project_block(active_project)]
+    if since_last_run is not None:
+        # Only a turn under a case with a stored receipt has one (ADR 0126); every other frame is
+        # exactly what it was.
+        frame_blocks.append(_since_block(since_last_run, tag))
+    frame_blocks += [
         _host_state_block(current, delta, tag, host_state_chars),
         _tool_results_block(tool_results, tag, tool_result_limit),
     ]

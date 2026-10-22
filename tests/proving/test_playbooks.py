@@ -29,6 +29,7 @@ from athena.proving.playbooks.bench import (
     prose_audit,
     rescore,
     run_bench,
+    run_second,
     score,
     summary_of,
     switch_requested,
@@ -934,3 +935,144 @@ def test_a_required_item_missed_is_short_whatever_else_was_found(tmp_path: Path)
     judged = verdict(book, report)
     assert judged["word"] == "short"
     assert judged["reasons"] == ["missed 1ZC, which could not wait"]
+
+
+# --- the second run (ADR 0126) -------------------------------------------------------------------
+
+
+def _remembers(request: ModelRequest) -> str:
+    """The careful model, made blind to its recalled conversation, which also reads its "since
+    last run": a claim it sees filed there is not filed again. A real model also reads the
+    episodes recalled from run 1 (the same brain); this one does not, so the carry-forward is the
+    only memory of run 1 it acts on, and the two arms differ by it alone."""
+    frame = frame_of(request)
+    if "## Recalled conversation" in frame:
+        head, tail = frame.split("## Recalled conversation", 1)
+        frame = head + tail[tail.index("## Decisions waiting") :]
+    if "## Since last run of this chore" in frame:
+        carried = frame.split("## Since last run of this chore", 1)[1]
+        if "tracking=1ZA" in carried and "tracking=1ZB" in carried:
+            return "Both late parcels were claimed and approved last run; nothing new is late."
+    if "Claim filed" in frame or ("file_claim" in frame and "1ZB" in frame and "approved" in frame):
+        return "Both claims are filed."
+    if "1ZA" not in frame:
+        return "Reading the shipments.\n" + op_line("host.shipdesk.list_shipments")
+    return (
+        "Two parcels arrived late.\n"
+        + op_line("host.shipdesk.file_claim", tracking="1ZA", amount=12.5)
+        + "\n"
+        + op_line("host.shipdesk.file_claim", tracking="1ZB", amount=17.5)
+    )
+
+
+def test_a_prior_run_s_items_score_as_its_duplicates_and_recall_is_on_the_rest(
+    tmp_path: Path,
+) -> None:
+    book = load_playbook(make_playbook(tmp_path))
+    cards = [_card("file_claim", tracking="1ZA", amount=12.5)] * 2 + [
+        _card("file_claim", tracking="1ZB", amount=17.5)
+    ]
+    scored = score(book, cards, prior={("file_claim", "1ZA")})
+    assert [c["outcome"] for c in scored["cards"]] == ["duplicate", "duplicate", "correct"]
+    assert [c.get("of_prior") for c in scored["cards"]] == [True, True, None]
+    assert scored["duplicates_of_prior"] == 2 and scored["duplicates"] == 2
+    assert (scored["prior"], scored["rest_eligible"], scored["rest_found"]) == (1, 1, 1)
+    assert scored["recall_rest_count"] == 1.0 and scored["recall_rest_value"] == 1.0
+    assert "duplicates_of_prior" not in score(book, cards), "a one-run score is unchanged"
+
+
+def _rooted(fn: Any, conversations: set[str]) -> Any:
+    """Worlds on a given root, as ``run_second`` opens two on one brain; each one's ledger
+    conversations are kept as it closes."""
+
+    def make(book: Any, root: Path) -> World:
+        first, *rest = book.apps
+        world = World(engine="nebius", model_fn=fn, manifest=first.manifest(), root=root)
+        for app in rest:
+            world.register(app.manifest())
+        close = world.close
+
+        def closing() -> None:
+            conversations.update(row.conversation for row in world.local.ledger.recent(200).rows)
+            close()
+
+        world.close = closing  # type: ignore[method-assign]
+        return world
+
+    return make
+
+
+def test_a_second_run_counts_its_duplicates_of_run_1_with_and_without_the_carry(
+    tmp_path: Path,
+) -> None:
+    """The fake second run: run 1 approves both claims; run 2, a fresh Athena on the same brain,
+    files both again without the carry-forward (two duplicates of run 1, short) and none with it
+    (meets). The case rides every turn as ``case_id`` and routes nothing: no ``conv_proj_``."""
+    book = load_playbook(make_playbook(tmp_path))
+    seen: list[str] = []
+
+    def model(request: ModelRequest) -> str:
+        seen.append(frame_of(request))
+        return _remembers(request)
+
+    conversations: set[str] = set()
+    factory = _rooted(scripted_model(model), conversations)
+    base = run_second(book, BenchConfig(engine="nebius"), carry=False, world_factory=factory)
+    assert not any("Since last run" in f for f in seen)
+    assert conversations and not any(c.startswith("conv_proj_") for c in conversations)
+    run_1 = base["run_1"]
+    assert run_1["approve"] == "all" and len(run_1["executed"]) == 2
+    assert run_1["score"]["found"] == 2 and "project_id" not in run_1
+    assert run_1["case_id"] == base["run_2"]["case_id"] == base["case_id"]
+    assert ids.is_id("project", base["case_id"])
+    assert base["receipt"]["approved"] == 2 and base["receipt"]["consumed"] == 2
+    assert "carried" not in base
+    s = base["second_run"]
+    assert (s["duplicates_of_run_1"], s["run_1_found"], s["rest_eligible"]) == (2, 2, 0)
+    assert s.get("recall_rest_count") is None and s["word"] == "short"
+
+    seen.clear()
+    carried = run_second(book, BenchConfig(engine="nebius"), carry=True, world_factory=factory)
+    second_frames = [f for f in seen if "## Since last run of this chore" in f]
+    assert second_frames, "run 2's frames carry run 1's receipt"
+    assert "tracking=1ZA" in second_frames[0] and "tracking=1ZB" in second_frames[0]
+    assert carried["carried"]["total"] == 2 and len(carried["carried"]["lines"]) == 2
+    s = carried["second_run"]
+    assert s["duplicates_of_run_1"] == 0 and s["word"] == "meets", s
+    assert carried["cost_usd"] is not None and carried["mode"] == "second_run"
+    assert not any(c.startswith("conv_proj_") for c in conversations)
+
+
+def test_the_bench_cli_runs_the_second_run_with_and_without_the_carry(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from athena.proving.playbooks import __main__ as cli
+
+    make_playbook(tmp_path / "lib")
+    asked: list[bool] = []
+
+    def fake(book: Any, config: BenchConfig, *, carry: bool, echo: Any) -> dict[str, Any]:
+        asked.append(carry)
+        assert config.engine == "nebius"
+        return {
+            "cost_usd": 0.01,
+            "run_1": {"score": {"found": 2, "eligible": 2}},
+            "second_run": {
+                "word": "meets" if carry else "short",
+                "reasons": [] if carry else ["2 cards for items run 1 already filed"],
+                "duplicates_of_run_1": 0 if carry else 2,
+                "rest_eligible": 0,
+                "rest_found": 0,
+                "recall_rest_count": None,
+            },
+        }
+
+    monkeypatch.setattr(cli, "run_second", fake)
+    common = ["--dir", str(tmp_path / "lib"), "bench", "late-parcels", "--engine", "nebius"]
+    out = ["--out", str(tmp_path / "runs")]
+    assert cli.main([*common, "--second-run", "--no-carry", *out]) == 1
+    assert cli.main([*common, "--second-run", *out]) == 0
+    assert asked == [False, True]
+    written = sorted((tmp_path / "runs").glob("*/second-run-late-parcels-*/report.json"))
+    assert len(written) == 2
+    assert not (tmp_path / "lib" / "late-parcels" / "bench.json").exists()

@@ -14,7 +14,7 @@ from __future__ import annotations
 
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
-from datetime import datetime
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from athena.contracts.channel import DecisionRequested
@@ -161,23 +161,58 @@ def _cross_tab_line(entry: ToolEntry, ctx: TurnContext) -> str:
     return f"proposed from the host:{ctx.app_id} tab; it runs on the {entry.origin} tab"
 
 
-def _may_have_run(approvals: ApprovalsPort, action: str, params: Mapping[str, Any]) -> str:
-    """The card's line for a call the user approved and the gate let through in the last day.
+#: The shortest a card's "you approved this exact call" ever looks back: the day a card lives,
+#: ``athena.core.approvals.SPENT_LOOKBACK`` (``tests/harness/test_ports.py`` holds the two equal).
+SPENT_AT_LEAST = timedelta(hours=24)
+
+
+def _may_have_run(
+    approvals: ApprovalsPort,
+    action: str,
+    params: Mapping[str, Any],
+    since: str | None = None,
+    *,
+    now: datetime | None = None,
+) -> str:
+    """The card's line for a call the user approved and the gate let through recently.
 
     A write that outlived its deadline is ``outcome_unknown`` on the surface, which gates the tool
     until a card about it is answered (ADR 0101). That card must not read like a first ask: the
     same call may already have happened. Informs, never blocks; ``""`` when there is nothing to say.
+
+    "Recently" is the last day, unless the turn is under a chore whose case has a stored run
+    (``since``, ``TurnContext.spent_since``, ADR 0126): then it reaches back to where that run
+    began, never less than a day, and the line names the date as well as the time, because the
+    yes may be weeks old.
     """
     if not isinstance(approvals, SpentLookupPort):
         return ""
-    stamp = approvals.spent_recently(action, params)
+    began = _stamp(since) if since else None
+    if began is None:
+        stamp = approvals.spent_recently(action, params)
+    else:
+        within = max((now or datetime.now(UTC)) - began, SPENT_AT_LEAST)
+        stamp = approvals.spent_recently(action, params, within=within)
     if not stamp:
         return ""
-    try:
-        clock = datetime.fromisoformat(stamp).astimezone().strftime("%H:%M")
-    except ValueError:
+    at = _stamp(stamp)
+    if at is None:
         return ""
-    return f"You approved this exact call at {clock} and it may already have run."
+    local = at.astimezone()
+    clock = local.strftime("%H:%M")
+    if began is None:
+        return f"You approved this exact call at {clock} and it may already have run."
+    day = f"{local.strftime('%b')} {local.day}"
+    return f"You approved this exact call on {day} at {clock} and it may already have run."
+
+
+def _stamp(text: str) -> datetime | None:
+    """An ISO stamp as an aware datetime (UTC when it names no zone), or ``None``."""
+    try:
+        value = datetime.fromisoformat(text)
+    except ValueError:
+        return None
+    return value if value.tzinfo is not None else value.replace(tzinfo=UTC)
 
 
 class GateHook:
@@ -220,7 +255,7 @@ class GateHook:
         notice = "\n".join(
             line
             for line in (
-                _may_have_run(self.approvals, entry.name, params),
+                _may_have_run(self.approvals, entry.name, params, ctx.spent_since),
                 _taint_line(entry, ctx),
                 _cross_tab_line(entry, ctx),
             )

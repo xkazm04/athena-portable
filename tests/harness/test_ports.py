@@ -245,3 +245,66 @@ def test_a_card_for_a_call_already_let_through_today_says_it_may_have_run(brain:
     other = gate.before_tool_call(entry, {**params, "value": "pays at 60 days"}, ctx)
     assert other.card is not None
     assert other.card.rationale == ""
+
+
+def test_under_a_chore_the_line_reaches_back_to_its_last_run_and_names_the_date(
+    brain: Brain,
+) -> None:
+    """ADR 0126: a turn under a case looks back to where its chore's last run began, not a day,
+    and says the date. Outside one, or with no stored run, a 20-day-old yes says nothing, as
+    before. Either way the card is filed: the line informs and never blocks."""
+    from datetime import UTC, datetime, timedelta
+
+    from athena.core.approvals import SPENT_LOOKBACK
+    from athena.harness.hooks import SPENT_AT_LEAST
+
+    assert SPENT_AT_LEAST == SPENT_LOOKBACK
+    catalog = _catalog(brain, [])
+    approvals = Approvals(brain)
+    gate = GateHook(catalog, approvals)
+    episode = brain.append_episode("The client has not paid since June.", role="user")
+    params = {"key": "late-payer", "value": "pays at 45 days", "sources": [episode.id]}
+    then = datetime.now(UTC) - timedelta(days=20)
+    row = approvals.create(
+        "core.write_fact",
+        params,
+        origin="core",
+        conversation="conv_proj_0123456789ab",
+        surface="panel",
+        now=then,
+    )
+    approvals.resolve(row.id, "approve", now=then)
+    assert approvals.consume(row.id, now=then)
+    entry = catalog.get("core.write_fact")
+
+    loose = TurnContext(conversation_id="conv_x", turn_id="turn_000000000001", lane=Lane.BROWSER)
+    today = gate.before_tool_call(entry, params, loose)
+    assert today.card is not None and today.card.rationale == ""
+
+    started = then - timedelta(hours=2)
+    chore = TurnContext(
+        conversation_id="conv_proj_0123456789ab",
+        turn_id="turn_000000000002",
+        lane=Lane.BROWSER,
+        project_id="proj_0123456789ab",
+        spent_since=started.isoformat(),
+    )
+    again = gate.before_tool_call(entry, params, chore)
+    assert again.card is not None
+    assert isinstance(again.decision, Cancel) and again.decision.reason == "pending_approval"
+    local = then.astimezone()
+    day = f"{local.strftime('%b')} {local.day}"
+    assert again.card.rationale == (
+        f"You approved this exact call on {day} at {local.strftime('%H:%M')} "
+        "and it may already have run."
+    )
+
+    # A run that began after the yes does not reach it.
+    recent = TurnContext(
+        conversation_id="conv_proj_0123456789ab",
+        turn_id="turn_000000000003",
+        lane=Lane.BROWSER,
+        spent_since=(then + timedelta(days=1)).isoformat(),
+    )
+    late = gate.before_tool_call(entry, params, recent)
+    assert late.card is not None and late.card.rationale == ""
