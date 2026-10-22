@@ -26,6 +26,9 @@ SlotSource = Literal["user", "research", "memory", "document", "account", "defau
 LaneKind = Literal["rules", "accounts", "memory", "document"]
 LaneStatus = Literal["queued", "running", "done", "failed", "skipped"]
 ShowcaseStatus = Literal["queued", "running", "done", "failed"]
+#: Why a done showcase claims no dollar figure (ADR 0125): ``""`` none withheld, ``"shaped"`` the
+#: shape leg edited rows or moved ``today``, so the answer key no longer matches the world.
+FoundReason = Literal["", "shaped"]
 AnswerVia = Literal["text", "voice"]
 
 #: Every model call names its kind; the tier bench picks the model and effort per kind (tiers.json).
@@ -177,7 +180,11 @@ class Clear(AdoptEvent):
 
 @dataclass(frozen=True)
 class Showcase(AdoptEvent):
-    """The tailored rehearsal. ``trace`` uses bench.json's trace-turn shape."""
+    """The tailored rehearsal. ``trace`` uses bench.json's trace-turn shape.
+
+    ``found_usd`` is the bench's ``value_found_usd`` only while the answer key still holds (ADR
+    0125): a world shaped by renames alone. Otherwise it is ``None`` and ``found_reason`` says why.
+    """
 
     kind: ClassVar[str] = "adopt.showcase"
     status: ShowcaseStatus = "queued"
@@ -185,6 +192,7 @@ class Showcase(AdoptEvent):
     total: int | None = None
     trace: tuple[dict[str, Any], ...] = ()
     found_usd: float | None = None
+    found_reason: FoundReason = ""
     detail: str = ""
 
 
