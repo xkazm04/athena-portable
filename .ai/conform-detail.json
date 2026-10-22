@@ -5402,6 +5402,72 @@
         }
       ],
       "registryProposal": "Clarify which lifecycle requirements apply to standalone static checkers: three-state-outcomes explicitly includes lint and compliance sweeps, while caching and probe lifecycle requirements primarily describe shared dependency probes."
+    },
+    "2c7d08b8-f9aa-4b85-908f-99e34042a011/invariant-placement": {
+      "context": "hirelane-design-law",
+      "subject": "invariant-placement",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-22",
+      "evaluatedTs": "2026-10-22T22:09:50.832Z",
+      "worker": "b86ebeb7-d113-408d-b0cb-ad0464352dae",
+      "techniques": [
+        {
+          "technique": "completeness-at-emission",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/design/build-tokens.mjs:254 Unresolved references cause omission rather than refusal; an in-memory execution confirmed successful CSS emission after dropping a declared space token."
+        },
+        {
+          "technique": "constraint-deletion-is-silent",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/test/law.test.ts:53 The law checks use executable refusal tests, not structural type constraints whose removal silently admits more programs."
+        },
+        {
+          "technique": "consumption-bounds-at-most-once",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/build-tokens.mjs:196 The builder deduplicates declarations; this is not a single-use capability or an obligation requiring consumption."
+        },
+        {
+          "technique": "derived-properties-cannot-be-forged",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/design/check-contrast.mjs:246 Contrast is recomputed from parsed token colors and modeled surfaces, rather than accepted from an author's contrast annotation."
+        },
+        {
+          "technique": "indistinguishable-members-do-not-rise",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/check-contrast.mjs:137 The two color arguments are deliberately interchangeable in this symmetric calculation; no structural ordering guarantee is claimed."
+        },
+        {
+          "technique": "initialization-proof-tokens",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/build-tokens.mjs:86 Initialization and consumption occur within one top-level script flow, rather than separately exposed operations requiring a subsystem readiness proof."
+        },
+        {
+          "technique": "occurrence-is-not-a-type",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/check-law.mjs:100 The inspected rules enforce style and source arrangement, not assumed type guarantees about identity, capture time, consumption, or read sets."
+        },
+        {
+          "technique": "paired-sites-localize-the-fault",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/build-tokens.mjs:5 The generated-token consumer is absent; the active checkers inspect authored artifacts rather than an internal encoding and decoding pair."
+        },
+        {
+          "technique": "placement-precedes-gate",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/design/check-law.mjs:156 Whether a literal occurs outside the designated token module is an arrangement rule, appropriately enforced by an artifact gate."
+        },
+        {
+          "technique": "repairing-check-erases-its-evidence",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/hl-scales.css:37 The clamp specifies responsive typography; it does not defensively repair an upstream contract violation."
+        },
+        {
+          "technique": "shape-with-a-not-applicable-member",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/check-contrast.mjs:153 Color parsing represents failure separately from its color object; there is no closed kind set containing a none-of-these member."
+        }
+      ]
     }
   }
 }

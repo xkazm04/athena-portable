@@ -6484,7 +6484,11 @@
           "revision": 9,
           "changedAt": "2026-09-21",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/hirelane/design/build-tokens.mjs:254 The token builder silently drops unresolved declared group tokens and still writes CSS, so successful emission does not establish completeness.",
+          "evaluatedAt": "2026-10-22",
+          "evaluatedAgainst": "sha256-b2:c6563834f502429c",
+          "evaluatedRevision": 9
         },
         {
           "subject": "eval-harness",
