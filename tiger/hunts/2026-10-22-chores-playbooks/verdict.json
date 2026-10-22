@@ -1,0 +1,116 @@
+{
+  "thesis": "Turn a chore from a library entry you launch once into a standing case: it remembers your setup, every real run comes back to it as a receipt measured from your cards, and it comes due on its own - while nothing irreversible runs unattended.",
+  "judge": "claude-opus-5-5",
+  "kept": [
+    "P01",
+    "P02",
+    "P03",
+    "P05",
+    "P06",
+    "P07",
+    "P08",
+    "P09",
+    "P10",
+    "P11",
+    "P12",
+    "P14",
+    "P15",
+    "P16",
+    "P17",
+    "P18"
+  ],
+  "approved": [
+    "P01",
+    "P02",
+    "P03",
+    "P05",
+    "P06",
+    "P07",
+    "P08",
+    "P09",
+    "P10",
+    "P11",
+    "P12",
+    "P14",
+    "P15",
+    "P16",
+    "P17",
+    "P18"
+  ],
+  "items": {
+    "C1": [
+      "P16",
+      "P01",
+      "P09",
+      "P14"
+    ],
+    "C2": [
+      "P05",
+      "P02",
+      "P10"
+    ],
+    "C3": [
+      "P12"
+    ],
+    "S1": [
+      "P06"
+    ],
+    "S2": [
+      "P08"
+    ],
+    "L1": [
+      "P17",
+      "P15",
+      "P07",
+      "P03",
+      "P11"
+    ],
+    "L2": [
+      "P18"
+    ]
+  },
+  "approved_items": [
+    "C1",
+    "C2",
+    "C3",
+    "S1",
+    "S2",
+    "L1",
+    "L2"
+  ],
+  "dropped": {
+    "P04": "live dry-run is a new page-lane harness mode (hunted 2026-10-15); its bench half folded into L2",
+    "P13": "outcome desk depends on C1, C2 and L1; kept for backlog"
+  },
+  "landed_items": [
+    "C1",
+    "C2",
+    "C3",
+    "S2",
+    "L1",
+    "L2"
+  ],
+  "failed_items": {
+    "S1": "paid target failed: carry-forward raised run-1 duplicates 6 -> 14; prompt block removed (ADR 0130), dated card line kept"
+  },
+  "landed": [
+    "P01",
+    "P02",
+    "P03",
+    "P05",
+    "P07",
+    "P08",
+    "P09",
+    "P10",
+    "P11",
+    "P12",
+    "P14",
+    "P15",
+    "P16",
+    "P17",
+    "P18"
+  ],
+  "reworked": {
+    "C2": "shared conv_proj conversation cost 1.7-2.5x per run; reworked to turn stamps (ADR 0127)"
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "id": "2026-10-22-chores-playbooks",
+  "area": [
+    "apps/desktop/src/scenes/chores",
+    "apps/desktop/src/lib/playbooks.ts",
+    "apps/desktop/src/modules/playbooks",
+    "apps/desktop/src/stores/playbooks.ts",
+    "src/athena/adopt",
+    "src/athena/proving/playbooks",
+    "playbooks"
+  ],
+  "head": "9beaef313d593981bf3b17569d1237b223e1055f",
+  "created": "2026-10-22T06:33:25.100Z",
+  "rounds": {
+    "1": {
+      "started": "2026-10-22T06:41:26.155Z",
+      "seats": {},
+      "finished": "2026-10-22T06:59:45.499Z",
+      "stray_changes": 0
+    },
+    "2": {
+      "started": "2026-10-22T06:59:59.772Z",
+      "seats": {},
+      "finished": "2026-10-22T07:10:13.453Z",
+      "stray_changes": 0
+    }
+  },
+  "seats": "agy:gemini-4-argon@high,codex:gpt-6.1-sol@xhigh,claude:claude-opus-5-5@xhigh"
+}

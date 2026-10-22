@@ -1,0 +1,756 @@
+{
+  "proposals": [
+    {
+      "id": "P01",
+      "seat": "agy-gemini-4-argon_high",
+      "round": 1,
+      "title": "Persist approved cases in the markdown brain and hydrate repeat runs",
+      "kind": "connect",
+      "outcome": "Once a person finishes the Adopt interview and approves their brief, Athena remembers their confirmed slots, portal swaps, and rule thresholds across restarts: returning to the chore pre-fills the studio for quick edits and exposes a direct 'Run my case' action on the topic and catalogue views.",
+      "builds_on": "The Adopt studio slot-and-auditor loop (ADR 0097, src/athena/adopt/loop.py) and the markdown-first brain reconciler (src/athena/core/brain/paths.py, reconcile.py).",
+      "mechanism": "When loop.approve(session, rev) succeeds (src/athena/adopt/loop.py:134-146), mint a stable project_id via ids.mint('project') (src/athena/contracts/ids.py:35) and write a markdown file under goals/proj_<id>_<playbook_id>.md (already walked and indexed as kind='goal' by reconcile.py:44) containing YAML frontmatter for playbook_id, project_id, approved_rev, confirmed/guessed slots, and Brief.portals swaps, with the approved summary and fitted_command as the markdown body. Simultaneously record the approval turn via Brain.append_episode (src/athena/core/brain/store.py:302-361) and call Brain.write_fact for user-confirmed slots using that episode_id so provenance-at-write (_require_provenance, store.py:378-396) is satisfied without bypass. On POST /adopt (src/athena/adopt/routes.py:114-140) and GET /chores/cases, hydrate saved slots as status='confirmed', source='memory' so repeat visits only ask what changed, and render a 'My case' card with a direct 'Run my case' button in topic.tsx:171-212.",
+      "anchors": [
+        "src/athena/adopt/loop.py:134-146",
+        "src/athena/adopt/loop.py:357-416",
+        "src/athena/adopt/session.py:557-566",
+        "src/athena/core/brain/paths.py:23-39",
+        "src/athena/core/brain/reconcile.py:41-53",
+        "src/athena/core/brain/store.py:302-396",
+        "apps/desktop/src/scenes/chores/adopt/studio.tsx:233-239",
+        "apps/desktop/src/scenes/chores/topic.tsx:171-212"
+      ],
+      "evidence": "Today AdoptSession lives strictly in process memory with a 2-hour TTL (src/athena/adopt/session.py:81, 557-566) and studio.tsx:233-239 hands only the flat string s.brief!.command into the chat composer. Meanwhile, BrainPaths.goals (paths.py:29) and _BRAIN_ROOTS (reconcile.py:44) are already implemented and tested in core/brain but never written to by Adopt.",
+      "effort": "S",
+      "risk": "Stale slot values if a user's portal or threshold changes later; mitigated by hydrating saved slots into the existing SlotsBoard (casepanel.tsx:51-170) where any slot can be re-opened and re-audited in one round, and by rebuilding the SQLite index from the markdown file on reconcile_from_disk.",
+      "verify": "Unit test in tests/adopt/ verifying that approving a brief writes goals/proj_<id>_<playbook_id>.md, appends a provenance episode, survives SessionStore eviction and reconcile_from_disk, and pre-populates confirmed slots when starting a new AdoptSession for the same playbook.",
+      "why_groundbreaking": "",
+      "parents": [],
+      "anchor_check": {
+        "ok": 8,
+        "total": 8,
+        "bad": []
+      }
+    },
+    {
+      "id": "P02",
+      "seat": "agy-gemini-4-argon_high",
+      "round": 1,
+      "title": "Bind real runs to chore project IDs for live receipts and turn replay",
+      "kind": "deepen",
+      "outcome": "Every real run of an adopted chore produces an auditable run receipt—showing cards approved, cards declined, exact dollar value acted on, and model cost—and can be stepped through turn-by-turn inside the existing Chores Replay view alongside the rehearsal and bench runs.",
+      "builds_on": "Chores Replay (ADR 0093, apps/desktop/src/scenes/chores/replay.tsx), active_project handoff (ADR 0044, apps/desktop/src/stores/run.ts), and the daemon's project-scoped session and approval tables (src/athena/daemon/routes.py, src/athena/core/approvals.py).",
+      "mechanism": "Include the case's minted project_id ('proj_...') in CompanionOffer (apps/desktop/src/lib/companion.ts:27-35) and pass it as project_id on POST /run in apps/desktop/src/stores/run.ts:875-881,1283. Because routes.py:585-601 already maps a valid proj_ ID to conversation_id = session_store.for_project(project_id) ('conv_proj_<id>') and sets TurnContext.project_id (routes.py:779), browser_lane.py:106-122 automatically tags every episode with [project:proj_<id>], while companion_approval (src/athena/core/approvals.py:115-139) and companion_turn (src/athena/core/ledger.py:86-108) key every gated card decision and token/cost row to that conversation_id. Add a read-only daemon endpoint GET /chores/<playbook_id>/runs that folds those episodes, approval rows (approved vs denied/expired with params_json dollar amounts via _filed_total from bench.py:516-525), and ledger totals into the TraceTurn schema (bench.py:668-711, lib/playbooks.ts:131-142) so replay.tsx:81-174 can switch between 'Bench run', 'Your rehearsal', and 'Your real runs (showing N of M)'.",
+      "anchors": [
+        "apps/desktop/src/stores/run.ts:875-881",
+        "src/athena/daemon/routes.py:585-601",
+        "src/athena/core/prompt.py:380-386",
+        "src/athena/lane/browser_lane.py:106-122",
+        "src/athena/core/approvals.py:115-139",
+        "src/athena/core/ledger.py:86-108",
+        "apps/desktop/src/scenes/chores/replay.tsx:81-174",
+        "src/athena/proving/playbooks/bench.py:668-711"
+      ],
+      "evidence": "routes.py:585-601 and browser_lane.py:106-122 already implement project_id conversation scoping and episode tagging, but run.ts:875-881 only sends active_project={'kind':'playbook','id':project.id,...} where project.id is the playbook slug rather than a 'proj_' ID, leaving TurnContext.project_id None on every real playbook run.",
+      "effort": "M",
+      "risk": "Params in companion_approval may contain sensitive customer strings; mitigated by keeping real-run traces strictly local in the user's SQLite/markdown brain, wrapping any re-prompted text in wrap_untrusted fences, and using bounded '(showing N of M)' cuts on run lists.",
+      "verify": "Integration test executing a multi-turn playbook run via POST /run with a minted proj_ ID, resolving one approval card as approved and one as denied, and asserting GET /chores/<playbook_id>/runs returns a TraceTurn list with exact card statuses, dollar totals, and ledger cost.",
+      "why_groundbreaking": "",
+      "parents": [],
+      "anchor_check": {
+        "ok": 8,
+        "total": 8,
+        "bad": []
+      }
+    },
+    {
+      "id": "P03",
+      "seat": "agy-gemini-4-argon_high",
+      "round": 1,
+      "title": "Cadence rituals and one-click portal staging for due recurring chores",
+      "kind": "extend",
+      "outcome": "Adopted chores become genuinely recurring: Athena tracks when each weekly, monthly, or quarterly chore is due, surfaces a 'Due now' queue in Chores, and stages the run in one click by opening the user's swapped portals in browser tabs and pre-loading the fitted brief—while keeping every gated action behind human approval.",
+      "builds_on": "The brain's existing rituals/cadence and rituals/quiet_hours markdown directories (src/athena/core/brain/paths.py, reconcile.py), playbook economics.per frequencies (src/athena/proving/playbooks/rank.py), and the desktop's wired-but-unused actions.open tab launcher (apps/desktop/src/modules/playbooks/index.ts).",
+      "mechanism": "When a user adopts a chore (or toggles its schedule on the Topic page), write a markdown ritual file to rituals/cadence/job_<id>.md using ids.mint('job') (src/athena/contracts/ids.py:38), seeded from playbook.json economics.per (src/athena/proving/playbooks/rank.py:20-27) or the user's confirmed cadence slot, with frontmatter fields project_id, playbook_id, cadence, next_run_at, last_run_at, and enabled. Add a daemon cadence tick that checks due rituals outside rituals/quiet_hours (paths.py:35-36), advances next_run_at in the markdown file before dispatch so restarts never double-fire, and exposes due state to the desktop. In catalogue.tsx:184-233, add a 'My chores' filter chip showing due badges and last-run receipts; in topic.tsx:178-199 and studio.tsx:233-239, wire a 'Stage portals & start' button that calls model.actions.open(url) (apps/desktop/src/modules/playbooks/index.ts:49) for each URL in Brief.portals and hands the fitted command with trigger='schedule' (src/athena/contracts/registry.py:207-210).",
+      "anchors": [
+        "src/athena/core/brain/paths.py:34-36",
+        "src/athena/core/brain/reconcile.py:48-50",
+        "src/athena/contracts/ids.py:28-39",
+        "src/athena/contracts/registry.py:207-210",
+        "src/athena/proving/playbooks/rank.py:20-27",
+        "apps/desktop/src/modules/playbooks/index.ts:45-53",
+        "apps/desktop/src/scenes/chores/catalogue.tsx:184-233"
+      ],
+      "evidence": "Every persona in the brief (mira, jonas, ana, priya) hires Athena for a recurring weekly/monthly chore, paths.py:34-36 and reconcile.py:48-50 already index rituals/cadence/*.md and rituals/quiet_hours/*.md, ids.py:38 already mints 'job_' IDs, and modules/playbooks/index.ts:49 already binds actions.open: (url) => tabsCreate(url), yet none of these are connected to Chores.",
+      "effort": "M",
+      "risk": "Unattended execution must never fire gated writes; mitigated by invariant §2.3—cadence staging only marks a chore due, opens its read portals, and pre-loads the composer (or runs read-only discovery), while every WRITE/GATED tool remains gated behind user decision cards.",
+      "verify": "Unit and daemon tests verifying rituals/cadence/job_<id>.md creation, quiet-hours suppression, next_run_at advancement prior to dispatch, reconcile_from_disk recovery after SQLite deletion, and desktop Vitest check that 'Stage portals & start' invokes actions.open for each swapped portal.",
+      "why_groundbreaking": "",
+      "parents": [],
+      "anchor_check": {
+        "ok": 7,
+        "total": 7,
+        "bad": []
+      }
+    },
+    {
+      "id": "P04",
+      "seat": "agy-gemini-4-argon_high",
+      "round": 1,
+      "title": "Shadow-gate follow-through proving and live read-only case dry-runs",
+      "kind": "leap",
+      "outcome": "Before approving a single real write card, a user can run a live read-only dry-run of their fitted chore against their actual open browser tabs—seeing the exact records Athena read and the staged approval cards and dollar amounts she would file—while on the bench, multi-step playbooks prove their post-gate follow-through without auto-approving traps.",
+      "builds_on": "SimulatedPortals and card scoring in src/athena/proving/playbooks/bench.py, Showcase rehearsal in src/athena/adopt/showcase.py, and TurnContext gating in src/athena/contracts/registry.py.",
+      "mechanism": "Close the two halves of the rehearsal-to-reality gap with one shadow-gate mechanism: (1) In src/athena/proving/playbooks/bench.py:294-296,356-365, add approve='policy' (used by proving and by showcase.py:446-455), which executes a gated card against SimulatedPortals only when score_card classifies it as 'eligible' or 'neutral'—refusing 'trap' and 'forbidden' cards—and records a shadow mutation trace so Phase 2/3 read-after-write verification steps can complete and be scored, alongside multi-run stability (n, pass_k, value_spread_usd) in rank.py:165-182 from bench.json history (bench.py:798-806). (2) In the live daemon and desktop studio (showcase.tsx:49-125, run.ts:1230-1307), add a dry_run=True mode on POST /run that pins every host tool above READ to a staging sink in the harness: Athena reads the user's real open tabs via WebMCP/DOM, intercepts every proposed write into a staged card ledger (computing total staged USD and target descriptions via run.ts:1724-1739), and renders the live dry-run preview inside the studio before the user clicks 'Start for real' or approves individual staged cards.",
+      "anchors": [
+        "src/athena/proving/playbooks/bench.py:294-296",
+        "src/athena/proving/playbooks/bench.py:356-365",
+        "src/athena/proving/playbooks/rank.py:165-182",
+        "src/athena/adopt/showcase.py:136-212",
+        "src/athena/adopt/showcase.py:446-455",
+        "apps/desktop/src/scenes/chores/adopt/showcase.tsx:49-125",
+        "src/athena/contracts/registry.py:225-231",
+        "apps/desktop/src/stores/run.ts:1230-1307"
+      ],
+      "evidence": "Today bench.py:294-296 and showcase.py:449 run with approve='none', which leaves SimulatedPortals unmutated (bench.py:356-365) and causes downstream card-dependent steps to score as missed; meanwhile showcase.tsx:66-69 explicitly warns the user that rehearsal ran on a 'shaped example — not your live accounts', forcing a blind leap to 'Start for real'.",
+      "effort": "L",
+      "risk": "A live read-only dry-run could still trigger side effects if a poorly declared page tool mutates state during a READ call; mitigated by enforcing the catalog's READ/WRITE/GATED classification in core/catalog.py and harness/hooks.py, wrapping all page output in untrusted fences, and never dispatching any tool classified as WRITE or GATED to the browser bridge while dry_run=True.",
+      "verify": "1) Proving test on a multi-phase playbook verifying approve='policy' mutates state for eligible cards, blocks trap cards, and scores downstream follow-through cards. 2) Harness test with dry_run=True verifying READ tools execute against the mock browser bridge while WRITE/GATED calls are captured into staged_cards with zero bridge dispatches.",
+      "why_groundbreaking": "It turns Chores from a static library plus synthetic demo into a safe, counterfactual staging ground on the user's real web apps—letting cautious users verify the exact invoices, rows, and dollar totals Athena will touch on their live tabs before a single write is even armed.",
+      "parents": [],
+      "anchor_check": {
+        "ok": 8,
+        "total": 8,
+        "bad": []
+      }
+    },
+    {
+      "id": "P05",
+      "seat": "claude-claude-opus-5-5_xhigh",
+      "round": 1,
+      "title": "Give each adopted chore a project id so its real runs come back to it",
+      "kind": "connect",
+      "outcome": "After 'Start for real', the chore's topic page gets a 'Your runs' section. Each real run is listed with its cards approved, refused and expired, the dollars those cards asked for, minutes and model spend, next to the rehearsal's figure. It survives a restart. Today the person never sees 'your last run of this chore found X'.",
+      "builds_on": "Every claim is measured from cards, never from her words (strength 2), plus project conversations that already span origins and are already joinable to cards and ledger rows by conversation_id.",
+      "mechanism": "1) When 'Start for real' is pressed, the daemon mints a project id with ids.mint('project'), since ids are minted only in ids.py. The desktop writes a `projects` row (id, name = playbook title) and a `project_runs` row (conversation_id = conv_proj_<hex>). 2) The Athena window's onOffer sets that id beside the playbook, and every POST /run sends `project_id` as well as `active_project` (kind:'playbook', id:<slug>). The daemon's existing path then routes every tab's turn into one conversation and marks its episodes. 3) A new read-only daemon route returns a receipt for a conversation id: approvals grouped by status (approved/consumed, denied, expired), with action and key params; the asked total uses the same rule as the bench's `_filed_total` (amount_usd / amount_disputed_usd of recovering cards); ledger cost/ms/calls summed by conversation; first and last timestamps. 4) topic.tsx draws 'Your runs' from project_runs plus the receipt. Each number says where it came from ('from N cards you answered'), and with no run it says so instead of showing a zero.",
+      "anchors": [
+        "apps/desktop/src/stores/run.ts:874-881",
+        "apps/desktop/src/companion/live.tsx:364-366",
+        "src/athena/daemon/routes.py:584-592",
+        "src/athena/daemon/sessions.py:49-58",
+        "apps/desktop/src-tauri/src/store.rs:256-263",
+        "src/athena/core/approvals.py:116-136",
+        "src/athena/core/ledger.py:87-106",
+        "src/athena/proving/playbooks/bench.py:516-524"
+      ],
+      "evidence": "Observed: routes.py already validates and threads project_id into TurnContext and into conversation_for. sessions.py says outright 'while one is active every page of it talks in the same conversation and the episodes of that turn are found together afterwards'. The approval and ledger tables both carry conversation_id and survive a reconcile (ADR 0005). store.rs ships project_runs for exactly this join. The missing piece is the desktop sending a minted id. Hypothesis: a shared cross-tab conversation does not hurt the run, because ADR 0044 already gives every tab the same goal.",
+      "effort": "S",
+      "risk": "Moving playbook turns from conv_<app> to one conv_proj_<hex> changes the history each turn sees, and could regress a multi-portal run. Mitigation: bench the top 5 playbooks with project_id set (~$7) and require unchanged verdicts before shipping. The receipt stays read-only and shows no truth-derived numbers.",
+      "verify": "Integration test: adopt, Start for real, send. Every /run body carries project_id=proj_x, and every ledger row for those turns has conversation_id=conv_proj_x. Restart daemon and desktop, then open the topic page: 'Your runs' lists the run. Its approved/denied/expired counts equal SELECT status,count(*) FROM companion_approval WHERE conversation_id='conv_proj_x' GROUP BY status, and its spend equals /ledger/rollup?by=conversation for that key. Before: the Chores scene shows 0 real runs anywhere. After: every real run appears. Bench: top-5 verdicts unchanged with project_id set.",
+      "why_groundbreaking": "It closes the loop from 'what the bench found on an invented world' to 'what this did for you'. The number the product is built on (value found, measured from cards) now gets measured on the person's own work.",
+      "parents": [],
+      "anchor_check": {
+        "ok": 8,
+        "total": 8,
+        "bad": []
+      }
+    },
+    {
+      "id": "P06",
+      "seat": "claude-claude-opus-5-5_xhigh",
+      "round": 1,
+      "title": "Make a chore's second run start where its last run stopped",
+      "kind": "deepen",
+      "outcome": "Coming back next month, the person reopens their chore with its approved brief and 'My case' intact, with no new interview. She knows what the last run already did: calls approved last time are flagged on the card ('You approved this exact call on Oct 15'), refused ones are not re-proposed without the person asking, and expired ones are offered again first.",
+      "builds_on": "The approved brief's mechanical command (playbook command + 'My case:' block, never rewritten by a model) and the gate's existing 'you approved this exact call and it may already have run' line, which informs and never blocks.",
+      "mechanism": "1) On approve(rev), the brief is written as markdown in the brain's reserved `goals/` directory, keyed by the chore's project id: playbook id, rev, brief md, fitted command, portal swaps, confirmed slots. It is markdown on disk, so the index rebuilds it and it survives the 2 h session TTL and restarts. The studio can open from it, so no re-interview is needed. 2) When a run of that chore starts, the frame gets a bounded 'Last run of this chore' block computed from the previous project_run's approvals: approved [action key, date], refused [action key], expired [action key]. It uses the ordinary `(showing N of M)` footer and the turn's fence, because params came from pages. 3) For a turn under a project, `_may_have_run` looks back to the start of the chore's last run instead of a flat 24 h. It still only informs; policy stays in the gate.",
+      "anchors": [
+        "src/athena/core/brain/paths.py:23-40",
+        "src/athena/core/brain/reconcile.py:41-53",
+        "src/athena/adopt/loop.py:400-416",
+        "src/athena/adopt/loop.py:134-146",
+        "src/athena/adopt/session.py:81",
+        "src/athena/harness/hooks.py:164-180",
+        "src/athena/core/approvals.py:92-94",
+        "src/athena/proving/playbooks/bench.py:402-430"
+      ],
+      "evidence": "Observed: adopt sessions die after 2 h or a restart and the approved brief is stored nowhere (session.py TTL_S; ADR 0097). The brain creates goals/ and indexes it, but the brain has no code that writes it. `_may_have_run` and `spent_recently` already compute 'this exact call was approved' from canonical params, capped at a day (SPENT_LOOKBACK). The bench's score() already counts `duplicate` outcomes from a seen set, so a second-run metric is one pre-seeded set away. Hypothesis: carrying the last run's card outcomes cuts re-filed duplicates to zero without lowering recall on the rest.",
+      "effort": "M",
+      "risk": "Goal files must stay byte-compatible with the brain's fixed five-key header (browser_lane.py notes this for episodes), and a stale carry-forward could hide an item that changed (a re-billed invoice). Mitigations: put chore fields in the body, not the header. The carry-forward names keys and dates only and never says 'skip'. Changed params are a different canonical call, so they are never flagged.",
+      "verify": "A two-run bench mode on 10 playbooks (~$32): run 1 with approve='all', run 2 on the same world with the carry-forward, scoring run 2 with run 1's seen set pre-seeded. First record the baseline without carry-forward. Target: duplicates of run-1 items = 0 and recall of the rest still ≥ the bar. Unit: a card proposed under the project for a call approved 20 days ago in the last run carries the dated line; today it carries nothing. Restart test: after a daemon restart the studio reopens the approved brief at the same rev with the same slots. Today it is gone.",
+      "why_groundbreaking": "It answers the open question 'what does a chore's second run look like', and every run after that. A one-off demo becomes something the person comes back to.",
+      "parents": [],
+      "anchor_check": {
+        "ok": 8,
+        "total": 8,
+        "bad": []
+      }
+    },
+    {
+      "id": "P07",
+      "seat": "claude-claude-opus-5-5_xhigh",
+      "round": 1,
+      "title": "Let chores come due: a cadence that prepares the run and waits for your cards",
+      "kind": "leap",
+      "outcome": "Mira confirms 'every Monday' for her invoice chase. On Monday, during her focus window, Athena opens the chore's portals, reads, and drafts. Every message she would send waits as a card, and one tray nudge says 'Invoice chase is ready: 6 cards, $4,120 asked'. Nothing is sent until Mira answers each card. Chores become recurring in fact, not just in name.",
+      "builds_on": "The rule that a gated call never executes without a resolved decision, cards as an inbox the person works through, and economics.per / times_per_year, which already know each chore's natural cadence but only use it for display and ranking.",
+      "mechanism": "1) A cadence is durable data in the brain's reserved `rituals/cadence/<proj>.md`: enabled, cadence, next_run_at, last_run_at, quiet window. It is proposed from times_per_year plus the person's due-date facts, and only the person confirms or changes it; the model never sets it. 2) A reconciliation loop in the daemon follows the registry `scheduling` standard: it advances next_run_at before dispatch, a missed run (laptop off) fires one catch-up rather than N, the same chore never runs twice at once, and every fire or skip writes an explainable line. 3) When the chore is due and the desktop is open, the desktop opens the chore's portals (the wired-but-undrawn actions.open) and sends the stored command under the chore's project id with trigger='schedule'. TurnContext already documents that value and the ledger stores it, so every scheduled turn is one ledger row like any other. Reads run; every gated or cross-tab call becomes a card in the existing GET /decisions inbox. 4) One nudge per due chore per window (dedup key = project id + due date), held during quiet hours, timed inside the focus window so the cards (which expire after 24 h) are answered fresh. Effect is measured as cards answered within the window.",
+      "anchors": [
+        "src/athena/contracts/registry.py:207-210",
+        "src/athena/core/ledger.py:61-67",
+        "src/athena/core/brain/paths.py:33-36",
+        "apps/desktop/src/modules/playbooks/index.ts:49",
+        "src/athena/daemon/decisions.py:177-187",
+        "src/athena/harness/hooks.py:183-196",
+        "apps/desktop/src/modules/playbooks/model.ts:100-106",
+        "src/athena/contracts/registry.py:220"
+      ],
+      "evidence": "Observed: 41 of 100 playbooks state times_per_year ≥ 4. Every uat Character's motivation.chore is a recurring job (mira's is 'every invoice over 30 days'). TurnContext.trigger names 'schedule' as planned and nothing sets it. The brain tree reserves rituals/cadence and rituals/quiet_hours, and TurnContext has quiet_hours. The dossier's constraint ('may prepare, read and propose; a gated action still needs the person's resolved card') is the safety model already built into the gate, so this adds no new authority. Hypothesis: 'ready for your signature' collapses the 45→8 min job further, because the reading and drafting happen before the person sits down.",
+      "effort": "L",
+      "risk": "Proactive contact can turn into nagging, and an unattended read could run against a logged-out or changed portal. Mitigations: one deduplicated nudge per due chore per window, quiet hours respected, and a nudge that goes unanswered N times lowers its cadence or asks to pause (proactive-nudges efficacy feedback). Prepare runs only with the desktop open and the portals' origins enabled; a failed read is a stated outcome on the chore, never a silent skip. No new tool class and no change to the gate.",
+      "verify": "Fake-clock tests: next_run_at three periods in the past fires exactly once. A crash mid-run does not fire again, because next_run_at was advanced first. Disabled never fires, and quiet hours defer. Every scheduled turn's ledger row has trigger_kind='schedule'. Every consumed approval has a resolved_at from POST /decisions/<id>, and none is approved without one. One nudge per (project, due date). End-to-end on 3 bench worlds: a scheduled prepare files cards that score() rates at the same recall and 0 false claims as the manual run (~$10).",
+      "why_groundbreaking": "Athena changes from an agent you drive into one that brings you a prepared, gated job on the day it is due. That is what 'a chore you hand her' promised, and it gets there without letting anything irreversible run unattended.",
+      "parents": [],
+      "anchor_check": {
+        "ok": 8,
+        "total": 8,
+        "bad": []
+      }
+    },
+    {
+      "id": "P08",
+      "seat": "claude-claude-opus-5-5_xhigh",
+      "round": 1,
+      "title": "Rank and badge playbooks on repeated runs, not one draw",
+      "kind": "deepen",
+      "outcome": "The catalogue and juror see 'exceeds in 3 of 3 runs' or '2 of 3', and the 'Best edge' order is ranked on the worst or median run rather than a single draw. The headline '99 of 100 exceed' becomes a claim that holds up under repetition. A rescore adds a correction and leaves the original standing.",
+      "builds_on": "The honesty rule that every claim is measured or says it is not (strength 1), and the bench's existing per-run scoring with its 12-entry history.",
+      "mechanism": "1) `bench --runs k` (default 3) runs k fresh worlds at a fixed commit and records each run's headline with a hash of world.json+truth.json+code, so only comparable runs are aggregated. 2) rank_all reads the comparable set: ranked rows carry n, min/median recall_value, false-claim max, and k-of-n exceeds. A playbook is excluded if any comparable run filed a trap or false claim, and its score uses median recall, with tie-breaks as today. 3) The `rescore` verb appends a correction entry (old score kept, note, new score) instead of overwriting. 4) verdictOf shows 'k of n runs exceed' and an n=1 badge where only one run exists, so a single draw says it is one.",
+      "anchors": [
+        "src/athena/proving/playbooks/rank.py:155-168",
+        "src/athena/proving/playbooks/rank.py:60-80",
+        "src/athena/proving/playbooks/bench.py:76-82",
+        "src/athena/proving/playbooks/bench.py:760-806",
+        "src/athena/proving/playbooks/__main__.py:85-88",
+        "apps/desktop/src/modules/playbooks/model.ts:108"
+      ],
+      "evidence": "Observed: rank_all sorts on the single latest bench, and the registry map records this as an open eval-harness deviation ('the published order is a sorted draw'), alongside the audit-logging deviation on rescore. History shows the top 3 ranked playbooks each benched short at least once (lien-desk 1 of 6, clinic-denials 1 of 4, estate-settlement mostly short), but those runs span code and world edits. So whether noise remains at a fixed commit is the hypothesis this measures. 80 of 100 playbooks have no history at all.",
+      "effort": "M",
+      "risk": "Cost: about 200 extra runs at the observed mean of $1.61, roughly $320 for k=3, and some playbooks may drop out of the ranked set. Mitigation: run the top 20 first (~$64) and publish the drop-outs as 'short in 1 of 3', which is the honest result. Truth stays frozen, and no world is re-authored.",
+      "verify": "ranking.json rows carry n ≥ 3 and min/median recall; `rank --check` is current; the catalogue row renders 'k of n'. Report Kendall tau between the order from run 1 and the order from runs 2-3. Restate the headline as 'N of 100 exceed in every run'. A rescore leaves history length +1 with the original score intact (test).",
+      "why_groundbreaking": "It makes the catalogue's order something a skeptic (jonas, the juror) can trust. Once Proposal 1 ships, it also gives real runs a comparable baseline.",
+      "parents": [],
+      "anchor_check": {
+        "ok": 6,
+        "total": 6,
+        "bad": []
+      }
+    },
+    {
+      "id": "P09",
+      "seat": "codex-gpt-6.1-sol_xhigh",
+      "round": 1,
+      "title": "Keep each approved case ready for its next run",
+      "kind": "deepen",
+      "outcome": "A person returns to their configured chore after restarting Athena, reuses its approved setup, and conversationally changes only what needs updating. Two cases using the same playbook remain distinct.",
+      "builds_on": "The studio already produces a revisioned brief, explicit slot states, portal mappings, and a mechanically assembled command. That approved artifact is already a useful personal configuration.",
+      "mechanism": "Ship an approved-snapshot release in roughly 3–5 team days: add a shared CaseSnapshot contract and portable Markdown storage containing case identity, playbook version, brief revision, slots, and source references. Record the person's answers as live episodes before persisting derived facts through existing provenance checks. Reopen snapshots from the existing topic/studio flow; reuse stable setup and flag period-dependent or stale values for review. Keep live interview workers and temporary documents outside this first release. Brief approval never grants permission for future gated actions.",
+      "anchors": [
+        "src/athena/contracts/adopt.py:157-167",
+        "src/athena/adopt/session.py:194-224",
+        "src/athena/adopt/loop.py:134-146",
+        "src/athena/adopt/loop.py:400-416",
+        "src/athena/core/brain/store.py:378-395",
+        "apps/desktop/src/scenes/chores/memory.ts:16-35"
+      ],
+      "evidence": "Observed: the approved brief and revision reside on AdoptSession, while Chores memory is a module variable. fitted_command already reconstructs the runnable instruction from visible slots. Hypothesis: retaining this setup reduces the cost of every subsequent use; real-user repeat usage is currently unmeasured.",
+      "effort": "S",
+      "risk": "Old assumptions could acquire undeserved authority. Preserve source, confirmation status, observation date, and playbook version; explicitly review expired values and fence recalled evidence.",
+      "verify": "Approve two cases of one playbook, restart the daemon and desktop, and reopen each with its exact revision, portal mappings, and command intact. Reopening unchanged setup asks zero repeated setup questions. Changing one date invalidates dependent assumptions and the old brief revision. A subsequent irreversible action still requires its own resolved card.",
+      "why_groundbreaking": "The studio's work becomes a reusable personal asset. Each adoption compounds into faster future runs.",
+      "parents": [],
+      "anchor_check": {
+        "ok": 6,
+        "total": 6,
+        "bad": []
+      }
+    },
+    {
+      "id": "P10",
+      "seat": "codex-gpt-6.1-sol_xhigh",
+      "round": 1,
+      "title": "Give every real chore run a durable receipt",
+      "kind": "connect",
+      "outcome": "From a chore, the person can inspect their actual attempts across tabs: what was proposed, declined, completed, or left uncertain, with evidence and model cost.",
+      "builds_on": "Athena already carries a playbook goal across tabs, records tool-result episodes, meters calls, and makes recorded replay turns addressable. These pieces can form an honest personal history.",
+      "mechanism": "Introduce shared case/run identity alongside the active-project prompt data. Persist a Markdown run record linking turn IDs, episode IDs, approval IDs, and ledger rows; rebuild its lookup index from disk. Observe existing execution and result records to distinguish proposed, approved, acknowledged completion, declined, failed, and outcome unknown. Add actual-run routes alongside the current bench replay. Display proposed amounts separately from subsequently verified recovery; use unknown when value cannot be established. Aggregate receipts deterministically without another model call.",
+      "anchors": [
+        "apps/desktop/src/stores/run.ts:874-880",
+        "src/athena/daemon/routes.py:584-618",
+        "src/athena/contracts/registry.py:195-218",
+        "src/athena/harness/hooks.py:470-503",
+        "src/athena/lane/browser_lane.py:388-431",
+        "apps/desktop/src/scenes/chores/view.tsx:142-175",
+        "src/athena/core/ledger.py:86-105"
+      ],
+      "evidence": "Observed: the desktop sends active_project, but the route separately constructs TurnContext from project_id; the ledger schema has no chore/run association. The Chores run route explicitly reads bench.trace. Result recording already distinguishes outcome_unknown from failure. Hypothesis: joining these records makes the auditability Jonas wants accessible at the job level.",
+      "effort": "M",
+      "risk": "An approved proposal could be presented as completed work, or a claimed amount as recovered cash. Require the corresponding result or later outcome evidence for each stronger state; preserve uncertainty and distinguish protected value from recovery.",
+      "verify": "Run one case across three tabs with one successful action, one declined card, and one timed-out write. After restart, its receipt shows all three states, correct origins, and exactly the associated ledger cost. The timeout remains uncertain, the decline contributes no completed value, and the receipt survives index reconstruction.",
+      "why_groundbreaking": "Chores gains evidence of what Athena did for this person. Personal receipts supply the foundation for repeat-run continuity and verified value.",
+      "parents": [],
+      "anchor_check": {
+        "ok": 7,
+        "total": 7,
+        "bad": []
+      }
+    },
+    {
+      "id": "P11",
+      "seat": "codex-gpt-6.1-sol_xhigh",
+      "round": 1,
+      "title": "Prepare the next occurrence when a chore becomes due",
+      "kind": "extend",
+      "outcome": "A person can make their saved invoice chase or weekly desk recur, receive one timely review item, and resume with the previous case and unresolved work already assembled.",
+      "builds_on": "The library already describes recurring jobs and remembers the information their next run needs. The composer handoff and portal-opening action provide an attended execution path.",
+      "mechanism": "Attach an explicitly chosen cadence to a saved case, independently of economics.per. Store timezone, enabled state, next_run_at, last_run_at, and occurrence identity as durable data. A local reconciliation loop atomically journals the fire intent and advances the schedule before dispatch; recovery retries the same occurrence identity. Coalesce missed occurrences into one review, prevent overlap, and explain every fire or skip. Scheduled preparation uses saved local evidence; current portal checks begin when the person resumes. Apply quiet windows, a daily attention budget, snooze, and pause.",
+      "anchors": [
+        "src/athena/contracts/registry.py:205-220",
+        "playbooks/lien-desk/playbook.json:101-110",
+        "apps/desktop/src/modules/playbooks/model.ts:100-106",
+        "apps/desktop/src/stores/run.ts:1230-1239",
+        "README.md:195-198",
+        "apps/desktop/src/modules/playbooks/index.ts:39-50"
+      ],
+      "evidence": "Observed: TurnContext anticipates a schedule trigger, but the live desktop requires a focused page. The lien-desk memory explicitly promises that next week's run starts from computed deadlines. The dossier reports no implemented cadence or scheduler. Hypothesis: a dependable due review closes the gap between a recurring job and the user remembering to start it.",
+      "effort": "M",
+      "risk": "Laptop downtime, duplicate dispatch, stale evidence, or excessive reminders could undermine trust. Make missed-run behavior explicit, deduplicate occurrences, identify stale inputs, and prepare a review awaiting the person. Other-tab proposals and irreversible actions retain their existing gates.",
+      "verify": "With a fake clock, cross a daylight-saving transition, sleep through two occurrences, and crash after journaling a fire but before delivery. Recovery produces exactly one pending review with an explanation of missed occurrences. Quiet windows suppress interruption; pause prevents further fires; an open occurrence prevents overlap. No unattended cross-tab tool execution occurs.",
+      "why_groundbreaking": "A chore becomes a standing commitment the person can rely on. Saved setup and prior receipts make every recurrence more useful.",
+      "parents": [],
+      "anchor_check": {
+        "ok": 6,
+        "total": 6,
+        "bad": []
+      }
+    },
+    {
+      "id": "P12",
+      "seat": "codex-gpt-6.1-sol_xhigh",
+      "round": 1,
+      "title": "Let people test the assumptions their case depends on",
+      "kind": "deepen",
+      "outcome": "Before starting, a person can see whether Athena changes its proposals appropriately when an invoice is already paid or required proof is missing, using their selected engine and case revision.",
+      "builds_on": "Athena already rehearses on an isolated, mechanically shaped world and evaluates filed cards rather than persuasive prose. That machinery can expose specific behavioral evidence about a personal case.",
+      "mechanism": "Add optional case checks with predefined, consistency-validated transformations and assertions evaluated against filed cards. Pilot receivables with three conditions: the baseline, an already-paid invoice, and missing required proof. Preserve frozen library truth; evaluate changed variants through separate behavioral assertions, and suppress inherited dollar scores when their oracle no longer applies. Show the condition, observed behavior, engine, case/world version, and repeat count. Use the configured daily engine. A nine-run pilot would cost approximately $15 at the committed $1.61 mean, with a $45 maximum under the existing $5/run cap; no full-library re-bench is required.",
+      "anchors": [
+        "src/athena/adopt/showcase.py:215-258",
+        "src/athena/adopt/showcase.py:546-567",
+        "src/athena/adopt/showcase.py:446-449",
+        "src/athena/proving/playbooks/bench.py:402-439",
+        "apps/desktop/src/scenes/chores/adopt/showcase.tsx:93-99",
+        "src/athena/adopt/prompts.py:82-106"
+      ],
+      "evidence": "Observed: apply_shape edits world rows and dates while copying truth with renames only. The rehearsal then publishes score.value_found_usd, which the UI displays. Those dollars therefore cannot establish correctness for arbitrary changed cases. The dossier also reports every adopt-tier configuration disqualified. Hypothesis: focused behavioral checks make rehearsal useful for deciding what still needs clarification.",
+      "effort": "M",
+      "risk": "An inconsistent variant or narrow passing result could create false confidence. Validate all related references, use independently specified assertions, disclose unchecked conditions, and retain the invented-world label. A model never judges its own success.",
+      "verify": "Across three repeats per pilot condition, the due baseline produces its expected proposal, the paid invoice produces no chase proposal, and missing proof produces no dependent filing proposal. An intentionally regressed runner fails these checks. Changing the brief or engine makes earlier results historical. Altered worlds never display the unchanged answer key's dollars as personalized findings.",
+      "why_groundbreaking": "Rehearsal becomes inspectable evidence about consequential assumptions. The person learns which behavior has actually been demonstrated before authorizing real work.",
+      "parents": [],
+      "anchor_check": {
+        "ok": 6,
+        "total": 6,
+        "bad": []
+      }
+    },
+    {
+      "id": "P13",
+      "seat": "codex-gpt-6.1-sol_xhigh",
+      "round": 1,
+      "title": "Stay on each invoice until its outcome is verified",
+      "kind": "leap",
+      "outcome": "A person delegates 'get these invoices resolved' and returns to a living case showing each invoice's blocker, next checkpoint, evidence, and remaining balance across multiple sessions.",
+      "builds_on": "The receivables playbook already reconciles portals, contracts, and bank evidence, including misleading pending statuses and fixable submission holds. Other playbooks explicitly remember pending claims and previously served notices.",
+      "mechanism": "Build an outcome desk on saved cases, receipts, and due reviews. Start with freelancer receivables: maintain stable invoice identity, sourced observations, remaining balance, and user-approved checkpoints such as submission corrected, awaiting response, partially paid, paid, or explicitly abandoned. New evidence captured during ordinary attended use reevaluates the affected checkpoint and proposes the appropriate existing playbook step. Persist transitions in Markdown with episode provenance; ambiguous identity or contradictory evidence requires clarification. A declined action leaves the case visibly blocked. Start with one job family and additive case metadata.",
+      "anchors": [
+        "playbooks/freelancer-receivables/playbook.json:81-100",
+        "playbooks/lien-desk/playbook.json:90-105",
+        "src/athena/contracts/channel.py:88-105",
+        "src/athena/core/brain/store.py:431-461",
+        "src/athena/core/brain/store.py:501-535",
+        "src/athena/adopt/research.py:6-23",
+        "src/athena/proving/playbooks/bench.py:457-500"
+      ],
+      "evidence": "Observed: receivables already distinguishes a portal saying pending from bank evidence of payment, remembers what was sent, and identifies the person's W-9 as a blocker. The current bench deduplicates within one score invocation; it supplies no cross-run outcome lifecycle. Hypothesis: retaining these unresolved conditions makes Athena substantially more valuable than repeatedly launching the same command.",
+      "effort": "L",
+      "risk": "Wrong entity matching, duplicate follow-ups, or premature closure could damage a client relationship. Require stable identifiers or user-confirmed matches, source every transition, deduplicate checkpoints, and verify settlement from appropriate evidence. Every external action still requires its ordinary resolved card.",
+      "verify": "Exercise one invoice over three sessions and daemon restarts: correct a rejection, observe a partial payment, then observe final payment while the client portal remains pending. The case retains the exact residual balance, creates one appropriate follow-up checkpoint, and closes only on payment evidence. Replaying observations creates no duplicate transition or recovery total. Declining a proposed follow-up leaves a visible blocker.",
+      "why_groundbreaking": "Athena becomes a personal operations desk that carries work through waiting and resolution. Its cross-app judgment and provenance now accumulate toward an outcome over time.",
+      "parents": [],
+      "anchor_check": {
+        "ok": 7,
+        "total": 7,
+        "bad": []
+      }
+    },
+    {
+      "id": "P14",
+      "seat": "agy-gemini-4-argon_high",
+      "round": 2,
+      "title": "Persist cases in goals/ and join project runs for receipts and carry-forward",
+      "kind": "connect",
+      "outcome": "Approved chore cases survive restarts in the portable markdown brain (supporting multiple distinct cases per playbook), every real run produces an execution-verified receipt (distinguishing completed, outcome-unknown, failed, declined, and expired cards alongside model cost), and the next run automatically carries forward those exact item outcomes so completed actions are not re-filed, timed-out writes are checked before retrying, and expired or failed cards are surfaced first.",
+      "builds_on": "Project-scoped conversations (conv_proj_<id> in src/athena/daemon/sessions.py), markdown brain reconciliation of goals/ (src/athena/core/brain/reconcile.py), tool-result outcome recording (src/athena/lane/browser_lane.py), and the gate's _may_have_run notice (src/athena/harness/hooks.py).",
+      "mechanism": "1) When loop.approve(session, rev) succeeds (src/athena/adopt/loop.py:134-146), mint a case identity via ids.mint('project') and write goals/<project_id>.md using the brain's fixed five-key frontmatter (id, type='goal', scope='project', created, session) so reconcile_from_disk (src/athena/core/brain/reconcile.py:45,123-151) indexes it cleanly while storing playbook_id, rev, Brief.portals swaps, confirmed/guessed slots, and fitted_command in the markdown body; append an approval episode and call write_fact for user-confirmed slots citing that episode_id to satisfy _require_provenance (src/athena/core/brain/store.py:378-396). 2) Pass project_id through athenaOffer/onOffer (apps/desktop/src/companion/live.tsx:364-366) and POST /run (apps/desktop/src/stores/run.ts:874-881) so routes.py:584-601 and sessions.py:49-58 bind every turn, approval row, and [project:proj_<id>] episode to conv_proj_<id>. 3) Add GET /chores/<playbook_id>/runs?project_id=proj_<id> that joins companion_approval (src/athena/core/approvals.py:116-136), the following system tool-result episodes in browser_lane.py:388-431, and companion_turn (src/athena/core/ledger.py:87-106) by conv_proj_<id> to classify each card into five states—completed (consumed + 'returned' episode), outcome_unknown (consumed + deadline timeout or missing result), failed (consumed + 'failed' episode), declined, or expired—computing asked_usd and verified_completed_usd from AMOUNT_PARAMS without truth.json. 4) On subsequent runs under proj_<id>, inject a bounded '(showing N of M)' nonce-fenced '## Last run of this chore' block grouping prior canonical (action, key) calls by those five states, and extend _may_have_run (src/athena/harness/hooks.py:164-180) and spent_recently (approvals.py:92-94) across conv_proj_<id> history so cards display dated prior execution status ('You approved this exact call on Oct 15; outcome: completed / unknown') while keeping all gating policy in GateHook.",
+      "anchors": [
+        "src/athena/adopt/loop.py:134-146",
+        "src/athena/core/brain/reconcile.py:41-53",
+        "src/athena/core/brain/store.py:378-396",
+        "apps/desktop/src/stores/run.ts:874-881",
+        "src/athena/daemon/routes.py:584-601",
+        "src/athena/daemon/sessions.py:49-58",
+        "src/athena/lane/browser_lane.py:388-431",
+        "src/athena/harness/hooks.py:164-180"
+      ],
+      "evidence": "Observed: P05 and P02 noted that routes.py:584-601 and sessions.py:49-58 already route project_id to conv_proj_<id>, but both relied on bench.py:516-524 (_filed_total), which depends on truth.json and treats every approved card as completed work. Conversely, P10 spotted that browser_lane.py:400-405 already records returned vs failed vs outcome_unknown on tool_results, but missed conv_proj_<id> and proposed a redundant run-record schema. Fusing P01/P06's goals/ persistence, P05's conv_proj_<id> join, P10's 5-state execution verification, and P06's _may_have_run carry-forward fixes both flaws in one coherent loop. Hypothesis: carrying 5-state card outcomes into run 2 eliminates duplicate filings on completed items and prevents blind retries on outcome_unknown writes without reducing recall on new or expired items.",
+      "effort": "M",
+      "risk": "Stale slot values or misinterpreting an approved-but-timed-out write as completed; mitigated by deriving completed status strictly from the subsequent tool_result episode (leaving timeouts as outcome_unknown), fencing all recalled parameters with wrap_untrusted, keeping five-key frontmatter byte-compatible with reconcile_from_disk, and keeping _may_have_run purely informational inside GateHook.",
+      "verify": "1) Approve a case, delete index.sqlite, run reconcile_from_disk, and verify goals/proj_<id>.md and its provenance-linked facts restore cleanly and reopen in the studio with zero repeated questions. 2) Execute a multi-tab run under proj_<id> with one returned write, one timed-out write (outcome_unknown), one declined card, and one expired card; verify GET /chores/<playbook_id>/runs reports all four states and exact conv_proj_<id> ledger spend. 3) Run the two-run bench on 10 playbooks pre-seeding score()'s seen set from run 1: verify 0 duplicate filings of completed run-1 items and recall >= bar on remaining eligible items.",
+      "why_groundbreaking": "It unifies case persistence, honest post-execution receipts, and cross-run memory across all 100 playbooks without special-casing any domain—turning Athena from a stateless single-run demo into an auditable desk that knows what actually succeeded, what timed out, and where the next run must pick up.",
+      "parents": [
+        "P01",
+        "P05",
+        "P06",
+        "P10"
+      ],
+      "anchor_check": {
+        "ok": 8,
+        "total": 8,
+        "bad": []
+      }
+    },
+    {
+      "id": "P15",
+      "seat": "agy-gemini-4-argon_high",
+      "round": 2,
+      "title": "Schedule chores in rituals/cadence with local prep and attended tab staging",
+      "kind": "leap",
+      "outcome": "Users can put any adopted chore on a recurring schedule (weekly, monthly, custom) that survives restarts and laptop sleep: when due, Athena quietly prepares a carry-forward review brief from local memory and prior receipts without touching browser tabs unattended, nudges once inside the user's focus window, and on click opens the user's swapped portals and steps through each portal tab with full screenshots and human gating.",
+      "builds_on": "The brain's reserved rituals/cadence, rituals/quiet_hours, and rituals/focus_window directories (src/athena/core/brain/paths.py, reconcile.py), TurnContext.trigger='schedule' (src/athena/contracts/registry.py), origin-pinned cross-tab safety (src/athena/harness/hooks.py, README §3.4), and the desktop's wired actions.open tab launcher (apps/desktop/src/modules/playbooks/index.ts).",
+      "mechanism": "1) Store each chore's user-confirmed schedule in rituals/cadence/job_<id>.md (minted via ids.mint('job'), indexed as kind='ritual' by reconcile.py:48-50) with project_id, playbook_id, cadence, timezone, enabled, next_run_at, last_run_at, and occurrence_id. 2) Run a daemon cadence reconciliation loop that checks due rituals against rituals/quiet_hours and rituals/focus_window (paths.py:34-36), atomically journals occurrence_id and advances next_run_at on disk before dispatch, coalesces missed periods while the laptop was off into a single catch-up occurrence, blocks overlapping runs of the same project_id, and logs every fire or skip reason. 3) Fix P07's origin-pinning flaw (where hooks.py:130-137 another_tab gates even READ calls on non-focused portals and run.ts:1230-1239 requires a focused tab) by splitting due execution into two stages: (a) Unattended Local Prep (trigger='schedule' on TurnContext, registry.py:207-210; added to TRIGGERS in ledger.py:67): run a local brain-only prep turn with disabled_origins covering all host origins, assembling the saved goals/proj_<id>.md setup, recalled deadline facts (e.g. lien-desk/playbook.json:101-105), and unresolved/expired cards from the prior run into a pending 'Due review', emitting at most one deduplicated nudge per (project_id, occurrence_id). (b) Attended Multi-Portal Staging: when the user clicks 'Stage portals & start' on the due review, invoke model.actions.open(url) (modules/playbooks/index.ts:49) for each portal in Brief.portals and advance focus across the playbook's portal sequence as phases complete (run.ts:1230-1248), so each portal's READ tools execute natively on the focused tab with zero false cross-tab cards and every GATED write card carries a live tab screenshot (_capture_for, hooks.py:93-102).",
+      "anchors": [
+        "src/athena/core/brain/paths.py:33-36",
+        "src/athena/core/brain/reconcile.py:48-50",
+        "src/athena/contracts/registry.py:207-220",
+        "src/athena/core/ledger.py:61-67",
+        "src/athena/harness/hooks.py:93-137",
+        "apps/desktop/src/stores/run.ts:1230-1248",
+        "apps/desktop/src/modules/playbooks/index.ts:39-53"
+      ],
+      "evidence": "Observed: P03 and P07 identified the unwired rituals/cadence/*.md tree (paths.py:35), job_ IDs (ids.py:38), trigger='schedule' (registry.py:207-210), and actions.open (modules/playbooks/index.ts:49), while P11 noticed that README.md:195-198, hooks.py:130-137 (another_tab), and run.ts:1230-1239 forbid unattended multi-tab browser execution. Fusing P03/P07's brain ritual storage and tab-staging action with P11's two-stage local-prep-then-attended-resume flow satisfies both the scheduling/proactive-nudges standards and origin_pinning. Hypothesis: pre-assembling the due case locally and staging all required portal tabs on one click eliminates the manual setup friction of recurring chores without weakening cross-tab or write gating.",
+      "effort": "M",
+      "risk": "Nudge fatigue if a user ignores due chores, or portal login walls when tabs open; mitigated by deduplicating nudges per (project_id, occurrence_id), auto-pausing or suggesting a slower cadence after N unanswered occurrences, and running live portal reads only during the attended staging flow where the user sees and focuses each portal tab.",
+      "verify": "1) Fake-clock daemon test: cross DST, sleep across 3 periods, and simulate a crash after next_run_at advancement; verify exactly one catch-up occurrence fires, reconcile_from_disk restores rituals/cadence/job_<id>.md, quiet hours defer nudges, and companion_turn records trigger_kind='schedule' with zero host tool calls during unattended prep. 2) Desktop/integration test: clicking 'Stage portals & start' calls actions.open for each swapped portal URL, focuses each portal tab in sequence so READ tools execute without filing cross-tab cards, and attaches a valid capture_id screenshot to every GATED write card.",
+      "why_groundbreaking": "It makes 'recurring chores' real without compromising Athena's strictest security boundary (origin pinning and human-gated actions): Athena remembers the calendar, prepares the dossier from memory while you are away, and opens and walks your portals with you the moment you sit down.",
+      "parents": [
+        "P03",
+        "P07",
+        "P11"
+      ],
+      "anchor_check": {
+        "ok": 7,
+        "total": 7,
+        "bad": []
+      }
+    },
+    {
+      "id": "P16",
+      "seat": "claude-claude-opus-5-5_xhigh",
+      "round": 2,
+      "title": "Make each adopted chore a case file its runs and receipts come back to",
+      "kind": "connect",
+      "outcome": "After approving a brief, the person has a durable case for that chore. Reopening it after a restart shows the same brief rev, slots and command with no re-interview. Every real run started from it is listed on the topic page as a receipt: cards approved, declined, expired and 'may have completed', dollars asked on approved cards, model cost and minutes. The receipt sits beside the rehearsal, and the rehearsal shows a dollar figure only when that figure is still valid for the shaped world. Today the brief dies with the 2 h session, no real run is linked to its chore, and the rehearsal's dollar figure is scored against an answer key that the shaping may have invalidated.",
+      "builds_on": "Strength 1 (every claim is measured or says it is not) and strength 2 (value is read from cards, never prose), applied to the person's own work. It reuses the brain's indexed but unwritten goals/ directory and the daemon's existing proj_ to one-conversation routing.",
+      "mechanism": "1) Case file: the on_approve path (loop.py:134-146) mints a proj_ id (ids 'project') and writes goals/<proj>.md. The brain's fixed header stays untouched; playbook id, rev, brief md, fitted command, portal swaps, and each slot with status, source and confirmation date go in the body. reconcile.WALK already indexes goals/ as kind 'goal'. The studio reopens from the file: confirmed slots carry over with their date and the person's quote, and date or amount facts the chore depends on reopen as 'guessed', so the auditor re-confirms them from the person's words. This fixes P01 hydrating them as confirmed. 2) Linking: hand() carries the proj_ id, and run.ts sends project_id beside active_project. sessions.conversation_for then puts every tab's turns in conv_proj_<hex>, and browser_lane marks episodes [project:proj_]. 3) Receipt: a read-only route folds companion_approval rows for that conversation_id into approved, declined, expired and pending, plus outcome_unknown from the conversation's episodes. 'Asked' dollars use the bench's _filed_total rule over approved cards and are labelled 'asked, from N cards you approved', never 'recovered'. Cost and minutes come from ledger rollup by=conversation. When the person presses done (ADR 0044), the receipt is appended to the case file as a dated section, so it survives deletion of index.sqlite. reconcile does not own the approval and ledger tables. 4) Honest comparison: showcase sends found_usd only when shape.json made no row edits and no 'today' shift (renames only, so truth still holds). Otherwise it sends null with the reason 'your case changed rows the answer key was written for', and the topic page compares the rehearsal by cards proposed, not dollars.",
+      "anchors": [
+        "src/athena/adopt/loop.py:134-146",
+        "src/athena/core/brain/reconcile.py:41-54",
+        "apps/desktop/src/stores/run.ts:874-881",
+        "src/athena/daemon/routes.py:584-586",
+        "src/athena/daemon/sessions.py:49-58",
+        "src/athena/core/approvals.py:115-139",
+        "src/athena/adopt/showcase.py:546-567",
+        "apps/desktop/src/scenes/chores/adopt/showcase.tsx:93-99"
+      ],
+      "evidence": "Observed: nothing in src/athena writes goals/ although the tree and WALK reserve it; AdoptSession holds the brief and approved_rev in memory with TTL_S = 2 h; run.ts never sends project_id; routes.py already validates a proj_ id and conversation_for maps it to one conversation across origins; companion_approval and companion_turn both carry conversation_id; browser_lane.py:402-404 already records outcome_unknown as 'may have completed'. showcase.py:12-13 says the rehearsal is unscored and truth is only renamed, yet showcase.py:557-558 sends value_found_usd and the studio prints it. Hypothesis: a shared conv_proj conversation does not hurt multi-portal runs, because ADR 0044 already gives every tab the same goal; this is checked below before shipping.",
+      "effort": "M",
+      "risk": "Moving playbook turns from conv_<app> to conv_proj changes the history each turn sees and could regress a multi-portal run. Mitigation: bench the top 5 playbooks with project_id set (about $7) and require unchanged verdicts. A second risk is a receipt reading as recovered money; mitigation: it says 'asked' and shows declined and unknown separately. A carried slot could also be stale; mitigation: facts the chore depends on reopen as guessed.",
+      "verify": "Approve a brief, restart daemon and desktop, reopen: same rev, slots and command, and zero questions re-asked for unchanged non-date slots. Start for real: every /run body carries project_id=proj_x, and every ledger row for those turns has conversation_id=conv_proj_x. The topic page's counts equal SELECT status,count(*) FROM companion_approval WHERE conversation_id='conv_proj_x' GROUP BY status, and its cost equals /ledger/rollup?by=conversation. Delete index.sqlite and reconcile: the case and its appended receipts reappear. A rehearsal whose shape has a row edit shows no dollar figure; a renames-only rehearsal still does. Top-5 bench verdicts stay unchanged with project_id set.",
+      "why_groundbreaking": "A chore stops being a library entry you launch once and becomes an object with a history. The number the product rests on, value read from cards, is measured on the person's own work and set against a rehearsal figure that is honest about when it still holds.",
+      "parents": [
+        "P01",
+        "P02",
+        "P05",
+        "P10",
+        "P12"
+      ],
+      "anchor_check": {
+        "ok": 8,
+        "total": 8,
+        "bad": []
+      }
+    },
+    {
+      "id": "P17",
+      "seat": "claude-claude-opus-5-5_xhigh",
+      "round": 2,
+      "title": "Bring a due chore back as a staged review that waits for you to press send",
+      "kind": "extend",
+      "outcome": "The person sets 'every Monday' or 'the 1st of the month' on a saved case. When it comes due, they get one notification outside quiet hours. Opening it shows a review assembled with no model call: what the last run left unresolved (expired cards, 'may have completed' calls), what was approved and when, and the cadence's next date. One press opens the chore's real portal tabs and puts the command in the composer with a bounded 'Since last run' block. Nothing runs until they press send.",
+      "builds_on": "The mechanical fitted command, the gate's 'you approved this exact call' line (hooks.py:164-180), the brain's reserved rituals/cadence/ directory, and the wired but undrawn actions.open. It fixes P03's two mechanism errors and fills in P11's review.",
+      "mechanism": "1) Cadence: a durable rituals/cadence/<proj>.md (enabled, cadence, timezone, next_run_at, last_run_at), which reconcile.WALK already indexes. The suggested default comes from economics.times_per_year (present in 91 of 100 playbooks), not economics.per (71 are 'year'); only the person confirms it. 2) A daemon reconciliation loop following the registry scheduling standard: advance next_run_at before notifying; coalesce missed occurrences into one review ('missed 2, here is one'); no second review while one is open; every fire or skip writes an explainable line. 3) The review reads only the case file and its last receipt (crossbreed 1): approved keys with dates, declined keys, expired and outcome_unknown keys first. 4) 'Open and prepare' calls actions.open on each playbook.apps[].url for unswapped portals, and on a URL slot the studio asks for each swapped portal. Brief.portals holds names only, which was P03's error. It then pre-loads the composer with the command plus the 'Since last run' block, using the (showing N of M) footer and the untrusted fence. The first turn the person sends carries trigger='schedule' into the ledger's trigger_kind. 5) For turns under this project, _may_have_run looks back to the start of the last run instead of SPENT_LOOKBACK's 24 h; it still only informs. 6) One notification per (proj, due date), held in quiet hours. Three unanswered in a row prompts 'pause or slow this chore?'.",
+      "anchors": [
+        "src/athena/core/brain/reconcile.py:48-50",
+        "src/athena/contracts/adopt.py:157-167",
+        "apps/desktop/src/modules/playbooks/index.ts:40-55",
+        "apps/desktop/src/stores/run.ts:1230-1239",
+        "src/athena/contracts/registry.py:205-210",
+        "src/athena/harness/hooks.py:164-180",
+        "src/athena/core/approvals.py:92-94",
+        "playbooks/lien-desk/playbook.json:101-106"
+      ],
+      "evidence": "Observed: rituals/cadence is in the tree and in WALK, and no code writes it. TurnContext.trigger names 'schedule' and nothing sets it. run.ts:1230-1239 refuses a turn without a focused page, so an attended, open-then-send flow fits the desktop as it is, without inventing unattended page access. Brief.portals maps names to names, and playbook.apps[] carries a url. economics.per is 'year' for 71 playbooks and times_per_year exists in 91. lien-desk's memory promises that 'next week's run starts from the calendar'. Every uat Character's chore recurs. Hypothesis: putting the last run's unresolved items first cuts duplicate filings on the second run and the time to start it; untested.",
+      "effort": "M",
+      "risk": "Nagging, and a stale carry-forward hiding an item that changed. Mitigations: a deduplicated notification with quiet hours and a pause prompt after repeated silence; the block names keys and dates and never says 'skip', and changed params are a different canonical call, so they are never flagged. Nothing reads a portal or sends a turn without the person present, so no new authority is added; README:195-198 stands. It depends on crossbreed 1's case file and receipt.",
+      "verify": "Fake-clock tests: next_run_at three periods in the past yields exactly one review that names 2 missed occurrences; a crash after advancing does not notify twice; disabled never fires; quiet hours defer; a DST crossing keeps local time. Vitest: 'Open and prepare' calls tabsCreate with playbook.apps urls and the case's URL slot, never a Brief.portals string, and zero /run requests happen until send is pressed. The pre-loaded command contains an expired card key taken from the previous receipt. The first sent turn's ledger row has trigger_kind='schedule'. A card for a call approved 20 days ago in the last run carries the dated line; today it carries nothing.",
+      "why_groundbreaking": "'Chores' become recurring in fact without anything running unattended. The second run starts from where the first stopped, which answers the dossier's open question about what a chore's second run looks like.",
+      "parents": [
+        "P03",
+        "P11",
+        "P06",
+        "P10"
+      ],
+      "anchor_check": {
+        "ok": 8,
+        "total": 8,
+        "bad": []
+      }
+    },
+    {
+      "id": "P18",
+      "seat": "codex-gpt-6.1-sol_xhigh",
+      "round": 2,
+      "title": "Prove follow-through across approvals, restarts, and second runs",
+      "kind": "deepen",
+      "outcome": "Before relying on a recurring chore, a person can inspect repeated evidence that their selected engine follows through after approval, respects a refusal, and handles uncertain execution across a restart.",
+      "builds_on": "The bench already exercises the real daemon and gate on isolated portals, supports simulated approval, and produces navigable traces; the parents add continuity, behavioral checks, and comparable repetitions.",
+      "mechanism": "Pilot freelancer receivables with a separate deterministic scenario overlay that defines action effects, subsequent observations, and serializable simulated state without rewriting committed worlds or frozen truth. Drive predefined approve, decline, and execute-with-lost-answer branches through the ordinary decision route; the decision script never consults scorer classifications. Run a first session, restart against the same temporary brain and saved overlay, then run a second session with independently specified follow-through assertions. Preserve the approved brief revision and project identity in the scenario manifest. Aggregate three repetitions per branch only when brief, world, overlay, engine/model, harness, and assertion versions match. Show branch-specific k-of-n results and traces in the studio, retain corrections as new records, and suppress inherited dollar scores for changed scenarios.",
+      "anchors": [
+        "src/athena/proving/playbooks/page.py:34-87",
+        "src/athena/proving/playbooks/bench.py:280-306",
+        "src/athena/proving/playbooks/bench.py:356-365",
+        "src/athena/proving/playbooks/bench.py:402-500",
+        "src/athena/adopt/showcase.py:215-258",
+        "src/athena/core/approvals.py:570-598",
+        "src/athena/lane/browser_lane.py:388-431",
+        "src/athena/proving/playbooks/rank.py:155-168"
+      ],
+      "evidence": "Observed: simulated execution records actions but never updates read tables, duplicate scoring resets its seen set on every invocation, and shaped rehearsals retain the original truth apart from renames. Hypothesis: stateful temporal checks expose failures that first-run recall and static variants miss. Three branches, three repetitions, and two sessions require 18 session executions, approximately $29 at the committed Sonnet mean, with a nominal $90 budget under existing $5 session caps.",
+      "effort": "M",
+      "risk": "An inaccurate simulator could certify behavior that real portals do not support; independently test every modeled effect, keep decision plans separate from scoring, identify all simulated assumptions, and present results as evidence limited to the tested scenarios.",
+      "verify": "An approved action changes a subsequent simulated read; a declined action produces no effect; an executed action whose answer is lost is not blindly repeated after restart; later payment evidence changes the next proposal appropriately; new eligible work remains discoverable; deliberately regressed behavior fails the assertions; each displayed k-of-n result links to matching versioned traces and retains prior corrections.",
+      "why_groundbreaking": "Chores gains reproducible evidence about continuity over time: respecting refusals, preserving uncertainty, and following through after a restart. That makes recurring delegation assessable through observed behavior.",
+      "parents": [
+        "P04",
+        "P06",
+        "P08",
+        "P12"
+      ],
+      "anchor_check": {
+        "ok": 8,
+        "total": 8,
+        "bad": []
+      }
+    }
+  ],
+  "ratings": [
+    {
+      "id": "P05",
+      "score": 8,
+      "why": "Checking routes.py:584-592 and sessions.py:49-58 confirms project_id already routes turns into conv_proj_<hex> across companion_approval and companion_turn, making this a high-leverage Effort S win, though bench.py:516-524 (_filed_total) relies on truth-derived recovers/outcome fields that do not exist on live runs and store.rs:256-263 keeps project identity in Tauri SQLite rather than the portable markdown brain.",
+      "by": "agy-gemini-4-argon_high"
+    },
+    {
+      "id": "P06",
+      "score": 9,
+      "why": "Every anchor checks out—reconcile.py:45 already walks goals/, browser_lane.py:111-114 confirms the fixed five-key header constraint, and extending hooks.py:164-180 (_may_have_run) and approvals.py:92-94 (SPENT_LOOKBACK) to the project's prior run while seeding score()'s seen set in bench.py:402-430 directly solves repeat-run deduplication without moving policy out of the gate.",
+      "by": "agy-gemini-4-argon_high"
+    },
+    {
+      "id": "P07",
+      "score": 6,
+      "why": "While paths.py:33-36 and registry.py:207-220 support rituals/cadence and trigger='schedule', checking hooks.py:130-137 (another_tab) reveals a critical flaw in Mechanism step 3: every playbook spans at least two portals, and in an unattended scheduled turn pinned to one origin, another_tab gates even READ calls on the other portals into cards, preventing multi-portal discovery from completing.",
+      "by": "agy-gemini-4-argon_high"
+    },
+    {
+      "id": "P08",
+      "score": 5,
+      "why": "Checking rank.py:155-168, bench.py:781-806, and __main__.py:219-224 confirms both recorded deviations—rank_all sorts on a single draw and rescore overwrites the same run_at without appending to history—but spending ~$64–$320 on multi-run benching mainly improves static catalogue badges rather than what users can do with their chores.",
+      "by": "agy-gemini-4-argon_high"
+    },
+    {
+      "id": "P09",
+      "score": 7,
+      "why": "Checking adopt.py:157-167, loop.py:134-146, and store.py:378-395 confirms the value of keeping multiple cases per playbook distinct and recording user answers as episodes to satisfy _require_provenance, but the mechanism invents a new CaseSnapshot storage format without connecting to the brain's existing goals/ directory (paths.py:29, reconcile.py:45) or ids.mint('project').",
+      "by": "agy-gemini-4-argon_high"
+    },
+    {
+      "id": "P10",
+      "score": 7,
+      "why": "Checking browser_lane.py:388-431 confirms P10's critical observation that an approved card can still end in failed or outcome_unknown on execution—which P02 and P05 missed—but P10's Evidence wrongly claims the ledger lacks a run association, overlooking sessions.py:49-58 (conv_proj_<id>) which already joins turns, approvals, and episodes without a custom markdown run-record table.",
+      "by": "agy-gemini-4-argon_high"
+    },
+    {
+      "id": "P11",
+      "score": 8,
+      "why": "Checking run.ts:1230-1239 (which refuses turns without a focused page) and README.md:195-198 confirms why P11's split—preparing due reviews from saved local evidence and deferring live portal checks until the user resumes—is architecturally sound where P07 fails, losing a point only for overlooking the brain's existing rituals/cadence and rituals/quiet_hours directories in paths.py:34-36.",
+      "by": "agy-gemini-4-argon_high"
+    },
+    {
+      "id": "P12",
+      "score": 4,
+      "why": "Checking showcase.py:257 and 558-566 confirms a real bug—apply_shape edits world rows while leaving truth.json un-recomputed, yet Showcase._run still emits score.value_found_usd to showcase.tsx:93-99—but running nine full bench runs (~21 minutes and ~$15) on hand-built variants for a single playbook is too slow, expensive, and narrow for interactive studio use.",
+      "by": "agy-gemini-4-argon_high"
+    },
+    {
+      "id": "P13",
+      "score": 5,
+      "why": "Checking freelancer-receivables/playbook.json:81-100 and store.py:431-461 supports tracking partial payments and blockers with episode provenance across sessions, but building a bespoke receivable state machine for one playbook at Effort L works against Athena's playbook-agnostic core/harness architecture when 100 playbooks share the same target-key structure.",
+      "by": "agy-gemini-4-argon_high"
+    },
+    {
+      "id": "P01",
+      "score": 7,
+      "why": "Checked: goals/ is in paths.TREE and reconcile.WALK as kind 'goal' and nothing in src/athena writes it, ids has a 'project' prefix, and approve() (loop.py:134-146) only sets approved_rev, so the gap is real and the fix is small; points off because hydrating saved slots as status 'confirmed' gets around the auditor's literal-words rule for values that may have gone stale.",
+      "by": "claude-claude-opus-5-5_xhigh"
+    },
+    {
+      "id": "P02",
+      "score": 8,
+      "why": "Checked: run.ts:874-881 sends only active_project with the playbook slug and never a project_id, while routes.py:584-586 and sessions.conversation_for already map a proj_ id to one conversation and companion_approval/companion_turn both key on conversation_id, so the receipt is mostly a join; folding approval rows into TraceTurn for the replay is the weak part, and it ignores the regression risk of moving turns from conv_<app> to conv_proj.",
+      "by": "claude-claude-opus-5-5_xhigh"
+    },
+    {
+      "id": "P03",
+      "score": 4,
+      "why": "Checked: rituals/cadence and the 'job' id prefix exist, but Brief.portals (contracts/adopt.py:157-167) maps playbook portal names to the person's names, not URLs, so 'open each URL in Brief.portals' cannot work as written, and economics.per is 'year' for 71 of 100 playbooks (freelancer-receivables included), so it cannot seed a weekly or monthly cadence.",
+      "by": "claude-claude-opus-5-5_xhigh"
+    },
+    {
+      "id": "P04",
+      "score": 3,
+      "why": "Checked: bench.py:79,294-295,356-365 already has approve='all' running cards against SimulatedPortals; a 'policy' approver that reads truth to refuse traps lets the answer key steer the run's trajectory; and the live dry run mostly repeats what the gate already does (every GATED call waits as a card) while reaching into the page-operation lane the dossier rules out.",
+      "by": "claude-claude-opus-5-5_xhigh"
+    },
+    {
+      "id": "P09",
+      "score": 6,
+      "why": "Checked: Brief (contracts/adopt.py:157-167), approved_rev held only on AdoptSession and module-variable memory.ts confirm nothing persists; same outcome as P01 with better care for stale values and for two cases of one playbook, but it names no storage home or reopen path, so less of it can be checked.",
+      "by": "claude-claude-opus-5-5_xhigh"
+    },
+    {
+      "id": "P10",
+      "score": 6,
+      "why": "Checked: the honest state split is real (browser_lane.py:402-404 records outcome_unknown as 'may have completed'), but its anchor hooks.py:470-503 is the ledger's after_turn writer, not result-state recording, and it misses that conversation_id already joins a run once a proj_ id is sent, so it proposes a heavier separate run record.",
+      "by": "claude-claude-opus-5-5_xhigh"
+    },
+    {
+      "id": "P11",
+      "score": 6,
+      "why": "Checked: run.ts:1230-1239 refuses a turn with no focused page, and P11 correctly works within that by preparing from saved evidence and leaving portal checks until the person resumes; lien-desk's memory (playbook.json:101-106) does promise that next week's run 'starts from the calendar'; the scheduling rules are sound but it barely says what the prepared review contains.",
+      "by": "claude-claude-opus-5-5_xhigh"
+    },
+    {
+      "id": "P12",
+      "score": 6,
+      "why": "Checked, and the flaw is real: showcase.py:12-13 says the rehearsal is unscored and truth is only renamed, yet showcase.py:557-558 sends score.value_found_usd and showcase.tsx:93-99 shows it as 'found in the rehearsal' after add/remove/modify row edits, which is a live honesty bug; the receivables-only paid pilot is narrow for what it costs.",
+      "by": "claude-claude-opus-5-5_xhigh"
+    },
+    {
+      "id": "P13",
+      "score": 4,
+      "why": "Checked: freelancer-receivables' traps and memory (Ariba pending vs bank paid, the W-9 hold) support the idea, but it rests on three unbuilt layers (saved case, receipts, due reviews), cites channel.py:88-105 (a generic ToolResult) as support, and leaves undesigned how new evidence re-checks a checkpoint, all at L effort for one job family.",
+      "by": "claude-claude-opus-5-5_xhigh"
+    },
+    {
+      "id": "P01",
+      "score": 7,
+      "why": "session.py:557-565 and loop.py:134-146 confirm valuable persistence is missing, but frontmatter.py does not parse nested YAML structures and restoring saved guesses as confirmed would overstate their evidence.",
+      "by": "codex-gpt-6.1-sol_xhigh"
+    },
+    {
+      "id": "P02",
+      "score": 5,
+      "why": "routes.py:584-601 supports the proposed project join, but companion.ts:27-35 contains sizing code and bench.py:516-524 totals requested amounts, so the cited machinery cannot establish exact executed value.",
+      "by": "codex-gpt-6.1-sol_xhigh"
+    },
+    {
+      "id": "P03",
+      "score": 4,
+      "why": "The due queue addresses a real gap, but slots.py:167-175 stores portal names rather than URLs, rank.py:20-27 defines valuation periods rather than personal schedules, and advancing before dispatch alone can lose delivery after a crash.",
+      "by": "codex-gpt-6.1-sol_xhigh"
+    },
+    {
+      "id": "P04",
+      "score": 2,
+      "why": "page.py:75-87 only records approved actions without mutating tables, while manifest.py:152-156 classifies host tools as AUTO or GATED, undermining both the assumed simulated follow-through and the proposed READ-only live interceptor.",
+      "by": "codex-gpt-6.1-sol_xhigh"
+    },
+    {
+      "id": "P05",
+      "score": 8,
+      "why": "run.ts:875-880, routes.py:584-601 and store.rs:243-263 confirm a valuable missing join with substantial infrastructure ready, although live receipt totals need a recovery classification independent of the bench scorer's truth-derived recovers flag.",
+      "by": "codex-gpt-6.1-sol_xhigh"
+    },
+    {
+      "id": "P06",
+      "score": 6,
+      "why": "session.py:81 and approvals.py:570-598 confirm the persistence and lookback gaps, but spent approval explicitly includes uncertain execution and page.py:75-87 leaves tables unchanged, weakening the proposed second-run duplicate evidence.",
+      "by": "codex-gpt-6.1-sol_xhigh"
+    },
+    {
+      "id": "P07",
+      "score": 5,
+      "why": "hooks.py:129-137 and run.ts:1230-1239 confirm that focused-page requirements and gated cross-tab reads limit unattended preparation, while the proposed advance-before-dispatch rule still needs recoverable delivery to prevent silently lost occurrences.",
+      "by": "codex-gpt-6.1-sol_xhigh"
+    },
+    {
+      "id": "P08",
+      "score": 9,
+      "why": "rank.py:155-177 ranks the latest draw, bench.py:786-806 replaces same-run rescoring, and inspection confirms 80 of 100 bench files lack history, making comparable repeated runs and preserved corrections a strong improvement to the catalogue's central claims.",
+      "by": "codex-gpt-6.1-sol_xhigh"
+    }
+  ],
+  "seats": {
+    "agy-gemini-4-argon_high": {
+      "letter": "A",
+      "spec": "agy:gemini-4-argon@high"
+    },
+    "claude-claude-opus-5-5_xhigh": {
+      "letter": "B",
+      "spec": "claude:claude-opus-5-5@xhigh"
+    },
+    "codex-gpt-6.1-sol_xhigh": {
+      "letter": "C",
+      "spec": "codex:gpt-6.1-sol@xhigh"
+    },
+    "grok-grok-4.7_high": {
+      "letter": "D",
+      "spec": "grok:grok-4.7@high"
+    }
+  },
+  "problems": {
+    "r1/grok-grok-4.7_high": [
+      "no JSON block with \"proposals\" in the final message"
+    ]
+  }
+}
