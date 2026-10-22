@@ -5248,6 +5248,62 @@
           "evidence": "src/athena/connectors/seal.py:184 The keystore backend delegates credential storage; no application-owned data key or random-nonce cipher budget was found."
         }
       ]
+    },
+    "9e179811-457d-4d43-865e-87faad968f56/embedded-db": {
+      "context": "demo-kit-ui-webmcp",
+      "subject": "embedded-db",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-22",
+      "evaluatedTs": "2026-10-22T21:35:00.009Z",
+      "worker": "23ddece7-2d4a-4a24-a631-2b970921e426",
+      "techniques": [
+        {
+          "technique": "analytical-reads-off-the-serving-store",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/activity/index.ts:93 The context performs listing and point reads; inspection and searches found no analytical aggregates, self-joins, or analysis-copy workflow."
+        },
+        {
+          "technique": "connection-pooling",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/db/index.ts:135 The wrapper reuses a synchronous handle per file rather than implementing a pool with checkout, acquisition waits, and returns."
+        },
+        {
+          "technique": "corruption-class-response",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/src/db/index.ts:157 Writes directly use the shared handle without corruption classification or quarantine state, so a structural error does not prevent later write attempts."
+        },
+        {
+          "technique": "db-self-instrumentation",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/src/db/index.ts:153 Database operations directly invoke the driver without latency records, operation-family metrics, slow thresholds, or bounded diagnostic rings."
+        },
+        {
+          "technique": "derived-capacity-limits",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/webmcp/bounded.ts:38 This limit governs WebMCP result presentation; the inspected database wrapper exposes no entry-size, transaction-size, cache-budget, replication, or cipher limits requiring a derivation tree."
+        },
+        {
+          "technique": "extension-lifecycle",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/db/index.ts:191 The context uses ordinary SQLite tables and built-in statements; searches found no loadable extensions, registered database functions, collations, or virtual-table modules."
+        },
+        {
+          "technique": "journal-and-durability-modes",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/src/db/index.ts:139 WAL is requested through exec without reading its effective value, and synchronization is neither explicitly configured nor verified on connection creation."
+        },
+        {
+          "technique": "single-writer-holder-discipline",
+          "verdict": "not-applicable",
+          "evidence": "examples/demo-kit/src/db/index.ts:138 The context uses SQLite connection concurrency rather than an exclusively held single-writer directory, and contains no live-directory backup or holder-diagnosis workflow."
+        },
+        {
+          "technique": "storage-accounting-and-pruning",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/src/activity/index.ts:65 Activity rows accumulate on mutations without a named retention policy, pruning owner, or per-table storage report; the read LIMIT does not bound stored rows."
+        }
+      ]
     }
   }
 }
