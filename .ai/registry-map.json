@@ -1596,7 +1596,11 @@
           "revision": 3,
           "changedAt": "2026-09-26",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/connectors/vault.py:784 The vault stores individual provider credentials directly, while context and repository searches found no root_key, data_key, recovery_key, key_rotation, or upgrade_entry implementation, placing this context within the standard's explicit credential-vault boundary.",
+          "evaluatedAt": "2026-10-22",
+          "evaluatedAgainst": "sha256-b2:044e6e9d3f3395f0",
+          "evaluatedRevision": 3
         },
         {
           "subject": "test-harness",

@@ -5207,6 +5207,47 @@
         "at": "2026-10-20T21:26:51.523220+00:00",
         "reason": "reviewer (sonnet): The claim is contradicted by the code. Before `run_tool` executes, the gate's `_check_grant` calls `approvals.consume(approval_id)`, which spends the single-use approval, so a reservation does exist (hooks.py:310). The result `call_id` is `f'{turn_ctx.turn_id}_exec'` (browser_lane.py:369), built fro"
       }
+    },
+    "1aff3b77-8fa5-45ac-93ae-941206f3ed16/seal-and-key-hierarchy": {
+      "context": "connector-service",
+      "subject": "seal-and-key-hierarchy",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-22",
+      "evaluatedTs": "2026-10-22T21:03:47.665Z",
+      "worker": "4fddb334-a9f1-4b6e-85c5-a261e8d4c48c",
+      "techniques": [
+        {
+          "technique": "any-one-seal-unseals",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/connectors/vault.py:290 One credential-storage backend is selected; no external root-key service, additional root custody, or seal migration was found."
+        },
+        {
+          "technique": "append-only-keyring-rotation",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/connectors/seal.py:163 DPAPI protects credential bytes directly; this context does not manage a data key or rotating encryption-key ring."
+        },
+        {
+          "technique": "per-tenant-seal-chain",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/connectors/__init__.py:5 Credentials belong to one user-level vault; searches found no tenant hierarchy or independently controlled tenant custody."
+        },
+        {
+          "technique": "recovery-key-is-not-unseal-key",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/daemon/connectors.py:45 Routes expose connector lifecycle operations; searches found no recovery shares, quorum ceremony, or recovery-based unseal path."
+        },
+        {
+          "technique": "transient-upgrade-entry",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/connectors/vault.py:273 This is a user-level credential vault; searches found no replicas, rotating root/keyring state, or replica upgrade entries."
+        },
+        {
+          "technique": "usage-triggered-rotation",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/connectors/seal.py:184 The keystore backend delegates credential storage; no application-owned data key or random-nonce cipher budget was found."
+        }
+      ]
     }
   }
 }
