@@ -363,7 +363,13 @@ export default function Live() {
     let alive = true;
     onOffer(({ text, playbook }) => {
       setOffer((prev) => ({ n: (prev?.n ?? 0) + 1, text }));
-      if (playbook) useRun.getState().setProject({ id: playbook.id, title: playbook.title, goal: text });
+      if (playbook)
+        useRun.getState().setProject({
+          id: playbook.id,
+          title: playbook.title,
+          goal: text,
+          ...(playbook.caseId ? { caseId: playbook.caseId } : {}),
+        });
       rt.dispatch({ t: "open" });
       rt.dispatch({ t: "tab", tab: "talk" });
     })
@@ -386,7 +392,10 @@ export default function Live() {
     send: (message) => void run.send(message).catch(report("send")),
     stop: () => void run.stop().catch(report("stop")),
     clear: () => run.clear(),
-    clearProject: () => run.setProject(null),
+    clearProject: () =>
+      void run.doneProject().then((problem) => {
+        if (problem) console.error(`[athena] done: ${problem}`);
+      }, report("done")),
     pin: () => rt.dispatch({ t: "pin" }),
     tab: (tab) => rt.dispatch({ t: "tab", tab }),
     open: () => rt.dispatch({ t: "open" }),

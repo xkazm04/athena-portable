@@ -323,6 +323,14 @@ export class DaemonApi {
   }
 
   /**
+   * Close a case's open run (ADR 0124): the daemon folds it and appends the receipt to the case file.
+   * `receipt` is null when nothing ran since the last one; `problem` says why it was not saved, or "".
+   */
+  closeRun(caseId: string): Promise<{ ok: boolean; receipt: Record<string, unknown> | null; saved: boolean; problem: string }> {
+    return this.json("POST", `/adopt/cases/${encodeURIComponent(caseId)}/done`, {});
+  }
+
+  /**
    * Stop the turn running for `origin` (ADR 0115). `stopped` is false when none of its turns was
    * running. A card the turn already filed is untouched and stays answerable.
    */

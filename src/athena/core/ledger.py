@@ -162,6 +162,10 @@ class RollupRow:
     cost_usd: float = 0.0
     unpriced: int = 0
     ms: int = 0
+    #: The earliest and latest row's ``created_at``; set by :meth:`Ledger.conversation_total`
+    #: only, ``""`` otherwise.
+    first_at: str = ""
+    last_at: str = ""
 
 
 @dataclass(frozen=True)
@@ -376,3 +380,42 @@ class Ledger:
             for raw in raws
         ]
         return sorted(rows, key=lambda r: (-r.cost_usd, -r.calls, r.key))
+
+    def conversation_total(
+        self, conversation: str, *, since: str = "", until: str = ""
+    ) -> RollupRow:
+        """One conversation's rows summed, in ``since <= created_at < until`` (``""`` open).
+
+        :meth:`rollup` by ``conversation`` for one key and a time window: the cost of one run of a
+        case (ADR 0124). With both ends open it equals that key's rollup row; with no rows it is a
+        row of zeros under the key.
+        """
+        where = "conversation_id = ?"
+        args: list[Any] = [conversation]
+        if since:
+            where += " AND created_at >= ?"
+            args.append(since)
+        if until:
+            where += " AND created_at < ?"
+            args.append(until)
+        query = (
+            "SELECT COUNT(*), SUM(is_error), SUM(rounds), SUM(input_tokens), SUM(output_tokens), "
+            "SUM(COALESCE(cost_usd, 0.0)), SUM(ms), "
+            "SUM(CASE WHEN cost_usd IS NULL THEN 1 ELSE 0 END), MIN(created_at), MAX(created_at) "
+            f"FROM companion_turn WHERE {where}"
+        )
+        with closing(self.brain.read_connection()) as con:
+            raw = con.execute(query, args).fetchone()
+        return RollupRow(
+            key=conversation,
+            calls=int(raw[0] or 0),
+            errors=int(raw[1] or 0),
+            rounds=int(raw[2] or 0),
+            input_tokens=int(raw[3] or 0),
+            output_tokens=int(raw[4] or 0),
+            cost_usd=float(raw[5] or 0.0),
+            ms=int(raw[6] or 0),
+            unpriced=int(raw[7] or 0),
+            first_at=str(raw[8] or ""),
+            last_at=str(raw[9] or ""),
+        )

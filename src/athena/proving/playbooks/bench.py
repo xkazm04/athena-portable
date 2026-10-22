@@ -33,6 +33,7 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from athena.contracts import ids
 from athena.proving.characters.scene import CONTINUE
 from athena.proving.playbooks.page import SimulatedPortals
 from athena.proving.playbooks.spec import AppSpec, Playbook, Target, _norm
@@ -80,6 +81,10 @@ class BenchConfig:
     cap_usd: float = 5.0
     #: How many times the person does what Athena asks when she asks them to switch tabs.
     follow_ups: int = 3
+    #: Run under a case, as the desktop does once a brief is approved (ADR 0124): a ``proj_`` id
+    #: is minted for the run and sent as ``project_id`` on every turn, so every phase's turns
+    #: share ``conv_proj_…``. Off, the turns stay in each portal's own conversation.
+    project: bool = False
 
 
 @dataclass
@@ -95,6 +100,8 @@ class _Run:
     cost_known: bool = True
     tokens_in: int = 0
     tokens_out: int = 0
+    #: The run's ``proj_`` id under ``BenchConfig.project``, else ``""``.
+    project_id: str = ""
 
 
 def _host_calls(record: TurnRecord) -> list[dict[str, Any]]:
@@ -160,7 +167,7 @@ def run_bench(
     started = time.monotonic()
     world = world_factory(playbook) if world_factory else _default_world(playbook, config)
     portals = SimulatedPortals(playbook)
-    run = _Run()
+    run = _Run(project_id=ids.mint("project") if config.project else "")
     try:
         for index, phase in enumerate(playbook.phases, start=1):
             app = playbook.app(phase.app)
@@ -195,6 +202,7 @@ def run_bench(
         "engine": config.engine,
         "model": config.model or None,
         "approve": config.approve,
+        "project_id": run.project_id or None,
         "wall_s": wall,
         "turns": len(run.turns),
         "nudges": run.nudges,
@@ -278,6 +286,7 @@ def _phase(
                 host_state=portals.host_state(app_id),
                 tool_results=pending,
                 active_project=project,
+                fields={"project_id": run.project_id} if run.project_id else None,
             )
             filed = _absorb(run, record, app_id, message)
             echo(

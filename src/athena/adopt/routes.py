@@ -17,6 +17,17 @@ waits for one (``tests/adopt/test_routes.py`` holds the writer lock and is still
 ``GET /adopt/cases?playbook_id=`` (ADR 0123)
     The saved cases, latest approval first, read from the brain's ``goals/``:
     ``{ok, cases: [CaseSummary], showing, total, footer}`` (at most ``cases.MAX_CASES``).
+``GET /adopt/cases/<proj>/runs`` (ADR 0124)
+    The case's runs, read-only: ``{ok, case_id, conversation_id, open, receipts, showing, total,
+    footer}``. ``open`` is the run since the last receipt, folded now from the approval table, the
+    episodes and the ledger of ``conv_proj_…`` (a :class:`~athena.contracts.adopt.Receipt`), or
+    ``null`` when nothing ran in it; ``receipts`` are the ones the case file keeps, latest first,
+    at most :data:`MAX_RECEIPTS`. An unknown case is 404 ``unknown_ref``.
+``POST /adopt/cases/<proj>/done`` (ADR 0124)
+    The person pressed done on the active playbook: the open run is folded with ``until`` now and
+    appended to the case file's block -> ``{ok, receipt, saved, problem}``. ``receipt`` is
+    ``null`` and ``saved`` false when nothing ran since the last receipt; ``problem`` is ``""``
+    or why the file was not written. It takes the brain's write lock, never the turn lock.
 ``GET /adopt/<sid>/events?after=<seq>``
     Server-Sent Events: every event past ``after``, then live, ``event: <kind>`` / ``data:
     <json>``, a ``: heartbeat`` comment every :data:`HEARTBEAT_S` of quiet. When the session
@@ -56,12 +67,14 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from athena.adopt import intake, loop
-from athena.adopt.cases import MAX_CASES, CaseBook, summary
+from athena.adopt import receipts as runs
+from athena.adopt.cases import MAX_CASES, CaseBook, CaseUnreadable, summary
 from athena.adopt.legs import LedgerSink, LegRunner, load_tiers
 from athena.adopt.session import AdoptSession, Busy, IntakeSession, SessionStore
 from athena.adopt.slots import PlaybookMissing
 from athena.contracts import ids
 from athena.contracts.adopt import AdoptEvent, Answer
+from athena.contracts.channel import now_iso
 from athena.daemon.routes import EventStream, Reply, Request, Route, announced, error
 
 if TYPE_CHECKING:
@@ -71,10 +84,12 @@ __all__ = [
     "ADOPT_PATH",
     "ADOPT_PREFIX",
     "CASES_PATH",
+    "CASES_PREFIX",
     "DOCUMENT_CAP",
     "HEARTBEAT_S",
     "INTAKE_PATH",
     "INTAKE_PREFIX",
+    "MAX_RECEIPTS",
     "AdoptStudio",
     "adopt_routes",
     "adopt_sse_frame",
@@ -84,6 +99,9 @@ __all__ = [
 ADOPT_PATH = "/adopt"
 ADOPT_PREFIX = "/adopt/"
 CASES_PATH = "/adopt/cases"
+CASES_PREFIX = "/adopt/cases/"
+#: The most stored receipts ``GET /adopt/cases/<proj>/runs`` answers, latest first.
+MAX_RECEIPTS = 20
 INTAKE_PATH = "/intake"
 INTAKE_PREFIX = "/intake/"
 HEARTBEAT_S = 15.0
@@ -181,6 +199,54 @@ def cases(studio: AdoptStudio, request: Request) -> Reply:
     found = studio.cases.cases(playbook_id)
     rows = [asdict(summary(case)) for case in found[:MAX_CASES]]
     return 200, announced(rows, len(found), "cases")
+
+
+def case_runs(daemon: AthenaDaemon, studio: AdoptStudio, request: Request, tail: str) -> Reply:
+    """``GET /adopt/cases/<proj>/runs`` and ``POST /adopt/cases/<proj>/done`` (ADR 0124)."""
+    case_id, _, verb = tail.partition("/")
+    want = "runs" if request.method == "GET" else "done"
+    if verb != want:
+        return error(404, "unknown", f"no route for {request.method} {CASES_PREFIX}{tail}")
+    if not ids.is_id("project", case_id):
+        return error(400, "validator_failed", f"not a case id: {case_id!r}")
+    book = studio.cases
+    if book is None:
+        return error(503, "engine_error", "no brain is wired, so no case can be read")
+    if book.load(case_id) is None:
+        return error(404, "unknown_ref", f"no saved case {case_id!r}")
+    kept = book.receipts(case_id)
+    since = kept[-1].until if kept else ""
+    if want == "runs":
+        current = runs.fold(daemon.brain, daemon.approvals, daemon.ledger, case_id, since=since)
+        latest = [runs.as_dict(r) for r in reversed(kept)][:MAX_RECEIPTS]
+        reply = announced(latest, len(kept), "receipts")
+        reply["case_id"] = case_id
+        reply["conversation_id"] = ids.conversation_for_project(case_id)
+        reply["open"] = None if runs.empty(current) else runs.as_dict(current)
+        return 200, reply
+    until = now_iso()
+    closed = runs.fold(
+        daemon.brain,
+        daemon.approvals,
+        daemon.ledger,
+        case_id,
+        since=since,
+        until=until,
+        closed_by="done",
+        closed_at=until,
+    )
+    if runs.empty(closed):
+        return 200, {"ok": True, "receipt": None, "saved": False, "problem": ""}
+    try:
+        book.append_receipt(case_id, closed)
+    except (OSError, ValueError, CaseUnreadable) as exc:
+        return 200, {
+            "ok": True,
+            "receipt": runs.as_dict(closed),
+            "saved": False,
+            "problem": f"the receipt was not saved: {type(exc).__name__}: {exc}",
+        }
+    return 200, {"ok": True, "receipt": runs.as_dict(closed), "saved": True, "problem": ""}
 
 
 def act(studio: AdoptStudio, request: Request, tail: str) -> Reply | EventStream:
@@ -389,9 +455,15 @@ def adopt_routes(daemon: AthenaDaemon, studio: AdoptStudio) -> list[Route]:
     def itail(request: Request) -> str:
         return request.path[len(INTAKE_PREFIX) :]
 
+    def ctail(request: Request) -> str:
+        return request.path[len(CASES_PREFIX) :]
+
     return [
         Route("POST", ADOPT_PATH, lambda request: start(studio, request)),
         Route("GET", CASES_PATH, lambda request: cases(studio, request)),
+        # Before the session prefix, which would read ``cases`` as a session id.
+        Route("GET", CASES_PREFIX, lambda r: case_runs(daemon, studio, r, ctail(r)), prefix=True),
+        Route("POST", CASES_PREFIX, lambda r: case_runs(daemon, studio, r, ctail(r)), prefix=True),
         Route("GET", ADOPT_PREFIX, lambda r: act(studio, r, tail(r)), prefix=True),
         Route("POST", ADOPT_PREFIX, lambda r: act(studio, r, tail(r)), prefix=True),
         Route("DELETE", ADOPT_PREFIX, lambda r: act(studio, r, tail(r)), prefix=True),

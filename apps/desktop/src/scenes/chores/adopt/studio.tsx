@@ -247,9 +247,12 @@ export default function Studio({
                   showcase={s.showcase}
                   handed={handed}
                   onStart={() => {
+                    // The saved case rides the hand-off, so every turn of the run is filed under it
+                    // and its receipt comes back to the chore (ADR 0124).
                     model.actions.hand(s.brief!.command, {
                       id: p.id,
                       title: view.title,
+                      ...(s.caseId ? { caseId: s.caseId } : {}),
                     });
                     setHanded(true);
                   }}

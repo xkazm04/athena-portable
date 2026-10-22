@@ -7,12 +7,14 @@ and a rollup that quietly drops the rows it could not parse.
 
 from __future__ import annotations
 
+from datetime import UTC, datetime, timedelta
 from pathlib import Path
 from typing import Any
 
 import pytest
 
 from athena.contracts import ids
+from athena.contracts.channel import iso
 from athena.contracts.harness import ERROR_REASONS
 from athena.core.brain import Brain
 from athena.core.brain.reconcile import reconcile_from_disk
@@ -281,3 +283,28 @@ def test_a_reconcile_rebuilds_the_index_and_keeps_the_ledger(tmp_path: Path) -> 
 
         assert ledger.recent().total == 1
         assert ledger.rollup(by="engine")[0].cost_usd == pytest.approx(0.42)
+
+
+# -- one conversation's total (ADR 0124) -------------------------------------------------------
+
+
+def test_a_conversation_total_is_its_rollup_row_and_can_be_cut_to_a_window(ledger: Ledger) -> None:
+    t0 = datetime(2026, 10, 1, 9, 0, tzinfo=UTC)
+    case = ids.conversation_for_project("proj_0123456789ab")
+    _record(ledger, conversation=case, cost_usd=0.25, ms=1000, now=t0)
+    _record(ledger, conversation=case, cost_usd=None, ms=500, now=t0 + timedelta(hours=1))
+    _record(ledger, cost_usd=9.0, now=t0)
+
+    whole = ledger.conversation_total(case)
+    (row,) = [r for r in ledger.rollup("conversation") if r.key == case]
+    assert (whole.calls, whole.cost_usd, whole.ms, whole.unpriced) == (
+        row.calls,
+        row.cost_usd,
+        row.ms,
+        row.unpriced,
+    )
+    assert whole.first_at == iso(t0) and whole.last_at == iso(t0 + timedelta(hours=1))
+    late = ledger.conversation_total(case, since=iso(t0 + timedelta(minutes=30)))
+    assert (late.calls, late.cost_usd, late.unpriced) == (1, 0.0, 1)
+    none = ledger.conversation_total("conv_nobody")
+    assert (none.calls, none.cost_usd, none.first_at) == (0, 0.0, "")

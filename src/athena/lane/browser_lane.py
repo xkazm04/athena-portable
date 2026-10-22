@@ -63,6 +63,7 @@ from athena.lane.ports import (
 from athena.lane.turn_frame import FrameBuilder, SurfaceTurn
 
 __all__ = [
+    "MAY_HAVE_COMPLETED",
     "BrowserLane",
     "Execute",
     "Resolution",
@@ -101,6 +102,10 @@ def assert_no_host_executor(entries: Sequence[ToolEntry]) -> None:
 
 
 # --- episode markers ------------------------------------------------------------------------
+
+#: The verb a result episode carries for a call whose answer never came (``outcome_unknown``,
+#: ADR 0101). A case's receipt finds those episodes by it (ADR 0124), so it is spelled once.
+MAY_HAVE_COMPLETED = "may have completed (no answer before the deadline; do not retry unasked)"
 
 
 def marked(
@@ -402,7 +407,7 @@ class BrowserLane:
             if not result.ok and (result.error or "").startswith("outcome_unknown"):
                 # Not "failed": the call was sent and its answer never came, so it may have run
                 # (ADR 0101). A record that said "failed" would invite the retry that sends twice.
-                verb = "may have completed (no answer before the deadline; do not retry unasked)"
+                verb = MAY_HAVE_COMPLETED
             self._append(
                 f"{result.name} {verb}: {result.output}".strip(),
                 "system",

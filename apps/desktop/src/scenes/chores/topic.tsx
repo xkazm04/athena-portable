@@ -8,6 +8,8 @@
  * "Your case" (ADR 0123): the chore's saved cases, asked of the daemon through the studio's deps
  * (`GET /adopt/cases`), each opened in the studio with its approved brief and no re-interview. Each
  * state is said: no daemon in this window, looking, none saved yet, could not be looked up.
+ *
+ * "Your runs" (ADR 0124): under each case, the receipts of its runs (`./runs.tsx`).
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -27,6 +29,7 @@ import Rich from "./rich";
 import { stillsOf } from "./facts";
 import Flow from "./flow";
 import Glyph from "./glyphs";
+import Runs from "./runs";
 
 /** What the topic page knows of the chore's saved cases (ADR 0123). */
 export type CasesState =
@@ -253,6 +256,7 @@ export default function Topic({
                         Open this case
                       </Button>
                     ) : null}
+                    {deps ? <Runs deps={deps} caseId={c.case_id} /> : null}
                   </li>
                 ))}
               </ul>

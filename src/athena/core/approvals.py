@@ -75,6 +75,7 @@ __all__ = [
     "ApprovalRow",
     "ApprovalStatus",
     "Approvals",
+    "ConversationCards",
     "PendingPage",
 ]
 
@@ -288,6 +289,23 @@ class PendingPage:
         if not self.truncated:
             return ""
         return f"(showing {self.shown} of {self.total})"
+
+
+@dataclass(frozen=True)
+class ConversationCards:
+    """A bounded read of one conversation's cards (:meth:`Approvals.of_conversation`).
+
+    ``total`` is the window's population (of ``status`` when one was asked), ``by_status`` the
+    count of each state in the window, ``consumed`` the approved rows the gate spent.
+    """
+
+    rows: tuple[ApprovalRow, ...]
+    total: int
+    by_status: dict[str, int]
+    consumed: int
+    #: The window's earliest and latest ``created_at`` (of every state), ``""`` when empty.
+    first_at: str = ""
+    last_at: str = ""
 
 
 #: The projection :func:`_row` reads, in order. One string, so every SELECT agrees with it.
@@ -596,6 +614,67 @@ class Approvals:
                 (action, canonical, cutoff),
             ).fetchone()
         return None if raw is None or raw[0] is None else str(raw[0])
+
+    def of_conversation(
+        self,
+        conversation: str,
+        *,
+        since: str = "",
+        until: str = "",
+        status: str = "",
+        limit: int = 20,
+    ) -> ConversationCards:
+        """The cards of one conversation filed in ``since <= created_at < until``, oldest first.
+
+        ``""`` leaves that end open; ``status`` narrows to one state. ``total`` and ``by_status``
+        count every row of the window, not the page, and ``consumed`` the approved rows the gate
+        spent: a receipt of a case's run is these numbers (ADR 0124). Read-only.
+        """
+        where = "conversation_id = ?"
+        args: list[Any] = [conversation]
+        if since:
+            where += " AND created_at >= ?"
+            args.append(since)
+        if until:
+            where += " AND created_at < ?"
+            args.append(until)
+        with closing(self.brain.read_connection()) as con:
+            counts = {
+                str(raw[0]): int(raw[1])
+                for raw in con.execute(
+                    f"SELECT status, COUNT(*) FROM companion_approval WHERE {where} "
+                    "GROUP BY status",
+                    args,
+                ).fetchall()
+            }
+            consumed = int(
+                con.execute(
+                    f"SELECT COUNT(*) FROM companion_approval WHERE {where} "
+                    "AND status = 'approved' AND consumed_at IS NOT NULL",
+                    args,
+                ).fetchone()[0]
+            )
+            first, last = con.execute(
+                f"SELECT MIN(created_at), MAX(created_at) FROM companion_approval WHERE {where}",
+                args,
+            ).fetchone()
+            narrowed, nargs = where, args
+            if status:
+                narrowed, nargs = f"{where} AND status = ?", [*args, status]
+            raws = con.execute(
+                f"""SELECT {_COLUMNS} FROM companion_approval WHERE {narrowed}
+                    ORDER BY created_at ASC, rowid ASC LIMIT ?""",
+                [*nargs, max(limit, 0)],
+            ).fetchall()
+        total = counts.get(status, 0) if status else sum(counts.values())
+        return ConversationCards(
+            rows=tuple(_row(raw) for raw in raws),
+            total=total,
+            by_status=counts,
+            consumed=consumed,
+            first_at=str(first or ""),
+            last_at=str(last or ""),
+        )
 
     def pending(self, limit: int = 20, *, now: datetime | None = None) -> PendingPage:
         """The live inbox, oldest first, bounded and announced.

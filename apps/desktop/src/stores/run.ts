@@ -306,7 +306,15 @@ export interface ActivePlaybook {
   title: string;
   /** The playbook's command, which is the goal every tab's turn works toward. */
   goal: string;
+  /**
+   * The saved case this run is under (`proj_…`, ADR 0124), or absent for a playbook handed over with
+   * no case: every turn then also sends it as `project_id`, so every tab talks in `conv_proj_…`.
+   */
+  caseId?: string;
 }
+
+/** A minted project id (`contracts/ids.py`: `proj_` and twelve hex digits). Anything else is not sent. */
+const PROJECT_ID = /^proj_[0-9a-f]{12}$/;
 
 export interface RunState {
   phase: RunPhase;
@@ -342,6 +350,12 @@ export interface RunState {
   project: ActivePlaybook | null;
   /** Set or clear it. Clear (the transcript) does not touch it: it is the person's selection. */
   setProject: (project: ActivePlaybook | null) => void;
+  /**
+   * The person pressed "done" on the active playbook (ADR 0044): it is cleared, and when it was a
+   * case's, the daemon is asked to close the run and append its receipt to the case (ADR 0124).
+   * Answers why the receipt was not kept, or "" (kept, or nothing ran, or no case).
+   */
+  doneProject: () => Promise<string>;
   send: (message: string) => Promise<void>;
   /**
    * Stop her (ADR 0115): the request in flight is aborted, the daemon is asked to end the turn,
@@ -871,13 +885,18 @@ export function gatedListsOf(
 }
 
 /** `2026-10-01 10:08:07`, UTC, the way the store writes a stamp. */
-/** The turn body's `active_project` for a playbook, or nothing when none is active (ADR 0044). */
+/**
+ * The turn body's `active_project` for a playbook, or nothing when none is active (ADR 0044); and,
+ * when the playbook runs under a saved case, its `project_id` (ADR 0124).
+ */
 export function activeProject(
   project: ActivePlaybook | null,
-): { active_project?: Record<string, string> } {
-  return project
-    ? { active_project: { kind: "playbook", id: project.id, title: project.title, goal: project.goal } }
-    : {};
+): { active_project?: Record<string, string>; project_id?: string } {
+  if (!project) return {};
+  const active = { kind: "playbook", id: project.id, title: project.title, goal: project.goal };
+  return project.caseId && PROJECT_ID.test(project.caseId)
+    ? { active_project: active, project_id: project.caseId }
+    : { active_project: active };
 }
 
 export function stampOf(date: Date): string {
@@ -1757,6 +1776,23 @@ export const useRun = create<RunState>((set, get) => {
 
     setProject(project) {
       set({ project });
+    },
+
+    async doneProject() {
+      const project = get().project;
+      set({ project: null });
+      const caseId = project?.caseId;
+      if (!caseId || !PROJECT_ID.test(caseId)) return "";
+      const api = deps.api();
+      if (!api) return "the daemon is not running, so this run's receipt was not kept yet";
+      try {
+        const reply = await api.closeRun(caseId);
+        return reply.problem;
+      } catch (error) {
+        // The run stays open on the daemon (a receipt is everything since the last one), so the
+        // next "done" on this case keeps it.
+        return error instanceof Error ? error.message : String(error);
+      }
     },
 
     clear() {

@@ -234,7 +234,8 @@ Escape as the way back:
   step, Escape or the backdrop closes it, and focus returns to the still.
 - **Make it yours**: "Fit it to me", "Watch the run turn by turn" (where the bench kept a trace)
   and "Copy the command"; above them **Your case**, the chore's saved cases with "Open your case"
-  beside "Talk it through with her" (ADR 0123), or why none can be shown (no daemon, none yet).
+  beside "Talk it through with her" (ADR 0123), or why none can be shown (no daemon, none yet);
+  under each case **Your runs**, its receipts (ADR 0124), or "No run yet".
 
 **The fit** asks only what differs: for each portal "I use this" or "Mine is…" with the name of the
 person's own, and an optional note on their case. It hands Athena the playbook's own command with
@@ -293,10 +294,20 @@ case_id}`) shows the approved brief at once; what she said carries over from mem
 date or an amount that may have moved is asked again. `GET /adopt/cases?playbook_id=` lists the
 cases, and a rebuilt index finds them again.
 
+**Your runs.** "Start for real" carries the case's `proj_` id to Athena, and every `POST /run` while
+that playbook is active sends it as `project_id` beside `active_project`, so every tab's turns,
+cards and ledger rows share `conv_proj_<hex>` ([ADR 0124](../adr/0124-your-runs-come-back-to-the-chore.md)).
+`GET /adopt/cases/<proj>/runs` folds that conversation into a receipt: the cards filed (approved, of
+them let through; declined; expired; waiting), the calls that may have completed, the dollars the
+approved cards **asked** for ("asked, from N cards you approved", never "recovered") and the
+ledger's cost and minutes. A run is everything since the case's last receipt; pressing **done** on
+the active playbook (`POST /adopt/cases/<proj>/done`) closes it and appends the receipt to the case
+file's block, so it survives a rebuilt index. `bench <id> --project` runs a playbook the same way.
+
 **The wire.** `POST /adopt`, `GET /adopt/<sid>/events?after=<seq>` (Server-Sent Events, replay
 then live, heartbeats, last frame `adopt.error {reason: "session_closed"}`), `.../answer`,
 `.../documents`, `.../enough`, `.../approve {rev}` (answers the `case_id`), `DELETE /adopt/<sid>`,
-`GET /adopt/cases`. The shapes are
+`GET /adopt/cases`, `GET /adopt/cases/<proj>/runs`, `POST /adopt/cases/<proj>/done`. The shapes are
 `contracts/adopt.py` and `apps/desktop/src/lib/adopt.ts`, kept equal by
 `tests/contracts/test_adopt_parity.py`.
 

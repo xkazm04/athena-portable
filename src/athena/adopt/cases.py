@@ -45,6 +45,7 @@ from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass, fields
 from typing import TYPE_CHECKING, Any
 
+from athena.adopt import receipts as runs
 from athena.contracts import ids
 from athena.contracts.adopt import (
     CASE_SCHEMA,
@@ -53,6 +54,7 @@ from athena.contracts.adopt import (
     CaseApproval,
     CaseSlot,
     CaseSummary,
+    Receipt,
     Slot,
     SlotSource,
     SlotStatus,
@@ -151,6 +153,10 @@ def render_case(case: Case, extra: Mapping[str, Any] | None = None) -> str:
     if case.approvals:
         rows = [f"- draft {a.rev} on {a.at[:10]} ({a.episode_id})" for a in case.approvals]
         parts += ["## Approvals", "\n".join(rows)]
+    kept = runs.stored(extra or {})
+    if kept:
+        # The runs as a person reads them; the block below is what the code reads (ADR 0124).
+        parts += ["## Your runs", "\n".join(runs.receipt_line(r) for r in kept)]
     data = {**{k: v for k, v in dict(extra or {}).items() if k not in _OWNED}, **asdict(case)}
     block = json.dumps(data, indent=2, sort_keys=True, ensure_ascii=False)
     parts.append(f"{CASE_MARKER}\n{_OPEN}\n{block}\n{_CLOSE}")
@@ -413,6 +419,34 @@ class CaseBook:
                 session.case_id = case_id
                 session.case = case
                 session.slot_meta = {s.id: s for s in kept}
+            return case
+
+    def receipts(self, case_id: str) -> list[Receipt]:
+        """The receipts the case file keeps, oldest first (ADR 0124); ``[]`` for no case."""
+        return runs.stored(self._extra(case_id))
+
+    def append_receipt(self, case_id: str, receipt: Receipt) -> Case:
+        """Append ``receipt`` to the case file's ``receipts`` and rewrite ``goals/<proj>.md``.
+
+        The case itself is rewritten as it stands (the same header, the same approvals); only the
+        block's ``receipts`` grows. Raises :class:`CaseUnreadable` for no case, and what the brain
+        raises on a disk error.
+        """
+        with self._lock:
+            path = self.brain.root / "goals" / f"{case_id}.md"
+            if not ids.is_id("project", case_id) or not path.is_file():
+                raise CaseUnreadable(f"no saved case {case_id!r}")
+            _, body = frontmatter.parse(path.read_text(encoding="utf-8"))
+            case, extra = parse_case(body)
+            held = extra.get("receipts")
+            extra["receipts"] = [*(held if isinstance(held, list) else []), runs.as_dict(receipt)]
+            self.brain.write_goal(
+                case_id,
+                case.title or case.playbook_id,
+                render_case(case, extra),
+                session_id=ids.conversation_for_project(case_id),
+                created=case.created,
+            )
             return case
 
     def _extra(self, case_id: str) -> dict[str, Any]:

@@ -22,6 +22,8 @@ import type {
   Lane,
   Question,
   RawTraceTurn,
+  Receipt,
+  RunsReply,
   Slot,
   StartReply,
 } from "@/lib/adopt";
@@ -393,6 +395,71 @@ export const PREVIEW_CASE: CaseSummary = {
   slots: 10,
 };
 
+/** A closed run of the preview case (ADR 0124): what its cards and the ledger came to. */
+export const PREVIEW_RECEIPT: Receipt = {
+  case_id: PREVIEW_CASE.case_id,
+  conversation_id: `conv_${PREVIEW_CASE.case_id}`,
+  since: "",
+  until: "2026-10-09T10:20:00+00:00",
+  first_at: "2026-10-09T09:02:11+00:00",
+  last_at: "2026-10-09T10:14:40+00:00",
+  approved: 2,
+  consumed: 2,
+  declined: 1,
+  expired: 0,
+  pending: 0,
+  asked_usd: 712.4,
+  asked_cards: 2,
+  calls: 9,
+  errors: 1,
+  cost_usd: 0.4123,
+  unpriced: 0,
+  ms: 381000,
+  cards: [
+    {
+      id: "apr_0a0a0a0a0a01",
+      action: "host.skylindle.request_refund",
+      status: "approved",
+      consumed: true,
+      created_at: "2026-10-09T09:10:02+00:00",
+      resolved_at: "2026-10-09T09:11:30+00:00",
+      params: { amount_usd: "412.4", booking: "SKY-4QX2" },
+      more_params: 0,
+      amount_usd: 412.4,
+    },
+    {
+      id: "apr_0a0a0a0a0a02",
+      action: "host.aerovale.request_refund",
+      status: "approved",
+      consumed: true,
+      created_at: "2026-10-09T09:40:19+00:00",
+      resolved_at: "2026-10-09T09:41:02+00:00",
+      params: { amount_usd: "300", booking: "AV-77810", reason: "<b>cancelled by the airline</b>" },
+      more_params: 1,
+      amount_usd: 300,
+    },
+    {
+      id: "apr_0a0a0a0a0a03",
+      action: "host.aerovale.convert_credit",
+      status: "declined",
+      consumed: false,
+      created_at: "2026-10-09T09:52:44+00:00",
+      resolved_at: "2026-10-09T09:53:01+00:00",
+      params: { credit: "AV-C-118" },
+      more_params: 0,
+      amount_usd: null,
+    },
+  ],
+  cards_total: 3,
+  cards_footer: "",
+  notes: [],
+  notes_total: 0,
+  notes_footer: "",
+  closed_by: "done",
+  closed_at: "2026-10-09T10:20:00+00:00",
+  schema: 1,
+};
+
 /** A reopened case: what she confirmed carries over from memory; the look-back window is asked again. */
 function reopened(): Beat[] {
   const slots = SLOTS_2.map((s): Slot => {
@@ -531,6 +598,8 @@ export class ScriptedClient implements AdoptClient {
       speed?: number;
       /** The saved cases `cases()` answers (ADR 0123). */
       cases?: CaseSummary[];
+      /** The receipts `runs()` answers, latest first, for every case (ADR 0124). */
+      receipts?: Receipt[];
     } = {},
   ) {}
 
@@ -582,6 +651,23 @@ export class ScriptedClient implements AdoptClient {
       return Promise.reject(new ApiError(0, "offline", "The daemon is not running."));
     const cases = (this.opts.cases ?? []).filter((c) => c.playbook_id === playbookId);
     return Promise.resolve({ ok: true, cases, showing: cases.length, total: cases.length, footer: "" });
+  }
+
+  runs(caseId: string): Promise<RunsReply> {
+    this.calls.push({ route: "runs", body: { case_id: caseId } });
+    if (this.opts.offline)
+      return Promise.reject(new ApiError(0, "offline", "The daemon is not running."));
+    const receipts = (this.opts.receipts ?? []).filter((r) => r.case_id === caseId);
+    return Promise.resolve({
+      ok: true,
+      case_id: caseId,
+      conversation_id: `conv_${caseId}`,
+      open: null,
+      receipts,
+      showing: receipts.length,
+      total: receipts.length,
+      footer: "",
+    });
   }
 
   async *events_(
@@ -702,8 +788,11 @@ export const ADOPT_FIXTURES = [
   "adopt-offline",
 ] as const;
 
-/** The saved-case fixtures (ADR 0123): the topic page with a case, with no daemon, and the reopened studio. */
-export const CASE_FIXTURES = ["case", "case-offline", "adopt-case"] as const;
+/**
+ * The saved-case fixtures (ADR 0123): the topic page with a case (no run yet), with no daemon, and the
+ * reopened studio; and the topic page whose case has a closed run (ADR 0124).
+ */
+export const CASE_FIXTURES = ["case", "case-offline", "adopt-case", "case-runs"] as const;
 
 const made = new Map<string, AdoptDeps>();
 
@@ -721,6 +810,7 @@ export function adoptDepsFor(
       offline: fixture === "adopt-offline" || fixture === "case-offline",
       showFails: fixture === "adopt-show-failed",
       cases: (CASE_FIXTURES as readonly string[]).includes(fixture) ? [PREVIEW_CASE] : [],
+      receipts: fixture === "case-runs" ? [PREVIEW_RECEIPT] : [],
     }),
     dictation: scriptedDictation,
   };

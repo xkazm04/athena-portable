@@ -102,6 +102,11 @@ class FakeClient implements AdoptClient {
     this.calls.push({ route: "cases", body: playbookId });
     return Promise.resolve({ ok: true as const, cases: [], showing: 0, total: 0, footer: "" });
   }
+  runs(caseId: string) {
+    this.calls.push({ route: "runs", body: caseId });
+    const none = { ok: true as const, case_id: caseId, conversation_id: `conv_${caseId}`, open: null };
+    return Promise.resolve({ ...none, receipts: [], showing: 0, total: 0, footer: "" });
+  }
   close(sid: string) {
     this.calls.push({ route: "close", body: sid });
     return Promise.resolve();
@@ -709,15 +714,16 @@ describe("the brief and the showcase", () => {
     expect(qa(".ad-route__dot")).toHaveLength(turns);
   });
 
-  it("hands the brief's command to Athena on Start for real", async () => {
+  it("hands the brief's command to Athena on Start for real, with the case it was saved to", async () => {
     await show();
     await feed(BRIEF(1), { kind: "adopt.clear", rev: 1 });
     await click(button("Approve"));
     await click(button("Start for real"));
     const p = fixtures.shipped!.items.find((v) => v.id === ID)!;
+    // The approve saved the case (ADR 0123); its id rides the hand-off (ADR 0124).
     expect(hand).toHaveBeenCalledWith(
       "Go through my Gmail and ask Delta for refunds.",
-      { id: ID, title: p.title },
+      { id: ID, title: p.title, caseId: "proj_0123456789ab" },
     );
     expect(text(".ad-said")).toContain(
       "It waits in her composer until you send it.",

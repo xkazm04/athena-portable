@@ -316,6 +316,89 @@ class CaseSummary:
     slots: int = 0
 
 
+# ------------------------------------------------------------------------------------------
+# the receipts of a case's runs (ADR 0124)
+# ------------------------------------------------------------------------------------------
+
+#: The shape version of one receipt, as the case file's ``receipts`` list keeps it.
+RECEIPT_SCHEMA = 1
+
+
+@dataclass(frozen=True)
+class ReceiptCard:
+    """One card filed in the run, as the approval table holds it.
+
+    ``status`` is the row's (``approved``, ``declined``, ``expired``, ``pending``); ``consumed``
+    says the gate let an approved one through. ``params`` are the card's key parameters as text,
+    each cut, at most :data:`athena.adopt.receipts.PARAMS_CAP` of them (``more_params`` counts the
+    rest): what the page proposed, untrusted, for a surface to show as text and never as markup.
+    ``amount_usd`` is the card's own amount parameter, ``None`` without one.
+    """
+
+    id: str
+    action: str
+    status: str
+    consumed: bool = False
+    created_at: str = ""
+    resolved_at: str = ""
+    params: dict[str, str] = field(default_factory=dict)
+    more_params: int = 0
+    amount_usd: float | None = None
+
+
+@dataclass(frozen=True)
+class ReceiptNote:
+    """A call of the run that may have completed (``outcome_unknown``, ADR 0101): the episode
+    that records it, when, and its text cut (untrusted: it carries the page's output)."""
+
+    episode_id: str
+    at: str
+    text: str
+
+
+@dataclass(frozen=True)
+class Receipt:
+    """What one run of a case came to, folded from its conversation ``conv_proj_…``.
+
+    The run is the window ``since`` .. ``until`` (``""`` for the start, and for a run still
+    open). Every count is the approval table's for the cards created in the window; ``consumed``
+    is of ``approved``. ``asked_usd`` sums the amount parameter of the approved cards
+    (``asked_cards`` of them), what the cards asked for and never what came back; ``None`` when
+    no approved card named an amount. ``calls`` .. ``ms`` sum the ledger's rows of the
+    conversation in the window. ``cards`` and ``notes`` are bounded: ``cards_total`` and
+    ``notes_total`` are the populations, and each ``*_footer`` is ``(showing N of M)`` or ``""``.
+    ``closed_by`` is ``"done"`` once the person pressed done, else ``""``.
+    """
+
+    case_id: str
+    conversation_id: str
+    since: str = ""
+    until: str = ""
+    first_at: str = ""
+    last_at: str = ""
+    approved: int = 0
+    consumed: int = 0
+    declined: int = 0
+    expired: int = 0
+    pending: int = 0
+    asked_usd: float | None = None
+    asked_cards: int = 0
+    calls: int = 0
+    errors: int = 0
+    cost_usd: float = 0.0
+    unpriced: int = 0
+    ms: int = 0
+    cards: tuple[ReceiptCard, ...] = ()
+    cards_total: int = 0
+    cards_footer: str = ""
+    notes: tuple[ReceiptNote, ...] = ()
+    notes_total: int = 0
+    notes_footer: str = ""
+    closed_by: str = ""
+    closed_at: str = ""
+    schema: int = RECEIPT_SCHEMA
+
+
 _EVENTS: tuple[type[AdoptEvent], ...] = (
     Progress,
     Say,

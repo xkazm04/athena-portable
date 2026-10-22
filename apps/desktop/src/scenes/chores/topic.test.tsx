@@ -13,11 +13,11 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { Path } from "@/depth/model";
 import { ApiError } from "@/lib/api";
-import type { AdoptEvent, CaseSummary, CasesReply, StartReply } from "@/lib/adopt";
+import type { AdoptEvent, CaseSummary, CasesReply, Receipt, RunsReply, StartReply } from "@/lib/adopt";
 import type { AdoptClient } from "@/lib/adopt-client";
 
 import type { AdoptDeps } from "./adopt/deps";
-import { ADOPT_PLAYBOOK } from "./adopt/fixtures";
+import { ADOPT_PLAYBOOK, PREVIEW_RECEIPT } from "./adopt/fixtures";
 import { fixtures } from "./fixtures";
 import { forgetChores } from "./memory";
 import { adoptPath, casePath, chorePath } from "./model";
@@ -39,7 +39,15 @@ const CASE: CaseSummary = {
 class FakeClient implements AdoptClient {
   starts: { playbookId: string; caseId: string | undefined }[] = [];
   asked: string[] = [];
-  constructor(private readonly listing: () => Promise<CasesReply>) {}
+  ran: string[] = [];
+  constructor(
+    private readonly listing: () => Promise<CasesReply>,
+    private readonly running: (caseId: string) => Promise<RunsReply> = (caseId) => runsOf(caseId, null, []),
+  ) {}
+  runs(caseId: string) {
+    this.ran.push(caseId);
+    return this.running(caseId);
+  }
   start(playbookId: string, _intro?: string, caseId?: string): Promise<StartReply> {
     this.starts.push({ playbookId, caseId });
     return Promise.resolve({ ok: true, session_id: "s1", slots: [], case: caseId ? CASE : null });
@@ -68,6 +76,18 @@ class FakeClient implements AdoptClient {
     return Promise.resolve();
   }
 }
+
+const runsOf = (caseId: string, open: Receipt | null, receipts: Receipt[], footer = ""): Promise<RunsReply> =>
+  Promise.resolve({
+    ok: true,
+    case_id: caseId,
+    conversation_id: `conv_${caseId}`,
+    open,
+    receipts,
+    showing: receipts.length,
+    total: receipts.length,
+    footer,
+  });
 
 const found = (cases: CaseSummary[], footer = ""): (() => Promise<CasesReply>) =>
   () => Promise.resolve({ ok: true, cases, showing: cases.length, total: cases.length, footer });
@@ -165,6 +185,68 @@ describe("Your case, on the topic page", () => {
   it("says it is looking while the answer is on its way", async () => {
     await show(chorePath(ADOPT_PLAYBOOK), deps(new FakeClient(() => new Promise(() => {}))));
     expect(text()).toContain("Looking for a case you saved…");
+  });
+});
+
+describe("Your runs, under the case", () => {
+  it("says there is no run yet rather than a row of zeros", async () => {
+    const client = new FakeClient(found([CASE]));
+    await show(chorePath(ADOPT_PLAYBOOK), deps(client));
+    expect(client.ran).toEqual([CASE.case_id]);
+    expect(text()).toContain("Your runs");
+    expect(text()).toContain("No run yet. Start it for real with her");
+    expect(text()).not.toMatch(/\b0 approved\b|\$0\.00/);
+  });
+
+  it("lists each receipt and says where every number comes from", async () => {
+    const receipt = { ...PREVIEW_RECEIPT, case_id: CASE.case_id };
+    const open: Receipt = {
+      ...PREVIEW_RECEIPT,
+      case_id: CASE.case_id,
+      since: receipt.until,
+      until: "",
+      first_at: "2026-10-10T08:00:00+00:00",
+      last_at: "2026-10-10T08:05:00+00:00",
+      approved: 0,
+      consumed: 0,
+      declined: 0,
+      pending: 1,
+      asked_usd: null,
+      asked_cards: 0,
+      calls: 2,
+      errors: 0,
+      unpriced: 1,
+      cards: [],
+      cards_total: 1,
+      notes: [{ episode_id: "ep_00000001", at: "2026-10-10T08:04:00+00:00", text: "host.x.pay may have completed <i>x</i>" }],
+      notes_total: 1,
+      closed_by: "",
+      closed_at: "",
+    };
+    const client = new FakeClient(found([CASE]), (id) => runsOf(id, open, [receipt], "(showing 1 of 4)"));
+    await show(chorePath(ADOPT_PLAYBOOK), deps(client));
+    const t = text();
+    expect(t).toContain("Running now, since 2026-10-10 08:00–08:05 UTC");
+    expect(t).toContain("1 still waiting: of the 1 card filed in this run, from the approval table.");
+    expect(t).toContain("1 call may have completed");
+    expect(t).toContain("(1 row unpriced, so at least this)");
+    expect(t).toContain("Run closed 2026-10-09 · active 09:02–10:14 UTC");
+    expect(t).toContain("2 approved (2 let through by the gate), 1 declined: of the 3 cards filed in this run, from the approval table.");
+    expect(t).toContain("$712.40 asked, from 2 cards you approved (each card's own amount).");
+    expect(t).toContain("Spent: $0.41 and 6.3 min, over 9 ledger rows, 1 of them failed or refused.");
+    expect(t).not.toContain("recovered");
+    expect(t).toContain("(showing 1 of 4)");
+    // The page's parameters are text in a fence, never markup.
+    expect(host.querySelector(".pa-run__params b")).toBeNull();
+    expect(host.querySelector(".pa-run__params i")).toBeNull();
+    expect(t).toContain("reason: <b>cancelled by the airline</b>");
+    expect(t).toContain("(and 1 more parameter)");
+  });
+
+  it("says when the runs could not be looked up", async () => {
+    const offline = new FakeClient(found([CASE]), () => Promise.reject(new ApiError(0, "offline", "down")));
+    await show(chorePath(ADOPT_PLAYBOOK), deps(offline));
+    expect(text()).toContain("Your runs could not be looked up: the daemon is not running.");
   });
 });
 

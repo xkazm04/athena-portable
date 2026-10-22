@@ -16,6 +16,7 @@ from typing import Any
 
 import pytest
 
+from athena.contracts import ids
 from athena.harness.ports import ModelRequest
 from athena.proving.characters.scene import CONTINUE
 from athena.proving.playbooks import spec
@@ -725,6 +726,36 @@ def test_every_turn_carries_the_playbook_as_the_active_project(tmp_path: Path) -
     assert seen and all("## Active project" in f for f in seen)
     assert all("goal: File a refund claim for every late parcel." in f for f in seen)
     assert all("kind: playbook" in f for f in seen)
+
+
+def test_a_project_run_sends_one_minted_id_on_every_turn(tmp_path: Path) -> None:
+    """ADR 0124: ``--project`` runs the bench under a case, as the desktop runs one: every turn of
+    every phase carries ``project_id``, so every ledger row is ``conv_proj_…``. Off, none is."""
+    seen: dict[str, set[str]] = {}
+
+    def watched(key: str) -> Any:
+        def make(book: Any) -> World:
+            world: World = _factory(scripted_model(_careful))(book)
+            close = world.close
+
+            def closing() -> None:
+                rows = world.local.ledger.recent(200).rows
+                seen[key] = {row.conversation for row in rows}
+                close()
+
+            world.close = closing  # type: ignore[method-assign]
+            return world
+
+        return make
+
+    book = load_playbook(make_playbook(tmp_path))
+    on = run_bench(book, BenchConfig(engine="nebius", project=True), world_factory=watched("on"))
+    off = run_bench(book, BenchConfig(engine="nebius"), world_factory=watched("off"))
+    project_id = on["project_id"]
+    assert ids.is_id("project", project_id)
+    assert seen["on"] == {f"conv_{project_id}"}
+    assert "project_id" not in off and not any(c.startswith("conv_proj_") for c in seen["off"])
+    assert on["verdict"]["word"] == off["verdict"]["word"]
 
 
 # --- the person does what she asks --------------------------------------------------------------

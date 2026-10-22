@@ -1259,6 +1259,45 @@ describe("the active playbook", () => {
     expect(daemon.runs()[1].body!.active_project).toBeUndefined();
   });
 
+  it("sends the case's project_id beside it on every turn while a case-backed playbook is active (ADR 0124)", async () => {
+    const daemon = fakeDaemon({ runs: [[finished()], [finished()], [finished()], [finished()]] });
+    wire(daemon, fakePage());
+    useRun.getState().setProject({ ...playbook, caseId: "proj_0123456789ab" });
+
+    await useRun.getState().send("start");
+    await useRun.getState().send("and the next tab");
+    const [first, second] = daemon.runs();
+    expect(first.body!.project_id).toBe("proj_0123456789ab");
+    expect(second.body!.project_id).toBe("proj_0123456789ab");
+    // The frame's project stays the playbook's: the case id is not a field of it.
+    expect(first.body!.active_project).toEqual({ kind: "playbook", ...playbook });
+
+    // A playbook with no case sends none; nor does a malformed id, which the daemon would refuse.
+    useRun.getState().setProject(playbook);
+    await useRun.getState().send("no case");
+    useRun.getState().setProject({ ...playbook, caseId: "proj_nothex" });
+    await useRun.getState().send("bad id");
+    const [, , third, fourth] = daemon.runs();
+    expect("project_id" in third.body!).toBe(false);
+    expect("project_id" in fourth.body!).toBe(false);
+    useRun.getState().setProject(null);
+  });
+
+  it("closes the case's run on done, and asks nothing of the daemon for a playbook with no case", async () => {
+    const daemon = fakeDaemon();
+    wire(daemon, fakePage());
+    useRun.getState().setProject(playbook);
+    expect(await useRun.getState().doneProject()).toBe("");
+    expect(useRun.getState().project).toBeNull();
+    expect(daemon.seen.filter((s) => s.path.startsWith("/adopt/"))).toEqual([]);
+
+    useRun.getState().setProject({ ...playbook, caseId: "proj_0123456789ab" });
+    // The fake daemon has no such route: the refusal is said, and the chip is cleared anyway.
+    expect(await useRun.getState().doneProject()).not.toBe("");
+    expect(useRun.getState().project).toBeNull();
+    expect(daemon.seen.map((s) => s.path)).toContain("/adopt/cases/proj_0123456789ab/done");
+  });
+
   it("is the person's selection, so clearing the conversation keeps it", () => {
     useRun.getState().setProject(playbook);
     useRun.getState().clear();

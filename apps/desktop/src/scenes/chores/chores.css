@@ -942,6 +942,65 @@
   font-size: 0.875rem;
   font-variant-numeric: tabular-nums;
 }
+/* Your runs (ADR 0124): each case's receipts, under it, full width. */
+.pa-runs {
+  display: flex;
+  flex: 1 1 100%;
+  flex-direction: column;
+  gap: 8px;
+  margin-top: 8px;
+}
+.pa-run {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card-raised);
+}
+.pa-run__line {
+  margin: 0;
+  color: var(--foreground);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
+.pa-run__cards {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin: 4px 0 0;
+  padding: 0;
+  list-style: none;
+}
+.pa-run__card {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 2px 12px;
+}
+.pa-run__action {
+  font-family: var(--font-mono);
+  font-size: 0.8125rem;
+  overflow-wrap: anywhere;
+}
+.pa-run__status {
+  color: var(--muted-foreground);
+  font-size: 0.8125rem;
+}
+/* What the page proposed: untrusted text, fenced and never rendered as markup. */
+.pa-run__params {
+  flex: 1 1 100%;
+  margin: 0;
+  padding: 6px 10px;
+  border-left: 3px solid var(--border-emphasis);
+  border-radius: 4px;
+  background: var(--card-bg);
+  color: var(--muted-foreground);
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
 /* The command, shown when the clipboard refused it: wrapped, never scrolled, one click selects it. */
 .pa-command {
   margin: 0;

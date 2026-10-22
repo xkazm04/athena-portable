@@ -4,7 +4,7 @@
 
     uv run python -m athena.proving.playbooks check              # every playbook loads
     uv run python -m athena.proving.playbooks bench <id> [--model sonnet] [--approve none|all]
-        [--cap 5.0] [--engine claude_code] [--out proving-runs] [--no-write]
+        [--cap 5.0] [--engine claude_code] [--out proving-runs] [--no-write] [--project]
     uv run python -m athena.proving.playbooks rescore <id> <run>/report.json
     uv run python -m athena.proving.playbooks evidence <id>|--all [--dry] [--verify]
         [--stills-only] [--desktop apps/desktop]
@@ -79,6 +79,11 @@ def build_parser() -> argparse.ArgumentParser:
     b.add_argument("--model", default="sonnet")
     b.add_argument("--approve", choices=("none", "all"), default="none")
     b.add_argument("--cap", type=float, default=5.0, help="USD cap for the run")
+    b.add_argument(
+        "--project",
+        action="store_true",
+        help="run under a minted proj_ id, sent as project_id on every turn (ADR 0124)",
+    )
     b.add_argument("--out", default=RUNS_DIRNAME)
     b.add_argument("--no-write", dest="write", action="store_false", help="leave bench.json alone")
     b.add_argument("--note", default="", help="what changed since the last run, in a sentence")
@@ -223,7 +228,11 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(f"rescored {source.as_posix()} -> {target.as_posix()}: {again['verdict']['word']}")
         return 1 if again["verdict"]["word"] == "short" else 0
     config = BenchConfig(
-        engine=args.engine, model=args.model, approve=args.approve, cap_usd=args.cap
+        engine=args.engine,
+        model=args.model,
+        approve=args.approve,
+        cap_usd=args.cap,
+        project=args.project,
     )
     print(f"bench {book.id} on {config.engine} {config.model}", flush=True)
     report = run_bench(book, config, echo=lambda line: print(line, flush=True))

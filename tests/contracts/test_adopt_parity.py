@@ -31,6 +31,9 @@ from athena.contracts.adopt import (
     LegKind,
     Option,
     Question,
+    Receipt,
+    ReceiptCard,
+    ReceiptNote,
     ShowcaseStatus,
     Slot,
     SlotKind,
@@ -112,6 +115,9 @@ _NESTED: tuple[tuple[str, Any], ...] = (
     ("Alternate", Alternate),
     ("Verdict", Verdict),
     ("CaseSummary", CaseSummary),
+    ("Receipt", Receipt),
+    ("ReceiptCard", ReceiptCard),
+    ("ReceiptNote", ReceiptNote),
 )
 
 

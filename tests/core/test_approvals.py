@@ -17,7 +17,7 @@ from typing import Any
 import pytest
 
 from athena.contracts import ids
-from athena.contracts.channel import DecisionRequested
+from athena.contracts.channel import DecisionRequested, iso
 from athena.core.approvals import (
     APPROVAL_SCHEMA,
     APPROVE_TOKEN,
@@ -503,3 +503,32 @@ def test_a_brain_from_before_the_tab_binding_gains_the_columns_on_open(tmp_path:
     assert (old.tab_id, old.tab_nav) == (None, None)
     new = _create(approvals, tab_id=4, tab_nav=1)
     assert approvals.describe(new.id).tab_id == 4
+
+
+# -- one conversation's cards (ADR 0124) -------------------------------------------------------
+
+
+def test_a_conversations_cards_are_counted_by_state_in_a_window(approvals: Approvals) -> None:
+    """The receipt of a case's run is these counts: the window's, not the page's."""
+    other = ids.conversation_for_project("proj_0123456789ab")
+    yes = _create(approvals, conversation=other, params={"n": 1})
+    no = _create(approvals, conversation=other, params={"n": 2}, now=T0 + timedelta(minutes=1))
+    _create(approvals, conversation=other, params={"n": 3}, now=T0 + timedelta(minutes=2))
+    _create(approvals, params={"n": 4})  # another conversation
+    approvals.resolve(yes.id, APPROVE_TOKEN, now=T0 + timedelta(minutes=3))
+    approvals.consume(yes.id, now=T0 + timedelta(minutes=3))
+    approvals.resolve(no.id, "decline", now=T0 + timedelta(minutes=3))
+
+    page = approvals.of_conversation(other, limit=2)
+    assert page.total == 3 and [r.id for r in page.rows] == [yes.id, no.id]
+    assert page.by_status == {"approved": 1, "declined": 1, "pending": 1}
+    assert page.consumed == 1
+    assert page.first_at == yes.created_at and page.last_at == iso(T0 + timedelta(minutes=2))
+
+    later = approvals.of_conversation(other, since=iso(T0 + timedelta(minutes=1)))
+    assert later.total == 2 and later.consumed == 0
+    before = approvals.of_conversation(other, until=iso(T0 + timedelta(minutes=1)))
+    assert [r.id for r in before.rows] == [yes.id]
+    only = approvals.of_conversation(other, status="approved")
+    assert only.total == 1 and [r.id for r in only.rows] == [yes.id]
+    assert approvals.of_conversation("conv_nobody").by_status == {}

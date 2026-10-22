@@ -23,6 +23,9 @@ import {
   type ApproveReply,
   type CaseSummary,
   type CasesReply,
+  type Receipt,
+  type ReceiptCard,
+  type RunsReply,
   type FoundReason,
   type Lane,
   type Question,
@@ -50,6 +53,8 @@ export interface AdoptClient {
   start(playbookId: string, intro?: string, caseId?: string): Promise<StartReply>;
   /** The saved cases of a playbook, latest approval first (ADR 0123). Read-only. */
   cases(playbookId: string): Promise<CasesReply>;
+  /** A case's runs: the open one and the receipts its file keeps, latest first (ADR 0124). Read-only. */
+  runs(caseId: string): Promise<RunsReply>;
   /** The session's events after `after`, as they arrive; ends when the daemon closes the stream. */
   events(sid: string, after: number, signal: AbortSignal): AsyncGenerator<AdoptEvent>;
   answer(sid: string, answers: readonly Answer[], via: AnswerVia): Promise<void>;
@@ -91,6 +96,21 @@ export class AdoptApi implements AdoptClient {
       cases,
       showing: num(reply.showing, cases.length),
       total: num(reply.total, cases.length),
+      footer: str(reply.footer),
+    };
+  }
+
+  async runs(caseId: string): Promise<RunsReply> {
+    const reply = await this.json<Raw>("GET", ADOPT_ROUTES.runs(caseId));
+    const receipts = list(reply.receipts).filter(isRaw).map(receiptOf);
+    return {
+      ok: true,
+      case_id: str(reply.case_id),
+      conversation_id: str(reply.conversation_id),
+      open: isRaw(reply.open) ? receiptOf(reply.open) : null,
+      receipts,
+      showing: num(reply.showing, receipts.length),
+      total: num(reply.total, receipts.length),
       footer: str(reply.footer),
     };
   }
@@ -204,6 +224,57 @@ export function caseOf(raw: unknown): CaseSummary {
     created: str(r.created),
     confirmed: num(r.confirmed),
     slots: num(r.slots),
+  };
+}
+
+/** One receipt (ADR 0124), each field read to its type with the contract's absent value. */
+export function receiptOf(raw: unknown): Receipt {
+  const r = isRaw(raw) ? raw : {};
+  const cards: ReceiptCard[] = list(r.cards)
+    .filter(isRaw)
+    .map((c) => ({
+      id: str(c.id),
+      action: str(c.action),
+      status: str(c.status),
+      consumed: c.consumed === true,
+      created_at: str(c.created_at),
+      resolved_at: str(c.resolved_at),
+      params: Object.fromEntries(
+        Object.entries(isRaw(c.params) ? c.params : {}).map(([k, v]) => [k, typeof v === "string" ? v : String(v)]),
+      ),
+      more_params: num(c.more_params),
+      amount_usd: numOrNull(c.amount_usd),
+    }));
+  return {
+    case_id: str(r.case_id),
+    conversation_id: str(r.conversation_id),
+    since: str(r.since),
+    until: str(r.until),
+    first_at: str(r.first_at),
+    last_at: str(r.last_at),
+    approved: num(r.approved),
+    consumed: num(r.consumed),
+    declined: num(r.declined),
+    expired: num(r.expired),
+    pending: num(r.pending),
+    asked_usd: numOrNull(r.asked_usd),
+    asked_cards: num(r.asked_cards),
+    calls: num(r.calls),
+    errors: num(r.errors),
+    cost_usd: num(r.cost_usd),
+    unpriced: num(r.unpriced),
+    ms: num(r.ms),
+    cards,
+    cards_total: num(r.cards_total, cards.length),
+    cards_footer: str(r.cards_footer),
+    notes: list(r.notes)
+      .filter(isRaw)
+      .map((n) => ({ episode_id: str(n.episode_id), at: str(n.at), text: str(n.text) })),
+    notes_total: num(r.notes_total),
+    notes_footer: str(r.notes_footer),
+    closed_by: str(r.closed_by),
+    closed_at: str(r.closed_at),
+    schema: num(r.schema, 1),
   };
 }
 

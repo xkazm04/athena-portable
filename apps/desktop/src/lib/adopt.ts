@@ -156,6 +156,9 @@ export const ADOPT_ROUTES = {
   documents: (sid: string) => `/adopt/${encodeURIComponent(sid)}/documents`, // POST {name, mime, data_b64} -> {ok, doc_id}
   enough: (sid: string) => `/adopt/${encodeURIComponent(sid)}/enough`, // POST
   approve: (sid: string) => `/adopt/${encodeURIComponent(sid)}/approve`, // POST {rev} -> {ok, rev, case_id, case_problem}
+  runs: (caseId: string) =>
+    `/adopt/cases/${encodeURIComponent(caseId)}/runs`, // GET -> {ok, case_id, conversation_id, open, receipts, showing, total, footer}
+  done: (caseId: string) => `/adopt/cases/${encodeURIComponent(caseId)}/done`, // POST -> {ok, receipt, saved, problem}
   session: (sid: string) => `/adopt/${encodeURIComponent(sid)}`, // DELETE
 } as const;
 
@@ -214,4 +217,79 @@ export interface ApproveReply {
   case_id: string;
   /** Why the case was not saved, or "". The approval stands either way. */
   case_problem: string;
+}
+
+// -- the receipts of a case's runs (ADR 0124) --------------------------------------------------------
+
+/** One card filed in a run, as the approval table holds it. `params` are the page's, untrusted text. */
+export interface ReceiptCard {
+  id: string;
+  action: string;
+  /** `approved` | `declined` | `expired` | `pending`. */
+  status: string;
+  /** The gate let an approved card through. */
+  consumed: boolean;
+  created_at: string;
+  resolved_at: string;
+  /** The card's key parameters as text, each cut; `more_params` counts the ones left out. */
+  params: Record<string, string>;
+  more_params: number;
+  /** The card's own amount parameter, or null. */
+  amount_usd: number | null;
+}
+
+/** A call of the run that may have completed (`outcome_unknown`): its episode, when, its text (untrusted). */
+export interface ReceiptNote {
+  episode_id: string;
+  at: string;
+  text: string;
+}
+
+/**
+ * What one run of a case came to, folded from `conv_proj_…`. Counts are the approval table's for the
+ * cards filed in the window; `asked_usd` sums the approved cards' own amounts (`asked_cards` of them),
+ * never what came back; `calls`..`ms` are the ledger's rows. `until` is "" for a run still open.
+ */
+export interface Receipt {
+  case_id: string;
+  conversation_id: string;
+  since: string;
+  until: string;
+  first_at: string;
+  last_at: string;
+  approved: number;
+  consumed: number;
+  declined: number;
+  expired: number;
+  pending: number;
+  asked_usd: number | null;
+  asked_cards: number;
+  calls: number;
+  errors: number;
+  cost_usd: number;
+  unpriced: number;
+  ms: number;
+  cards: ReceiptCard[];
+  cards_total: number;
+  cards_footer: string;
+  notes: ReceiptNote[];
+  notes_total: number;
+  notes_footer: string;
+  /** "done" once the person pressed done, else "". */
+  closed_by: string;
+  closed_at: string;
+  schema: number;
+}
+
+export interface RunsReply {
+  ok: true;
+  case_id: string;
+  conversation_id: string;
+  /** The run since the last receipt, or null when nothing ran in it. */
+  open: Receipt | null;
+  /** The receipts the case file keeps, latest first. */
+  receipts: Receipt[];
+  showing: number;
+  total: number;
+  footer: string;
 }
