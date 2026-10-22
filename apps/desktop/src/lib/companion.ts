@@ -127,8 +127,9 @@ export interface Offer {
   /**
    * When the command is a playbook's, which one: it becomes her active project (ADR 0044). `caseId`
    * is the saved case it runs under (ADR 0124), sent as `case_id` on every turn (ADR 0127).
+   * `scheduled` is "Open and prepare" on a due chore's review (ADR 0131): her first send is marked.
    */
-  playbook?: { id: string; title: string; caseId?: string };
+  playbook?: { id: string; title: string; caseId?: string; scheduled?: boolean };
 }
 
 /**

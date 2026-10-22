@@ -1,0 +1,12 @@
+/* A chore that came due (ADR 0131): one quiet line beside her in the dock, pressed to open it. */
+.due-notice {
+  padding: 4px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--card-bg) 82%, transparent);
+  color: var(--foreground);
+  font-size: 0.8125rem;
+}
+.due-notice:hover {
+  border-color: var(--accent);
+}

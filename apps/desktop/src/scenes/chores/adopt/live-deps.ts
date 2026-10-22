@@ -8,6 +8,7 @@
  * of the Chores scene.
  */
 import { AdoptApi } from "@/lib/adopt-client";
+import { ChoresApi } from "@/lib/chores-client";
 import {
   VoiceSetupApi,
   refusalText,
@@ -95,5 +96,5 @@ function liveDictation(): Dictation {
 }
 
 export function liveAdoptDeps(): AdoptDeps {
-  return { client: new AdoptApi(at), dictation: liveDictation() };
+  return { client: new AdoptApi(at), chores: new ChoresApi(at), dictation: liveDictation() };
 }

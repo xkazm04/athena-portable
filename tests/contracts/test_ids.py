@@ -33,6 +33,7 @@ EXPECTED_PREFIXES = {
     "capture": "cap_",
     "session": "sess_",
     "job": "job_",
+    "ritual": "rit_",
 }
 
 

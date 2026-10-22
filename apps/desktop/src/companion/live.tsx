@@ -369,6 +369,7 @@ export default function Live() {
           title: playbook.title,
           goal: text,
           ...(playbook.caseId ? { caseId: playbook.caseId } : {}),
+          ...(playbook.caseId && playbook.scheduled ? { scheduled: true } : {}),
         });
       rt.dispatch({ t: "open" });
       rt.dispatch({ t: "tab", tab: "talk" });

@@ -173,6 +173,9 @@ DECISION_PREFIX = "/decisions/"
 DECISION_TOOL = "athena_decision"
 
 SSE_CONTENT_TYPE = "text/event-stream"
+#: ``POST /run``'s ``trigger`` for the first send after "Open and prepare" on a due chore's review,
+#: and the ledger's ``trigger_kind`` when the chores clock claims the turn (ADR 0131).
+SCHEDULE_TRIGGER = "schedule"
 
 #: How much of a free-text answer beside a decision button reaches the record. The same cap a
 #: ``READ`` answer is held to, and it announces what it cut like every other bounded thing here.
@@ -622,6 +625,7 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
             host_state=dict(host_state) if isinstance(host_state, Mapping) else {},
             results=results,
             project=_active_project(body, project_id),
+            scheduled=body.get("trigger") == SCHEDULE_TRIGGER,
         )
     )
 
@@ -829,10 +833,17 @@ def _turn_frames(
     host_state: Mapping[str, Any],
     results: tuple[Any, ...],
     project: Mapping[str, Any] | None,
+    scheduled: bool = False,
 ) -> Generator[str, None, None]:
     """The turn's frames: :func:`turn_events`, one SSE frame per event (ADR 0012)."""
     for event in turn_events(
-        daemon, ctx, message=message, host_state=host_state, results=results, project=project
+        daemon,
+        ctx,
+        message=message,
+        host_state=host_state,
+        results=results,
+        project=project,
+        scheduled=scheduled,
     ):
         yield sse_frame(event)
 
@@ -845,6 +856,7 @@ def turn_events(
     host_state: Mapping[str, Any],
     results: tuple[Any, ...],
     project: Mapping[str, Any] | None,
+    scheduled: bool = False,
 ) -> Generator[ChannelEvent, None, None]:
     """One turn's events, with the writer lock held for exactly as long as the turn runs.
 
@@ -852,8 +864,14 @@ def turn_events(
     event is produced. A turn that dies mid-stream still releases it: the ``with`` block is inside
     the generator, and the handler closes the generator when a client hangs up. The voice gateway
     drives the same generator, so a spoken turn holds the lock exactly the way a typed one does.
+
+    ``scheduled`` is the surface saying this is the first send after "Open and prepare" on a due
+    chore's review (ADR 0131); the trigger becomes ``schedule`` only if the chores clock agrees,
+    once, with the lock held, so a refused or queued request never spends the claim.
     """
     with daemon.writing(), daemon.turn_door(ctx.page_origin or "") as door:
+        if scheduled:
+            ctx = schedule_trigger(daemon, ctx)
         stamped = stamp_case_turn(daemon, ctx)
         try:
             started = last_run_of(daemon, ctx.case_id)
@@ -886,6 +904,20 @@ def stamp_case_turn(daemon: AthenaDaemon, ctx: TurnContext) -> bool:
         return False
     daemon.case_turns.record(ctx.case_id, ctx.turn_id, ctx.conversation_id)
     return True
+
+
+def schedule_trigger(daemon: AthenaDaemon, ctx: TurnContext) -> TurnContext:
+    """``ctx`` with ``trigger='schedule'`` when the chores clock claims its turn as the first of a
+    run staged from a due review of its case (ADR 0131); otherwise ``ctx`` as it was. Only the
+    ledger reads the trigger: nothing about the gate or the prompt changes. A claim that cannot
+    be read is an ordinary turn, never a failed one."""
+    if not ctx.case_id or daemon.schedule_claim is None:
+        return ctx
+    try:
+        claimed = daemon.schedule_claim(ctx.case_id, ctx.turn_id)
+    except Exception:  # an unreadable cadence file labels nothing, and fails nothing
+        return ctx
+    return replace(ctx, trigger=SCHEDULE_TRIGGER) if claimed else ctx
 
 
 def last_run_of(daemon: AthenaDaemon, case_id: str | None) -> str | None:

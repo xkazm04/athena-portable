@@ -25,6 +25,9 @@ import secrets
 #: things a reader has to line up after the fact: the ledger's ``turn_id`` column, the events a
 #: surface rendered, and the tripwires a harness flagged against it. A harness that minted its
 #: own would be the second place ids are made, which is the finding this module exists to answer.
+#:
+#: ``ritual`` names a file under ``rituals/`` (ADR 0131): a chore's cadence is filed by its case's
+#: ``proj_`` id, which is the goal's id already, so the ritual carries one of its own.
 ID_PREFIXES: dict[str, str] = {
     "episode": "ep_",
     "fact": "fact_",
@@ -36,6 +39,7 @@ ID_PREFIXES: dict[str, str] = {
     "capture": "cap_",
     "session": "sess_",
     "job": "job_",
+    "ritual": "rit_",
 }
 
 #: kind → how many hex digits ``mint`` puts after the prefix.

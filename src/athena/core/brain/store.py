@@ -43,6 +43,7 @@ import hashlib
 import json
 import math
 import os
+import re
 import secrets
 import sqlite3
 import threading
@@ -68,6 +69,8 @@ PROCEDURAL_SCOPES: tuple[str, ...] = paths.PROCEDURAL_SCOPES
 #: The only SQLite result codes that mean the index file itself is damaged (ADR 0081). A locked or
 #: read-only brain is a different failure and must never be called damaged.
 _DAMAGE_CODES = (sqlite3.SQLITE_CORRUPT, sqlite3.SQLITE_NOTADB)
+#: A ritual's file name (ADR 0131): a lowercase slug, so ``rituals/<folder>/<name>.md`` stays put.
+_RITUAL_NAME = re.compile(r"[a-z0-9][a-z0-9_-]{0,63}\Z")
 
 
 class IndexDamagedError(sqlite3.DatabaseError):
@@ -611,6 +614,76 @@ class Brain:
             rows = con.execute(
                 f"""SELECT {NODE_COLUMNS} FROM companion_node
                     WHERE kind = 'goal' ORDER BY created_at, id"""
+            ).fetchall()
+        return [node_from_row(row) for row in rows]
+
+    # -- rituals -------------------------------------------------------------------------------
+
+    def write_ritual(
+        self,
+        ritual_id: str,
+        folder: str,
+        name: str,
+        title: str,
+        body: str,
+        *,
+        session_id: str,
+        created: str,
+    ) -> MemoryRef:
+        """Write (or rewrite) ``rituals/<folder>/<name>.md``: one standing ritual (ADR 0131).
+
+        The header is the goal's five keys with ``type: ritual``: ``id, type, title, session,
+        created``; whatever the ritual holds is the body's. ``folder`` is one of the ritual
+        directories the tree reserves (``quiet_hours``, ``cadence``, ``focus_window``) and
+        ``name`` a lowercase slug, so the path stays inside it. The id is a minted ``rit_`` id
+        (``contracts/ids.py``), not the name: a chore's cadence is named for its case's ``proj_``
+        id, which is already the goal's id, and two files claiming one id is a collision the
+        rebuild refuses. ``created`` is the first write's and a rewrite passes it again.
+        """
+        if not ids.is_id("ritual", ritual_id):
+            raise ValueError(f"a ritual id is a minted ritual id: {ritual_id!r}")
+        if f"rituals/{folder}" not in paths.TREE:
+            raise ValueError(f"not a ritual folder: {folder!r}")
+        if not _RITUAL_NAME.fullmatch(name):
+            raise ValueError(f"a ritual file name is a lowercase slug: {name!r}")
+        if not title.strip():
+            raise ValueError("refusing to write a ritual with no title")
+        text_body = _lf(body).strip()
+        if not text_body:
+            raise ValueError("refusing to write an empty ritual")
+        rel = f"rituals/{folder}/{name}.md"
+        file_text = frontmatter.render(
+            [
+                ("id", ritual_id),
+                ("type", "ritual"),
+                ("title", title.strip()),
+                ("session", session_id),
+                ("created", created),
+            ],
+            text_body,
+        )
+        self._write_file(rel, file_text)
+        with self.write_txn() as con:
+            self.index_node(
+                con,
+                node_id=ritual_id,
+                kind="ritual",
+                rel=rel,
+                file_text=file_text,
+                body=text_body,
+                importance=DEFAULT_IMPORTANCE,
+                created_at=created,
+                session_id=session_id,
+            )
+        return MemoryRef(ritual_id, rel, "ritual")
+
+    def rituals(self, folder: str) -> list[NodeRow]:
+        """Every ritual the index holds under ``rituals/<folder>/``, oldest first."""
+        with closing(self.read_connection()) as con:
+            rows = con.execute(
+                f"""SELECT {NODE_COLUMNS} FROM companion_node
+                    WHERE kind = 'ritual' AND file_path LIKE ? ORDER BY created_at, id""",
+                (f"rituals/{folder}/%",),
             ).fetchall()
         return [node_from_row(row) for row in rows]
 

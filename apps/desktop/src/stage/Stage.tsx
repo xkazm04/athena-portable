@@ -42,6 +42,8 @@ export interface Presence {
   text: string;
   /** Cards waiting on the person. */
   waiting: number;
+  /** A chore that came due (ADR 0131): one line in the dock beside her, never a window over the work. */
+  notice?: ReactNode;
 }
 
 export interface StageProps {
@@ -226,6 +228,7 @@ export default function Stage(props: StageProps) {
                 </span>
                 {presence.waiting > 0 && <em>{presence.waiting} waiting</em>}
               </button>
+              {presence.notice}
               <nav className="stage__roots" aria-label="Depths">
                 {ROOTS.map((r) => (
                   <button

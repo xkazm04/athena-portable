@@ -62,10 +62,11 @@ __all__ = [
 
 #: The triggers the writers use: ``cli`` for a typed turn (``TurnContext.trigger``'s default),
 #: ``voice`` for an utterance, ``decision`` for a row the lane writes when a card is answered, and
-#: ``adopt``, which an adopt run writes as ``adopt.<leg kind>``. Documentation, not a gate: an
+#: ``adopt``, which an adopt run writes as ``adopt.<leg kind>``, and ``schedule`` for the first
+#: turn the person sent from a due chore's review (ADR 0131). Documentation, not a gate: an
 #: unknown trigger is stored verbatim, because refusing to record a turn is a worse failure than
 #: a rollup key nobody recognises. ``tests/core/test_ledger.py`` holds it to the writers' defaults.
-TRIGGERS: tuple[str, ...] = ("cli", "voice", "decision", "adopt")
+TRIGGERS: tuple[str, ...] = ("cli", "voice", "decision", "adopt", "schedule")
 
 #: ``rollup(by=...)`` → the column it groups on. The dimensions the activity module of README §1
 #: act 4 offers, and no free-form column name ever reaches SQL.

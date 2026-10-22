@@ -22,7 +22,7 @@ const BASE = {
       throw error;
     });
   },
-  hand: (text: string, playbook: { id: string; title: string; caseId?: string }) => {
+  hand: (text: string, playbook: { id: string; title: string; caseId?: string; scheduled?: boolean }) => {
     void athenaOffer(text, playbook).catch((error: unknown) =>
       console.error(`[playbooks] hand: ${String(error)}`),
     );

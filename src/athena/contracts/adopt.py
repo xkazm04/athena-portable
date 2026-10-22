@@ -402,6 +402,170 @@ class Receipt:
     schema: int = RECEIPT_SCHEMA
 
 
+# ------------------------------------------------------------------------------------------
+# when a chore comes due (ADR 0131)
+# ------------------------------------------------------------------------------------------
+
+#: The shape version of a cadence file's data block. A reader refuses a version it does not know.
+CADENCE_SCHEMA = 1
+
+#: The three rules a chore's cadence is written in: a weekday, a day of the month, or every N days.
+CadenceKind = Literal["weekly", "monthly", "every_days"]
+CADENCE_KINDS: tuple[CadenceKind, ...] = ("weekly", "monthly", "every_days")
+#: How a review was closed: ``""`` still open, ``prepare`` she pressed "Open and prepare",
+#: ``skip`` she skipped this one, ``paused`` she paused the chore with it open.
+ReviewAnswer = Literal["", "prepare", "skip", "paused"]
+#: One line of a due review, in the order the review lists them.
+ReviewLineKind = Literal["expired", "may_have_completed", "pending", "approved", "declined"]
+REVIEW_LINE_KINDS: tuple[ReviewLineKind, ...] = (
+    "expired",
+    "may_have_completed",
+    "pending",
+    "approved",
+    "declined",
+)
+#: Where an "Open and prepare" address came from: the playbook's app, the case's own slot, none.
+PortalSource = Literal["playbook", "case", ""]
+
+
+@dataclass(frozen=True)
+class CadenceRule:
+    """When a chore comes due, in the person's own wall-clock time (``Cadence.timezone``).
+
+    ``weekly`` uses ``weekday`` (0 Monday .. 6 Sunday); ``monthly`` uses ``day`` (1 .. 31, a
+    month shorter than it falls on its last day); ``every_days`` uses ``every_days`` (1 .. 366)
+    counted from ``start`` (a local ``YYYY-MM-DD``, the first occurrence). ``at`` is ``HH:MM``.
+    """
+
+    kind: CadenceKind
+    weekday: int = 0
+    day: int = 1
+    every_days: int = 0
+    start: str = ""
+    at: str = "09:00"
+
+
+@dataclass(frozen=True)
+class ChoreReview:
+    """The review a due occurrence opened: at most one per case is open (``answer`` ``""``).
+
+    ``due_at`` is the occurrence it stands for (ISO UTC), the identity its one notification is
+    keyed on with the case. ``missed`` counts the later occurrences folded into it, the first ten
+    in ``missed_at``. ``delivered_at`` is when the desktop showed its notice (``""`` not yet);
+    ``held_at`` when quiet hours first held it. ``first_turn_id`` is the turn the ledger records
+    as ``trigger_kind='schedule'`` after "Open and prepare" (``""`` until her first send).
+    """
+
+    due_at: str
+    opened_at: str
+    missed: int = 0
+    missed_at: tuple[str, ...] = ()
+    delivered_at: str = ""
+    held_at: str = ""
+    answer: ReviewAnswer = ""
+    answered_at: str = ""
+    first_turn_id: str = ""
+
+
+@dataclass(frozen=True)
+class CadenceLine:
+    """One explainable line of a cadence's log: what the loop or the person decided, and why."""
+
+    at: str
+    event: str
+    due_at: str = ""
+    text: str = ""
+
+
+@dataclass(frozen=True)
+class Cadence:
+    """A chore's cadence, kept in ``rituals/cadence/<proj>.md`` (ADR 0131).
+
+    ``id`` is a minted ``rit_`` id; ``case_id`` the case it is the cadence of. ``next_run_at`` and
+    ``last_run_at`` are ISO UTC (``""`` none); ``next_run_at`` is a cache of the rule, recomputed on
+    every change of the rule, the zone or ``enabled``. ``unanswered`` counts the occurrences that
+    came due while a review she had been shown sat unanswered; at :data:`ASK_SLOW_AFTER` the
+    review asks whether to pause or slow the chore. ``log`` keeps the latest lines, ``log_total``
+    counts every line ever written.
+    """
+
+    id: str
+    case_id: str
+    enabled: bool
+    rule: CadenceRule
+    timezone: str
+    next_run_at: str
+    last_run_at: str
+    created: str
+    updated_at: str = ""
+    review: ChoreReview | None = None
+    unanswered: int = 0
+    log: tuple[CadenceLine, ...] = ()
+    log_total: int = 0
+    schema: int = CADENCE_SCHEMA
+
+
+#: Unanswered occurrences in a row before a review asks "pause or slow this chore?".
+ASK_SLOW_AFTER = 3
+
+
+@dataclass(frozen=True)
+class ReviewLine:
+    """One line of a due review, from the case's last receipt: a card (``action``, its kept
+    ``params``, when it was filed or answered) or a call that may have completed (``text``)."""
+
+    kind: ReviewLineKind
+    action: str = ""
+    params: dict[str, str] = field(default_factory=dict)
+    at: str = ""
+    text: str = ""
+
+
+@dataclass(frozen=True)
+class ReviewPortal:
+    """One app "Open and prepare" opens: the playbook's address, else the case's own, else none
+    (``url`` ``""``, said, never guessed)."""
+
+    name: str
+    url: str = ""
+    source: PortalSource = ""
+
+
+@dataclass(frozen=True)
+class DueReview:
+    """``GET /adopt/cases/<proj>/review``: a chore's review, assembled with no model call from the
+    case file, its cadence and its last receipt (ADR 0131)."""
+
+    case_id: str
+    playbook_id: str
+    title: str
+    command: str
+    enabled: bool
+    rule_text: str
+    timezone: str
+    next_run_at: str
+    review: ChoreReview | None = None
+    unanswered: int = 0
+    ask_slow: bool = False
+    last_run_at: str = ""
+    lines: tuple[ReviewLine, ...] = ()
+    lines_total: int = 0
+    lines_footer: str = ""
+    portals: tuple[ReviewPortal, ...] = ()
+
+
+@dataclass(frozen=True)
+class DueNotice:
+    """One notice ``GET /adopt/chores/due`` asks the desktop to show, once per (case, due)."""
+
+    case_id: str
+    playbook_id: str
+    title: str
+    due_at: str
+    missed: int = 0
+    ask_slow: bool = False
+
+
 _EVENTS: tuple[type[AdoptEvent], ...] = (
     Progress,
     Say,

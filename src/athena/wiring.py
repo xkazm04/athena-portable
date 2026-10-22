@@ -433,7 +433,9 @@ def _wire_adopt(
     body past the 1 MiB JSON cap (a base64 document, ADR 0097). Every studio's saved cases are
     this brain's ``goals/`` (ADR 0123), unless it came with a book of its own.
     """
+    from athena.adopt.cadence import CadenceBook
     from athena.adopt.cases import CaseBook
+    from athena.adopt.chores import ChoreClock
     from athena.adopt.documents import DOCUMENT_BODY_BYTES, DOCUMENT_SUFFIX
     from athena.adopt.research import studio_hooks
     from athena.adopt.routes import ADOPT_PREFIX, adopt_routes, default_studio
@@ -451,6 +453,14 @@ def _wire_adopt(
     # through the daemon, so the gate dates an old yes and the core never reads the adopt package
     # (ADR 0126); nothing of the receipt reaches the prompt (ADR 0130).
     daemon.last_run_started = chosen.cases.last_run_started
+    if chosen.chores is None:
+        # When the cases come due (ADR 0131): their cadences are this brain's rituals. The loop is
+        # bound here and started by ``athena serve`` alone, so a second Athena built in-process
+        # (the showcase's) never ticks over a brain it does not own.
+        chosen.chores = ChoreClock(CadenceBook(brain), chosen.cases)
+    # Her first send after "Open and prepare" is recorded as scheduled: the daemon asks the
+    # clock, so the core never reads a cadence file (ADR 0131).
+    daemon.schedule_claim = chosen.chores.claim_first_turn
     for route in adopt_routes(daemon, chosen):
         daemon.routes.add(route)
     daemon.body_caps.append(BodyCap(ADOPT_PREFIX, DOCUMENT_SUFFIX, DOCUMENT_BODY_BYTES))

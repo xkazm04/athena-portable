@@ -263,7 +263,8 @@ Escape as the way back:
 - **Make it yours**: "Fit it to me", "Watch the run turn by turn" (where the bench kept a trace)
   and "Copy the command"; above them **Your case**, the chore's saved cases with "Open your case"
   beside "Talk it through with her" (ADR 0123), or why none can be shown (no daemon, none yet);
-  under each case **Your runs**, its receipts (ADR 0124), or "No run yet".
+  under each case **When it comes due**, its cadence and any review that is open (ADR 0131), and
+  **Your runs**, its receipts (ADR 0124), or "No run yet".
 
 **The fit** asks only what differs: for each portal "I use this" or "Mine is…" with the name of the
 person's own, and an optional note on their case. It hands Athena the playbook's own command with
@@ -351,10 +352,29 @@ playbooks) than without it (6)
 every card, the second, after a restart, scored for its duplicates of run 1 and its recall on the
 rest (`--no-carry` is accepted and changes nothing).
 
+**When it comes due.** A case can come due on its own: weekly on a weekday, monthly on a day, or
+every N days, at a local time in her zone, set only by her on the topic page (the playbook's
+`economics.times_per_year` suggests one, applied only when she presses it), paused and resumed
+there. The cadence is `rituals/cadence/<proj>.md` in the brain (a `rit_` id, the five-key header,
+a log of every fire and skip in the body). A daemon loop (`adopt/chores.py`, every 30 s under
+`athena serve`) advances `next_run_at` and opens one review in the same write; occurrences missed
+while it was off are folded into that one review, and none opens while one is open. The review
+(`GET /adopt/cases/<proj>/review`) is assembled with no model call from the case and its last
+receipt: expired cards and calls that may have completed first, then what was approved (with the
+date) and declined, and the next due date. Main's dock shows one line per (case, due date), held
+in quiet hours (`rituals/quiet_hours/chores.md`, default 21:00 to 08:00, `POST
+/adopt/chores/quiet`), and after three unanswered the review asks "pause or slow this chore?".
+**Open and prepare** opens the chore's tabs (the playbook's addresses, else the one in her case;
+none is said, never guessed) and puts the case's command in Athena's composer; nothing is sent
+until she presses send, and that first turn's ledger row is `trigger_kind='schedule'`
+([ADR 0131](../adr/0131-a-chore-comes-due-as-a-staged-review.md)).
+
 **The wire.** `POST /adopt`, `GET /adopt/<sid>/events?after=<seq>` (Server-Sent Events, replay
 then live, heartbeats, last frame `adopt.error {reason: "session_closed"}`), `.../answer`,
 `.../documents`, `.../enough`, `.../approve {rev}` (answers the `case_id`), `DELETE /adopt/<sid>`,
-`GET /adopt/cases`, `GET /adopt/cases/<proj>/runs`, `POST /adopt/cases/<proj>/done`. The shapes are
+`GET /adopt/cases`, `GET /adopt/cases/<proj>/runs`, `POST /adopt/cases/<proj>/done`,
+`GET`/`POST /adopt/cases/<proj>/cadence`, `GET`/`POST /adopt/cases/<proj>/review {due_at, answer}`,
+`GET /adopt/chores/due`, `GET`/`POST /adopt/chores/quiet`. The shapes are
 `contracts/adopt.py` and `apps/desktop/src/lib/adopt.ts`, kept equal by
 `tests/contracts/test_adopt_parity.py`.
 

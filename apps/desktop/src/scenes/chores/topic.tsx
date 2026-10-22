@@ -10,6 +10,9 @@
  * state is said: no daemon in this window, looking, none saved yet, could not be looked up.
  *
  * "Your runs" (ADR 0124): under each case, the receipts of its runs (`./runs.tsx`).
+ *
+ * "When it comes due" (ADR 0131): under each case, the cadence she set and the review a due
+ * occurrence opened, with "Open and prepare" (`./due.tsx`).
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
@@ -29,6 +32,7 @@ import Rich from "./rich";
 import { stillsOf } from "./facts";
 import Flow from "./flow";
 import Glyph from "./glyphs";
+import Due from "./due";
 import Runs from "./runs";
 
 /** What the topic page knows of the chore's saved cases (ADR 0123). */
@@ -256,6 +260,7 @@ export default function Topic({
                         Open this case
                       </Button>
                     ) : null}
+                    {deps?.chores ? <Due chores={deps.chores} caseId={c.case_id} actions={model.actions} /> : null}
                     {deps ? <Runs deps={deps} caseId={c.case_id} /> : null}
                   </li>
                 ))}

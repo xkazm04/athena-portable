@@ -74,6 +74,7 @@ def test_the_documented_triggers_are_the_ones_the_writers_use() -> None:
     from dataclasses import fields
 
     from athena.contracts import TurnContext
+    from athena.daemon.routes import SCHEDULE_TRIGGER
     from athena.lane.browser_lane import BrowserLane
 
     decision = next(f.default for f in fields(BrowserLane) if f.name == "decision_trigger")
@@ -82,6 +83,7 @@ def test_the_documented_triggers_are_the_ones_the_writers_use() -> None:
         decision,
         "voice",
         "adopt",
+        SCHEDULE_TRIGGER,
     }
     assert written <= set(TRIGGERS)
     assert "chat" not in TRIGGERS

@@ -1288,6 +1288,29 @@ describe("the active playbook", () => {
     useRun.getState().setProject(null);
   });
 
+  it("marks only the first send after Open and prepare as scheduled (ADR 0131)", async () => {
+    const daemon = fakeDaemon({ runs: [[finished()], [finished()], [finished()]] });
+    wire(daemon, fakePage());
+    // Nothing is sent by the hand-off itself.
+    useRun.getState().setProject({ ...playbook, caseId: "proj_0123456789ab", scheduled: true });
+    expect(daemon.runs()).toHaveLength(0);
+
+    await useRun.getState().send("Chase every overdue invoice.");
+    await useRun.getState().send("and the next one");
+    const [first, second] = daemon.runs();
+    expect(first.body!.trigger).toBe("schedule");
+    expect(first.body!.case_id).toBe("proj_0123456789ab");
+    expect("trigger" in second.body!).toBe(false);
+    expect(second.body!.case_id).toBe("proj_0123456789ab");
+    expect(useRun.getState().project?.scheduled).toBe(false);
+
+    // A mark with no case sends none: the daemon has no review to claim it against.
+    useRun.getState().setProject({ ...playbook, scheduled: true });
+    await useRun.getState().send("no case");
+    expect("trigger" in daemon.runs()[2].body!).toBe(false);
+    useRun.getState().setProject(null);
+  });
+
   it("closes the case's run on done, and asks nothing of the daemon for a playbook with no case", async () => {
     const daemon = fakeDaemon();
     wire(daemon, fakePage());

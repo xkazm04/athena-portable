@@ -312,6 +312,11 @@ export interface ActivePlaybook {
    * own conversation and the daemon stamps the turn under the case (ADR 0127).
    */
   caseId?: string;
+  /**
+   * Handed over by "Open and prepare" on a due chore's review (ADR 0131): the next request sends
+   * `trigger: "schedule"` and the mark is spent, so only that first send is the scheduled run's.
+   */
+  scheduled?: boolean;
 }
 
 /** A minted project id (`contracts/ids.py`: `proj_` and twelve hex digits). Anything else is not sent. */
@@ -904,6 +909,11 @@ export function caseOf(project: ActivePlaybook | null): { case_id?: string } {
   return project?.caseId && PROJECT_ID.test(project.caseId) ? { case_id: project.caseId } : {};
 }
 
+/** `trigger: "schedule"` while `project` is a case's run handed over by "Open and prepare" (ADR 0131). */
+export function scheduleMark(project: ActivePlaybook | null): { trigger?: "schedule" } {
+  return project?.scheduled && caseOf(project).case_id ? { trigger: "schedule" } : {};
+}
+
 export function stampOf(date: Date): string {
   return date.toISOString().slice(0, 19).replace("T", " ");
 }
@@ -1279,6 +1289,10 @@ export const useRun = create<RunState>((set, get) => {
       return false;
     }
     flight.sent = true;
+    // Spent on the first request after "Open and prepare" (ADR 0131), whatever it comes to: the
+    // daemon decides whether it is the scheduled run's first turn; no later request asks again.
+    const scheduled = scheduleMark(get().project);
+    if (scheduled.trigger) set((s) => ({ project: s.project && { ...s.project, scheduled: false } }));
     let opened = false;
     let errored = false;
     try {
@@ -1305,6 +1319,7 @@ export const useRun = create<RunState>((set, get) => {
         // Set here from the shell's tab list, never by a model.
         ...(published.length ? { open_apps: openAppsOf(published) } : {}),
         ...activeProject(get().project),
+        ...scheduled,
       }, flight.controller.signal)) {
         // The daemon's turn ends at its last frame; what follows is the page's, with nothing to abort.
         opened = true;

@@ -205,8 +205,10 @@ class TurnContext:
     #: Which surface raised the turn — ``panel``, ``voice`` or ``mcp`` (README §3.4, act 4).
     surface: str = "panel"
     #: What set the turn off, for the ledger's ``trigger_kind`` column: ``cli`` for a typed
-    #: message, ``voice`` for an utterance, later ``mcp`` and ``schedule``. The surface says who
-    #: is rendering; the trigger says what started it, and act 4 rolls the record up by both.
+    #: message, ``voice`` for an utterance, ``schedule`` for the first turn the person sent from a
+    #: due chore's review (ADR 0131: set by the daemon, never by a surface alone), later ``mcp``.
+    #: The surface says who is rendering; the trigger says what started it, and act 4 rolls the
+    #: record up by both.
     trigger: str = "cli"
     session_id: str | None = None
     app_id: str | None = None

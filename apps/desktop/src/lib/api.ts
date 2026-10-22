@@ -223,6 +223,13 @@ export interface TurnBody {
    * as a card bound to that tab. First-sight and switched-off apps are never listed.
    */
   open_apps?: Array<{ app: string; origin: string; tab_id: number; tab_nav?: number }>;
+  /** The saved case this turn is a run of (ADR 0127); routes nothing. */
+  case_id?: string;
+  /**
+   * `schedule` on the first send after "Open and prepare" on a due chore's review (ADR 0131). The
+   * daemon records it only when its chores clock agrees; otherwise the turn is an ordinary one.
+   */
+  trigger?: "schedule";
 }
 
 /** A refusal the daemon named. `reason` is a member of the one closed vocabulary. */

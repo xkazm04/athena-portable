@@ -29,6 +29,12 @@ waits for one (``tests/adopt/test_routes.py`` holds the writer lock and is still
     appended to the case file's block -> ``{ok, receipt, saved, problem}``. ``receipt`` is
     ``null`` and ``saved`` false when nothing ran since the last receipt; ``problem`` is ``""``
     or why the file was not written. It takes the brain's write lock, never the turn lock.
+``GET``/``POST /adopt/cases/<proj>/cadence``, ``GET``/``POST /adopt/cases/<proj>/review``,
+``GET /adopt/chores/due``, ``GET``/``POST /adopt/chores/quiet`` (ADR 0131)
+    When a case comes due: the cadence the person sets (``{rule?, timezone?, enabled?}``), the
+    review a due occurrence opened, assembled with no model call (``{due_at, answer}`` answers it:
+    ``prepare``, ``skip``, or ``seen`` for its notice shown), the notices to show now and the quiet
+    window. See :mod:`athena.adopt.chores`.
 ``GET /adopt/<sid>/events?after=<seq>``
     Server-Sent Events: every event past ``after``, then live, ``event: <kind>`` / ``data:
     <json>``, a ``: heartbeat`` comment every :data:`HEARTBEAT_S` of quiet. When the session
@@ -70,6 +76,14 @@ from typing import TYPE_CHECKING, Any
 from athena.adopt import intake, loop
 from athena.adopt import receipts as runs
 from athena.adopt.cases import MAX_CASES, CaseBook, CaseUnreadable, summary
+from athena.adopt.chores import (
+    CHORES_DUE_PATH,
+    CHORES_QUIET_PATH,
+    ChoreClock,
+    case_route,
+    chores_due,
+    chores_quiet,
+)
 from athena.adopt.legs import LedgerSink, LegRunner, load_tiers
 from athena.adopt.session import AdoptSession, Busy, IntakeSession, SessionStore
 from athena.adopt.slots import PlaybookMissing
@@ -127,8 +141,13 @@ class AdoptStudio:
     library: Callable[[], list[dict[str, str]]] | None = None
     #: The saved cases (ADR 0123), over the daemon's brain; ``None`` until wiring binds one.
     cases: CaseBook | None = None
+    #: When the cases come due (ADR 0131): their cadences and the loop over them; ``None``
+    #: until wiring binds one, and the cadence, review and due routes say so.
+    chores: ChoreClock | None = None
 
     def close(self) -> None:
+        if self.chores is not None:
+            self.chores.stop()
         self.store.close_all()
 
 
@@ -203,8 +222,13 @@ def cases(studio: AdoptStudio, request: Request) -> Reply:
 
 
 def case_runs(daemon: AthenaDaemon, studio: AdoptStudio, request: Request, tail: str) -> Reply:
-    """``GET /adopt/cases/<proj>/runs`` and ``POST /adopt/cases/<proj>/done`` (ADR 0124)."""
+    """``GET /adopt/cases/<proj>/runs`` and ``POST /adopt/cases/<proj>/done`` (ADR 0124); the
+    cadence and the review of a case (``/cadence``, ``/review``, ADR 0131) are the chores'."""
     case_id, _, verb = tail.partition("/")
+    if verb in ("cadence", "review"):
+        if studio.chores is None:
+            return error(503, "engine_error", "no brain is wired, so no chore can come due")
+        return case_route(studio.chores, request, case_id, verb)
     want = "runs" if request.method == "GET" else "done"
     if verb != want:
         return error(404, "unknown", f"no route for {request.method} {CASES_PREFIX}{tail}")
@@ -250,6 +274,15 @@ def case_runs(daemon: AthenaDaemon, studio: AdoptStudio, request: Request, tail:
             "problem": f"the receipt was not saved: {type(exc).__name__}: {exc}",
         }
     return 200, {"ok": True, "receipt": runs.as_dict(closed), "saved": True, "problem": ""}
+
+
+def chores(
+    studio: AdoptStudio, request: Request, route: Callable[[ChoreClock, Request], Reply]
+) -> Reply:
+    """``/adopt/chores/due`` and ``/adopt/chores/quiet`` (ADR 0131), once a clock is wired."""
+    if studio.chores is None:
+        return error(503, "engine_error", "no brain is wired, so no chore can come due")
+    return route(studio.chores, request)
 
 
 def act(studio: AdoptStudio, request: Request, tail: str) -> Reply | EventStream:
@@ -464,6 +497,10 @@ def adopt_routes(daemon: AthenaDaemon, studio: AdoptStudio) -> list[Route]:
     return [
         Route("POST", ADOPT_PATH, lambda request: start(studio, request)),
         Route("GET", CASES_PATH, lambda request: cases(studio, request)),
+        # Exact, so before the session prefix, which would read ``chores`` as a session id.
+        Route("GET", CHORES_DUE_PATH, lambda r: chores(studio, r, chores_due)),
+        Route("GET", CHORES_QUIET_PATH, lambda r: chores(studio, r, chores_quiet)),
+        Route("POST", CHORES_QUIET_PATH, lambda r: chores(studio, r, chores_quiet)),
         # Before the session prefix, which would read ``cases`` as a session id.
         Route("GET", CASES_PREFIX, lambda r: case_runs(daemon, studio, r, ctail(r)), prefix=True),
         Route("POST", CASES_PREFIX, lambda r: case_runs(daemon, studio, r, ctail(r)), prefix=True),

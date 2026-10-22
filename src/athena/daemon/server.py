@@ -276,6 +276,10 @@ class AthenaDaemon:
     #: approved this exact call" looks back a day. Only the gate uses it; nothing of the receipt
     #: reaches the prompt (ADR 0130).
     last_run_started: Callable[[str], str | None] | None = None
+    #: Is this turn the first of a run the person staged from a due chore's review, by its case
+    #: and turn id (ADR 0131)? Bound by wiring to the chores clock; ``True`` once per review, and
+    #: the turn's ledger rows then say ``trigger_kind='schedule'``. ``None``: never.
+    schedule_claim: Callable[[str, str], bool] | None = None
     #: The turns sent under a case, stamped as each begins (ADR 0127): what a case's receipt is
     #: joined by, whatever conversation each turn talked in. Opened on the daemon's brain.
     case_turns: CaseTurns = field(init=False, repr=False)
@@ -879,6 +883,9 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
         ),
         stream,
     )
+    # The chores loop (ADR 0131) runs in the served daemon only: it notices, it never sends.
+    if local.adopt is not None and local.adopt.chores is not None:
+        local.adopt.chores.start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:

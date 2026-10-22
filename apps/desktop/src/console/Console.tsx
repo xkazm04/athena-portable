@@ -6,7 +6,7 @@
  * the one place that turns the stage's callbacks into depth moves and her mirror into a presence,
  * and that gathers the crumb names the scenes know and the band the Apps scene owns.
  */
-import { useCallback } from "react";
+import { lazy, Suspense, useCallback } from "react";
 
 import { poseOf, POSE_WORDS } from "@/bell/pose";
 import WindowControls from "@/components/WindowControls";
@@ -22,6 +22,7 @@ import { useFollowShell } from "./follow";
 import { LIVE_SCENES, sceneFor } from "./scenes";
 
 const SCENES = Object.values(LIVE_SCENES);
+const DueNotice = lazy(() => import("./due-notice"));
 
 const retryRead = () => void readRows();
 
@@ -60,6 +61,12 @@ export default function Console() {
   useFollowShell();
 
   const pose = poseOf(athena);
+  // A chore that came due (ADR 0131): its notice rides the dock, a lazy chunk off the first frame.
+  const notice = (
+    <Suspense fallback={null}>
+      <DueNotice go={go} />
+    </Suspense>
+  );
   const render = useCallback(
     (p: Path) => sceneFor(p, { hydrated, onboarded, reopened, go, problem, retry: retryRead }),
     [hydrated, onboarded, reopened, go, problem],
@@ -77,6 +84,7 @@ export default function Console() {
         pose,
         text: athena.cards > 0 || pose !== "resting" ? pillText(athena) : POSE_WORDS.resting,
         waiting: athena.cards,
+        notice,
       }}
       onGo={go}
       onRise={rise}
