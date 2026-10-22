@@ -42,6 +42,7 @@ export function labeller(titles: ReadonlyMap<string, string>): Labeller {
     if (path.root !== "chores" || path.item === undefined) return undefined;
     if (path.sub?.kind === "run") return `Turn ${path.sub.arg ?? ""}`.trim();
     if (path.sub?.kind === "adopt") return "Make it yours";
+    if (path.sub?.kind === "case") return "Your case";
     if (path.item === NEW_ITEM) return "New chore";
     return titles.get(path.item);
   };

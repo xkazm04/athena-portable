@@ -143,13 +143,15 @@ export const ADOPT_EVENT_KINDS: readonly AdoptEventKind[] = [
 
 /** Routes (all carry the daemon token header, like every other route). */
 export const ADOPT_ROUTES = {
-  start: "/adopt", // POST {playbook_id, intro?} -> {ok, session_id, slots}
+  start: "/adopt", // POST {playbook_id, intro?, case_id?} -> {ok, session_id, slots, case}
+  cases: (playbookId: string) =>
+    `/adopt/cases?playbook_id=${encodeURIComponent(playbookId)}`, // GET -> {ok, cases, showing, total, footer}
   events: (sid: string, after: number) =>
     `/adopt/${encodeURIComponent(sid)}/events?after=${after}`, // GET SSE
   answer: (sid: string) => `/adopt/${encodeURIComponent(sid)}/answer`, // POST {answers, via}; question_id "" = said to no question
   documents: (sid: string) => `/adopt/${encodeURIComponent(sid)}/documents`, // POST {name, mime, data_b64} -> {ok, doc_id}
   enough: (sid: string) => `/adopt/${encodeURIComponent(sid)}/enough`, // POST
-  approve: (sid: string) => `/adopt/${encodeURIComponent(sid)}/approve`, // POST {rev}
+  approve: (sid: string) => `/adopt/${encodeURIComponent(sid)}/approve`, // POST {rev} -> {ok, rev, case_id, case_problem}
   session: (sid: string) => `/adopt/${encodeURIComponent(sid)}`, // DELETE
 } as const;
 
@@ -168,8 +170,44 @@ export interface IntakeStartReply {
   session_id: string;
 }
 
+/**
+ * A saved case (ADR 0123): one person's approved setup of one playbook, kept in the brain as
+ * `goals/<case_id>.md`. `case_id` is a `proj_` id, the same for every approval of the case.
+ */
+export interface CaseSummary {
+  case_id: string;
+  playbook_id: string;
+  title: string;
+  approved_rev: number;
+  /** ISO 8601, UTC: the latest approval. */
+  approved_at: string;
+  created: string;
+  /** Slots confirmed, of `slots`. */
+  confirmed: number;
+  slots: number;
+}
+
+export interface CasesReply {
+  ok: true;
+  cases: CaseSummary[];
+  showing: number;
+  total: number;
+  /** "(showing N of M)" when the list was cut, else "". */
+  footer: string;
+}
+
 export interface StartReply {
   ok: true;
   session_id: string;
   slots: Slot[];
+  /** The case this session reopened; `null` for a fresh conversation. */
+  case: CaseSummary | null;
+}
+
+export interface ApproveReply {
+  rev: number;
+  /** The case the approval was written to; "" when it could not be saved. */
+  case_id: string;
+  /** Why the case was not saved, or "". The approval stands either way. */
+  case_problem: string;
 }

@@ -33,6 +33,7 @@ function everyPath(): Path[] {
     out.push({ root: "chores", item: id });
     out.push({ root: "chores", item: id, sub: { kind: "run", arg: "2" } });
     out.push({ root: "chores", item: id, sub: { kind: "adopt" } });
+    out.push({ root: "chores", item: id, sub: { kind: "case", arg: "proj_0123456789ab" } });
     out.push({ root: "accounts", item: id });
     out.push({ root: "accounts", item: id, sub: { kind: "allowlist" } });
   }
@@ -55,6 +56,8 @@ describe("the grammar", () => {
       { root: "apps", item: "a", sub: { kind: "run", arg: "1" } },
       { root: "apps", item: "a", sub: { kind: "adopt" } }, // the studio is a chore's
       { root: "chores", item: "a", sub: { kind: "adopt", arg: "x" } }, // the studio takes none
+      { root: "chores", item: "a", sub: { kind: "case" } }, // a case is named by its id
+      { root: "apps", item: "a", sub: { kind: "case", arg: "proj_0123456789ab" } }, // a case is a chore's
       { root: "apps", item: "a", sub: { kind: "tool" } }, // a tool needs a name
       { root: "apps", item: "a", sub: { kind: "page", arg: "x" } }, // a page takes none
       { root: "apps", sub: { kind: "page" } }, // a sub-level needs an item

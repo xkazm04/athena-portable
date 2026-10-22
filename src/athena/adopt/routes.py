@@ -4,12 +4,19 @@ Every route is behind the token like every other, refuses in the one error shape
 takes** ``daemon.writing()``: an adopt session runs while a chat turn runs, and a chat turn never
 waits for one (``tests/adopt/test_routes.py`` holds the writer lock and is still answered).
 
-``POST /adopt`` ``{playbook_id, intro?}``
-    A new session -> ``{ok, session_id, slots}``. ``intro`` is what the person says before the
-    first card (at most ``loop.ANSWER_TEXT_CAP`` characters); the first audit and card read
+``POST /adopt`` ``{playbook_id, intro?, case_id?}``
+    A new session -> ``{ok, session_id, slots, case}``. ``intro`` is what the person says before
+    the first card (at most ``loop.ANSWER_TEXT_CAP`` characters); the first audit and card read
     it. The opening, the first card and the research
     lanes follow on the event stream. A fourth live session is refused: ``reason``
     ``budget_exhausted``, ``detail`` starting ``busy:`` (``busy`` is not in ``ERROR_REASONS``).
+    ``case_id`` (a ``proj_`` id, ADR 0123) reopens that saved case of this playbook: ``case`` is
+    its summary (``null`` without one), and the stream starts with its slots and its approved
+    brief. An unknown case is 404 ``unknown_ref``; another playbook's is 400; no brain wired is
+    503 ``engine_error``.
+``GET /adopt/cases?playbook_id=`` (ADR 0123)
+    The saved cases, latest approval first, read from the brain's ``goals/``:
+    ``{ok, cases: [CaseSummary], showing, total, footer}`` (at most ``cases.MAX_CASES``).
 ``GET /adopt/<sid>/events?after=<seq>``
     Server-Sent Events: every event past ``after``, then live, ``event: <kind>`` / ``data:
     <json>``, a ``: heartbeat`` comment every :data:`HEARTBEAT_S` of quiet. When the session
@@ -22,7 +29,10 @@ waits for one (``tests/adopt/test_routes.py`` holds the writer lock and is still
 ``POST /adopt/<sid>/enough``
 ``POST /adopt/<sid>/approve`` ``{rev}``
     A rev that is not the current, unanswered brief is refused: ``reason`` ``validator_failed``,
-    ``detail`` starting ``stale_rev:``.
+    ``detail`` starting ``stale_rev:``. An approved rev is written to the session's case
+    (ADR 0123) -> ``{ok, rev, case_id, case_problem}``: ``case_id`` is the ``proj_`` id, the
+    same one for every approval of the case; ``case_problem`` is ``""``, or why the case could
+    not be written (the approval itself stands).
 ``DELETE /adopt/<sid>``
     Lanes told, ``session_closed`` appended, warm process killed, temp dir deleted, streams
     ended.
@@ -46,11 +56,13 @@ from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
 from athena.adopt import intake, loop
+from athena.adopt.cases import MAX_CASES, CaseBook, summary
 from athena.adopt.legs import LedgerSink, LegRunner, load_tiers
 from athena.adopt.session import AdoptSession, Busy, IntakeSession, SessionStore
 from athena.adopt.slots import PlaybookMissing
+from athena.contracts import ids
 from athena.contracts.adopt import AdoptEvent, Answer
-from athena.daemon.routes import EventStream, Reply, Request, Route, error
+from athena.daemon.routes import EventStream, Reply, Request, Route, announced, error
 
 if TYPE_CHECKING:
     from athena.daemon.server import AthenaDaemon
@@ -58,6 +70,7 @@ if TYPE_CHECKING:
 __all__ = [
     "ADOPT_PATH",
     "ADOPT_PREFIX",
+    "CASES_PATH",
     "DOCUMENT_CAP",
     "HEARTBEAT_S",
     "INTAKE_PATH",
@@ -70,6 +83,7 @@ __all__ = [
 
 ADOPT_PATH = "/adopt"
 ADOPT_PREFIX = "/adopt/"
+CASES_PATH = "/adopt/cases"
 INTAKE_PATH = "/intake"
 INTAKE_PREFIX = "/intake/"
 HEARTBEAT_S = 15.0
@@ -92,6 +106,8 @@ class AdoptStudio:
     #: The library the intake reads, as ``[{id, title, area, job, summary}]``; ``None`` is the
     #: shipped one (:func:`athena.adopt.intake.library_summary`). Tests inject a fixture.
     library: Callable[[], list[dict[str, str]]] | None = None
+    #: The saved cases (ADR 0123), over the daemon's brain; ``None`` until wiring binds one.
+    cases: CaseBook | None = None
 
     def close(self) -> None:
         self.store.close_all()
@@ -126,8 +142,24 @@ def start(studio: AdoptStudio, request: Request) -> Reply:
             "validator_failed",
             f"intro: {len(intro)} characters is more than {loop.ANSWER_TEXT_CAP}",
         )
+    case_id = request.body.get("case_id", "")
+    if not isinstance(case_id, str):
+        return error(400, "validator_failed", "case_id must be a string")
+    case = None
+    if case_id:
+        if not ids.is_id("project", case_id):
+            return error(400, "validator_failed", f"case_id is not a project id: {case_id!r}")
+        if studio.cases is None:
+            return error(503, "engine_error", "no brain is wired, so no case can be opened")
+        case = studio.cases.load(case_id)
+        if case is None:
+            return error(404, "unknown_ref", f"no saved case {case_id!r}")
+        if case.playbook_id != playbook_id:
+            return error(
+                400, "validator_failed", f"case {case_id} is a case of {case.playbook_id!r}"
+            )
     try:
-        session = studio.store.create(playbook_id, intro)
+        session = studio.store.create(playbook_id, intro, case)
     except PlaybookMissing as exc:
         return error(404, "unknown_ref", str(exc))
     except Busy as exc:
@@ -137,7 +169,18 @@ def start(studio: AdoptStudio, request: Request) -> Reply:
         "ok": True,
         "session_id": session.id,
         "slots": [asdict(slot) for slot in session.slots],
+        "case": asdict(summary(case)) if case is not None else None,
     }
+
+
+def cases(studio: AdoptStudio, request: Request) -> Reply:
+    """``GET /adopt/cases?playbook_id=``: the saved cases, read-only (ADR 0123)."""
+    if studio.cases is None:
+        return error(503, "engine_error", "no brain is wired, so no case can be read")
+    playbook_id = request.query.get("playbook_id", "")
+    found = studio.cases.cases(playbook_id)
+    rows = [asdict(summary(case)) for case in found[:MAX_CASES]]
+    return 200, announced(rows, len(found), "cases")
 
 
 def act(studio: AdoptStudio, request: Request, tail: str) -> Reply | EventStream:
@@ -163,7 +206,7 @@ def act(studio: AdoptStudio, request: Request, tail: str) -> Reply | EventStream
         loop.enough(session)
         return 200, {"ok": True}
     if verb == "approve":
-        return approve(session, request.body)
+        return approve(session, request.body, studio.cases)
     return error(404, "unknown", f"no route for POST {ADOPT_PREFIX}{tail}")
 
 
@@ -236,14 +279,33 @@ def document(session: AdoptSession, body: Mapping[str, Any]) -> Reply:
     return 200, {"ok": True, "doc_id": doc_id}
 
 
-def approve(session: AdoptSession, body: Mapping[str, Any]) -> Reply:
+def approve(session: AdoptSession, body: Mapping[str, Any], book: CaseBook | None = None) -> Reply:
     rev = body.get("rev")
     if not isinstance(rev, int) or isinstance(rev, bool):
         return error(400, "validator_failed", "rev must be a whole number")
     problem = loop.approve(session, rev)
     if problem:
         return error(409, "validator_failed", problem)
-    return 200, {"ok": True, "rev": rev}
+    # The case is written here, on the request, so the reply carries its id (ADR 0123). It takes
+    # the brain's own write lock for a few small files, never the turn lock.
+    if book is None:
+        return 200, {
+            "ok": True,
+            "rev": rev,
+            "case_id": "",
+            "case_problem": "no brain is wired, so the case was not saved",
+        }
+    try:
+        case = book.save(session, rev)
+    except (OSError, ValueError) as exc:
+        session.count("case_failed")
+        return 200, {
+            "ok": True,
+            "rev": rev,
+            "case_id": session.case_id,
+            "case_problem": f"the case was not saved: {type(exc).__name__}: {exc}",
+        }
+    return 200, {"ok": True, "rev": rev, "case_id": case.id, "case_problem": ""}
 
 
 # --- the stream ---------------------------------------------------------------------------------
@@ -329,6 +391,7 @@ def adopt_routes(daemon: AthenaDaemon, studio: AdoptStudio) -> list[Route]:
 
     return [
         Route("POST", ADOPT_PATH, lambda request: start(studio, request)),
+        Route("GET", CASES_PATH, lambda request: cases(studio, request)),
         Route("GET", ADOPT_PREFIX, lambda r: act(studio, r, tail(r)), prefix=True),
         Route("POST", ADOPT_PREFIX, lambda r: act(studio, r, tail(r)), prefix=True),
         Route("DELETE", ADOPT_PREFIX, lambda r: act(studio, r, tail(r)), prefix=True),

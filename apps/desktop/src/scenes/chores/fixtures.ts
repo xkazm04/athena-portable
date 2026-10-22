@@ -19,9 +19,9 @@ import {
 } from "@/modules/playbooks/fixtures";
 import type { FixtureId } from "@/modules/types";
 
-import { ADOPT_FIXTURES, ADOPT_PLAYBOOK } from "./adopt/fixtures";
+import { ADOPT_FIXTURES, ADOPT_PLAYBOOK, CASE_FIXTURES, PREVIEW_CASE } from "./adopt/fixtures";
 import { INTAKE_FIXTURES } from "./intake/fixtures";
-import { adoptPath, chorePath, newChorePath, runPath } from "./model";
+import { adoptPath, casePath, chorePath, newChorePath, runPath } from "./model";
 
 /** The module's fixtures minus the one per shipped playbook, which the evidence capture films. */
 const IDS: readonly FixtureId[] = [
@@ -89,15 +89,25 @@ export const fixtures: Readonly<Record<string, PlaybooksModel>> = {
   ledger: ledgerFixture(),
   // The Adopt studio plays a scripted session over a shipped playbook (ADR 0097).
   ...Object.fromEntries(ADOPT_FIXTURES.map((id) => [id, moduleFixtures.shipped!])),
+  // A saved case of the same chore, on its topic page and reopened in the studio (ADR 0123).
+  ...Object.fromEntries(CASE_FIXTURES.map((id) => [id, moduleFixtures.shipped!])),
   // The front door plays a scripted conversation over the same shipped set (ADR 0098).
   ...Object.fromEntries(INTAKE_FIXTURES.map((id) => [id, moduleFixtures.shipped!])),
 };
 
-export const fixtureIds: readonly FixtureId[] = [...IDS, "ledger", ...ADOPT_FIXTURES, ...INTAKE_FIXTURES];
+export const fixtureIds: readonly FixtureId[] = [
+  ...IDS,
+  "ledger",
+  ...ADOPT_FIXTURES,
+  ...CASE_FIXTURES,
+  ...INTAKE_FIXTURES,
+];
 
 /** Where a fixture is meant to be looked at: the catalogue, a chore's topic page, a turn of its replay, or its studio. */
 export function pathFor(fixture: FixtureId): Path {
   if ((ADOPT_FIXTURES as readonly string[]).includes(fixture)) return adoptPath(ADOPT_PLAYBOOK);
+  if (fixture === "adopt-case") return casePath(ADOPT_PLAYBOOK, PREVIEW_CASE.case_id);
+  if ((CASE_FIXTURES as readonly string[]).includes(fixture)) return chorePath(ADOPT_PLAYBOOK);
   if ((INTAKE_FIXTURES as readonly string[]).includes(fixture)) return newChorePath();
   const id = initialOpenFor(fixture);
   if (id === null) return { root: "chores" };

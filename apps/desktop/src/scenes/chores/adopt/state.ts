@@ -11,6 +11,7 @@ import type {
   AdoptEvent,
   Answer,
   AnswerVia,
+  CaseSummary,
   Lane,
   Question,
   Slot,
@@ -66,6 +67,12 @@ export interface StudioState {
   approvedRev: number | null;
   showcase: ShowcaseEvent | null;
   usage: { calls: number; ms: number };
+  /** The saved case this session reopened (ADR 0123); `null` for a fresh conversation. */
+  reopened: CaseSummary | null;
+  /** The case the last approval was saved to; "" before one. */
+  caseId: string;
+  /** Why the last approval was not saved as a case, or "". */
+  caseProblem: string;
 }
 
 export const INITIAL: StudioState = {
@@ -84,11 +91,14 @@ export const INITIAL: StudioState = {
   approvedRev: null,
   showcase: null,
   usage: { calls: 0, ms: 0 },
+  reopened: null,
+  caseId: "",
+  caseProblem: "",
 };
 
 export type Action =
   | { t: "restart" }
-  | { t: "started"; sid: string; slots: Slot[] }
+  | { t: "started"; sid: string; slots: Slot[]; reopened?: CaseSummary | null }
   | { t: "start_failed"; reason: string; detail: string }
   | { t: "event"; e: AdoptEvent }
   | { t: "conn"; conn: Conn; tries: number; reason?: string; detail?: string }
@@ -104,14 +114,23 @@ export type Action =
     }
   | { t: "error"; key: string; reason: string; detail: string }
   | { t: "enough" }
-  | { t: "approved"; rev: number | null };
+  | { t: "approved"; rev: number | null }
+  | { t: "saved"; caseId: string; problem: string };
 
 export function reduce(s: StudioState, a: Action): StudioState {
   switch (a.t) {
     case "restart":
       return INITIAL;
     case "started":
-      return { ...s, sid: a.sid, slots: a.slots, conn: "live", problem: null };
+      return {
+        ...s,
+        sid: a.sid,
+        slots: a.slots,
+        conn: "live",
+        problem: null,
+        reopened: a.reopened ?? null,
+        caseId: a.reopened?.case_id ?? "",
+      };
     case "start_failed":
       return {
         ...s,
@@ -181,6 +200,8 @@ export function reduce(s: StudioState, a: Action): StudioState {
       return { ...s, enough: true };
     case "approved":
       return { ...s, approvedRev: a.rev };
+    case "saved":
+      return { ...s, caseId: a.caseId || s.caseId, caseProblem: a.problem };
     case "event":
       return onEvent(s, a.e);
   }
@@ -254,6 +275,10 @@ function onEvent(prev: StudioState, e: AdoptEvent): StudioState {
 }
 
 // -- what the studio says -------------------------------------------------------------------------
+
+/** "2026-10-22" from an ISO instant (a saved case's approval, ADR 0123); the text itself otherwise. */
+export const dayOf = (iso: string): string =>
+  /^\d{4}-\d{2}-\d{2}/.test(iso) ? iso.slice(0, 10) : iso || "an earlier day";
 
 /**
  * Whether the brief on show can be approved, and if not, why. Approve opens for the revision the

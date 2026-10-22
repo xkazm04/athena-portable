@@ -72,7 +72,7 @@ class FakeClient implements AdoptClient {
   calls: { route: string; body: unknown }[] = [];
   streams: Stream[] = [];
   startWith: () => Promise<StartReply> = () =>
-    Promise.resolve({ ok: true, session_id: "s1", slots: [] });
+    Promise.resolve({ ok: true, session_id: "s1", slots: [], case: null });
   start(playbookId: string) {
     this.calls.push({ route: "start", body: playbookId });
     return this.startWith();
@@ -96,7 +96,11 @@ class FakeClient implements AdoptClient {
   }
   approve(sid: string, rev: number) {
     this.calls.push({ route: "approve", body: { sid, rev } });
-    return Promise.resolve();
+    return Promise.resolve({ rev, case_id: "proj_0123456789ab", case_problem: "" });
+  }
+  cases(playbookId: string) {
+    this.calls.push({ route: "cases", body: playbookId });
+    return Promise.resolve({ ok: true as const, cases: [], showing: 0, total: 0, footer: "" });
   }
   close(sid: string) {
     this.calls.push({ route: "close", body: sid });
@@ -737,7 +741,7 @@ describe("leaving, and the voice", () => {
     client.startWith = () => new Promise((r) => (resolve = r));
     await show();
     act(() => root.render(<div />));
-    resolve({ ok: true, session_id: "late", slots: [] });
+    resolve({ ok: true, session_id: "late", slots: [], case: null });
     await flush();
     expect(client.routes("close")).toEqual(["late"]);
     expect(client.streams).toHaveLength(0);

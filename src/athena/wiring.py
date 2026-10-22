@@ -430,8 +430,10 @@ def _wire_adopt(
     brain and vault, bound to its store rather than registered process-wide: the showcase builds
     a second Athena in this process (``build_local`` again), which must not rebind the first's
     hooks. An injected studio keeps the hooks it came with. The documents route alone may take a
-    body past the 1 MiB JSON cap (a base64 document, ADR 0097).
+    body past the 1 MiB JSON cap (a base64 document, ADR 0097). Every studio's saved cases are
+    this brain's ``goals/`` (ADR 0123), unless it came with a book of its own.
     """
+    from athena.adopt.cases import CaseBook
     from athena.adopt.documents import DOCUMENT_BODY_BYTES, DOCUMENT_SUFFIX
     from athena.adopt.research import studio_hooks
     from athena.adopt.routes import ADOPT_PREFIX, adopt_routes, default_studio
@@ -442,6 +444,9 @@ def _wire_adopt(
         chosen = default_studio(root, ledger)
         hooks = studio_hooks(brain=brain, vault=vault)
         chosen.store.hooks = lambda: hooks
+    if chosen.cases is None:
+        # The saved cases are this daemon's brain's goals (ADR 0123), injected studio or not.
+        chosen.cases = CaseBook(brain)
     for route in adopt_routes(daemon, chosen):
         daemon.routes.add(route)
     daemon.body_caps.append(BodyCap(ADOPT_PREFIX, DOCUMENT_SUFFIX, DOCUMENT_BODY_BYTES))

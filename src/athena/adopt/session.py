@@ -34,11 +34,14 @@ from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
+from athena.adopt.cases import case_brief, reopen_slots
 from athena.adopt.legs import LegResult, LegRunner, WarmSession
-from athena.adopt.slots import apply_updates, load_playbook_json, mechanical_slots
+from athena.adopt.slots import MAX_SLOTS, apply_updates, load_playbook_json, mechanical_slots
 from athena.contracts.adopt import (
     AdoptEvent,
     Brief,
+    Case,
+    CaseSlot,
     Error,
     LegKind,
     Question,
@@ -230,6 +233,17 @@ class AdoptSession:
         self.cancelled = threading.Event()
         self.last_active = self.clock()
         self.warm: WarmSession | None = None
+        #: The standing case this session belongs to (ADR 0123): ``""`` until the first approval
+        #: mints one, or the reopened case's id from the start.
+        self.case_id = ""
+        #: The case as last written or as reopened; ``None`` for a fresh conversation.
+        self.case: Case | None = None
+        #: Per slot id, what the case remembers of it (date, words, fact) for the next save.
+        self.slot_meta: dict[str, CaseSlot] = {}
+        #: The slots a reopen turned back into guesses: dates and amounts (ADR 0123).
+        self.reopened: tuple[str, ...] = ()
+        #: Held by a save, so two approvals of one session never mint two cases.
+        self.case_lock = threading.Lock()
         self._actor = ThreadPoolExecutor(max_workers=1, thread_name_prefix=f"adopt-{self.id}")
 
     # -- the event log ---------------------------------------------------------------------------
@@ -435,6 +449,40 @@ class IntakeSession(AdoptSession):
             return self._library
 
 
+# --- reopening a case (ADR 0123) ----------------------------------------------------------------
+
+
+def reopen(session: AdoptSession, case: Case) -> None:
+    """Hand ``session`` the standing ``case``: its id, its slots (dates and amounts back to
+    guesses), its approved brief as the current draft at the same rev, and the person's own words
+    for every slot that carried over confirmed, so the auditor reads why each one stands."""
+    slots, reopened = reopen_slots(session.slots, case)
+    with session.lock:
+        session.case_id = case.id
+        session.case = case
+        session.slot_meta = {s.id: s for s in case.slots}
+        session.reopened = tuple(reopened)
+        session._slots = slots[:MAX_SLOTS]
+        session.rev = case.approved_rev
+        session.brief = case_brief(case, session._slots)
+        for slot in session._slots:
+            held = session.slot_meta.get(slot.id)
+            if slot.status != "confirmed" or held is None or not held.quote:
+                continue
+            when = held.confirmed_at[:10] or "an earlier approval"
+            session.answers.append(
+                GivenAnswer(
+                    round=0,
+                    question_id="",
+                    question=f"(from your saved case, confirmed {when}) {slot.label}",
+                    slot_ids=(slot.id,),
+                    choices=(),
+                    text=held.quote,
+                    via="memory",
+                )
+            )
+
+
 # --- the store ----------------------------------------------------------------------------------
 
 
@@ -459,11 +507,13 @@ class SessionStore:
         self._stop = threading.Event()
         self._swept = False
 
-    def create(self, playbook_id: str, intro: str = "") -> AdoptSession:
+    def create(self, playbook_id: str, intro: str = "", case: Case | None = None) -> AdoptSession:
         """A new session, or :class:`Busy`, or :class:`~athena.adopt.slots.PlaybookMissing`.
 
         ``intro`` is what the person said before the first card; it is kept as an answer to no
-        question (round 0), so the first audit and the first card both read it."""
+        question (round 0), so the first audit and the first card both read it. ``case`` reopens
+        a standing case (ADR 0123): its slots, its words and its approved brief are the session's
+        from the start (:func:`reopen`)."""
         playbook = self.load_playbook(playbook_id)
         self.reap()
         with self._lock:
@@ -482,6 +532,8 @@ class SessionStore:
                 hooks=self.hooks(),
                 clock=self.clock,
             )
+            if case is not None:
+                reopen(session, case)
             if intro.strip():
                 session.answers.append(
                     GivenAnswer(

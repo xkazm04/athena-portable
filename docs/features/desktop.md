@@ -33,7 +33,7 @@ renders without Tauri in `preview.html?scene=<depth>&fixture=&theme=`.
 | Depth | What it shows |
 |---|---|
 | **Apps** | registered apps as windows of light whose standing is a shape and a word; an app with its switch, Open and two-press Forget; what its open page registered as tools (as claims, never a class); the band over a page: tabs, address, tools |
-| **Chores** | the playbooks' edge map as the hero, a drawing for every chore, a chore's own scene with its facets, and the replay of a run as a place of its own. The shipped set loads lazily (2.7 MB of JSON). See [playbooks.md](playbooks.md). |
+| **Chores** | the playbooks' edge map as the hero, a drawing for every chore, a chore's own scene with its facets, and the replay of a run as a place of its own. A chore's page names your saved case and "Open your case" reopens the studio on it at `chores/<id>/case/<proj>` (ADR 0123). The shipped set loads lazily (2.7 MB of JSON). See [playbooks.md](playbooks.md). |
 | **Accounts** | a drawing per connector, a staged connect, the gated writes switch, the allow-list, a records notice that cannot be dismissed ([connectors.md](connectors.md)) |
 | **Voice** | the studio as a staged act and settings as two instruments, with the keys and one frame loop (ADR 0092) |
 | **Mind** | the engine, the brain, the look (theme, text size and Calm motion), the data and the microphone; the first act (Mind, Reach, Voice) opens the same scene on first run |

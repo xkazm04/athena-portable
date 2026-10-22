@@ -26,7 +26,7 @@ from __future__ import annotations
 import re
 from collections.abc import Callable, Mapping, Sequence
 from concurrent.futures import ThreadPoolExecutor
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from typing import Any, TypeVar
 
 from athena.adopt.legs import LegResult
@@ -70,6 +70,7 @@ __all__ = [
     "enough",
     "fitted_command",
     "receive_answers",
+    "reopen_line",
     "start",
 ]
 
@@ -181,6 +182,9 @@ def check_answers(session: AdoptSession, answers: Sequence[Answer]) -> str:
 
 
 def _start(session: AdoptSession) -> None:
+    if session.case is not None:
+        _reopen(session)
+        return
     session.emit(Slots(slots=tuple(session.slots)))
     session.emit(Say(text=opening(session.playbook)))
     session.call_hook("on_start")
@@ -193,6 +197,56 @@ def _start(session: AdoptSession) -> None:
     )
     _apply_audit(session, audit)
     _offer_card(session, card, round_no=1, open_ids=None)
+
+
+def _reopen(session: AdoptSession) -> None:
+    """A reopened case (ADR 0123): the slots, a line on what carried over, the approved brief at
+    once. Only the dates and amounts that reopened as guesses are asked again; with none, the
+    brief is clear for approval and no model is called."""
+    case = session.case
+    assert case is not None
+    slots = session.slots
+    with session.lock:
+        brief = session.brief
+        reopened = list(session.reopened)
+    session.emit(Slots(slots=tuple(slots)))
+    session.emit(Say(text=reopen_line(case.approved_at, slots, reopened)))
+    session.call_hook("on_start")
+    if brief is not None:
+        session.emit(brief)
+    if not reopened:
+        if brief is not None:
+            session.emit(Clear(rev=brief.rev))
+        return
+    session.warm = session.runner.warm_session("interview", INTERVIEW_SYSTEM, str(session.temp_dir))
+    session.emit(Progress(text="Checking the dates and amounts that may have moved…"))
+    card = _interview_leg(session, slots, round_no=1)
+    if card.ok and card.value is not None:
+        # Asked again: only what reopened. A slot she left a guess when she approved stays one.
+        wanted = set(reopened)
+        kept = []
+        for raw in _dicts(card.value.get("questions")):
+            named = [i for i in raw.get("slot_ids", []) if isinstance(i, str) and i in wanted]
+            if named:
+                kept.append({**raw, "slot_ids": named})
+        card = replace(card, value={**card.value, "questions": kept})
+    _offer_card(session, card, round_no=1, open_ids=reopened)
+
+
+def reopen_line(approved_at: str, slots: Sequence[Slot], reopened: Sequence[str]) -> str:
+    """Athena's first line on a reopened case, written without a model."""
+    carried = sum(1 for s in slots if s.source == "memory" and s.status == "confirmed")
+    when = approved_at[:10] or "earlier"
+    line = f"Your case is back as you approved it on {when}."
+    if carried:
+        line += f" {carried} {'thing' if carried == 1 else 'things'} you told me carry over."
+    if not reopened:
+        return line + " Nothing in it has a date or an amount that could have moved."
+    return (
+        line + f" {len(reopened)} {'date or amount' if len(reopened) == 1 else 'dates or amounts'}"
+        " may have changed since, so I'll ask about "
+        f"{'that one' if len(reopened) == 1 else 'those'} again."
+    )
 
 
 # --- one answered card --------------------------------------------------------------------------

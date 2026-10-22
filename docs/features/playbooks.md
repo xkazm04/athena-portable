@@ -233,7 +233,8 @@ Escape as the way back:
   with its caption. A still opens the lightbox: the image as large as fits, "n / N", Left and Right
   step, Escape or the backdrop closes it, and focus returns to the still.
 - **Make it yours**: "Fit it to me", "Watch the run turn by turn" (where the bench kept a trace)
-  and "Copy the command".
+  and "Copy the command"; above them **Your case**, the chore's saved cases with "Open your case"
+  beside "Talk it through with her" (ADR 0123), or why none can be shown (no daemon, none yet).
 
 **The fit** asks only what differs: for each portal "I use this" or "Mine is…" with the name of the
 person's own, and an optional note on their case. It hands Athena the playbook's own command with
@@ -252,7 +253,8 @@ Adopting a playbook is a conversation, not a form
 ([ADR 0097](../adr/0097-adopting-a-playbook-is-a-conversation-held-outside-the-turn-lock.md)).
 The daemon holds an adopt session in memory (`src/athena/adopt/`), outside the turn lock, so it
 runs while a chat turn runs; at most three are live, each expires after two hours idle, and its
-dropped documents live in a temp directory under `$ATHENA_HOME/adopt/` deleted with it.
+dropped documents live in a temp directory under `$ATHENA_HOME/adopt/` deleted with it. What
+outlives it is the approved case (below).
 
 **Slots.** What the run depends on for this person: one `portal` slot per app ("Do you use
 Payroll Harbor for the payroll firm, or something else?") and one `gate` slot per gate come
@@ -281,9 +283,20 @@ ledger row (surface `adopt`, trigger `adopt.<kind>`), failures and malformed ans
 one `adopt.usage` event with its milliseconds and time to first text. A malformed answer is sent
 back once; a second one degrades (a plain free-text question, or the slots kept) and never stalls.
 
+**Your case.** Approving a brief saves it as a case ([ADR 0123](../adr/0123-an-approved-brief-is-a-case-file-in-the-brain.md)):
+`goals/<proj>.md` in the brain, one `proj_` id per case kept by every later approval, holding the
+playbook id, the approved rev, the brief, the fitted command, the portal swaps and every slot with
+its status, source, date and the person's words, as markdown and one JSON block after
+`<!-- athena:case -->`. The approval is an episode and each slot she confirmed a fact citing it.
+"Open your case" on the chore's page (`chores/<id>/case/<proj>`, `POST /adopt {playbook_id,
+case_id}`) shows the approved brief at once; what she said carries over from memory, and only a
+date or an amount that may have moved is asked again. `GET /adopt/cases?playbook_id=` lists the
+cases, and a rebuilt index finds them again.
+
 **The wire.** `POST /adopt`, `GET /adopt/<sid>/events?after=<seq>` (Server-Sent Events, replay
 then live, heartbeats, last frame `adopt.error {reason: "session_closed"}`), `.../answer`,
-`.../documents`, `.../enough`, `.../approve {rev}`, `DELETE /adopt/<sid>`. The shapes are
+`.../documents`, `.../enough`, `.../approve {rev}` (answers the `case_id`), `DELETE /adopt/<sid>`,
+`GET /adopt/cases`. The shapes are
 `contracts/adopt.py` and `apps/desktop/src/lib/adopt.ts`, kept equal by
 `tests/contracts/test_adopt_parity.py`.
 

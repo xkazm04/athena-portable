@@ -20,6 +20,9 @@ import {
   type AdoptEventKind,
   type Answer,
   type AnswerVia,
+  type ApproveReply,
+  type CaseSummary,
+  type CasesReply,
   type Lane,
   type Question,
   type Slot,
@@ -39,15 +42,21 @@ export interface AdoptDocument {
 }
 
 export interface AdoptClient {
-  /** A new session; `intro` is what the person says before the first card (optional). */
-  start(playbookId: string, intro?: string): Promise<StartReply>;
+  /**
+   * A new session; `intro` is what the person says before the first card (optional). `caseId`
+   * reopens that saved case of the playbook (ADR 0123): its slots and its approved brief arrive first.
+   */
+  start(playbookId: string, intro?: string, caseId?: string): Promise<StartReply>;
+  /** The saved cases of a playbook, latest approval first (ADR 0123). Read-only. */
+  cases(playbookId: string): Promise<CasesReply>;
   /** The session's events after `after`, as they arrive; ends when the daemon closes the stream. */
   events(sid: string, after: number, signal: AbortSignal): AsyncGenerator<AdoptEvent>;
   answer(sid: string, answers: readonly Answer[], via: AnswerVia): Promise<void>;
   /** Hand a document to the session; answers its `doc_id`. */
   document(sid: string, doc: AdoptDocument): Promise<string>;
   enough(sid: string): Promise<void>;
-  approve(sid: string, rev: number): Promise<void>;
+  /** Approve brief `rev`; answers the case it was saved to (ADR 0123). */
+  approve(sid: string, rev: number): Promise<ApproveReply>;
   close(sid: string): Promise<void>;
 }
 
@@ -59,17 +68,29 @@ export class AdoptApi implements AdoptClient {
     private readonly fetchImpl: FetchLike = globalFetch,
   ) {}
 
-  async start(playbookId: string, intro?: string): Promise<StartReply> {
+  async start(playbookId: string, intro?: string, caseId?: string): Promise<StartReply> {
     const words = intro?.trim() ?? "";
-    const reply = await this.json<Partial<StartReply>>(
-      "POST",
-      ADOPT_ROUTES.start,
-      words ? { playbook_id: playbookId, intro: words } : { playbook_id: playbookId },
-    );
+    const body: Record<string, string> = { playbook_id: playbookId };
+    if (words) body.intro = words;
+    if (caseId) body.case_id = caseId;
+    const reply = await this.json<Partial<Record<keyof StartReply, unknown>>>("POST", ADOPT_ROUTES.start, body);
     return {
       ok: true,
-      session_id: String(reply.session_id ?? ""),
-      slots: Array.isArray(reply.slots) ? reply.slots.map(slotOf) : [],
+      session_id: str(reply.session_id),
+      slots: list(reply.slots).map(slotOf),
+      case: isRaw(reply.case) ? caseOf(reply.case) : null,
+    };
+  }
+
+  async cases(playbookId: string): Promise<CasesReply> {
+    const reply = await this.json<Raw>("GET", ADOPT_ROUTES.cases(playbookId));
+    const cases = list(reply.cases).filter(isRaw).map(caseOf);
+    return {
+      ok: true,
+      cases,
+      showing: num(reply.showing, cases.length),
+      total: num(reply.total, cases.length),
+      footer: str(reply.footer),
     };
   }
 
@@ -95,8 +116,9 @@ export class AdoptApi implements AdoptClient {
     await this.json("POST", ADOPT_ROUTES.enough(sid), {});
   }
 
-  async approve(sid: string, rev: number): Promise<void> {
-    await this.json("POST", ADOPT_ROUTES.approve(sid), { rev });
+  async approve(sid: string, rev: number): Promise<ApproveReply> {
+    const reply = await this.json<Raw>("POST", ADOPT_ROUTES.approve(sid), { rev });
+    return { rev: num(reply.rev, rev), case_id: str(reply.case_id), case_problem: str(reply.case_problem) };
   }
 
   async close(sid: string): Promise<void> {
@@ -166,6 +188,21 @@ export function slotOf(raw: unknown): Slot {
     status: oneOf(r.status, ["open", "guessed", "confirmed"], "open"),
     value: str(r.value),
     source: oneOf(r.source, ["user", "research", "memory", "document", "account", "default"], "default"),
+  };
+}
+
+/** A saved case's summary (ADR 0123), each field read to its type with the contract's absent value. */
+export function caseOf(raw: unknown): CaseSummary {
+  const r = isRaw(raw) ? raw : {};
+  return {
+    case_id: str(r.case_id),
+    playbook_id: str(r.playbook_id),
+    title: str(r.title),
+    approved_rev: num(r.approved_rev),
+    approved_at: str(r.approved_at),
+    created: str(r.created),
+    confirmed: num(r.confirmed),
+    slots: num(r.slots),
   };
 }
 

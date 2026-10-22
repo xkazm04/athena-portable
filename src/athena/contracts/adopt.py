@@ -234,6 +234,80 @@ class Error(AdoptEvent):
     detail: str = ""
 
 
+# ------------------------------------------------------------------------------------------
+# the case file (ADR 0123)
+# ------------------------------------------------------------------------------------------
+
+#: The shape version of a case file's data block. A reader refuses a version it does not know.
+CASE_SCHEMA = 1
+
+
+@dataclass(frozen=True)
+class CaseSlot:
+    """One slot as the case keeps it: the :class:`Slot`, plus when it was last confirmed
+    (``confirmed_at``, ISO 8601 UTC, ``""`` when never), the person's own words for it
+    (``quote``, ``""`` when none) and the fact written from it (``fact_id``, ``""`` when none)."""
+
+    id: str
+    kind: SlotKind
+    label: str
+    status: SlotStatus = "open"
+    value: str = ""
+    source: SlotSource = "default"
+    confirmed_at: str = ""
+    quote: str = ""
+    fact_id: str = ""
+
+
+@dataclass(frozen=True)
+class CaseApproval:
+    """One approval of the case: the brief ``rev``, when, and the episode that records it."""
+
+    rev: int
+    at: str
+    episode_id: str
+
+
+@dataclass(frozen=True)
+class Case:
+    """A standing case: one person's setup of one playbook, kept in ``goals/<id>.md``.
+
+    ``id`` is a minted ``proj_`` id, one per case and kept across re-approvals.
+    ``approved_rev`` / ``approved_at`` / ``episode_id`` are the latest approval's; ``approvals``
+    is every one, oldest first. ``brief_md``, ``command``, ``portals`` and ``open_slot_ids`` are
+    the approved :class:`Brief`'s. ``created`` is the first approval's time.
+    """
+
+    id: str
+    playbook_id: str
+    title: str
+    approved_rev: int
+    approved_at: str
+    episode_id: str
+    created: str
+    brief_md: str = ""
+    command: str = ""
+    portals: dict[str, str] = field(default_factory=dict)
+    open_slot_ids: tuple[str, ...] = ()
+    slots: tuple[CaseSlot, ...] = ()
+    approvals: tuple[CaseApproval, ...] = ()
+    schema: int = CASE_SCHEMA
+
+
+@dataclass(frozen=True)
+class CaseSummary:
+    """One row of ``GET /adopt/cases``: enough to name a case and open it."""
+
+    case_id: str
+    playbook_id: str
+    title: str
+    approved_rev: int
+    approved_at: str
+    created: str
+    confirmed: int = 0
+    slots: int = 0
+
+
 _EVENTS: tuple[type[AdoptEvent], ...] = (
     Progress,
     Say,

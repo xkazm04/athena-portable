@@ -252,8 +252,9 @@ def apply_updates(
     """Apply ``[{slot_id, value, status}]`` from ``source``; answers ``(slots, changed)``.
 
     An unknown slot id or status is skipped, never raised: the updates come from a model or a
-    lane. A non-user source never touches a slot the person confirmed herself, and never marks
-    anything ``open`` (only the auditor, reading her words, reopens).
+    lane. A non-user source never touches a slot the person confirmed herself (now, or in an
+    approved case this session reopened: source ``memory``, ADR 0123), and never marks anything
+    ``open`` (only the auditor, reading her words, reopens).
     """
     by_id = {s.id: s for s in slots}
     changed = False
@@ -265,7 +266,7 @@ def apply_updates(
         if status not in _STATUSES:
             continue
         if source != "user" and (
-            (slot.status == "confirmed" and slot.source == "user") or status == "open"
+            (slot.status == "confirmed" and slot.source in ("user", "memory")) or status == "open"
         ):
             continue
         value = cap_text(_text(raw.get("value")), VALUE_CAP) if "value" in raw else slot.value

@@ -8,10 +8,17 @@
  * script afresh, so leaving the studio and coming back plays it again. The script is written for
  * the shipped "Airline credits" playbook; its rehearsal is the recorded run renamed to the
  * person's portals and cut short, so the swap is visible.
+ *
+ * Saved cases (ADR 0123): `case` is the topic page with one saved case to open, `case-offline` the
+ * topic page with no daemon to ask, `adopt-case` the studio reopened on that case (its approved
+ * brief at once, and only the date-like slot asked again).
  */
 import { ApiError } from "@/lib/api";
 import type {
   AdoptEvent,
+  ApproveReply,
+  CaseSummary,
+  CasesReply,
   Lane,
   Question,
   RawTraceTurn,
@@ -374,6 +381,57 @@ function brief(rev: number, open: string[]): Beat[] {
   ];
 }
 
+/** The saved case the case fixtures hold. */
+export const PREVIEW_CASE: CaseSummary = {
+  case_id: "proj_0a1b2c3d4e5f",
+  playbook_id: ADOPT_PLAYBOOK,
+  title: "Airline credits turned back into card refunds",
+  approved_rev: 1,
+  approved_at: "2026-10-08T17:42:00+00:00",
+  created: "2026-10-08T17:42:00+00:00",
+  confirmed: 8,
+  slots: 10,
+};
+
+/** A reopened case: what she confirmed carries over from memory; the look-back window is asked again. */
+function reopened(): Beat[] {
+  const slots = SLOTS_2.map((s): Slot => {
+    if (s.id === "f-window") return { ...s, status: "guessed", source: "memory" };
+    return s.source === "user" ? { ...s, source: "memory" } : s;
+  });
+  return [
+    { ms: 200, e: { kind: "adopt.slots", slots } },
+    {
+      ms: 200,
+      e: {
+        kind: "adopt.say",
+        text: "Your case is back as you approved it on 2026-10-08. 6 things you told me carry over. 1 date or amount may have changed since, so I'll ask about that one again.",
+      },
+    },
+    ...brief(1, ["f-window", "t-chose"]).slice(3),
+    {
+      ms: 500,
+      e: {
+        kind: "adopt.questions",
+        round: 1,
+        questions: [
+          {
+            id: "r1q1",
+            slot_ids: ["f-window"],
+            text: "Still the last 12 months, counted from today?",
+            options: [
+              { id: "a", label: "Yes, from today" },
+              { id: "b", label: "From when I last ran it" },
+            ],
+            multi: false,
+            allow_text: true,
+          },
+        ],
+      },
+    },
+  ];
+}
+
 function toRaw(t: TraceTurn): RawTraceTurn {
   return {
     portal: t.portal,
@@ -463,6 +521,7 @@ export class ScriptedClient implements AdoptClient {
   private wake = new Set<() => void>();
   private answers = 0;
   private briefed = false;
+  private reopenedCase = false;
   private run = 0;
   constructor(
     private readonly recorded: readonly TraceTurn[],
@@ -470,6 +529,8 @@ export class ScriptedClient implements AdoptClient {
       offline?: boolean;
       showFails?: boolean;
       speed?: number;
+      /** The saved cases `cases()` answers (ADR 0123). */
+      cases?: CaseSummary[];
     } = {},
   ) {}
 
@@ -487,8 +548,11 @@ export class ScriptedClient implements AdoptClient {
     }
   }
 
-  start(playbookId: string): Promise<StartReply> {
-    this.calls.push({ route: "start", body: { playbook_id: playbookId } });
+  start(playbookId: string, _intro?: string, caseId?: string): Promise<StartReply> {
+    this.calls.push({
+      route: "start",
+      body: caseId ? { playbook_id: playbookId, case_id: caseId } : { playbook_id: playbookId },
+    });
     if (this.opts.offline)
       return Promise.reject(
         new ApiError(0, "offline", "The daemon is not running."),
@@ -498,12 +562,26 @@ export class ScriptedClient implements AdoptClient {
     this.played = [];
     this.answers = 0;
     this.briefed = false;
-    this.play(opening());
+    const held = caseId ? (this.opts.cases ?? []).find((c) => c.case_id === caseId) : undefined;
+    if (caseId && !held)
+      return Promise.reject(new ApiError(404, "unknown_ref", `no saved case '${caseId}'`));
+    this.briefed = held !== undefined;
+    this.reopenedCase = held !== undefined;
+    this.play(held ? reopened() : opening());
     return Promise.resolve({
       ok: true,
       session_id: `preview-${this.run}`,
       slots: [],
+      case: held ?? null,
     });
+  }
+
+  cases(playbookId: string): Promise<CasesReply> {
+    this.calls.push({ route: "cases", body: { playbook_id: playbookId } });
+    if (this.opts.offline)
+      return Promise.reject(new ApiError(0, "offline", "The daemon is not running."));
+    const cases = (this.opts.cases ?? []).filter((c) => c.playbook_id === playbookId);
+    return Promise.resolve({ ok: true, cases, showing: cases.length, total: cases.length, footer: "" });
   }
 
   async *events_(
@@ -544,7 +622,12 @@ export class ScriptedClient implements AdoptClient {
     );
     if (cards) {
       this.answers += 1;
-      if (this.answers === 1) this.play(afterRound1());
+      if (this.reopenedCase && this.answers === 1)
+        this.play([
+          ...brief(2, ["t-chose"]),
+          { ms: 500, e: { kind: "adopt.clear", rev: 2 } },
+        ]);
+      else if (this.answers === 1) this.play(afterRound1());
       else if (this.answers === 2 && !this.briefed) {
         this.briefed = true;
         this.play([
@@ -590,10 +673,10 @@ export class ScriptedClient implements AdoptClient {
     return Promise.resolve();
   }
 
-  approve(sid: string, rev: number): Promise<void> {
+  approve(sid: string, rev: number): Promise<ApproveReply> {
     this.calls.push({ route: "approve", body: { sid, rev } });
     this.play(rehearsal(this.recorded, this.opts.showFails === true));
-    return Promise.resolve();
+    return Promise.resolve({ rev, case_id: PREVIEW_CASE.case_id, case_problem: "" });
   }
 
   close(sid: string): Promise<void> {
@@ -619,6 +702,9 @@ export const ADOPT_FIXTURES = [
   "adopt-offline",
 ] as const;
 
+/** The saved-case fixtures (ADR 0123): the topic page with a case, with no daemon, and the reopened studio. */
+export const CASE_FIXTURES = ["case", "case-offline", "adopt-case"] as const;
+
 const made = new Map<string, AdoptDeps>();
 
 /** The deps a preview fixture hands the studio; the same object every render, so a session is not restarted. */
@@ -626,14 +712,15 @@ export function adoptDepsFor(
   fixture: string,
   recorded: readonly TraceTurn[],
 ): AdoptDeps | undefined {
-  if (!(ADOPT_FIXTURES as readonly string[]).includes(fixture))
-    return undefined;
+  const all = [...ADOPT_FIXTURES, ...CASE_FIXTURES] as readonly string[];
+  if (!all.includes(fixture)) return undefined;
   const known = made.get(fixture);
   if (known) return known;
   const deps: AdoptDeps = {
     client: new ScriptedClient(recorded, {
-      offline: fixture === "adopt-offline",
+      offline: fixture === "adopt-offline" || fixture === "case-offline",
       showFails: fixture === "adopt-show-failed",
+      cases: (CASE_FIXTURES as readonly string[]).includes(fixture) ? [PREVIEW_CASE] : [],
     }),
     dictation: scriptedDictation,
   };

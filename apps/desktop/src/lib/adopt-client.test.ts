@@ -130,6 +130,48 @@ describe("the routes", () => {
     expect(JSON.parse(String(calls[3]!.init.body))).toEqual({ rev: 3 });
   });
 
+  it("reopens a saved case, lists the cases, and reads the case an approval was saved to (ADR 0123)", async () => {
+    const summary = {
+      case_id: "proj_0123456789ab",
+      playbook_id: "travel-credit-refunds",
+      title: "Airline credits",
+      approved_rev: 2,
+      approved_at: "2026-10-08T17:42:00+00:00",
+      created: "2026-10-01T09:00:00+00:00",
+      confirmed: 7,
+      slots: 9,
+    };
+    const { calls, f } = fake((url) =>
+      url.includes("/adopt/cases")
+        ? json({ ok: true, cases: [summary, { case_id: "proj_ffffffffffff" }], showing: 2, total: 3, footer: "(showing 2 of 3)" })
+        : url.endsWith("/approve")
+          ? json({ ok: true, rev: 2, case_id: "proj_0123456789ab", case_problem: "" })
+          : json({ ok: true, session_id: "s2", slots: [], case: summary }),
+    );
+    const api = new AdoptApi(() => AT, f);
+    const reply = await api.start("travel-credit-refunds", "", "proj_0123456789ab");
+    expect(JSON.parse(String(calls[0]!.init.body))).toEqual({
+      playbook_id: "travel-credit-refunds",
+      case_id: "proj_0123456789ab",
+    });
+    expect(reply.case).toEqual(summary);
+
+    const listed = await api.cases("travel credit/x");
+    expect(calls[1]!.init.method).toBe("GET");
+    expect(calls[1]!.url).toBe("http://127.0.0.1:9/adopt/cases?playbook_id=travel%20credit%2Fx");
+    expect(listed.cases[0]).toEqual(summary);
+    // A thin row reads to the contract's absent values, never a crash.
+    expect(listed.cases[1]).toMatchObject({ case_id: "proj_ffffffffffff", title: "", approved_rev: 0, slots: 0 });
+    expect([listed.showing, listed.total, listed.footer]).toEqual([2, 3, "(showing 2 of 3)"]);
+
+    expect(await api.approve("s2", 2)).toEqual({ rev: 2, case_id: "proj_0123456789ab", case_problem: "" });
+  });
+
+  it("starts with no case when the daemon names none", async () => {
+    const { f } = fake(() => json({ ok: true, session_id: "s1", slots: [] }));
+    expect((await new AdoptApi(() => AT, f).start("x")).case).toBeNull();
+  });
+
   it("says offline with no endpoint or no answer, and the daemon's own reason for a refusal", async () => {
     const none = new AdoptApi(() => null, () => Promise.reject(new Error("unreached")));
     await expect(none.start("x")).rejects.toMatchObject({ reason: "offline" });

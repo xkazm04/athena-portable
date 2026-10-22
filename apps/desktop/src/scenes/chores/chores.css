@@ -913,6 +913,35 @@
 .pa-said:empty {
   display: none;
 }
+/* Your case (ADR 0123): the saved cases of this chore, each one press from its studio. */
+.pa-cases {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pa-case {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 16px;
+  padding: 12px 16px;
+  border-radius: 10px;
+  border: 1px solid var(--line);
+  background: var(--card-bg);
+}
+.pa-case__title {
+  color: var(--foreground);
+  font-weight: 600;
+}
+.pa-case__when {
+  flex: 1 1 auto;
+  color: var(--muted-foreground);
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+}
 /* The command, shown when the clipboard refused it: wrapped, never scrolled, one click selects it. */
 .pa-command {
   margin: 0;

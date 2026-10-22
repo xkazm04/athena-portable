@@ -4,7 +4,8 @@
  * A pure function of `{ model, path, go }`: the place says which level is drawn. The root is the
  * catalogue (`catalogue.tsx`), a chore is its topic page (`topic.tsx`), a turn of its run is the
  * replay (`replay.tsx`), and its "Make it yours" is the Adopt studio (`adopt/studio.tsx`, ADR 0097),
- * the one level that talks to the daemon, through the deps it is handed. The stage mounts a fresh
+ * the one level that talks to the daemon, through the deps it is handed (the topic page asks the same
+ * deps only for the saved cases it names, ADR 0123). The stage mounts a fresh
  * view at every move, so the catalogue's filters, order and last pick, the front door's words and
  * each topic's scroll are kept in `memory.ts`, and coming back finds them as they were. A load that
  * failed, a set on its way, an empty build, an id this build does not ship, a chore with no
@@ -139,6 +140,20 @@ export default function ChoresView({ model, path, go, adopt, offer }: ChoresView
     );
   }
 
+  // The studio on a saved case (ADR 0123): the case's slots and approved brief, no re-interview.
+  if (path.sub?.kind === "case") {
+    return (
+      <Studio
+        key={`${view.id}/${path.sub.arg ?? ""}`}
+        view={view}
+        model={model}
+        deps={adopt}
+        back={() => go(chorePath(view.id))}
+        caseId={path.sub.arg}
+      />
+    );
+  }
+
   if (path.sub?.kind === "run") {
     const trace = view.playbook.bench?.trace ?? [];
     if (trace.length === 0) {
@@ -175,7 +190,7 @@ export default function ChoresView({ model, path, go, adopt, offer }: ChoresView
     return <Replay view={view} turn={turn} go={go} />;
   }
 
-  return <Topic key={view.id} view={view} model={model} go={go} back={back} />;
+  return <Topic key={view.id} view={view} model={model} go={go} back={back} deps={adopt} />;
 }
 
 function Centre({ children }: { children: React.ReactNode }) {

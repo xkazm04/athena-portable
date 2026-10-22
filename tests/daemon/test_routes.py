@@ -111,6 +111,7 @@ def test_the_table_ships_every_route_the_daemon_answers(daemon: AthenaDaemon) ->
         "DELETE /voice/key",
         # The adopt studio's, outside the writer lock (ADR 0097).
         "POST /adopt",
+        "GET /adopt/cases",
         "GET /adopt/<id>",
         "POST /adopt/<id>",
         "DELETE /adopt/<id>",

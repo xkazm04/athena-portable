@@ -132,10 +132,9 @@ def test_answer_to_clear_then_approve_the_current_rev_only(live: Live) -> None:
     assert (status, body["reason"]) == (409, "validator_failed")
     assert body["detail"].startswith("stale_rev:")
     assert live.request(f"/adopt/{sid}/approve", method="POST", body={"rev": "1"})[0] == 400
-    assert live.request(f"/adopt/{sid}/approve", method="POST", body={"rev": 1}) == (
-        200,
-        {"ok": True, "rev": 1},
-    )
+    status, body = live.request(f"/adopt/{sid}/approve", method="POST", body={"rev": 1})
+    assert (status, body["ok"], body["rev"], body["case_problem"]) == (200, True, 1, "")
+    assert body["case_id"].startswith("proj_")  # ADR 0123: the approval is a saved case
     session.drain()
     assert ("approve", 1) in live.rig.seen
 

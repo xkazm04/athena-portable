@@ -98,7 +98,7 @@ class FakeAdopt implements AdoptClient {
   starts: { playbookId: string; intro: string | undefined }[] = [];
   start(playbookId: string, intro?: string): Promise<StartReply> {
     this.starts.push({ playbookId, intro });
-    return Promise.resolve({ ok: true, session_id: "a1", slots: [] });
+    return Promise.resolve({ ok: true, session_id: "a1", slots: [], case: null });
   }
   events(_sid: string, _after: number, signal: AbortSignal) {
     return new Stream(0).run(signal);
@@ -112,8 +112,11 @@ class FakeAdopt implements AdoptClient {
   enough() {
     return Promise.resolve();
   }
-  approve() {
-    return Promise.resolve();
+  approve(_sid: string, rev: number) {
+    return Promise.resolve({ rev, case_id: "", case_problem: "" });
+  }
+  cases() {
+    return Promise.resolve({ ok: true as const, cases: [], showing: 0, total: 0, footer: "" });
   }
   close() {
     return Promise.resolve();

@@ -22,6 +22,7 @@ from athena.contracts.adopt import (
     Alternate,
     Answer,
     AnswerVia,
+    CaseSummary,
     Finding,
     Lane,
     LaneKind,
@@ -109,6 +110,7 @@ _NESTED: tuple[tuple[str, Any], ...] = (
     ("Answer", Answer),
     ("Alternate", Alternate),
     ("Verdict", Verdict),
+    ("CaseSummary", CaseSummary),
 )
 
 

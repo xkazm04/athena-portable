@@ -4,15 +4,23 @@
  * One playbook as a product page. A hero (the brief beside
  * its first still and three figures), the run drawn as a blueprint, every still of the run large,
  * and what to do with it. Escape, or the crumb, goes back to the catalogue.
+ *
+ * "Your case" (ADR 0123): the chore's saved cases, asked of the daemon through the studio's deps
+ * (`GET /adopt/cases`), each opened in the studio with its approved brief and no re-interview. Each
+ * state is said: no daemon in this window, looking, none saved yet, could not be looked up.
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import Button from "@/components/Button";
 import type { Path } from "@/depth/model";
+import type { CaseSummary } from "@/lib/adopt";
 import { categoryLabel, jobLabel } from "@/lib/playbook-taxonomy";
 import type { PlaybookView, PlaybooksModel } from "@/modules/playbooks/model";
 
-import { adoptPath, beforeAfterOf, blueprintOf, lowerFirst, runPath, valueCell } from "./model";
+import type { AdoptDeps } from "./adopt/deps";
+import { why } from "./adopt/session";
+import { dayOf } from "./adopt/state";
+import { adoptPath, beforeAfterOf, blueprintOf, casePath, lowerFirst, runPath, valueCell } from "./model";
 import Lightbox from "./lightbox";
 import { scrolls } from "./memory";
 import Rich from "./rich";
@@ -20,18 +28,73 @@ import { stillsOf } from "./facts";
 import Flow from "./flow";
 import Glyph from "./glyphs";
 
+/** What the topic page knows of the chore's saved cases (ADR 0123). */
+export type CasesState =
+  | { kind: "no-daemon" }
+  | { kind: "looking" }
+  | { kind: "found"; cases: CaseSummary[]; footer: string }
+  | { kind: "failed"; offline: boolean; detail: string };
+
+/** The saved cases of `playbookId`, asked once per mount. Without deps, it says there is no daemon. */
+export function useCases(deps: AdoptDeps | undefined, playbookId: string): CasesState {
+  // The answer is kept with what it answered, so a later chore or client never shows an old one.
+  const [answer, set] = useState<{ for: string; client: unknown; state: CasesState } | null>(null);
+  useEffect(() => {
+    if (!deps) return;
+    let live = true;
+    const done = (state: CasesState) => live && set({ for: playbookId, client: deps.client, state });
+    deps.client.cases(playbookId).then(
+      (reply) => done({ kind: "found", cases: reply.cases, footer: reply.footer }),
+      (error: unknown) => {
+        const w = why(error);
+        done({ kind: "failed", offline: w.reason === "offline", detail: w.detail || w.reason });
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [deps, playbookId]);
+  if (!deps) return { kind: "no-daemon" };
+  if (answer === null || answer.for !== playbookId || answer.client !== deps.client) return { kind: "looking" };
+  return answer.state;
+}
+
+/** The one line the "Your case" block says when it has no case to show, or "" when it has. */
+export function casesLine(state: CasesState): string {
+  switch (state.kind) {
+    case "no-daemon":
+      return "Saved cases are kept by Athena's daemon, and no daemon is connected to this window.";
+    case "looking":
+      return "Looking for a case you saved…";
+    case "failed":
+      return state.offline
+        ? "Your saved case could not be looked up: the daemon is not running."
+        : `Your saved case could not be looked up: ${state.detail}`;
+    case "found":
+      return state.cases.length
+        ? ""
+        : "No saved case yet. Approve a brief with her and she keeps it here, so next time nothing is asked twice.";
+  }
+}
+
 export default function Topic({
   view,
   model,
   go,
   back,
+  deps,
 }: {
   view: PlaybookView;
   model: PlaybooksModel;
   go: (to: Path) => void;
   back: () => void;
+  /** The studio's client; the page asks it only for the saved cases (ADR 0123). */
+  deps?: AdoptDeps;
 }) {
   const p = view.playbook;
+  const saved = useCases(deps, p.id);
+  const cases = saved.kind === "found" ? saved.cases : [];
+  const latest = cases[0];
   const stills = stillsOf(view);
   const [at, setAt] = useState<number | null>(null);
   // What the last press of "Copy the command" came to. Only the latest press may answer, so a
@@ -175,8 +238,38 @@ export default function Topic({
             </h2>
             <p className="pa-muted">{`Worth ${view.value} ${view.per} for ${p.persona ? lowerFirst(p.persona.replace(/^(A|An|The) /, (w) => w.toLowerCase())) : "the playbook's own case"}. Tell her what differs in yours; she looks up the rest and shows you the run before anything is real.`}</p>
           </div>
+          <div className="pa-adopt__case" aria-labelledby="pa-case-h">
+            <h3 id="pa-case-h" className="pa-kpi__label">
+              Your case
+            </h3>
+            {cases.length ? (
+              <ul className="pa-cases">
+                {cases.map((c) => (
+                  <li key={c.case_id} className="pa-case">
+                    <span className="pa-case__title">{c.title || p.shortTitle}</span>
+                    <span className="pa-case__when">{`Last approved ${dayOf(c.approved_at)} · draft ${c.approved_rev} · ${c.confirmed} of ${c.slots} confirmed`}</span>
+                    {cases.length > 1 ? (
+                      <Button variant="ghost" size="sm" onClick={() => go(casePath(p.id, c.case_id))}>
+                        Open this case
+                      </Button>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            ) : (
+              <p className="pa-muted" role="status">
+                {casesLine(saved)}
+              </p>
+            )}
+            {saved.kind === "found" && saved.footer ? <p className="pa-muted">{saved.footer}</p> : null}
+          </div>
           <div className="pa-adopt__row">
-            <Button variant="primary" onClick={() => go(adoptPath(p.id))}>
+            {latest ? (
+              <Button variant="primary" onClick={() => go(casePath(p.id, latest.case_id))}>
+                Open your case
+              </Button>
+            ) : null}
+            <Button variant={latest ? "secondary" : "primary"} onClick={() => go(adoptPath(p.id))}>
               Talk it through with her
             </Button>
             {trace.length ? (

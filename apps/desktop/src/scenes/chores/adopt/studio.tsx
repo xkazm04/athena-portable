@@ -1,7 +1,8 @@
 /**
  * The Adopt studio — ADR 0097, README section 3.5.
  *
- * Where "Make it yours" leads (`chores/<id>/adopt`). Athena interviews the person in question
+ * Where "Make it yours" leads (`chores/<id>/adopt`), and "Open your case" (`chores/<id>/case/<proj_id>`,
+ * ADR 0123): the same studio started on a saved case, which draws its approved brief at once. Athena interviews the person in question
  * cards while research lanes fill the case on their own; when nothing is open (or the person says
  * "Good enough") she drafts a brief; approving it plays the run with their portals and rehearses
  * it on a world shaped like their case; "Start for real" hands the brief's command to her. Two
@@ -23,7 +24,7 @@ import Conversation from "./conversation";
 import type { AdoptDeps } from "./deps";
 import { useAdoptSession } from "./session";
 import Showcase from "./showcase";
-import { approval } from "./state";
+import { approval, dayOf } from "./state";
 import "./adopt.css";
 
 export default function Studio({
@@ -32,6 +33,7 @@ export default function Studio({
   deps,
   back,
   intro,
+  caseId,
 }: {
   view: PlaybookView;
   model: PlaybooksModel;
@@ -40,9 +42,11 @@ export default function Studio({
   back: () => void;
   /** What the person said at the front door (ADR 0098): the session's opening message. */
   intro?: string;
+  /** The saved case to reopen (ADR 0123): its slots and approved brief, with no re-interview. */
+  caseId?: string;
 }) {
   const p = view.playbook;
-  const [s, act] = useAdoptSession(deps, p.id, intro);
+  const [s, act] = useAdoptSession(deps, p.id, intro, caseId);
   const drafts = useRef(new Set<string>());
   const [asking, setAsking] = useState(false);
   const [aloud, setAloud] = useState(false);
@@ -108,7 +112,7 @@ export default function Studio({
     <header className="ad-head">
       <div className="ad-head__row">
         <div>
-          <p className="pa-eyebrow">Make it yours</p>
+          <p className="pa-eyebrow">{caseId ? "Your case" : "Make it yours"}</p>
           <h1 className="ad-title">{p.shortTitle}</h1>
           <p className="ad-sub">
             She asks what differs in your case, looks the rest up, and shows you
@@ -205,6 +209,18 @@ export default function Studio({
         {s.conn === "closed" ? (
           <p className="ad-banner" role="status">
             {`This conversation has ended (${s.problem?.detail || "closed"}). Close it and start again to continue.`}
+          </p>
+        ) : null}
+        {s.reopened ? (
+          <p className="ad-banner" role="status">
+            {`Your case, as you approved it on ${dayOf(s.reopened.approved_at)} (draft ${s.reopened.approved_rev}). What you told her carries over; a date or an amount that may have moved, she asks again.`}
+          </p>
+        ) : null}
+        {approved && s.caseProblem ? (
+          <p className="ad-note" role="status">{`Approved, but your case was not saved: ${s.caseProblem}`}</p>
+        ) : approved && s.caseId ? (
+          <p className="ad-note" role="status">
+            Saved as your case. It is on the chore&apos;s page next time, with what you told her.
           </p>
         ) : null}
         <div className="ad-cols">

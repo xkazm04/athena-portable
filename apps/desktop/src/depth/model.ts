@@ -32,11 +32,11 @@ export const ROOT_LABEL: Readonly<Record<Root, string>> = {
   mind: "Mind",
 };
 
-export type SubKind = "page" | "tool" | "run" | "adopt" | "allowlist";
+export type SubKind = "page" | "tool" | "run" | "adopt" | "case" | "allowlist";
 
 export interface Sub {
   kind: SubKind;
-  /** The tool name or the turn number, for the kinds that take one. */
+  /** The tool name, the turn number or the saved case's id, for the kinds that take one. */
   arg?: string;
 }
 
@@ -56,7 +56,8 @@ const GRAMMAR: Readonly<
   // A boolean says whether the sub-level takes an argument.
   apps: { items: "open", subs: { page: false, tool: true } },
   // The id "new" is the front door (ADR 0098); the Chores scene reserves it, no chore may take it.
-  chores: { items: "open", subs: { run: true, adopt: false } },
+  // `case/<proj_id>` is the studio on a saved case (ADR 0123).
+  chores: { items: "open", subs: { run: true, adopt: false, case: true } },
   accounts: { items: "open", subs: { allowlist: false } },
   voice: { items: ["studio", "settings"], subs: {} },
   mind: { items: ["engine", "brain", "look", "data", "mic"], subs: {} },

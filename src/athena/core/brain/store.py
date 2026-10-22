@@ -557,6 +557,63 @@ class Brain:
             self.index_provenance(con, node_id, cited, created_at)
         return MemoryRef(node_id, rel, "procedural")
 
+    # -- goals ---------------------------------------------------------------------------------
+
+    def write_goal(
+        self, goal_id: str, title: str, body: str, *, session_id: str, created: str
+    ) -> MemoryRef:
+        """Write (or rewrite) ``goals/<goal_id>.md``: one standing case (ADR 0123).
+
+        The header is five keys, the episode's shape with ``title`` in ``role``'s place: ``id,
+        type, title, session, created``. Everything a writer of goals needs beyond that is the
+        body's, so the header stays what the rebuild reads and nothing more. The id is a minted
+        project id (``contracts/ids.py``), which is also what keeps the path inside ``goals/``.
+        ``created`` is the first write's and a rewrite passes it again, so the row a rebuild
+        makes is the row this writes. A goal is not a distilled claim and cites nothing here;
+        the facts drawn from it do (:meth:`write_fact`).
+        """
+        if not ids.is_id("project", goal_id):
+            raise ValueError(f"a goal id is a minted project id: {goal_id!r}")
+        if not title.strip():
+            raise ValueError("refusing to write a goal with no title")
+        text_body = _lf(body).strip()
+        if not text_body:
+            raise ValueError("refusing to write an empty goal")
+        rel = f"goals/{goal_id}.md"
+        file_text = frontmatter.render(
+            [
+                ("id", goal_id),
+                ("type", "goal"),
+                ("title", title.strip()),
+                ("session", session_id),
+                ("created", created),
+            ],
+            text_body,
+        )
+        self._write_file(rel, file_text)
+        with self.write_txn() as con:
+            self.index_node(
+                con,
+                node_id=goal_id,
+                kind="goal",
+                rel=rel,
+                file_text=file_text,
+                body=text_body,
+                importance=DEFAULT_IMPORTANCE,
+                created_at=created,
+                session_id=session_id,
+            )
+        return MemoryRef(goal_id, rel, "goal")
+
+    def goals(self) -> list[NodeRow]:
+        """Every goal the index holds, oldest first (a rebuild finds them again from disk)."""
+        with closing(self.read_connection()) as con:
+            rows = con.execute(
+                f"""SELECT {NODE_COLUMNS} FROM companion_node
+                    WHERE kind = 'goal' ORDER BY created_at, id"""
+            ).fetchall()
+        return [node_from_row(row) for row in rows]
+
     # -- write plumbing ------------------------------------------------------------------------
 
     def _write_file(self, rel: str, payload: str) -> None:

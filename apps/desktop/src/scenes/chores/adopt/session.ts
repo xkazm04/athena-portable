@@ -1,7 +1,8 @@
 /**
  * The Adopt studio's session, held for as long as the studio is open — ADR 0097.
  *
- * On mount: `POST /adopt` for the playbook, then follow its events from `after=0`. A stream that
+ * On mount: `POST /adopt` for the playbook (with the saved case's id when the studio was opened on
+ * one, ADR 0123), then follow its events from `after=0`. A stream that
  * drops is followed again from the last `seq` drawn, after 1, 2, then 4 s, five times at most;
  * then the studio says so and offers Retry. An event that arrives resets the count. On unmount
  * the session is closed (`DELETE`, fire and forget) — a session whose start was still in flight is
@@ -68,6 +69,7 @@ export function useAdoptSession(
   deps: AdoptDeps | undefined,
   playbookId: string,
   intro?: string,
+  caseId?: string,
 ): [StudioState, StudioActions] {
   const [state, dispatch] = useReducer(reduce, INITIAL);
   const sid = useRef("");
@@ -133,7 +135,7 @@ export function useAdoptSession(
     sid.current = "";
     dispatch({ t: "restart" });
     let started = "";
-    void deps.client.start(playbookId, opening.current).then(
+    void deps.client.start(playbookId, opening.current, caseId).then(
       (reply) => {
         started = reply.session_id;
         if (ctl.signal.aborted) {
@@ -141,7 +143,7 @@ export function useAdoptSession(
           return;
         }
         sid.current = started;
-        dispatch({ t: "started", sid: started, slots: reply.slots });
+        dispatch({ t: "started", sid: started, slots: reply.slots, reopened: reply.case });
         void follow(started, ctl.signal);
       },
       (error: unknown) => {
@@ -152,7 +154,7 @@ export function useAdoptSession(
       ctl.abort();
       if (started) void deps.client.close(started).catch(() => {});
     };
-  }, [deps, playbookId, follow, epoch]);
+  }, [deps, playbookId, caseId, follow, epoch]);
 
   const fail = useCallback(
     (error: unknown) => dispatch({ t: "error", key: nextKey(), ...why(error) }),
@@ -240,10 +242,13 @@ export function useAdoptSession(
     approve: (rev) => {
       if (!deps || !sid.current) return;
       dispatch({ t: "approved", rev });
-      deps.client.approve(sid.current, rev).catch((error: unknown) => {
-        dispatch({ t: "approved", rev: null });
-        fail(error);
-      });
+      deps.client.approve(sid.current, rev).then(
+        (reply) => dispatch({ t: "saved", caseId: reply.case_id, problem: reply.case_problem }),
+        (error: unknown) => {
+          dispatch({ t: "approved", rev: null });
+          fail(error);
+        },
+      );
     },
     retry: () => {
       if (!deps) return;
