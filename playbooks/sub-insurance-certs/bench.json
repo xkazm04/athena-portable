@@ -1,15 +1,16 @@
 {
   "playbook": "sub-insurance-certs",
-  "run_at": "2026-10-10T03:20:28Z",
+  "run_at": "2026-10-22T09:21:40Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 189.6,
-  "turns": 12,
+  "comparable": "sha256:99b3412c246e2b81",
+  "wall_s": 188.8,
+  "turns": 13,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 33,
-  "cost_usd": 1.9643,
+  "reads": 35,
+  "cost_usd": 1.7555,
   "your_time_s": 270,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 3.2
+    "minutes": 3.1
   },
   "score": {
     "eligible": 9,
     "found": 9,
     "exact": 9,
+    "neutral": 0,
     "value_total_usd": 7200.0,
     "value_found_usd": 7200.0,
     "recall_value": 1.0,
@@ -178,20 +180,15 @@
     }
   ],
   "missed": [],
-  "closing_words": "The recall I have is cut off, and each notice has to name everything wrong. So I'm pulling the full Coverwell findings before I file anything.\n\nI've filed three approvals and six deficiency notices as cards. Each one rests on the policy as it stands on Coverwell, not on the certificate. M-501 confirms Marlow's cure, and I read nothing in the folder that changes any other result.\n\n**Approve (3):** S-01 Brightline, S-07 Marlow, S-10 Halvorsen. Each policy has $1M/$2M or better, and both CG 20 10 and CG 20 37 name both parties at 1180 Alder Street. Marlow's CG 20 37 took effect 7 Oct, so its open deficiency is cured and it gets approved, not re-noticed. Halvorsen's blank AI box on the certificate doesn't count against it.\n\n**Deficiency notice (6):** S-02 Tallgrass, S-03 Cobalt, S-04 Redfern, S-05 Pinecrest, S-08 Northbank, S-09 Quarry Hill. The card for each names what is wrong.\n\n\n**Left al",
+  "closing_words": "I'm pulling the exact Coverwell and Mailnest findings back from memory first. Each deficiency notice has to name everything that's wrong, and I only have a summary of some of those findings.\n\nI'm filing the 9 cards now, 3 approvals and 6 deficiency notices. Nothing is sent until you answer each one.\n\nApprovals, each checked on the Coverwell policy:\n\nDeficiency notices:\n\n**What I left alone**\n- **S-06 Ironleaf:** Already approved 2 Oct and on site since 5 Oct. Coverwell showed it still meets Exhibit D, so there's nothing to do.\n- **Pinecrest, Redfern, Tallgrass:** I didn't take their emails (M-502, M-503, M-504) as a reason to approve. Each one conflicts with the policy.\n- **M-506:** A Certrack Pro sales pitch. I ignored it.\n\n**Gaps**\n- **S-08 Northbank:** I've added the missing endorsement copies to its notice, but I only have a summary of its Coverwell endorsement status. Please check t",
   "trace": [
     {
       "portal": "Sitegrid",
       "user": "Subs are starting to mobilize on Alder Street and I don't trust our insurance files. Start here in Sitegrid: Exhibit D's insurance requirements, and the look-ahead of who mobilizes when.",
       "continued": false,
-      "said": "I'll read Exhibit D and the look-ahead from Sitegrid now.\n\n\nI've requested the Exhibit D index, its five topics (liability, additional-insured, certificates, workers-comp, review) and the six-week look-ahead. Nothing has come back yet, so I haven't read any of it. Once it does, I'll summarize the requirements and the mobilization order. After that I'll move on to Subhub, Coverwell and Mailnest.",
-      "said_chars": 397,
+      "said": "I'll start with the Exhibit D index and the look-ahead in Sitegrid.",
+      "said_chars": 67,
       "reads": [
-        "read_exhibit",
-        "read_exhibit",
-        "read_exhibit",
-        "read_exhibit",
-        "read_exhibit",
         "read_exhibit",
         "read_lookahead"
       ],
@@ -201,8 +198,23 @@
       "portal": "Sitegrid",
       "user": "",
       "continued": true,
-      "said": "Exhibit D and the look-ahead are read. Next I'm pulling the Subhub vendor list and the Coverwell policy list.\n\n**What Exhibit D requires (read in Sitegrid):**\n- **Liability:** Occurrence-form CGL with at least $1M each occurrence and $2M general aggregate. An umbrella can't make up a primary limit that falls short.\n- **Additional insureds:** The policy must carry both CG 20 10 (ongoing work) and CG 20 37 (completed operations). Each schedule must name both Kestrel Ridge Builders Inc. and Alder Street Partners LLC.",
-      "said_chars": 3536,
+      "said": "The look-ahead lists 10 subs. The Exhibit D index only gave topics, so I'll read each topic in full now.",
+      "said_chars": 104,
+      "reads": [
+        "read_exhibit",
+        "read_exhibit",
+        "read_exhibit",
+        "read_exhibit",
+        "read_exhibit"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Sitegrid",
+      "user": "",
+      "continued": true,
+      "said": "Exhibit D is clear: $1M per occurrence and $2M aggregate on an occurrence form, plus both CG 20 10 and CG 20 37 naming Kestrel Ridge and Alder Street Partners (location 1180 Alder Street, if one is named). The policy on Coverwell counts, not the certificate. Next I'll read Subhub's vendor list and Coverwell's policy list.\n\nI couldn't read Subhub or Coverwell because this session is pinned to Sitegrid. Their tools only work while I'm switched to those tabs.",
+      "said_chars": 2060,
       "reads": [],
       "cards": []
     },
@@ -210,8 +222,8 @@
       "portal": "Subhub",
       "user": "Now Subhub. Go through every sub's compliance file: the certificate they uploaded, any endorsements, and the notices we've sent.",
       "continued": false,
-      "said": "I'll list the vendors in Subhub first, then open each compliance file.",
-      "said_chars": 70,
+      "said": "One sentence first: I'm listing every vendor on the Alder Street job, then I'll read each compliance file.",
+      "said_chars": 106,
       "reads": [
         "list_vendors"
       ],
@@ -221,9 +233,10 @@
       "portal": "Subhub",
       "user": "",
       "continued": true,
-      "said": "Ten vendors are on the job. S-06 Ironleaf is already approved, so I'll leave it alone. I'm opening the other nine compliance files now, including S-07 Marlow, which has a deficiency open.",
-      "said_chars": 187,
+      "said": "Ten vendors are listed. S-06 is already approved, S-07 has a deficiency open, and the other eight are pending review. I'm reading all ten files now, including S-06 and S-07, so I can see what was approved and what notice went out.",
+      "said_chars": 230,
       "reads": [
+        "read_vendor",
         "read_vendor",
         "read_vendor",
         "read_vendor",
@@ -240,8 +253,8 @@
       "portal": "Subhub",
       "user": "",
       "continued": true,
-      "said": "Subhub is read. Nine files are open, and none can be decided on the certificate alone. Next is Coverwell, to see what each policy carries.\n\n**What the Subhub files show (certificate claims, not yet checked against the policies):**\n\n| Sub | Policy | Term / limits | Endorsement copies uploaded | Flag |\n|---|---|---|---|---|\n| S-01 Brightline | HC-GL-44810 | to 1 Mar 2027, $1M/$2M | None | Certificate says both parties are AI, but no endorsements are on file.",
-      "said_chars": 3365,
+      "said": "Subhub is read for all 10 subs. None can be approved or sent a notice yet, because Exhibit D is decided on the policy and these are certificate-side facts only.\n\n| Sub | Mobilizes | Subhub file |\n|---|---|---|\n| S-01 Brightline | Mon 12 Oct | Certificate looks right. No endorsement copies uploaded. |\n| S-02 Tallgrass | Wed 14 Oct | CG 20 10 copy only. The certificate claims completed-ops cover, but CG 20 37 isn't uploaded. |\n| S-03 Cobalt | not read | No endorsements.",
+      "said_chars": 2337,
       "reads": [],
       "cards": []
     },
@@ -249,8 +262,8 @@
       "portal": "Coverwell",
       "user": "This is Coverwell, where the agents post the actual policies. Check what's really endorsed on each sub's policy.",
       "continued": false,
-      "said": "I'll list the policies posted to Coverwell, then open each one.",
-      "said_chars": 63,
+      "said": "I'm listing the policies Coverwell holds for Kestrel Ridge. Then I'll read each one.",
+      "said_chars": 84,
       "reads": [
         "list_policies"
       ],
@@ -260,9 +273,10 @@
       "portal": "Coverwell",
       "user": "",
       "continued": true,
-      "said": "Ten policies are posted. I'm opening the nine for the subs still to be decided. S-06 Ironleaf (PM-8120-GL) is already approved, so I'm skipping it.",
-      "said_chars": 147,
+      "said": "Ten policies are listed. I'm reading each one now to see which endorsements are attached.",
+      "said_chars": 89,
       "reads": [
+        "read_policy",
         "read_policy",
         "read_policy",
         "read_policy",
@@ -279,8 +293,8 @@
       "portal": "Coverwell",
       "user": "",
       "continued": true,
-      "said": "Coverwell is read. On the policies, three subs meet Exhibit D and six don't. Before I file anything I'm checking your Mailnest folder, because a deficiency notice can't be unsent and the folder may hold something that changes a result.\n\n**Coverwell findings (what is actually attached to each policy):**\n\n| Sub | Result | Why |\n|---|---|---|\n| S-01 Brightline | Meets | $1M/$2M. CG 20 10 and CG 20 37 both name both parties at 1180 Alder Street. |\n| S-02 Tallgrass | Fails | No CG 20 37 (completed operations).",
-      "said_chars": 2365,
+      "said": "Coverwell is read for all 10 policies. On the policies, 4 subs meet Exhibit D and 6 don't. I haven't filed anything yet, because Mailnest could change a result (for example a renewal bound or an endorsement sent since).\n\n| Sub | Policy | What's actually on it | Result |\n|---|---|---|---|\n| S-01 Brightline | HC-GL-44810 | 1M/2M. CG 20 10 and CG 20 37, both parties, 1180 Alder Street. | Meets |\n| S-02 Tallgrass | PM-7731-GL | CG 20 10 only. No completed-ops endorsement, although the certificate claims it.",
+      "said_chars": 2685,
       "reads": [],
       "cards": []
     },
@@ -288,8 +302,8 @@
       "portal": "Mailnest",
       "user": "My Mailnest folder has what the subs and their agents have sent us lately. Read what bears on their insurance.",
       "continued": false,
-      "said": "I'll list the Mailnest folder first, then open the messages that bear on insurance.",
-      "said_chars": 83,
+      "said": "I'll list the folder first, then read each message that bears on insurance.",
+      "said_chars": 75,
       "reads": [
         "search_mail"
       ],
@@ -299,8 +313,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "Six messages are in the folder. I'm opening the five that bear on insurance. I'm skipping M-506, the Certrack Pro ad.",
-      "said_chars": 117,
+      "said": "Six messages are in the folder. Five bear on insurance and one is a sales pitch (M-506, Certrack Pro), which I'll skip. I'm reading the five now.",
+      "said_chars": 145,
       "reads": [
         "read_message",
         "read_message",
@@ -314,8 +328,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "The mail raises three claims I haven't checked against the policies: Marlow's cure, Pinecrest's endorsements and Halvorsen's endorsements. I'm reading those three on Coverwell. I'm also recalling my earlier findings table, because my context shows only part of it.\n\nThe mail doesn't change any result. I'll file the three approvals and six notices from Subhub.\n\nI couldn't re-read the policies from this tab, because Coverwell's tools only run from the Coverwell tab. I used the policy findings I recorded earlier.",
-      "said_chars": 3061,
+      "said": "Mailnest changes one result: Marlow now meets Exhibit D. I'm filing 3 approvals and 6 deficiency notices as cards for you to answer. Nothing has been sent yet.\n\n**What the mail shows**\n- **M-501, Marlow's agent:** CG 20 37 was added effective 7 Oct, naming both parties at 1180 Alder Street. Coverwell shows it, so Marlow now meets Exhibit D.\n- **M-502, Tallgrass:** The sub says the certificate wording covers completed ops. The policy has no CG 20 37, so this doesn't change the result.",
+      "said_chars": 2447,
       "reads": [],
       "cards": []
     },
@@ -323,8 +337,8 @@
       "portal": "Subhub",
       "user": "Back in Subhub. Approve every sub that actually meets Exhibit D, and send a deficiency notice to every one that doesn't, saying what's wrong. Then tell me what you left alone and why.",
       "continued": false,
-      "said": "The recall I have is cut off, and each notice has to name everything wrong. So I'm pulling the full Coverwell findings before I file anything.\n\nI've filed three approvals and six deficiency notices as cards. Each one rests on the policy as it stands on Coverwell, not on the certificate. M-501 confirms Marlow's cure, and I read nothing in the folder that changes any other result.\n\n**Approve (3):** S-01 Brightline, S-07 Marlow, S-10 Halvorsen.",
-      "said_chars": 1729,
+      "said": "I'm pulling the exact Coverwell and Mailnest findings back from memory first. Each deficiency notice has to name everything that's wrong, and I only have a summary of some of those findings.\n\nI'm filing the 9 cards now, 3 approvals and 6 deficiency notices. Nothing is sent until you answer each one.\n\nApprovals, each checked on the Coverwell policy:\n\nDeficiency notices:\n\n**What I left alone**\n- **S-06 Ironleaf:** Already approved 2 Oct and on site since 5 Oct.",
+      "said_chars": 1145,
       "reads": [],
       "cards": [
         {
@@ -384,7 +398,7 @@
       ]
     }
   ],
-  "note": "regression re-bench after ADR 0059 (the seventh repair)",
+  "note": "ADR 0128 repeat runs",
   "history": [
     {
       "run_at": "2026-10-09T23:50:31Z",
@@ -394,6 +408,56 @@
       "eligible": 9,
       "value_found_usd": 3200.0,
       "false_claims": 0
+    },
+    {
+      "run_at": "2026-10-10T03:20:28Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 9,
+      "eligible": 9,
+      "value_found_usd": 7200.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 189.6,
+      "your_time_s": 270,
+      "note": "regression re-bench after ADR 0059 (the seventh repair)"
+    },
+    {
+      "run_at": "2026-10-22T09:15:01Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:99b3412c246e2b81",
+      "verdict": "exceeds",
+      "found": 9,
+      "eligible": 9,
+      "value_found_usd": 7200.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 198.0,
+      "your_time_s": 270,
+      "note": "ADR 0128 repeat runs"
+    },
+    {
+      "run_at": "2026-10-22T09:18:31Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:99b3412c246e2b81",
+      "verdict": "exceeds",
+      "found": 9,
+      "eligible": 9,
+      "value_found_usd": 7200.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 209.6,
+      "your_time_s": 270,
+      "note": "ADR 0128 repeat runs"
     }
   ]
 }

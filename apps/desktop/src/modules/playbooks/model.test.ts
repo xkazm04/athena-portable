@@ -16,6 +16,7 @@ import {
   selectPlaybooks,
   sortLedger,
   turnState,
+  verdictOf,
   visitsOf,
   type PlaybookActions,
   type PlaybookView,
@@ -186,4 +187,51 @@ test("the model carries the load's problem, none by default", () => {
   const failed = selectPlaybooks([], NOOP, false, "the playbooks could not be read: offline");
   expect(failed.problem).toBe("the playbooks could not be read: offline");
   expect(failed.loading).toBe(false);
+});
+
+/** ADR 0128: a raw bench.json with a keyed latest run and the given history lines. */
+function benched(word: string, history: Record<string, unknown>[], extra: Record<string, unknown> = {}) {
+  const p = parsePlaybook(
+    { id: "runs" },
+    {
+      run_at: "2026-10-22T00:00:00Z",
+      comparable: "sha256:aaaa",
+      verdict: { word, reasons: [] },
+      score: { found: 3, eligible: 3, false_claims: 0 },
+      history,
+      ...extra,
+    },
+  );
+  return p!.bench!;
+}
+
+test("the verdict says how many comparable runs it stands on, and n=1 where there is one", () => {
+  const three = benched("exceeds", [
+    { run_at: "2026-10-20T00:00:00Z", comparable: "sha256:aaaa", verdict: "meets" },
+    { run_at: "2026-10-21T00:00:00Z", comparable: "sha256:aaaa", verdict: "exceeds" },
+    // Another key, and a line a rescore superseded: neither is counted.
+    { run_at: "2026-10-01T00:00:00Z", comparable: "sha256:bbbb", verdict: "exceeds" },
+    { run_at: "2026-10-02T00:00:00Z", comparable: "sha256:aaaa", verdict: "exceeds", superseded_by: { rescored_at: "x" } },
+  ]);
+  expect(three.runs).toEqual({ n: 3, exceeds: 2 });
+  const v = verdictOf(three);
+  expect(v.runs).toBe("exceeds in 2 of 3");
+  expect(v.sample).toBe("");
+  expect(v.sentence).toContain("It exceeds in 2 of 3 comparable runs.");
+
+  // A run benched before keys were kept stands alone, whatever its history says.
+  const legacy = benched("exceeds", [{ run_at: "2026-10-20T00:00:00Z", verdict: "exceeds" }], { comparable: undefined });
+  expect(legacy.runs).toEqual({ n: 1, exceeds: 1 });
+  const one = verdictOf(legacy);
+  expect(one.runs).toBe("exceeds in 1 of 1");
+  expect(one.sample).toBe("n=1");
+  expect(one.sentence).toMatch(/One run so far\.$/);
+
+  expect(verdictOf(benched("short", [])).runs).toBe("exceeds in 0 of 1");
+});
+
+test("unbenched claims nothing: no runs, no sample", () => {
+  const v = verdictOf(null);
+  expect(v.runs).toBe("");
+  expect(v.sample).toBe("");
 });

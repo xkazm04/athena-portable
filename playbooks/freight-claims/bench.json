@@ -1,15 +1,16 @@
 {
   "playbook": "freight-claims",
-  "run_at": "2026-10-10T07:09:31Z",
+  "run_at": "2026-10-22T09:24:05Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 173.1,
+  "comparable": "sha256:f5e364daa8483ead",
+  "wall_s": 418.1,
   "turns": 16,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 53,
-  "cost_usd": 2.0219,
+  "reads": 54,
+  "cost_usd": 3.2866,
   "your_time_s": 150,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 2.9
+    "minutes": 7.0
   },
   "score": {
     "eligible": 5,
     "found": 5,
     "exact": 5,
+    "neutral": 0,
     "value_total_usd": 6920.0,
     "value_found_usd": 6920.0,
     "recall_value": 1.0,
@@ -143,11 +145,11 @@
   "cards": [
     {
       "action": "file_claim",
-      "key": "BOL-6101",
+      "key": "BOL-6087",
       "outcome": "correct",
-      "value_usd": 1380.0,
+      "value_usd": 1170.0,
       "exact": true,
-      "why": "Harrowgate picked up and delivered it, its driver counted 12 cartons, and the delivery receipt notes 2 cartons crushed (Thursday 17 September 2026): good-order tender, damaged arrival and the amount make the prima facie case (Elmore & Stahl). 2 cartons of 4 Arden pendants at $172.50, $690 a carton, all broken: $1,380, full value, within 9 months of delivery. The receipt's notation is not itself a claim (49 CFR 370.3(c))"
+      "why": "Concealed damage: the receipt is clean, but a clean receipt is evidence, not a bar. Thistlewood's packing record shows the shade sets packed to spec (double-wall, foam corners) and Harrowgate's driver signed for 10 cartons in apparent good order; Brightwell found the damage two days after delivery, reported it to Harrowgate within its 5 business days, and Harrowgate's own inspector found forklift-tine punctures at fork height. 3 Calla shade sets at $390: $1,170"
     },
     {
       "action": "file_claim",
@@ -159,11 +161,11 @@
     },
     {
       "action": "file_claim",
-      "key": "BOL-6087",
+      "key": "BOL-6101",
       "outcome": "correct",
-      "value_usd": 1170.0,
+      "value_usd": 1380.0,
       "exact": true,
-      "why": "Concealed damage: the receipt is clean, but a clean receipt is evidence, not a bar. Thistlewood's packing record shows the shade sets packed to spec (double-wall, foam corners) and Harrowgate's driver signed for 10 cartons in apparent good order; Brightwell found the damage two days after delivery, reported it to Harrowgate within its 5 business days, and Harrowgate's own inspector found forklift-tine punctures at fork height. 3 Calla shade sets at $390: $1,170"
+      "why": "Harrowgate picked up and delivered it, its driver counted 12 cartons, and the delivery receipt notes 2 cartons crushed (Thursday 17 September 2026): good-order tender, damaged arrival and the amount make the prima facie case (Elmore & Stahl). 2 cartons of 4 Arden pendants at $172.50, $690 a carton, all broken: $1,380, full value, within 9 months of delivery. The receipt's notation is not itself a claim (49 CFR 370.3(c))"
     },
     {
       "action": "submit_claim",
@@ -183,14 +185,14 @@
     }
   ],
   "missed": [],
-  "closing_words": "I'm filing two claims with Larkfield. Each goes to you as a card to approve, and nothing is filed until you answer.\n\n- **BOL-5871 (PRO LK-70218), loss, $3,260.00.** Larkfield's driver signed \"8 CTNS, 1 PLT RECD\" on 12 Jan 2026, and the freight was never delivered. Pellham's statement of non-receipt is D-14. Larkfield's rule gives nine months from the bill of lading date for a shipment never delivered, so the last day is Mon 12 Oct, three days from now. The trace TR-5531 does not count as a claim and did not stop the clock. This one is urgent.\n- **BOL-6110 (PRO LK-77310), shortage, $940.00.** The driver counted 8 cartons at pickup, and Brightwell noted 1 carton short (Tamsin Brass) on the signed receipt on 28 Sep. OSD-8840 is a search, not a claim, and it closed on 5 Oct with the carton not found. Delivery was under two weeks ago, well inside the nine months.\n\n\n**What is due next**\n- **La",
+  "closing_words": "Both Larkfield claims are ready for you to approve, and nothing has gone to Larkfield yet. The rules confirm both cards as written, so I'm not changing or re-filing them.\n\n**Waiting on your approval:**\n- **BOL-5871, lost pallet, $3,260.00 (apr_a47a12fc4508).** Please approve this one first. For a shipment that was never delivered, Larkfield's limit is 9 months from the bill of lading date. That date is 12 Jan 2026, so the limit runs out on **Monday 12 Oct 2026**, three days from now. The attachments are the ones Larkfield's filing rule requires: the bill of lading, the invoice, and Pellham's statement that it never received the cartons. No delivery receipt exists because the pallet was never delivered.\n- **BOL-6110, short carton, $940.00 (apr_9a22068b2e41).** Delivered 28 Sep, so the limit is 28 Jun 2027. Larkfield has no released-value rates, so the claim is for the full $940.00 invoice",
   "trace": [
     {
       "portal": "Tracklog TMS",
       "user": "I'm Rosa, I run freight claims at Thistlewood Lighting. Start in Tracklog: read every shipment with an exception, and open each one for its carrier, its bill of lading terms and its delivery receipt.",
       "continued": false,
-      "said": "I'll start by listing the Tracklog exceptions.",
-      "said_chars": 46,
+      "said": "I'll start by reading the Tracklog exceptions list.",
+      "said_chars": 51,
       "reads": [
         "list_exceptions"
       ],
@@ -200,8 +202,8 @@
       "portal": "Tracklog TMS",
       "user": "",
       "continued": true,
-      "said": "Page 1 of 3 shows 5 of 11 exceptions. I'm fetching pages 2 and 3, and opening the five shipments from page 1.",
-      "said_chars": 109,
+      "said": "Page 1 of 3 is in (showing 5 of 11 exceptions). I'm reading pages 2 and 3 now, and opening the five shipments from page 1.",
+      "said_chars": 122,
       "reads": [
         "list_exceptions",
         "list_exceptions",
@@ -217,8 +219,8 @@
       "portal": "Tracklog TMS",
       "user": "",
       "continued": true,
-      "said": "Pages 2 and 3 are in, so I've now listed all 11 exceptions. Five shipments are open from page 1. I'm opening the other six now.",
-      "said_chars": 127,
+      "said": "All 11 exceptions are listed, and I've opened 5 of them. I'm opening the other 6 now.",
+      "said_chars": 85,
       "reads": [
         "view_shipment",
         "view_shipment",
@@ -233,8 +235,8 @@
       "portal": "Tracklog TMS",
       "user": "",
       "continued": true,
-      "said": "Tracklog is done: all 11 exceptions are read and each shipment is opened. Nothing is filed yet. I haven't checked the carrier rules, Docshelf or Mailnest, so the statuses below are provisional.\n\n| BOL | Carrier | What happened | Provisional status |\n|---|---|---|---|\n| 6122 | Harrowgate | 1 crate damaged and noted. Released value of $2.00/lb on 85 lb. | Claim, capped at $170 (85 × $2). |\n| 6115 | Sablecroft | 2 cartons wet. | Not ours to file in either portal. Sablecroft takes claims by mail only.",
-      "said_chars": 3252,
+      "said": "All 11 exceptions are read and opened in Tracklog. I haven't filed anything.\n\n| BOL | Carrier | What happened | Terms | Already filed? |\n|---|---|---|---|---|\n| 6122 | Harrowgate | 1 crate damaged, noted at delivery | Released value, $2.00/lb per article | No |\n| 6115 | Sablecroft | 2 cartons wet | Sablecroft's own bill of lading | Not ours to file in either portal (see below) |\n| 6110 | Larkfield | 1 of 8 cartons short, noted | Full value | No |\n| 6101 | Harrowgate | 2 of 12 cartons crushed, noted | Full value |",
+      "said_chars": 2563,
       "reads": [],
       "cards": []
     },
@@ -242,7 +244,7 @@
       "portal": "Mailnest",
       "user": "Mailnest has the claims folder: our customers' damage reports and the carriers' letters. Read every message, and note when and how each damage or shortage was found.",
       "continued": false,
-      "said": "Starting with the claims folder, I'll read the first page of the list.",
+      "said": "I'll read the claims folder, starting with page 1 of the message list.",
       "said_chars": 70,
       "reads": [
         "list_messages"
@@ -253,8 +255,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "Page 1 of 2 is listed (6 of 9 messages), so I'm reading those six and fetching page 2.",
-      "said_chars": 86,
+      "said": "Page 1 of 2 is in (showing 6 of 9 messages). I'm reading page 2 and opening the six messages from page 1.",
+      "said_chars": 105,
       "reads": [
         "list_messages",
         "read_message",
@@ -270,8 +272,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "Nine messages are listed and six are read. I'm reading the last three (M-3, M-2, M-1) now.",
-      "said_chars": 90,
+      "said": "Page 2 is in (showing 3 of 9), and I've read M-4 to M-9. I'm opening the last three, M-1 to M-3.",
+      "said_chars": 96,
       "reads": [
         "read_message",
         "read_message",
@@ -283,8 +285,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "All nine messages in the claims folder are read, and nothing has been filed. Here is what each one says and when and how the damage was found:\n\n| Msg | BOL | Found | How | What it means |\n|---|---|---|---|---|\n| M-1 | 5822 | Delivered 26 Feb, noted on receipt | Visible, 4 cartons | Harrowgate acknowledged HC-30551 for $2,760 on 8 Jun. Already filed, so I won't refile. |\n| M-2 | 6040 | Delivered 13 Aug, noted on receipt | Visible, 3 cartons | Larkfield acknowledged LC-22019 for $1,170 on 9 Sep.",
-      "said_chars": 2788,
+      "said": "I've read all 9 messages in the claims folder (page 1 showed 6 of 9, page 2 showed 3). Nothing is filed yet.\n\n| Msg | BOL / carrier | When and how it was found | Notes |\n|---|---|---|---|\n| M-3 | 6064 Harrowgate | Concealed. Signed clean Fri 21 Aug, found Mon 24 Aug on unpacking: 6 sconces broken in 4 cartons that looked fine outside. | Corlett told Harrowgate. Tracklog says Harrowgate inspected 27 Aug. |\n| M-4 | 6087 Harrowgate | Concealed.",
+      "said_chars": 2460,
       "reads": [],
       "cards": []
     },
@@ -292,8 +294,8 @@
       "portal": "Docshelf",
       "user": "Docshelf has our claims checklist, the invoices, our packing records and the inspection reports. Read what each claim would rest on.",
       "continued": false,
-      "said": "I'll start with the Docshelf document list.",
-      "said_chars": 43,
+      "said": "I'll start by listing the Docshelf claims folder, then read each document.",
+      "said_chars": 74,
       "reads": [
         "list_documents",
         "list_documents"
@@ -304,8 +306,8 @@
       "portal": "Docshelf",
       "user": "",
       "continued": true,
-      "said": "Fourteen documents are listed. I'm reading all of them now, since each claim rests on them.",
-      "said_chars": 91,
+      "said": "All 14 documents are listed (7 a page, 2 pages). I'm reading each one now, starting with the checklist.",
+      "said_chars": 103,
       "reads": [
         "read_document",
         "read_document",
@@ -328,8 +330,8 @@
       "portal": "Docshelf",
       "user": "",
       "continued": true,
-      "said": "Docshelf is read. Three claims are ready for Harrowgate and two for Larkfield, and nothing is filed yet. Three shipments are left alone.\n\n| BOL | Carrier | Amount | What it rests on | Call |\n|---|---|---|---|---|\n| 6101 | Harrowgate, PRO HG-4401123 | $1,380.00 | 2 cartons × $690 (8 pendants at $172.50, D-2). Damage was noted on the receipt, with photos (D-3). | Claim |\n| 6122 | Harrowgate, PRO HG-4403310 | $170.00 | Released value of 85 lb × $2.00. The chandelier's invoice is $2,600 (D-4).",
-      "said_chars": 3023,
+      "said": "I've read all 14 documents. Five claims are supported, two shipments should not be claimed, and one can't be filed through either portal. Nothing is filed yet.\n\n| BOL | Carrier | Claim | Amount | Rests on |\n|---|---|---|---|---|\n| 5871 | Larkfield | Lost pallet, 8 cartons | $3,260.00 (8 × $407.50) | Invoice D-13 and Pellham's non-receipt statement D-14. The loss also needs the bill of lading and Larkfield's closed trace (M-8).",
+      "said_chars": 4000,
       "reads": [],
       "cards": []
     },
@@ -337,11 +339,17 @@
       "portal": "Harrowgate Freight claims",
       "user": "Harrowgate Freight's claims portal. Read its claim rules and the claims we already have open, then file every claim Harrowgate owes us, for the amount it owes, with the proof. Don't file anything it doesn't owe.",
       "continued": false,
-      "said": "I'll start with Harrowgate's claim rules and the claims already open, and pull my notes from the other tabs.\n\nI've asked for Harrowgate's claim rules and its open-claims list. Both answers come back with my next turn, so I'm not filing anything yet.\n\nFrom my notes, here is what I'll check against those rules:\n- **BOL-6101** (HG-4401123): $1,380, damage noted on the receipt.\n- **BOL-6122** (HG-4403310): $170, the released-value cap of 85 lb × $2.00.\n- **BOL-6087** (HG-4398870): $1,170, concealed damage.",
-      "said_chars": 760,
+      "said": "I'll start by reading Harrowgate's rules and our open claims, and by recalling what I found earlier on the Harrowgate shipments. I haven't filed anything yet.\n\nThe rules and claim-list answers haven't come back yet, and I won't call them again. While they're pending, I'll read the Harrowgate evidence I need for amounts: the Docshelf index and the Harrowgate shipments.\n\n\nSo far nothing is filed. Next I'll check Harrowgate's time limits and open claims against the evidence before proposing any claim.",
+      "said_chars": 2873,
       "reads": [
+        "read_claim_rules",
         "list_claims",
-        "read_claim_rules"
+        "list_claims",
+        "read_claim_rules",
+        "read_claim_rules",
+        "read_claim_rules",
+        "read_claim_rules",
+        "list_claims"
       ],
       "cards": []
     },
@@ -349,30 +357,15 @@
       "portal": "Harrowgate Freight claims",
       "user": "",
       "continued": true,
-      "said": "The rules index came back, but it only lists topics. I'm reading the ones that decide each claim.",
-      "said_chars": 97,
-      "reads": [
-        "read_claim_rules",
-        "read_claim_rules",
-        "read_claim_rules",
-        "read_claim_rules",
-        "read_claim_rules"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "Harrowgate Freight claims",
-      "user": "",
-      "continued": true,
-      "said": "Three claims are ready to file with Harrowgate, and I'm filing them as cards for you to approve. Nothing is filed until you answer.\n\n- **BOL-6101, $1,380.00.** The receipt noted the damage on 17 Sep, and Pellham's photos show it. The amount is 8 broken pendants at $172.50. It was delivered under 3 weeks ago, well inside the 9 months.\n- **BOL-6122, $170.00.** You signed Harrowgate's released-value declaration on 22 Sep, so item 780 caps liability at 85 lb × $2.00.",
-      "said_chars": 1253,
+      "said": "The rules and claim list are in. Before I file anything, I'm recalling my earlier note on the BOL-6122 weight and the shipment it said I'd left off my summary.\n\n\nSo far:\n- **No duplicates.** Harrowgate has only HC-30551 (BOL-5822, open) and HC-29870 (BOL-5617, paid). Nothing is open for BOL-6101, 6087, 6122 or 5950.\n- **BOL-5950 is out.** Harrowgate allows 9 months from delivery, and it was delivered 12 Dec 2025, so the limit ran out on 12 Sep 2026. Harrowgate would decline it.",
+      "said_chars": 2295,
       "reads": [],
       "cards": [
         {
           "action": "file_claim",
-          "key": "BOL-6101",
+          "key": "BOL-6087",
           "outcome": "correct",
-          "value_usd": 1380.0
+          "value_usd": 1170.0
         },
         {
           "action": "file_claim",
@@ -382,9 +375,9 @@
         },
         {
           "action": "file_claim",
-          "key": "BOL-6087",
+          "key": "BOL-6101",
           "outcome": "correct",
-          "value_usd": 1170.0
+          "value_usd": 1380.0
         }
       ]
     },
@@ -392,24 +385,12 @@
       "portal": "Larkfield LTL claims",
       "user": "Larkfield LTL's claims centre. Read its rules and what we already have open with Larkfield, and file what Larkfield owes us. Then tell me what you filed, what is due next, and what you left alone and why.",
       "continued": false,
-      "said": "I'll start with Larkfield's claim rules and its open claims and traces. Nothing is filed yet.\n\n\nThe answers come back with my next turn, so I'm not filing anything yet. After they arrive I'll check these against the rules:\n- **BOL-5871** (LK-70218): loss of 1 pallet, 8 cartons, $3,260. Picked up 12 Jan, so nine months ends Mon 12 Oct. Larkfield's trace TR-5531 is closed, and a trace is not a claim.\n- **BOL-6110** (LK-77310): shortage of 1 carton, $940.\n- **Left alone:** BOL-6040, because LC-22019 is already filed.",
-      "said_chars": 576,
+      "said": "I'll read Larkfield's rules and our open claims, and recall my earlier notes on the Larkfield shipments. I haven't filed anything yet.\n\nThe rules and claim list haven't come back yet, and I won't call them again. While they're pending, I'm recalling the amounts and proof documents for BOL-6110 and BOL-5871.\n\nNothing is filed yet. Larkfield's rules and the list of open claims still haven't come back, and I won't call them again.",
+      "said_chars": 3106,
       "reads": [
-        "read_claim_rules",
-        "read_claim_rules",
-        "read_claim_rules",
         "read_claim_rules",
         "list_claims_and_traces"
       ],
-      "cards": []
-    },
-    {
-      "portal": "Larkfield LTL claims",
-      "user": "",
-      "continued": true,
-      "said": "I'm filing two claims with Larkfield. Each goes to you as a card to approve, and nothing is filed until you answer.\n\n- **BOL-5871 (PRO LK-70218), loss, $3,260.00.** Larkfield's driver signed \"8 CTNS, 1 PLT RECD\" on 12 Jan 2026, and the freight was never delivered. Pellham's statement of non-receipt is D-14. Larkfield's rule gives nine months from the bill of lading date for a shipment never delivered, so the last day is Mon 12 Oct, three days from now.",
-      "said_chars": 1882,
-      "reads": [],
       "cards": [
         {
           "action": "submit_claim",
@@ -424,6 +405,80 @@
           "value_usd": 940.0
         }
       ]
+    },
+    {
+      "portal": "Larkfield LTL claims",
+      "user": "",
+      "continued": true,
+      "said": "The rules call returned only the index, so I'm reading the time-limits, filing and liability topics now. Both Larkfield claims are already waiting as cards, and there are no duplicates. The claim list shows only LC-22019 (BOL-6040), the closed trace TR-5531, and the closed search OSD-8840, and the last two are not claims.",
+      "said_chars": 323,
+      "reads": [
+        "read_claim_rules",
+        "read_claim_rules",
+        "read_claim_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Larkfield LTL claims",
+      "user": "",
+      "continued": true,
+      "said": "Both Larkfield claims are ready for you to approve, and nothing has gone to Larkfield yet. The rules confirm both cards as written, so I'm not changing or re-filing them.\n\n**Waiting on your approval:**\n- **BOL-5871, lost pallet, $3,260.00 (apr_a47a12fc4508).** Please approve this one first. For a shipment that was never delivered, Larkfield's limit is 9 months from the bill of lading date. That date is 12 Jan 2026, so the limit runs out on **Monday 12 Oct 2026**, three days from now.",
+      "said_chars": 2185,
+      "reads": [],
+      "cards": []
+    }
+  ],
+  "note": "ADR 0128 repeat runs",
+  "history": [
+    {
+      "run_at": "2026-10-10T07:09:31Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 6920.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 173.1,
+      "your_time_s": 150
+    },
+    {
+      "run_at": "2026-10-22T09:13:38Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:f5e364daa8483ead",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 6920.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 233.7,
+      "your_time_s": 150,
+      "note": "ADR 0128 repeat runs"
+    },
+    {
+      "run_at": "2026-10-22T09:17:07Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:f5e364daa8483ead",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 6920.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 208.6,
+      "your_time_s": 150,
+      "note": "ADR 0128 repeat runs"
     }
   ]
 }

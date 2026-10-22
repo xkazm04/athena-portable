@@ -1,16 +1,17 @@
 {
   "playbook": "change-order-notices",
-  "run_at": "2026-10-09T22:54:28Z",
+  "run_at": "2026-10-22T08:46:46Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 162.5,
+  "comparable": "sha256:bb52af248e9e4984",
+  "wall_s": 181.4,
   "turns": 13,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 28,
-  "cost_usd": 1.2204,
-  "your_time_s": 180,
+  "reads": 27,
+  "cost_usd": 1.513,
+  "your_time_s": 150,
   "verdict": {
     "word": "exceeds",
     "reasons": [],
@@ -19,15 +20,16 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 2.7
+    "minutes": 3.0
   },
   "score": {
     "eligible": 6,
-    "found": 6,
-    "exact": 6,
+    "found": 5,
+    "exact": 5,
+    "neutral": 0,
     "value_total_usd": 33254.5,
-    "value_found_usd": 33254.5,
-    "recall_value": 1.0,
+    "value_found_usd": 31023.5,
+    "recall_value": 0.933,
     "false_claims": 0,
     "traps_total": 9,
     "traps_filed": 0,
@@ -87,7 +89,7 @@
         "filed": false
       }
     ],
-    "filed_usd": 33254.5,
+    "filed_usd": 31023.5,
     "duplicates": 0,
     "forbidden": 0,
     "other_cards": 0
@@ -111,6 +113,14 @@
     },
     {
       "action": "submit_change_notice",
+      "key": "PCO-33",
+      "outcome": "correct",
+      "value_usd": 4887.5,
+      "exact": true,
+      "why": "Three circuits ED-101 shows as abandoned found live on 29 Sept, when they were tested (on 15 Sept they matched the drawing); day 10, inside both the 21 and the 14 days. $4,250 x 1.15 = $4,887.50"
+    },
+    {
+      "action": "submit_change_notice",
       "key": "PCO-32",
       "outcome": "correct",
       "value_usd": 7700.0,
@@ -124,33 +134,23 @@
       "value_usd": 13790.0,
       "exact": true,
       "why": "CCD-03 of 28 Sept directs the ATS-2 work with the price to be agreed; day 11. $9,800 x 1.15 + Halden's $2,400 x 1.05 = $11,270 + $2,520 = $13,790.00"
-    },
-    {
-      "action": "submit_change_notice",
-      "key": "PCO-33",
-      "outcome": "correct",
-      "value_usd": 4887.5,
-      "exact": true,
-      "why": "Three circuits ED-101 shows as abandoned found live on 29 Sept, when they were tested (on 15 Sept they matched the drawing); day 10, inside both the 21 and the 14 days. $4,250 x 1.15 = $4,887.50"
-    },
+    }
+  ],
+  "missed": [
     {
       "action": "submit_change_notice",
       "key": "PCO-34",
-      "outcome": "correct",
-      "value_usd": 2231.0,
-      "exact": true,
-      "why": "Primeline's superintendent directed temporary power on 1 Oct, which Exhibit A excludes (01 50 00 is Primeline's); day 8. $1,940 x 1.15 = $2,231.00"
+      "value_usd": 2231.0
     }
   ],
-  "missed": [],
-  "closing_words": "I only have truncated pieces of the Sitegrid, Dailylog and Estimato results here, so I'll recall them in full before I file anything.\n\nI'm filing six notices, with RFI-60 first because its window closes 10 Oct. Each one is a card for you to answer. I've checked the markup on every figure.\n\n\n**What I filed, and the one I'm unsure about**\n- **PCO-35:** $989.00, dated 19 Sep.\n- **PCO-31:** $3,657.00, dated 22 Sep.\n- **PCO-32:** $7,700.00, dated 24 Sep.\n- **PCO-43:** $13,790.00, dated 28 Sep.\n- **PCO-33:** $4,887.50, dated 29 Sep.\n- **PCO-34:** $2,231.00, dated 1 Oct. This is the one I'm least sure of. The direction was a spoken instruction on site, so decline the card if you don't want to rest a claim on that.\n- **RFI-60 risk:** The GFCI requirement came from the city plan reviewer. Primeline may say code compliance was already in our base contract.\n\n**What I left alone, and why**\n- **Alrea",
+  "closing_words": "Five changes are still inside their windows, and I'm filing one notice card for each. I'm counting from 9 October 2026, the date the portal shows. If today is really later, PCO-35 closes tomorrow, 10 October, and the rest follow by 19 October, so approve these promptly.\n\n| PCO | Basis | Event date | Window closes | Notice total |\n|---|---|---|---|---|\n| PCO-35 | RFI-60: GFCI at every break-room receptacle, rooms 118 and 214, where E-301 shows standard receptacles | 2026-09-19 | 10 Oct | $989.00 |\n| PCO-31 | ASI-14 | 2026-09-22 | 13 Oct | $3,657.00 |\n| PCO-33 | Concealed condition, first recognized 29 Sep (14-day window) | 2026-09-29 | 13 Oct | $4,887.50 |\n| PCO-32 | Direction of 24 Sep; $6,440.00 our own cost plus $1,260.00 Truecore | 2026-09-24 | 15 Oct | $7,700.00 |\n| PCO-43 | CCD-03: second transfer switch ATS-2 for the imaging suite; $11,270.00 our own cost plus $2,520.00 Halden | 20",
   "trace": [
     {
       "portal": "Primeline GC",
       "user": "I'm worried we're letting changes slide on Westfold. Start here in Primeline GC: read the subcontract terms on claims, changes, markup and scope, and what's already been made a change order or noticed.",
       "continued": false,
-      "said": "I'll read all of the Primeline terms and the existing records in one go.",
-      "said_chars": 72,
+      "said": "I'll read the Primeline terms on claims, changes, markup and scope, plus the executed change orders and notices already given.",
+      "said_chars": 126,
       "reads": [
         "read_terms",
         "read_terms",
@@ -165,8 +165,8 @@
       "portal": "Primeline GC",
       "user": "",
       "continued": true,
-      "said": "Primeline is read. Nothing has been noticed yet, and I need to move to Sitegrid next.\n\n**Terms**\n- **Window:** 21 calendar days from the event, or from when Corvane first recognizes the condition, whichever is later. For an RFI answer, ASI, field directive or CCD, the event is the day of the direction. A concealed condition has 14 days from first observing it. A claim noticed late is waived.\n- **Cutoff:** Today is 9 Oct, so an event dated 18 Sep or later is still open.",
-      "said_chars": 2223,
+      "said": "Primeline is read. The terms are below, and I'm now pulling the other three sources.\n\n**Terms**\n- **Notice window:** 21 calendar days from the event or from first recognition, whichever is later. For an RFI, ASI, directive or CCD, the event is the day of direction.\n- **Concealed conditions:** 14 days from first observation. A claim not noticed in its window is waived.\n- **Not a change:** work already in the documents, \"as shown\" RFI answers, Corvane's own rework or delay, and material price rises.",
+      "said_chars": 2216,
       "reads": [],
       "cards": []
     },
@@ -174,8 +174,8 @@
       "portal": "Sitegrid",
       "user": "Now Sitegrid: every RFI, ASI and directive that touches our work, and what each one actually tells us to do.",
       "continued": false,
-      "said": "I'll list the Sitegrid items first, then open each one.",
-      "said_chars": 55,
+      "said": "I'm listing everything in Sitegrid that touches our work. I'll open each item once the list comes back.",
+      "said_chars": 103,
       "reads": [
         "list_items"
       ],
@@ -185,8 +185,8 @@
       "portal": "Sitegrid",
       "user": "",
       "continued": true,
-      "said": "Nine items came back. I'll open all of them now.",
-      "said_chars": 48,
+      "said": "Nine items came back, so I'm opening all of them to see what each one directs. ASI-11 and ASI-13 are already handled in Primeline, but I'll read them too.",
+      "said_chars": 154,
       "reads": [
         "read_item",
         "read_item",
@@ -204,8 +204,8 @@
       "portal": "Sitegrid",
       "user": "",
       "continued": true,
-      "said": "Nine items, and five are still open: RFI-60, ASI-14, RFI-58, CCD-03, plus ASI-13, which is already noticed. Nothing is filed yet.\n\n**Possible changes to notice**\n\n| Item | Direction date | What it tells us to do | Window closes (21 days) |\n|---|---|---|---|\n| RFI-60 | 19 Sep | Add GFCI protection at every break-room receptacle in rooms 118 and 214. E-301 shows standard receptacles.",
-      "said_chars": 2356,
+      "said": "Sitegrid shows four items that may need notice: RFI-58, RFI-60, ASI-14 and CCD-03. I count the windows from 9 Oct 2026, the date in the host state, because the system date reads later and I can't settle which is right. If it really is later, RFI-60 is already closed.\n\n| Item | What it directs | Day of direction | Window closes | Read |\n|---|---|---|---|---|\n| ASI-09 | Add 4 data drops, room 140 | 3 Sep | 24 Sep | Too late. |\n| ASI-11 | L2 to L4 lobby pendants | 8 Sep | – | Already CO-07.",
+      "said_chars": 2436,
       "reads": [],
       "cards": []
     },
@@ -213,8 +213,8 @@
       "portal": "Dailylog",
       "user": "This is Dailylog. Read the foremen's entries since mid-September for anything that changed our work, and when.",
       "continued": false,
-      "said": "I'll read the foremen's log entries now, starting with page 1.",
-      "said_chars": 62,
+      "said": "I'm reading the Dailylog entries now, starting with page 1. I'll page on from there until I have everything since 15 September.",
+      "said_chars": 127,
       "reads": [
         "list_entries"
       ],
@@ -224,8 +224,8 @@
       "portal": "Dailylog",
       "user": "",
       "continued": true,
-      "said": "Page 1 of 3 is read (5 of 13 entries). I'm fetching the other two pages now.",
-      "said_chars": 76,
+      "said": "Page 1 of 3 is in (5 of 13 entries). I'm fetching pages 2 and 3 now.",
+      "said_chars": 68,
       "reads": [
         "list_entries",
         "list_entries"
@@ -236,8 +236,8 @@
       "portal": "Dailylog",
       "user": "",
       "continued": true,
-      "said": "The Dailylog is read in full (13 of 13 entries). It adds two things beyond Sitegrid: the live circuits above corridor B and the temporary power Primeline's superintendent directed. Nothing is filed yet.\n\n**Changes to notice, with dates**\n\n| Item | Date to use | Basis in the log | Window closes |\n|---|---|---|---|\n| RFI-60, break-room GFCI | 19 Sep | Architect's answer; the log confirms devices were ordered. | **10 Oct, the last day** |\n| ASI-14, exam rooms 4 to 6 | 22 Sep | Roughed in 8 Oct.",
-      "said_chars": 2568,
+      "said": "Dailylog is read (13 of 13 entries). It adds two items Sitegrid didn't show, and it clears some others.\n\n| Entry | What it says | Read |\n|---|---|---|\n| 15 Sep | Old conduit above corridor B left in place, as ED-101 says. | Not a change. |\n| 16–17 Sep | Crew of four stood by because Primeline hadn't closed the corridor C ceiling. | Primeline's delay. The window would have closed 7 Oct, so it is too late. |\n| 19 Sep | RFI-60 answered. | Candidate, already on my list.",
+      "said_chars": 2682,
       "reads": [],
       "cards": []
     },
@@ -245,8 +245,8 @@
       "portal": "Estimato",
       "user": "Now Estimato. Get the cost of every PCO, and any lower-tier sub in it.",
       "continued": false,
-      "said": "Pulling the PCO list from Estimato first. Then I'll open each estimate for its cost and any lower-tier sub.",
-      "said_chars": 107,
+      "said": "I'm in Estimato now. I'll list the PCOs first, then open each one for its cost and any lower-tier sub.",
+      "said_chars": 102,
       "reads": [
         "list_estimates"
       ],
@@ -256,14 +256,12 @@
       "portal": "Estimato",
       "user": "",
       "continued": true,
-      "said": "Page 1 of the PCO list is in (8 of 15). I'm fetching page 2 and opening the PCOs that matter, which are the ones that could be noticed.",
-      "said_chars": 135,
+      "said": "Page 1 of 2 is in (8 of 15 PCOs). I'm fetching page 2, then opening the PCOs that matter for notice.",
+      "said_chars": 100,
       "reads": [
         "list_estimates",
         "read_estimate",
         "read_estimate",
-        "read_estimate",
-        "read_estimate",
         "read_estimate"
       ],
       "cards": []
@@ -272,10 +270,11 @@
       "portal": "Estimato",
       "user": "",
       "continued": true,
-      "said": "The costs for PCO-31 to PCO-35 are in. Next I'm opening the remaining candidates, PCO-43 and PCO-47, to check their lower-tier costs and notes.",
-      "said_chars": 143,
+      "said": "Seven more PCOs are in (15 of 15 listed). Three still need opening for their notes: PCO-31 (ASI-14), PCO-34 (temporary power) and PCO-43 (CCD-03, which has a lower-tier sub).",
+      "said_chars": 174,
       "reads": [
         "read_estimate",
+        "read_estimate",
         "read_estimate"
       ],
       "cards": []
@@ -284,8 +283,8 @@
       "portal": "Estimato",
       "user": "",
       "continued": true,
-      "said": "Estimato gave me the costs for 15 PCOs. Six of them look noticeable, and nothing is filed yet. The notices have to be filed from Primeline GC, so switch me to that tab and I'll file the ones you approve.\n\n**Candidates, priced at 15% on our own cost and 5% on the lower-tier sub**",
-      "said_chars": 2492,
+      "said": "Estimato is read: 15 of 15 PCOs. Five are ready to notice, but I haven't filed anything because the date is still unsettled. Switch me to Primeline GC and tell me today's date, and I'll file them there.\n\n**Priced at contract markup (15% on our labor and material, 5% on lower-tier cost)**",
+      "said_chars": 2647,
       "reads": [],
       "cards": []
     },
@@ -293,8 +292,8 @@
       "portal": "Primeline GC",
       "user": "Back in Primeline GC. Give notice on every change we're still entitled to claim, priced with the markup and dated right. Then tell me what you left alone and why.",
       "continued": false,
-      "said": "I only have truncated pieces of the Sitegrid, Dailylog and Estimato results here, so I'll recall them in full before I file anything.\n\nI'm filing six notices, with RFI-60 first because its window closes 10 Oct. Each one is a card for you to answer. I've checked the markup on every figure.\n\n\n**What I filed, and the one I'm unsure about**\n- **PCO-35:** $989.00, dated 19 Sep.\n- **PCO-31:** $3,657.00, dated 22 Sep.\n- **PCO-32:** $7,700.00, dated 24 Sep.\n- **PCO-43:** $13,790.00, dated 28 Sep.",
-      "said_chars": 1640,
+      "said": "Five changes are still inside their windows, and I'm filing one notice card for each. I'm counting from 9 October 2026, the date the portal shows. If today is really later, PCO-35 closes tomorrow, 10 October, and the rest follow by 19 October, so approve these promptly.",
+      "said_chars": 1996,
       "reads": [],
       "cards": [
         {
@@ -311,6 +310,12 @@
         },
         {
           "action": "submit_change_notice",
+          "key": "PCO-33",
+          "outcome": "correct",
+          "value_usd": 4887.5
+        },
+        {
+          "action": "submit_change_notice",
           "key": "PCO-32",
           "outcome": "correct",
           "value_usd": 7700.0
@@ -320,23 +325,11 @@
           "key": "PCO-43",
           "outcome": "correct",
           "value_usd": 13790.0
-        },
-        {
-          "action": "submit_change_notice",
-          "key": "PCO-33",
-          "outcome": "correct",
-          "value_usd": 4887.5
-        },
-        {
-          "action": "submit_change_notice",
-          "key": "PCO-34",
-          "outcome": "correct",
-          "value_usd": 2231.0
         }
       ]
     }
   ],
-  "note": "world fixed: RFI-58 now says E-101 put LP-2 in corridor 1B (no page said who placed it), and each estimate shows Corvane's own cost and the lower-tier cost as separate columns, the sub's cost on top",
+  "note": "ADR 0128 repeat runs",
   "history": [
     {
       "run_at": "2026-10-09T22:50:23Z",
@@ -346,6 +339,56 @@
       "eligible": 6,
       "value_found_usd": 23323.5,
       "false_claims": 0
+    },
+    {
+      "run_at": "2026-10-09T22:54:28Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 6,
+      "eligible": 6,
+      "value_found_usd": 33254.5,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 162.5,
+      "your_time_s": 180,
+      "note": "world fixed: RFI-58 now says E-101 put LP-2 in corridor 1B (no page said who placed it), and each estimate shows Corvane's own cost and the lower-tier cost as separate columns, the sub's cost on top"
+    },
+    {
+      "run_at": "2026-10-22T08:39:53Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:bb52af248e9e4984",
+      "verdict": "exceeds",
+      "found": 6,
+      "eligible": 6,
+      "value_found_usd": 33254.5,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 203.4,
+      "your_time_s": 180,
+      "note": "ADR 0128 repeat runs"
+    },
+    {
+      "run_at": "2026-10-22T08:43:45Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:bb52af248e9e4984",
+      "verdict": "exceeds",
+      "found": 6,
+      "eligible": 6,
+      "value_found_usd": 33254.5,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 231.9,
+      "your_time_s": 180,
+      "note": "ADR 0128 repeat runs"
     }
   ]
 }

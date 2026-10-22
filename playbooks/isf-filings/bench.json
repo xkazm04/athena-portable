@@ -1,15 +1,16 @@
 {
   "playbook": "isf-filings",
-  "run_at": "2026-10-10T10:48:28Z",
+  "run_at": "2026-10-22T09:37:19Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 202.1,
-  "turns": 13,
+  "comparable": "sha256:979dffdb71256458",
+  "wall_s": 160.0,
+  "turns": 12,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 40,
-  "cost_usd": 2.355,
+  "reads": 42,
+  "cost_usd": 1.4816,
   "your_time_s": 150,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 3.4
+    "minutes": 2.7
   },
   "score": {
     "eligible": 5,
     "found": 5,
     "exact": 5,
+    "neutral": 0,
     "value_total_usd": 25000.0,
     "value_found_usd": 25000.0,
     "recall_value": 1.0,
@@ -134,14 +136,14 @@
     }
   ],
   "missed": [],
-  "closing_words": "41610 is filed with Joliet as ship-to, and M-4 says it goes to Memphis. So I'm proposing the update. 41588 matches its PO and has no change.\n\n\nFive cards are now waiting for you. Nothing has been transmitted yet.\n\n| Bill | PO | Action | Due |\n|---|---|---|---|\n| FWDN-26-41902 | 7750 | File | **Today, Fri 9 Oct, 11:00 a.m. Chicago** |\n| FWDN-26-41871 | 7731 | File | **Today, Fri 9 Oct, 2:00 p.m. Chicago** |\n| FWDN-26-41893 | 7742 | File | Sun 11 Oct, 4:00 a.m. Chicago |\n| FWDN-26-41655 | 7716 | Update: Kilnmere as manufacturer, stuffing location and consolidator | Before arrival, and at least 24 hours before it reaches the US port |\n| FWDN-26-41610 | 7705 | Update: ship-to Memphis, 4180 Shelby Drive | Before arrival 15 Oct, at least 24 hours ahead |\n\nPlease answer the 41902 card first, because it is the one closest to its cutoff.\n\n**Left alone:**\n- **41588 (PO-7709) and 41744 (PO-7722):**",
+  "closing_words": "I'm filing the three missing ISFs, earliest deadline first, then the two updates. Each one files a card for you to sign.\n\n**New filings (nothing is on file for these bills)**\n- **FWDN-26-41902, cushions.** Due today, Fri 9 Oct, 11:00 a.m. Chicago. The manufacturer is Brightloom Textiles in Cambodia, not the seller Fenlow, and the origin is Cambodia even though it loads at Cai Mep.\n- **FWDN-26-41871, planters.** Due today, Fri 9 Oct, 2:00 p.m. Chicago.\n- **FWDN-26-41893, rattan.** Due Sun 11 Oct, 4:00 a.m. Chicago. It's less-than-container-load, so it isn't exempt. Forwarden Vietnam stuffs it and is the consolidator.\n\n\n**Updates (already filed, cargo not yet arrived)**\n- **FWDN-26-41655, planters.** The filing carries a placeholder manufacturer and no stuffing location or consolidator. Fenlow named Kilnmere on 8 Oct. The cargo reaches Long Beach 19 Oct, so the update must be in before 18 ",
   "trace": [
     {
       "portal": "Sourcewick supplier portal",
       "user": "I'm Ines, the import coordinator at Larchwick Home & Garden. Start in Sourcewick: read every open purchase order, and open each one for who sold it, who made it and where, the tariff number on the invoice, where the container was stuffed an",
       "continued": false,
-      "said": "Starting with the list of open orders, then I'll open each one.",
-      "said_chars": 63,
+      "said": "I'll start by listing the open purchase orders, then open each one.",
+      "said_chars": 67,
       "reads": [
         "list_orders"
       ],
@@ -151,8 +153,8 @@
       "portal": "Sourcewick supplier portal",
       "user": "",
       "continued": true,
-      "said": "Ten open POs are listed (showing 10 of 10). I'm opening each one now.",
-      "said_chars": 69,
+      "said": "Ten open POs came back, and I'm opening all ten now.",
+      "said_chars": 52,
       "reads": [
         "view_order",
         "view_order",
@@ -171,8 +173,8 @@
       "portal": "Sourcewick supplier portal",
       "user": "",
       "continued": true,
-      "said": "All ten POs are read (showing 10 of 10). Sourcewick is finished. The next work is in Forwarden, for sailing and loading dates, so I'm saving a checkpoint first.\n\nHere is what Sourcewick shows for each PO. All ship-to addresses are Larchwick Joliet, 2600 Laraway Road, Joliet, IL 60433, unless noted.",
-      "said_chars": 2696,
+      "said": "I've read all 10 open POs in Sourcewick. Seven are candidates for an ISF, and three look out of scope.\n\n**Likely ours to file or update (ocean, into the US):**\n\n| PO | Bill | Seller | Manufacturer / origin | HTS | Stuffed at | Ship to |\n|---|---|---|---|---|---|---|\n| 7731 | FWDN-26-41871 | Fenlow Trading (HK) | Kilnmere Ceramics, Yuyao / China | 6914.90 | Kilnmere factory yard, Yuyao (Kilnmere) | Joliet DC |\n| 7742 | FWDN-26-41893 | Ricewood Rattan | Ricewood, Tan Uyen, Binh Duong / Vietnam | 4602.12 | Forwarden",
+      "said_chars": 2560,
       "reads": [],
       "cards": []
     },
@@ -180,9 +182,10 @@
       "portal": "Forwarden",
       "user": "Forwarden is our freight forwarder. Read every booking, and open each one for how it moves, the vessel, when it's loaded and when it arrives, and their notes.",
       "continued": false,
-      "said": "Starting with the Forwarden booking list, then I'll open each booking.\n\nThe booking list has been requested. I'm waiting for the page to return it, and then I'll open each booking.",
-      "said_chars": 180,
+      "said": "I'll list the bookings first, then open each one.",
+      "said_chars": 49,
       "reads": [
+        "list_bookings",
         "list_bookings"
       ],
       "cards": []
@@ -191,10 +194,13 @@
       "portal": "Forwarden",
       "user": "",
       "continued": true,
-      "said": "Page 1 of 2 is in (showing 6 of 10). I'm fetching page 2 and opening the six bookings from page 1.",
-      "said_chars": 98,
+      "said": "Ten bookings are listed, so I'm opening all ten in full.",
+      "said_chars": 56,
       "reads": [
-        "list_bookings",
+        "view_booking",
+        "view_booking",
+        "view_booking",
+        "view_booking",
         "view_booking",
         "view_booking",
         "view_booking",
@@ -208,22 +214,8 @@
       "portal": "Forwarden",
       "user": "",
       "continued": true,
-      "said": "Six of the ten bookings are read. The page 2 list shows four more, so I'm opening those now.",
-      "said_chars": 92,
-      "reads": [
-        "view_booking",
-        "view_booking",
-        "view_booking",
-        "view_booking"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "Forwarden",
-      "user": "",
-      "continued": true,
-      "said": "Forwarden is read in full (10 of 10 bookings). Two ISFs are due today, and one more falls due early Sunday.\n\n\nHere is what Forwarden shows. Times are the laden-aboard moment and the 24-hour cutoff, in Chicago time.\n\n| Bill | PO | Loads (laden) | ISF cutoff | Note |\n|---|---|---|---|---|\n| FWDN-26-41902 | 7750 | Sat 10 Oct 11:00 a.m. | **Fri 9 Oct 11:00 a.m. (2 hours from now)** | Tessaline advanced it on 8 Oct from 15 Oct. Loads at Cai Mep. |\n| FWDN-26-41871 | 7731 | Sat 10 Oct 2:00 p.m.",
-      "said_chars": 2050,
+      "said": "All 10 bookings are read. Three are due before loading, two ISFs already on file need updates, and four are out of scope or need nothing.\n\nI'm using the 9 Oct 9:00 a.m. Chicago (14:00 UTC) time the Forwarden page gave me. The ISF is due 24 hours before the cargo is laden at the foreign port.\n\n**Due before loading (ocean, into the US)**",
+      "said_chars": 3161,
       "reads": [],
       "cards": []
     },
@@ -231,8 +223,8 @@
       "portal": "Postwren",
       "user": "Postwren is our import inbox. Read this week's messages.",
       "continued": false,
-      "said": "Reading this week's Postwren messages now.",
-      "said_chars": 42,
+      "said": "I'll list this week's messages first, then open each one.",
+      "said_chars": 57,
       "reads": [
         "list_messages"
       ],
@@ -242,8 +234,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "Six messages this week (showing 6 of 6). I'll read the ones that bear on filings: M-1 to M-4 and M-6. M-5 is about air samples, which aren't ocean cargo, but I'll read it too so I'm not guessing.",
-      "said_chars": 195,
+      "said": "Six messages are listed, so I'm opening all six in full.",
+      "said_chars": 56,
       "reads": [
         "read_message",
         "read_message",
@@ -258,8 +250,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "Postwren is read in full (6 of 6 messages). The rest of the work is in the Quayloft ISF desk, so I'm saving a checkpoint first.\n\n\nPostwren found three things that change what we do:\n- **PO-7750 (FWDN-26-41902):** the carrier advanced the sailing, so the ISF is due **today at 11:00 a.m. Chicago**. The M-1 email says Saturday 10 Oct at 23:00 Indochina Time, which is Saturday 11:00 a.m. Chicago.\n- **PO-7716 (FWDN-26-41655):** Fenlow named the factory on 8 Oct.",
-      "said_chars": 1549,
+      "said": "All six messages are read. Four of them change what we file, and two are out of scope.\n\n**What each message changes**\n- **M-1 (FWDN-26-41902, cushions):** The sailing moved up from Thu 15 Oct to Sat 10 Oct, 23:00 Indochina Time. That is 16:00 UTC, or 11:00 a.m. Chicago. The ISF is due 24 hours earlier, at 11:00 a.m. Chicago today. Nothing in the recalled episodes shows this one already filed. Today's deadline is the urgent one.",
+      "said_chars": 2388,
       "reads": [],
       "cards": []
     },
@@ -267,16 +259,15 @@
       "portal": "Quayloft ISF desk",
       "user": "Quayloft is where we file our Importer Security Filings with CBP. Read its rules and the filings we already have, then file every ISF we owe that isn't filed yet and update every filing that needs it before the cargo arrives, each with the ",
       "continued": false,
-      "said": "I'll start with Quayloft's rules and the filings already on file, and recall the PO and booking details I saved earlier.\n\n\nI've requested the rules, the filings on file, and my saved PO details. I can't file or update anything until they come back, because the parties and the \"already filed\" status come from them.\n\nThe rules and filings are still on their way back. While I wait, I'm pulling the full party addresses for the POs that look fileable.\n\n\nI haven't filed or updated anything yet.",
-      "said_chars": 1080,
+      "said": "I'll start by reading the ISF rules and the filings on file, and recalling what the earlier tabs showed.\n\nThe rules and filings answers haven't come back yet, so I won't call them again. In the meantime I'm reading the order and message detail I need for each filing.\n\nSourcewick and Postwren are out of reach from this tab, so I'm recalling what I read there earlier.\n\nThe index of Quayloft's rules and the filing list haven't come back yet, so I'm not filing anything blind.",
+      "said_chars": 555,
       "reads": [
+        "read_isf_rules",
         "list_filings",
-        "read_isf_rules",
-        "read_isf_rules",
-        "read_isf_rules",
-        "read_isf_rules",
-        "read_isf_rules",
-        "read_isf_rules",
+        "view_filing",
+        "view_filing",
+        "view_filing",
+        "view_filing",
         "view_filing"
       ],
       "cards": []
@@ -285,12 +276,24 @@
       "portal": "Quayloft ISF desk",
       "user": "",
       "continued": true,
-      "said": "Quayloft shows four ISFs already on file: 41655, 41610, 41744 and 41588. Three bills have none (41902, 41871 and 41893), so I'm filing those now, most urgent first. I'm also updating 41655 with the factory Fenlow named on 8 Oct.\n\n\nFour cards are waiting for your answers. The two due today are 41902 (11:00 a.m. Chicago) and 41871 (2:00 p.m.). 41893 is due Sunday 4:00 a.m. Chicago.\n\n- **To file:**\n  - **41902 (PO-7750):** the carrier advanced the sailing, so this is due today.",
-      "said_chars": 2435,
+      "said": "Four filings are on file: 41655, 41610, 41744 and 41588. Nothing is on file for 41902, 41871 or 41893. I'm reading the detailed rule topics before I file.",
+      "said_chars": 154,
       "reads": [
-        "view_filing",
-        "view_filing"
+        "read_isf_rules",
+        "read_isf_rules",
+        "read_isf_rules",
+        "read_isf_rules",
+        "read_isf_rules"
       ],
+      "cards": []
+    },
+    {
+      "portal": "Quayloft ISF desk",
+      "user": "",
+      "continued": true,
+      "said": "I'm filing the three missing ISFs, earliest deadline first, then the two updates. Each one files a card for you to sign.\n\n**New filings (nothing is on file for these bills)**\n- **FWDN-26-41902, cushions.** Due today, Fri 9 Oct, 11:00 a.m. Chicago. The manufacturer is Brightloom Textiles in Cambodia, not the seller Fenlow, and the origin is Cambodia even though it loads at Cai Mep.\n- **FWDN-26-41871, planters.** Due today, Fri 9 Oct, 2:00 p.m. Chicago.\n- **FWDN-26-41893, rattan.** Due Sun 11 Oct, 4:00 a.m. Chicago.",
+      "said_chars": 1767,
+      "reads": [],
       "cards": [
         {
           "action": "file_isf",
@@ -315,17 +318,7 @@
           "key": "FWDN-26-41655",
           "outcome": "correct",
           "value_usd": 5000.0
-        }
-      ]
-    },
-    {
-      "portal": "Quayloft ISF desk",
-      "user": "",
-      "continued": true,
-      "said": "41610 is filed with Joliet as ship-to, and M-4 says it goes to Memphis. So I'm proposing the update. 41588 matches its PO and has no change.\n\n\nFive cards are now waiting for you. Nothing has been transmitted yet.\n\n| Bill | PO | Action | Due |\n|---|---|---|---|\n| FWDN-26-41902 | 7750 | File | **Today, Fri 9 Oct, 11:00 a.m. Chicago** |\n| FWDN-26-41871 | 7731 | File | **Today, Fri 9 Oct, 2:00 p.m. Chicago** |\n| FWDN-26-41893 | 7742 | File | Sun 11 Oct, 4:00 a.m.",
-      "said_chars": 1291,
-      "reads": [],
-      "cards": [
+        },
         {
           "action": "update_isf",
           "key": "FWDN-26-41610",
@@ -333,6 +326,58 @@
           "value_usd": 5000.0
         }
       ]
+    }
+  ],
+  "note": "ADR 0128 repeat runs",
+  "history": [
+    {
+      "run_at": "2026-10-10T10:48:28Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 25000.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 202.1,
+      "your_time_s": 150
+    },
+    {
+      "run_at": "2026-10-22T09:31:54Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:979dffdb71256458",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 25000.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 153.8,
+      "your_time_s": 150,
+      "note": "ADR 0128 repeat runs"
+    },
+    {
+      "run_at": "2026-10-22T09:34:39Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:979dffdb71256458",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 25000.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 164.8,
+      "your_time_s": 150,
+      "note": "ADR 0128 repeat runs"
     }
   ]
 }

@@ -1,15 +1,16 @@
 {
   "playbook": "certified-payroll",
-  "run_at": "2026-10-09T22:44:28Z",
+  "run_at": "2026-10-22T08:59:28Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 201.0,
+  "comparable": "sha256:c2e120e1940b4339",
+  "wall_s": 186.8,
   "turns": 11,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 30,
-  "cost_usd": 1.6961,
+  "reads": 32,
+  "cost_usd": 1.4374,
   "your_time_s": 300,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 3.4
+    "minutes": 3.1
   },
   "score": {
     "eligible": 10,
     "found": 10,
     "exact": 10,
+    "neutral": 0,
     "value_total_usd": 81417.95,
     "value_found_usd": 81417.95,
     "recall_value": 1.0,
@@ -103,19 +105,19 @@
     },
     {
       "action": "pay_restitution",
-      "key": "E-14",
-      "outcome": "correct",
-      "value_usd": 115.95,
-      "exact": true,
-      "why": "46 hours in the week ending 19 September, all at straight time: the overtime premium on 6 hours is 0.5 x $38.65 x 6 = $115.95"
-    },
-    {
-      "action": "pay_restitution",
       "key": "E-23",
       "outcome": "correct",
       "value_usd": 56.0,
       "exact": true,
       "why": "Fringe $8.00 cash + $6.40 plan = $14.40 against $15.10 in the weeks ending 19 and 26 September: $0.70 x 80 hours = $56.00 (corrected from 3 October)"
+    },
+    {
+      "action": "pay_restitution",
+      "key": "E-14",
+      "outcome": "correct",
+      "value_usd": 115.95,
+      "exact": true,
+      "why": "46 hours in the week ending 19 September, all at straight time: the overtime premium on 6 hours is 0.5 x $38.65 x 6 = $115.95"
     },
     {
       "action": "submit_payroll",
@@ -175,19 +177,14 @@
     }
   ],
   "missed": [],
-  "closing_words": "I'll recall the saved Clockyard table first. My notes cut off before the 3 Oct row, and I won't guess its figures.\n\nI'm filing the seven weeks now: six payrolls and one no-work statement. The counts and hours come from the Clockyard table I saved. Each one files a card for you to approve.\n\n\n**What I'm leaving alone, and why:**\n- **8 Aug (accepted) and 15 Aug (under review):** Both are already filed, and a week is submitted once.\n- **10 Oct:** The week is still in progress and can't be certified. Its payday is 14 Oct and it's due 21 Oct.\n- **The three adjustment checks:** I filed them earlier, and they are still waiting for you (E-21 $246.00, E-14 $115.95, E-23 $56.00, $417.95 in total). I haven't acted on them. The rules say to submit the payrolls at the same time and not wait for the checks to clear, but the payrolls should list those adjustments. Please answer the check cards when you ",
-  "prose_audit": {
-    "said_usd": 417.95,
-    "record_usd": 417.95,
-    "agrees": true
-  },
+  "closing_words": "Seven filings are ready for your approval: six payrolls and one no-work statement. They rest on the Clockyard hours I recorded earlier, and nothing has gone in yet.\n\n\n**Filings by week**\n\n| Week ending | Filing | Workers / hours |\n|---|---|---|\n| 22 Aug | Payroll | 5 / 192 |\n| 29 Aug | Payroll | 6 / 208 |\n| 5 Sep | No-work statement | none |\n| 12 Sep | Payroll | 1 / 6 |\n| 19 Sep | Payroll | 6 / 246 |\n| 26 Sep | Payroll, resubmitted | 6 / 192 |\n| 3 Oct | Payroll | 5 / 192 |\n\n**Left alone**\n- **8 Aug and 15 Aug:** one is accepted and the other is under review. Submitting either again would be a duplicate.\n- **10 Oct:** the week is still in progress, and the rules say it can't be certified. It will be due 21 Oct.\n- **PE-9:** it isn't billed until after 31 Oct.\n- **The three restitution cards already waiting:**\n  - E-21 Pike, $246.00 (29 Aug)\n  - E-23 Bell, $56.00 (19 and 26 Sep)\n  - E-14 Ok",
   "trace": [
     {
       "portal": "Wagecheck",
       "user": "The City is holding our pay estimates on Larkin Street because the certified payrolls are behind. Start here in Wagecheck: read the rules, every week's status, and what's being held and why.",
       "continued": false,
-      "said": "I'll read the rules index, the week list and the holds together.",
-      "said_chars": 64,
+      "said": "I'll read the rules index, the week list and the holds from Wagecheck.\n\n\nI'll read the individual rule topics (due, coverage, corrections, holds and the rest) once the index comes back. I won't submit or pay anything yet.",
+      "said_chars": 221,
       "reads": [
         "read_rules",
         "list_weeks",
@@ -199,8 +196,8 @@
       "portal": "Wagecheck",
       "user": "",
       "continued": true,
-      "said": "Eight weeks are outstanding and two estimates are held: PE-7 ($38,400) and PE-8 ($42,600). The rules index only listed topics, so I'll read the topic pages I need now.\n\n**Week status (10 weeks, none submitted twice):**\n- 8 Aug (#1): accepted. 15 Aug (#2): submitted and under review. Neither needs action.\n- Not received and past due: 22 Aug, 29 Aug, 5 Sep, 12 Sep, 19 Sep.\n- 26 Sep (#3): rejected 1 Oct. E-23 Marcus Bell, carpenter, was paid $14.40/hr in fringe against $15.10 on the determination.",
-      "said_chars": 1131,
+      "said": "Next I'm reading the rule topics that decide what has to be filed and how.\n\n\nSo far, here is what Wagecheck shows. This is a count of the weeks, not the rules.\n\n- **Held:** PE-7 ($38,400) is held for the weeks ending 22 and 29 Aug. PE-8 ($42,600) is held for 5, 12 and 19 Sep, plus the rejected 26 Sep week. PE-9 isn't billed yet.\n- **Not received (7):** 22 Aug, 29 Aug, 5 Sep, 12 Sep, 19 Sep, 3 Oct (due 14 Oct), plus 26 Sep, which was rejected and needs resubmitting.\n- **Already in:** 8 Aug is accepted.",
+      "said_chars": 1004,
       "reads": [
         "read_rules",
         "read_rules",
@@ -217,8 +214,8 @@
       "portal": "Wagecheck",
       "user": "",
       "continued": true,
-      "said": "I've finished reading Wagecheck. The rules settle how the work goes, but I can't reach the other apps' tools from this tab.\n\n**What the rules settle:**\n- **Coverage:** A payroll lists only hours on Larkin Street. Sable Ridge and yard hours stay off it and aren't paid under the determination.\n- **Which form:** A week where anyone worked gets a payroll. A week where nobody worked gets a no-work statement, never a payroll.",
-      "said_chars": 2719,
+      "said": "The rules are read. Now I'm pulling the wage determination documents, the employee list and the approved timesheets for every unfiled week.\n\n\nWhat the rules settle:\n- A week with any work on the project gets a payroll. A week with none gets a no-work statement.\n- 10 Oct is still in progress, so it can't be certified.\n- 8 Aug and 15 Aug are done, so I won't resubmit them.\n- A payroll counts only Larkin Street hours, not Sable Ridge hours.",
+      "said_chars": 1402,
       "reads": [],
       "cards": []
     },
@@ -226,8 +223,8 @@
       "portal": "Docshelf",
       "user": "Now Docshelf: the wage determination and anything else that decides what each worker had to be paid.",
       "continued": false,
-      "said": "I'll list the Docshelf documents first, then open the ones that bear on pay.",
-      "said_chars": 76,
+      "said": "I'll list the Docshelf documents first, then open each one.",
+      "said_chars": 59,
       "reads": [
         "list_documents"
       ],
@@ -237,8 +234,8 @@
       "portal": "Docshelf",
       "user": "",
       "continued": true,
-      "said": "Five documents are filed. I'll open the four that bear on pay: the contract excerpt, the wage determination, the plan contribution schedule and the apprentice registration. I'll skip the Sable Ridge contract for now. Sable Ridge hours aren't covered by this determination.",
-      "said_chars": 272,
+      "said": "Five documents are filed. D-01 to D-04 bear on pay, so I'm reading those now. I'm skipping D-05, the Sable Ridge contract, because it's a different job and doesn't set Larkin Street wages.",
+      "said_chars": 188,
       "reads": [
         "read_document",
         "read_document",
@@ -251,8 +248,8 @@
       "portal": "Docshelf",
       "user": "",
       "continued": true,
-      "said": "Docshelf is read. The determination, the plan schedule and Ortiz's registration give me every rate I need to check pay.\n\n\nDocshelf is done. Rates and fringes per class are in the checkpoint note. The plan's $6.40/hr counts toward each fringe, so the rest must be paid in cash on the check.\n\nOrtiz is a registered apprentice at 60% ($18.84) with full fringe. That only holds within a 1:1 ratio with a journeyman cement mason on site. I'll check that week by week against the timesheets.\n\nSwitch me to Clockyard.",
-      "said_chars": 1050,
+      "said": "Docshelf is read. Here's what it settles for pay, and what I still need from Clockyard and Crewpay.\n\n**Wage determination HV20260031, Mod. 2 (base + fringe per hour)**\n- Laborer, including hand-held compactors, jackhammers and power hand tools: $24.10 + $11.25 = $35.35\n- Cement mason / finisher: $31.40 + $13.80 = $45.20\n- Carpenter, including formwork: $33.20 + $15.10 = $48.30\n- Power equipment operator, Group 2 (excavators, loaders, backhoes): $38.65 + $17.20 = $55.85\n- Dump truck driver: $26.00 + $9.75 =",
+      "said_chars": 2277,
       "reads": [],
       "cards": []
     },
@@ -260,8 +257,8 @@
       "portal": "Clockyard",
       "user": "This is Clockyard. Go through the timesheets for every week the City doesn't have yet: who was on Larkin, for how long, doing what.",
       "continued": false,
-      "said": "I'll read the approved timesheets for each week the City doesn't have: 22 Aug, 29 Aug, 5 Sep, 12 Sep, 19 Sep, the rejected 26 Sep, and 3 Oct. I'm leaving out 8 Aug (accepted) and 15 Aug (under review).",
-      "said_chars": 201,
+      "said": "I'm reading the approved timesheets for the seven unfiled weeks: 22 Aug, 29 Aug, 5 Sep, 12 Sep, 19 Sep, 26 Sep (rejected, needs resubmitting) and 3 Oct. I'm not reading 10 Oct, because that week is still running. I'm not submitting or paying anything yet.",
+      "said_chars": 255,
       "reads": [
         "read_timesheets",
         "read_timesheets",
@@ -277,8 +274,8 @@
       "portal": "Clockyard",
       "user": "",
       "continued": true,
-      "said": "Clockyard is read. I'm saving it as a checkpoint, because I can't reach these timesheets from the Crewpay tab.\n\n\n**All seven weeks are read. Six need a payroll and one needs a no-work statement.**",
-      "said_chars": 2123,
+      "said": "I read all seven unfiled weeks. Five need a payroll, one needs a no-work statement, and 26 Sep needs resubmitting. Clockyard gives hours only, so I can't say yet who was shorted. That needs the Crewpay registers.",
+      "said_chars": 3048,
       "reads": [],
       "cards": []
     },
@@ -286,10 +283,12 @@
       "portal": "Crewpay",
       "user": "Now Crewpay. Check what we actually paid each of them on Larkin against what the determination required, and issue an adjustment check to anyone we shorted.",
       "continued": false,
-      "said": "Reading the Crewpay registers for the weeks in question, and recalling the Clockyard hours and rates I saved.\n\nThe Crewpay reads are on the page and their answers arrive next turn. That recall returned the Wagecheck and Docshelf notes, not the Clockyard hours. I'm running a narrower one for the per-worker hours.\n\nThe register answers still haven't arrived, and I won't re-issue those calls. I'm recalling the determination rates now so I can compare as soon as they land.",
-      "said_chars": 2504,
+      "said": "I'll read the employee notes and each week's register, and recall the full wage determination and timesheet detail, before comparing pay to the determination.\n\n\nNo adjustment checks yet. I need these registers and the full determination text first, because I won't compute a shortfall from partial figures.\n\nThe Crewpay register and employee reads were sent to the page, but their answers haven't reached me yet. I haven't compared any pay or issued any check.",
+      "said_chars": 1319,
       "reads": [
         "list_employees",
+        "read_register",
+        "read_register",
         "read_register",
         "read_register",
         "read_register",
@@ -303,8 +302,8 @@
       "portal": "Crewpay",
       "user": "",
       "continued": true,
-      "said": "Three workers were shorted on Larkin Street, for $417.95 in total. I'm filing one adjustment check for each.\n\n| Worker | Weeks | What was short | Owed |\n|---|---|---|---|\n| E-21 Pike | 29 Aug | 12 hours of the 40 were on the CAT 320 as operator (Tue–Thu pm) but were paid as laborer. That is $14.55 base plus $5.95 cash fringe, or $20.50 an hour. | $246.00 |\n| E-14 Okafor | 19 Sep | He worked 46 hours but all were paid at straight time. The 6 overtime hours are owed the half-time premium: 6 × 0.5 × $38.65.",
-      "said_chars": 1369,
+      "said": "The registers are in. One conclusion is already clear: Lindqvist is not shorted. Before I file any checks I need the Clockyard per-worker notes for 29 Aug, 19 Sep and 26 Sep. I have only a truncated summary of them, so I'm recalling them now.\n\n\n**Preliminary result (not yet confirmed against the timesheets)**\n- **Lindqvist:** not shorted. $39.10 base plus the $6.40 plan credit is $45.50 an hour, against $45.20 required for a mason. Cash paid in the rate counts.",
+      "said_chars": 2513,
       "reads": [],
       "cards": [
         {
@@ -315,15 +314,15 @@
         },
         {
           "action": "pay_restitution",
-          "key": "E-14",
-          "outcome": "correct",
-          "value_usd": 115.95
-        },
-        {
-          "action": "pay_restitution",
           "key": "E-23",
           "outcome": "correct",
           "value_usd": 56.0
+        },
+        {
+          "action": "pay_restitution",
+          "key": "E-14",
+          "outcome": "correct",
+          "value_usd": 115.95
         }
       ]
     },
@@ -331,8 +330,8 @@
       "portal": "Wagecheck",
       "user": "Back in Wagecheck. Submit every week that's due with the right workers and hours, and a no-work statement where nobody was on the job. Then tell me what you left alone and why.",
       "continued": false,
-      "said": "I'll recall the saved Clockyard table first. My notes cut off before the 3 Oct row, and I won't guess its figures.\n\nI'm filing the seven weeks now: six payrolls and one no-work statement. The counts and hours come from the Clockyard table I saved. Each one files a card for you to approve.\n\n\n**What I'm leaving alone, and why:**\n- **8 Aug (accepted) and 15 Aug (under review):** Both are already filed, and a week is submitted once.\n- **10 Oct:** The week is still in progress and can't be certified.",
-      "said_chars": 1177,
+      "said": "Seven filings are ready for your approval: six payrolls and one no-work statement. They rest on the Clockyard hours I recorded earlier, and nothing has gone in yet.\n\n\n**Filings by week**\n\n| Week ending | Filing | Workers / hours |\n|---|---|---|\n| 22 Aug | Payroll | 5 / 192 |\n| 29 Aug | Payroll | 6 / 208 |\n| 5 Sep | No-work statement | none |\n| 12 Sep | Payroll | 1 / 6 |\n| 19 Sep | Payroll | 6 / 246 |\n| 26 Sep | Payroll, resubmitted | 6 / 192 |\n| 3 Oct | Payroll | 5 / 192 |",
+      "said_chars": 1433,
       "reads": [],
       "cards": [
         {
@@ -380,7 +379,7 @@
       ]
     }
   ],
-  "note": "world fixed: the corrections rule said to issue the adjustment check before certifying, so she held three weeks behind unsigned cards; it now says the payroll goes in with the adjustment listed, and is not held for the check to clear",
+  "note": "ADR 0128 repeat runs",
   "history": [
     {
       "run_at": "2026-10-09T22:39:35Z",
@@ -390,6 +389,56 @@
       "eligible": 10,
       "value_found_usd": 40917.95,
       "false_claims": 0
+    },
+    {
+      "run_at": "2026-10-09T22:44:28Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 10,
+      "eligible": 10,
+      "value_found_usd": 81417.95,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 201.0,
+      "your_time_s": 300,
+      "note": "world fixed: the corrections rule said to issue the adjustment check before certifying, so she held three weeks behind unsigned cards; it now says the payroll goes in with the adjustment listed, and is not held for the check to clear"
+    },
+    {
+      "run_at": "2026-10-22T08:53:20Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:c2e120e1940b4339",
+      "verdict": "exceeds",
+      "found": 9,
+      "eligible": 10,
+      "value_found_usd": 81171.95,
+      "recall_value": 0.997,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 183.4,
+      "your_time_s": 270,
+      "note": "ADR 0128 repeat runs"
+    },
+    {
+      "run_at": "2026-10-22T08:56:21Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:c2e120e1940b4339",
+      "verdict": "exceeds",
+      "found": 10,
+      "eligible": 10,
+      "value_found_usd": 81417.95,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 181.3,
+      "your_time_s": 300,
+      "note": "ADR 0128 repeat runs"
     }
   ]
 }

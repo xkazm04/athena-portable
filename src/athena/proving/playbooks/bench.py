@@ -24,6 +24,7 @@ Athena said she did (ADR 0032's rule, applied to usefulness rather than safety).
 
 from __future__ import annotations
 
+import hashlib
 import json
 import re
 import tempfile
@@ -46,11 +47,15 @@ from athena.proving.world import TurnRecord, World
 __all__ = [
     "MAX_CONTINUATIONS",
     "NUDGE",
+    "SCORER_VERSION",
     "BenchConfig",
     "RootedWorldFactory",
     "WorldFactory",
     "cards_of",
     "case_receipt",
+    "comparability_key",
+    "comparable_runs",
+    "content_digest",
     "headline",
     "prose_audit",
     "rescore",
@@ -80,6 +85,50 @@ SECONDS_PER_CARD = 30
 WorldFactory = Callable[[Playbook], World]
 #: A world on a given root, so a second Athena can open the first one's brain (ADR 0126).
 RootedWorldFactory = Callable[[Playbook, Path], World]
+
+#: The person at the cards: handed one turn's filed cards, returns the page's answers (ADR 0129).
+Answerer = Callable[[Sequence[Mapping[str, Any]]], list[dict[str, Any]]]
+
+#: The scorer's identity in a run's comparability key (ADR 0128). Raise it in the same commit as
+#: any change to :func:`score` or :func:`verdict` that measures the same cards differently, so the
+#: runs scored before are not averaged with the runs scored after.
+SCORER_VERSION = 1
+
+
+def _canonical(value: Any) -> str:
+    return json.dumps(value, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def content_digest(root: Path) -> str:
+    """What a run of the playbook at ``root`` is measured against, as one digest (ADR 0128).
+
+    ``world.json`` and ``truth.json`` whole, the two keys of ``playbook.json`` the bench reads
+    besides the id (``command`` and ``expectation``), and :data:`SCORER_VERSION`. Parsed and
+    re-serialised, so a checkout's line endings or a reformat change nothing; a value does.
+    """
+
+    def read(name: str) -> Any:
+        return json.loads((root / name).read_text(encoding="utf-8"))
+
+    book = read("playbook.json")
+    measured = {
+        "world": read("world.json"),
+        "truth": read("truth.json"),
+        "command": book.get("command"),
+        "expectation": book.get("expectation"),
+        "scorer": SCORER_VERSION,
+    }
+    return hashlib.sha256(_canonical(measured).encode("utf-8")).hexdigest()
+
+
+def comparability_key(content: str, engine: Any, model: Any, approve: Any) -> str:
+    """The key two runs share when their numbers may be pooled (ADR 0128).
+
+    ``content`` is :func:`content_digest`; the engine, the model and the approval mode are the
+    run's own. Runs under different keys measured different things and are never aggregated.
+    """
+    joined = _canonical({"content": content, "engine": engine, "model": model, "approve": approve})
+    return "sha256:" + hashlib.sha256(joined.encode("utf-8")).hexdigest()[:16]
 
 
 @dataclass(frozen=True)
@@ -290,6 +339,9 @@ def _report(
         "transcript": run.turns,
     }
     report["verdict"] = verdict(playbook, report)
+    report["comparable"] = comparability_key(
+        content_digest(playbook.root), report["engine"], report["model"], report["approve"]
+    )
     pruned: dict[str, Any] = prune(report)
     return pruned
 
@@ -456,7 +508,17 @@ def _phase(
     nudges: int,
     config: BenchConfig,
     echo: Callable[[str], None],
+    *,
+    answer: Answerer | None = None,
+    fields: Mapping[str, Any] | None = None,
 ) -> None:
+    """One phase of the desktop's run loop on ``app_id``.
+
+    ``answer`` replaces ``config.approve`` as the person at the cards: it is handed each turn's
+    filed cards and returns the page's answers to ride the next turn (the follow-through driver,
+    ADR 0129). ``fields`` are the surface's other request fields, read afresh on every turn, so a
+    caller that adds to them between turns is heard on the next one.
+    """
     pending: list[dict[str, Any]] = []
     # The playbook the person handed over is her active project on every turn, in every tab
     # (ADR 0044): the goal she works toward while the phase message names only this tab's part.
@@ -476,7 +538,7 @@ def _phase(
                 host_state=portals.host_state(app_id),
                 tool_results=pending,
                 active_project=project,
-                fields=_case_fields(run),
+                fields={**(_case_fields(run) or {}), **(fields or {})} or None,
             )
             filed = _absorb(run, record, app_id, message)
             echo(
@@ -490,7 +552,9 @@ def _phase(
                 _result(call, *portals.answer(str(call.get("name", "")), _params(call)))
                 for call in _host_calls(record)
             ]
-            if config.approve == "all":
+            if answer is not None:
+                pending.extend(answer(filed))
+            elif config.approve == "all":
                 pending.extend(_approve(world, portals, filed))
             if not pending:
                 return
@@ -879,6 +943,7 @@ def summary_of(report: Mapping[str, Any]) -> dict[str, Any]:
             "engine": report.get("engine"),
             "model": report.get("model"),
             "approve": report.get("approve"),
+            "comparable": report.get("comparable"),
             "wall_s": report.get("wall_s"),
             "turns": report.get("turns"),
             "nudges": report.get("nudges"),
@@ -978,19 +1043,27 @@ def cards_of(report: Mapping[str, Any]) -> list[dict[str, Any]]:
 
 def rescore(playbook: Playbook, report: Mapping[str, Any]) -> dict[str, Any]:
     """A saved run scored again against today's truth and scorer. Nothing is re-run; the cards are
-    the run's own, so a change of score is a change of the measure, and ``rescored_at`` says so."""
+    the run's own, so a change of score is a change of the measure, and ``rescored_at`` says so.
+    Its comparability key is today's (ADR 0128): the rescored run is measured as a run benched now
+    would be, so it pools with those and no longer with the runs scored before."""
     again = dict(report)
     again.setdefault("portals", {app.app_id: app.name for app in playbook.apps})
     again["score"] = score(playbook, cards_of(report))
     again["verdict"] = verdict(playbook, again)
     again["rescored_at"] = datetime.now(UTC).strftime("%Y-%m-%dT%H:%M:%SZ")
+    again["comparable"] = comparability_key(
+        content_digest(playbook.root),
+        report.get("engine"),
+        report.get("model"),
+        report.get("approve"),
+    )
     return again
 
 
-def write_report(run_dir: Path, report: Mapping[str, Any]) -> Path:
+def write_report(run_dir: Path, report: Mapping[str, Any], name: str = "report.json") -> Path:
     """The full report, transcript and all, into ``run_dir`` (gitignored ``proving-runs/``)."""
     run_dir.mkdir(parents=True, exist_ok=True)
-    path = run_dir / "report.json"
+    path = run_dir / name
     path.write_text(json.dumps(report, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     return path
 
@@ -1000,32 +1073,78 @@ HISTORY = 12
 
 
 def headline(summary: Mapping[str, Any]) -> dict[str, Any]:
-    """One earlier run, in a line: when, on what, the verdict and the money."""
+    """One run, in a line: when, on what, under which key, the verdict, the money and the minutes.
+
+    It holds what the ranking needs to pool the run with the others under its key (ADR 0128).
+    """
     s = summary.get("score", {})
     keep: dict[str, Any] = prune(
         {
             "run_at": summary.get("run_at"),
+            "rescored_at": summary.get("rescored_at"),
+            "engine": summary.get("engine"),
             "model": summary.get("model"),
+            "approve": summary.get("approve"),
+            "comparable": summary.get("comparable"),
             "verdict": summary.get("verdict", {}).get("word"),
             "found": s.get("found"),
             "eligible": s.get("eligible"),
             "value_found_usd": s.get("value_found_usd"),
+            "recall_value": s.get("recall_value"),
             "false_claims": s.get("false_claims"),
+            "traps_filed": s.get("traps_filed"),
+            "wall_s": summary.get("wall_s"),
+            "your_time_s": summary.get("your_time_s"),
             "note": summary.get("note"),
         }
     )
     return keep
 
 
+def comparable_runs(
+    bench: Mapping[str, Any], current: str | None = None
+) -> list[dict[str, Any]] | None:
+    """The runs ``bench.json`` holds that pool with its latest, latest first (ADR 0128).
+
+    ``None`` when the latest run carries no key (benched before keys were kept): it is then a set
+    of one, and nothing is pooled with it. ``current`` is the key a run benched now would carry;
+    a latest run under another key was measured against something that has changed since, and the
+    set is empty. A history line a rescore superseded is the same run, and is never counted twice.
+    """
+    key = bench.get("comparable")
+    if not key:
+        return None
+    if current is not None and key != current:
+        return []
+    runs = [headline(bench)]
+    for line in bench.get("history", []):
+        if not isinstance(line, Mapping) or line.get("superseded_by"):
+            continue
+        if line.get("comparable") != key:
+            continue
+        if bench.get("rescored_at") and line.get("run_at") == bench.get("run_at"):
+            continue
+        runs.append(dict(line))
+    return runs
+
+
 def write_bench(
-    playbook: Playbook, report: Mapping[str, Any], run_dir: Path, *, note: str = ""
+    playbook: Playbook,
+    report: Mapping[str, Any],
+    run_dir: Path,
+    *,
+    note: str = "",
+    report_name: str = "report.json",
 ) -> Path:
     """The full report into ``run_dir`` and the summary into the playbook's ``bench.json``.
 
-    The run ``bench.json`` held before becomes a line of its history, unless it is this same run
-    (a rescore replaces itself). ``note`` says what changed since the last run, in a sentence.
+    The run ``bench.json`` held before becomes a line of its history. A rescore of that same run is
+    appended as a correction (ADR 0128): the line keeps the original score, and its
+    ``superseded_by`` says when it was rescored, why (``note``) and to what; the run's own note
+    stays on the run. Otherwise ``note`` says what changed since the last run, in a sentence.
+    ``report_name`` lets a rescore write beside the run's report instead of over it.
     """
-    write_report(run_dir, report)
+    write_report(run_dir, report, report_name)
     target = playbook.root / "bench.json"
     summary = summary_of(report)
     history: list[dict[str, Any]] = []
@@ -1035,10 +1154,26 @@ def write_bench(
         except json.JSONDecodeError:
             before = {}
         history = list(before.get("history", []))
-        if before.get("run_at") and before.get("run_at") != summary.get("run_at"):
+        same = bool(before.get("run_at")) and before.get("run_at") == summary.get("run_at")
+        if same and summary.get("rescored_at"):
+            s = summary.get("score", {})
+            line = headline(before)
+            line["superseded_by"] = prune(
+                {
+                    "rescored_at": summary.get("rescored_at"),
+                    "note": note or None,
+                    "comparable": summary.get("comparable"),
+                    "verdict": summary.get("verdict", {}).get("word"),
+                    "found": s.get("found"),
+                    "recall_value": s.get("recall_value"),
+                    "false_claims": s.get("false_claims"),
+                    "traps_filed": s.get("traps_filed"),
+                }
+            )
+            history.append(line)
+            note = str(before.get("note") or "")
+        elif before.get("run_at"):
             history.append(headline(before))
-        elif before.get("note") and not note:
-            note = str(before["note"])
     if note:
         summary["note"] = note
     if history:

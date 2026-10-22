@@ -1,0 +1,235 @@
+{
+  "playbook": "freelancer-receivables",
+  "assertion_version": 1,
+  "comparable": "sha256:07ecd4da2aedba18",
+  "tally": {
+    "approve": {
+      "k": 1,
+      "n": 3
+    },
+    "decline": {
+      "k": 1,
+      "n": 3
+    },
+    "lost_answer": {
+      "k": 2,
+      "n": 3
+    }
+  },
+  "runs": [
+    {
+      "run_at": "2026-10-22T08:33:48Z",
+      "branch": "approve",
+      "repeat": 1,
+      "engine": "claude_code",
+      "model": "sonnet",
+      "drive": "sha256:891b03249cf91245",
+      "assertion_version": 1,
+      "comparable": "sha256:07ecd4da2aedba18",
+      "passed": false,
+      "checks": {
+        "followed": true,
+        "approved_effect_read": true,
+        "approved_not_refiled": true,
+        "payment_heeded": true,
+        "new_work_found": false
+      },
+      "cards": [
+        5,
+        5
+      ],
+      "cost_usd": 6.8275,
+      "report": "proving-runs/20261022T082826Z/followthrough-freelancer-receivables/approve-1.json"
+    },
+    {
+      "run_at": "2026-10-22T08:39:03Z",
+      "branch": "approve",
+      "repeat": 2,
+      "engine": "claude_code",
+      "model": "sonnet",
+      "drive": "sha256:891b03249cf91245",
+      "assertion_version": 1,
+      "comparable": "sha256:07ecd4da2aedba18",
+      "passed": true,
+      "checks": {
+        "followed": true,
+        "approved_effect_read": true,
+        "approved_not_refiled": true,
+        "payment_heeded": true,
+        "new_work_found": true
+      },
+      "cards": [
+        4,
+        3
+      ],
+      "cost_usd": 7.3009,
+      "report": "proving-runs/20261022T082826Z/followthrough-freelancer-receivables/approve-2.json"
+    },
+    {
+      "run_at": "2026-10-22T08:44:09Z",
+      "branch": "approve",
+      "repeat": 3,
+      "engine": "claude_code",
+      "model": "sonnet",
+      "drive": "sha256:891b03249cf91245",
+      "assertion_version": 1,
+      "comparable": "sha256:07ecd4da2aedba18",
+      "passed": false,
+      "checks": {
+        "followed": true,
+        "approved_effect_read": true,
+        "approved_not_refiled": true,
+        "payment_heeded": true,
+        "new_work_found": false
+      },
+      "cards": [
+        4,
+        5
+      ],
+      "cost_usd": 6.4453,
+      "report": "proving-runs/20261022T082826Z/followthrough-freelancer-receivables/approve-3.json"
+    },
+    {
+      "run_at": "2026-10-22T08:49:37Z",
+      "branch": "decline",
+      "repeat": 1,
+      "engine": "claude_code",
+      "model": "sonnet",
+      "drive": "sha256:891b03249cf91245",
+      "assertion_version": 1,
+      "comparable": "sha256:07ecd4da2aedba18",
+      "passed": false,
+      "checks": {
+        "followed": true,
+        "declined_no_effect": true,
+        "declined_not_reproposed": true,
+        "payment_heeded": true,
+        "new_work_found": false
+      },
+      "cards": [
+        4,
+        3
+      ],
+      "cost_usd": 6.5024,
+      "report": "proving-runs/20261022T082826Z/followthrough-freelancer-receivables/decline-1.json"
+    },
+    {
+      "run_at": "2026-10-22T08:55:08Z",
+      "branch": "decline",
+      "repeat": 2,
+      "engine": "claude_code",
+      "model": "sonnet",
+      "drive": "sha256:891b03249cf91245",
+      "assertion_version": 1,
+      "comparable": "sha256:07ecd4da2aedba18",
+      "passed": false,
+      "checks": {
+        "followed": true,
+        "declined_no_effect": true,
+        "declined_not_reproposed": true,
+        "payment_heeded": true,
+        "new_work_found": false
+      },
+      "cards": [
+        3,
+        4
+      ],
+      "cost_usd": 6.7938,
+      "report": "proving-runs/20261022T082826Z/followthrough-freelancer-receivables/decline-2.json"
+    },
+    {
+      "run_at": "2026-10-22T08:59:50Z",
+      "branch": "decline",
+      "repeat": 3,
+      "engine": "claude_code",
+      "model": "sonnet",
+      "drive": "sha256:891b03249cf91245",
+      "assertion_version": 1,
+      "comparable": "sha256:07ecd4da2aedba18",
+      "passed": true,
+      "checks": {
+        "followed": true,
+        "declined_no_effect": true,
+        "declined_not_reproposed": true,
+        "payment_heeded": true,
+        "new_work_found": true
+      },
+      "cards": [
+        4,
+        2
+      ],
+      "cost_usd": 5.4994,
+      "report": "proving-runs/20261022T082826Z/followthrough-freelancer-receivables/decline-3.json"
+    },
+    {
+      "run_at": "2026-10-22T09:04:33Z",
+      "branch": "lost_answer",
+      "repeat": 1,
+      "engine": "claude_code",
+      "model": "sonnet",
+      "drive": "sha256:891b03249cf91245",
+      "assertion_version": 1,
+      "comparable": "sha256:07ecd4da2aedba18",
+      "passed": true,
+      "checks": {
+        "followed": true,
+        "lost_not_retried": true,
+        "payment_heeded": true,
+        "new_work_found": true
+      },
+      "cards": [
+        4,
+        2
+      ],
+      "cost_usd": 6.7154,
+      "report": "proving-runs/20261022T082826Z/followthrough-freelancer-receivables/lost_answer-1.json"
+    },
+    {
+      "run_at": "2026-10-22T09:11:03Z",
+      "branch": "lost_answer",
+      "repeat": 2,
+      "engine": "claude_code",
+      "model": "sonnet",
+      "drive": "sha256:891b03249cf91245",
+      "assertion_version": 1,
+      "comparable": "sha256:07ecd4da2aedba18",
+      "passed": true,
+      "checks": {
+        "followed": true,
+        "lost_not_retried": true,
+        "payment_heeded": true,
+        "new_work_found": true
+      },
+      "cards": [
+        4,
+        6
+      ],
+      "cost_usd": 9.3859,
+      "report": "proving-runs/20261022T082826Z/followthrough-freelancer-receivables/lost_answer-2.json"
+    },
+    {
+      "run_at": "2026-10-22T09:16:46Z",
+      "branch": "lost_answer",
+      "repeat": 3,
+      "engine": "claude_code",
+      "model": "sonnet",
+      "drive": "sha256:891b03249cf91245",
+      "assertion_version": 1,
+      "comparable": "sha256:07ecd4da2aedba18",
+      "passed": false,
+      "checks": {
+        "followed": true,
+        "lost_not_retried": false,
+        "payment_heeded": true,
+        "new_work_found": true
+      },
+      "cards": [
+        4,
+        4
+      ],
+      "cost_usd": 9.0443,
+      "report": "proving-runs/20261022T082826Z/followthrough-freelancer-receivables/lost_answer-3.json"
+    }
+  ],
+  "corrections": []
+}

@@ -1,7 +1,8 @@
-"""The ranking (README §14; ADR 0056, 0064): the method pinned on fixed inputs, not on the files.
+"""The ranking (README §14; ADR 0056, 0064, 0128): the method pinned on fixed inputs, not files.
 
 The nine fixtures come from the numbers of ADR 0056's worked table. No test reads a model or a
-bench; the last class reads the committed tree.
+bench; the last class reads the committed tree. ``TestRepeatedRuns`` pins ADR 0128: a row stands
+on every run under the current comparability key, and says how many.
 """
 
 from __future__ import annotations
@@ -11,6 +12,7 @@ from typing import Any
 
 import pytest
 
+from athena.proving.playbooks import bench as bench_module
 from athena.proving.playbooks import rank
 from athena.proving.playbooks.__main__ import main
 from athena.proving.playbooks.rank import RankError, rank_all
@@ -57,11 +59,22 @@ def bench(
     word: str = "exceeds",
     false_claims: int = 0,
     traps_filed: int = 0,
+    key: str | None = None,
+    history: list[dict[str, Any]] | None = None,
+    run_at: str = "2026-10-07T00:00:00Z",
 ) -> dict[str, Any]:
     seconds = person * 60
+    extra: dict[str, Any] = {}
+    if key is not None:
+        extra["comparable"] = key
+    if history is not None:
+        extra["history"] = history
     return {
-        "run_at": "2026-10-07T00:00:00Z",
+        **extra,
+        "run_at": run_at,
+        "engine": "claude_code",
         "model": "sonnet",
+        "approve": "none",
         "wall_s": seconds - 300,
         "your_time_s": 300,
         "verdict": {"word": word, "expected": {"recall": 0.75}},
@@ -279,3 +292,191 @@ class TestCommittedTree:
             list((REPO / "playbooks").glob("*/playbook.json"))
         )
         assert [r["rank"] for r in doc["ranked"]] == list(range(1, len(doc["ranked"]) + 1))
+
+    def test_every_committed_row_carries_its_comparable_runs(self) -> None:
+        """ADR 0128 on the committed data: every ranked row says how many runs it stands on.
+
+        The top 20 were benched three times each (2026-10-22), so a row stands on one run or on
+        three; a one-run row's recall is that run's, and a pooled row's median sits within its
+        spread. The pooled order is the committed ranking (``rank --check`` holds the file to it).
+        """
+        base = REPO / "playbooks"
+        pooled = rank_all(rank.load_entries(base), rank.load_contents(base))
+        counts = {row["bench"]["runs"]["n"] for row in pooled["ranked"]}
+        assert counts <= {1, 3}
+        for row in pooled["ranked"]:
+            runs = row["bench"]["runs"]
+            assert runs["recall_min"] <= runs["recall_median"]
+            if runs["n"] == 1:
+                assert runs["recall_min"] == runs["recall_median"] == row["money"]["recall_value"]
+
+
+def line(
+    run_at: str,
+    *,
+    key: str | None = "K",
+    recall: float = 1.0,
+    word: str = "exceeds",
+    false_claims: int = 0,
+    traps_filed: int = 0,
+    **more: Any,
+) -> dict[str, Any]:
+    """One history line, as ``bench.headline`` writes it."""
+    out: dict[str, Any] = {
+        "run_at": run_at,
+        "verdict": word,
+        "recall_value": recall,
+        "false_claims": false_claims,
+        "traps_filed": traps_filed,
+        **more,
+    }
+    if key is not None:
+        out["comparable"] = key
+    return out
+
+
+class TestRepeatedRuns:
+    """ADR 0128: n, the spread, k of n, and only the runs under the current key."""
+
+    def runs(self, doc: dict[str, Any]) -> dict[str, Any]:
+        [row] = doc["ranked"]
+        return dict(row["bench"]["runs"])
+
+    def test_a_row_carries_n_the_min_and_median_recall_and_k_of_n_exceeds(self) -> None:
+        b = bench(
+            recall=0.9,
+            key="K",
+            history=[
+                line("2026-10-01T00:00:00Z", recall=0.6, word="meets"),
+                line("2026-10-02T00:00:00Z"),
+            ],
+        )
+        doc = rank_all([(playbook("x"), b)])
+        assert self.runs(doc) == {
+            "n": 3,
+            "comparable": "K",
+            "exceeds": 2,
+            "recall_min": 0.6,
+            "recall_median": 0.9,
+            "false_claims_max": 0,
+            "traps_filed_max": 0,
+        }
+        assert doc["ranked"][0]["money"]["recall_value"] == 0.9
+
+    def test_the_score_takes_the_median_not_the_latest_draw(self) -> None:
+        lucky = bench(
+            recall=1.0,
+            key="K",
+            history=[
+                line("2026-10-01T00:00:00Z", recall=0.2),
+                line("2026-10-02T00:00:00Z", recall=0.3),
+            ],
+        )
+        a = rank.rank_row(playbook("x"), lucky)
+        b = rank.rank_row(playbook("x"), bench(recall=0.3))
+        assert a["score"] == b["score"]
+        assert a["money"]["recall_value"] == 0.3
+
+    def test_one_run_of_three_that_filed_a_trap_excludes_the_playbook(self) -> None:
+        b = bench(
+            key="K",
+            history=[line("2026-10-01T00:00:00Z", traps_filed=1), line("2026-10-02T00:00:00Z")],
+        )
+        doc = rank_all([(playbook("x"), b)])
+        assert doc["ranked"] == []
+        assert doc["unranked"][0]["why"] == (
+            "false claims 0, traps filed 1 (the worst of 3 comparable runs)"
+        )
+
+    def test_a_false_claim_in_any_comparable_run_excludes(self) -> None:
+        b = bench(key="K", history=[line("2026-10-01T00:00:00Z", false_claims=2)])
+        assert "false claims 2" in rank_all([(playbook("x"), b)])["unranked"][0]["why"]
+
+    def test_short_in_half_the_runs_is_short_and_in_one_of_three_is_not(self) -> None:
+        half = bench(key="K", history=[line("2026-10-01T00:00:00Z", word="short", recall=0.1)])
+        assert rank_all([(playbook("x"), half)])["unranked"][0]["why"] == (
+            "short in 1 of 2 comparable runs"
+        )
+        third = bench(
+            key="K",
+            history=[
+                line("2026-10-01T00:00:00Z", word="short", recall=0.1),
+                line("2026-10-02T00:00:00Z"),
+            ],
+        )
+        assert self.runs(rank_all([(playbook("x"), third)]))["exceeds"] == 2
+
+    def test_mixed_keys_aggregate_only_the_current_one(self) -> None:
+        b = bench(
+            recall=0.8,
+            key="K",
+            history=[
+                line("2026-09-01T00:00:00Z", key="OLD", recall=0.1, traps_filed=3),
+                line("2026-09-02T00:00:00Z", key=None, recall=0.1, false_claims=1),
+                line("2026-10-01T00:00:00Z", recall=0.6),
+            ],
+        )
+        runs = self.runs(rank_all([(playbook("x"), b)]))
+        assert (runs["n"], runs["recall_min"], runs["recall_median"]) == (2, 0.6, 0.7)
+
+    def test_a_latest_run_under_a_key_the_files_no_longer_give_is_not_ranked(self) -> None:
+        doc = rank_all([(playbook("x"), bench(key="sha256:0000000000000000"))], {"x": "other"})
+        assert doc["unranked"][0]["why"].startswith("no comparable run")
+        current = bench_module.comparability_key("d", "claude_code", "sonnet", "none")
+        doc = rank_all([(playbook("x"), bench(key=current))], {"x": "d"})
+        assert self.runs(doc)["n"] == 1
+
+    def test_a_line_a_rescore_superseded_is_not_counted_twice(self) -> None:
+        b = bench(
+            key="K",
+            history=[
+                line("2026-10-07T00:00:00Z", recall=0.2, superseded_by={"rescored_at": "x"}),
+                line("2026-10-07T00:00:00Z", recall=0.2),
+            ],
+        )
+        b["rescored_at"] = "2026-10-08T00:00:00Z"
+        assert self.runs(rank_all([(playbook("x"), b)]))["n"] == 1
+
+    def test_an_unkeyed_run_stands_alone_whatever_its_history(self) -> None:
+        b = bench(history=[line("2026-10-01T00:00:00Z", key=None, traps_filed=4)])
+        assert self.runs(rank_all([(playbook("x"), b)]))["n"] == 1
+
+
+class TestTau:
+    def test_kendall_tau_b(self) -> None:
+        assert rank.kendall_tau_b([1, 2, 3], [1, 2, 3]) == 1.0
+        assert rank.kendall_tau_b([1, 2, 3], [3, 2, 1]) == -1.0
+        assert rank.kendall_tau_b([1, 1], [1, 2]) is None
+        tau = rank.kendall_tau_b([1, 2, 3, 4], [1, 3, 2, 4])
+        assert tau is not None and round(tau, 4) == 0.6667
+
+    def test_run_1_against_the_median_of_the_rest(self) -> None:
+        def three(first: float, rest: float) -> dict[str, Any]:
+            return bench(
+                recall=rest,
+                key="K",
+                run_at="2026-10-03T00:00:00Z",
+                history=[
+                    line("2026-10-01T00:00:00Z", recall=first),
+                    line("2026-10-02T00:00:00Z", recall=rest),
+                ],
+            )
+
+        doc = rank.tau_of(
+            [
+                (playbook("a", value=10**6), three(1.0, 0.01)),
+                (playbook("b", value=10**6), three(0.5, 0.5)),
+                (playbook("c", value=10**6), three(0.01, 1.0)),
+                (playbook("solo"), bench()),
+                (playbook("trap"), bench(traps_filed=1)),
+            ]
+        )
+        assert [p["playbook"] for p in doc["pairs"]] == ["a", "b", "c"]
+        assert doc["tau_b"] == -1.0
+        assert (doc["fewer_runs"], doc["excluded"]) == (1, 1)
+
+    def test_the_committed_tree_compares_its_repeated_playbooks(
+        self, capsys: pytest.CaptureFixture[str]
+    ) -> None:
+        assert main(["--dir", str(REPO / "playbooks"), "rank", "--tau"]) == 0
+        assert "tau-b" in capsys.readouterr().out

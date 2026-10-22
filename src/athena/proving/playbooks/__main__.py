@@ -4,17 +4,26 @@
 
     uv run python -m athena.proving.playbooks check              # every playbook loads
     uv run python -m athena.proving.playbooks bench <id> [--model sonnet] [--approve none|all]
-        [--cap 5.0] [--engine claude_code] [--out proving-runs] [--no-write] [--project] [--case]
+        [--cap 5.0] [--engine claude_code] [--out proving-runs] [--no-write] [--runs 1]
+        [--project] [--case]
     uv run python -m athena.proving.playbooks bench <id> --second-run [--no-carry] [--model ...]
     uv run python -m athena.proving.playbooks rescore <id> <run>/report.json
     uv run python -m athena.proving.playbooks evidence <id>|--all [--dry] [--verify]
         [--stills-only] [--desktop apps/desktop]
-    uv run python -m athena.proving.playbooks rank [--check]
+    uv run python -m athena.proving.playbooks rank [--check | --tau]
+    uv run python -m athena.proving.playbooks followthrough <id> [--branch approve|decline|
+        lost_answer|all] [--repeats 3] [--model sonnet] [--cap 5.0] [--engine claude_code]
+        [--out proving-runs] [--no-write]
+    uv run python -m athena.proving.playbooks followthrough <id> --reassess <run>.json [--note]
 
 ``bench`` runs a real Athena on the user's own ``claude`` CLI (no key needed) and writes the full
 report under ``proving-runs/<ts>/playbook-<id>/`` (gitignored) and the summary into the playbook's
 ``bench.json``, which the desktop's Playbooks module shows. Exit 0 when the verdict is ``meets``
-or ``exceeds``, 1 when it is ``short``, 2 when the playbook could not be loaded.
+or ``exceeds``, 1 when it is ``short``, 2 when the playbook could not be loaded. ``--runs k``
+benches ``k`` fresh worlds one after the other, each a line of the history under its comparability
+key (ADR 0128); the exit is 1 when any of them was short. ``rescore`` writes the rescored report
+beside the run's own ``report.json``, never over it, and appends the run's original score to the
+history as a correction.
 
 ``bench --second-run`` (ADR 0126) runs the playbook twice on one world: run 1 approving every card,
 run 2 with run 1's receipt carried forward (``--no-carry``: without it, the baseline), and reports
@@ -33,7 +42,16 @@ Exit 0 when every step ran (or, with ``--verify``, every benched playbook is cur
 did not, 2 when a playbook could not be loaded or has no bench to film.
 
 ``rank`` writes ``playbooks/ranking.json`` by the method of ADR 0056 (:mod:`.rank`), from the
-committed files alone. ``--check`` writes nothing and exits 1 when the file differs.
+committed files alone. ``--check`` writes nothing and exits 1 when the file differs. ``--tau``
+writes nothing and prints each playbook's score on its first comparable run against the median of
+the rest, with their Kendall tau-b (ADR 0128).
+
+``followthrough`` drives a playbook that has a ``followthrough.json`` overlay (ADR 0129,
+:mod:`.followthrough`) through two sessions on one brain with a restart between, once per branch
+per repeat, writes each run's full record under ``proving-runs/<ts>/followthrough-<id>/``, appends
+its line to ``playbooks/<id>/followthrough.runs.json`` and prints k-of-n per branch under the
+current key. ``--reassess`` judges a saved run again and appends a correction; nothing is re-run.
+Exit 0 when every run passed, 1 when one did not, 2 when the playbook or overlay could not be read.
 """
 
 from __future__ import annotations
@@ -47,6 +65,7 @@ from pathlib import Path
 from athena.core.catalog import READ_CAP
 from athena.proving.playbooks.bench import (
     BenchConfig,
+    WorldFactory,
     rescore,
     run_bench,
     run_second,
@@ -64,8 +83,21 @@ from athena.proving.playbooks.evidence import (
     verify,
     write_story,
 )
+from athena.proving.playbooks.followthrough import (
+    BRANCHES,
+    RESULTS_FILENAME,
+    FollowConfig,
+    FollowWorldFactory,
+    OverlayError,
+    load_overlay,
+    reassess,
+    record_correction,
+    record_run,
+    run_followthrough,
+    tally,
+)
 from athena.proving.playbooks.page import SimulatedPortals
-from athena.proving.playbooks.rank import run_rank
+from athena.proving.playbooks.rank import run_rank, run_tau
 from athena.proving.playbooks.spec import (
     PLAYBOOKS_DIRNAME,
     Playbook,
@@ -111,6 +143,9 @@ def build_parser() -> argparse.ArgumentParser:
     b.add_argument("--out", default=RUNS_DIRNAME)
     b.add_argument("--no-write", dest="write", action="store_false", help="leave bench.json alone")
     b.add_argument("--note", default="", help="what changed since the last run, in a sentence")
+    b.add_argument(
+        "--runs", type=int, default=1, help="fresh worlds to bench, one after the other (ADR 0128)"
+    )
     r = verbs.add_parser("rescore", help="score a saved run again; nothing is re-run")
     r.add_argument("playbook")
     r.add_argument("report", help="the run's report.json")
@@ -129,8 +164,90 @@ def build_parser() -> argparse.ArgumentParser:
     )
     e.add_argument("--desktop", default=None, help="the apps/desktop the capture serves")
     k = verbs.add_parser("rank", help="rank every playbook by ADR 0056")
-    k.add_argument("--check", action="store_true", help="exit 1 if ranking.json would change")
+    how = k.add_mutually_exclusive_group()
+    how.add_argument("--check", action="store_true", help="exit 1 if ranking.json would change")
+    how.add_argument(
+        "--tau", action="store_true", help="run 1's order against the rest's, as Kendall tau-b"
+    )
+    f = verbs.add_parser(
+        "followthrough", help="approve, decline or lose the answers, restart, run again (ADR 0129)"
+    )
+    f.add_argument("playbook")
+    f.add_argument("--branch", choices=(*BRANCHES, "all"), default="all")
+    f.add_argument("--repeats", type=int, default=3, help="runs per branch")
+    f.add_argument("--engine", default="claude_code")
+    f.add_argument("--model", default="sonnet")
+    f.add_argument("--cap", type=float, default=5.0, help="USD cap per session")
+    f.add_argument("--out", default=RUNS_DIRNAME)
+    f.add_argument(
+        "--no-write", dest="write", action="store_false", help="leave followthrough.runs.json alone"
+    )
+    f.add_argument("--reassess", default=None, help="a saved run's record, judged again")
+    f.add_argument("--note", default="", help="why it was reassessed, in a sentence")
     return parser
+
+
+def followthrough(
+    book: Playbook,
+    args: argparse.Namespace,
+    *,
+    world_factory: FollowWorldFactory | None = None,
+) -> int:
+    """Every branch asked for, ``--repeats`` times, each run written and appended (ADR 0129)."""
+    try:
+        overlay = load_overlay(book)
+    except OverlayError as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
+    if args.reassess:
+        source = Path(args.reassess)
+        original = json.loads(source.read_text(encoding="utf-8"))
+        again = reassess(overlay, original)
+        stamp = str(again["reassessed_at"]).replace(":", "").replace("-", "")
+        write_report(source.parent, again, f"{source.stem}.reassessed-{stamp}.json")
+        target = record_correction(book, original, again, note=args.note)
+        word = "passed" if again["assessment"]["passed"] else "failed"
+        print(f"reassessed {source.as_posix()} -> {target.as_posix()}: {word}")
+        return 0 if again["assessment"]["passed"] else 1
+    if args.repeats < 1:
+        print(f"refused: --repeats must be 1 or more, not {args.repeats}", file=sys.stderr)
+        return 2
+    config = FollowConfig(engine=args.engine, model=args.model, cap_usd=args.cap)
+    branches = BRANCHES if args.branch == "all" else (args.branch,)
+    run_dir = new_run_dir(Path(args.out)) / f"followthrough-{book.id}"
+    failed = 0
+    key = ""
+    for branch in branches:
+        for repeat in range(1, args.repeats + 1):
+            report = run_followthrough(
+                book,
+                overlay,
+                branch,
+                config,
+                repeat=repeat,
+                world_factory=world_factory,
+                echo=lambda line: print(line, flush=True),
+            )
+            key = str(report["comparable"])
+            path = write_report(run_dir, report, f"{branch}-{repeat}.json")
+            if args.write:
+                record_run(book, report, path.as_posix())
+            verdict = report["assessment"]
+            failed += not verdict["passed"]
+            print(
+                f"{branch} {repeat}: {'passed' if verdict['passed'] else 'FAILED'}; "
+                + "; ".join(
+                    f"{name} {'ok' if c['ok'] else 'no'} ({c['detail']})"
+                    for name, c in verdict["checks"].items()
+                )
+                + f"; ${report.get('cost_usd', '?')}; record {path.as_posix()}",
+                flush=True,
+            )
+    if args.write and key:
+        results = json.loads((book.root / RESULTS_FILENAME).read_text(encoding="utf-8"))
+        for branch, row in tally(results, key).items():
+            print(f"{branch}: {row['k']} of {row['n']} under {key}", flush=True)
+    return 1 if failed else 0
 
 
 def evidence(args: argparse.Namespace) -> int:
@@ -216,6 +333,60 @@ def stills(books: Sequence[Playbook], repo: Path, desktop: Path | None) -> int:
     return 1 if failed else 0
 
 
+def bench(
+    book: Playbook,
+    config: BenchConfig,
+    *,
+    runs: int = 1,
+    out: Path = Path(RUNS_DIRNAME),
+    write: bool = True,
+    note: str = "",
+    world_factory: WorldFactory | None = None,
+) -> int:
+    """``runs`` fresh worlds of ``book``, each benched and written in turn (ADR 0128).
+
+    Every run is kept: each writes its own report and, with ``write``, becomes the latest run of
+    ``bench.json`` and pushes the one before into the history, so the ranking pools all of them.
+    Exit 1 when any run was short, else 0.
+    """
+    short = 0
+    for index in range(1, runs + 1):
+        if runs > 1:
+            print(f"run {index} of {runs}", flush=True)
+        report = run_bench(
+            book, config, world_factory=world_factory, echo=lambda line: print(line, flush=True)
+        )
+        run_dir = new_run_dir(out) / f"playbook-{book.id}"
+        if write:
+            target = write_bench(book, report, run_dir, note=note)
+            print(f"summary: {target.as_posix()}", flush=True)
+        else:
+            write_report(run_dir, report)
+        s = report["score"]
+        v = report["verdict"]
+        print(
+            f"found {s['found']}/{s['eligible']} (${s['value_found_usd']:,.2f} of "
+            f"${s['value_total_usd']:,.2f}), exact {s['exact']}, false {s['false_claims']}, "
+            f"dup {s['duplicates']}; {report['turns']} turns, {v['minutes']} min, "
+            f"${report.get('cost_usd', '?')}",
+            flush=True,
+        )
+        print(f"verdict: {v['word']}" + (f" - {'; '.join(v['reasons'])}" if v["reasons"] else ""))
+        receipt = report.get("case_receipt")
+        if isinstance(receipt, dict):
+            # What the chore page would show for this run (ADR 0127), beside the bench's own cost.
+            print(
+                f"case receipt: {receipt.get('turns')} turns, {receipt.get('pending')} waiting, "
+                f"${receipt.get('cost_usd')} over {receipt.get('calls')} ledger rows",
+                flush=True,
+            )
+        print(f"report: {(run_dir / 'report.json').as_posix()}", flush=True)
+        short += v["word"] == "short"
+    if runs > 1:
+        print(f"{runs - short} of {runs} runs met the bar", flush=True)
+    return 1 if short else 0
+
+
 def main(argv: Sequence[str] | None = None) -> int:
     args = build_parser().parse_args(argv)
     if args.verb == "check":
@@ -239,18 +410,27 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.verb == "evidence":
         return evidence(args)
     if args.verb == "rank":
+        if args.tau:
+            return run_tau(Path(args.dir))
         return run_rank(Path(args.dir), check=args.check)
     try:
         book = load_playbook(Path(args.dir) / args.playbook)
     except PlaybookError as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
+    if args.verb == "followthrough":
+        return followthrough(book, args)
     if args.verb == "rescore":
         source = Path(args.report)
         again = rescore(book, json.loads(source.read_text(encoding="utf-8")))
-        target = write_bench(book, again, source.parent, note=args.note)
+        # ADR 0128: the run's own report stays as it was; the rescore is written beside it.
+        name = f"report.rescored-{str(again['rescored_at']).replace(':', '').replace('-', '')}.json"
+        target = write_bench(book, again, source.parent, note=args.note, report_name=name)
         print(f"rescored {source.as_posix()} -> {target.as_posix()}: {again['verdict']['word']}")
         return 1 if again["verdict"]["word"] == "short" else 0
+    if args.runs < 1:
+        print(f"refused: --runs must be 1 or more, not {args.runs}", file=sys.stderr)
+        return 2
     config = BenchConfig(
         engine=args.engine,
         model=args.model,
@@ -262,33 +442,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.second_run:
         return second_run(book, config, carry=args.carry, out=Path(args.out))
     print(f"bench {book.id} on {config.engine} {config.model}", flush=True)
-    report = run_bench(book, config, echo=lambda line: print(line, flush=True))
-    run_dir = new_run_dir(Path(args.out)) / f"playbook-{book.id}"
-    if args.write:
-        target = write_bench(book, report, run_dir, note=args.note)
-        print(f"summary: {target.as_posix()}", flush=True)
-    else:
-        write_report(run_dir, report)
-    s = report["score"]
-    v = report["verdict"]
-    print(
-        f"found {s['found']}/{s['eligible']} (${s['value_found_usd']:,.2f} of "
-        f"${s['value_total_usd']:,.2f}), exact {s['exact']}, false {s['false_claims']}, "
-        f"dup {s['duplicates']}; {report['turns']} turns, {v['minutes']} min, "
-        f"${report.get('cost_usd', '?')}",
-        flush=True,
-    )
-    print(f"verdict: {v['word']}" + (f" - {'; '.join(v['reasons'])}" if v["reasons"] else ""))
-    receipt = report.get("case_receipt")
-    if isinstance(receipt, dict):
-        # What the chore page would show for this run (ADR 0127), beside the bench's own cost.
-        print(
-            f"case receipt: {receipt.get('turns')} turns, {receipt.get('pending')} waiting, "
-            f"${receipt.get('cost_usd')} over {receipt.get('calls')} ledger rows",
-            flush=True,
-        )
-    print(f"report: {(run_dir / 'report.json').as_posix()}", flush=True)
-    return 1 if v["word"] == "short" else 0
+    return bench(book, config, runs=args.runs, out=Path(args.out), write=args.write, note=args.note)
 
 
 def second_run(book: Playbook, config: BenchConfig, *, carry: bool, out: Path) -> int:

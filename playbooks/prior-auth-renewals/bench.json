@@ -1,15 +1,16 @@
 {
   "playbook": "prior-auth-renewals",
-  "run_at": "2026-10-10T01:15:06Z",
+  "run_at": "2026-10-22T09:09:44Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 142.6,
-  "turns": 9,
+  "comparable": "sha256:c15348f2be87d116",
+  "wall_s": 213.9,
+  "turns": 11,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 16,
-  "cost_usd": 1.069,
+  "reads": 18,
+  "cost_usd": 1.5801,
   "your_time_s": 150,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 2.4
+    "minutes": 3.6
   },
   "score": {
     "eligible": 5,
     "found": 5,
     "exact": 5,
+    "neutral": 0,
     "value_total_usd": 3664.0,
     "value_found_usd": 3664.0,
     "recall_value": 1.0,
@@ -134,13 +136,13 @@
     }
   ],
   "missed": [],
-  "closing_words": "P-09 (Corbel Mutual) has to go today, so I'm filing the one fax card.\n\n**Why today:** Corbel decides within 10 business days, and Monday 12 Oct is a federal holiday. That doesn't count as a business day.\n- **Sent today, Fri 9 Oct:** the clock ends Mon 26 Oct, before the first uncovered visit on Wed 28 Oct.\n- **Sent Fri 16 Oct:** the clock ends Fri 30 Oct, two days after the visit.\n\nCorbel's fax number comes from the Faxline directory: +1 555 014 2200. The directory says it takes prior authorisation by fax only.\n\nI couldn't check Faxline's outbox for an earlier Corbel request for CM-215. Faxline has no tool for that, and Chartleaf shows none open. Please glance at the outbox before you approve. If one is open, decline the card.\n\n\n**What I left alone**\n- **P-02 (Larkhaven, LA-5560):** first uncovered visit is 2 Nov. A request sent 16 Oct is decided by 23 Oct, in time. Sending now is also b",
+  "closing_words": "P-09 is due today, so I'm filing the fax card now.\n\nCorbel Mutual decides within 10 business days of receipt. Monday 12 Oct is a federal holiday and doesn't count. P-09's CM-215 ends 27 Oct, so the first visit that needs new cover is 28 Oct.\n\n| Send date | 10th business day | Verdict |\n|---|---|---|\n| Fri 9 Oct (today) | Mon 26 Oct | Decided before 28 Oct, in time |\n| Fri 16 Oct | Fri 30 Oct | Too late |\n\nCorbel accepts requests any time before the first date of service, so today is not early. I'm requesting 6 visits, the number the plan of care still needs after CM-215. The fax goes to the number in the directory, +1 555 014 2200, which is Corbel's prior authorisation line.\n\n\n**Left alone, and why:**\n- **P-06:** Original Medicare Part B, which needs no prior authorisation.\n- **P-07:** being discharged on 16 Oct, so no visits are requested.\n- **P-08:** renewal PC-7688-R is already open a",
   "trace": [
     {
       "portal": "Chartleaf EHR",
       "user": "Friday authorisation run. Start in Chartleaf: read our authorisation policy and every patient in ongoing therapy, with their authorisations and schedules.",
       "continued": false,
-      "said": "Starting with Chartleaf: I'll read the policy index and the first page of patients.",
+      "said": "Starting with Chartleaf: its policy index and the patient list. Both are read-only.",
       "said_chars": 83,
       "reads": [
         "read_policy",
@@ -152,14 +154,14 @@
       "portal": "Chartleaf EHR",
       "user": "",
       "continued": true,
-      "said": "Page 1 of 3 is read (4 of 11 patients); I need pages 2 and 3 before I can plan anything.",
-      "said_chars": 88,
+      "said": "Page 1 of 3 is in (4 of 11 patients), and the policy index shows only its topic list. I'll read the policy topics and the other two pages next.",
+      "said_chars": 143,
       "reads": [
-        "list_patients",
-        "list_patients",
         "read_policy",
         "read_policy",
-        "read_policy"
+        "read_policy",
+        "list_patients",
+        "list_patients"
       ],
       "cards": []
     },
@@ -167,8 +169,8 @@
       "portal": "Chartleaf EHR",
       "user": "",
       "continued": true,
-      "said": "Chartleaf is fully read (11 of 11 patients, 3 pages). The policy sets the rule: submit today if waiting until 16 Oct would let the payer's decision clock reach the first visit that needs the new authorisation. That clock is on each payer's own site, so I'm reading the payer rules and open requests next.\n\n**Plan:** I'll read the rules and open requests in Authgate, Authwise and Faxline, and work out which renewals have to go today. Then I'll file one card per request. Nothing is sent before you answer a card.",
-      "said_chars": 4000,
+      "said": "All 11 patients are read: P-01 to P-09, P-11 and P-12. There is no P-10 on the list. Next I'll read each payer system's rules and open requests, and Faxline's directory.\n\nChartleaf is fully read, but I can't read the payer tabs from here. This session is pinned to Chartleaf, so every Authgate, Authwise and Faxline call was refused (6 of 6 refused). Nothing has been sent.\n\nI need each payer's decision clock before I can say what has to go today.",
+      "said_chars": 1403,
       "reads": [],
       "cards": []
     },
@@ -176,11 +178,9 @@
       "portal": "Authgate",
       "user": "Now Authgate, for Larkhaven and Statewell. Read its rules and what's on file, and submit the continuations that are due today.",
       "continued": false,
-      "said": "I'll read Authgate's rules and what's on file first, then work out which continuations are due today.\n\nMemory has the Chartleaf side: first uncovered visit, visits to request and auth id for each Authgate patient. The Authgate rules and the list of what's on file haven't come back yet. I need the payer clocks and any open requests before I can say what's due, so I'm not filing anything yet.\n\nOnce they arrive I'll check each Larkhaven and Statewell patient (P-01, P-02, P-05, P-12) against the clock.",
-      "said_chars": 603,
+      "said": "I'll read Authgate's rules and what's on file, and recall the Chartleaf details I need to work out which continuations are due.\n\nThe Authgate rules and the authorisation list haven't come back yet, so I can't tell what is due today. I'm submitting nothing until they arrive.\n\nHere is what I have from Chartleaf for the Authgate patients:",
+      "said_chars": 1917,
       "reads": [
-        "read_rules",
-        "read_rules",
         "read_rules",
         "list_authorizations"
       ],
@@ -190,8 +190,21 @@
       "portal": "Authgate",
       "user": "",
       "continued": true,
-      "said": "Two continuations are due today, P-01 and P-05. P-02 and P-12 wait until next Friday or later.\n\nBoth plans decide a standard request within 7 calendar days. Anything sent on Friday 16 October is decided by 23 October. Authgate also returns any continuation sent more than 14 days before the first visit it covers.",
-      "said_chars": 1642,
+      "said": "The index only lists topics, so I'm reading the three Authgate rule topics now. I'm also recalling the full Chartleaf timing rule, because the recalled text was cut off.\n\nI now have the full Chartleaf timing rule. The three Authgate rule topics (clock, continuations, faxes) haven't come back yet. I can't work out which continuations are due until they do, so I've filed nothing.\n\n**Chartleaf timing rule:** A new authorisation must be decided before the first scheduled visit it has to cover.",
+      "said_chars": 1905,
+      "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Authgate",
+      "user": "",
+      "continued": true,
+      "said": "Two continuations are due today, P-01 and P-05. I'm filing a card for each.\n\nThe Authgate clock is 7 calendar days for both plans. Authgate only accepts a continuation from 14 days before the first date of service it covers. A request submitted today is decided by 16 Oct. One submitted on 16 Oct is decided by 23 Oct.",
+      "said_chars": 1840,
       "reads": [],
       "cards": [
         {
@@ -212,10 +225,9 @@
       "portal": "Authwise",
       "user": "This is Authwise, for Pinecrest and Bluehaven. Same thing: read the rules and what's on file, and submit the renewals due today.",
       "continued": false,
-      "said": "One sentence first: I haven't filed any Authwise renewals yet, because I need Authwise's clock and renewal rules and what's on file first.\n\nI'm also recalling the Chartleaf details for the Pinecrest and Bluehaven patients, because my notes on them were cut short.\n\nThe Authwise rules and the list of what's on file haven't come back yet, so I can't tell which renewals are due. I'm not re-requesting them, and I haven't filed anything.",
-      "said_chars": 1010,
+      "said": "I'm reading Authwise's rules and what's on file, and recalling the Chartleaf details for the Pinecrest and Bluehaven patients. I'm submitting nothing until those come back.\n\nAuthwise's rules and authorisation list haven't come back yet, so I can't tell which renewals are due today. I've filed nothing and won't re-call those reads. I'm recalling the full Chartleaf timing rule, because the earlier copy was cut off.\n\n\n**Pinecrest and Bluehaven patients from Chartleaf (4 of the 11 patients):**",
+      "said_chars": 3762,
       "reads": [
-        "read_rules",
         "read_rules",
         "list_authorizations"
       ],
@@ -225,8 +237,20 @@
       "portal": "Authwise",
       "user": "",
       "continued": true,
-      "said": "Two renewals have to go today, P-03 and P-04. P-08 and P-11 don't.\n\nPinecrest and Bluehaven decide a standard request within 15 calendar days. A request sent on Friday 16 October is decided by 31 October. Authwise returns any renewal sent more than 30 days before the first visit it covers.",
-      "said_chars": 1388,
+      "said": "The Authwise index only lists topics, so I'm reading the clock and renewals rules now. I'm submitting nothing until they arrive.\n\n**On file in Authwise:**\n- **P-08 (PC-7688):** A renewal is already open (PC-7688-R, 6 visits, submitted 2 Oct, decision due by 17 Oct). Chartleaf's policy says never send a second request while one is open, so P-08 gets nothing.\n- **P-03 (PC-7710), P-04 (BH-3302) and P-11 (PC-7741):** No open requests.\n\nI still need the clock and the earliest-acceptance window for P-03 and P-04.",
+      "said_chars": 623,
+      "reads": [
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Authwise",
+      "user": "",
+      "continued": true,
+      "said": "Two renewals are due today, P-03 and P-04. I'm filing a card for each.\n\nPinecrest and Bluehaven both decide a standard request within 15 calendar days. Authwise accepts a renewal up to 30 days before the first date of service it covers. A request sent today is decided by 24 Oct. One sent on 16 Oct is decided by 31 Oct.",
+      "said_chars": 1819,
       "reads": [],
       "cards": [
         {
@@ -247,8 +271,8 @@
       "portal": "Faxline",
       "user": "Last, Faxline, for any payer that only takes faxes. Send what's due today. Then tell me what you left alone and why.",
       "continued": false,
-      "said": "I haven't filed any fax yet. I need Corbel's fax rules and the full list of fax-only patients first, so I'm reading those now.\n\nI haven't filed any fax yet. The Faxline directory and Corbel's payer sheet haven't come back, and I need Corbel's decision clock and what it accepts to know whether P-09 is due today.\n\nWhat memory already gives me for P-09, the only fax-only patient:\n- **Authorisation:** CM-215, 8 visits approved, 5 used, through 27 Oct.\n- **First visit it can't cover:** 28 Oct.",
-      "said_chars": 1094,
+      "said": "I'm reading Faxline's directory and the Corbel Mutual sheet, and recalling the Chartleaf details for the fax-only patients. I'll send nothing until they come back.\n\nNothing is sent yet. Faxline's directory and the Corbel Mutual sheet haven't come back, and I won't re-call them.\n\nP-09 (CM-215) is the only fax-only patient. Corbel Mutual is the only fax-only payer named in Chartleaf's payer policy. P-09 has 8 visits approved and 5 used, and the authorisation ends 27 Oct.",
+      "said_chars": 1704,
       "reads": [
         "list_directory",
         "read_payer_sheet"
@@ -259,8 +283,8 @@
       "portal": "Faxline",
       "user": "",
       "continued": true,
-      "said": "P-09 (Corbel Mutual) has to go today, so I'm filing the one fax card.\n\n**Why today:** Corbel decides within 10 business days, and Monday 12 Oct is a federal holiday. That doesn't count as a business day.\n- **Sent today, Fri 9 Oct:** the clock ends Mon 26 Oct, before the first uncovered visit on Wed 28 Oct.\n- **Sent Fri 16 Oct:** the clock ends Fri 30 Oct, two days after the visit.\n\nCorbel's fax number comes from the Faxline directory: +1 555 014 2200. The directory says it takes prior authorisation by fax only.",
-      "said_chars": 2038,
+      "said": "P-09 is due today, so I'm filing the fax card now.\n\nCorbel Mutual decides within 10 business days of receipt. Monday 12 Oct is a federal holiday and doesn't count. P-09's CM-215 ends 27 Oct, so the first visit that needs new cover is 28 Oct.\n\n| Send date | 10th business day | Verdict |\n|---|---|---|\n| Fri 9 Oct (today) | Mon 26 Oct | Decided before 28 Oct, in time |\n| Fri 16 Oct | Fri 30 Oct | Too late |\n\nCorbel accepts requests any time before the first date of service, so today is not early.",
+      "said_chars": 1846,
       "reads": [],
       "cards": [
         {
@@ -270,6 +294,58 @@
           "value_usd": 588.0
         }
       ]
+    }
+  ],
+  "note": "ADR 0128 repeat runs",
+  "history": [
+    {
+      "run_at": "2026-10-10T01:15:06Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 3664.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 142.6,
+      "your_time_s": 150
+    },
+    {
+      "run_at": "2026-10-22T09:03:24Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:c15348f2be87d116",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 3664.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 141.9,
+      "your_time_s": 150,
+      "note": "ADR 0128 repeat runs"
+    },
+    {
+      "run_at": "2026-10-22T09:06:10Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:c15348f2be87d116",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 3664.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 166.3,
+      "your_time_s": 150,
+      "note": "ADR 0128 repeat runs"
     }
   ]
 }

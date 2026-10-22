@@ -10,6 +10,7 @@ the whole storyboard to its budget.
 from __future__ import annotations
 
 import json
+import re
 import shutil
 import subprocess
 from pathlib import Path
@@ -97,7 +98,8 @@ def test_the_narration_says_the_chore_the_money_the_traps_and_the_time() -> None
     assert text.startswith("The subcontractor's lien desk. This is a chore for a 6-million-dollar")
     assert "416,700 dollars of the 416,700 dollars" in text
     assert "The world held 12 traps, and she walked past 12." in text
-    assert "She took 4 minutes. By hand, the same chore takes 25 hours" in text
+    # The minutes are the latest committed run's (re-benched 2026-10-22); the hand time is fixed.
+    assert re.search(r"She took \d+ minutes?\. By hand, the same chore takes 25 hours", text)
 
 
 def test_a_run_that_approved_its_cards_never_says_they_waited_unsigned() -> None:
@@ -602,6 +604,7 @@ def test_stills_only_dry_prints_the_storyboard_plan_and_runs_no_tool(
     base = str(tmp_path / "playbooks")
     assert main(["--dir", base, "evidence", "lien-desk", "--stills-only", "--dry"]) == 0
     out = capsys.readouterr().out
-    assert "--stills --fixture shipped:lien-desk --turns 1,5,9,13" in out
+    # The turns follow the latest committed run (re-benched 2026-10-22): only their shape holds.
+    assert re.search(r"--stills --fixture shipped:lien-desk --turns 1(,\d+)+ ", out)
     assert "playbooks/lien-desk/story/01..06.webp" in out
     assert "schema 2, story added, the rest kept" in out
