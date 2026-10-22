@@ -124,6 +124,9 @@ class CharactersConfig:
     turns: int = 3
     #: The starting rung of both Nemotron roles, the user and the judge.
     rung: str = "lightning"
+    #: More Nemotron judges, scored on the same transcripts beside the ladder's. They are reported
+    #: next to it and never decide the agreement proof, which stays the ladder's last judge.
+    judge_rungs: tuple[str, ...] = ()
     athena_rung: str = "lightning"
     athena_claude_model: str = "sonnet"
     claude_row: bool = True
@@ -145,6 +148,7 @@ class CharactersConfig:
             "nemotron_repeats": self.nemotron_repeats,
             "turns": self.turns,
             "rung": self.rung,
+            "judge_rungs": list(self.judge_rungs) or None,
             "athena_rung": self.athena_rung,
             "athena_claude_model": self.athena_claude_model,
             "claude_row": self.claude_row,
@@ -711,6 +715,20 @@ def run_characters(
 
     final_users = users[-1]["fidelity"]
     final_judge = judges[-1]
+    for extra in config.judge_rungs:
+        if any(j["judge"] == extra for j in judges):
+            continue
+        echo(f"scoring the same transcripts with a judge on {extra}")
+        judge_rubric(
+            conversations,
+            extra,
+            engines.nemotron(RUNGS[extra]),
+            caller,
+            rubric,
+            dimensions,
+            config.workers,
+        )
+        judges.append({**agreement(conversations, extra, dimensions), "model": RUNGS[extra]})
     rho = final_judge.get("rho")
     proof = {
         "fidelity": {**final_users, "rung": users[-1]["rung"]},

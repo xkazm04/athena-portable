@@ -130,6 +130,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="the starting rung of the Nemotron user and judge",
     )
     c.add_argument("--athena-rung", choices=sorted(RUNGS), default="lightning")
+    c.add_argument(
+        "--judge-rungs",
+        nargs="+",
+        choices=sorted(RUNGS),
+        default=[],
+        help="more Nemotron judges on the same transcripts, reported beside the ladder's",
+    )
     c.add_argument("--athena-claude-model", default="sonnet")
     c.add_argument(
         "--claude", dest="claude_row", action=argparse.BooleanOptionalAction, default=True
@@ -241,6 +248,7 @@ def _characters(args: argparse.Namespace) -> int:
         nemotron_repeats=args.nemotron_repeats,
         turns=args.turns,
         rung=args.rung,
+        judge_rungs=tuple(args.judge_rungs),
         athena_rung=args.athena_rung,
         athena_claude_model=args.athena_claude_model,
         claude_row=args.claude_row,

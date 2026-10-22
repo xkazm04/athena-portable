@@ -44,7 +44,9 @@ from athena.harness.tokenfactory import API_KEY_ENV as NEBIUS_KEY_ENV
 from athena.harness.tokenfactory import (
     DEFAULT_MODEL,
     LIGHTNING_MODEL,
+    SUPER_VL_MODEL,
     THINKING_OFF,
+    ULTRA_MODEL,
     HttpPost,
     TokenFactoryModel,
     urllib_post,
@@ -81,7 +83,14 @@ __all__ = [
 HAIKU_MODEL = "claude-haiku-5-5"
 
 #: The operator's ladder (design note, "Resume 2026-10-07"): Lightning first, Super if too poor.
-RUNGS: dict[str, str] = {"lightning": LIGHTNING_MODEL, "super": DEFAULT_MODEL}
+#: ``super-vl`` and ``ultra`` are not on the ladder: a run names them to measure them beside it
+#: (spark nvidia-revisit, 2026-10-22), and nothing escalates to them.
+RUNGS: dict[str, str] = {
+    "lightning": LIGHTNING_MODEL,
+    "super": DEFAULT_MODEL,
+    "super-vl": SUPER_VL_MODEL,
+    "ultra": ULTRA_MODEL,
+}
 
 
 # --- one answer ----------------------------------------------------------------------------------

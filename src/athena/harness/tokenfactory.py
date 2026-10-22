@@ -50,7 +50,9 @@ __all__ = [
     "LIGHTNING_MODEL",
     "PRICES",
     "REQUEST_TIMEOUT_S",
+    "SUPER_VL_MODEL",
     "THINKING_OFF",
+    "ULTRA_MODEL",
     "HttpPost",
     "HttpReply",
     "TokenFactoryModel",
@@ -77,15 +79,23 @@ DEFAULT_MODEL = "nvidia/nemotron-3-super-120b-a12b"
 #: on before it is escalated to :data:`DEFAULT_MODEL` (ADR 0030, "assume mediocre until measured").
 LIGHTNING_MODEL = "nvidia/Nemotron-3_5-Lightning"
 
+#: Nemotron 3.5 Super with vision, first served on Token Factory after 2026-10-07; read from the
+#: live catalog on 2026-10-22. A text role can run on it as on any other rung.
+SUPER_VL_MODEL = "nvidia/Nemotron-3.5-Super-VL"
+
+#: The largest NVIDIA model Token Factory serves.
+ULTRA_MODEL = "nvidia/Nemotron-3-Ultra-550b-a55b"
+
 #: USD per one million (input, output) tokens, read from ``GET /v1/models?verbose=true`` on
-#: 2026-10-07 (``pricing.prompt`` / ``pricing.completion`` are per token). Still an *estimate* for
-#: the ledger — ``cost_estimated`` says so, because list prices move — and a model missing from
-#: the table has its cost omitted, never written as 0.
+#: 2026-10-07, Super-VL's on 2026-10-22 (``pricing.prompt`` / ``pricing.completion`` are per
+#: token). Still an *estimate* for the ledger — ``cost_estimated`` says so, because list prices
+#: move — and a model missing from the table has its cost omitted, never written as 0.
 PRICES: dict[str, tuple[float, float]] = {
     LIGHTNING_MODEL: (0.06, 0.24),
     "nvidia/NVIDIA-Nemotron-3-Nano-30B-A3B": (0.06, 0.24),
     DEFAULT_MODEL: (0.30, 0.90),
-    "nvidia/Nemotron-3-Ultra-550b-a55b": (1.00, 3.00),
+    SUPER_VL_MODEL: (0.30, 0.90),
+    ULTRA_MODEL: (1.00, 3.00),
 }
 
 #: The one request field Token Factory honours to turn a Nemotron model's reasoning off (ADR 0034,

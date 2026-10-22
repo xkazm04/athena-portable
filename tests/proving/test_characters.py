@@ -20,7 +20,7 @@ import pytest
 
 from athena.core.fence import close_marker, is_fenced
 from athena.harness.ports import ModelRequest
-from athena.harness.tokenfactory import DEFAULT_MODEL, LIGHTNING_MODEL, HttpReply
+from athena.harness.tokenfactory import DEFAULT_MODEL, LIGHTNING_MODEL, SUPER_VL_MODEL, HttpReply
 from athena.proving.budget import Budget
 from athena.proving.characters.judges import (
     DIMENSIONS,
@@ -422,6 +422,29 @@ def test_a_failed_agreement_escalates_the_judge_and_a_low_rho_kills_it() -> None
     assert agree["pass"] is False and agree["killed"] is True
     assert agree["nemotron_judge"] == "not used"
     assert any("Score every dimension" in p for p in users[DEFAULT_MODEL].prompts)
+
+
+def test_extra_judge_rungs_score_beside_the_ladder_and_never_decide_the_proof() -> None:
+    def flipped(system: str, prompt: str) -> str:
+        if "Score every dimension" in prompt:
+            return json.dumps({"scores": _scores(_name(prompt), flip=True)})
+        return user_answer()(system, prompt)
+
+    users = {
+        LIGHTNING_MODEL: FakeRole(user_answer(), model=LIGHTNING_MODEL),
+        SUPER_VL_MODEL: FakeRole(flipped, model=SUPER_VL_MODEL),
+    }
+    engines, made = _engines(users=users)
+    config = _config(characters=("mira", "jonas", "ana"), judge_rungs=("super-vl", "lightning"))
+    report = run_characters(config, engines)
+    judges = report["judges"]["nemotron"]
+    # the ladder's own rung is not scored twice; the extra rung follows it
+    assert [j["judge"] for j in judges] == ["lightning", "super-vl"]
+    assert judges[1]["model"] == SUPER_VL_MODEL and judges[1]["rho"] < 0
+    agree = report["proof"]["agreement"]
+    assert agree["rung"] == "lightning" and agree["pass"] is True
+    assert SUPER_VL_MODEL in made
+    assert report["config"]["judge_rungs"] == ["super-vl", "lightning"]
 
 
 def test_unusable_user_answers_are_retried_once_then_end_the_conversation() -> None:
