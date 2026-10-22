@@ -120,6 +120,12 @@ export interface Bench {
   note: string;
   /** Earlier runs, oldest first. */
   history: readonly RunLine[];
+  /** The latest run's comparability key (ADR 0127); "" for a run benched before keys were kept. */
+  comparable: string;
+  /** The runs this bench.json holds under the latest run's key, the latest counted (ADR 0127):
+   *  how many, and how many of them exceeded. An unkeyed run is a set of one. The ranking also
+   *  checks the key against today's files; the desktop cannot, so this is what the file says. */
+  runs: { n: number; exceeds: number };
   cards: readonly BenchCard[];
   missed: readonly { action: string; key: string; valueUsd: number | null }[];
   closingWords: string;
@@ -151,6 +157,30 @@ export interface RunLine {
   valueFoundUsd: number;
   falseClaims: number;
   note: string;
+  /** Its comparability key (ADR 0127); "" when it carries none. */
+  comparable: string;
+  /** A rescore replaced it: the line keeps the original score (ADR 0127). "" otherwise. */
+  supersededAt: string;
+}
+
+/** The runs a bench pools, by ADR 0127's rule: the latest, and every earlier line under its key that
+ *  no rescore superseded and that is not the latest run itself. Pure. */
+export function comparableRuns(
+  latest: { comparable: string; verdict: VerdictWord; runAt: string; rescoredAt: string },
+  history: readonly RunLine[],
+): { n: number; exceeds: number } {
+  const pooled = latest.comparable
+    ? history.filter(
+        (h) =>
+          h.comparable === latest.comparable &&
+          !h.supersededAt &&
+          !(latest.rescoredAt && h.runAt === latest.runAt),
+      )
+    : [];
+  return {
+    n: 1 + pooled.length,
+    exceeds: (latest.verdict === "exceeds" ? 1 : 0) + pooled.filter((h) => h.verdict === "exceeds").length,
+  };
 }
 
 /** A product fix one of this playbook's runs uncovered. */
@@ -257,6 +287,28 @@ function parseBench(raw: unknown): Bench | null {
   const score = isRaw(raw.score) ? raw.score : {};
   const verdict = isRaw(raw.verdict) ? raw.verdict : {};
   const word = str(verdict.word);
+  const history: RunLine[] = list(raw.history)
+    .filter(isRaw)
+    .map((h) => ({
+      runAt: str(h.run_at),
+      model: str(h.model),
+      verdict: (VERDICTS as readonly string[]).includes(str(h.verdict))
+        ? (str(h.verdict) as VerdictWord)
+        : "short",
+      found: num(h.found),
+      eligible: num(h.eligible),
+      valueFoundUsd: num(h.value_found_usd),
+      falseClaims: num(h.false_claims),
+      note: str(h.note),
+      comparable: str(h.comparable),
+      supersededAt: isRaw(h.superseded_by) ? str(h.superseded_by.rescored_at) || "unknown" : "",
+    }));
+  const head = {
+    comparable: str(raw.comparable),
+    verdict: (VERDICTS as readonly string[]).includes(word) ? (word as VerdictWord) : "short",
+    runAt: str(raw.run_at),
+    rescoredAt: str(raw.rescored_at),
+  };
   return {
     runAt: str(raw.run_at),
     engine: str(raw.engine),
@@ -293,20 +345,9 @@ function parseBench(raw: unknown): Bench | null {
       : null,
     rescoredAt: str(raw.rescored_at),
     note: str(raw.note),
-    history: list(raw.history)
-      .filter(isRaw)
-      .map((h) => ({
-        runAt: str(h.run_at),
-        model: str(h.model),
-        verdict: (VERDICTS as readonly string[]).includes(str(h.verdict))
-          ? (str(h.verdict) as VerdictWord)
-          : "short",
-        found: num(h.found),
-        eligible: num(h.eligible),
-        valueFoundUsd: num(h.value_found_usd),
-        falseClaims: num(h.false_claims),
-        note: str(h.note),
-      })),
+    history,
+    comparable: head.comparable,
+    runs: comparableRuns(head, history),
     cards: list(raw.cards)
       .filter(isRaw)
       .map((c) => ({

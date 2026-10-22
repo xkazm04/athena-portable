@@ -105,6 +105,13 @@ describe("the catalogue", () => {
     expect(l).toContain('<span class="pa-value__n">$4,940</span><span class="pa-value__per">a year</span>');
   });
 
+  it("says under a benched row how many comparable runs it exceeds in, with n=1 for a single draw", () => {
+    // ADR 0127. The ledger fixture: two benched rows of one run each, one unbenched.
+    expect(count(l, /class="pa-name__runs pa-muted">exceeds in \d of 1 <span class="pa-chip"[^>]*>n=1<\/span>/g)).toBe(2);
+    expect(l).toContain(">exceeds in 1 of 1 <");
+    expect(count(l, /class="pa-name__runs/g)).toBe(2);
+  });
+
   it("teases a row with its brief's lead line, or its promise when it has no brief", () => {
     expect(l).toContain(fixtures.ledger!.items[1]!.playbook.promise.replace(/'/g, "&#x27;"));
     const b = render(withBrief("Late parcels, **refunded**.\n\n- one\n- two"), { root: "chores" });

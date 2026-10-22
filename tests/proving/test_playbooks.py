@@ -18,6 +18,8 @@ import pytest
 
 from athena.harness.ports import ModelRequest
 from athena.proving.characters.scene import CONTINUE
+from athena.proving.playbooks import __main__ as playbooks_main
+from athena.proving.playbooks import bench as bench_module
 from athena.proving.playbooks import spec
 from athena.proving.playbooks.bench import (
     MAX_CONTINUATIONS,
@@ -693,9 +695,10 @@ def test_the_transcript_keeps_the_calls_the_core_answered_with_their_footers() -
     assert "output" not in turn["core_calls"][0]
 
 
-def test_bench_json_keeps_earlier_runs_as_history_and_a_rescore_replaces_itself(
+def test_bench_json_keeps_earlier_runs_as_history_and_a_rescore_appends_a_correction(
     tmp_path: Path,
 ) -> None:
+    """ADR 0127: a rescore of the latest run keeps its original score as a history line."""
     book = load_playbook(make_playbook(tmp_path))
     factory = _factory(scripted_model(_careful))
     first = run_bench(book, BenchConfig(engine="nebius"), world_factory=factory)
@@ -707,9 +710,109 @@ def test_bench_json_keeps_earlier_runs_as_history_and_a_rescore_replaces_itself(
     assert [h["run_at"] for h in summary["history"]] == [first["run_at"]]
     assert summary["history"][0]["verdict"] == "exceeds"
     assert summary["note"] == "after the harness fix"
-    write_bench(book, rescore(book, second), tmp_path / "r2")
+    # The truth moves under the run: the first eligible parcel is worth more now.
+    truth = json.loads((book.root / "truth.json").read_text(encoding="utf-8"))
+    [parcel, *_] = truth["targets"][0]["eligible"]
+    truth["targets"][0]["eligible"][parcel]["value_usd"] = 999
+    _write(book.root, "truth.json", truth)
+    again_report = rescore(load_playbook(book.root), second)
+    write_bench(book, again_report, tmp_path / "r2", note="the refund rule was read again")
     again = json.loads((book.root / "bench.json").read_text(encoding="utf-8"))
-    assert len(again["history"]) == 1 and again["note"] == "after the harness fix"
+    assert len(again["history"]) == len(summary["history"]) + 1
+    correction = again["history"][-1]
+    assert correction["run_at"] == second["run_at"]
+    assert correction["value_found_usd"] == second["score"]["value_found_usd"]
+    assert correction["comparable"] == second["comparable"]
+    fix = correction["superseded_by"]
+    assert fix["rescored_at"] == again_report["rescored_at"]
+    assert fix["note"] == "the refund rule was read again"
+    assert fix["comparable"] == again_report["comparable"] != second["comparable"]
+    assert again["score"]["value_found_usd"] != second["score"]["value_found_usd"]
+    assert again["note"] == "after the harness fix" and again["rescored_at"]
+
+
+def test_a_run_carries_a_key_that_moves_with_what_it_is_measured_against(tmp_path: Path) -> None:
+    """ADR 0127: world, truth, command, expectation, scorer, engine, model and approval."""
+    book = load_playbook(make_playbook(tmp_path))
+    content = bench_module.content_digest(book.root)
+    key = bench_module.comparability_key(content, "nebius", "m", "none")
+    assert key.startswith("sha256:") and len(key) == len("sha256:") + 16
+    assert key != bench_module.comparability_key(content, "nebius", "m", "all")
+    assert key != bench_module.comparability_key(content, "nebius", "other", "none")
+    # Re-serialised, the same files are the same digest; a changed value is another.
+    world = json.loads((book.root / "world.json").read_text(encoding="utf-8"))
+    (book.root / "world.json").write_text(
+        json.dumps(world, indent=4) + chr(13) + chr(10), encoding="utf-8"
+    )
+    assert bench_module.content_digest(book.root) == content
+    world["phases"][0]["message"] = "something else"
+    _write(book.root, "world.json", world)
+    assert bench_module.content_digest(book.root) != content
+    report = run_bench(
+        load_playbook(book.root),
+        BenchConfig(engine="nebius"),
+        world_factory=_factory(scripted_model(_careful)),
+    )
+    assert report["comparable"] == bench_module.comparability_key(
+        bench_module.content_digest(book.root), "nebius", "sonnet", "none"
+    )
+    assert summary_of(report)["comparable"] == report["comparable"]
+
+
+def test_bench_runs_k_fresh_worlds_and_the_ranking_pools_them(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    """``bench --runs 3``: three reports, three runs in bench.json under one key, n=3 ranked."""
+    book = load_playbook(make_playbook(tmp_path))
+    code = playbooks_main.bench(
+        book,
+        BenchConfig(engine="nebius"),
+        runs=3,
+        out=tmp_path / "runs",
+        world_factory=_factory(scripted_model(_careful)),
+    )
+    out = capsys.readouterr().out
+    assert code == 0
+    assert "run 3 of 3" in out and "3 of 3 runs met the bar" in out
+    assert len(list((tmp_path / "runs").glob("*/playbook-late-parcels/report.json"))) == 3
+    summary = json.loads((book.root / "bench.json").read_text(encoding="utf-8"))
+    assert len(summary["history"]) == 2
+    assert {h["comparable"] for h in summary["history"]} == {summary["comparable"]}
+    pooled = bench_module.comparable_runs(summary)
+    assert pooled is not None and len(pooled) == 3
+
+
+def test_the_rescore_verb_writes_beside_the_report_never_over_it(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    book = load_playbook(make_playbook(tmp_path))
+    report = run_bench(
+        book, BenchConfig(engine="nebius"), world_factory=_factory(scripted_model(_careful))
+    )
+    original = write_bench(book, report, tmp_path / "run")
+    saved = (tmp_path / "run" / "report.json").read_bytes()
+    code = playbooks_main.main(
+        [
+            "--dir",
+            str(book.root.parent),
+            "rescore",
+            book.id,
+            str(tmp_path / "run" / "report.json"),
+            "--note",
+            "nothing changed",
+        ]
+    )
+    capsys.readouterr()
+    assert code == 0
+    assert (tmp_path / "run" / "report.json").read_bytes() == saved
+    [beside] = list((tmp_path / "run").glob("report.rescored-*.json"))
+    assert json.loads(beside.read_text(encoding="utf-8"))["rescored_at"]
+    after = json.loads(original.read_text(encoding="utf-8"))
+    assert len(after["history"]) == 1
+    assert after["history"][0]["superseded_by"]["note"] == "nothing changed"
+    # Same truth, same scorer: the rescore keeps the key, and the corrected line is not counted.
+    pooled = bench_module.comparable_runs(after)
+    assert pooled is not None and len(pooled) == 1
 
 
 def test_every_turn_carries_the_playbook_as_the_active_project(tmp_path: Path) -> None:

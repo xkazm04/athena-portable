@@ -47,6 +47,10 @@ export interface Verdict {
   tone: Tone;
   /** One sentence a person reads under the badge. */
   sentence: string;
+  /** "exceeds in 2 of 3": the comparable runs the verdict stands on (ADR 0127); "" unbenched. */
+  runs: string;
+  /** "n=1" where one comparable run is all there is, a single draw; "" otherwise. */
+  sample: string;
 }
 
 /** The run filmed and narrated (ADR 0055), as the card and the layer show it. */
@@ -112,7 +116,9 @@ export function verdictOf(bench: Bench | null): Verdict {
       label: "Not benched",
       tone: "neutral",
       sentence: "No run on the bench yet, so nothing here is measured.",
-    }
+      runs: "",
+      sample: "",
+    };
   }
   const found = `${bench.found} of ${bench.eligible} found`;
   const money = bench.valueTotalUsd
@@ -123,17 +129,24 @@ export function verdictOf(bench: Bench | null): Verdict {
       ? "no false claims"
       : `${bench.falseClaims} false claim${bench.falseClaims === 1 ? "" : "s"}`;
   const body = [found, money, falses].filter(Boolean).join(", ");
+  // ADR 0127: the latest run is one draw; say how many comparable runs stand behind it.
+  const { n, exceeds } = bench.runs;
+  const runs = `exceeds in ${exceeds} of ${n}`;
+  const sample = n === 1 ? "n=1" : "";
+  const behind = n === 1 ? " One run so far." : ` It exceeds in ${exceeds} of ${n} comparable runs.`;
   switch (bench.verdict.word) {
     case "exceeds":
-      return { word: "exceeds", label: "Exceeds", tone: "success", sentence: `Beat the bar: ${body}.` };
+      return { word: "exceeds", label: "Exceeds", tone: "success", sentence: `Beat the bar: ${body}.${behind}`, runs, sample };
     case "meets":
-      return { word: "meets", label: "Meets", tone: "info", sentence: `Met the bar: ${body}.` };
+      return { word: "meets", label: "Meets", tone: "info", sentence: `Met the bar: ${body}.${behind}`, runs, sample };
     default:
       return {
         word: "short",
         label: "Falls short",
         tone: "warning",
-        sentence: `${body}. ${bench.verdict.reasons[0] ?? ""}`.trim(),
+        sentence: `${body}. ${bench.verdict.reasons[0] ?? ""}`.trim() + behind,
+        runs,
+        sample,
       };
   }
 }
