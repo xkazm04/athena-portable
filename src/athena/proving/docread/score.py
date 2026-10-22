@@ -45,7 +45,9 @@ KILL_RATIO = 0.70
 _NOT_STATED = re.compile(
     r"^\W*(?:(?:n/?a|none|null|nil|unknown|empty)\W*$"
     r"|not\s+(?:stated|given|mentioned|provided|shown|present|in\b)"
-    r"|no\s+(?:value|information|mention)\b)",
+    r"|no\s+(?:value|information|mention)\b"
+    r"|(?:the\s+)?(?:document|letter|notice|statement|it)\s+does\s+not\s+"
+    r"(?:state|say|mention|show|give|specify|include)\b)",
     re.I,
 )
 

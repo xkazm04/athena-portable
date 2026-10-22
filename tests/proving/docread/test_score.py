@@ -42,6 +42,8 @@ def test_not_stated_phrases_are_no_value() -> None:
         assert given(text) == ""
     assert given("Priya Iyer") == "Priya Iyer"
     assert given("Not in the document") == ""
+    assert given("The document does not state whether the benefit paid") == ""
+    assert given("It does not mention a second car.") == ""
     # a word that only starts like a refusal is a value
     assert given("not interesting, but $40") == "not interesting, but $40"
     assert given("no informational letter") == "no informational letter"
