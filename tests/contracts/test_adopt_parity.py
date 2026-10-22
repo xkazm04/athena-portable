@@ -23,6 +23,7 @@ from athena.contracts.adopt import (
     Answer,
     AnswerVia,
     Finding,
+    FoundReason,
     Lane,
     LaneKind,
     LaneStatus,
@@ -126,6 +127,7 @@ _VOCABULARIES: tuple[tuple[str, object], ...] = (
     ("LaneKind", LaneKind),
     ("LaneStatus", LaneStatus),
     ("ShowcaseStatus", ShowcaseStatus),
+    ("FoundReason", FoundReason),
     ("AnswerVia", AnswerVia),
 )
 

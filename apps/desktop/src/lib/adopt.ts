@@ -12,6 +12,8 @@ export type SlotSource =
 export type LaneKind = "rules" | "accounts" | "memory" | "document";
 export type LaneStatus = "queued" | "running" | "done" | "failed" | "skipped";
 export type ShowcaseStatus = "queued" | "running" | "done" | "failed";
+/** Why a done showcase claims no dollar figure (ADR 0125); "" when none was withheld. */
+export type FoundReason = "" | "shaped";
 export type AnswerVia = "text" | "voice";
 
 export interface Slot {
@@ -111,6 +113,8 @@ export type AdoptEvent =
       total: number | null;
       trace: RawTraceTurn[];
       found_usd: number | null;
+      /** Absent from an older daemon; the parser reads that as "". */
+      found_reason?: FoundReason;
       detail: string;
     }
   | {

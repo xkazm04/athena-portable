@@ -22,6 +22,7 @@ from athena.adopt.showcase import (
     SHAPE_SYSTEM,
     ShapeFailed,
     Showcase,
+    answer_key_holds,
     apply_shape,
     shape_world,
 )
@@ -235,7 +236,8 @@ def test_the_rehearsal_streams_turns_and_ends_done(rig: Rig, tmp_path: Path) -> 
             ("running", 2, recorded),
             ("done", 2, 2),
         ]
-        assert events[-1].found_usd == 25.87
+        # SPEC edits rows and moves today: the answer key no longer holds (ADR 0125).
+        assert events[-1].found_usd is None and events[-1].found_reason == "shaped"
         assert events[-1].trace[0]["portal"] == "Gusto"
         assert seen["config"].approve == "none" and seen["config"].model == "claude-sonnet-5-5"
         assert seen["config"].cap_usd == 5.0  # the bench's own default budget
@@ -247,6 +249,48 @@ def test_the_rehearsal_streams_turns_and_ends_done(rig: Rig, tmp_path: Path) -> 
             isinstance(e, Progress) and "One rehearsal" in e.text for e in session.events_after(0)
         )
         assert len(showcases(session)) == 5
+
+
+def _done(rig: Rig, tmp_path: Path, spec: dict[str, Any]) -> ShowcaseEvent:
+    rig.model.script = {"shape": [spec]}
+    show = Showcase(bench=lambda *a, **k: fake_report(1), spawn=inline)
+    with real_session(rig, tmp_path) as (_, session):
+        show.start(session, 1)
+        last = showcases(session)[-1]
+    assert last.status == "done"
+    return last
+
+
+def test_a_renames_only_rehearsal_claims_its_dollars(rig: Rig, tmp_path: Path) -> None:
+    """ADR 0125: the truth is kept by renames, so a renames-only world is still scored by it."""
+    last = _done(rig, tmp_path, {"today": "", "rows": [], "note": "Nothing to change."})
+    assert last.found_usd == 25.87 and last.found_reason == ""
+
+
+def test_a_today_that_stays_put_is_no_shift(rig: Rig, tmp_path: Path) -> None:
+    today = json.loads((SOURCE / "world.json").read_text(encoding="utf-8"))["today"]
+    last = _done(rig, tmp_path, {"today": today, "rows": []})
+    assert last.found_usd == 25.87 and last.found_reason == ""
+
+
+def test_a_row_edit_withholds_the_dollars(rig: Rig, tmp_path: Path) -> None:
+    edit = {"op": "remove", "table": "offers", "match": {"offer_id": "O-1"}}
+    last = _done(rig, tmp_path, {"today": "", "rows": [edit]})
+    assert last.found_usd is None and last.found_reason == "shaped"
+    assert last.trace  # the run itself is still shown
+
+
+def test_a_today_shift_alone_withholds_the_dollars(rig: Rig, tmp_path: Path) -> None:
+    last = _done(rig, tmp_path, {"today": "2026-11-02", "rows": []})
+    assert last.found_usd is None and last.found_reason == "shaped"
+
+
+def test_the_answer_key_holds_only_for_renames() -> None:
+    world = {"today": "2026-10-09"}
+    assert answer_key_holds({"rows": []}, world)
+    assert answer_key_holds({"today": "2026-10-09", "rows": []}, world)
+    assert not answer_key_holds({"today": "2026-10-10", "rows": []}, world)
+    assert not answer_key_holds({"rows": [{"op": "add"}]}, world)
 
 
 def test_a_shape_the_loader_refuses_is_a_failed_showcase(rig: Rig, tmp_path: Path) -> None:

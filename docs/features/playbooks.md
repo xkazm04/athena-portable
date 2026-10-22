@@ -301,7 +301,10 @@ starts a rehearsal on a world shaped like her case: one `shape` leg proposes the
 twenty row edits to a copy of the world, portal renames come from the approved brief and not the
 model, the copy is validated by the playbook loader, and the bench runs on it in the daemon's
 process (its own temp brain, lock and ledger; Sonnet 5.5, the bench's $5 cap), streaming each
-turn, then replaces the recorded run. The sidecar ships the playbooks' JSON and `tiers.json` so a
+turn, then replaces the recorded run. It claims dollars found only when the shape was renames
+alone; a world with edited rows or a moved date is compared by cards proposed, since its answer
+key was written for other rows ([ADR 0125](../adr/0125-rehearsal-dollars-only-where-the-answer-key-holds.md)).
+The sidecar ships the playbooks' JSON and `tiers.json` so a
 built daemon can do this.
 
 **Which model.** Every leg names its kind, and `src/athena/adopt/tiers.json` says which Claude 5.5

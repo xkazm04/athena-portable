@@ -40,7 +40,7 @@ describe("reading an event", () => {
     "adopt.lane": { lane: { id: "r", kind: "rules", title: "Rules", status: "running", summary: "", findings: [] } },
     "adopt.brief": { rev: 2, md: "x", command: "do it", portals: { Postwren: "Gmail" }, open_slot_ids: ["s"] },
     "adopt.clear": { rev: 2 },
-    "adopt.showcase": { status: "running", turn: 3, total: 9, trace: [], found_usd: null, detail: "" },
+    "adopt.showcase": { status: "running", turn: 3, total: 9, trace: [], found_usd: null, found_reason: "shaped", detail: "" },
     "adopt.usage": { leg: "interview", model: "claude-sonnet-5-5", effort: "low", ms: 1200, first_text_ms: 300 },
     "adopt.verdict": {
       fit: "template",
@@ -62,6 +62,13 @@ describe("reading an event", () => {
       expect(e!.seq).toBe(7);
       expect(e, kind).toMatchObject(samples[kind]!);
     }
+  });
+
+  it("reads a showcase without found_reason, from an older daemon, as none withheld", () => {
+    const e = parseAdoptEvent(JSON.stringify({ kind: "adopt.showcase", seq: 1, status: "done", found_usd: 4 }));
+    expect(e).toMatchObject({ found_usd: 4, found_reason: "" });
+    const odd = parseAdoptEvent(JSON.stringify({ kind: "adopt.showcase", seq: 2, found_reason: "nope" }));
+    expect(odd).toMatchObject({ found_reason: "" });
   });
 
   it("drops what is not an event: bad JSON, an unknown kind, no seq, a lane event without a lane", () => {

@@ -20,6 +20,7 @@ import {
   type AdoptEventKind,
   type Answer,
   type AnswerVia,
+  type FoundReason,
   type Lane,
   type Question,
   type Slot,
@@ -248,6 +249,7 @@ export function parseAdoptEvent(data: string): AdoptEvent | null {
         total: numOrNull(raw.total),
         trace: list(raw.trace).filter(isRaw),
         found_usd: numOrNull(raw.found_usd),
+        found_reason: oneOf<FoundReason>(raw.found_reason, ["", "shaped"], ""),
         detail: str(raw.detail),
       };
     case "adopt.usage":

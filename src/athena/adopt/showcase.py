@@ -9,10 +9,11 @@ session's temp dir. One ``shape`` leg returns a *spec*, never a world: ``today``
 moved it, and at most :data:`MAX_ROW_EDITS` row edits (``add`` / ``remove`` / ``modify``) limited
 to each table's existing columns. The spec is applied mechanically; the portal renames come from
 the approved brief itself (``Brief.portals``), not from the model — what the person approved is
-what runs. ``truth.json`` is kept consistent by the same renames and nothing else: the
-rehearsal is unscored, so the truth is not recomputed. The result is checked by the spec loader
-(:func:`~athena.proving.playbooks.spec.load_playbook`); a world it refuses is ``adopt.showcase
-{status: "failed"}`` and the overlay replay stays.
+what runs. ``truth.json`` is kept consistent by the same renames and nothing else: the truth
+is not recomputed, so the bench's dollar score means something only when the spec edited no row
+and left ``today`` where it was (:func:`answer_key_holds`, ADR 0125). The result is checked by
+the spec loader (:func:`~athena.proving.playbooks.spec.load_playbook`); a world it refuses is
+``adopt.showcase {status: "failed"}`` and the overlay replay stays.
 
 **Rehearse** (:class:`Showcase`). :func:`~athena.proving.playbooks.bench.run_bench` with
 ``approve="none"`` and the bench's own budget cap, on a background thread *in the daemon
@@ -21,7 +22,9 @@ process*: the bench builds its own Athena (:class:`~athena.proving.world.World`,
 own writer lock and its own ledger — it never touches the live daemon's brain or lock. Each
 turn is one ``adopt.showcase {status: "running", turn, total}`` (``total`` is the recorded run's
 turn count, an estimate, raised if the rehearsal runs longer); the end is ``done`` with the
-bench's trace (:func:`~athena.proving.playbooks.bench.trace_of`) and ``found_usd``. Every model
+bench's trace (:func:`~athena.proving.playbooks.bench.trace_of`) and ``found_usd`` — or, when the
+shape changed rows or ``today``, ``found_usd`` ``None`` with ``found_reason`` ``"shaped"``: the
+answer key was written for other rows, so no dollar figure is claimed. Every model
 turn the rehearsal ran is also written to the live ledger under this session's conversation, so
 the spend is on the record the person reads. One showcase per session; closing the session stops
 it at the next turn boundary.
@@ -60,6 +63,7 @@ __all__ = [
     "SHOWN_FILES",
     "ShapeFailed",
     "Showcase",
+    "answer_key_holds",
     "apply_shape",
     "shape_prompt",
     "shape_world",
@@ -210,6 +214,18 @@ def shape_world(
             f"the shaped world did not pass the spec check: {problems}"[:400]
         ) from exc
     return target
+
+
+def answer_key_holds(spec: Mapping[str, Any], world: Mapping[str, Any]) -> bool:
+    """ADR 0125: whether ``truth.json`` still scores the world ``spec`` shaped from ``world``.
+
+    The truth changes only by the portal renames, so it holds exactly when the spec is
+    renames-only: no row edit, and ``today`` empty or the date ``world`` already had.
+    """
+    if spec.get("rows"):
+        return False
+    today = spec.get("today", "")
+    return not today or today == world.get("today", "")
 
 
 def apply_shape(
@@ -557,13 +573,15 @@ class Showcase:
             raise ShapeFailed(errors[0][:300] if errors else "the rehearsal ran no turn")
         score = report.get("score")
         found = score.get("value_found_usd") if isinstance(score, Mapping) else None
+        holds = _key_holds(source, shaped)
         session.emit(
             ShowcaseEvent(
                 status="done",
                 turn=len(trace),
                 total=len(trace),
                 trace=trace,
-                found_usd=float(found) if isinstance(found, int | float) else None,
+                found_usd=float(found) if holds and isinstance(found, int | float) else None,
+                found_reason="" if holds else "shaped",
                 detail=errors[0][:300] if errors else "",
             )
         )
@@ -632,6 +650,16 @@ def _forward(ledger: Any, conversation: str, row: Mapping[str, Any]) -> None:
         )
     except Exception:
         return
+
+
+def _key_holds(source: Path, shaped: Path) -> bool:
+    """:func:`answer_key_holds` for the spec ``shape_world`` wrote; unreadable is not holding."""
+    try:
+        spec = json.loads((shaped / "shape.json").read_text(encoding="utf-8"))
+        world = json.loads((source / "world.json").read_text(encoding="utf-8"))
+    except (OSError, json.JSONDecodeError):
+        return False
+    return isinstance(spec, dict) and isinstance(world, dict) and answer_key_holds(spec, world)
 
 
 def _recorded_turns(source: Path) -> int | None:

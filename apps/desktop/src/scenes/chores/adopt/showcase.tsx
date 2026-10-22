@@ -4,7 +4,9 @@
  * Shown at once: the playbook's recorded bench run with the person's portal names in it, played
  * turn by turn, labelled for what it is. Meanwhile the daemon rehearses a real bench run on a world
  * shaped like their case; while it runs a line says which turn it is on, and when it is done its
- * own trace takes the recorded one's place with what it found. A rehearsal that failed leaves the
+ * own trace takes the recorded one's place with what it found — in dollars only while the answer
+ * key still holds (ADR 0125: a world shaped by renames alone); a world whose rows or date the
+ * shape changed is compared by cards proposed instead. A rehearsal that failed leaves the
  * recorded run and says why. Then "Start for real" hands the brief's command to Athena.
  */
 import { useEffect, useMemo, useState } from "react";
@@ -45,6 +47,13 @@ export function shownRun(
     label: "The benched run, shown with your portals",
   };
 }
+
+/** Cards proposed across a run's turns. */
+export function cardsIn(trace: readonly TraceTurn[]): number {
+  return trace.reduce((n, t) => n + t.cards.length, 0);
+}
+
+const cards = (n: number) => `${n} ${n === 1 ? "card" : "cards"}`;
 
 export default function Showcase({
   recorded,
@@ -90,6 +99,17 @@ export default function Showcase({
         </p>
       ) : status === "failed" ? (
         <p className="ad-note ad-show__line">{`The rehearsal did not finish${showcase?.detail ? `: ${showcase.detail}` : ""}. The recorded run stays.`}</p>
+      ) : shown.tailored && showcase?.found_reason === "shaped" ? (
+        <p className="ad-show__found" data-reason="shaped">
+          <span className="ad-show__n">{cards(cardsIn(shown.trace))}</span>
+          <span className="ad-note">
+            {`proposed in the rehearsal${
+              recorded.length
+                ? `, against ${cards(cardsIn(recorded))} in the recorded run`
+                : ""
+            }. Your case changed rows the answer key was written for, so no dollar figure is claimed.`}
+          </span>
+        </p>
       ) : shown.tailored && showcase?.found_usd != null ? (
         <p className="ad-show__found">
           <span className="ad-show__n">{usd(showcase.found_usd)}</span>
