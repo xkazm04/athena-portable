@@ -1879,7 +1879,11 @@
           "revision": 6,
           "changedAt": "2026-08-31",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/contracts/channel.py:44 The cross-boundary contract shapes are declared as standalone Python dataclasses without code generation to emit matching TypeScript or Rust declarations, leading to hand-maintained mirrors and partial regex parity tests.",
+          "evaluatedAt": "2026-10-22",
+          "evaluatedAgainst": "sha256-b2:c9cce81ffdd6456a",
+          "evaluatedRevision": 6
         },
         {
           "subject": "ui-controls",

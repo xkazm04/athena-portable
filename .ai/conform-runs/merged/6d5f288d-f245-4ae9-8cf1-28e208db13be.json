@@ -1,0 +1,71 @@
+{
+ "schema": "conform-run/1",
+ "worker": "6d5f288d-f245-4ae9-8cf1-28e208db13be",
+ "subject": "ipc-contract",
+ "evaluatedAt": "2026-10-22T22:23:31.458545+00:00",
+ "provider": "agy",
+ "model": "gemini-3.8-flash-high",
+ "pairs": [
+  {
+   "context": "contracts-seam",
+   "subject": "ipc-contract",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "src/athena/contracts/channel.py:44 The cross-boundary contract shapes are declared as standalone Python dataclasses without code generation to emit matching TypeScript or Rust declarations, leading to hand-maintained mirrors and partial regex parity tests.",
+   "techniques": [
+    {
+     "technique": "call-wrapping",
+     "verdict": "deviation",
+     "evidence": "tests/contracts/test_harness.py:44 Timeout reasons distinguish outcome_unknown from timeout, but the seam provides no call wrapper or named timeout classes for operations."
+    },
+    {
+     "technique": "casing-and-naming",
+     "verdict": "deviation",
+     "evidence": "src/athena/contracts/channel.py:341 Event deserialization silently drops keys not matching Python field names, masking mis-cased fields into defaults instead of failing loudly."
+    },
+    {
+     "technique": "command-registration",
+     "verdict": "deviation",
+     "evidence": "src/athena/contracts/registry.py:311 ToolEntry enforces namespacing syntax and origin rules on tools, but the seam does not implement D/R/I/P set-parity reconciliation."
+    },
+    {
+     "technique": "drift-gates",
+     "verdict": "deviation",
+     "evidence": "tests/contracts/test_manifest.py:228 Hand-curated regex checks on specific export strings substitute for an automated regenerate-and-diff gate and inventory comparison."
+    },
+    {
+     "technique": "error-shape-mapping",
+     "verdict": "conformant",
+     "evidence": "src/athena/contracts/harness.py:119 Error reasons are constrained to an explicit closed tuple vocabulary and normalized through normalize_reason."
+    },
+    {
+     "technique": "generated-type-contracts",
+     "verdict": "deviation",
+     "evidence": "tests/contracts/test_channel.py:223 Hand-authored TypeScript interfaces are regex-parsed for parity in tests rather than generating client types mechanically from Python contract classes."
+    }
+   ]
+  }
+ ],
+ "declined": [],
+ "consults": [
+  {
+   "ts": "2026-10-22T22:23:31.458545+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "ipc-contract"
+   ],
+   "techniques": [
+    "call-wrapping",
+    "casing-and-naming",
+    "command-registration",
+    "drift-gates",
+    "error-shape-mapping",
+    "generated-type-contracts"
+   ],
+   "deviations": 1,
+   "context": "contracts-seam",
+   "via": "curator-multi:agy",
+   "model": "gemini-3.8-flash-high"
+  }
+ ]
+}
