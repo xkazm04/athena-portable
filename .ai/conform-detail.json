@@ -5365,6 +5365,43 @@
           "evidence": "apps/desktop/src/depth/model.ts:214 Invalid navigation returns the existing state; this context raises no guest runtime ceiling failures."
         }
       ]
+    },
+    "2c7d08b8-f9aa-4b85-908f-99e34042a011/health-checks": {
+      "context": "hirelane-design-law",
+      "subject": "health-checks",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-22",
+      "evaluatedTs": "2026-10-22T22:04:23.329Z",
+      "worker": "4969e259-ed0b-42fd-a772-e71a267082d7",
+      "techniques": [
+        {
+          "technique": "check-scheduling",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/package.json:11 An explicit command launches fresh checks on demand; these scripts do not couple observation to UI rendering."
+        },
+        {
+          "technique": "health-rollup",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/design/check-contrast.mjs:268 Individual diagnostics identify affected members, but the aggregate boolean merges MODEL/UNREAD outcomes with confirmed UNDER violations and provides no distinct undetermined summary."
+        },
+        {
+          "technique": "probe-caching",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/design/check-contrast.mjs:160 These standalone source scans read fresh files per invocation; there is no cached verdict shared among health surfaces whose TTL or invalidation requires judgment."
+        },
+        {
+          "technique": "remediation-affordances",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/design/check-contrast.mjs:265 This below-floor instruction also follows MODEL/UNREAD failures, which need checker-specific remediation; check definitions do not structurally declare fixability."
+        },
+        {
+          "technique": "three-state-outcomes",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/design/check-contrast.mjs:240 The diagnostic admits that measurement could not run, but immediately sets the same failed boolean used for measured violations instead of producing a first-class unverifiable outcome."
+        }
+      ],
+      "registryProposal": "Clarify which lifecycle requirements apply to standalone static checkers: three-state-outcomes explicitly includes lint and compliance sweeps, while caching and probe lifecycle requirements primarily describe shared dependency probes."
     }
   }
 }

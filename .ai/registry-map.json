@@ -6443,7 +6443,11 @@
           "revision": 11,
           "changedAt": "2026-09-04",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/hirelane/design/check-contrast.mjs:268 The contrast checker collapses unreadable inputs and measured violations into one failure result, preventing consumers from distinguishing unverifiable checks from confirmed failures.",
+          "evaluatedAt": "2026-10-22",
+          "evaluatedAgainst": "sha256-b2:9254e4fb7feef6b1",
+          "evaluatedRevision": 11
         },
         {
           "subject": "scale-investment-timing",

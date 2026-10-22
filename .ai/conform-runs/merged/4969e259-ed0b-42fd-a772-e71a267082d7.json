@@ -1,0 +1,66 @@
+{
+ "schema": "conform-run/1",
+ "worker": "4969e259-ed0b-42fd-a772-e71a267082d7",
+ "subject": "health-checks",
+ "evaluatedAt": "2026-10-22T22:04:23.329846+00:00",
+ "provider": "codex",
+ "model": "gpt-6.1-sol",
+ "pairs": [
+  {
+   "context": "hirelane-design-law",
+   "subject": "health-checks",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "examples/hirelane/design/check-contrast.mjs:268 The contrast checker collapses unreadable inputs and measured violations into one failure result, preventing consumers from distinguishing unverifiable checks from confirmed failures.",
+   "techniques": [
+    {
+     "technique": "check-scheduling",
+     "verdict": "conformant",
+     "evidence": "examples/hirelane/package.json:11 An explicit command launches fresh checks on demand; these scripts do not couple observation to UI rendering."
+    },
+    {
+     "technique": "health-rollup",
+     "verdict": "deviation",
+     "evidence": "examples/hirelane/design/check-contrast.mjs:268 Individual diagnostics identify affected members, but the aggregate boolean merges MODEL/UNREAD outcomes with confirmed UNDER violations and provides no distinct undetermined summary."
+    },
+    {
+     "technique": "probe-caching",
+     "verdict": "not-applicable",
+     "evidence": "examples/hirelane/design/check-contrast.mjs:160 These standalone source scans read fresh files per invocation; there is no cached verdict shared among health surfaces whose TTL or invalidation requires judgment."
+    },
+    {
+     "technique": "remediation-affordances",
+     "verdict": "deviation",
+     "evidence": "examples/hirelane/design/check-contrast.mjs:265 This below-floor instruction also follows MODEL/UNREAD failures, which need checker-specific remediation; check definitions do not structurally declare fixability."
+    },
+    {
+     "technique": "three-state-outcomes",
+     "verdict": "deviation",
+     "evidence": "examples/hirelane/design/check-contrast.mjs:240 The diagnostic admits that measurement could not run, but immediately sets the same failed boolean used for measured violations instead of producing a first-class unverifiable outcome."
+    }
+   ],
+   "registryProposal": "Clarify which lifecycle requirements apply to standalone static checkers: three-state-outcomes explicitly includes lint and compliance sweeps, while caching and probe lifecycle requirements primarily describe shared dependency probes."
+  }
+ ],
+ "declined": [],
+ "consults": [
+  {
+   "ts": "2026-10-22T22:04:23.329846+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "health-checks"
+   ],
+   "techniques": [
+    "check-scheduling",
+    "health-rollup",
+    "probe-caching",
+    "remediation-affordances",
+    "three-state-outcomes"
+   ],
+   "deviations": 1,
+   "context": "hirelane-design-law",
+   "via": "curator-multi:codex",
+   "model": "gpt-6.1-sol"
+  }
+ ]
+}
