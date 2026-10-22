@@ -293,26 +293,22 @@ class TestCommittedTree:
         )
         assert [r["rank"] for r in doc["ranked"]] == list(range(1, len(doc["ranked"]) + 1))
 
-    def test_every_committed_row_stands_on_one_run_in_the_single_run_order(self) -> None:
-        """ADR 0127 on the committed data: n=1 everywhere, and the order ADR 0056 gave.
+    def test_every_committed_row_carries_its_comparable_runs(self) -> None:
+        """ADR 0127 on the committed data: every ranked row says how many runs it stands on.
 
-        The single-run order is computed with every history dropped, which is all the ranking read
-        before runs were pooled; the pooled order is the same order.
+        The top 20 were benched three times each (2026-10-22), so a row stands on one run or on
+        three; a one-run row's recall is that run's, and a pooled row's median sits within its
+        spread. The pooled order is the committed ranking (``rank --check`` holds the file to it).
         """
         base = REPO / "playbooks"
-        entries = rank.load_entries(base)
-        pooled = rank_all(entries, rank.load_contents(base))
-        single = rank_all(
-            [(p, {k: v for k, v in b.items() if k != "history"} if b else None) for p, b in entries]
-        )
-        assert [r["playbook"] for r in pooled["ranked"]] == [
-            r["playbook"] for r in single["ranked"]
-        ]
-        assert pooled["unranked"] == single["unranked"]
+        pooled = rank_all(rank.load_entries(base), rank.load_contents(base))
+        counts = {row["bench"]["runs"]["n"] for row in pooled["ranked"]}
+        assert counts <= {1, 3}
         for row in pooled["ranked"]:
             runs = row["bench"]["runs"]
-            assert runs["n"] == 1
-            assert runs["recall_min"] == runs["recall_median"] == row["money"]["recall_value"]
+            assert runs["recall_min"] <= runs["recall_median"]
+            if runs["n"] == 1:
+                assert runs["recall_min"] == runs["recall_median"] == row["money"]["recall_value"]
 
 
 def line(
@@ -479,8 +475,8 @@ class TestTau:
         assert doc["tau_b"] == -1.0
         assert (doc["fewer_runs"], doc["excluded"]) == (1, 1)
 
-    def test_the_committed_tree_has_no_second_run_yet(
+    def test_the_committed_tree_compares_its_repeated_playbooks(
         self, capsys: pytest.CaptureFixture[str]
     ) -> None:
-        assert main(["--dir", str(REPO / "playbooks"), "rank", "--tau"]) == 1
-        assert "over 0 playbooks" in capsys.readouterr().out
+        assert main(["--dir", str(REPO / "playbooks"), "rank", "--tau"]) == 0
+        assert "tau-b" in capsys.readouterr().out

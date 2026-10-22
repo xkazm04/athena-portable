@@ -48,6 +48,8 @@ def book(tmp_path: Path) -> Playbook:
     library = tmp_path / "playbooks"
     shutil.copytree(REPO / "playbooks" / PILOT, library / PILOT)
     shutil.copy(REPO / "playbooks" / TAXONOMY_FILENAME, library / TAXONOMY_FILENAME)
+    # The committed pilot's results (2026-10-22) are not this test's: each test starts with none.
+    (library / PILOT / ft.RESULTS_FILENAME).unlink(missing_ok=True)
     return load_playbook(library / PILOT)
 
 
