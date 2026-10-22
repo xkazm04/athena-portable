@@ -1,15 +1,16 @@
 {
   "playbook": "wotc-screening",
-  "run_at": "2026-10-09T18:36:50Z",
+  "run_at": "2026-10-22T09:40:29Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 180.9,
+  "comparable": "sha256:77e3ba234eef259f",
+  "wall_s": 164.5,
   "turns": 12,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 36,
-  "cost_usd": 1.8829,
+  "reads": 34,
+  "cost_usd": 1.2031,
   "your_time_s": 150,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 3.0
+    "minutes": 2.7
   },
   "score": {
     "eligible": 5,
     "found": 5,
     "exact": 5,
+    "neutral": 0,
     "value_total_usd": 19200.0,
     "value_found_usd": 19200.0,
     "recall_value": 1.0,
@@ -102,14 +104,6 @@
     },
     {
       "action": "submit_8850",
-      "key": "T-203",
-      "outcome": "correct",
-      "value_usd": 9600.0,
-      "exact": true,
-      "why": "A veteran with a service-connected disability (VA letter, 30%), unemployed since 2025-04-15, about seven and a half months of the year before his 2025-12-01 start: VET-DIS-UNEMP6, 40% of the first $24,000 = $9,600; due by 2025-12-29"
-    },
-    {
-      "action": "submit_8850",
       "key": "T-204",
       "outcome": "correct",
       "value_usd": 2400.0,
@@ -118,30 +112,38 @@
     },
     {
       "action": "submit_8850",
-      "key": "T-205",
-      "outcome": "correct",
-      "value_usd": 2400.0,
-      "exact": true,
-      "why": "Released from prison after a felony conviction on 2025-06-20 and hired within a year: EXFELON, $2,400; began 2025-12-08, due by 2026-01-05"
-    },
-    {
-      "action": "submit_8850",
       "key": "T-206",
       "outcome": "correct",
       "value_usd": 2400.0,
       "exact": true,
       "why": "Received SSI every month of 2025, so for a month ending in the 60 days before hire: SSI, $2,400; began 2025-12-03, due by 2025-12-31"
+    },
+    {
+      "action": "submit_8850",
+      "key": "T-203",
+      "outcome": "correct",
+      "value_usd": 9600.0,
+      "exact": true,
+      "why": "A veteran with a service-connected disability (VA letter, 30%), unemployed since 2025-04-15, about seven and a half months of the year before his 2025-12-01 start: VET-DIS-UNEMP6, 40% of the first $24,000 = $9,600; due by 2025-12-29"
+    },
+    {
+      "action": "submit_8850",
+      "key": "T-205",
+      "outcome": "correct",
+      "value_usd": 2400.0,
+      "exact": true,
+      "why": "Released from prison after a felony conviction on 2025-06-20 and hired within a year: EXFELON, $2,400; began 2025-12-08, due by 2026-01-05"
     }
   ],
   "missed": [],
-  "closing_words": "Most hires can now be decided against the rules. I'm still missing Curtis Hale's details and the start dates for Jamal Reed and Priya Nand, so I'm recalling those before I file anything.\n\nI'm filing five cards, one per qualifying hire. Nothing is submitted until you answer each card.\n\n| Hire | Group | Max credit | Started | Due | Evidence |\n|---|---|---|---|---|---|\n| T-201 Marisol Vega | SNAP | $2,400 | 17 Nov | 15 Dec | Age 24. County letter H-301: SNAP every month since April. 8850 signed on the offer day. |\n| T-203 Curtis Hale | VET-DIS-UNEMP6 | $9,600 | 1 Dec | 29 Dec | VA letter H-302: Army veteran with a 30% service-connected disability. He reports being unemployed since 15 April. He was discharged in 2019, so VET-DIS doesn't apply. |\n| T-204 Bea Lindqvist | LTUR | $2,400 | 2 Dec | 30 Dec | Unemployed since 2 May, about 30 weeks, with unemployment compensation paid through October",
+  "closing_words": "Three hires are clear to submit now: Vega, Lindqvist and Nand. I'm filing their cards. I need Talentry details for Hale, Reed and Carter before I decide on them.\n\n**Screened out**\n- **T-202 Okonjo:** he started 5 Nov, so his 28th day was 3 Dec. That's past, and the credit is lost.\n- **T-207 Pruitt:** Dana's note calls him \"my sister's boy\", which makes him the owner's nephew. The rules exclude that.\n- **T-208 Ferraro:** she worked for us until 30 Sep 2024, so she is a rehire.\n- **T-209 Banks:** he signed Form 8850 on 21 Nov, three days after the 18 Nov offer, so it can't be certified.\n- **T-210 Simmons:** he is 47, and the SNAP group covers ages 18 to 39. He fits no other group.\n- **T-211 Ruiz:** she answered no to every screening question, so she fits no group.\n- **T-213 Ito:** already submitted on 5 Dec (WC-55120).\n- **T-214 Moreno:** she never started work.\n\n**Ready to submit**\n- **T-",
   "trace": [
     {
       "portal": "Talentry ATS",
       "user": "It's holiday hiring and I'm behind on WOTC. Start here in Talentry: go through every hire since November, their screening answers, their age, and when they signed the 8850 against when we offered the job.",
       "continued": false,
-      "said": "I'll start by pulling the hire list, along with the agency rules and the payroll start dates I'll need for the 28-day count.\n\nThe other tabs' tools can't be called from Talentry, so I'll stay here. The hire list is still loading, and I'll read each application once it arrives. Before I leave this tab, I'll check memory for anything already read elsewhere.\n\nNothing is in memory about the WOTC rules or payroll start dates, so I'll read those in their own tabs later.",
-      "said_chars": 1303,
+      "said": "I'll start with the Talentry hires list, then open each application.",
+      "said_chars": 68,
       "reads": [
         "list_hires"
       ],
@@ -151,8 +153,8 @@
       "portal": "Talentry ATS",
       "user": "",
       "continued": true,
-      "said": "Page 1 shows 7 of 14 hires. I'll read those seven applications and fetch page 2.",
-      "said_chars": 80,
+      "said": "Page 1 gives 7 of 14 hires. I'm fetching page 2 and opening all 7 applications from page 1.",
+      "said_chars": 91,
       "reads": [
         "list_hires",
         "read_application",
@@ -169,8 +171,8 @@
       "portal": "Talentry ATS",
       "user": "",
       "continued": true,
-      "said": "Page 1 is read. Next are the seven page 2 applications.",
-      "said_chars": 55,
+      "said": "Page 1 is read. Page 2's seven applications are still unread, so I'm opening them now.\n\nThe seven page 2 applications (T-208 to T-214) are with the page, and I'll read them next turn. I'm not re-calling them.\n\nThe WorkCredit rules read was refused because this session is pinned to Talentry. I'll need the rules (deadline, groups, exclusions, hours) before I judge anyone. When Talentry is done, I'll ask you to switch me to WorkCredit Online to read them.",
+      "said_chars": 456,
       "reads": [
         "read_application",
         "read_application",
@@ -186,8 +188,8 @@
       "portal": "Talentry ATS",
       "user": "",
       "continued": true,
-      "said": "All fourteen Talentry applications are read, and nothing has been submitted. Seven look like clear candidates and seven need a rule check or a payroll fact before I can say. Group codes and the 28-day deadlines have to wait for the rules and the start dates.\n\n| Hire | Age | Screening answer (Talentry) | 8850 signed vs.",
-      "said_chars": 3113,
+      "said": "I've read all 14 Talentry applications. Every 8850 was signed the same day as the offer except one, and two other hires look like exclusions. This is a preliminary screen. I haven't read the WorkCredit rules or the Payroll start dates, so nothing is cleared to submit.",
+      "said_chars": 2805,
       "reads": [],
       "cards": []
     },
@@ -195,8 +197,8 @@
       "portal": "Payroll Harbor",
       "user": "Now Payroll Harbor. Note the day each of them actually began work, and anything about their history with us.",
       "continued": false,
-      "said": "I'll read both pages of new employees in Payroll Harbor.",
-      "said_chars": 56,
+      "said": "I'll read the Payroll Harbor new-employee list, pages 1 and 2, for start dates, hours and any earlier employment with us.",
+      "said_chars": 121,
       "reads": [
         "list_new_employees",
         "list_new_employees"
@@ -207,8 +209,8 @@
       "portal": "Payroll Harbor",
       "user": "",
       "continued": true,
-      "said": "Payroll Harbor is read. One hire, T-214 Kay Moreno, never started, and the facts for the other thirteen are below. Nothing has been submitted.\n\n| Hire | Began work | Hrs/wk | Earlier employment with us | 28 days from start (provisional) |\n|---|---|---|---|---|\n| T-201 Marisol Vega | 17 Nov | 38 | None | 15 Dec |\n| T-202 Ray Okonjo | 5 Nov | 35 | None | 3 Dec (already past) |\n| T-203 Curtis Hale | 1 Dec | 36 | None | 29 Dec |\n| T-204 Bea Lindqvist | 2 Dec | 40 | None | 30 Dec |\n| T-205 Jamal Reed | 8 Dec | 32 |",
-      "said_chars": 2433,
+      "said": "Payroll Harbor is read. T-202's 28 days have already run out, T-201's run out Monday, and T-214 never started work.\n\nMy deadline dates count 28 days from the start date. I haven't read the WorkCredit rules, so treat them as provisional.",
+      "said_chars": 2197,
       "reads": [],
       "cards": []
     },
@@ -216,8 +218,8 @@
       "portal": "Mailnest",
       "user": "My Mailnest hiring folder has what people sent us: benefit letters, the VA, release papers, and a few notes. Read what bears on the credit.",
       "continued": false,
-      "said": "I'll list the whole hiring folder first, then open the messages that bear on the credit.",
-      "said_chars": 88,
+      "said": "I'll list the hiring folder first, then open the messages that bear on the credit.",
+      "said_chars": 82,
       "reads": [
         "search_mail"
       ],
@@ -227,8 +229,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "Nine messages are in the folder. I'm opening all of them now, since each one is either evidence for a hire or a note about one.",
-      "said_chars": 127,
+      "said": "I'll open all nine messages, since each one names a hire.",
+      "said_chars": 57,
       "reads": [
         "read_message",
         "read_message",
@@ -246,8 +248,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "The folder confirms the screening answers for six hires, shows one is already filed, one won't start, and one note isn't a WOTC document. I haven't submitted anything.\n\n| Msg | Hire | What the letter says | Bears on |\n|---|---|---|---|\n| H-301 | T-201 Marisol Vega | The county confirms SNAP every month from April 2025 to date. | Supports SNAP, matching Talentry. |\n| H-302 | T-203 Curtis Hale | Army, honorably discharged 14 June 2019. Service-connected disability, 30% rating.",
-      "said_chars": 3428,
+      "said": "I've read all nine messages. Four hires have documents that support their screening answers, and three notes change who gets submitted. I haven't read the WorkCredit rules yet, so nothing here is cleared to submit.\n\n**Letters that support the screening answers**\n| Hire | Letter | What it states |\n|---|---|---|\n| T-201 Vega | H-301 | Household has had SNAP every month from April 2025 to date. |\n| T-210 Simmons | H-309 | Household has had SNAP every month from June 2025 to date.",
+      "said_chars": 2408,
       "reads": [],
       "cards": []
     },
@@ -255,11 +257,9 @@
       "portal": "WorkCredit Online",
       "user": "This is WorkCredit Online. Submit an 8850 for every hire who qualifies and is still inside the 28 days, with the right group, then tell me who you left out and why.",
       "continued": false,
-      "said": "I'll read the agency rules and the existing submissions first, and recall what I stored from the other tabs. I haven't submitted anything yet.\n\nI haven't submitted anything yet. The answers to the rules read and the submissions list haven't reached me, and I won't pick target groups or deadlines without them.\n\nHere is what I can say from memory:\n- **T-214 Kay Moreno:** leave out. She emailed on 7 December that she won't start (H-307), and Payroll Harbor shows no start date.",
-      "said_chars": 2583,
+      "said": "I'm on WorkCredit Online. Before I judge anyone, I'm reading the agency rules and the existing submissions, and recalling the Payroll and Mailnest findings that were cut off above.\n\nI now have the Payroll start dates and the Mailnest notes. The rules and the submitted-forms list went to the page, and I'll screen everyone once they arrive next turn. I'm not re-calling them, and I haven't filed any submission yet.",
+      "said_chars": 415,
       "reads": [
-        "read_rules",
-        "list_submissions",
         "read_rules",
         "list_submissions"
       ],
@@ -269,8 +269,8 @@
       "portal": "WorkCredit Online",
       "user": "",
       "continued": true,
-      "said": "The rules index came back, but the rules themselves are under four topics. I'm reading each one, and I'm recalling the full hire tables from the other tabs.\n\nFour rules reads are with the page, and their answers will arrive on my next turn. I won't repeat them. Nothing is filed yet, and I don't want to file under rules I haven't read.\n\nWhat I have so far:\n\n| Hire | Screening | Start | Note |\n|---|---|---|---|\n| T-201 Marisol Vega | SNAP, confirmed by the county letter | 17 Nov | Candidate.",
-      "said_chars": 2381,
+      "said": "Only the rules index came back. I still need the deadline, groups, exclusions and hours topics, so I'm reading all four.",
+      "said_chars": 120,
       "reads": [
         "read_rules",
         "read_rules",
@@ -283,13 +283,25 @@
       "portal": "WorkCredit Online",
       "user": "",
       "continued": true,
-      "said": "Most hires can now be decided against the rules. I'm still missing Curtis Hale's details and the start dates for Jamal Reed and Priya Nand, so I'm recalling those before I file anything.\n\nI'm filing five cards, one per qualifying hire. Nothing is submitted until you answer each card.\n\n| Hire | Group | Max credit | Started | Due | Evidence |\n|---|---|---|---|---|---|\n| T-201 Marisol Vega | SNAP | $2,400 | 17 Nov | 15 Dec | Age 24. County letter H-301: SNAP every month since April. 8850 signed on the offer day.",
-      "said_chars": 2369,
+      "said": "Three hires are clear to submit now: Vega, Lindqvist and Nand. I'm filing their cards. I need Talentry details for Hale, Reed and Carter before I decide on them.\n\n**Screened out**\n- **T-202 Okonjo:** he started 5 Nov, so his 28th day was 3 Dec. That's past, and the credit is lost.\n- **T-207 Pruitt:** Dana's note calls him \"my sister's boy\", which makes him the owner's nephew. The rules exclude that.\n- **T-208 Ferraro:** she worked for us until 30 Sep 2024, so she is a rehire.",
+      "said_chars": 2526,
       "reads": [],
       "cards": [
         {
           "action": "submit_8850",
           "key": "T-201",
+          "outcome": "correct",
+          "value_usd": 2400.0
+        },
+        {
+          "action": "submit_8850",
+          "key": "T-204",
+          "outcome": "correct",
+          "value_usd": 2400.0
+        },
+        {
+          "action": "submit_8850",
+          "key": "T-206",
           "outcome": "correct",
           "value_usd": 2400.0
         },
@@ -301,23 +313,63 @@
         },
         {
           "action": "submit_8850",
-          "key": "T-204",
-          "outcome": "correct",
-          "value_usd": 2400.0
-        },
-        {
-          "action": "submit_8850",
           "key": "T-205",
-          "outcome": "correct",
-          "value_usd": 2400.0
-        },
-        {
-          "action": "submit_8850",
-          "key": "T-206",
           "outcome": "correct",
           "value_usd": 2400.0
         }
       ]
+    }
+  ],
+  "note": "ADR 0127 repeat runs",
+  "history": [
+    {
+      "run_at": "2026-10-09T18:36:50Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 19200.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 180.9,
+      "your_time_s": 150
+    },
+    {
+      "run_at": "2026-10-22T09:34:07Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:77e3ba234eef259f",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 19200.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 230.2,
+      "your_time_s": 150,
+      "note": "ADR 0127 repeat runs"
+    },
+    {
+      "run_at": "2026-10-22T09:37:45Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:77e3ba234eef259f",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 19200.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 217.0,
+      "your_time_s": 150,
+      "note": "ADR 0127 repeat runs"
     }
   ]
 }

@@ -27,18 +27,18 @@
       },
       "minutes": {
         "manual": 1500,
-        "person": 8.8,
-        "saved_per_time": 1491.2,
+        "person": 8.39,
+        "saved_per_time": 1491.61,
         "times_per_year": 1,
         "times_per_year_stated": false,
-        "saved_per_year": 1491.2
+        "saved_per_year": 1491.61
       },
       "edge": {
         "difficulty": 5,
         "usefulness": 5
       },
       "bench": {
-        "run_at": "2026-10-07T23:43:59Z",
+        "run_at": "2026-10-22T08:36:28Z",
         "model": "sonnet",
         "verdict": "exceeds",
         "found": 10,
@@ -47,9 +47,9 @@
         "traps_filed": 0,
         "traps_total": 12,
         "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
+          "n": 3,
+          "comparable": "sha256:688a1f197ed624ce",
+          "exceeds": 3,
           "recall_min": 1.0,
           "recall_median": 1.0,
           "false_claims_max": 0,
@@ -59,69 +59,14 @@
     },
     {
       "rank": 2,
-      "playbook": "clinic-denials",
-      "domain": "Clinics",
-      "audience": "work",
-      "category": "health",
-      "job": "contest",
-      "score": 10.7,
-      "points": {
-        "money": 3.7,
-        "time": 1.99,
-        "edge": 5
-      },
-      "money": {
-        "value_usd": 4200,
-        "per": "month",
-        "annual_usd": 50400,
-        "recurs": true,
-        "recall_value": 1.0,
-        "proven_usd_year": 50400,
-        "incumbent_fee_pct": null,
-        "fee_avoided_usd_year": null
-      },
-      "minutes": {
-        "manual": 600,
-        "person": 7.62,
-        "saved_per_time": 592.38,
-        "times_per_year": 1,
-        "times_per_year_stated": false,
-        "saved_per_year": 592.38
-      },
-      "edge": {
-        "difficulty": 5,
-        "usefulness": 5
-      },
-      "bench": {
-        "run_at": "2026-10-08T00:15:18Z",
-        "model": "sonnet",
-        "verdict": "exceeds",
-        "found": 9,
-        "eligible": 10,
-        "false_claims": 0,
-        "traps_filed": 0,
-        "traps_total": 22,
-        "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
-          "recall_min": 1.0,
-          "recall_median": 1.0,
-          "false_claims_max": 0,
-          "traps_filed_max": 0
-        }
-      }
-    },
-    {
-      "rank": 3,
       "playbook": "estate-settlement",
       "domain": "Family affairs",
       "audience": "home",
       "category": "family",
       "job": "comply",
-      "score": 10.56,
+      "score": 10.57,
       "points": {
-        "money": 3.26,
+        "money": 3.28,
         "time": 2.3,
         "edge": 5
       },
@@ -130,45 +75,45 @@
         "per": "estate",
         "annual_usd": 20000,
         "recurs": false,
-        "recall_value": 0.92,
-        "proven_usd_year": 18400,
+        "recall_value": 0.946,
+        "proven_usd_year": 18920,
         "incumbent_fee_pct": null,
         "fee_avoided_usd_year": null
       },
       "minutes": {
         "manual": 1200,
-        "person": 11.47,
-        "saved_per_time": 1188.53,
+        "person": 12.58,
+        "saved_per_time": 1187.42,
         "times_per_year": 1,
         "times_per_year_stated": false,
-        "saved_per_year": 1188.53
+        "saved_per_year": 1187.42
       },
       "edge": {
         "difficulty": 5,
         "usefulness": 5
       },
       "bench": {
-        "run_at": "2026-10-08T01:25:59Z",
+        "run_at": "2026-10-22T08:50:10Z",
         "model": "sonnet",
         "verdict": "exceeds",
-        "found": 9,
+        "found": 10,
         "eligible": 12,
         "false_claims": 0,
         "traps_filed": 0,
         "traps_total": 11,
         "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
-          "recall_min": 0.92,
-          "recall_median": 0.92,
+          "n": 3,
+          "comparable": "sha256:373ce99caf3c6b43",
+          "exceeds": 3,
+          "recall_min": 0.936,
+          "recall_median": 0.946,
           "false_claims_max": 0,
           "traps_filed_max": 0
         }
       }
     },
     {
-      "rank": 4,
+      "rank": 3,
       "playbook": "change-order-notices",
       "domain": "Construction",
       "audience": "work",
@@ -192,30 +137,30 @@
       },
       "minutes": {
         "manual": 240,
-        "person": 5.71,
-        "saved_per_time": 234.29,
+        "person": 5.52,
+        "saved_per_time": 234.48,
         "times_per_year": 12,
         "times_per_year_stated": true,
-        "saved_per_year": 2811.5
+        "saved_per_year": 2813.72
       },
       "edge": {
         "difficulty": 4,
         "usefulness": 4
       },
       "bench": {
-        "run_at": "2026-10-09T22:54:28Z",
+        "run_at": "2026-10-22T08:46:46Z",
         "model": "sonnet",
         "verdict": "exceeds",
-        "found": 6,
+        "found": 5,
         "eligible": 6,
         "false_claims": 0,
         "traps_filed": 0,
         "traps_total": 9,
         "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
-          "recall_min": 1.0,
+          "n": 3,
+          "comparable": "sha256:bb52af248e9e4984",
+          "exceeds": 3,
+          "recall_min": 0.933,
           "recall_median": 1.0,
           "false_claims_max": 0,
           "traps_filed_max": 0
@@ -223,7 +168,7 @@
       }
     },
     {
-      "rank": 5,
+      "rank": 4,
       "playbook": "customs-protests",
       "domain": "Customs & trade",
       "audience": "work",
@@ -247,18 +192,18 @@
       },
       "minutes": {
         "manual": 300,
-        "person": 4.14,
-        "saved_per_time": 295.86,
+        "person": 5.03,
+        "saved_per_time": 294.97,
         "times_per_year": 4,
         "times_per_year_stated": true,
-        "saved_per_year": 1183.45
+        "saved_per_year": 1179.87
       },
       "edge": {
         "difficulty": 5,
         "usefulness": 4
       },
       "bench": {
-        "run_at": "2026-10-10T07:33:31Z",
+        "run_at": "2026-10-22T08:44:54Z",
         "model": "sonnet",
         "verdict": "exceeds",
         "found": 4,
@@ -267,9 +212,9 @@
         "traps_filed": 0,
         "traps_total": 14,
         "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
+          "n": 3,
+          "comparable": "sha256:06bebc79427a4431",
+          "exceeds": 3,
           "recall_min": 1.0,
           "recall_median": 1.0,
           "false_claims_max": 0,
@@ -278,7 +223,7 @@
       }
     },
     {
-      "rank": 6,
+      "rank": 5,
       "playbook": "certified-payroll",
       "domain": "Construction",
       "audience": "work",
@@ -287,7 +232,7 @@
       "score": 10.07,
       "points": {
         "money": 3.6,
-        "time": 2.46,
+        "time": 2.47,
         "edge": 4
       },
       "money": {
@@ -302,18 +247,18 @@
       },
       "minutes": {
         "manual": 300,
-        "person": 8.35,
-        "saved_per_time": 291.65,
+        "person": 8.11,
+        "saved_per_time": 291.89,
         "times_per_year": 6,
         "times_per_year_stated": true,
-        "saved_per_year": 1749.9
+        "saved_per_year": 1751.32
       },
       "edge": {
         "difficulty": 4,
         "usefulness": 4
       },
       "bench": {
-        "run_at": "2026-10-09T22:44:28Z",
+        "run_at": "2026-10-22T08:59:28Z",
         "model": "sonnet",
         "verdict": "exceeds",
         "found": 10,
@@ -322,10 +267,10 @@
         "traps_filed": 0,
         "traps_total": 9,
         "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
-          "recall_min": 1.0,
+          "n": 3,
+          "comparable": "sha256:c2e120e1940b4339",
+          "exceeds": 3,
+          "recall_min": 0.997,
           "recall_median": 1.0,
           "false_claims_max": 0,
           "traps_filed_max": 0
@@ -333,62 +278,7 @@
       }
     },
     {
-      "rank": 7,
-      "playbook": "ltc-claims",
-      "domain": "Family care",
-      "audience": "home",
-      "category": "health",
-      "job": "recover",
-      "score": 10.07,
-      "points": {
-        "money": 3.3,
-        "time": 1.77,
-        "edge": 5
-      },
-      "money": {
-        "value_usd": 20000,
-        "per": "year",
-        "annual_usd": 20000,
-        "recurs": true,
-        "recall_value": 1.0,
-        "proven_usd_year": 20000,
-        "incumbent_fee_pct": null,
-        "fee_avoided_usd_year": null
-      },
-      "minutes": {
-        "manual": 360,
-        "person": 9.8,
-        "saved_per_time": 350.2,
-        "times_per_year": 1,
-        "times_per_year_stated": false,
-        "saved_per_year": 350.2
-      },
-      "edge": {
-        "difficulty": 5,
-        "usefulness": 5
-      },
-      "bench": {
-        "run_at": "2026-10-08T00:04:41Z",
-        "model": "sonnet",
-        "verdict": "exceeds",
-        "found": 10,
-        "eligible": 10,
-        "false_claims": 0,
-        "traps_filed": 0,
-        "traps_total": 11,
-        "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
-          "recall_min": 1.0,
-          "recall_median": 1.0,
-          "false_claims_max": 0,
-          "traps_filed_max": 0
-        }
-      }
-    },
-    {
-      "rank": 8,
+      "rank": 6,
       "playbook": "clinic-underpayments",
       "domain": "Clinics",
       "audience": "work",
@@ -412,18 +302,18 @@
       },
       "minutes": {
         "manual": 180,
-        "person": 6.04,
-        "saved_per_time": 173.96,
+        "person": 5,
+        "saved_per_time": 175,
         "times_per_year": 12,
         "times_per_year_stated": true,
-        "saved_per_year": 2087.54
+        "saved_per_year": 2099.96
       },
       "edge": {
         "difficulty": 4,
         "usefulness": 4
       },
       "bench": {
-        "run_at": "2026-10-10T00:58:27Z",
+        "run_at": "2026-10-22T08:53:35Z",
         "model": "sonnet",
         "verdict": "exceeds",
         "found": 5,
@@ -432,9 +322,9 @@
         "traps_filed": 0,
         "traps_total": 12,
         "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
+          "n": 3,
+          "comparable": "sha256:6f92961155df6ab3",
+          "exceeds": 3,
           "recall_min": 1.0,
           "recall_median": 1.0,
           "false_claims_max": 0,
@@ -443,117 +333,7 @@
       }
     },
     {
-      "rank": 9,
-      "playbook": "cpg-deductions",
-      "domain": "Food & beverage",
-      "audience": "work",
-      "category": "commerce",
-      "job": "contest",
-      "score": 9.95,
-      "points": {
-        "money": 3.78,
-        "time": 2.17,
-        "edge": 4
-      },
-      "money": {
-        "value_usd": 60000,
-        "per": "year",
-        "annual_usd": 60000,
-        "recurs": true,
-        "recall_value": 1.0,
-        "proven_usd_year": 60000,
-        "incumbent_fee_pct": 30,
-        "fee_avoided_usd_year": 18000
-      },
-      "minutes": {
-        "manual": 900,
-        "person": 7.73,
-        "saved_per_time": 892.27,
-        "times_per_year": 1,
-        "times_per_year_stated": false,
-        "saved_per_year": 892.27
-      },
-      "edge": {
-        "difficulty": 4,
-        "usefulness": 4
-      },
-      "bench": {
-        "run_at": "2026-10-07T23:28:15Z",
-        "model": "sonnet",
-        "verdict": "exceeds",
-        "found": 7,
-        "eligible": 7,
-        "false_claims": 0,
-        "traps_filed": 0,
-        "traps_total": 10,
-        "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
-          "recall_min": 1.0,
-          "recall_median": 1.0,
-          "false_claims_max": 0,
-          "traps_filed_max": 0
-        }
-      }
-    },
-    {
-      "rank": 10,
-      "playbook": "duty-drawback",
-      "domain": "Customs & trade",
-      "audience": "work",
-      "category": "freight",
-      "job": "recover",
-      "score": 9.94,
-      "points": {
-        "money": 3.48,
-        "time": 1.99,
-        "edge": 4.47
-      },
-      "money": {
-        "value_usd": 30000,
-        "per": "year",
-        "annual_usd": 30000,
-        "recurs": true,
-        "recall_value": 1.0,
-        "proven_usd_year": 30000,
-        "incumbent_fee_pct": 25,
-        "fee_avoided_usd_year": 7500
-      },
-      "minutes": {
-        "manual": 300,
-        "person": 5.86,
-        "saved_per_time": 294.14,
-        "times_per_year": 2,
-        "times_per_year_stated": true,
-        "saved_per_year": 588.29
-      },
-      "edge": {
-        "difficulty": 5,
-        "usefulness": 4
-      },
-      "bench": {
-        "run_at": "2026-10-09T18:44:23Z",
-        "model": "sonnet",
-        "verdict": "exceeds",
-        "found": 4,
-        "eligible": 4,
-        "false_claims": 0,
-        "traps_filed": 0,
-        "traps_total": 8,
-        "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
-          "recall_min": 1.0,
-          "recall_median": 1.0,
-          "false_claims_max": 0,
-          "traps_filed_max": 0
-        }
-      }
-    },
-    {
-      "rank": 11,
+      "rank": 7,
       "playbook": "pslf-employment-certification",
       "domain": "Student loans",
       "audience": "home",
@@ -577,18 +357,18 @@
       },
       "minutes": {
         "manual": 360,
-        "person": 5.84,
-        "saved_per_time": 354.16,
+        "person": 5.57,
+        "saved_per_time": 354.43,
         "times_per_year": 1,
         "times_per_year_stated": true,
-        "saved_per_year": 354.16
+        "saved_per_year": 354.43
       },
       "edge": {
         "difficulty": 4,
         "usefulness": 5
       },
       "bench": {
-        "run_at": "2026-10-09T17:30:28Z",
+        "run_at": "2026-10-22T09:01:01Z",
         "model": "sonnet",
         "verdict": "exceeds",
         "found": 5,
@@ -597,9 +377,9 @@
         "traps_filed": 0,
         "traps_total": 8,
         "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
+          "n": 3,
+          "comparable": "sha256:a42f09c477fc03a6",
+          "exceeds": 3,
           "recall_min": 1.0,
           "recall_median": 1.0,
           "false_claims_max": 0,
@@ -608,7 +388,7 @@
       }
     },
     {
-      "rank": 12,
+      "rank": 8,
       "playbook": "sub-insurance-certs",
       "domain": "Construction",
       "audience": "work",
@@ -632,18 +412,18 @@
       },
       "minutes": {
         "manual": 150,
-        "person": 7.66,
-        "saved_per_time": 142.34,
+        "person": 7.65,
+        "saved_per_time": 142.35,
         "times_per_year": 12,
         "times_per_year_stated": true,
-        "saved_per_year": 1708.08
+        "saved_per_year": 1708.24
       },
       "edge": {
         "difficulty": 4,
         "usefulness": 4
       },
       "bench": {
-        "run_at": "2026-10-10T03:20:28Z",
+        "run_at": "2026-10-22T09:21:40Z",
         "model": "sonnet",
         "verdict": "exceeds",
         "found": 9,
@@ -652,9 +432,9 @@
         "traps_filed": 0,
         "traps_total": 11,
         "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
+          "n": 3,
+          "comparable": "sha256:99b3412c246e2b81",
+          "exceeds": 3,
           "recall_min": 1.0,
           "recall_median": 1.0,
           "false_claims_max": 0,
@@ -663,7 +443,62 @@
       }
     },
     {
-      "rank": 13,
+      "rank": 9,
+      "playbook": "duty-drawback",
+      "domain": "Customs & trade",
+      "audience": "work",
+      "category": "freight",
+      "job": "recover",
+      "score": 9.85,
+      "points": {
+        "money": 3.38,
+        "time": 1.99,
+        "edge": 4.47
+      },
+      "money": {
+        "value_usd": 30000,
+        "per": "year",
+        "annual_usd": 30000,
+        "recurs": true,
+        "recall_value": 0.803,
+        "proven_usd_year": 24090,
+        "incumbent_fee_pct": 25,
+        "fee_avoided_usd_year": 6022.5
+      },
+      "minutes": {
+        "manual": 300,
+        "person": 4.78,
+        "saved_per_time": 295.22,
+        "times_per_year": 2,
+        "times_per_year_stated": true,
+        "saved_per_year": 590.44
+      },
+      "edge": {
+        "difficulty": 5,
+        "usefulness": 4
+      },
+      "bench": {
+        "run_at": "2026-10-22T09:11:16Z",
+        "model": "sonnet",
+        "verdict": "exceeds",
+        "found": 3,
+        "eligible": 4,
+        "false_claims": 0,
+        "traps_filed": 0,
+        "traps_total": 8,
+        "runs": {
+          "n": 3,
+          "comparable": "sha256:18fe974d6817bf1c",
+          "exceeds": 2,
+          "recall_min": 0.683,
+          "recall_median": 0.803,
+          "false_claims_max": 0,
+          "traps_filed_max": 0
+        }
+      }
+    },
+    {
+      "rank": 10,
       "playbook": "ocean-demurrage-disputes",
       "domain": "Logistics",
       "audience": "work",
@@ -687,18 +522,18 @@
       },
       "minutes": {
         "manual": 180,
-        "person": 7.91,
-        "saved_per_time": 172.09,
+        "person": 6.18,
+        "saved_per_time": 173.82,
         "times_per_year": 12,
         "times_per_year_stated": true,
-        "saved_per_year": 2065.04
+        "saved_per_year": 2085.8
       },
       "edge": {
         "difficulty": 4,
         "usefulness": 4
       },
       "bench": {
-        "run_at": "2026-10-10T07:18:48Z",
+        "run_at": "2026-10-22T09:22:32Z",
         "model": "sonnet",
         "verdict": "exceeds",
         "found": 6,
@@ -707,9 +542,9 @@
         "traps_filed": 0,
         "traps_total": 10,
         "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
+          "n": 3,
+          "comparable": "sha256:b2732ea21df1ce17",
+          "exceeds": 3,
           "recall_min": 1.0,
           "recall_median": 1.0,
           "false_claims_max": 0,
@@ -718,7 +553,7 @@
       }
     },
     {
-      "rank": 14,
+      "rank": 11,
       "playbook": "prior-auth-renewals",
       "domain": "Clinics",
       "audience": "work",
@@ -742,18 +577,18 @@
       },
       "minutes": {
         "manual": 150,
-        "person": 4.88,
-        "saved_per_time": 145.12,
+        "person": 6.06,
+        "saved_per_time": 143.94,
         "times_per_year": 52,
         "times_per_year_stated": true,
-        "saved_per_year": 7546.41
+        "saved_per_year": 7484.62
       },
       "edge": {
         "difficulty": 4,
         "usefulness": 3
       },
       "bench": {
-        "run_at": "2026-10-10T01:15:06Z",
+        "run_at": "2026-10-22T09:09:44Z",
         "model": "sonnet",
         "verdict": "exceeds",
         "found": 5,
@@ -762,9 +597,9 @@
         "traps_filed": 0,
         "traps_total": 9,
         "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
+          "n": 3,
+          "comparable": "sha256:c15348f2be87d116",
+          "exceeds": 3,
           "recall_min": 1.0,
           "recall_median": 1.0,
           "false_claims_max": 0,
@@ -773,7 +608,7 @@
       }
     },
     {
-      "rank": 15,
+      "rank": 12,
       "playbook": "abn-liability-sweep",
       "domain": "Clinics",
       "audience": "work",
@@ -797,18 +632,18 @@
       },
       "minutes": {
         "manual": 150,
-        "person": 6.52,
-        "saved_per_time": 143.48,
+        "person": 6.74,
+        "saved_per_time": 143.26,
         "times_per_year": 12,
         "times_per_year_stated": true,
-        "saved_per_year": 1721.76
+        "saved_per_year": 1719.18
       },
       "edge": {
         "difficulty": 4,
         "usefulness": 4
       },
       "bench": {
-        "run_at": "2026-10-10T02:23:12Z",
+        "run_at": "2026-10-22T09:30:17Z",
         "model": "sonnet",
         "verdict": "exceeds",
         "found": 7,
@@ -817,9 +652,9 @@
         "traps_filed": 0,
         "traps_total": 11,
         "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
+          "n": 3,
+          "comparable": "sha256:7b822f38936ec5ca",
+          "exceeds": 3,
           "recall_min": 1.0,
           "recall_median": 1.0,
           "false_claims_max": 0,
@@ -828,7 +663,7 @@
       }
     },
     {
-      "rank": 16,
+      "rank": 13,
       "playbook": "erate-applications",
       "domain": "Schools & libraries",
       "audience": "work",
@@ -852,18 +687,18 @@
       },
       "minutes": {
         "manual": 240,
-        "person": 3.73,
-        "saved_per_time": 236.28,
+        "person": 3.86,
+        "saved_per_time": 236.14,
         "times_per_year": 1,
         "times_per_year_stated": true,
-        "saved_per_year": 236.28
+        "saved_per_year": 236.14
       },
       "edge": {
         "difficulty": 5,
         "usefulness": 4
       },
       "bench": {
-        "run_at": "2026-10-11T06:53:20Z",
+        "run_at": "2026-10-22T09:29:20Z",
         "model": "sonnet",
         "verdict": "exceeds",
         "found": 4,
@@ -872,9 +707,9 @@
         "traps_filed": 0,
         "traps_total": 12,
         "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
+          "n": 3,
+          "comparable": "sha256:3742e66dfa923ab5",
+          "exceeds": 3,
           "recall_min": 1.0,
           "recall_median": 1.0,
           "false_claims_max": 0,
@@ -883,16 +718,16 @@
       }
     },
     {
-      "rank": 17,
+      "rank": 14,
       "playbook": "freight-claims",
       "domain": "Logistics",
       "audience": "work",
       "category": "freight",
       "job": "recover",
-      "score": 9.63,
+      "score": 9.62,
       "points": {
         "money": 3.26,
-        "time": 2.37,
+        "time": 2.36,
         "edge": 4
       },
       "money": {
@@ -907,18 +742,18 @@
       },
       "minutes": {
         "manual": 240,
-        "person": 5.39,
-        "saved_per_time": 234.62,
+        "person": 9.47,
+        "saved_per_time": 230.53,
         "times_per_year": 6,
         "times_per_year_stated": true,
-        "saved_per_year": 1407.69
+        "saved_per_year": 1383.19
       },
       "edge": {
         "difficulty": 4,
         "usefulness": 4
       },
       "bench": {
-        "run_at": "2026-10-10T07:09:31Z",
+        "run_at": "2026-10-22T09:24:05Z",
         "model": "sonnet",
         "verdict": "exceeds",
         "found": 5,
@@ -927,9 +762,9 @@
         "traps_filed": 0,
         "traps_total": 17,
         "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
+          "n": 3,
+          "comparable": "sha256:f5e364daa8483ead",
+          "exceeds": 3,
           "recall_min": 1.0,
           "recall_median": 1.0,
           "false_claims_max": 0,
@@ -938,7 +773,7 @@
       }
     },
     {
-      "rank": 18,
+      "rank": 15,
       "playbook": "wotc-screening",
       "domain": "Hiring",
       "audience": "work",
@@ -962,18 +797,18 @@
       },
       "minutes": {
         "manual": 180,
-        "person": 5.51,
-        "saved_per_time": 174.49,
+        "person": 5.24,
+        "saved_per_time": 174.76,
         "times_per_year": 12,
         "times_per_year_stated": true,
-        "saved_per_year": 2093.82
+        "saved_per_year": 2097.1
       },
       "edge": {
         "difficulty": 4,
         "usefulness": 4
       },
       "bench": {
-        "run_at": "2026-10-09T18:36:50Z",
+        "run_at": "2026-10-22T09:40:29Z",
         "model": "sonnet",
         "verdict": "exceeds",
         "found": 5,
@@ -982,9 +817,9 @@
         "traps_filed": 0,
         "traps_total": 9,
         "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
+          "n": 3,
+          "comparable": "sha256:77e3ba234eef259f",
+          "exceeds": 3,
           "recall_min": 1.0,
           "recall_median": 1.0,
           "false_claims_max": 0,
@@ -993,7 +828,7 @@
       }
     },
     {
-      "rank": 19,
+      "rank": 16,
       "playbook": "isf-filings",
       "domain": "Customs & trade",
       "audience": "work",
@@ -1017,18 +852,18 @@
       },
       "minutes": {
         "manual": 120,
-        "person": 5.87,
-        "saved_per_time": 114.13,
+        "person": 5.17,
+        "saved_per_time": 114.83,
         "times_per_year": 52,
         "times_per_year_stated": true,
-        "saved_per_year": 5934.85
+        "saved_per_year": 5971.33
       },
       "edge": {
         "difficulty": 4,
         "usefulness": 3
       },
       "bench": {
-        "run_at": "2026-10-10T10:48:28Z",
+        "run_at": "2026-10-22T09:37:19Z",
         "model": "sonnet",
         "verdict": "exceeds",
         "found": 5,
@@ -1037,9 +872,9 @@
         "traps_filed": 0,
         "traps_total": 9,
         "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
+          "n": 3,
+          "comparable": "sha256:979dffdb71256458",
+          "exceeds": 3,
           "recall_min": 1.0,
           "recall_median": 1.0,
           "false_claims_max": 0,
@@ -1048,7 +883,7 @@
       }
     },
     {
-      "rank": 20,
+      "rank": 17,
       "playbook": "overpayment-refunds",
       "domain": "Clinics",
       "audience": "work",
@@ -1072,30 +907,30 @@
       },
       "minutes": {
         "manual": 150,
-        "person": 7.43,
-        "saved_per_time": 142.57,
+        "person": 7.32,
+        "saved_per_time": 142.68,
         "times_per_year": 12,
         "times_per_year_stated": true,
-        "saved_per_year": 1710.82
+        "saved_per_year": 1712.12
       },
       "edge": {
         "difficulty": 4,
         "usefulness": 4
       },
       "bench": {
-        "run_at": "2026-10-10T01:04:35Z",
+        "run_at": "2026-10-22T09:33:29Z",
         "model": "sonnet",
         "verdict": "exceeds",
-        "found": 9,
+        "found": 8,
         "eligible": 9,
         "false_claims": 0,
         "traps_filed": 0,
         "traps_total": 13,
         "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
-          "recall_min": 1.0,
+          "n": 3,
+          "comparable": "sha256:9e26d12c3eacc1ef",
+          "exceeds": 3,
+          "recall_min": 0.968,
           "recall_median": 1.0,
           "false_claims_max": 0,
           "traps_filed_max": 0
@@ -1103,7 +938,7 @@
       }
     },
     {
-      "rank": 21,
+      "rank": 18,
       "playbook": "crop-insurance-notice",
       "domain": "Agriculture",
       "audience": "work",
@@ -1158,7 +993,7 @@
       }
     },
     {
-      "rank": 22,
+      "rank": 19,
       "playbook": "section8-landlord",
       "domain": "Rental property",
       "audience": "work",
@@ -1213,7 +1048,7 @@
       }
     },
     {
-      "rank": 23,
+      "rank": 20,
       "playbook": "chargeback-representment",
       "domain": "Payments",
       "audience": "work",
@@ -1268,7 +1103,7 @@
       }
     },
     {
-      "rank": 24,
+      "rank": 21,
       "playbook": "inspection-scheduling",
       "domain": "Construction",
       "audience": "work",
@@ -1323,7 +1158,7 @@
       }
     },
     {
-      "rank": 25,
+      "rank": 22,
       "playbook": "stormwater-permit-log",
       "domain": "Construction",
       "audience": "work",
@@ -1378,7 +1213,7 @@
       }
     },
     {
-      "rank": 26,
+      "rank": 23,
       "playbook": "closeout-package",
       "domain": "Construction",
       "audience": "work",
@@ -1433,7 +1268,7 @@
       }
     },
     {
-      "rank": 27,
+      "rank": 24,
       "playbook": "observation-status-appeal",
       "domain": "Family care",
       "audience": "home",
@@ -1488,7 +1323,7 @@
       }
     },
     {
-      "rank": 28,
+      "rank": 25,
       "playbook": "grant-drawdown-reporting",
       "domain": "Nonprofit",
       "audience": "work",
@@ -1543,7 +1378,7 @@
       }
     },
     {
-      "rank": 29,
+      "rank": 26,
       "playbook": "hospital-financial-assistance",
       "domain": "Patient health",
       "audience": "home",
@@ -1598,7 +1433,7 @@
       }
     },
     {
-      "rank": 30,
+      "rank": 27,
       "playbook": "parcel-guarantee-refunds",
       "domain": "Logistics",
       "audience": "work",
@@ -1653,7 +1488,7 @@
       }
     },
     {
-      "rank": 31,
+      "rank": 28,
       "playbook": "ui-claim-responses",
       "domain": "Unemployment insurance",
       "audience": "work",
@@ -1708,7 +1543,7 @@
       }
     },
     {
-      "rank": 32,
+      "rank": 29,
       "playbook": "food-recall-trace",
       "domain": "Food & beverage",
       "audience": "work",
@@ -1763,7 +1598,7 @@
       }
     },
     {
-      "rank": 33,
+      "rank": 30,
       "playbook": "restricted-funds-release",
       "domain": "Nonprofit",
       "audience": "work",
@@ -1818,7 +1653,7 @@
       }
     },
     {
-      "rank": 34,
+      "rank": 31,
       "playbook": "trademark-maintenance",
       "domain": "Intellectual property",
       "audience": "work",
@@ -1873,7 +1708,7 @@
       }
     },
     {
-      "rank": 35,
+      "rank": 32,
       "playbook": "sales-tax-exemption-certs",
       "domain": "Sales tax",
       "audience": "work",
@@ -1928,7 +1763,7 @@
       }
     },
     {
-      "rank": 36,
+      "rank": 33,
       "playbook": "out-of-network-claims",
       "domain": "Patient health",
       "audience": "home",
@@ -1983,7 +1818,7 @@
       }
     },
     {
-      "rank": 37,
+      "rank": 34,
       "playbook": "carrier-accessorials",
       "domain": "Trucking",
       "audience": "work",
@@ -2038,7 +1873,7 @@
       }
     },
     {
-      "rank": 38,
+      "rank": 35,
       "playbook": "counterfeit-takedowns",
       "domain": "E-commerce",
       "audience": "work",
@@ -2093,7 +1928,7 @@
       }
     },
     {
-      "rank": 39,
+      "rank": 36,
       "playbook": "merchant-fee-audit",
       "domain": "Payments",
       "audience": "work",
@@ -2148,7 +1983,7 @@
       }
     },
     {
-      "rank": 40,
+      "rank": 37,
       "playbook": "medical-bills",
       "domain": "Daily life",
       "audience": "home",
@@ -2203,7 +2038,7 @@
       }
     },
     {
-      "rank": 41,
+      "rank": 38,
       "playbook": "recoverable-depreciation",
       "domain": "Home insurance",
       "audience": "home",
@@ -2258,7 +2093,7 @@
       }
     },
     {
-      "rank": 42,
+      "rank": 39,
       "playbook": "layoff-sixty-days",
       "domain": "Employment",
       "audience": "home",
@@ -2313,7 +2148,7 @@
       }
     },
     {
-      "rank": 43,
+      "rank": 40,
       "playbook": "fba-reimbursements",
       "domain": "E-commerce",
       "audience": "work",
@@ -2368,7 +2203,7 @@
       }
     },
     {
-      "rank": 44,
+      "rank": 41,
       "playbook": "fema-individual-assistance",
       "domain": "Disaster aid",
       "audience": "home",
@@ -2423,7 +2258,7 @@
       }
     },
     {
-      "rank": 45,
+      "rank": 42,
       "playbook": "freelancer-receivables",
       "domain": "Freelance",
       "audience": "work",
@@ -2478,7 +2313,7 @@
       }
     },
     {
-      "rank": 46,
+      "rank": 43,
       "playbook": "ifta-quarterly",
       "domain": "Trucking",
       "audience": "work",
@@ -2533,7 +2368,7 @@
       }
     },
     {
-      "rank": 47,
+      "rank": 44,
       "playbook": "medicaid-renewal",
       "domain": "Public benefits",
       "audience": "home",
@@ -2588,7 +2423,7 @@
       }
     },
     {
-      "rank": 48,
+      "rank": 45,
       "playbook": "parental-leave-claims",
       "domain": "Employment",
       "audience": "home",
@@ -2643,7 +2478,7 @@
       }
     },
     {
-      "rank": 49,
+      "rank": 46,
       "playbook": "rmd-check",
       "domain": "Retirement & Medicare",
       "audience": "home",
@@ -2698,7 +2533,7 @@
       }
     },
     {
-      "rank": 50,
+      "rank": 47,
       "playbook": "driver-qualification-files",
       "domain": "Trucking",
       "audience": "work",
@@ -2753,7 +2588,7 @@
       }
     },
     {
-      "rank": 51,
+      "rank": 48,
       "playbook": "gpsr-listings",
       "domain": "E-commerce",
       "audience": "work",
@@ -2808,7 +2643,7 @@
       }
     },
     {
-      "rank": 52,
+      "rank": 49,
       "playbook": "adverse-action-notices",
       "domain": "Hiring",
       "audience": "work",
@@ -2863,7 +2698,7 @@
       }
     },
     {
-      "rank": 53,
+      "rank": 50,
       "playbook": "funeral-price-check",
       "domain": "Family affairs",
       "audience": "home",
@@ -2918,7 +2753,7 @@
       }
     },
     {
-      "rank": 54,
+      "rank": 51,
       "playbook": "workers-comp-premium-audit",
       "domain": "Business insurance",
       "audience": "work",
@@ -2973,7 +2808,7 @@
       }
     },
     {
-      "rank": 55,
+      "rank": 52,
       "playbook": "federal-prompt-pay-interest",
       "domain": "Government contracting",
       "audience": "work",
@@ -3028,7 +2863,7 @@
       }
     },
     {
-      "rank": 56,
+      "rank": 53,
       "playbook": "remote-payroll-registration",
       "domain": "Payroll",
       "audience": "work",
@@ -3083,7 +2918,7 @@
       }
     },
     {
-      "rank": 57,
+      "rank": 54,
       "playbook": "public-records-requests",
       "domain": "Government transparency",
       "audience": "work",
@@ -3138,7 +2973,7 @@
       }
     },
     {
-      "rank": 58,
+      "rank": 55,
       "playbook": "oversize-permits",
       "domain": "Trucking",
       "audience": "work",
@@ -3193,7 +3028,7 @@
       }
     },
     {
-      "rank": 59,
+      "rank": 56,
       "playbook": "part-d-exception",
       "domain": "Patient health",
       "audience": "home",
@@ -3248,7 +3083,7 @@
       }
     },
     {
-      "rank": 60,
+      "rank": 57,
       "playbook": "household-employer-tax",
       "domain": "Family care",
       "audience": "home",
@@ -3303,7 +3138,7 @@
       }
     },
     {
-      "rank": 61,
+      "rank": 58,
       "playbook": "veteran-burial-benefits",
       "domain": "Family affairs",
       "audience": "home",
@@ -3358,7 +3193,7 @@
       }
     },
     {
-      "rank": 62,
+      "rank": 59,
       "playbook": "msp-extra-help",
       "domain": "Family care",
       "audience": "home",
@@ -3413,7 +3248,7 @@
       }
     },
     {
-      "rank": 63,
+      "rank": 60,
       "playbook": "fafsa-verification",
       "domain": "Student aid",
       "audience": "home",
@@ -3468,7 +3303,7 @@
       }
     },
     {
-      "rank": 64,
+      "rank": 61,
       "playbook": "good-faith-estimates",
       "domain": "Clinics",
       "audience": "work",
@@ -3523,7 +3358,7 @@
       }
     },
     {
-      "rank": 65,
+      "rank": 62,
       "playbook": "fsa-acreage-reporting",
       "domain": "Agriculture",
       "audience": "work",
@@ -3578,7 +3413,7 @@
       }
     },
     {
-      "rank": 66,
+      "rank": 63,
       "playbook": "ssdi-work-reporting",
       "domain": "Public benefits",
       "audience": "home",
@@ -3633,7 +3468,7 @@
       }
     },
     {
-      "rank": 67,
+      "rank": 64,
       "playbook": "eitc-claim",
       "domain": "Household tax",
       "audience": "home",
@@ -3688,7 +3523,7 @@
       }
     },
     {
-      "rank": 68,
+      "rank": 65,
       "playbook": "eu261-flight-compensation",
       "domain": "Air travel",
       "audience": "home",
@@ -3743,7 +3578,7 @@
       }
     },
     {
-      "rank": 69,
+      "rank": 66,
       "playbook": "401k-late-deposits",
       "domain": "Benefits administration",
       "audience": "work",
@@ -3798,7 +3633,7 @@
       }
     },
     {
-      "rank": 70,
+      "rank": 67,
       "playbook": "medicare-plan-review",
       "domain": "Family care",
       "audience": "home",
@@ -3853,7 +3688,7 @@
       }
     },
     {
-      "rank": 71,
+      "rank": 68,
       "playbook": "aid-professional-judgment",
       "domain": "Student aid",
       "audience": "home",
@@ -3908,7 +3743,7 @@
       }
     },
     {
-      "rank": 72,
+      "rank": 69,
       "playbook": "tenant-deposit-return",
       "domain": "Tenancy",
       "audience": "home",
@@ -3963,7 +3798,7 @@
       }
     },
     {
-      "rank": 73,
+      "rank": 70,
       "playbook": "cobra-notices",
       "domain": "Benefits administration",
       "audience": "work",
@@ -4018,7 +3853,7 @@
       }
     },
     {
-      "rank": 74,
+      "rank": 71,
       "playbook": "medicare-enrollment-timing",
       "domain": "Retirement & Medicare",
       "audience": "home",
@@ -4073,7 +3908,7 @@
       }
     },
     {
-      "rank": 75,
+      "rank": 72,
       "playbook": "organic-annual-update",
       "domain": "Food & beverage",
       "audience": "work",
@@ -4128,7 +3963,7 @@
       }
     },
     {
-      "rank": 76,
+      "rank": 73,
       "playbook": "provider-revalidation",
       "domain": "Clinics",
       "audience": "work",
@@ -4183,7 +4018,7 @@
       }
     },
     {
-      "rank": 77,
+      "rank": 74,
       "playbook": "mlc-unmatched-royalties",
       "domain": "Music & creative",
       "audience": "work",
@@ -4238,7 +4073,7 @@
       }
     },
     {
-      "rank": 78,
+      "rank": 75,
       "playbook": "travel-credit-refunds",
       "domain": "Air travel",
       "audience": "home",
@@ -4293,7 +4128,7 @@
       }
     },
     {
-      "rank": 79,
+      "rank": 76,
       "playbook": "lease-operator-escrow",
       "domain": "Trucking",
       "audience": "work",
@@ -4348,7 +4183,7 @@
       }
     },
     {
-      "rank": 80,
+      "rank": 77,
       "playbook": "reg-e-fraud-claims",
       "domain": "Consumer banking",
       "audience": "home",
@@ -4403,7 +4238,7 @@
       }
     },
     {
-      "rank": 81,
+      "rank": 78,
       "playbook": "property-tax-appeal",
       "domain": "Housing",
       "audience": "home",
@@ -4458,7 +4293,7 @@
       }
     },
     {
-      "rank": 82,
+      "rank": 79,
       "playbook": "rep-payee-accounting",
       "domain": "Family care",
       "audience": "home",
@@ -4513,7 +4348,7 @@
       }
     },
     {
-      "rank": 83,
+      "rank": 80,
       "playbook": "credit-report-disputes",
       "domain": "Credit",
       "audience": "home",
@@ -4568,7 +4403,7 @@
       }
     },
     {
-      "rank": 84,
+      "rank": 81,
       "playbook": "first-time-abate",
       "domain": "Tax notices",
       "audience": "work",
@@ -4623,7 +4458,7 @@
       }
     },
     {
-      "rank": 85,
+      "rank": 82,
       "playbook": "homestead-exemption",
       "domain": "Housing",
       "audience": "home",
@@ -4678,7 +4513,7 @@
       }
     },
     {
-      "rank": 86,
+      "rank": 83,
       "playbook": "pmi-cancellation",
       "domain": "Mortgage",
       "audience": "home",
@@ -4733,7 +4568,7 @@
       }
     },
     {
-      "rank": 87,
+      "rank": 84,
       "playbook": "fsa-claims-substantiation",
       "domain": "Benefits",
       "audience": "home",
@@ -4788,7 +4623,7 @@
       }
     },
     {
-      "rank": 88,
+      "rank": 85,
       "playbook": "subscription-audit",
       "domain": "Subscriptions",
       "audience": "home",
@@ -4843,7 +4678,7 @@
       }
     },
     {
-      "rank": 89,
+      "rank": 86,
       "playbook": "escrow-analysis-check",
       "domain": "Mortgage",
       "audience": "home",
@@ -4898,7 +4733,7 @@
       }
     },
     {
-      "rank": 90,
+      "rank": 87,
       "playbook": "bid-opportunity-triage",
       "domain": "Government contracting",
       "audience": "work",
@@ -4953,7 +4788,7 @@
       }
     },
     {
-      "rank": 91,
+      "rank": 88,
       "playbook": "baggage-delay-claims",
       "domain": "Air travel",
       "audience": "home",
@@ -5008,7 +4843,7 @@
       }
     },
     {
-      "rank": 92,
+      "rank": 89,
       "playbook": "unclaimed-property-sweep",
       "domain": "Personal finance",
       "audience": "home",
@@ -5063,7 +4898,7 @@
       }
     },
     {
-      "rank": 93,
+      "rank": 90,
       "playbook": "denied-party-screening",
       "domain": "Customs & trade",
       "audience": "work",
@@ -5118,7 +4953,7 @@
       }
     },
     {
-      "rank": 94,
+      "rank": 91,
       "playbook": "lease-end-wear-charges",
       "domain": "Vehicles",
       "audience": "home",
@@ -5173,7 +5008,7 @@
       }
     },
     {
-      "rank": 95,
+      "rank": 92,
       "playbook": "medical-records-gather",
       "domain": "Patient health",
       "audience": "home",
@@ -5228,7 +5063,7 @@
       }
     },
     {
-      "rank": 96,
+      "rank": 93,
       "playbook": "name-change-everywhere",
       "domain": "Family affairs",
       "audience": "home",
@@ -5283,7 +5118,7 @@
       }
     },
     {
-      "rank": 97,
+      "rank": 94,
       "playbook": "vehicle-recall-reimbursement",
       "domain": "Vehicles",
       "audience": "home",
@@ -5338,7 +5173,7 @@
       }
     },
     {
-      "rank": 98,
+      "rank": 95,
       "playbook": "class-action-claims",
       "domain": "Consumer settlements",
       "audience": "home",
@@ -5393,7 +5228,7 @@
       }
     },
     {
-      "rank": 99,
+      "rank": 96,
       "playbook": "data-broker-deletion",
       "domain": "Privacy",
       "audience": "home",
@@ -5449,6 +5284,18 @@
     }
   ],
   "unranked": [
+    {
+      "playbook": "clinic-denials",
+      "why": "short in 2 of 3 comparable runs"
+    },
+    {
+      "playbook": "cpg-deductions",
+      "why": "false claims 1, traps filed 1 (the worst of 3 comparable runs)"
+    },
+    {
+      "playbook": "ltc-claims",
+      "why": "short in 2 of 3 comparable runs"
+    },
     {
       "playbook": "osha-300-log",
       "why": "short: found 7 of 10 items, expected 75%"

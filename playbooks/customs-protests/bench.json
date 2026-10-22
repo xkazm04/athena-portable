@@ -1,15 +1,16 @@
 {
   "playbook": "customs-protests",
-  "run_at": "2026-10-10T07:33:31Z",
+  "run_at": "2026-10-22T08:44:54Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 128.3,
-  "turns": 9,
+  "comparable": "sha256:06bebc79427a4431",
+  "wall_s": 182.0,
+  "turns": 10,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 19,
-  "cost_usd": 1.5204,
+  "reads": 17,
+  "cost_usd": 1.2494,
   "your_time_s": 120,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 2.1
+    "minutes": 3.0
   },
   "score": {
     "eligible": 4,
     "found": 4,
     "exact": 4,
+    "neutral": 0,
     "value_total_usd": 10998.0,
     "value_found_usd": 10998.0,
     "recall_value": 1.0,
@@ -157,19 +159,14 @@
     }
   ],
   "missed": [],
-  "closing_words": "Portline's rules and records confirm the plan. I'm filing two protests.\n\n- **K7Q-0394105-2:** it liquidated on 17 Apr 2026, so the 180 days end Wed 14 Oct 2026, five days from now. The refund is $7,950 − (3.4% × $150,000 = $5,100) = **$2,850**.\n- **K7Q-0398412-6:** it liquidated on 19 Jun 2026, so the window runs to Wed 16 Dec 2026. The refund is $7,800 − (3.4% × $120,000 = $4,080) = **$3,720**.\n\n\n**Filed (two cards, waiting for your answer):** the two protests above, $6,570 in total. The earlier PSC cards for K7Q-0418830-4 ($1,824) and K7Q-0421977-1 ($2,604) are also still waiting on you.\n\n**Due next**\n- **Wed 14 Oct:** the deadline for the K7Q-0394105-2 protest. Please answer that card first.\n- **Fri 23 Oct:** K7Q-0405218-0 (BM-40) is scheduled to liquidate. Its PSC window has closed, and Portline doesn't accept a protest before liquidation. After it liquidates, I'd protest it at 3924.",
-  "prose_audit": {
-    "said_usd": 6570.0,
-    "record_usd": 10998.0,
-    "agrees": false
-  },
+  "closing_words": "I'm filing two protests, for entries 0394105-2 and 0398412-6. Both were liquidated at the wrong number and are inside the 180-day window.\n\n| Entry | SKU | Liquidated | Protest deadline | Claimed | Refund |\n|---|---|---|---|---|---|\n| 0394105-2 | SP-12 | 17 Apr 2026 | Wed 14 Oct 2026 (5 days left) | 3924.10.40 (3.4%) | $7,950 − $5,100 = $2,850 |\n| 0398412-6 | BM-40 | 19 Jun 2026 | Wed 16 Dec 2026 | 3924.10.40 (3.4%) | $7,800 − $4,080 = $3,720 |\n\nThe refund is the duty deposited less 3.4% of the same entered value. The entered values are $150,000 and $120,000. The $2,850 protest is the urgent one.\n\n\n**Filed:** nothing has gone to CBP yet. The two protests above are cards waiting for your answer. The two Forwarden correction cards from earlier (0418830-4 for $1,824 and 0421977-1 for $2,604) are still waiting too.\n\n**Due next**\n- **0394105-2:** approve its card by Wed 14 Oct. After that the ",
   "trace": [
     {
       "portal": "Ledgerline ERP",
       "user": "I'm Lucia, trade compliance at Ashby Kitchenworks. Start in Ledgerline: read the product master and the duty we paid on every entry since May last year.",
       "continued": false,
-      "said": "Reading both Ledgerline sources now.",
-      "said_chars": 36,
+      "said": "I'm reading the product master and the duty ledger in Ledgerline now.",
+      "said_chars": 69,
       "reads": [
         "list_products",
         "duty_ledger"
@@ -180,8 +177,8 @@
       "portal": "Ledgerline ERP",
       "user": "",
       "continued": true,
-      "said": "Ledgerline is read: 3 products and 9 entries (showing 3 of 3 and 9 of 9). Nothing is filed yet.\n\n**Product master.** All three SKUs carry 3924.10.40.\n- SP-12 (silicone spatulas) and BM-40 (silicone molds) were set by you on 3 Jan 2025 from the specification.\n- MP-30 (melamine platters) was set by the buyer on 14 Aug 2023 and not reviewed since.",
-      "said_chars": 2116,
+      "said": "Ledgerline shows 9 entries across 3 SKUs. Most were declared under numbers that differ from the product master.\n\n- **Product master:** all three SKUs (SP-12 spatulas, BM-40 molds, MP-30 melamine platters) hold 3924.10.40. Lucia set the first two from the specification on 3 Jan 2025. The buyer set MP-30 on 14 Aug 2023, and nobody has reviewed it since.\n- **SP-12:** three entries (0392016-9, 0394105-2, 0418830-4) were declared at 3926.90.99 (5.3%).",
+      "said_chars": 2011,
       "reads": [],
       "cards": []
     },
@@ -189,8 +186,8 @@
       "portal": "Docshelf",
       "user": "Docshelf has our product specifications, our CBP ruling and the tariff extracts. Read them all, and work out how each product should be classified.",
       "continued": false,
-      "said": "Reading the Docshelf folder now.",
-      "said_chars": 32,
+      "said": "I'm listing the Docshelf folder first, then I'll read each document.",
+      "said_chars": 68,
       "reads": [
         "list_documents"
       ],
@@ -216,8 +213,8 @@
       "portal": "Docshelf",
       "user": "",
       "continued": true,
-      "said": "Here is how I'd classify each product, from the specifications (D-1 to D-3), the ruling (D-4) and the tariff extract (D-5):\n\n- **SP-12 (silicone spatulas): 3924.10.40, 3.4%.** They are kitchen utensils. Silicone counts as plastic under Chapter 39 note 1, and heading 3924 is more specific than 3926 under GRI 3(a). The entries declared 3926.90.99 at 5.3%, so they are wrong.\n- **BM-40 (silicone baking molds): 3924.10.40, 3.4%.** They are kitchenware but not plates, serving dishes, platters or trays.",
-      "said_chars": 2388,
+      "said": "I've worked out the classification for each product. Next I'm checking the full ledger, Forwarden and Portline to see which entries are affected and where each stands.\n\n**Classification (from D-1 to D-6)**\n- **SP-12 spatulas:** 3924.10.40 at 3.4%. Silicone counts as plastic under Chapter 39 note 1, and these are kitchenware. They aren't plates, serving dishes or trays, so they fall under \"other\". The 3926.90.99 (5.3%) declaration was wrong, which means 1.9% of entered value is refundable.",
+      "said_chars": 3464,
       "reads": [],
       "cards": []
     },
@@ -225,11 +222,10 @@
       "portal": "Forwarden",
       "user": "Forwarden is our customs broker. Read our entries, how each was classified and liquidated, and the broker's notes. Have Forwarden correct every entry that was misclassified and can still be corrected before liquidation, for the right duty.",
       "continued": false,
-      "said": "I'll read Forwarden's entries and its notes first, before anything is filed.",
-      "said_chars": 76,
+      "said": "I'm reading Forwarden's entries and notes, plus the ledger and CBP's liquidation record.\n\nForwarden's answers haven't arrived yet, so I'm not calling them again. Portline's tools are out of reach from this tab. I'm recalling the ledger from earlier in this conversation.\n\nI still don't have Forwarden's answers, so I'm checking whether they were recorded as episodes.\n\nI haven't filed anything, because Forwarden's entry list and notes haven't reached me.",
+      "said_chars": 2032,
       "reads": [
         "list_entries",
-        "read_broker_notes",
         "read_broker_notes",
         "read_broker_notes"
       ],
@@ -239,8 +235,8 @@
       "portal": "Forwarden",
       "user": "",
       "continued": true,
-      "said": "Two entries can still be corrected, but I need their entered values before I file anything. I'm reading the duty ledger again to get them.\n\nRecall what I read in Ledgerline.\n\nTwo entries can be corrected before liquidation, and I'm filing a card for each. I checked every unliquidated entry against the PSC test: transmit within 300 days of entry, or up to 15 days before scheduled liquidation, whichever is earlier.\n\n- **K7Q-0418830-4 (SP-12, entered 15 May 2026):** the window is open until 11 Mar 2027.",
-      "said_chars": 1519,
+      "said": "I'm filing two corrections, for entries 0418830-4 and 0421977-1. Both are misclassified, unliquidated and inside the PSC window.\n\nForwarden's rule is that a PSC goes in within 300 days of entry, or up to 15 days before scheduled liquidation, whichever is earlier. Today is 9 Oct 2026.",
+      "said_chars": 1574,
       "reads": [],
       "cards": [
         {
@@ -261,12 +257,9 @@
       "portal": "Portline Entries",
       "user": "Portline Entries is our trade account with CBP. Read the rules, the liquidations and our protests, and protest every liquidated entry we can still protest that was misclassified, for the right refund. Don't protest anything that was right, ",
       "continued": false,
-      "said": "I'll read Portline's rules, liquidations and protests, and recall the duty figures from Ledgerline.\n\nThe Portline answers arrive next turn. The Ledgerline duty ledger is another tab's tool, so I'll recall what I read there instead.\n\nI haven't filed anything. The Portline answers (rules, liquidations, protests) didn't come back with this turn. My protest filing would rest on a 180-day window and liquidation dates I haven't read from Portline itself, so I'm holding.",
-      "said_chars": 3198,
+      "said": "I'm reading Portline's rules, liquidations and protests first. I'm also recalling the ledger and classification from earlier.\n\nI've filed nothing yet. Portline's rules, liquidations and protests haven't reached me. The page says they arrive with my next turn, and I won't call them again.\n\nI do have the ledger. The correct classification is 3924.10.40 at 3.4% for SP-12 and BM-40. MP-30 stays at 3924.10.20 at 6.5% under ruling NY N998214, so it is already right.",
+      "said_chars": 1003,
       "reads": [
-        "read_cbp_rules",
-        "read_cbp_rules",
-        "read_cbp_rules",
         "read_cbp_rules",
         "list_liquidations",
         "list_protests"
@@ -277,8 +270,20 @@
       "portal": "Portline Entries",
       "user": "",
       "continued": true,
-      "said": "Portline's rules and records confirm the plan. I'm filing two protests.\n\n- **K7Q-0394105-2:** it liquidated on 17 Apr 2026, so the 180 days end Wed 14 Oct 2026, five days from now. The refund is $7,950 − (3.4% × $150,000 = $5,100) = **$2,850**.\n- **K7Q-0398412-6:** it liquidated on 19 Jun 2026, so the window runs to Wed 16 Dec 2026. The refund is $7,800 − (3.4% × $120,000 = $4,080) = **$3,720**.\n\n\n**Filed (two cards, waiting for your answer):** the two protests above, $6,570 in total.",
-      "said_chars": 1582,
+      "said": "The rules index doesn't state the protest window. Before I file anything I'm reading the protest and refunds topics.",
+      "said_chars": 116,
+      "reads": [
+        "read_cbp_rules",
+        "read_cbp_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Portline Entries",
+      "user": "",
+      "continued": true,
+      "said": "I'm filing two protests, for entries 0394105-2 and 0398412-6. Both were liquidated at the wrong number and are inside the 180-day window.\n\n| Entry | SKU | Liquidated | Protest deadline | Claimed | Refund |\n|---|---|---|---|---|---|\n| 0394105-2 | SP-12 | 17 Apr 2026 | Wed 14 Oct 2026 (5 days left) | 3924.10.40 (3.4%) | $7,950 − $5,100 = $2,850 |\n| 0398412-6 | BM-40 | 19 Jun 2026 | Wed 16 Dec 2026 | 3924.10.40 (3.4%) | $7,800 − $4,080 = $3,720 |\n\nThe refund is the duty deposited less 3.4% of the same entered value.",
+      "said_chars": 1792,
       "reads": [],
       "cards": [
         {
@@ -294,6 +299,58 @@
           "value_usd": 3720.0
         }
       ]
+    }
+  ],
+  "note": "ADR 0127 repeat runs",
+  "history": [
+    {
+      "run_at": "2026-10-10T07:33:31Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 4,
+      "eligible": 4,
+      "value_found_usd": 10998.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 128.3,
+      "your_time_s": 120
+    },
+    {
+      "run_at": "2026-10-22T08:38:57Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:06bebc79427a4431",
+      "verdict": "exceeds",
+      "found": 4,
+      "eligible": 4,
+      "value_found_usd": 10998.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 144.8,
+      "your_time_s": 120,
+      "note": "ADR 0127 repeat runs"
+    },
+    {
+      "run_at": "2026-10-22T08:41:52Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:06bebc79427a4431",
+      "verdict": "exceeds",
+      "found": 4,
+      "eligible": 4,
+      "value_found_usd": 10998.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 175.2,
+      "your_time_s": 120,
+      "note": "ADR 0127 repeat runs"
     }
   ]
 }

@@ -1,15 +1,16 @@
 {
   "playbook": "clinic-underpayments",
-  "run_at": "2026-10-10T00:58:27Z",
+  "run_at": "2026-10-22T08:53:35Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 212.3,
+  "comparable": "sha256:6f92961155df6ab3",
+  "wall_s": 150.2,
   "turns": 11,
   "nudges": 0,
   "follow_ups": 0,
   "reads": 23,
-  "cost_usd": 1.8317,
+  "cost_usd": 1.291,
   "your_time_s": 150,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 3.5
+    "minutes": 2.5
   },
   "score": {
     "eligible": 5,
     "found": 5,
     "exact": 5,
+    "neutral": 0,
     "value_total_usd": 565.0,
     "value_found_usd": 565.0,
     "recall_value": 1.0,
@@ -153,14 +155,19 @@
     }
   ],
   "missed": [],
-  "closing_words": "I've checked the five lines against both payers' rules. All five are inside their windows, and none is already in dispute. I'm filing one dispute per line.\n\n- **Tallowbrook (90 days):** L-305 closes 14 Oct, L-302 on 3 Nov and L-308 on 8 Dec.\n- **Cindermoor (180 days):** L-311 closes 7 Dec and L-312 on 16 Feb 2027.\n\n\nFive disputes are queued for your approval, and nothing has been filed yet. Together they claim $565.\n\n**Left alone**\n- **L-315 (Cindermoor, $0.25):** already in dispute as DSP-4471, and Cindermoor doesn't accept a second dispute on a line while the first is open. This answers my earlier question. It's covered, so I won't file it again.\n- **L-309 (Tallowbrook, $18 short) and L-319 (Cindermoor, $28 short):** short-paid, but their windows closed on 30 Sep and 26 Sep. The payers would close a late dispute unreviewed.\n- **L-303, L-313 and L-317:** bundled under NCCI edits, which ",
+  "closing_words": "I'm filing five disputes, one per open short line, for $565 in total. The cards are below for you to approve.\n\n\n**What I filed**\n\n| Line | Payer | Contracted | Short | Window closes |\n|---|---|---|---|---|\n| L-305 | Tallowbrook | $152 | $18 | 14 Oct |\n| L-302 | Tallowbrook | $1,110 | $90 | 3 Nov |\n| L-308 | Tallowbrook | $58 | $29 | 8 Dec |\n| L-311 | Cindermoor | $1,040 | $400 | 7 Dec |\n| L-312 | Cindermoor | $124 | $28 | about 16 Feb 2027 |\n\n**L-305's date:** The Paylance page said today is 9 Oct, but my session clock says 22 Oct. If it is the 22nd, L-305's 14 Oct window has passed. Tallowbrook closes late disputes unreviewed, so approve that card only if today is on or before the 14th.\n\n**What I left alone**\n- **L-315:** Already in dispute as DSP-4471, open, for $0.25. Cindermoor doesn't take a second dispute while the first is open.\n- **L-309:** Short $18, but Tallowbrook's 90-day win",
+  "prose_audit": {
+    "said_usd": 565.0,
+    "record_usd": 565.0,
+    "agrees": true
+  },
   "trace": [
     {
       "portal": "Chartmend PM",
       "user": "Month-end check on what Tallowbrook and Cindermoor paid us. Start here in Chartmend: go through every posted line since March.",
       "continued": false,
-      "said": "I'm starting with the first page of posted lines. I'm also pulling the contract, ERA and dispute lists, because I'll need them to check the lines.\n\nThe Chartmend page 1 request went through, but its answer hasn't arrived yet. The Docshelf, Relaywave and Paylance calls were refused because this session is pinned to Chartmend. I'll come back to those tabs later.\n\nI won't repeat the page 1 call. Once its result arrives, I'll go through the remaining pages in order.",
-      "said_chars": 1251,
+      "said": "I'm starting with the posted lines in Chartmend, page 1.",
+      "said_chars": 56,
       "reads": [
         "list_posted_lines"
       ],
@@ -170,8 +177,8 @@
       "portal": "Chartmend PM",
       "user": "",
       "continued": true,
-      "said": "Page 1 of 4 is in (5 of 17 lines). I'm requesting pages 2–4 now.",
-      "said_chars": 64,
+      "said": "Page 1 of 4 is in (5 of 17 lines), so I'm pulling pages 2–4.",
+      "said_chars": 60,
       "reads": [
         "list_posted_lines",
         "list_posted_lines",
@@ -183,8 +190,8 @@
       "portal": "Chartmend PM",
       "user": "",
       "continued": true,
-      "said": "All 17 lines are read (5 + 5 + 5 + 2). I can't judge most of them yet, because I need the contract rates first. I'm saving a checkpoint so the line data is in memory when I switch tabs.\n\n\nI've read every posted line, and I haven't filed any disputes. Nothing can be called short or right until I check the lines against the contract rates, which are in Docshelf.\n\n**Looks paid at a flat rate (needs contract confirmation):**\n- 99214 at $134 (L-301, L-305).\n- 73562 at $40 and 73564 at $29 (L-304, L-308).",
-      "said_chars": 2257,
+      "said": "All 17 lines are read. Next I'm gathering the contracts, the remittances, the existing disputes and the payer dispute policies, to compare against what was paid.\n\nThe Chartmend pass is done, but I can't read the other three tabs from this session. It's pinned to Chartmend, and the contracts, remittances and payer policies are in tabs I can only act on once you switch to them. I'm saving what I read so it carries across tabs.",
+      "said_chars": 1900,
       "reads": [],
       "cards": []
     },
@@ -192,8 +199,8 @@
       "portal": "Relaywave",
       "user": "Now Relaywave. Read the remittances behind those lines, with every adjustment code.",
       "continued": false,
-      "said": "I'll start by listing the remittances, then read each one.\n\n\nCorrection: that line isn't a valid op. Here is the real call.\n\nMy first line was malformed and got dropped. The `list_eras` call did go through, and the page says its answer will arrive with my next turn. I won't call it again.\n\nWhen the list arrives, I'll read each remittance with `read_era` and record every line's allowed and paid amounts, plus each adjustment's group code and CARC. I'm not filing any disputes at this stage.",
-      "said_chars": 492,
+      "said": "I'm listing the remittances in Relaywave first, then I'll read each one's line detail and adjustment codes.",
+      "said_chars": 107,
       "reads": [
         "list_eras"
       ],
@@ -203,8 +210,8 @@
       "portal": "Relaywave",
       "user": "",
       "continued": true,
-      "said": "Eight remittances are listed. I'm reading all of them now, so every adjustment code comes back in one pass.",
-      "said_chars": 107,
+      "said": "Eight remittances are listed, so I'm reading all eight for their line detail and adjustment codes.",
+      "said_chars": 98,
       "reads": [
         "read_era",
         "read_era",
@@ -221,8 +228,8 @@
       "portal": "Relaywave",
       "user": "",
       "continued": true,
-      "said": "All eight remittances are read. Nothing is filed, and I can't call any line short until I see the contract rates.\n\n\n**What the adjustments show:**\n- **Bundled by NCCI edit (CO-97), so these stay undisputed unless the contract says otherwise:**\n  - L-303 (29877, $1,150) is bundled into L-302.\n  - L-313 (76942, $180) is bundled into L-312.\n  - L-317 (99213, $160) is bundled into L-315. No modifier 25 was billed.\n- **Patient share, not a short-pay:**\n  - L-314 (99204) was allowed at $176 and paid $36.",
-      "said_chars": 1895,
+      "said": "All eight remittances are read, and each one's paid total matches the ERA total. I haven't compared anything to a contract yet, so none of the lines below is confirmed short.\n\n**What the adjustment codes show**",
+      "said_chars": 2157,
       "reads": [],
       "cards": []
     },
@@ -230,8 +237,8 @@
       "portal": "Docshelf",
       "user": "Docshelf has both payer agreements, their fee schedules and the amendment. Read what we're actually owed.",
       "continued": false,
-      "said": "I'll list the contracts folder first, then read each document.\n\n\nI can't read the documents until the list returns their ids. I'll read the agreements, fee schedules and amendment next turn, then compare them with the 17 lines already recorded. Nothing is filed yet.",
-      "said_chars": 266,
+      "said": "I'm listing the contracts folder first, then I'll read each document.",
+      "said_chars": 69,
       "reads": [
         "list_documents"
       ],
@@ -241,8 +248,8 @@
       "portal": "Docshelf",
       "user": "",
       "continued": true,
-      "said": "Reading the six contract documents now. I'm skipping DOC-31, which is a vendor proposal and not a contract.\n\n\nWhen the texts arrive I'll set each line's contracted allowed amount against what was paid. I'll file nothing until those rates are in front of me.",
-      "said_chars": 257,
+      "said": "Seven documents are listed. I'm reading the six contract documents now. I'm skipping DOC-31, the Recoverline sales proposal, because it isn't a contract.",
+      "said_chars": 153,
       "reads": [
         "read_document",
         "read_document",
@@ -257,8 +264,8 @@
       "portal": "Docshelf",
       "user": "",
       "continued": true,
-      "said": "Contracts are read. I need the full line detail from memory to finish the comparison, so I'm recalling it. I'm also checkpointing the contract terms for when I switch tabs.\n\n\nI haven't filed anything. Once the recall returns, I'll finish the line-by-line comparison and work out which dispute windows are still open. Some windows may already have closed.\n\nWe're owed $693 across 7 short-paid lines. Two more short-paid lines, $46 in all, are past their dispute windows.",
-      "said_chars": 3174,
+      "said": "**Against the contracts, 7 lines look short by $602 in total, and 2 more are short but their dispute windows have closed. Nothing is filed yet.** I haven't read the Paylance payer policies or the disputes already filed, so these are findings only. I've counted windows from each remittance date as of today, 9 Oct 2026.\n\n**Short, window open**",
+      "said_chars": 3270,
       "reads": [],
       "cards": []
     },
@@ -266,8 +273,8 @@
       "portal": "Paylance payer hub",
       "user": "Now Paylance. Read each payer's dispute rules and what we already have in dispute, then file a dispute for every line paid short of the contract, with the amount. Tell me what you left alone and why.",
       "continued": false,
-      "said": "I'll read both payers' dispute rules, the disputes already filed, and my saved analysis. No dispute is filed until those are in.\n\nThe Paylance reads went through, but their answers haven't arrived. I'm not repeating the calls, and I'm not filing anything until I've seen the dispute rules and the disputes already filed.\n\nI have the analysis from memory. Five lines look short-paid, $565 in total:\n- L-305, Tallowbrook: $18 short. Its window closes 14 Oct, which makes it the most urgent.",
-      "said_chars": 1359,
+      "said": "I'm reading both payers' dispute rules and the disputes already filed, and recalling the full contract findings. I'll file nothing until those results are back.\n\nThe recall is back, but the Paylance answers (the filed disputes and both payers' dispute rules) haven't arrived yet. I'm not re-calling them and I'm not filing anything.\n\nThe recall gave me the five open short lines (L-305, L-302, L-308, L-311, L-312).",
+      "said_chars": 1137,
       "reads": [
         "list_disputes",
         "read_payer_policy",
@@ -279,8 +286,8 @@
       "portal": "Paylance payer hub",
       "user": "",
       "continued": true,
-      "said": "I've checked the five lines against both payers' rules. All five are inside their windows, and none is already in dispute. I'm filing one dispute per line.\n\n- **Tallowbrook (90 days):** L-305 closes 14 Oct, L-302 on 3 Nov and L-308 on 8 Dec.\n- **Cindermoor (180 days):** L-311 closes 7 Dec and L-312 on 16 Feb 2027.\n\n\nFive disputes are queued for your approval, and nothing has been filed yet. Together they claim $565.",
-      "said_chars": 1515,
+      "said": "I'm filing five disputes, one per open short line, for $565 in total. The cards are below for you to approve.\n\n\n**What I filed**\n\n| Line | Payer | Contracted | Short | Window closes |\n|---|---|---|---|---|\n| L-305 | Tallowbrook | $152 | $18 | 14 Oct |\n| L-302 | Tallowbrook | $1,110 | $90 | 3 Nov |\n| L-308 | Tallowbrook | $58 | $29 | 8 Dec |\n| L-311 | Cindermoor | $1,040 | $400 | 7 Dec |\n| L-312 | Cindermoor | $124 | $28 | about 16 Feb 2027 |",
+      "said_chars": 1806,
       "reads": [],
       "cards": [
         {
@@ -314,6 +321,58 @@
           "value_usd": 28.0
         }
       ]
+    }
+  ],
+  "note": "ADR 0127 repeat runs",
+  "history": [
+    {
+      "run_at": "2026-10-10T00:58:27Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 565.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 212.3,
+      "your_time_s": 150
+    },
+    {
+      "run_at": "2026-10-22T08:47:46Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:6f92961155df6ab3",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 565.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 170.5,
+      "your_time_s": 150,
+      "note": "ADR 0127 repeat runs"
+    },
+    {
+      "run_at": "2026-10-22T08:51:05Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:6f92961155df6ab3",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 565.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 199.1,
+      "your_time_s": 150,
+      "note": "ADR 0127 repeat runs"
     }
   ]
 }
