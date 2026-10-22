@@ -1683,7 +1683,11 @@
           "revision": 2,
           "changedAt": "2026-09-07",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/connectors/vault.py:85 Context searches found no frontmatter, wikilink, backlink or obsidian occurrences, and inspected persistence stores connection JSON and sealed credentials rather than a Markdown note vault.",
+          "evaluatedAt": "2026-10-22",
+          "evaluatedAgainst": "sha256-b2:7a10f98b2d9488ac",
+          "evaluatedRevision": 2
         },
         {
           "subject": "conditional-service-composition",
