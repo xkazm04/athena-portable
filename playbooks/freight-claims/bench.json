@@ -429,7 +429,7 @@
       "cards": []
     }
   ],
-  "note": "ADR 0127 repeat runs",
+  "note": "ADR 0128 repeat runs",
   "history": [
     {
       "run_at": "2026-10-10T07:09:31Z",
@@ -461,7 +461,7 @@
       "traps_filed": 0,
       "wall_s": 233.7,
       "your_time_s": 150,
-      "note": "ADR 0127 repeat runs"
+      "note": "ADR 0128 repeat runs"
     },
     {
       "run_at": "2026-10-22T09:17:07Z",
@@ -478,7 +478,7 @@
       "traps_filed": 0,
       "wall_s": 208.6,
       "your_time_s": 150,
-      "note": "ADR 0127 repeat runs"
+      "note": "ADR 0128 repeat runs"
     }
   ]
 }

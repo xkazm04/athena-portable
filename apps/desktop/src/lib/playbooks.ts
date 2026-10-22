@@ -120,9 +120,9 @@ export interface Bench {
   note: string;
   /** Earlier runs, oldest first. */
   history: readonly RunLine[];
-  /** The latest run's comparability key (ADR 0127); "" for a run benched before keys were kept. */
+  /** The latest run's comparability key (ADR 0128); "" for a run benched before keys were kept. */
   comparable: string;
-  /** The runs this bench.json holds under the latest run's key, the latest counted (ADR 0127):
+  /** The runs this bench.json holds under the latest run's key, the latest counted (ADR 0128):
    *  how many, and how many of them exceeded. An unkeyed run is a set of one. The ranking also
    *  checks the key against today's files; the desktop cannot, so this is what the file says. */
   runs: { n: number; exceeds: number };
@@ -157,13 +157,13 @@ export interface RunLine {
   valueFoundUsd: number;
   falseClaims: number;
   note: string;
-  /** Its comparability key (ADR 0127); "" when it carries none. */
+  /** Its comparability key (ADR 0128); "" when it carries none. */
   comparable: string;
-  /** A rescore replaced it: the line keeps the original score (ADR 0127). "" otherwise. */
+  /** A rescore replaced it: the line keeps the original score (ADR 0128). "" otherwise. */
   supersededAt: string;
 }
 
-/** The runs a bench pools, by ADR 0127's rule: the latest, and every earlier line under its key that
+/** The runs a bench pools, by ADR 0128's rule: the latest, and every earlier line under its key that
  *  no rescore superseded and that is not the latest run itself. Pure. */
 export function comparableRuns(
   latest: { comparable: string; verdict: VerdictWord; runAt: string; rescoredAt: string },

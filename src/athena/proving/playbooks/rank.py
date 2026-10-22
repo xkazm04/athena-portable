@@ -1,11 +1,11 @@
-"""Rank the playbooks by the method ADR 0056 fixed (README §14; ADR 0056, 0064, 0127).
+"""Rank the playbooks by the method ADR 0056 fixed (README §14; ADR 0056, 0064, 0128).
 
 Computation over the committed ``playbook.json`` and ``bench.json`` files only: no model call, no
 bench. ``playbooks/ranking.json`` carries no timestamp and a stable key order, so the same inputs
 give the same bytes, and ``rank --check`` compares the committed file with what would be written.
 
 A playbook is ranked on every run its ``bench.json`` holds under the key a run benched today would
-carry (ADR 0127), not on its latest draw alone: the score takes the median recall, any comparable
+carry (ADR 0128), not on its latest draw alone: the score takes the median recall, any comparable
 run that filed a trap or a false claim excludes it, and each row says how many runs it stands on.
 """
 
@@ -71,7 +71,7 @@ def _times_per_year(playbook_id: str, economics: dict[str, Any]) -> tuple[float,
 
 
 def runs_of(bench: Mapping[str, Any], current: str | None = None) -> list[dict[str, Any]]:
-    """The runs a playbook is ranked on (ADR 0127): every run under its latest run's key, or the
+    """The runs a playbook is ranked on (ADR 0128): every run under its latest run's key, or the
     latest alone when it carries none. Empty when that key is not ``current``."""
     pooled = comparable_runs(bench, current)
     return [headline(bench)] if pooled is None else pooled
@@ -90,7 +90,7 @@ def _recall(run: Mapping[str, Any]) -> float:
 def exclusion(
     playbook: dict[str, Any], bench: dict[str, Any] | None, current: str | None = None
 ) -> str | None:
-    """Why a playbook is not ranked (ADR 0056 (b), ADR 0127), or None.
+    """Why a playbook is not ranked (ADR 0056 (b), ADR 0128), or None.
 
     ``current`` is the comparability key a run benched today would carry, when it is known. A
     playbook short in half its comparable runs or more is short; one false claim or one trap filed
@@ -137,7 +137,7 @@ def _row(
 ) -> tuple[dict[str, Any], tuple[float, float]]:
     """The row, and the unrounded (proven, saved minutes a year) its tie-breaks compare.
 
-    The money takes the median recall of ``runs`` (ADR 0127); the minutes are the latest run's.
+    The money takes the median recall of ``runs`` (ADR 0128); the minutes are the latest run's.
     """
     pid = playbook["id"]
     economics = playbook["economics"]
@@ -196,7 +196,7 @@ def _row(
             "false_claims": score.get("false_claims", 0),
             "traps_filed": score.get("traps_filed", 0),
             "traps_total": score.get("traps_total"),
-            # ADR 0127: what the score stands on. ``comparable`` is null for a run benched before
+            # ADR 0128: what the score stands on. ``comparable`` is null for a run benched before
             # keys were kept, which is then a set of one.
             "runs": {
                 "n": len(runs),
@@ -322,7 +322,7 @@ def tau_of(
     entries: list[tuple[dict[str, Any], dict[str, Any] | None]],
     contents: Mapping[str, str] | None = None,
 ) -> dict[str, Any]:
-    """Run 1 against the rest (ADR 0127): does a second draw keep the order of the first?
+    """Run 1 against the rest (ADR 0128): does a second draw keep the order of the first?
 
     For each ranked playbook with two comparable runs or more: its score on its oldest comparable
     run alone, and its score on the median of the others, the minutes held at the latest run's on

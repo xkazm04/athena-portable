@@ -336,7 +336,7 @@
       ]
     }
   ],
-  "note": "ADR 0127 repeat runs",
+  "note": "ADR 0128 repeat runs",
   "history": [
     {
       "run_at": "2026-10-10T02:23:12Z",
@@ -368,7 +368,7 @@
       "traps_filed": 0,
       "wall_s": 155.5,
       "your_time_s": 210,
-      "note": "ADR 0127 repeat runs"
+      "note": "ADR 0128 repeat runs"
     },
     {
       "run_at": "2026-10-22T09:27:02Z",
@@ -385,7 +385,7 @@
       "traps_filed": 0,
       "wall_s": 166.9,
       "your_time_s": 210,
-      "note": "ADR 0127 repeat runs"
+      "note": "ADR 0128 repeat runs"
     }
   ]
 }

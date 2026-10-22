@@ -698,7 +698,7 @@ def test_the_transcript_keeps_the_calls_the_core_answered_with_their_footers() -
 def test_bench_json_keeps_earlier_runs_as_history_and_a_rescore_appends_a_correction(
     tmp_path: Path,
 ) -> None:
-    """ADR 0127: a rescore of the latest run keeps its original score as a history line."""
+    """ADR 0128: a rescore of the latest run keeps its original score as a history line."""
     book = load_playbook(make_playbook(tmp_path))
     factory = _factory(scripted_model(_careful))
     first = run_bench(book, BenchConfig(engine="nebius"), world_factory=factory)
@@ -732,7 +732,7 @@ def test_bench_json_keeps_earlier_runs_as_history_and_a_rescore_appends_a_correc
 
 
 def test_a_run_carries_a_key_that_moves_with_what_it_is_measured_against(tmp_path: Path) -> None:
-    """ADR 0127: world, truth, command, expectation, scorer, engine, model and approval."""
+    """ADR 0128: world, truth, command, expectation, scorer, engine, model and approval."""
     book = load_playbook(make_playbook(tmp_path))
     content = bench_module.content_digest(book.root)
     key = bench_module.comparability_key(content, "nebius", "m", "none")

@@ -101,7 +101,7 @@ export default function Catalogue({
         <span className="pa-name">
           <span className="pa-name__title">{v.playbook.shortTitle}</span>
           <span className="pa-name__lead">{lead(v.playbook.brief) || v.playbook.promise}</span>
-          {/* ADR 0127: how many comparable runs the bench stands on; an unbenched row claims nothing. */}
+          {/* ADR 0128: how many comparable runs the bench stands on; an unbenched row claims nothing. */}
           {v.verdict.runs ? (
             <span className="pa-name__runs pa-muted">
               {v.verdict.runs}

@@ -1,7 +1,7 @@
-"""The ranking (README §14; ADR 0056, 0064, 0127): the method pinned on fixed inputs, not files.
+"""The ranking (README §14; ADR 0056, 0064, 0128): the method pinned on fixed inputs, not files.
 
 The nine fixtures come from the numbers of ADR 0056's worked table. No test reads a model or a
-bench; the last class reads the committed tree. ``TestRepeatedRuns`` pins ADR 0127: a row stands
+bench; the last class reads the committed tree. ``TestRepeatedRuns`` pins ADR 0128: a row stands
 on every run under the current comparability key, and says how many.
 """
 
@@ -294,7 +294,7 @@ class TestCommittedTree:
         assert [r["rank"] for r in doc["ranked"]] == list(range(1, len(doc["ranked"]) + 1))
 
     def test_every_committed_row_carries_its_comparable_runs(self) -> None:
-        """ADR 0127 on the committed data: every ranked row says how many runs it stands on.
+        """ADR 0128 on the committed data: every ranked row says how many runs it stands on.
 
         The top 20 were benched three times each (2026-10-22), so a row stands on one run or on
         three; a one-run row's recall is that run's, and a pooled row's median sits within its
@@ -336,7 +336,7 @@ def line(
 
 
 class TestRepeatedRuns:
-    """ADR 0127: n, the spread, k of n, and only the runs under the current key."""
+    """ADR 0128: n, the spread, k of n, and only the runs under the current key."""
 
     def runs(self, doc: dict[str, Any]) -> dict[str, Any]:
         [row] = doc["ranked"]

@@ -189,7 +189,7 @@ test("the model carries the load's problem, none by default", () => {
   expect(failed.loading).toBe(false);
 });
 
-/** ADR 0127: a raw bench.json with a keyed latest run and the given history lines. */
+/** ADR 0128: a raw bench.json with a keyed latest run and the given history lines. */
 function benched(word: string, history: Record<string, unknown>[], extra: Record<string, unknown> = {}) {
   const p = parsePlaybook(
     { id: "runs" },

@@ -106,7 +106,7 @@ describe("the catalogue", () => {
   });
 
   it("says under a benched row how many comparable runs it exceeds in, with n=1 for a single draw", () => {
-    // ADR 0127. The ledger fixture: two benched rows of one run each, one unbenched.
+    // ADR 0128. The ledger fixture: two benched rows of one run each, one unbenched.
     expect(count(l, /class="pa-name__runs pa-muted">exceeds in \d of 1 <span class="pa-chip"[^>]*>n=1<\/span>/g)).toBe(2);
     expect(l).toContain(">exceeds in 1 of 1 <");
     expect(count(l, /class="pa-name__runs/g)).toBe(2);

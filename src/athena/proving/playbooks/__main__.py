@@ -19,7 +19,7 @@ report under ``proving-runs/<ts>/playbook-<id>/`` (gitignored) and the summary i
 ``bench.json``, which the desktop's Playbooks module shows. Exit 0 when the verdict is ``meets``
 or ``exceeds``, 1 when it is ``short``, 2 when the playbook could not be loaded. ``--runs k``
 benches ``k`` fresh worlds one after the other, each a line of the history under its comparability
-key (ADR 0127); the exit is 1 when any of them was short. ``rescore`` writes the rescored report
+key (ADR 0128); the exit is 1 when any of them was short. ``rescore`` writes the rescored report
 beside the run's own ``report.json``, never over it, and appends the run's original score to the
 history as a correction.
 
@@ -36,7 +36,7 @@ did not, 2 when a playbook could not be loaded or has no bench to film.
 ``rank`` writes ``playbooks/ranking.json`` by the method of ADR 0056 (:mod:`.rank`), from the
 committed files alone. ``--check`` writes nothing and exits 1 when the file differs. ``--tau``
 writes nothing and prints each playbook's score on its first comparable run against the median of
-the rest, with their Kendall tau-b (ADR 0127).
+the rest, with their Kendall tau-b (ADR 0128).
 
 ``followthrough`` drives a playbook that has a ``followthrough.json`` overlay (ADR 0129,
 :mod:`.followthrough`) through two sessions on one brain with a restart between, once per branch
@@ -114,7 +114,7 @@ def build_parser() -> argparse.ArgumentParser:
     b.add_argument("--no-write", dest="write", action="store_false", help="leave bench.json alone")
     b.add_argument("--note", default="", help="what changed since the last run, in a sentence")
     b.add_argument(
-        "--runs", type=int, default=1, help="fresh worlds to bench, one after the other (ADR 0127)"
+        "--runs", type=int, default=1, help="fresh worlds to bench, one after the other (ADR 0128)"
     )
     r = verbs.add_parser("rescore", help="score a saved run again; nothing is re-run")
     r.add_argument("playbook")
@@ -313,7 +313,7 @@ def bench(
     note: str = "",
     world_factory: WorldFactory | None = None,
 ) -> int:
-    """``runs`` fresh worlds of ``book``, each benched and written in turn (ADR 0127).
+    """``runs`` fresh worlds of ``book``, each benched and written in turn (ADR 0128).
 
     Every run is kept: each writes its own report and, with ``write``, becomes the latest run of
     ``bench.json`` and pushes the one before into the history, so the ranking pools all of them.
@@ -385,7 +385,7 @@ def main(argv: Sequence[str] | None = None) -> int:
     if args.verb == "rescore":
         source = Path(args.report)
         again = rescore(book, json.loads(source.read_text(encoding="utf-8")))
-        # ADR 0127: the run's own report stays as it was; the rescore is written beside it.
+        # ADR 0128: the run's own report stays as it was; the rescore is written beside it.
         name = f"report.rescored-{str(again['rescored_at']).replace(':', '').replace('-', '')}.json"
         target = write_bench(book, again, source.parent, note=args.note, report_name=name)
         print(f"rescored {source.as_posix()} -> {target.as_posix()}: {again['verdict']['word']}")

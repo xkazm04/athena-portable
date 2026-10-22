@@ -1,4 +1,4 @@
-# 0127. A playbook is ranked on its comparable runs, and a rescore appends a correction
+# 0128. A playbook is ranked on its comparable runs, and a rescore appends a correction
 
 Date: 2026-10-22
 

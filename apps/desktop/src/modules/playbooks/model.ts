@@ -47,7 +47,7 @@ export interface Verdict {
   tone: Tone;
   /** One sentence a person reads under the badge. */
   sentence: string;
-  /** "exceeds in 2 of 3": the comparable runs the verdict stands on (ADR 0127); "" unbenched. */
+  /** "exceeds in 2 of 3": the comparable runs the verdict stands on (ADR 0128); "" unbenched. */
   runs: string;
   /** "n=1" where one comparable run is all there is, a single draw; "" otherwise. */
   sample: string;
@@ -129,7 +129,7 @@ export function verdictOf(bench: Bench | null): Verdict {
       ? "no false claims"
       : `${bench.falseClaims} false claim${bench.falseClaims === 1 ? "" : "s"}`;
   const body = [found, money, falses].filter(Boolean).join(", ");
-  // ADR 0127: the latest run is one draw; say how many comparable runs stand behind it.
+  // ADR 0128: the latest run is one draw; say how many comparable runs stand behind it.
   const { n, exceeds } = bench.runs;
   const runs = `exceeds in ${exceeds} of ${n}`;
   const sample = n === 1 ? "n=1" : "";

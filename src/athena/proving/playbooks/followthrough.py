@@ -20,7 +20,7 @@ same brain with a restart between them.
 4. :func:`assess` reads the two sessions' cards, decisions and reads (never her prose) against
    independent follow-through assertions, and a run passes when every one that applies holds.
 
-k-of-n per branch is pooled only across runs under one comparability key (the ADR 0127 idea):
+k-of-n per branch is pooled only across runs under one comparability key (the ADR 0128 idea):
 what drove the run (world, truth, brief, command, expectation, scorer, overlay, engine, model,
 driver) and :data:`ASSERTION_VERSION`. A run is a line in ``followthrough.runs.json`` that is
 never rewritten; :func:`reassess` appends a correction instead.

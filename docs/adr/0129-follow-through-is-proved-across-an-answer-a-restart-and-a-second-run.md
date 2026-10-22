@@ -3,7 +3,7 @@
 Date: 2026-10-22
 
 Follows [0040](0040-a-playbook-is-data-and-earns-its-place-on-the-bench.md) for the bench and
-[0127](0127-a-playbook-is-ranked-on-its-comparable-runs-and-a-rescore-appends.md) for comparable
+[0128](0128-a-playbook-is-ranked-on-its-comparable-runs-and-a-rescore-appends.md) for comparable
 runs and appended corrections; uses the `outcome_unknown` path of
 [0101](0101-a-timed-out-write-is-outcome-unknown-and-a-late-answer-is-heard.md). README section 14;
 `docs/features/playbooks.md`, "Follow-through".
@@ -65,7 +65,7 @@ before it is repeated, and new evidence changes the next proposal.
    `--reassess <record>` judges a saved record with today's assertions, writes the result beside
    it, and appends a correction (`was`, `now`, when, why) without touching the run's line. A
    correction keeps the run's drive and moves its key only with `ASSERTION_VERSION`, unlike a
-   rescore under 0127, which takes today's content key: the session record was driven by the old
+   rescore under 0128, which takes today's content key: the session record was driven by the old
    overlay, and judging it again does not re-drive it. The file's `tally` is k-of-n under the
    latest run's key, corrections applied.
 

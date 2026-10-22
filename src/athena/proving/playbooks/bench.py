@@ -79,7 +79,7 @@ WorldFactory = Callable[[Playbook], World]
 #: The person at the cards: handed one turn's filed cards, returns the page's answers (ADR 0129).
 Answerer = Callable[[Sequence[Mapping[str, Any]]], list[dict[str, Any]]]
 
-#: The scorer's identity in a run's comparability key (ADR 0127). Raise it in the same commit as
+#: The scorer's identity in a run's comparability key (ADR 0128). Raise it in the same commit as
 #: any change to :func:`score` or :func:`verdict` that measures the same cards differently, so the
 #: runs scored before are not averaged with the runs scored after.
 SCORER_VERSION = 1
@@ -90,7 +90,7 @@ def _canonical(value: Any) -> str:
 
 
 def content_digest(root: Path) -> str:
-    """What a run of the playbook at ``root`` is measured against, as one digest (ADR 0127).
+    """What a run of the playbook at ``root`` is measured against, as one digest (ADR 0128).
 
     ``world.json`` and ``truth.json`` whole, the two keys of ``playbook.json`` the bench reads
     besides the id (``command`` and ``expectation``), and :data:`SCORER_VERSION`. Parsed and
@@ -112,7 +112,7 @@ def content_digest(root: Path) -> str:
 
 
 def comparability_key(content: str, engine: Any, model: Any, approve: Any) -> str:
-    """The key two runs share when their numbers may be pooled (ADR 0127).
+    """The key two runs share when their numbers may be pooled (ADR 0128).
 
     ``content`` is :func:`content_digest`; the engine, the model and the approval mode are the
     run's own. Runs under different keys measured different things and are never aggregated.
@@ -806,7 +806,7 @@ def cards_of(report: Mapping[str, Any]) -> list[dict[str, Any]]:
 def rescore(playbook: Playbook, report: Mapping[str, Any]) -> dict[str, Any]:
     """A saved run scored again against today's truth and scorer. Nothing is re-run; the cards are
     the run's own, so a change of score is a change of the measure, and ``rescored_at`` says so.
-    Its comparability key is today's (ADR 0127): the rescored run is measured as a run benched now
+    Its comparability key is today's (ADR 0128): the rescored run is measured as a run benched now
     would be, so it pools with those and no longer with the runs scored before."""
     again = dict(report)
     again.setdefault("portals", {app.app_id: app.name for app in playbook.apps})
@@ -837,7 +837,7 @@ HISTORY = 12
 def headline(summary: Mapping[str, Any]) -> dict[str, Any]:
     """One run, in a line: when, on what, under which key, the verdict, the money and the minutes.
 
-    It holds what the ranking needs to pool the run with the others under its key (ADR 0127).
+    It holds what the ranking needs to pool the run with the others under its key (ADR 0128).
     """
     s = summary.get("score", {})
     keep: dict[str, Any] = prune(
@@ -866,7 +866,7 @@ def headline(summary: Mapping[str, Any]) -> dict[str, Any]:
 def comparable_runs(
     bench: Mapping[str, Any], current: str | None = None
 ) -> list[dict[str, Any]] | None:
-    """The runs ``bench.json`` holds that pool with its latest, latest first (ADR 0127).
+    """The runs ``bench.json`` holds that pool with its latest, latest first (ADR 0128).
 
     ``None`` when the latest run carries no key (benched before keys were kept): it is then a set
     of one, and nothing is pooled with it. ``current`` is the key a run benched now would carry;
@@ -901,7 +901,7 @@ def write_bench(
     """The full report into ``run_dir`` and the summary into the playbook's ``bench.json``.
 
     The run ``bench.json`` held before becomes a line of its history. A rescore of that same run is
-    appended as a correction (ADR 0127): the line keeps the original score, and its
+    appended as a correction (ADR 0128): the line keeps the original score, and its
     ``superseded_by`` says when it was rescored, why (``note``) and to what; the run's own note
     stays on the run. Otherwise ``note`` says what changed since the last run, in a sentence.
     ``report_name`` lets a rescore write beside the run's report instead of over it.

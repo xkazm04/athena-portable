@@ -24,11 +24,11 @@ the areas and jobs a playbook may name (below).
 ```bash
 uv run python -m athena.proving.playbooks check          # every playbook loads; fails on a missing or unknown category or job (ADR 0096), a read the cap would cut, <2 portals, <8 traps, no times_per_year (ADR 0057 rule 1; not the nine older ones), a per outside ADR 0056's table, or $0 with no weighted truth
 uv run python -m athena.proving.playbooks bench <id> --model sonnet --cap 8 --note "what changed"
-uv run python -m athena.proving.playbooks bench <id> --runs 3   # three fresh worlds, every run kept (ADR 0127)
+uv run python -m athena.proving.playbooks bench <id> --runs 3   # three fresh worlds, every run kept (ADR 0128)
 uv run python -m athena.proving.playbooks rescore <id> proving-runs/<ts>/playbook-<id>/report.json
 ```
 
-Every run carries a comparability key (ADR [0127](../adr/0127-a-playbook-is-ranked-on-its-comparable-runs-and-a-rescore-appends.md)):
+Every run carries a comparability key (ADR [0128](../adr/0128-a-playbook-is-ranked-on-its-comparable-runs-and-a-rescore-appends.md)):
 a hash of `world.json`, `truth.json`, the command, the expectation, the scorer's `SCORER_VERSION`,
 the engine, the model and the approval mode. A rescore writes `report.rescored-<stamp>.json` beside
 the run's report and appends the original score to `bench.json`'s history as a correction.
@@ -238,7 +238,7 @@ amendment *The catalogue*).
 - **the ledger**, the catalog `Table` with a line saying how many playbooks it shows and where: each
   row led by the first still of its run (or its area's glyph), its short title over the lead line
   of its brief (the promise when it has none) and, when benched, how many comparable runs it
-  exceeds in ("exceeds in 2 of 3", with an "n=1" badge on a single draw; ADR 0127; an unbenched
+  exceeds in ("exceeds in 2 of 3", with an "n=1" badge on a single draw; ADR 0128; an unbenched
   row says nothing), its job, up to three portals, the time by hand
   against her measured run ("3h → 6m", "not run" when unbenched) and its value. A click, Enter or
   Space on a row opens its topic page; the arrows only walk the rows. The filters, the order and
@@ -429,7 +429,7 @@ uv run python -m athena.proving.playbooks rank --check   # exit 1 if the committ
 uv run python -m athena.proving.playbooks rank --tau     # run 1's scores against the rest's, Kendall tau-b
 ```
 
-A row stands on every run under the key a run benched today would carry (ADR 0127): the money
+A row stands on every run under the key a run benched today would carry (ADR 0128): the money
 takes the median recall, a trap or a false claim in any comparable run excludes the playbook, and
 `bench.runs` says how many runs (`n`), how many exceeded, and the min and median recall. Every
 committed row is `n: 1` today, a single draw; the desktop's ledger shows it as "n=1".
@@ -469,7 +469,7 @@ From ADR 0056 (f):
 
 - The worlds are simulated portals with invented actors; no ranked figure is any real person's
   money. Recall is one run with one model (Sonnet), extrapolated to a year; each row's
-  `bench.runs.n` says so until the playbooks are benched again (ADR 0127).
+  `bench.runs.n` says so until the playbooks are benched again (ADR 0128).
 - The economics are sourced estimates, several of them vendor figures. The money is not all of one
   kind: lien-desk's is protection, estate-settlement's is fees avoided, most of the rest is money
   recovered, and the ranking adds them as though they were one.
