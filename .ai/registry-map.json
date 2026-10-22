@@ -5614,7 +5614,11 @@
           "revision": 3,
           "changedAt": "2026-09-04",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/stage/Stage.tsx:192 Searches found none of the listed guest-execution terms in the context directories, whose code manages navigation, animations and the chrome band above a separate native page webview.",
+          "evaluatedAt": "2026-10-22",
+          "evaluatedAgainst": "sha256-b2:a59e479b7cea486b",
+          "evaluatedRevision": 3
         },
         {
           "subject": "quality-gates",

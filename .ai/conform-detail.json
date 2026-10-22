@@ -5304,6 +5304,67 @@
           "evidence": "examples/demo-kit/src/activity/index.ts:65 Activity rows accumulate on mutations without a named retention policy, pruning owner, or per-table storage report; the read LIMIT does not bound stored rows."
         }
       ]
+    },
+    "c11bdae5-0012-4b41-a287-4ad262191093/guest-execution-bounding": {
+      "context": "desktop-stage-depth",
+      "subject": "guest-execution-bounding",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-22",
+      "evaluatedTs": "2026-10-22T21:55:15.052Z",
+      "worker": "7f078330-7f56-490f-8905-2035a1118f9e",
+      "techniques": [
+        {
+          "technique": "back-edge-iteration-counter",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stage/Backdrop.tsx:32 The graphics code constructs a fixed particle collection; it does not compile or execute guest loops."
+        },
+        {
+          "technique": "bounded-shadow-backtrace",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/depth/model.ts:182 The recorded levels are navigation breadcrumbs, with no guest execution frames or engine failures requiring a shadow backtrace."
+        },
+        {
+          "technique": "budget-tier-from-observed-output",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stage/Stage.tsx:68 The time allowance concerns animation settlement, with no essential-versus-optional guest output population."
+        },
+        {
+          "technique": "cost-budget-cooperative-yield",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stage/Backdrop.tsx:113 The component subscribes host animation work to a frame clock; it owns no guest interpreter dispatch loop to budget."
+        },
+        {
+          "technique": "count-host-reentry-in-recursion-depth",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/depth/model.ts:74 Depth measures a fixed navigation hierarchy, with no guest frame stack or native re-entry accounting."
+        },
+        {
+          "technique": "grace-for-the-uninterruptible-host-call",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/depth/shape.ts:27 This boundary sends a window-layout selection; it is not a host call executing inside a deadline-bounded guest."
+        },
+        {
+          "technique": "nested-liveness-ceilings",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stage/layers.ts:67 Flushing removes leaving visual layers and rests arriving layers; there are no nested guest execution scopes to bound."
+        },
+        {
+          "technique": "one-terminator-many-armed-slots",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/depth/shape.ts:32 Dispatch here synchronizes changed window shapes, with no concurrent engine evaluations requiring termination slots."
+        },
+        {
+          "technique": "terminate-from-outside-when-you-cannot-count",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stage/Stage.tsx:102 The timer flushes animation state and makes no promise to stop foreign execution."
+        },
+        {
+          "technique": "uncatchable-limit-errors",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/depth/model.ts:214 Invalid navigation returns the existing state; this context raises no guest runtime ceiling failures."
+        }
+      ]
     }
   }
 }
