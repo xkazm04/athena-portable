@@ -1,0 +1,162 @@
+{
+  "overlay": 1,
+  "playbook": "freelancer-receivables",
+  "about": "The follow-through scenario (ADR 0129): what each signed action does to the portals, and what three weeks later looks like. world.json and truth.json are not touched; the driver never reads truth.json.",
+  "effects": {
+    "send_demand_letter": {
+      "key": "invoice_id",
+      "mark": "Demand sent {today}",
+      "ops": [
+        {
+          "table": "books_invoices",
+          "where": { "invoice_id": "{invoice_id}" },
+          "set": { "status": "{status}; Demand sent {today} under the Freelance Isn't Free Act" }
+        },
+        {
+          "table": "mail",
+          "append": {
+            "date": "{today}",
+            "from": "Maya Chen <maya@mayachen.design>",
+            "to": "{to}",
+            "subject": "Demand for payment: invoice {invoice_id}",
+            "body": "Demand sent {today} for invoice {invoice_id} ({amount_usd} USD) under New York's Freelance Isn't Free Act.",
+            "text": "demand letter sent {invoice_id} freelance isn't free act payment"
+          }
+        }
+      ]
+    },
+    "send_email": {
+      "key": "invoice_id",
+      "mark": "Reminder sent {today}",
+      "ops": [
+        {
+          "table": "books_invoices",
+          "where": { "invoice_id": "{invoice_id}" },
+          "set": { "status": "{status}; Reminder sent {today}" }
+        },
+        {
+          "table": "mail",
+          "append": {
+            "date": "{today}",
+            "from": "Maya Chen <maya@mayachen.design>",
+            "to": "{to}",
+            "subject": "{subject}",
+            "body": "Reminder sent {today} about invoice {invoice_id}.",
+            "text": "reminder sent {invoice_id} email"
+          }
+        }
+      ]
+    },
+    "submit_invoice": {
+      "key": "po_number",
+      "mark": "Submitted {today}",
+      "ops": [
+        {
+          "table": "coupa_invoices",
+          "append": {
+            "invoice_number": "{invoice_number}",
+            "po": "{po_number}",
+            "amount_usd": "{amount_usd}",
+            "status": "Submitted {today}; awaiting approval",
+            "buyer_comment": ""
+          }
+        },
+        {
+          "table": "coupa_pos",
+          "where": { "po": "{po_number}" },
+          "set": { "status": "{status}; invoice {invoice_number} Submitted {today}" }
+        }
+      ]
+    },
+    "update_tax_form": {
+      "key": "payee_id",
+      "mark": "W-9 updated {today}",
+      "ops": [
+        {
+          "table": "tipalti_status",
+          "where": { "item": "Tax form on file" },
+          "set": { "value": "W-9: {legal_name}, {tin_type}; W-9 updated {today}" }
+        },
+        {
+          "table": "tipalti_status",
+          "where": { "item": "Hold" },
+          "set": { "value": "Hold released: W-9 updated {today}" }
+        }
+      ]
+    }
+  },
+  "later": {
+    "today": "2026-10-28",
+    "ops": [
+      {
+        "table": "deposits",
+        "append": { "date": "2026-10-20", "payer": "NORTHWIND FOODS", "memo": "NW-1043", "amount_usd": 2000.0 }
+      },
+      {
+        "table": "books_invoices",
+        "append": {
+          "invoice_id": "GH-03",
+          "client": "Gale Hill Ceramics",
+          "amount_usd": 1800.0,
+          "completed": "2026-09-11",
+          "sent": "2026-09-11 (email)",
+          "status": "Open"
+        }
+      },
+      {
+        "table": "contracts",
+        "append": {
+          "client": "Gale Hill Ceramics",
+          "signed": "2026-08-05",
+          "terms": "Product photography art direction, $1,800. No payment date stated."
+        }
+      },
+      {
+        "table": "mail",
+        "append": {
+          "date": "2026-09-11",
+          "from": "Maya Chen <maya@mayachen.design>",
+          "to": "Ines Moreau, Gale Hill Ceramics <ines@galehill.example>",
+          "subject": "Gale Hill: final selects and invoice GH-03",
+          "body": "Final selects attached, and invoice GH-03 for $1,800.",
+          "text": "gale hill ceramics final selects delivered invoice GH-03"
+        }
+      },
+      {
+        "table": "mail",
+        "append": {
+          "date": "2026-09-12",
+          "from": "Ines Moreau, Gale Hill Ceramics <ines@galehill.example>",
+          "subject": "Re: Gale Hill final selects",
+          "body": "Love them, approved. I'll pass the invoice to our bookkeeper.",
+          "text": "gale hill ines approved accepted invoice GH-03"
+        }
+      }
+    ],
+    "phases": [
+      { "app": "books", "message": "It's been three weeks since we went through what clients owe me. Pick up where we left off: what has changed since then, and anything new.", "nudges": 2 },
+      { "app": "bank", "message": "Chase. What came in since last time.", "nudges": 1 },
+      { "app": "coupa", "message": "Northwind's Coupa portal.", "nudges": 1 },
+      { "app": "ariba", "message": "Ariba.", "nudges": 1 },
+      { "app": "tipalti", "message": "Lumen's Tipalti hub.", "nudges": 1 },
+      { "app": "mail", "message": "My Gmail. Follow up where it's needed.", "nudges": 1 }
+    ]
+  },
+  "branches": {
+    "approve": { "choice": "approve", "why": "The person signs every card she files in session 1, and each runs on the page." },
+    "decline": { "choice": "decline", "why": "The person declines every card she files in session 1; nothing runs." },
+    "lost_answer": { "choice": "approve", "lost": true, "why": "The person signs every card and each runs on the page, but no answer comes back: outcome_unknown, ADR 0101." }
+  },
+  "observed": {
+    "paid": {
+      "key": "NW-1043",
+      "tools": ["send_demand_letter", "send_email"],
+      "why": "Past its 2026-10-20 date by session 2 and still Open in the books, but the bank shows Northwind paid it that day."
+    },
+    "new_work": {
+      "tool": "send_demand_letter",
+      "key": "GH-03",
+      "why": "A new $1,800 invoice with no payment date, delivered and accepted 2026-09-11: due 30 days later, late by session 2."
+    }
+  }
+}

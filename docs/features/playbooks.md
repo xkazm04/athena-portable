@@ -16,6 +16,7 @@ Each one is data, and earns its place on the desktop by a run on the bench.
 | `truth.json` | what a perfect run files and what looks eligible but is not, per tool: eligible items with value and expected parameters (an item can be `required`), traps with the reason, fair-either-way items; only the scorer reads it |
 | `bench.json` | the latest measured run, committed: score, cards, the trap ledger, the turn-by-turn trace, closing words and every earlier run's headline |
 | `evidence.json`, `thumb.jpg` | the film's index and its still, written by `evidence` (below) |
+| `followthrough.json`, `followthrough.runs.json` | the follow-through overlay (what a signed action does to the tables, session 2's observations and phases) and its append-only results; `freelancer-receivables` only (below) |
 
 One file sits beside the directories and belongs to the whole library: `playbooks/taxonomy.json`,
 the areas and jobs a playbook may name (below).
@@ -31,6 +32,25 @@ Every run carries a comparability key (ADR [0127](../adr/0127-a-playbook-is-rank
 a hash of `world.json`, `truth.json`, the command, the expectation, the scorer's `SCORER_VERSION`,
 the engine, the model and the approval mode. A rescore writes `report.rescored-<stamp>.json` beside
 the run's report and appends the original score to `bench.json`'s history as a correction.
+
+## Follow-through
+
+The bench measures what she proposes; `followthrough` measures what she does with the answers
+(ADR [0129](../adr/0129-follow-through-is-proved-across-an-answer-a-restart-and-a-second-run.md)).
+Session 1 is the bench's run loop under one `proj_` id, each card answered through the decision
+route by the branch alone (`approve`, `decline`, or `lost_answer`: signed, run, and answered
+`outcome_unknown`). The overlay changes the tables an executed action touches; then a restart on
+the same brain, the overlay's later observations (a payment, new work, a later date), and session 2
+with nobody answering. Assertions on cards, decisions and reads: a signed action is read back and
+not filed again, a declined one had no effect and is not proposed again, a lost one is not retried,
+the paid invoice is not chased, the new one is. k-of-n per branch pools only runs under one key
+(world, truth, brief, overlay, engine, model, driver, `ASSERTION_VERSION`); `--reassess` appends a
+correction.
+
+```bash
+uv run python -m athena.proving.playbooks followthrough freelancer-receivables --branch all --repeats 3
+uv run python -m athena.proving.playbooks followthrough freelancer-receivables --reassess proving-runs/<ts>/followthrough-freelancer-receivables/approve-1.json --note "why"
+```
 
 ## Categories and jobs
 

@@ -9,6 +9,10 @@
     uv run python -m athena.proving.playbooks evidence <id>|--all [--dry] [--verify]
         [--stills-only] [--desktop apps/desktop]
     uv run python -m athena.proving.playbooks rank [--check | --tau]
+    uv run python -m athena.proving.playbooks followthrough <id> [--branch approve|decline|
+        lost_answer|all] [--repeats 3] [--model sonnet] [--cap 5.0] [--engine claude_code]
+        [--out proving-runs] [--no-write]
+    uv run python -m athena.proving.playbooks followthrough <id> --reassess <run>.json [--note]
 
 ``bench`` runs a real Athena on the user's own ``claude`` CLI (no key needed) and writes the full
 report under ``proving-runs/<ts>/playbook-<id>/`` (gitignored) and the summary into the playbook's
@@ -33,6 +37,13 @@ did not, 2 when a playbook could not be loaded or has no bench to film.
 committed files alone. ``--check`` writes nothing and exits 1 when the file differs. ``--tau``
 writes nothing and prints each playbook's score on its first comparable run against the median of
 the rest, with their Kendall tau-b (ADR 0127).
+
+``followthrough`` drives a playbook that has a ``followthrough.json`` overlay (ADR 0129,
+:mod:`.followthrough`) through two sessions on one brain with a restart between, once per branch
+per repeat, writes each run's full record under ``proving-runs/<ts>/followthrough-<id>/``, appends
+its line to ``playbooks/<id>/followthrough.runs.json`` and prints k-of-n per branch under the
+current key. ``--reassess`` judges a saved run again and appends a correction; nothing is re-run.
+Exit 0 when every run passed, 1 when one did not, 2 when the playbook or overlay could not be read.
 """
 
 from __future__ import annotations
@@ -62,6 +73,19 @@ from athena.proving.playbooks.evidence import (
     plan_story,
     verify,
     write_story,
+)
+from athena.proving.playbooks.followthrough import (
+    BRANCHES,
+    RESULTS_FILENAME,
+    FollowConfig,
+    FollowWorldFactory,
+    OverlayError,
+    load_overlay,
+    reassess,
+    record_correction,
+    record_run,
+    run_followthrough,
+    tally,
 )
 from athena.proving.playbooks.page import SimulatedPortals
 from athena.proving.playbooks.rank import run_rank, run_tau
@@ -115,7 +139,85 @@ def build_parser() -> argparse.ArgumentParser:
     how.add_argument(
         "--tau", action="store_true", help="run 1's order against the rest's, as Kendall tau-b"
     )
+    f = verbs.add_parser(
+        "followthrough", help="approve, decline or lose the answers, restart, run again (ADR 0129)"
+    )
+    f.add_argument("playbook")
+    f.add_argument("--branch", choices=(*BRANCHES, "all"), default="all")
+    f.add_argument("--repeats", type=int, default=3, help="runs per branch")
+    f.add_argument("--engine", default="claude_code")
+    f.add_argument("--model", default="sonnet")
+    f.add_argument("--cap", type=float, default=5.0, help="USD cap per session")
+    f.add_argument("--out", default=RUNS_DIRNAME)
+    f.add_argument(
+        "--no-write", dest="write", action="store_false", help="leave followthrough.runs.json alone"
+    )
+    f.add_argument("--reassess", default=None, help="a saved run's record, judged again")
+    f.add_argument("--note", default="", help="why it was reassessed, in a sentence")
     return parser
+
+
+def followthrough(
+    book: Playbook,
+    args: argparse.Namespace,
+    *,
+    world_factory: FollowWorldFactory | None = None,
+) -> int:
+    """Every branch asked for, ``--repeats`` times, each run written and appended (ADR 0129)."""
+    try:
+        overlay = load_overlay(book)
+    except OverlayError as exc:
+        print(f"refused: {exc}", file=sys.stderr)
+        return 2
+    if args.reassess:
+        source = Path(args.reassess)
+        original = json.loads(source.read_text(encoding="utf-8"))
+        again = reassess(overlay, original)
+        stamp = str(again["reassessed_at"]).replace(":", "").replace("-", "")
+        write_report(source.parent, again, f"{source.stem}.reassessed-{stamp}.json")
+        target = record_correction(book, original, again, note=args.note)
+        word = "passed" if again["assessment"]["passed"] else "failed"
+        print(f"reassessed {source.as_posix()} -> {target.as_posix()}: {word}")
+        return 0 if again["assessment"]["passed"] else 1
+    if args.repeats < 1:
+        print(f"refused: --repeats must be 1 or more, not {args.repeats}", file=sys.stderr)
+        return 2
+    config = FollowConfig(engine=args.engine, model=args.model, cap_usd=args.cap)
+    branches = BRANCHES if args.branch == "all" else (args.branch,)
+    run_dir = new_run_dir(Path(args.out)) / f"followthrough-{book.id}"
+    failed = 0
+    key = ""
+    for branch in branches:
+        for repeat in range(1, args.repeats + 1):
+            report = run_followthrough(
+                book,
+                overlay,
+                branch,
+                config,
+                repeat=repeat,
+                world_factory=world_factory,
+                echo=lambda line: print(line, flush=True),
+            )
+            key = str(report["comparable"])
+            path = write_report(run_dir, report, f"{branch}-{repeat}.json")
+            if args.write:
+                record_run(book, report, path.as_posix())
+            verdict = report["assessment"]
+            failed += not verdict["passed"]
+            print(
+                f"{branch} {repeat}: {'passed' if verdict['passed'] else 'FAILED'}; "
+                + "; ".join(
+                    f"{name} {'ok' if c['ok'] else 'no'} ({c['detail']})"
+                    for name, c in verdict["checks"].items()
+                )
+                + f"; ${report.get('cost_usd', '?')}; record {path.as_posix()}",
+                flush=True,
+            )
+    if args.write and key:
+        results = json.loads((book.root / RESULTS_FILENAME).read_text(encoding="utf-8"))
+        for branch, row in tally(results, key).items():
+            print(f"{branch}: {row['k']} of {row['n']} under {key}", flush=True)
+    return 1 if failed else 0
 
 
 def evidence(args: argparse.Namespace) -> int:
@@ -278,6 +380,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     except PlaybookError as exc:
         print(f"refused: {exc}", file=sys.stderr)
         return 2
+    if args.verb == "followthrough":
+        return followthrough(book, args)
     if args.verb == "rescore":
         source = Path(args.report)
         again = rescore(book, json.loads(source.read_text(encoding="utf-8")))

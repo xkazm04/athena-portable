@@ -76,6 +76,9 @@ SECONDS_PER_CARD = 30
 
 WorldFactory = Callable[[Playbook], World]
 
+#: The person at the cards: handed one turn's filed cards, returns the page's answers (ADR 0129).
+Answerer = Callable[[Sequence[Mapping[str, Any]]], list[dict[str, Any]]]
+
 #: The scorer's identity in a run's comparability key (ADR 0127). Raise it in the same commit as
 #: any change to :func:`score` or :func:`verdict` that measures the same cards differently, so the
 #: runs scored before are not averaged with the runs scored after.
@@ -307,7 +310,17 @@ def _phase(
     nudges: int,
     config: BenchConfig,
     echo: Callable[[str], None],
+    *,
+    answer: Answerer | None = None,
+    fields: Mapping[str, Any] | None = None,
 ) -> None:
+    """One phase of the desktop's run loop on ``app_id``.
+
+    ``answer`` replaces ``config.approve`` as the person at the cards: it is handed each turn's
+    filed cards and returns the page's answers to ride the next turn (the follow-through driver,
+    ADR 0129). ``fields`` are the surface's other request fields, read afresh on every turn, so a
+    caller that adds to them between turns is heard on the next one.
+    """
     pending: list[dict[str, Any]] = []
     # The playbook the person handed over is her active project on every turn, in every tab
     # (ADR 0044): the goal she works toward while the phase message names only this tab's part.
@@ -327,6 +340,7 @@ def _phase(
                 host_state=portals.host_state(app_id),
                 tool_results=pending,
                 active_project=project,
+                fields=fields,
             )
             filed = _absorb(run, record, app_id, message)
             echo(
@@ -340,7 +354,9 @@ def _phase(
                 _result(call, *portals.answer(str(call.get("name", "")), _params(call)))
                 for call in _host_calls(record)
             ]
-            if config.approve == "all":
+            if answer is not None:
+                pending.extend(answer(filed))
+            elif config.approve == "all":
                 pending.extend(_approve(world, portals, filed))
             if not pending:
                 return
