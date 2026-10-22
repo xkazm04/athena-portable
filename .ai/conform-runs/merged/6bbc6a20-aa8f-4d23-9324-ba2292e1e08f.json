@@ -1,0 +1,17 @@
+{
+ "schema": "conform-run/1",
+ "worker": "6bbc6a20-aa8f-4d23-9324-ba2292e1e08f",
+ "subject": "concurrent-vcs",
+ "evaluatedAt": "2026-10-22T21:20:26.458390+00:00",
+ "provider": "agy",
+ "model": "gemini-3.8-flash-high",
+ "pairs": [],
+ "declined": [
+  {
+   "subject": "concurrent-vcs",
+   "context": "desktop-voice-ui",
+   "reason": "the seat returned unknown"
+  }
+ ],
+ "consults": []
+}
