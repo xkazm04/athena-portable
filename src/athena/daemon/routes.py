@@ -75,7 +75,6 @@ from athena.contracts.manifest import HostManifest
 from athena.contracts.registry import Lane, OpenApp, TurnContext, parse_origin
 from athena.core.catalog import CatalogError
 from athena.core.ledger import LedgerError
-from athena.core.prompt import SinceLastRun
 from athena.core.recall import recall as recall_bundle
 from athena.daemon.sessions import Session, conversation_for
 from athena.harness.engines import EngineStatus
@@ -857,9 +856,9 @@ def turn_events(
     with daemon.writing(), daemon.turn_door(ctx.page_origin or "") as door:
         stamped = stamp_case_turn(daemon, ctx)
         try:
-            last = last_run_of(daemon, ctx.case_id)
-            if last is not None and last.started:
-                ctx = replace(ctx, spent_since=last.started)
+            started = last_run_of(daemon, ctx.case_id)
+            if started:
+                ctx = replace(ctx, spent_since=started)
             events = daemon.lane.run(
                 message,
                 ctx,
@@ -867,7 +866,6 @@ def turn_events(
                 tool_results=results,
                 active_project=project,
                 pending_decisions=pending_lines(daemon),
-                since_last_run=last,
             )
             yield from drain(events, door)
         except Exception as exc:  # a lane bug ends the stream honestly, never silently
@@ -890,19 +888,20 @@ def stamp_case_turn(daemon: AthenaDaemon, ctx: TurnContext) -> bool:
     return True
 
 
-def last_run_of(daemon: AthenaDaemon, case_id: str | None) -> SinceLastRun | None:
-    """The last run of case ``case_id``'s chore, for this turn's frame (ADR 0126).
+def last_run_of(daemon: AthenaDaemon, case_id: str | None) -> str | None:
+    """Where the last run of case ``case_id``'s chore began, for the gate (ADR 0126, ADR 0130).
 
-    Keyed on the case the turn names (``TurnContext.case_id``), never on its conversation.
-    ``None`` for a turn under no case, a daemon with nothing bound, or a case with no stored
-    receipt; and ``None`` when the case file cannot be read, because what a past run came to is
-    context for this one and a turn never fails for want of it.
+    Keyed on the case the turn names (``TurnContext.case_id``), never on its conversation. It
+    becomes ``TurnContext.spent_since``, so a card's "you approved this exact call" reaches back
+    to that run and names the date; nothing of the run reaches the prompt (ADR 0130). ``None``
+    for a turn under no case, a daemon with nothing bound, or a case with no stored receipt; and
+    ``None`` when the case file cannot be read, because a turn never fails for want of it.
     """
-    if not case_id or daemon.last_run is None:
+    if not case_id or daemon.last_run_started is None:
         return None
     try:
-        return daemon.last_run(case_id)
-    except Exception:  # an unreadable case file is no "since last run", never a failed turn
+        return daemon.last_run_started(case_id) or None
+    except Exception:  # an unreadable case file is a day's lookback, never a failed turn
         return None
 
 

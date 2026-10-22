@@ -86,3 +86,14 @@ By [0127](0127-a-cases-turns-keep-their-conversations-and-are-stamped-under-it.m
 named above landed: every turn with a `case_id` is stamped under its case and `fold` joins by turn
 id, so a turn sent with `case_id` alone is in the receipt `done` folds. A run's start is its first
 turn's, so the gate's lookback starts there.
+
+## Amended 2026-10-22
+
+By [0130](0130-a-chores-last-run-stays-out-of-the-next-runs-prompt.md). Decisions 2 and 3 are
+reversed: the two-run bench (`--second-run`, sonnet, n=1 per arm, $29.99) counted run 2's
+duplicates of run 1 at 6 without the "Since last run of this chore" block and 14 with it, over
+five playbooks (lien-desk 2 to 7, change-order-notices 2 to 5, the other three unchanged). The
+block is gone from the composed prompt and the lane; the daemon now hands in only where the last
+run began (`AthenaDaemon.last_run_started`), for decision 4, which stands with decision 1. The
+bench of decision 5 stays; `--no-carry` is a no-op that says so. The first consequence ("a
+chore's second run is told what the first one asked ...") and the block's cost no longer hold.

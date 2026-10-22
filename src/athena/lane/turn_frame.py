@@ -31,7 +31,7 @@ from typing import Any
 from athena.contracts.channel import ToolResult, cut_text
 from athena.contracts.registry import Lane
 from athena.core.constitution import Constitution
-from athena.core.prompt import Composed, SinceLastRun, TurnFrame, compose
+from athena.core.prompt import Composed, TurnFrame, compose
 from athena.lane.ports import CatalogPort, HostState, RecallFn
 
 __all__ = [
@@ -63,9 +63,6 @@ class SurfaceTurn:
     pending_decisions: tuple[str, ...] = ()
     #: Origins the user switched off for this turn; their tools leave the capability block.
     disabled_origins: frozenset[str] = frozenset()
-    #: The last run of the chore this turn belongs to, from its case's last receipt (ADR 0126);
-    #: ``None`` under no case or a case with no stored receipt. The daemon supplies it.
-    since_last_run: SinceLastRun | None = None
 
 
 def tool_results_from(payloads: Sequence[Mapping[str, Any]]) -> tuple[ToolResult, ...]:
@@ -160,7 +157,6 @@ class FrameBuilder:
             active_project=turn.active_project,
             pending_decisions=turn.pending_decisions,
             disabled_origins=turn.disabled_origins,
-            since_last_run=turn.since_last_run,
         )
 
     def remember(self, conversation_id: str, frame: TurnFrame) -> None:

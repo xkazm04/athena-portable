@@ -30,14 +30,13 @@ import re
 import tempfile
 import time
 from collections.abc import Callable, Collection, Mapping, Sequence
-from dataclasses import asdict, dataclass, field, replace
+from dataclasses import dataclass, field, replace
 from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from athena.contracts import ids
 from athena.contracts.channel import now_iso
-from athena.core.prompt import SinceLastRun
 from athena.proving.characters.scene import CONTINUE
 from athena.proving.playbooks.page import SimulatedPortals
 from athena.proving.playbooks.spec import AppSpec, Playbook, Target, _norm
@@ -353,7 +352,6 @@ def run_second(
     playbook: Playbook,
     config: BenchConfig | None = None,
     *,
-    carry: bool = True,
     world_factory: RootedWorldFactory | None = None,
     echo: Callable[[str], None] = lambda line: None,
 ) -> dict[str, Any]:
@@ -363,9 +361,10 @@ def run_second(
     each portal keeps its own conversation as the desktop's do. Run 1 approves every card
     (``approve: all``), as a person who signs what she is shown, and its cards become a receipt
     (:func:`athena.adopt.receipts.of_cards`). Then the daemon restarts on the same brain, the same
-    approval table: run 2 is a fresh Athena, as a run a month later is. With ``carry`` the
-    receipt is the case's last run, so run 2's frames carry "since last run" and the gate looks
-    back to run 1's start; without it run 2 is today's second run. Run 2 is scored with run 1's
+    approval table: run 2 is a fresh Athena, as a run a month later is. The receipt is the case's
+    last run, so run 2's gate looks back to run 1's start and dates an old yes, as the product's
+    does; nothing of it reaches run 2's prompt (ADR 0130: the "since last run" block that did
+    doubled the re-filed cards, 6 to 14 over five playbooks). Run 2 is scored with run 1's
     found items as already seen: a card for one is a ``duplicate`` of run 1, and recall is
     measured on the rest.
     """
@@ -377,7 +376,6 @@ def run_second(
     first, second = _Run(case_id=case_id), _Run(case_id=case_id)
     portals_1, portals_2 = SimulatedPortals(playbook), SimulatedPortals(playbook)
     config_1 = replace(config, approve="all")
-    carried: SinceLastRun | None = None
     started = time.monotonic()
     with tempfile.TemporaryDirectory(prefix="athena-second-", ignore_cleanup_errors=True) as tmp:
         root = Path(tmp)
@@ -392,20 +390,18 @@ def run_second(
         finally:
             world.close()
         wall_1 = round(time.monotonic() - started, 1)
-        if carry:
-            carried = runs.carry_forward(receipt)
+        began = runs.run_started(receipt) or None
         world = make(playbook, root)
         try:
-            if carried is not None:
-                bound, held = world.local.daemon.last_run, carried
+            bound = world.local.daemon.last_run_started
 
-                def last_run(case: str) -> SinceLastRun | None:
-                    if case == case_id:
-                        return held
-                    return bound(case) if bound is not None else None
+            def last_run_started(case: str) -> str | None:
+                if case == case_id:
+                    return began
+                return bound(case) if bound is not None else None
 
-                world.local.daemon.last_run = last_run
-            echo("run 2: " + ("with the carry-forward" if carry else "no carry-forward"))
+            world.local.daemon.last_run_started = last_run_started
+            echo("run 2: after a restart, the gate looking back to run 1's start")
             _script(world, portals_2, second, config, echo)
         finally:
             world.close()
@@ -420,7 +416,9 @@ def run_second(
     report: dict[str, Any] = {
         "playbook": playbook.id,
         "mode": "second_run",
-        "carry": carry,
+        # No run carries the last receipt into its prompt any more (ADR 0130); kept so a report
+        # reads the same as the measured 2026-10-22 baseline arm.
+        "carry": False,
         "case_id": case_id,
         "run_at": run_2.get("run_at"),
         "engine": config.engine,
@@ -428,7 +426,7 @@ def run_second(
         "wall_s": wall,
         "cost_usd": round(sum(known), 4) if len(known) == len(costs) else None,
         "receipt": runs.as_dict(receipt),
-        "carried": asdict(carried) if carried is not None else None,
+        "spent_since": began,
         "second_run": second_run_verdict(playbook, run_2),
         "run_1": run_1,
         "run_2": run_2,

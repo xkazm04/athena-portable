@@ -1125,22 +1125,17 @@ def test_a_required_item_missed_is_short_whatever_else_was_found(tmp_path: Path)
     assert judged["reasons"] == ["missed 1ZC, which could not wait"]
 
 
-# --- the second run (ADR 0126) -------------------------------------------------------------------
+# --- the second run (ADR 0126, ADR 0130) ---------------------------------------------------------
 
 
-def _remembers(request: ModelRequest) -> str:
-    """The careful model, made blind to its recalled conversation, which also reads its "since
-    last run": a claim it sees filed there is not filed again. A real model also reads the
-    episodes recalled from run 1 (the same brain); this one does not, so the carry-forward is the
-    only memory of run 1 it acts on, and the two arms differ by it alone."""
+def _forgets(request: ModelRequest) -> str:
+    """The careful model, made blind to its recalled conversation: run 2 starts from the pages
+    alone and files both claims again, so its cards are run 1's duplicates, which the two-run
+    bench counts (ADR 0126, ADR 0130)."""
     frame = frame_of(request)
     if "## Recalled conversation" in frame:
         head, tail = frame.split("## Recalled conversation", 1)
         frame = head + tail[tail.index("## Decisions waiting") :]
-    if "## Since last run of this chore" in frame:
-        carried = frame.split("## Since last run of this chore", 1)[1]
-        if "tracking=1ZA" in carried and "tracking=1ZB" in carried:
-            return "Both late parcels were claimed and approved last run; nothing new is late."
     if "Claim filed" in frame or ("file_claim" in frame and "1ZB" in frame and "approved" in frame):
         return "Both claims are filed."
     if "1ZA" not in frame:
@@ -1190,65 +1185,57 @@ def _rooted(fn: Any, conversations: set[str]) -> Any:
     return make
 
 
-def test_a_second_run_counts_its_duplicates_of_run_1_with_and_without_the_carry(
+def test_a_second_run_counts_its_duplicates_of_run_1_and_composes_no_receipt(
     tmp_path: Path,
 ) -> None:
     """The fake second run: run 1 approves both claims; run 2, a fresh Athena on the same brain,
-    files both again without the carry-forward (two duplicates of run 1, short) and none with it
-    (meets). The case rides every turn as ``case_id`` and routes nothing: no ``conv_proj_``."""
+    files both again (two duplicates of run 1, short). No frame of either run holds run 1's
+    receipt (ADR 0130), while run 2's gate looks back to where run 1 began. The case rides every
+    turn as ``case_id`` and routes nothing: no ``conv_proj_``."""
     book = load_playbook(make_playbook(tmp_path))
     seen: list[str] = []
 
     def model(request: ModelRequest) -> str:
         seen.append(frame_of(request))
-        return _remembers(request)
+        return _forgets(request)
 
     conversations: set[str] = set()
     factory = _rooted(scripted_model(model), conversations)
-    base = run_second(book, BenchConfig(engine="nebius"), carry=False, world_factory=factory)
-    assert not any("Since last run" in f for f in seen)
+    report = run_second(book, BenchConfig(engine="nebius"), world_factory=factory)
+    assert seen and not any("Since last run" in f for f in seen)
     assert conversations and not any(c.startswith("conv_proj_") for c in conversations)
-    run_1 = base["run_1"]
+    run_1 = report["run_1"]
     assert run_1["approve"] == "all" and len(run_1["executed"]) == 2
     assert run_1["score"]["found"] == 2 and "project_id" not in run_1
-    assert run_1["case_id"] == base["run_2"]["case_id"] == base["case_id"]
-    assert ids.is_id("project", base["case_id"])
-    assert base["receipt"]["approved"] == 2 and base["receipt"]["consumed"] == 2
-    assert "carried" not in base
-    s = base["second_run"]
+    assert run_1["case_id"] == report["run_2"]["case_id"] == report["case_id"]
+    assert ids.is_id("project", report["case_id"])
+    assert report["receipt"]["approved"] == 2 and report["receipt"]["consumed"] == 2
+    assert report["carry"] is False and "carried" not in report
+    assert report["spent_since"] == report["receipt"]["first_at"]
+    s = report["second_run"]
     assert (s["duplicates_of_run_1"], s["run_1_found"], s["rest_eligible"]) == (2, 2, 0)
     assert s.get("recall_rest_count") is None and s["word"] == "short"
-
-    seen.clear()
-    carried = run_second(book, BenchConfig(engine="nebius"), carry=True, world_factory=factory)
-    second_frames = [f for f in seen if "## Since last run of this chore" in f]
-    assert second_frames, "run 2's frames carry run 1's receipt"
-    assert "tracking=1ZA" in second_frames[0] and "tracking=1ZB" in second_frames[0]
-    assert carried["carried"]["total"] == 2 and len(carried["carried"]["lines"]) == 2
-    s = carried["second_run"]
-    assert s["duplicates_of_run_1"] == 0 and s["word"] == "meets", s
-    assert carried["cost_usd"] is not None and carried["mode"] == "second_run"
-    assert not any(c.startswith("conv_proj_") for c in conversations)
+    assert report["cost_usd"] is not None and report["mode"] == "second_run"
 
 
-def test_the_bench_cli_runs_the_second_run_with_and_without_the_carry(
-    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+def test_the_bench_cli_runs_the_second_run_and_no_carry_is_a_noop_that_says_so(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
 ) -> None:
     from athena.proving.playbooks import __main__ as cli
 
     make_playbook(tmp_path / "lib")
-    asked: list[bool] = []
+    asked: list[str] = []
 
-    def fake(book: Any, config: BenchConfig, *, carry: bool, echo: Any) -> dict[str, Any]:
-        asked.append(carry)
+    def fake(book: Any, config: BenchConfig, *, echo: Any) -> dict[str, Any]:
+        asked.append(book.id)
         assert config.engine == "nebius"
         return {
             "cost_usd": 0.01,
             "run_1": {"score": {"found": 2, "eligible": 2}},
             "second_run": {
-                "word": "meets" if carry else "short",
-                "reasons": [] if carry else ["2 cards for items run 1 already filed"],
-                "duplicates_of_run_1": 0 if carry else 2,
+                "word": "short",
+                "reasons": ["2 cards for items run 1 already filed"],
+                "duplicates_of_run_1": 2,
                 "rest_eligible": 0,
                 "rest_found": 0,
                 "recall_rest_count": None,
@@ -1258,9 +1245,12 @@ def test_the_bench_cli_runs_the_second_run_with_and_without_the_carry(
     monkeypatch.setattr(cli, "run_second", fake)
     common = ["--dir", str(tmp_path / "lib"), "bench", "late-parcels", "--engine", "nebius"]
     out = ["--out", str(tmp_path / "runs")]
+    assert cli.main([*common, "--second-run", *out]) == 1
+    assert cli.NO_CARRY_NOTE not in capsys.readouterr().out
+    # The command that measured ADR 0130 still runs; the flag changes nothing but a line.
     assert cli.main([*common, "--second-run", "--no-carry", *out]) == 1
-    assert cli.main([*common, "--second-run", *out]) == 0
-    assert asked == [False, True]
-    written = sorted((tmp_path / "runs").glob("*/second-run-late-parcels-*/report.json"))
+    assert cli.NO_CARRY_NOTE in capsys.readouterr().out
+    assert asked == ["late-parcels", "late-parcels"]
+    written = sorted((tmp_path / "runs").glob("*/second-run-late-parcels/report.json"))
     assert len(written) == 2
     assert not (tmp_path / "lib" / "late-parcels" / "bench.json").exists()

@@ -75,7 +75,6 @@ from athena.core.brain import paths as brain_paths
 from athena.core.case_turns import CaseTurns
 from athena.core.catalog import Catalog
 from athena.core.ledger import Ledger
-from athena.core.prompt import SinceLastRun
 from athena.daemon.ready import announce, failure_line, ready_line
 from athena.daemon.routes import (
     ENGINES_TTL_S,
@@ -271,10 +270,12 @@ class AthenaDaemon:
     #: which the turn being stopped holds.
     door_lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
     _door: TurnDoor | None = field(default=None, repr=False)
-    #: The last run of a case's chore, by its ``proj_`` id, from the case file's last receipt, or
-    #: ``None`` (ADR 0126). Bound by wiring to the adopt package's case book, so neither the
-    #: daemon nor the core reads a case file; ``None`` here, no turn has a "since last run".
-    last_run: Callable[[str], SinceLastRun | None] | None = None
+    #: Where the last run of a case's chore began (an ISO stamp), by its ``proj_`` id, from the
+    #: case file's last receipt, or ``None`` (ADR 0126). Bound by wiring to the adopt package's case
+    #: book, so neither the daemon nor the core reads a case file; ``None`` here, every card's "you
+    #: approved this exact call" looks back a day. Only the gate uses it; nothing of the receipt
+    #: reaches the prompt (ADR 0130).
+    last_run_started: Callable[[str], str | None] | None = None
     #: The turns sent under a case, stamped as each begins (ADR 0127): what a case's receipt is
     #: joined by, whatever conversation each turn talked in. Opened on the daemon's brain.
     case_turns: CaseTurns = field(init=False, repr=False)

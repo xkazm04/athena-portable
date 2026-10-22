@@ -9,6 +9,7 @@ receipt to the case file, which is still there after the index is deleted and re
 
 from __future__ import annotations
 
+import re
 import shutil
 from datetime import UTC, datetime, timedelta
 from pathlib import Path
@@ -253,10 +254,10 @@ def test_a_case_with_no_run_says_so(live: Live, daemon: AthenaDaemon) -> None:
     assert body["open"] is None and body["receipts"] == [] and body["total"] == 0
 
 
-# --- the second run starts where the last stopped (ADR 0126) ------------------------------------
+# --- an old yes is dated on the card; the receipt stays out of the prompt (ADR 0126, 0130) ------
 
 
-def test_a_turn_under_a_case_with_a_stored_run_carries_it_and_dates_an_old_yes(
+def test_a_turn_under_a_case_with_a_stored_run_dates_an_old_yes_and_composes_no_receipt(
     live: Live, daemon: AthenaDaemon, transport: ScriptedTransport
 ) -> None:
     from athena.adopt import receipts as runs
@@ -312,13 +313,9 @@ def test_a_turn_under_a_case_with_a_stored_run_carries_it_and_dates_an_old_yes(
     under = live.run("pay the late ones", case_id=case_id)
     assert {r.conversation for r in daemon.ledger.recent(5).rows} == {f"conv_{APP_ID}"}
     frame = transport.requests[-1].stdin
-    assert "## Since last run of this chore" in frame
-    block = frame[frame.index("## Since last run of this chore") :]
-    block = block[: block.index("(showing ")]
-    assert "untrusted" in block, "the receipt's params came from pages: fenced"
-    assert block.index("expired unanswered") < block.index("approved ")
-    assert "invoice=8" in block and "amount_usd=120, invoice=7" in block
-    assert "(showing 2 of 2)" in frame
+    # ADR 0130: the last run's receipt is not composed into the turn, in any wording.
+    assert "Since last run" not in frame
+    assert "expired unanswered" not in frame and "invoice=8" not in frame
     local = then.astimezone()
     day = f"{local.strftime('%b')} {local.day}"
     (card,) = [p for kind, p in under.frames() if kind == "decision.requested"]
@@ -326,20 +323,40 @@ def test_a_turn_under_a_case_with_a_stored_run_carries_it_and_dates_an_old_yes(
         card["rationale"]
     )
 
-    # No project: today's frame and today's day-long lookback, so a 20-day-old yes says nothing.
+    # No case: today's day-long lookback, so a 20-day-old yes says nothing.
     loose = live.run("pay the late ones")
     assert "Since last run" not in transport.requests[-1].stdin
     (card,) = [p for kind, p in loose.frames() if kind == "decision.requested"]
     assert "You approved this exact call" not in str(card["rationale"])
 
-    # A case with no stored run: no block, and the day-long lookback.
+    # A case with no stored run: the day-long lookback.
     fresh = live.run("pay the late ones", case_id=bare_case)
     assert "Since last run" not in transport.requests[-1].stdin
     (card,) = [p for kind, p in fresh.frames() if kind == "decision.requested"]
     assert "You approved this exact call" not in str(card["rationale"])
 
-    # A project_id alone names its case too (the voice path sends only that).
+    # A project_id alone names its case too (the voice path sends only that): dated, no block.
     routed = live.run("pay the late ones", project_id=case_id)
-    assert "## Since last run of this chore" in transport.requests[-1].stdin
     assert routed.status == 200
+    assert "Since last run" not in transport.requests[-1].stdin
+    (card,) = [p for kind, p in routed.frames() if kind == "decision.requested"]
+    assert f"on {day} at" in str(card["rationale"])
     assert live.run("x", case_id="proj_nothex").status == 400
+
+    # Outside a case, a yes inside the last day is today's line: the clock time, no date.
+    recent = daemon.approvals.create(
+        "host.invoices.pay",
+        {"invoice": "9"},
+        origin="host:invoices",
+        conversation=conv,
+        surface="panel",
+    )
+    daemon.approvals.resolve(recent.id, "approve")
+    assert daemon.approvals.consume(recent.id)
+    live.script(claude_round("Paying it.\n" + op("host.invoices.pay", invoice="9")))
+    today = live.run("pay invoice 9")
+    (card,) = [p for kind, p in today.frames() if kind == "decision.requested"]
+    assert re.search(
+        r"You approved this exact call at \d\d:\d\d and it may already have run\.",
+        str(card["rationale"]),
+    ), card

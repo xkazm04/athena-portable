@@ -337,16 +337,19 @@ closes it and appends the receipt to the case file's block, so it survives a reb
 shared `conv_proj_<hex>` for every tab, stays as the experiment that measured it 1.7 to 2.5 times
 dearer per run.
 
-**The next run starts where the last stopped.** A turn that names a case (`case_id` on `POST /run`
-or a voice frame, which routes nothing, or a `project_id`) whose file holds a receipt gets a fenced, bounded "Since
-last run of this chore" block from the last one: cards that expired or were still waiting and calls
-that may have completed first, then approved and declined cards, each with its action, key
-parameters and date, `(showing N of M)`. It informs and never says what to leave out. A card filed
-in that turn for a call approved and let through since that run began says so with the date ("You
-approved this exact call on Oct 15 at 14:02 ..."), not only inside the last day
-([ADR 0126](../adr/0126-the-second-run-starts-where-the-last-stopped.md)).
-`bench <id> --second-run [--no-carry]` measures it: two runs of one case on one brain, the first
-approving every card, the second scored for its duplicates of run 1 and its recall on the rest.
+**An old yes is dated on the card.** Under a turn that names a case (`case_id` on `POST /run` or a
+voice frame, which routes nothing, or a `project_id`) whose file holds a receipt, a card filed for a
+call approved and let through since the case's last run began says so with the date ("You
+approved this exact call on Oct 15 at 14:02 ..."), not only inside the last day; outside a case it
+is the day-long lookback and the clock time
+([ADR 0126](../adr/0126-the-second-run-starts-where-the-last-stopped.md)). The last run's receipt
+does not go into the next run's prompt: a "Since last run of this chore" block that listed it was
+benched and removed, because run 2 re-filed more with it (14 duplicates of run 1 over five
+playbooks) than without it (6)
+([ADR 0130](../adr/0130-a-chores-last-run-stays-out-of-the-next-runs-prompt.md)).
+`bench <id> --second-run` is that measure: two runs of one case on one brain, the first approving
+every card, the second, after a restart, scored for its duplicates of run 1 and its recall on the
+rest (`--no-carry` is accepted and changes nothing).
 
 **The wire.** `POST /adopt`, `GET /adopt/<sid>/events?after=<seq>` (Server-Sent Events, replay
 then live, heartbeats, last frame `adopt.error {reason: "session_closed"}`), `.../answer`,

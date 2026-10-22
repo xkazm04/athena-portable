@@ -6,7 +6,7 @@
     uv run python -m athena.proving.playbooks bench <id> [--model sonnet] [--approve none|all]
         [--cap 5.0] [--engine claude_code] [--out proving-runs] [--no-write] [--runs 1]
         [--project] [--case]
-    uv run python -m athena.proving.playbooks bench <id> --second-run [--no-carry] [--model ...]
+    uv run python -m athena.proving.playbooks bench <id> --second-run [--model ...]
     uv run python -m athena.proving.playbooks rescore <id> <run>/report.json
     uv run python -m athena.proving.playbooks evidence <id>|--all [--dry] [--verify]
         [--stills-only] [--desktop apps/desktop]
@@ -26,10 +26,11 @@ beside the run's own ``report.json``, never over it, and appends the run's origi
 history as a correction.
 
 ``bench --second-run`` (ADR 0126) runs the playbook twice on one world: run 1 approving every card,
-run 2 with run 1's receipt carried forward (``--no-carry``: without it, the baseline), and reports
-run 2's cards for items run 1 already filed and its recall on the rest. It writes the report
-alone, never ``bench.json``: a two-run result is not comparable with a one-run verdict. ``--cap``
-bounds each run. Exit 1 when run 2 is ``short`` of that bar.
+run 2 after a restart with the gate looking back to run 1's start, and reports run 2's cards for
+items run 1 already filed and its recall on the rest. ``--no-carry`` is accepted and changes
+nothing: run 1's receipt no longer reaches run 2's prompt in any run (ADR 0130). It writes the
+report alone, never ``bench.json``: a two-run result is not comparable with a one-run verdict.
+``--cap`` bounds each run. Exit 1 when run 2 is ``short`` of that bar.
 
 ``evidence`` films a benched playbook (ADR 0055, :mod:`.evidence`): the media under the gitignored
 ``evidence/<id>/``, the index and thumbnail into ``playbooks/<id>/``. ``--dry`` prints the plan and
@@ -132,13 +133,12 @@ def build_parser() -> argparse.ArgumentParser:
     b.add_argument(
         "--second-run",
         action="store_true",
-        help="run twice on one world, the second starting where the first stopped (ADR 0126)",
+        help="run twice on one world, run 2 after a restart, scored for re-filing (ADR 0126)",
     )
     b.add_argument(
         "--no-carry",
-        dest="carry",
-        action="store_false",
-        help="with --second-run: run 2 without run 1's receipt, the baseline",
+        action="store_true",
+        help="no-op since ADR 0130: run 2 never gets run 1's receipt in its prompt",
     )
     b.add_argument("--out", default=RUNS_DIRNAME)
     b.add_argument("--no-write", dest="write", action="store_false", help="leave bench.json alone")
@@ -440,17 +440,25 @@ def main(argv: Sequence[str] | None = None) -> int:
         case=args.case,
     )
     if args.second_run:
-        return second_run(book, config, carry=args.carry, out=Path(args.out))
+        if args.no_carry:
+            print(NO_CARRY_NOTE, flush=True)
+        return second_run(book, config, out=Path(args.out))
     print(f"bench {book.id} on {config.engine} {config.model}", flush=True)
     return bench(book, config, runs=args.runs, out=Path(args.out), write=args.write, note=args.note)
 
 
-def second_run(book: Playbook, config: BenchConfig, *, carry: bool, out: Path) -> int:
+#: What ``--no-carry`` says: kept so the command that measured ADR 0130 still runs, and changes
+#: nothing, because no run carries the last receipt into its prompt any more.
+NO_CARRY_NOTE = (
+    "--no-carry changes nothing since ADR 0130: run 2 never gets run 1's receipt in its prompt"
+)
+
+
+def second_run(book: Playbook, config: BenchConfig, *, out: Path) -> int:
     """``bench --second-run``: two runs on one world, the report written, ``bench.json`` not."""
-    arm = "with carry-forward" if carry else "no carry-forward"
-    print(f"bench {book.id} second run ({arm}) on {config.engine} {config.model}", flush=True)
-    report = run_second(book, config, carry=carry, echo=lambda line: print(line, flush=True))
-    run_dir = new_run_dir(out) / f"second-run-{book.id}-{'carry' if carry else 'no-carry'}"
+    print(f"bench {book.id} second run on {config.engine} {config.model}", flush=True)
+    report = run_second(book, config, echo=lambda line: print(line, flush=True))
+    run_dir = new_run_dir(out) / f"second-run-{book.id}"
     write_report(run_dir, report)
     s = report["second_run"]
     first = report["run_1"]["score"]
