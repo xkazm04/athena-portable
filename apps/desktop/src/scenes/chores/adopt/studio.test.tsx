@@ -104,7 +104,7 @@ class FakeClient implements AdoptClient {
   }
   runs(caseId: string) {
     this.calls.push({ route: "runs", body: caseId });
-    const none = { ok: true as const, case_id: caseId, conversation_id: `conv_${caseId}`, open: null };
+    const none = { ok: true as const, case_id: caseId, open: null };
     return Promise.resolve({ ...none, receipts: [], showing: 0, total: 0, footer: "" });
   }
   close(sid: string) {

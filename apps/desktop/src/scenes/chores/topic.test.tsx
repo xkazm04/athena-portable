@@ -81,7 +81,6 @@ const runsOf = (caseId: string, open: Receipt | null, receipts: Receipt[], foote
   Promise.resolve({
     ok: true,
     case_id: caseId,
-    conversation_id: `conv_${caseId}`,
     open,
     receipts,
     showing: receipts.length,

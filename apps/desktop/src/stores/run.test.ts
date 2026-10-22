@@ -1259,7 +1259,7 @@ describe("the active playbook", () => {
     expect(daemon.runs()[1].body!.active_project).toBeUndefined();
   });
 
-  it("sends the case's project_id beside it on every turn while a case-backed playbook is active (ADR 0124)", async () => {
+  it("sends the case's case_id and no project_id on every turn while a case-backed playbook is active (ADR 0127)", async () => {
     const daemon = fakeDaemon({ runs: [[finished()], [finished()], [finished()], [finished()]] });
     wire(daemon, fakePage());
     useRun.getState().setProject({ ...playbook, caseId: "proj_0123456789ab" });
@@ -1267,8 +1267,11 @@ describe("the active playbook", () => {
     await useRun.getState().send("start");
     await useRun.getState().send("and the next tab");
     const [first, second] = daemon.runs();
-    expect(first.body!.project_id).toBe("proj_0123456789ab");
-    expect(second.body!.project_id).toBe("proj_0123456789ab");
+    expect(first.body!.case_id).toBe("proj_0123456789ab");
+    expect(second.body!.case_id).toBe("proj_0123456789ab");
+    // Each tab keeps its own conversation: a project_id would route every turn into conv_proj_.
+    expect("project_id" in first.body!).toBe(false);
+    expect("project_id" in second.body!).toBe(false);
     // The frame's project stays the playbook's: the case id is not a field of it.
     expect(first.body!.active_project).toEqual({ kind: "playbook", ...playbook });
 
@@ -1278,8 +1281,10 @@ describe("the active playbook", () => {
     useRun.getState().setProject({ ...playbook, caseId: "proj_nothex" });
     await useRun.getState().send("bad id");
     const [, , third, fourth] = daemon.runs();
-    expect("project_id" in third.body!).toBe(false);
-    expect("project_id" in fourth.body!).toBe(false);
+    for (const body of [third.body!, fourth.body!]) {
+      expect("case_id" in body).toBe(false);
+      expect("project_id" in body).toBe(false);
+    }
     useRun.getState().setProject(null);
   });
 

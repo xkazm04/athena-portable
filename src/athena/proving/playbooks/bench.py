@@ -50,6 +50,7 @@ __all__ = [
     "RootedWorldFactory",
     "WorldFactory",
     "cards_of",
+    "case_receipt",
     "headline",
     "prose_audit",
     "rescore",
@@ -89,10 +90,15 @@ class BenchConfig:
     cap_usd: float = 5.0
     #: How many times the person does what Athena asks when she asks them to switch tabs.
     follow_ups: int = 3
-    #: Run under a case, as the desktop does once a brief is approved (ADR 0124): a ``proj_`` id
-    #: is minted for the run and sent as ``project_id`` on every turn, so every phase's turns
-    #: share ``conv_proj_…``. Off, the turns stay in each portal's own conversation.
+    #: An experiment, not how the desktop runs a case any more (ADR 0127): a ``proj_`` id is
+    #: minted for the run and sent as ``project_id`` on every turn, so every phase's turns share
+    #: ``conv_proj_…``. The paid gate measured it at 1.7-2.5x the cost per run. Off, the turns stay
+    #: in each portal's own conversation.
     project: bool = False
+    #: Run under a case as the desktop does (ADR 0127): a ``proj_`` id is minted and sent as
+    #: ``case_id`` on every turn, which routes nothing, so each portal keeps its own conversation
+    #: and the daemon stamps every turn under the case. The report carries the case's receipt.
+    case: bool = False
 
 
 @dataclass
@@ -178,13 +184,42 @@ def run_bench(
     started = time.monotonic()
     world = world_factory(playbook) if world_factory else _default_world(playbook, config)
     portals = SimulatedPortals(playbook)
-    run = _Run(project_id=ids.mint("project") if config.project else "")
+    run = _Run(
+        project_id=ids.mint("project") if config.project else "",
+        case_id=ids.mint("project") if config.case else "",
+    )
+    receipt: dict[str, Any] | None = None
     try:
         _script(world, portals, run, config, echo)
+        if config.case:
+            receipt = case_receipt(world, run.case_id)
     finally:
         world.close()
     wall = round(time.monotonic() - started, 1)
-    return _report(playbook, config, run, portals, wall, score(playbook, run.cards))
+    report = _report(playbook, config, run, portals, wall, score(playbook, run.cards))
+    if receipt is not None:
+        report["case_receipt"] = receipt
+    return report
+
+
+def case_receipt(world: World, case_id: str) -> dict[str, Any]:
+    """The case's open run as the receipt route would fold it (ADR 0127): its turns, the cards
+    by state, the asked dollars and the ledger's rows of those turns, which the bench's own
+    ``cost_usd`` should equal."""
+    from athena.adopt import receipts as runs  # adopt imports this module; not at import time
+
+    local = world.local
+    folded = runs.fold(local.brain, local.approvals, local.ledger, local.daemon.case_turns, case_id)
+    keys = ("turns", "approved", "consumed", "declined", "expired", "pending")
+    out: dict[str, Any] = {k: getattr(folded, k) for k in keys}
+    out.update(
+        notes=folded.notes_total,
+        asked_usd=folded.asked_usd,
+        calls=folded.calls,
+        errors=folded.errors,
+        cost_usd=round(folded.cost_usd, 4),
+    )
+    return out
 
 
 def _script(

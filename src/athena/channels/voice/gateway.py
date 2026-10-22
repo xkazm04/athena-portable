@@ -8,11 +8,11 @@ words ``surface = voice`` and ``trigger = voice``; what it adds to the ledger is
 request a metered speech provider was sent (ADR 0083).
 
 **The wire.** Text frames carry JSON. From the client: ``start`` (the key went down; carries the
-page origin, the host state and a project id), binary frames of PCM16 for as long as it is held,
-``stop`` (the key came up: the end of the utterance), ``text`` (an utterance typed rather than
-spoken, for a client with no microphone) and ``tool_result`` (the page's answer to a
-``tool.call``). From the server: every channel event of the turn, one frame each, exactly the
-JSON ``/run`` puts on an SSE frame — plus the voice family: ``voice.transcript``,
+page origin, the host state, a project id and the case it is a run of), binary frames of PCM16 for
+as long as it is held, ``stop`` (the key came up: the end of the utterance), ``text`` (an
+utterance typed rather than spoken, for a client with no microphone) and ``tool_result`` (the
+page's answer to a ``tool.call``). From the server: every channel event of the turn, one frame
+each, exactly the JSON ``/run`` puts on an SSE frame — plus the voice family: ``voice.transcript``,
 ``voice.speaking`` and ``voice.stopped``, and her face's ``voice.visemes`` and ``voice.motion``
 when the speaker has a face helper (ADR 0120). Audio comes back as binary frames of a 4-byte
 big-endian generation number followed by PCM16 at the backend's rate.
@@ -77,6 +77,7 @@ from athena.channels.voice.backends import (
 from athena.channels.voice.commands import Card, Spoken, outcome_of, recognise
 from athena.channels.voice.tts import SpokenLine, spoken_line
 from athena.channels.voice.ws import FrameTooLarge, WebSocket, WebSocketError
+from athena.contracts import ids
 from athena.contracts.channel import (
     ChannelEvent,
     DecisionRequested,
@@ -255,12 +256,26 @@ class VoiceGateway:
         ws.close(TRY_AGAIN_LATER, "too many voice sockets")
 
 
+class _NotACase(ValueError):
+    """A frame's ``case_id`` that is not a ``proj_`` id."""
+
+
+def _case_id(body: Mapping[str, Any]) -> str:
+    """The frame's ``case_id`` (ADR 0126), ``""`` when it names none."""
+    case_id = str(body.get("case_id", "") or "")
+    if case_id and not ids.is_id("project", case_id):
+        raise _NotACase(f"not a case id: {case_id!r}")
+    return case_id
+
+
 @dataclass
 class _Utterance:
     origin: str
     host_state: dict[str, Any]
     project_id: str
     transcriber: Any
+    #: The case the utterance is a run of (ADR 0126), routing nothing; ``""`` for none.
+    case_id: str = ""
     disabled_origins: frozenset[str] = frozenset()
     gated_origins: frozenset[str] = frozenset()
     gated_tools: frozenset[str] = frozenset()
@@ -283,6 +298,9 @@ class _Job:
     host_state: dict[str, Any]
     project_id: str
     interrupted: bool = False
+    #: The case the utterance is a run of (ADR 0126), routing nothing; ``""`` for none. Its turns
+    #: are stamped under it, as a typed turn's are (ADR 0127).
+    case_id: str = ""
     #: The apps the user had switched off when they spoke (the shell says the list on every
     #: request; the daemon keeps none of it).
     disabled_origins: frozenset[str] = frozenset()
@@ -596,6 +614,7 @@ class VoiceSession:
             origin=fields["origin"],
             host_state=fields["host_state"],
             project_id=fields["project_id"],
+            case_id=fields["case_id"],
             transcriber=backend.transcriber(),
             meter=hearing_meter(backend),
             disabled_origins=fields["disabled_origins"],
@@ -620,6 +639,7 @@ class VoiceSession:
                 origin=current.origin,
                 host_state=current.host_state,
                 project_id=current.project_id,
+                case_id=current.case_id,
                 interrupted=current.interrupted,
                 disabled_origins=current.disabled_origins,
                 gated_origins=current.gated_origins,
@@ -675,6 +695,9 @@ class VoiceSession:
         except ListTooLong as exc:
             self.send(TurnError(reason="validator_failed", detail=str(exc)))
             return None
+        except _NotACase as exc:  # refused as ``POST /run`` refuses it
+            self.send(TurnError(reason="unknown_ref", detail=str(exc)))
+            return None
 
     @staticmethod
     def _job_fields(body: Mapping[str, Any]) -> dict[str, Any]:
@@ -684,6 +707,7 @@ class VoiceSession:
             "origin": str(body.get("origin", "")).strip(),
             "host_state": dict(host_state) if isinstance(host_state, Mapping) else {},
             "project_id": str(body.get("project_id", "") or ""),
+            "case_id": _case_id(body),
             "disabled_origins": disabled_origins_from(body),
             "gated_origins": gated_origins_from(body),
             "gated_tools": gated_tools_from(body),
@@ -944,6 +968,7 @@ class VoiceSession:
                 self.daemon,
                 session,
                 job.project_id,
+                case_id=job.case_id,
                 surface="voice",
                 trigger="voice",
                 disabled_origins=job.disabled_origins,

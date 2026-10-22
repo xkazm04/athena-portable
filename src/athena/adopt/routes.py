@@ -18,11 +18,12 @@ waits for one (``tests/adopt/test_routes.py`` holds the writer lock and is still
     The saved cases, latest approval first, read from the brain's ``goals/``:
     ``{ok, cases: [CaseSummary], showing, total, footer}`` (at most ``cases.MAX_CASES``).
 ``GET /adopt/cases/<proj>/runs`` (ADR 0124)
-    The case's runs, read-only: ``{ok, case_id, conversation_id, open, receipts, showing, total,
-    footer}``. ``open`` is the run since the last receipt, folded now from the approval table, the
-    episodes and the ledger of ``conv_proj_…`` (a :class:`~athena.contracts.adopt.Receipt`), or
-    ``null`` when nothing ran in it; ``receipts`` are the ones the case file keeps, latest first,
-    at most :data:`MAX_RECEIPTS`. An unknown case is 404 ``unknown_ref``.
+    The case's runs, read-only: ``{ok, case_id, open, receipts, showing, total, footer}``.
+    ``open`` is the run since the last receipt, folded now from the approval table, the episodes
+    and the ledger by the turns stamped under the case (ADR 0127; a
+    :class:`~athena.contracts.adopt.Receipt`), or ``null`` when nothing ran in it; ``receipts``
+    are the ones the case file keeps, latest first, at most :data:`MAX_RECEIPTS`. An unknown case
+    is 404 ``unknown_ref``.
 ``POST /adopt/cases/<proj>/done`` (ADR 0124)
     The person pressed done on the active playbook: the open run is folded with ``until`` now and
     appended to the case file's block -> ``{ok, receipt, saved, problem}``. ``receipt`` is
@@ -217,11 +218,12 @@ def case_runs(daemon: AthenaDaemon, studio: AdoptStudio, request: Request, tail:
     kept = book.receipts(case_id)
     since = kept[-1].until if kept else ""
     if want == "runs":
-        current = runs.fold(daemon.brain, daemon.approvals, daemon.ledger, case_id, since=since)
+        current = runs.fold(
+            daemon.brain, daemon.approvals, daemon.ledger, daemon.case_turns, case_id, since=since
+        )
         latest = [runs.as_dict(r) for r in reversed(kept)][:MAX_RECEIPTS]
         reply = announced(latest, len(kept), "receipts")
         reply["case_id"] = case_id
-        reply["conversation_id"] = ids.conversation_for_project(case_id)
         reply["open"] = None if runs.empty(current) else runs.as_dict(current)
         return 200, reply
     until = now_iso()
@@ -229,6 +231,7 @@ def case_runs(daemon: AthenaDaemon, studio: AdoptStudio, request: Request, tail:
         daemon.brain,
         daemon.approvals,
         daemon.ledger,
+        daemon.case_turns,
         case_id,
         since=since,
         until=until,

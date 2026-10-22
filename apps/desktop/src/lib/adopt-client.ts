@@ -106,7 +106,6 @@ export class AdoptApi implements AdoptClient {
     return {
       ok: true,
       case_id: str(reply.case_id),
-      conversation_id: str(reply.conversation_id),
       open: isRaw(reply.open) ? receiptOf(reply.open) : null,
       receipts,
       showing: num(reply.showing, receipts.length),
@@ -252,6 +251,7 @@ export function receiptOf(raw: unknown): Receipt {
     until: str(r.until),
     first_at: str(r.first_at),
     last_at: str(r.last_at),
+    turns: num(r.turns),
     approved: num(r.approved),
     consumed: num(r.consumed),
     declined: num(r.declined),

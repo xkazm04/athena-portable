@@ -285,26 +285,26 @@ def test_a_reconcile_rebuilds_the_index_and_keeps_the_ledger(tmp_path: Path) -> 
         assert ledger.rollup(by="engine")[0].cost_usd == pytest.approx(0.42)
 
 
-# -- one conversation's total (ADR 0124) -------------------------------------------------------
+# -- the total of some turns (ADR 0124, 0127) ----------------------------------------------------
 
 
-def test_a_conversation_total_is_its_rollup_row_and_can_be_cut_to_a_window(ledger: Ledger) -> None:
+def test_the_total_of_some_turns_sums_exactly_their_rows(ledger: Ledger) -> None:
     t0 = datetime(2026, 10, 1, 9, 0, tzinfo=UTC)
-    case = ids.conversation_for_project("proj_0123456789ab")
-    _record(ledger, conversation=case, cost_usd=0.25, ms=1000, now=t0)
-    _record(ledger, conversation=case, cost_usd=None, ms=500, now=t0 + timedelta(hours=1))
-    _record(ledger, cost_usd=9.0, now=t0)
-
-    whole = ledger.conversation_total(case)
-    (row,) = [r for r in ledger.rollup("conversation") if r.key == case]
-    assert (whole.calls, whole.cost_usd, whole.ms, whole.unpriced) == (
-        row.calls,
-        row.cost_usd,
-        row.ms,
-        row.unpriced,
+    one, two = ids.mint("turn"), ids.mint("turn")
+    _record(ledger, turn_id=one, cost_usd=0.25, ms=1000, now=t0)
+    _record(
+        ledger,
+        turn_id=two,
+        conversation="conv_crm",
+        cost_usd=None,
+        ms=500,
+        now=t0 + timedelta(hours=1),
     )
-    assert whole.first_at == iso(t0) and whole.last_at == iso(t0 + timedelta(hours=1))
-    late = ledger.conversation_total(case, since=iso(t0 + timedelta(minutes=30)))
-    assert (late.calls, late.cost_usd, late.unpriced) == (1, 0.0, 1)
-    none = ledger.conversation_total("conv_nobody")
-    assert (none.calls, none.cost_usd, none.first_at) == (0, 0.0, "")
+    _record(ledger, turn_id=ids.mint("turn"), cost_usd=9.0, now=t0)  # another run's turn
+    _record(ledger, cost_usd=4.0, now=t0)  # a row with no turn is in no run
+
+    total = ledger.turns_total([one, two])
+    assert (total.calls, total.cost_usd, total.ms, total.unpriced) == (2, 0.25, 1500, 1)
+    assert total.first_at == iso(t0) and total.last_at == iso(t0 + timedelta(hours=1))
+    none = ledger.turns_total([])
+    assert (none.key, none.calls, none.cost_usd, none.first_at) == ("", 0, 0.0, "")

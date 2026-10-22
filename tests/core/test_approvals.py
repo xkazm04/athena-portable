@@ -505,30 +505,42 @@ def test_a_brain_from_before_the_tab_binding_gains_the_columns_on_open(tmp_path:
     assert approvals.describe(new.id).tab_id == 4
 
 
-# -- one conversation's cards (ADR 0124) -------------------------------------------------------
+# -- the cards some turns filed (ADR 0124, 0127) -------------------------------------------------
 
 
-def test_a_conversations_cards_are_counted_by_state_in_a_window(approvals: Approvals) -> None:
-    """The receipt of a case's run is these counts: the window's, not the page's."""
-    other = ids.conversation_for_project("proj_0123456789ab")
-    yes = _create(approvals, conversation=other, params={"n": 1})
-    no = _create(approvals, conversation=other, params={"n": 2}, now=T0 + timedelta(minutes=1))
-    _create(approvals, conversation=other, params={"n": 3}, now=T0 + timedelta(minutes=2))
-    _create(approvals, params={"n": 4})  # another conversation
+def test_the_cards_of_some_turns_are_counted_by_state_whatever_their_conversation(
+    approvals: Approvals,
+) -> None:
+    """The receipt of a case's run is these counts: every card its turns filed, not the page's,
+    in whichever tab's conversation each turn talked."""
+    one, two, elsewhere = ids.mint("turn"), ids.mint("turn"), ids.mint("turn")
+    yes = _create(approvals, turn_id=one, params={"n": 1})
+    no = _create(
+        approvals,
+        turn_id=two,
+        conversation="conv_crm",
+        params={"n": 2},
+        now=T0 + timedelta(minutes=1),
+    )
+    _create(approvals, turn_id=two, params={"n": 3}, now=T0 + timedelta(minutes=2))
+    _create(approvals, turn_id=elsewhere, params={"n": 4})  # another run's turn
+    _create(approvals, params={"n": 5})  # a card filed with no turn is in no run
     approvals.resolve(yes.id, APPROVE_TOKEN, now=T0 + timedelta(minutes=3))
     approvals.consume(yes.id, now=T0 + timedelta(minutes=3))
     approvals.resolve(no.id, "decline", now=T0 + timedelta(minutes=3))
+    assert approvals.get(yes.id).turn_id == one  # type: ignore[union-attr]
 
-    page = approvals.of_conversation(other, limit=2)
+    page = approvals.of_turns([one, two], limit=2)
     assert page.total == 3 and [r.id for r in page.rows] == [yes.id, no.id]
     assert page.by_status == {"approved": 1, "declined": 1, "pending": 1}
     assert page.consumed == 1
     assert page.first_at == yes.created_at and page.last_at == iso(T0 + timedelta(minutes=2))
-
-    later = approvals.of_conversation(other, since=iso(T0 + timedelta(minutes=1)))
-    assert later.total == 2 and later.consumed == 0
-    before = approvals.of_conversation(other, until=iso(T0 + timedelta(minutes=1)))
-    assert [r.id for r in before.rows] == [yes.id]
-    only = approvals.of_conversation(other, status="approved")
+    only = approvals.of_turns([one, two], status="approved")
     assert only.total == 1 and [r.id for r in only.rows] == [yes.id]
-    assert approvals.of_conversation("conv_nobody").by_status == {}
+    assert approvals.of_turns([two]).consumed == 0
+    assert approvals.of_turns([]).by_status == {} and approvals.of_turns([]).first_at == ""
+
+
+def test_a_card_names_only_a_minted_turn(approvals: Approvals) -> None:
+    with pytest.raises(ApprovalError, match="not a turn id"):
+        _create(approvals, turn_id="t1")

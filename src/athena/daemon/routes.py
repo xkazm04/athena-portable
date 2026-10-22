@@ -122,6 +122,7 @@ __all__ = [
     "playbooks",
     "run",
     "sse_frame",
+    "stamp_case_turn",
     "stop",
     "turn_context",
     "turn_events",
@@ -854,6 +855,7 @@ def turn_events(
     drives the same generator, so a spoken turn holds the lock exactly the way a typed one does.
     """
     with daemon.writing(), daemon.turn_door(ctx.page_origin or "") as door:
+        stamped = stamp_case_turn(daemon, ctx)
         try:
             last = last_run_of(daemon, ctx.case_id)
             if last is not None and last.started:
@@ -872,6 +874,20 @@ def turn_events(
             # The type only: an exception's message can quote a request body, and a body may hold
             # anything the caller put in it.
             yield TurnError(reason="unknown", detail=type(exc).__name__)
+        finally:
+            if stamped:
+                daemon.case_turns.finish(ctx.turn_id)
+
+
+def stamp_case_turn(daemon: AthenaDaemon, ctx: TurnContext) -> bool:
+    """Stamp ``ctx``'s turn under the case it names, as it begins (ADR 0127); ``False`` for a
+    turn under no case. The turn keeps its own conversation: the stamp is what a receipt joins
+    the turn's cards and ledger rows by. Called with the writer lock held, so a turn's window
+    holds only what that turn wrote."""
+    if not ctx.case_id:
+        return False
+    daemon.case_turns.record(ctx.case_id, ctx.turn_id, ctx.conversation_id)
+    return True
 
 
 def last_run_of(daemon: AthenaDaemon, case_id: str | None) -> SinceLastRun | None:

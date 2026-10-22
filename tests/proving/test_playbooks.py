@@ -759,6 +759,89 @@ def test_a_project_run_sends_one_minted_id_on_every_turn(tmp_path: Path) -> None
     assert on["verdict"]["word"] == off["verdict"]["word"]
 
 
+def test_a_case_run_keeps_every_conversation_and_reports_the_cases_receipt(
+    tmp_path: Path,
+) -> None:
+    """ADR 0127: ``--case`` runs the bench as the desktop now runs a case: every turn carries
+    ``case_id``, which routes nothing, so the conversations and the verdict are the ones a run
+    with no case has; every turn is stamped under the case, and the report's receipt costs what
+    the ledger's rows of those turns cost."""
+    seen: dict[str, list[str]] = {}
+    stamped: dict[str, int] = {}
+
+    def watched(key: str) -> Any:
+        def make(book: Any) -> World:
+            world: World = _factory(scripted_model(_careful))(book)
+            close = world.close
+
+            def closing() -> None:
+                rows = world.local.ledger.recent(200).rows[::-1]
+                seen[key] = [row.conversation for row in rows]
+                with world.local.brain.read_connection() as con:
+                    stamped[key] = con.execute(
+                        "SELECT count(*) FROM companion_case_turn"
+                    ).fetchone()[0]
+                close()
+
+            world.close = closing  # type: ignore[method-assign]
+            return world
+
+        return make
+
+    book = load_playbook(make_playbook(tmp_path))
+    on = run_bench(book, BenchConfig(engine="nebius", case=True), world_factory=watched("on"))
+    off = run_bench(book, BenchConfig(engine="nebius"), world_factory=watched("off"))
+    assert ids.is_id("project", on["case_id"]) and "project_id" not in on
+    assert seen["on"] == seen["off"] and not any(c.startswith("conv_proj_") for c in seen["on"])
+    assert on["verdict"]["word"] == off["verdict"]["word"]
+    assert on["score"] == off["score"]
+    assert stamped == {"on": on["turns"], "off": 0}
+    receipt = on["case_receipt"]
+    assert "case_receipt" not in off
+    assert receipt["turns"] == on["turns"] and receipt["calls"] == len(seen["on"])
+    assert receipt["pending"] == len(on["cards"])
+    assert abs(receipt["cost_usd"] - (on["cost_usd"] or 0.0)) < 1e-3
+
+
+def test_the_bench_cli_sends_a_case_or_a_project_when_asked(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch, capsys: pytest.CaptureFixture[str]
+) -> None:
+    from athena.proving.playbooks import __main__ as cli
+
+    make_playbook(tmp_path / "lib")
+    asked: list[tuple[bool, bool]] = []
+
+    def fake(book: Any, config: BenchConfig, *, echo: Any) -> dict[str, Any]:
+        asked.append((config.case, config.project))
+        score = {
+            "found": 1,
+            "eligible": 1,
+            "value_found_usd": 1.0,
+            "value_total_usd": 1.0,
+            "exact": 1,
+            "false_claims": 0,
+            "duplicates": 0,
+        }
+        report: dict[str, Any] = {
+            "score": score,
+            "turns": 2,
+            "cost_usd": 0.5,
+            "verdict": {"word": "meets", "reasons": [], "minutes": 1},
+        }
+        if config.case:
+            report["case_receipt"] = {"turns": 2, "pending": 1, "cost_usd": 0.5, "calls": 2}
+        return report
+
+    monkeypatch.setattr(cli, "run_bench", fake)
+    common = ["--dir", str(tmp_path / "lib"), "bench", "late-parcels", "--engine", "nebius"]
+    out = ["--no-write", "--out", str(tmp_path / "runs")]
+    for flags in (["--case"], ["--project"], []):
+        assert cli.main([*common, *flags, *out]) == 0
+    assert asked == [(True, False), (False, True), (False, False)]
+    printed = capsys.readouterr().out
+    assert printed.count("case receipt: 2 turns") == 1
+
+
 # --- the person does what she asks --------------------------------------------------------------
 
 

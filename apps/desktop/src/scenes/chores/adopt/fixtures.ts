@@ -398,11 +398,12 @@ export const PREVIEW_CASE: CaseSummary = {
 /** A closed run of the preview case (ADR 0124): what its cards and the ledger came to. */
 export const PREVIEW_RECEIPT: Receipt = {
   case_id: PREVIEW_CASE.case_id,
-  conversation_id: `conv_${PREVIEW_CASE.case_id}`,
+  conversation_id: "",
   since: "",
   until: "2026-10-09T10:20:00+00:00",
   first_at: "2026-10-09T09:02:11+00:00",
   last_at: "2026-10-09T10:14:40+00:00",
+  turns: 6,
   approved: 2,
   consumed: 2,
   declined: 1,
@@ -661,7 +662,6 @@ export class ScriptedClient implements AdoptClient {
     return Promise.resolve({
       ok: true,
       case_id: caseId,
-      conversation_id: `conv_${caseId}`,
       open: null,
       receipts,
       showing: receipts.length,

@@ -10,6 +10,7 @@ foot of its module, once everything this module takes from it is defined, so the
 
 from __future__ import annotations
 
+from dataclasses import replace
 from typing import TYPE_CHECKING, Any
 
 from athena.contracts import ids
@@ -27,6 +28,7 @@ from athena.daemon.routes import (
     capped,
     disabled_origins_from,
     error,
+    stamp_case_turn,
 )
 
 if TYPE_CHECKING:
@@ -66,8 +68,19 @@ def decide(daemon: AthenaDaemon, request: Request, approval_id: str) -> Reply:
     except ListTooLong as exc:  # refused whole, as ``POST /run`` refuses it
         return error(400, "validator_failed", str(exc))
     ctx = _decision_ctx(daemon, grant.origin, grant.conversation, disabled)
+    # A card filed by a turn under a case is answered under that case too, so the row the answer
+    # writes (a decline is ledgered) is in the case's run with the card (ADR 0127).
+    row = daemon.approvals.get(approval_id)
+    case_id = daemon.case_turns.case_of(row.turn_id) if row and row.turn_id else None
+    if case_id is not None:
+        ctx = replace(ctx, case_id=case_id)
     with daemon.writing():
-        resolution = daemon.lane.answer_decision(approval_id, choice, ctx)
+        stamped = stamp_case_turn(daemon, ctx)
+        try:
+            resolution = daemon.lane.answer_decision(approval_id, choice, ctx)
+        finally:
+            if stamped:
+                daemon.case_turns.finish(ctx.turn_id)
     if resolution.reason is not None and resolution.reason != "user_denied":
         return error(409, resolution.reason, resolution.detail)
 

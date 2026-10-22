@@ -308,7 +308,8 @@ export interface ActivePlaybook {
   goal: string;
   /**
    * The saved case this run is under (`proj_…`, ADR 0124), or absent for a playbook handed over with
-   * no case: every turn then also sends it as `project_id`, so every tab talks in `conv_proj_…`.
+   * no case: every turn then also sends it as `case_id`, which routes nothing, so each tab keeps its
+   * own conversation and the daemon stamps the turn under the case (ADR 0127).
    */
   caseId?: string;
 }
@@ -887,16 +888,20 @@ export function gatedListsOf(
 /** `2026-10-01 10:08:07`, UTC, the way the store writes a stamp. */
 /**
  * The turn body's `active_project` for a playbook, or nothing when none is active (ADR 0044); and,
- * when the playbook runs under a saved case, its `project_id` (ADR 0124).
+ * when the playbook runs under a saved case, its `case_id` (ADR 0127). Never `project_id`: that would
+ * route every tab into one `conv_proj_…`, which the paid gate measured at 1.7-2.5x the cost per run.
  */
 export function activeProject(
   project: ActivePlaybook | null,
-): { active_project?: Record<string, string>; project_id?: string } {
+): { active_project?: Record<string, string>; case_id?: string } {
   if (!project) return {};
   const active = { kind: "playbook", id: project.id, title: project.title, goal: project.goal };
-  return project.caseId && PROJECT_ID.test(project.caseId)
-    ? { active_project: active, project_id: project.caseId }
-    : { active_project: active };
+  return { active_project: active, ...caseOf(project) };
+}
+
+/** The `case_id` a turn sends while `project` is a case's (ADR 0127), or nothing. Typed and spoken alike. */
+export function caseOf(project: ActivePlaybook | null): { case_id?: string } {
+  return project?.caseId && PROJECT_ID.test(project.caseId) ? { case_id: project.caseId } : {};
 }
 
 export function stampOf(date: Date): string {

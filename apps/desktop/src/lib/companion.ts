@@ -126,7 +126,7 @@ export interface Offer {
   text: string;
   /**
    * When the command is a playbook's, which one: it becomes her active project (ADR 0044). `caseId`
-   * is the saved case it runs under (ADR 0124), sent as `project_id` on every turn.
+   * is the saved case it runs under (ADR 0124), sent as `case_id` on every turn (ADR 0127).
    */
   playbook?: { id: string; title: string; caseId?: string };
 }

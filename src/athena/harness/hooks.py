@@ -17,6 +17,7 @@ from dataclasses import dataclass, field
 from datetime import UTC, datetime, timedelta
 from typing import Any
 
+from athena.contracts import ids
 from athena.contracts.channel import DecisionRequested
 from athena.contracts.harness import PromptBlock, TurnResult, normalize_reason
 from athena.contracts.registry import ExecResult, OpenApp, ToolClass, ToolEntry, TurnContext
@@ -265,6 +266,10 @@ class GateHook:
         # nothing new; the same for the tab binding, so an unbound card asks nothing new either.
         optional: dict[str, Any] = {"capture_id": capture} if capture else {}
         optional.update(_tab_for(entry, ctx))
+        # The turn that filed it, so a case's run finds its cards by turn (ADR 0127). A context
+        # built by hand with no minted turn id files the card as it always did.
+        if ids.is_id("turn", ctx.turn_id):
+            optional["turn_id"] = ctx.turn_id
         card = self.approvals.create(
             entry.name,
             dict(params),

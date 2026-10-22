@@ -75,8 +75,8 @@ __all__ = [
     "ApprovalRow",
     "ApprovalStatus",
     "Approvals",
-    "ConversationCards",
     "PendingPage",
+    "TurnCards",
 ]
 
 #: A card lives for a day. Long enough that a decision raised in the morning is still answerable
@@ -133,7 +133,8 @@ APPROVAL_SCHEMA: tuple[str, ...] = (
         resolved_at TEXT,
         consumed_at TEXT,
         tab_id INTEGER,
-        tab_nav INTEGER
+        tab_nav INTEGER,
+        turn_id TEXT
     )""",
     "CREATE INDEX IF NOT EXISTS idx_approval_live ON companion_approval(status, expires_at)",
     "CREATE INDEX IF NOT EXISTS idx_approval_created ON companion_approval(created_at)",
@@ -147,6 +148,7 @@ _ADDED_COLUMNS: tuple[tuple[str, str], ...] = (
     ("consumed_at", "TEXT"),
     ("tab_id", "INTEGER"),
     ("tab_nav", "INTEGER"),
+    ("turn_id", "TEXT"),
 )
 
 
@@ -234,6 +236,9 @@ class ApprovalRow:
     #: surface through the turn's context, never by a model; ``None`` on an unbound row.
     tab_id: int | None = None
     tab_nav: int | None = None
+    #: The turn that filed the card (``TurnContext.turn_id``), so a case's run finds its cards by
+    #: the turns stamped under it (ADR 0127); ``None`` on a row filed before the column existed.
+    turn_id: str | None = None
 
     @property
     def pending(self) -> bool:
@@ -292,18 +297,18 @@ class PendingPage:
 
 
 @dataclass(frozen=True)
-class ConversationCards:
-    """A bounded read of one conversation's cards (:meth:`Approvals.of_conversation`).
+class TurnCards:
+    """A bounded read of the cards some turns filed (:meth:`Approvals.of_turns`).
 
-    ``total`` is the window's population (of ``status`` when one was asked), ``by_status`` the
-    count of each state in the window, ``consumed`` the approved rows the gate spent.
+    ``total`` is the population (of ``status`` when one was asked), ``by_status`` the count of
+    each state, ``consumed`` the approved rows the gate spent.
     """
 
     rows: tuple[ApprovalRow, ...]
     total: int
     by_status: dict[str, int]
     consumed: int
-    #: The window's earliest and latest ``created_at`` (of every state), ``""`` when empty.
+    #: The earliest and latest ``created_at`` (of every state), ``""`` when empty.
     first_at: str = ""
     last_at: str = ""
 
@@ -312,7 +317,7 @@ class ConversationCards:
 _COLUMNS = (
     "id, action, params_json, origin, conversation_id, surface, options_json, status, "
     "created_at, expires_at, summary, capture_id, choice, answer, reason, resolved_at, "
-    "consumed_at, tab_id, tab_nav"
+    "consumed_at, tab_id, tab_nav, turn_id"
 )
 
 
@@ -337,6 +342,7 @@ def _row(raw: Sequence[Any]) -> ApprovalRow:
         consumed_at=None if raw[16] is None else str(raw[16]),
         tab_id=None if raw[17] is None else int(raw[17]),
         tab_nav=None if raw[18] is None else int(raw[18]),
+        turn_id=None if raw[19] is None else str(raw[19]),
     )
 
 
@@ -352,6 +358,10 @@ class Approvals:
             for name, declaration in _ADDED_COLUMNS:
                 if name not in present:
                     con.execute(f"ALTER TABLE companion_approval ADD COLUMN {name} {declaration}")
+            # After the columns: an index on an added column cannot precede the column.
+            con.execute(
+                "CREATE INDEX IF NOT EXISTS idx_approval_turn ON companion_approval(turn_id)"
+            )
 
     # -- writing -------------------------------------------------------------------------------
 
@@ -369,6 +379,7 @@ class Approvals:
         capture_id: str | None = None,
         tab_id: int | None = None,
         tab_nav: int | None = None,
+        turn_id: str | None = None,
         now: datetime | None = None,
     ) -> ApprovalRow:
         """File a card and return the row it became.
@@ -397,6 +408,8 @@ class Approvals:
             raise ApprovalError(f"not a tab id: {tab_id!r}")
         if tab_nav is not None and (tab_id is None or not _is_count(tab_nav)):
             raise ApprovalError(f"a document generation needs a tab and a count: {tab_nav!r}")
+        if turn_id is not None and not ids.is_id("turn", turn_id):
+            raise ApprovalError(f"not a turn id: {turn_id!r}")
 
         stored_params = _canonical(params)  # before the transaction: a refusal is not a rollback
         moment = now or _now()
@@ -415,13 +428,15 @@ class Approvals:
             capture_id=capture_id,
             tab_id=tab_id,
             tab_nav=tab_nav,
+            turn_id=turn_id,
         )
         with self.brain.write_txn() as con:
             con.execute(
                 """INSERT INTO companion_approval
                    (id, action, params_json, origin, conversation_id, surface, options_json,
-                    summary, capture_id, status, created_at, expires_at, tab_id, tab_nav)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    summary, capture_id, status, created_at, expires_at, tab_id, tab_nav,
+                    turn_id)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
                     row.id,
                     row.action,
@@ -437,6 +452,7 @@ class Approvals:
                     row.expires_at,
                     row.tab_id,
                     row.tab_nav,
+                    row.turn_id,
                 ),
             )
         return row
@@ -615,29 +631,23 @@ class Approvals:
             ).fetchone()
         return None if raw is None or raw[0] is None else str(raw[0])
 
-    def of_conversation(
+    def of_turns(
         self,
-        conversation: str,
+        turn_ids: Sequence[str],
         *,
-        since: str = "",
-        until: str = "",
         status: str = "",
         limit: int = 20,
-    ) -> ConversationCards:
-        """The cards of one conversation filed in ``since <= created_at < until``, oldest first.
+    ) -> TurnCards:
+        """The cards filed by the turns ``turn_ids`` (their ``turn_id``), oldest first.
 
-        ``""`` leaves that end open; ``status`` narrows to one state. ``total`` and ``by_status``
-        count every row of the window, not the page, and ``consumed`` the approved rows the gate
-        spent: a receipt of a case's run is these numbers (ADR 0124). Read-only.
+        ``status`` narrows to one state; ``total`` and ``by_status`` count every card of those
+        turns, not the page, and ``consumed`` the approved rows the gate spent: the receipt of a
+        case's run is these numbers, its turns the ones stamped under the case (ADR 0127). The
+        ids go in as one JSON array (``json_each``), so a run of any length is one parameter.
+        Read-only; a row filed before the column existed has no turn and is in no run.
         """
-        where = "conversation_id = ?"
-        args: list[Any] = [conversation]
-        if since:
-            where += " AND created_at >= ?"
-            args.append(since)
-        if until:
-            where += " AND created_at < ?"
-            args.append(until)
+        where = "turn_id IN (SELECT value FROM json_each(?))"
+        args: list[Any] = [json.dumps(list(turn_ids))]
         with closing(self.brain.read_connection()) as con:
             counts = {
                 str(raw[0]): int(raw[1])
@@ -667,7 +677,7 @@ class Approvals:
                 [*nargs, max(limit, 0)],
             ).fetchall()
         total = counts.get(status, 0) if status else sum(counts.values())
-        return ConversationCards(
+        return TurnCards(
             rows=tuple(_row(raw) for raw in raws),
             total=total,
             by_status=counts,

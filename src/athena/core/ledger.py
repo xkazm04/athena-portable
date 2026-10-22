@@ -37,6 +37,7 @@ Protocols with no I/O, while the brain is a sibling module of this one inside ``
 
 from __future__ import annotations
 
+import json
 from collections.abc import Sequence
 from contextlib import closing
 from dataclasses import dataclass
@@ -105,6 +106,8 @@ LEDGER_SCHEMA: tuple[str, ...] = (
     )""",
     "CREATE INDEX IF NOT EXISTS idx_turn_created ON companion_turn(created_at)",
     "CREATE INDEX IF NOT EXISTS idx_turn_error ON companion_turn(is_error, error_reason)",
+    # A case's run sums its turns' rows by turn id (ADR 0127).
+    "CREATE INDEX IF NOT EXISTS idx_turn_turn ON companion_turn(turn_id)",
 )
 
 
@@ -381,23 +384,14 @@ class Ledger:
         ]
         return sorted(rows, key=lambda r: (-r.cost_usd, -r.calls, r.key))
 
-    def conversation_total(
-        self, conversation: str, *, since: str = "", until: str = ""
-    ) -> RollupRow:
-        """One conversation's rows summed, in ``since <= created_at < until`` (``""`` open).
-
-        :meth:`rollup` by ``conversation`` for one key and a time window: the cost of one run of a
-        case (ADR 0124). With both ends open it equals that key's rollup row; with no rows it is a
-        row of zeros under the key.
+    def turns_total(self, turn_ids: Sequence[str]) -> RollupRow:
+        """The rows of the turns ``turn_ids`` (their ``turn_id``) summed: the cost of one run of a
+        case, whose turns are the ones stamped under it (ADR 0127), whatever conversation each
+        talked in. The ids go in as one JSON array (``json_each``). With no rows it is a row of
+        zeros under the key ``""``; a row with no turn id is in no run.
         """
-        where = "conversation_id = ?"
-        args: list[Any] = [conversation]
-        if since:
-            where += " AND created_at >= ?"
-            args.append(since)
-        if until:
-            where += " AND created_at < ?"
-            args.append(until)
+        where = "turn_id IN (SELECT value FROM json_each(?))"
+        args: list[Any] = [json.dumps(list(turn_ids))]
         query = (
             "SELECT COUNT(*), SUM(is_error), SUM(rounds), SUM(input_tokens), SUM(output_tokens), "
             "SUM(COALESCE(cost_usd, 0.0)), SUM(ms), "
@@ -407,7 +401,7 @@ class Ledger:
         with closing(self.brain.read_connection()) as con:
             raw = con.execute(query, args).fetchone()
         return RollupRow(
-            key=conversation,
+            key="",
             calls=int(raw[0] or 0),
             errors=int(raw[1] or 0),
             rounds=int(raw[2] or 0),

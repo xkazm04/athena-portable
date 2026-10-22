@@ -173,6 +173,8 @@ export type ClientFrame =
       /** The shell's capture of the focused tab, taken just before the key went down (ADR 0066). */
       capture_id?: string;
       project_id?: string;
+      /** The case the utterance is a run of (ADR 0127): it routes nothing; the turn is stamped under it. */
+      case_id?: string;
     }
   | { type: "stop" }
   | {
@@ -184,6 +186,7 @@ export type ClientFrame =
       gated_origins: string[];
       gated_tools: string[];
       capture_id?: string;
+      case_id?: string;
     }
   | {
       type: "tool_result";

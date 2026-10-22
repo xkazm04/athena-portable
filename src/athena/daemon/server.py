@@ -72,6 +72,7 @@ from athena.connectors.vault import Vault
 from athena.core.approvals import Approvals
 from athena.core.brain import Brain
 from athena.core.brain import paths as brain_paths
+from athena.core.case_turns import CaseTurns
 from athena.core.catalog import Catalog
 from athena.core.ledger import Ledger
 from athena.core.prompt import SinceLastRun
@@ -274,9 +275,13 @@ class AthenaDaemon:
     #: ``None`` (ADR 0126). Bound by wiring to the adopt package's case book, so neither the
     #: daemon nor the core reads a case file; ``None`` here, no turn has a "since last run".
     last_run: Callable[[str], SinceLastRun | None] | None = None
+    #: The turns sent under a case, stamped as each begins (ADR 0127): what a case's receipt is
+    #: joined by, whatever conversation each turn talked in. Opened on the daemon's brain.
+    case_turns: CaseTurns = field(init=False, repr=False)
 
     def __post_init__(self) -> None:
         self.routes = RouteTable(base_routes(self))
+        self.case_turns = CaseTurns(self.brain)
 
     def body_limit(self, path: str) -> int:
         """The JSON body cap for ``path``: :data:`MAX_BODY_BYTES` unless a cap covers it."""

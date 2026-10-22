@@ -157,7 +157,7 @@ export const ADOPT_ROUTES = {
   enough: (sid: string) => `/adopt/${encodeURIComponent(sid)}/enough`, // POST
   approve: (sid: string) => `/adopt/${encodeURIComponent(sid)}/approve`, // POST {rev} -> {ok, rev, case_id, case_problem}
   runs: (caseId: string) =>
-    `/adopt/cases/${encodeURIComponent(caseId)}/runs`, // GET -> {ok, case_id, conversation_id, open, receipts, showing, total, footer}
+    `/adopt/cases/${encodeURIComponent(caseId)}/runs`, // GET -> {ok, case_id, open, receipts, showing, total, footer}
   done: (caseId: string) => `/adopt/cases/${encodeURIComponent(caseId)}/done`, // POST -> {ok, receipt, saved, problem}
   session: (sid: string) => `/adopt/${encodeURIComponent(sid)}`, // DELETE
 } as const;
@@ -246,9 +246,11 @@ export interface ReceiptNote {
 }
 
 /**
- * What one run of a case came to, folded from `conv_proj_…`. Counts are the approval table's for the
- * cards filed in the window; `asked_usd` sums the approved cards' own amounts (`asked_cards` of them),
- * never what came back; `calls`..`ms` are the ledger's rows. `until` is "" for a run still open.
+ * What one run of a case came to, joined by the `turns` stamped under the case (ADR 0127), each in its
+ * own tab's conversation. Counts are the approval table's for the cards those turns filed; `asked_usd`
+ * sums the approved cards' own amounts (`asked_cards` of them), never what came back; `calls`..`ms` are
+ * the ledger's rows of those turns. `until` is "" for a run still open. `conversation_id` is "" (a
+ * receipt kept before ADR 0127 names the `conv_proj_…` it was folded from).
  */
 export interface Receipt {
   case_id: string;
@@ -257,6 +259,7 @@ export interface Receipt {
   until: string;
   first_at: string;
   last_at: string;
+  turns: number;
   approved: number;
   consumed: number;
   declined: number;
@@ -284,7 +287,6 @@ export interface Receipt {
 export interface RunsReply {
   ok: true;
   case_id: string;
-  conversation_id: string;
   /** The run since the last receipt, or null when nothing ran in it. */
   open: Receipt | null;
   /** The receipts the case file keeps, latest first. */

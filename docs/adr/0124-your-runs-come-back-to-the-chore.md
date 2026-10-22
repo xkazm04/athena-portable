@@ -81,3 +81,14 @@ runs had nowhere to come back to.
   window reads, the parity test, the bench's `--project`; Vitest: `project_id` on every `/run`
   while a case-backed playbook is active and none without a case, "done" closing the run, and the
   "Your runs" states.
+
+## Amended 2026-10-22
+
+By [0127](0127-a-cases-turns-keep-their-conversations-and-are-stamped-under-it.md). Decision 1 is
+reversed: the paid gate measured runs under one shared `conv_proj_<hex>` at 1.7 to 2.5 times the
+cost per run, and estate-settlement crossed its $8 cap at turn 22 (short, 4 of 12) where its
+per-tab baseline exceeds 3 of 3 at $3.10 to $3.45. The desktop now sends `case_id`, which routes
+nothing; every tab keeps its own conversation, the daemon stamps each turn under the case, and the
+receipt (decision 3) is joined by those turn ids, not by the conversation. The consequence "every
+turn of a run now shares one conversation" no longer holds; `bench --project` stays as the
+experiment that measured it.

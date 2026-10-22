@@ -79,3 +79,10 @@ on the conversation a turn lands in: the case is named on the turn, not derived 
   `tests/daemon/test_case_runs.py` (the whole path over HTTP, `case_id` routing nothing),
   `tests/contracts/test_registry.py`, `tests/proving/test_playbooks.py` (the fake two-run bench
   with and without the carry, the CLI flags).
+
+## Amended 2026-10-22
+
+By [0127](0127-a-cases-turns-keep-their-conversations-and-are-stamped-under-it.md). The follow-up
+named above landed: every turn with a `case_id` is stamped under its case and `fold` joins by turn
+id, so a turn sent with `case_id` alone is in the receipt `done` folds. A run's start is its first
+turn's, so the gate's lookback starts there.

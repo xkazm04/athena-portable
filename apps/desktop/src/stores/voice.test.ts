@@ -277,6 +277,23 @@ describe("a spoken turn", () => {
     });
   });
 
+  it("names the active case as case_id on the start and text frames, and never a project_id (ADR 0127)", async () => {
+    const { socket } = wire();
+    await startVoice();
+    useRun.getState().setProject({ id: "late-parcels", title: "Late parcels", goal: "g", caseId: "proj_0123456789ab" });
+    await useVoice.getState().press();
+    useVoice.getState().release();
+    await useVoice.getState().say("next one");
+    useRun.getState().setProject(null);
+    await useVoice.getState().say("no case now");
+    const [start] = socket.frames().filter((f) => f.type === "start");
+    const [under, loose] = socket.frames().filter((f) => f.type === "text");
+    expect(start).toMatchObject({ case_id: "proj_0123456789ab" });
+    expect(under).toMatchObject({ case_id: "proj_0123456789ab" });
+    for (const frame of [start, under, loose]) expect(frame).not.toHaveProperty("project_id");
+    expect(loose).not.toHaveProperty("case_id");
+  });
+
   it("sends both lists empty, not absent, when nothing is wired to tighten", async () => {
     const { socket } = wire();
     await startVoice();

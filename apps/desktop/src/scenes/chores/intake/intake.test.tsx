@@ -119,7 +119,7 @@ class FakeAdopt implements AdoptClient {
     return Promise.resolve({ ok: true as const, cases: [], showing: 0, total: 0, footer: "" });
   }
   runs(caseId: string) {
-    const none = { ok: true as const, case_id: caseId, conversation_id: `conv_${caseId}`, open: null };
+    const none = { ok: true as const, case_id: caseId, open: null };
     return Promise.resolve({ ...none, receipts: [], showing: 0, total: 0, footer: "" });
   }
   close() {

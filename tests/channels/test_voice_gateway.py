@@ -31,7 +31,7 @@ from athena.channels.voice.gateway import (
 )
 from athena.channels.voice.tts import TTS_CAP
 from athena.channels.voice.ws import MAX_FRAME_BYTES, HandshakeError, connect
-from athena.contracts import ToolCall
+from athena.contracts import ToolCall, ids
 from daemon.conftest import PAGE_ORIGIN, SHELL_ORIGIN, TOKEN, Live, claude_round, op
 
 from .conftest import VoiceClient
@@ -723,6 +723,27 @@ def test_a_voice_frame_with_a_list_past_its_cap_is_refused_not_cut(
 
     assert error["reason"] == "validator_failed"
     assert "gated_tools" in error["detail"]
+
+
+def test_a_voice_turn_under_a_case_is_stamped_under_it_in_its_own_conversation(
+    voiced: Live, client: VoiceClient
+) -> None:
+    """ADR 0127: a frame's ``case_id`` routes nothing, as on ``POST /run``; the spoken turn is
+    stamped under the case, and one that is not a ``proj_`` id is refused."""
+    voiced.register()
+    voiced.script(claude_round("Nothing is overdue."))
+    case_id = ids.mint("project")
+
+    client.say("what is overdue", case_id=case_id)
+    client.until("turn.finished")
+    (row,) = voiced.daemon.ledger.recent(10).rows
+    assert row.conversation.startswith("conv_") and "proj_" not in row.conversation
+    (turn,) = voiced.daemon.case_turns.of_case(case_id)
+    assert (turn.turn_id, turn.conversation) == (row.turn_id, row.conversation)
+
+    client.say("again", case_id="proj_nothex")
+    error = client.until("turn.error")
+    assert error["reason"] == "unknown_ref" and "case id" in error["detail"]
 
 
 # -- the utterance ceiling -----------------------------------------------------------------------

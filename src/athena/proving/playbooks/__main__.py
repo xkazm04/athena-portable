@@ -4,7 +4,7 @@
 
     uv run python -m athena.proving.playbooks check              # every playbook loads
     uv run python -m athena.proving.playbooks bench <id> [--model sonnet] [--approve none|all]
-        [--cap 5.0] [--engine claude_code] [--out proving-runs] [--no-write] [--project]
+        [--cap 5.0] [--engine claude_code] [--out proving-runs] [--no-write] [--project] [--case]
     uv run python -m athena.proving.playbooks bench <id> --second-run [--no-carry] [--model ...]
     uv run python -m athena.proving.playbooks rescore <id> <run>/report.json
     uv run python -m athena.proving.playbooks evidence <id>|--all [--dry] [--verify]
@@ -90,7 +90,12 @@ def build_parser() -> argparse.ArgumentParser:
     b.add_argument(
         "--project",
         action="store_true",
-        help="run under a minted proj_ id, sent as project_id on every turn (ADR 0124)",
+        help="experiment: a minted proj_ id sent as project_id, one shared conversation (ADR 0124)",
+    )
+    b.add_argument(
+        "--case",
+        action="store_true",
+        help="run under a minted case, sent as case_id on every turn; routes nothing (ADR 0127)",
     )
     b.add_argument(
         "--second-run",
@@ -252,6 +257,7 @@ def main(argv: Sequence[str] | None = None) -> int:
         approve=args.approve,
         cap_usd=args.cap,
         project=args.project,
+        case=args.case,
     )
     if args.second_run:
         return second_run(book, config, carry=args.carry, out=Path(args.out))
@@ -273,6 +279,14 @@ def main(argv: Sequence[str] | None = None) -> int:
         flush=True,
     )
     print(f"verdict: {v['word']}" + (f" - {'; '.join(v['reasons'])}" if v["reasons"] else ""))
+    receipt = report.get("case_receipt")
+    if isinstance(receipt, dict):
+        # What the chore page would show for this run (ADR 0127), beside the bench's own cost.
+        print(
+            f"case receipt: {receipt.get('turns')} turns, {receipt.get('pending')} waiting, "
+            f"${receipt.get('cost_usd')} over {receipt.get('calls')} ledger rows",
+            flush=True,
+        )
     print(f"report: {(run_dir / 'report.json').as_posix()}", flush=True)
     return 1 if v["word"] == "short" else 0
 

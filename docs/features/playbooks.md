@@ -294,18 +294,23 @@ case_id}`) shows the approved brief at once; what she said carries over from mem
 date or an amount that may have moved is asked again. `GET /adopt/cases?playbook_id=` lists the
 cases, and a rebuilt index finds them again.
 
-**Your runs.** "Start for real" carries the case's `proj_` id to Athena, and every `POST /run` while
-that playbook is active sends it as `project_id` beside `active_project`, so every tab's turns,
-cards and ledger rows share `conv_proj_<hex>` ([ADR 0124](../adr/0124-your-runs-come-back-to-the-chore.md)).
-`GET /adopt/cases/<proj>/runs` folds that conversation into a receipt: the cards filed (approved, of
-them let through; declined; expired; waiting), the calls that may have completed, the dollars the
-approved cards **asked** for ("asked, from N cards you approved", never "recovered") and the
-ledger's cost and minutes. A run is everything since the case's last receipt; pressing **done** on
-the active playbook (`POST /adopt/cases/<proj>/done`) closes it and appends the receipt to the case
-file's block, so it survives a rebuilt index. `bench <id> --project` runs a playbook the same way.
+**Your runs.** "Start for real" carries the case's `proj_` id to Athena, and every `POST /run` (and
+every spoken turn) while that playbook is active sends it as `case_id` beside `active_project`. It
+routes nothing: each tab keeps its own conversation, and the daemon stamps the turn under the case
+([ADR 0124](../adr/0124-your-runs-come-back-to-the-chore.md),
+[ADR 0127](../adr/0127-a-cases-turns-keep-their-conversations-and-are-stamped-under-it.md)).
+`GET /adopt/cases/<proj>/runs` folds those turns into a receipt, joined by turn id: the cards they
+filed (approved, of them let through; declined; expired; waiting), the calls that may have
+completed, the dollars the approved cards **asked** for ("asked, from N cards you approved", never
+"recovered") and the ledger's cost and minutes for those turns. A run is every turn since the
+case's last receipt; pressing **done** on the active playbook (`POST /adopt/cases/<proj>/done`)
+closes it and appends the receipt to the case file's block, so it survives a rebuilt index.
+`bench <id> --case` runs a playbook the same way and reports the case's receipt; `--project`, one
+shared `conv_proj_<hex>` for every tab, stays as the experiment that measured it 1.7 to 2.5 times
+dearer per run.
 
-**The next run starts where the last stopped.** A turn that names a case (`case_id` on `POST /run`,
-which routes nothing, or a `project_id`) whose file holds a receipt gets a fenced, bounded "Since
+**The next run starts where the last stopped.** A turn that names a case (`case_id` on `POST /run`
+or a voice frame, which routes nothing, or a `project_id`) whose file holds a receipt gets a fenced, bounded "Since
 last run of this chore" block from the last one: cards that expired or were still waiting and calls
 that may have completed first, then approved and declined cards, each with its action, key
 parameters and date, `(showing N of M)`. It informs and never says what to leave out. A card filed

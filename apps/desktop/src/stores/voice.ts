@@ -56,6 +56,7 @@ import { endpoint, useDaemon } from "@/stores/daemon";
 import { useOrigins } from "@/stores/origins";
 import {
   captureOf,
+  caseOf,
   disabledOriginsOf,
   gatedListsOf,
   routingTools,
@@ -533,6 +534,8 @@ export const useVoice = create<VoiceState>((set, get) => {
         disabled_origins: taking.disabledOrigins,
         // Read per frame: a tool either channel left unsure is gated here too (ADR 0101).
         ...withUnsure(taking.gated),
+        // A spoken turn under a case is stamped under it as a typed one is; it routes nothing (ADR 0127).
+        ...caseOf(useRun.getState().project),
       });
       if (deps.openMic === null) {
         fail("this webview offers no microphone");
@@ -591,6 +594,8 @@ export const useVoice = create<VoiceState>((set, get) => {
         disabled_origins: taking.disabledOrigins,
         // Read per frame: a tool either channel left unsure is gated here too (ADR 0101).
         ...withUnsure(taking.gated),
+        // A spoken turn under a case is stamped under it as a typed one is; it routes nothing (ADR 0127).
+        ...caseOf(useRun.getState().project),
       });
     },
 

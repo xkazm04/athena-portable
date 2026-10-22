@@ -358,15 +358,17 @@ class ReceiptNote:
 
 @dataclass(frozen=True)
 class Receipt:
-    """What one run of a case came to, folded from its conversation ``conv_proj_…``.
+    """What one run of a case came to, joined by the turns stamped under the case (ADR 0127).
 
-    The run is the window ``since`` .. ``until`` (``""`` for the start, and for a run still
-    open). Every count is the approval table's for the cards created in the window; ``consumed``
-    is of ``approved``. ``asked_usd`` sums the amount parameter of the approved cards
-    (``asked_cards`` of them), what the cards asked for and never what came back; ``None`` when
-    no approved card named an amount. ``calls`` .. ``ms`` sum the ledger's rows of the
-    conversation in the window. ``cards`` and ``notes`` are bounded: ``cards_total`` and
-    ``notes_total`` are the populations, and each ``*_footer`` is ``(showing N of M)`` or ``""``.
+    The run is the case's ``turns`` that began in ``since`` .. ``until`` (``""`` for the start,
+    and for a run still open), each in its own tab's conversation. Every count is the approval
+    table's for the cards those turns filed; ``consumed`` is of ``approved``. ``asked_usd`` sums
+    the amount parameter of the approved cards (``asked_cards`` of them), what the cards asked
+    for and never what came back; ``None`` when no approved card named an amount. ``calls`` ..
+    ``ms`` sum the ledger's rows of those turns. ``conversation_id`` is ``""``: a run spans each
+    tab's own; a receipt kept before ADR 0127 names the ``conv_proj_…`` it was folded from.
+    ``cards`` and ``notes`` are bounded: ``cards_total`` and ``notes_total`` are the populations,
+    and each ``*_footer`` is ``(showing N of M)`` or ``""``.
     ``closed_by`` is ``"done"`` once the person pressed done, else ``""``.
     """
 
@@ -376,6 +378,7 @@ class Receipt:
     until: str = ""
     first_at: str = ""
     last_at: str = ""
+    turns: int = 0
     approved: int = 0
     consumed: int = 0
     declined: int = 0

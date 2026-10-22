@@ -1,25 +1,28 @@
 """ADR 0124 (your runs come back to the chore): a case's runs, folded into receipts.
 
-A run under a case talks in one conversation, ``conv_proj_…`` (ADR 0044): the desktop sends the
-case's ``proj_`` id as ``project_id`` on every ``POST /run`` while the playbook is active, so
-every tab's turns, cards and ledger rows land there. A **receipt** is what one run came to, read
-from three records this module never writes:
+A run under a case keeps each tab's own conversation: the desktop sends the case's ``proj_`` id
+as ``case_id`` on every ``POST /run`` while the playbook is active, which routes nothing, and
+the daemon stamps each such turn under the case (``core.case_turns``, ADR 0127). A **receipt** is
+what one run came to, joined by those turn ids from three records this module never writes:
 
-- the approval table: the cards filed in the run, counted by state (approved, of which the gate
-  spent ``consumed``; declined; expired; pending), and the first :data:`CARDS_CAP` shown;
-- the run's episodes: every call that **may have completed** (``outcome_unknown``, ADR 0101),
-  found by the lane's own verb :data:`~athena.lane.browser_lane.MAY_HAVE_COMPLETED`;
-- the ledger: rows, errors, dollars and milliseconds, summed for the conversation.
+- the approval table: the cards those turns filed (``turn_id``), counted by state (approved, of
+  which the gate spent ``consumed``; declined; expired; pending), the first :data:`CARDS_CAP`
+  shown;
+- the episodes: every call that **may have completed** (``outcome_unknown``, ADR 0101), found by
+  the lane's own verb :data:`~athena.lane.browser_lane.MAY_HAVE_COMPLETED`, written in a stamped
+  turn's conversation while that turn ran (the daemon runs one turn at a time);
+- the ledger: rows, errors, dollars and milliseconds, summed over those turn ids.
 
 Dollars are **asked**: the amount parameter of each approved card (the bench's ``_filed_total``
 rule over its own ``AMOUNT_PARAMS``), "asked, from N cards you approved". Nothing here reads a
 truth file or claims what came back.
 
-**A run** is the window from the end of the case's last receipt (or its start) to now. Pressing
-"done" on the active playbook closes it: :func:`fold` with ``until`` now, appended to the case
-file's block as a dated ``receipts`` entry (:meth:`~athena.adopt.cases.CaseBook.append_receipt`),
-so it survives deleting ``index.sqlite`` (the approval and ledger tables are not rebuilt from
-disk). A card is in the run it was filed in.
+**A run** is every turn of the case that began since the end of its last receipt (or ever).
+Pressing "done" on the active playbook closes it: :func:`fold` with ``until`` now, appended to
+the case file's block as a dated ``receipts`` entry
+(:meth:`~athena.adopt.cases.CaseBook.append_receipt`), so it survives deleting ``index.sqlite``
+(the approval, ledger and case-turn tables are not rebuilt from disk). A card is in the run of
+the turn that filed it, and so is a ledger row, whenever each was written.
 
 **The next run starts where the last stopped** (ADR 0126): :func:`carry_forward` turns a case's
 last receipt into the ``SinceLastRun`` the daemon hands the next turn's frame (calls whose outcome
@@ -29,6 +32,7 @@ start of that run, which the gate's "you approved this exact call" looks back to
 
 from __future__ import annotations
 
+import json
 from collections.abc import Mapping, Sequence
 from contextlib import closing
 from dataclasses import asdict
@@ -39,6 +43,7 @@ from athena.contracts import ids
 from athena.contracts.adopt import RECEIPT_SCHEMA, Receipt, ReceiptCard, ReceiptNote, cap_text
 from athena.core.approvals import ApprovalRow, Approvals
 from athena.core.brain.store import Brain
+from athena.core.case_turns import CaseTurn, CaseTurns
 from athena.core.ledger import Ledger
 from athena.core.prompt import SinceLastRun
 from athena.lane.browser_lane import MAY_HAVE_COMPLETED
@@ -110,25 +115,25 @@ def _footer(shown: int, total: int) -> str:
     return "" if shown >= total else f"(showing {shown} of {total})"
 
 
-def _notes(
-    brain: Brain, conversation: str, since: str, until: str
-) -> tuple[list[ReceiptNote], int]:
-    """The run's "may have completed" episodes, oldest first, and how many there are."""
-    where = "kind = 'episode' AND session_id = ? AND body_excerpt LIKE ?"
-    args: list[Any] = [conversation, f"%{MAY_HAVE_COMPLETED}%"]
-    if since:
-        where += " AND created_at >= ?"
-        args.append(since)
-    if until:
-        where += " AND created_at < ?"
-        args.append(until)
+def _notes(brain: Brain, turns: Sequence[CaseTurn]) -> tuple[list[ReceiptNote], int]:
+    """The run's "may have completed" episodes, oldest first, and how many there are: each one
+    written in a stamped turn's conversation between that turn's start and end. A turn with no
+    end (the daemon died under it) is its start alone, so it claims nothing written after."""
+    windows = [[t.conversation, t.started_at, t.ended_at or t.started_at] for t in turns]
+    where = (
+        "n.kind = 'episode' AND n.body_excerpt LIKE ? AND EXISTS ("
+        "SELECT 1 FROM json_each(?) w WHERE n.session_id = json_extract(w.value, '$[0]') "
+        "AND n.created_at >= json_extract(w.value, '$[1]') "
+        "AND n.created_at <= json_extract(w.value, '$[2]'))"
+    )
+    args: list[Any] = [f"%{MAY_HAVE_COMPLETED}%", json.dumps(windows)]
     with closing(brain.read_connection()) as con:
         total = int(
-            con.execute(f"SELECT COUNT(*) FROM companion_node WHERE {where}", args).fetchone()[0]
+            con.execute(f"SELECT COUNT(*) FROM companion_node n WHERE {where}", args).fetchone()[0]
         )
         raws = con.execute(
-            f"SELECT id, created_at FROM companion_node WHERE {where} "
-            "ORDER BY created_at, id LIMIT ?",
+            f"SELECT n.id, n.created_at FROM companion_node n WHERE {where} "
+            "ORDER BY n.created_at, n.id LIMIT ?",
             [*args, NOTES_CAP],
         ).fetchall()
     notes = []
@@ -151,6 +156,7 @@ def fold(
     brain: Brain,
     approvals: Approvals,
     ledger: Ledger,
+    case_turns: CaseTurns,
     case_id: str,
     *,
     since: str = "",
@@ -158,25 +164,28 @@ def fold(
     closed_by: str = "",
     closed_at: str = "",
 ) -> Receipt:
-    """The receipt of ``case_id``'s run in ``since <= t < until`` (``""`` leaves an end open)."""
-    conversation = ids.conversation_for_project(case_id)
-    page = approvals.of_conversation(conversation, since=since, until=until, limit=CARDS_CAP)
-    approved = approvals.of_conversation(
-        conversation, since=since, until=until, status="approved", limit=ASKED_CEILING
-    )
+    """The receipt of ``case_id``'s run: its turns that began in ``since <= t < until`` (``""``
+    leaves an end open), and the cards, ledger rows and episodes those turns wrote (ADR 0127)."""
+    turns = case_turns.of_case(case_id, since=since, until=until)
+    turn_ids = [t.turn_id for t in turns]
+    page = approvals.of_turns(turn_ids, limit=CARDS_CAP)
+    approved = approvals.of_turns(turn_ids, status="approved", limit=ASKED_CEILING)
     amounts = [a for row in approved.rows if (a := card_amount(row.params)) is not None]
-    cost = ledger.conversation_total(conversation, since=since, until=until)
-    notes, notes_total = _notes(brain, conversation, since, until)
-    stamps = [s for s in (page.first_at, cost.first_at, *(n.at for n in notes)) if s]
-    ends = [s for s in (page.last_at, cost.last_at, *(n.at for n in notes)) if s]
+    cost = ledger.turns_total(turn_ids)
+    notes, notes_total = _notes(brain, turns)
+    starts = [t.started_at for t in turns]
+    finishes = [t.ended_at or t.started_at for t in turns]
+    stamps = [s for s in (*starts, page.first_at, cost.first_at, *(n.at for n in notes)) if s]
+    ends = [s for s in (*finishes, page.last_at, cost.last_at, *(n.at for n in notes)) if s]
     cards = tuple(_card(row) for row in page.rows)
     return Receipt(
         case_id=case_id,
-        conversation_id=conversation,
+        conversation_id="",
         since=since,
         until=until,
         first_at=min(stamps) if stamps else "",
         last_at=max(ends) if ends else "",
+        turns=len(turns),
         approved=page.by_status.get("approved", 0),
         consumed=page.consumed,
         declined=page.by_status.get("declined", 0),
@@ -235,8 +244,14 @@ def of_cards(
 
 
 def empty(receipt: Receipt) -> bool:
-    """Nothing ran in the window: no card, no ledger row, no call that may have completed."""
-    return receipt.cards_total == 0 and receipt.calls == 0 and receipt.notes_total == 0
+    """Nothing ran in the window: no turn, no card, no ledger row, no call that may have
+    completed."""
+    return (
+        receipt.turns == 0
+        and receipt.cards_total == 0
+        and receipt.calls == 0
+        and receipt.notes_total == 0
+    )
 
 
 def receipt_line(receipt: Receipt) -> str:
@@ -366,6 +381,7 @@ def receipt_of(raw: Any) -> Receipt | None:
         until=_s(raw.get("until")),
         first_at=_s(raw.get("first_at")),
         last_at=_s(raw.get("last_at")),
+        turns=_i(raw.get("turns")),
         approved=_i(raw.get("approved")),
         consumed=_i(raw.get("consumed")),
         declined=_i(raw.get("declined")),

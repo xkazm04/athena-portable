@@ -162,6 +162,7 @@ class FakeApprovals:
         summary: str = "",
         tab_id: int | None = None,
         tab_nav: int | None = None,
+        turn_id: str | None = None,
     ) -> FakeCard:
         card = FakeCard(
             id=f"apr_{len(self.rows):012d}",
