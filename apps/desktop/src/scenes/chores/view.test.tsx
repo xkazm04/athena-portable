@@ -87,35 +87,29 @@ describe("the catalogue", () => {
     expect(l).toContain('role="grid"');
     expect(count(l, /<tr aria-selected=/g)).toBe(3);
     expect(count(l, /aria-selected="true"/g)).toBe(0);
-    const titles = [...l.matchAll(/class="pa-name__title">([^<]+)</g)].map((m) => m[1]);
+    const titles = [...l.matchAll(/class="pa-name"[^>]*>([^<]+)</g)].map((m) => m[1]);
     expect(titles).toEqual(fixtures.ledger!.items.map((v) => v.playbook.shortTitle));
   });
 
-  it("leads a filmed row with its first still, lazy, and the others with their area's glyph", () => {
-    expect(count(l, /<img class="pa-thumb"[^>]*loading="lazy"/g)).toBe(1);
-    expect(count(l, /class="pa-thumb pa-thumb--none"/g)).toBe(2);
+  it("is one line a row: no still, no lead line, no run count, no portals", () => {
+    expect(l).not.toContain("pa-thumb");
+    expect(l).not.toContain("pa-name__lead");
+    expect(l).not.toContain("pa-name__runs");
+    expect(l).not.toContain(">Portals<");
   });
 
-  it("gives each row its job, its portals, its time by hand against hers and its value on the year's scale", () => {
+  it("gives each row its job, its time by hand against hers and its value on the year's scale", () => {
     expect(l).toContain(">Recover money</span>");
-    expect(l).toContain('<span class="pa-chip">Carrier billing centre</span>');
     expect(l).toContain('<span class="pa-time__hand">3h</span>');
     expect(l).toContain('<span class="pa-time__athena">6m</span>');
     expect(l).toContain('<span class="pa-time__athena">not run</span>');
     expect(l).toContain('<span class="pa-value__n">$4,940</span><span class="pa-value__per">a year</span>');
   });
 
-  it("says under a benched row how many comparable runs it exceeds in, with n=1 for a single draw", () => {
-    // ADR 0128. The ledger fixture: two benched rows of one run each, one unbenched.
-    expect(count(l, /class="pa-name__runs pa-muted">exceeds in \d of 1 <span class="pa-chip"[^>]*>n=1<\/span>/g)).toBe(2);
-    expect(l).toContain(">exceeds in 1 of 1 <");
-    expect(count(l, /class="pa-name__runs/g)).toBe(2);
-  });
-
-  it("teases a row with its brief's lead line, or its promise when it has no brief", () => {
+  it("keeps a row's lead line, or its promise when it has no brief, as the name's hover title", () => {
     expect(l).toContain(fixtures.ledger!.items[1]!.playbook.promise.replace(/'/g, "&#x27;"));
     const b = render(withBrief("Late parcels, **refunded**.\n\n- one\n- two"), { root: "chores" });
-    expect(b).toContain('<span class="pa-name__lead">Late parcels, refunded.</span>');
+    expect(b).toContain('<span class="pa-name" title="Late parcels, refunded.">');
   });
 
   it("is an empty state of its own when the build ships nothing, with no totals", () => {

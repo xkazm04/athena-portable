@@ -48,17 +48,18 @@ test("each page is its own scroll and a size container, so it is laid out by the
   expect(rule(".pa-wrap")).toMatch(/max-width:\s*1240px/);
 });
 
-test("the catalogue's table gives up the portals, then the job, as the frame narrows", () => {
-  expect(block("@container (max-width: 1060px)")).toMatch(/td:nth-child\(4\)\s*\{\s*display:\s*none/);
-  expect(block("@container (max-width: 760px)")).toMatch(/td:nth-child\(3\)\s*\{\s*display:\s*none/);
+test("the catalogue's table gives up the job as the frame narrows, and keeps the value on one line", () => {
+  expect(block("@container (max-width: 760px)")).toMatch(/td:nth-child\(2\)\s*\{\s*display:\s*none/);
+  expect(rule(".pa-value")).toMatch(/white-space:\s*nowrap/);
   expect(rule(".pa-ledger .table")).toMatch(/table-layout:\s*fixed/);
 });
 
-test("a row's still holds its box before it loads, so the rows do not move", () => {
-  const thumb = rule(".pa-thumb");
-  expect(thumb).toMatch(/width:\s*128px/);
-  expect(thumb).toMatch(/height:\s*80px/);
-  expect(thumb).toMatch(/object-fit:\s*cover/);
+test("an area card's count rides its top edge, centred, out of the glyph's room", () => {
+  const count = rule(".pa-tab__count");
+  expect(count).toMatch(/position:\s*absolute/);
+  expect(count).toMatch(/left:\s*50%/);
+  expect(count).toMatch(/transform:\s*translate\(-50%, -50%\)/);
+  expect(rule(".pa-tab")).toMatch(/position:\s*relative/);
 });
 
 test("the hero still and every gallery frame hold a 16:10 box, so the page under them holds still", () => {

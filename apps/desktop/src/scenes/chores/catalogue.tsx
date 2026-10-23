@@ -1,9 +1,9 @@
 /**
  * The Chores root: the catalogue — README section 3.5, ADR 0096.
  *
- * Full width, no side rail: the areas are a tab bar with a
- * glyph and a count each, the jobs are chips under it, the order a three-way switch, and the ledger
- * a comfortable list of rows each led by a still of its own run. A press opens the topic page.
+ * Full width, no side rail: the areas are a row of cards, each a large glyph over its name with its
+ * count riding the top edge, the jobs are chips under it, the order a three-way switch, and the
+ * ledger one line per playbook: name, job, time saved, value. A press opens the topic page.
  */
 import { useEffect, useRef } from "react";
 
@@ -23,7 +23,7 @@ import {
 
 import { EDGE_ORDER, emptyLine, totalsLine, valueCell } from "./model";
 import { lead } from "./rich";
-import { JOB_TONE, stillsOf, timeCell } from "./facts";
+import { JOB_TONE, timeCell } from "./facts";
 import Glyph from "./glyphs";
 
 export interface CatalogueState {
@@ -81,40 +81,11 @@ export default function Catalogue({
 
   const columns: Column<PlaybookView>[] = [
     {
-      key: "shot",
-      head: "",
-      render: (v) => {
-        const first = stillsOf(v)[0];
-        return first ? (
-          <img className="pa-thumb" src={first.url} alt="" loading="lazy" decoding="async" width={128} height={80} />
-        ) : (
-          <span className="pa-thumb pa-thumb--none" aria-hidden="true">
-            <Glyph id={v.playbook.category} size={28} />
-          </span>
-        );
-      },
-    },
-    {
       key: "name",
       head: "Playbook",
       render: (v) => (
-        <span className="pa-name">
-          <span className="pa-name__title">{v.playbook.shortTitle}</span>
-          <span className="pa-name__lead">{lead(v.playbook.brief) || v.playbook.promise}</span>
-          {/* ADR 0128: how many comparable runs the bench stands on; an unbenched row claims nothing. */}
-          {v.verdict.runs ? (
-            <span className="pa-name__runs pa-muted">
-              {v.verdict.runs}
-              {v.verdict.sample ? (
-                <>
-                  {" "}
-                  <span className="pa-chip" title="One comparable run: a single draw, not yet repeated">
-                    {v.verdict.sample}
-                  </span>
-                </>
-              ) : null}
-            </span>
-          ) : null}
+        <span className="pa-name" title={lead(v.playbook.brief) || v.playbook.promise}>
+          {v.playbook.shortTitle}
         </span>
       ),
     },
@@ -129,23 +100,6 @@ export default function Catalogue({
         ) : (
           <span className="pa-muted">–</span>
         ),
-    },
-    {
-      key: "portals",
-      head: "Portals",
-      render: (v) => {
-        const apps = v.playbook.apps;
-        return (
-          <span className="pa-portals">
-            {apps.slice(0, 3).map((a) => (
-              <span key={a.name} className="pa-chip">
-                {a.name}
-              </span>
-            ))}
-            {apps.length > 3 ? <span className="pa-chip pa-chip--more">{`+${apps.length - 3}`}</span> : null}
-          </span>
-        );
-      },
     },
     {
       key: "time",
@@ -207,9 +161,9 @@ export default function Catalogue({
               title={t.label}
               aria-label={`${t.label}, ${t.count}`}
             >
-              <Glyph id={t.id} size={24} />
-              <span className="pa-tab__label">{short(t.label)}</span>
               <span className="pa-tab__count">{t.count}</span>
+              <Glyph id={t.id} size={40} />
+              <span className="pa-tab__label">{short(t.label)}</span>
             </button>
           ))}
         </nav>

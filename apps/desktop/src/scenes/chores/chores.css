@@ -69,28 +69,31 @@
   color: var(--muted-foreground);
 }
 
+/* The areas: one card each, the glyph dominant and the name under it. The count rides the card's top
+ * edge, centred, so it costs the glyph no room; the row's top padding is the half of it that hangs
+ * above. */
 .pa-tabs {
-  display: flex;
-  gap: 4px;
-  border-bottom: 1px solid var(--border-default);
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(96px, 1fr));
+  gap: 10px;
+  padding-top: 12px;
 }
 .pa-tab {
-  flex: 1 1 0;
+  position: relative;
   min-width: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 6px;
-  padding: 12px 4px 12px;
-  border: 0;
-  border-bottom: 3px solid transparent;
-  margin-bottom: -1px;
-  background: none;
+  justify-content: center;
+  gap: 8px;
+  padding: 22px 6px 12px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-card);
+  background: var(--card-bg);
   color: var(--muted-foreground);
   font: inherit;
   font-size: 14px;
   cursor: pointer;
-  border-radius: var(--radius-interactive) var(--radius-interactive) 0 0;
   transition:
     color var(--duration-fast) var(--ease-fast),
     background var(--duration-fast) var(--ease-fast),
@@ -98,12 +101,13 @@
 }
 .pa-tab:hover:not(:disabled) {
   color: var(--foreground);
+  border-color: var(--border-emphasis);
   background: var(--hover-wash);
 }
 .pa-tab[aria-current="page"] {
   color: var(--foreground);
-  border-bottom-color: var(--accent);
-  background: var(--card-bg);
+  border-color: var(--accent);
+  box-shadow: inset 0 0 0 1px var(--accent);
 }
 .pa-tab[aria-current="page"] .pa-glyph {
   color: var(--accent-text);
@@ -120,12 +124,25 @@
   font-weight: 600;
 }
 .pa-tab__count {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  min-width: 28px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--border-default);
+  background: var(--background);
   font-size: 13px;
+  font-weight: 600;
+  line-height: 18px;
+  text-align: center;
   font-variant-numeric: tabular-nums;
   color: var(--muted-foreground);
 }
 .pa-tab[aria-current="page"] .pa-tab__count {
   color: var(--accent-text);
+  border-color: var(--accent);
 }
 
 .pa-bar {
@@ -216,20 +233,14 @@
 .pa-ledger .table {
   table-layout: fixed;
 }
-.pa-ledger .table th:nth-child(1) {
-  width: 152px;
-}
-.pa-ledger .table th:nth-child(3) {
+.pa-ledger .table th:nth-child(2) {
   width: 146px;
 }
+.pa-ledger .table th:nth-child(3) {
+  width: 132px;
+}
 .pa-ledger .table th:nth-child(4) {
-  width: 210px;
-}
-.pa-ledger .table th:nth-child(5) {
-  width: 124px;
-}
-.pa-ledger .table th:nth-child(6) {
-  width: 130px;
+  width: 240px;
 }
 .pa-ledger .table th {
   font-size: 13px;
@@ -238,56 +249,21 @@
   letter-spacing: 0.06em;
 }
 .pa-ledger .table td {
-  padding: 4px 12px;
-  height: 92px;
+  padding: 10px 12px;
+  height: 52px;
   vertical-align: middle;
 }
-.pa-ledger .table td:first-child {
-  width: 128px;
-  padding-left: 8px;
-}
-.pa-ledger .table tbody tr:hover .pa-thumb {
-  border-color: var(--border-emphasis);
-}
-.pa-ledger .table tbody tr[aria-selected="true"] .pa-name__title {
+.pa-ledger .table tbody tr[aria-selected="true"] .pa-name {
   color: var(--accent-text);
 }
 
-.pa-thumb {
-  display: block;
-  width: 128px;
-  height: 80px;
-  object-fit: cover;
-  object-position: top left;
-  border-radius: 8px;
-  border: 1px solid var(--border-default);
-  background: var(--recessed);
-  transition: border-color var(--duration-fast) var(--ease-fast);
-}
-.pa-thumb--none {
-  display: grid;
-  place-items: center;
-  color: var(--muted-foreground);
-  background-color: var(--recessed);
-  background-image:
-    repeating-linear-gradient(135deg, var(--border-subtle) 0 1px, transparent 1px 10px);
-}
-
 .pa-name {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
+  display: block;
   min-width: 0;
-}
-.pa-name__title {
-  font-size: 17px;
+  font-size: 16px;
   font-weight: 600;
   line-height: 1.3;
   color: var(--foreground);
-}
-.pa-name__lead {
-  font-size: 14px;
-  color: var(--muted-foreground);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -304,26 +280,6 @@
   color: var(--foreground);
   background: color-mix(in srgb, var(--pa-tone) 16%, transparent);
   border: 1px solid color-mix(in srgb, var(--pa-tone) 55%, transparent);
-}
-.pa-portals {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-.pa-chip {
-  padding: 2px 8px;
-  border-radius: 6px;
-  font-size: 13px;
-  background: var(--recessed);
-  border: 1px solid var(--border-subtle);
-  color: var(--foreground);
-  white-space: nowrap;
-  max-width: 16ch;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.pa-chip--more {
-  color: var(--muted-foreground);
 }
 .pa-time {
   display: inline-flex;
@@ -344,12 +300,12 @@
 }
 .pa-value {
   display: inline-flex;
-  flex-direction: column;
-  align-items: flex-end;
+  align-items: baseline;
+  gap: 6px;
   white-space: nowrap;
 }
 .pa-value__n {
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 650;
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
@@ -370,15 +326,9 @@
   margin: 0;
 }
 
-@container (max-width: 1060px) {
-  .pa-ledger .table th:nth-child(4),
-  .pa-ledger .table td:nth-child(4) {
-    display: none;
-  }
-}
 @container (max-width: 760px) {
-  .pa-ledger .table th:nth-child(3),
-  .pa-ledger .table td:nth-child(3) {
+  .pa-ledger .table th:nth-child(2),
+  .pa-ledger .table td:nth-child(2) {
     display: none;
   }
 }

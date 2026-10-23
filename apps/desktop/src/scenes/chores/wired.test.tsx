@@ -88,7 +88,7 @@ afterEach(() => {
 describe("the catalogue", () => {
   const ledger = () => fixtures.ledger!;
   const rows = () => qa("tbody tr[aria-selected]");
-  const titles = () => qa(".pa-name__title").map((t) => t.textContent);
+  const titles = () => qa(".pa-name").map((t) => t.textContent);
   const tab = (name: string) => qa(".pa-tab").find((b) => b.title === name) ?? null;
   const tabCount = (name: string) => tab(name)?.querySelector(".pa-tab__count")?.textContent;
   const chip = (name: string) => qa(".pa-jobchip").find((b) => b.textContent === name) ?? null;
