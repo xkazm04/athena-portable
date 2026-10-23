@@ -38,6 +38,8 @@ from athena.proving.chores_uat.numbers import (
 
 from .conftest import LIBRARY
 
+SRC = "by hand is the author's estimate, hers is from the test run"
+
 
 @pytest.fixture(scope="module")
 def rows() -> dict[str, dict[str, Any]]:
@@ -172,7 +174,8 @@ def test_headline_and_summary(rows: dict[str, dict[str, Any]]) -> None:
 PAGES = {
     "medical-bills": [
         "In the example case: $3,424 back, in the invented example",
-        f"Time saved: 8 h -> 6 min, including about 4 min of your review · 82{TIMES} faster",
+        f"Time saved: 8 h -> 6 min, including about 4 min of your review · 82{TIMES} faster"
+        f" · {SRC}",
         "Mistakes avoided: 12/12 in the test run",
         "Beats its bar: Beat its bar in its one test run: 7 of 8 found, $3,424 back of $3,424, "
         "no false claims.",
@@ -180,7 +183,8 @@ PAGES = {
     ],
     "clinic-denials": [
         "In the example case: $2,120 back, in the invented example",
-        f"Time saved: 10 h -> 6 min, including about 3 min of your review · 108{TIMES} faster",
+        f"Time saved: 10 h -> 6 min, including about 3 min of your review · 108{TIMES} faster"
+        f" · {SRC}",
         "Mistakes avoided: 22/22 in the test run",
         "Falls short: Fell short: 6 of 10 found, $1,530 back of $2,120, no false claims, latest "
         "of 3 test runs. found 72% of the value, expected 75%",
@@ -189,7 +193,8 @@ PAGES = {
     "lien-desk": [
         "In the example case: No money comes back in the example case: this chore protects money "
         "that is at risk.",
-        f"Time saved: 8 h -> 8 min, including about 5 min of your review · 57{TIMES} faster",
+        f"Time saved: 8 h -> 8 min, including about 5 min of your review · 57{TIMES} faster"
+        f" · {SRC}",
         "Mistakes avoided: 12/12 in the test run",
         "Beats its bar: Beat its bar in 3 of 3 test runs: 10 of 10 found, $416,700 of $416,700 "
         "protected, no false claims.",
@@ -260,7 +265,7 @@ def test_meets_and_a_bench_without_review() -> None:
     row = number_row(
         {"id": "x", "economics": {"value_usd": 10, "per": "month", "manual_minutes": 60}}, bench
     )
-    assert row["time_text"] == f"60 min -> 2 min, 30{TIMES} faster"
+    assert row["time_text"] == f"60 min -> 2 min, 30{TIMES} faster · {SRC}"
     assert row["verdict_text"] == (
         "Met its bar in the latest test run: 3 of 4 found, $75 back of $100, 1 false claim. "
         "One test run so far."

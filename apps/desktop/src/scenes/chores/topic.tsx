@@ -42,6 +42,9 @@ import Glyph from "./glyphs";
 import Due from "./due";
 import Runs from "./runs";
 
+/** Where the two times come from: the hand figure is typed by the author, hers is measured (spark chores-uat recertify). */
+const TIME_SOURCE = "by hand is the author's estimate, hers is from the test run";
+
 /** What the topic page knows of the chore's saved cases (ADR 0123). */
 export type CasesState =
   | { kind: "no-daemon" }
@@ -218,7 +221,7 @@ export default function Topic({
                 </span>
                 <span className="pa-kpi__line">
                   {band.athena
-                    ? [band.athena.review, band.ratio].filter(Boolean).join(" · ") || "measured in the test run"
+                    ? [band.athena.review, band.ratio, TIME_SOURCE].filter(Boolean).join(" · ")
                     : "not tested yet"}
                 </span>
               </div>

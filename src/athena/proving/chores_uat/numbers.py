@@ -526,7 +526,7 @@ def number_row(playbook: Mapping[str, Any], bench: Mapping[str, Any] | None) -> 
         "author's estimate"
     )
     # beforeAfterOf + topic.tsx's "Time saved" tile: hand -> her run plus your review, then
-    # `[band.athena.review, band.ratio].filter(Boolean).join(" · ") || "measured in the test run"`.
+    # `[band.athena.review, band.ratio, TIME_SOURCE].filter(Boolean).join(" · ")`.
     manual0 = manual or 0.0
     hand = minutes_text(manual0) if manual0 else DASH
     if bench is not None:
@@ -535,7 +535,7 @@ def number_row(playbook: Mapping[str, Any], bench: Mapping[str, Any] | None) -> 
             f"including about {minutes_text(your_s / 60)} of your review" if your_s else ""
         )
         speed = speedup_text(manual0, with_review_min)  # view.speed
-        line = DOT.join(x for x in (review_words, speed) if x) or "measured in the test run"
+        line = DOT.join(x for x in (review_words, speed, TIME_SOURCE) if x)
         time_text = f"{hand} -> {minutes_text(with_review_min)}, {line}"
     else:
         time_text = f"{hand} -> {DASH}, not tested yet"
@@ -581,6 +581,9 @@ def hero_lines(row: Mapping[str, Any], promise: str = "") -> list[str]:
     """The hero's text (``topic.tsx``): the tag and the brief, or the promise when no brief."""
     brief = str(row.get("brief") or "")
     return [TAG, brief.strip()] if brief.strip() else [promise]
+
+
+TIME_SOURCE = "by hand is the author's estimate, hers is from the test run"
 
 
 def headline(row: Mapping[str, Any]) -> list[str]:
