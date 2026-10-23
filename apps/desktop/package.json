@@ -26,7 +26,9 @@
     "perf:avatar": "node scripts/perf-gate.mjs --scene avatar",
     "perf:all": "pnpm perf && node scripts/perf-gate.mjs --all",
     "test:e2e": "vitest run --config e2e/vitest.e2e.config.ts",
-    "test:e2e:shadowrunr": "vitest run --config e2e/vitest.e2e.config.ts e2e/shadowrunr"
+    "test:e2e:shadowrunr": "vitest run --config e2e/vitest.e2e.config.ts e2e/shadowrunr",
+    "test:e2e:desktop": "vitest run --config e2e/vitest.e2e.config.ts e2e/desktop",
+    "drive": "node drive/drive.mjs"
   },
   "dependencies": {
     "@athena/bridge": "workspace:*",
