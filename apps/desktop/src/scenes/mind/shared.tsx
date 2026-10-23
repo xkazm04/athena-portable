@@ -23,6 +23,7 @@ export const THEME_HINTS: Record<ThemeChoice, string> = {
 export const TYPE_SCALE_HINTS: Record<TypeScale, string> = {
   comfortable: "Every size under the headings, two pixels larger.",
   compact: "The original sizes, for more on one screen.",
+  large: "Every size four pixels larger, headings included, for reading at a distance.",
 };
 
 /** A miniature of the app in one theme: the tokens re-scoped by `data-theme` on its own root. */

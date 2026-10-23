@@ -131,7 +131,8 @@
   --ease-fast: cubic-bezier(0.2, 0, 0, 1);
 
   /* The reading step (Setup, Theme, "Text size"): added to every size under the heading tiers,
-   * never to a heading. Comfortable is the default; compact is the original ramp. */
+   * never to a heading. Comfortable is the default; compact is the original ramp; large doubles the
+   * step and is the one scale that also lifts the two heading tiers. */
   --type-step: 2px;
 
   /* §3.2. Every gap and pad in the app is one of these three. */
@@ -147,6 +148,18 @@
 
 [data-type-scale="compact"] {
   --type-step: 0px;
+}
+
+[data-type-scale="large"] {
+  --type-step: 4px;
+}
+
+[data-type-scale="large"] .typo-heading-lg {
+  font-size: 1.5rem;
+}
+
+[data-type-scale="large"] .typo-heading {
+  font-size: 1.1875rem;
 }
 
 *,

@@ -53,8 +53,8 @@ export function resolveTheme(choice: ThemeChoice): Theme {
   return choice === "system" ? systemTheme() : choice;
 }
 
-/** Comfortable adds the reading step (`--type-step` in `styles/app.css`); compact removes it. */
-export const TYPE_SCALES = ["comfortable", "compact"] as const;
+/** Comfortable adds the reading step (`--type-step` in `styles/app.css`); compact removes it; large doubles it. */
+export const TYPE_SCALES = ["compact", "comfortable", "large"] as const;
 
 export type TypeScale = (typeof TYPE_SCALES)[number];
 
@@ -62,7 +62,7 @@ export function isTypeScale(value: unknown): value is TypeScale {
   return typeof value === "string" && (TYPE_SCALES as readonly string[]).includes(value);
 }
 
-/** The one writer of `data-type-scale`; only `compact` has a rule, comfortable is the sheet's default. */
+/** The one writer of `data-type-scale`; `compact` and `large` have rules, comfortable is the sheet's default. */
 export function applyTypeScale(scale: TypeScale): void {
   if (typeof document === "undefined") return;
   document.documentElement.setAttribute("data-type-scale", scale);
