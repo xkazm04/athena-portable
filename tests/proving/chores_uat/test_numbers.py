@@ -19,11 +19,15 @@ from typing import Any
 import pytest
 
 from athena.proving.chores_uat.numbers import (
+    DASH,
+    TAG,
     TIMES,
     annual_value,
     audit,
     comparable_runs,
+    fit_rows,
     headline,
+    hero_lines,
     minutes_text,
     number_row,
     read_library,
@@ -66,13 +70,13 @@ def test_clinic_denials_per_month(rows: dict[str, dict[str, Any]]) -> None:
     assert r["basis_says_estimate"] is True  # ADR 0133 wave: the basis now says so
     assert r["sources_n"] == 5 and r["incumbent_fee_pct"] is None
     assert r["expectation_minutes"] == 30.0
-    assert r["caveat_rendered"] is False and r["basis_rendered"] is False
-    assert any("Make it yours" in q for q in r["quirks"])
+    assert r["caveat_rendered"] is True and r["basis_rendered"] is True  # one click away (0133)
+    assert r["quirks"] == []
 
 
 def test_pslf_per_episode(rows: dict[str, dict[str, Any]]) -> None:
     r = rows["pslf-employment-certification"]
-    assert (r["annual_shown"], r["unit_shown"]) == (20000.0, "per episode")
+    assert (r["annual_shown"], r["unit_shown"]) == (20000.0, "an episode")
     assert r["world_total_usd"] == 20000.0 and r["world_ratio"] == 1.0
     assert r["speedup_shown"] == 140.169
     assert r["speedup_with_review"] == 64.651
@@ -101,7 +105,7 @@ def test_absent_figures_are_null_never_zero() -> None:
     assert row["speedup_with_review"] is None and row["bench_runs_n"] is None
     assert row["expectation_minutes"] is None
     assert row["verdict"] == "unbenched"
-    assert row["unit_shown"] == "per quarter"
+    assert row["unit_shown"] == "a quarter"
     joined = " ".join(row["quirks"])
     assert "quarter is not multiplied by 4" in joined
     assert "no bench.json" in joined
@@ -133,6 +137,8 @@ def test_comparable_runs_mirrors_the_desktop() -> None:
 def test_the_words_match_the_desktop() -> None:
     assert annual_value(100, "month") == 1200 and annual_value(100, "episode") == 100
     assert usd_text(50400) == "$50,400" and usd_text(12.5) == "$12.50" and usd_text(7) == "$7"
+    # toLocaleString rounds half away from zero; Python's format would say $3,422 for 3,422.50.
+    assert usd_text(3423.5) == "$3,424" and usd_text(3422.5) == "$3,423"
     assert minutes_text(0.5) == "30 s" and minutes_text(42.4) == "42 min"
     assert minutes_text(600) == "10 h" and minutes_text(150) == "2.5 h"
     assert speedup_text(600, 2.5733) == f"233{TIMES} faster"
@@ -142,9 +148,121 @@ def test_the_words_match_the_desktop() -> None:
 
 def test_headline_and_summary(rows: dict[str, dict[str, Any]]) -> None:
     lines = headline(rows["clinic-denials"])
-    assert lines[0] == "Value: $50,400 a year, for the persona"
-    assert "10 h by hand" in lines[1] and f"233{TIMES} faster" in lines[1]
-    assert lines[2] == "Verdict: Falls short"
+    assert lines[0] == "In the example case: $2,120 back, in the invented example"
+    assert lines[-1] == "Typical value: about $50,400 a year, author's estimate"
     counts = summary({"playbooks": list(rows.values())})
     assert counts["playbooks"] == 100
     assert counts["world_ratio_gt_10"] <= counts["world_ratio_gt_3"]
+
+
+# --- the post-0136 topic page, pinned by hand from the TS (worth.ts, topic.tsx, model.ts) --------
+#
+# medical-bills: per episode, money back, example_usd 3,423.50 -> usd() rounds half up: "$3,424".
+#   Time: manual 480 min = 8 h; with review (140.8 + 210) / 60 = 5.847 min -> "6 min"; review
+#   210 / 60 = 3.5 min -> Math.round -> "4 min"; 480 / 5.847 = 82.1 -> "82x faster". Traps 12 of
+#   12 avoided. Tally: dispute_bill 324.50 + 64 + 1,750, refund 45, appeal 1,240 = 3,423.50 money
+#   back; pay_bill is a count. No comparable key, so one test run.
+# clinic-denials: per month, 4,200 x 12 = $50,400 a year; example $2,120. With review
+#   (154.4 + 180) / 60 = 5.573 -> "6 min", 600 / 5.573 = 107.7 -> "108x". Short, latest of 3 runs
+#   (two keyed unsuperseded history lines), first reason quoted. Traps 22 of 22.
+# lien-desk: money protected, example_usd null -> INSTEAD[money_protected]; $380,000 "a year
+#   protected". (203.5 + 300) / 60 = 8.392 -> "8 min", 480 / 8.392 = 57.2 -> "57x"; review 5 min.
+#   Exceeds in 3 of 3 keyed runs; every card is money_protected: "$416,700 of $416,700 protected".
+
+PAGES = {
+    "medical-bills": [
+        "In the example case: $3,424 back, in the invented example",
+        f"Time saved: 8 h -> 6 min, including about 4 min of your review · 82{TIMES} faster",
+        "Mistakes avoided: 12/12 in the test run",
+        "Beats its bar: Beat its bar in its one test run: 7 of 8 found, $3,424 back of $3,424, "
+        "no false claims.",
+        "Typical value: about $3,423 an episode, author's estimate",
+    ],
+    "clinic-denials": [
+        "In the example case: $2,120 back, in the invented example",
+        f"Time saved: 10 h -> 6 min, including about 3 min of your review · 108{TIMES} faster",
+        "Mistakes avoided: 22/22 in the test run",
+        "Falls short: Fell short: 6 of 10 found, $1,530 back of $2,120, no false claims, latest "
+        "of 3 test runs. found 72% of the value, expected 75%",
+        "Typical value: about $50,400 a year, author's estimate",
+    ],
+    "lien-desk": [
+        "In the example case: No money comes back in the example case: this chore protects money "
+        "that is at risk.",
+        f"Time saved: 8 h -> 8 min, including about 5 min of your review · 57{TIMES} faster",
+        "Mistakes avoided: 12/12 in the test run",
+        "Beats its bar: Beat its bar in 3 of 3 test runs: 10 of 10 found, $416,700 of $416,700 "
+        "protected, no false claims.",
+        "Typical value: about $380,000 a year protected, author's estimate",
+    ],
+}
+
+
+@pytest.mark.parametrize("pid", sorted(PAGES))
+def test_headline_is_the_post_0136_page(rows: dict[str, dict[str, Any]], pid: str) -> None:
+    assert headline(rows[pid]) == PAGES[pid]
+
+
+def test_the_page_fields(rows: dict[str, dict[str, Any]]) -> None:
+    med, lien = rows["medical-bills"], rows["lien-desk"]
+    assert (med["value_kind"], med["example_usd"]) == ("money_back", 3423.5)
+    assert (lien["value_kind"], lien["example_usd"]) == ("money_protected", None)
+    assert med["brief"].startswith("A family on a PPO faces bills")
+    assert hero_lines(med, "the promise") == [TAG, med["brief"].strip()]
+    assert hero_lines({"brief": "  "}, "the promise") == ["the promise"]
+    assert fit_rows(lien["fit"])[0] == (
+        "Where",
+        "California or Texas. California and Texas lien law only; every other state's deadlines "
+        "differ.",
+    )
+    assert [label for label, _ in fit_rows(med["fit"])] == [
+        "Where",
+        "Who it is for",
+        "Not for",
+        "She will ask you for",
+        "What it costs",
+    ]
+    assert fit_rows(med["fit"])[0][1].startswith("the United States. ")
+
+
+def test_the_page_without_a_bench_or_a_fit() -> None:
+    row = number_row(
+        {
+            "id": "x",
+            "traps": ["a", "b"],
+            "fit": {"where": [], "who": ""},
+            "economics": {"value_usd": 500, "per": "year", "value_kind": "penalty_avoided"},
+        },
+        None,
+    )
+    assert row["fit"] is None and fit_rows(row["fit"]) == []
+    assert headline(row) == [
+        "In the example case: No money comes back in the example case: this chore keeps you "
+        "clear of penalties.",
+        f"Time saved: {DASH} -> {DASH}, not tested yet",
+        "Mistakes avoided: 2 known mistakes, not tested",
+        "Not tested: No test run yet, so nothing here is measured.",
+        "Typical value: about $500 a year in penalties avoided, author's estimate",
+    ]
+    # `count` is never the estimate's kind; an unknown kind is money back.
+    assert number_row({"id": "y", "economics": {"value_kind": "count"}}, None)["value_kind"] == (
+        "money_back"
+    )
+
+
+def test_meets_and_a_bench_without_review() -> None:
+    bench = {
+        "wall_s": 120,
+        "verdict": {"word": "meets"},
+        "score": {"eligible": 4, "found": 3, "false_claims": 1, "value_total_usd": 100,
+                  "value_found_usd": 75},
+    }  # fmt: skip
+    row = number_row(
+        {"id": "x", "economics": {"value_usd": 10, "per": "month", "manual_minutes": 60}}, bench
+    )
+    assert row["time_text"] == f"60 min -> 2 min, 30{TIMES} faster"
+    assert row["verdict_text"] == (
+        "Met its bar in the latest test run: 3 of 4 found, $75 back of $100, 1 false claim. "
+        "One test run so far."
+    )
+    assert row["guard_text"] == f"{DASH} known mistakes, not tested"

@@ -13,7 +13,7 @@ import pytest
 from athena.adopt.prompts import AUDIT_SYSTEM, INTERVIEW_SYSTEM
 from athena.proving.chores_uat.__main__ import main
 from athena.proving.chores_uat.cast import case_path, load_case, load_characters, load_pairs
-from athena.proving.chores_uat.numbers import read_library
+from athena.proving.chores_uat.numbers import TAG, read_library
 from athena.proving.chores_uat.run import (
     Job,
     dump_path,
@@ -152,8 +152,14 @@ def test_the_judge_is_blind_to_athenas_prompts_and_sees_the_criteria(tmp_path: P
     _, model = _run(tmp_path, clearing_script())
     prompt = model.prompts("judge")[0]
     assert "Nothing is sent in her name" in prompt  # criteria
-    assert "NOT SHOWN IN THE APP" in prompt and "Caveat:" in prompt
-    assert "Value: $" in prompt  # the page headline from the numbers row
+    # The page as the desktop renders it since ADR 0133-0136: the hero brief, not the promise.
+    assert "NOT SHOWN IN THE APP" not in prompt and "Promise:" not in prompt
+    assert TAG in prompt and str(PLAYBOOK["brief"]).strip() in prompt
+    assert "In the example case: " in prompt and "Typical value: about $" in prompt
+    assert "Time saved: " in prompt and "of your review" in prompt
+    assert "Where it fits\nWhere: " in prompt
+    assert "ONE CLICK AWAY ON THE PAGE (the estimate's disclosure)" in prompt
+    assert "Basis: " in prompt and "Caveat:" in prompt
     assert "invented data shaped like your case" in prompt
     assert "I was not sure what Postwren is." in prompt  # her aside
     assert "turn 1" in prompt and "turn 0" in prompt

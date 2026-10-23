@@ -1,25 +1,33 @@
-"""uat chores (spark chores-uat): the numbers audit — each chore's promise as the desktop shows it.
+"""uat chores (spark chores-uat): the numbers audit — each chore's page as the desktop shows it.
 
 Deterministic, no model. One row per playbook, every figure computed the way the desktop's Chores
-scene computes it, so the row is what a person reads and not what the playbook file means:
+scene computes it, so the row is what a person reads and not what the playbook file means. The
+topic page (fix wave chores-uat, ADR 0133-0136; ``apps/desktop/src/scenes/chores/topic.tsx`` and
+``worth.ts``) shows, and the row carries as text:
 
-- **Value** (``annual_shown``, ``unit_shown``) mirrors ``annualValue`` and ``valueCell``
-  (``apps/desktop/src/modules/playbooks/model.ts``, ``scenes/chores/model.ts``): a month is
-  twelve, a week fifty-two, a year one; any other ``per`` (episode, quarter, estate) is shown
-  raw in its own unit, ``"per <unit>"`` (the ``PER`` table's fallback).
-- **Speed** (``speedup_shown``) mirrors ``speedup(manualMinutes, bench.wallS / 60)``
-  (``lib/playbooks.ts``): the bench's wall clock only. ``speedup_with_review`` adds the person's
-  review time (``your_time_s``), which the desktop does not.
-- **Verdict** and ``bench_runs_n`` mirror ``verdictOf`` and ``comparableRuns``: the latest run's
-  word, and how many comparable, unsuperseded runs stand behind it.
+- the hero: the playbook's short ``brief`` markdown, tagged as the invented example case
+  (``brief``; the ``promise`` only when there is no brief);
+- one money headline by kind (``value_kind``, ``example_usd``): the example case's money back, or
+  in words what the chore does for the money when none of it is money back (``worthOf``);
+- the author's estimate on one line (``estimate_text``), whose disclosure opens on the basis, the
+  sources and the caveat — one click away, so ``basis_rendered``/``caveat_rendered`` are true;
+- the time saved with the person's review counted (``time_text``; ``beforeAfterOf``);
+- the mistakes avoided (``guard_text``; ``blueprintOf``);
+- the verdict sentence and the runs it stands on (``verdict_text``; ``verdictOf``);
+- "Where it fits" from the playbook's ``fit`` (``fit``; ``fitRows``), absent without one.
+
+The older fields are kept so ``numbers.json`` stays comparable across runs:
+
+- ``annual_shown``/``unit_shown`` mirror ``annualValue`` and the ``PER`` table: still the
+  estimate line's figure and unit. A month is twelve, a week fifty-two, a year one; any other
+  ``per`` (episode, quarter, estate) is said raw in its own unit.
+- ``speedup_shown`` is the pre-0136 page's speed (``speedup(manualMinutes, bench.wallS / 60)``,
+  the bench's wall clock only). ``speedup_with_review`` is what the page shows now.
 - ``world_total_usd`` is what the bench world holds (``score.value_total_usd``) and
-  ``world_ratio`` how many times the shown value exceeds it: a ratio far above one is a promise
-  the bench never measured.
+  ``world_ratio`` how many times the estimate exceeds it.
 
 The desktop's quirks are copied, not fixed, and each one that touches a row is named in its
-``quirks``. **An absent figure is ``null``, never 0.** The caveat and the economics basis are
-parsed or carried but rendered by no desktop view (``caveat_rendered``/``basis_rendered`` false:
-no ``.tsx`` reads ``caveat``, ``basis`` or ``economics.sources``).
+``quirks``. **An absent figure is ``null``, never 0.**
 """
 
 from __future__ import annotations
@@ -28,16 +36,20 @@ import json
 import math
 from collections.abc import Mapping
 from datetime import UTC, datetime
+from decimal import ROUND_HALF_UP, Decimal
 from pathlib import Path
 from typing import Any
 
 __all__ = [
     "NOTES",
     "PER",
+    "TAG",
     "annual_value",
     "audit",
     "comparable_runs",
+    "fit_rows",
     "headline",
+    "hero_lines",
     "minutes_text",
     "number_row",
     "read_library",
@@ -54,24 +66,72 @@ PER: dict[str, str] = {
     "week": "a week",
     "run": "a run",
     "claim": "a claim",
+    "episode": "an episode",
+    "quarter": "a quarter",
+    "estate": "an estate",
 }
 _YEARLY = ("year", "month", "week")
 #: The desktop's own glyphs: the multiplication sign of "18x faster" and the en dash of "unknown".
 TIMES = "\u00d7"
 DASH = "\u2013"
+DOT = " \u00b7 "
 _VERDICTS = ("exceeds", "meets", "short")
+#: ``modules/playbooks/model.ts`` ``LOOK`` and ``verdictOf``'s untested badge.
 _LABELS = {
-    "exceeds": "Exceeds",
-    "meets": "Meets",
+    "exceeds": "Beats its bar",
+    "meets": "Meets its bar",
     "short": "Falls short",
-    "unbenched": "Not benched",
+    "unbenched": "Not tested",
 }
+#: ``lib/playbooks.ts`` ``ValueKind``; ``count`` is a card's kind, never the estimate's.
+_KINDS = ("money_back", "money_protected", "penalty_avoided", "count")
+_MONEY_KINDS = ("money_back", "money_protected", "penalty_avoided")
+#: ``worth.ts`` ``KIND_WORD``: the word after an estimate's figure.
+_KIND_WORD = {
+    "money_back": "back",
+    "money_protected": "protected",
+    "penalty_avoided": "in penalties avoided",
+}
+#: ``worth.ts`` ``INSTEAD``: the money headline when the example case holds no money back.
+_INSTEAD = {
+    "money_back": "The example case holds no money back to count; it is scored by what she finds.",
+    "money_protected": (
+        "No money comes back in the example case: this chore protects money that is at risk."
+    ),
+    "penalty_avoided": (
+        "No money comes back in the example case: this chore keeps you clear of penalties."
+    ),
+}
+#: ``topic.tsx``: the tag over the hero brief.
+TAG = "Invented example case: its names and figures are not yours"
+#: ``worth.ts`` ``STATES`` and ``REGIONS``: where a chore's rules hold, in words.
+_STATES = {
+    "AL": "Alabama", "AK": "Alaska", "AZ": "Arizona", "AR": "Arkansas", "CA": "California",
+    "CO": "Colorado", "CT": "Connecticut", "DE": "Delaware", "DC": "the District of Columbia",
+    "FL": "Florida", "GA": "Georgia", "HI": "Hawaii", "ID": "Idaho", "IL": "Illinois",
+    "IN": "Indiana", "IA": "Iowa", "KS": "Kansas", "KY": "Kentucky", "LA": "Louisiana",
+    "ME": "Maine", "MD": "Maryland", "MA": "Massachusetts", "MI": "Michigan", "MN": "Minnesota",
+    "MS": "Mississippi", "MO": "Missouri", "MT": "Montana", "NE": "Nebraska", "NV": "Nevada",
+    "NH": "New Hampshire", "NJ": "New Jersey", "NM": "New Mexico", "NY": "New York",
+    "NC": "North Carolina", "ND": "North Dakota", "OH": "Ohio", "OK": "Oklahoma", "OR": "Oregon",
+    "PA": "Pennsylvania", "RI": "Rhode Island", "SC": "South Carolina", "SD": "South Dakota",
+    "TN": "Tennessee", "TX": "Texas", "UT": "Utah", "VT": "Vermont", "VA": "Virginia",
+    "WA": "Washington", "WV": "West Virginia", "WI": "Wisconsin", "WY": "Wyoming",
+    "PR": "Puerto Rico",
+    "US": "the United States", "EU": "the European Union", "UK": "the United Kingdom",
+}  # fmt: skip
 
 #: What holds for every row, said once.
 NOTES: tuple[str, ...] = (
-    "speedup_shown is manual_minutes / (bench wall_s / 60), as lib/playbooks.ts speedup(); the "
-    "person's review time (your_time_s) is not in it.",
-    "economics.basis, economics.sources and the playbook caveat are rendered by no desktop view.",
+    "The page these rows mirror is the post-0136 topic page (ADR 0133-0136): hero = brief, one "
+    "money headline from economics.example_usd by value_kind, the estimate line, the time saved "
+    "with the person's review, the verdict sentence and 'Where it fits'.",
+    "speedup_shown is the pre-0136 page's figure: manual_minutes / (bench wall_s / 60), with no "
+    "review time. The page now shows speedup_with_review (time_text).",
+    "annual_shown and unit_shown are still on the page, as the estimate line's figure and unit "
+    "(estimate_text); before 0136 they were the page's Value headline.",
+    "economics.basis, economics.sources and the playbook caveat are one click away: the estimate "
+    "line's disclosure opens on them.",
 )
 
 
@@ -128,7 +188,11 @@ def usd_text(n: float) -> str:
     """``usd``: whole dollars at 1000 and over or when whole, else cents."""
     whole = abs(n) >= 1000 or float(n).is_integer()
     sign = "-" if n < 0 else ""
-    return f"{sign}${abs(n):,.0f}" if whole else f"{sign}${abs(n):,.2f}"
+    # ``toLocaleString`` rounds half away from zero ($3,423.50 is "$3,424"); Python's format rounds
+    # half to even, so the amount is quantized first.
+    step = Decimal(1) if whole else Decimal("0.01")
+    amount = Decimal(repr(abs(float(n)))).quantize(step, rounding=ROUND_HALF_UP)
+    return f"{sign}${amount:,.0f}" if whole else f"{sign}${amount:,.2f}"
 
 
 def minutes_text(m: float) -> str:
@@ -193,6 +257,183 @@ def _sources_n(econ: Mapping[str, Any]) -> int:
     )
 
 
+def _str(value: Any) -> str:
+    """``str``: a string, else ""."""
+    return value if isinstance(value, str) else ""
+
+
+def _n0(value: Any) -> float:
+    """``num``: a finite number, else 0."""
+    n = _num(value)
+    return n if n is not None else 0.0
+
+
+def _strings(value: Any) -> list[str]:
+    return [s for s in value if isinstance(s, str)] if isinstance(value, list) else []
+
+
+def _value_kind(econ: Mapping[str, Any]) -> str:
+    """``parsePlaybook``'s ``valueKind``: a known kind other than ``count``, else money back."""
+    kind = econ.get("value_kind")
+    return kind if kind in _KINDS and kind != "count" else "money_back"
+
+
+def _fit(raw: Any) -> dict[str, Any] | None:
+    """``parseFit``: the playbook's ``fit``, or ``None`` when absent or saying nothing at all."""
+    if not isinstance(raw, Mapping):
+        return None
+    where = raw.get("where")
+    fit: dict[str, Any] = {
+        "where": [where] if isinstance(where, str) else _strings(where),
+        "where_note": _str(raw.get("where_note")),
+        "who": _str(raw.get("who")),
+        "not_for": _str(raw.get("not_for")),
+        "asks_for": _strings(raw.get("asks_for")),
+        "costs": _str(raw.get("costs")),
+    }
+    return fit if any(len(v) for v in fit.values()) else None
+
+
+def _where_words(where: list[str]) -> str:
+    """``whereWords``: "Texas", "California or Oregon", "the United States"."""
+    names = [_STATES.get(w.upper(), w) for w in where]
+    if len(names) <= 1:
+        return names[0] if names else ""
+    return f"{', '.join(names[:-1])} or {names[-1]}"
+
+
+def fit_rows(fit: Mapping[str, Any] | None) -> list[tuple[str, str]]:
+    """``fitRows``: the "Where it fits" rows in reading order; an empty row is not drawn."""
+    if fit is None:
+        return []
+    where = ". ".join(x for x in (_where_words(list(fit["where"])), fit["where_note"]) if x)
+    rows = [
+        ("Where", where),
+        ("Who it is for", fit["who"]),
+        ("Not for", fit["not_for"]),
+        ("She will ask you for", "; ".join(fit["asks_for"])),
+        ("What it costs", fit["costs"]),
+    ]
+    return [(label, text) for label, text in rows if text]
+
+
+def _cents(x: float) -> float:
+    """``Math.round(x * 100) / 100``."""
+    return _js_round(x * 100) / 100
+
+
+def _tally(econ: Mapping[str, Any], bench: Mapping[str, Any]) -> dict[str, dict[str, float]]:
+    """``tallyOf``: a run's right cards and what the example held, by each tool's kind."""
+    raw_kinds = econ.get("kinds")
+    kinds = (
+        {k: v for k, v in raw_kinds.items() if v in _KINDS}
+        if isinstance(raw_kinds, Mapping)
+        else {}
+    )
+    tally: dict[str, dict[str, float]] = {}
+
+    def add(tool: str, value: float | None, found: bool) -> None:
+        t = tally.setdefault(kinds.get(tool, "money_back"), {"found": 0.0, "total": 0.0})
+        t["total"] = _cents(t["total"] + (value or 0))
+        if found:
+            t["found"] = _cents(t["found"] + (value or 0))
+
+    cards = [c for c in bench.get("cards") or [] if isinstance(c, Mapping)]
+    missed = [m for m in bench.get("missed") or [] if isinstance(m, Mapping)]
+    for c in cards:
+        if c.get("outcome") == "correct":
+            add(_str(c.get("action")), _num(c.get("value_usd")), True)
+    for m in missed:
+        add(_str(m.get("action")), _num(m.get("value_usd")), False)
+    score = bench.get("score") if isinstance(bench.get("score"), Mapping) else {}
+    assert isinstance(score, Mapping)
+    if (
+        not cards
+        and not missed
+        and _n0(score.get("eligible"))
+        and not any(k != "money_back" for k in kinds.values())
+    ):
+        tally["money_back"] = {
+            "found": _n0(score.get("value_found_usd")),
+            "total": _n0(score.get("value_total_usd")),
+        }
+    return tally
+
+
+def _kind_amount(kind: str, amount: float) -> str:
+    """``kindAmount``: "$96.40 back", "$380,000 protected", "$500 in penalties avoided"."""
+    return f"{usd_text(amount)} {_KIND_WORD[kind]}"
+
+
+def _tally_words(tally: Mapping[str, Mapping[str, float]]) -> str:
+    """``tallyWords``: "$96.40 back of $96.40, $36,000 of $416,700 protected"."""
+    words: list[str] = []
+    for k in _MONEY_KINDS:
+        t = tally.get(k)
+        if t and t["total"]:
+            words.append(
+                f"{usd_text(t['found'])} back of {usd_text(t['total'])}"
+                if k == "money_back"
+                else f"{usd_text(t['found'])} of {_kind_amount(k, t['total'])}"
+            )
+    return ", ".join(words)
+
+
+def _int_text(x: float) -> str:
+    """A count as JS writes it: "7", not "7.0"."""
+    return _js_text(x)
+
+
+def _verdict_sentence(econ: Mapping[str, Any], bench: Mapping[str, Any] | None) -> str:
+    """``verdictOf``'s sentence (``modules/playbooks/model.ts``)."""
+    if bench is None:
+        return "No test run yet, so nothing here is measured."
+    score = bench.get("score") if isinstance(bench.get("score"), Mapping) else {}
+    assert isinstance(score, Mapping)
+    f = _n0(score.get("false_claims"))
+    found, eligible = _int_text(_n0(score.get("found"))), _int_text(_n0(score.get("eligible")))
+    body = ", ".join(
+        x
+        for x in (
+            f"{found} of {eligible} found",
+            _tally_words(_tally(econ, bench)),
+            f"{_int_text(f)} false claim{'' if f == 1 else 's'}" if f else "no false claims",
+        )
+        if x
+    )
+    n, exceeds = comparable_runs(bench)
+    one = n == 1
+    beat = f"{exceeds} of {n} test runs"
+    verdict = bench.get("verdict")
+    word = verdict.get("word") if isinstance(verdict, Mapping) else None
+    if word == "exceeds":
+        return f"Beat its bar in {'its one test run' if one else beat}: {body}."
+    if word == "meets":
+        tail = "One test run so far." if one else f"It beat the bar in {beat}."
+        return f"Met its bar in the latest test run: {body}. {tail}"
+    reasons = _strings(verdict.get("reasons")) if isinstance(verdict, Mapping) else []
+    runs = "one test run" if one else f"latest of {n} test runs"
+    return f"Fell short: {body}, {runs}. {reasons[0] if reasons else ''}".strip()
+
+
+def _guard_text(playbook: Mapping[str, Any], bench: Mapping[str, Any] | None) -> str:
+    """The "Mistakes avoided" tile (``blueprintOf``'s ``guard``, ``topic.tsx``)."""
+    if bench is not None:
+        score = bench.get("score") if isinstance(bench.get("score"), Mapping) else {}
+        assert isinstance(score, Mapping)
+        ledger = [t for t in score.get("trap_ledger") or [] if isinstance(t, Mapping)]
+        of = len(ledger) or _n0(score.get("traps_total"))
+        avoided = (
+            sum(1 for t in ledger if t.get("filed") is not True)
+            if ledger
+            else of - _n0(score.get("traps_filed"))
+        )
+        if of:
+            return f"{_int_text(avoided)}/{_int_text(of)} in the test run"
+    traps = len(_strings(playbook.get("traps")))
+    return f"{traps or DASH} known mistakes, not tested"
+
+
 def number_row(playbook: Mapping[str, Any], bench: Mapping[str, Any] | None) -> dict[str, Any]:
     """One playbook's row of ``numbers.json``."""
     econ = playbook.get("economics")
@@ -215,19 +456,14 @@ def number_row(playbook: Mapping[str, Any], bench: Mapping[str, Any] | None) -> 
     unit = "a year" if yearly else PER.get(per, f"per {per}")
     if not yearly:
         quirks.append(
-            f"per {per!r} is not annualised: shown as {unit!r}, while the ledger's value sort "
-            "compares it raw against yearly figures"
+            f"per {per!r} is not annualised: the estimate is said {unit!r}, and the ledger's "
+            "value order puts it after every yearly money-back figure"
         )
         if per == "quarter":
-            quirks.append("a quarter is not multiplied by 4 on the way to the ledger's value order")
+            quirks.append("a quarter is not multiplied by 4 on the way to the estimate line")
         times = _num(econ.get("times_per_year"))
         if times is not None:
             quirks.append(f"economics.times_per_year = {times:g} is not used by the shown value")
-    elif per != "year" and value is not None:
-        quirks.append(
-            f"the topic page shows {usd_text(annual or 0)} a year as Value but "
-            f"'{usd_text(value)} {PER[per]}' under Make it yours"
-        )
 
     manual = _num(econ.get("manual_minutes"))
     if manual is None or manual <= 0:
@@ -271,6 +507,38 @@ def number_row(playbook: Mapping[str, Any], bench: Mapping[str, Any] | None) -> 
     if not isinstance(basis, str):
         quirks.append("economics.basis is absent")
     ratio = annual / world_total if annual and world_total else None
+
+    # The post-0136 page, in its own words (worth.ts, topic.tsx, modules/playbooks/model.ts).
+    kind = _value_kind(econ)
+    example = _num(econ.get("example_usd"))
+    # worthOf: `e.exampleUsd !== null && e.exampleUsd > 0 ? usd(e.exampleUsd) : null`.
+    money_text = (
+        f"{usd_text(example)} back, in the invented example"
+        if example is not None and example > 0
+        else _INSTEAD[kind]
+    )
+    # worthOf: `Typical value: about ${cell.figure} ${cell.per}${kind}, author's estimate`, the
+    # kind's word only when the estimate is not money back; valueCell reads annualValue of
+    # `num(econ.value_usd)` (0 when absent) and "a year" or the PER word.
+    kind_word = "" if kind == "money_back" else f" {_KIND_WORD[kind]}"
+    estimate = (
+        f"Typical value: about {usd_text(annual_value(value or 0.0, per))} {unit}{kind_word}, "
+        "author's estimate"
+    )
+    # beforeAfterOf + topic.tsx's "Time saved" tile: hand -> her run plus your review, then
+    # `[band.athena.review, band.ratio].filter(Boolean).join(" · ") || "measured in the test run"`.
+    manual0 = manual or 0.0
+    hand = minutes_text(manual0) if manual0 else DASH
+    if bench is not None:
+        with_review_min = ((wall_s or 0.0) + (your_s or 0.0)) / 60  # withReviewMinutes
+        review_words = (
+            f"including about {minutes_text(your_s / 60)} of your review" if your_s else ""
+        )
+        speed = speedup_text(manual0, with_review_min)  # view.speed
+        line = DOT.join(x for x in (review_words, speed) if x) or "measured in the test run"
+        time_text = f"{hand} -> {minutes_text(with_review_min)}, {line}"
+    else:
+        time_text = f"{hand} -> {DASH}, not tested yet"
     return {
         "id": str(playbook.get("id") or ""),
         "category": playbook.get("category") if isinstance(playbook.get("category"), str) else None,
@@ -292,33 +560,39 @@ def number_row(playbook: Mapping[str, Any], bench: Mapping[str, Any] | None) -> 
         "speedup_shown": round(speedup, 3) if speedup is not None else None,
         "speedup_with_review": round(with_review, 3) if with_review is not None else None,
         "expectation_minutes": exp_minutes,
-        "caveat_rendered": False,
-        "basis_rendered": False,
+        # The estimate line's disclosure opens on them (topic.tsx `pa-estimate`, ADR 0133).
+        "caveat_rendered": True,
+        "basis_rendered": True,
+        "value_kind": kind,
+        "example_usd": example,
+        "fit": _fit(playbook.get("fit")),
+        "brief": _str(playbook.get("brief")),
+        "money_text": money_text,
+        "estimate_text": estimate,
+        "time_text": time_text,
+        "guard_text": _guard_text(playbook, bench),
+        "verdict_label": _LABELS[verdict_word],
+        "verdict_text": _verdict_sentence(econ, bench),
         "quirks": quirks,
     }
 
 
+def hero_lines(row: Mapping[str, Any], promise: str = "") -> list[str]:
+    """The hero's text (``topic.tsx``): the tag and the brief, or the promise when no brief."""
+    brief = str(row.get("brief") or "")
+    return [TAG, brief.strip()] if brief.strip() else [promise]
+
+
 def headline(row: Mapping[str, Any]) -> list[str]:
-    """The chore's figures as the topic page's KPI band writes them (``chores/topic.tsx``)."""
-    annual = row.get("annual_shown")
-    value = (
-        f"{usd_text(annual)} {row.get('unit_shown')}, for the persona"
-        if annual is not None
-        else DASH
-    )
-    manual = row.get("manual_minutes")
-    bench = row.get("bench_minutes")
-    hand = minutes_text(manual) if manual else DASH
-    athena = minutes_text(bench) if bench is not None else DASH
-    ratio = speedup_text(manual, bench) or ("measured" if bench is not None else "not benched yet")
-    verdict = _LABELS.get(str(row.get("verdict")), str(row.get("verdict")))
-    runs = row.get("bench_runs_n")
-    lines = [
-        f"Value: {value}",
-        f"Time saved: {hand} by hand -> {athena} with Athena ({ratio})",
-        f"Verdict: {verdict}" + (" (n=1, one run so far)" if runs == 1 else ""),
+    """The chore's figures as the topic page writes them (``chores/topic.tsx``, ``worth.ts``):
+    the three tiles, the verdict, and the estimate line whose disclosure holds the basis."""
+    return [
+        f"In the example case: {row.get('money_text')}",
+        f"Time saved: {row.get('time_text')}",
+        f"Mistakes avoided: {row.get('guard_text')}",
+        f"{row.get('verdict_label')}: {row.get('verdict_text')}",
+        str(row.get("estimate_text")),
     ]
-    return lines
 
 
 # --- the audit -----------------------------------------------------------------------------------
