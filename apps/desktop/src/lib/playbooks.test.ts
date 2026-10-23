@@ -70,7 +70,7 @@ test("money, minutes and speed read the way a person says them", () => {
   expect(speedup(0, 2)).toBe("");
 });
 
-test("a playbook's evidence is read leniently, beside its bench, with the thumbnail's URL", () => {
+test("a playbook's evidence is read leniently, beside its bench, and an old thumbnail is not read", () => {
   const dir = "../../../../playbooks/x/";
   const [p] = loadPlaybooks(
     { [`${dir}playbook.json`]: { id: "x", title: "X" } },
@@ -87,11 +87,11 @@ test("a playbook's evidence is read leniently, beside its bench, with the thumbn
         },
       },
     },
-    { [`${dir}thumb.jpg`]: "/assets/thumb-x.jpg" },
     true,
   );
   expect(p.evidence?.narration.text).toBe("X, narrated.");
-  expect(p.evidence?.thumbnailUrl).toBe("/assets/thumb-x.jpg");
+  expect(p.evidence).not.toHaveProperty("thumbnail");
+  expect(p.evidence).not.toHaveProperty("thumbnailUrl");
   expect(p.evidence?.videoUrl).toBe("/evidence/x/evidence.mp4");
   expect(evidenceCurrent(p)).toBe(true);
   // No index: no evidence, and nothing claimed current.
@@ -102,10 +102,10 @@ test("a playbook's evidence is read leniently, beside its bench, with the thumbn
 
 test("a film is a URL only where a dev server serves it, and only under evidence/", () => {
   const raw = { video: { path: "evidence/x/evidence.mp4" } };
-  expect(parseEvidence(raw, "", false)?.videoUrl).toBeNull();
-  expect(parseEvidence(raw, "", true)?.videoUrl).toBe("/evidence/x/evidence.mp4");
+  expect(parseEvidence(raw, false)?.videoUrl).toBeNull();
+  expect(parseEvidence(raw, true)?.videoUrl).toBe("/evidence/x/evidence.mp4");
   for (const path of ["../secret.mp4", "C:/evidence/x/evidence.mp4", "evidence/../x/evidence.mp4", "playbooks/x/thumb.jpg"]) {
-    expect(parseEvidence({ video: { path } }, "", true)?.videoUrl, path).toBeNull();
+    expect(parseEvidence({ video: { path } }, true)?.videoUrl, path).toBeNull();
   }
   // Garbage reads as empty fields, never as a throw.
   const odd = parseEvidence({ narration: "nope", video: 3 });
@@ -114,15 +114,21 @@ test("a film is a URL only where a dev server serves it, and only under evidence
   expect(parseEvidence(null)).toBeNull();
 });
 
-test("the shipped evidence names the bench run it filmed and a repo-relative film", () => {
+test("the shipped evidence names the bench run it shows, and a film only where it has one", () => {
   for (const p of PLAYBOOKS.filter((b) => b.evidence !== null)) {
-    expect([1, 2], p.id).toContain(p.evidence?.schema);
+    expect([1, 2, 3], p.id).toContain(p.evidence?.schema);
     // A still the index lists is a still this build carries.
     for (const s of p.evidence?.story ?? []) expect(s.url, `${p.id}: ${s.caption}`).not.toBe("");
     expect(p.evidence?.benchRunAt, p.id).not.toBe("");
-    expect(p.evidence?.video.path, p.id).toBe(`evidence/${p.id}/evidence.mp4`);
-    expect(p.evidence?.thumbnail.path, p.id).toBe(`playbooks/${p.id}/thumb.jpg`);
-    expect(p.evidence?.thumbnailUrl, p.id).not.toBe("");
+    // Schema 3 (ADR 0137): the drawing and up to four turns; the film is left out until the films pass.
+    if (p.evidence?.schema === 3) {
+      expect(p.evidence.story.length, p.id).toBeGreaterThanOrEqual(1);
+      expect(p.evidence.story.length, p.id).toBeLessThanOrEqual(5);
+      expect(p.evidence.story[0], p.id).toMatchObject({ caption: "How it runs", turn: null });
+      expect(["", `evidence/${p.id}/evidence.mp4`], p.id).toContain(p.evidence.video.path);
+    } else {
+      expect(p.evidence?.video.path, p.id).toBe(`evidence/${p.id}/evidence.mp4`);
+    }
   }
 });
 
@@ -156,7 +162,6 @@ describe("the storyboard", () => {
       { [`${dir}playbook.json`]: { id: "x", title: "X" } },
       {},
       { [`${dir}evidence.json`]: evidence },
-      {},
       false,
       stories,
     )[0].evidence?.story;
@@ -183,7 +188,7 @@ describe("the storyboard", () => {
     ]);
   });
 
-  test("a still the build does not carry keeps its row with an empty URL, like the thumbnail", () => {
+  test("a still the build does not carry keeps its row with an empty URL", () => {
     const story = load(index({ story: [{ path: "playbooks/x/story/01.webp", caption: "Abstract" }] }));
     expect(story).toEqual([{ url: "", caption: "Abstract", turn: null }]);
   });
@@ -205,6 +210,26 @@ describe("the storyboard", () => {
       }),
     );
     expect(story).toEqual([{ url: "", caption: "Kept", turn: null }]);
+  });
+
+  test("schema 3 reads the drawing and the turns, with no film and no thumbnail", () => {
+    const story = load(
+      {
+        schema: 3,
+        playbook: "x",
+        captured_at: "2026-10-23T12:00:00Z",
+        bench_run_at: "2026-10-07T00:00:00Z",
+        story: [
+          { n: 1, path: "playbooks/x/story/01.webp", caption: "How it runs", kind: "drawing", bytes: 9 },
+          { n: 2, path: "playbooks/x/story/02.webp", caption: "Turn 1 - Office: start here", kind: "turn", turn: 1 },
+        ],
+      },
+      { [`${dir}story/01.webp`]: "/assets/01-x.webp", [`${dir}story/02.webp`]: "/assets/02-x.webp" },
+    );
+    expect(story).toEqual([
+      { url: "/assets/01-x.webp", caption: "How it runs", turn: null },
+      { url: "/assets/02-x.webp", caption: "Turn 1 - Office: start here", turn: 1 },
+    ]);
   });
 
   test("schema 1, or an index without a story, reads as no storyboard", () => {

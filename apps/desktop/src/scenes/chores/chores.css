@@ -555,6 +555,13 @@
 .pa-estimate__body p {
   margin: 0;
 }
+/* The basis and the caveat are markdown bullets (refilm-prep), drawn by `.rich`; the caveat stays muted. */
+.pa-estimate__body .rich > :last-child {
+  margin-bottom: 0;
+}
+.rich.pa-estimate__caveat {
+  color: var(--muted-foreground);
+}
 .pa-estimate__sources {
   margin: 0;
   padding-left: 18px;

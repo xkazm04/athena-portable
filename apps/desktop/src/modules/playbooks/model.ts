@@ -72,8 +72,7 @@ export interface EvidenceView {
   /** "kokoro af_heart". */
   voice: string;
   narration: string;
-  thumbnailUrl: string;
-  /** `null` where nothing serves the film: the layer shows the still instead. */
+  /** `null` where nothing serves the film: the page shows the stills instead. */
   videoUrl: string | null;
 }
 
@@ -260,7 +259,6 @@ export function evidenceOf(p: Playbook): EvidenceView | null {
     capturedAt: e.capturedAt.slice(0, 10),
     voice: [e.narration.engine, e.narration.voice].filter(Boolean).join(" "),
     narration: e.narration.text,
-    thumbnailUrl: e.thumbnailUrl,
     videoUrl: e.videoUrl,
   };
 }

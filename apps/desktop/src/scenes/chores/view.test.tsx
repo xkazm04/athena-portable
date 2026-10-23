@@ -223,6 +223,17 @@ describe("a chore's topic page", () => {
     expect(count(t, "$4,940")).toBe(1);
   });
 
+  it("draws the estimate's basis and caveat as markdown bullets, never as markup", () => {
+    const b = render(
+      withEconomics({ basis: "- 95 parcels a year x **$52** = $4,940 (carrier terms)\n- Late in 1 of 20 <b>shipments</b>" }),
+      chorePath("carrier-refunds"),
+    );
+    expect(b).toContain('<div class="rich pa-estimate__basis"><ul><li>95 parcels a year x <strong>$52</strong> = $4,940 (carrier terms)</li>');
+    expect(b).toContain("<li>Late in 1 of 20 &lt;b&gt;shipments&lt;/b&gt;</li>");
+    expect(b).not.toContain("- 95 parcels");
+    expect(b).toContain('<div class="rich pa-estimate__caveat pa-muted">');
+  });
+
   it("never shows two different totals for one quantity on a page", () => {
     // The brief states the example's total; the headline and the flow say the same money back.
     const b = render(withEconomics({}, { brief: "A store **owed $96.40** across five parcels." }), chorePath("carrier-refunds"));
@@ -282,6 +293,8 @@ describe("a chore's topic page", () => {
 
   it("shows every still of the run large, each with its caption and a way to enlarge it", () => {
     expect(t).toContain(">See it run</h2>");
+    expect(t).toContain("Screens of the test run, on invented portals");
+    expect(t).not.toContain("Real screens");
     expect(count(t, /class="pa-frame focus-ring"/g)).toBe(3);
     expect(t).toContain('aria-label="Enlarge: Turn 2 - Carrier billing centre: list the invoice"');
     expect(t).not.toContain('role="dialog"');

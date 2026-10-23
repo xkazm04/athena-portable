@@ -5,10 +5,11 @@
  * bench (`src/athena/proving/playbooks/`): `playbook.json` is the showcase this app renders and
  * `bench.json` is the latest measured run, absent until one ran. `world.json` and `truth.json`
  * are the bench's and are never imported here — a surface that could read the answers would be
- * tempted to show them. `evidence.json` and `thumb.jpg` are the run filmed (ADR 0055): the index of
- * a narrated recording that lives in the repository's gitignored `evidence/`, and a still of the
- * result that is committed beside it. Schema 2 adds the storyboard (ADR 0096): up to six stills of
- * the run under `story/`, also committed, each with a caption and the turn it shows.
+ * tempted to show them. `evidence.json` is the run filmed (ADR 0055): the index of a narrated
+ * recording that lives in the repository's gitignored `evidence/`. Schema 2 added the storyboard
+ * (ADR 0096): stills of the run under `story/`, committed, each with a caption and the turn it shows.
+ * Schema 3 (ADR 0137) is five of them, the "How it runs" drawing and four turns, 1280 px and 16:10,
+ * with no figure baked in, and retires the thumbnail (`thumb.jpg`), which no component drew.
  *
  * The files are bundled at build time (`import.meta.glob`, as chunks fetched on first ask by
  * `loadShipped`, ADR 0095), so the module needs no daemon and no route: a playbook is something the
@@ -268,30 +269,29 @@ export interface Playbook {
   evidence: Evidence | null;
 }
 
-/** One still of the run's storyboard (ADR 0096): the abstract, a turn, or what she filed. */
+/** One still of the run's storyboard (ADR 0096, 0137): the drawing or a turn (schema 2: the abstract,
+ *  a turn, or what she filed). */
 export interface StoryStill {
   /** The bundled still's URL; "" when the file is not in this build. */
   url: string;
   caption: string;
-  /** The replay turn it shows, from 1; `null` for the abstract and the result. */
+  /** The replay turn it shows, from 1; `null` for the drawing (schema 2: the abstract and the result). */
   turn: number | null;
 }
 
-/** One playbook's `evidence.json` (schema 1 or 2, ADR 0055 and 0096), read leniently. */
+/** One playbook's `evidence.json` (schema 1, 2 or 3; ADR 0055, 0096 and 0137), read leniently. */
 export interface Evidence {
   schema: number;
   capturedAt: string;
   /** The `run_at` of the bench run it filmed: equal to `bench.runAt` while it is current. */
   benchRunAt: string;
+  /** Empty in a schema 3 index of the stills alone, until the films pass narrates it again. */
   narration: { text: string; engine: string; voice: string; durationS: number; sha256: string };
-  /** Repo-relative paths: the film under the gitignored `evidence/`, the committed thumbnail. */
+  /** A repo-relative path: the film under the gitignored `evidence/`; empty without a film. */
   video: { path: string; durationS: number; bytes: number; sha256: string };
-  thumbnail: { path: string; bytes: number; sha256: string };
-  /** The bundled thumbnail's URL; "" when the file is not in this build. */
-  thumbnailUrl: string;
   /** Where the dev server serves the film; `null` in a build, which carries no media. */
   videoUrl: string | null;
-  /** Schema 2's storyboard, in order; `[]` for schema 1 or before the stills were captured. */
+  /** The storyboard, in order; `[]` for schema 1 or before the stills were captured. */
   story: readonly StoryStill[];
 }
 
@@ -436,12 +436,12 @@ export function parseTrace(raw: unknown): TraceTurn[] {
 const STILL_PATH = /^playbooks\/([\w.-]+)\/story\/\d{2}\.webp$/;
 
 /**
- * Schema 2's storyboard (ADR 0096), in the file's order. A row is kept only when it has a caption
+ * The storyboard (schema 2 and 3; ADR 0096, 0137), in the file's order. A row is kept only when it has a caption
  * and a path of the one shape the capture writes, under the playbook the index names when it names
  * one: a caption is what the strip reads aloud, and a path that points anywhere else is not a still
  * of this run. `still` turns a kept path into the bundled URL, "" when this build lacks the file —
- * the same rule as the thumbnail, so a row the stills step listed but the build did not carry
- * still says what it was rather than vanishing. Schema 1 has no storyboard, whatever it holds.
+ * so a row the stills step listed but the build did not carry still says what it was rather than
+ * vanishing. Schema 1 has no storyboard, whatever it holds.
  */
 function parseStory(raw: Raw, still: (path: string) => string): StoryStill[] {
   if (num(raw.schema) < 2) return [];
@@ -459,20 +459,18 @@ function parseStory(raw: Raw, still: (path: string) => string): StoryStill[] {
 }
 
 /**
- * One `evidence.json` into an `Evidence`, or `null` when there is none. `thumbnailUrl` is the
- * bundled still; `serve` says whether a dev server is there to hand out the film itself; `still`
- * resolves a storyboard row's repo-relative path to its bundled URL ("" when it is not bundled).
+ * One `evidence.json` into an `Evidence`, or `null` when there is none. `serve` says whether a dev
+ * server is there to hand out the film itself; `still` resolves a storyboard row's repo-relative path
+ * to its bundled URL ("" when it is not bundled). An old index's `thumbnail` is not read (ADR 0137).
  */
 export function parseEvidence(
   raw: unknown,
-  thumbnailUrl = "",
   serve = false,
   still: (path: string) => string = () => "",
 ): Evidence | null {
   if (!isRaw(raw)) return null;
   const narration = isRaw(raw.narration) ? raw.narration : {};
   const video = isRaw(raw.video) ? raw.video : {};
-  const thumb = isRaw(raw.thumbnail) ? raw.thumbnail : {};
   const videoPath = str(video.path);
   return {
     schema: num(raw.schema),
@@ -491,8 +489,6 @@ export function parseEvidence(
       bytes: num(video.bytes),
       sha256: str(video.sha256),
     },
-    thumbnail: { path: str(thumb.path), bytes: num(thumb.bytes), sha256: str(thumb.sha256) },
-    thumbnailUrl,
     // Only a repo-relative path under `evidence/` is ever turned into a URL.
     videoUrl: serve && /^evidence\/[\w.-]+\/[\w.-]+\.mp4$/.test(videoPath) ? `/${videoPath}` : null,
     story: parseStory(raw, still),
@@ -606,7 +602,6 @@ export function loadPlaybooks(
   showcases: Record<string, unknown>,
   benches: Record<string, unknown>,
   evidences: Record<string, unknown> = {},
-  thumbnails: Record<string, unknown> = {},
   serve = false,
   stories: Record<string, unknown> = {},
 ): Playbook[] {
@@ -619,9 +614,8 @@ export function loadPlaybooks(
   const evidenceFor = (path: string) =>
     parseEvidence(
       unwrap(evidences[beside(path, "evidence.json")] ?? null),
-      urlOf(thumbnails[beside(path, "thumb.jpg")]),
       serve,
-      // A still is looked up beside its playbook.json, like the thumbnail: the row's own
+      // A still is looked up beside its playbook.json: the row's own
       // `playbooks/<id>/` is the directory the glob already keys, so only `story/NN.webp` is read.
       (still) => urlOf(stories[beside(path, still.replace(/^playbooks\/[^/]+\//, ""))]),
     );
@@ -675,12 +669,8 @@ export function speedup(manual: number, measured: number): string {
 const SHOWCASES = import.meta.glob("../../../../playbooks/*/playbook.json");
 const BENCHES = import.meta.glob("../../../../playbooks/*/bench.json");
 const EVIDENCES = import.meta.glob("../../../../playbooks/*/evidence.json");
-const THUMBNAILS = import.meta.glob<string>("../../../../playbooks/*/thumb.jpg", {
-  query: "?url",
-  import: "default",
-});
-// The storyboard stills (ADR 0096): up to six small WebPs a playbook, as URLs, fetched with the
-// rest. A build with none — the stills not yet captured — is an empty glob, and every story reads [].
+// The storyboard stills (ADR 0096, 0137): five small WebPs a playbook, as URLs, fetched with the
+// rest. No thumbnail is globbed: it is retired, so a build does not carry it. A build with none — the stills not yet captured — is an empty glob, and every story reads [].
 const STORIES = import.meta.glob<string>("../../../../playbooks/*/story/*.webp", {
   query: "?url",
   import: "default",
@@ -694,14 +684,13 @@ async function resolved(glob: Record<string, () => Promise<unknown>>): Promise<R
 
 /** What this build ships, fetched on demand. The film plays only where the dev server serves `evidence/`. */
 export async function loadShipped(): Promise<readonly Playbook[]> {
-  const [showcases, benches, evidences, thumbnails, stories] = await Promise.all([
+  const [showcases, benches, evidences, stories] = await Promise.all([
     resolved(SHOWCASES),
     resolved(BENCHES),
     resolved(EVIDENCES),
-    resolved(THUMBNAILS),
     resolved(STORIES),
   ]);
-  return loadPlaybooks(showcases, benches, evidences, thumbnails, import.meta.env.DEV, stories);
+  return loadPlaybooks(showcases, benches, evidences, import.meta.env.DEV, stories);
 }
 
 /** Whether the evidence films the bench run it is filed against, or an earlier one. */

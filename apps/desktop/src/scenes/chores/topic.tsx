@@ -16,7 +16,7 @@
  *
  * Honest numbers (fix wave chores-uat, ADR 0133): one money headline, the example case's money back,
  * labelled as the invented example's; the author's estimate on one secondary line that opens on its
- * basis, sources and caveat; the time saved with the person's review in it; the verdict and the runs
+ * basis, sources and caveat (the basis and the caveat are markdown bullets, drawn by `Rich`, refilm-prep); the time saved with the person's review in it; the verdict and the runs
  * it stands on; and "Where it fits" from the playbook's `fit`, absent when it has none.
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
@@ -241,7 +241,7 @@ export default function Topic({
             <details className="pa-estimate">
               <summary className="pa-estimate__sum focus-ring">{worth.estimate}</summary>
               <div className="pa-estimate__body">
-                {worth.basis ? <p>{worth.basis}</p> : <p className="pa-muted">The author gave no basis for this estimate.</p>}
+                {worth.basis ? <Rich md={worth.basis} className="pa-estimate__basis" /> : <p className="pa-muted">The author gave no basis for this estimate.</p>}
                 {worth.sources.length ? (
                   <ul className="pa-estimate__sources" aria-label="Sources">
                     {worth.sources.map((s) => (
@@ -253,7 +253,7 @@ export default function Topic({
                     ))}
                   </ul>
                 ) : null}
-                {worth.caveat ? <p className="pa-muted">{worth.caveat}</p> : null}
+                {worth.caveat ? <Rich md={worth.caveat} className="pa-estimate__caveat pa-muted" /> : null}
               </div>
             </details>
           </div>
@@ -282,7 +282,7 @@ export default function Topic({
             <h2 id="pa-gallery-h" className="pa-h2">
               See it run
             </h2>
-            <p className="pa-muted">Real screens of the test run, on invented portals.</p>
+            <p className="pa-muted">Screens of the test run, on invented portals</p>
           </div>
           {stills.length ? (
             <ul className="pa-grid">

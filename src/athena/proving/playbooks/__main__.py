@@ -34,12 +34,13 @@ report alone, never ``bench.json``: a two-run result is not comparable with a on
 ``--cap`` bounds each run. Exit 1 when run 2 is ``short`` of that bar.
 
 ``evidence`` films a benched playbook (ADR 0055, :mod:`.evidence`): the media under the gitignored
-``evidence/<id>/``, the index and thumbnail into ``playbooks/<id>/``. ``--dry`` prints the plan and
-runs no tool; ``--verify`` reports each index as current, stale, missing or unreadable (a
+``evidence/<id>/``, the index and the storyboard into ``playbooks/<id>/``. ``--dry`` prints the
+plan and runs no tool; ``--verify`` reports each index as current, stale, missing or unreadable (a
 ``bench.json`` or ``evidence.json`` that is not a JSON object) against its bench, and re-hashes
-its storyboard. ``--stills-only`` runs the storyboard step alone: the stills into
-``playbooks/<id>/story/`` and the index rewritten to schema 2 with every other key kept; no voice
-is needed. ``--desktop`` serves the capture from another checkout's ``apps/desktop``.
+its storyboard. ``--stills-only`` runs the storyboard step alone (ADR 0137): five stills into
+``playbooks/<id>/story/`` (the drawing and four turns, 1280 px WebP, no figures) and a schema 3
+index of them; no voice is needed. ``--desktop`` serves the capture from another checkout's
+``apps/desktop``.
 Exit 0 when every step ran (or, with ``--verify``, every benched playbook is current), 1 when one
 did not, 2 when a playbook could not be loaded or has no bench to film.
 
@@ -116,6 +117,7 @@ from athena.proving.playbooks.spec import (
     example_problems,
     load_all,
     load_playbook,
+    prose_problems,
 )
 from athena.proving.report import RUNS_DIRNAME, new_run_dir
 
@@ -171,7 +173,7 @@ def build_parser() -> argparse.ArgumentParser:
     e.add_argument(
         "--stills-only",
         action="store_true",
-        help="only the storyboard: stills into playbooks/<id>/story/, the index to schema 2",
+        help="only the storyboard: stills into playbooks/<id>/story/, a schema 3 index",
     )
     e.add_argument("--desktop", default=None, help="the apps/desktop the capture serves")
     k = verbs.add_parser("rank", help="rank every playbook by ADR 0056")
@@ -323,7 +325,7 @@ def evidence(args: argparse.Namespace) -> int:
 
 
 def stills(books: Sequence[Playbook], repo: Path, desktop: Path | None) -> int:
-    """``--stills-only``: each playbook's storyboard, and its index at schema 2 with the rest kept.
+    """``--stills-only``: each playbook's storyboard, and a schema 3 index of it (ADR 0137).
 
     The voice is not looked for: nothing is spoken. One playbook failing does not stop the others;
     the exit says whether any did, and its line says why.
@@ -411,7 +413,9 @@ def main(argv: Sequence[str] | None = None) -> int:
         except PlaybookError as exc:
             print(f"refused: {exc}", file=sys.stderr)
             return 2
-        drift = [line for book in books for line in example_problems(book)]
+        drift = [
+            line for book in books for line in (*example_problems(book), *prose_problems(book))
+        ]
         if drift:
             print("refused: " + "; ".join(drift), file=sys.stderr)
             return 2

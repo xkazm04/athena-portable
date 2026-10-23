@@ -27,13 +27,6 @@ function book(
   return p;
 }
 
-/** A still for the invented films: a flat card, so a fixture needs no image file. */
-const STILL =
-  "data:image/svg+xml," +
-  encodeURIComponent(
-    '<svg xmlns="http://www.w3.org/2000/svg" width="320" height="200"><rect width="320" height="200" fill="#0f1c1f"/><rect x="16" y="16" width="180" height="14" rx="4" fill="#2f6f73"/><rect x="16" y="44" width="288" height="120" rx="8" fill="#16292d"/></svg>',
-  );
-
 /** An `evidence.json` for an invented playbook, through the same reader the shipped ones go through. */
 function film(id: string, benchRunAt: string, seconds: number, served: boolean): Evidence | null {
   return parseEvidence(
@@ -50,9 +43,7 @@ function film(id: string, benchRunAt: string, seconds: number, served: boolean):
         sha256: "0".repeat(64),
       },
       video: { path: `evidence/${id}/evidence.mp4`, duration_s: seconds, bytes: 2_400_000, sha256: "1".repeat(64) },
-      thumbnail: { path: `playbooks/${id}/thumb.jpg`, bytes: 48_000, sha256: "2".repeat(64) },
     },
-    STILL,
     served,
   );
 }

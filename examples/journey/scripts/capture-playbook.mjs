@@ -19,23 +19,35 @@
  * `<out>/capture.json`: `lead_s`, how far into the webm the walk starts (the page loading is cut
  * off by the mux), `walked_s`, `turns`, and the URL that was filmed.
  *
- * Stills (the storyboard, ADR 0055's amendment):
+ * Stills (the storyboard, ADR 0055's amendment, ADR 0137):
  *   node examples/journey/scripts/capture-playbook.mjs --stills --fixture shipped:<id>
  *        --out evidence/<id> [--turns 1,4,6,9] [--desktop <dir>] [--port N]
  *
- * No film and no pacing: the same playbook photographed at its stages, as the Chores depth draws
- * them (ADR 0090), each a place opened by its own address rather than reached by clicks, so no
- * still can catch a layer halfway through its transition. The abstract (`#/chores/<id>`), each
- * turn named by `--turns` (1-based; by default up to four spread evenly, always the first and the
- * last), and *What she filed* (the `shipped-proof` fixture opens a chore on that facet; the chore
- * is scrolled so the facets and the panel stand at the top). Every still is the same element,
- * `.stage__layer`: the scene under the crumbs and above the dock, so the chrome that is the same
- * on every screen is not paid for a hundred times. The old film's `.layer__sheet` no longer exists:
- * the layer it framed became the Chores depth.
+ * No film and no pacing: the playbook photographed as the Chores depth draws it today (ADR 0090,
+ * 0096), each place opened by its own address rather than reached by clicks, so no still can catch
+ * a layer halfway through its transition. Still 01 is the topic page's drawing, *How it runs*
+ * (`.pa-flow`), alone and centred; then each turn named by `--turns` (1-based; by default up to
+ * four spread evenly, always the first and the last; `--turns ""` for none) on the replay,
+ * `#/chores/<id>/run/N`. Every still is the live `.stage__layer`, with the stage's bar, dock and
+ * gauge taken away so the layer fills the viewport: 1280 x 800, so every frame is 16:10, the shape
+ * of the topic page's hero box and gallery frames. A drawing taller than that widens its frame,
+ * still 16:10, rather than losing its end.
+ *
+ * No still shows a figure (ADR 0137): the page draws the money, the time, the verdict and the
+ * estimate live from the record, so a picture of them could only drift from it. The capture hides
+ * the replay's running total and the drawing's result node, and fails when any of `FORBIDDEN` (the
+ * figure tiles, the verdict, the estimate) would still be drawn inside a frame.
+ *
+ * Rendered at deviceScaleFactor 2, so the PNGs are twice the frame (2560 x 1600) and `evidence.py`
+ * shrinks them to 1280: supersampled text, sharper than a 1280 render at scale 1.
  *
  * `--desktop` serves the walk from another checkout's `apps/desktop` (a capture that must not see
  * somebody's half-saved edit through Vite's hot reload). Writes `<out>/still-NN.png` and
- * `<out>/stills.json`, `[{ file, turn }]` in order, `turn` null for the abstract and the result.
+ * `<out>/stills.json`, `[{ file, kind, turn, frame }]` in order: `kind` "drawing" (turn null) or
+ * "turn", `frame` the CSS size photographed ("1280x800").
+ *
+ * The film walk above still targets the retired Playbooks layer (`.pb-abstract`); the films return
+ * in a later pass, on the stills' frames.
  */
 
 import { spawn, spawnSync } from 'node:child_process';
@@ -55,14 +67,15 @@ const DESKTOP = path.join(REPO, 'apps', 'desktop');
 const VIEWPORT = { width: 1440, height: 900 };
 /** What every still frames: the depth's layer, without the crumbs above it or the dock below. */
 const STILL = '.stage__layer';
-/**
- * Smaller than the film's: a still is shrunk to 960 px and must stay under 24,000 bytes as WebP,
- * and the abstract framed at 1440 x 900 does not, even at quality 30 (about 28,700 bytes, nearly
- * all of it text: hiding the water saves nothing). At 1280 x 800 it is about 21,700 at 30 and
- * still reads. (Measured with a lanczos shrink; `evidence.py` shrinks bilinear, which is smaller
- * again, and cuts the rare still that is still too heavy shorter, never less legible.)
- */
+/** A still's frame in CSS px: 16:10, the topic page's hero and gallery boxes, and STORY_WIDTH wide. */
 const STILL_VIEWPORT = { width: 1280, height: 800 };
+/** Rendered at twice the frame and shrunk by `evidence.py`: text drawn at 2x and averaged reads sharper. */
+const SCALE = 2;
+/** The space above and below the drawing inside its frame, CSS px. */
+const DRAWING_PAD = 40;
+/** How a drawing's frame grows when it does not fit, and how far: twice the base is 1:1 at scale 2. */
+const FRAME_STEP = 160;
+const FRAME_MAX = 2560;
 /** The most turns a storyboard samples; `evidence.py` holds the same number (`STORY_TURNS`). */
 const STORY_TURNS = 4;
 
@@ -92,7 +105,10 @@ function parseArgs(argv) {
     else if (a === '--out') args.out = path.resolve(argv[(i += 1)] ?? '');
     else if (a === '--port') args.port = Number(argv[(i += 1)]);
     else if (a === '--stills') args.stills = true;
-    else if (a === '--turns') args.turns = (argv[(i += 1)] ?? '').split(',').map(Number);
+    else if (a === '--turns') {
+      const list = (argv[(i += 1)] ?? '').trim();
+      args.turns = list ? list.split(',').map(Number) : [];
+    }
     else if (a === '--desktop') args.desktop = path.resolve(argv[(i += 1)] ?? '');
     else if (a === '--viewport') {
       const [width, height] = (argv[(i += 1)] ?? '').split('x').map(Number);
@@ -202,16 +218,87 @@ async function stopAndCheck(vite, port) {
   process.exitCode = 1;
 }
 
-/** One still: the layer at a place, once it has drawn and nothing is mid-move. */
-async function still(page, url, ready, file, prepare) {
+/**
+ * What the capture adds to the page so a still is a frame and not a window: the stage's bar, dock
+ * and gauge go and the layer fills the viewport (which is 16:10, so the layer is too), and the
+ * figure tiles go (ADR 0137: no figure is baked into a still; the page draws them live). A tile is
+ * hidden with `visibility`, so the layout around it does not move.
+ */
+const FRAME_CSS = `
+  .stage__top, .stage__dock, .stage__gauge { display: none !important; }
+  .stage__scenes, .stage__layer { inset: 0 !important; }
+  .ch-found { visibility: hidden !important; }
+`;
+/** The drawing alone: every other section of the topic page goes, and the drawing stands centred. */
+const DRAWING_CSS = `
+  .pa-wrap > :not(.pa-flow) { display: none !important; }
+  .pa-flow .pa-result, .pa-flow .pa-spine__note { display: none !important; }
+  .pa-page { display: flex; flex-direction: column; justify-content: center; }
+  .pa-wrap { width: 100%; max-width: none; padding: ${DRAWING_PAD}px 60px; margin: auto; }
+`;
+/**
+ * No still may show these (ADR 0137): the page's figure tiles, the verdict line, the estimate line,
+ * the drawing's result node and the replay's running total. Each must be hidden or outside the frame.
+ */
+const FORBIDDEN = ['.pa-kpis', '.pa-kpi', '.pa-verdict', '.pa-estimate', '.pa-result', '.pa-spine__note', '.ch-found'];
+
+/** Fail when anything in {@link FORBIDDEN} is drawn inside `clip` (CSS px of the viewport). */
+async function assertNoFigures(page, clip, where) {
+  const seen = await page.evaluate(
+    ({ selectors, clip }) => {
+      const hits = [];
+      for (const sel of selectors) {
+        for (const el of document.querySelectorAll(sel)) {
+          const style = getComputedStyle(el);
+          if (!el.checkVisibility({ visibilityProperty: true, opacityProperty: true })) continue;
+          if (style.visibility === 'hidden') continue;
+          const r = el.getBoundingClientRect();
+          if (r.width === 0 || r.height === 0) continue;
+          const inside = r.right > clip.x && r.left < clip.x + clip.width && r.bottom > clip.y && r.top < clip.y + clip.height;
+          if (inside) hits.push(sel);
+        }
+      }
+      return hits;
+    },
+    { selectors: FORBIDDEN, clip },
+  );
+  if (seen.length) fail(`${where}: the frame would show ${[...new Set(seen)].join(', ')}`);
+}
+
+/** One still: the live layer at a place, once it has drawn and nothing is mid-move. */
+async function still(page, url, ready, file, { css = '', prepare } = {}) {
   await page.goto(url, { waitUntil: 'load' });
   await page.locator(ready).first().waitFor({ state: 'visible', timeout: 60_000 });
+  await page.addStyleTag({ content: FRAME_CSS + css });
   await page.evaluate(() => document.fonts.ready);
   const layer = page.locator(`${STILL}:not([inert])`);
   if ((await layer.count()) !== 1) fail(`${url}: expected one live ${STILL}, found ${await layer.count()}`);
   if (prepare) await prepare(page);
   await page.waitForTimeout(350);
+  const box = await layer.boundingBox();
+  if (!box) fail(`${url}: the layer has no box`);
+  const ratio = box.width / box.height;
+  if (Math.abs(ratio - 1.6) > 0.01) fail(`${url}: the layer is ${box.width} x ${box.height}, not 16:10`);
+  await assertNoFigures(page, box, url);
   await layer.screenshot({ path: file, animations: 'disabled' });
+  return box;
+}
+
+/**
+ * The drawing's frame: the smallest 16:10 viewport, from the base up in steps of {@link FRAME_STEP}
+ * CSS px, that holds the whole drawing. The topic page caps its width; the capture lifts the cap,
+ * so a wider frame also lays the drawing out wider, and a drawing with many steps and gates grows
+ * across instead of down. Its text is smaller once shrunk to 1280 px, never cut. Leaves the page
+ * at that viewport.
+ */
+async function fitDrawing(page, base) {
+  for (let width = base.width; ; width += FRAME_STEP) {
+    const frame = { width, height: Math.round((width * 10) / 16) };
+    await page.setViewportSize(frame);
+    await page.waitForTimeout(50);
+    const height = await page.locator('.pa-flow').evaluate((el) => el.getBoundingClientRect().height);
+    if (height + 2 * DRAWING_PAD <= frame.height || width + FRAME_STEP > FRAME_MAX) return frame;
+  }
 }
 
 async function stills(args) {
@@ -229,17 +316,20 @@ async function stills(args) {
   try {
     await waitForServer(`${base}/preview.html`, vite);
     browser = await chromium.launch();
-    const context = await browser.newContext({ viewport: args.viewport, deviceScaleFactor: 1, colorScheme: 'dark' });
+    const context = await browser.newContext({ viewport: args.viewport, deviceScaleFactor: SCALE, colorScheme: 'dark' });
     const page = await context.newPage();
     const name = () => path.join(args.out, `still-${String(shots.length + 1).padStart(2, '0')}.png`);
-    const take = async (url, ready, turn, prepare) => {
-      const file = name();
-      await still(page, url, ready, file, prepare);
-      shots.push({ file: path.basename(file), turn });
-    };
 
-    await take(at('shipped', chore), '.ch-chore__top', null);
-    const count = await page.locator('.ch-facet', { hasText: 'Watch the run' }).count();
+    // 01: the drawing. Measured once at the base viewport, then framed at the size it fits.
+    await page.goto(at('shipped', chore), { waitUntil: 'load' });
+    await page.locator('.pa-flow').first().waitFor({ state: 'visible', timeout: 60_000 });
+    await page.addStyleTag({ content: FRAME_CSS + DRAWING_CSS });
+    const frame = await fitDrawing(page, args.viewport);
+    const file = name();
+    await still(page, at('shipped', chore), '.pa-flow', file, { css: DRAWING_CSS });
+    shots.push({ file: path.basename(file), kind: 'drawing', turn: null, frame: `${frame.width}x${frame.height}` });
+    await page.setViewportSize(args.viewport);
+
     let turns = args.turns;
     if (turns === null) {
       // The number of turns is on the replay's own marquee: "Turn 1 of 13".
@@ -247,23 +337,19 @@ async function stills(args) {
       const of = await page.locator('.ch-marquee__of').first().textContent({ timeout: 60_000 });
       turns = sampleTurns(Number(/of (\d+)/.exec(of ?? '')?.[1] ?? 0));
     }
-    if (turns.length && count === 0) fail(`${id} has no "Watch the run": no turns to photograph`);
     for (const n of turns) {
-      await take(at('shipped', `${chore}/run/${n}`), '.ch-run .ch-turn', n, async (p) => {
-        const marquee = (await p.locator('.ch-marquee--run').first().textContent()) ?? '';
-        if (!marquee.startsWith(`Turn ${n} `)) fail(`${id}: turn ${n} drew "${marquee}"`);
+      const file = name();
+      await still(page, at('shipped', `${chore}/run/${n}`), '.ch-run .ch-turn', file, {
+        prepare: async (p) => {
+          const marquee = (await p.locator('.ch-marquee--run').first().textContent()) ?? '';
+          if (!marquee.startsWith(`Turn ${n} `)) fail(`${id}: turn ${n} drew "${marquee}"`);
+        },
       });
+      shots.push({ file: path.basename(file), kind: 'turn', turn: n, frame: `${args.viewport.width}x${args.viewport.height}` });
     }
-    await take(at('shipped-proof', chore), '.ch-panel[aria-label="What she filed"]', null, async (p) => {
-      // The facets and the panel to the top of the layer: the result, not the abstract again.
-      await p.locator('.ch-chore').evaluate((el) => {
-        const body = el.querySelector('.ch-chore__body');
-        if (body) el.scrollTo({ top: body.getBoundingClientRect().top - el.getBoundingClientRect().top + el.scrollTop - 16 });
-      });
-    });
     await context.close();
     writeFileSync(path.join(args.out, 'stills.json'), `${JSON.stringify(shots, null, 2)}\n`);
-    console.log(`stills ${id}: ${shots.length} (${shots.map((s) => s.turn ?? '-').join(' ')}) on port ${port}`);
+    console.log(`stills ${id}: ${shots.length} (${shots.map((s) => s.turn ?? 'drawing').join(' ')}) on port ${port}`);
   } finally {
     await browser?.close().catch(() => {});
     await stopAndCheck(vite, port);

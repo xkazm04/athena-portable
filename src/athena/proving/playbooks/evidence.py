@@ -2,44 +2,53 @@
 
 ``bench.json`` is the measured run as numbers. The evidence is the same run as something a person
 watches: a narration that says what the chore is, what Athena found and walked past, and the
-verdict; spoken by the local voice; laid over a recording of the desktop's own Playbooks layer
-replaying that run. Six steps per playbook, each a tool the machine already has:
+verdict; spoken by the local voice; laid over a recording of the desktop replaying that run; and
+the storyboard, five stills of it committed beside the index (ADR 0096, ADR 0137). The steps, each
+a tool the machine already has:
 
 1. **Narration** — :func:`narration`, a pure function of ``playbook.json`` and ``bench.json``.
-   No model writes it, so the same run always says the same words, and 45 to 90 s of them.
+   No model writes it, so the same run always says the same words, and 45 to 90 s of them, in the
+   page's own words (ADR 0133 to 0136): "test run", money by its kind, the time with the person's
+   review in it, and the verdict with the runs it stands on.
 2. **Speech** — Kokoro (``af_heart``) through :class:`~athena.channels.voice.kokoro.KokoroTTS`
-   and :func:`~athena.channels.voice.home.resolve_homes`, so no machine path is written down.
-   Piper only when Kokoro is absent. Nothing goes over a network.
-3. **Capture** — ``examples/journey/scripts/capture-playbook.mjs``: Playwright records
-   ``preview.html?module=playbooks&fixture=shipped:<id>`` on its own Vite dev server, walking the
-   abstract, every turn of *Watch the run*, then *What she filed*, paced to the narration.
-4. **Mux** — ffmpeg (``$FFMPEG`` else PATH) writes H.264 + AAC, and a JPEG thumbnail of the
-   result view, shrunk until it is under :data:`THUMB_MAX_BYTES`.
-5. **Stills** — the storyboard: the same capture script with ``--stills`` photographs the abstract,
-   up to :data:`STORY_TURNS` turns of the replay spread evenly (:func:`sample_turns`) and *What
-   she filed*; ffmpeg encodes each as a 960 px WebP under :data:`STORY_MAX_BYTES` into
+   and :func:`~athena.channels.voice.home.resolve_homes`, so no machine path is written down, in
+   her halo tone (:mod:`athena.channels.voice.ether`, ADR 0138) when numpy is installed, else in
+   her natural tone, and the index says which. Piper only when Kokoro is absent. Nothing goes over
+   a network.
+3. **Capture** — ``examples/journey/scripts/capture-playbook.mjs`` records the desktop on its own
+   Vite dev server, paced to the narration. (The film walk still targets the retired Playbooks
+   layer; the films return in a later pass, ADR 0137.)
+4. **Mux** — ffmpeg (``$FFMPEG`` else PATH) writes H.264 + AAC.
+5. **Stills** — the storyboard: the same capture script with ``--stills`` photographs the topic
+   page's drawing, *How it runs*, and up to :data:`STORY_TURNS` turns of the replay spread evenly
+   (:func:`sample_turns`), each a 16:10 frame rendered at twice its size, with no figure in it;
+   ffmpeg shrinks each to a :data:`STORY_WIDTH` px WebP under :data:`STORY_MAX_BYTES` into
    ``playbooks/<id>/story/NN.webp``, and :func:`story_caption` names each one from the record, no
-   model involved. The film is not committed and a person who never ran it still wants to see the
-   process; three to six screens committed beside the index are that.
-6. **Index** — ``playbooks/<id>/evidence.json`` (schema 2, with ``story``), repo-relative paths.
+   model involved.
+6. **Index** — ``playbooks/<id>/evidence.json`` (schema 3), repo-relative paths.
 
-``--stills-only`` (:func:`build_story`) runs step 5 on its own and rewrites the existing index to
-schema 2 with every other key as it was: a storyboard does not need the narration spoken again or
-the film recorded again, and ``captured_at`` stays the date of the film. A schema 1 index, which
-has no ``story``, still reads and verifies.
+Schema 3 (ADR 0137): ``{schema, playbook, captured_at, bench_run_at, story: [{n, path, bytes,
+sha256, caption, kind: "drawing" | "turn", turn?}], narration?, video?}``. No ``thumbnail``: the
+JPEG of the old result view was drawn by no component and is retired. The film's keys are left out,
+not null, when there is no film. A schema 1 or 2 index still reads and verifies while the stills
+are re-shot; its thumbnail is hashed when it is there and no longer required.
 
-The media lives under ``evidence/`` at the repository root, which is gitignored: the index, the
-thumbnail and the storyboard are committed, the film is not. :func:`verify` says whether each
-index is still current against its ``bench.json`` (``bench_run_at`` equal to ``run_at``),
-re-hashes whatever media is present on this machine, and holds the storyboard, being committed,
-to its recorded bytes and hashes. Every ``sha256`` in the index is of a file's bytes:
-``narration.sha256`` is the spoken WAV, since the text it was spoken from is already in the index
-word for word.
+``--stills-only`` (:func:`build_story`, :func:`write_story`) runs step 5 on its own and writes a
+schema 3 index of the stills: ``captured_at`` the date of the stills, ``bench_run_at`` the run they
+show. An old index's narration and film are dropped, because they narrate and film a page that is
+gone; the films pass writes them again.
+
+The media lives under ``evidence/`` at the repository root, which is gitignored: the index and the
+storyboard are committed, the film is not. :func:`verify` says whether each index is still current
+against its ``bench.json`` (``bench_run_at`` equal to ``run_at``), re-hashes whatever media is
+present on this machine, and holds the storyboard, being committed, to its recorded bytes and
+hashes. Every ``sha256`` in the index is of a file's bytes: ``narration.sha256`` is the spoken WAV,
+since the text it was spoken from is already in the index word for word.
 
 A rescore keeps ``run_at`` (``bench.write_bench``), and an edit to ``playbook.json`` changes no date
 at all, so either can leave an index "current" whose narration no longer says what the record says.
-:func:`verify` therefore also fills the narration again and compares it with the committed text; a
-difference is reported, and the playbook wants filming again.
+:func:`verify` therefore also fills the narration again, when the index has one, and compares it
+with the committed text; a difference is reported, and the playbook wants filming again.
 
 A ``bench.json`` or ``evidence.json`` that is not valid JSON, or not an object, makes that playbook
 ``unreadable``: a non-current standing whose notes name the file and the problem. The other
@@ -62,23 +71,27 @@ from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
+from athena.channels.voice import ether
 from athena.channels.voice.backends import VoiceBackendError
 from athena.channels.voice.home import EXE_SUFFIX, EngineHomes, creation_flags, resolve_homes
 from athena.channels.voice.kokoro import MAX_CHARS, KokoroTTS, find_voice, split_sentences
 from athena.channels.voice.kokoro import SAMPLE_RATE as KOKORO_RATE
 from athena.channels.voice.kokoro import probe as probe_kokoro
-from athena.proving.playbooks.spec import PLAYBOOKS_DIRNAME, Playbook
+from athena.proving.playbooks.bench import comparable_runs, headline
+from athena.proving.playbooks.spec import DEFAULT_KIND, PLAYBOOKS_DIRNAME, Playbook, kind_of
 
 __all__ = [
     "CAPTURE_SCRIPT",
+    "DRAWING_CAPTION",
     "EVIDENCE_DIRNAME",
     "MAX_SECONDS",
     "MIN_SECONDS",
     "SCHEMA",
+    "STORY_COUNT",
     "STORY_MAX_BYTES",
     "STORY_TOTAL_MAX_BYTES",
     "STORY_TURNS",
-    "THUMB_MAX_BYTES",
+    "STORY_WIDTH",
     "EvidenceError",
     "Tools",
     "Voice",
@@ -95,44 +108,49 @@ __all__ = [
     "plan",
     "plan_story",
     "sample_turns",
+    "speak",
     "story_caption",
     "verify",
     "write_story",
 ]
 
-#: 2 added ``story``; a schema 1 index is still read and verified as it is.
-SCHEMA = 2
+#: 2 added ``story``; 3 (ADR 0137) dropped ``thumbnail``, made the film optional and gave each
+#: still its ``n`` and ``kind``. Schema 1 and 2 indexes are still read and verified as they are.
+SCHEMA = 3
 EVIDENCE_DIRNAME = "evidence"
-#: Inside ``playbooks/<id>/``: the storyboard's stills, ``01.webp`` to ``06.webp``.
+#: Inside ``playbooks/<id>/``: the storyboard's stills, ``01.webp`` to ``05.webp``.
 STORY_DIRNAME = "story"
 #: The most replay turns a storyboard samples (``STORY_TURNS`` in the capture script too).
 STORY_TURNS = 4
-#: Every still's width; its height follows the capture's aspect.
-STORY_WIDTH = 960
-#: Per still, read strictly like the thumbnail's bound: a hundred playbooks of six stays near 15 MB.
-STORY_MAX_BYTES = 24_000
+#: The drawing and up to four turns.
+STORY_COUNT = 1 + STORY_TURNS
+#: Every still's width. The frame is 16:10 (1280 x 800 CSS px, rendered at deviceScaleFactor 2),
+#: so the height is 800 for a turn and for a drawing that fits; the topic page's hero and gallery
+#: boxes are 16:10 too, so nothing is cropped away when a still is shown.
+STORY_WIDTH = 1280
+#: Per still, read strictly: 95 playbooks of five at this bound is 20.9 MB (ADR 0137).
+STORY_MAX_BYTES = 44_000
 #: The whole storyboard across every shipped playbook.
-STORY_TOTAL_MAX_BYTES = 15_000_000
-#: libwebp qualities, tried in order until a still is under :data:`STORY_MAX_BYTES`; below 30 the
-#: small text of a turn stops reading, so a still that needs less fails instead.
-STORY_QUALITIES: tuple[int, ...] = (75, 65, 55, 48, 42, 36, 30)
-#: A still that does not fit at its full height even at the lowest quality loses its bottom edge
-#: instead, cut to each of these heights in turn at the two lowest qualities: what is cut is the
-#: tail of a long list, never the legibility of what stays. On the hundred shipped playbooks at
-#: 1280 x 800 (2026-10-14), 54 of 600 stills needed it: 48 a *What she filed* thick with the prose
-#: of its cards, 6 a turn; 480 px fitted 28, 440 px 25, 400 px one.
-STORY_CROPS: tuple[int, ...] = (480, 440, 400)
-#: Bilinear, not lanczos: lanczos rings around small text, and the ringing costs bytes. On those 96
-#: stills at quality 30, 34 were over :data:`STORY_MAX_BYTES` with lanczos and 4 with bilinear.
-STORY_SCALE_FLAGS = "bilinear"
+STORY_TOTAL_MAX_BYTES = 21_000_000
+#: libwebp qualities, tried in order until a still is under :data:`STORY_MAX_BYTES`. Below 30 the
+#: small text of a turn stops reading, so a still that needs less fails instead. There is no
+#: shorter-crop fallback any more: on medical-bills and lien-desk (2026-10-23) every 16:10 still
+#: fitted between quality 52 and 75 (34.8 to 43.6 KB), and at 30 they are about 31 KB, far inside
+#: the bound, so a frame is never cut.
+STORY_QUALITIES: tuple[int, ...] = (75, 68, 60, 52, 45, 38, 30)
+#: Lanczos, measured against bilinear on the 2560 x 1600 renders shrunk to 1280 (2026-10-23,
+#: medical-bills, five stills): at equal bytes (about 43 KB; bilinear at quality 75, lanczos at 60)
+#: lanczos kept more of the text. SSIM against a lossless shrink was 0.980 / 0.992 for lanczos and
+#: 0.975 / 0.987 for bilinear (drawing / turn, lanczos reference), 0.980 / 0.992 against 0.965 /
+#: 0.987 with an area reference, and the edge energy (mean Sobel) was 26.9 against 26.1. At 2:1
+#: the lanczos ringing that cost bytes at 960 px is small; bilinear's blur costs more than its
+#: higher quality buys back.
+STORY_SCALE_FLAGS = "lanczos"
 #: A turn caption's own words, after "Turn N - <portal>: ", ellipsis included.
 CAPTION_CHARS = 80
-ABSTRACT_CAPTION = "The abstract"
-RESULT_CAPTION = "What she filed"
+DRAWING_CAPTION = "How it runs"
 #: Repo-relative: the recorder the capture step runs with Node.
 CAPTURE_SCRIPT = "examples/journey/scripts/capture-playbook.mjs"
-#: "Under 100 KB", read strictly: 100,000 bytes, not 102,400.
-THUMB_MAX_BYTES = 100_000
 #: How long the spoken narration may be.
 MIN_SECONDS = 45.0
 MAX_SECONDS = 90.0
@@ -146,19 +164,10 @@ TAIL_S = 1.0
 #: A chore whose first sentence is longer than this is left out: it would be read, not heard.
 CHORE_WORDS = 30
 KOKORO_VOICE = "af_heart"
+#: The tone the narration is spoken in when the layer can run (ADR 0138).
+NARRATION_TONE = "halo"
 #: The Piper voice Personas installs beside Kokoro: ``companion-tts/piper/<voice>/<voice>.onnx``.
 PIPER_VOICE = "en_US-amy-medium"
-#: Widths (never wider than the still) and JPEG qualities (ffmpeg's ``-q:v``, lower is better),
-#: tried in order for the thumbnail until one is under :data:`THUMB_MAX_BYTES`.
-THUMB_STEPS: tuple[tuple[int, int], ...] = (
-    (960, 3),
-    (960, 5),
-    (960, 8),
-    (720, 8),
-    (560, 10),
-    (480, 14),
-    (360, 20),
-)
 
 
 class EvidenceError(RuntimeError):
@@ -237,17 +246,126 @@ def estimate_seconds(text: str) -> float:
     return len(text.split()) / WORDS_PER_SECOND
 
 
+def _plain(text: object) -> str:
+    """A playbook's markdown as words to say: its first line or bullet, no bullet mark, no bold."""
+    for line in str(text).replace("\r\n", "\n").split("\n"):
+        line = re.sub(r"^\s*(?:[-*]\s+|#+\s*|>\s*)", "", line).strip()
+        if line:
+            return re.sub(r"[*`]+", "", line)
+    return ""
+
+
+#: The page's words, not the lab's (ADR 0136): a playbook's own prose that says "bench" is read as
+#: the test run it means.
+_LAB_WORDS = (
+    (re.compile(r"\bbench(?:ed)? world(?:'s)?", re.IGNORECASE), "example case"),
+    (re.compile(r"\bbench(?:ed)?\b", re.IGNORECASE), "test run"),
+)
+
+
+def _page_words(text: str) -> str:
+    for pattern, word in _LAB_WORDS:
+        text = pattern.sub(word, text)
+    return text
+
+
+def _tally(econ: Mapping[str, Any], bench: Mapping[str, Any]) -> dict[str, list[float]]:
+    """The run's money by kind (ADR 0133): ``{kind: [found, total]}``, as the desktop's ``tallyOf``.
+
+    Right cards are found; right cards and missed items are what the example held. A run recorded
+    with neither falls back on the score's totals, as money back only when the playbook names no
+    other kind; otherwise it claims nothing.
+    """
+    tally: dict[str, list[float]] = {}
+
+    def add(tool: str, value: Any, found: bool) -> None:
+        amount = float(value or 0)
+        t = tally.setdefault(kind_of(econ, tool), [0.0, 0.0])
+        t[1] = round(t[1] + amount, 2)
+        if found:
+            t[0] = round(t[0] + amount, 2)
+
+    cards = [c for c in bench.get("cards", []) or [] if isinstance(c, Mapping)]
+    missed = [m for m in bench.get("missed", []) or [] if isinstance(m, Mapping)]
+    for c in cards:
+        if c.get("outcome") == "correct":
+            add(str(c.get("action", "")), c.get("value_usd"), True)
+    for m in missed:
+        add(str(m.get("action", "")), m.get("value_usd"), False)
+    score_raw = bench.get("score", {})
+    score = score_raw if isinstance(score_raw, Mapping) else {}
+    kinds_raw = econ.get("kinds")
+    kinds = kinds_raw if isinstance(kinds_raw, Mapping) else {}
+    only_back = not any(k != DEFAULT_KIND for k in kinds.values())
+    if not cards and not missed and score.get("eligible") and only_back:
+        tally[DEFAULT_KIND] = [
+            float(score.get("value_found_usd", 0) or 0),
+            float(score.get("value_total_usd", 0) or 0),
+        ]
+    return tally
+
+
+#: What each other kind of money is called after its figure, as the page says it (ADR 0136).
+_KIND_WORDS = {"money_protected": "protected", "penalty_avoided": "in penalties avoided"}
+
+
+def _money_words(econ: Mapping[str, Any], tally: Mapping[str, list[float]]) -> list[str]:
+    """Each money kind the run held, in its own words; ``count`` weights are never dollars.
+
+    Money back is measured against ``economics.example_usd``, the example case's money back and
+    the page's headline, when the playbook has derived it.
+    """
+    parts: list[str] = []
+    back = tally.get(DEFAULT_KIND)
+    if back and back[1]:
+        example = econ.get("example_usd")
+        derived = float(example) if isinstance(example, (int, float)) else 0.0
+        of = derived if derived > 0 and not isinstance(example, bool) else back[1]
+        parts.append(f"{_dollars(back[0])} back of the {_dollars(of)} the example case holds")
+    for kind, word in _KIND_WORDS.items():
+        t = tally.get(kind)
+        if t and t[1]:
+            parts.append(f"{_dollars(t[0])} of {_dollars(t[1])} {word}")
+    return parts
+
+
+def _times(manual: float, measured: float) -> str:
+    """The ratio as the page rounds it (``speedup``): whole from ten up, else one decimal."""
+    x = manual / measured
+    return f"{round(x):,}" if x >= 10 else f"{x:.1f}"
+
+
+def _runs(bench: Mapping[str, Any]) -> tuple[int, int]:
+    """How many comparable test runs stand behind the verdict, how many beat the bar (ADR 0128)."""
+    pooled = comparable_runs(bench)
+    runs = pooled if pooled else [headline(bench)]
+    return len(runs), sum(1 for r in runs if r.get("verdict") == "exceeds")
+
+
 def narration(showcase: Mapping[str, Any], bench: Mapping[str, Any]) -> str:
     """What the film says, from ``playbook.json`` and ``bench.json`` alone. Pure.
 
-    The parts every narration has — who it is for, what she found, the traps, her time against the
-    manual time, the verdict — always stay. The parts that colour it — the chore's first sentence,
-    the portals, two of the traps in words, the exact amounts, the caveat — are added in that order
-    while the estimate stays under the target, so a playbook with long prose is not read for two
-    minutes and one with short prose still fills its 45 seconds.
+    In the page's own words (ADR 0133 to 0136): the run is a "test run" on an invented example
+    case; money is said by its kind (money back against the example's own total, money protected,
+    penalties avoided; a count weight never as dollars); her time is said with the person's review
+    of her cards beside it, and a "times faster" only from that sum, never from the wall clock
+    alone; and the verdict names the test runs it stands on.
+
+    The parts every narration has (who it is for, what she found, the mistakes, the time, the
+    verdict) always stay. The parts that colour it (the chore's first sentence, the portals, two
+    of the mistakes in words, the exact amounts, the caveat) are added in that order while the
+    estimate stays under the target, so a playbook with long prose is not read for two minutes and
+    one with short prose still fills its 45 seconds.
     """
-    title = str(showcase.get("title") or showcase.get("id") or "This playbook")
-    persona = str(showcase.get("persona", "")).strip()
+    # The page's own name for it: the short title, as the topic page heads it; the long title is a
+    # paragraph of the example's facts.
+    title = str(
+        showcase.get("short_title")
+        or showcase.get("title")
+        or showcase.get("id")
+        or "This playbook"
+    )
+    persona = _plain(showcase.get("persona", ""))
     economics = showcase.get("economics", {})
     econ = economics if isinstance(economics, Mapping) else {}
     score_raw = bench.get("score", {})
@@ -255,16 +373,19 @@ def narration(showcase: Mapping[str, Any], bench: Mapping[str, Any]) -> str:
     verdict_raw = bench.get("verdict", {})
     verdict = verdict_raw if isinstance(verdict_raw, Mapping) else {}
 
+    def say(text: str) -> str:
+        return _page_words(_spoken(text))
+
     found = int(score.get("found", 0) or 0)
     eligible = int(score.get("eligible", 0) or 0)
     exact = int(score.get("exact", 0) or 0)
-    value_found = float(score.get("value_found_usd", 0) or 0)
-    value_total = float(score.get("value_total_usd", 0) or 0)
     false_claims = int(score.get("false_claims", 0) or 0)
     ledger = [t for t in score.get("trap_ledger", []) or [] if isinstance(t, Mapping)]
     traps_total = int(score.get("traps_total", len(ledger)) or 0)
     traps_filed = int(score.get("traps_filed", 0) or 0)
-    minutes = float(verdict.get("minutes", float(bench.get("wall_s", 0) or 0) / 60) or 0)
+    wall_s = float(bench.get("wall_s", 0) or 0)
+    minutes = wall_s / 60 if wall_s else float(verdict.get("minutes", 0) or 0)
+    review = float(bench.get("your_time_s", 0) or 0) / 60
     manual = float(econ.get("manual_minutes", 0) or 0)
     word = str(verdict.get("word", "short"))
     reasons = [str(r) for r in verdict.get("reasons", []) or []]
@@ -273,8 +394,8 @@ def narration(showcase: Mapping[str, Any], bench: Mapping[str, Any]) -> str:
 
     intro = f"{title}."
     if persona:
-        intro += f" This is a chore for {_spoken(_lower_first(persona)).rstrip('.')}."
-    chore = _sentence(_spoken(_first_sentence(str(showcase.get("chore", "")))))
+        intro += f" This is a chore for {say(_lower_first(persona)).rstrip('.')}."
+    chore = _sentence(say(_first_sentence(_plain(showcase.get("chore", "")))))
     if len(chore.split()) > CHORE_WORDS:
         chore = ""
     apps = [a for a in showcase.get("apps", []) or [] if isinstance(a, Mapping)]
@@ -284,11 +405,12 @@ def narration(showcase: Mapping[str, Any], bench: Mapping[str, Any]) -> str:
         f"Athena works it across {_count(len(names), 'portal')}: {_and(names)}." if names else ""
     )
 
-    found_line = f"On the bench, she found {found} of {eligible} eligible items"
-    if value_total:
-        found_line += f", worth {_dollars(value_found)} of the {_dollars(value_total)} there was"
-        found_line += " to find"
-    found_line += "."
+    money = _money_words(econ, _tally(econ, bench))
+    found_line = (
+        f"In the test run, on an invented example case, she found {found} of {eligible} items"
+        + (": " + _and(money) if money else "")
+        + "."
+    )
     exact_line = (
         (f"All {found}" if exact == found else f"{exact} of the {found}")
         + " were filed at the exact amount the rules allow."
@@ -302,54 +424,75 @@ def narration(showcase: Mapping[str, Any], bench: Mapping[str, Any]) -> str:
     )
     if traps_total:
         avoided = traps_total - traps_filed
-        traps_line = f"The world held {_count(traps_total, 'trap')}, and she walked past {avoided}."
+        traps_line = (
+            f"The example case set up {_count(traps_total, 'mistake')} for her to make, "
+            f"and she avoided {avoided}."
+        )
         if traps_filed:
             fell = [t for t in ledger if t.get("filed")]
             keys = _and([str(t.get("key", "")) for t in fell[:3] if t.get("key")])
-            traps_line += f" She fell for {traps_filed}" + (f": {keys}." if keys else ".")
+            traps_line += f" She made {traps_filed}" + (f": {keys}." if keys else ".")
     else:
-        traps_line = "The world held no trap for her."
-    examples = [
-        _sentence(_spoken(str(t))) for t in showcase.get("traps", []) or [] if str(t).strip()
-    ]
+        traps_line = "The example case set up no mistake for her to make."
+    examples = [_sentence(say(_plain(t))) for t in showcase.get("traps", []) or [] if _plain(t)]
     trap_words = f"Among them: {' '.join(examples[:2])}" if examples and traps_total else ""
 
-    time_line = f"She took {_duration(minutes)}."
+    total = minutes + review
+    if review > 0:
+        time_line = (
+            f"She took {_duration(minutes)} in the test run, and reviewing her cards takes you "
+            f"{_duration(review)} more, so {_duration(total)} in all."
+        )
+    else:
+        time_line = f"She took {_duration(minutes)} in the test run."
     if manual:
         time_line += f" By hand, the same chore takes {_duration(manual)}"
-        if minutes >= 0.5 and manual / max(minutes, 0.5) >= 2:
-            time_line += f", so she was about {round(manual / max(minutes, 0.5)):,} times faster"
+        # A ratio only with the review counted: her wall clock alone is not the person's time.
+        if review > 0 and manual / max(total, 0.5) >= 2:
+            ratio = _times(manual, max(total, 0.5))
+            time_line += f", so even with your review she is about {ratio} times faster"
         time_line += "."
 
     bar = []
     if expected.get("recall") is not None:
-        bar.append(f"{round(float(expected['recall']) * 100)} percent of the money")
+        # A count weight is not money (ADR 0133): the bar is then a share of what the case holds.
+        share = "the money" if money else "what the example case holds"
+        bar.append(f"{round(float(expected['recall']) * 100)} percent of {share}")
     if expected.get("false_claims") is not None:
         n = int(expected["false_claims"])
         bar.append("no false claim" if n == 0 else f"at most {_count(n, 'false claim')}")
     if expected.get("minutes") is not None:
         bar.append(f"inside {_duration(float(expected['minutes']))}")
     bar_words = f" The bar was {_and(bar)}." if bar else ""
+    n_runs, beat = _runs(bench)
     if word == "exceeds":
+        on = "its one test run" if n_runs == 1 else f"{beat} of {n_runs} test runs"
         verdict_line = (
-            f"The verdict: exceeds. She beat the bar this playbook set itself.{bar_words}"
+            f"The verdict: exceeds. She beat the bar this playbook set itself in {on}.{bar_words}"
         )
     elif word == "meets":
+        more = (
+            " It is the only test run so far."
+            if n_runs == 1
+            else f" She beat it in {beat} of {n_runs} test runs."
+        )
         verdict_line = (
-            f"The verdict: meets. She cleared the bar this playbook set itself.{bar_words}"
+            "The verdict: meets. She cleared the bar this playbook set itself in the latest "
+            f"test run.{more}{bar_words}"
         )
     else:
+        on = "its one test run" if n_runs == 1 else f"the latest of {n_runs} test runs"
         why = "; ".join(reasons[:3])
-        verdict_line = "The verdict: short." + (
+        verdict_line = f"The verdict: short, in {on}." + (
             f" {_sentence(why[0].upper() + why[1:])}" if why else ""
         )
-    caveat_raw = str(showcase.get("caveat", "")).strip()
-    caveat = _sentence(_spoken(_first_sentence(caveat_raw))) if caveat_raw else ""
+    caveat_raw = _plain(showcase.get("caveat", ""))
+    caveat = _sentence(say(_first_sentence(caveat_raw))) if caveat_raw else ""
     # ``bench --approve all`` signs every card and runs it on the page; only an unanswered run may
     # say that nothing was sent.
     closing = (
-        "This run approved every card she filed, so each one ran once on the simulated portal; "
-        "nothing reached a real person."
+        "This test run approved every card she filed, so each one ran once on the invented "
+        "portal; nothing reached a real person."
         if bench.get("approve") == "all"
         else "Every card she filed waited for a person's signature, and nothing was sent."
     )
@@ -474,8 +617,32 @@ def wav_seconds(path: Path) -> float:
         return wav.getnframes() / float(wav.getframerate())
 
 
-def speak(voice: Voice, text: str, out: Path) -> float:
-    """``text`` into a 16-bit mono WAV at ``out``, with a breath before and a beat after."""
+@dataclass(frozen=True)
+class Spoken:
+    """What :func:`speak` wrote: its length, the tone it is in, and why when not the one asked."""
+
+    seconds: float
+    tone: str
+    note: str = ""
+
+
+def _toned(pcm: bytes, rate: int, tone: str) -> tuple[bytes, str, str]:
+    """``pcm`` in ``tone`` when the layer can run (ADR 0138), else as rendered, with the reason."""
+    if tone == "natural":
+        return pcm, "natural", ""
+    try:
+        return ether.apply(pcm, rate, tone), tone, ""
+    except ether.EtherUnavailable as exc:
+        return pcm, "natural", f"spoken in her natural tone: {exc}"
+
+
+def speak(voice: Voice, text: str, out: Path, *, tone: str = NARRATION_TONE) -> Spoken:
+    """``text`` into a 16-bit mono WAV at ``out``, with a breath before and a beat after.
+
+    Kokoro's audio goes through her ``tone`` (the halo, ADR 0138) when numpy is installed, else it
+    stays natural and :attr:`Spoken.note` says why. Piper's voice is not hers, so it is never toned.
+    """
+    note = ""
     if voice.engine == "kokoro":
         spec = find_voice(voice.voice)
         if spec is None:
@@ -486,11 +653,13 @@ def speak(voice: Voice, text: str, out: Path) -> float:
         except VoiceBackendError as exc:
             raise EvidenceError(f"kokoro failed: {exc}") from None
         rate = KOKORO_RATE
+        body, tone, note = _toned(body, rate, tone)
     else:
         body, rate = _piper(voice.homes, text)
+        tone = "natural"
     silence = b"\x00\x00"
     _write_wav(out, silence * int(rate * LEAD_S) + body + silence * int(rate * TAIL_S), rate)
-    return wav_seconds(out)
+    return Spoken(wav_seconds(out), tone, note)
 
 
 def _piper(homes: EngineHomes, text: str) -> tuple[bytes, int]:
@@ -528,7 +697,6 @@ class MediaPaths:
     capture_log: Path
     result_png: Path
     video: Path
-    thumb: Path
     index: Path
     #: The capture's ``[{file, turn}]`` for the stills it wrote beside it as ``still-NN.png``.
     stills_log: Path
@@ -546,7 +714,6 @@ def media_paths(repo: Path, playbook_id: str) -> MediaPaths:
         capture_log=media / "capture.json",
         result_png=media / "result.png",
         video=media / "evidence.mp4",
-        thumb=book / "thumb.jpg",
         index=book / "evidence.json",
         stills_log=media / "stills.json",
         story=book / STORY_DIRNAME,
@@ -670,38 +837,6 @@ def mux(tools: Tools, media: MediaPaths, lead_s: float, seconds: float) -> None:
     )
 
 
-def thumbnail(tools: Tools, media: MediaPaths) -> int:
-    """The result view as a JPEG under :data:`THUMB_MAX_BYTES`, shrunk until it fits."""
-    media.thumb.parent.mkdir(parents=True, exist_ok=True)
-    for width, quality in THUMB_STEPS:
-        _run(
-            [
-                tools.ffmpeg,
-                "-y",
-                "-hide_banner",
-                "-loglevel",
-                "error",
-                "-i",
-                str(media.result_png),
-                "-vf",
-                f"scale='min(iw,{width})':-2:flags=lanczos",
-                "-frames:v",
-                "1",
-                "-q:v",
-                str(quality),
-                str(media.thumb),
-            ],
-            "ffmpeg",
-        )
-        size = media.thumb.stat().st_size
-        if size < THUMB_MAX_BYTES:
-            return size
-    media.thumb.unlink(missing_ok=True)
-    raise EvidenceError(
-        f"no thumbnail under {THUMB_MAX_BYTES:,} bytes, even at {THUMB_STEPS[-1][0]} px wide"
-    )
-
-
 # --- 5. stills: the storyboard -------------------------------------------------------------------
 
 
@@ -740,17 +875,17 @@ def clause(text: str, limit: int = CAPTION_CHARS) -> str:
     return cut.rstrip(f" ,;:-{_DASHES}") + "…"
 
 
-def story_caption(turn: int | None, trace: Sequence[Mapping[str, Any]], *, result: bool) -> str:
+def story_caption(turn: int | None, trace: Sequence[Mapping[str, Any]]) -> str:
     """What a still is called, from the record alone: no model names it.
 
-    The first still is :data:`ABSTRACT_CAPTION`, the last :data:`RESULT_CAPTION`. A turn is
-    "Turn N - <portal>: " and the first clause of what the person said to her on it. A turn the run
-    loop continued (the tools answered and she went on; about a third of the turns a storyboard
-    samples) has no words from the person, so it carries the first clause of hers instead, and says
-    so: "Turn N - <portal>, Athena: ...".
+    The drawing (``turn`` None) is :data:`DRAWING_CAPTION`. A turn is "Turn N - <portal>: " and
+    the first clause of what the person said to her on it. A turn the run loop continued (the tools
+    answered and she went on; about a third of the turns a storyboard samples) has no words from
+    the person, so it carries the first clause of hers instead, and says so:
+    "Turn N - <portal>, Athena: ...".
     """
     if turn is None:
-        return RESULT_CAPTION if result else ABSTRACT_CAPTION
+        return DRAWING_CAPTION
     entry = trace[turn - 1] if 1 <= turn <= len(trace) else {}
     portal = str(entry.get("portal") or "").strip()
     head = f"Turn {turn} - {portal}" if portal else f"Turn {turn}"
@@ -772,7 +907,8 @@ def capture_stills(
     *,
     desktop: Path | None = None,
 ) -> list[tuple[Path, int | None]]:
-    """Photograph the abstract, ``turns`` of the replay and the result; return each PNG in order."""
+    """Photograph the drawing and ``turns`` of the replay; return each PNG in order, with its turn
+    (``None`` for the drawing)."""
     media.dir.mkdir(parents=True, exist_ok=True)
     for old in media.dir.glob("still-*.png"):
         old.unlink()
@@ -801,34 +937,23 @@ def capture_stills(
             raise EvidenceError(f"the stills capture named {png.name} and did not write it")
         turn = shot.get("turn")
         shots.append((png, int(turn) if turn is not None else None))
-    if [t for _p, t in shots] != [None, *turns, None]:
+    if [t for _p, t in shots] != [None, *turns]:
         raise EvidenceError(
-            f"the stills capture took turns {[t for _p, t in shots]}, not {[None, *turns, None]}"
+            f"the stills capture took turns {[t for _p, t in shots]}, not {[None, *turns]}"
         )
     return shots
 
 
-def story_ladder() -> list[tuple[int, int | None]]:
-    """The encodings :func:`encode_still` tries, in order: ``(quality, height or None)``.
-
-    Every quality at the full height first, then each of :data:`STORY_CROPS` at the two lowest.
-    """
-    full: list[tuple[int, int | None]] = [(q, None) for q in STORY_QUALITIES]
-    return full + [(q, h) for h in STORY_CROPS for q in STORY_QUALITIES[-2:]]
-
-
-def encode_still(tools: Tools, png: Path, out: Path) -> tuple[int, int, int | None]:
+def encode_still(tools: Tools, png: Path, out: Path) -> tuple[int, int]:
     """``png`` as a :data:`STORY_WIDTH` px WebP at ``out`` under :data:`STORY_MAX_BYTES`.
 
-    Each step of :func:`story_ladder` in turn until one fits; returns the bytes, the quality and
-    the height it was cut to (``None`` for the whole still). None fitting is an error and leaves no
-    file: a still that would only fit illegible is not committed.
+    Each of :data:`STORY_QUALITIES` in turn until one fits; returns the bytes and the quality. The
+    frame is never cut: none fitting is an error and leaves no file, since a still that would only
+    fit illegible is not committed.
     """
     out.parent.mkdir(parents=True, exist_ok=True)
     size = 0
-    for quality, height in story_ladder():
-        scale = f"scale={STORY_WIDTH}:-2:flags={STORY_SCALE_FLAGS}"
-        crop = f",crop={STORY_WIDTH}:'min(ih,{height})':0:0" if height else ""
+    for quality in STORY_QUALITIES:
         _run(
             [
                 tools.ffmpeg,
@@ -839,7 +964,7 @@ def encode_still(tools: Tools, png: Path, out: Path) -> tuple[int, int, int | No
                 "-i",
                 str(png),
                 "-vf",
-                scale + crop,
+                f"scale={STORY_WIDTH}:-2:flags={STORY_SCALE_FLAGS}",
                 "-frames:v",
                 "1",
                 "-c:v",
@@ -854,11 +979,11 @@ def encode_still(tools: Tools, png: Path, out: Path) -> tuple[int, int, int | No
         )
         size = out.stat().st_size
         if size <= STORY_MAX_BYTES:
-            return size, quality, height
+            return size, quality
     out.unlink(missing_ok=True)
     raise EvidenceError(
         f"{png.name}: no WebP under {STORY_MAX_BYTES:,} bytes even at quality "
-        f"{STORY_QUALITIES[-1]} cut to {STORY_CROPS[-1]} px ({size:,} bytes)"
+        f"{STORY_QUALITIES[-1]} ({size:,} bytes)"
     )
 
 
@@ -880,33 +1005,34 @@ def build_story(
     trace = [t for t in bench.get("trace", []) or [] if isinstance(t, Mapping)]
     turns = sample_turns(len(trace))
     media = media_paths(repo, book.id)
-    echo(f"{book.id}: photographing the abstract, turns {turns} and the result")
+    echo(f"{book.id}: photographing the drawing and turns {turns}")
     shots = capture_stills(tools, repo, book.id, turns, media, desktop=desktop)
-    staged: list[tuple[Path, int | None, int]] = []
+    staged: list[tuple[Path, int | None]] = []
     for i, (png, turn) in enumerate(shots, start=1):
         webp = media.dir / f"story-{i:02d}.webp"
-        size, quality, height = encode_still(tools, png, webp)
-        staged.append((webp, turn, quality))
-        cut = f", cut to {height} px" if height else ""
-        echo(f"{book.id}: {i:02d}.webp {size:,} bytes at quality {quality}{cut}")
+        size, quality = encode_still(tools, png, webp)
+        staged.append((webp, turn))
+        echo(f"{book.id}: {i:02d}.webp {size:,} bytes at quality {quality}")
     media.story.mkdir(parents=True, exist_ok=True)
     names = {f"{i:02d}.webp" for i in range(1, len(staged) + 1)}
     for old in media.story.glob("*.webp"):
         if old.name not in names:
             old.unlink()
     story: list[dict[str, Any]] = []
-    for i, (webp, turn, _quality) in enumerate(staged, start=1):
+    for i, (webp, turn) in enumerate(staged, start=1):
         target = media.story / f"{i:02d}.webp"
         shutil.copyfile(webp, target)
-        story.append(
-            {
-                "path": _rel(repo, target),
-                "caption": story_caption(turn, trace, result=i == len(staged)),
-                "turn": turn,
-                "bytes": target.stat().st_size,
-                "sha256": sha256(target),
-            }
-        )
+        entry: dict[str, Any] = {
+            "n": i,
+            "path": _rel(repo, target),
+            "bytes": target.stat().st_size,
+            "sha256": sha256(target),
+            "caption": story_caption(turn, trace),
+            "kind": "drawing" if turn is None else "turn",
+        }
+        if turn is not None:
+            entry["turn"] = turn
+        story.append(entry)
     return story
 
 
@@ -917,16 +1043,32 @@ def _write_index(path: Path, index: Mapping[str, Any]) -> None:
     )
 
 
-def write_story(book: Playbook, repo: Path, story: Sequence[Mapping[str, Any]]) -> dict[str, Any]:
-    """The existing index at schema 2 with ``story``; every other key and value as it was."""
+def _stamp(now: Callable[[], datetime]) -> str:
+    return now().strftime("%Y-%m-%dT%H:%M:%SZ")
+
+
+def write_story(
+    book: Playbook,
+    repo: Path,
+    story: Sequence[Mapping[str, Any]],
+    *,
+    now: Callable[[], datetime] = lambda: datetime.now(UTC),
+) -> dict[str, Any]:
+    """A schema 3 index of the stills alone: ``--stills-only``'s index (ADR 0137).
+
+    ``captured_at`` is now, ``bench_run_at`` the run the stills show. An earlier index's narration,
+    film and thumbnail are not carried over: they narrate and film the page as it was, and the
+    films pass writes them again for this one. No index before is needed.
+    """
     path = media_paths(repo, book.id).index
-    if not path.is_file():
-        raise EvidenceError(f"{book.id} has no evidence.json: film it before its storyboard")
-    index, fault = _read_object(path)
-    if index is None:
-        raise EvidenceError(f"{book.id}: {fault}")
-    index["schema"] = SCHEMA
-    index["story"] = [dict(s) for s in story]
+    bench = _bench(book)
+    index: dict[str, Any] = {
+        "schema": SCHEMA,
+        "playbook": book.id,
+        "captured_at": _stamp(now),
+        "bench_run_at": bench.get("run_at"),
+        "story": [dict(s) for s in story],
+    }
     _write_index(path, index)
     return index
 
@@ -936,14 +1078,15 @@ def plan_story(book: Playbook, repo: Path) -> list[str]:
     bench = _bench(book)
     turns = sample_turns(len(bench.get("trace", []) or []))
     media = media_paths(repo, book.id)
-    n = len(turns) + 2
+    n = len(turns) + 1
     return [
-        f"{book.id}: {len(bench.get('trace', []) or [])} turns; stills of turns {turns}",
+        f"{book.id}: {len(bench.get('trace', []) or [])} turns; the drawing and turns {turns}",
         f"  capture: node {CAPTURE_SCRIPT} --stills --fixture {fixture_for(book.id)} "
         f"--turns {','.join(map(str, turns))} -> {_rel(repo, media.dir)}/still-01..{n:02d}.png",
         f"  encode: ffmpeg -> {_rel(repo, media.story)}/01..{n:02d}.webp "
-        f"({STORY_WIDTH} px WebP, <= {STORY_MAX_BYTES:,} bytes each)",
-        f"  index: {_rel(repo, media.index)} (schema {SCHEMA}, story added, the rest kept)",
+        f"({STORY_WIDTH} px WebP, 16:10, <= {STORY_MAX_BYTES:,} bytes each)",
+        f"  index: {_rel(repo, media.index)} (schema {SCHEMA}, the stills only; "
+        "narration and film left for the films pass)",
     ]
 
 
@@ -964,16 +1107,15 @@ def plan(book: Playbook, repo: Path) -> list[str]:
     media = media_paths(repo, book.id)
     turns = len(bench.get("trace", []) or [])
     return [
-        f"{book.id}: bench run_at {bench.get('run_at')}, {turns} turns",
+        f"{book.id}: test run of {bench.get('run_at')}, {turns} turns",
         f"  narration: {len(text.split())} words, about {estimate_seconds(text):.0f} s",
-        f"  speech: kokoro {KOKORO_VOICE} (piper {PIPER_VOICE} if kokoro is missing) -> "
-        f"{_rel(repo, media.narration)}",
+        f"  speech: kokoro {KOKORO_VOICE} in the {NARRATION_TONE} tone (natural without numpy; "
+        f"piper {PIPER_VOICE} if kokoro is missing) -> {_rel(repo, media.narration)}",
         f"  capture: node {CAPTURE_SCRIPT} --fixture {fixture_for(book.id)} -> "
         f"{_rel(repo, media.capture)}",
         f"  mux: ffmpeg -> {_rel(repo, media.video)} (H.264 + AAC)",
-        f"  thumbnail: ffmpeg -> {_rel(repo, media.thumb)} (< {THUMB_MAX_BYTES:,} bytes)",
-        f"  stills: turns {sample_turns(turns)} -> {_rel(repo, media.story)}/NN.webp "
-        f"(<= {STORY_MAX_BYTES:,} bytes each)",
+        f"  stills: the drawing and turns {sample_turns(turns)} -> {_rel(repo, media.story)}/"
+        f"NN.webp (<= {STORY_MAX_BYTES:,} bytes each)",
         f"  index: {_rel(repo, media.index)} (schema {SCHEMA})",
     ]
 
@@ -988,48 +1130,48 @@ def build_evidence(
     now: Callable[[], datetime] = lambda: datetime.now(UTC),
     desktop: Path | None = None,
 ) -> dict[str, Any]:
-    """Narrate, speak, capture, mux, thumbnail, photograph and index one benched playbook."""
+    """Narrate, speak, capture, mux, photograph and index one benched playbook."""
     bench = _bench(book)
     text = narration(book.showcase, bench)
     media = media_paths(repo, book.id)
     media.dir.mkdir(parents=True, exist_ok=True)
     echo(f"{book.id}: speaking {len(text.split())} words with {voice.engine} {voice.voice}")
     spoken = speak(voice, text, media.narration)
-    if not MIN_SECONDS <= spoken <= MAX_SECONDS + LEAD_S + TAIL_S:
+    if spoken.note:
+        echo(f"{book.id}: {spoken.note}")
+    if not MIN_SECONDS <= spoken.seconds <= MAX_SECONDS + LEAD_S + TAIL_S:
         raise EvidenceError(
-            f"{book.id}: the narration runs {spoken:.1f} s, outside {MIN_SECONDS:.0f} to "
+            f"{book.id}: the narration runs {spoken.seconds:.1f} s, outside {MIN_SECONDS:.0f} to "
             f"{MAX_SECONDS:.0f} s"
         )
-    echo(f"{book.id}: capturing {spoken:.1f} s of the layer")
-    lead = capture(tools, repo, book.id, spoken + 1.0, media)
+    echo(f"{book.id}: capturing {spoken.seconds:.1f} s of the desktop")
+    lead = capture(tools, repo, book.id, spoken.seconds + 1.0, media)
     echo(f"{book.id}: muxing from {lead:.2f} s into the capture")
-    mux(tools, media, lead, spoken)
-    thumb_bytes = thumbnail(tools, media)
+    mux(tools, media, lead, spoken.seconds)
     story = build_story(book, repo, tools, desktop=desktop, echo=echo)
+    narrated: dict[str, Any] = {
+        "text": text,
+        "engine": voice.engine,
+        "voice": voice.voice,
+        "tone": spoken.tone,
+        "duration_s": round(spoken.seconds, 3),
+        "sha256": sha256(media.narration),
+    }
+    if spoken.note:
+        narrated["tone_note"] = spoken.note
     index: dict[str, Any] = {
         "schema": SCHEMA,
         "playbook": book.id,
-        "captured_at": now().strftime("%Y-%m-%dT%H:%M:%SZ"),
+        "captured_at": _stamp(now),
         "bench_run_at": bench.get("run_at"),
-        "narration": {
-            "text": text,
-            "engine": voice.engine,
-            "voice": voice.voice,
-            "duration_s": round(spoken, 3),
-            "sha256": sha256(media.narration),
-        },
+        "story": story,
+        "narration": narrated,
         "video": {
             "path": _rel(repo, media.video),
             "duration_s": probe_seconds(tools, media.video),
             "bytes": media.video.stat().st_size,
             "sha256": sha256(media.video),
         },
-        "thumbnail": {
-            "path": _rel(repo, media.thumb),
-            "bytes": thumb_bytes,
-            "sha256": sha256(media.thumb),
-        },
-        "story": story,
     }
     _write_index(media.index, index)
     echo(f"{book.id}: {_rel(repo, media.index)}")
@@ -1064,27 +1206,41 @@ def _read_object(path: Path) -> tuple[dict[str, Any] | None, str]:
 
 
 def _story_notes(repo: Path, index: Mapping[str, Any]) -> list[str]:
-    """The storyboard against its index: committed like the thumbnail, so an absent still is a
-    fault, and so is one whose bytes or hash are not the ones recorded. Schema 1 has none to check.
+    """The storyboard against its index: committed, so an absent still is a fault, and so is one
+    whose bytes or hash are not the ones recorded. Schema 1 has none to check; schema 3 also holds
+    each still to its number, its kind and the count of five (ADR 0137).
     """
+    schema = index.get("schema")
     story = index.get("story")
     if story is None:
-        schema = index.get("schema")
-        return ["a schema 2 index has no story"] if isinstance(schema, int) and schema >= 2 else []
+        if isinstance(schema, int) and schema >= 2:
+            return [f"a schema {schema} index has no story"]
+        return []
     if not isinstance(story, list):
         return ["story is not a list"]
     notes: list[str] = []
+    if schema == SCHEMA and len(story) > STORY_COUNT:
+        notes.append(f"story has {len(story)} stills, more than {STORY_COUNT}")
     for i, entry in enumerate(story, start=1):
-        where = str(entry.get("path", "")) if isinstance(entry, dict) else ""
+        row = entry if isinstance(entry, dict) else {}
+        if schema == SCHEMA:
+            kind = row.get("kind")
+            if row.get("n") != i:
+                notes.append(f"story still {i} is numbered {row.get('n')!r}")
+            if kind != ("drawing" if i == 1 else "turn"):
+                notes.append(f"story still {i} is of kind {kind!r}")
+            elif kind == "turn" and not isinstance(row.get("turn"), int):
+                notes.append(f"story still {i} names no turn")
+        where = str(row.get("path", ""))
         if not where:
             notes.append(f"story still {i} names no path")
             continue
         path = repo / where
         if not path.is_file():
             notes.append(f"{where} is missing")
-        elif path.stat().st_size != entry.get("bytes"):
-            notes.append(f"{where} is {path.stat().st_size:,} bytes, not {entry.get('bytes')}")
-        elif sha256(path) != entry.get("sha256"):
+        elif path.stat().st_size != row.get("bytes"):
+            notes.append(f"{where} is {path.stat().st_size:,} bytes, not {row.get('bytes')}")
+        elif sha256(path) != row.get("sha256"):
             notes.append(f"{where} does not match its sha256")
     return notes
 
@@ -1110,25 +1266,26 @@ def verify(books: Iterable[Playbook], repo: Path) -> list[Standing]:
         state = "current" if index.get("bench_run_at") == bench.get("run_at") else "stale"
         notes: list[str] = []
         narrated = media_paths(repo, book.id).narration
-        # The film and its sound stay on the machine that made them; the thumbnail is committed,
-        # so only its absence is a fault.
-        for part, required in (("narration", False), ("video", False), ("thumbnail", True)):
+        # The film and its sound stay on the machine that made them, and a schema 1 or 2 index's
+        # thumbnail is retired (ADR 0137): each is re-hashed when it is here, and none is required.
+        for part in ("narration", "video", "thumbnail"):
             found = index.get(part)
+            if found is None:
+                continue
             entry: dict[str, Any] = found if isinstance(found, dict) else {}
             where = str(entry.get("path", "")) or (
                 _rel(repo, narrated) if part == "narration" else ""
             )
             path = repo / where if where else None
-            if path is not None and path.is_file():
-                if sha256(path) != entry.get("sha256"):
-                    notes.append(f"{where} does not match its sha256")
-            elif required:
-                notes.append(f"{where or part} is missing")
+            if path is not None and path.is_file() and sha256(path) != entry.get("sha256"):
+                notes.append(f"{where} does not match its sha256")
         notes += _story_notes(repo, index)
-        # Read like the media entries above: anything but an object is an entry with no text.
-        spoken = index.get("narration")
-        said = spoken.get("text") if isinstance(spoken, dict) else None
-        if state == "current" and said != narration(book.showcase, bench):
-            notes.append("the narration no longer says what the record says: film it again")
+        # Read like the media entries above: anything but an object is an entry with no text. An
+        # index with no narration (the stills alone, schema 3) has nothing to drift.
+        if "narration" in index:
+            spoken = index.get("narration")
+            said = spoken.get("text") if isinstance(spoken, dict) else None
+            if state == "current" and said != narration(book.showcase, bench):
+                notes.append("the narration no longer says what the record says: film it again")
         out.append(Standing(book.id, state, tuple(notes)))
     return out

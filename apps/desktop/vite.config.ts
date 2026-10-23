@@ -18,8 +18,8 @@
  * window.
  *
  * The dev server also hands out a playbook's film from the repository's gitignored `evidence/`
- * (ADR 0055), so the Playbooks module can play it; a build carries no media and the module shows
- * the committed thumbnail instead.
+ * (ADR 0055), so the Playbooks module can play it; a build carries no film and the topic page shows
+ * the committed stills instead (ADR 0137).
  */
 import { createReadStream, statSync } from "node:fs";
 import path from "node:path";
