@@ -12,12 +12,12 @@ from __future__ import annotations
 
 import json
 import shutil
-import struct
 import subprocess
 from collections.abc import Callable, Sequence
 from dataclasses import dataclass
 from pathlib import Path
 
+from athena.harness.vision import png_size
 from athena.proving.adopt_tiers.scenarios import Entry, Scenario
 from athena.proving.docread.templates import KINDS, Statement, render_html
 
@@ -170,11 +170,3 @@ def render(
     done = run([executable, str(RENDER_SCRIPT), "--manifest", str(manifest)])
     if done.returncode != 0:
         raise RuntimeError(f"render-docs.mjs failed ({done.returncode}): {done.stderr[-800:]}")
-
-
-def png_size(data: bytes) -> tuple[int, int]:
-    """``(width, height)`` from a PNG header, or raise ``ValueError``."""
-    if data[:8] != b"\x89PNG\r\n\x1a\n" or data[12:16] != b"IHDR":
-        raise ValueError("not a PNG")
-    width, height = struct.unpack(">II", data[16:24])
-    return int(width), int(height)

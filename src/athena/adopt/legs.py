@@ -652,12 +652,31 @@ class LegRunner:
             malformed=malformed,
         )
 
-    def _account(self, result: LegResult, conversation: str, on_usage: UsageFn | None) -> None:
+    def account(
+        self,
+        result: LegResult,
+        conversation: str,
+        on_usage: UsageFn | None,
+        *,
+        engine: str,
+    ) -> None:
+        """Account a call made outside :meth:`run_leg` (the documents lane's opt-in vision reader)
+        exactly as a leg is: one ledger row under ``engine``, one usage call."""
+        self._account(result, conversation, on_usage, engine=engine)
+
+    def _account(
+        self,
+        result: LegResult,
+        conversation: str,
+        on_usage: UsageFn | None,
+        *,
+        engine: str = ENGINE,
+    ) -> None:
         """One ledger row and one usage call for one invocation, whatever it produced."""
         if self.ledger is not None:
             try:
                 self.ledger.record(
-                    engine=ENGINE,
+                    engine=engine,
                     model=result.model,
                     conversation=conversation or "adopt",
                     origin=ORIGIN,

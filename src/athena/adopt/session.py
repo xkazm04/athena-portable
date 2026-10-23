@@ -343,6 +343,12 @@ class AdoptSession:
             timeout_s=timeout_s,
         )
 
+    def account(self, result: LegResult, *, engine: str) -> None:
+        """A model call made outside :meth:`run_leg`, ledgered under this session's conversation
+        with one ``adopt.usage``, like a leg (the documents lane's vision reader, engine
+        ``nebius``)."""
+        self.runner.account(result, self.conversation, self._usage, engine=engine)
+
     def _usage(self, result: LegResult) -> None:
         self.emit(
             Usage(
