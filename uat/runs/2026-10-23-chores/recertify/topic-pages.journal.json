@@ -1,0 +1,88 @@
+{
+  "name": "topic-pages",
+  "ms": 19845,
+  "code": 0,
+  "checks": [
+    {
+      "label": "catalogue has no 'bench' word",
+      "ok": true
+    },
+    {
+      "label": "catalogue has no 'exceed the bar'",
+      "ok": true
+    },
+    {
+      "label": "medical-bills: no 'for the persona'",
+      "ok": true
+    },
+    {
+      "label": "medical-bills: no 'Worth $'",
+      "ok": true
+    },
+    {
+      "label": "medical-bills: estimate labelled",
+      "ok": true
+    },
+    {
+      "label": "medical-bills: review counted in time saved",
+      "ok": true
+    },
+    {
+      "label": "medical-bills: fit block",
+      "ok": true
+    },
+    {
+      "label": "medical-bills: no 'bench' word",
+      "ok": true
+    },
+    {
+      "label": "lien-desk: no 'for the persona'",
+      "ok": true
+    },
+    {
+      "label": "lien-desk: no 'Worth $'",
+      "ok": true
+    },
+    {
+      "label": "lien-desk: estimate labelled",
+      "ok": true
+    },
+    {
+      "label": "lien-desk: review counted in time saved",
+      "ok": true
+    },
+    {
+      "label": "lien-desk: fit block",
+      "ok": true
+    },
+    {
+      "label": "lien-desk: no 'bench' word",
+      "ok": true
+    },
+    {
+      "label": "wotc-screening: no 'for the persona'",
+      "ok": true
+    },
+    {
+      "label": "wotc-screening: no 'Worth $'",
+      "ok": true
+    },
+    {
+      "label": "wotc-screening: estimate labelled",
+      "ok": true
+    },
+    {
+      "label": "wotc-screening: review counted in time saved",
+      "ok": true
+    },
+    {
+      "label": "wotc-screening: fit block",
+      "ok": true
+    },
+    {
+      "label": "wotc-screening: no 'bench' word",
+      "ok": true
+    }
+  ],
+  "notes": []
+}

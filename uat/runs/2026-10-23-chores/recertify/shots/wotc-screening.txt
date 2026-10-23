@@ -1,0 +1,138 @@
+Athena, Chores, Hiring tax credit forms filed inside 28 days
+
+Rise to Chores
+Athena
+/
+Chores
+/
+Hiring tax credit forms filed inside 28 days
+←
+All playbooks
+
+EMPLOYMENT & PAYROLL · CLAIM A BENEFIT
+
+Hiring tax credit forms filed inside 28 days
+
+Invented example case: its names and figures are not yours
+
+A Columbus restaurant group has fourteen holiday hires to screen for a hiring tax credit.
+
+Submitted — 5 hires, $19,200:
+
+One form per qualifying hire, within 28 days
+Each under the group worth the most
+A disabled veteran's $9,600 credit
+A SNAP hire due in three days
+
+These hires began work in 2025, inside the credit; for hires after 31 December 2025 a form keeps the credit open only if Congress extends it.
+
+Left alone:
+
+A late form, or one signed after the offer
+The owner's nephew and a rehire
+Hires in no group, or past the age limit
+A form already in, a hire who never started
+⤢ Enlarge
+IN THE EXAMPLE CASE
+$19,200
+back, in the invented example
+TIME SAVED
+3 h
+→
+5 min
+including about 3 min of your review · 34× faster
+MISTAKES AVOIDED
+9/9
+in the test run
+
+Beats its bar
+Beat its bar in 3 of 3 test runs: 5 of 5 found, $19,200 back of $19,200, no false claims.
+
+Typical value: about $0 a year, author's estimate
+Where it fits
+WHERE
+the United States. Federal credit, certified by your state workforce agency.
+WHO IT IS FOR
+An employer screening new hires for the Work Opportunity Tax Credit.
+NOT FOR
+Hires who began work after 31 December 2025, unless Congress extends the credit.
+SHE WILL ASK YOU FOR
+each hire's Form 8850 answers and signing date; start dates; letters that prove a target group
+WHAT IT COSTS
+No fees; only your Claude usage.
+How it runs
+
+Portal she reads
+Step
+Athena asks you first
+
+Talentry ATS
+each hire's offer date, age, Form 8850 screening answers, the day it…
+Payroll Harbor
+the day each hire began work, scheduled hours, status, and any…
+Mailnest
+SNAP, VA, unemployment, prison-release and SSI letters, the owner's…
+WorkCredit Online
+the state workforce agency's WOTC rules, the forms already submitted…
+1
+Reads every hire in Talentry: the offer date, age, screening answers, and the day Form 8850 was signed.
+2
+Reads Payroll Harbor: the day each hire began work, and whether any of them worked here before.
+Payroll Harbor
+3
+Reads the letters in Mailnest that prove a group, and the notes that rule a hire out.
+Mailnest
+!
+ATHENA ASKS YOU FIRST
+Submit Form 8850 to the state
+4
+On WorkCredit Online, reads the rules and what was already submitted, then submits one form per hire who qualifies, under the group worth most, inside 28 days.
+WorkCredit Online
+5
+Leaves alone the late form, the owner's nephew, the rehire, the form signed after the offer, the 47-year-old in a SNAP household, the hire in no group, the veteran out of work three weeks, the form already in, and the hire who never started.
+
+In the test run she avoided 9 of 9 mistakes the example case set up.
+
+FOUND IN THE TEST RUN
+$19,200 back
+5 of 5 found, none false
+See it run
+
+Real screens of the test run, on invented portals.
+
+1
+The abstract
+
+2
+Turn 1 - Talentry ATS: It's holiday hiring and I'm behind on WOTC. Start here in Talentry
+
+3
+Turn 5 - Payroll Harbor: Now Payroll Harbor
+
+4
+Turn 8 - Mailnest, Athena: Nine messages are in the folder
+
+5
+Turn 12 - WorkCredit Online, Athena: Most hires can now be decided against the rules
+
+6
+What she filed
+
+Make it yours
+
+This page shows an invented example case: the office manager of a restaurant group of about sixty people in Columbus, Ohio, fourteen hires into the holiday season. Tell her what differs in yours; she looks up the rest and shows you the run before anything is real.
+
+YOUR CASE
+
+No saved case yet. Approve a brief with her and she keeps it here, so next time nothing is asked twice.
+
+Talk it through with her
+Watch the run turn by turn
+Copy the command
+Athena
+resting
+Apps
+Chores
+Accounts
+Voice
+Mind

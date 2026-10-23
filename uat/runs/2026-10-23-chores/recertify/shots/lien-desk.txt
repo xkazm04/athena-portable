@@ -1,0 +1,161 @@
+Athena, Chores, Lien rights kept on every job
+
+Rise to Chores
+Athena
+/
+Chores
+/
+Lien rights kept on every job
+←
+All playbooks
+
+CONSTRUCTION & TRADES · STAY COMPLIANT
+
+Lien rights kept on every job
+
+Invented example case: its names and figures are not yours
+
+A $6M mechanical subcontractor runs a dozen jobs in California and Texas through each GC's portal.
+
+Protected — 10 actions, $416,700:
+
+Notices and liens filed by each statute's date
+Weekend deadlines worked out per state
+Waivers listing retention and disputed work
+Statutory Texas form instead of the GC's version
+Non-payment notice before Textura's 72h release
+Pay app without pending change orders
+
+Left alone:
+
+Notice on a job contracted with the owner
+A notice already served last month
+Unconditional waivers before the money lands
+A final waiver while retention is unpaid
+⤢ Enlarge
+IN THE EXAMPLE CASE
+No money comes back in the example case: this chore protects money that is at risk.
+TIME SAVED
+8 h
+→
+8 min
+including about 5 min of your review · 57× faster
+MISTAKES AVOIDED
+12/12
+in the test run
+
+Beats its bar
+Beat its bar in 3 of 3 test runs: 10 of 10 found, $416,700 of $416,700 protected, no false claims.
+
+Typical value: about $380,000 a year protected, author's estimate
+Where it fits
+WHERE
+California or Texas. California and Texas lien law only; every other state's deadlines differ.
+WHO IT IS FOR
+A subcontractor or supplier on private jobs in California or Texas with lien deadlines to keep.
+NOT FOR
+Public jobs, where bond claims replace liens, or jobs in other states.
+SHE WILL ASK YOU FOR
+each job's contract, first delivery and completion dates; the GCs' portal logins; your unpaid ledger and bank receipts; your counsel's deadline table
+WHAT IT COSTS
+No fees from Athena; county recording fees for a lien and mailing costs for notices still apply; plus your Claude usage.
+How it runs
+
+Portal she reads
+Step
+Athena asks you first
+
+Office (ERP and mail)
+jobs, deliveries, unpaid ledger, bank receipts, the insurance…
+Procore
+California projects, daily logs, Procore Pay waiver requests
+Oracle Textura
+the Mission Bay draw, its waiver and payment status
+GCPay
+the Texas jobs' pay applications, change orders, compliance documents…
+!
+ATHENA ASKS YOU FIRST
+Serve a California preliminary notice
+!
+ATHENA ASKS YOU FIRST
+Send a Texas monthly notice
+!
+ATHENA ASKS YOU FIRST
+Send a Texas retainage notice
+!
+ATHENA ASKS YOU FIRST
+File a Textura non-payment notice
+1
+Reads the lien rules the office keeps for California, Texas and Textura before computing a single date.
+!
+ATHENA ASKS YOU FIRST
+Record a mechanics lien
+2
+Walks every job: state, who the contract is with, first delivery, completion, a recorded Notice of Completion, notices already served.
+3
+Gives a job whose state is not known no deadline until you confirm the state.
+4
+Computes each deadline from the statute and today's date, moving a weekend deadline the way each state's rule says (Texas: to the next business day, Property Code 53.003; California: the next court day under CCP 12a), and files a day early where that is safe.
+!
+ATHENA ASKS YOU FIRST
+Sign a lien waiver
+!
+ATHENA ASKS YOU FIRST
+Decline a waiver and offer the right form
+5
+In Procore and Textura, reads each waiver request against what the bank actually received and what retention or disputed work is still owed.
+Procore
+6
+In GCPay, checks the pay app's change orders against the GC's log and the certificate of insurance against its expiry.
+GCPay
+7
+Files each notice, lien, waiver answer and pay app as a card — each one a legal signature.
+!
+ATHENA ASKS YOU FIRST
+Submit a pay application
+
+In the test run she avoided 12 of 12 mistakes the example case set up.
+
+FOUND IN THE TEST RUN
+10 of 10
+10 of 10 found, none false; $416,700 of $416,700 protected
+See it run
+
+Real screens of the test run, on invented portals.
+
+1
+The abstract
+
+2
+Turn 1 - Office: Lien desk for the week
+
+3
+Turn 5 - Procore: I'm in Procore Pay
+
+4
+Turn 9 - GCPay: Now GCPay for the Texas jobs
+
+5
+Turn 13 - Office, Athena: I'm filing the Mission Bay preliminary notice with an estimated price of…
+
+6
+What she filed
+
+Make it yours
+
+This page shows an invented example case: a $6M mechanical subcontractor with a dozen jobs in California and Texas and one office manager. Tell her what differs in yours; she looks up the rest and shows you the run before anything is real.
+
+YOUR CASE
+
+No saved case yet. Approve a brief with her and she keeps it here, so next time nothing is asked twice.
+
+Talk it through with her
+Watch the run turn by turn
+Copy the command
+Athena
+resting
+Apps
+Chores
+Accounts
+Voice
+Mind

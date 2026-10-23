@@ -66,6 +66,11 @@ done only after `recertify` re-runs the touched pairs.
 | B-C7 | high | Fit stated (where, not for, asks for, costs) and answered in the interview | housing-04, commerce-06, benefits-04 | a person outside `fit.where` is told on the first card | WP-K, WP-N, WP-B |
 | B-C8 | medium | Due cadence anchored to the chore's window for yearly chores | housing (Due) | a property-tax chore adopted in October comes due before the protest window | backlog |
 
+| B-C9 | high | Re-film or crop the topic stills so no picture shows a figure the page does not (R-1) | recertify R-1 | no still contradicts the tiles | evidence films predate ADR 0136 |
+| B-C10 | high | The interviewer asks for the person's own anchor dates so "Dates that matter" carries dates (R-3) | recertify R-3, lien-desk--gina | re-run: >= 80% of dated rules carry a calendar date when the person has the document | WP-B follow-up |
+| B-C11 | high | wotc-screening: the example says its hires predate the lapse, or the example is re-dated with a re-bench (R-5) | recertify R-5 | Carmen's number criterion passes | truth/world change re-keys the bench |
+| B-C12 | medium | One rounding rule for co-published figures; restricted-funds disclosure reconciled (R-2, R-6) | recertify R-2, R-6 | no two renderings of one quantity differ | - |
+
 ### Concept-docs
 - **C-C1 Answer keys a walker doubts** (parental-leave NY PFL weeks, estate RMD-disclaimer trap, stormwater thresholds): verify against a source; a truth.json fix re-keys the bench (ADR 0128), so re-bench in the same change.
 - **C-C2 What a proposed card must show** (the document she would send): extends C1 from run r1.

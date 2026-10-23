@@ -1,0 +1,1052 @@
+Athena, Chores
+
+Rise to Athena
+Athena
+/
+Chores
+Chores
+
+100 playbooks · 97 of 100 tested beat their bar on the latest run · $307,017 back found in test runs on invented cases
+
+New chore
+100
+All
+14
+Health
+12
+Freight
+11
+Commerce
+11
+Employment
+11
+Consumer
+12
+Benefits
+9
+Housing
+8
+Public funding
+7
+Construction
+5
+Family
+All jobs
+Recover money
+Claim a benefit
+Win a dispute
+Stay compliant
+Best fit
+Most value
+Most time saved
+
+100 playbooks in all areas
+
+Pick a playbook to open its page.
+PLAYBOOK	JOB	TIME SAVED	VALUE
+
+A parent's estate settled without a wrong move
+	Stay compliant	
+20h
+→
+13m
+	
+$9,000
+an estate back, est.
+
+
+A parent's long-term care claims caught up
+	Recover money	
+6h
+→
+6m
+	
+$20,000
+a year back, est.
+
+
+Denied claims corrected, appealed or written off
+	Win a dispute	
+10h
+→
+6m
+	
+$50,400
+a year back, est.
+
+
+Lien rights kept on every job
+	Stay compliant	
+8h
+→
+8m
+	
+$380,000
+a year protected, est.
+
+
+Overpaid customs duty corrected or protested
+	Win a dispute	
+5h
+→
+5m
+	
+$30,000
+a year back, est.
+
+
+Layoff benefits and coverage lined up
+	Claim a benefit	
+3h
+→
+5m
+	
+$3,000
+an episode back, est.
+
+
+Observation stay appealed so Medicare pays rehab
+	Win a dispute	
+4h
+→
+3m
+	
+$10,000
+an episode back, est.
+
+
+Missed IRA withdrawal made up, waiver asked
+	Stay compliant	
+3h
+→
+7m
+	
+$2,000
+a year in penalties avoided, est.
+
+
+Hospital bills turned into free care
+	Claim a benefit	
+4h
+→
+5m
+	
+$6,000
+an episode back, est.
+
+
+E-Rate funding requests filed with lowest bids
+	Claim a benefit	
+4h
+→
+4m
+	
+$40,000
+a year protected, est.
+
+
+Unemployment claim notices answered on time
+	Stay compliant	
+4h
+→
+8m
+	
+$3,000
+a year protected, est.
+
+
+Freeze damage noticed and crop claims filed
+	Recover money	
+4h
+→
+6m
+	
+$18,000
+a year back, est.
+
+
+Import duties refunded on exported goods
+	Recover money	
+5h
+→
+5m
+	
+$30,000
+a year back, est.
+
+
+Public service loan months certified and counted
+	Claim a benefit	
+6h
+→
+6m
+	
+$20,000
+an episode back, est.
+
+
+Workers' comp audit errors disputed
+	Win a dispute	
+2.5h
+→
+4m
+	
+$5,000
+a year back, est.
+
+
+Part-time earnings reported to Social Security
+	Stay compliant	
+1.5h
+→
+4m
+	
+$4,000
+a year protected, est.
+
+
+Delayed family flights claimed under EU 261
+	Recover money	
+4h
+→
+5m
+	
+$1,300
+an episode back, est.
+
+
+Household payroll for a father's caregivers
+	Stay compliant	
+3h
+→
+6m
+	
+$800
+a year in penalties avoided, est.
+
+
+Unpaid freelance invoices chased and unstuck
+	Recover money	
+4h
+→
+6m
+	
+$6,000
+a year back, est.
+
+
+FEMA decisions appealed before the deadline
+	Claim a benefit	
+3h
+→
+3m
+	
+$8,000
+an episode back, est.
+
+
+Damaged and lost freight claimed from carriers
+	Recover money	
+4h
+→
+9m
+	
+$18,000
+a year back, est.
+
+
+A married name changed everywhere, in order
+	Stay compliant	
+10h
+→
+5m
+	
+$0
+an episode back, est.
+
+
+Medicare costs covered for a low-income mother
+	Claim a benefit	
+3h
+→
+4m
+	
+$2,500
+a year back, est.
+
+
+Birth leave and benefits lined up
+	Claim a benefit	
+2.5h
+→
+3m
+	
+$8,000
+an episode back, est.
+
+
+A cremation booked at the fair price
+	Win a dispute	
+5h
+→
+7m
+	
+$1,500
+an episode back, est.
+
+
+Drug plan exceptions asked for a parent
+	Claim a benefit	
+2h
+→
+3m
+	
+$2,400
+a year back, est.
+
+
+Fraudulent bank charges reported and credited
+	Recover money	
+1.5h
+→
+5m
+	
+$900
+an episode back, est.
+
+
+Recalled ingredient traced to every customer
+	Stay compliant	
+3h
+→
+6m
+	
+$20,000
+an episode protected, est.
+
+
+Held student aid freed by verification
+	Claim a benefit	
+1.5h
+→
+5m
+	
+$5,000
+a year protected, est.
+
+
+California deposit deductions contested
+	Win a dispute	
+2h
+→
+5m
+	
+$1,500
+an episode back, est.
+
+
+Airline credits turned back into card refunds
+	Recover money	
+2.5h
+→
+5m
+	
+$800
+a year back, est.
+
+
+A veteran's burial benefits claimed
+	Claim a benefit	
+4h
+→
+4m
+	
+$2,000
+an episode back, est.
+
+
+Earned income credit claimed for qualifying children
+	Claim a benefit	
+2h
+→
+4m
+	
+$3,000
+a year back, est.
+
+
+Amazon's lost and short units reimbursed
+	Recover money	
+5h
+→
+5m
+	
+$5,000
+a year back, est.
+
+
+Wrong container fees disputed
+	Win a dispute	
+3h
+→
+6m
+	
+$20,000
+a year back, est.
+
+
+Detention, lumper and TONU pay collected
+	Recover money	
+2.5h
+→
+9m
+	
+$14,000
+a year back, est.
+
+
+Distributor deductions disputed with proof
+	Win a dispute	
+15h
+→
+8m
+	
+$60,000
+a year back, est.
+
+
+Credit balances returned to their owners
+	Stay compliant	
+2.5h
+→
+7m
+	
+$8,000
+a year protected, est.
+
+
+Field changes priced and noticed in time
+	Recover money	
+4h
+→
+6m
+	
+$60,000
+a year back, est.
+
+
+Underpaid insurance lines found and disputed
+	Recover money	
+3h
+→
+5m
+	
+$30,000
+a year back, est.
+
+
+Medicare denials billed to patients or refunded
+	Stay compliant	
+2.5h
+→
+7m
+	
+$14,400
+a year back, est.
+
+
+Hiring tax credit forms filed inside 28 days
+	Claim a benefit	
+3h
+→
+5m
+	
+$0
+a year back, est.
+
+
+Therapy sessions claimed and chased
+	Recover money	
+2h
+→
+7m
+	
+$3,000
+a year back, est.
+
+
+Subcontractor insurance checked on the policy
+	Stay compliant	
+2.5h
+→
+8m
+	
+$25,000
+a year protected, est.
+
+
+Medical bills checked against the EOBs
+	Win a dispute	
+8h
+→
+6m
+	
+$3,423
+an episode back, est.
+
+
+Part B started with no gap or penalty
+	Claim a benefit	
+2.5h
+→
+3m
+	
+$487
+a year in penalties avoided, est.
+
+
+Insurer's depreciation holdback collected
+	Recover money	
+4h
+→
+4m
+	
+$6,500
+an episode back, est.
+
+
+Medicaid renewal answered before it lapses
+	Claim a benefit	
+3h
+→
+7m
+	
+$7,000
+a year protected, est.
+
+
+Parents' drug plans compared for next year
+	Claim a benefit	
+3h
+→
+4m
+	
+$1,200
+a year back, est.
+
+
+Voucher rent kept flowing and raised on time
+	Stay compliant	
+2h
+→
+8m
+	
+$4,000
+a year protected, est.
+
+
+Certified payrolls caught up, held funds freed
+	Stay compliant	
+5h
+→
+8m
+	
+$40,000
+a year protected, est.
+
+
+Records requests appealed and chased on time
+	Win a dispute	
+2.5h
+→
+7m
+	
+$500
+a year protected, est.
+
+
+Card disputes answered or accepted on evidence
+	Win a dispute	
+2.5h
+→
+6m
+	
+$3,000
+a year back, est.
+
+
+Trademark registrations kept alive
+	Stay compliant	
+3h
+→
+4m
+	
+$5,000
+a year protected, est.
+
+
+Sales tax exemption certificates collected
+	Stay compliant	
+2.5h
+→
+7m
+	
+$15,000
+a year protected, est.
+
+
+Card processing overcharges credited back
+	Recover money	
+2h
+→
+4m
+	
+$470
+a year back, est.
+
+
+Background-check rejection notices sent in order
+	Stay compliant	
+45m
+→
+5m
+	
+$0
+a year back, est.
+
+
+Federal grant costs drawn down and reported
+	Recover money	
+8h
+→
+6m
+	
+$2,500
+a quarter protected, est.
+
+
+Import security filings made before loading
+	Stay compliant	
+2h
+→
+5m
+	
+$3,000
+a year in penalties avoided, est.
+
+
+Farm acreage reported as actually farmed
+	Stay compliant	
+2.5h
+→
+6m
+	
+$0
+a year protected, est.
+
+
+Oversize permits bought for the week's loads
+	Stay compliant	
+2h
+→
+6m
+	
+$0
+a year back, est.
+
+
+Unused subscriptions cancelled and refunds asked
+	Recover money	
+2h
+→
+4m
+	
+$600
+a year protected, est.
+
+
+Restricted grant funds released as terms are met
+	Stay compliant	
+3h
+→
+6m
+	
+$5,724
+a year protected, est.
+
+
+Aid recomputed after a layoff and a pay cut
+	Claim a benefit	
+2.5h
+→
+3m
+	
+$4,000
+a year back, est.
+
+
+Delayed-bag costs claimed from the airline
+	Recover money	
+1.7h
+→
+5m
+	
+$200
+an episode back, est.
+
+
+Late parcel refunds claimed from carriers
+	Recover money	
+75m
+→
+7m
+	
+$4,000
+a year back, est.
+
+
+Copied listings taken down on two marketplaces
+	Win a dispute	
+2.5h
+→
+5m
+	
+$10,000
+a year protected, est.
+
+
+Year's injury log closed and filed
+	Stay compliant	
+2h
+→
+5m
+	
+$0
+a year back, est.
+
+
+Mother's benefits spent and reported correctly
+	Stay compliant	
+8h
+→
+7m
+	
+$500
+a year back, est.
+
+
+Credit report errors disputed with proof
+	Win a dispute	
+2.5h
+→
+6m
+	
+$1,000
+a year protected, est.
+
+
+FSA expenses claimed before the run-out ends
+	Recover money	
+2h
+→
+5m
+	
+$900
+a year back, est.
+
+
+EU product-safety listings brought up to rule
+	Stay compliant	
+2.5h
+→
+5m
+	
+$10,000
+a year protected, est.
+
+
+COBRA election notices mailed on time
+	Stay compliant	
+75m
+→
+5m
+	
+$2,000
+a year in penalties avoided, est.
+
+
+Export orders released or held after screening
+	Stay compliant	
+70m
+→
+8m
+	
+$0
+a year back, est.
+
+
+Driver qualification files brought current
+	Stay compliant	
+1.5h
+→
+5m
+	
+$0
+a year back, est.
+
+
+Winnable bids kept and their questions sent
+	Stay compliant	
+2h
+→
+7m
+	
+$0
+a year back, est.
+
+
+Late 401(k) deposits repaid with lost earnings
+	Stay compliant	
+1.5h
+→
+4m
+	
+$400
+a year protected, est.
+
+
+Quarterly fuel tax return filed and paid
+	Stay compliant	
+4h
+→
+6m
+	
+$200
+a year in penalties avoided, est.
+
+
+Remote hires' state payroll accounts opened
+	Stay compliant	
+1.7h
+→
+5m
+	
+$0
+a year back, est.
+
+
+Unmatched song royalties claimed
+	Recover money	
+2.5h
+→
+5m
+	
+$300
+a year back, est.
+
+
+Unclaimed money under old names claimed
+	Recover money	
+2h
+→
+5m
+	
+$400
+an episode back, est.
+
+
+Organic certifier's annual update filed
+	Stay compliant	
+4h
+→
+6m
+	
+$2,000
+a year protected, est.
+
+
+Escrow got back from a former carrier
+	Recover money	
+2.5h
+→
+6m
+	
+$1,000
+an episode back, est.
+
+
+Inspections booked for the first possible day
+	Stay compliant	
+1.5h
+→
+6m
+	
+$4,250
+a year protected, est.
+
+
+Therapy authorisations renewed on time
+	Stay compliant	
+2.5h
+→
+6m
+	
+$18,000
+a year protected, est.
+
+
+Mortgage insurance ended as early as allowed
+	Claim a benefit	
+1.5h
+→
+4m
+	
+$1,500
+a year back, est.
+
+
+Closeout package done, so retainage can be released
+	Recover money	
+3h
+→
+7m
+	
+$30,000
+a year protected, est.
+
+
+Mortgage escrow overcharges disputed
+	Recover money	
+1.5h
+→
+5m
+	
+$700
+a year back, est.
+
+
+Texas homestead exemptions claimed late
+	Claim a benefit	
+2h
+→
+4m
+	
+$1,200
+a year back, est.
+
+
+Interest on late federal payments claimed
+	Recover money	
+3h
+→
+8m
+	
+$2,900
+a year back, est.
+
+
+Texas property tax protested with real comps
+	Win a dispute	
+4h
+→
+6m
+	
+$1,100
+a year back, est.
+
+
+Stormwater permit log brought up to date
+	Stay compliant	
+2h
+→
+5m
+	
+$0
+a year protected, est.
+
+
+First-time IRS penalty relief requested
+	Win a dispute	
+2h
+→
+4m
+	
+$1,200
+an episode back, est.
+
+
+Pre-recall car repair reimbursed
+	Recover money	
+75m
+→
+4m
+	
+$700
+an episode back, est.
+
+
+Lease-end wear charges disputed
+	Win a dispute	
+1.5h
+→
+4m
+	
+$900
+an episode back, est.
+
+
+Data broker listings removed and checked
+	Win a dispute	
+3h
+→
+4m
+	
+$0
+a year back, est.
+
+
+Clinician enrollments and licenses kept current
+	Stay compliant	
+2h
+→
+8m
+	
+$0
+a year back, est.
+
+
+Records gathered for a second opinion
+	Claim a benefit	
+8h
+→
+6m
+	
+$100
+an episode back, est.
+
+
+Self-pay estimates issued and overbills held
+	Stay compliant	
+75m
+→
+7m
+	
+$1,200
+a year protected, est.
+
+
+Class action settlement claims filed with proof
+	Recover money	
+1.5h
+→
+5m
+	
+$150
+a year back, est.
+Athena
+resting
+Apps
+Chores
+Accounts
+Voice
+Mind

@@ -1,0 +1,144 @@
+Athena, Chores, Medical bills checked against the EOBs
+
+Rise to Chores
+Athena
+/
+Chores
+/
+Medical bills checked against the EOBs
+←
+All playbooks
+
+HEALTH & CLINICS · WIN A DISPUTE
+
+Medical bills checked against the EOBs
+
+Invented example case: its names and figures are not yours
+
+A family on a PPO faces bills from an ER visit, a surgery and follow-up care.
+
+Disputed, appealed or refunded — $3,423:
+
+Bills matched to EOBs by date of service
+$2,138.50 of overcharges and surprise bills
+Out-of-network anesthesia held to in-network share
+A $1,240 denial appealed with therapy records
+A $45 refund from a reduced payment
+
+Left alone:
+
+A January bill that is right after the deductible reset
+Bills whose EOB is still pending
+A reminder repeating a disputed balance
+A denial past its 180-day appeal window
+⤢ Enlarge
+IN THE EXAMPLE CASE
+$3,424
+back, in the invented example
+TIME SAVED
+8 h
+→
+6 min
+including about 4 min of your review · 82× faster
+MISTAKES AVOIDED
+12/12
+in the test run
+
+Beats its bar
+Beat its bar in its one test run: 7 of 8 found, $3,424 back of $3,424, no false claims.
+
+Typical value: about $3,423 an episode, author's estimate
+Where it fits
+WHERE
+the United States. US health plans with EOBs; the No Surprises Act applies to surprise bills.
+WHO IT IS FOR
+A family on a PPO or similar plan with hospital and doctor bills and EOBs.
+NOT FOR
+Bills from a plan with no EOBs, or bills already sold to a collector years ago.
+SHE WILL ASK YOU FOR
+your insurer's EOBs; the bills; what you have paid (card or HSA)
+WHAT IT COSTS
+No fees; only your Claude usage.
+How it runs
+
+Portal she reads
+Step
+Athena asks you first
+
+Insurer member portal
+the claims, the EOBs, the plan's rules and the appeal form
+MyChart (Valley Medical)
+the hospital's bills, payments and visit records
+Cedar
+the anesthesia group's and the dermatologist's bills
+!
+ATHENA ASKS YOU FIRST
+File an appeal
+1
+Reads the plan's rules in the member portal: deductible, network, No Surprises Act protection, appeal windows.
+2
+Walks every claim and its EOB, two pages of them, and notes what each provider may bill.
+3
+In MyChart, matches each bill to its EOB line by date of service, and spots the duplicate line and the reminder that restates a balance.
+4
+In Cedar, holds the out-of-network anesthesia group to the in-network cost share, and finds a payment the insurer later reduced.
+Cedar
+5
+Back at the insurer, appeals the denial that is still in time, citing the therapy visits it read in MyChart.
+6
+Before any hospital balance is paid, asks for the itemized bill and checks whether the hospital's financial assistance policy covers it.
+!
+ATHENA ASKS YOU FIRST
+Dispute a bill
+!
+ATHENA ASKS YOU FIRST
+Ask for a refund
+!
+ATHENA ASKS YOU FIRST
+Pay a bill
+
+In the test run she avoided 12 of 12 mistakes the example case set up.
+
+FOUND IN THE TEST RUN
+$3,424 back
+7 of 8 found, none false
+See it run
+
+Real screens of the test run, on invented portals.
+
+1
+The abstract
+
+2
+Turn 1 - Bluepoint Health member portal: My medical bills are a mess
+
+3
+Turn 4 - Bluepoint Health member portal, Athena: Here's what I can establish from the insurance portal
+
+4
+Turn 7 - MyChart (Valley Medical), Athena: Three of the five bills I opened match their EOBs, and two don't
+
+5
+Turn 10 - Bluepoint Health member portal: Back in the insurance portal
+
+6
+What she filed
+
+Make it yours
+
+This page shows an invented example case: a family on a PPO with an ER visit, a surgery and some follow-up care this year. Tell her what differs in yours; she looks up the rest and shows you the run before anything is real.
+
+YOUR CASE
+
+No saved case yet. Approve a brief with her and she keeps it here, so next time nothing is asked twice.
+
+Talk it through with her
+Watch the run turn by turn
+Copy the command
+Athena
+resting
+Apps
+Chores
+Accounts
+Voice
+Mind

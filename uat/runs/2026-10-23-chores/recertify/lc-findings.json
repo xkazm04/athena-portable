@@ -1,0 +1,1857 @@
+[
+ {
+  "id": "baggage-delay-claims--bev#1",
+  "journey": "J7",
+  "character": "bev",
+  "playbook_id": "baggage-delay-claims",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "clarity",
+  "title": "Question options didn't fit TripIt",
+  "expected": "A way to say my bookings are in TripIt, or an 'other' that works",
+  "got": "I had to choose 'Paper tickets' as the closest option, which is wrong and left me unsure what would be looked at",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/baggage-delay-claims--bev#turn:1"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "baggage-delay-claims--bev#2",
+  "journey": "J7",
+  "character": "bev",
+  "playbook_id": "baggage-delay-claims",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Legal and internal terms unexplained",
+  "expected": "Plain words for the rules and what 'left alone' means",
+  "got": "Montreal Convention, Article 31, 14 CFR 260.5 and 'playbook' appear without explanation",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/baggage-delay-claims--bev#brief",
+   "transcript:2026-10-23-chores-recert/baggage-delay-claims--bev#page"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "baggage-delay-claims--bev#3",
+  "journey": "J7",
+  "character": "bev",
+  "playbook_id": "baggage-delay-claims",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "missing",
+  "title": "Cannot read paper Chase letters",
+  "expected": "A clear plan for how the card benefit and statement will be handled",
+  "got": "The brief says Athena cannot read them, with no explanation of what happens next, such as whether I type figures in",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/baggage-delay-claims--bev#brief",
+   "transcript:2026-10-23-chores-recert/baggage-delay-claims--bev#turn:2"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "baggage-delay-claims--bev#4",
+  "journey": "J7",
+  "character": "bev",
+  "playbook_id": "baggage-delay-claims",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "No stop or go-back wording on screens",
+  "expected": "Each card says in words that I can stop or go back",
+  "got": "No such wording on the cards or page, only the one line in the brief",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/baggage-delay-claims--bev#turn:1",
+   "transcript:2026-10-23-chores-recert/baggage-delay-claims--bev#turn:2",
+   "transcript:2026-10-23-chores-recert/baggage-delay-claims--bev#brief"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "baggage-delay-claims--bev#5",
+  "journey": "J8",
+  "character": "bev",
+  "playbook_id": "baggage-delay-claims",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Rehearsal showed no result",
+  "expected": "To see a sample complaint and sample figures labelled as pretend",
+  "got": "Only a line that it ran 9 turns and claimed no dollar figure, so I can't judge the output",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/baggage-delay-claims--bev#rehearsal"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "baggage-delay-claims--bev#6",
+  "journey": "J7",
+  "character": "bev",
+  "playbook_id": "baggage-delay-claims",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "trust",
+  "title": "Big money and speed claims on the page",
+  "expected": "Calm wording without scam-like figures",
+  "got": "'$1,070', '22× faster' and 'about $200 an episode' feel like sales claims",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/baggage-delay-claims--bev#page"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "certified-payroll--gina#1",
+  "journey": "J7",
+  "character": "gina",
+  "playbook_id": "certified-payroll",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "clarity",
+  "title": "Deadlines lumped, no per-week date or agency",
+  "expected": "Each of the six weeks listed with job, county, due date and rule",
+  "got": "One line, 'weeks ending 8/16 through 9/20: already past due', with the rule cited",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/certified-payroll--gina#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "certified-payroll--gina#2",
+  "journey": "J8",
+  "character": "gina",
+  "playbook_id": "certified-payroll",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "trust",
+  "title": "No document preview shown",
+  "expected": "To see the actual certified payroll and no-work statement before approving",
+  "got": "A promise to ask, but no sample document in the brief or the rehearsal",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/certified-payroll--gina#brief",
+   "transcript:2026-10-23-chores-recert/certified-payroll--gina#rehearsal"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "certified-payroll--gina#3",
+  "journey": "J7",
+  "character": "gina",
+  "playbook_id": "certified-payroll",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "time-saved",
+  "title": "Headline speed-up and savings with the basis hidden",
+  "expected": "Time-saved and dollar figures that say plainly they are estimates, with the basis visible",
+  "got": "'5 h -> 8 min, 37× faster' and '$40,000 a year' up front, with the basis one click away",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/certified-payroll--gina#page"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "certified-payroll--gina#4",
+  "journey": "J7",
+  "character": "gina",
+  "playbook_id": "certified-payroll",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Contradictory money statement on the page",
+  "expected": "A clear statement of what money moves",
+  "got": "'No money comes back' next to $417.95 of back pay to workers",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/certified-payroll--gina#page"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "certified-payroll--gina#5",
+  "journey": "J8",
+  "character": "gina",
+  "playbook_id": "certified-payroll",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "trust",
+  "title": "Rehearsal gives no left-alone reasons or output",
+  "expected": "Per-item reasons for what was left alone, and the figures it produced",
+  "got": "Only a count of 8 action cards in 11 turns, with no dollar claim",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/certified-payroll--gina#rehearsal"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "certified-payroll--gina#6",
+  "journey": "J7",
+  "character": "gina",
+  "playbook_id": "certified-payroll",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "State prevailing-wage question left unresolved",
+  "expected": "Help working out whether a state rule also applies",
+  "got": "The brief says only that she will flag it, not apply it",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/certified-payroll--gina#turn:2",
+   "transcript:2026-10-23-chores-recert/certified-payroll--gina#brief"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "cpg-deductions--hana#1",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": "cpg-deductions",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "missing",
+  "title": "No help with Cascade or Faire deductions",
+  "expected": "Some route to checking small deductions from a gift distributor and Faire, or a suggestion of a better-fitting chore",
+  "got": "The brief only says Cascade and Faire would need their own rules checked first, with no next step",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/cpg-deductions--hana#brief",
+   "transcript:2026-10-23-chores-recert/cpg-deductions--hana#turn:2"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "cpg-deductions--hana#2",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": "cpg-deductions",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Fit answer arrives late",
+  "expected": "A clear fit or no-fit verdict on the first screen or in the first reply",
+  "got": "I had to answer two questions and read the brief to learn it doesn't fit; the page's 'Not for' line is below the example",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/cpg-deductions--hana#page",
+   "transcript:2026-10-23-chores-recert/cpg-deductions--hana#turn:1",
+   "transcript:2026-10-23-chores-recert/cpg-deductions--hana#turn:2",
+   "transcript:2026-10-23-chores-recert/cpg-deductions--hana#brief"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "cpg-deductions--hana#3",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": "cpg-deductions",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "effort",
+  "title": "Chore offered to a non-fitting user",
+  "expected": "The app to steer a Faire/gift-distributor maker away from this chore before a conversation",
+  "got": "I started a conversation for a chore that explicitly excludes makers selling via Faire",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/cpg-deductions--hana#page",
+   "transcript:2026-10-23-chores-recert/cpg-deductions--hana#turn:1"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "eitc-claim--bev#1",
+  "journey": "J7",
+  "character": "bev",
+  "playbook_id": "eitc-claim",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "trust",
+  "title": "No plain way to stop or go back on screens",
+  "expected": "Each card says in words how to stop, go back or change an answer.",
+  "got": "Cards only ask questions; the only reassurance is the brief's 'ask before claiming'.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/eitc-claim--bev#turn:1",
+   "transcript:2026-10-23-chores-recert/eitc-claim--bev#turn:2",
+   "transcript:2026-10-23-chores-recert/eitc-claim--bev#turn:5",
+   "transcript:2026-10-23-chores-recert/eitc-claim--bev#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "eitc-claim--bev#2",
+  "journey": "J7",
+  "character": "bev",
+  "playbook_id": "eitc-claim",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Tax jargon unexplained on page and brief",
+  "expected": "Terms like Form 8862, Form 8332, maximizer, refund advance, playbook explained in everyday words.",
+  "got": "These terms appear bare, and 'from the playbook' means nothing to me.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/eitc-claim--bev#page",
+   "transcript:2026-10-23-chores-recert/eitc-claim--bev#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "eitc-claim--bev#3",
+  "journey": "J7",
+  "character": "bev",
+  "playbook_id": "eitc-claim",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Big claims feel like a sales pitch",
+  "expected": "Modest, sourced figures, with the 'about $3,000' basis visible rather than hidden.",
+  "got": "'32× faster', '8/8', and '$3,000 a year, author's estimate' shown up front; the basis is only in the fold.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/eitc-claim--bev#page"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "eitc-claim--bev#4",
+  "journey": "J7",
+  "character": "bev",
+  "playbook_id": "eitc-claim",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "completion",
+  "title": "Extension due date never resolved",
+  "expected": "Athena tells me where to find my extension notice and what the due date might be.",
+  "got": "She asked twice and I said I didn't know; the brief only says 'I'll find it' and that it may have passed.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/eitc-claim--bev#turn:2",
+   "transcript:2026-10-23-chores-recert/eitc-claim--bev#turn:3",
+   "transcript:2026-10-23-chores-recert/eitc-claim--bev#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "eitc-claim--bev#5",
+  "journey": "J7",
+  "character": "bev",
+  "playbook_id": "eitc-claim",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "effort",
+  "title": "Unclear how Athena will access my accounts",
+  "expected": "A plain statement of whether Athena logs into Taxfold or the school portal, and what she can see.",
+  "got": "The brief lists my apps but doesn't say how she gets in, and I asked twice to be told first.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/eitc-claim--bev#turn:4",
+   "transcript:2026-10-23-chores-recert/eitc-claim--bev#turn:5",
+   "transcript:2026-10-23-chores-recert/eitc-claim--bev#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "estate-settlement--samira#1",
+  "journey": "J7",
+  "character": "samira",
+  "playbook_id": "estate-settlement",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "senior-quality",
+  "title": "No plain statement to get a lawyer or accountant for the disclaimer",
+  "expected": "A clear statement that, with three weeks left, I need a probate lawyer or accountant for the disclaimer decision, and why.",
+  "got": "The brief notes I have no lawyer and that the playbook expects one, and says it will flag court steps. It never says plainly to get one.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/estate-settlement--samira#brief",
+   "transcript:2026-10-23-chores-recert/estate-settlement--samira#page",
+   "transcript:2026-10-23-chores-recert/estate-settlement--samira#turn:1"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "estate-settlement--samira#2",
+  "journey": "J7",
+  "character": "samira",
+  "playbook_id": "estate-settlement",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "clarity",
+  "title": "No ordered step list",
+  "expected": "A numbered order of what to do first, with urgency.",
+  "got": "A list of settings, dates and claims, but no sequence.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/estate-settlement--samira#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "estate-settlement--samira#3",
+  "journey": "J8",
+  "character": "samira",
+  "playbook_id": "estate-settlement",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "trust",
+  "title": "Dollar figures weakly sourced and the rehearsal not clearly labelled",
+  "expected": "Each figure with a source, and the rehearsal's $1,837 labelled as an invented household.",
+  "got": "The disclosure admits no published figure behind $9,000 and withdraws a $20,000 figure. The rehearsal result is shown without a label.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/estate-settlement--samira#page",
+   "transcript:2026-10-23-chores-recert/estate-settlement--samira#rehearsal"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "estate-settlement--samira#4",
+  "journey": "J7",
+  "character": "samira",
+  "playbook_id": "estate-settlement",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "effort",
+  "title": "Asked for the state and assumed a lawyer and CPA",
+  "expected": "Cards that fit someone with no lawyer or CPA and that find the state without questions.",
+  "got": "Three cards went on tools and the state, and the questions assumed a lawyer and CPA I don't have.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/estate-settlement--samira#turn:1",
+   "transcript:2026-10-23-chores-recert/estate-settlement--samira#turn:2",
+   "transcript:2026-10-23-chores-recert/estate-settlement--samira#turn:3"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "estate-settlement--samira#5",
+  "journey": "J7",
+  "character": "samira",
+  "playbook_id": "estate-settlement",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "missing",
+  "title": "Caregiver employer taxes and name mismatch not addressed",
+  "expected": "At least a mention of the household-employer filing and that my maiden name is on the court papers.",
+  "got": "Neither came up.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/estate-settlement--samira#brief",
+   "transcript:2026-10-23-chores-recert/estate-settlement--samira#turn:0"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "household-employer-tax--samira#1",
+  "journey": "J7",
+  "character": "samira",
+  "playbook_id": "household-employer-tax",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "clarity",
+  "title": "Form names not explained in plain words",
+  "expected": "Each form (I-9, W-2, W-3, Schedule H) followed by what it is for",
+  "got": "Names listed bare in the brief; only EIN is glossed",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/household-employer-tax--samira#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "household-employer-tax--samira#2",
+  "journey": "J7",
+  "character": "samira",
+  "playbook_id": "household-employer-tax",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "clarity",
+  "title": "No clear ordered list or urgency ranking",
+  "expected": "A numbered order and a flag for what is urgent today, such as Dev's I-9 and his pay day",
+  "got": "Unordered claim list and a dates list; urgency is not ranked",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/household-employer-tax--samira#brief",
+   "transcript:2026-10-23-chores-recert/household-employer-tax--samira#turn:1"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "household-employer-tax--samira#3",
+  "journey": "J7",
+  "character": "samira",
+  "playbook_id": "household-employer-tax",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "missing",
+  "title": "State rules left to the portal",
+  "expected": "Athena tells me which state's rate and due date apply, as I asked",
+  "got": "'Due date your state's portal states', with no state, rate or penalty named",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/household-employer-tax--samira#turn:1",
+   "transcript:2026-10-23-chores-recert/household-employer-tax--samira#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "household-employer-tax--samira#4",
+  "journey": "J8",
+  "character": "samira",
+  "playbook_id": "household-employer-tax",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Headline dollar figures are sourced only in the folded disclosure",
+  "expected": "The $818 and $800/yr figures are sourced where shown and clearly marked as not mine",
+  "got": "The page shows the figures up front; the sourcing is hidden behind a click, and the rehearsal showed no dollars",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/household-employer-tax--samira#page",
+   "transcript:2026-10-23-chores-recert/household-employer-tax--samira#rehearsal"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "household-employer-tax--samira#5",
+  "journey": "J7",
+  "character": "samira",
+  "playbook_id": "household-employer-tax",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Contractor-to-employee change explained thinly",
+  "expected": "A plain reason why Dev must be an employee and who decides",
+  "got": "A one-line 'control' rule; no mention that I should confirm this with a professional",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/household-employer-tax--samira#brief"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "ifta-quarterly--dario#1",
+  "journey": "J7",
+  "character": "dario",
+  "playbook_id": "ifta-quarterly",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Page uses idioms, jargon and rule codes",
+  "expected": "Simple words, with hard terms said another way",
+  "got": "'Beats its bar', '43× faster', 'net tax', 'qualified motor vehicles', 'tax-paid credits', and R1220, P550.200 in the disclosure",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/ifta-quarterly--dario#page"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "ifta-quarterly--dario#2",
+  "journey": "J7",
+  "character": "dario",
+  "playbook_id": "ifta-quarterly",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "effort",
+  "title": "Several questions per message",
+  "expected": "One question per message",
+  "got": "Card 1 had four questions and card 2 had three, each with multi-part answers",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/ifta-quarterly--dario#turn:1",
+   "transcript:2026-10-23-chores-recert/ifta-quarterly--dario#turn:2"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "ifta-quarterly--dario#3",
+  "journey": "J7",
+  "character": "dario",
+  "playbook_id": "ifta-quarterly",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Page shows another carrier's case, not mine",
+  "expected": "A clear statement of what she does for me and what she asks before acting",
+  "got": "An El Paso example with $56.15 and Wyoming/Kansas items; the approval steps are not clear on the page",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/ifta-quarterly--dario#page"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "ifta-quarterly--dario#4",
+  "journey": "J7",
+  "character": "dario",
+  "playbook_id": "ifta-quarterly",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Payment from my account and no estimate of what I owe",
+  "expected": "A real estimate of my tax or a clear statement that it is not yet known, and how the payment is approved",
+  "got": "The brief says the balance is paid from my account after approval, but no figure is given and the value claim is only $200 a year in penalties avoided",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/ifta-quarterly--dario#brief",
+   "transcript:2026-10-23-chores-recert/ifta-quarterly--dario#page"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "ifta-quarterly--dario#5",
+  "journey": "J7",
+  "character": "dario",
+  "playbook_id": "ifta-quarterly",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Answer on the Nebraska cash slip is buried",
+  "expected": "A direct answer to whether the cash slip gets a credit, and why, in simple words",
+  "got": "The brief says no credit, citing P550.300, with no plain explanation",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/ifta-quarterly--dario#brief"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "isf-filings--lorna#1",
+  "journey": "J7",
+  "character": "lorna",
+  "playbook_id": "isf-filings",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Headline figures have no source beside them",
+  "expected": "Each time and penalty figure shows its basis next to it, such as author's estimate or test run on invented data.",
+  "got": "'2 h -> 5 min', '23× faster', '9/9' and '$25,000 of $25,000' are shown bare. The basis is in a folded disclosure.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/isf-filings--lorna#page"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "isf-filings--lorna#2",
+  "journey": "J7",
+  "character": "lorna",
+  "playbook_id": "isf-filings",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Test-run results are not labelled as invented data next to the figures",
+  "expected": "'$25,000 avoided' marked as invented-data practice next to the number.",
+  "got": "The page-wide note says the case is invented, but the figure reads like a result.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/isf-filings--lorna#page"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "isf-filings--lorna#3",
+  "journey": "J7",
+  "character": "lorna",
+  "playbook_id": "isf-filings",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "effort",
+  "title": "Asked for time zone already in my materials",
+  "expected": "Read the Chicago cutoff from the documents instead of asking.",
+  "got": "Card 2 asked for my time zone.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/isf-filings--lorna#turn:2"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "isf-filings--lorna#4",
+  "journey": "J8",
+  "character": "lorna",
+  "playbook_id": "isf-filings",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "clarity",
+  "title": "Rehearsal output does not show what was left alone",
+  "expected": "A visible list of items left alone with reasons in the practice run.",
+  "got": "Only a count of action cards and a note that no dollar figure was claimed.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/isf-filings--lorna#rehearsal"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "isf-filings--lorna#5",
+  "journey": "J7",
+  "character": "lorna",
+  "playbook_id": "isf-filings",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Brief gives only one dated filing",
+  "expected": "Each filing in my case tied to its own deadline and rule.",
+  "got": "Only PO 44718 has a stated deadline; the rest are described as 24 hours before lading in Forwarden.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/isf-filings--lorna#brief"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "layoff-sixty-days--lan#1",
+  "journey": "J7",
+  "character": "lan",
+  "playbook_id": "layoff-sixty-days",
+  "cert_level": "LC",
+  "type": "broken-flow",
+  "dimension": "effort",
+  "title": "State asked repeatedly, and my question about where to look went unanswered",
+  "expected": "When I said I did not know the state, Athena would tell me which paper shows it and then move on.",
+  "got": "The state was asked in r1q3, r2q1 and r3q1. My request to be told where to look on the paper was not answered on the card.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/layoff-sixty-days--lan#turn:1",
+   "transcript:2026-10-23-chores-recert/layoff-sixty-days--lan#turn:2",
+   "transcript:2026-10-23-chores-recert/layoff-sixty-days--lan#turn:3"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "layoff-sixty-days--lan#2",
+  "journey": "J7",
+  "character": "lan",
+  "playbook_id": "layoff-sixty-days",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Question with two meanings",
+  "expected": "One question per item.",
+  "got": "'Do you live and work in New York?' plus the website question. I could not tell whether Fernhollow was the state's site.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/layoff-sixty-days--lan#turn:1"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "layoff-sixty-days--lan#3",
+  "journey": "J7",
+  "character": "lan",
+  "playbook_id": "layoff-sixty-days",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "senior-quality",
+  "title": "Brief assumes New York rules and gives vague dates",
+  "expected": "Exact dates computed from my 2 October last day and 31 October coverage end, and no state rules until the state is known.",
+  "got": "New York timing rules are used though my state is unknown. The brief says 'about 1 November', 'about 30 December' and 'as soon as you can'.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/layoff-sixty-days--lan#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "layoff-sixty-days--lan#4",
+  "journey": "J7",
+  "character": "lan",
+  "playbook_id": "layoff-sixty-days",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Jargon not explained",
+  "expected": "Plain words, with the printed document titles.",
+  "got": "Severance, COBRA, marketplace, special enrollment and 'revoke' are used without simple explanations. Questions say 'papers from work'.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/layoff-sixty-days--lan#turn:1",
+   "transcript:2026-10-23-chores-recert/layoff-sixty-days--lan#turn:2",
+   "transcript:2026-10-23-chores-recert/layoff-sixty-days--lan#brief"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "layoff-sixty-days--lan#5",
+  "journey": "J7",
+  "character": "lan",
+  "playbook_id": "layoff-sixty-days",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Example case dates differ from mine and the approved brief is not clearly mine",
+  "expected": "A clear link between the example and my own case.",
+  "got": "The page example has coverage ending 30 September and a knee scan. My case has 31 October and a back scan on 10 November. The brief never mentions my scan.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/layoff-sixty-days--lan#page",
+   "transcript:2026-10-23-chores-recert/layoff-sixty-days--lan#brief"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "layoff-sixty-days--lan#6",
+  "journey": "J8",
+  "character": "lan",
+  "playbook_id": "layoff-sixty-days",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Rehearsal gives little proof",
+  "expected": "A clear result I can check.",
+  "got": "The rehearsal says no figure was claimed, and it made 5 action cards where the demo had 6, with no explanation.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/layoff-sixty-days--lan#rehearsal"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "lien-desk--gina#1",
+  "journey": "J7",
+  "character": "gina",
+  "playbook_id": "lien-desk",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "clarity",
+  "title": "Deadlines have no dates or job-specific mapping",
+  "expected": "Each deadline shown with job, GC, actual date and rule, e.g. Sunset Medical Plaza / Calder / date / §8204.",
+  "got": "The brief gives generic rule formulas ('each California job', 'by the 15th of the third month', 'the deadline §53.057 sets') with no dates or per-job rows.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/lien-desk--gina#brief",
+   "transcript:2026-10-23-chores-recert/lien-desk--gina#turn:1"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "lien-desk--gina#2",
+  "journey": "J8",
+  "character": "gina",
+  "playbook_id": "lien-desk",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "trust",
+  "title": "Rehearsal gives no visible documents or left-alone reasons",
+  "expected": "Seeing the draft documents and a reason for every item left alone in the practice run.",
+  "got": "Only a summary: 12 turns, 10 action cards, no dollar figure. No documents and no itemised left-alone reasons are shown.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/lien-desk--gina#rehearsal"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "lien-desk--gina#3",
+  "journey": "J7",
+  "character": "gina",
+  "playbook_id": "lien-desk",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Headline speed and accuracy claims overstate for a user who checks everything",
+  "expected": "A time figure that accounts for checking every notice, and no unexplained headline multiples.",
+  "got": "'57× faster' and '12/12' mistakes avoided lead the page, from a test run. The review time is only about 5 minutes, and the 8 h baseline is an assumption.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/lien-desk--gina#page"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "lien-desk--gina#4",
+  "journey": "J7",
+  "character": "gina",
+  "playbook_id": "lien-desk",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "missing",
+  "title": "Interview did not ask for deadlines or state confirmation",
+  "expected": "Asking for my whiteboard deadlines and each job's state early.",
+  "got": "The questions covered tools only. Mission Bay's state is a guess to be confirmed later, and my whiteboard deadlines were not requested.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/lien-desk--gina#turn:1",
+   "transcript:2026-10-23-chores-recert/lien-desk--gina#brief"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "lien-desk--gina#5",
+  "journey": "J7",
+  "character": "gina",
+  "playbook_id": "lien-desk",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Unclear whether requested inputs duplicate what I already give",
+  "expected": "Clarity that she reads the subcontract and pay apps rather than asking me for their contents.",
+  "got": "The page lists contract, first delivery and completion dates as things she will ask me for.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/lien-desk--gina#page"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "ltc-claims--nadia#1",
+  "journey": "J7",
+  "character": "nadia",
+  "playbook_id": "ltc-claims",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "clarity",
+  "title": "Setup time question unanswered",
+  "expected": "A clear statement of how long setup takes, since I asked for it first.",
+  "got": "The first card went straight to tool questions. The page shows only time saved, not setup time.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/ltc-claims--nadia#turn:0",
+   "transcript:2026-10-23-chores-recert/ltc-claims--nadia#turn:1",
+   "transcript:2026-10-23-chores-recert/ltc-claims--nadia#page"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "ltc-claims--nadia#2",
+  "journey": "J7",
+  "character": "nadia",
+  "playbook_id": "ltc-claims",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "effort",
+  "title": "Four questions in one card",
+  "expected": "One question per message.",
+  "got": "Card 1 asked four multi-option questions at once.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/ltc-claims--nadia#turn:1"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "ltc-claims--nadia#3",
+  "journey": "J7",
+  "character": "nadia",
+  "playbook_id": "ltc-claims",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Test results contradict the headline claims",
+  "expected": "A plain statement of how sure the money figure is.",
+  "got": "The page shows 57× faster and 11/11 mistakes avoided beside 'Falls short: 20% of value found vs 75% expected', with no explanation.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/ltc-claims--nadia#page"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "ltc-claims--nadia#4",
+  "journey": "J7",
+  "character": "nadia",
+  "playbook_id": "ltc-claims",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Bank options did not fit",
+  "expected": "Options that cover a POA holder using the father's own account.",
+  "got": "The options only partly matched, so I had to write in 'Another way'.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/ltc-claims--nadia#turn:1"
+  ],
+  "severity_hint": "polish",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "ltc-claims--nadia#5",
+  "journey": "J7",
+  "character": "nadia",
+  "playbook_id": "ltc-claims",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Unclear whether progress is saved",
+  "expected": "A note that I can stop and resume without losing answers.",
+  "got": "Nothing in the page, conversation or brief mentions saving or resuming.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/ltc-claims--nadia#turn:1",
+   "transcript:2026-10-23-chores-recert/ltc-claims--nadia#brief"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "medical-bills--joel#1",
+  "journey": "J7",
+  "character": "joel",
+  "playbook_id": "medical-bills",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Insurance jargon not explained",
+  "expected": "Plain-words explanations of EOB, deductible, out-of-network, financial assistance on first use",
+  "got": "Terms used without explanation on the page and in the brief",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/medical-bills--joel#page",
+   "transcript:2026-10-23-chores-recert/medical-bills--joel#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "medical-bills--joel#2",
+  "journey": "J7",
+  "character": "joel",
+  "playbook_id": "medical-bills",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Dollar figures inconsistent and weakly sourced",
+  "expected": "Each figure traceable, with the invented-family label clear",
+  "got": "$3,423 and $3,424 both appear; the disclosure says the estimate is the bench world's own total",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/medical-bills--joel#page"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "medical-bills--joel#3",
+  "journey": "J8",
+  "character": "joel",
+  "playbook_id": "medical-bills",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "completion",
+  "title": "Rehearsal shows no per-line verdicts",
+  "expected": "A visible list of each bill marked pay/dispute/wait with a reason",
+  "got": "Only a count of 7 action cards and no dollar figure",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/medical-bills--joel#rehearsal"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "medical-bills--joel#4",
+  "journey": "J7",
+  "character": "joel",
+  "playbook_id": "medical-bills",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "effort",
+  "title": "Unclear how paper bills get read",
+  "expected": "Clear way to upload or photograph the paper bills so I don't type them",
+  "got": "I typed the amounts and dates; nothing said how the envelopes are read",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/medical-bills--joel#turn:1",
+   "transcript:2026-10-23-chores-recert/medical-bills--joel#turn:2"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "medical-bills--joel#5",
+  "journey": "J7",
+  "character": "joel",
+  "playbook_id": "medical-bills",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "missing",
+  "title": "Hospital balance and rehab not asked about",
+  "expected": "Questions about the wife's surgery balance and the mother-in-law's observation billing",
+  "got": "The cards focused on the duplicate payment and the deductible",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/medical-bills--joel#turn:2",
+   "transcript:2026-10-23-chores-recert/medical-bills--joel#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "medical-bills--joel#6",
+  "journey": "J7",
+  "character": "joel",
+  "playbook_id": "medical-bills",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Exact-letter approval not promised",
+  "expected": "I see and approve the exact letter before anything is sent",
+  "got": "The brief only says it asks before disputes and refunds",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/medical-bills--joel#brief"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "medicare-enrollment-timing--denise#1",
+  "journey": "J7",
+  "character": "denise",
+  "playbook_id": "medicare-enrollment-timing",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "clarity",
+  "title": "Sensitive number question left unanswered",
+  "expected": "A plain statement up front of what she'd ask for, including Walt's Social Security number, and why.",
+  "got": "I asked twice; the brief only says she'll tell me before asking.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/medicare-enrollment-timing--denise#turn:1",
+   "transcript:2026-10-23-chores-recert/medicare-enrollment-timing--denise#turn:3",
+   "transcript:2026-10-23-chores-recert/medicare-enrollment-timing--denise#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "medicare-enrollment-timing--denise#2",
+  "journey": "J7",
+  "character": "denise",
+  "playbook_id": "medicare-enrollment-timing",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "clarity",
+  "title": "Multiple questions per card with no stated purpose",
+  "expected": "One question at a time, each saying what it is for.",
+  "got": "Card 1 had four questions and card 2 had three, with no reasons given.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/medicare-enrollment-timing--denise#turn:1",
+   "transcript:2026-10-23-chores-recert/medicare-enrollment-timing--denise#turn:2"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "medicare-enrollment-timing--denise#3",
+  "journey": "J7",
+  "character": "denise",
+  "playbook_id": "medicare-enrollment-timing",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Jargon not explained",
+  "expected": "Plain explanations of special enrollment period, CMS-L564, COBRA and Part B.",
+  "got": "Terms used unexplained, and the brief cites regulations like 42 CFR and POMS.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/medicare-enrollment-timing--denise#page",
+   "transcript:2026-10-23-chores-recert/medicare-enrollment-timing--denise#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "medicare-enrollment-timing--denise#4",
+  "journey": "J7",
+  "character": "denise",
+  "playbook_id": "medicare-enrollment-timing",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "missing",
+  "title": "Marlene and other notices not covered",
+  "expected": "The brief to cover Marlene's situation and the broker, COBRA and filing-service emails, with their deadlines.",
+  "got": "Only Walt's two deadlines, both 'about'; the emails were not sorted by which matters.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/medicare-enrollment-timing--denise#brief",
+   "transcript:2026-10-23-chores-recert/medicare-enrollment-timing--denise#turn:0"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "medicare-enrollment-timing--denise#5",
+  "journey": "J8",
+  "character": "denise",
+  "playbook_id": "medicare-enrollment-timing",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Brief built on guesses",
+  "expected": "Confirmed facts before I approve.",
+  "got": "The brief marks the Benefitline Medicare record and the HR contact as 'my guess', and the rehearsal result gives no detail.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/medicare-enrollment-timing--denise#brief",
+   "transcript:2026-10-23-chores-recert/medicare-enrollment-timing--denise#rehearsal"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "pslf-employment-certification--lan#1",
+  "journey": "J7",
+  "character": "lan",
+  "playbook_id": "pslf-employment-certification",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "clarity",
+  "title": "Cost question never answered on the cards",
+  "expected": "A direct, short answer on the cards when I asked 'does it cost money?'",
+  "got": "I asked three times. The cards went on to the next question. The answer is only on the page and in the brief.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/pslf-employment-certification--lan#turn:1",
+   "transcript:2026-10-23-chores-recert/pslf-employment-certification--lan#turn:2",
+   "transcript:2026-10-23-chores-recert/pslf-employment-certification--lan#turn:3",
+   "transcript:2026-10-23-chores-recert/pslf-employment-certification--lan#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "pslf-employment-certification--lan#2",
+  "journey": "J7",
+  "character": "lan",
+  "playbook_id": "pslf-employment-certification",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "effort",
+  "title": "Same questions asked twice",
+  "expected": "Each thing asked once.",
+  "got": "The studentaid.gov account was asked in card 1 and again in card 2. Loan type was asked again. The interpreting start date was asked after I gave the year.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/pslf-employment-certification--lan#turn:1",
+   "transcript:2026-10-23-chores-recert/pslf-employment-certification--lan#turn:2",
+   "transcript:2026-10-23-chores-recert/pslf-employment-certification--lan#turn:3"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "pslf-employment-certification--lan#3",
+  "journey": "J7",
+  "character": "lan",
+  "playbook_id": "pslf-employment-certification",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "missing",
+  "title": "No deadlines in the brief",
+  "expected": "Each deadline with its date and what happens if I miss it.",
+  "got": "The brief has no deadlines or consequences.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/pslf-employment-certification--lan#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "pslf-employment-certification--lan#4",
+  "journey": "J7",
+  "character": "lan",
+  "playbook_id": "pslf-employment-certification",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Question options do not fit my situation",
+  "expected": "A way to say I also have a union stipend, and a way to give hours I do not know.",
+  "got": "The options were fixed. Hours was asked with two meanings in one question. Nothing helped me when I did not know.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/pslf-employment-certification--lan#turn:2",
+   "transcript:2026-10-23-chores-recert/pslf-employment-certification--lan#turn:3"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "pslf-employment-certification--lan#5",
+  "journey": "J7",
+  "character": "lan",
+  "playbook_id": "pslf-employment-certification",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Brief makes guesses about my jobs",
+  "expected": "Clear facts, or a question to me before the brief.",
+  "got": "The brief says my pharmacy job is 'likely for-profit (my guess)'. It was never asked.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/pslf-employment-certification--lan#brief"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "pslf-employment-certification--lan#6",
+  "journey": "J8",
+  "character": "lan",
+  "playbook_id": "pslf-employment-certification",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Page has hard words and numbers I do not understand",
+  "expected": "Plain words and my own situation.",
+  "got": "Words like 'contested', 'buyback', 'EIN', '65× faster' and a $20,000 for another family.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/pslf-employment-certification--lan#page",
+   "transcript:2026-10-23-chores-recert/pslf-employment-certification--lan#rehearsal"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "public-records-requests--ruth#1",
+  "journey": "J7",
+  "character": "ruth",
+  "playbook_id": "public-records-requests",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "clarity",
+  "title": "Page says 'Filed today' without saying approval is needed",
+  "expected": "A plain statement on the page that Athena prepares and I approve before anything is filed",
+  "got": "The page lists 'Filed today — 9 acts'. Only the brief says nothing is filed without my yes.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/public-records-requests--ruth#page",
+   "transcript:2026-10-23-chores-recert/public-records-requests--ruth#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "public-records-requests--ruth#2",
+  "journey": "J7",
+  "character": "ruth",
+  "playbook_id": "public-records-requests",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "senior-quality",
+  "title": "Missed NRCS appeal deadline left unresolved",
+  "expected": "A firm date from the 24 July letter, and what to do right now if it has passed",
+  "got": "The brief says 'about 22 October… likely passed yesterday'. It gives no fallback beyond 'Athena checks it first'.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/public-records-requests--ruth#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "public-records-requests--ruth#3",
+  "journey": "J7",
+  "character": "ruth",
+  "playbook_id": "public-records-requests",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "missing",
+  "title": "No concrete dates for other federal or county requests",
+  "expected": "A date for each open request",
+  "got": "Only a rule of 20 working days, and the county clock is left to ask later",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/public-records-requests--ruth#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "public-records-requests--ruth#4",
+  "journey": "J7",
+  "character": "ruth",
+  "playbook_id": "public-records-requests",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Page describes a California nonprofit and not a farm",
+  "expected": "An example that looks like my farm, or a clear sign that it is only an example",
+  "got": "The records coordinator, the city and the $584 charge are all unlike my case. The page does say the case is invented.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/public-records-requests--ruth#page"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "public-records-requests--ruth#5",
+  "journey": "J7",
+  "character": "ruth",
+  "playbook_id": "public-records-requests",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Sales-style figures with sources hidden",
+  "expected": "Numbers that say where they come from, shown plainly",
+  "got": "'22× faster', '$500 a year protected' and '15/15' appear up front, and the basis is in a long folded disclosure.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/public-records-requests--ruth#page"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "public-records-requests--ruth#6",
+  "journey": "J7",
+  "character": "ruth",
+  "playbook_id": "public-records-requests",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "effort",
+  "title": "Four questions on one card, California offered first",
+  "expected": "One question at a time, and no asking for what I already said",
+  "got": "Card 1 asked four questions. I had already named the NRCS denial and the county. Card 2 offered California first.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/public-records-requests--ruth#turn:1",
+   "transcript:2026-10-23-chores-recert/public-records-requests--ruth#turn:2"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "recoverable-depreciation--marcus#1",
+  "journey": "J8",
+  "character": "marcus",
+  "playbook_id": "recoverable-depreciation",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "trust",
+  "title": "No line-by-line math in the practice result",
+  "expected": "Each of the 4 repairs with its estimate line, invoice, payment and holdback amount, adding up to $15,190",
+  "got": "Only the $15,190 total and a list of what is claimed or left alone",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/recoverable-depreciation--marcus#page",
+   "transcript:2026-10-23-chores-recert/recoverable-depreciation--marcus#rehearsal"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "recoverable-depreciation--marcus#2",
+  "journey": "J8",
+  "character": "marcus",
+  "playbook_id": "recoverable-depreciation",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "completion",
+  "title": "No visible legitimate-charge verdicts with reasons in the run",
+  "expected": "The practice run showing at least one line judged legitimate or not claimable, with its specific reason",
+  "got": "Only a short 'Left alone' list on the page and a run summary that doesn't show per-line verdicts",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/recoverable-depreciation--marcus#page",
+   "transcript:2026-10-23-chores-recert/recoverable-depreciation--marcus#rehearsal"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "recoverable-depreciation--marcus#3",
+  "journey": "J7",
+  "character": "marcus",
+  "playbook_id": "recoverable-depreciation",
+  "cert_level": "LC",
+  "type": "broken-flow",
+  "dimension": "effort",
+  "title": "Asked me to type dates already on my statements",
+  "expected": "Read the loss dates, payment dates and policy deadline from the Hearthguard claims and policy",
+  "got": "The questions asked me to supply the dates, and I had to say I wasn't sure",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/recoverable-depreciation--marcus#turn:2"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "recoverable-depreciation--marcus#4",
+  "journey": "J7",
+  "character": "marcus",
+  "playbook_id": "recoverable-depreciation",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "missing",
+  "title": "Deadline left unknown and vaguely ranged",
+  "expected": "A concrete deadline for each claim, with the policy clause it came from",
+  "got": "'Unknown, Athena reads it' plus a generic 180-days-to-2-years range, and the water claim may already be closed",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/recoverable-depreciation--marcus#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "recoverable-depreciation--marcus#5",
+  "journey": "J7",
+  "character": "marcus",
+  "playbook_id": "recoverable-depreciation",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "California-based page example and time-saved claims don't match my Washington case",
+  "expected": "A clear statement of how the California example applies to a Washington household",
+  "got": "The page leans on California Insurance Code 2051.5, while my brief says the policy governs. The 55× and 4 h to 4 min claims have no visible method.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/recoverable-depreciation--marcus#page",
+   "transcript:2026-10-23-chores-recert/recoverable-depreciation--marcus#brief"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "restricted-funds-release--devon#1",
+  "journey": "J7",
+  "character": "devon",
+  "playbook_id": "restricted-funds-release",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "clarity",
+  "title": "Brief does not separate prepare, approve and never-do",
+  "expected": "Ordered lists: what she prepares, what needs my approval, what she never does alone.",
+  "got": "Approval rules sit as bullets inside 'Your setup', mixed with facts and rules; 'Left alone' covers funds, not actions.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/restricted-funds-release--devon#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "restricted-funds-release--devon#2",
+  "journey": "J7",
+  "character": "devon",
+  "playbook_id": "restricted-funds-release",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Example figures read like my savings",
+  "expected": "Time and dollar figures clearly labelled as an invented organisation's numbers, not mine.",
+  "got": "Headline '3 h -> 6 min, 29x faster' and '$5,724 a year protected' sit beside a small 'invented' label; the caveat detail is folded away.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/restricted-funds-release--devon#page"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "restricted-funds-release--devon#3",
+  "journey": "J7",
+  "character": "devon",
+  "playbook_id": "restricted-funds-release",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "trust",
+  "title": "Rules cited but not quoted, and unevenly",
+  "expected": "Each applied rule quoted and sourced in the brief.",
+  "got": "The brief gives a few citations, while 'recognise in part' and simultaneous release lack the full source. The full list is in the disclosure only.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/restricted-funds-release--devon#brief",
+   "transcript:2026-10-23-chores-recert/restricted-funds-release--devon#page"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "restricted-funds-release--devon#4",
+  "journey": "J7",
+  "character": "devon",
+  "playbook_id": "restricted-funds-release",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Question options did not map to my apps",
+  "expected": "Options that help me match Ledgerwren, Grantpoint, Binderwell, Fundergate and Postwren to the right category.",
+  "got": "Generic options with 'which?' follow-ups; I guessed and was unsure I matched correctly.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/restricted-funds-release--devon#turn:1"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "restricted-funds-release--devon#5",
+  "journey": "J8",
+  "character": "devon",
+  "playbook_id": "restricted-funds-release",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "clarity",
+  "title": "Rehearsal shows no content",
+  "expected": "See each release or filing and the record it rests on.",
+  "got": "Only a count of 7 action cards and 'no dollar figure was claimed'.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/restricted-funds-release--devon#rehearsal"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "restricted-funds-release--devon#6",
+  "journey": "J7",
+  "character": "devon",
+  "playbook_id": "restricted-funds-release",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Inconsistent figures on the page",
+  "expected": "One consistent set of numbers.",
+  "got": "'10/10' mistakes avoided versus '7 of 7' found; $59,600 versus $74,600 explained only in the folded disclosure.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/restricted-funds-release--devon#page"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "sales-tax-exemption-certs--hana#1",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": "sales-tax-exemption-certs",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "effort",
+  "title": "Asked registration status instead of checking Taxline State",
+  "expected": "Read my registration status from Taxline State, since she knew I use it and I'd said she could look there if she told me first",
+  "got": "Two cards asked me whether I'm registered. I answered 'not sure' and 'I don't know', and she only planned to check afterwards",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/sales-tax-exemption-certs--hana#turn:2",
+   "transcript:2026-10-23-chores-recert/sales-tax-exemption-certs--hana#turn:3",
+   "transcript:2026-10-23-chores-recert/sales-tax-exemption-certs--hana#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "sales-tax-exemption-certs--hana#2",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": "sales-tax-exemption-certs",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "effort",
+  "title": "Asked for facts she could read from my accounts",
+  "expected": "Detect my store, email and sheet from the connected accounts",
+  "got": "The first card asked which store, which email and where my certificate sheet lives",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/sales-tax-exemption-certs--hana#turn:1"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "sales-tax-exemption-certs--hana#3",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": "sales-tax-exemption-certs",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "The example case is much bigger than my shop",
+  "expected": "An example sized for a small shop with a few $40 orders",
+  "got": "The page shows an Ohio candle wholesaler with six buyers and $4,250, plus a $15,000 a year figure that doesn't match my size",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/sales-tax-exemption-certs--hana#page"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "sales-tax-exemption-certs--hana#4",
+  "journey": "J8",
+  "character": "hana",
+  "playbook_id": "sales-tax-exemption-certs",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "trust",
+  "title": "The rehearsal shows no drafted replies or evidence",
+  "expected": "To see sample drafts naming the order, the buyer's reason and the attached evidence",
+  "got": "Only a count of 2 action cards and no dollar claim, so I can't judge draft quality",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/sales-tax-exemption-certs--hana#rehearsal"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "sales-tax-exemption-certs--hana#5",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": "sales-tax-exemption-certs",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Unclear whether Ohio's answer can be sent online",
+  "expected": "A clear statement of how the answer goes back to Ohio, since the letter arrived by paper",
+  "got": "I raised this and the brief doesn't say how the reply is delivered",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/sales-tax-exemption-certs--hana#turn:1",
+   "transcript:2026-10-23-chores-recert/sales-tax-exemption-certs--hana#brief"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "tenant-deposit-return--rosa#1",
+  "journey": "J7",
+  "character": "rosa",
+  "playbook_id": "tenant-deposit-return",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "missing",
+  "title": "No Texas deadlines or rules",
+  "expected": "The deadline for contesting and the justice court limit and steps, up front, since I asked for dates first.",
+  "got": "The brief says 'Not set yet' and 'Not known yet' for every date, and the playbook has only California rules.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/tenant-deposit-return--rosa#brief",
+   "transcript:2026-10-23-chores-recert/tenant-deposit-return--rosa#turn:2",
+   "transcript:2026-10-23-chores-recert/tenant-deposit-return--rosa#turn:0"
+  ],
+  "severity_hint": "blocker",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "tenant-deposit-return--rosa#2",
+  "journey": "J7",
+  "character": "rosa",
+  "playbook_id": "tenant-deposit-return",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Page is a California example, but my case is Texas",
+  "expected": "A page that fits a Texas tenant, or says clearly up front that it does not.",
+  "got": "The page is about an Oakland teacher under California law. The 'Not for' line excludes tenants outside California, which is me.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/tenant-deposit-return--rosa#page"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "tenant-deposit-return--rosa#3",
+  "journey": "J7",
+  "character": "rosa",
+  "playbook_id": "tenant-deposit-return",
+  "cert_level": "LC",
+  "type": "trust",
+  "dimension": "trust",
+  "title": "Brief includes guesses about the law",
+  "expected": "Rules I can rely on, not guesses.",
+  "got": "Two brief items are labelled 'my guess', and the legal citations come from the California playbook.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/tenant-deposit-return--rosa#brief"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "tenant-deposit-return--rosa#4",
+  "journey": "J8",
+  "character": "rosa",
+  "playbook_id": "tenant-deposit-return",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "senior-quality",
+  "title": "Rehearsal gives little proof",
+  "expected": "A rehearsal showing the sorting works on a Texas-shaped statement.",
+  "got": "No dollar figure was claimed, and only 3 action cards were proposed against 6 in the demo run.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/tenant-deposit-return--rosa#rehearsal"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "tenant-deposit-return--rosa#5",
+  "journey": "J7",
+  "character": "rosa",
+  "playbook_id": "tenant-deposit-return",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "missing",
+  "title": "Cost versus a consultant not addressed",
+  "expected": "A clear cost for this chore compared with paying a consultant.",
+  "got": "The page says 'no fees to dispute plus your Claude usage' for the California case, with no comparison.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/tenant-deposit-return--rosa#page"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "tenant-deposit-return--rosa#6",
+  "journey": "J7",
+  "character": "rosa",
+  "playbook_id": "tenant-deposit-return",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Legal jargon in the brief",
+  "expected": "Plain words for the rules.",
+  "got": "The brief cites Property Code 92.107 and 92.109 and 'bad-faith rules' without explaining them.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/tenant-deposit-return--rosa#brief"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "wotc-screening--carmen#1",
+  "journey": "J7",
+  "character": "carmen",
+  "playbook_id": "wotc-screening",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "2026 hires and the credit lapse are not squarely addressed",
+  "expected": "A plain statement up front that my fall 2026 hires fall after the end date, what that means, and what Athena will do about it.",
+  "got": "The brief lists the end date as a rule and says the extension is read during the run (my guess). The page headline shows $19,200 while the value is about $0 a year.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/wotc-screening--carmen#brief",
+   "transcript:2026-10-23-chores-recert/wotc-screening--carmen#page"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "wotc-screening--carmen#2",
+  "journey": "J8",
+  "character": "carmen",
+  "playbook_id": "wotc-screening",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "dimension": "trust",
+  "title": "Rehearsal output is not visible",
+  "expected": "The prepared cards, each showing the hire's start event, due date and planned send date.",
+  "got": "Only a count: 5 cards, $19,200, 13 turns.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/wotc-screening--carmen#rehearsal"
+  ],
+  "severity_hint": "major",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "wotc-screening--carmen#3",
+  "journey": "J7",
+  "character": "carmen",
+  "playbook_id": "wotc-screening",
+  "cert_level": "LC",
+  "type": "confusion",
+  "dimension": "clarity",
+  "title": "Several setup items are marked as guesses",
+  "expected": "Confirmation of the start dates, the state and the extension status before I approve the brief.",
+  "got": "Three items are labelled 'my guess'. I couldn't tell how she would verify them.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/wotc-screening--carmen#brief",
+   "transcript:2026-10-23-chores-recert/wotc-screening--carmen#turn:2"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ },
+ {
+  "id": "wotc-screening--carmen#4",
+  "journey": "J7",
+  "character": "carmen",
+  "playbook_id": "wotc-screening",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "dimension": "missing",
+  "title": "Unclear what happens with unknown letters",
+  "expected": "A statement of whether she stops or guesses when a proof letter hasn't arrived or arrives another way.",
+  "got": "I said I don't know which letters will come in other ways, and the brief just records it.",
+  "evidence": [
+   "transcript:2026-10-23-chores-recert/wotc-screening--carmen#turn:1",
+   "transcript:2026-10-23-chores-recert/wotc-screening--carmen#brief"
+  ],
+  "severity_hint": "minor",
+  "verdict": "uncertain"
+ }
+]
