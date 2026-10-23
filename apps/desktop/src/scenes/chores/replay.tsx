@@ -156,7 +156,7 @@ export default function Replay({
   return (
     <div className="chores ch-run" ref={root}>
       <header className="ch-run__top">
-        <p className="ch-eyebrow">{`${view.title} · the run`}</p>
+        <p className="ch-eyebrow">{`${view.playbook.shortTitle} · the run`}</p>
         <h1 className="ch-marquee ch-marquee--run">
           {`Turn ${at + 1}`}
           <span className="ch-marquee__of">{` of ${trace.length}`}</span>
