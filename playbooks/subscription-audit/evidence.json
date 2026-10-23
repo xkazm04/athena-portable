@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "subscription-audit",
-  "captured_at": "2026-10-10T20:53:56Z",
-  "bench_run_at": "2026-10-10T20:50:12Z",
-  "narration": {
-    "text": "A household's recurring charges are audited: a second streaming account on the bank, a trial that became a charge, an add-on raised without notice and an unused storage plan cancelled, two refunded, while a son's and a partner's weekly use, a service used this week, a one-time purchase and a plan renewed after its reminder are left alone. This is a chore for a dental office manager in San Diego, California, who pays for streaming, a fitness app and cloud storage from a card and a bank account, with a son and a partner who use some of it. On the bench, she found 6 of 6 eligible items, worth 613 dollars and 50 cents of the 613 dollars and 50 cents there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 1 minute. By hand, the same chore takes 2 hours, so she was about 86 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 62.781,
-    "sha256": "ea0ee2e4dcf71504924b06405aaad94077bd522ed4fd92518f6fe16ae5f136f1"
-  },
-  "video": {
-    "path": "evidence/subscription-audit/evidence.mp4",
-    "duration_s": 62.8,
-    "bytes": 3412043,
-    "sha256": "69912c142678aa02b92971c4a96d23ca390dde910f9238263ba7c1013257ed14"
-  },
-  "thumbnail": {
-    "path": "playbooks/subscription-audit/thumb.jpg",
-    "bytes": 86696,
-    "sha256": "829b5ff14d55dbf6c63dbfdb6bed773b8f0650d5184d751ae2068243a6fd725c"
-  },
+  "captured_at": "2026-10-23T17:11:31Z",
+  "bench_run_at": "2026-10-23T16:27:23Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/subscription-audit/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22550,
-      "sha256": "53b38c4c07dc32a6ca9c9661cb48459312ec693f6f21b2a85cf4dd796c209c08"
+      "bytes": 34718,
+      "sha256": "397c30c1f2a7fce96c6ae24dcd6e82e4a5eb94e2e0cd4d17ad753d136b700cff",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/subscription-audit/story/02.webp",
+      "bytes": 32846,
+      "sha256": "1febe432b12035f5cf951d7bddc53eca0338bcf7aca31cbd7e7dc7b9f44b7f41",
       "caption": "Turn 1 - Postwren: I'm Rosa Delgado",
-      "turn": 1,
-      "bytes": 23594,
-      "sha256": "4bc5ae84de6d4a1dc5f3962c0b51e850613a6f10e29d1aba4b391afc13a833f4"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/subscription-audit/story/03.webp",
-      "caption": "Turn 5 - Cardhollow, Athena: I read the card note and all four statement pages (16 charges) and changed…",
-      "turn": 5,
-      "bytes": 22092,
-      "sha256": "c18fe324a74d04935265e1a692a726dd2460aa9d20085613181a4824f7c77086"
+      "bytes": 43646,
+      "sha256": "a1544cc1f93da58db5c87f2098c7d29e7fc147098ca0a450264e08672bec086a",
+      "caption": "Turn 5 - Cardhollow, Athena: I read the card note and all four statement pages (16 of 16 lines), and I…",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/subscription-audit/story/04.webp",
-      "caption": "Turn 9 - Streamquill, Athena: Here is what I found, and I'm filing three cards for you to answer",
-      "turn": 9,
-      "bytes": 23386,
-      "sha256": "8d5c8593f4da299bf68381399919bd4a10f457982e61697c46dfbc52199a2cfd"
+      "bytes": 43166,
+      "sha256": "4b6e3e4c70e7aa389e1f3d7210f92e263fb06f15e7236c09cc28d16fd6762e26",
+      "caption": "Turn 9 - Streamquill, Athena: I'm filing three cards",
+      "kind": "turn",
+      "turn": 9
     },
     {
+      "n": 5,
       "path": "playbooks/subscription-audit/story/05.webp",
-      "caption": "Turn 13 - Vaultmoor, Athena: Only Storage (S-6) is unused here, so I'm filing one cancel card for it and no…",
-      "turn": 13,
-      "bytes": 22202,
-      "sha256": "f8b30876df88d5c3916cea47bf97f6939e63da199adf87e63409cb1e40628de5"
-    },
-    {
-      "path": "playbooks/subscription-audit/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22592,
-      "sha256": "ddb0dc7b4e6f85a72b4475ae05781295638924b0b554663b63675d0e528edcd2"
+      "bytes": 41738,
+      "sha256": "cf8a928a5a2bb4ff1060b2ca7c62ea669bb2d9031b9fa6f641b1ffbde2707c87",
+      "caption": "Turn 13 - Vaultmoor, Athena: I'm filing one card for Vaultmoor",
+      "kind": "turn",
+      "turn": 13
     }
   ]
 }

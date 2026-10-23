@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "eitc-claim",
-  "captured_at": "2026-10-11T06:40:13Z",
-  "bench_run_at": "2026-10-11T06:37:27Z",
-  "narration": {
-    "text": "A working family's 2025 return on extension claims the earned income credit for three children, a daughter, a son who moved in in March and a student of 22, with Form 8862 for the disallowed 2023 credit, while a niece her mother claims, a boy there four months, a 21-year-old, another family's child and two offers are left alone. This is a chore for a mother in a family with two earners and several children, who files jointly and whose 2025 return is on extension. On the bench, she found 4 of 4 eligible items, worth 4,000 dollars of the 4,000 dollars there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes 2 hours, so she was about 71 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 59.861,
-    "sha256": "c347387531401fc3dab043ff62fdc1af20d892823597b2d9be0ddcff49091194"
-  },
-  "video": {
-    "path": "evidence/eitc-claim/evidence.mp4",
-    "duration_s": 59.88,
-    "bytes": 2656451,
-    "sha256": "34915709121ec3210c6be2c16fc72ff2ba96a76f083fcf4bdca93ee17f9ea397"
-  },
-  "thumbnail": {
-    "path": "playbooks/eitc-claim/thumb.jpg",
-    "bytes": 96065,
-    "sha256": "346928db95088ce33b1b00cd417b7c3847360e5f62b50155abbb57d1ba58e4f7"
-  },
+  "captured_at": "2026-10-23T17:01:07Z",
+  "bench_run_at": "2026-10-23T15:55:15Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/eitc-claim/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22440,
-      "sha256": "d71cf93e3fadf9f8dd8b64a7a53f63e749adb850b614cb09ea6c1220c6b93a0b"
+      "bytes": 39266,
+      "sha256": "7fcb32eb1fd1568a5f7ad4a6a0fca53156e87abf4efdf6d8b5ae1d1b46b19303",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/eitc-claim/story/02.webp",
+      "bytes": 30416,
+      "sha256": "df2fdbaa9c524d210a9900eec40cc696e2779b36e9f6b5a72fa217bb616e6b8e",
       "caption": "Turn 1 - Taxfold: I'm Rosalind Pruitt",
-      "turn": 1,
-      "bytes": 22496,
-      "sha256": "9ea0427624c2b0505b8214e861f625366118e206556c3ebcf3bece528dec6358"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/eitc-claim/story/03.webp",
+      "bytes": 29492,
+      "sha256": "c6abc96af74fed964c9cff4c23ae55914a823cb665d0faa3b2974dcd05ba744d",
       "caption": "Turn 4 - Slatewick school records: Slatewick holds the children's school and college records",
-      "turn": 4,
-      "bytes": 23168,
-      "sha256": "0b5f8abdb44554cf16a4c050321fb593ed5e174d8f3446aa17da06fc9d686bf1"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/eitc-claim/story/04.webp",
-      "caption": "Turn 7 - Payroll Harbor, Athena: Payroll Harbor lists two 2025 W-2s for you and Everett",
-      "turn": 7,
-      "bytes": 22344,
-      "sha256": "7deb5b9d1eefa49d324481774085f0c7eddb22db20bede2ad2bab389ae79829d"
+      "bytes": 40132,
+      "sha256": "21bea11e94acbbef970816d2a356cc6e98b162d5cbd15d20c9533b3bf7c965dd",
+      "caption": "Turn 7 - Payroll Harbor, Athena: The W-2s are read, and they put the household well under the credit limits",
+      "kind": "turn",
+      "turn": 7
     },
     {
+      "n": 5,
       "path": "playbooks/eitc-claim/story/05.webp",
+      "bytes": 42796,
+      "sha256": "b6398197b4b49e80bc21048affed628547d3a9eae0e96b7c9065144c48a316bb",
       "caption": "Turn 10 - Taxfold: Back in Taxfold, claim the earned income credit on the 2025 return for each…",
-      "turn": 10,
-      "bytes": 23640,
-      "sha256": "c9a18f8cabe980f1d264560c607394c301bf602bda0e000801965b1b8b2021d6"
-    },
-    {
-      "path": "playbooks/eitc-claim/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22848,
-      "sha256": "e5af979a6d0a68c0b2b8c4fcb42994c9342aad30c813dddb7b1e46631243c316"
+      "kind": "turn",
+      "turn": 10
     }
   ]
 }

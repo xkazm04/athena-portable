@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "sales-tax-exemption-certs",
-  "captured_at": "2026-10-10T15:00:47Z",
-  "bench_run_at": "2026-10-10T14:58:47Z",
-  "narration": {
-    "text": "A candle maker's wholesale resale certificates checked before the state audits them: six buyers asked for a fully completed certificate, an unsigned paper one, a blank identification number, a wrong state, a lapsed buyer and a sale with none among them, and the state's request answered with the three certificates that support it, while a Texas sale, certificates already complete, a taxed sale and a buyer still inside twelve months are left alone. This is a chore for the owner of a small wholesale candle company in Ohio, who sells to retailers in four states and has just had a sales tax substantiation request. On the bench, she found 9 of 9 eligible items, worth 4,250 dollars of the 4,250 dollars there was to find. She made no false claim. The world held 10 traps, and she walked past 10. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 68 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 65.257,
-    "sha256": "fcba6dd4fdcd595f8ab0c9c7efcb878d58094c95a7f2537d08fbc3f0fdfdd44b"
-  },
-  "video": {
-    "path": "evidence/sales-tax-exemption-certs/evidence.mp4",
-    "duration_s": 65.28,
-    "bytes": 3385874,
-    "sha256": "bb9a025de7ebf670e98313e448906847bc56122cab44e1a1ec52701ac05b1ade"
-  },
-  "thumbnail": {
-    "path": "playbooks/sales-tax-exemption-certs/thumb.jpg",
-    "bytes": 83172,
-    "sha256": "6dafed1406b36ac78edfd8753c1c8bff6e14cd2ac95becf0168d3a6b6c271031"
-  },
+  "captured_at": "2026-10-23T17:10:41Z",
+  "bench_run_at": "2026-10-23T16:25:30Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/sales-tax-exemption-certs/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23216,
-      "sha256": "48849bba66a6d125cd6adcf4878d75e55b2e244649f5c1004d65f02b4ea7bc3a"
+      "bytes": 39238,
+      "sha256": "42c31cb41accc05f26c807671b971d1a6cc4c945839a1e1c74702805bda875f7",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/sales-tax-exemption-certs/story/02.webp",
+      "bytes": 41440,
+      "sha256": "12b930736330cad6aaf3e2ceb62c2dc0baed88596266d08deb51c5df6cfc1622",
       "caption": "Turn 1 - Storeline admin: I'm Dana, Alderkeep Candle Works",
-      "turn": 1,
-      "bytes": 22598,
-      "sha256": "253167d13c3411ce5d81f43c0e0b845f32c5cc00bdbb5e5ba8964879a5f7461f"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/sales-tax-exemption-certs/story/03.webp",
-      "caption": "Turn 5 - Postwren, Athena: Three messages are in the mail",
-      "turn": 5,
-      "bytes": 23390,
-      "sha256": "1f61502712c35c02de84a7647ec9eb3d8a001ec3b70680f4e509029a6e87ecdb"
+      "bytes": 29686,
+      "sha256": "78d608c51e00120dcbfdc7954e0a7be993303d6e94b3ea931a463588bc4a48f2",
+      "caption": "Turn 5 - Postwren, Athena: Three messages in the mailbox (all 3 listed)",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/sales-tax-exemption-certs/story/04.webp",
-      "caption": "Turn 8 - Clientwren CRM, Athena: Thirteen certificates are on file",
-      "turn": 8,
-      "bytes": 22868,
-      "sha256": "7446a1e90beff34d7c8fbe1cae5d54f6b4a50023e704f0f6c7b3e513f2da56fa"
+      "bytes": 34194,
+      "sha256": "860c973590eb1fe5053decc8f61ac8847476f0cd3c5a2aa225f09e6c928226f0",
+      "caption": "Turn 8 - Clientwren CRM, Athena: 13 certificates are on file (all 13 listed)",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/sales-tax-exemption-certs/story/05.webp",
-      "caption": "Turn 12 - Taxline State, Athena: The rules are in, and they support the three answers I filed",
-      "turn": 12,
-      "bytes": 22288,
-      "sha256": "609eca4e1421fa07e9cf3abbf1063ee74e67fd72e7c5d58f373da9e9c0bec7a2"
-    },
-    {
-      "path": "playbooks/sales-tax-exemption-certs/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23480,
-      "sha256": "51e75d1cfb70657945b35463a4fdb7ec1f78c0d3a24b74db4a98598985074f93"
+      "bytes": 43684,
+      "sha256": "cd0dbbbc5b4cc5fdf2f351757c7b84012cef68a1c43984c2dd6b77aac3bede8e",
+      "caption": "Turn 12 - Taxline State, Athena: I'm filing the third answer, for O-2908, because the rules clear C-108",
+      "kind": "turn",
+      "turn": 12
     }
   ]
 }

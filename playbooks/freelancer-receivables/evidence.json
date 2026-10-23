@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "freelancer-receivables",
-  "captured_at": "2026-10-09T16:05:34Z",
+  "captured_at": "2026-10-23T17:03:03Z",
   "bench_run_at": "2026-10-08T00:19:01Z",
-  "narration": {
-    "text": "A freelancer's receivables, collected. This is a chore for a solo product designer in Brooklyn, trading as a one-person LLC, with seven clients: three force a supplier portal (Coupa, Ariba, Tipalti), the rest pay by email invoice. The invoice leaves QuickBooks, and then it disappears. Athena works it across 6 portals: QuickBooks, Chase Business, Coupa Supplier Portal, SAP Business Network, Tipalti supplier hub and Gmail. On the bench, she found 4 of 5 eligible items, worth 21,100 dollars of the 21,550 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. Among them: Acme's Ariba shows payment scheduled on Net 120; the contract says 30 days and governs. Orbit kept 500 dollars, and the contract's late-delivery credit lets it. She took 4 minutes. By hand, the same chore takes 4 hours, so she was about 69 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 30 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 68.207,
-    "sha256": "cfb9cbb125d9b011eaf5529ec88400e94b64c7e28491e0a7c23a594f60ff3105"
-  },
-  "video": {
-    "path": "evidence/freelancer-receivables/evidence.mp4",
-    "duration_s": 68.24,
-    "bytes": 3136942,
-    "sha256": "b44ea30602522655553660d613d9989b6f0a01b742b4bdeec809b5b39b789671"
-  },
-  "thumbnail": {
-    "path": "playbooks/freelancer-receivables/thumb.jpg",
-    "bytes": 99931,
-    "sha256": "4dd9b3777b16a5fb0a962cbb263c475ff1a4f1dcb7b552c83f52b1d92d9fd8d5"
-  },
   "story": [
     {
+      "n": 1,
       "path": "playbooks/freelancer-receivables/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23130,
-      "sha256": "5ba61399b932d301db07a3eebc394a068ee2ff4c6141f15da2ac33fd4a95c742"
+      "bytes": 43208,
+      "sha256": "0c45f47efac03fafb644eee3821637e5f3829664c56b1e0fde24352e13b35f1a",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/freelancer-receivables/story/02.webp",
+      "bytes": 33084,
+      "sha256": "8caee555abd5c457bd833c228002b49b2979c9c8a5dc4dc7879717d8ed043e1f",
       "caption": "Turn 1 - QuickBooks: Money day",
-      "turn": 1,
-      "bytes": 21156,
-      "sha256": "0cddf332ec23ab40c4e48019a12d437ce21da89d06e9657a1705275fbf66756d"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/freelancer-receivables/story/03.webp",
+      "bytes": 44000,
+      "sha256": "d978f8d72232104fc2b1e49fd4cf2f6c45069c5e89bb39e41f53d85bd1cf84b7",
       "caption": "Turn 5 - Coupa Supplier Portal: Northwind's Coupa portal",
-      "turn": 5,
-      "bytes": 23380,
-      "sha256": "5653ea443cbb075eda36f09b32dac37cb5a65d27ec20e6ab11e95a7c49255541"
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/freelancer-receivables/story/04.webp",
+      "bytes": 43612,
+      "sha256": "6775dc894ff724f41120d1a6be8083f5f6fde8f59509e4b9e7ef3d3e6ddb7328",
       "caption": "Turn 10 - Tipalti supplier hub, Athena: The hold on LU-330 ($4,200) is a W-9 name mismatch",
-      "turn": 10,
-      "bytes": 23314,
-      "sha256": "33ad8bc9f7ef6b41b480538be3a69d3a3be9f5466f67684d0c4d5c704aa0bfdc"
+      "kind": "turn",
+      "turn": 10
     },
     {
+      "n": 5,
       "path": "playbooks/freelancer-receivables/story/05.webp",
+      "bytes": 43152,
+      "sha256": "4c1b1a6928837b0913c1d4cc2faf9412b2692c402b0950a3592b2b4a550fa5f7",
       "caption": "Turn 14 - Tipalti supplier hub: I've switched to Tipalti supplier hub as you asked",
-      "turn": 14,
-      "bytes": 23312,
-      "sha256": "6ad4a3343cc0a90f809be91cdf09759ab26e085e63fbafa5d3bdcfdd7d906b70"
-    },
-    {
-      "path": "playbooks/freelancer-receivables/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22678,
-      "sha256": "a07fa88f9d669cfef05da1e5b125e6b3ff665470281b65117ac87253908c50e5"
+      "kind": "turn",
+      "turn": 14
     }
   ]
 }

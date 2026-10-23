@@ -1,15 +1,16 @@
 {
   "playbook": "trademark-maintenance",
-  "run_at": "2026-10-10T16:25:40Z",
+  "run_at": "2026-10-23T16:29:29Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 121.2,
+  "comparable": "sha256:a612c5e4e8c56d58",
+  "wall_s": 145.5,
   "turns": 13,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 50,
-  "cost_usd": 1.7647,
+  "reads": 49,
+  "cost_usd": 1.4593,
   "your_time_s": 120,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 2.0
+    "minutes": 2.4
   },
   "score": {
     "eligible": 4,
     "found": 4,
     "exact": 4,
+    "neutral": 0,
     "value_total_usd": 45500.0,
     "value_found_usd": 45500.0,
     "recall_value": 1.0,
@@ -96,11 +98,11 @@
     },
     {
       "action": "file_declaration",
-      "key": "6213401",
+      "key": "6075522",
       "outcome": "correct",
-      "value_usd": 18400.0,
+      "value_usd": 6300.0,
       "exact": true,
-      "why": "R-1 TARNBROOK, registered 12 November 2020: the section 8 window ran from 12 November 2025 to 12 November 2026 and is open (rules: windows). Backpacks and duffel bags (class 18) and camp mugs (class 21) are all sold this month; specimens SP-01 or SP-03 and SP-04 are real photographs and a live product page, not the SP-02 render. Section 8 only, 2 classes at 325 dollars: 650. Sales under it, 18,400 dollars"
+      "why": "R-4 TARNBROOK logo, registered 9 June 2020: the sixth anniversary was 9 June 2026, so the section 8 deadline has passed and the grace period runs to 9 December 2026. Wool socks are sold this month. Section 8 with the grace surcharge for the one class: 325 + 100 = 425. Sales under it, 6,300 dollars"
     },
     {
       "action": "file_declaration",
@@ -112,23 +114,34 @@
     },
     {
       "action": "file_declaration",
-      "key": "6075522",
+      "key": "6213401",
       "outcome": "correct",
-      "value_usd": 6300.0,
+      "value_usd": 18400.0,
       "exact": true,
-      "why": "R-4 TARNBROOK logo, registered 9 June 2020: the sixth anniversary was 9 June 2026, so the section 8 deadline has passed and the grace period runs to 9 December 2026. Wool socks are sold this month. Section 8 with the grace surcharge for the one class: 325 + 100 = 425. Sales under it, 6,300 dollars"
+      "why": "R-1 TARNBROOK, registered 12 November 2020: the section 8 window ran from 12 November 2025 to 12 November 2026 and is open (rules: windows). Backpacks and duffel bags (class 18) and camp mugs (class 21) are all sold this month; specimens SP-01 or SP-03 and SP-04 are real photographs and a live product page, not the SP-02 render. Section 8 only, 2 classes at 325 dollars: 650. Sales under it, 18,400 dollars"
     }
   ],
   "missed": [],
-  "closing_words": "My recall view is cut short, so I'll pull back the product and specimen details before filing anything.\n\nFour specimens are confirmed as acceptable in full (SP-03, SP-07, SP-09 and SP-10). I still need to check SP-04 and SP-05 before I rely on them. I'll also reread Dani's specimen-photos email, since it may affect the photos.\n\nI'm pinned to the Markwick tab, so I'll recall those details from memory.\n\nSP-04 is a product page showing the mark, a price and an add-to-cart button, and SP-05 is a photo of the TRAIL label on a hip pack. Both qualify. For the other specimens I'll use ones confirmed as real photos of stock:\n- **R-1 class 18:** SP-03 (duffel), not SP-01.\n- **R-2 class 25:** SP-07 (hat label), not SP-06.\n\nI'm filing four declarations. Each comes to you as a card to sign under oath.\n\n\n**Nothing is filed yet.** Four cards are waiting for your answer, and the total is **$3,225**, whi",
+  "closing_words": "The recalled notes are cut short, and I need the exact specimens and goods for each class before I propose any filing. I'm recalling them now.\n\nMost of what I need is in. I'm still missing the camp mugs for R-1's class 21 and the wool socks for R-4.\n\nI'm filing four declarations as cards for you to approve. Nothing runs until you answer each one. I'm correcting one figure from my earlier table: R-3 pays the grace surcharge on both the section 8 and the section 9, so its fee is $850, not $750.\n\n- **R-1 (6213401), section 8, classes 18 and 21: $650.** Class 18 backpacks and duffel bags are both still sold, and class 21 camp mugs are still sold. Specimens are SP-01 (backpack hangtag photo) and SP-04 (mug product page showing the mark, price and add-to-cart). I'm leaving out the SP-02 render.\n- **R-2 (5100288), sections 8 and 9, classes 18 and 25: $1,300.** Hip packs, jackets and hats are st",
+  "prose_audit": {
+    "said_usd": 3225.0,
+    "record_usd": 45500.0,
+    "agrees": false
+  },
   "trace": [
     {
       "portal": "Markwick filing desk",
       "user": "I'm Marit, Tarnbrook Outfitters. First, in the Markwick filing desk, read the rules and every registration on our docket, in full. Don't file anything yet: I'll send you to the store, our papers and my mail next.",
       "continued": false,
-      "said": "I'll start with the rules, the docket list and the first page of registrations.",
-      "said_chars": 79,
+      "said": "I'll start with the desk's rules and the docket listing. Nothing gets filed.",
+      "said_chars": 76,
       "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
         "read_rules",
         "list_registrations",
         "list_registrations"
@@ -139,15 +152,9 @@
       "portal": "Markwick filing desk",
       "user": "",
       "continued": true,
-      "said": "Next I'll read the remaining rules topics and all twelve registrations in full.",
-      "said_chars": 79,
+      "said": "Rules and the 12-registration list are in. Now I'll read each registration in full.",
+      "said_chars": 83,
       "reads": [
-        "read_rules",
-        "read_rules",
-        "read_rules",
-        "read_rules",
-        "read_rules",
-        "read_rules",
         "read_registration",
         "read_registration",
         "read_registration",
@@ -167,8 +174,8 @@
       "portal": "Markwick filing desk",
       "user": "",
       "continued": true,
-      "said": "I've read the rules and all twelve registrations in full. From the dates alone, four need filing, and R-3 is urgent. Nothing is filed yet.\n\n**Needs maintenance now** (specimens and goods still to check in Storeline)\n- **R-2 TARNBROOK TRAIL (5100288), classes 18 and 25:** The 10-year section 8 and 9 window is open until 2026-12-02. Gloves must be deleted, which I'll confirm from Storeline. Fee: 2 classes × (325 + 325) = $1,300.",
-      "said_chars": 2132,
+      "said": "I've read the rules and all 12 registrations, and I've filed nothing. These calls are based on the desk's date of Friday 9 October 2026. Whether each registration has goods in use still has to be checked against Storeline.\n\n| Reg | Mark | Position | Likely filing |\n|---|---|---|---|\n| R-1 (6213401) | TARNBROOK | Section 8 window is open (5th–6th anniversary, 12 Nov 2025 to 12 Nov 2026). | Section 8, classes 18 and 21: $650 |\n| R-2 (5100288) | TRAIL | Ten-year window is open (2 Dec 2025 to 2 Dec 2026).",
+      "said_chars": 2642,
       "reads": [],
       "cards": []
     },
@@ -176,8 +183,8 @@
       "portal": "Storeline",
       "user": "This is our store. Read every product: what we still sell, when we last sold it, and the photographs we have of each.",
       "continued": false,
-      "said": "I'll list the products first, then read each one in full.",
-      "said_chars": 57,
+      "said": "I'll list both pages of products first, then read each one in full.",
+      "said_chars": 67,
       "reads": [
         "list_products",
         "list_products"
@@ -188,8 +195,8 @@
       "portal": "Storeline",
       "user": "",
       "continued": true,
-      "said": "Sixteen products, so I'll read all of them in full.",
-      "said_chars": 51,
+      "said": "All 16 products are listed. Now I'll read each one in full.",
+      "said_chars": 59,
       "reads": [
         "read_product",
         "read_product",
@@ -214,8 +221,8 @@
       "portal": "Storeline",
       "user": "",
       "continued": true,
-      "said": "All sixteen products are read. Nothing is filed yet.\n\n**Still sold, with an acceptable specimen** (specimens are photos taken 2 Sept 2026 unless noted)\n- P-01 Backpacks (R-1, cl. 18): last sale 6 Oct, $6,200 in 12 months. SP-01 is acceptable. SP-02 is a render, so don't use it.\n- P-02 Duffel bags (R-1, cl. 18): last sale 3 Oct, $4,800. SP-03.\n- P-03 Camp mugs (R-1, cl. 21): last sale 8 Oct, $7,400. SP-04 is the product page captured 7 Oct.\n- P-04 Hip packs (R-2, cl. 18): last sale 29 Sept, $3,900. SP-05.",
-      "said_chars": 2148,
+      "said": "All 16 products are read, and I've filed nothing. Fourteen are still sold, and two are discontinued: the leather gloves and the snowshoes. Sleeping bags have never been sold.",
+      "said_chars": 2933,
       "reads": [],
       "cards": []
     },
@@ -234,8 +241,8 @@
       "portal": "Binderwell",
       "user": "",
       "continued": true,
-      "said": "Four papers are listed. I'll read all of them.",
-      "said_chars": 46,
+      "said": "Four papers are listed. I'll read each one.",
+      "said_chars": 43,
       "reads": [
         "read_document",
         "read_document",
@@ -248,8 +255,8 @@
       "portal": "Binderwell",
       "user": "",
       "continued": true,
-      "said": "I've read all four Binderwell papers, and nothing is filed yet.\n\n- **D-1, assignment:** On 2 May 2024 Tarnbrook Outfitters LLC assigned TARNBROOK SPORTS (reg. 6361822, R-10) to Fellmoor Brands Inc. Only the owner of record can file, so R-10 isn't ours to maintain. I'll leave it alone.\n- **D-2, glove line:** The line ended on 14 February 2023, the last sale was on 20 February 2023, and no gloves will be made again. The leather gloves can't be declared as in use, so they come off R-2's class 25 goods.",
-      "said_chars": 1114,
+      "said": "I've read all four papers in Binderwell and filed nothing.\n\n| Doc | What it says | What it means |\n|---|---|---|\n| D-1 | On 2 May 2024 Tarnbrook Outfitters LLC assigned TARNBROOK SPORTS (6361822) to Fellmoor Brands Inc. | R-10 is no longer ours, so we can't declare it. |\n| D-2 | The glove line ended on 14 Feb 2023. The last pairs sold by 20 Feb 2023, and none will be made again. | The gloves (P-07) must be deleted from R-2's goods. |\n| D-3 | The snowshoe line ended on 19 Mar 2024, and none are planned.",
+      "said_chars": 1429,
       "reads": [],
       "cards": []
     },
@@ -257,10 +264,9 @@
       "portal": "Postwren",
       "user": "This is my mail. Read every message.",
       "continued": false,
-      "said": "Starting with the mail list.\n\n\nCorrection: listing is AUTO, so I'll call it directly.",
-      "said_chars": 85,
+      "said": "I'll list your mail first, then read each message.",
+      "said_chars": 50,
       "reads": [
-        "list_messages",
         "list_messages"
       ],
       "cards": []
@@ -269,8 +275,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "Four messages are listed. I'll read all of them.",
-      "said_chars": 48,
+      "said": "Four messages are listed. I'll read all of them now.",
+      "said_chars": 52,
       "reads": [
         "read_message",
         "read_message",
@@ -283,8 +289,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "All four messages are read. Before I plan any filing, I'll recall the registration and product details, because my view of them is cut short.\n\nI've read all four messages, and they add nothing that changes the plan. Nothing is filed yet.\n\n- **M-1** (Markwick, 8 Jul): the section 8 for 6154803 (TARNBROOK KIDS, R-7) was accepted, so R-7 stays alone.\n- **M-2** (Fellmoor, 20 Aug): they own TARNBROOK SPORTS (R-10) since the May 2024 assignment and ask you to stop forwarding its reminders. R-10 stays alone.",
-      "said_chars": 2313,
+      "said": "I've read all four messages in your mail and filed nothing.\n\n| Msg | What it says | What it means |\n|---|---|---|\n| M-1 | Markwick accepted the section 8 declaration for TARNBROOK KIDS (6154803), filed 14 May 2026. Nothing more is due until the year before its 10th anniversary. | Leave it alone. |\n| M-2 | Fellmoor Brands Inc. has owned TARNBROOK SPORTS (6361822) since the May 2024 assignment. They ask you to stop forwarding its reminders. | This matches D-1. R-10 isn't ours, so we can't declare it.",
+      "said_chars": 1600,
       "reads": [],
       "cards": []
     },
@@ -292,8 +298,8 @@
       "portal": "Markwick filing desk",
       "user": "Back at the filing desk. For each registration that has to be maintained now, file the declaration the rules require, with a specimen for every class, only the goods we still sell, and the fee for it. Leave alone what is not due, what is al",
       "continued": false,
-      "said": "My recall view is cut short, so I'll pull back the product and specimen details before filing anything.\n\nFour specimens are confirmed as acceptable in full (SP-03, SP-07, SP-09 and SP-10). I still need to check SP-04 and SP-05 before I rely on them. I'll also reread Dani's specimen-photos email, since it may affect the photos.\n\nI'm pinned to the Markwick tab, so I'll recall those details from memory.",
-      "said_chars": 1943,
+      "said": "The recalled notes are cut short, and I need the exact specimens and goods for each class before I propose any filing. I'm recalling them now.\n\nMost of what I need is in. I'm still missing the camp mugs for R-1's class 21 and the wool socks for R-4.\n\nI'm filing four declarations as cards for you to approve. Nothing runs until you answer each one. I'm correcting one figure from my earlier table: R-3 pays the grace surcharge on both the section 8 and the section 9, so its fee is $850, not $750.",
+      "said_chars": 1768,
       "reads": [],
       "cards": [
         {
@@ -304,9 +310,9 @@
         },
         {
           "action": "file_declaration",
-          "key": "6213401",
+          "key": "6075522",
           "outcome": "correct",
-          "value_usd": 18400.0
+          "value_usd": 6300.0
         },
         {
           "action": "file_declaration",
@@ -316,11 +322,29 @@
         },
         {
           "action": "file_declaration",
-          "key": "6075522",
+          "key": "6213401",
           "outcome": "correct",
-          "value_usd": 6300.0
+          "value_usd": 18400.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-10T16:25:40Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 4,
+      "eligible": 4,
+      "value_found_usd": 45500.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 121.2,
+      "your_time_s": 120
     }
   ]
 }

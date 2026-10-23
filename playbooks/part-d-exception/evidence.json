@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "part-d-exception",
-  "captured_at": "2026-10-10T02:52:06Z",
-  "bench_run_at": "2026-10-10T02:49:45Z",
-  "narration": {
-    "text": "A parent's drug plan asked for every formulary and tier exception his history supports, with the prescriber's statement, and none it does not. This is a chore for an adult daughter who manages her father's Medicare drug plan as his authorized representative, with proxy access to his doctor's portal. Athena works it across 3 portals: Rxmeadow plan, Carenook and Corner Pharmacy. On the bench, she found 3 of 3 eligible items, worth 799 dollars of the 799 dollars there was to find. All 3 were filed at the exact amount the rules allow. She made no false claim. The world held 15 traps, and she walked past 15. Among them: A drug whose step therapy alternative was never tried. A tiering exception for a specialty-tier drug. She took 2 minutes. By hand, the same chore takes 2 hours, so she was about 71 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 62.599,
-    "sha256": "f0d8d2536bf57bfa3bbaff7ee34b8a1ce11276d9a8e6005db59231bd5b02427c"
-  },
-  "video": {
-    "path": "evidence/part-d-exception/evidence.mp4",
-    "duration_s": 62.6,
-    "bytes": 2750288,
-    "sha256": "8b1e200645308d5c1f476e8b87cca956dd7915c19ac0e2546a1d1c97a75c5057"
-  },
-  "thumbnail": {
-    "path": "playbooks/part-d-exception/thumb.jpg",
-    "bytes": 74958,
-    "sha256": "1e33e3c3a02d5e6fb24e500737b94759f1a8afbe98eb8658d9d4a5244a029a36"
-  },
+  "captured_at": "2026-10-23T17:08:44Z",
+  "bench_run_at": "2026-10-23T16:19:22Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/part-d-exception/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22880,
-      "sha256": "406fa61e07a2f0a426175fce608048eaf49a937c7f2a69dab010763ea503297a"
+      "bytes": 40840,
+      "sha256": "f6f85324a42e3b671f0cc6ab53ecef0292ba0bd55c7cf0ce5aa72cfbe65ba54e",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/part-d-exception/story/02.webp",
+      "bytes": 28380,
+      "sha256": "7cae045978b0aa7772d48780292e4a8d8cd9367426e393f42642741ca1763afb",
       "caption": "Turn 1 - Rxmeadow plan: Dad's drug plan is costing him a fortune",
-      "turn": 1,
-      "bytes": 20240,
-      "sha256": "07ee095a0db0802b07ec4cf7a7aa4a02f739520c3b0164e592784d7e7d9cee3c"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/part-d-exception/story/03.webp",
-      "caption": "Turn 4 - Carenook: This is Dr",
-      "turn": 4,
-      "bytes": 19208,
-      "sha256": "de1a6bdb3fa52e9a1438b7893cc0363c9e7ded6a950316f70afebaa80d739c1c"
+      "bytes": 40256,
+      "sha256": "c7a4024a88bbab0aaa49db085ca3659741d5e896e3edc963937f1339cd82e267",
+      "caption": "Turn 3 - Rxmeadow plan, Athena: All eight drugs are now read (8 of 8), and the Rxmeadow side is done",
+      "kind": "turn",
+      "turn": 3
     },
     {
+      "n": 4,
       "path": "playbooks/part-d-exception/story/04.webp",
-      "caption": "Turn 6 - Carenook, Athena: Page 2 is read, and it settles three of the drugs",
-      "turn": 6,
-      "bytes": 22266,
-      "sha256": "bf1d6b670edacd2775cdc6ddec482c70d45c703aa102f4f1eade2617e07a85f9"
+      "bytes": 23794,
+      "sha256": "20c534c6fb41f89595b84537119b532b0dbbac37647181152af3d74927ac235e",
+      "caption": "Turn 6 - Corner Pharmacy: Corner Pharmacy",
+      "kind": "turn",
+      "turn": 6
     },
     {
+      "n": 5,
       "path": "playbooks/part-d-exception/story/05.webp",
-      "caption": "Turn 9 - Rxmeadow plan: Back in Rxmeadow",
-      "turn": 9,
-      "bytes": 23594,
-      "sha256": "8a91764258cec46a695d15bf20135649f2373d30c286078dd5d6d58f5a840707"
-    },
-    {
-      "path": "playbooks/part-d-exception/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 21982,
-      "sha256": "70ee141b0b174b8e201cd884c74a8aa9f8a43861026ddf9ba14059cc5041a680"
+      "bytes": 42204,
+      "sha256": "f2a182b65a7a1a5c6a09af530963ec8357c1d77391a456e2471eb021d72b56d2",
+      "caption": "Turn 8 - Rxmeadow plan: Back in Rxmeadow",
+      "kind": "turn",
+      "turn": 8
     }
   ]
 }

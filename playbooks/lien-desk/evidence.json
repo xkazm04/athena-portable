@@ -1,8 +1,8 @@
 {
   "schema": 3,
   "playbook": "lien-desk",
-  "captured_at": "2026-10-23T15:06:38Z",
-  "bench_run_at": "2026-10-22T08:36:28Z",
+  "captured_at": "2026-10-23T17:05:41Z",
+  "bench_run_at": "2026-10-23T15:35:50Z",
   "story": [
     {
       "n": 1,
@@ -15,8 +15,8 @@
     {
       "n": 2,
       "path": "playbooks/lien-desk/story/02.webp",
-      "bytes": 34774,
-      "sha256": "8d8dd047f8bf84d92d3772398d0d84e69306679ce09e4a12042837b27e6456be",
+      "bytes": 32566,
+      "sha256": "6b563118efafc4e9414faec7c709385b90b4d3dae1b4d918c1fcaa1da01e4246",
       "caption": "Turn 1 - Office: Lien desk for the week",
       "kind": "turn",
       "turn": 1
@@ -24,29 +24,29 @@
     {
       "n": 3,
       "path": "playbooks/lien-desk/story/03.webp",
-      "bytes": 42680,
-      "sha256": "4a8672b8294444ddf29517b509dc04040cf003520f1177f8396ba51a0ab464dc",
-      "caption": "Turn 5 - Procore: I'm in Procore Pay",
+      "bytes": 41898,
+      "sha256": "2490803ce9ea3eb42227c30c0d6c93464f1a6956ae0db71cba199aa84ecdb9a0",
+      "caption": "Turn 5 - Office, Athena: Deposits don't change the picture, so I'm filing four cards",
       "kind": "turn",
       "turn": 5
     },
     {
       "n": 4,
       "path": "playbooks/lien-desk/story/04.webp",
-      "bytes": 43592,
-      "sha256": "b1efa89994d62865191b603ca6ab38875b354ce929cc8ed38aa79f00b0acb90a",
-      "caption": "Turn 8 - Oracle Textura, Athena: The Mission Bay non-payment notice is the urgent one",
+      "bytes": 42870,
+      "sha256": "33c6df3f15b5ba9d87c7a8cc9e120bbfc4527b8026033d05c36af696d7be1f0e",
+      "caption": "Turn 9 - Oracle Textura, Athena: I'm filing one card",
       "kind": "turn",
-      "turn": 8
+      "turn": 9
     },
     {
       "n": 5,
       "path": "playbooks/lien-desk/story/05.webp",
-      "bytes": 43376,
-      "sha256": "93bb727153cae12cc652e101990ef2d2e3866a63a5607e5953271b9b31abad66",
-      "caption": "Turn 12 - Office: Back in the office",
+      "bytes": 42030,
+      "sha256": "836d7e977b036aed6eb762284500f404da3eeb873685b2272721149f86f26201",
+      "caption": "Turn 13 - Office, Athena: Nothing new is due that I can file without you, apart from the Mission Bay…",
       "kind": "turn",
-      "turn": 12
+      "turn": 13
     }
   ]
 }

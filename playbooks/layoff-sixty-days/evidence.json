@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "layoff-sixty-days",
-  "captured_at": "2026-10-11T02:49:38Z",
-  "bench_run_at": "2026-10-11T02:47:20Z",
-  "narration": {
-    "text": "A laid-off analyst's three clocks are kept: unemployment filed this week, COBRA for October only to cover a scan, a marketplace plan and credit from November, and severance signed to be paid after thirty days, while a withdrawn draft, an early payment, a full COBRA, a December start and a broker's rush are left out, across four portals. This is a chore for a 52-year-old logistics analyst in New York, laid off with six weeks of severance and a scan on the sixth of October, who has a broker's rush, a friend's advice and a COBRA notice. On the bench, she found 6 of 6 eligible items, worth 6,025 dollars of the 6,025 dollars there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes 3 hours, so she was about 78 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 61.449,
-    "sha256": "cdf25cec70eb4894b712bccc6a324e8dfdbde2ec37fc6de55ec2bb96b91e6703"
-  },
-  "video": {
-    "path": "evidence/layoff-sixty-days/evidence.mp4",
-    "duration_s": 61.449,
-    "bytes": 3364955,
-    "sha256": "5c77a9b132dccc7c1ebf3c9282718259555ce92a904c67a120d30f446b4465dc"
-  },
-  "thumbnail": {
-    "path": "playbooks/layoff-sixty-days/thumb.jpg",
-    "bytes": 89806,
-    "sha256": "b3f0f3d980aa22314f43a36f12894f9ba09c8f9bfdb5bf6b556a22bd0e0b8cd8"
-  },
+  "captured_at": "2026-10-23T17:05:11Z",
+  "bench_run_at": "2026-10-23T16:07:07Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/layoff-sixty-days/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22438,
-      "sha256": "9534cce0efc344399d7339d3307ee1b04f0bfca190d85eba0afda55057d3962d"
+      "bytes": 42474,
+      "sha256": "4cb87cdac805cd1c286c2a0ee481e2684e9c81f83f4429d3f89b42bffc29d8e1",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/layoff-sixty-days/story/02.webp",
+      "bytes": 30844,
+      "sha256": "f92d20e8bf4aa0f915ad5c61d6a53047a220e4c2f233b19f677a69d0ebe082f2",
       "caption": "Turn 1 - Postwren: I'm Lena Okafor",
-      "turn": 1,
-      "bytes": 23918,
-      "sha256": "d6f58d9587c7c711d19569005315eecc4d87acf6483262c6370890b65fc42341"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/layoff-sixty-days/story/03.webp",
+      "bytes": 32908,
+      "sha256": "179b00697248ef4177016c44d16ef3b7885f6540cdd735c3a81c49a664e491cd",
       "caption": "Turn 4 - Fernhollow Unemployment Desk: This is the Fernhollow Unemployment Desk",
-      "turn": 4,
-      "bytes": 23676,
-      "sha256": "ed0053a8bb7aa6d44b47dfae35bf8500b462837f705ba6286a80cd3570d98e22"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/layoff-sixty-days/story/04.webp",
-      "caption": "Turn 7 - Coverfind, Athena: Coverfind is read and nothing is chosen or applied",
-      "turn": 7,
-      "bytes": 22580,
-      "sha256": "c887f45ab47fedcf3637d8a4529e55503b5615f80e17cdbf6bd0d84f4078975f"
+      "bytes": 33140,
+      "sha256": "a401a5839f17872d00637446e7638eda0979dba631d461185d7d4d40d62f1f64",
+      "caption": "Turn 8 - Crewmarrow HR: This is my HR, Crewmarrow",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/layoff-sixty-days/story/05.webp",
-      "caption": "Turn 10 - Coverfind: Back to Coverfind",
-      "turn": 10,
-      "bytes": 23868,
-      "sha256": "5cecc55ff48a4b4a576f9f21b23c4d239ea618fd7563a20e4738e46add737251"
-    },
-    {
-      "path": "playbooks/layoff-sixty-days/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23738,
-      "sha256": "1a6e41f3b60b33172323e953f73f2232fd351d3bed9705a87b69a7d0ef5bb5ab"
+      "bytes": 43428,
+      "sha256": "1bbd56c2a7ad8636de6bee674cbb4f033999aba2e98198b483a04d7e7457fcef",
+      "caption": "Turn 11 - Coverfind: Back to Coverfind",
+      "kind": "turn",
+      "turn": 11
     }
   ]
 }

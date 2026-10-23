@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "merchant-fee-audit",
-  "captured_at": "2026-10-10T16:10:22Z",
-  "bench_run_at": "2026-10-10T16:07:36Z",
-  "narration": {
-    "text": "A ceramics shop's three card-processing statements checked against its contract and Visa's published rates, five overcharges credited, a markup raised back to the first of the month, a regulated debit billed as exempt, a closed merchant ID, a wrong rate and a fee the contract does not name, while downgrades billed at their own rate, pass-through assessments, the fees the contract names, a credit already paid and a statement past its window are left alone. This is a chore for the owner of a small online ceramics shop in Oregon, who takes Visa payments through a processor on an interchange-plus agreement and has never checked a statement. On the bench, she found 5 of 5 eligible items, worth 118 dollars of the 118 dollars there was to find. She made no false claim. The world held 13 traps, and she walked past 13. She took 2 minutes. By hand, the same chore takes 2 hours, so she was about 67 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 64.377,
-    "sha256": "e6aafcc550ebb676f35f172abac7686e18031a9586dc45db76a900a9e0a84d09"
-  },
-  "video": {
-    "path": "evidence/merchant-fee-audit/evidence.mp4",
-    "duration_s": 64.377,
-    "bytes": 2978289,
-    "sha256": "239143d9caaae55693972f0cd10ddb3cd7d45f1d4d47160c44d6f19691445756"
-  },
-  "thumbnail": {
-    "path": "playbooks/merchant-fee-audit/thumb.jpg",
-    "bytes": 78207,
-    "sha256": "497ff920f2da8c1cfeab4f194220da8a227ec48f9772c9a699d8c61ead41dff3"
-  },
+  "captured_at": "2026-10-23T17:06:50Z",
+  "bench_run_at": "2026-10-23T16:14:43Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/merchant-fee-audit/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23036,
-      "sha256": "01c785ab74e1367614e2bc5c0cfcb2d67cf42339e4b9b7bd62d68525836deff2"
+      "bytes": 26540,
+      "sha256": "dd867a0a79071bbfcc73573a8f64779dd1955e48c2fae322d6f4807f5cd917c5",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/merchant-fee-audit/story/02.webp",
+      "bytes": 33736,
+      "sha256": "650e95a3dcb8b4668e961796776666a2b834f2a23abc6adbc029b9a4ff963dd1",
       "caption": "Turn 1 - Paycurrent: I'm Nora, Wrenfield Ceramics",
-      "turn": 1,
-      "bytes": 23876,
-      "sha256": "d5b03bfa339bda3f2c57390e68c87530eec16428d2d52ae6096c1dfd75afd7f8"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/merchant-fee-audit/story/03.webp",
-      "caption": "Turn 4 - Paycurrent, Athena: All 18 lines, both notices and all five guide rules are read",
-      "turn": 4,
-      "bytes": 23156,
-      "sha256": "0ad377506f7579b09e6f2c3a9cdc65a25d7800e56eae829ec2696cf299ceb80e"
+      "bytes": 41718,
+      "sha256": "cccbb7e1434d0074afbfbee512b14c66786b03a767ec4bf22b882483356aa69e",
+      "caption": "Turn 4 - Paycurrent, Athena: I've read all 3 statements, every line (18 of 18), both notices and all 5…",
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/merchant-fee-audit/story/04.webp",
+      "bytes": 27416,
+      "sha256": "10d150026b986ca0f4b8ee6b79ec7bc4414c38116cbbe759a076c8c0471dd2e4",
       "caption": "Turn 8 - Ledgerwren bank: This is our bank",
-      "turn": 8,
-      "bytes": 22320,
-      "sha256": "ad5172e670fea6e2f47297d71c8d69b4eeb32175b1277099d045439eafc8df9c"
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/merchant-fee-audit/story/05.webp",
+      "bytes": 42376,
+      "sha256": "bc43615e9ca5bfc43e2604ab2e4424cc6436c28dcb3de39bf50388a7e520fbd7",
       "caption": "Turn 11 - Paycurrent: Back in Paycurrent",
-      "turn": 11,
-      "bytes": 23980,
-      "sha256": "0e10490499bdc7896048c9f2376d92f500c9ad4ef4da44883c3efc5ce14eda41"
-    },
-    {
-      "path": "playbooks/merchant-fee-audit/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23252,
-      "sha256": "b9931f907de1ea43bdff1aa914295172c0524d5ad499dc4b3091131568bbdf0d"
+      "kind": "turn",
+      "turn": 11
     }
   ]
 }

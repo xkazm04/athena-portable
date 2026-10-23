@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "name-change-everywhere",
-  "captured_at": "2026-10-10T06:18:54Z",
-  "bench_run_at": "2026-10-10T06:16:38Z",
-  "narration": {
-    "text": "A married name carried through Social Security, the licence, the passport, the bank and payroll in the order each office needs, on the free passport form, with a REAL ID before Thanksgiving and a husband's change started where it has to start. This is a chore for a woman of thirty-two, married five weeks ago, carrying her new name through every office and starting her husband's, who took the same name. Athena works it across 5 portals: Benefitline, IDway, Passdesk, Ledgerline bank and Staffnest. On the bench, she found 6 of 6 eligible items, worth 39 dollars and 96 cents of the 39 dollars and 96 cents there was to find. She made no false claim. The world held 9 traps, and she walked past 9. She took 2 minutes. By hand, the same chore takes 10 hours, so she was about 333 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 60.441,
-    "sha256": "bb12a78f1e7a34a71e48ac97531d1c98bff63c1c34e4baca9e09e4d185a02893"
-  },
-  "video": {
-    "path": "evidence/name-change-everywhere/evidence.mp4",
-    "duration_s": 60.48,
-    "bytes": 3564153,
-    "sha256": "4c462e5b198ea6c9e0b33b8d9f806fbfd7fa29133669eff0b16d2917e0664212"
-  },
-  "thumbnail": {
-    "path": "playbooks/name-change-everywhere/thumb.jpg",
-    "bytes": 93320,
-    "sha256": "b5fa0c8869262a7dd60f45cacb1d938b181b16efb503d62eab0fecd4a678a4bc"
-  },
+  "captured_at": "2026-10-23T17:07:18Z",
+  "bench_run_at": "2026-10-23T16:14:38Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/name-change-everywhere/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22276,
-      "sha256": "ddeec9fe33231ae58bc2f76e8b88a2ad3f2fadbf98ae9a9ac3ff37acb2abefa1"
+      "bytes": 42698,
+      "sha256": "938d202065471c497482c95900cb81399478167f6bb49a6ed789ee01aa642e83",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/name-change-everywhere/story/02.webp",
+      "bytes": 33482,
+      "sha256": "0cb432715614601f63c9287f19b330156c871c6998e1646e2866ad0708cb3b3c",
       "caption": "Turn 1 - Benefitline: Elias and I married on Saturday 5 September and we both took the name…",
-      "turn": 1,
-      "bytes": 23982,
-      "sha256": "2884f1de9243b50375db42582a79065fc2a2bc77329603f63b1204fce6e98f31"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/name-change-everywhere/story/03.webp",
-      "caption": "Turn 5 - IDway, Athena: I'm booking Nadia's name change with the REAL ID upgrade for Tuesday 13 October",
-      "turn": 5,
-      "bytes": 23654,
-      "sha256": "25f08c7ee4ae58de3535b6f79a61aa1dfc7fd6b20361298ec25b971606eb9127"
+      "bytes": 34400,
+      "sha256": "b80adc1d24e1076e7760f0f2b78d5459aa6609af6fab8f15824c2a8587a06a2d",
+      "caption": "Turn 5 - IDway, Athena: The licences and slots are in",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/name-change-everywhere/story/04.webp",
-      "caption": "Turn 8 - Ledgerline bank: Ledgerline, our bank",
-      "turn": 8,
-      "bytes": 23502,
-      "sha256": "89bfc10128af5af254f372ca639e4d086b8d5985542d6df15a382fb8b8a92f73"
+      "bytes": 42678,
+      "sha256": "faaa3191c79a654b2dfb2c11481fea073e27027961c46d6996c1bca166f7481a",
+      "caption": "Turn 8 - Passdesk, Athena: The right form is DS-5504, and it's free",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/name-change-everywhere/story/05.webp",
-      "caption": "Turn 12 - IDway: I've switched to IDway as you asked",
-      "turn": 12,
-      "bytes": 22596,
-      "sha256": "5003325e8a59a8f3a393f26352b951758641ec6924c58b2070b186b70e8b85bb"
-    },
-    {
-      "path": "playbooks/name-change-everywhere/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22382,
-      "sha256": "e6414152abebd0e6d6fc41a89e48e2a226caca999c3588590a42064b5222ab55"
+      "bytes": 41360,
+      "sha256": "35680028bd9f208828e05227093db8ee54de3d1c9b18cedd170b0145a5a463df",
+      "caption": "Turn 12 - Staffnest, Athena: One change is due now",
+      "kind": "turn",
+      "turn": 12
     }
   ]
 }

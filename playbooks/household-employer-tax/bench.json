@@ -1,15 +1,16 @@
 {
   "playbook": "household-employer-tax",
-  "run_at": "2026-10-10T06:01:21Z",
+  "run_at": "2026-10-23T16:04:55Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 208.1,
-  "turns": 11,
+  "comparable": "sha256:1479b8cbf185bcd7",
+  "wall_s": 152.4,
+  "turns": 10,
   "nudges": 0,
   "follow_ups": 0,
   "reads": 31,
-  "cost_usd": 1.1913,
+  "cost_usd": 1.0264,
   "your_time_s": 180,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 3.5
+    "minutes": 2.5
   },
   "score": {
     "eligible": 6,
     "found": 6,
     "exact": 6,
+    "neutral": 0,
     "value_total_usd": 818.17,
     "value_found_usd": 818.17,
     "recall_value": 1.0,
@@ -185,7 +187,7 @@
     }
   ],
   "missed": [],
-  "closing_words": "The rules settle the Q3 numbers.\n\n**Q3 wages**\n- **Marisol:** $8,418.00 paid in Q3. She was paid $2,760.00 in Q1 and $8,832.00 in Q2, which makes $11,592.00 before Q3. That leaves $4,408.00 under the $16,000 base, so $4,408.00 is taxable.\n- **Tax:** $4,408.00 × 3.4% = $149.872, which rounds to **$149.87**.\n- **Felix:** left out. Ostmere doesn't cover wages paid to your child under 21.\n- **Tomasz:** $0 in Q3, because his first pay is today.\n- **Priya:** left out. Fernhollow controls her work and reports her.\n- **Total covered wages:** $8,418.00.\n\nI'm filing the report and the payment as separate cards. Please approve the report first, then the payment. Filing myself costs nothing, so I'm leaving Pennwick's $195 unpaid.\n\n\n**New-hire report for Tomasz:** I haven't filed it yet. Ostmere wants the first day of work for pay, and I only have 6 October as the day his I-9 Section 1 was signed. I ",
+  "closing_words": "Three Taxline cards are filed below: the Q3 report on $8,418.00 of covered wages with $149.87 of tax, the payment of that amount, and Tomasz's new-hire report.\n\n**Q3 wages (2026-Q3)**\n- **Marisol: $8,418.00.** This is her cash wages paid by pay date in Q3, from Hearthpay.\n- **Taxable wages: $4,408.00.** Her earlier covered wages this year were $2,760 + $8,832 = $11,592. That leaves $16,000 − $11,592 = $4,408 under the wage base.\n- **Tax: $149.87.** That is $4,408 × 3.4%, to the cent.\n- **Total covered wages: $8,418.00.** Felix is your child under 21, so his $2,592 is not covered or reported. Priya is Fernhollow's employee, so she isn't reported either. Tomasz had no Q3 pay, because his first pay is today.\n\n\nI took Tomasz's 6 October start from my Hearthpay notes, and the last four digits (2290) from his Social Security card copy on file. Please check both on the card. If his first day of",
   "prose_audit": {
     "said_usd": 8418.0,
     "record_usd": 149.87,
@@ -196,25 +198,11 @@
       "portal": "Hourquill",
       "user": "I employ people to look after Dad at home, and I want this quarter's payroll taxes done right. Start in Hourquill, where everyone's hours are kept: read who works here, my notes on each person, and the hours week by week.",
       "continued": false,
-      "said": "I'll start by reading who is in Hourquill and the first page of weekly hours.",
-      "said_chars": 77,
+      "said": "I'll start in Hourquill. I'm reading the list of people and the logged weeks now, then each person's notes.\n\n\nPlan: Hourquill first, then Hearthpay set-up, Ledgerline and Taxline. I'll read the notes on each person once the list returns their ids.",
+      "said_chars": 247,
       "reads": [
         "list_people",
-        "list_weeks"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "Hourquill",
-      "user": "",
-      "continued": true,
-      "said": "Four people are logged, and I've read page 1 of 3 of the weeks. Next I'll read your notes on each person and the remaining pages.",
-      "said_chars": 129,
-      "reads": [
-        "read_person",
-        "read_person",
-        "read_person",
-        "read_person",
+        "list_weeks",
         "list_weeks",
         "list_weeks"
       ],
@@ -224,8 +212,22 @@
       "portal": "Hourquill",
       "user": "",
       "continued": true,
-      "said": "Hourquill is read. Marisol and Tomasz look like household employees, and Felix and Priya probably should not be in your Ostmere report.\n\n**What the notes and hours show**\n- **Marisol Ferreira (P-1):** She works weekdays from 8:30 to 2:30, 30 h a week at $23/h, and you set her hours and tasks. That makes her your employee. She has been paid every Friday since 2 March, with no pay on 21 Aug (unpaid vacation).",
-      "said_chars": 2431,
+      "said": "Hours are read. Next I'm reading your notes on each of the four people.",
+      "said_chars": 71,
+      "reads": [
+        "read_person",
+        "read_person",
+        "read_person",
+        "read_person"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Hourquill",
+      "user": "",
+      "continued": true,
+      "said": "Hourquill is read. It shows two people who are not your employees, one set up wrongly, and one regular employee.\n\n| Person | What your notes show | Reading |\n|---|---|---|\n| Marisol Ferreira (P-1) | You set her hours and tasks. She's paid weekly at $23/h, 30 h a week, since 2 March. | Employee. |\n| Felix Vale (P-2) | He's your son, born 3 May 2007, so he's 19. He worked weekends from 13 June to 23 August at $18/h and is back at college.",
+      "said_chars": 2060,
       "reads": [],
       "cards": []
     },
@@ -233,12 +235,14 @@
       "portal": "Hearthpay",
       "user": "Hearthpay runs my payroll. Read each worker's set-up and file, the wages paid by quarter and the household employer guide. Fix any set-up that's wrong before tonight's pay run, and sign whatever is due today. Don't set up anyone who isn't m",
       "continued": false,
-      "said": "I'll start with the worker list, Q3 wages and the guide index, then open each worker's file.",
-      "said_chars": 92,
+      "said": "I'm reading Hearthpay first: the worker list, the guide index and the wages for each quarter. I'll open each worker's file once the list gives their ids.",
+      "said_chars": 153,
       "reads": [
         "list_workers",
+        "read_guide",
         "wages_by_quarter",
-        "read_guide"
+        "wages_by_quarter",
+        "wages_by_quarter"
       ],
       "cards": []
     },
@@ -246,8 +250,8 @@
       "portal": "Hearthpay",
       "user": "",
       "continued": true,
-      "said": "Next I'll read each worker's file and the guide topics that bear on this.",
-      "said_chars": 73,
+      "said": "The worker list and wages are read. Now I'm opening each worker's file and the guide topics that decide the set-up.",
+      "said_chars": 115,
       "reads": [
         "view_worker",
         "view_worker",
@@ -256,7 +260,6 @@
         "read_guide",
         "read_guide",
         "read_guide",
-        "read_guide",
         "read_guide"
       ],
       "cards": []
@@ -265,8 +268,8 @@
       "portal": "Hearthpay",
       "user": "",
       "continued": true,
-      "said": "Three Hearthpay changes are needed before tonight's 6 pm run. I'm filing a decision card for each.\n\n**Tomasz Bielski (HW-3)** is set up as a 1099 contractor, but he's your employee. You set his hours and tasks, he uses your supplies and works only for you, and you can end it at any time. The guide says a request to be paid as a contractor, or an LLC, doesn't change who controls the work. Tonight's $288 would go out with no tax withheld and no W-2.",
-      "said_chars": 1627,
+      "said": "Three Hearthpay fixes are needed before tonight's 6 pm run. I'm filing a card for each, and I'm leaving Felix and Priya alone.\n\n- **Tomasz Bielski (HW-3):** He's set up as a 1099-NEC contractor, but you set his hours and tasks, he uses your supplies, and you can end it. Under Pub 926 that makes him your employee. Hearthpay's guide says a contractor request or an LLC doesn't change that. He needs a W-2 set-up before tonight's first pay.\n- **Tomasz's I-9, Section 2:** It's due today.",
+      "said_chars": 1369,
       "reads": [],
       "cards": [
         {
@@ -293,8 +296,8 @@
       "portal": "Ledgerline bank",
       "user": "Ledgerline is my bank. Read what I've paid the IRS and Ostmere this year and the bills waiting. Don't pay anything twice, and don't pay anyone to file what I can file myself.",
       "continued": false,
-      "said": "I'll read the tax payments, the bills waiting and the account activity.",
-      "said_chars": 71,
+      "said": "I'm reading Ledgerline now: the tax payments, the bills waiting and the account activity.",
+      "said_chars": 89,
       "reads": [
         "list_tax_payments",
         "list_bills",
@@ -306,8 +309,8 @@
       "portal": "Ledgerline bank",
       "user": "",
       "continued": true,
-      "said": "Nothing in Ledgerline needs paying today, so I'm filing no card here.\n\n- **IRS estimates:** ES-1, ES-2 and ES-3 are all paid. ES-3 went out on 14 September (confirmation 26C-5518) and shows in the account activity. The bill-pay reminder for voucher 3 ($1,150, due 15 September) is stale, and paying it would pay the same estimate twice. ES-4 isn't due until 15 January 2027 and has no amount yet.\n- **Ostmere:** Q1 ($93.84) and Q2 ($300.29) are paid. Q3 has no payment yet.",
-      "said_chars": 1925,
+      "said": "Ledgerline is read, and nothing there needs paying today.\n\n- **1040-ES payment 3 is already paid.** The $1,150 went out on 14 September (IRS confirmation 26C-5518), and it shows in the account activity. The bill-pay reminder for voucher 3 is stale, so I won't pay it. Payments 1 and 2 are also paid. Payment 4 (due 15 January 2027) has no amount set, so I'm leaving it.\n- **Ostmere:**\n  - Q1 ($93.84, 24 April) and Q2 ($300.29, 28 July) are paid.\n  - Q3 is not paid, and no amount appears here.",
+      "said_chars": 2755,
       "reads": [],
       "cards": []
     },
@@ -315,22 +318,11 @@
       "portal": "Taxline State",
       "user": "Taxline State, Ostmere's employer portal. Read the rules, my account and my filings. File and pay what's due for the third quarter with the right wages, and report any new hire who has to be reported. Then tell me what's already past, what'",
       "continued": false,
-      "said": "I'll start by reading Ostmere's rules, your account and your filings, and recalling what the other tabs showed.\n\nI've read nothing from Taxline yet. The rules, account and filings answers haven't come back, so I'm not filing or paying anything. A report or payment needs the Q3 covered wages, the rate and wage base, and what the account already lists as reported new hires.\n\nWhat I carry over from the other tabs:\n- **Marisol:** $8,418.00 paid in Q3, and she is your employee.\n- **Felix:** $2,592.00 paid in Q3.",
-      "said_chars": 1274,
+      "said": "I'm reading Taxline's rules, your account and your filings now, and recalling what I found in the other tabs.\n\n\nNothing is filed or paid yet. Once these return, I'll work out the Q3 covered wages and the new-hire details from the pages. I won't derive them from nearby figures.\n\nThe Taxline reads (account, filings and four rule topics) went to the page. Their answers arrive with my next turn, so I'm not calling them again.\n\nRecall found no Taxline figures.",
+      "said_chars": 912,
       "reads": [
-        "read_rules",
         "view_account",
-        "list_filings"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "Taxline State",
-      "user": "",
-      "continued": true,
-      "said": "The account and filings are in. Now I'll read the specific Ostmere rules on who is covered, the report, and the new-hire report.\n\n\nSo far from the account and filings:\n- **Past:** Q1 and Q2 are filed and paid ($93.84 and $300.29).\n- **Due next:** Q3 is due Friday 30 October and is not filed. Q4 opens 1 January 2027 and is due 1 February 2027.\n- **Rate:** 3.4% on the first $16,000 of each employee's covered wages.\n- **Already reported:** only Marisol, as a new hire.",
-      "said_chars": 673,
-      "reads": [
+        "list_filings",
         "read_rules",
         "read_rules",
         "read_rules",
@@ -343,8 +335,8 @@
       "portal": "Taxline State",
       "user": "",
       "continued": true,
-      "said": "The rules settle the Q3 numbers.\n\n**Q3 wages**\n- **Marisol:** $8,418.00 paid in Q3. She was paid $2,760.00 in Q1 and $8,832.00 in Q2, which makes $11,592.00 before Q3. That leaves $4,408.00 under the $16,000 base, so $4,408.00 is taxable.\n- **Tax:** $4,408.00 × 3.4% = $149.872, which rounds to **$149.87**.\n- **Felix:** left out. Ostmere doesn't cover wages paid to your child under 21.\n- **Tomasz:** $0 in Q3, because his first pay is today.\n- **Priya:** left out. Fernhollow controls her work and reports her.",
-      "said_chars": 2389,
+      "said": "Three Taxline cards are filed below: the Q3 report on $8,418.00 of covered wages with $149.87 of tax, the payment of that amount, and Tomasz's new-hire report.\n\n**Q3 wages (2026-Q3)**\n- **Marisol: $8,418.00.** This is her cash wages paid by pay date in Q3, from Hearthpay.\n- **Taxable wages: $4,408.00.** Her earlier covered wages this year were $2,760 + $8,832 = $11,592. That leaves $16,000 − $11,592 = $4,408 under the wage base.\n- **Tax: $149.87.** That is $4,408 × 3.4%, to the cent.",
+      "said_chars": 2419,
       "reads": [],
       "cards": [
         {
@@ -366,6 +358,24 @@
           "value_usd": 25.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-10T06:01:21Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 6,
+      "eligible": 6,
+      "value_found_usd": 818.17,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 208.1,
+      "your_time_s": 180
     }
   ]
 }

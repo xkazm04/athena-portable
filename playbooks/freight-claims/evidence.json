@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "freight-claims",
-  "captured_at": "2026-10-10T07:13:45Z",
-  "bench_run_at": "2026-10-10T07:09:31Z",
-  "narration": {
-    "text": "A lighting maker's freight claims filed with the carriers that moved the goods, inside nine months: concealed damage behind a clean receipt proved, a released-value crate claimed at its limit, and a pallet lost in January claimed three days before its time runs out, while damage its own packing or its customer caused is left alone. This is a chore for the logistics coordinator of a small light-fixture maker that ships to distributors by LTL, who files the freight claims herself between other work. On the bench, she found 5 of 5 eligible items, worth 6,920 dollars of the 6,920 dollars there was to find. She made no false claim. The world held 17 traps, and she walked past 17. She took 3 minutes. By hand, the same chore takes 4 hours, so she was about 83 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 60.589,
-    "sha256": "7fb853bd8af124bf6f0869b0cd210d002afb5541b40f7a37bbd7c222de4567b4"
-  },
-  "video": {
-    "path": "evidence/freight-claims/evidence.mp4",
-    "duration_s": 60.6,
-    "bytes": 3466904,
-    "sha256": "1b369b42a616f52a57222d489f36aa078d8f89c733aabe49f300498aa7e19058"
-  },
-  "thumbnail": {
-    "path": "playbooks/freight-claims/thumb.jpg",
-    "bytes": 80172,
-    "sha256": "9ad9ee575003eff21df69ff9409c3437e06d2ec876cb5bc69bee8a3be387cb65"
-  },
+  "captured_at": "2026-10-23T17:03:12Z",
+  "bench_run_at": "2026-10-23T15:30:48Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/freight-claims/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23578,
-      "sha256": "8c84619ac44ace1ee5359496900b967cacc3e6326b0d288707117c35d67c1ee7"
+      "bytes": 41354,
+      "sha256": "4197396f3971eabc4be5065986f6c7f7e3ca049a4cb53e112707e26360927774",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/freight-claims/story/02.webp",
+      "bytes": 31966,
+      "sha256": "5c4fa85d0efed39dc8409a2484ca107a6534459592abdde3e38b85b0004eb3b5",
       "caption": "Turn 1 - Tracklog TMS: I'm Rosa, I run freight claims at Thistlewood Lighting",
-      "turn": 1,
-      "bytes": 23594,
-      "sha256": "d2d16b681f424b68e7669c5e7114c94f4b0f60fe7e4257444a5918b437aa037d"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/freight-claims/story/03.webp",
-      "caption": "Turn 6 - Mailnest, Athena: Page 1 of 2 is listed (6 of 9 messages), so I'm reading those six and fetching…",
-      "turn": 6,
-      "bytes": 22958,
-      "sha256": "ba73b40dc708d639c2a60da881d93b25d8b8e5b70370732291f8f43e6718eba0"
+      "bytes": 28908,
+      "sha256": "cd7435006b9e2436d469686e4a20605bf3d0889c6736d40e3502cbd7574a7702",
+      "caption": "Turn 6 - Mailnest, Athena: All 9 messages are listed (page 3 was a repeat of page 2)",
+      "kind": "turn",
+      "turn": 6
     },
     {
+      "n": 4,
       "path": "playbooks/freight-claims/story/04.webp",
-      "caption": "Turn 11 - Docshelf, Athena: Docshelf is read",
-      "turn": 11,
-      "bytes": 22184,
-      "sha256": "4162e59789b9e14464c8cdcf4751232c3aa0059bd0307e52f4283a55e14b759d"
+      "bytes": 43688,
+      "sha256": "ef794f2b8b0c03093bcbf020d375dd9e3366d7cbfba38d833ec15eb576ec5916",
+      "caption": "Turn 10 - Docshelf, Athena: All 14 documents are read",
+      "kind": "turn",
+      "turn": 10
     },
     {
+      "n": 5,
       "path": "playbooks/freight-claims/story/05.webp",
-      "caption": "Turn 16 - Larkfield LTL claims, Athena: I'm filing two claims with Larkfield",
-      "turn": 16,
-      "bytes": 22022,
-      "sha256": "41d60e4eb94eee5f5daeccbf3d0cfcff14a4d99f0d487f121c7154a22229bc51"
-    },
-    {
-      "path": "playbooks/freight-claims/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22588,
-      "sha256": "cb36ee906ead6ce6480d0b9f6fea1ec18518cb36acfcc9cea4749b06bfef094e"
+      "bytes": 43286,
+      "sha256": "c8401b7c0ed49ad64187bc4b6b83213574fbf5566266fe230ba64bcdca892a73",
+      "caption": "Turn 15 - Larkfield LTL claims, Athena: The two Larkfield claims are on decision cards and not yet filed, so nothing…",
+      "kind": "turn",
+      "turn": 15
     }
   ]
 }

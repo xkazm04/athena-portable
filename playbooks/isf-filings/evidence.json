@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "isf-filings",
-  "captured_at": "2026-10-10T10:53:15Z",
-  "bench_run_at": "2026-10-10T10:48:28Z",
-  "narration": {
-    "text": "A garden importer's Importer Security Filings made before each cargo is loaded: two due today, one of them on a sailing the carrier moved five days earlier, one due on Sunday, a factory named late and a new warehouse updated before arrival, while the air samples, the bulk pebbles, the Canadian container the carrier files and a rolled sailing are left alone. This is a chore for the import coordinator of a home and garden importer that brings in a few containers a week from Asia and files its own Importer Security Filings. On the bench, she found 5 of 5 eligible items, worth 25,000 dollars of the 25,000 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. She took 3 minutes. By hand, the same chore takes 2 hours, so she was about 35 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 59.744,
-    "sha256": "cba880b5bd9ff90fa1a1e1c166c961be9a5e6e62f73dd96cd74054a3b4f60fc4"
-  },
-  "video": {
-    "path": "evidence/isf-filings/evidence.mp4",
-    "duration_s": 59.76,
-    "bytes": 3084240,
-    "sha256": "3f8b1cb7808d394b1e17057a1407ae47b50cba061a25277c08a801bf81a0a3ed"
-  },
-  "thumbnail": {
-    "path": "playbooks/isf-filings/thumb.jpg",
-    "bytes": 91580,
-    "sha256": "5f18064b3b755a433e724b1bb011c843abe2747f00165deaa4663a72ab46ce52"
-  },
+  "captured_at": "2026-10-23T17:05:01Z",
+  "bench_run_at": "2026-10-23T15:33:04Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/isf-filings/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22650,
-      "sha256": "b10905b2c4eb1498555ebea8a88839dc319eef9b53fec5609b582531de1c34da"
+      "bytes": 39138,
+      "sha256": "3999a56d1d811eaa019562015ea4e10baef8a54bccc566cbf4f335e0ffeb48eb",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/isf-filings/story/02.webp",
+      "bytes": 37864,
+      "sha256": "d00f9de82955b422f2bfc22357e9ffd4b053a23947cff28f643dfe8d98031a29",
       "caption": "Turn 1 - Sourcewick supplier portal: I'm Ines, the import coordinator at Larchwick Home & Garden",
-      "turn": 1,
-      "bytes": 23854,
-      "sha256": "ee907b0f992e0f2051f92bbe0e4eb189a5da7b67b048f4e5c4afbcd49417c959"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/isf-filings/story/03.webp",
-      "caption": "Turn 5 - Forwarden, Athena: Page 1 of 2 is in (showing 6 of 10)",
-      "turn": 5,
-      "bytes": 22494,
-      "sha256": "bb7c0da5806fcfbee1b28532fd81873605bc60125b0e8d810483d1b57360c996"
+      "bytes": 34328,
+      "sha256": "22a80441fae010293e47fa25238b453a7f2a84ea69e42bf945b096eac1fa62b9",
+      "caption": "Turn 5 - Forwarden, Athena: All ten bookings are listed",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/isf-filings/story/04.webp",
-      "caption": "Turn 9 - Postwren, Athena: Six messages this week (showing 6 of 6)",
-      "turn": 9,
-      "bytes": 23914,
-      "sha256": "1e950f5275bc316de1a88f6d9cfec79ee6a4358de109582837bb1f2d1dfaf445"
+      "bytes": 33862,
+      "sha256": "b20609fff70a24dad65557fe3c7d0c086b7f61b1d900d8482b53e44c094f2021",
+      "caption": "Turn 8 - Postwren, Athena: Six messages are listed",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/isf-filings/story/05.webp",
-      "caption": "Turn 13 - Quayloft ISF desk, Athena: 41610 is filed with Joliet as ship-to, and M-4 says it goes to Memphis",
-      "turn": 13,
-      "bytes": 23640,
-      "sha256": "42e1adb92f661859a76ff2fd321dd8ff2ec91b7f6f3c97bd8ac298f967f9b873"
-    },
-    {
-      "path": "playbooks/isf-filings/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23528,
-      "sha256": "4fb2021c75a0bce652024ad9a048395f45aac057cbf65e5b35c55b05beca90f0"
+      "bytes": 42794,
+      "sha256": "d29d72732b6b4f990f8b1b31cd937573be8e5db4842ebbf67671c7a474bd0ec7",
+      "caption": "Turn 12 - Quayloft ISF desk, Athena: I'm filing the three new ISFs, most urgent first, and updating the two filings…",
+      "kind": "turn",
+      "turn": 12
     }
   ]
 }

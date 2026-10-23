@@ -1,15 +1,16 @@
 {
   "playbook": "vehicle-recall-reimbursement",
-  "run_at": "2026-10-10T19:42:49Z",
+  "run_at": "2026-10-23T16:30:50Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 93.2,
+  "comparable": "sha256:c3da6f1f9c177d5a",
+  "wall_s": 103.4,
   "turns": 9,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 24,
-  "cost_usd": 0.8671,
+  "reads": 19,
+  "cost_usd": 0.8667,
   "your_time_s": 120,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 1.6
+    "minutes": 1.7
   },
   "score": {
     "eligible": 4,
     "found": 4,
     "exact": 4,
+    "neutral": 0,
     "value_total_usd": 674.02,
     "value_found_usd": 674.02,
     "recall_value": 1.0,
@@ -120,15 +122,21 @@
     }
   ],
   "missed": [],
-  "closing_words": "Nothing in the plan excludes the four items you expected to be claimable, so I'm filing them. Tamsin signs each one.\n\n\n**Four claims are filed for Tamsin to sign, all on VIN 9TVKE22A4NB204417: $288.00 + $14.50 + $344.00 + $27.52 = $674.02.**\n\n- **G-4471-L1:** labour, $288.00.\n- **G-4471-L2:** shop fee and waste disposal, $14.50.\n- **P-1:** the pump module you bought, $344.00. That is under Torvane's $420.00 list price, so you get what you paid.\n- **P-2:** tax on the pump module, $27.52.\n\n**Left out, and why:**\n- **G-3920-L1, relay, $168.40:** it was done 30 May 2025, before the period opens on 20 July 2025. It is also a different part.\n- **G-4471-L3, tank vent valve, $215.00:** the plan covers the fuel pump module, not other parts.\n- **G-4471-L4, oil change, $79.95, and G-4471-L5, tire rotation, $29.00:** the plan excludes maintenance.\n- **G-4802-L1, second pump replacement, $402.00:** B",
+  "closing_words": "I'm filing four claims, one per line, all for your Kestrel (VIN 9TVKE22A4NB204417). The repair was on 12 Nov 2025, inside the plan's window of 20 Jul 2025 to 15 Sep 2026. You paid every line yourself.\n\n\n**Claimed (4 cards waiting for you):**\n- **G-4471-L1:** labour, $288.00.\n- **G-4471-L2:** shop fee and waste disposal, $14.50.\n- **P-1:** the fuel pump module you bought, $344.00. That is below Torvane's $420.00 list price, so the claim is what you paid.\n- **P-2:** sales tax on the part, $27.52.\n\nThe total is $674.02. Tamsin signs each card.\n\n**Left out, and why:**\n- **G-3920-L1, relay, $168.40:** done on 30 May 2025, before the window opens on 20 Jul 2025. It is also a different part.\n- **G-4471-L3, vent valve, $215.00:** a different part, not the fuel pump module.\n- **G-4471-L4, oil change, $79.95, and G-4471-L5, tire rotation, $29.00:** maintenance, which the plan excludes.\n- **G-4802-",
+  "prose_audit": {
+    "said_usd": 674.02,
+    "record_usd": 674.02,
+    "agrees": true
+  },
   "trace": [
     {
       "portal": "Postwren",
       "user": "I'm Tamsin Okafor. This is my mail: the recall letter, the receipts for a part I bought, and what my warranty and my roadside cover paid. Read every message. Don't do anything yet: I'll send you to the recall site, my repair shop and the ca",
       "continued": false,
-      "said": "I'll start by listing the inbox, then read each message.",
-      "said_chars": 56,
+      "said": "I'll start by listing the inbox, then read each message.\n\n\nCorrection, in the right form:",
+      "said_chars": 89,
       "reads": [
+        "list_messages",
         "list_messages"
       ],
       "cards": []
@@ -137,8 +145,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "Next I'll read all five messages.",
-      "said_chars": 33,
+      "said": "Five messages in the inbox (5 of 5). I'll read all of them now.",
+      "said_chars": 63,
       "reads": [
         "read_message",
         "read_message",
@@ -152,8 +160,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "I've read all five messages. Nothing has been claimed.\n\n- **M-1, recall letter (28 Aug 2026):** Your 2022 Kestrel, VIN 9TVKE22A4NB204417, is in recall R-2614 (fuel pump module). Repairs you paid for between 20 July 2025 and 15 September 2026 can be claimed under Torvane's plan.\n- **M-2, Boltbarn order (9 Nov 2025):** The pump module (P-1) was $344.00 and sales tax (P-2) was $27.52. The core deposit (P-3) was $40.00, for a total of $411.52.",
-      "said_chars": 1277,
+      "said": "I've read all five messages (5 of 5) and done nothing else, as you asked. Here is what each one says.\n\n- **M-1, recall letter (28 Aug 2026):** Your 2022 Kestrel, VIN 9TVKE22A4NB204417, is in recall R-2614. You can claim repairs of this problem paid between 20 July 2025 and 15 September 2026.\n- **M-2, Boltbarn order (9 Nov 2025):** The fuel pump module cost $344.00 (P-1), plus $27.52 sales tax (P-2). The $40.00 core deposit (P-3) was refundable. You were charged $411.52 in total.",
+      "said_chars": 1555,
       "reads": [],
       "cards": []
     },
@@ -161,8 +169,8 @@
       "portal": "Recallmoor",
       "user": "This is Recallmoor. Read the recall and which vehicles are in it, and check the VINs of both my cars: my Kestrel, 9TVKE22A4NB204417, and my husband's Kestrel, 9TVKE20A1LB118902.",
       "continued": false,
-      "said": "I'll read the recall and check both VINs.",
-      "said_chars": 41,
+      "said": "I'll read the recall's summary and population, then check both VINs.",
+      "said_chars": 68,
       "reads": [
         "read_recall",
         "read_recall",
@@ -175,8 +183,8 @@
       "portal": "Recallmoor",
       "user": "",
       "continued": true,
-      "said": "Your Kestrel is in the recall and your husband's is not. Nothing has been claimed.\n\n- **Your Kestrel, 9TVKE22A4NB204417 (2022):** Recall R-2614 applies. The remedy has not been done yet.\n- **Your husband's Kestrel, 9TVKE20A1LB118902 (2020):** No recall matches this VIN. The recall covers only model years 2022 and 2023, and the tenth character of his VIN is L, which means 2020. Leave this car out of the claim.\n- **The recall:** The fuel pump module can fail and the engine can stall without warning.",
-      "said_chars": 996,
+      "said": "Your Kestrel is in the recall. Your husband's is not.\n\n- **Recall R-2614:** The fuel pump module can fail, and the engine can stall without warning. The fix is a free module replacement at the dealer. Torvane reported the defect on 20 July 2026 and mailed its last owner letter on 28 August 2026.\n- **Who is in it:** 2022 and 2023 Kestrels built 1 March 2021 to 31 January 2023. The VIN ranges are 9TVKE22A_NB200001 to 9TVKE22A_NB289999 and 9TVKE23A_PB000001 to 9TVKE23A_PB119999.",
+      "said_chars": 1474,
       "reads": [],
       "cards": []
     },
@@ -196,8 +204,8 @@
       "portal": "Garrowby Service",
       "user": "",
       "continued": true,
-      "said": "I've read all 9 invoice lines on both pages (showing 9 of 9). Two lines on one invoice look claimable, and nothing has been claimed yet.\n\n**Likely claimable (your Kestrel, VIN …204417, invoice G-4471, 12 Nov 2025):**\n- G-4471-L1: labour to replace the fuel pump module (you supplied the part), 2.4 h, $288.00, paid by you.\n- G-4471-L2: shop fee and waste disposal on the fuel pump job, $14.50, paid by you.",
-      "said_chars": 1580,
+      "said": "I've read all 9 invoice lines across both pages (9 of 9). Two of them are claimable.\n\n**Claimable, your Kestrel, inside 20 Jul 2025 to 15 Sep 2026, paid by you:**\n- G-4471-L1, 12 Nov 2025: labour to replace the fuel pump module, $288.00.\n- G-4471-L2, 12 Nov 2025: shop fee and waste disposal on that job, $14.50.\n\nThe part you bought yourself, from Boltbarn, is claimed separately: $344.00 plus $27.52 tax, which is $371.52. It has no Garrowby line.",
+      "said_chars": 1652,
       "reads": [],
       "cards": []
     },
@@ -205,15 +213,9 @@
       "portal": "Torvane Owners",
       "user": "This is Torvane Owners. Read the reimbursement plan, every topic. Then claim every line of my invoices and my parts receipt that the plan covers, with the VIN and why, and leave out what it does not cover. Then tell me what you claimed and ",
       "continued": false,
-      "said": "I'll read every topic of the plan first, and re-read the invoice lines so I have the exact figures.\n\n\nI haven't claimed anything yet. Once the plan topics and invoice lines come back, I'll file the claims.\n\nThe Garrowby tools can't be called from this tab, so I'll recall the invoice lines from memory. The plan answers arrive next turn.\n\n\nNothing is claimed yet. I'm waiting on the plan topics before filing anything.\n\nMy last recall line was malformed, so I'm sending it again in the right form.",
-      "said_chars": 998,
+      "said": "I'll read every topic of the Torvane plan first.",
+      "said_chars": 48,
       "reads": [
-        "read_plan",
-        "read_plan",
-        "read_plan",
-        "read_plan",
-        "read_plan",
-        "read_plan",
         "read_plan",
         "read_plan",
         "read_plan",
@@ -227,8 +229,8 @@
       "portal": "Torvane Owners",
       "user": "",
       "continued": true,
-      "said": "Nothing in the plan excludes the four items you expected to be claimable, so I'm filing them. Tamsin signs each one.\n\n\n**Four claims are filed for Tamsin to sign, all on VIN 9TVKE22A4NB204417: $288.00 + $14.50 + $344.00 + $27.52 = $674.02.**\n\n- **G-4471-L1:** labour, $288.00.\n- **G-4471-L2:** shop fee and waste disposal, $14.50.\n- **P-1:** the pump module you bought, $344.00. That is under Torvane's $420.00 list price, so you get what you paid.\n- **P-2:** tax on the pump module, $27.52.",
-      "said_chars": 1553,
+      "said": "I'm filing four claims, one per line, all for your Kestrel (VIN 9TVKE22A4NB204417). The repair was on 12 Nov 2025, inside the plan's window of 20 Jul 2025 to 15 Sep 2026. You paid every line yourself.\n\n\n**Claimed (4 cards waiting for you):**\n- **G-4471-L1:** labour, $288.00.\n- **G-4471-L2:** shop fee and waste disposal, $14.50.\n- **P-1:** the fuel pump module you bought, $344.00. That is below Torvane's $420.00 list price, so the claim is what you paid.\n- **P-2:** sales tax on the part, $27.52.",
+      "said_chars": 1433,
       "reads": [],
       "cards": [
         {
@@ -256,6 +258,24 @@
           "value_usd": 27.52
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-10T19:42:49Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 4,
+      "eligible": 4,
+      "value_found_usd": 674.02,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 93.2,
+      "your_time_s": 120
     }
   ]
 }

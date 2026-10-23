@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "public-records-requests",
-  "captured_at": "2026-10-11T07:58:43Z",
-  "bench_run_at": "2026-10-11T07:55:10Z",
-  "narration": {
-    "text": "A civic nonprofit's records requests on Friday 9 October 2026: three appeals filed inside 90 days, one for a denial that came only by mail, an overdue request chased, a narrowing, a city search fee disputed, and two new requests, while a late appeal, requests inside 20 working days, a city appeal and a records service go unfiled. This is a chore for the records coordinator of a small civic nonprofit that publishes investigative reports, with a board policy that it files its own requests, pays no records service and appeals an adverse determination it still needs. On the bench, she found 9 of 9 eligible items, worth 9 dollars of the 9 dollars there was to find. She made no false claim. The world held 15 traps, and she walked past 15. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 68 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 63.8,
-    "sha256": "14485400fa69690deda085c6ee9f02435e4243f31adf67542994e60a3d3d296c"
-  },
-  "video": {
-    "path": "evidence/public-records-requests/evidence.mp4",
-    "duration_s": 63.8,
-    "bytes": 3939504,
-    "sha256": "33ddb986fd49768716a9aa661cb7fbed3a46a4797743fa616ac0ef69e9d3cd4c"
-  },
-  "thumbnail": {
-    "path": "playbooks/public-records-requests/thumb.jpg",
-    "bytes": 89626,
-    "sha256": "5031b844022c71d060f2da5aaada2e9804114cbe8b133aedd06770a6e7d24f18"
-  },
+  "captured_at": "2026-10-23T17:09:34Z",
+  "bench_run_at": "2026-10-23T16:20:59Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/public-records-requests/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23114,
-      "sha256": "e2b79a02eff4d946cff81f4b0c4ad09eedec87d4e4b5f6d032767b2de39a9731"
+      "bytes": 42858,
+      "sha256": "1d80042b61c7f61b0c424e5570fcaa5168454b5e17fbe59c25256350046d7900",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/public-records-requests/story/02.webp",
+      "bytes": 34682,
+      "sha256": "b5853f34c79592646930216eb54fc6cdb2150c7fe68d5c0274477a9c67e38443",
       "caption": "Turn 1 - Filerecords: I'm the records coordinator at Cinderlake Civic Project",
-      "turn": 1,
-      "bytes": 22586,
-      "sha256": "1259db52f7cb37d16464db88a71e6563113f7c9a84a6e79efcb85d93f5b59686"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/public-records-requests/story/03.webp",
-      "caption": "Turn 5 - Agencydesk, Athena: Page 1 of 2 is read (3 of 4 city requests)",
-      "turn": 5,
-      "bytes": 22308,
-      "sha256": "c60507152aed90cb0d96516c9c95471bf36fd643aeca44eca78b8d03adaeb702"
+      "bytes": 41084,
+      "sha256": "d609564eb9deb3706fabde941d3c1a7853cdd8c3a3aa7df6548e52e219e7d622",
+      "caption": "Turn 5 - Agencydesk, Athena: Nothing is filed",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/public-records-requests/story/04.webp",
-      "caption": "Turn 9 - Binderwell, Athena: I've read all four Binderwell documents and all four drafts, and I've filed…",
-      "turn": 9,
-      "bytes": 23930,
-      "sha256": "97c693c06d3ad5bcc874ca15a9e5510cdba72728416d98b581d25e54065495f8"
+      "bytes": 43712,
+      "sha256": "f4ecedf87381ee87446cf2b4fd27bf87236e55f9e4bbd93814e2efd9b6f6c906",
+      "caption": "Turn 8 - Binderwell, Athena: Binderwell is read and nothing is filed",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/public-records-requests/story/05.webp",
-      "caption": "Turn 13 - Agencydesk: Now Agencydesk",
-      "turn": 13,
-      "bytes": 23026,
-      "sha256": "43217b9a30be64c044e01705acee3ad88756f37bb215dc8347ae759b1e1d808e"
-    },
-    {
-      "path": "playbooks/public-records-requests/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22694,
-      "sha256": "f5fb1519055f0f1347603d656eca7418be9398b7ba8fa00efbe3ee46c88abe50"
+      "bytes": 41820,
+      "sha256": "f5009afbac5b7aa82ed1414d02f68dc9d295a57c87f25e663b9aef71bdd1488d",
+      "caption": "Turn 12 - Agencydesk: Now Agencydesk",
+      "kind": "turn",
+      "turn": 12
     }
   ]
 }

@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "cobra-notices",
-  "captured_at": "2026-10-11T03:48:36Z",
-  "bench_run_at": "2026-10-11T03:46:20Z",
-  "narration": {
-    "text": "A self-administered employer's COBRA election notices go out inside their windows: a layoff, a resignation, an hours cut, a death, a divorce and a child's twenty-sixth birthday reported in time, and a separated spouse at her own address, while a waiver, a cut that kept coverage, a late or missing report and a leave are left alone. This is a chore for the HR and benefits manager of a 46-person manufacturer that administers its own group health plan. Athena works it across 3 portals: Crewmarrow HR, Carriercore and Postwren. On the bench, she found 7 of 7 eligible items, worth 770 dollars of the 770 dollars there was to find. She made no false claim. The world held 11 traps, and she walked past 11. She took 2 minutes. By hand, the same chore takes 75 minutes, so she was about 39 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 62.456,
-    "sha256": "d207080561aa7145f91163ebd505bf03379d8ab9eed316cb6a3784950b6f0935"
-  },
-  "video": {
-    "path": "evidence/cobra-notices/evidence.mp4",
-    "duration_s": 62.456,
-    "bytes": 2557528,
-    "sha256": "f436386d6cc189e91a0407386534b20f074c7ec438310423db070d2d89717da5"
-  },
-  "thumbnail": {
-    "path": "playbooks/cobra-notices/thumb.jpg",
-    "bytes": 83310,
-    "sha256": "1147cdc2c6c27fa6fd0fb0af9027b90e25e555e2190940c00d908e536a9c0df0"
-  },
+  "captured_at": "2026-10-23T16:59:41Z",
+  "bench_run_at": "2026-10-23T15:50:49Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/cobra-notices/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23082,
-      "sha256": "45f6dcf3ace418110286dca57f30ef4f4b6a6473d87a86bf916f2fc5b9d56cc3"
+      "bytes": 26310,
+      "sha256": "d8fb7e08a61d03f64721f1c7db3b11e8d3aabf6b0a25799ecd3a4aa9c2190081",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/cobra-notices/story/02.webp",
+      "bytes": 40906,
+      "sha256": "aac9a7562b307fb69b59b1e3faf39d155264f548d550ecbacb2f65f0dee475ad",
       "caption": "Turn 1 - Crewmarrow HR: I'm Bea, benefits at Brindlemoor Fabrication",
-      "turn": 1,
-      "bytes": 22706,
-      "sha256": "6a42e7fce01833273d506f5d0b6453ebc1308f8d8fb7bacbbbd28caa13a2c4f9"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/cobra-notices/story/03.webp",
-      "caption": "Turn 3 - Carriercore: Carriercore is the plan",
-      "turn": 3,
-      "bytes": 23732,
-      "sha256": "27f70712edb26e02a83b62e67492de485f4eaf0bcf7b583c97ecce22f6589bb0"
+      "bytes": 40780,
+      "sha256": "59564ad837a815a6edfad596e14890c9c22a3d9b88ce428713d1c7d17dc0f13c",
+      "caption": "Turn 3 - Crewmarrow HR, Athena: All 14 events are read",
+      "kind": "turn",
+      "turn": 3
     },
     {
+      "n": 4,
       "path": "playbooks/cobra-notices/story/04.webp",
-      "caption": "Turn 4 - Carriercore, Athena: Carriercore is read",
-      "turn": 4,
-      "bytes": 23886,
-      "sha256": "7d202274caf49c1c487115988c0f1302790a4ae6b81c6a2270440cae1b6cc581"
+      "bytes": 41918,
+      "sha256": "23ad4ac68eeb63ed2d6c0ed1c051229608fc21e2eace93aa274f15b7cc0b5647",
+      "caption": "Turn 5 - Carriercore, Athena: Carriercore is read",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 5,
       "path": "playbooks/cobra-notices/story/05.webp",
-      "caption": "Turn 6 - Postwren, Athena: The inbox is read, and I'm filing seven election notices now",
-      "turn": 6,
-      "bytes": 23428,
-      "sha256": "c9ca63188332435c54a5504e8333dde0652fad6247b52a603d185d352f59bdec"
-    },
-    {
-      "path": "playbooks/cobra-notices/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 21992,
-      "sha256": "e925140f2dcfec44298471bf569dc015ed92f39426e65669d698e85c328ef8b6"
+      "bytes": 42156,
+      "sha256": "91f25415004cda807668ae5f3a24e8b1686af999b85fe1ea5e7cc60f68ad3484",
+      "caption": "Turn 7 - Postwren, Athena: The inbox is read, so I'm filing the other four cards now",
+      "kind": "turn",
+      "turn": 7
     }
   ]
 }

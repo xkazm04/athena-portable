@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "crop-insurance-notice",
-  "captured_at": "2026-10-09T18:59:49Z",
-  "bench_run_at": "2026-10-09T18:54:11Z",
-  "narration": {
-    "text": "Crop damage noticed inside 72 hours, and the claims filed with the yields. This is a chore for ines and Carl Brandt, who farm about a thousand acres of corn and soybeans in central Iowa, the morning after an early freeze. Athena works it across 4 portals: Fieldmark agent portal, Acrelog farm records, Rainmark station and Mailnest. On the bench, she found 5 of 5 eligible items, worth 34,527 dollars of the 34,527 dollars there was to find. All 5 were filed at the exact amount the rules allow. She made no false claim. The world held 8 traps, and she walked past 8. Among them: Beans harvested before the freeze: nothing to notice. A hailed unit already noticed and harvested: a second notice is a duplicate. She took 4 minutes. By hand, the same chore takes 4 hours, so she was about 65 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 65.093,
-    "sha256": "410d32975be6f275ddd62fbc0d4c679d046ede98934e49f202a35a46b0b06aac"
-  },
-  "video": {
-    "path": "evidence/crop-insurance-notice/evidence.mp4",
-    "duration_s": 65.093,
-    "bytes": 2971815,
-    "sha256": "2977e8c4418ae37b81e7af7b403ba79086a257255f1594c763ff98a9ce185d05"
-  },
-  "thumbnail": {
-    "path": "playbooks/crop-insurance-notice/thumb.jpg",
-    "bytes": 85762,
-    "sha256": "79a4cdce630b7b690435e3394238448d6c22b237f1875201adbb2a6e3b89a4fa"
-  },
+  "captured_at": "2026-10-23T17:00:11Z",
+  "bench_run_at": "2026-10-23T15:53:30Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/crop-insurance-notice/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23632,
-      "sha256": "7bba3cb85656b14dffef2f77b1652ed92fd228b26859eee0b61c0fdbb9e77b64"
+      "bytes": 41694,
+      "sha256": "b790fe736aa5b88d09ad4b09c0659b3ff01174d19cb3c676827ee35ebcbc68bb",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/crop-insurance-notice/story/02.webp",
+      "bytes": 37158,
+      "sha256": "90eec44e2decf5864440f14c39bd339754697092519abaa4f387935bd27e1526",
       "caption": "Turn 1 - Fieldmark agent portal: That freeze hit the beans and we have corn claims to file",
-      "turn": 1,
-      "bytes": 21814,
-      "sha256": "35f2c9ec71c81bce93686334bc5d24d91ac4803de3a77776a59dddf34da24f12"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/crop-insurance-notice/story/03.webp",
-      "caption": "Turn 6 - Acrelog farm records, Athena: Page 2 is in, so all 12 fields are listed",
-      "turn": 6,
-      "bytes": 20604,
-      "sha256": "fc5f8d47a1548ec68509ae8d21f72c8679b44bc5957a5ae876b2174d674fd056"
+      "bytes": 41408,
+      "sha256": "5422db3c00b64c6f8241af3d1be4154f95843655e76a99a0e633d4527f6ecba0",
+      "caption": "Turn 5 - Acrelog farm records, Athena: Page 2 of the field list is in",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/crop-insurance-notice/story/04.webp",
-      "caption": "Turn 10 - Mailnest: And my Mailnest farm folder",
-      "turn": 10,
-      "bytes": 19096,
-      "sha256": "fab941182d9b84567c453b5e91daf38e971b92c25d202dad324ed63ac590916e"
+      "bytes": 42352,
+      "sha256": "9b68e91d5d1fe03a8ddb20302069c0418a3293e87432f55bece879f3de6ee9b7",
+      "caption": "Turn 8 - Rainmark station, Athena: The station shows one freeze, and nothing earlier on any of the freeze units",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/crop-insurance-notice/story/05.webp",
-      "caption": "Turn 15 - Fieldmark agent portal: I've switched to Fieldmark agent portal as you asked",
-      "turn": 15,
-      "bytes": 23392,
-      "sha256": "57d8a7d0d4288980c67cd48e515a6f51dd44dff67e54371650883393ec7a0701"
-    },
-    {
-      "path": "playbooks/crop-insurance-notice/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22790,
-      "sha256": "acc1fe5f456de86d3e211e68c0ae57770b3955bf84ac21c7dd9d65ca3bfa3eaa"
+      "bytes": 42758,
+      "sha256": "c7352cf98e39c1cf66f8467ae9ff799a8ab189a0b3d3303361a9cc969ec28e03",
+      "caption": "Turn 12 - Fieldmark agent portal: Back in Fieldmark",
+      "kind": "turn",
+      "turn": 12
     }
   ]
 }

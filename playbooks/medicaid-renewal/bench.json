@@ -1,15 +1,16 @@
 {
   "playbook": "medicaid-renewal",
-  "run_at": "2026-10-09T17:47:16Z",
+  "run_at": "2026-10-23T16:09:37Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 167.7,
-  "turns": 9,
+  "comparable": "sha256:ada1eb8a353c32c1",
+  "wall_s": 104.9,
+  "turns": 10,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 18,
-  "cost_usd": 0.9754,
+  "reads": 21,
+  "cost_usd": 0.7519,
   "your_time_s": 240,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 2.8
+    "minutes": 1.7
   },
   "score": {
     "eligible": 8,
     "found": 8,
     "exact": 8,
+    "neutral": 0,
     "value_total_usd": 7000.0,
     "value_found_usd": 7000.0,
     "recall_value": 1.0,
@@ -152,14 +154,14 @@
     }
   ],
   "missed": [],
-  "closing_words": "I'm filing eight cards: three income corrections, one household removal and four proof documents. The rules settle each one.\n\n**Plan**\n- **IN-1, Northside Pharmacy:** change $2,950 to **$2,040** a month. The rule counts taxable wages: two pays of $1,020 (PS-0915, PS-0930). That is $1,080 gross less the $60 pre-tax 401(k), twice a month.\n- **IN-2, Brightway Cleaning:** change $640 to **$0**. The job ended 2026-07-31 (ML-31).\n- **IN-3, Unemployment:** change $1,180 to **$0**. The benefits were exhausted in March (ML-32).\n- **IN-4, Teo:** no change. It is already $0.\n- **Rosa (M-4):** remove her from the household. She files her own return and you don't claim her. She applies on her own case.\n- **Proof:** I'm sending only what the rules ask for.\n  - Northside stubs from the last 30 days (since 09-09): PS-0915 and PS-0930. PS-0831 is older than 30 days, so I'm leaving it out.\n  - The two let",
+  "closing_words": "The form needs 3 income corrections, 1 household removal and 4 documents of proof. Each is filed as a card for you to approve.\n\n**Plan, by Statecare's own rules (income, household, proof):**\n- **IN-1, Northside Pharmacy:** change $2,950 to **$2,040** a month. Statecare counts taxable wages: $1,020 a pay, two pays a month (stubs PS-0915 and PS-0930).\n- **IN-2, Brightway Cleaning:** change $640 to **$0**. The job ended 2026-07-31 (ML-31).\n- **IN-3, Unemployment:** change $1,180 to **$0**. The benefit ended (ML-32).\n- **IN-4, Teo's Lumen wages:** leave it. It's already $0, and a dependent's earnings under $15,750 aren't counted.\n- **M-4, Rosa:** remove her. She files her own return and nobody claims her, so she applies on her own case.\n- **Not reported and not sent:** child support, the IRS refund and the car loan are all excluded. Rosa's SSA letter is also left out, since she's no longer i",
   "trace": [
     {
       "portal": "Mailnest",
       "user": "My Medicaid renewal is due on the 20th and the form has old numbers. Start in my mail: find the renewal notice and anything about my jobs, benefits and money this year.",
       "continued": false,
-      "said": "Starting with a mail search for the renewal notice and anything on jobs, benefits and money.",
-      "said_chars": 92,
+      "said": "I'll start by listing everything in your mail, then open the relevant messages.",
+      "said_chars": 79,
       "reads": [
         "search_mail"
       ],
@@ -169,8 +171,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "Nine messages came back. I'll read all of them, since each bears on income or household.",
-      "said_chars": 88,
+      "said": "Nine messages came back (showing 9 of 9). All look relevant except possibly the pharmacy one, so I'm opening the rest in full.",
+      "said_chars": 126,
       "reads": [
         "read_message",
         "read_message",
@@ -188,8 +190,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "I've read all nine letters. Four things changed this year, and I'll check the rest against the Statecare rules later.\n\n- **Renewal notice (ML-30):** The form and proof of current income are due 2026-10-20. If coverage lapses, you have 90 days to send it and be reconsidered.\n- **Brightway Cleaning (ML-31):** That job ended 2026-07-31.\n- **Unemployment (ML-32):** Benefits are exhausted. The last payment was for the week ending 2026-03-21.",
-      "said_chars": 1818,
+      "said": "Your mail is read (9 of 9 messages). Here is what each one says and what's still open.\n\n**Renewal notice (ML-30):** Statecare needs corrected figures and proof of current income by 2026-10-20. If coverage lapses, you have 90 days to send it and be reconsidered.\n\n**What changed this year, per your mail:**\n- **Brightway Cleaning:** the job ended 2026-07-31, with final pay the same day.\n- **Unemployment:** the last payment was for the week ending 2026-03-21, and the claim is exhausted.",
+      "said_chars": 2341,
       "reads": [],
       "cards": []
     },
@@ -197,8 +199,8 @@
       "portal": "Payroll Harbor",
       "user": "This is Payroll Harbor with my pay stubs. Work out what I earn now.",
       "continued": false,
-      "said": "I'll pull your pay stubs and Statecare's income rules together, so I count pay the way the state does.\n\nThe pay stub results arrive next turn, so I won't call that again. The Statecare rules are in another tab, so I'm checking whether I already have them in memory.\n\nMy recall line was malformed, so I'm sending it again in the right format.\n\nI can't give you a final figure yet. The pay stub results haven't reached me, and I haven't read Statecare's income rules.",
-      "said_chars": 1427,
+      "said": "I'll read your pay stubs and Statecare's income rules first, then work out the figure.\n\nThe Statecare reads were refused because this session is pinned to Payroll Harbor. The pay stub answer comes with my next turn, so I'm waiting on it before working out your pay.\n\nStatecare's rules and the prefilled income lines aren't reachable from this tab. Once I have the stubs and the figure, I'll ask you to switch me to Statecare Benefits so I can read them there and correct the form.",
+      "said_chars": 480,
       "reads": [
         "list_paystubs"
       ],
@@ -208,8 +210,8 @@
       "portal": "Payroll Harbor",
       "user": "",
       "continued": true,
-      "said": "You earn about $2,160 a month gross now, or $2,040 a month in taxable wages after the 401(k). All of it is from Northside Pharmacy.\n\n- **Northside Pharmacy:** the last three stubs are PS-0831, PS-0915 and PS-0930. Each is $1,080 gross, with a $60 pre-tax 401(k) and $1,020 taxable wages. Two pays a month makes $2,160 gross, $120 of 401(k) and $2,040 taxable.\n- **Brightway Cleaning:** the final stub was BW-0731 for $320 on 2026-07-31. It pays $0 now, and the form should show that job as ended.",
-      "said_chars": 1303,
+      "said": "Your current Northside Pharmacy pay is about $2,160 a month gross, or $2,040 a month after the pre-tax 401(k). That is a first estimate, because I haven't yet read how Statecare counts income.\n\n- **Stubs:** PS-0831, PS-0915 and PS-0930 are each $1,080 gross, $60 to the 401(k) and $1,020 taxable. This matches the August schedule change in ML-38.\n- **Monthly figure:** two pays a month gives $2,160 gross and $2,040 taxable.",
+      "said_chars": 1296,
       "reads": [],
       "cards": []
     },
@@ -217,7 +219,7 @@
       "portal": "Ledgerline bank",
       "user": "Now my Ledgerline account. Check what's been coming in.",
       "continued": false,
-      "said": "I'll pull the deposits since January, starting with page 1.",
+      "said": "I'll read the deposits since January, starting with page 1.",
       "said_chars": 59,
       "reads": [
         "list_deposits"
@@ -228,8 +230,8 @@
       "portal": "Ledgerline bank",
       "user": "",
       "continued": true,
-      "said": "Your deposits show one job paying you now, Northside Pharmacy, plus child support that is still coming in. This is all 10 deposits since 2026-01-01 (showing 10 of 10).\n\n- **Northside Pharmacy:** Net pay of $912.40 landed on 2026-08-31, 09-15 and 09-30. The 08-15 deposit of $1,201.80 was at the old, higher rate. The new pay matches the $1,080 gross stubs.\n- **Child support (CS-77120):** $450 arrived on 2026-08-01 and 2026-09-01. Mail only showed payments through July, so this confirms they continued.",
-      "said_chars": 1770,
+      "said": "Your Ledgerline deposits show one steady income, Northside Pharmacy. They also show child support that kept coming after July, and mail said it ended in July. I read 10 of 10 deposits (showing 10 of 10, one page).\n\n**Ongoing income**\n- **Northside Pharmacy:** net pay of $912.40 on 08-31, 09-15 and 09-30. That fits gross $1,080 less the $60 401(k) and taxes. The 08-15 deposit of $1,201.80 is the last pay at the old $1,440 rate.\n- **Child support:** $450 on 08-01 and $450 on 09-01, case CS-77120.",
+      "said_chars": 1662,
       "reads": [],
       "cards": []
     },
@@ -237,11 +239,24 @@
       "portal": "Statecare Benefits",
       "user": "And this is the renewal in Statecare. Fix whatever's wrong on the form and send the proof it needs, so we keep our coverage.",
       "continued": false,
-      "said": "I'll start by reading the household, the prefilled income lines and the rules.\n\n\nI'll propose corrections once those answers arrive. I won't guess at which figures count before then.",
-      "said_chars": 182,
+      "said": "I'll read Statecare's rules, household and prefilled income lines first, so I can propose corrections from what's on the form.",
+      "said_chars": 126,
       "reads": [
         "read_household",
         "read_income",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Statecare Benefits",
+      "user": "",
+      "continued": true,
+      "said": "The rules index only lists topics, and I need the actual text before I propose anything. I'm reading the topics that bear on this form.",
+      "said_chars": 135,
+      "reads": [
+        "read_rules",
+        "read_rules",
         "read_rules",
         "read_rules",
         "read_rules",
@@ -253,8 +268,8 @@
       "portal": "Statecare Benefits",
       "user": "",
       "continued": true,
-      "said": "I'm filing eight cards: three income corrections, one household removal and four proof documents. The rules settle each one.\n\n**Plan**\n- **IN-1, Northside Pharmacy:** change $2,950 to **$2,040** a month. The rule counts taxable wages: two pays of $1,020 (PS-0915, PS-0930). That is $1,080 gross less the $60 pre-tax 401(k), twice a month.\n- **IN-2, Brightway Cleaning:** change $640 to **$0**. The job ended 2026-07-31 (ML-31).\n- **IN-3, Unemployment:** change $1,180 to **$0**.",
-      "said_chars": 1379,
+      "said": "The form needs 3 income corrections, 1 household removal and 4 documents of proof. Each is filed as a card for you to approve.\n\n**Plan, by Statecare's own rules (income, household, proof):**\n- **IN-1, Northside Pharmacy:** change $2,950 to **$2,040** a month. Statecare counts taxable wages: $1,020 a pay, two pays a month (stubs PS-0915 and PS-0930).\n- **IN-2, Brightway Cleaning:** change $640 to **$0**. The job ended 2026-07-31 (ML-31).\n- **IN-3, Unemployment:** change $1,180 to **$0**. The benefit ended (ML-32).",
+      "said_chars": 1486,
       "reads": [],
       "cards": [
         {
@@ -306,6 +321,24 @@
           "value_usd": 0.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-09T17:47:16Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 8,
+      "eligible": 8,
+      "value_found_usd": 7000.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 167.7,
+      "your_time_s": 240
     }
   ]
 }

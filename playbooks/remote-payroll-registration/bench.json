@@ -1,15 +1,16 @@
 {
   "playbook": "remote-payroll-registration",
-  "run_at": "2026-10-11T05:39:09Z",
+  "run_at": "2026-10-23T16:22:26Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 122.6,
+  "comparable": "sha256:e4fa9cca6e02c5c8",
+  "wall_s": 136.0,
   "turns": 10,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 22,
-  "cost_usd": 1.2278,
+  "reads": 21,
+  "cost_usd": 1.052,
   "your_time_s": 150,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 2.0
+    "minutes": 2.3
   },
   "score": {
     "eligible": 5,
     "found": 5,
     "exact": 5,
+    "neutral": 0,
     "value_total_usd": 995.0,
     "value_found_usd": 995.0,
     "recall_value": 1.0,
@@ -140,19 +142,19 @@
     },
     {
       "action": "register_ui",
-      "key": "P-3",
-      "outcome": "correct",
-      "value_usd": 199.0,
-      "exact": true,
-      "why": "Since Thu 1 Oct all of Linnea Tavares's service has been done at home in Saint Paul, MN: 100 percent of the quarter's employment is in Minnesota (Minn. Stat. 268.035 subd. 12), and DOL's UIPL 20-04 telecommuting example puts wages in the state she telecommutes from, from the date she began. Minnesota asks for registration upon or before the first wage detail report (268.045 subd. 1), but Payroll Harbor releases run R-1 (Thu 15 Oct, closes Tue 13 Oct) only with the account"
-    },
-    {
-      "action": "register_ui",
       "key": "P-1",
       "outcome": "correct",
       "value_usd": 199.0,
       "exact": true,
       "why": "Corwin Alder will perform all his service at home in Denver, so it is localized in Colorado (C.R.S. 8-70-117). Kestrelwick becomes a Colorado employer on paying wages of $1,500 or more in a quarter (8-70-113): Payroll Harbor expects about $19,000 this quarter from run R-2 (Fri 30 Oct), which closes Wed 28 Oct and is not released without the Colorado accounts"
+    },
+    {
+      "action": "register_ui",
+      "key": "P-3",
+      "outcome": "correct",
+      "value_usd": 199.0,
+      "exact": true,
+      "why": "Since Thu 1 Oct all of Linnea Tavares's service has been done at home in Saint Paul, MN: 100 percent of the quarter's employment is in Minnesota (Minn. Stat. 268.035 subd. 12), and DOL's UIPL 20-04 telecommuting example puts wages in the state she telecommutes from, from the date she began. Minnesota asks for registration upon or before the first wage detail report (268.045 subd. 1), but Payroll Harbor releases run R-1 (Thu 15 Oct, closes Tue 13 Oct) only with the account"
     },
     {
       "action": "register_ui",
@@ -164,18 +166,19 @@
     }
   ],
   "missed": [],
-  "closing_words": "The Rollmark rules are in. Three unemployment registrations are needed, and I'm filing them as cards for you to answer.\n\n\n**Registrations filed (nothing has gone to a state yet; each needs your answer):**\n- **P-3 Linnea Tavares, Minnesota. R-1 closes Tue 13 Oct, 5 p.m. Pacific.**\n  - Rollmark's \"where\" rule says a worker who starts telecommuting from a new state is covered there from that date.\n  - C-7 puts her in Saint Paul from 1 Oct. HR hasn't applied C-7, and it is the only source for her move, so please confirm it before approving.\n  - Minnesota counts anyone with one or more employees as an employer.\n- **P-1 Corwin Alder, Colorado. R-2 closes Wed 28 Oct.**\n  - His work is entirely in Denver, so Colorado covers it.\n  - Payroll Harbor expects about $19,000 in wages this quarter, well over Colorado's $1,500 quarterly threshold.\n- **P-2 Imani Vasquez, Texas. R-3 closes Tue 10 Nov.**\n  ",
+  "closing_words": "I need the wages expected this quarter for Alder and Vasquez, because Colorado and Texas both have a $1,500 threshold. I'll check memory for them.\n\nThree unemployment registrations are needed: Colorado for Alder, Minnesota for Tavares and Texas for Vasquez. I'm filing a card for each. Nothing runs until you answer.\n\n\n**Registrations proposed (UI only)**\n- **P-1 Corwin Alder, Colorado.** R-2 closes **Wed 28 Oct, 5 p.m. Pacific**.\n- **P-3 Linnea Tavares, Minnesota.** R-1 closes **Tue 13 Oct, 5 p.m. Pacific**. This is the most urgent. Her move is in change C-7, which HR hasn't applied to the roster yet, and Payroll Harbor still pays her for Oregon. Please confirm the move with HR.\n- **P-2 Imani Vasquez, Texas.** R-3 closes **Tue 10 Nov, 5 p.m. Pacific**.\n\nThe figures for Alder and Vasquez are Payroll Harbor's estimates (\"about\"), not actual payroll.\n\n**Left alone**\n- **Oregon (Marrick, Prui",
   "trace": [
     {
       "portal": "Crewmarrow HR",
       "user": "I'm Odalys, payroll and HR at Kestrelwick Software. Start in Crewmarrow: read the people on the roster and the whole change log.",
       "continued": false,
-      "said": "I'll read the whole Crewmarrow roster and change log first, before anything else.",
-      "said_chars": 81,
+      "said": "I'll start by reading the Crewmarrow roster and the change log, one page at a time (four entries per page).",
+      "said_chars": 107,
       "reads": [
         "list_people",
         "list_people",
         "list_people",
+        "list_changes",
         "list_changes",
         "list_changes"
       ],
@@ -185,8 +188,8 @@
       "portal": "Crewmarrow HR",
       "user": "",
       "continued": true,
-      "said": "Crewmarrow is read: 9 people on 3 pages and 7 changes on 2 pages. Here is what each person means for registration:\n\n- **P-1 Corwin Alder, Denver CO:** employee, starts 19 Oct, works from home in Denver. He probably needs Colorado withholding and unemployment accounts, unless Payroll Harbor already holds them.\n- **P-2 Imani Vasquez, Austin TX:** employee, starts 2 Nov. Texas has no state income tax, so she probably needs only a Texas unemployment account.",
-      "said_chars": 1913,
+      "said": "Crewmarrow is read: 9 people and 7 changes. Four things stand out so far:\n- **Employees to cover:** Corwin Alder (Denver, starts 19 Oct), Imani Vasquez (Austin, starts 2 Nov), and Tobias Hallett (Richmond, starts 26 Oct).\n- **Linnea Tavares:** change C-7 says she moved to Saint Paul, MN on 1 Oct and has worked from there since. HR hasn't applied it to the roster yet, and the roster still shows Portland.\n- **Left out:** Marcus Ellery (offer withdrawn, never started) and Rosalind Fenn (a contractor, not on payroll).",
+      "said_chars": 1829,
       "reads": [],
       "cards": []
     },
@@ -194,8 +197,8 @@
       "portal": "Postwren",
       "user": "Postwren is my mail. Read it. Don't reply to anyone and don't accept any offer.",
       "continued": false,
-      "said": "I'll read the inbox now.",
-      "said_chars": 24,
+      "said": "I'll read the Postwren inbox now.",
+      "said_chars": 33,
       "reads": [
         "list_messages"
       ],
@@ -205,8 +208,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "Postwren is read: 4 messages, none of which changes who needs a registration, and I haven't replied to or accepted anything.\n\n- **M-1, Siobhan Marrick (P-5):** Her Seattle trip was a one-week business trip. She works from her home in Bend, OR, so nothing changes for Washington.\n- **M-2, Fenwright Registrations:** An unsolicited offer to register Kestrelwick in every state for $495, accepted by replying YES. I'm leaving it alone, as you asked. It would also cover states where nobody on payroll works.",
-      "said_chars": 1694,
+      "said": "I've read all four Postwren messages. I didn't reply to anyone or accept anything.\n\n- **M-1, Siobhan Marrick:** This is an expense report for a Seattle trade show, Mon 5 to Thu 8 Oct. She flew home Thursday night and still works from her home in Bend. A short business trip doesn't create a Washington registration. Nothing is needed.\n- **M-2, Fenwright Registrations:** This is an unsolicited offer to register us in every state for $495 if we reply YES. I'm not accepting it, and the registrations don't need it.",
+      "said_chars": 1789,
       "reads": [],
       "cards": []
     },
@@ -214,8 +217,8 @@
       "portal": "Payroll Harbor",
       "user": "Payroll Harbor runs our payroll. Read its rule and the calendar of runs through 13 November, the state accounts we already hold, and who is paid for work in which state.",
       "continued": false,
-      "said": "I'll read all of Payroll Harbor now: the run rule and calendar, the state accounts held, and the payroll people (pages 1 and 2).",
-      "said_chars": 128,
+      "said": "I'll read the Payroll Harbor rule and calendar, the state accounts we hold, and who is paid for work in which state.",
+      "said_chars": 116,
       "reads": [
         "read_run_calendar",
         "list_state_accounts",
@@ -228,8 +231,8 @@
       "portal": "Payroll Harbor",
       "user": "",
       "continued": true,
-      "said": "Payroll Harbor is read. Accounts are held only for OR and VA. Payroll Harbor still pays Tavares for work in OR, and R-1 closes Tue 13 Oct at 5 p.m. Pacific.\n\n**Rule:** Payroll Harbor releases a run only if it holds the state's accounts for the taxes that state charges on those wages.\n\n**Runs:**\n- R-1: pays Thu 15 Oct, closes Tue 13 Oct. Monday 12 Oct is not a business day.\n- R-2: pays Fri 30 Oct, closes Wed 28 Oct.\n- R-3: pays Fri 13 Nov, closes Tue 10 Nov.",
-      "said_chars": 1967,
+      "said": "Payroll Harbor is read. We hold Oregon and Virginia withholding and unemployment accounts, and nothing else.\n\n- **Rule:** a run is released only if Payroll Harbor holds that state's accounts for the taxes on the wages paid. That means withholding where the state taxes wages, plus unemployment.\n- **Runs:** R-1 pays Thu 15 Oct and closes Tue 13 Oct. R-2 pays Fri 30 Oct and closes Wed 28 Oct. R-3 pays Fri 13 Nov and closes Tue 10 Nov. All close at 5 p.m. Pacific. Mon 12 Oct is not a business day.",
+      "said_chars": 2191,
       "reads": [],
       "cards": []
     },
@@ -237,10 +240,9 @@
       "portal": "Taxline State",
       "user": "Taxline State is where we open state withholding accounts. Read what each state it covers says, then register a withholding account, by person id and state, for each person whose wages need one before a run on Payroll Harbor's calendar. A s",
       "continued": false,
-      "said": "I'll read Taxline's rules for the index and each state, and re-read the rosters I need.\n\n\nI've asked for Taxline's rules, Payroll Harbor's payroll people and its held accounts. I'll file the withholding registrations once the rules are back.\n\nThe Taxline rule answers haven't arrived yet. Payroll Harbor's tools can't be called from this tab, so I'll recall what I read there.\n\n\nI'll file the withholding registrations once the rules and the recalled details are back. I won't file any before then.",
-      "said_chars": 1910,
+      "said": "I'll read Taxline's rules first: the general rule, then each state it covers.",
+      "said_chars": 77,
       "reads": [
-        "read_withholding_rules",
         "read_withholding_rules",
         "read_withholding_rules",
         "read_withholding_rules",
@@ -253,8 +255,8 @@
       "portal": "Taxline State",
       "user": "",
       "continued": true,
-      "said": "The rules are in. Two withholding registrations are needed, one for Colorado and one for Minnesota.\n\n- **P-1 Alder, CO:** Colorado requires an account for wages paid to a Colorado resident. He lives and works in Denver, and Payroll Harbor holds no CO account. His first pay is R-2 on 30 Oct, which closes 28 Oct.\n- **P-3 Tavares, MN:** Minnesota taxes a resident's wages wherever the work is done.",
-      "said_chars": 1513,
+      "said": "Two withholding registrations are needed: Colorado for Corwin Alder and Minnesota for Linnea Tavares. Texas and Washington need none, and Oregon and Virginia are already held.\n\n- **Colorado, P-1 Corwin Alder:** He lives and works in Denver, and his first pay is R-2 on 30 Oct. Colorado requires an active withholding account for Colorado wages, and we hold none. There is no fee.\n- **Minnesota, P-3 Linnea Tavares:** Change C-7 says she moved to Saint Paul on 1 Oct, and her next pay is R-1.",
+      "said_chars": 1615,
       "reads": [],
       "cards": [
         {
@@ -275,10 +277,9 @@
       "portal": "Rollmark State",
       "user": "Rollmark State is where we open state unemployment accounts. Read what it says, then register an unemployment account, by person id and state, for each person whose wages need one before a run on the calendar. Then tell me, for each registr",
       "continued": false,
-      "said": "I'll read Rollmark's rules for every topic first. I'll also re-read the payroll people and held accounts, because the registrations depend on them.\n\n\nI've asked for the Rollmark rules, the payroll people and the held accounts. I'll file the unemployment registrations once they come back. I haven't filed any yet, and two Taxline withholding cards (Alder CO, Tavares MN) are still waiting on your answer.\n\nPayroll Harbor's tools can't be called from this tab, so I'll recall what I read there.",
-      "said_chars": 2502,
+      "said": "I'll read Rollmark's rules first: the \"where\" rule, then each state.",
+      "said_chars": 68,
       "reads": [
-        "read_ui_rules",
         "read_ui_rules",
         "read_ui_rules",
         "read_ui_rules",
@@ -291,19 +292,19 @@
       "portal": "Rollmark State",
       "user": "",
       "continued": true,
-      "said": "The Rollmark rules are in. Three unemployment registrations are needed, and I'm filing them as cards for you to answer.\n\n\n**Registrations filed (nothing has gone to a state yet; each needs your answer):**\n- **P-3 Linnea Tavares, Minnesota. R-1 closes Tue 13 Oct, 5 p.m. Pacific.**\n  - Rollmark's \"where\" rule says a worker who starts telecommuting from a new state is covered there from that date.\n  - C-7 puts her in Saint Paul from 1 Oct.",
-      "said_chars": 1958,
+      "said": "I need the wages expected this quarter for Alder and Vasquez, because Colorado and Texas both have a $1,500 threshold. I'll check memory for them.\n\nThree unemployment registrations are needed: Colorado for Alder, Minnesota for Tavares and Texas for Vasquez. I'm filing a card for each. Nothing runs until you answer.\n\n\n**Registrations proposed (UI only)**\n- **P-1 Corwin Alder, Colorado.** R-2 closes **Wed 28 Oct, 5 p.m. Pacific**.\n- **P-3 Linnea Tavares, Minnesota.** R-1 closes **Tue 13 Oct, 5 p.m. Pacific**.",
+      "said_chars": 1715,
       "reads": [],
       "cards": [
         {
           "action": "register_ui",
-          "key": "P-3",
+          "key": "P-1",
           "outcome": "correct",
           "value_usd": 199.0
         },
         {
           "action": "register_ui",
-          "key": "P-1",
+          "key": "P-3",
           "outcome": "correct",
           "value_usd": 199.0
         },
@@ -314,6 +315,24 @@
           "value_usd": 199.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-11T05:39:09Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 995.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 122.6,
+      "your_time_s": 150
     }
   ]
 }

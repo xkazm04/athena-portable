@@ -1,15 +1,16 @@
 {
   "playbook": "fafsa-verification",
-  "run_at": "2026-10-11T05:47:10Z",
+  "run_at": "2026-10-23T15:55:38Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 109.5,
+  "comparable": "sha256:335cf6b8eced31ec",
+  "wall_s": 127.4,
   "turns": 12,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 25,
-  "cost_usd": 1.3696,
+  "reads": 22,
+  "cost_usd": 1.0377,
   "your_time_s": 210,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 1.8
+    "minutes": 2.1
   },
   "score": {
     "eligible": 7,
     "found": 7,
     "exact": 7,
+    "neutral": 0,
     "value_total_usd": 7000.0,
     "value_found_usd": 7000.0,
     "recall_value": 1.0,
@@ -192,14 +194,14 @@
     }
   ],
   "missed": [],
-  "closing_words": "I'm filing six send cards, one per document, each against the item it answers. Nothing goes until you answer them.\n\n- **VI-1, identity:** D-10, Tamsin's photo ID copy with the signed statement from Reed Lanier (Brightwater Mobile Notary), who saw her in person on 6 Oct. I'm leaving out D-17, the online notary copy, because the college doesn't accept online notaries.\n- **VI-2, family size:** D-8, the five-person statement signed by Tamsin and Delia. I'm leaving out D-9, the earlier four-name sheet that only Tamsin signed.\n- **VI-3, foreign income:** D-2, the 2024 joint return transcript. I'm leaving out D-1 (2023, wrong year) and D-3 (the wage and income transcript, which isn't the return).\n- **VI-4, Tamsin's 2024 earnings:** D-5 (non-filing statement), D-6 (bakery W-2) and D-7 (bookshop W-2, from the February 2025 letter).\n\n\n**What I'm leaving alone:**\n- **VI-5:** the IRS transfer alread",
+  "closing_words": "I need the exact document ids before I send anything. The recalled episodes are cut short, so I'm pulling them from memory.\n\nI'm filing six send cards, one per document, each against the item it answers. Nothing goes until you approve each card.\n\n\nNothing has gone yet. The six cards are waiting, and the deadline is Fri 16 Oct, 5:00 p.m. Eastern.\n\n**What goes, by item**\n- **VI-1 Identity:** D-10. It's Tamsin's photo ID copy with the notary's signed statement that she showed it in person on 6 Oct.\n- **VI-2 Family size:** D-8. It's the 2026-27 statement with five names (Delia 46, Emeka 48, Chidi 20, Tamsin 18, Ngozi 0), signed by Tamsin and Delia on 5 Oct.\n- **VI-3 Foreign income:** D-2, the 2024 joint return transcript.\n- **VI-4 Tamsin's 2024 earnings:** D-5, D-6 and D-7.\n  - D-5 is her signed, dated non-filing statement. It lists the bakery at $5,800 and the bookshop at $3,500.\n  - D-6 is",
   "trace": [
     {
       "portal": "Aidcenter",
       "user": "I'm Delia Okoro. Tamsin's college picked her FAFSA for verification. Start in Aidcenter: read the rules the college applies, the request with each item it names, and the aid it is holding.",
       "continued": false,
-      "said": "Starting in Aidcenter: I'm reading the rules index, the first page of the request, and the award status.",
-      "said_chars": 104,
+      "said": "Starting with the three Aidcenter reads, which are all read-only.",
+      "said_chars": 65,
       "reads": [
         "read_aid_rules",
         "read_verification_request",
@@ -211,13 +213,10 @@
       "portal": "Aidcenter",
       "user": "",
       "continued": true,
-      "said": "Three of the six items are read. Page 2 and the rules on request, deadline, hold, documents, identity, family and tax are still unread, so I'm reading them now.",
-      "said_chars": 160,
+      "said": "Page 1 of the request shows 3 of 6 items, so I'm reading page 2 next. I'm also reading the rule topics that govern what each item needs.",
+      "said_chars": 136,
       "reads": [
         "read_verification_request",
-        "read_aid_rules",
-        "read_aid_rules",
-        "read_aid_rules",
         "read_aid_rules",
         "read_aid_rules",
         "read_aid_rules",
@@ -229,8 +228,8 @@
       "portal": "Aidcenter",
       "user": "",
       "continued": true,
-      "said": "Aidcenter is fully read. Four of the six items need something from us, one is already verified, and one isn't on this request.\n\n**What the college asks for (due Fri 16 Oct, 5:00 p.m. ET):**\n- **VI-1 Identity:** Tamsin's photo ID copy shown to a notary in person, with the notary's signed statement. A bare ID copy isn't enough, and online notaries aren't accepted.\n- **VI-2 Family size:** a statement signed by Tamsin and one parent, listing the name, age and relationship of everyone in the household for 2026-27.",
-      "said_chars": 2558,
+      "said": "Aidcenter is read. Four of the six items need something from us, one is already done, and one isn't on this request.\n\n**Aid held:** The Pell spring term ($3,500) and the Direct Subsidized Loan ($3,500) stay unpaid until verification is complete. The request is due Fri 16 Oct, 5:00 p.m. Eastern.\n\n**Plan (nothing sent yet):**\n- **VI-1 Identity:** Tamsin's valid photo ID copy shown to a notary in person, with the notary's signed statement. The college accepts this, a video call, or a NIST IAL2 confirmation.",
+      "said_chars": 1926,
       "reads": [],
       "cards": []
     },
@@ -238,8 +237,8 @@
       "portal": "Taxmoor Federal Account",
       "user": "Taxmoor is our household's federal tax account. Read what transcripts are in it and what each one says.",
       "continued": false,
-      "said": "I'll start with the list of transcripts in the account.",
-      "said_chars": 55,
+      "said": "I'll start by listing the transcripts in Taxmoor, then read each one.",
+      "said_chars": 69,
       "reads": [
         "list_tax_documents"
       ],
@@ -249,8 +248,8 @@
       "portal": "Taxmoor Federal Account",
       "user": "",
       "continued": true,
-      "said": "Three transcripts are in the account, and I'm reading all three now.",
-      "said_chars": 68,
+      "said": "Three transcripts are listed, all free. I'm reading each one now.",
+      "said_chars": 65,
       "reads": [
         "read_tax_document",
         "read_tax_document",
@@ -262,8 +261,8 @@
       "portal": "Taxmoor Federal Account",
       "user": "",
       "continued": true,
-      "said": "All three transcripts are read. Only D-2 is a document the college could use, and I haven't sent or changed anything.\n\n- **D-1, 2023 return transcript (joint):** AGI 84,100 dollars, total tax 9,610 dollars, no foreign earned income exclusion. It is the wrong year, because 2026-27 uses 2024 information. It belongs to the 2025-26 FAFSA, so it isn't asked for.\n- **D-2, 2024 return transcript (joint, filed 14 April 2025):**\n  - Wages are 103,700 dollars, AGI is 91,300 dollars and total tax is 10,420 dollars.",
-      "said_chars": 1906,
+      "said": "Taxmoor holds three transcripts, all free, and only D-2 answers the college's tax item.\n\n- **D-1, 2023 return transcript (joint):** AGI $84,100, total tax $9,610, no foreign earned income exclusion. It is the wrong year. 2023 belongs to the 2025-26 FAFSA, so I won't send it.\n- **D-2, 2024 return transcript (joint, filed 14 April 2025):**\n  - Wages $103,700.\n  - Foreign earned income exclusion $14,800 (Schedule 1, line 8d).\n  - AGI $91,300 and total tax $10,420.\n  - Dependents claimed: Chidi and Tamsin.",
+      "said_chars": 1584,
       "reads": [],
       "cards": []
     },
@@ -271,8 +270,8 @@
       "portal": "Postwren",
       "user": "Postwren is my mail. Read every page of it, the old letters too, and note what each attachment is. Don't reply to anyone.",
       "continued": false,
-      "said": "Reading page 1 of the inbox now. I'll go through the rest in order.\n\nAll five page reads are filed. The answers come with my next turn, so I'm not calling them again. My first attempt used a malformed line and was dropped, which cost nothing. I've sent nothing and replied to no one.\n\nSend me on when the pages arrive. Then I'll list each message and what each attachment is, with its document id.",
-      "said_chars": 397,
+      "said": "I'm reading all five pages of the inbox. These are read-only, and I won't reply to anyone.",
+      "said_chars": 90,
       "reads": [
         "list_messages",
         "list_messages",
@@ -286,8 +285,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "I've read all 14 messages on 5 pages. Four attachments are what the college asked for, plus the two Taxmoor/Aidcenter items already identified. I replied to no one and sent nothing.\n\n**Attachments that answer a request item**\n- **VI-1 identity:** D-10, in M-2 from Reed Lanier of Brightwater Mobile Notary, 7 Oct. It is a copy of Tamsin's photo ID with the notary's signed statement that she showed it in person on 6 Oct.\n- **VI-2 family size:** D-8, in M-3 from Tamsin, 5 Oct.",
-      "said_chars": 3456,
+      "said": "All 14 messages across 5 pages are read, and I replied to no one. Most attachments are the wrong paper for this request.\n\n**Attachments and what each is**\n- **D-10** (M-2, Brightwater Notary): Tamsin's photo ID copy with the notary's signed statement that it was shown in person on 6 Oct. This is what VI-1 asks for.\n- **D-8** (M-3): the five-person family statement (Delia 46, Emeka 48, Chidi 20, Tamsin 18, Ngozi 0). Tamsin and Delia signed it on 5 Oct. This answers VI-2.",
+      "said_chars": 2667,
       "reads": [],
       "cards": []
     },
@@ -295,8 +294,8 @@
       "portal": "AidPath",
       "user": "AidPath is Tamsin's FAFSA. Read the record and what AidPath says about corrections. Correct the item the rules say verification requires you to update, and change nothing the IRS sent.",
       "continued": false,
-      "said": "I'll read the FAFSA record and AidPath's correction help first. I haven't changed anything.",
-      "said_chars": 91,
+      "said": "I'm reading the FAFSA record and AidPath's correction help now. I'll propose a correction after that.",
+      "said_chars": 101,
       "reads": [
         "read_fafsa_record",
         "read_fafsa_help"
@@ -307,8 +306,8 @@
       "portal": "AidPath",
       "user": "",
       "continued": true,
-      "said": "The record shows family size (FS-6) as 4, marked \"from the IRS (the 2024 return claimed four)\", and also \"must be correct as of the date of verification\". Those two notes pull in opposite directions, so I'm reading the three correction topics before I change anything.",
-      "said_chars": 268,
+      "said": "The record shows family size as 4, labelled \"from the IRS\", but its note says it must be correct as of the date of verification. I'm reading the three help topics to see whether it can be edited and what a correction costs.",
+      "said_chars": 223,
       "reads": [
         "read_fafsa_help",
         "read_fafsa_help",
@@ -320,8 +319,8 @@
       "portal": "AidPath",
       "user": "",
       "continued": true,
-      "said": "Family size is the item verification requires me to update. It's a headcount, not a tax figure, so the \"IRS figures are locked\" rule doesn't cover it. That label only records that the 2024 return claimed four. 668.55(b)(1) says a student selected to verify family size must update it to be correct as of the verification date. Corrections cost nothing.\n\nI'm filing a card to change FS-6 from 4 to 5.",
-      "said_chars": 1015,
+      "said": "Family size (FS-6) is the item verification requires you to update, and I'm filing a card to change it from 4 to 5.\n\n- **Why it's FS-6:** Rule 668.55(b)(1) says an applicant selected to verify family size must update it to be correct as of the date of verification. The \"from the IRS\" label only records that the 2024 return claimed four. Family size is a count of people, not a tax figure.",
+      "said_chars": 1182,
       "reads": [],
       "cards": [
         {
@@ -336,8 +335,8 @@
       "portal": "Aidcenter",
       "user": "Back in Aidcenter, send the Verification Unit, for each item the request names, the document that answers it, before the college's date. Send nothing the request does not name, and don't reply to anyone. Then tell me, for each item, which d",
       "continued": false,
-      "said": "I'm filing six send cards, one per document, each against the item it answers. Nothing goes until you answer them.\n\n- **VI-1, identity:** D-10, Tamsin's photo ID copy with the signed statement from Reed Lanier (Brightwater Mobile Notary), who saw her in person on 6 Oct. I'm leaving out D-17, the online notary copy, because the college doesn't accept online notaries.\n- **VI-2, family size:** D-8, the five-person statement signed by Tamsin and Delia.",
-      "said_chars": 1558,
+      "said": "I need the exact document ids before I send anything. The recalled episodes are cut short, so I'm pulling them from memory.\n\nI'm filing six send cards, one per document, each against the item it answers. Nothing goes until you approve each card.\n\n\nNothing has gone yet. The six cards are waiting, and the deadline is Fri 16 Oct, 5:00 p.m. Eastern.\n\n**What goes, by item**\n- **VI-1 Identity:** D-10. It's Tamsin's photo ID copy with the notary's signed statement that she showed it in person on 6 Oct.",
+      "said_chars": 2453,
       "reads": [],
       "cards": [
         {
@@ -377,6 +376,24 @@
           "value_usd": 1000.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-11T05:47:10Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 7,
+      "eligible": 7,
+      "value_found_usd": 7000.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 109.5,
+      "your_time_s": 210
     }
   ]
 }

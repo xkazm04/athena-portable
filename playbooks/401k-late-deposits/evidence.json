@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "401k-late-deposits",
-  "captured_at": "2026-10-11T04:01:11Z",
-  "bench_run_at": "2026-10-11T03:59:14Z",
-  "narration": {
-    "text": "A small plan's late 401(k) deposits are made good with their lost earnings: two deferrals and three loan repayments deposited after the seventh business day, one found only on the loan list, while deposits on the sixth and seventh days across Labor Day, a late match, a stopped deferral and a recovery firm's share are left alone. This is a chore for the owner and 401(k) plan trustee of a 38-person packaging company. Athena works it across 4 portals: Payroll Harbor, Retireline, Correctcalc and Ledgerwren bank. On the bench, she found 5 of 5 eligible items, worth 87 dollars and 93 cents of the 87 dollars and 93 cents there was to find. She made no false claim. The world held 10 traps, and she walked past 10. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 56 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 63.335,
-    "sha256": "243270ea052c137d8e55acbcefdffce6d25185a22d1e00e73cede86b5feac90a"
-  },
-  "video": {
-    "path": "evidence/401k-late-deposits/evidence.mp4",
-    "duration_s": 63.335,
-    "bytes": 2923238,
-    "sha256": "072b34ba32e2a246114db2d129370416718c1b8624f5109365424514db65ae44"
-  },
-  "thumbnail": {
-    "path": "playbooks/401k-late-deposits/thumb.jpg",
-    "bytes": 98871,
-    "sha256": "8fa6d174b9bd17540ae5f6cb1f3b7858a1fcb8854e72063c32dea5864cd723f0"
-  },
+  "captured_at": "2026-10-23T16:57:25Z",
+  "bench_run_at": "2026-10-23T15:42:41Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/401k-late-deposits/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23834,
-      "sha256": "6633e6192c42c592faf15a00e0b6d3d2e2cc52c442b9fcbc282a3f961ceb5949"
+      "bytes": 38672,
+      "sha256": "a5a42b8565ec31a679f95f8ac7abc574392f487c287830f3d66a74fc778953ae",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/401k-late-deposits/story/02.webp",
+      "bytes": 32630,
+      "sha256": "d4a87c1c83761057b1a20bd871c7fd1b14840f67b43049b84e4432c340f10796",
       "caption": "Turn 1 - Payroll Harbor: I'm Neil, owner of Wexcombe Packaging and trustee of our 401(k)",
-      "turn": 1,
-      "bytes": 23000,
-      "sha256": "32ec88542213acbd188478a186ab750da171b96f1adb83aafc38668891cbd0b0"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/401k-late-deposits/story/03.webp",
-      "caption": "Turn 4 - Retireline: Retireline is our recordkeeper",
-      "turn": 4,
-      "bytes": 22478,
-      "sha256": "c1600f3d444c8f186102328f66d708ce3e1421f064391376d2009578e6784c41"
+      "bytes": 36454,
+      "sha256": "52e49f91e978b6fe67931a3bd427f03dcc4dbb570c0a0c75de72cf23863a6473",
+      "caption": "Turn 4 - Retireline, Athena: Five items were deposited late",
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/401k-late-deposits/story/04.webp",
-      "caption": "Turn 8 - Correctcalc, Athena: I have all five figures",
-      "turn": 8,
-      "bytes": 22020,
-      "sha256": "f9eab4259f3425913cb09a2897eddf2bf57c65b74c175c0d1401173458bc93f0"
+      "bytes": 39044,
+      "sha256": "3046a89d3232df7568148b98253fee9f98846c737c3d811a42afacfcf7c4b5f1",
+      "caption": "Turn 7 - Correctcalc, Athena: I have the lost-earnings figure for all five late deposits, and they total…",
+      "kind": "turn",
+      "turn": 7
     },
     {
+      "n": 5,
       "path": "playbooks/401k-late-deposits/story/05.webp",
-      "caption": "Turn 11 - Ledgerwren bank, Athena: The bank agrees with Retireline on all five late deposits",
-      "turn": 11,
-      "bytes": 23808,
-      "sha256": "d706d23a49f0b3f078c32db6aab98c6a78a06d07aca82defbb333b99aaff58fb"
-    },
-    {
-      "path": "playbooks/401k-late-deposits/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23508,
-      "sha256": "624b5b93b8dc7c258a762ab7b34e25f040fb6067dfd232139f067ad698f8ffed"
+      "bytes": 42968,
+      "sha256": "23d6c3660cbc0520cbf3bb9944100097ef4431d78e2c5a8109668fe4c5388b56",
+      "caption": "Turn 10 - Ledgerwren bank, Athena: The bank shows 11 transfers and none is a lost-earnings payment, so nothing…",
+      "kind": "turn",
+      "turn": 10
     }
   ]
 }

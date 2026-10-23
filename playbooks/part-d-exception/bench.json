@@ -1,15 +1,16 @@
 {
   "playbook": "part-d-exception",
-  "run_at": "2026-10-10T02:49:45Z",
+  "run_at": "2026-10-23T16:19:22Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 101.7,
-  "turns": 9,
+  "comparable": "sha256:1a58f819b3600acd",
+  "wall_s": 113.4,
+  "turns": 8,
   "nudges": 0,
   "follow_ups": 0,
   "reads": 11,
-  "cost_usd": 1.2053,
+  "cost_usd": 0.9873,
   "your_time_s": 90,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 1.7
+    "minutes": 1.9
   },
   "score": {
     "eligible": 3,
     "found": 3,
     "exact": 3,
+    "neutral": 0,
     "value_total_usd": 799.0,
     "value_found_usd": 799.0,
     "recall_value": 1.0,
@@ -154,14 +156,14 @@
     }
   ],
   "missed": [],
-  "closing_words": "I need the exact wording of Dr. Petrov's statements before I file anything. My recalled view of them is cut short, so I'm pulling the full text.\n\nI'm filing the two exceptions that are ready. Each rests on Dr. Petrov's signed statement, which I quote word for word.\n\n**D-1 Felotrex:** formulary exception, standard. DOC-11 says the standard timeframe is appropriate.\n\n**D-6 Haldamine:** formulary exception, expedited. DOC-12 asks for an expedited decision, and he has about two days of tablets left.\n\n**What I left alone:**\n- **D-2 Ostavia:** the tiering exception is supported, because Calmira failed and Ostavia works. No signed statement is posted, and Rxmeadow's rules say a request rests on one. The request for her statement is already waiting on you (apr_9193efc8c219), so I haven't filed another. Once she posts it, I'll submit a tiering exception, standard, since she hasn't asked for exped",
+  "closing_words": "The Carenook and pharmacy details were cut short in what I was shown, so I'm recalling them in full before filing anything.\n\nI'm filing two requests: Felotrex (standard) and Haldamine (expedited). Each carries Dr. Petrov's signed statement.\n\n\n**Filed for your approval**\n- **D-1 Felotrex:** formulary exception, standard, because her statement says the standard timeframe is appropriate. If approved it drops from $295 cash to $95 and counts toward his limit.\n- **D-6 Haldamine:** formulary exception, expedited, because she wrote that delay may seriously jeopardize his health. The plan has 24 hours to decide, and he runs out on 11 Oct. If approved it drops from $180 cash to $95.\n\n**Left alone**\n- **D-2 Ostavia:** it's justified (Calmira failed and Ostavia works), but her tiering statement isn't posted yet. Your earlier request to her is still waiting on your approval (apr_d8e829cf00d5). Once ",
   "trace": [
     {
       "portal": "Rxmeadow plan",
       "user": "Dad's drug plan is costing him a fortune. Start in Rxmeadow: read their rules on tiers, exceptions, timeframes and what's excluded, his drug list and the exceptions already on file.",
       "continued": false,
-      "said": "I'll read the Rxmeadow rules, his drug list and the exceptions on file.",
-      "said_chars": 71,
+      "said": "I'll read the Rxmeadow rules (all four topics), the drug list (page 1) and the exceptions on file.",
+      "said_chars": 98,
       "reads": [
         "read_rules",
         "read_rules",
@@ -176,8 +178,8 @@
       "portal": "Rxmeadow plan",
       "user": "",
       "continued": true,
-      "said": "Page 1 of 2 is read, so I need page 2 of the drug list before I can say anything about drugs D-5 to D-8.\n\nHere is what I have so far (showing 4 of 8 drugs):\n- **D-1 Felotrex 5 mg:** not on the formulary, so he pays $295 cash a fill. That money doesn't count toward his $2,100 limit. A formulary exception would bring it to $95. The alternatives are Avinor (tier 2) and Brelada (tier 3).\n- **D-2 Ostavia 50 mg:** tier 4 at $95.",
-      "said_chars": 2233,
+      "said": "Rxmeadow's rules are read and half the drug list is in. I'm fetching page 2 of the list, which holds the other four drugs.\n\n\nSo far, with the list cut to 4 of 8:\n\n- **Rules:**\n  - A formulary exception makes a non-formulary drug cost tier 4 ($95).\n  - A tiering exception moves tier 4 to the tier 3 amount ($47).\n  - Neither is available for tier 5 specialty drugs.\n  - Approved exceptions last the rest of the plan year.\n  - Every request rests on the prescriber's signed statement.",
+      "said_chars": 1504,
       "reads": [
         "list_drugs"
       ],
@@ -187,8 +189,8 @@
       "portal": "Rxmeadow plan",
       "user": "",
       "continued": true,
-      "said": "All 8 drugs are read. Rxmeadow has nothing more for me, so the rest is in Carenook and Corner Pharmacy.\n\n**Candidates for an exception, each depending on what Dr. Petrov's records say:**\n- **D-1 Felotrex:** formulary exception, $295 cash to $95. It needs a history of failing or reacting to Avinor and Brelada.\n- **D-6 Haldamine:** formulary exception, $180 cash to $95. It needs a history with Ferrovan and Mesdora.\n- **D-3 Zentorin:** a formulary exception to waive step therapy. It needs a history with Pradexil.",
-      "said_chars": 1764,
+      "said": "All eight drugs are now read (8 of 8), and the Rxmeadow side is done.\n\n**Candidates for an exception, pending his history:**\n- **D-1 Felotrex:** not on the formulary, $295 cash. A formulary exception would bring it to $95 and make it count toward his limit. It needs Avinor and Brelada to have failed.\n- **D-2 Ostavia:** tier 4 at $95. A tiering exception would bring it to $47. It needs Calmira to have failed.\n- **D-3 Zentorin:** tier 3 but rejected for step therapy. A formulary exception waives the rule.",
+      "said_chars": 2610,
       "reads": [],
       "cards": []
     },
@@ -196,9 +198,10 @@
       "portal": "Carenook",
       "user": "This is Dr. Petrov's portal. Read his medication history and her documents. If a drug needs a statement from her that she hasn't posted, ask her for it, but only where his history supports it.",
       "continued": false,
-      "said": "Reading both Carenook lists first.",
-      "said_chars": 34,
+      "said": "I'll read Walter's medication history (pages 1 and 2) and Dr. Petrov's posted documents.",
+      "said_chars": 88,
       "reads": [
+        "list_medication_history",
         "list_medication_history",
         "list_documents"
       ],
@@ -208,19 +211,8 @@
       "portal": "Carenook",
       "user": "",
       "continued": true,
-      "said": "Page 1 of his history and all three of her documents are read. Page 2 comes next, because Haldamine, Zentorin and Pradexil aren't on page 1.\n\n\nSo far (showing 5 of 10 history rows, 3 of 3 documents):\n- **D-1 Felotrex:** the history backs it. Avinor caused hives and Brelada failed at full dose, and those are the only two alternatives. DOC-11 is posted and says standard timeframe.\n- **D-2 Ostavia:** the history backs a tiering exception, because Calmira, the only tier 3 alternative, failed.",
-      "said_chars": 819,
-      "reads": [
-        "list_medication_history"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "Carenook",
-      "user": "",
-      "continued": true,
-      "said": "Page 2 is read, and it settles three of the drugs.\n\n- **D-1 Felotrex:** supported. Avinor caused hives and Brelada failed at full dose. DOC-11 is posted and says standard timeframe. I'll submit it in Rxmeadow.\n- **D-6 Haldamine:** supported. Ferrovan caused dizziness and a fall on 16 Apr, and Mesdora was ineffective at the highest dose. DOC-12 is posted and says expedited, so I'll submit it expedited in Rxmeadow.\n- **D-3 Zentorin:** not supported.",
-      "said_chars": 1295,
+      "said": "Only one statement is missing and justified, for Ostavia (D-2), so I'm asking Dr. Petrov for it now.\n\n**What his history supports**\n- **D-1 Felotrex:** supported. Avinor caused hives and Brelada failed at full dose, and DOC-11 is already posted. It's a standard request, not expedited, because she wrote that the standard timeframe is appropriate.\n- **D-6 Haldamine:** supported. Ferrovan caused dizziness and a fall, and Mesdora failed at the highest dose. DOC-12 is posted and she marked it expedited.",
+      "said_chars": 1547,
       "reads": [],
       "cards": [
         {
@@ -235,7 +227,7 @@
       "portal": "Corner Pharmacy",
       "user": "Corner Pharmacy. Check what the plan rejected, when each refill is due and how much he has left.",
       "continued": false,
-      "said": "I'm reading the pharmacy's prescriptions now.",
+      "said": "Reading the pharmacy's prescription list now.",
       "said_chars": 45,
       "reads": [
         "list_prescriptions"
@@ -246,8 +238,8 @@
       "portal": "Corner Pharmacy",
       "user": "",
       "continued": true,
-      "said": "Haldamine is the urgent one, and the plan rejected three drugs. Here is what the pharmacy shows (6 prescriptions, all read).\n\n**Rejected by the plan**\n- **D-1 Felotrex:** rejected 6 Oct as not on the formulary. He paid $295 cash for that fill, and 27 days are left. The next fill is due 5 Nov.\n- **D-3 Zentorin:** rejected 2 Oct for step therapy (Pradexil first). It has never been filled, so he has none.\n- **D-6 Haldamine:** rejected 8 Oct as not on the formulary. His last fill was a transition supply on 11 Sep.",
-      "said_chars": 2031,
+      "said": "The plan has rejected three drugs, and only Haldamine is urgent. It has 2 days left, so its exception request needs to go in today. These are all six prescriptions on file (showing 6 of 6), counted from today, 9 Oct.",
+      "said_chars": 2152,
       "reads": [],
       "cards": []
     },
@@ -255,8 +247,8 @@
       "portal": "Rxmeadow plan",
       "user": "Back in Rxmeadow. Ask for every exception that's ready, the right kind, expedited only where the doctor says so. Then tell me what you left alone and why.",
       "continued": false,
-      "said": "I need the exact wording of Dr. Petrov's statements before I file anything. My recalled view of them is cut short, so I'm pulling the full text.\n\nI'm filing the two exceptions that are ready. Each rests on Dr. Petrov's signed statement, which I quote word for word.\n\n**D-1 Felotrex:** formulary exception, standard. DOC-11 says the standard timeframe is appropriate.\n\n**D-6 Haldamine:** formulary exception, expedited. DOC-12 asks for an expedited decision, and he has about two days of tablets left.",
-      "said_chars": 1872,
+      "said": "The Carenook and pharmacy details were cut short in what I was shown, so I'm recalling them in full before filing anything.\n\nI'm filing two requests: Felotrex (standard) and Haldamine (expedited). Each carries Dr. Petrov's signed statement.\n\n\n**Filed for your approval**\n- **D-1 Felotrex:** formulary exception, standard, because her statement says the standard timeframe is appropriate. If approved it drops from $295 cash to $95 and counts toward his limit.",
+      "said_chars": 1783,
       "reads": [],
       "cards": [
         {
@@ -272,6 +264,24 @@
           "value_usd": 255.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-10T02:49:45Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 3,
+      "eligible": 3,
+      "value_found_usd": 799.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 101.7,
+      "your_time_s": 90
     }
   ]
 }

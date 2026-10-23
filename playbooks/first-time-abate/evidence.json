@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "first-time-abate",
-  "captured_at": "2026-10-10T17:52:56Z",
-  "bench_run_at": "2026-10-10T17:50:35Z",
-  "narration": {
-    "text": "Twelve IRS notices sorted: first-time abatement requested on four penalties the owner's record qualifies for, one on tax still being paid, while a second quarter, an earlier penalty in a history, accuracy and estimated tax penalties, a second partnership year, an abated penalty and two non-penalty notices are left alone. This is a chore for the owner of a small millwork company in Duluth, Minnesota, who co-owns two partnerships and has a bookkeeper who scanned the IRS letters but never called the number on them. On the bench, she found 4 of 4 eligible items, worth 1,850 dollars and 60 cents of the 1,850 dollars and 60 cents there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes 2 hours, so she was about 71 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 63.624,
-    "sha256": "53894bbddbe6315b84611f2abf92e8c6d6a12d6173e89077a6e3d0377ef67b5c"
-  },
-  "video": {
-    "path": "evidence/first-time-abate/evidence.mp4",
-    "duration_s": 63.64,
-    "bytes": 3057982,
-    "sha256": "a14bf0e08e7313b8b5deac08b0dfc30d8f2bce9d61f6520e0e2ed820adf952b3"
-  },
-  "thumbnail": {
-    "path": "playbooks/first-time-abate/thumb.jpg",
-    "bytes": 95316,
-    "sha256": "ff73a9f2166934262809e385f67e0b76292c72dc964b5e701aacc1c05601028d"
-  },
+  "captured_at": "2026-10-23T17:02:42Z",
+  "bench_run_at": "2026-10-23T15:59:21Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/first-time-abate/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23262,
-      "sha256": "b635a6eb754a68731b624f8098a3b99ea7f3f09e9e0e49225dd8eec0e510e93a"
+      "bytes": 32698,
+      "sha256": "2797e59ec52fbbb9677d1af1c6b36911b911740d36aad713a48a45ca2a110d2c",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/first-time-abate/story/02.webp",
+      "bytes": 32286,
+      "sha256": "c16b7d26cf1fe0cee350489061c778573df3dc67950ba00fea8989cf165e7e2d",
       "caption": "Turn 1 - Taxline Federal: I'm Bram Halvering",
-      "turn": 1,
-      "bytes": 23492,
-      "sha256": "ff3ab4f96d26fa83fc11a52d9c745959558c74d4cb89351821698b700eba7369"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/first-time-abate/story/03.webp",
-      "caption": "Turn 5 - Binderwell, Athena: The list has 15 papers",
-      "turn": 5,
-      "bytes": 21932,
-      "sha256": "18494457838e11392f3a0b90f424532f651b248a9953f5ef54f559ca1cece8ad"
+      "bytes": 24184,
+      "sha256": "de1340925c56368a1c7921e1784fa9da56d1f872d762befa92a274349a5e1c6e",
+      "caption": "Turn 5 - Binderwell, Athena: Fifteen papers are listed, so I'm reading all of them now",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/first-time-abate/story/04.webp",
-      "caption": "Turn 8 - Ledgerwren bank, Athena: All 12 IRS payments are read, both pages (12 of 12)",
-      "turn": 8,
-      "bytes": 23736,
-      "sha256": "135dfdf0904aa739e392dda079af9429a1c2ffd0ded0a3a166b3fad2d2151c1c"
+      "bytes": 40716,
+      "sha256": "07a22c2107a19567fcab8b76baa29dc86f4318e412bf82f65046593542dfa987",
+      "caption": "Turn 8 - Ledgerwren bank, Athena: I've read both pages of payments (showing 12 of 12), and I've asked the IRS…",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/first-time-abate/story/05.webp",
+      "bytes": 43734,
+      "sha256": "2188b4268870ff11c1f92f138cdda40fc5c840d596bd619a257e043ab46bae19",
       "caption": "Turn 12 - Taxline Federal: Back at Taxline Federal",
-      "turn": 12,
-      "bytes": 22682,
-      "sha256": "52156e27a0fcaa8e622f79275d294daf8b6a25233c3dccfbc92df646fe6f2d6d"
-    },
-    {
-      "path": "playbooks/first-time-abate/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23646,
-      "sha256": "4e9980f0390fc8ff67bbfc850df0acb77dbac41f6b774584d839604d1dc09737"
+      "kind": "turn",
+      "turn": 12
     }
   ]
 }

@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "data-broker-deletion",
-  "captured_at": "2026-10-09T18:00:15Z",
-  "bench_run_at": "2026-10-09T17:56:03Z",
-  "narration": {
-    "text": "Data brokers told to delete, and checked. This is a chore for a Californian who sent the state's one-step deletion request in January and still finds herself on people-search sites. Read each broker's answer on the state's deletion platform: deleted, opted out, exempt, not found, or nothing yet. Athena works it across 4 portals: Mailnest, Erasepoint registry, Findwho and Lookabout. On the bench, she found 5 of 5 eligible items, worth 32 dollars and 25 cents of the 32 dollars and 25 cents there was to find. All 5 were filed at the exact amount the rules allow. She made no false claim. The world held 10 traps, and she walked past 10. She took 2 minutes. By hand, the same chore takes 3 hours, so she was about 95 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 57.656,
-    "sha256": "fa76a66e0980fc1ca6ff1ec3dc5fb83fb2f57abe7508460d0eb3e7bcdb9584eb"
-  },
-  "video": {
-    "path": "evidence/data-broker-deletion/evidence.mp4",
-    "duration_s": 57.656,
-    "bytes": 2439042,
-    "sha256": "186d1109438c4cda48175eb5be8c801b5dff70e699f3d1160c221ea5eeb9354d"
-  },
-  "thumbnail": {
-    "path": "playbooks/data-broker-deletion/thumb.jpg",
-    "bytes": 80755,
-    "sha256": "5b5a91144dfdbc870913063664c71e27e2ed9df242d46c1d5055b4cb3268dcaa"
-  },
+  "captured_at": "2026-10-23T17:00:30Z",
+  "bench_run_at": "2026-10-23T15:52:58Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/data-broker-deletion/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23902,
-      "sha256": "3ef896c1965fe9965b47fd4ce5a9a0ea21b598b81cf20ee23197abe5f295396a"
+      "bytes": 42944,
+      "sha256": "6489eff804d6ded5e48404f8f7ebc0e4e9f9030db399ee56d8182836dad4c47e",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/data-broker-deletion/story/02.webp",
+      "bytes": 28978,
+      "sha256": "393fba8faba2db629e531e63ad3b143b2143bfcd9bac900629f652fdf46fc864",
       "caption": "Turn 1 - Mailnest: I asked the state's Erasepoint to make data brokers delete me back in January…",
-      "turn": 1,
-      "bytes": 18740,
-      "sha256": "1da076bf0f02156603807876e5964054ad6c98745e263e1fdbf206c53fb7a40e"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/data-broker-deletion/story/03.webp",
-      "caption": "Turn 5 - Erasepoint registry, Athena: Findwho, Lookabout and Peoplegrid have answered",
-      "turn": 5,
-      "bytes": 21674,
-      "sha256": "ba1308af1d14570cd7d1edb70de1869ec8eb8ab5e93f826d5951cac37937f052"
+      "bytes": 31570,
+      "sha256": "7591a7981af18b504c51f820dc3b10e7aaf02d669cf53d610982c400005ba4e3",
+      "caption": "Turn 5 - Erasepoint registry: This is my request on Erasepoint",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/data-broker-deletion/story/04.webp",
-      "caption": "Turn 8 - Findwho, Athena: Five listings came back",
-      "turn": 8,
-      "bytes": 17260,
-      "sha256": "98e0a1928068ac85a8c61f1623c1d15a51e1b3f4e79613179f15e296640afabc"
+      "bytes": 30412,
+      "sha256": "7a1325dbe0a2bd3ab633d8f60dbdaa7806cb124854052c1fa6a35d7e10ccf2ee",
+      "caption": "Turn 8 - Findwho, Athena: I'll open the candidate listings to see which are yours",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/data-broker-deletion/story/05.webp",
-      "caption": "Turn 12 - Lookabout, Athena: LA-81 is yours, and I'm filing a removal for it",
-      "turn": 12,
-      "bytes": 23254,
-      "sha256": "4f6ecb6e314e0bcfbe9eb62dfd21528ab126a8300070826e4c0cb30cef7d531e"
-    },
-    {
-      "path": "playbooks/data-broker-deletion/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23324,
-      "sha256": "dce2c70d8f176d550dccee458e227e917ad51abe42d854dd3b5f358da1614a31"
+      "bytes": 41752,
+      "sha256": "0d16919e0db2d73df39ddc6caacf52e0c3305ec044efcd2dc38e08257901a7a2",
+      "caption": "Turn 12 - Lookabout, Athena: One of the three Lookabout listings is yours, and I'm filing a removal for it",
+      "kind": "turn",
+      "turn": 12
     }
   ]
 }

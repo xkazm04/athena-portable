@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "prior-auth-renewals",
-  "captured_at": "2026-10-10T01:18:01Z",
-  "bench_run_at": "2026-10-10T01:15:06Z",
-  "narration": {
-    "text": "Every therapy authorisation renewed before visits run past it, each on its own payer's clock. This is a chore for the authorisation coordinator of an outpatient physical and occupational therapy group with eleven patients in ongoing care across five payers. Athena works it across 4 portals: Chartleaf EHR, Authgate, Authwise and Faxline. On the bench, she found 5 of 5 eligible items, worth 3,664 dollars of the 3,664 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. Among them: A Medicare Advantage renewal three weeks out, which the portal would return if sent today. A Medicaid managed care renewal that next Friday's run still has time for. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 62 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 62.681,
-    "sha256": "6ee936d13576ad7d022e8b90957b214c852dde42ef2de6074d8d1cd1107e1a74"
-  },
-  "video": {
-    "path": "evidence/prior-auth-renewals/evidence.mp4",
-    "duration_s": 62.681,
-    "bytes": 2807882,
-    "sha256": "8de2f02db3eed6d4e1baebe0f4a1b872f77270c3785232a7153d8884d8035440"
-  },
-  "thumbnail": {
-    "path": "playbooks/prior-auth-renewals/thumb.jpg",
-    "bytes": 83904,
-    "sha256": "1b58d56db1baaac5e7ce97ee5348292cba586425bcff11dd200d6dcdea4ff8a6"
-  },
+  "captured_at": "2026-10-23T17:09:04Z",
+  "bench_run_at": "2026-10-23T15:41:10Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/prior-auth-renewals/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 21954,
-      "sha256": "aab4ab54c2c54ba1d7de9ef50797c0eeec1ddf3ce2f3664570ead2e51a3faae2"
+      "bytes": 40984,
+      "sha256": "d6ab085190661d3c7099d1df289944b2d8d7f28976020b16fd98694db5ba2b27",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/prior-auth-renewals/story/02.webp",
+      "bytes": 30384,
+      "sha256": "5ce9de815b2bdc20b6b95f385ef3d009cc48ab7298c778bb23f6a94580e852e1",
       "caption": "Turn 1 - Chartleaf EHR: Friday authorisation run",
-      "turn": 1,
-      "bytes": 19642,
-      "sha256": "17fd1a91fbc7811a3c04bfab8e859423b5a7d007ee514595a5a3e7f774af845c"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/prior-auth-renewals/story/03.webp",
+      "bytes": 42456,
+      "sha256": "a53062dd73a88b2b364ca4abb76aa46e79d86e33281c787e8e3e3df9134ee81b",
       "caption": "Turn 4 - Authgate: Now Authgate, for Larkhaven and Statewell",
-      "turn": 4,
-      "bytes": 22624,
-      "sha256": "0fb3f2bb66969b65df05c07346ed09004ba44e8cbb956a482329d278327c62d3"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/prior-auth-renewals/story/04.webp",
-      "caption": "Turn 6 - Authwise: This is Authwise, for Pinecrest and Bluehaven",
-      "turn": 6,
-      "bytes": 23944,
-      "sha256": "7a4ac4a7e95e87b3237e99fbc33022e8c7e8efb3ad038d5128ae495e78a77e36"
+      "bytes": 35770,
+      "sha256": "0b6aba25c904d5af513357bad963dd53da6617a5e9eafe2819e4d0d4aeabd315",
+      "caption": "Turn 8 - Authwise, Athena: The Authwise index came back, so I'll read the two topics it lists",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/prior-auth-renewals/story/05.webp",
-      "caption": "Turn 9 - Faxline, Athena: P-09 (Corbel Mutual) has to go today, so I'm filing the one fax card",
-      "turn": 9,
-      "bytes": 23292,
-      "sha256": "a2725af43d08e3bc4b90f870bebcb95c7106488db13ac1d6e801c47b209f323f"
-    },
-    {
-      "path": "playbooks/prior-auth-renewals/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22676,
-      "sha256": "c432bd9126de6658cda37af209a050fb501267f8d92b5eb93aa383d53063febd"
+      "bytes": 42632,
+      "sha256": "1fa2ef84d372b4d6790157e09104f8268b42db9f56f86a74ee347ed28d6f5e16",
+      "caption": "Turn 11 - Faxline, Athena: P-09 is due today, so I'm filing one fax card to Corbel Mutual for CM-215",
+      "kind": "turn",
+      "turn": 11
     }
   ]
 }

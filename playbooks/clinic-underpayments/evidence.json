@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "clinic-underpayments",
-  "captured_at": "2026-10-10T01:02:45Z",
-  "bench_run_at": "2026-10-10T00:58:27Z",
-  "narration": {
-    "text": "Every line paid short of the payer contract found and disputed, and the bundled lines left alone. This is a chore for the billing manager of a three-clinician orthopedic clinic contracted with two commercial payers, one of which also runs a Medicare Advantage plan. Athena works it across 4 portals: Chartmend PM, Relaywave, Docshelf and Paylance payer hub. On the bench, she found 5 of 5 eligible items, worth 565 dollars of the 565 dollars there was to find. All 5 were filed at the exact amount the rules allow. She made no false claim. The world held 12 traps, and she walked past 12. Among them: A knee chondroplasty bundled into the meniscectomy under an NCCI edit. Ultrasound guidance bundled into the injection it guided. She took 4 minutes. By hand, the same chore takes 3 hours, so she was about 51 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 63.984,
-    "sha256": "4e55caffd38481622fdf959b6fb16e9d995ccaef00ab933844aa6b6097efdf48"
-  },
-  "video": {
-    "path": "evidence/clinic-underpayments/evidence.mp4",
-    "duration_s": 64.0,
-    "bytes": 2841909,
-    "sha256": "b5e886c43565c226e991f9c2ff9fcc8bed02f3f1c8b74fda1bfb58229dac0669"
-  },
-  "thumbnail": {
-    "path": "playbooks/clinic-underpayments/thumb.jpg",
-    "bytes": 79156,
-    "sha256": "30777fa58a467d175b57ea0d9e02217e93381145c4b82255b8cd8f106689f7b7"
-  },
+  "captured_at": "2026-10-23T16:59:22Z",
+  "bench_run_at": "2026-10-23T15:17:44Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/clinic-underpayments/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23518,
-      "sha256": "e5a3cde143fc9d52dc744a9b7c54a42fc4986d5d0dca6e092355fa47582ec3b8"
+      "bytes": 35104,
+      "sha256": "2ec991bfeb40bdf837040e0fe570a0fecb594d55c1cd49023622062e89134922",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/clinic-underpayments/story/02.webp",
+      "bytes": 27834,
+      "sha256": "97d43da965493e0d0917d3491ba24a2349b2eddc9c3b9376efaee23848b5849d",
       "caption": "Turn 1 - Chartmend PM: Month-end check on what Tallowbrook and Cindermoor paid us",
-      "turn": 1,
-      "bytes": 23540,
-      "sha256": "f87548b29b4865ea8a9020e835503b5d70c71fb747f31a55da729214094de8d1"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/clinic-underpayments/story/03.webp",
+      "bytes": 30588,
+      "sha256": "71108dd67b1aa8bdc9ee42f58859dea1d33a157816b0f774cc3b27164519900f",
       "caption": "Turn 4 - Relaywave: Now Relaywave",
-      "turn": 4,
-      "bytes": 23280,
-      "sha256": "28cfaa2fe7b917cf9ff5cef97e19a1298f87b4e36cea3bbea7cd8b02d9cdbf61"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/clinic-underpayments/story/04.webp",
-      "caption": "Turn 8 - Docshelf, Athena: Reading the six contract documents now",
-      "turn": 8,
-      "bytes": 22754,
-      "sha256": "3cb3d235cc7ecd209ea31c05bceb6820fa26302282469bf9d95e8461e6986e4c"
+      "bytes": 28560,
+      "sha256": "040cb77895e113f5e3727762cb0d0c473373de0e037603c644a4b895a59834ba",
+      "caption": "Turn 8 - Docshelf, Athena: Seven documents are listed",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/clinic-underpayments/story/05.webp",
-      "caption": "Turn 11 - Paylance payer hub, Athena: I've checked the five lines against both payers' rules",
-      "turn": 11,
-      "bytes": 23564,
-      "sha256": "46954cd4780cd06ca82d925262fc0b4e708601541ac1b8750bccfeaa066723dc"
-    },
-    {
-      "path": "playbooks/clinic-underpayments/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23030,
-      "sha256": "54d9c6839201551ac04e965afaa25ece5135ad97b3336c7b8f4824acc72e248f"
+      "bytes": 42490,
+      "sha256": "5ceb25ae2aac1c281083e56115ae08ddbb45b48249da05ea817e1db5baa6b146",
+      "caption": "Turn 11 - Paylance payer hub, Athena: Paylance confirms the five lines and the windows, so I'm filing five dispute…",
+      "kind": "turn",
+      "turn": 11
     }
   ]
 }

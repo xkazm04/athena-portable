@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "fafsa-verification",
-  "captured_at": "2026-10-11T05:50:58Z",
-  "bench_run_at": "2026-10-11T05:47:10Z",
-  "narration": {
-    "text": "A student's FAFSA verification is answered by 16 October with the documents the college names: a notarized ID, a five-person family statement, the 2024 return transcript, her non-filer statement and two W-2s, one in a 2025 letter, and the family size fixed, while old forms, a paid service and the IRS's figures are left alone. This is a chore for the mother of a first-year student, with the college's proxy access to her daughter's aid account and her own federal tax account. On the bench, she found 7 of 7 eligible items, worth 7,000 dollars of the 7,000 dollars there was to find. She made no false claim. The world held 16 traps, and she walked past 16. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 50 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 59.513,
-    "sha256": "38f6cf8645929522f6a2add1d5d4b22c1ea93eec00d848a23a5022aeced8db32"
-  },
-  "video": {
-    "path": "evidence/fafsa-verification/evidence.mp4",
-    "duration_s": 59.52,
-    "bytes": 3178010,
-    "sha256": "f7e517b95cc67c82badbf3153a3f0e8df2aa7d924e1e9242f088e60ff65acef5"
-  },
-  "thumbnail": {
-    "path": "playbooks/fafsa-verification/thumb.jpg",
-    "bytes": 82687,
-    "sha256": "8af85a39c4f84db1b782d943f59133ba04a136d6e1eec4bd807fb0f2f3b73d7a"
-  },
+  "captured_at": "2026-10-23T17:02:01Z",
+  "bench_run_at": "2026-10-23T15:55:38Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/fafsa-verification/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23956,
-      "sha256": "5268730be060ea00af515abda7c98e2e0d1f42e8bfdd74e545d83767a183fdab"
+      "bytes": 40270,
+      "sha256": "537d38a187bbe4cee9f96eb220558f0d08155c8f3ce04bd2748ac58356a78823",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/fafsa-verification/story/02.webp",
+      "bytes": 30844,
+      "sha256": "2f905bf4414ae9aad0f282c817952d467bfb90c93cbfc6e776984ff4c41e03ca",
       "caption": "Turn 1 - Aidcenter: I'm Delia Okoro",
-      "turn": 1,
-      "bytes": 22948,
-      "sha256": "92244959b0299f91ec3400103819dfee95dab1863edf1503414bc352c36acba6"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/fafsa-verification/story/03.webp",
-      "caption": "Turn 5 - Taxmoor Federal Account, Athena: Three transcripts are in the account, and I'm reading all three now",
-      "turn": 5,
-      "bytes": 22742,
-      "sha256": "ec6b4dd1f3c37594942ccbade41a1dcc8f3232c92fbf2af73db90f9fd1bac54a"
+      "bytes": 26374,
+      "sha256": "37e996929593b8d46903f9b5089ec5dbb2c6de2f9732a45b457f15d5788ce619",
+      "caption": "Turn 5 - Taxmoor Federal Account, Athena: Three transcripts are listed, all free",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/fafsa-verification/story/04.webp",
-      "caption": "Turn 8 - Postwren, Athena: I've read all 14 messages on 5 pages",
-      "turn": 8,
-      "bytes": 23260,
-      "sha256": "c7cdf63606f13c1ab2b345c4ce181913aaaa2af3f02c06e0e20f9d38bb0505c6"
+      "bytes": 41856,
+      "sha256": "a421c328c6dc7944cf0e50fa312d34a330fefd8741b5e960295195c5d1d1f0a5",
+      "caption": "Turn 8 - Postwren, Athena: All 14 messages across 5 pages are read, and I replied to no one",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/fafsa-verification/story/05.webp",
+      "bytes": 43398,
+      "sha256": "0d183ab5d3eb091df17c2c66ad776ea2918796b4975b8742a759ea002e082fd4",
       "caption": "Turn 12 - Aidcenter: Back in Aidcenter, send the Verification Unit, for each item the request…",
-      "turn": 12,
-      "bytes": 22988,
-      "sha256": "525a6e922d29967d7bc08d669d22328687628fc43c11e4e5821f578e474025da"
-    },
-    {
-      "path": "playbooks/fafsa-verification/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 21996,
-      "sha256": "d823e20dd374b8d3ede16cf2736a5761c9807d64f43d47f4af499594c3507c8d"
+      "kind": "turn",
+      "turn": 12
     }
   ]
 }

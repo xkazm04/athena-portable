@@ -1,15 +1,16 @@
 {
   "playbook": "homestead-exemption",
-  "run_at": "2026-10-09T23:56:12Z",
+  "run_at": "2026-10-23T16:04:43Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 140.9,
-  "turns": 13,
+  "comparable": "sha256:3cc73b789cb492e1",
+  "wall_s": 201.9,
+  "turns": 12,
   "nudges": 0,
-  "follow_ups": 1,
-  "reads": 17,
-  "cost_usd": 1.2062,
+  "follow_ups": 0,
+  "reads": 16,
+  "cost_usd": 1.4943,
   "your_time_s": 120,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 2.3
+    "minutes": 3.4
   },
   "score": {
     "eligible": 4,
     "found": 4,
     "exact": 4,
+    "neutral": 0,
     "value_total_usd": 2893.0,
     "value_found_usd": 2893.0,
     "recall_value": 1.0,
@@ -126,14 +128,14 @@
     }
   ],
   "missed": [],
-  "closing_words": "The address change hasn't gone through. The license still shows 917 Cedar Bend Road, and card apr_f88b43841612 is still waiting for your answer. I can't approve it, and filing it again would only add a duplicate.\n\n**To do on your side**\n- Answer apr_f88b43841612 on the decision list. Approving it certifies that Juniper Draw is Hal's residence.\n- The state updates its record the next business day. Today is Saturday, so that means Monday, and the district checks the license address when it reviews each application.\n\n**Where the other cards stand**\n- The three Countyline cards are also waiting: homestead 2024 and 2025 for Teresa, and age 65 for Hal in 2026 (apr_9a3008e71012, apr_034144879654, apr_aea2dae8ac91).\n- The district says not to hold an application back for the address, so you can answer those whenever you're ready.\n- The 2024 and 2025 homestead cards rest on your move out of Cedar",
+  "closing_words": "I'm filing three applications on Juniper Draw (R-30418). Each one becomes a card for you to approve.\n\n\n**What I'm filing**\n- **2024 homestead, Teresa applying:** worth about $1,012.\n- **2025 homestead, Teresa applying:** worth about $1,323.\n- **2026 age 65, for Hal:** worth about $558. His licence, which is Hal's own as the rules require, still shows 917 Cedar Bend Road. The address change (apr_6c3866c100e2) is still waiting for your answer. Countyline checks the licence address when it reviews the application. So approve that card too, or the age filing may be refused on the address.\n\nThe dollar figures are my estimates from the district's rates and exemption amounts. The refund itself comes from the collector once each year is approved.\n\n**What I left alone, and why**\n- **2023 homestead:** that year closed on 1 Feb 2026.\n- **Cedar Bend Road (R-27705):** it has been rented out since Dec",
   "trace": [
     {
       "portal": "Countyline Appraisal",
       "user": "A neighbour says we've been overpaying school taxes for years because we never filed for a homestead exemption until this spring. Start here in Countyline: read the rules, every account in our names, and each one's exemption history.",
       "continued": false,
-      "said": "Plan: read the rules, list the accounts, then read each account's history. I'll start with the first two, since the history reads need account numbers.",
-      "said_chars": 151,
+      "said": "I'll start with the district's rules and the list of accounts. Then I'll read each account's history.",
+      "said_chars": 101,
       "reads": [
         "read_rules",
         "list_accounts"
@@ -144,17 +146,15 @@
       "portal": "Countyline Appraisal",
       "user": "",
       "continued": true,
-      "said": "Next I'll read the detailed rules and each account's exemption history. The rules index only listed topics, so I'm reading those too.",
-      "said_chars": 133,
+      "said": "Three accounts are in your names. Next I'll read the history for each one, plus the rules on homestead, late filing and age/disability.",
+      "said_chars": 135,
       "reads": [
-        "read_rules",
-        "read_rules",
-        "read_rules",
-        "read_rules",
-        "read_rules",
         "read_exemption_history",
         "read_exemption_history",
-        "read_exemption_history"
+        "read_exemption_history",
+        "read_rules",
+        "read_rules",
+        "read_rules"
       ],
       "cards": []
     },
@@ -162,8 +162,20 @@
       "portal": "Countyline Appraisal",
       "user": "",
       "continued": true,
-      "said": "The Countyline read is done. Two years look filable, but I haven't filed anything because the move-in date isn't on any page I've read yet.\n\n**Rules that matter**\n- A home qualifies for a year if it was your principal residence on 1 January of that year.\n- Late homestead and age 65 applications are accepted until two years after the year's delinquency date. 2023 closed on 1 Feb 2026. 2024 is open until 1 Feb 2027, and 2025 until 1 Feb 2028.\n- The age 65 exemption covers the whole year the owner turns 65.",
-      "said_chars": 2216,
+      "said": "Countyline gives me three findings so far.\n\n- **2023 is closed.** It shut on 1 February 2026, so it can't be filed.\n- **2024, 2025 and 2026 are still open.** The 2024 and 2025 years have no exemption on file for 4410 Juniper Draw (R-30418).\n- **The other two accounts don't qualify.** Cedar Bend Road (R-27705) and the Mesquite Flats land (R-88120) are not a homestead.\n\nI still need to know whether you lived at Juniper Draw on 1 January of 2024 and 2025.",
+      "said_chars": 774,
+      "reads": [
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Countyline Appraisal",
+      "user": "",
+      "continued": true,
+      "said": "Countyline is done. Here is the plan, which still needs your say-so.\n\n- **2024 homestead on R-30418:** worth about $1,012 in school tax if you lived there on 1 Jan 2024. The $100,000 exemption at $1.0120 per $100 gives $1,012.\n- **2025 homestead on R-30418:** worth about $1,323 if you lived there on 1 Jan 2025. The $140,000 exemption at $0.9450 per $100 gives $1,323.\n- **2026 age 65 for Hal on R-30418:** worth about $558. The $60,000 exemption at $0.9300 per $100 gives $558.",
+      "said_chars": 1160,
       "reads": [],
       "cards": []
     },
@@ -171,8 +183,8 @@
       "portal": "Deedvault",
       "user": "Now Deedvault. Check what the county records say we own, and since when.",
       "continued": false,
-      "said": "Reading the Deedvault recordings now.",
-      "said_chars": 37,
+      "said": "I'll read the recorded documents on Deedvault now.",
+      "said_chars": 50,
       "reads": [
         "list_recordings"
       ],
@@ -182,8 +194,8 @@
       "portal": "Deedvault",
       "user": "",
       "continued": true,
-      "said": "Deedvault shows you own three properties, and 4410 Juniper Draw was bought by deed recorded 18 Nov 2022. The deed doesn't say when you moved in.\n\n**What the county records say**\n- **4410 Juniper Draw (R-30418):** general warranty deed 2022-031877, recorded 2022-11-18. It names Harold and Teresa Brannock as grantees. A deed of trust to Northgate Mortgage was recorded the same day.\n- **917 Cedar Bend Road (R-27705):** warranty deed 2009-014402, recorded 2009-06-30.",
-      "said_chars": 1467,
+      "said": "Deedvault shows you have owned 4410 Juniper Draw since the deed was recorded on 18 Nov 2022, so ownership of Juniper Draw covers 1 Jan 2024, 2025 and 2026.\n\n- **4410 Juniper Draw (R-30418):** The general warranty deed (2022-031877) was recorded 18 Nov 2022, with Hal and Teresa as grantees. A deed of trust (2022-031878) was recorded the same day.\n- **917 Cedar Bend Road (R-27705):** Owned since 30 Jun 2009 (2009-014402). Countyline says you moved out in December 2022, so it isn't a homestead.",
+      "said_chars": 2141,
       "reads": [],
       "cards": []
     },
@@ -191,8 +203,8 @@
       "portal": "IDway",
       "user": "This is IDway, signed in as Hal. Check his license against what the appraisal district needs, and fix anything that has to be fixed.",
       "continued": false,
-      "said": "I'll read Hal's license first, then compare it with the district's ID rule: the address on it must be the address of the home claimed.",
-      "said_chars": 134,
+      "said": "I'll read Hal's license first, then compare it with what Countyline needs.",
+      "said_chars": 74,
       "reads": [
         "read_license"
       ],
@@ -202,8 +214,8 @@
       "portal": "IDway",
       "user": "",
       "continued": true,
-      "said": "Hal's license has the wrong address for the district. It shows 917 Cedar Bend Road, unchanged since it was issued in 2019, but the claimed home is 4410 Juniper Draw. The district checks the license address against the state's record, so I'm filing a change-of-address card for you to answer.\n\n**What I read on the license**\n- License 18830417, Harold James Brannock, born 14 May 1961, expires 14 May 2027.\n- The birth date confirms he turned 65 on 14 May 2026.",
-      "said_chars": 1568,
+      "said": "Hal's license shows the old address, so it needs changing. It says 917 Cedar Bend Road, unchanged since it was issued on 2019-05-10. Countyline requires the license address to match the home claimed, which is 4410 Juniper Draw. His birth date (14 May 1961) is on the license. He turned 65 on 14 May 2026, so he is inside the one-year window for the age 65 exemption, and the license doesn't expire until 14 May 2027.\n\nThe state will mail a new card, and the new address is on the state's record the next business day.",
+      "said_chars": 1247,
       "reads": [],
       "cards": [
         {
@@ -218,8 +230,8 @@
       "portal": "Mailnest",
       "user": "My Mailnest house folder has the letters about the houses, the lease and my injury. Read what bears on the exemptions.",
       "continued": false,
-      "said": "I'll list the House folder first to see what's there.",
-      "said_chars": 53,
+      "said": "I'll list the House folder first, then read the messages that bear on the exemptions.",
+      "said_chars": 85,
       "reads": [
         "search_mail"
       ],
@@ -229,8 +241,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "Five messages. H-404 and H-405 look like solicitations, so I'll leave them alone. I'm reading the other three now.",
-      "said_chars": 114,
+      "said": "I'll read the three messages that bear on the exemptions: the lease, the injury claim and the 2026 approval. H-404 and H-405 are sales pitches, so I'm skipping them.",
+      "said_chars": 165,
       "reads": [
         "read_message",
         "read_message",
@@ -242,8 +254,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "Teresa's injury benefits are temporary workers' comp, not Social Security disability, so she doesn't qualify for the age or disability exemption. The lease shows Cedar Bend has been rented out since 1 Dec 2022, so it can't be a homestead. I still need the date you moved into Juniper Draw. I'll check memory for it before I ask you.\n\nI can't file anything yet, because no page I've read gives the date you moved into Juniper Draw.",
-      "said_chars": 2084,
+      "said": "Three filings are supported by what I read, and Teresa's injury doesn't qualify for a disability exemption.\n\n**What the folder showed**\n- **Cedar Bend was rented out from 1 Dec 2022.** H-401 says the Ochoa family has rented 917 Cedar Bend Road since then. Countyline also has your move-out notice for December 2022. Cedar Bend therefore wasn't your residence on 1 Jan 2024 or 2025, and Juniper Draw (deeded 18 Nov 2022) is the only home you owned then.",
+      "said_chars": 2732,
       "reads": [],
       "cards": []
     },
@@ -251,8 +263,8 @@
       "portal": "Countyline Appraisal",
       "user": "Back in Countyline. File every exemption we're owed for every year the law still allows, with the right owner on each. Then tell me what you left alone and why.",
       "continued": false,
-      "said": "I only have part of the earlier conversation, and the Juniper Draw move-in date isn't in what I can see. I'm searching memory for it before I file anything.\n\nI'm filing three applications, all on R-30418, Juniper Draw. I couldn't find a stated move-in date. The case for 2024 and 2025 rests on a deed recorded 18 Nov 2022, your move out of Cedar Bend in December 2022, and Cedar Bend leased out from 1 Dec 2022. Those facts come from the Deedvault recording, the Countyline history and the Mailnest lease.",
-      "said_chars": 2178,
+      "said": "I'm filing three applications on Juniper Draw (R-30418). Each one becomes a card for you to approve.\n\n\n**What I'm filing**\n- **2024 homestead, Teresa applying:** worth about $1,012.\n- **2025 homestead, Teresa applying:** worth about $1,323.\n- **2026 age 65, for Hal:** worth about $558. His licence, which is Hal's own as the rules require, still shows 917 Cedar Bend Road. The address change (apr_6c3866c100e2) is still waiting for your answer. Countyline checks the licence address when it reviews the application.",
+      "said_chars": 1420,
       "reads": [],
       "cards": [
         {
@@ -274,26 +286,24 @@
           "value_usd": 558.0
         }
       ]
-    },
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
     {
-      "portal": "IDway",
-      "user": "I've switched to IDway as you asked. Go ahead.",
-      "continued": false,
-      "said": "The address change is already filed as card apr_f88b43841612. I won't file it a second time, and I can't answer it for you. I'm checking whether the change has gone through.",
-      "said_chars": 173,
-      "reads": [
-        "read_license"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "IDway",
-      "user": "",
-      "continued": true,
-      "said": "The address change hasn't gone through. The license still shows 917 Cedar Bend Road, and card apr_f88b43841612 is still waiting for your answer. I can't approve it, and filing it again would only add a duplicate.\n\n**To do on your side**\n- Answer apr_f88b43841612 on the decision list. Approving it certifies that Juniper Draw is Hal's residence.\n- The state updates its record the next business day. Today is Saturday, so that means Monday, and the district checks the license address when it reviews each application.",
-      "said_chars": 1178,
-      "reads": [],
-      "cards": []
+      "run_at": "2026-10-09T23:56:12Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 4,
+      "eligible": 4,
+      "value_found_usd": 2893.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 140.9,
+      "your_time_s": 120
     }
   ]
 }

@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "driver-qualification-files",
-  "captured_at": "2026-10-10T11:29:13Z",
-  "bench_run_at": "2026-10-10T11:26:16Z",
-  "narration": {
-    "text": "A small carrier's driver qualification files kept current on four clocks: a full Clearinghouse query run before its twenty-four hours run out, an overdue annual query, two overdue driving records from the right states, one record ordered for a new medical status before the paper exemption ends, and an annual review signed, while a driver with no CDL is kept out of the Clearinghouse, a driver who left is left alone and nothing done this year is done twice. This is a chore for the safety and compliance manager of a small trucking company with eight drivers, who keeps the driver qualification files herself. On the bench, she found 6 of 6 eligible items, worth 540 dollars of the 540 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 41 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 63.586,
-    "sha256": "f97a212fdc115c1816349fdb781c4e6ae60869990818aa5d77011e5c3c76255c"
-  },
-  "video": {
-    "path": "evidence/driver-qualification-files/evidence.mp4",
-    "duration_s": 63.6,
-    "bytes": 3158307,
-    "sha256": "bd524053e6f3eaf7d06c6331f53a41858683e537058b741f86d2be3dfca5cb84"
-  },
-  "thumbnail": {
-    "path": "playbooks/driver-qualification-files/thumb.jpg",
-    "bytes": 84751,
-    "sha256": "16393c952bab1acb3d381f6f9c3a3bb3c2e1dabdcb3906ad34351c9e98bbb3b3"
-  },
+  "captured_at": "2026-10-23T17:00:48Z",
+  "bench_run_at": "2026-10-23T15:53:29Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/driver-qualification-files/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23132,
-      "sha256": "ce44cb48ac8c66b51b9cce648a02d8fc57b23e7e905d6275df657882c9c22222"
+      "bytes": 36586,
+      "sha256": "405b4644cd87b80754bcd1bb266ba3369d1069040bf84fbfc4e7e4569a52669d",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/driver-qualification-files/story/02.webp",
+      "bytes": 27182,
+      "sha256": "93ffc91f76566265b750759e006ddac18c9cac4612d39307f1d500f1f3c17a6d",
       "caption": "Turn 1 - Logmarrow ELD: I'm Marisa, safety and compliance at Pell Ridge Transport",
-      "turn": 1,
-      "bytes": 23568,
-      "sha256": "b04d0d0ad2a8f12d85df2bb5dabc314769d9f910ca288bb9c5065dc54710e81e"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/driver-qualification-files/story/03.webp",
+      "bytes": 39986,
+      "sha256": "9b92c1da76b9f21404fa7e72acd7a55d6f45bcc5767615cd50cdf48cf7ad0d34",
       "caption": "Turn 3 - Crewmarrow HR: Crewmarrow has the driver qualification files and the rules we work to",
-      "turn": 3,
-      "bytes": 22266,
-      "sha256": "a55b5d3c93bbb1b30cdd80a60cd1d26336a12f8925eb86005906dc21457b8c58"
+      "kind": "turn",
+      "turn": 3
     },
     {
+      "n": 4,
       "path": "playbooks/driver-qualification-files/story/04.webp",
-      "caption": "Turn 6 - Screenmoor MVR, Athena: Three orders are due, and I'm filing a card for each",
-      "turn": 6,
-      "bytes": 22546,
-      "sha256": "901f0784fa855c739723c8f12b11107f6ece6f4ef375b40255afc5c272b4d9f1"
+      "bytes": 43538,
+      "sha256": "5970c5c9e5ca046e07a4e3d9e0564bad9f653741ebe9ef73efda0a4532977470",
+      "caption": "Turn 6 - Screenmoor MVR, Athena: I'm filing three orders",
+      "kind": "turn",
+      "turn": 6
     },
     {
+      "n": 5,
       "path": "playbooks/driver-qualification-files/story/05.webp",
+      "bytes": 41490,
+      "sha256": "34de909830feb37036a510c16f12a2d0eed62cbd3bcbd3ba3727560ba7b717d7",
       "caption": "Turn 8 - Specimoor Clearinghouse desk, Athena: Two queries are due, and I'm filing a card for each",
-      "turn": 8,
-      "bytes": 23526,
-      "sha256": "0727a9c2b064922bf09008cb6aed8be996093ac54f3ac13e9599335fcdecd614"
-    },
-    {
-      "path": "playbooks/driver-qualification-files/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 21606,
-      "sha256": "7f662276965999c99eff0f9674a28c8faeca5b88ef8fb6c740f75b6c6eecb32a"
+      "kind": "turn",
+      "turn": 8
     }
   ]
 }

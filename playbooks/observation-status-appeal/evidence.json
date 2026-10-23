@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "observation-status-appeal",
-  "captured_at": "2026-10-10T06:16:11Z",
-  "bench_run_at": "2026-10-10T06:12:09Z",
-  "narration": {
-    "text": "A mother's hospital stay, changed from inpatient to observation the day after she was admitted, appealed to Medicare's quality reviewers so the ten thousand two hundred dollars her nursing home billed privately can fall to Part A, and the stays the rule does not reach left alone. This is a chore for a daughter, appointed representative for her mother of eighty-one, whose rehab after a hospital stay is being billed privately because the stay was changed to observation. Athena works it across 4 portals: Carenook, Saint Ardent billing, Myline Medicare and Oakview Care. On the bench, she found 2 of 2 eligible items, worth 10,200 dollars of the 10,200 dollars there was to find. She made no false claim. The world held 12 traps, and she walked past 12. She took 2 minutes. By hand, the same chore takes 4 hours, so she was about 126 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 62.708,
-    "sha256": "2fdd39965ee7379f153cc637bf84d216ac6a529d8724385a1a9056981f39638a"
-  },
-  "video": {
-    "path": "evidence/observation-status-appeal/evidence.mp4",
-    "duration_s": 62.72,
-    "bytes": 3231744,
-    "sha256": "1bfed9ad59e3fdcf810d840c87dadda175ab7f79080b7bdd56e833eed3adc6c8"
-  },
-  "thumbnail": {
-    "path": "playbooks/observation-status-appeal/thumb.jpg",
-    "bytes": 79023,
-    "sha256": "0671db5fe51094f8bcabc9ece0a446626423799b44155000aab3b4b08ccfb872"
-  },
+  "captured_at": "2026-10-23T17:07:28Z",
+  "bench_run_at": "2026-10-23T16:15:18Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/observation-status-appeal/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22408,
-      "sha256": "2bf36fbfdd892b9d403cfe955df9d902322dca099188389b0ec027618110c8bb"
+      "bytes": 41578,
+      "sha256": "853c2dffed294328523a33501fd08ba004847dc7175e65a8b4c22765cb2dc9c6",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/observation-status-appeal/story/02.webp",
+      "bytes": 29212,
+      "sha256": "77cdcbaeed63dbf4bcfb35ff72da1fa609be37e3937aeddf9686ab539b1af063",
       "caption": "Turn 1 - Carenook: Mom has been at Oakview since her hospital stay in September, and they're…",
-      "turn": 1,
-      "bytes": 23976,
-      "sha256": "b479e7d361b80c20ff03bf09180af0c8604ee64428b3efa075f0c2cea7ed3a3a"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/observation-status-appeal/story/03.webp",
+      "bytes": 28376,
+      "sha256": "f9e97cb4979cc1e46d9a055fca20344ec8c9160c2bf8d463de65ed26a46eb5b5",
       "caption": "Turn 4 - Saint Ardent billing: Saint Ardent's billing portal",
-      "turn": 4,
-      "bytes": 21530,
-      "sha256": "1b7222bc6f2a2bece11fbe11a29a36cec8cb69530190dce0098af574e01515ef"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/observation-status-appeal/story/04.webp",
-      "caption": "Turn 8 - Myline Medicare, Athena: The September stay (MC-2609) qualifies for a standard QIO appeal, and I'm…",
-      "turn": 8,
-      "bytes": 22852,
-      "sha256": "fe1f5c0b23972ef85dcf4880984286eec10647d246c3d145f15791c0c2380436"
+      "bytes": 27090,
+      "sha256": "ac9300cd141c8d4f5e19de6877097023810aab130c4a7ad85cb32fede8a21c4e",
+      "caption": "Turn 7 - Myline Medicare, Athena: The September stay (MC-2609) fits the QIO status-appeal rule",
+      "kind": "turn",
+      "turn": 7
     },
     {
+      "n": 5,
       "path": "playbooks/observation-status-appeal/story/05.webp",
-      "caption": "Turn 11 - Oakview Care, Athena: I'm asking Oakview to hold OV-2610, the $10,200 statement, which is the only…",
-      "turn": 11,
-      "bytes": 23668,
-      "sha256": "ae5baf6c3854866460ab45dfaf586caf4bd0670a411da8c1714ea71f7cdf2863"
-    },
-    {
-      "path": "playbooks/observation-status-appeal/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23794,
-      "sha256": "224c34fdef28a7109aea774153340a15444e581028333bfd4f7512e5c46207ee"
+      "bytes": 41092,
+      "sha256": "208fc1a7f1630478ae9babc5ed7689d1879b3fba1105d5919fcbd98789eb5329",
+      "caption": "Turn 10 - Oakview Care, Athena: I'm asking Oakview to hold OV-2610 ($10,200), the one statement the appeal…",
+      "kind": "turn",
+      "turn": 10
     }
   ]
 }

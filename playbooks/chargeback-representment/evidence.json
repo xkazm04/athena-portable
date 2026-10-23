@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "chargeback-representment",
-  "captured_at": "2026-10-10T15:18:34Z",
-  "bench_run_at": "2026-10-10T15:16:40Z",
-  "narration": {
-    "text": "A woodworker's ten open card disputes answered with the evidence each reason code needs, five contested and won on delivery, Compelling Evidence 3.0, a matching listing, a credit already issued and a registered device, and two accepted because the board never shipped and the refund was never paid, while disputes that cannot be won and one past its processor's date are left alone. This is a chore for the owner of a small online woodworking shop in Idaho, who takes card payments through a processor and has ten disputes open. On the bench, she found 7 of 7 eligible items, worth 957 dollars of the 957 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. She took 3 minutes. By hand, the same chore takes about 2 hours, so she was about 54 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 61.554,
-    "sha256": "6b0a3478b1c243490370d2a258260f5aeefa26c2fd184c594e9d848b0f5356d2"
-  },
-  "video": {
-    "path": "evidence/chargeback-representment/evidence.mp4",
-    "duration_s": 61.56,
-    "bytes": 3306402,
-    "sha256": "1e3f94e7ec993872e4cee7a1a6b21b4dbcb273d474a16afd2c95495cc6775c24"
-  },
-  "thumbnail": {
-    "path": "playbooks/chargeback-representment/thumb.jpg",
-    "bytes": 84761,
-    "sha256": "8c401bbfa057f918c73b50cd2e2da3b751138a9558ba1d867742c0364fbb483d"
-  },
+  "captured_at": "2026-10-23T16:58:53Z",
+  "bench_run_at": "2026-10-23T15:48:02Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/chargeback-representment/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23206,
-      "sha256": "3147312cb34984f105b7260eb0d292e9674bc941b78d0c06a44962733d1a6dc5"
+      "bytes": 39950,
+      "sha256": "13e1fb9808781093e7763f2ed15520d2723fb80a30c40f491a284c38e0a6caf3",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/chargeback-representment/story/02.webp",
+      "bytes": 33958,
+      "sha256": "bdc40ceb6b3d92d697c42e4816f17db19cf1d56b563ca1bf41381a3e8d7655e6",
       "caption": "Turn 1 - Paycurrent dashboard: I'm Maya, Lowfield Joinery",
-      "turn": 1,
-      "bytes": 23854,
-      "sha256": "ccb875b478c3c26939e17fefc373cdb81f9f9707a3cff27e35b2fe09b5aafd17"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/chargeback-representment/story/03.webp",
-      "caption": "Turn 5 - Storeline, Athena: The disputed orders are read",
-      "turn": 5,
-      "bytes": 22960,
-      "sha256": "b78c1b6508a73de364d384327abab5c0085723c2e1339371f005992bdc8fb5a1"
+      "bytes": 35516,
+      "sha256": "85658aa1366b57c53ff73a887a26ffe901a5961a39c946d8871806eec0c3b9a8",
+      "caption": "Turn 5 - Storeline, Athena: The orders behind all ten disputes are read",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/chargeback-representment/story/04.webp",
-      "caption": "Turn 9 - Parcelwick, Athena: I read all ten delivery records",
-      "turn": 9,
-      "bytes": 23664,
-      "sha256": "8af5c0c85cd7f0b383c64ed0a6ee1f9c49d58c9511d5c2cd773621d5539d345d"
+      "bytes": 43422,
+      "sha256": "59ecf512e04ae8b3be58426b90f62e2da86015366f30a1a87f39121ec332b621",
+      "caption": "Turn 8 - Parcelwick, Athena: I've read the Parcelwick record for all ten disputed orders (10 of 10) and…",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/chargeback-representment/story/05.webp",
-      "caption": "Turn 13 - Paycurrent dashboard: Back in Paycurrent",
-      "turn": 13,
-      "bytes": 23600,
-      "sha256": "e8494148db0054ff0a7451d3a11d2366a996f75a695ffafe7efc80b2e8bfdcd1"
-    },
-    {
-      "path": "playbooks/chargeback-representment/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23160,
-      "sha256": "bb6eb184f6de8a086208c0bbc51b4820c50eae764af66c1ff1f53b6db1cd7fd0"
+      "bytes": 43578,
+      "sha256": "8035e83cc4866fdde07d1d9beb9d44bdd008762831393c254cd8c3ee1aae8a3c",
+      "caption": "Turn 12 - Paycurrent dashboard: Back in Paycurrent",
+      "kind": "turn",
+      "turn": 12
     }
   ]
 }

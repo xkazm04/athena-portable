@@ -1,15 +1,16 @@
 {
   "playbook": "msp-extra-help",
-  "run_at": "2026-10-10T06:08:16Z",
+  "run_at": "2026-10-23T16:13:45Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 109.0,
+  "comparable": "sha256:2d6d5be50bde3588",
+  "wall_s": 131.6,
   "turns": 9,
   "nudges": 0,
   "follow_ups": 0,
   "reads": 20,
-  "cost_usd": 0.857,
+  "cost_usd": 0.8456,
   "your_time_s": 150,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 1.8
+    "minutes": 2.2
   },
   "score": {
     "eligible": 4,
     "found": 4,
     "exact": 4,
+    "neutral": 1,
     "value_total_usd": 3797.2,
     "value_found_usd": 3797.2,
     "recall_value": 1.0,
@@ -138,14 +140,19 @@
     }
   ],
   "missed": [],
-  "closing_words": "Mom qualifies for QMB. I'm filing cards for the three resource lines that count and then the application itself. Nothing has been filed yet, and each card needs your answer.\n\n**Income:** $1,302.00 Social Security (gross, before the $202.90 Part B premium) plus $46.00 pension is $1,348.00. After the $20 disregard that is **$1,328.00**, which is at or below the $1,330 QMB limit. Mom typed $1,099.10, which is the net deposit and is wrong. Using it would have put her at $1,125, still QMB, but it would be a wrong figure on a sworn form.\n\n**Resources that count:**\n- **R-1 Checking ...2210: $1,906.25.** Accounts count at the first moment of the application month, which is 1 October. She typed today's $1,388.62.\n- **R-2 Savings ...2228: $5,610.00.**\n- **R-3 Burial fund ...2236: $1,000.00.** Up to $1,500 is excluded, but that is first reduced by the $1,000 life insurance face value, which leaves ",
+  "closing_words": "Irene qualifies for QMB. I've filed four cards for you to approve, but nothing is filed until you answer them.\n\n**Income:** $1,302.00 Social Security (gross, before the $202.90 Part B premium) plus $46.00 pension is $1,348.00. After the $20 disregard, countable income is **$1,328.00**. That is under the QMB limit of $1,330. Her draft had $1,099.10, which is the net deposit.\n\n**Resources:** these are the figures that count, taken at the first moment of October as the rules require.\n- Checking ...2210: **$1,906.25**. That was the balance at the start of 1 October. Today's $1,388.62 is not what counts.\n- Savings ...2228: **$5,610.00**.\n- Burial fund ...2236: **$1,000.00**. The $1,500 burial exclusion is reduced by the $1,000 face value of her Corliss life policy, which leaves $500 excluded. The other $1,000 counts.\n- **Total countable resources: $8,516.25**, under the $9,950 limit.\n\n**Left ",
+  "prose_audit": {
+    "said_usd": 8516.25,
+    "record_usd": 3797.2,
+    "agrees": false
+  },
   "trace": [
     {
       "portal": "Mailnest",
       "user": "Mom lives on her Social Security and I think she can get help with her Medicare costs. Start in my inbox: what she forwarded me from Social Security and her life insurer, her note about the state form, Teo's note, and anything else about th",
       "continued": false,
-      "said": "I'll list the inbox first.",
-      "said_chars": 26,
+      "said": "I'll start by listing your inbox.",
+      "said_chars": 33,
       "reads": [
         "search_mail"
       ],
@@ -155,9 +162,10 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "There are five messages. I'll read the four that matter, and skip M-3 for now because it's a filing service's pitch.",
-      "said_chars": 116,
+      "said": "Five messages are in the inbox. I'll read all of them.",
+      "said_chars": 54,
       "reads": [
+        "read_message",
         "read_message",
         "read_message",
         "read_message",
@@ -169,8 +177,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "Nothing is filed yet. Here is what the inbox says, and my plan.\n\n- **Social Security letter (M-1):** The state runs the Medicare Savings Program (MSP). Anyone who gets an MSP gets Extra Help automatically. Applying for Extra Help is free.\n- **Life insurance (M-2):** The face amount is $1,000 and the cash value is $580.40. Both figures are on the page. Whether either one counts is a rules question, so I'll check the rules before I use them.",
-      "said_chars": 2256,
+      "said": "The inbox says Medicost's $189 filing offer isn't needed, because applying is free. Irene's note says her income figure came from what lands in her checking, which may not be the gross benefit. Next I'll read the other three apps: Ledgerline, Benefitline and Statecare.",
+      "said_chars": 2739,
       "reads": [],
       "cards": []
     },
@@ -178,8 +186,8 @@
       "portal": "Ledgerline bank",
       "user": "Ledgerline, Mom's bank. Read what each of her accounts holds and this month's checking activity.",
       "continued": false,
-      "said": "Both reads are AUTO, so I'll run them now.",
-      "said_chars": 42,
+      "said": "Reading both Ledgerline views now.",
+      "said_chars": 34,
       "reads": [
         "list_accounts",
         "list_checking_activity"
@@ -190,8 +198,8 @@
       "portal": "Ledgerline bank",
       "user": "",
       "continued": true,
-      "said": "Both Ledgerline reads came back. Nothing is filed, and the bank doesn't decide what counts.\n\n**Accounts (balances today, 9 Oct 2026)**\n- Checking ...2210: $1,388.62. It was $1,906.25 on 1 October. Her Social Security and pension are deposited here.\n- Savings ...2228: $5,610.00. There has been no activity since June 2026.\n- Savings ...2236 (burial fund): $1,500.00. It was opened 14 May 2019 and designated for her burial. It is kept apart from her other money, and there have been no withdrawals.",
-      "said_chars": 2179,
+      "said": "Ledgerline shows three accounts, and her deposits are net of the Medicare premium, so the checking figure is not her gross benefit.\n\n**Accounts (balances today, 9 Oct 2026)**\n- Checking ...2210: $1,388.62. It was $1,906.25 on 1 Oct. Her Social Security and pension are deposited here.\n- Savings ...2228: $5,610.00. There has been no activity since June 2026.\n- Savings ...2236, burial fund: $1,500.00. It was opened 14 May 2019 and is designated for her burial.",
+      "said_chars": 2625,
       "reads": [],
       "cards": []
     },
@@ -199,10 +207,9 @@
       "portal": "Benefitline",
       "user": "Benefitline, Mom's and Dad's Social Security and Medicare. Read the Extra Help rules, both their records and Mom's benefit statement. Then decide whether either of them should apply for Extra Help here, and don't apply anyone who already ha",
       "continued": false,
-      "said": "I'll read the Extra Help rules, both Medicare records and Mom's benefit statement before deciding anything.",
-      "said_chars": 107,
+      "said": "I'll read the Extra Help rules, both records and Mom's benefit statement.",
+      "said_chars": 73,
       "reads": [
-        "read_rules",
         "read_rules",
         "read_rules",
         "read_rules",
@@ -215,8 +222,8 @@
       "portal": "Benefitline",
       "user": "",
       "continued": true,
-      "said": "Dad already has Extra Help, so I won't apply him. Mom qualifies and has none, so I'm filing a card for her application.\n\n**Dad (Leon, B-2):** He is deemed on his full Brennick Medicaid, with a full subsidy, $0 premium and $0 copays. It was re-deemed in July 2026 and runs through 31 December 2027. Fernhill is right, and an application would add nothing.\n\n**Mom (Irene, B-1):** Her record shows no Medicaid or Medicare Savings Program (MSP) and no Extra Help. She is not deemed, so she may apply here, and it is free.",
-      "said_chars": 1822,
+      "said": "Irene should apply for Extra Help here, and Leon should not.\n\n**Leon (B-2): leave alone.** He is already deemed for Extra Help through his full Medicaid. He gets the full subsidy at $0 premium and $0 copays, through 31 December 2027. This answers Teo's question: Fernhill is right. An application would be redundant.\n\n**Irene (B-1): apply.**\n- **Nothing on file.** She has no Medicaid, Medicare Savings Program or Extra Help, so she isn't deemed.",
+      "said_chars": 1505,
       "reads": [],
       "cards": [
         {
@@ -230,16 +237,16 @@
       "portal": "Statecare Benefits",
       "user": "Statecare, the state's portal, where Mom's Medicare Savings Program application is saved as a draft. Read the rules and her draft, put the resources that count on the resource statement at the right values, and file her application for the ",
       "continued": false,
-      "said": "I'll read the Statecare rules and Mom's draft first. Nothing gets filed until I've seen both.",
-      "said_chars": 93,
+      "said": "I'll read the Statecare rules and Irene's saved draft first, then work out the figures.",
+      "said_chars": 87,
       "reads": [
-        "view_draft",
         "read_rules",
         "read_rules",
         "read_rules",
         "read_rules",
         "read_rules",
-        "read_rules"
+        "read_rules",
+        "view_draft"
       ],
       "cards": []
     },
@@ -247,8 +254,8 @@
       "portal": "Statecare Benefits",
       "user": "",
       "continued": true,
-      "said": "Mom qualifies for QMB. I'm filing cards for the three resource lines that count and then the application itself. Nothing has been filed yet, and each card needs your answer.\n\n**Income:** $1,302.00 Social Security (gross, before the $202.90 Part B premium) plus $46.00 pension is $1,348.00. After the $20 disregard that is **$1,328.00**, which is at or below the $1,330 QMB limit. Mom typed $1,099.10, which is the net deposit and is wrong.",
-      "said_chars": 2149,
+      "said": "Irene qualifies for QMB. I've filed four cards for you to approve, but nothing is filed until you answer them.\n\n**Income:** $1,302.00 Social Security (gross, before the $202.90 Part B premium) plus $46.00 pension is $1,348.00. After the $20 disregard, countable income is **$1,328.00**. That is under the QMB limit of $1,330. Her draft had $1,099.10, which is the net deposit.\n\n**Resources:** these are the figures that count, taken at the first moment of October as the rules require.",
+      "said_chars": 1832,
       "reads": [],
       "cards": [
         {
@@ -276,6 +283,24 @@
           "value_usd": 3797.2
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-10T06:08:16Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 4,
+      "eligible": 4,
+      "value_found_usd": 3797.2,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 109.0,
+      "your_time_s": 150
     }
   ]
 }

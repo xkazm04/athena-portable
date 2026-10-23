@@ -1,16 +1,16 @@
 {
   "playbook": "lien-desk",
-  "run_at": "2026-10-22T08:36:28Z",
+  "run_at": "2026-10-23T15:35:50Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "comparable": "sha256:688a1f197ed624ce",
-  "wall_s": 203.5,
-  "turns": 12,
+  "comparable": "sha256:33131cca3cdfcf33",
+  "wall_s": 216.5,
+  "turns": 13,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 27,
-  "cost_usd": 1.4436,
+  "reads": 30,
+  "cost_usd": 1.7948,
   "your_time_s": 300,
   "verdict": {
     "word": "exceeds",
@@ -20,12 +20,12 @@
       "false_claims": 0,
       "minutes": 35.0
     },
-    "minutes": 3.4
+    "minutes": 3.6
   },
   "score": {
     "eligible": 10,
     "found": 10,
-    "exact": 10,
+    "exact": 9,
     "neutral": 0,
     "value_total_usd": 416700.0,
     "value_found_usd": 416700.0,
@@ -122,28 +122,20 @@
       "why": "Notice of Completion recorded 09-10: 30 days end Sat 10-10, so record by Fri 10-09; $41,000 unpaid plus $22,000 retention"
     },
     {
-      "action": "send_texas_notice",
-      "key": "KATY",
-      "outcome": "correct",
-      "value_usd": 18900.0,
-      "exact": true,
-      "why": "July work unpaid: notice due by 10-15"
-    },
-    {
-      "action": "serve_preliminary_notice",
-      "key": "MB-LAB",
-      "outcome": "correct",
-      "value_usd": 36000.0,
-      "exact": true,
-      "why": "First furnished 09-24; the 20 days run to 10-14 and no notice is on file"
-    },
-    {
       "action": "serve_preliminary_notice",
       "key": "OAK-CLINIC",
       "outcome": "correct",
       "value_usd": 52000.0,
       "exact": true,
       "why": "Late, but served today it protects work from 09-17 on ($14,800 done, $37,200 to come); the $48,200 before is lost"
+    },
+    {
+      "action": "send_texas_notice",
+      "key": "KATY",
+      "outcome": "correct",
+      "value_usd": 18900.0,
+      "exact": true,
+      "why": "July work unpaid: notice due by 10-15"
     },
     {
       "action": "send_retainage_notice",
@@ -178,34 +170,86 @@
       "why": "Instruction 10-05 14:00; no deposit; notice due within 60 hours, by 10-08 02:00"
     },
     {
-      "action": "decline_waiver",
-      "key": "KATY-W-AUG",
-      "outcome": "correct",
-      "value_usd": 23900.0,
-      "exact": true,
-      "why": "Decline the custom release and offer the Property Code 53.284 statutory form"
-    },
-    {
       "action": "submit_pay_app",
       "key": "KATY-PA-09",
       "outcome": "correct",
       "value_usd": 71500.0,
       "exact": true,
       "why": "Without pending CO #7 ($12,500) and with the renewed certificate of insurance attached"
+    },
+    {
+      "action": "decline_waiver",
+      "key": "KATY-W-AUG",
+      "outcome": "correct",
+      "value_usd": 23900.0,
+      "exact": false,
+      "why": "Decline the custom release and offer the Property Code 53.284 statutory form"
+    },
+    {
+      "action": "serve_preliminary_notice",
+      "key": "MB-LAB",
+      "outcome": "correct",
+      "value_usd": 36000.0,
+      "exact": true,
+      "why": "First furnished 09-24; the 20 days run to 10-14 and no notice is on file"
     }
   ],
   "missed": [],
-  "closing_words": "I can't serve, send or record anything myself, because every notice is a card and only you can answer it. All five office cards are already filed and nobody has answered them, so I won't file them again.\n\n**Office cards waiting on you, in deadline order**\n\n| Deadline | Card | Action | Note |\n|---|---|---|---|\n| Fri 10/9 | apr_1877026c97f5 | Fremont lien, $63,000, Alameda | Please confirm the $22,000 retention is due now. If it isn't, the amount is $41,000. |\n| Wed 10/14 | apr_77e3bc0af24a | Mission Bay preliminary notice | |\n| Thu 10/15 | apr_5f4a6b888cdd | Katy July notice, $18,900 | |\n| Fri 10/16 | apr_e7583eb0e15e | Round Rock retainage notice, $27,000 | The legal deadline is Mon 10/19. |\n| Now | apr_5f10606bd048 | Oakland preliminary notice | Already late. Each day of delay leaves more work unprotected. |\n\n**Portal cards also waiting**\n- **Textura (apr_63997042c5db):** the non-paymen",
+  "closing_words": "Nothing new is due that I can file without you, apart from the Mission Bay notice below. All nine earlier cards are still unanswered, and the Fremont lien and the Textura notice are the ones with the shortest clocks.\n\n**Calendar, from the job pages (host date 2026-10-07)**\n- **Thu 10/08, 02:00 Pacific:** the Mission Bay non-payment notice (apr_6695cee15119). The Textura rule gives 60 hours from the 10/05 14:00 payment instruction. The waiver then releases automatically at 14:00 on 10/08. It is about 17 hours away, and the $55,000 is not in the bank.\n- **Fri 10/09:** Fremont lien recording, $63,000 (apr_cf6f34088ed8). Day 30 after the 9/10 Notice of Completion is Sat 10/10, which moves to Friday.\n- **Wed 10/14:** Mission Bay preliminary notice, not yet served (see below).\n- **Thu 10/15:** Katy July notice, $18,900 (apr_23c663639ead).\n- **Mon 10/19:** Round Rock retainage notice, $27,000 (",
   "trace": [
     {
       "portal": "Office",
       "user": "Lien desk for the week. Start here in the office: read our rules and every job, and tell me which deadlines are due or coming and what you need from the GC portals.",
       "continued": false,
-      "said": "I'll start by reading the rules index, the job list and the bank receipts. Then I'll read each job in full.",
-      "said_chars": 107,
+      "said": "I'll read the office rules and the job list first.",
+      "said_chars": 50,
       "reads": [
         "read_rules",
+        "list_jobs"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Office",
+      "user": "",
+      "continued": true,
+      "said": "Page 1 shows 4 of 8 jobs, and the rules index only lists topics. I'm fetching page 2 and the rule topics before I judge any deadline.",
+      "said_chars": 133,
+      "reads": [
         "list_jobs",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Office",
+      "user": "",
+      "continued": true,
+      "said": "Next I'm reading each job in full: contract date, unpaid by month, and retention. Those decide the Texas deadlines and the lien amounts.",
+      "said_chars": 136,
+      "reads": [
+        "read_job",
+        "read_job",
+        "read_job",
+        "read_job",
+        "read_job",
+        "read_job",
+        "read_job",
+        "read_job"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Office",
+      "user": "",
+      "continued": true,
+      "said": "The office data shows five items that need action, and I'm checking deposits before I file any cards. Today is Wed 2026-10-07.\n\n**Due or coming**\n\n| Job | Deadline | Status |\n|---|---|---|\n| Oakland Clinic (CA) | The preliminary notice was due 2026-09-18. | **Already late.** Nothing was served. A late notice protects only work furnished from 20 days before it is served, so each day of delay leaves more work unprotected. If served today it covers work from 9/17 on, which is the $14,800 since 9/17.",
+      "said_chars": 2632,
+      "reads": [
         "bank_receipts"
       ],
       "cards": []
@@ -214,45 +258,8 @@
       "portal": "Office",
       "user": "",
       "continued": true,
-      "said": "Page 1 of the job list shows 4 of 8 jobs. Next I'll get page 2, then every rules topic and each job in full.",
-      "said_chars": 108,
-      "reads": [
-        "list_jobs",
-        "read_rules",
-        "read_rules",
-        "read_rules",
-        "read_rules",
-        "read_rules",
-        "read_rules",
-        "read_rules",
-        "read_rules",
-        "read_job",
-        "read_job",
-        "read_job",
-        "read_job"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "Office",
-      "user": "",
-      "continued": true,
-      "said": "I still need the other four jobs in full: Daly City, San Jose Library, Round Rock and Katy. I'll read them now.",
-      "said_chars": 111,
-      "reads": [
-        "read_job",
-        "read_job",
-        "read_job",
-        "read_job"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "Office",
-      "user": "",
-      "continued": true,
-      "said": "Five notices need action in the next few days, and none is on a portal. I'm filing cards for them now. I used the host clock, Wed 2026-10-07. If today is actually 10-22, the Fremont, Mission Bay and Katy deadlines below have already passed, so tell me.\n\n**Due now or soon**\n\n| Job | What | Deadline | Basis |\n|---|---|---|---|\n| Fremont Tower (CA) | Record mechanics lien, Alameda County | **Fri 10/9** | The Notice of Completion was recorded 9/10, so 30 days ends Sat 10/10 and the weekend rule pulls it to Friday.",
-      "said_chars": 3100,
+      "said": "Deposits don't change the picture, so I'm filing four cards. The Gulfline payment of $23,900 on 9/28 is referenced \"Katy Aug\", so it doesn't pay the unpaid July work. There are no deposits for Fremont, Round Rock, Mission Bay or Oakland's post-9/17 work. The Peak Build deposit is a Sunnyvale progress payment, not the retention.\n\n- **Fremont lien, $63,000:** this is $41,000 unpaid billed plus $22,000 retention, both written on the job page. It would change if the retention isn't yet lienable under the contract.",
+      "said_chars": 1334,
       "reads": [],
       "cards": [
         {
@@ -262,22 +269,16 @@
           "value_usd": 63000.0
         },
         {
-          "action": "send_texas_notice",
-          "key": "KATY",
-          "outcome": "correct",
-          "value_usd": 18900.0
-        },
-        {
-          "action": "serve_preliminary_notice",
-          "key": "MB-LAB",
-          "outcome": "correct",
-          "value_usd": 36000.0
-        },
-        {
           "action": "serve_preliminary_notice",
           "key": "OAK-CLINIC",
           "outcome": "correct",
           "value_usd": 52000.0
+        },
+        {
+          "action": "send_texas_notice",
+          "key": "KATY",
+          "outcome": "correct",
+          "value_usd": 18900.0
         },
         {
           "action": "send_retainage_notice",
@@ -291,8 +292,8 @@
       "portal": "Procore",
       "user": "I'm in Procore Pay. Deal with the waiver requests here.",
       "continued": false,
-      "said": "I'll read the open Procore waiver requests and the bank receipts first, so I can check each amount against the money actually received.\n\nThe Procore list is on its way. The bank receipts call was refused because it belongs to the Office tab, so I'll recall what I read there earlier.\n\nI can't file any waiver cards yet, because the Procore waiver list hasn't come back. Its answer was supposed to arrive with this turn, and I won't call it again as instructed. Send any message and I'll work from it when it lands.",
-      "said_chars": 1981,
+      "said": "I'm reading the Procore waiver requests and the California waiver rules before I propose anything.\n\nThe office rules tool is refused from this tab, so I'm searching memory for the waiver rules. The waiver list itself arrives next turn.\n\nI can't file any waiver card yet. The Procore waiver list hasn't come back, and I don't have the California waiver rules.\n\n- **Waiver list:** I asked the page for it and was told not to ask again. I'll work from it as soon as it arrives.",
+      "said_chars": 1372,
       "reads": [
         "list_waiver_requests"
       ],
@@ -302,8 +303,8 @@
       "portal": "Procore",
       "user": "",
       "continued": true,
-      "said": "I'm filing two cards. The Oakland request is signable as a conditional waiver with exceptions. The Sunnyvale request is one I'll decline.\n\n**Oakland Clinic (OAK-W-0926, 8132 conditional progress, $38,400)**\n- A conditional form only releases when that payment arrives, so it doesn't give away money we haven't received.\n- I'm listing the $4,267 retention and the $6,100 disputed extra under Exceptions. Both are in the GC's own note and on our job record.\n- The $38,400 is the figure on the request.",
-      "said_chars": 1443,
+      "said": "I'm filing two cards. One signs the Oakland waiver on the conditional form with the held amounts excepted, and the other declines the Sunnyvale final release.\n\n**Oakland Clinic (OAK-W-0926): sign, conditional only**\n- Harbor GC asked for form 8132, conditional progress, for $38,400. A conditional form only takes effect when that payment arrives, so it doesn't release money we haven't received.\n- I'm excepting the $4,267 retention and the $6,100 disputed extra ductwork, both named in the GC's note.",
+      "said_chars": 1644,
       "reads": [],
       "cards": [
         {
@@ -324,8 +325,8 @@
       "portal": "Oracle Textura",
       "user": "Now Textura, for Mission Bay.",
       "continued": false,
-      "said": "I'll read the Textura draws and check the bank for Mission Bay money before proposing anything.\n\nThe Office tools are out of reach from this tab, so I'll recall what I already read about Mission Bay. The draw list arrives next turn.\n\nI don't have the Textura draw data yet, so I can't tell you the payment instruction time or file anything. The page took my `list_draws` call, but its answer hasn't come back, and I won't call it again.",
-      "said_chars": 1814,
+      "said": "I'm reading the Textura draws and the Textura waiver rules before I propose anything on Mission Bay.\n\n\nI have no draw data or Textura rules yet, so I can't file a card. Once they come back, I'll check three things:\n- Whether the waiver releases money that hasn't arrived. The September draw is $55,000 billed and $0 paid, per the job page.\n- Whether a non-payment notice is needed to stop an automatic release.\n- The Mission Bay preliminary notice, due 2026-10-14 with nothing served.",
+      "said_chars": 1959,
       "reads": [
         "list_draws"
       ],
@@ -335,8 +336,8 @@
       "portal": "Oracle Textura",
       "user": "",
       "continued": true,
-      "said": "The Mission Bay non-payment notice is the urgent one. I'm filing a card for it, and I'm not filing a card to sign the waiver.\n\n**What the draw says**\n- Draw MB-SEP is $55,000, and it requires an unconditional progress waiver (request MB-W-SEP).\n- The payment instruction went out 10/5 at 2:00 pm Pacific. The status is \"Instruction sent\", not paid.\n- The 60-hour window to file notice closes **10/8 at 2:00 am Pacific**. The waiver releases automatically at **10/8 at 2:00 pm Pacific**.",
-      "said_chars": 1494,
+      "said": "I'm filing one card: a non-payment notice to Textura for the September draw. I'm not signing the unconditional waiver.\n\n**Mission Bay Lab, draw MB-SEP ($55,000)**\n- Textura requires an unconditional progress waiver (request MB-W-SEP). That form releases the money whether or not it arrives.\n- The draw list shows \"Instruction sent\" (10/05, 14:00 Pacific). That means Bayline has instructed payment, not that we've been paid.\n- The job page shows $0 paid.",
+      "said_chars": 1745,
       "reads": [],
       "cards": [
         {
@@ -351,13 +352,15 @@
       "portal": "GCPay",
       "user": "Now GCPay for the Texas jobs. Get this month's pay app in clean and deal with anything waiting here.",
       "continued": false,
-      "said": "I'll read GCPay's pay apps, waivers, change orders, documents and compliance files, and recall what I have on the Texas jobs. I won't propose anything until those answers come back.\n\n\nTwo things to settle first:\n- **Date:** the host clock says Wed 2026-10-07, but my environment says 2026-10-22. If it is the 22nd, the Katy July notice (due 10/15) is already late. The Fremont, Mission Bay and Round Rock deadlines may have passed too. Tell me which date is right.",
-      "said_chars": 2631,
+      "said": "I'm reading the GCPay pay apps, waiver requests, change orders and document library before I propose anything. I also need the Texas job details from memory.\n\n\nNo card is filed yet. The data comes back next turn, and I'll build the pay app from what those pages say.\n\nOne thing to settle first. The page says today is 2026-10-07, but my clock says 2026-10-23. If 10-23 is right, the Katy July notice (due 10-15) and the Round Rock retainage notice (due 10-19) are already past. Their cards are still waiting on you.",
+      "said_chars": 1808,
       "reads": [
         "list_pay_apps",
         "list_waivers",
         "document_library",
-        "compliance_documents"
+        "compliance_documents",
+        "change_order_log",
+        "change_order_log"
       ],
       "cards": []
     },
@@ -365,12 +368,16 @@
       "portal": "GCPay",
       "user": "",
       "continued": true,
-      "said": "The Katy waiver is one I'll decline. The pay app needs the change order log first, and I'm reading it now.\n\n\n**Waiver (KATY-W-AUG):**\n- The Gulfline form says we release all claims \"through the date hereof\" and indemnify and hold harmless the contractor.\n- I'm declining it and offering the statutory unconditional progress form for the $23,900 August payment, which arrived 9/28.\n- Katy's July work ($18,900) is still unpaid.",
-      "said_chars": 1550,
-      "reads": [
-        "change_order_log"
-      ],
+      "said": "I'm filing two cards: one submits the Katy September pay app with CO #7 taken out, and one declines the Gulfline release.\n\n**Katy Retail pay app KATY-PA-09: submit at $71,500**\n- The draft bills $84,000. That is $71,500 base work plus $12,500 for CO #7.\n- The change order log shows CO #7 as Pending, so it isn't billable yet. I'm taking it out.\n- The draft attaches COI-2025-26.pdf, which expired 2026-09-30. The library has COI-2026-27.pdf, covering 2026-10-01 to 2027-10-01, so I'm attaching that.",
+      "said_chars": 1596,
+      "reads": [],
       "cards": [
+        {
+          "action": "submit_pay_app",
+          "key": "KATY-PA-09",
+          "outcome": "correct",
+          "value_usd": 71500.0
+        },
         {
           "action": "decline_waiver",
           "key": "KATY-W-AUG",
@@ -380,32 +387,38 @@
       ]
     },
     {
-      "portal": "GCPay",
-      "user": "",
-      "continued": true,
-      "said": "The pay app is ready to file with CO #7 left off. The GC's log shows CO #7 ($12,500, exhaust fans) as Pending, so it can't be billed yet.\n\n\n**What the card changes from the draft:**\n- **Amount:** $71,500 instead of $84,000, which is the base work line only.\n- **Change orders:** none included. CO #7 goes on a later pay app once the GC approves it.\n- **Attachment:** COI-2026-27.pdf (covers 10/1/26 to 10/1/27) replaces COI-2025-26.pdf, which expired 9/30.",
-      "said_chars": 1584,
-      "reads": [],
-      "cards": [
-        {
-          "action": "submit_pay_app",
-          "key": "KATY-PA-09",
-          "outcome": "correct",
-          "value_usd": 71500.0
-        }
-      ]
-    },
-    {
       "portal": "Office",
       "user": "Back in the office. Serve, send or record whatever is due, and tell me what's on the calendar.",
       "continued": false,
-      "said": "I can't serve, send or record anything myself, because every notice is a card and only you can answer it. All five office cards are already filed and nobody has answered them, so I won't file them again.\n\n**Office cards waiting on you, in deadline order**\n\n| Deadline | Card | Action | Note |\n|---|---|---|---|\n| Fri 10/9 | apr_1877026c97f5 | Fremont lien, $63,000, Alameda | Please confirm the $22,000 retention is due now. If it isn't, the amount is $41,000.",
-      "said_chars": 2051,
-      "reads": [],
+      "said": "The four office cards are already filed and waiting on you, so I'm checking memory for what the other tabs gave me. I need the Mission Bay lender and owner, which the preliminary notice requires.\n\nI'm back in the Office tab. Memory has no lender for Mission Bay, so I'm searching the mailbox. I'm also reading the waiver and Textura rules I couldn't reach from the other tabs.",
+      "said_chars": 376,
+      "reads": [
+        "search_mail",
+        "search_mail",
+        "read_rules",
+        "read_rules",
+        "read_rules"
+      ],
       "cards": []
+    },
+    {
+      "portal": "Office",
+      "user": "",
+      "continued": true,
+      "said": "Nothing new is due that I can file without you, apart from the Mission Bay notice below. All nine earlier cards are still unanswered, and the Fremont lien and the Textura notice are the ones with the shortest clocks.\n\n**Calendar, from the job pages (host date 2026-10-07)**\n- **Thu 10/08, 02:00 Pacific:** the Mission Bay non-payment notice (apr_6695cee15119). The Textura rule gives 60 hours from the 10/05 14:00 payment instruction. The waiver then releases automatically at 14:00 on 10/08.",
+      "said_chars": 2525,
+      "reads": [],
+      "cards": [
+        {
+          "action": "serve_preliminary_notice",
+          "key": "MB-LAB",
+          "outcome": "correct",
+          "value_usd": 36000.0
+        }
+      ]
     }
   ],
-  "note": "ADR 0128 repeat runs",
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
   "history": [
     {
       "run_at": "2026-10-07T23:10:58Z",
@@ -505,6 +518,57 @@
       "wall_s": 174.9,
       "your_time_s": 300,
       "note": "ADR 0128 repeat runs"
+    },
+    {
+      "run_at": "2026-10-22T08:36:28Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:688a1f197ed624ce",
+      "verdict": "exceeds",
+      "found": 10,
+      "eligible": 10,
+      "value_found_usd": 416700.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 203.5,
+      "your_time_s": 300,
+      "note": "ADR 0128 repeat runs"
+    },
+    {
+      "run_at": "2026-10-23T15:28:07Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:33131cca3cdfcf33",
+      "verdict": "exceeds",
+      "found": 10,
+      "eligible": 10,
+      "value_found_usd": 416700.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 151.4,
+      "your_time_s": 330,
+      "note": "world text cells bulleted, same facts (spark refilm-prep)"
+    },
+    {
+      "run_at": "2026-10-23T15:32:13Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "comparable": "sha256:33131cca3cdfcf33",
+      "verdict": "exceeds",
+      "found": 10,
+      "eligible": 10,
+      "value_found_usd": 416700.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 245.7,
+      "your_time_s": 330,
+      "note": "world text cells bulleted, same facts (spark refilm-prep)"
     }
   ]
 }

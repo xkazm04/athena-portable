@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "restricted-funds-release",
-  "captured_at": "2026-10-11T07:52:50Z",
-  "bench_run_at": "2026-10-11T07:48:33Z",
-  "narration": {
-    "text": "A kitchen nonprofit's restricted funds are released on 9 October as their terms are met: a cooler in service, a gift whose date a mailed amendment moved up, 6,300 dollars of meals money, 9,400 and 5,700 dollars of two grants, and two releases reported, while a van, a later date, 104 of 150 served and a consultant wait. This is a chore for the finance manager of a small community kitchen, a week after the quarter's close, who books the releases and files the funders' reports. On the bench, she found 7 of 7 eligible items, worth 74,600 dollars of the 74,600 dollars there was to find. She made no false claim. The world held 10 traps, and she walked past 10. She took 3 minutes. By hand, the same chore takes 3 hours, so she was about 64 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 62.566,
-    "sha256": "8f9b0ee5565e497a29ee6b1e4416c8b5c6fb12dd6188e56f62bbb1d2fb25c203"
-  },
-  "video": {
-    "path": "evidence/restricted-funds-release/evidence.mp4",
-    "duration_s": 62.566,
-    "bytes": 3489175,
-    "sha256": "ae12992fb81dd27531b8c8dc38895068734672068446ff49d7179b3c252e5863"
-  },
-  "thumbnail": {
-    "path": "playbooks/restricted-funds-release/thumb.jpg",
-    "bytes": 86518,
-    "sha256": "da28502e281e950f1708c752e71481323ff1bc7cb625316dfe69859349e40181"
-  },
+  "captured_at": "2026-10-23T17:10:22Z",
+  "bench_run_at": "2026-10-23T16:25:03Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/restricted-funds-release/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22514,
-      "sha256": "427dd53d59d8a2cb410512096f3282b47eb89466d60dd694c6d4e2e185e9a7d3"
+      "bytes": 41394,
+      "sha256": "dbe16962bef5404d3b1f5f7bffe47996b6fce99df3e1a20d20db72343009e117",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/restricted-funds-release/story/02.webp",
+      "bytes": 33292,
+      "sha256": "86976a73299fb3f6d0f8551970d8a305c64afdf14b91421575daa3da13037a13",
       "caption": "Turn 1 - Grantpoint: I'm the finance manager of Quillfern Community Kitchen",
-      "turn": 1,
-      "bytes": 23338,
-      "sha256": "3ba36990c89a62ab6093e2070ccbc5b9de1df50e753f27b53affa6eb1902c148"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/restricted-funds-release/story/03.webp",
-      "caption": "Turn 5 - Ledgerwren: Ledgerwren is our books",
-      "turn": 5,
-      "bytes": 22620,
-      "sha256": "e275021e874dcaf08925767d25989776c8adb28dd36c076a0178abf4ed944330"
+      "bytes": 42912,
+      "sha256": "67984415a860c44d628fd9e730eb33d083ed33ae7eb1a60d3316d7eb06f6ded2",
+      "caption": "Turn 6 - Ledgerwren, Athena: Ledgerwren is read in full, and nothing is booked",
+      "kind": "turn",
+      "turn": 6
     },
     {
+      "n": 4,
       "path": "playbooks/restricted-funds-release/story/04.webp",
-      "caption": "Turn 10 - Postwren, Athena: All 3 Postwren messages are read (3 of 3)",
-      "turn": 10,
-      "bytes": 23186,
-      "sha256": "da7d197d45315ee8b3193b911c25696a8d0a3dcc7ddf82ce5e44b26706152ea7"
+      "bytes": 35288,
+      "sha256": "efae15815e399f8d99bc5f0c70630b37e63210b2c49ff8e3873b9d1416c4f354",
+      "caption": "Turn 11 - Fundergate: Fundergate is where our funders take reports",
+      "kind": "turn",
+      "turn": 11
     },
     {
+      "n": 5,
       "path": "playbooks/restricted-funds-release/story/05.webp",
-      "caption": "Turn 14 - Fundergate: Back in Fundergate, send each funder whose agreement asks for it the report of…",
-      "turn": 14,
-      "bytes": 22994,
-      "sha256": "ff96000410760764bf1e0918a290e54e29697bb6aa395e24063d01a5cb416b4c"
-    },
-    {
-      "path": "playbooks/restricted-funds-release/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23680,
-      "sha256": "14630fdeeaceec7227fdd333b9431bcebfffd55684815e9eec8251dc42fdc463"
+      "bytes": 41946,
+      "sha256": "4035741a0971a1a9d58de1c52d4632d58f7458ee74cc2e8eb74813184dd4c5fd",
+      "caption": "Turn 16 - Fundergate, Athena: Nothing is sent yet",
+      "kind": "turn",
+      "turn": 16
     }
   ]
 }

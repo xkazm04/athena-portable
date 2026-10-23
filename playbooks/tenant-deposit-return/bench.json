@@ -1,15 +1,16 @@
 {
   "playbook": "tenant-deposit-return",
-  "run_at": "2026-10-10T19:38:29Z",
+  "run_at": "2026-10-23T16:28:53Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 134.0,
-  "turns": 10,
+  "comparable": "sha256:7a659d652fa3301a",
+  "wall_s": 175.4,
+  "turns": 11,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 27,
-  "cost_usd": 1.2738,
+  "reads": 26,
+  "cost_usd": 1.7245,
   "your_time_s": 180,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 2.2
+    "minutes": 2.9
   },
   "score": {
     "eligible": 6,
     "found": 6,
     "exact": 6,
+    "neutral": 0,
     "value_total_usd": 1445.0,
     "value_found_usd": 1445.0,
     "recall_value": 1.0,
@@ -136,15 +138,21 @@
     }
   ],
   "missed": [],
-  "closing_words": "I'll pull the photo proof map back from memory first, so each contest cites the right photo IDs.\n\nI'm filing six contests, one per line, which comes to $1,445.00. They're decision cards, and Noor signs each one before it goes in.\n\n\n**Contested (6 lines, $1,445.00):**\n- **S-5, $620:** repaint, ordinary wear.\n- **S-6, $420:** bedroom carpet, same wear at move-in and move-out.\n- **S-9, $95:** blind, the same bent slats at move-in.\n- **S-8, $70:** oven, clean in Corbel's own photo.\n- **S-12, $120:** rekey, all keys returned.\n- **S-7, $120:** wall hole billed twice.\n\n**Left alone (8 lines, $1,128.70):**\n- **S-1 and S-2, $454.20:** rent and water you owe.\n- **S-3, $160:** wine-stain carpet cleaning, which was your damage.\n- **S-4, $120:** the one real wall repair.\n- **S-13, $52.50:** bathroom cleaning back to move-in level.\n- **S-14, $64:** both screens, which were missing at move-out.\n- **S-1",
+  "closing_words": "I'm recalling the photo and Gavelmoor notes I saved, so each contest cites exactly what they say.\n\nI'm filing six contests, one per line. Each is a card for you to sign.\n\n\n**Contested, six lines totalling $1,445.00:**\n- **S-5, repaint of all rooms ($620):** ordinary wear. MO-3 shows paint intact with light scuffs and fading.\n- **S-6, bedroom carpet ($420):** the same worn lane and stain are in the move-in photo MI-3 and the move-out photo MO-4.\n- **S-9, bedroom blind ($95):** the same three bent slats are in MI-4 and MO-5.\n- **S-8, oven cleaning ($70):** the oven was clean in Corbel's own MO-6 and in your NH-1.\n- **S-12, rekey ($120):** Corbel's message M-5 says all your keys came back.\n- **S-7, wall hole repair ($120):** it repeats S-4 on the same invoice, INV-2214.\n\n**Left alone, $1,128.70:**\n- **Owed:** S-1, rent ($400), and S-2, water ($54.20).\n- **Damage you did:** S-3, wine stain c",
+  "prose_audit": {
+    "said_usd": 426.3,
+    "record_usd": 1445.0,
+    "agrees": false
+  },
   "trace": [
     {
       "portal": "Postwren",
       "user": "I'm Noor Haddad. This is my mail from Corbel Property Management, my landlord's manager. Read every message. Don't do anything yet: I'll send you to my tenant portal, my photos and the small claims site, and then back to the portal.",
       "continued": false,
-      "said": "I'll list the inbox first, then read each message.",
-      "said_chars": 50,
+      "said": "I'll list the inbox first, then read each message.\n\n\nCorrection, using the proper form:",
+      "said_chars": 87,
       "reads": [
+        "list_messages",
         "list_messages"
       ],
       "cards": []
@@ -153,8 +161,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "Six messages. Reading all of them now.",
-      "said_chars": 38,
+      "said": "Six messages from Corbel. I'm reading all of them now.",
+      "said_chars": 54,
       "reads": [
         "read_message",
         "read_message",
@@ -169,8 +177,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "I've read all six messages and done nothing else. I'm writing a checkpoint now so the key facts carry over to the other tabs.\n\n\n**Summary of the mail:**\n- **Deposit and lease:** The deposit is $3,000. The lease ran 15 Sep 2025 to 14 Sep 2026, and Corbel and Noor signed a move-in condition report.\n- **Inspection (4 Sep):** Corbel named only three problems: oven grease, an 8 cm bedroom wall hole and a wine stain on the carpet.",
-      "said_chars": 1512,
+      "said": "I've read all six messages from Corbel. I'm saving the facts that matter, because the other tabs can't see this one.\n\n\nNothing is filed yet, as you asked.\n\nWhat the mail shows so far:\n- **Lease and deposit:** the lease ran 15 Sep 2025 to 14 Sep 2026, with a $3,000 deposit. Move-in photos and a signed condition report exist.\n- **Inspection on 4 Sep:** Corbel named only three charges: oven grease, an 8 cm bedroom wall hole, and a wine stain on the carpet. It said nothing else was found.",
+      "said_chars": 1251,
       "reads": [],
       "cards": []
     },
@@ -178,18 +186,12 @@
       "portal": "Latchwick tenant portal",
       "user": "This is my tenant portal, Latchwick. Read my lease, my payments, the summary of my deposit statement and every line of it. Don't contest anything yet: I'll show you my photos next.",
       "continued": false,
-      "said": "I'll read the lease, ledger, statement summary and all three statement pages now, and contest nothing.",
-      "said_chars": 102,
+      "said": "Reading the lease, ledger, statement summary and the first statement page now.",
+      "said_chars": 78,
       "reads": [
-        "read_lease",
-        "read_lease",
-        "read_lease",
-        "read_lease",
         "read_lease",
         "read_ledger",
         "read_statement_summary",
-        "read_statement",
-        "read_statement",
         "read_statement"
       ],
       "cards": []
@@ -198,8 +200,24 @@
       "portal": "Latchwick tenant portal",
       "user": "",
       "continued": true,
-      "said": "I've read the lease, the ledger, the statement summary and all 14 statement lines (showing 14 of 14), and I've contested nothing.\n\n**Totals:** The deposit is $3,000. Corbel deducted $2,573.70 and returned $426.30. The 14 lines add up to that total. The statement is dated 8 Oct, 20 days after the 18 Sep move-out. The lease allows 21 days.\n\n**You owe these, so I'll leave them alone:**\n- **S-1:** rent for 15–18 Sep, $400 (4 days at $100). It matches the ledger and M-4.\n- **S-2:** water and sewer, $54.20.",
-      "said_chars": 2274,
+      "said": "Page 1 of 3 is in. Nine more lines are on pages 2 and 3, so I'm reading those next, plus the lease sections on cleaning, deposit, utilities and keys.",
+      "said_chars": 149,
+      "reads": [
+        "read_statement",
+        "read_statement",
+        "read_lease",
+        "read_lease",
+        "read_lease",
+        "read_lease"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Latchwick tenant portal",
+      "user": "",
+      "continued": true,
+      "said": "All 14 statement lines are read, and the lines add up to the $2,573.70 total. Nothing is contested. I'm recording the lines now because the other tabs can't see this one.\n\n\n**What I read:**\n- **Owed, so I'll leave them out:** S-1 rent for 15 to 18 September ($400) and S-2 final water ($54.20). Both match your ledger as unpaid.\n- **Still an estimate, so I'll leave it out:** S-10, the vanity top ($240). The stone is backordered to 30 October and the documents are due after the work.",
+      "said_chars": 1660,
       "reads": [],
       "cards": []
     },
@@ -207,8 +225,8 @@
       "portal": "Lenswick photos",
       "user": "These are my photos and the landlord's, at Lenswick. Read every page: the move-in photos, the move-out photos and the ones after the repairs.",
       "continued": false,
-      "said": "I'll read all four pages of the Lenswick photo list now and contest nothing.",
-      "said_chars": 76,
+      "said": "I'll read all four pages of the Lenswick photo list now.",
+      "said_chars": 56,
       "reads": [
         "list_photos",
         "list_photos",
@@ -221,8 +239,8 @@
       "portal": "Lenswick photos",
       "user": "",
       "continued": true,
-      "said": "I've read all 20 photos (showing 20 of 20) and contested nothing. I'm saving a checkpoint, because Latchwick is the only place a contest can be filed.\n\n\n**What the photos show**\n- **Oven (S-8, $70):** MI-5, MO-6 and your NH-1 all show it clean. Corbel's own move-out photo contradicts the charge.\n- **Bedroom carpet (S-6, $420):** MI-3 and MO-4 show the same worn lane and the same stain, with no new damage. That is wear and a move-in condition.",
-      "said_chars": 1801,
+      "said": "All 20 photos are read (4 of 4 pages). I'm recording them now, because the other tabs can't see this one.\n\n\n**What the photos show, by line:**\n- **Bedroom carpet (S-6):** the worn lane and the 15 cm stain are in the move-in photo MI-3. MO-4 shows no new damage, so this is a candidate to contest.\n- **Blind (S-9):** it had the same three bent slats at move-in (MI-4 and MO-5). That is a candidate to contest.\n- **Oven (S-8):** it is clean in Corbel's own MO-6, and in your NH-1 from 18 September.",
+      "said_chars": 1724,
       "reads": [],
       "cards": []
     },
@@ -230,11 +248,9 @@
       "portal": "Gavelmoor claims",
       "user": "This is the small claims site, Gavelmoor. Read what it says about a deposit, the limit and what to do first. Then go back to Latchwick.",
       "continued": false,
-      "said": "I'll read Gavelmoor's pages on the deposit, the limit and what to do first. I'm also reading its pages on deductions, statements and the letter, since they bear on what you contest. I won't contest anything yet.",
-      "said_chars": 211,
+      "said": "I'm reading the Gavelmoor pages on the deposit, the limit, the first step (the letter) and deductions. Nothing is contested yet.",
+      "said_chars": 128,
       "reads": [
-        "read_rules",
-        "read_rules",
         "read_rules",
         "read_rules",
         "read_rules",
@@ -246,8 +262,8 @@
       "portal": "Gavelmoor claims",
       "user": "",
       "continued": true,
-      "said": "Gavelmoor says a landlord may keep deposit money only for rent owed, damage beyond ordinary wear, and cleaning back to move-in level. It doesn't allow charges for wear, for conditions that were there at move-in, or for effects of wear that built up over time. I've contested nothing.\n\n- **Deposit:** You can sue for the amount wrongly kept. If the landlord kept money in bad faith, the court may add damages of up to twice the deposit.",
-      "said_chars": 1986,
+      "said": "Gavelmoor's pages are read, and nothing is contested yet. I'm saving the notes because Latchwick can't see this tab.\n\n\n**What Gavelmoor says:**\n- **Allowed deductions:** a landlord may keep deposit money only for rent owed, damage you caused beyond ordinary wear, cleaning back to move-in level, and restoring included furniture or items.\n- **Not allowed:** damage or defects that were there before the tenancy, ordinary wear, and the effects of wear that built up over time.",
+      "said_chars": 1819,
       "reads": [],
       "cards": []
     },
@@ -255,8 +271,8 @@
       "portal": "Latchwick tenant portal",
       "user": "Back in Latchwick. Contest each deduction that the law does not allow, with my proof from my mail, my lease and the photos, and say why. Leave alone what is accurate and allowed, and the estimate that is still open. Then tell me what you co",
       "continued": false,
-      "said": "I'll pull the photo proof map back from memory first, so each contest cites the right photo IDs.\n\nI'm filing six contests, one per line, which comes to $1,445.00. They're decision cards, and Noor signs each one before it goes in.\n\n\n**Contested (6 lines, $1,445.00):**\n- **S-5, $620:** repaint, ordinary wear.\n- **S-6, $420:** bedroom carpet, same wear at move-in and move-out.\n- **S-9, $95:** blind, the same bent slats at move-in.\n- **S-8, $70:** oven, clean in Corbel's own photo.",
-      "said_chars": 1541,
+      "said": "I'm recalling the photo and Gavelmoor notes I saved, so each contest cites exactly what they say.\n\nI'm filing six contests, one per line. Each is a card for you to sign.\n\n\n**Contested, six lines totalling $1,445.00:**\n- **S-5, repaint of all rooms ($620):** ordinary wear. MO-3 shows paint intact with light scuffs and fading.\n- **S-6, bedroom carpet ($420):** the same worn lane and stain are in the move-in photo MI-3 and the move-out photo MO-4.",
+      "said_chars": 1670,
       "reads": [],
       "cards": [
         {
@@ -296,6 +312,24 @@
           "value_usd": 120.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-10T19:38:29Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 6,
+      "eligible": 6,
+      "value_found_usd": 1445.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 134.0,
+      "your_time_s": 180
     }
   ]
 }

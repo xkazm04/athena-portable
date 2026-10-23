@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "customs-protests",
-  "captured_at": "2026-10-10T07:35:38Z",
-  "bench_run_at": "2026-10-10T07:33:31Z",
-  "narration": {
-    "text": "A kitchenware importer's misclassified entries put right the way each can still be: corrected before liquidation where the window is open, protested within a hundred and eighty days after it, one five days from its deadline, while the platters its own ruling classifies, an entry out of time and one that must wait for liquidation are left alone. This is a chore for the trade compliance manager of a small importer of silicone and melamine kitchenware, who reviews the broker's entries against liquidations herself. On the bench, she found 4 of 4 eligible items, worth 10,998 dollars of the 10,998 dollars there was to find. She made no false claim. The world held 14 traps, and she walked past 14. She took 2 minutes. By hand, the same chore takes 5 hours, so she was about 143 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 61.435,
-    "sha256": "f87742bd766e93dfb182a504343783a96db52a50b7380a410bde2cb7bd4011a7"
-  },
-  "video": {
-    "path": "evidence/customs-protests/evidence.mp4",
-    "duration_s": 61.44,
-    "bytes": 2981386,
-    "sha256": "04e31bdcfd9fd8954cfb4c1e2be9f650f0d2b8f2dedc18c8daf68f276199c058"
-  },
-  "thumbnail": {
-    "path": "playbooks/customs-protests/thumb.jpg",
-    "bytes": 87586,
-    "sha256": "ebd45fb61ee14887b1c755bc8d76c3c9d7acc126385e93b01cdc5c1980f42313"
-  },
+  "captured_at": "2026-10-23T17:00:20Z",
+  "bench_run_at": "2026-10-23T15:25:35Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/customs-protests/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22850,
-      "sha256": "ad659e01ebbe2a3c7ac0e88718922a3b227080f92040428b25d027bf58bd0e9c"
+      "bytes": 34516,
+      "sha256": "6da2f69d92358c55d49ac20c4721a1a86ac51b7bff5845e4ef0ccd560a764697",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/customs-protests/story/02.webp",
+      "bytes": 28270,
+      "sha256": "190fface767d43a5d6b6cbe0f75ae689f310f83497f889187b50142138c076e7",
       "caption": "Turn 1 - Ledgerline ERP: I'm Lucia, trade compliance at Ashby Kitchenworks",
-      "turn": 1,
-      "bytes": 23616,
-      "sha256": "de76d4ad0be5ba9d4bf89c9fb0a65592e88b0b989e10df16dc4974b04ba24063"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/customs-protests/story/03.webp",
+      "bytes": 25960,
+      "sha256": "06ecc111f2fc32958772915b23ea6131c96ea153ab3cd643ea6cb3eb0c064910",
       "caption": "Turn 4 - Docshelf, Athena: Six documents are in the folder",
-      "turn": 4,
-      "bytes": 23496,
-      "sha256": "8f577bd2597063ae793cd20d3fb445adab4da20c8a9f46b595bfd4652794b48e"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/customs-protests/story/04.webp",
-      "caption": "Turn 6 - Forwarden: Forwarden is our customs broker",
-      "turn": 6,
-      "bytes": 23948,
-      "sha256": "5f0746aae19b68077746d6337f1e4d5cd4d9c5d72d4c542ff4a7009c4112d5dc"
+      "bytes": 43864,
+      "sha256": "ab7a65a3259499b7697847a3a102731a289f1ab768fd94ae25e7fcd16c0e6ada",
+      "caption": "Turn 7 - Forwarden, Athena: Two entries can still be corrected, so I'm filing a PSC for each",
+      "kind": "turn",
+      "turn": 7
     },
     {
+      "n": 5,
       "path": "playbooks/customs-protests/story/05.webp",
-      "caption": "Turn 9 - Portline Entries, Athena: Portline's rules and records confirm the plan",
-      "turn": 9,
-      "bytes": 23980,
-      "sha256": "5e680b11646b1452d99e250f92318d461308b3ad268698678124c7b247a30d7b"
-    },
-    {
-      "path": "playbooks/customs-protests/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23822,
-      "sha256": "d926ff5bad0aa9a228f77830f01b2026f5105a17b4e0f1851bde3960676fbab4"
+      "bytes": 42516,
+      "sha256": "66fe67284de3edc6b7640da4416b34187b827af44f8030534fc7b8c8181f5a2f",
+      "caption": "Turn 10 - Portline Entries, Athena: I'm filing two protests",
+      "kind": "turn",
+      "turn": 10
     }
   ]
 }

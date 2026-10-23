@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "change-order-notices",
-  "captured_at": "2026-10-09T22:57:31Z",
-  "bench_run_at": "2026-10-09T22:54:28Z",
-  "narration": {
-    "text": "Every field change priced and noticed inside the contract's claim window. This is a chore for the project manager of a forty-person electrical subcontractor on a medical office building, under a subcontract that incorporates AIA A201-2017. Athena works it across 4 portals: Primeline GC, Sitegrid, Dailylog and Estimato. On the bench, she found 6 of 6 eligible items, worth 33,254 dollars and 50 cents of the 33,254 dollars and 50 cents there was to find. All 6 were filed at the exact amount the rules allow. She made no false claim. The world held 9 traps, and she walked past 9. Among them: A lobby fixture change already executed as a change order. An exam-room controls change already noticed and under review. She took 3 minutes. By hand, the same chore takes 4 hours, so she was about 89 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 67.775,
-    "sha256": "1d8f60c8fedb00630f60032a46903c85c42c963e32b8d0372ebe416bd1ffdc8d"
-  },
-  "video": {
-    "path": "evidence/change-order-notices/evidence.mp4",
-    "duration_s": 67.775,
-    "bytes": 2719410,
-    "sha256": "ddfba6369db226fbae6ebc4bf32f348c36515c2ffed3810afbdcde26219eba2e"
-  },
-  "thumbnail": {
-    "path": "playbooks/change-order-notices/thumb.jpg",
-    "bytes": 97212,
-    "sha256": "8803204707c9cd98b7f0afef1641f4bad369b12e03c883b4bb46654215e34a3a"
-  },
+  "captured_at": "2026-10-23T16:58:43Z",
+  "bench_run_at": "2026-10-23T15:19:12Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/change-order-notices/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23726,
-      "sha256": "8c1949ca8e163d9709eb1ff506f844da342362d484c6f58da8b6191aa5612dab"
+      "bytes": 42426,
+      "sha256": "3d37a5b15b4005039753e4645b0563dab43a5f1cfe1d59546415ecc62ab27b30",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/change-order-notices/story/02.webp",
+      "bytes": 33668,
+      "sha256": "1d7aa554a550d19643048996723382bbcfe71f89dead8e465d479dc752287abb",
       "caption": "Turn 1 - Primeline GC: I'm worried we're letting changes slide on Westfold",
-      "turn": 1,
-      "bytes": 22294,
-      "sha256": "2e290ebf3e7b332db21115b05c50796eb4f7ade48c873beaf909253f2c2cc67d"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/change-order-notices/story/03.webp",
-      "caption": "Turn 5 - Sitegrid, Athena: Nine items, and five are still open",
-      "turn": 5,
-      "bytes": 23610,
-      "sha256": "f9cb5327cd095e0039215a611172ed08fb2645a441ddf27030fbcd8254479532"
+      "bytes": 40774,
+      "sha256": "6036cdaedfe0c51cb3b500e16438d5c0c1775d52e7bd3517f85a22a13a68b8f3",
+      "caption": "Turn 5 - Sitegrid, Athena: Sitegrid has four open candidates for notice and one is urgent",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/change-order-notices/story/04.webp",
+      "bytes": 26682,
+      "sha256": "35136f79114c95c0c5f18ee5593d2425c6a6b403c6638e3a4b24ea0d43d23ef5",
       "caption": "Turn 9 - Estimato: Now Estimato",
-      "turn": 9,
-      "bytes": 19846,
-      "sha256": "d5dec5749d0e9f4ecacad82541ff52de39f6b09124e9cded8bfd990a880f103c"
+      "kind": "turn",
+      "turn": 9
     },
     {
+      "n": 5,
       "path": "playbooks/change-order-notices/story/05.webp",
+      "bytes": 43604,
+      "sha256": "dc9a55e976a7a610521cc89cece7f6f4ac03391c662254c52ff7af747d5d85ea",
       "caption": "Turn 13 - Primeline GC: Back in Primeline GC. Give notice on every change we're still entitled to…",
-      "turn": 13,
-      "bytes": 23448,
-      "sha256": "35707c4d9ac4b09c72b1c5ebe35396e7ed9214dace3ab66b8c069e85e7e8098d"
-    },
-    {
-      "path": "playbooks/change-order-notices/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22588,
-      "sha256": "f54df0c4481df2767e5b1df579f8ef833e79f8a9b798ab79a17a127a175cf902"
+      "kind": "turn",
+      "turn": 13
     }
   ]
 }

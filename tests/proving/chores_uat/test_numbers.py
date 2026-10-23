@@ -64,11 +64,11 @@ def test_clinic_denials_per_month(rows: dict[str, dict[str, Any]]) -> None:
     assert r["world_total_usd"] == 2120.0
     assert r["world_ratio"] == 23.774
     assert r["manual_minutes"] == 600.0
-    assert r["bench_minutes"] == 2.573
-    assert r["your_minutes"] == 3.0
-    assert r["speedup_shown"] == 233.161
-    assert r["speedup_with_review"] == 107.656
-    assert r["verdict"] == "short" and r["bench_runs_n"] == 3
+    assert r["bench_minutes"] == 2.987
+    assert r["your_minutes"] == 4.0
+    assert r["speedup_shown"] == 200.893
+    assert r["speedup_with_review"] == 85.878
+    assert r["verdict"] == "exceeds" and r["bench_runs_n"] == 4
     assert r["basis_says_estimate"] is True  # ADR 0133 wave: the basis now says so
     assert r["sources_n"] == 5 and r["incumbent_fee_pct"] is None
     assert r["expectation_minutes"] == 30.0
@@ -93,8 +93,8 @@ def test_carrier_accessorials_per_year(rows: dict[str, dict[str, Any]]) -> None:
     r = rows["carrier-accessorials"]
     assert (r["annual_shown"], r["unit_shown"]) == (14000.0, "a year")
     assert r["world_total_usd"] == 1580.0 and r["world_ratio"] == 8.861
-    assert r["speedup_shown"] == 33.309
-    assert r["speedup_with_review"] == 16.66
+    assert r["speedup_shown"] == 41.152
+    assert r["speedup_with_review"] == 17.351
     assert r["verdict"] == "exceeds" and r["bench_runs_n"] == 1
     assert r["quirks"] == []
 
@@ -158,6 +158,8 @@ def test_headline_and_summary(rows: dict[str, dict[str, Any]]) -> None:
 
 
 # --- the post-0136 topic page, pinned by hand from the TS (worth.ts, topic.tsx, model.ts) --------
+# The worked figures below are from the benches before the 2026-10-23 re-bench (spark refilm-prep);
+# PAGES pins the same arithmetic over the re-benched bench.json files.
 #
 # medical-bills: per episode, money back, example_usd 3,423.50 -> usd() rounds half up: "$3,424".
 #   Time: manual 480 min = 8 h; with review (140.8 + 210) / 60 = 5.847 min -> "6 min"; review
@@ -174,26 +176,26 @@ def test_headline_and_summary(rows: dict[str, dict[str, Any]]) -> None:
 PAGES = {
     "medical-bills": [
         "In the example case: $3,424 back, in the invented example",
-        f"Time saved: 8 h -> 6 min, including about 4 min of your review · 82{TIMES} faster"
+        f"Time saved: 8 h -> 7 min, including about 5 min of your review · 67{TIMES} faster"
         f" · {SRC}",
         "Mistakes avoided: 12/12 in the test run",
-        "Beats its bar: Beat its bar in its one test run: 7 of 8 found, $3,424 back of $3,424, "
-        "no false claims.",
+        "Falls short: Fell short: 7 of 8 found, $2,184 back of $3,424, no false claims, latest "
+        "of 3 test runs. found 64% of the value, expected 75%",
         "Typical value: about $3,423 an episode, author's estimate",
     ],
     "clinic-denials": [
         "In the example case: $2,120 back, in the invented example",
-        f"Time saved: 10 h -> 6 min, including about 3 min of your review · 108{TIMES} faster"
+        f"Time saved: 10 h -> 7 min, including about 4 min of your review · 86{TIMES} faster"
         f" · {SRC}",
         "Mistakes avoided: 22/22 in the test run",
-        "Falls short: Fell short: 6 of 10 found, $1,530 back of $2,120, no false claims, latest "
-        "of 3 test runs. found 72% of the value, expected 75%",
+        "Beats its bar: Beat its bar in 2 of 4 test runs: 8 of 10 found, $1,910 back of $2,120, "
+        "no false claims.",
         "Typical value: about $50,400 a year, author's estimate",
     ],
     "lien-desk": [
         "In the example case: No money comes back in the example case: this chore protects money "
         "that is at risk.",
-        f"Time saved: 8 h -> 8 min, including about 5 min of your review · 57{TIMES} faster"
+        f"Time saved: 8 h -> 9 min, including about 5 min of your review · 56{TIMES} faster"
         f" · {SRC}",
         "Mistakes avoided: 12/12 in the test run",
         "Beats its bar: Beat its bar in 3 of 3 test runs: 10 of 10 found, $416,700 of $416,700 "

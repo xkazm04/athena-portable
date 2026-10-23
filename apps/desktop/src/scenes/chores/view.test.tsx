@@ -315,7 +315,7 @@ describe("a chore's topic page", () => {
     const s = html("shipped", chorePath("travel-credit-refunds"));
     expect(s).toContain("Airline credits turned back into card refunds");
     expect(s).toContain("<strong>15 airline credits and fees</strong>");
-    expect(count(s, /class="pa-frame focus-ring"/g)).toBe(6);
+    expect(count(s, /class="pa-frame focus-ring"/g)).toBe(5);
   });
 });
 

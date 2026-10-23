@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "ltc-claims",
-  "captured_at": "2026-10-09T16:11:21Z",
-  "bench_run_at": "2026-10-08T00:04:41Z",
-  "narration": {
-    "text": "A parent's long-term-care claims, caught up. This is a chore for an adult daughter in Chicago with power of attorney for her 82-year-old mother at home in Pittsburgh, who has a tax-qualified long-term-care policy bought in 2011. The policy pays real money for in-home care. Athena works it across 6 portals: Harbor Mutual policyholder portal, BrightPath family portal, Email, MyChart, Medicare.gov and Mom's bank. On the bench, she found 10 of 10 eligible items, worth 26,410 dollars and 40 cents of the 26,410 dollars and 40 cents there was to find. She made no false claim. The world held 11 traps, and she walked past 11. Among them: February's invoice, inside the elimination period. A revised April invoice repeating dates already paid. She took 5 minutes. By hand, the same chore takes 6 hours, so she was about 75 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 40 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 66.526,
-    "sha256": "fa0358e0539ce8f6bde2733ad33accc3fb701409cc39d2ea5fbb59a40e1d261f"
-  },
-  "video": {
-    "path": "evidence/ltc-claims/evidence.mp4",
-    "duration_s": 66.56,
-    "bytes": 3932844,
-    "sha256": "473ea1ac4ff1bda36c642f56764d113e2d7919b16312d2049690a795d6f931fd"
-  },
-  "thumbnail": {
-    "path": "playbooks/ltc-claims/thumb.jpg",
-    "bytes": 76653,
-    "sha256": "5c6ac7f8f4e65ae038b2dd06511ec51581e01082ac94f723190145f56b0183bd"
-  },
+  "captured_at": "2026-10-23T17:05:53Z",
+  "bench_run_at": "2026-10-23T16:12:21Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/ltc-claims/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22488,
-      "sha256": "8a6ec89c5df00ed6f7a9a1b5654415f40035bd827b2b2eb9db6df51fdd64f203"
+      "bytes": 42802,
+      "sha256": "abc37263540479dc96d340e92048ccb2d494ac22b2c0b11f788638fc588518bb",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/ltc-claims/story/02.webp",
+      "bytes": 38050,
+      "sha256": "4e409dc5259531daaf5200a648f629c8ca008642bd249f754fe5a6024fc270cc",
       "caption": "Turn 1 - Harbor Mutual policyholder portal: I need to catch up on Mom's long-term-care claims",
-      "turn": 1,
-      "bytes": 23862,
-      "sha256": "f25e7a0df01f92ef97f6561cc285f085cdaac8bf9e8b6c08d1537bfc37a8056a"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/ltc-claims/story/03.webp",
-      "caption": "Turn 9 - Adaeze's email: My email, where the adult day center, the contractor and everyone else send…",
-      "turn": 9,
-      "bytes": 23594,
-      "sha256": "afc8fc748c3db72732a7d331bd00ee6ed88e44d39f016f16f7cecd7d48235526"
+      "bytes": 42290,
+      "sha256": "aa207e0c7e503419510e006bb37083be10b74148c0880d53199249839193c0d3",
+      "caption": "Turn 7 - BrightPath family portal, Athena: The EVV records settle three things",
+      "kind": "turn",
+      "turn": 7
     },
     {
+      "n": 4,
       "path": "playbooks/ltc-claims/story/04.webp",
-      "caption": "Turn 16 - Grace's bank (POA access): Mom's checking account",
-      "turn": 16,
-      "bytes": 23674,
-      "sha256": "b0ea851affcc9186049cd0e7de04b7f91bc31a15ff8ae43bc0c5f3d2b349faff"
+      "bytes": 43500,
+      "sha256": "0269a6b85fe02a93df28a2dfb9174f89c7348e40d0783a9abe636a2a541a871b",
+      "caption": "Turn 13 - MyChart (Allegheny Health), Athena: MyChart gives me two rule-outs and one date I still need",
+      "kind": "turn",
+      "turn": 13
     },
     {
+      "n": 5,
       "path": "playbooks/ltc-claims/story/05.webp",
-      "caption": "Turn 24 - Harbor Mutual policyholder portal: I've switched to Harbor Mutual policyholder portal as you asked",
-      "turn": 24,
-      "bytes": 23892,
-      "sha256": "66c4526321b91f894cf8a52e4e99617e6f5fc30818940413af92a4526a04b60d"
-    },
-    {
-      "path": "playbooks/ltc-claims/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22794,
-      "sha256": "e485e7acae65ffdecf30aaec457207b7c7f520d9dc6ee81f6feb21e06908d930"
+      "bytes": 42134,
+      "sha256": "7711ca59dd5965f78c937bbc8cb1d764499ace63a8080d4afa8a4e6a26763de9",
+      "caption": "Turn 19 - Harbor Mutual policyholder portal: Back in Harbor Mutual",
+      "kind": "turn",
+      "turn": 19
     }
   ]
 }

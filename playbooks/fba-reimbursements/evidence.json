@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "fba-reimbursements",
-  "captured_at": "2026-10-10T04:12:21Z",
-  "bench_run_at": "2026-10-07T23:06:39Z",
-  "narration": {
-    "text": "Amazon FBA reimbursements. This is a chore for an FBA seller doing 500 thousand dollars a year across a handful of SKUs. Athena works it across 2 portals: Seller Central and Supplier inbox. On the bench, she found 5 of 5 eligible items, worth 359 dollars and 78 cents of the 359 dollars and 78 cents there was to find. She made no false claim. The world held 14 traps, and she walked past 14. Among them: A shipment Amazon received short — but the 3PL packing list shows the supplier packed short, so it is the supplier's debt, not Amazon's. An AWD-to-FBA transfer that looks short: those are reconciled on their own path and have no supplier invoice. She took 3 minutes. By hand, the same chore takes 5 hours, so she was about 115 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 80 percent of the money, no false claim and inside 25 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 63.99,
-    "sha256": "2870f4c46f4a5c1628354a2b33709b01580e887cb77241cf8a4f2450f1856ead"
-  },
-  "video": {
-    "path": "evidence/fba-reimbursements/evidence.mp4",
-    "duration_s": 64.0,
-    "bytes": 2947237,
-    "sha256": "76ec6359b9cfdcab96f11c3babf6ae1fe423535f9270a805428902c8103390f6"
-  },
-  "thumbnail": {
-    "path": "playbooks/fba-reimbursements/thumb.jpg",
-    "bytes": 87124,
-    "sha256": "e860ae6a72a86fab4dbe52efaf7dae14acb9f35b18643086679017dc23e62401"
-  },
+  "captured_at": "2026-10-23T17:02:12Z",
+  "bench_run_at": "2026-10-23T15:56:59Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/fba-reimbursements/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22958,
-      "sha256": "a036ff29f3793e8dc208ff34674bf094f60ccb9a5ff363375d1ccfaa0fdf0234"
+      "bytes": 43058,
+      "sha256": "dbe358bcb6b1de029d46b5eab7e9abdaf0ec4e74cb2a194b8aa69a1822192978",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/fba-reimbursements/story/02.webp",
+      "bytes": 42354,
+      "sha256": "e99ec03c9b12a9be3d3431f253475790ee16ea184404794561b5fb876e81f117",
       "caption": "Turn 1 - Seller Central: It's reimbursement day",
-      "turn": 1,
-      "bytes": 22992,
-      "sha256": "02019877dd6fe1c2570cc183347fe8455a746a0df2898fe08eca764bbcd9a9d0"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/fba-reimbursements/story/03.webp",
-      "caption": "Turn 3 - Seller Central, Athena: Both reminders are set",
-      "turn": 3,
-      "bytes": 23852,
-      "sha256": "4d20e9345f69f65b949231003beb23094de49d9e4e50b550ef3dcf63857b5ea3"
+      "bytes": 42238,
+      "sha256": "61592816b64e436e031196df42acc786b33074dc85b3556f9d75a3436032ac03",
+      "caption": "Turn 3 - Seller Central, Athena: Three cases hold up now and I'm filing them",
+      "kind": "turn",
+      "turn": 3
     },
     {
+      "n": 4,
       "path": "playbooks/fba-reimbursements/story/04.webp",
-      "caption": "Turn 6 - Supplier inbox, Athena: One inbound claim holds up and I'm filing it",
-      "turn": 6,
-      "bytes": 23640,
-      "sha256": "d30f50cac0184a08bb59f89c660c4a79b72cda019f24139cc80e48dfeccf29ae"
+      "bytes": 32782,
+      "sha256": "f2a4f41c3d7a40eda2edc5f195d2fdd85adb066489de3a606a31374f89c61673",
+      "caption": "Turn 5 - Supplier inbox: I've switched to my supplier inbox",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 5,
       "path": "playbooks/fba-reimbursements/story/05.webp",
-      "caption": "Turn 8 - Seller Central, Athena: Two more cases hold up, and I'm filing both for your approval",
-      "turn": 8,
-      "bytes": 23568,
-      "sha256": "ee5b9e5f85adb1c24fb2f8a90c610bbc9d6eb1650215b90fc8314e178f5e9165"
-    },
-    {
-      "path": "playbooks/fba-reimbursements/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23852,
-      "sha256": "0d27ecc7bdd23451917e0c28f4a9536bfafb1fe974cdd33a60f073bceced5777"
+      "bytes": 43274,
+      "sha256": "61b7902bbfa9ddb29384b21b700fb0a97d833145f9693bf4e46a700881f4124e",
+      "caption": "Turn 7 - Seller Central: Back in Seller Central",
+      "kind": "turn",
+      "turn": 7
     }
   ]
 }

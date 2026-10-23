@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "medicaid-renewal",
-  "captured_at": "2026-10-09T17:58:18Z",
-  "bench_run_at": "2026-10-09T17:47:16Z",
-  "narration": {
-    "text": "The Medicaid renewal, answered before coverage lapses. This is a chore for a pharmacy technician raising two children, whose mother lives with them, and whose hours were cut in August. Read the state's prefilled renewal form, which found income from last winter's wage and benefit data. Athena works it across 4 portals: Statecare Benefits, Payroll Harbor, Ledgerline bank and Mailnest. On the bench, she found 8 of 8 eligible items, worth 7,000 dollars of the 7,000 dollars there was to find. All 8 were filed at the exact amount the rules allow. She made no false claim. The world held 8 traps, and she walked past 8. She took 3 minutes. By hand, the same chore takes 3 hours, so she was about 64 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 55.07,
-    "sha256": "8b4236ebc293702fd4634851219aa9684cdde9c948773644d3f3b78da2db9138"
-  },
-  "video": {
-    "path": "evidence/medicaid-renewal/evidence.mp4",
-    "duration_s": 55.08,
-    "bytes": 2396664,
-    "sha256": "bfbf41198decf12241bfcd365e5afd0ac6fa00639219b24bfb1cf44186d1385f"
-  },
-  "thumbnail": {
-    "path": "playbooks/medicaid-renewal/thumb.jpg",
-    "bytes": 99991,
-    "sha256": "cff736476ae7f0b5af57e6f8d844c00a8cfb15c7426f5db9b16d7b569f34b964"
-  },
+  "captured_at": "2026-10-23T17:06:03Z",
+  "bench_run_at": "2026-10-23T16:09:37Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/medicaid-renewal/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23492,
-      "sha256": "d2e9acb73c25abffa94259dc9f31950734ad13687ce6de3126a1689b907dda74"
+      "bytes": 43110,
+      "sha256": "81c9bed5097c6247400563fcd59653137f0228e383d7c2347c3656ca4c7c6d0b",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/medicaid-renewal/story/02.webp",
+      "bytes": 31798,
+      "sha256": "c2bc245051f3eb41df13364c413747b0285a2afaece926f82553c1e502adc1d0",
       "caption": "Turn 1 - Mailnest: My Medicaid renewal is due on the 20th and the form has old numbers",
-      "turn": 1,
-      "bytes": 20774,
-      "sha256": "78ed733534694fa623057677aa3dafadbf0f414326d4ae0c37ccb78ee48f5b2e"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/medicaid-renewal/story/03.webp",
+      "bytes": 42266,
+      "sha256": "876331bf3c258370faa4574fc4d26b248e4760615b70522bebd2dc8331db1694",
       "caption": "Turn 4 - Payroll Harbor: This is Payroll Harbor with my pay stubs",
-      "turn": 4,
-      "bytes": 23464,
-      "sha256": "08252ef0d6831beb6f6c23e1818f40e98b991504ac2f3589a00836611f087346"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/medicaid-renewal/story/04.webp",
-      "caption": "Turn 6 - Ledgerline bank: Now my Ledgerline account",
-      "turn": 6,
-      "bytes": 17892,
-      "sha256": "420b2b412a1efa77d6122a27e21d0f89ea1cf1f160f1b9c574ab2a7ca8dd12ad"
+      "bytes": 41518,
+      "sha256": "a2f0e1fb7e7c10593ef3b93bf56b1b3e390557e25a7bfbccfdc8cfec67488b4b",
+      "caption": "Turn 7 - Ledgerline bank, Athena: Your Ledgerline deposits show one steady income, Northside Pharmacy",
+      "kind": "turn",
+      "turn": 7
     },
     {
+      "n": 5,
       "path": "playbooks/medicaid-renewal/story/05.webp",
-      "caption": "Turn 9 - Statecare Benefits, Athena: I'm filing eight cards",
-      "turn": 9,
-      "bytes": 23472,
-      "sha256": "3f40c88079eb5a80ed52dedd5ad43611a6012bf61108525cbfff57f782e8874d"
-    },
-    {
-      "path": "playbooks/medicaid-renewal/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23198,
-      "sha256": "10166bc48bde36df1d0bb29e46b2b4a0d1e6b518bc9c48a6d37484819aa670a0"
+      "bytes": 43808,
+      "sha256": "a9392c265fef12a4e3941f2fae15b5d24f2cfe13831da2f3f38b71fb154b5ea3",
+      "caption": "Turn 10 - Statecare Benefits, Athena: The form needs 3 income corrections, 1 household removal and 4 documents of…",
+      "kind": "turn",
+      "turn": 10
     }
   ]
 }

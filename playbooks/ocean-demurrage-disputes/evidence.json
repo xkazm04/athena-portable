@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "ocean-demurrage-disputes",
-  "captured_at": "2026-10-10T07:21:42Z",
-  "bench_run_at": "2026-10-10T07:18:48Z",
-  "narration": {
-    "text": "An importer's ocean demurrage and detention invoices held to the federal billing rule: two invoices issued too late and one missing what it must state disputed in full, the days a storm closed the terminal and the empties were refused taken off, and free time the contract gives put back, while the charges that are right are left to pay. This is a chore for the import manager of a garden and home goods importer bringing containers into Savannah on two ocean lines, who checks every demurrage and detention invoice herself. On the bench, she found 6 of 6 eligible items, worth 5,475 dollars of the 5,475 dollars there was to find. She made no false claim. The world held 10 traps, and she walked past 10. She took 5 minutes. By hand, the same chore takes 3 hours, so she was about 37 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 61.083,
-    "sha256": "137847f1e0c7f1f3124d69c8d82f0c9af60c1571f5d636bcccec498b14df698a"
-  },
-  "video": {
-    "path": "evidence/ocean-demurrage-disputes/evidence.mp4",
-    "duration_s": 61.083,
-    "bytes": 3523320,
-    "sha256": "5f8c7a881a188eaddc2227a31edc4a4f913efc1902a741c48d594014f4220ffc"
-  },
-  "thumbnail": {
-    "path": "playbooks/ocean-demurrage-disputes/thumb.jpg",
-    "bytes": 87814,
-    "sha256": "cad25d0f0609ce233249fe8ac69dc4d5d2b9e8393ce91b9571e98641c9eff5fd"
-  },
+  "captured_at": "2026-10-23T17:07:37Z",
+  "bench_run_at": "2026-10-23T15:37:59Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/ocean-demurrage-disputes/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22782,
-      "sha256": "b063da092f4e50234e01fed9c186d927a6d6d00f96f23f025459963e6900d519"
+      "bytes": 43602,
+      "sha256": "a2baf1e5056e359931f003d0a24cb24586fb9f69a3683b56a692441102668d4d",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/ocean-demurrage-disputes/story/02.webp",
+      "bytes": 35486,
+      "sha256": "ec2ce20c9a33bc056945b4bc542c122c05c6e1759241f68601c400c260a2058f",
       "caption": "Turn 1 - Forwarden: I'm Imani, I run imports at Brennick Home & Garden",
-      "turn": 1,
-      "bytes": 23412,
-      "sha256": "b071de72260bb6f64d3861741462ee0cc70077838b45daa614c541e60b258763"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/ocean-demurrage-disputes/story/03.webp",
+      "bytes": 43380,
+      "sha256": "1283a08ea0e46c3482ddf4d413e5060be821095b4c7108a5a13ecd5fd9739d9c",
       "caption": "Turn 5 - Berthgate terminal, Athena: Berthgate is read",
-      "turn": 5,
-      "bytes": 22076,
-      "sha256": "e1973ffee2198ff627657fb71848f6e542b6b71119c993724eca1e0333ebf414"
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/ocean-demurrage-disputes/story/04.webp",
-      "caption": "Turn 10 - Halvard Lines, Athena: Six Halvard invoices are on the list",
-      "turn": 10,
-      "bytes": 23596,
-      "sha256": "0e0704afdae34ebb3ef9762989973aa99ab9fd24f1598a5a1447672f6319b97e"
+      "bytes": 27390,
+      "sha256": "d7be3cbf5b8c06be45e43546d531c5fe5c6f21415ff8112e8a4cff12998b8278",
+      "caption": "Turn 10 - Halvard Lines, Athena: Next I'll read each open invoice exactly as issued",
+      "kind": "turn",
+      "turn": 10
     },
     {
+      "n": 5,
       "path": "playbooks/ocean-demurrage-disputes/story/05.webp",
-      "caption": "Turn 14 - Trident Ocean, Athena: Two Trident invoices need a waiver request and two are correct",
-      "turn": 14,
-      "bytes": 23622,
-      "sha256": "74b32e6548d34625b4875e42948c5c40a0c94a3ef4dca0e342cf499b47cacf96"
-    },
-    {
-      "path": "playbooks/ocean-demurrage-disputes/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23114,
-      "sha256": "25243d592ea1659b00c6d64c9564703c69614424bd99d7f4d2647ce550d9a838"
+      "bytes": 42668,
+      "sha256": "0df4e167f156b5b9ef9782f31f26ddda7b613db841d87f7693cd5e0ae89abb74",
+      "caption": "Turn 14 - Trident Ocean, Athena: Two of Trident's four open invoices need a waiver request, for $2,225.00 in…",
+      "kind": "turn",
+      "turn": 14
     }
   ]
 }

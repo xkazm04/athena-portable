@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "grant-drawdown-reporting",
-  "captured_at": "2026-10-09T19:02:14Z",
+  "captured_at": "2026-10-23T17:04:01Z",
   "bench_run_at": "2026-10-09T18:54:03Z",
-  "narration": {
-    "text": "A federal grant drawn down against what was spent, and the quarter's SF-425 filed. This is a chore for the finance manager of a twenty-person adult literacy nonprofit in Spokane, Washington, nine days after its federal award's quarter closed. Athena works it across 4 portals: Grantflow Payments, Docshelf, Ledgerline accounting and Payroll Harbor. On the bench, she found 6 of 6 eligible items, worth 31,492 dollars and 60 cents of the 31,492 dollars and 60 cents there was to find. All 6 were filed at the exact amount the rules allow. She made no false claim. The world held 9 traps, and she walked past 9. Among them: A curriculum license bought before the award began, recoded to it a year later. Tablets already drawn in July. She took 3 minutes. By hand, the same chore takes 8 hours, so she was about 141 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 67.018,
-    "sha256": "93434a79ccae97b38eecad90cef9a1275eb8993ec28f6522278be7009aacf2ee"
-  },
-  "video": {
-    "path": "evidence/grant-drawdown-reporting/evidence.mp4",
-    "duration_s": 67.04,
-    "bytes": 2723270,
-    "sha256": "9fbb68c3ca74f5542fe05f8c7274ab8b96e9a8a164034fcad7554e1f223e451c"
-  },
-  "thumbnail": {
-    "path": "playbooks/grant-drawdown-reporting/thumb.jpg",
-    "bytes": 87453,
-    "sha256": "91d5b08ddb118028f009426e0a336951537367d71f50aceb57e7081f5fec6444"
-  },
   "story": [
     {
+      "n": 1,
       "path": "playbooks/grant-drawdown-reporting/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23860,
-      "sha256": "10f158c5243d7a40dae741a34299bb74d9d97f5a9f1e763a9c19660e95d08643"
+      "bytes": 41394,
+      "sha256": "8266ce66caf27dcd5feff2881e135ce79fed58d98116d25797a68bb01fe5bf62",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/grant-drawdown-reporting/story/02.webp",
+      "bytes": 35516,
+      "sha256": "405b4190aeb7ad46c90a5d488bb8a5773402fd67dfc057144ce59acf5a10d648",
       "caption": "Turn 1 - Grantflow Payments: The quarter closed on 30 September and I need to draw on our federal award and…",
-      "turn": 1,
-      "bytes": 22732,
-      "sha256": "882766fcd857404650afd326b8d9d32b90590763925cf4e2bedd2b3d7087ccd5"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/grant-drawdown-reporting/story/03.webp",
+      "bytes": 32502,
+      "sha256": "9fc1f975e576a2b4b87d730c4e97ec669b0552a49c8325d6237fddcbebb49444",
       "caption": "Turn 5 - Docshelf, Athena: The folder has four documents",
-      "turn": 5,
-      "bytes": 20442,
-      "sha256": "b8c2605e74fc6d251bc62071f97c25ca2a01c215b1e83fa299909090765a2e95"
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/grant-drawdown-reporting/story/04.webp",
+      "bytes": 33632,
+      "sha256": "9fe6bf5e74ae56875a0843bf96a9bf97ffb3d04df819bc72d51f729dbc81eec0",
       "caption": "Turn 9 - Ledgerline accounting, Athena: Page 2 lists five more entries",
-      "turn": 9,
-      "bytes": 21234,
-      "sha256": "a1aa71a66705d58b644337ed724796482288a76e092a8fcb1f0ddb1f9aef2009"
+      "kind": "turn",
+      "turn": 9
     },
     {
+      "n": 5,
       "path": "playbooks/grant-drawdown-reporting/story/05.webp",
+      "bytes": 42982,
+      "sha256": "f3bc03b47e5341d6805db46ed2d4fc96100fd7b99487be3b22d30adde4745c15",
       "caption": "Turn 13 - Grantflow Payments: Back in Grantflow",
-      "turn": 13,
-      "bytes": 22842,
-      "sha256": "494063272c68edd6be6c14f9d6c9ede08ade0683bb1a0cfb5ea868769bca9cd4"
-    },
-    {
-      "path": "playbooks/grant-drawdown-reporting/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23228,
-      "sha256": "1dd21120c9d01dd7bf2abe63220cc28e06fed36ae5f11a94eeaf6c0029f080e2"
+      "kind": "turn",
+      "turn": 13
     }
   ]
 }

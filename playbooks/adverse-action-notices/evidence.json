@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "adverse-action-notices",
-  "captured_at": "2026-10-11T05:47:12Z",
-  "bench_run_at": "2026-10-11T05:43:21Z",
-  "narration": {
-    "text": "A distributor's background-check rejections taken in the order the FCRA sets: four pre-adverse notices with the report and the summary of rights, final notices for three whose own wait has ended and a namesake's dispute sent on, while a skills test, a hire, a missing authorization and a corrected report are left alone. This is a chore for the HR coordinator of a 118-person Texas wholesale distributor that makes its offers contingent on a background report. Athena works it across 3 portals: Applyrook ATS, Veritarn Screening and Postwren. On the bench, she found 8 of 8 eligible items, worth 8,000 dollars of the 8,000 dollars there was to find. She made no false claim. The world held 24 traps, and she walked past 24. She took 1 minute. By hand, the same chore takes 45 minutes, so she was about 32 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 63.351,
-    "sha256": "3deae4da82672554714b9bbbd06d9c9a1c218fb834c9c59ce4563075c08157f8"
-  },
-  "video": {
-    "path": "evidence/adverse-action-notices/evidence.mp4",
-    "duration_s": 63.36,
-    "bytes": 3238236,
-    "sha256": "fa27e8fd63034aa7d8f6095c67876b96dd575d778eb36d717313e95cb3cea665"
-  },
-  "thumbnail": {
-    "path": "playbooks/adverse-action-notices/thumb.jpg",
-    "bytes": 84513,
-    "sha256": "28b2d6aec5f6963f1da72a2cea3d13162eb600d92d12ceb6af8020235dbb2e72"
-  },
+  "captured_at": "2026-10-23T16:57:44Z",
+  "bench_run_at": "2026-10-23T15:43:19Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/adverse-action-notices/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23972,
-      "sha256": "780309ef8757b1ba66ff2242c61c6cf3a3a4acfcc43af44fce91944ce506c4a1"
+      "bytes": 33694,
+      "sha256": "f632823a313f6b28d941a12143ecee2dd8f044fd223ece14457004724bcc4b1b",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/adverse-action-notices/story/02.webp",
+      "bytes": 31272,
+      "sha256": "17c370d6fb99a6fed93ee6a26b3819b3139addbd38a839da10ba713ff2d7b5ee",
       "caption": "Turn 1 - Applyrook ATS: I'm Odalys, HR at Brackenmere Distribution",
-      "turn": 1,
-      "bytes": 23608,
-      "sha256": "b276741304db8e7c9a90f39abb38fce71535c29775435a84f00d9008bc5d87d9"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/adverse-action-notices/story/03.webp",
-      "caption": "Turn 3 - Applyrook ATS, Athena: Applyrook is read, and 6 of the 16 candidates need no notice",
-      "turn": 3,
-      "bytes": 23640,
-      "sha256": "e5ecbf58a651aee16dcd4ce14d9287848f616d6fb21d5daa49e3a19c87e4f5bf"
+      "bytes": 29692,
+      "sha256": "5105a5741eadb7e4fe263a003f6359dec81d502c179cdea37271a39f623584fa",
+      "caption": "Turn 3 - Veritarn Screening: Veritarn is our background vendor",
+      "kind": "turn",
+      "turn": 3
     },
     {
+      "n": 4,
       "path": "playbooks/adverse-action-notices/story/04.webp",
-      "caption": "Turn 5 - Veritarn Screening, Athena: Veritarn is read",
-      "turn": 5,
-      "bytes": 23962,
-      "sha256": "7436df98546274b8cc459f4d0c664df0a67bdf515e05e4069d35df1f92e33d0a"
+      "bytes": 42760,
+      "sha256": "b92b265ff1f186f2416d6474cc2f2a242a8f84ebf4c37e344e28dbded1fe48fd",
+      "caption": "Turn 4 - Veritarn Screening, Athena: Veritarn is read",
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 5,
       "path": "playbooks/adverse-action-notices/story/05.webp",
-      "caption": "Turn 7 - Postwren, Athena: Eight cards are going to you for approval",
-      "turn": 7,
-      "bytes": 23838,
-      "sha256": "8b6580c95bbb15d927ebc42e2bff8b42eb09e1c5f2ec43ccdaa707efc1b231dc"
-    },
-    {
-      "path": "playbooks/adverse-action-notices/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22140,
-      "sha256": "e526f094f841a83eadb28327d9cf8941404f973dfe4cfc2de9a5a38858112747"
+      "bytes": 42826,
+      "sha256": "c6019346fbf8e011d9893fd90fc78fd2ab2513ca25a6ab9a2a55d407b34c2449",
+      "caption": "Turn 6 - Postwren, Athena: The inbox is read",
+      "kind": "turn",
+      "turn": 6
     }
   ]
 }

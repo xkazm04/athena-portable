@@ -1,15 +1,16 @@
 {
   "playbook": "layoff-sixty-days",
-  "run_at": "2026-10-11T02:47:20Z",
+  "run_at": "2026-10-23T16:07:07Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 140.3,
-  "turns": 10,
+  "comparable": "sha256:edadd728388d2109",
+  "wall_s": 130.7,
+  "turns": 11,
   "nudges": 0,
   "follow_ups": 0,
   "reads": 24,
-  "cost_usd": 0.8629,
+  "cost_usd": 0.7593,
   "your_time_s": 180,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 2.3
+    "minutes": 2.2
   },
   "score": {
     "eligible": 6,
     "found": 6,
     "exact": 6,
+    "neutral": 0,
     "value_total_usd": 6025.0,
     "value_found_usd": 6025.0,
     "recall_value": 1.0,
@@ -136,7 +138,7 @@
     }
   ],
   "missed": [],
-  "closing_words": "I'm filing three cards: choose MK-1, and apply the credit for PTC-11 and PTC-12. Nothing is chosen or applied until you answer them.\n\n\n**Chosen, pending your answer:** MK-1, Silver, starting 1 Nov. It costs $640.00 a month, or $230.00 after the $410.00 credit.\n\n**Credit:** I'm applying it for November (PTC-11) and December (PTC-12).\n\n**Left out**\n- **PTC-10, October:** That month is COBRA's, and the credit isn't allowed in a month you're enrolled in COBRA. No marketplace plan covers October anyway.\n- **MK-2:** It starts 1 Dec and leaves November uncovered.\n- **MK-3:** Platinum, the broker's pick. It's $540.00 a month more than MK-1 for the same credit, and its \"buy today\" deadline isn't in the rules.\n\n**Dependency:** This plan only works if the CB-1 card is approved. If you elect a longer COBRA instead, the credit would be disallowed for those months and MK-1 would overlap.\n\n**Dates you ",
+  "closing_words": "I'm filing three cards: choose MK-1, then apply the credit for November (PTC-11) and December (PTC-12). Nothing is chosen or applied until you approve them.\n\n\n**Chosen (pending your approval)**\n- **MK-1, Silver plan:** It starts 1 Nov and you'd pay $230.00 a month after the credit. COBRA CB-1 covers 1–31 Oct, so coverage runs with no gap and no overlap.\n- **PTC-11 and PTC-12:** The $410.00 credit applies to November and December. COBRA will have ended, so the credit rule allows both.\n\n**Left out, and why**\n- **PTC-10 (October):** You're enrolled in COBRA that month, so the credit isn't allowed. No marketplace plan covers October anyway.\n- **MK-2:** It starts 1 Dec and leaves November uncovered.\n- **MK-3:** It costs $770.00 a month after the credit, against $230.00 for MK-1. The broker's \"buy today\" claim is wrong, because your window runs to 29 Nov.\n\n**Dependency:** The credit months onl",
   "trace": [
     {
       "portal": "Postwren",
@@ -153,8 +155,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "Five messages in the inbox. I'm reading all of them now.",
-      "said_chars": 56,
+      "said": "Five messages. I'm reading all of them now.",
+      "said_chars": 43,
       "reads": [
         "read_message",
         "read_message",
@@ -168,8 +170,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "I've read all five messages and done nothing else. Nothing is filed, signed, elected or chosen.\n\n**What each message says**\n- **M-1, HR, 28 Sep:** Your last day worked was Fri 25 Sep. Group health coverage ended 30 Sep. The severance agreement is in Crewmarrow HR.\n- **M-2, HR, 5 Oct, COBRA notice:** COBRA costs $1,020.00 a month. You have at least 60 days to elect, counted from the later of 30 Sep and the notice date of 5 Oct. The first premium is due 45 days after you elect.",
-      "said_chars": 2667,
+      "said": "I've read all five messages and done nothing else, as you asked.\n\n**What each one says**\n- **M-1, Crewmarrow HR (28 Sep):** Your last day worked was Fri 25 Sep. Group health coverage ended 30 Sep. The severance agreement is in Crewmarrow HR.\n- **M-2, COBRA notice (5 Oct):** COBRA costs $1,020.00 a month. The election period is at least 60 days from the later of the coverage end and the notice date. The first premium is due 45 days after you elect. The options are CB-1 to CB-3.",
+      "said_chars": 1836,
       "reads": [],
       "cards": []
     },
@@ -177,14 +179,14 @@
       "portal": "Fernhollow Unemployment Desk",
       "user": "This is the Fernhollow Unemployment Desk. Read every rule and my filing choices. File my unemployment claim the way that is right for me, and leave out the choice that is not. Then tell me what you filed and why.",
       "continued": false,
-      "said": "I'll read the desk's rules and your filing choices first. Nothing is filed yet.",
-      "said_chars": 79,
+      "said": "I'll read the desk's rules and your filing choices before filing anything.",
+      "said_chars": 74,
       "reads": [
-        "read_claims",
         "read_rules",
         "read_rules",
         "read_rules",
-        "read_rules"
+        "read_rules",
+        "read_claims"
       ],
       "cards": []
     },
@@ -192,8 +194,8 @@
       "portal": "Fernhollow Unemployment Desk",
       "user": "",
       "continued": true,
-      "said": "UI-1 is the right claim, so I'm filing a card for it now. It's effective Monday 5 Oct and the claim is filed this week. UI-2 is the one I'm leaving out.\n\n\n**Why UI-1**\n- **Earliest start:** The desk makes a claim effective on the Monday of the week it is filed. Filing today, Friday 9 Oct, makes it effective Monday 5 Oct. The waiting week (5 to 11 Oct) is unpaid, and each later week is claimed after it ends.\n- **Your benefit rate:** The desk computes $625.00 a week.",
-      "said_chars": 1671,
+      "said": "I'm filing UI-1, the claim filed today and effective Monday 5 October 2026. It files as a card for you to approve.\n\n\n**Why UI-1**\n- **Filed now, effective 5 Oct:** The desk says a claim starts on the Monday of the week it is filed, and weeks before the start are not paid. UI-2 (filed 2 Nov) would lose every week from 5 Oct to 1 Nov. At $625.00 a week, that is up to roughly $2,500 across the weeks after the waiting week.",
+      "said_chars": 1516,
       "reads": [],
       "cards": [
         {
@@ -208,8 +210,8 @@
       "portal": "Coverfind",
       "user": "This is Coverfind, the marketplace. Read every rule, the plans and the months of the credit. Don't do anything yet: I'll tell you what to choose after my HR.",
       "continued": false,
-      "said": "I'll read Coverfind's rules, plans and credit months now. Nothing gets chosen or applied.",
-      "said_chars": 89,
+      "said": "I'll read the marketplace's rules, plans and credit months now, and I won't choose or apply anything.",
+      "said_chars": 101,
       "reads": [
         "read_rules",
         "read_rules",
@@ -225,8 +227,8 @@
       "portal": "Coverfind",
       "user": "",
       "continued": true,
-      "said": "Coverfind is read and nothing is chosen or applied.\n\n**Rules**\n- **Window:** Your special enrollment period runs to Sunday 29 Nov 2026. The broker's \"closes TODAY\" claim (M-3) isn't what the rules say.\n- **Start dates:** A plan chosen by 31 Oct starts 1 Nov. One chosen from 1 to 29 Nov starts 1 Dec, which leaves November uncovered.\n- **Credit:** The credit is $410.00 a month on the Silver plan. It is paid only for months you aren't enrolled in COBRA.",
-      "said_chars": 2191,
+      "said": "I've read all the Coverfind rules, the three plans and the three credit months. I haven't chosen or applied anything.\n\n**Rules**\n- **Window:** Your coverage ended Wed 30 Sep. You can choose a plan until Sun 29 Nov 2026.\n- **Start dates:** A plan chosen by 31 Oct starts 1 Nov. A plan chosen 1–29 Nov starts 1 Dec. No plan can start before the 1st of the month after you choose it.\n- **Credit:** The advance credit is $410.00 a month on the Silver plan. It is paid only for months you are not enrolled in COBRA.",
+      "said_chars": 2184,
       "reads": [],
       "cards": []
     },
@@ -234,12 +236,22 @@
       "portal": "Crewmarrow HR",
       "user": "This is my HR, Crewmarrow. Read the severance agreement, the COBRA elections and the plan, every page. Sign the one agreement that is right and elect the one COBRA coverage that is right, and leave out the others. Then tell me what you sign",
       "continued": false,
-      "said": "I'll read the agreements, the COBRA elections and all the HR rules first.",
-      "said_chars": 73,
+      "said": "I'll read all three Crewmarrow pages first.",
+      "said_chars": 43,
       "reads": [
         "read_agreements",
         "read_cobra",
-        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Crewmarrow HR",
+      "user": "",
+      "continued": true,
+      "said": "I have the agreements, COBRA elections and rules index. Three HR rule topics (agreement, cobra, plan) are still unread, so I'm reading those before I propose anything.",
+      "said_chars": 167,
+      "reads": [
         "read_rules",
         "read_rules",
         "read_rules"
@@ -250,8 +262,8 @@
       "portal": "Crewmarrow HR",
       "user": "",
       "continued": true,
-      "said": "I'm filing two cards: sign SA-3 and elect CB-1. Nothing is signed or elected until you answer them.\n\n\n**Signing SA-3.** It pays $7,500.00 once, on Monday 2 Nov 2026, with no waiver of unemployment benefits. SA-2 has the same terms but pays on 23 Oct. I'm leaving it out because that's an early payment. SA-1 is withdrawn, and its waiver would be void anyway under the desk's rule.\n\n**Electing CB-1.** COBRA covers 1 to 31 October at $1,020.00, and you end it after that.",
-      "said_chars": 1934,
+      "said": "I'm filing two cards: sign SA-3 and elect CB-1. Nothing is signed or elected until you approve them.\n\n\n**Proposed to sign: SA-3 ($7,500.00, paid Mon 2 Nov). Proposed to elect: CB-1 (COBRA for October only).**\n\n**Severance**\n- **SA-3 is the pick.** It has no waiver, and 2 Nov is more than 30 days after your 25 Sep last day (30 days is 25 Oct). That matches the Fernhollow rule that I filed UI-1 against.\n- **Left out: SA-2.** It pays 23 Oct, day 28, inside the 30 days.",
+      "said_chars": 2126,
       "reads": [],
       "cards": [
         {
@@ -272,8 +284,8 @@
       "portal": "Coverfind",
       "user": "Back to Coverfind. Choose the plan that is right for me with the COBRA decision you made, and apply the premium tax credit only for the months it is allowed. Leave the other plans and months alone. Then tell me what you chose, what you left",
       "continued": false,
-      "said": "I'm filing three cards: choose MK-1, and apply the credit for PTC-11 and PTC-12. Nothing is chosen or applied until you answer them.\n\n\n**Chosen, pending your answer:** MK-1, Silver, starting 1 Nov. It costs $640.00 a month, or $230.00 after the $410.00 credit.\n\n**Credit:** I'm applying it for November (PTC-11) and December (PTC-12).\n\n**Left out**\n- **PTC-10, October:** That month is COBRA's, and the credit isn't allowed in a month you're enrolled in COBRA. No marketplace plan covers October anyway.",
-      "said_chars": 1762,
+      "said": "I'm filing three cards: choose MK-1, then apply the credit for November (PTC-11) and December (PTC-12). Nothing is chosen or applied until you approve them.\n\n\n**Chosen (pending your approval)**\n- **MK-1, Silver plan:** It starts 1 Nov and you'd pay $230.00 a month after the credit. COBRA CB-1 covers 1–31 Oct, so coverage runs with no gap and no overlap.\n- **PTC-11 and PTC-12:** The $410.00 credit applies to November and December. COBRA will have ended, so the credit rule allows both.",
+      "said_chars": 1745,
       "reads": [],
       "cards": [
         {
@@ -295,6 +307,24 @@
           "value_usd": 410.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-11T02:47:20Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 6,
+      "eligible": 6,
+      "value_found_usd": 6025.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 140.3,
+      "your_time_s": 180
     }
   ]
 }

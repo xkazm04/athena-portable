@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "gpsr-listings",
-  "captured_at": "2026-10-10T15:09:48Z",
-  "bench_run_at": "2026-10-10T15:07:49Z",
-  "narration": {
-    "text": "A reseller's EU listings brought up to the product-safety rule on two marketplaces before they are hidden: a maker's address added, three Union responsible persons named from the mail, a missing model and the warnings the products carry, while food, an antique, seeds, listings not offered in the EU, listings already complete and a throw that needs no warning are left alone. This is a chore for the owner of a small reseller of homeware, who sells other makers' goods to EU buyers on two marketplaces, both of which will hide non-compliant EU listings on 1 November. On the bench, she found 6 of 6 eligible items, worth 7,100 dollars of the 7,100 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 68 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 62.966,
-    "sha256": "c97e0646de82b6439bedd317612253aaa8210442d73cfdc7f748a89bcdda62b7"
-  },
-  "video": {
-    "path": "evidence/gpsr-listings/evidence.mp4",
-    "duration_s": 62.966,
-    "bytes": 3052600,
-    "sha256": "e9e9abed846d6444f6b5a76491b927a0b6a73564d321d163aa00a021104ab977"
-  },
-  "thumbnail": {
-    "path": "playbooks/gpsr-listings/thumb.jpg",
-    "bytes": 83727,
-    "sha256": "ae6642b5b61d962ca7d2ce2b5170f480c708fe6a863c79eef244b6aacb0fab3c"
-  },
+  "captured_at": "2026-10-23T17:03:51Z",
+  "bench_run_at": "2026-10-23T16:04:21Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/gpsr-listings/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22824,
-      "sha256": "56ea6e177c93123e13a5daffb160e90884e2a96203f9cc3793c2120e689b7bf0"
+      "bytes": 43224,
+      "sha256": "846cc7a0a15783e0c509bc9b9545cdb9a363d4a01cf62fef76a8cac2850479ed",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/gpsr-listings/story/02.webp",
+      "bytes": 33886,
+      "sha256": "5fb7562957a0581b0409d7537bf688a7759b2f51cf24de0519f18b18288f13e0",
       "caption": "Turn 1 - Binderwell: I'm Hollis, Fennhollow Home",
-      "turn": 1,
-      "bytes": 22596,
-      "sha256": "e91efaa8e79ad0320fd50fc4703387c2b575ed944a77ca27127cec9ca60d2136"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/gpsr-listings/story/03.webp",
+      "bytes": 31036,
+      "sha256": "805c899465128126ead7af017a305e4861984208d1406806116fae9141a8d88e",
       "caption": "Turn 5 - Postwren: This is my mail",
-      "turn": 5,
-      "bytes": 22188,
-      "sha256": "fecb44a8768dee93e1d73aae4795572925118f08fca2f26f21d9da6e5e250434"
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/gpsr-listings/story/04.webp",
-      "caption": "Turn 9 - Stallwick seller, Athena: The Stallwick list shows 8 listings",
-      "turn": 9,
-      "bytes": 23036,
-      "sha256": "54b76ffab51ae3c6ea37fe92dc175f4da69617f28348e363327b11a5beb1b8ef"
+      "bytes": 37252,
+      "sha256": "8c303890b20fdaf694773efd62037ae1248ce458db2e6ed1ba510c35c96aff06",
+      "caption": "Turn 9 - Stallwick seller, Athena: Eight Stallwick listings came back",
+      "kind": "turn",
+      "turn": 9
     },
     {
+      "n": 5,
       "path": "playbooks/gpsr-listings/story/05.webp",
-      "caption": "Turn 13 - Hawkerbrook seller, Athena: Three of the five in-scope listings are missing something, so I'm filing three…",
-      "turn": 13,
-      "bytes": 22070,
-      "sha256": "1ec9c59af53c2db9b686f7f3e03f9b1b217411f8113bd7465313d8a37c7d0ed4"
-    },
-    {
-      "path": "playbooks/gpsr-listings/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23138,
-      "sha256": "ac73b1ca4f8ee1a6c81ec15e7c3dd3b3696cd744c818e9db327869cf5ee2c457"
+      "bytes": 42386,
+      "sha256": "d0a13397ac6aa2b3811e1e7ce9805679ac1e0943d632c086cd364aad13c66979",
+      "caption": "Turn 13 - Hawkerbrook seller, Athena: Three of the five need a fix",
+      "kind": "turn",
+      "turn": 13
     }
   ]
 }

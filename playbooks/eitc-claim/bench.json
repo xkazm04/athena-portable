@@ -1,15 +1,16 @@
 {
   "playbook": "eitc-claim",
-  "run_at": "2026-10-11T06:37:27Z",
+  "run_at": "2026-10-23T15:55:15Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 104.1,
+  "comparable": "sha256:1e12889932886ae2",
+  "wall_s": 136.9,
   "turns": 10,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 21,
-  "cost_usd": 1.505,
+  "reads": 18,
+  "cost_usd": 1.2444,
   "your_time_s": 120,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 1.7
+    "minutes": 2.3
   },
   "score": {
     "eligible": 4,
     "found": 4,
     "exact": 4,
+    "neutral": 0,
     "value_total_usd": 4000.0,
     "value_found_usd": 4000.0,
     "recall_value": 1.0,
@@ -103,35 +105,35 @@
       "why": "Mateo, 13, Rosalind's son: Taxfold says 5 months, entered from memory, but the school's record (SR-2) puts him at 41 Corbel Lane from 4 March 2025, 303 days, more than half the year. Only the enrolment record shows it. Due with the return by Thursday 15 October 2026"
     },
     {
-      "action": "attach_return_form",
-      "key": "8862",
-      "outcome": "correct",
-      "value_usd": 1000.0,
-      "exact": true,
-      "why": "Form 8862: the 2023 earned income credit was disallowed in an audit closed 18 November 2025 for a reason that is not a math or clerical error, and no ban applies, so the form is attached to claim the credit again; without it the claim is denied. Due with the return by Thursday 15 October 2026"
-    },
-    {
       "action": "claim_eitc_child",
       "key": "C-3",
       "outcome": "correct",
       "value_usd": 1000.0,
       "exact": true,
       "why": "Camille, 22, Rosalind's daughter: under 24 and a full-time student for the spring and fall terms of 2025 (SR-3), five months or more, and at home all year. Due with the return by Thursday 15 October 2026"
+    },
+    {
+      "action": "attach_return_form",
+      "key": "8862",
+      "outcome": "correct",
+      "value_usd": 1000.0,
+      "exact": true,
+      "why": "Form 8862: the 2023 earned income credit was disallowed in an audit closed 18 November 2025 for a reason that is not a math or clerical error, and no ban applies, so the form is attached to claim the credit again; without it the claim is denied. Due with the return by Thursday 15 October 2026"
     }
   ],
   "missed": [],
-  "closing_words": "I'm filing cards for Lena, Mateo and Form 8862 now. Camille's school record is cut off in what I can see here, so I'm recalling it before I file her card.\n\nCamille's record is confirmed, so I'm filing her card.\n\nSR-3 shows Hallowmere Community College, full time in spring (Jan to May) and fall (Aug to Dec) 2025, at 41 Corbel Lane. That is 10 calendar months, well over the 5 required. She's under 24 and your daughter.\n\n\nFour cards are now waiting for your answer: Lena (C-1), Mateo (C-2), Camille (C-3) and Form 8862. Nothing has been claimed or attached yet, because each card runs only after you answer it.\n\n**Children I'm claiming (on your approval)**\n- **C-1 Lena:** Your daughter, 9. SR-1 shows her at 41 Corbel Lane all of 2025.\n- **C-2 Mateo:** Your son, 13. SR-2 shows him at 41 Corbel Lane from 4 Mar 2025, about 303 days. That is over 182, so the 5 months Taxfold shows is wrong. I'm not",
+  "closing_words": "I've lost the detail of the Slatewick and Postwren findings, and the claims depend on it. I'm recalling it first and will file nothing until it's back.\n\nI'm filing four cards: three child claims and Form 8862. Nothing is claimed until you approve them.\n\n- **Lena (C-1):** Slatewick SR-1 shows 41 Corbel Lane all of 2025, and she is 9.\n- **Mateo (C-2):** SR-2 shows 41 Corbel Lane from 4 Mar 2025, which is 303 days and more than 182. The 5 months in Taxfold was entered from memory.\n- **Camille (C-3):** She is 22. SR-3 shows full-time enrolment for Jan–May and Aug–Dec 2025, which is 10 calendar months, at 41 Corbel Lane.\n- **Form 8862:** The IRS letter M-5 says the 2023 credit was disallowed for a reason other than a math or clerical error, and that no ban applies. The rules require this form with the new claim.\n\nIncome is $50,300 in wages plus $310 in interest. That is under the $68,675 limi",
   "trace": [
     {
       "portal": "Taxfold",
       "user": "I'm Rosalind Pruitt. Start in Taxfold, our 2025 return, which is on extension: read the earned income credit rules, our filing status and the children Taxfold lists, every page. Read, and do not claim anything yet.",
       "continued": false,
-      "said": "Reading all three Taxfold sources now, every page of the household list.\n\n\nCorrection: the lines above are malformed. Here are the actual reads.\n\nThose reads went through, but the answers haven't arrived yet. I won't call them again. My first attempt used a malformed op, and it was dropped. The only thing left to do is page 2 of the household list, since page 1 is already requested.",
-      "said_chars": 385,
+      "said": "I'll read the Taxfold return, rules and household pages now, and I won't claim anything.",
+      "said_chars": 88,
       "reads": [
-        "read_tax_rules",
-        "read_tax_rules",
         "read_filing_status",
+        "read_tax_rules",
+        "read_household",
         "read_household",
         "read_household"
       ],
@@ -141,10 +143,9 @@
       "portal": "Taxfold",
       "user": "",
       "continued": true,
-      "said": "I've read the rules index, the filing status and household pages 1 and 2 (6 of 7 children). Page 3 and the individual rule topics are still unread, so I'm requesting them now. Nothing is being claimed.",
-      "said_chars": 201,
+      "said": "I've read the filing status and all three household pages, which list seven children. The rules came back as an index only, so I'm reading each rule topic now. I still won't claim anything.",
+      "said_chars": 189,
       "reads": [
-        "read_household",
         "read_tax_rules",
         "read_tax_rules",
         "read_tax_rules",
@@ -160,8 +161,8 @@
       "portal": "Taxfold",
       "user": "",
       "continued": true,
-      "said": "Taxfold is fully read: the rules index and all eight topics, the filing status, and all 7 children across 3 pages. Nothing is claimed.\n\n**Where each child stands (Taxfold only)**\n- **C-1 Lena, 9:** Your daughter, home 12 months. She looks qualifying, and I want a school record to back the residency.\n- **C-2 Mateo, 13:** Taxfold shows 5 months, \"entered in July from memory\", with a school change in March. I can't set the real months from your account or from memory. The Slatewick record has to show them.",
-      "said_chars": 2290,
+      "said": "I've read all of Taxfold and claimed nothing. It lists seven children (3 pages), and the rules, filing status and household pages are all read. Three children look likely to qualify, but I need the school records and W-2s to confirm them.\n\n**Return:** 2025 joint return, extended to Thursday 15 October 2026. That is six days from today. Wages aren't entered yet, and interest is $310.\n\n**2023 credit:** It was disallowed in an audit that closed 18 Nov 2025. The reason was that residency wasn't substantiated.",
+      "said_chars": 2577,
       "reads": [],
       "cards": []
     },
@@ -169,10 +170,9 @@
       "portal": "Slatewick school records",
       "user": "Slatewick holds the children's school and college records. Read every page: what each record says about where each child lived and when.",
       "continued": false,
-      "said": "Reading all pages of the Slatewick records now. Page 1 is first, then pages 2 and 3 in case the records run that long. Nothing is claimed.",
-      "said_chars": 138,
+      "said": "I'll read every Slatewick school-records page now, starting with page 1 and page 2 together, and I won't claim anything.",
+      "said_chars": 120,
       "reads": [
-        "list_school_records",
         "list_school_records",
         "list_school_records"
       ],
@@ -182,8 +182,8 @@
       "portal": "Slatewick school records",
       "user": "",
       "continued": true,
-      "said": "All 6 Slatewick records are read (pages 1 and 2 of 2; my page 3 request returned page 2 again). Nothing is claimed.\n\n**What each record says about where the child lived**\n- **SR-1 Lena (C-1):** 41 Corbel Lane all of 2025, with Rosalind and Everett as guardians. This backs the full 12 months.\n- **SR-2 Mateo (C-2):** Enrolled from 4 Mar 2025. 41 Corbel Lane from that date, and before that his father's address in another district. 4 Mar to 31 Dec is about 303 days, well over 182.",
-      "said_chars": 2626,
+      "said": "I've read both Slatewick pages (6 of 6 records) and claimed nothing.\n\n**What the records say about residence in 2025:**\n- **Lena (SR-1):** 41 Corbel Lane all year. Guardians are Rosalind and Everett. That's 12 months at home.\n- **Mateo (SR-2):** 41 Corbel Lane from 4 Mar 2025. Before that he was at his father's address in another district. From 4 Mar to 31 Dec is about 303 days, which is more than 182. Taxfold's \"5 months\" was entered from memory, so it is wrong.",
+      "said_chars": 1846,
       "reads": [],
       "cards": []
     },
@@ -191,8 +191,8 @@
       "portal": "Payroll Harbor",
       "user": "Payroll Harbor has our 2025 W-2s. Read them.",
       "continued": false,
-      "said": "Your message just said \"noop\", so I haven't done anything. Tell me what you'd like done in the engine directory and I'll start.I'll read the W-2s now.\n\n\nI've sent the request for the W-2s but haven't received them yet. Once they arrive I'll report each W-2's owner, employer and box 1 wages. I haven't claimed anything.\n\nThe W-2 request has gone to the page, but the answers haven't reached me yet. My first attempt was dropped because I wrote it as plain text, not a valid `",
-      "said_chars": 634,
+      "said": "I'm reading the W-2s now.",
+      "said_chars": 25,
       "reads": [
         "list_w2s"
       ],
@@ -202,8 +202,8 @@
       "portal": "Payroll Harbor",
       "user": "",
       "continued": true,
-      "said": "Payroll Harbor lists two 2025 W-2s for you and Everett. Their box 1 wages add up to 50,300 dollars.\n\n| Form | Whose | Employer | Box 1 |\n|---|---|---|---|\n| W-1 | Rosalind Pruitt | Quillbrook Paving | 28,400 dollars |\n| W-2 | Everett Pruitt | Hartwell Bright Grocery | 21,900 dollars |\n\n- **Limits:** 50,300 dollars is under the 2025 joint limit of 68,675 dollars for three or more children. The 310 dollars of interest in Taxfold is under the 11,950 dollar investment income limit.",
-      "said_chars": 981,
+      "said": "The W-2s are read, and they put the household well under the credit limits. I haven't claimed anything.\n\n- **W-1, Rosalind (Quillbrook Paving):** $28,400 in box 1.\n- **W-2, Everett (Hartwell Bright Grocery):** $21,900 in box 1.\n- **Wages together:** $50,300. Interest of $310 brings income to about $50,610, which I added myself. That is under the $57,554 limit for one child, the lowest of the three limits. It is also well below the $11,950 investment income ceiling.",
+      "said_chars": 2649,
       "reads": [],
       "cards": []
     },
@@ -211,10 +211,9 @@
       "portal": "Postwren",
       "user": "Postwren is my mail. Read every page, the old letters too, and note what each attachment is. Don't reply to anyone.",
       "continued": false,
-      "said": "Reading the Postwren inbox now, pages 1 and 2 first, then page 3 in case the inbox runs longer.\n\n\nI haven't received any messages yet. Nothing is claimed and nobody is replied to.",
-      "said_chars": 179,
+      "said": "I'll read the Postwren inbox now, pages 1 and 2 together, and I won't reply to anyone.",
+      "said_chars": 86,
       "reads": [
-        "list_messages",
         "list_messages",
         "list_messages"
       ],
@@ -224,8 +223,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "The Postwren inbox holds 5 messages, and one has an attachment. I read pages 1 and 2. My page 3 request returned page 2 again, so there is no page 3 (showing 5 of 5). I replied to no one and claimed nothing.\n\n| ID | From | What it is | Effect |\n|---|---|---|---|\n| M-1 | Refund Rocket Advance | Offer of a 2,000 dollar advance for a 99 dollar fee, asking you to reply YES | Declined. No reply. |\n| M-2 | EITC Maximizers Inc. | Offer to \"find\" extra qualifying children for 20 percent of the refund | Declined. No reply.",
-      "said_chars": 2279,
+      "said": "I've read all five Postwren messages (5 of 5, both pages) and replied to no one. Before I write up the plan, I'm recalling the Slatewick findings and the Taxfold rules, because my earlier summaries were cut off.\n\nI've read all five Postwren messages (5 of 5). I've replied to no one and claimed nothing.\n\n**Inbox, with attachments**\n- **M-1, Refund Rocket Advance (8 Oct):** a $2,000 advance on the credit for a $99 fee. It has no attachment. It's an offer, so I'm leaving it alone.\n- **M-2, EITC Maximizers Inc.",
+      "said_chars": 2690,
       "reads": [],
       "cards": []
     },
@@ -233,8 +232,8 @@
       "portal": "Taxfold",
       "user": "Back in Taxfold, claim the earned income credit on the 2025 return for each child who qualifies under the rules, and attach what the rules say the return needs because of our 2023 credit, before the 15th. Claim no child who does not qualify",
       "continued": false,
-      "said": "I'm filing cards for Lena, Mateo and Form 8862 now. Camille's school record is cut off in what I can see here, so I'm recalling it before I file her card.\n\nCamille's record is confirmed, so I'm filing her card.\n\nSR-3 shows Hallowmere Community College, full time in spring (Jan to May) and fall (Aug to Dec) 2025, at 41 Corbel Lane. That is 10 calendar months, well over the 5 required. She's under 24 and your daughter.",
-      "said_chars": 2231,
+      "said": "I've lost the detail of the Slatewick and Postwren findings, and the claims depend on it. I'm recalling it first and will file nothing until it's back.\n\nI'm filing four cards: three child claims and Form 8862. Nothing is claimed until you approve them.\n\n- **Lena (C-1):** Slatewick SR-1 shows 41 Corbel Lane all of 2025, and she is 9.\n- **Mateo (C-2):** SR-2 shows 41 Corbel Lane from 4 Mar 2025, which is 303 days and more than 182. The 5 months in Taxfold was entered from memory.\n- **Camille (C-3):** She is 22.",
+      "said_chars": 1670,
       "reads": [],
       "cards": [
         {
@@ -250,18 +249,36 @@
           "value_usd": 1000.0
         },
         {
-          "action": "attach_return_form",
-          "key": "8862",
-          "outcome": "correct",
-          "value_usd": 1000.0
-        },
-        {
           "action": "claim_eitc_child",
           "key": "C-3",
           "outcome": "correct",
           "value_usd": 1000.0
+        },
+        {
+          "action": "attach_return_form",
+          "key": "8862",
+          "outcome": "correct",
+          "value_usd": 1000.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-11T06:37:27Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 4,
+      "eligible": 4,
+      "value_found_usd": 4000.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 104.1,
+      "your_time_s": 120
     }
   ]
 }

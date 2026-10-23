@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "parcel-guarantee-refunds",
-  "captured_at": "2026-10-10T07:27:21Z",
-  "bench_run_at": "2026-10-10T07:24:33Z",
-  "narration": {
-    "text": "A lens maker's late overnight parcels claimed under each carrier's money-back guarantee, inside each carrier's own window, for the transportation charge alone, while the services whose guarantee is suspended, a storm, a missing suite number, a late drop-off, a signature nobody could give and a parcel that was on time are left alone. This is a chore for the operations lead of a small optical lens maker that ships lenses and blanks overnight to optical labs and practices on two parcel carriers, who checks the late ones herself. On the bench, she found 6 of 6 eligible items, worth 269 dollars and 85 cents of the 269 dollars and 85 cents there was to find. She made no false claim. The world held 11 traps, and she walked past 11. She took 4 minutes. By hand, the same chore takes 75 minutes, so she was about 20 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 63.893,
-    "sha256": "ec81b9fe93a03089c6525c08551c085e181a8e1f6854ada009aacc6fe92d364f"
-  },
-  "video": {
-    "path": "evidence/parcel-guarantee-refunds/evidence.mp4",
-    "duration_s": 63.893,
-    "bytes": 3281837,
-    "sha256": "37561b0b9deced045b9cbfe55d1f71598248b824b56ef1a2791df819890957c7"
-  },
-  "thumbnail": {
-    "path": "playbooks/parcel-guarantee-refunds/thumb.jpg",
-    "bytes": 77399,
-    "sha256": "fb585a0a238a1371a452ddf51d9e50e69a567fe11e64d0380af577d7983fe2c6"
-  },
+  "captured_at": "2026-10-23T17:08:26Z",
+  "bench_run_at": "2026-10-23T16:18:19Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/parcel-guarantee-refunds/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23798,
-      "sha256": "0596fb23cc7a0f90c183e712dd1c102b67100fdf001b4dd7d36a802b4d4a50b3"
+      "bytes": 36478,
+      "sha256": "ee567e43ed2d6a4fc369c20a327687c1b7fec342ae5b94296de7a87d85b6fcc4",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/parcel-guarantee-refunds/story/02.webp",
+      "bytes": 35714,
+      "sha256": "c25065f339db260ca0c6fe99ff3fc8bd94c84f2421f91b0bd43e079ecbcfab69",
       "caption": "Turn 1 - Labelyard: I'm Teodora, I run shipping at Corbel Optics",
-      "turn": 1,
-      "bytes": 22718,
-      "sha256": "0fcd9eca7f7b0897ec44252120572a40c1328f56ee08ad55b3c6f36fdc42943a"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/parcel-guarantee-refunds/story/03.webp",
-      "caption": "Turn 5 - Mailnest: Mailnest has our shipping inbox",
-      "turn": 5,
-      "bytes": 22664,
-      "sha256": "cd1f786e48fb65da2e6c5dbcae5f387834d496c9cc7a6b9ebf361924ac29d671"
+      "bytes": 28774,
+      "sha256": "22a2d9e2a828f5e069ae5df00e27a383d49dec7c77423e7d4ad1a2232aa22ae5",
+      "caption": "Turn 4 - Mailnest: Mailnest has our shipping inbox",
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/parcel-guarantee-refunds/story/04.webp",
-      "caption": "Turn 10 - Lanecourier: Lanecourier's portal",
-      "turn": 10,
-      "bytes": 23334,
-      "sha256": "1a9c7a3ca264421afc217eb1de6fbd0f21c0d708b16d195de625a63e5c7ab9ea"
+      "bytes": 37096,
+      "sha256": "3c3d55380561aaabef457116b5c38beca889ae72f87071f48c23f576f2563590",
+      "caption": "Turn 7 - Wrenpost: Wrenpost's portal",
+      "kind": "turn",
+      "turn": 7
     },
     {
+      "n": 5,
       "path": "playbooks/parcel-guarantee-refunds/story/05.webp",
-      "caption": "Turn 14 - Labelyard: I've switched to Labelyard as you asked",
-      "turn": 14,
-      "bytes": 22840,
-      "sha256": "63c7efa76e553a9e021fd02ddad74ebaac2d0c682dd079a0fad46d832193a2c6"
-    },
-    {
-      "path": "playbooks/parcel-guarantee-refunds/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23800,
-      "sha256": "6474fdfd207b4fbe0786b6fe0b1c79bbfede9efadcb169f82e92c946810dc9d8"
+      "bytes": 42574,
+      "sha256": "35d0eeb158512af811dea4ed3f6dd959c24967aff4a5b55d0d132513781d1ac0",
+      "caption": "Turn 10 - Lanecourier, Athena: I'm filing three Lanecourier claims, for $52.80, $29.75 and $41.10, and each…",
+      "kind": "turn",
+      "turn": 10
     }
   ]
 }

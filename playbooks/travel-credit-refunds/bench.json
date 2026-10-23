@@ -1,15 +1,16 @@
 {
   "playbook": "travel-credit-refunds",
-  "run_at": "2026-10-10T20:44:01Z",
+  "run_at": "2026-10-23T16:29:06Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 98.2,
+  "comparable": "sha256:01eeff016f398662",
+  "wall_s": 102.6,
   "turns": 11,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 34,
-  "cost_usd": 0.9085,
+  "reads": 35,
+  "cost_usd": 0.6982,
   "your_time_s": 180,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 1.6
+    "minutes": 1.7
   },
   "score": {
     "eligible": 6,
     "found": 6,
     "exact": 6,
+    "neutral": 0,
     "value_total_usd": 832.0,
     "value_found_usd": 832.0,
     "recall_value": 1.0,
@@ -142,7 +144,7 @@
     }
   ],
   "missed": [],
-  "closing_words": "I'm filing one Tripcairn refund, C-12, and nothing else is owed there.\n\n\n**Tripcairn, left alone:** C-13 (AL 12, 90.00). That credit was spent on booking T-88 on 5 Aug, and the rule says a spent credit isn't refunded.\n\n**Across all three, I've asked for 6 refunds, 832.00 in total. Each one needs your signature on its card.**\n\n| Portal | Item | Why it's owed | Amount |\n|---|---|---|---|\n| Aerolark | C-1, AL 218 | Moved 3 h 55 min later, over the 3-hour domestic limit. You declined it and never accepted the credit. | 142.00 |\n| Aerolark | A-1, seat 14A | Extra-legroom seat that the swapped aircraft doesn't have. | 38.00 |\n| Skylindle | C-6, SK 804 | Moved 6 h 30 min later, over the 6-hour international limit. You never accepted the credit. | 188.00 |\n| Skylindle | C-7, SK 311 | Arrival airport changed from LaGuardia to Newark. | 98.00 |\n| Skylindle | C-8, SK 451 | Gained a stop in Chicago.",
+  "closing_words": "Tripcairn has one item owed, C-12. I'm filing that card now.\n\n\n**What you asked to be refunded (7 cards, all waiting for your signature):**\n- **Aerolark C-1, $142.00:** AL 218 moved from 07:10 to 11:05, 3h55m later on a domestic flight (the threshold is 3h). You declined it, and the credit was issued unasked.\n- **Aerolark A-1, $38.00:** the extra-legroom seat 14A on AL 330 wasn't on the substituted aircraft, so the service wasn't provided and it wasn't your fault.\n- **Skylindle C-6, $188.00:** SK 804 to Toronto moved 6h30m later on an international flight (the threshold is 6h). You declined it, and the credit was unasked.\n- **Skylindle C-7, $98.00:** SK 311 now lands at Newark instead of LaGuardia, a different airport.\n- **Skylindle C-8, $210.00:** SK 451 went from non-stop to one stop, which adds a connection. I took the $210.00 from your statement, because I didn't see the credit row's",
   "trace": [
     {
       "portal": "Postwren",
@@ -159,8 +161,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "Eight messages are in the inbox. I'm reading all of them now.",
-      "said_chars": 61,
+      "said": "Eight messages are listed (showing 8 of 8). I'll read all of them now.",
+      "said_chars": 70,
       "reads": [
         "read_message",
         "read_message",
@@ -177,8 +179,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "I've read all eight messages and haven't filed any request. I'm saving a note now so I still have these details when I'm in the other tabs.\n\n\nI've read the whole inbox. Eight messages cover seven flights and a reply you sent. Each is a candidate until a portal's refund rule and credit status say otherwise.",
-      "said_chars": 1881,
+      "said": "I've read all eight messages (8 of 8) and requested nothing. Here is what each one says, with the refund rules still to be checked:\n\n- **M-1, Aerolark AL 218 (14 Mar):** moved from 07:10 to 11:05, which is 3h55m later. The fare of $142.00 became a credit that Lucia didn't ask for. Whether this counts as significant depends on Aerolark's rule.\n- **M-2, Skylindle SK 804 (2 Jun):** moved from 08:15 to 14:45, which is 6h30m later. She didn't accept it and didn't fly.",
+      "said_chars": 1942,
       "reads": [],
       "cards": []
     },
@@ -186,8 +188,8 @@
       "portal": "Cardhollow",
       "user": "This is my Cardhollow card. Read its note and my statement, every page. Don't do anything yet.",
       "continued": false,
-      "said": "I'll read the card note and all four statement pages.",
-      "said_chars": 53,
+      "said": "I'll read the card note and all four statement pages, and I won't request anything yet.",
+      "said_chars": 87,
       "reads": [
         "read_card",
         "read_statement",
@@ -201,8 +203,8 @@
       "portal": "Cardhollow",
       "user": "",
       "continued": true,
-      "said": "Cardhollow is read: the note and all 4 statement pages, 16 of 16 entries. I've filed nothing.\n\n- **Already refunded:** AL 905 fare, 96.00, came back to your card on 22 Jul. It is the only refund on the statement.\n- **Spent:** the 90.00 Tripcairn credit for AL 12 paid booking T-88 on 5 Aug.\n- **Your own change:** AL 140 moved to 16 May, charged 120.00 as a fare difference.",
-      "said_chars": 1154,
+      "said": "I've read the card note and all four statement pages (16 of 16 rows) and requested nothing.\n\n**Card note:** it only says the statement holds the year's charges and one refund.\n\n**Charges, 15, plus one credit and one zero-amount booking:**\n- **Aerolark:**\n  - AL 218 fare, $142.00 (1 Mar).\n  - Seat 14A fee for AL 330, $38.00 (13 Apr).\n  - Change of AL 140, $120.00 (3 May). This is a fare difference, which looks like a change Lucia made herself.\n  - AL 905 fare, $96.00 (30 Apr).",
+      "said_chars": 1787,
       "reads": [],
       "cards": []
     },
@@ -210,8 +212,8 @@
       "portal": "Aerolark",
       "user": "This is Aerolark. Read its refund rules, and my credits and fees on every page. Ask for a refund of each item where the rule says one is owed, with the reason. Leave alone what is not owed.",
       "continued": false,
-      "said": "I'll read Aerolark's rules and all three credit pages.",
-      "said_chars": 54,
+      "said": "I'll read Aerolark's rules and all three credit pages first, and request nothing yet.",
+      "said_chars": 85,
       "reads": [
         "read_rules",
         "read_rules",
@@ -229,8 +231,8 @@
       "portal": "Aerolark",
       "user": "",
       "continued": true,
-      "said": "Two of Aerolark's seven items are owed a refund, and I'm filing both now.\n\n\nLeft alone:\n- **C-2, AL 140 (120.00):** you changed the date yourself.\n- **C-3, AL 702 (210.00):** you cancelled it yourself.\n- **A-2, seat 9A (34.00):** this fee belongs to the flight you cancelled.\n- **C-4, AL 466 (168.00):** the change was only 2 h 10 min, under the 3-hour threshold, and you cancelled it yourself.\n- **C-5, AL 905 (96.00):** already refunded to your card on 22 Jul.",
-      "said_chars": 650,
+      "said": "Two Aerolark items are owed a refund, C-1 and A-1. I'm filing a card for each (7 items read, 7 of 7).\n\n**Owed:**\n- **C-1, AL 218, $142.00.** Aerolark moved the flight 3h55m later. That is over the 3-hour domestic threshold, so it is a significant change. She declined the new time and didn't fly. Aerolark issued the credit unasked, and she never accepted it, so the refund is still owed.\n- **A-1, seat 14A on AL 330, $38.00.** The aircraft changed and seat 14A isn't on it.",
+      "said_chars": 933,
       "reads": [],
       "cards": [
         {
@@ -251,8 +253,8 @@
       "portal": "Skylindle",
       "user": "This is Skylindle, my second airline. Do the same here: read its rules and my credits on every page, and ask for the refunds that are owed.",
       "continued": false,
-      "said": "Reading Skylindle's rules and credits now, all pages.\n\nThose reads went to the page, and the answers arrive with my next turn. I'm not repeating them, so nothing is filed yet. Send me on and I'll go through Skylindle's rules and both credit pages, then file only the refunds owed.",
-      "said_chars": 280,
+      "said": "I'll read Skylindle's rules (all seven topics) and both credit pages first, and request nothing until I've seen them.",
+      "said_chars": 117,
       "reads": [
         "read_rules",
         "read_rules",
@@ -270,8 +272,8 @@
       "portal": "Skylindle",
       "user": "",
       "continued": true,
-      "said": "Three of Skylindle's six items are owed a refund, and I'm filing them now.\n\n- **C-6, SK 804 (188.00):** the flight left 6 h 30 min later, which is over the 6-hour limit for an international flight. You declined it and never accepted the credit.\n- **C-7, SK 311 (98.00):** the arrival airport changed from LaGuardia to Newark. You declined it and never accepted the credit.\n- **C-8, SK 451 (210.00):** the non-stop flight gained a stop in Chicago. You declined it and never accepted the credit.",
-      "said_chars": 1068,
+      "said": "Three of the six Skylindle items are owed a refund: C-6, C-7 and C-8. I read all 6 items and all seven rule topics (6 of 6). I'm filing one card for each.\n\n**Owed:**\n- **C-6, SK 804 Boston to Toronto, $188.00.** Skylindle moved it 6h30m later on an international flight, which is over the 6-hour threshold. She declined it and didn't fly. The credit was issued unasked and never accepted.\n- **C-7, SK 311 Boston to New York, $98.00.** It now lands at Newark instead of LaGuardia, a different arrival airport.",
+      "said_chars": 1269,
       "reads": [],
       "cards": [
         {
@@ -298,10 +300,11 @@
       "portal": "Tripcairn",
       "user": "This is Tripcairn, my travel agency. Do the same here. Then tell me, across all three, what you asked to be refunded and why, what you left alone and why, and what I should get back.",
       "continued": false,
-      "said": "I'll read Tripcairn's rules and credits now.\n\n\nNothing is filed yet. The answers arrive with my next turn, and I'll file only what the rule says is owed.",
-      "said_chars": 153,
+      "said": "I'll read Tripcairn's rules and credits first, and request nothing yet.",
+      "said_chars": 71,
       "reads": [
         "read_credits",
+        "read_rules",
         "read_rules"
       ],
       "cards": []
@@ -310,8 +313,8 @@
       "portal": "Tripcairn",
       "user": "",
       "continued": true,
-      "said": "I'm filing one Tripcairn refund, C-12, and nothing else is owed there.\n\n\n**Tripcairn, left alone:** C-13 (AL 12, 90.00). That credit was spent on booking T-88 on 5 Aug, and the rule says a spent credit isn't refunded.\n\n**Across all three, I've asked for 6 refunds, 832.00 in total. Each one needs your signature on its card.**\n\n| Portal | Item | Why it's owed | Amount |\n|---|---|---|---|\n| Aerolark | C-1, AL 218 | Moved 3 h 55 min later, over the 3-hour domestic limit. You declined it and never accepted the credit.",
-      "said_chars": 2110,
+      "said": "Tripcairn has one item owed, C-12. I'm filing that card now.\n\n\n**What you asked to be refunded (7 cards, all waiting for your signature):**\n- **Aerolark C-1, $142.00:** AL 218 moved from 07:10 to 11:05, 3h55m later on a domestic flight (the threshold is 3h). You declined it, and the credit was issued unasked.\n- **Aerolark A-1, $38.00:** the extra-legroom seat 14A on AL 330 wasn't on the substituted aircraft, so the service wasn't provided and it wasn't your fault.",
+      "said_chars": 2200,
       "reads": [],
       "cards": [
         {
@@ -321,6 +324,24 @@
           "value_usd": 156.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-10T20:44:01Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 6,
+      "eligible": 6,
+      "value_found_usd": 832.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 98.2,
+      "your_time_s": 180
     }
   ]
 }

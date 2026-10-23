@@ -1,15 +1,16 @@
 {
   "playbook": "ifta-quarterly",
-  "run_at": "2026-10-10T11:14:54Z",
+  "run_at": "2026-10-23T16:07:28Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 157.1,
+  "comparable": "sha256:17792e654ee8accf",
+  "wall_s": 185.6,
   "turns": 11,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 31,
-  "cost_usd": 1.1797,
+  "reads": 29,
+  "cost_usd": 1.1544,
   "your_time_s": 180,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 2.6
+    "minutes": 3.1
   },
   "score": {
     "eligible": 6,
     "found": 6,
     "exact": 6,
+    "neutral": 0,
     "value_total_usd": 1844.83,
     "value_found_usd": 1844.83,
     "recall_value": 1.0,
@@ -136,14 +138,19 @@
     }
   ],
   "missed": [],
-  "closing_words": "Here are the figures. Each of the six items is filed as its own decision card for you to answer.\n\n**Fleet totals (tractors 11, 12 and 14 only)**\n- Total miles are 18,850 + 16,860 + 13,300 = **49,010**. This includes the 260 Mexico miles, because the distance rule counts non-member miles in total distance. It also includes the Wyoming oil-lease miles and the Pecos ranch road.\n- Total gallons are 7,665 + 120 (Chihuahua) + 95 (cash fill) = **7,880**. The fuel rule says every gallon in a qualified vehicle counts, receipted or not, taxed or not, so the Mexico gallons go in. The receipt R-3318 duplicate is counted once.\n- Fleet miles per gallon is 49,010 / 7,880 = **6.22**.\n\n**Jurisdiction lines**\n\n| | Total miles | Taxable miles | Taxable gal | Tax-paid gal | Rate | Tax |\n|---|---|---|---|---|---|---|\n| TX | 21,400 | 21,400 | 3,441 | 4,120 | 0.2000 | −$135.80 |\n| NM | 9,850 | 9,850 | 1,584 | ",
+  "closing_words": "The Q3 return nets to $56.15. I'm filing four jurisdiction lines (TX, NM, CO and WY), the return totals, and the payment of $56.15. Each is a card for you to approve, and nothing has gone out yet.\n\n**How I got the figures**\n- **Qualified units:** 11, 12 and 14 only. Units 9 (25,500 lb) and P-2 (10,000 lb) are two-axle vehicles under 26,000 lb and not used in combination, so they're off the return.\n- **Total miles:** 18,850 + 16,860 + 13,300 = **49,010**. This includes unit 12's 260 Mexico miles and all exempt miles.\n- **Total gallons:** the card's 7,785 gal, including 120 gal bought in Mexico, plus the 95 gal cash fill = **7,880**. Fuel without a valid receipt still counts here.\n- **Fleet MPG:** 49,010 ÷ 7,880 = **6.22**.\n- **Wyoming:** I took out 420 off-road oil-lease miles (160 + 140 + 120), because Wyoming exempts them. The 180-mile private ranch road in Texas stays in, because Texas",
+  "prose_audit": {
+    "said_usd": 56.15,
+    "record_usd": 1844.83,
+    "agrees": false
+  },
   "trace": [
     {
       "portal": "Odowren ELD",
       "user": "I'm Rosa, I run the office at Brackmoor Line Haul. It's time for the third-quarter IFTA return. Start in Odowren: read the units and every unit's miles by jurisdiction for July to September.",
       "continued": false,
-      "said": "Reading the units first, then each unit's miles. I'll need the unit numbers from the list before I can pull distances.",
-      "said_chars": 118,
+      "said": "I'll read the unit list first, then each unit's miles.",
+      "said_chars": 54,
       "reads": [
         "list_units"
       ],
@@ -153,8 +160,8 @@
       "portal": "Odowren ELD",
       "user": "",
       "continued": true,
-      "said": "Five units are tracked: tractors 11, 12 and 14, box truck 9, and pickup P-2. I'm pulling each one's miles by jurisdiction now.",
-      "said_chars": 126,
+      "said": "Five units are tracked: three tractors (11, 12, 14), a box truck (9) and a pickup (P-2). Now I'll read each unit's miles for July to September.",
+      "said_chars": 143,
       "reads": [
         "distance_by_unit",
         "distance_by_unit",
@@ -168,8 +175,8 @@
       "portal": "Odowren ELD",
       "user": "",
       "continued": true,
-      "said": "Odowren is read. Tractors 11, 12 and 14 look like the only qualified units, and the Tallyquart rules still need to confirm that.\n\n- **Units 11, 12, 14:** each has 3 axles and a combination weight of 80,000 lb, so each meets the qualified-vehicle test.\n- **Unit 9 (box truck):** 2 axles, 25,500 lb, never pulls a trailer. It looks under the threshold, so its Louisiana 620 miles and Texas miles stay off.\n- **Unit P-2 (pickup):** 10,000 lb, 2 axles. Off, including the Oklahoma 400 miles.",
-      "said_chars": 1785,
+      "said": "Odowren is read. Units 11, 12 and 14 look like the only qualified trucks. Unit 9 (box truck) and P-2 (pickup) look excluded, pending Tallyquart's rule.\n\n| Unit | Texas | New Mexico | Colorado | Wyoming (of which off public roads) | Other | Total |\n|---|---|---|---|---|---|---|\n| 11 | 8,200 | 3,900 | 4,300 | 2,450 (160) | none | 18,850 |\n| 12 | 6,900 (180 on a private ranch road) | 3,350 | 4,100 | 2,250 (140) | Chihuahua, Mexico 260 | 16,860 |\n| 14 | 6,300 | 2,600 | 2,800 | 1,600 (120) | none | 13,300 |\n| 9 | 4,800",
+      "said_chars": 2628,
       "reads": [],
       "cards": []
     },
@@ -177,8 +184,8 @@
       "portal": "Pumpline fuel card",
       "user": "This is our Pumpline fuel card. Read what the records carry and every unit's fuel for the quarter.",
       "continued": false,
-      "said": "I'll read the Pumpline statement note first, then fuel for all five units.",
-      "said_chars": 74,
+      "said": "I'll read the Pumpline statement note and the fuel for all five units.",
+      "said_chars": 70,
       "reads": [
         "read_statement_note",
         "fuel_by_unit",
@@ -193,8 +200,8 @@
       "portal": "Pumpline fuel card",
       "user": "",
       "continued": true,
-      "said": "Pumpline is read. The three tractors bought 7,665.0 gal of diesel in the US this quarter, and the card is missing any cash purchases.\n\n**What the records carry:** each record has the date, station name and address, gallons, fuel type, price, total, unit number and purchaser (Brackmoor Line Haul LLC). Pumpline says the listing has every element a tax-paid credit needs. Purchases made without the card are not on it.\n\n**Qualified tractors (11, 12, 14), diesel gallons:**",
-      "said_chars": 2162,
+      "said": "Pumpline is read. The fuel card shows fuel for all five units, and the three tractors are the only ones that go on the return.\n\n**What the records carry:** date, station name and address, gallons, fuel type, price per gallon, total, the unit number keyed at the pump, and the purchaser (Brackmoor Line Haul LLC). Pumpline calls its listing third-party and says it has every element a tax-paid credit needs. Purchases made without the card are not here.",
+      "said_chars": 2174,
       "reads": [],
       "cards": []
     },
@@ -202,8 +209,8 @@
       "portal": "Binderwell",
       "user": "Binderwell has the drivers' paper receipts, fuel logs, dispatch records and registrations for the quarter. Read them all.",
       "continued": false,
-      "said": "I'll list the folder first, then read each document.",
-      "said_chars": 52,
+      "said": "I'll list the Binderwell folder first, then read each document.",
+      "said_chars": 63,
       "reads": [
         "list_documents"
       ],
@@ -213,8 +220,8 @@
       "portal": "Binderwell",
       "user": "",
       "continued": true,
-      "said": "Six documents are listed. I'll read all of them now.",
-      "said_chars": 52,
+      "said": "Six documents are listed. I'll read all six now.",
+      "said_chars": 48,
       "reads": [
         "read_document",
         "read_document",
@@ -229,8 +236,8 @@
       "portal": "Binderwell",
       "user": "",
       "continued": true,
-      "said": "Binderwell is read, and it settles the open items. I'm saving the findings now so they carry to Tallyquart.\n\n\nBinderwell is read, and these are the findings. There were six documents.\n\n- **FC-0817 is a duplicate.** Receipt R-3318 (B-1) is the printed receipt for Pumpline's FC-0817, the 180.5 gal fill by unit 12 in El Paso. It is counted once, inside unit 12's Texas 1,360 gal.\n- **The cash fill counts but isn't credited.** Slip R-3402 (B-2) is 95 gal of diesel for $361.00, paid cash.",
-      "said_chars": 2029,
+      "said": "Binderwell is read, all six documents. Nothing in it adds a new jurisdiction line. It settles four questions and leaves one date to check.\n\n- **R-3318 (B-1):** This is the printed receipt for Pumpline transaction FC-0817 (unit 12, El Paso, 180.5 gal). It is one purchase, already in the card's Texas 1,360 gal for unit 12, so it counts once.\n- **R-3402 (B-2, B-3):** This is a cash fill of 95 gal of diesel on 2 Sep. The fuel log puts it in unit 14 at Walsenburg, Colorado.",
+      "said_chars": 2009,
       "reads": [],
       "cards": []
     },
@@ -238,8 +245,8 @@
       "portal": "Tallyquart IFTA filing",
       "user": "Tallyquart is where we file the return with Texas. Read the rules, the rates and our returns, then file the third quarter: every jurisdiction line we owe, the return totals, and pay the balance. Don't put anything on the return that doesn't",
       "continued": false,
-      "said": "I'll start by reading the rules, the rates and your returns, and recalling what I saved from the other tabs.\n\nThe recall results are in. The answers from the rules, rates and returns reads come with my next turn, so I'm not re-calling them. I'm holding off on filing or paying anything until I've read them.",
-      "said_chars": 307,
+      "said": "I'll read Tallyquart's rules, rates and returns first. I'll also recall the Pumpline and Binderwell figures from earlier, because the recalled text above was cut short.\n\n\nI'll file nothing until these come back. Filing and payment are gated, and I want the rules and rates in front of me before I propose any figures.\n\nI've recalled the Pumpline and Binderwell figures. The rules, rates and returns answers haven't come back yet, so I'm waiting for them. I'm not re-reading them.",
+      "said_chars": 1537,
       "reads": [
         "read_rules",
         "read_rates",
@@ -251,11 +258,9 @@
       "portal": "Tallyquart IFTA filing",
       "user": "",
       "continued": true,
-      "said": "I've got the rates and the return list. Q3 is open and due Monday 2 November 2026. I still need the rule topics before I work out any figures.",
-      "said_chars": 142,
+      "said": "The index, rates and returns are in. Q3 is open and due Monday 2 November 2026. Before I compute anything, I'm reading the rule topics that decide what goes on the return.\n\n\nI'm waiting for these answers and haven't computed or filed anything yet.",
+      "said_chars": 247,
       "reads": [
-        "read_rules",
-        "read_rules",
         "read_rules",
         "read_rules",
         "read_rules",
@@ -270,8 +275,8 @@
       "portal": "Tallyquart IFTA filing",
       "user": "",
       "continued": true,
-      "said": "Here are the figures. Each of the six items is filed as its own decision card for you to answer.\n\n**Fleet totals (tractors 11, 12 and 14 only)**\n- Total miles are 18,850 + 16,860 + 13,300 = **49,010**. This includes the 260 Mexico miles, because the distance rule counts non-member miles in total distance. It also includes the Wyoming oil-lease miles and the Pecos ranch road.\n- Total gallons are 7,665 + 120 (Chihuahua) + 95 (cash fill) = **7,880**.",
-      "said_chars": 2262,
+      "said": "The Q3 return nets to $56.15. I'm filing four jurisdiction lines (TX, NM, CO and WY), the return totals, and the payment of $56.15. Each is a card for you to approve, and nothing has gone out yet.\n\n**How I got the figures**\n- **Qualified units:** 11, 12 and 14 only. Units 9 (25,500 lb) and P-2 (10,000 lb) are two-axle vehicles under 26,000 lb and not used in combination, so they're off the return.\n- **Total miles:** 18,850 + 16,860 + 13,300 = **49,010**.",
+      "said_chars": 2145,
       "reads": [],
       "cards": [
         {
@@ -311,6 +316,24 @@
           "value_usd": 0.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-10T11:14:54Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 6,
+      "eligible": 6,
+      "value_found_usd": 1844.83,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 157.1,
+      "your_time_s": 180
     }
   ]
 }

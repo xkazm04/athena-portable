@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "duty-drawback",
-  "captured_at": "2026-10-09T18:47:11Z",
-  "bench_run_at": "2026-10-09T18:44:23Z",
-  "narration": {
-    "text": "Duties refunded on what was exported: drawback, matched export by export. This is a chore for the controller of a pump maker of about 140 people in Dayton, Ohio, that imports motors, housings and controllers and exports a fifth of what it makes. Athena works it across 4 portals: Portline Entries, Forwarden broker, Ledgerline ERP and Docshelf. On the bench, she found 4 of 4 eligible items, worth 13,747 dollars and 14 cents of the 13,747 dollars and 14 cents there was to find. She made no false claim. The world held 8 traps, and she walked past 8. Among them: Controllers imported in July 2021: the five years to file have run out. An export already paid on an earlier claim. She took 4 minutes. By hand, the same chore takes 5 hours, so she was about 77 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 64.244,
-    "sha256": "e781347ea1a390415e34ffddd56d3c36881d391e61bb8cdd49260bd7e0fda0cc"
-  },
-  "video": {
-    "path": "evidence/duty-drawback/evidence.mp4",
-    "duration_s": 64.28,
-    "bytes": 2968444,
-    "sha256": "82e69fd620be386f18ccc4c2d9260e985bb4507fd7af1352acadec2d80d0803c"
-  },
-  "thumbnail": {
-    "path": "playbooks/duty-drawback/thumb.jpg",
-    "bytes": 93802,
-    "sha256": "4b5677315a124830e13e31c080abf526bbae5eb34aedd84bef24728dee5c84f5"
-  },
+  "captured_at": "2026-10-23T17:00:58Z",
+  "bench_run_at": "2026-10-22T09:11:16Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/duty-drawback/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23074,
-      "sha256": "acb74f6d9256294677f985db3e638bc18fb4c8fff454399948090ead27c5393e"
+      "bytes": 43098,
+      "sha256": "8ac4afda4cd57e4cfe36374786524e4bad03037063abc7775d82229972cdb143",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/duty-drawback/story/02.webp",
+      "bytes": 26508,
+      "sha256": "3e46d0068f2920ff1377d7a4970b71e92b9ac81089c5e619d54fad07a9c41a9c",
       "caption": "Turn 1 - Portline Entries: We've never kept up with drawback",
-      "turn": 1,
-      "bytes": 19174,
-      "sha256": "7caddc9a7d137887051273b8d9bd57659a9a120f3b60cc0a0e7b708fa4df0e8c"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/duty-drawback/story/03.webp",
-      "caption": "Turn 5 - Forwarden broker, Athena: Page 1 of 2 is back (6 of 12 exports)",
-      "turn": 5,
-      "bytes": 22526,
-      "sha256": "4b7f720840079abf615736444b93fcc8f67f50fc5e222994732f41ab8377a539"
+      "bytes": 35220,
+      "sha256": "022e4190cc5c5df519f5fc85e07e97ec36300b222a6f7606cd0353eafe4680d4",
+      "caption": "Turn 5 - Forwarden broker, Athena: Page 1 of 2 is in (showing 6 of 12 exports)",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/duty-drawback/story/04.webp",
-      "caption": "Turn 9 - Ledgerline ERP, Athena: I've traced all 11 exports with proof",
-      "turn": 9,
-      "bytes": 23574,
-      "sha256": "5a3a1f72f5c2fe8021ab9a05e9bf8f0b1cef938c12c8e2201082a4140b58577e"
+      "bytes": 31100,
+      "sha256": "9dcccf3dbb4ba7cd1187924c7d872c2c8df4404de5bdd0931872204195dbf374",
+      "caption": "Turn 9 - Ledgerline ERP, Athena: All 11 exports now trace to their sources",
+      "kind": "turn",
+      "turn": 9
     },
     {
+      "n": 5,
       "path": "playbooks/duty-drawback/story/05.webp",
+      "bytes": 42012,
+      "sha256": "1539c8488ff55edb73beb930ed6f8cee29fa815d64a8507d80281cc7c6f4943f",
       "caption": "Turn 13 - Portline Entries: Back in Portline",
-      "turn": 13,
-      "bytes": 23646,
-      "sha256": "2e544e80bfbc2ede52d34ffd8ed305f28e66aef4f7ec5e4d302496c9f501f7e0"
-    },
-    {
-      "path": "playbooks/duty-drawback/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23672,
-      "sha256": "e3e5b2fd534a5688b44913ef9b80ca1e0344cd5faaeac43754963b0fc92f7ba7"
+      "kind": "turn",
+      "turn": 13
     }
   ]
 }

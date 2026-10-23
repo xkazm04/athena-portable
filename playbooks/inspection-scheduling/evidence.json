@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "inspection-scheduling",
-  "captured_at": "2026-10-09T23:09:53Z",
-  "bench_run_at": "2026-10-09T23:06:21Z",
-  "narration": {
-    "text": "City inspections booked in sequence on two cities' portals, on the first day each can happen. This is a chore for the project coordinator of a general contractor building townhomes in one city and a store addition and canopy in the next. Athena works it across 4 portals: Permitway, Civicdesk, Sitegrid and Crew calendar. On the bench, she found 6 of 6 eligible items, worth 2,400 dollars of the 2,400 dollars there was to find. All 6 were filed at the exact amount the rules allow. She made no false claim. The world held 9 traps, and she walked past 9. Among them: Framing before the rough trades are all approved. Insulation that is not installed. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 36 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 57.234,
-    "sha256": "3fa8ff575ec3194d6d25e172e03fca9432b0e17ff1be32bed3f8169ad92b957c"
-  },
-  "video": {
-    "path": "evidence/inspection-scheduling/evidence.mp4",
-    "duration_s": 57.24,
-    "bytes": 2764276,
-    "sha256": "5974ca13b5fbd53960ecf153dd7cb03737dbe3e9995c2c131e92af47c1b2bb03"
-  },
-  "thumbnail": {
-    "path": "playbooks/inspection-scheduling/thumb.jpg",
-    "bytes": 98839,
-    "sha256": "18004075afb3edbbaa09109ff3d5ac237499deeda4cf15e03ef0a5240354dcbb"
-  },
+  "captured_at": "2026-10-23T17:04:52Z",
+  "bench_run_at": "2026-10-23T16:08:32Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/inspection-scheduling/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23460,
-      "sha256": "f75840a5a0d7ff935ad777eade7f36cb7573b445e2d917e9c75c0ddffb02fbb6"
+      "bytes": 42284,
+      "sha256": "242dc2493d43e51fd324abecb418732f1a544d91d2375080bd98a446126e4526",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/inspection-scheduling/story/02.webp",
+      "bytes": 30216,
+      "sha256": "50790e269e5facab392f22717c6cccdce6c70fd5eeb181d040ed50134da71cbd",
       "caption": "Turn 1 - Permitway: Inspections are slipping on both cities' jobs",
-      "turn": 1,
-      "bytes": 22224,
-      "sha256": "8297ab318fd069e15c36bda1631417221e716cb81fd41f3dd1dab3ed318c01a1"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/inspection-scheduling/story/03.webp",
-      "caption": "Turn 5 - Civicdesk, Athena: Merrow's index and five permits are read",
-      "turn": 5,
-      "bytes": 21868,
-      "sha256": "289b51ef2a60f1ee0d69b09b4d2964f27f08a110c2ac82f1d2d93ce7c943566b"
+      "bytes": 40728,
+      "sha256": "41effde88b1afefcad52eaa98f00bfa7cc8afad15a27568e6a19a924c30c1453",
+      "caption": "Turn 5 - Civicdesk, Athena: Merrow's policies are read",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/inspection-scheduling/story/04.webp",
+      "bytes": 26188,
+      "sha256": "baa613919c2830b3e4efffec9e6c35dd00f21cdc4335bf1629d0af13d9058e75",
       "caption": "Turn 9 - Crew calendar: And the crew calendar for next week",
-      "turn": 9,
-      "bytes": 18850,
-      "sha256": "04a1728d14c185f51369d7903734bbbb4f5fb62f17eaccdaee43d218728af84f"
+      "kind": "turn",
+      "turn": 9
     },
     {
+      "n": 5,
       "path": "playbooks/inspection-scheduling/story/05.webp",
-      "caption": "Turn 13 - Sitegrid: I've switched to Sitegrid as you asked",
-      "turn": 13,
-      "bytes": 23810,
-      "sha256": "df1a6dde6cc798413bc9cbb6a2b42c4ce1e489610ce914592d6e1b5e33d2424e"
-    },
-    {
-      "path": "playbooks/inspection-scheduling/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 21650,
-      "sha256": "e70da7c97ca49d21e920c5236b8fbaae50da6134f8734a7cb422ceb91062be4b"
+      "bytes": 42578,
+      "sha256": "f8c2a9f5be7a2ed65880a79ddcc06a326712af273a1cc55aa35755b1e855996c",
+      "caption": "Turn 13 - Civicdesk: Now Civicdesk",
+      "kind": "turn",
+      "turn": 13
     }
   ]
 }

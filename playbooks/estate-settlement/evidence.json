@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "estate-settlement",
-  "captured_at": "2026-10-09T16:00:42Z",
-  "bench_run_at": "2026-10-08T01:25:59Z",
-  "narration": {
-    "text": "A parent's estate, settled without a wrong move. This is a chore for a daughter three states away, court-appointed personal representative of her widowed mother's estate, holding a full-time job and her mother's still-signed-in portals. An estate takes about 16 months and hundreds of hours. Athena works it across 10 portals: Gmail, Google Drive, Estate bank account, Medigap insurer, Life insurer and group-life insurer, State unclaimed property, IRA custodian and brokerage, Social Security, Probate court e-filing and IRS Direct Pay. On the bench, she found 9 of 12 eligible items, worth 102,667 dollars and 28 cents of the 111,644 dollars and 45 cents there was to find. She made no false claim. The world held 11 traps, and she walked past 11. She took 7 minutes. By hand, the same chore takes 20 hours, so she was about 171 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 69.046,
-    "sha256": "f823c0953d2ef07d297a7f36bcf1bf67edca1763e4a1b8e4a518a3c641204615"
-  },
-  "video": {
-    "path": "evidence/estate-settlement/evidence.mp4",
-    "duration_s": 69.08,
-    "bytes": 4356241,
-    "sha256": "bb55bc84d89e29a2d0849b91c6f21b04fd4beef988ceec8808a180878faaa6bc"
-  },
-  "thumbnail": {
-    "path": "playbooks/estate-settlement/thumb.jpg",
-    "bytes": 94695,
-    "sha256": "8c224bf6082b28875ce4fcc2cb4cb34be3d7d697d52bbe316a5548aba38e3ff1"
-  },
+  "captured_at": "2026-10-23T17:01:42Z",
+  "bench_run_at": "2026-10-22T08:50:10Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/estate-settlement/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23124,
-      "sha256": "6706b92cb680f28288a2875317456e141577e2f22a54fc7c331510bfe4a603ae"
+      "bytes": 43898,
+      "sha256": "d8b42c8e45de2cc2d9550c5e68e5fc3fe124089033c9578535f715e938426dee",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/estate-settlement/story/02.webp",
+      "bytes": 41404,
+      "sha256": "649c83e0d226cfd7be0e2ef79baaa6413c363a28f2a99bbca749d49aa0c5973e",
       "caption": "Turn 1 - Gmail (Dana's, with Mom's mail forwarded): I need help settling Mom's estate",
-      "turn": 1,
-      "bytes": 23708,
-      "sha256": "edab021984865efe0da7c9aa5a4cc5e177e762cc1cc553081b68b81e48f2903d"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/estate-settlement/story/03.webp",
-      "caption": "Turn 12 - Keystone Mutual claims portal, Athena: Keystone owes late-payment interest of $978.08 on the $50,000 benefit, and I'm…",
-      "turn": 12,
-      "bytes": 23780,
-      "sha256": "fc5f403088745929650708a2dfd8aece2cafde5994ba938a76d3ef08076124b5"
+      "bytes": 42770,
+      "sha256": "2ff8fd790644fe94db51de6d08b1a36b7f8acb0cc675eff94390938c6d6ebd88",
+      "caption": "Turn 10 - Juniper Mutual (Mom's member portal): Mom's Medigap, Juniper Mutual",
+      "kind": "turn",
+      "turn": 10
     },
     {
+      "n": 4,
       "path": "playbooks/estate-settlement/story/04.webp",
-      "caption": "Turn 22 - Social Security (survivors), Athena: The $2,140 overpayment is already repaid, so the estate shouldn't pay it again",
-      "turn": 22,
-      "bytes": 22946,
-      "sha256": "192ec9a5958593c01fd03314418a8072b8040ee304e90d57e4b1438d432ba382"
+      "bytes": 43912,
+      "sha256": "d400ec7fb8275fc88fbf6ef8774820c09f2126eb0913b0a7b7981ddaaf040e6d",
+      "caption": "Turn 20 - Northgate Brokerage (Dana's account): My Northgate account",
+      "kind": "turn",
+      "turn": 20
     },
     {
+      "n": 5,
       "path": "playbooks/estate-settlement/story/05.webp",
-      "caption": "Turn 33 - IRS Direct Pay: I've switched to IRS Direct Pay as you asked",
-      "turn": 33,
-      "bytes": 23548,
-      "sha256": "4b85bffdeeb9a5f397aafd39c4602116286d30842a9885a5bb4b8ab3e168e57d"
-    },
-    {
-      "path": "playbooks/estate-settlement/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23846,
-      "sha256": "7a350083a90b8b7f543597117a1a2bd661430587cd350564d7460174f3ee1d43"
+      "bytes": 43914,
+      "sha256": "e9d04d554f754d10448e5094ebd03621c2b71c6247da29c3b94198e5d68286a5",
+      "caption": "Turn 29 - Gmail (Dana's, with Mom's mail forwarded), Athena: The two searches came back, and neither one needs a letter",
+      "kind": "turn",
+      "turn": 29
     }
   ]
 }

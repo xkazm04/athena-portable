@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "household-employer-tax",
-  "captured_at": "2026-10-10T06:05:49Z",
-  "bench_run_at": "2026-10-10T06:01:21Z",
-  "narration": {
-    "text": "A father's caregivers kept on the right side of the household employer rules: a new caregiver set up as a contractor made an employee before his first pay, his I-9 signed the day it is due, a W-2 number put right, and the state's third-quarter report filed and paid on the wages it covers, while the agency's aide and an exempt son are left out. This is a chore for an adult daughter whose father, eighty-four, lives with her, and who employs his caregivers at home and runs their payroll herself. On the bench, she found 6 of 6 eligible items, worth 818 dollars and 17 cents of the 818 dollars and 17 cents there was to find. She made no false claim. The world held 16 traps, and she walked past 16. She took 4 minutes. By hand, the same chore takes 3 hours, so she was about 51 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 60.284,
-    "sha256": "f939160a8ee56cc4648ff0594e6eb6a4338dd715daef28a1fee8f4c6c5a4acfe"
-  },
-  "video": {
-    "path": "evidence/household-employer-tax/evidence.mp4",
-    "duration_s": 60.284,
-    "bytes": 3073026,
-    "sha256": "c151b754420d14554ebccf6629043a30be0eface4d667d8a7d79dce3852e5e0a"
-  },
-  "thumbnail": {
-    "path": "playbooks/household-employer-tax/thumb.jpg",
-    "bytes": 80185,
-    "sha256": "655044c3a8a43ebd04a73e82775f4dbc4316c7eefb197d2f2c2d3bf99817e260"
-  },
+  "captured_at": "2026-10-23T17:04:32Z",
+  "bench_run_at": "2026-10-23T16:04:55Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/household-employer-tax/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23926,
-      "sha256": "d2ad4dc4b2f7c0d5c9ee3c36111a002efe444332d3d6e071ca4a6c1a99923067"
+      "bytes": 42460,
+      "sha256": "2a563a914e426a8584fbabae17b1f6725471ab79f3077b81a44c0bb08d10589d",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/household-employer-tax/story/02.webp",
+      "bytes": 42332,
+      "sha256": "f4a6b3c8a6b34341bd65018cc003a3c348bbaef64736d4071a61dedd33a4b331",
       "caption": "Turn 1 - Hourquill: I employ people to look after Dad at home, and I want this quarter's payroll…",
-      "turn": 1,
-      "bytes": 22728,
-      "sha256": "ce0ecc39f2ad2369f2ae8027e123644fe0eebc9118a96211054eb06f225937ef"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/household-employer-tax/story/03.webp",
+      "bytes": 40568,
+      "sha256": "48f75971a41cd673dc17867604278517f1ef3fa5cf46577cc0d030cb30a22fae",
       "caption": "Turn 4 - Hearthpay: Hearthpay runs my payroll",
-      "turn": 4,
-      "bytes": 23988,
-      "sha256": "71c8d923ff76b102961a4914eef53a60696b6525a0f334e7b0a7e16d26b1ed62"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/household-employer-tax/story/04.webp",
-      "caption": "Turn 8 - Ledgerline bank, Athena: Nothing in Ledgerline needs paying today, so I'm filing no card here",
-      "turn": 8,
-      "bytes": 22078,
-      "sha256": "d173bb399e610d4e2acc2f36a76e18fa3e2e7309fab917edf3e5189a0354b2c7"
+      "bytes": 36026,
+      "sha256": "75b2526adccef390f24b06f9c96bbefcc7c5df383613171fd59f0b452e6224f6",
+      "caption": "Turn 7 - Ledgerline bank: Ledgerline is my bank",
+      "kind": "turn",
+      "turn": 7
     },
     {
+      "n": 5,
       "path": "playbooks/household-employer-tax/story/05.webp",
-      "caption": "Turn 11 - Taxline State, Athena: The rules settle the Q3 numbers",
-      "turn": 11,
-      "bytes": 22584,
-      "sha256": "ef8e9121290a5da87ec085d18ebcbad9b54e4d5f6ff698311f8289f853850570"
-    },
-    {
-      "path": "playbooks/household-employer-tax/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23098,
-      "sha256": "c51716cb3dde0cce74d56fbce2d85f42e55fd0502d9eecf5ba1037890d6e314f"
+      "bytes": 43056,
+      "sha256": "1a3ecdd1e03edce4d689d1339b2ccde82c3a362251ba08e84ac3e0c62c073dee",
+      "caption": "Turn 10 - Taxline State, Athena: Three Taxline cards are filed below",
+      "kind": "turn",
+      "turn": 10
     }
   ]
 }

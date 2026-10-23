@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "organic-annual-update",
-  "captured_at": "2026-10-10T18:02:56Z",
-  "bench_run_at": "2026-10-10T18:00:49Z",
-  "narration": {
-    "text": "An organic granola maker's annual update assembled: three plan changes, two suppliers no longer certified and three import certificates reported, while an old paper certificate, an exempt distributor, a lapsed grower of a non-organic mix, a change already accepted or never made, and imports that mismatch or need none are left alone. This is a chore for the owner of a small organic granola company in Eau Claire, Wisconsin, with one warehouse, a certifier's update due next month and a supplier folder full of paper certificates. On the bench, she found 8 of 8 eligible items, worth 600 dollars of the 600 dollars there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes 4 hours, so she was about 141 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 60.89,
-    "sha256": "f499b6a902e59a675097369e4b72a848c47d03691654edf4ea72aeb36f6b6448"
-  },
-  "video": {
-    "path": "evidence/organic-annual-update/evidence.mp4",
-    "duration_s": 60.92,
-    "bytes": 3103890,
-    "sha256": "8c7e6dfdc7c0074f728c586e61fd12ec63691546e751ccc16f4f176035c8802c"
-  },
-  "thumbnail": {
-    "path": "playbooks/organic-annual-update/thumb.jpg",
-    "bytes": 79942,
-    "sha256": "0cccb440557b9c98a1cff5613cfed0eaf13cacdd4f5a1d79d3fc3112e2a5a15c"
-  },
+  "captured_at": "2026-10-23T17:07:48Z",
+  "bench_run_at": "2026-10-23T16:16:22Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/organic-annual-update/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23948,
-      "sha256": "167a6a59170120fc8c7ab633d61dab1487a85a42839844ca7ffcc01c70fa6a45"
+      "bytes": 42638,
+      "sha256": "70a6d4a8d9013aa641d7d830b5d864693b7658ec2b8145ac2ad7f13024768cfc",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/organic-annual-update/story/02.webp",
+      "bytes": 43078,
+      "sha256": "2812058318fb452e938a7b312d8649bf06b90e6b4b5759dd15d9586cad995cc5",
       "caption": "Turn 1 - Certifield Organic: I'm Greta Valdivia, Marrowby Mills",
-      "turn": 1,
-      "bytes": 23592,
-      "sha256": "91bfc59ef7add98531e773a4adac461f9d354a4ed1644b0522a5709d34085cfc"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/organic-annual-update/story/03.webp",
-      "caption": "Turn 4 - Binderwell, Athena: Fifteen papers are listed, so I'm reading all of them now",
-      "turn": 4,
-      "bytes": 22274,
-      "sha256": "4498f60bd9297cb61c5ccf1a7b43bff4b38a5c22e82b0e0bd9610991bd133b8c"
+      "bytes": 26026,
+      "sha256": "86f7e8f48cda973c65843ab5a1998f8fca0bb10fc84496fa24ffa008110e78d5",
+      "caption": "Turn 4 - Binderwell, Athena: Fifteen papers (D-1 to D-15)",
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/organic-annual-update/story/04.webp",
-      "caption": "Turn 7 - Ledgerwren ERP, Athena: I've read all 10 suppliers and all 10 receipts (both pages of each)",
-      "turn": 7,
-      "bytes": 23408,
-      "sha256": "d621cf6e0c30badbd013ca9fcdad7bddbab25be9f9d7cd8dd342feca2c77112f"
+      "bytes": 43932,
+      "sha256": "00aaab0014dc42b30507be5dbd75d1e9b6221a5db885277be8471e77daf5448a",
+      "caption": "Turn 7 - Ledgerwren ERP, Athena: I've read both pages of suppliers (10 of 10) and both pages of receipts (10 of…",
+      "kind": "turn",
+      "turn": 7
     },
     {
+      "n": 5,
       "path": "playbooks/organic-annual-update/story/05.webp",
+      "bytes": 43502,
+      "sha256": "93cb11832eec2ef21f4ffa4f580281940cac339e287ae17c43b69b127f015380",
       "caption": "Turn 10 - Certifield Organic: Back at Certifield Organic",
-      "turn": 10,
-      "bytes": 23454,
-      "sha256": "9a885d5111ccf736031328a358ff7c9aed737d5110f31986d47996cacf1a9b4d"
-    },
-    {
-      "path": "playbooks/organic-annual-update/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23012,
-      "sha256": "e426e8cd09eb8c89d570eecd71ec300918392342d21a1ded42b0ba415ac1d7c9"
+      "kind": "turn",
+      "turn": 10
     }
   ]
 }

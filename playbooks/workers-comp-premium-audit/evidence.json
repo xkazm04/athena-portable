@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "workers-comp-premium-audit",
-  "captured_at": "2026-10-11T04:20:40Z",
-  "bench_run_at": "2026-10-11T04:18:40Z",
-  "narration": {
-    "text": "A contractor's workers' compensation audit is answered by duties and records: a bookkeeper to clerical, a salesman to outside sales, a crew's extra overtime pay and two insured subs' costs taken off, one found only in its contract file, while an office manager on job sites and a general-liability certificate are left alone. This is a chore for the president of a small New York renovation contractor with six carpenters and laborers and four office and sales staff. On the bench, she found 5 of 5 eligible items, worth 19,016 dollars and 47 cents of the 19,016 dollars and 47 cents there was to find. She made no false claim. The world held 12 traps, and she walked past 12. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 83 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 61.481,
-    "sha256": "2efedef403f39107132500e51070c976d4fa4722b86e5ed1987e9118927e9aa0"
-  },
-  "video": {
-    "path": "evidence/workers-comp-premium-audit/evidence.mp4",
-    "duration_s": 61.481,
-    "bytes": 2937135,
-    "sha256": "d8fdd805228410838fc4a2abbdf3aee50e274841c58f178196223c82a84cec98"
-  },
-  "thumbnail": {
-    "path": "playbooks/workers-comp-premium-audit/thumb.jpg",
-    "bytes": 81670,
-    "sha256": "f998ffcbab271131fee905b6e8f48a56dcffe6819bd0371d3da3616b538f9470"
-  },
+  "captured_at": "2026-10-23T17:12:49Z",
+  "bench_run_at": "2026-10-23T16:33:34Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/workers-comp-premium-audit/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22652,
-      "sha256": "8a1c0345ea1a340af7fc2166edb33ebe7470dfbbc6317cf77c30adfb8d18276b"
+      "bytes": 35100,
+      "sha256": "f9ea32b397e6562f72336b75665831eeab03a3da8a985601304738604b68d8e0",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/workers-comp-premium-audit/story/02.webp",
+      "bytes": 32824,
+      "sha256": "1df612d3d5f03e82a972b68af62bd33052be1633ba3386aa7551dae1b408f231",
       "caption": "Turn 1 - Auditwell: I'm Joan Delaplane, president of Delaplane Renovation",
-      "turn": 1,
-      "bytes": 23970,
-      "sha256": "351f413a8ea427f2c68b6079a0f0637f2fb8213acf7d1a4021c3d751fd460ee4"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/workers-comp-premium-audit/story/03.webp",
-      "caption": "Turn 4 - Payroll Harbor, Athena: Payroll Harbor is read",
-      "turn": 4,
-      "bytes": 23574,
-      "sha256": "59bf00abc2cdd7c7224c80deb3a4aa177c5ebc12a0fbb95ea3fb8262b113a53c"
+      "bytes": 25688,
+      "sha256": "21b172d5e88f5d3c3ef1b4439e02a316ca353ddec966b44952b8e4aff4c627cc",
+      "caption": "Turn 4 - Payroll Harbor: Payroll Harbor has our register and the time records",
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/workers-comp-premium-audit/story/04.webp",
-      "caption": "Turn 6 - Binderwell, Athena: Binderwell's files settle Tarrow Decks (W-11) in your favour",
-      "turn": 6,
-      "bytes": 22502,
-      "sha256": "52b0f666b6e60cba014cfae0e424ab06de83c0f899a909ab8505bf3d2ef6999b"
+      "bytes": 36626,
+      "sha256": "987a470dc0c4e5aa799c645a0f28426722f7294a5e95f972b83d60062e61e2cd",
+      "caption": "Turn 7 - Binderwell, Athena: All five Binderwell files are read",
+      "kind": "turn",
+      "turn": 7
     },
     {
+      "n": 5,
       "path": "playbooks/workers-comp-premium-audit/story/05.webp",
-      "caption": "Turn 9 - Auditwell: Back in Auditwell",
-      "turn": 9,
-      "bytes": 23578,
-      "sha256": "7e278fb46e4407053f3920cd7f7697e628365e46f5ad0c2f8bd7db191423d87b"
-    },
-    {
-      "path": "playbooks/workers-comp-premium-audit/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23972,
-      "sha256": "07f993c442c1c5c6b1d8a7322f12cda9e98bb1f67fadc81fe39c1b5c43be56c8"
+      "bytes": 43244,
+      "sha256": "6b594447dfdaf0c13c9fd22d372f2f505ecda150e7d8fb223befa34861625351",
+      "caption": "Turn 10 - Auditwell: Back in Auditwell",
+      "kind": "turn",
+      "turn": 10
     }
   ]
 }

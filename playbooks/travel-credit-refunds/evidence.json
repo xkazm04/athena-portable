@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "travel-credit-refunds",
-  "captured_at": "2026-10-10T20:47:40Z",
-  "bench_run_at": "2026-10-10T20:44:01Z",
-  "narration": {
-    "text": "A technician's year of airline credits becomes refunds: flights moved nearly four and six and a half hours, a new arrival airport, an added stop, a lower fare class and a seat fee, while a change she made, a credit she chose, her own cancellation, a short delay, a spent credit and an uncovered flight are left alone, across five portals. This is a chore for a veterinary technician in Boston who holds travel credits from two airlines and a travel agency, most of them issued without her asking. On the bench, she found 6 of 6 eligible items, worth 832 dollars of the 832 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 94 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 58.207,
-    "sha256": "68a20e67a80347cfa1f7767e708c974d3fee2035dc5d9279bbbb77955eccae6e"
-  },
-  "video": {
-    "path": "evidence/travel-credit-refunds/evidence.mp4",
-    "duration_s": 58.207,
-    "bytes": 2789384,
-    "sha256": "5c2e5f1449aed2950acd27ca69fa5c2c812eff429c112c2e0a835873038c8d67"
-  },
-  "thumbnail": {
-    "path": "playbooks/travel-credit-refunds/thumb.jpg",
-    "bytes": 86479,
-    "sha256": "f50d113cfb4ad046495f609a22293aed77312d2f81066c87a020404fdf152f52"
-  },
+  "captured_at": "2026-10-23T17:11:59Z",
+  "bench_run_at": "2026-10-23T16:29:06Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/travel-credit-refunds/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22854,
-      "sha256": "21baecd3c7ff4415bb246831aad3683c9d9d3714408ed9f0e25a0e6c33a93d4a"
+      "bytes": 34132,
+      "sha256": "a4e4f187b465378f6c073c4ad71318fab54ec3d342adfbe979652a7730983761",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/travel-credit-refunds/story/02.webp",
+      "bytes": 30244,
+      "sha256": "9fbff382f531b68a27ff5e043ab4fdda27ec3e476976adfa19025242fe6fbbef",
       "caption": "Turn 1 - Postwren: I'm Lucia Ferreira",
-      "turn": 1,
-      "bytes": 23092,
-      "sha256": "6e0b52cc0ab1fb6095b5a2dd4f364da5f921757cfa7ee4405fabbbf03d996706"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/travel-credit-refunds/story/03.webp",
+      "bytes": 28210,
+      "sha256": "8e90ad4ee6af1ebc855d9088a7085b9643d8389f0a5f7d2cdb2daa9019af01c0",
       "caption": "Turn 4 - Cardhollow: This is my Cardhollow card",
-      "turn": 4,
-      "bytes": 23078,
-      "sha256": "ab26500f8ffbd6501cbba8ce12e3fff543703098a48b99518c5b6fb16c107acb"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/travel-credit-refunds/story/04.webp",
+      "bytes": 30666,
+      "sha256": "e928389b89c65658133e228af23e24878cf84c2d380b568ce14f9bde9b234d5f",
       "caption": "Turn 8 - Skylindle: This is Skylindle, my second airline",
-      "turn": 8,
-      "bytes": 23222,
-      "sha256": "0a8b06f9b7db77f93a961b6400c53171b2c518dc30309db9afbf427dc5834d53"
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/travel-credit-refunds/story/05.webp",
-      "caption": "Turn 11 - Tripcairn, Athena: I'm filing one Tripcairn refund, C-12, and nothing else is owed there",
-      "turn": 11,
-      "bytes": 22126,
-      "sha256": "4a247911a44c26b1e6f5aee4c834f4b5028813ce54389ab2901649662e47ae4e"
-    },
-    {
-      "path": "playbooks/travel-credit-refunds/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23310,
-      "sha256": "f680c79bee40f4192bd43f39f979e792bb4bdc8b6c063677d50a42097f61318e"
+      "bytes": 42448,
+      "sha256": "0e638e49329eb2382fe3dd105739c55155e23ff1657fd3d408af9eeb272a2035",
+      "caption": "Turn 11 - Tripcairn, Athena: Tripcairn has one item owed, C-12",
+      "kind": "turn",
+      "turn": 11
     }
   ]
 }

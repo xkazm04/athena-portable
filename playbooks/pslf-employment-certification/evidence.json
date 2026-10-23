@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "pslf-employment-certification",
-  "captured_at": "2026-10-09T17:33:30Z",
-  "bench_run_at": "2026-10-09T17:30:28Z",
-  "narration": {
-    "text": "Public Service Loan Forgiveness, every month certified. This is a chore for a speech-language pathologist ten years into public service, with a 48,200-dollar consolidation loan and two part-time jobs. Read the loan servicer's payment history, month by month, against the forgiveness tracker that says which months counted. Athena works it across 4 portals: Loanbridge servicer, Payroll Harbor, Mailnest and AidPath. On the bench, she found 5 of 5 eligible items, worth 20,000 dollars of the 20,000 dollars there was to find. All 5 were filed at the exact amount the rules allow. She made no false claim. The world held 8 traps, and she walked past 8. She took 3 minutes. By hand, the same chore takes 6 hours, so she was about 109 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 58.532,
-    "sha256": "1255d231232a72d5b50e183146d6753033e31d96b29cf36bb4473afa38d97c15"
-  },
-  "video": {
-    "path": "evidence/pslf-employment-certification/evidence.mp4",
-    "duration_s": 58.56,
-    "bytes": 2708399,
-    "sha256": "206845aa6aca8a7077e6c7a48a5f765913f2cb36cc0d3b7b62afb5ee96c82f79"
-  },
-  "thumbnail": {
-    "path": "playbooks/pslf-employment-certification/thumb.jpg",
-    "bytes": 85368,
-    "sha256": "ccaa7d99fe1784b192656afb832cfd62a0b55b838b105e1cdd9e578801d33c07"
-  },
+  "captured_at": "2026-10-23T17:09:24Z",
+  "bench_run_at": "2026-10-22T09:01:01Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/pslf-employment-certification/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23798,
-      "sha256": "483c9e08ae5f867db26ee3d7c9e39ac67da027036aded49ba75c6bfed729013a"
+      "bytes": 43060,
+      "sha256": "d49c221c072ad803847b900787c3d72cf6c33496ded8a5d590e98ec803df5423",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/pslf-employment-certification/story/02.webp",
+      "bytes": 32796,
+      "sha256": "c0bb87baec4f2cbe471b04a7f976427b14598fedbf2574a169b0ddab64afed28",
       "caption": "Turn 1 - Loanbridge servicer: My PSLF count looks too low",
-      "turn": 1,
-      "bytes": 20540,
-      "sha256": "e78a27ce4cf18573a745a00706ff5c04286ca631615cf028689491cfb17a00e9"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/pslf-employment-certification/story/03.webp",
-      "caption": "Turn 5 - Payroll Harbor, Athena: Payroll Harbor is done",
-      "turn": 5,
-      "bytes": 22982,
-      "sha256": "c9f78213d23380973cccaaa9fbf979ede7e37c0828492259ef02e2a6c1f910e4"
+      "bytes": 42688,
+      "sha256": "57df8c601d76913d49ddfd81889e4e80ffb98014f8b3fcfc8110c5e406687352",
+      "caption": "Turn 5 - Payroll Harbor, Athena: Payroll Harbor shows two active W-2 jobs, and I've noted them for the other tabs",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/pslf-employment-certification/story/04.webp",
-      "caption": "Turn 9 - Mailnest, Athena: Three new messages bear on the job dates",
-      "turn": 9,
-      "bytes": 18116,
-      "sha256": "fd5ad16324badaca498518611ad2a4f49b04805029352ee473179e2d4a26499c"
+      "bytes": 28800,
+      "sha256": "72756f2fc86fac0c1d5ca4c1196e074f389e62d828623e2deb8978bbfacc99ef",
+      "caption": "Turn 9 - Mailnest, Athena: The searches turned up four more messages that matter, so I'm opening them",
+      "kind": "turn",
+      "turn": 9
     },
     {
+      "n": 5,
       "path": "playbooks/pslf-employment-certification/story/05.webp",
-      "caption": "Turn 13 - AidPath, Athena: Three employers are clear, and I'm filing them now",
-      "turn": 13,
-      "bytes": 23238,
-      "sha256": "95372505f0bc5257772bccd8a3f97c7b8873658b6f1edbab635e128dd090b164"
-    },
-    {
-      "path": "playbooks/pslf-employment-certification/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23116,
-      "sha256": "4300c4803b3ae4ab5c92b929ec8e5102c7fb769de41b8f9520c3a81ef9ecb1b8"
+      "bytes": 41848,
+      "sha256": "0d06234f47dcabeca14795db74f37c5cd87e1cd39b077138676ef276048505bf",
+      "caption": "Turn 13 - AidPath, Athena: Five decision cards are waiting for you, and nothing has been filed yet",
+      "kind": "turn",
+      "turn": 13
     }
   ]
 }

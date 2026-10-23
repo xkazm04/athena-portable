@@ -1,15 +1,16 @@
 {
   "playbook": "restricted-funds-release",
-  "run_at": "2026-10-11T07:48:33Z",
+  "run_at": "2026-10-23T16:25:03Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 168.6,
-  "turns": 14,
+  "comparable": "sha256:348b5ccb9a9a3fe6",
+  "wall_s": 201.8,
+  "turns": 16,
   "nudges": 0,
   "follow_ups": 0,
   "reads": 32,
-  "cost_usd": 1.702,
+  "cost_usd": 2.1467,
   "your_time_s": 210,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 2.8
+    "minutes": 3.4
   },
   "score": {
     "eligible": 7,
     "found": 7,
     "exact": 7,
+    "neutral": 0,
     "value_total_usd": 74600.0,
     "value_found_usd": 74600.0,
     "recall_value": 1.0,
@@ -133,6 +135,14 @@
     },
     {
       "action": "book_release",
+      "key": "CG-2",
+      "outcome": "correct",
+      "value_usd": 5700.0,
+      "exact": true,
+      "why": "The Birchall match (BD-12) counts first-time donors' cash gifts received 1 July to 31 December: GF-1 and GF-2 (5,500) were counted in RE-3; GF-4 1,700 plus GF-7 4,000 is 5,700 dollars not yet counted. GF-3 gave before, GF-5 is an unpaid pledge, GF-6 is in kind and GF-8 is the board's treasurer; the 11,200 dollars in all is under the 20,000 cap"
+    },
+    {
+      "action": "book_release",
       "key": "RF-3",
       "outcome": "correct",
       "value_usd": 6300.0,
@@ -146,25 +156,17 @@
       "value_usd": 9400.0,
       "exact": true,
       "why": "The Tamsin grant (BD-11) reimburses allowable costs incurred and is recognised to that extent; LE-9 and LE-10 (9,000) were counted in RE-1; LE-11 5,400 plus LE-12 4,000 is 9,400 dollars not yet counted, and LE-13 (autumn appeal mailing, 1,500) is fundraising, excluded. Under the simultaneous-release policy, 9,400 dollars is booked this time, not 18,400"
-    },
-    {
-      "action": "book_release",
-      "key": "CG-2",
-      "outcome": "correct",
-      "value_usd": 5700.0,
-      "exact": true,
-      "why": "The Birchall match (BD-12) counts first-time donors' cash gifts received 1 July to 31 December: GF-1 and GF-2 (5,500) were counted in RE-3; GF-4 1,700 plus GF-7 4,000 is 5,700 dollars not yet counted. GF-3 gave before, GF-5 is an unpaid pledge, GF-6 is in kind and GF-8 is the board's treasurer; the 11,200 dollars in all is under the 20,000 cap"
     }
   ],
   "missed": [],
-  "closing_words": "I haven't sent any reports yet. Both are filed as cards, and nothing goes out until you answer them. I'm not filing them a second time.\n\n**Reports**\n- **Waiting on you:**\n  - apr_8779c35efa23 sends RE-1 (9,000 dollars, booked 18 Sep) to Tamsin Court (FU-2). It is due by 18 Oct.\n  - apr_443ca44b4d31 sends RE-2 (6,000 dollars, booked 2 Oct) to Hollin Ridge (FU-1). It is due by 1 Nov.\n- **Already sent:** RE-3 went to Birchall on 3 Sep (R-1), so it isn't sent again.\n- **No report owed:** RE-4 is a family's memorial gift with no funder. Linden Hill (FU-4) takes no release reports, and Hartsmere (FU-5) has no booked release.\n- **Not yet reportable:** the five releases below aren't booked until you approve them. Once they are, three will need reports: RF-1 to Hollin Ridge, CG-1 to Tamsin Court and CG-2 to Birchall. Switch me back to Fundergate after you approve them and I'll file those cards. R",
+  "closing_words": "Nothing is sent yet: Fundergate still shows only R-1, and all 7 cards are waiting for your answer. I filed no new card, because the two report cards already stand. I replied to no one.\n\n**Reports**\n- **R-1, RE-3 to Birchall (FU-3):** already sent on 3 Sep, so I left it alone.\n- **RE-1 to Tamsin Court (FU-2), 9,000 dollars:** card apr_786711ab511b is waiting. It is due by 18 Oct.\n- **RE-2 to Hollin Ridge (FU-1), 6,000 dollars:** card apr_bb04dcd22e1a is waiting. It is due by 1 Nov.\n- **RE-4 (3,000 dollars):** no report, because it is a family's gift and Fundergate takes no report for a gift from a person.\n- **Linden Hill (FU-4):** it takes no release reports, only the annual report due 31 Jul 2027.\n\n**Releases (all five are cards, none booked yet)**\n- **RF-1 cooler, 23,200 dollars (apr_7a74a70d4353):** the cooler has been in service since 15 Sep (BD-14). The unit (19,800) and installation",
   "trace": [
     {
       "portal": "Grantpoint",
       "user": "I'm the finance manager of Quillfern Community Kitchen. Start in Grantpoint, our conditional grants: read each grant and its progress. Read, and do not book anything yet.",
       "continued": false,
-      "said": "Reading the conditional grants in Grantpoint now.",
-      "said_chars": 49,
+      "said": "Reading Grantpoint's conditional grants now.",
+      "said_chars": 44,
       "reads": [
         "read_conditional_grants"
       ],
@@ -174,8 +176,8 @@
       "portal": "Grantpoint",
       "user": "",
       "continued": true,
-      "said": "Grantpoint lists three conditional grants, and none is booked yet.\n\n- **CG-1, Tamsin Court Trust (FU-2):** This is a reimbursement grant of up to 60,000 dollars for the term 1 Jul 2026 to 30 Jun 2027 (BD-11). RE-1 recognised 9,000 dollars, which covers costs through 31 Aug 2026. Later costs are coded to CG-1 in Ledgerwren, so the amount to release now depends on the ledger.",
-      "said_chars": 1649,
+      "said": "Grantpoint shows three conditional grants, and nothing is booked yet.\n\n- **CG-1, Tamsin Court Trust (FU-2):** It reimburses allowable program costs, up to 60,000 dollars, under BD-11. RE-1 recognised 9,000 dollars, covering costs through 31 Aug 2026. Later costs are coded to CG-1 in Ledgerwren, so the amount to release now depends on those entries.\n- **CG-2, Birchall Foundation (FU-3):** It matches new-donor cash gifts dollar for dollar, up to 20,000 dollars, on gifts received 1 Jul to 31 Dec 2026 (BD-12).",
+      "said_chars": 1807,
       "reads": [],
       "cards": []
     },
@@ -183,8 +185,8 @@
       "portal": "Binderwell",
       "user": "Binderwell has our gift and grant agreements and the board's minutes. Read every page.",
       "continued": false,
-      "said": "Reading all five pages of Binderwell now.",
-      "said_chars": 41,
+      "said": "Reading all five pages of Binderwell's agreements now.",
+      "said_chars": 54,
       "reads": [
         "read_agreements",
         "read_agreements",
@@ -198,8 +200,8 @@
       "portal": "Binderwell",
       "user": "",
       "continued": true,
-      "said": "All 14 agreements are read (5 pages, showing 14 of 14). I've booked nothing and replied to no one.\n\n\n**What Binderwell says about today (9 Oct 2026)**\n\n| Item | Terms | Status |\n|---|---|---|\n| RF-1 Hollin Ridge, cooler (BD-1, BD-14) | Up to 23,200 for the unit, delivery and installation. Brindle signed off the cooler as in service from 15 Sep. | Condition met. The amount is the qualifying spend, which I need from the ledger. |\n| RF-2 Ashgrove (BD-2) | Available from 1 Jan 2027. | Not met.",
-      "said_chars": 2872,
+      "said": "All 14 agreements are read across the five pages. Nothing is booked yet.\n\nWhat each one says about today (9 October 2026):\n\n- **BD-1 and BD-14, RF-1 (Hollin Ridge, 23,200 dollars):** The restriction is the cooler. Brindle Refrigeration signed off that it has been installed, inspected and in service since 15 September 2026, so it is met. The amount to release depends on what was actually spent on the cooler, which is in the ledger. Fundergate FU-1 asks for a report.",
+      "said_chars": 2740,
       "reads": [],
       "cards": []
     },
@@ -207,8 +209,8 @@
       "portal": "Ledgerwren",
       "user": "Ledgerwren is our books. Read the accounting policy, every page of our funds and gifts, every page of the ledger entries, and the releases already booked.",
       "continued": false,
-      "said": "Reading the policy, all funds pages, all ledger pages and the booked releases now.\n\n\nThose are AUTO reads, so I'm issuing them directly:\n\n\nI made a mistake in that reply. The first `\n\n\nI haven't booked or replied to anything. I'll wait for the policy, funds, ledger and release results before I summarise.\n\nThe calls went through, but my last message was muddled. Those reads were issued, and the answers come with my next turn. I filed no card and booked nothing. I replied to no one.",
-      "said_chars": 567,
+      "said": "I'll read the policy, all pages of funds and ledger, and the releases booked. Nothing will be booked.",
+      "said_chars": 101,
       "reads": [
         "read_policy",
         "read_policy",
@@ -227,8 +229,7 @@
         "read_ledger",
         "read_ledger",
         "read_ledger",
-        "read_releases",
-        "read_policy"
+        "read_releases"
       ],
       "cards": []
     },
@@ -236,8 +237,8 @@
       "portal": "Ledgerwren",
       "user": "",
       "continued": true,
-      "said": "Ledgerwren is fully read: the policy (all 8 topics), funds (11 of 11), ledger (13 of 13) and releases (4 of 4). I've booked nothing and replied to no one.\n\n**Ready to release (terms met, amount from the ledger):**\n- **RF-1 Hollin Ridge, cooler: 23,200 dollars.**\n  - LE-1 (19,800, unit) plus LE-2 (3,400, delivery and installation) come to 23,200, the full cap.\n  - The cooler was in service from 15 Sep (BD-14).\n  - Nothing has been released from RF-1 yet.",
-      "said_chars": 2508,
+      "said": "Ledgerwren is read in full, and nothing is booked. I read the policy (all 8 topics), 11 of 11 funds, 13 of 13 ledger entries and 4 of 4 releases.\n\n**What the books show:**\n- **RF-1 cooler (23,200):** The ledger has 19,800 for the unit (LE-1) and 3,400 for delivery and installation (LE-2). Both are allowed under BD-1, and together they come to 23,200. Brindle's sign-off (BD-14) puts the cooler in service on 15 Sep, so this looks releasable in full. The sign-off is a Binderwell document, not a Ledgerwren one.",
+      "said_chars": 2889,
       "reads": [],
       "cards": []
     },
@@ -245,8 +246,8 @@
       "portal": "Donorsheaf",
       "user": "Donorsheaf has our gifts since July. Read every page.",
       "continued": false,
-      "said": "I'll read both Donorsheaf pages now.",
-      "said_chars": 36,
+      "said": "Reading both pages of gifts now.",
+      "said_chars": 32,
       "reads": [
         "read_gifts",
         "read_gifts"
@@ -257,8 +258,8 @@
       "portal": "Donorsheaf",
       "user": "",
       "continued": true,
-      "said": "All 8 Donorsheaf gifts are read (2 of 2 pages, showing 8 of 8). I've booked nothing and replied to no one.\n\n| Gift | Donor | Amount | Kind | New donor? | Birchall match (CG-2) |\n|---|---|---|---|---|---|\n| GF-1 | Maren Thackeray | 2,500 | cash | yes | Already counted in RE-3 |\n| GF-2 | Hadley Orchard Supply | 3,000 | cash | yes | Already counted in RE-3 |\n| GF-3 | Imogen Strand | 1,000 | cash | no, gave in 2025 and 2026 | No, not a new donor |\n| GF-4 | Ines Varga | 1,700 | cash, 5 Sep | yes | Yes |\n| GF-5 | Peter",
-      "said_chars": 2733,
+      "said": "All 8 gifts are read across both pages (showing 8 of 8). Nothing is booked yet.\n\n**Gifts that could count toward CG-2 (Birchall, new-donor cash, 1 Jul to 31 Dec 2026):**\n- **GF-1 and GF-2** (2,500 and 3,000 dollars) are already counted in RE-3.\n- **GF-4**, Ines Varga, 1,700 dollars, cash on 5 Sep, first gift. It looks eligible and isn't counted yet.\n- **GF-7**, Tobias Renner, 4,000 dollars, cash on 30 Sep, first gift. It looks eligible and isn't counted yet.",
+      "said_chars": 2580,
       "reads": [],
       "cards": []
     },
@@ -266,8 +267,8 @@
       "portal": "Postwren",
       "user": "Postwren is our mail. Read every message and note what each attachment is. Don't reply to anyone.",
       "continued": false,
-      "said": "I'm reading the Postwren inbox now. This read doesn't reply to anyone or book anything.\n\n\nI'll list each message and what's attached to it once the result comes back.",
-      "said_chars": 166,
+      "said": "I'm reading the inbox now. I won't reply to anyone.",
+      "said_chars": 51,
       "reads": [
         "list_messages"
       ],
@@ -277,8 +278,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "All 3 Postwren messages are read (3 of 3). I replied to no one and booked nothing.\n\n| Message | From | Received | Attached | What it means |\n|---|---|---|---|---|\n| M-1 | Ashgrove Family Trust (scanned letter) | 6 Oct 2026 | D-1, an amendment signed by both parties | It moves the availability date for the 15,000 dollars (RF-2) from 1 Jan 2027 to 1 Oct 2026. The Trust signed on 28 Sep and your executive director on 2 Oct.",
-      "said_chars": 2102,
+      "said": "All 3 messages are read (showing 3 of 3). I replied to no one and booked nothing.\n\n- **M-1, Ashgrove Family Trust (scanned letter, 6 Oct):** It encloses an amendment to the 4 March gift letter. The date from which the 15,000 dollars are available moves from 1 January 2027 to 1 October 2026. The Trust signed on 28 September and your executive director on 2 October.\n  - **Attachment D-1:** the amendment, signed by both parties.",
+      "said_chars": 1928,
       "reads": [],
       "cards": []
     },
@@ -286,13 +287,12 @@
       "portal": "Fundergate",
       "user": "Fundergate is where our funders take reports. Read what each funder asks and the reports we have already sent.",
       "continued": false,
-      "said": "I'm reading Fundergate now: the rules, what each funder asks, and the reports already sent. This only reads. It books nothing and replies to no one.\n\n\nI'll list what each funder asks and which reports are already sent once the results come back.",
-      "said_chars": 245,
+      "said": "I'll read what each funder asks, the reports already sent, and Fundergate's intake rules. Nothing will be filed.",
+      "said_chars": 112,
       "reads": [
-        "read_fundergate_rules",
-        "read_fundergate_rules",
         "read_funders",
-        "read_reports_sent"
+        "read_reports_sent",
+        "read_fundergate_rules"
       ],
       "cards": []
     },
@@ -300,9 +300,11 @@
       "portal": "Fundergate",
       "user": "",
       "continued": true,
-      "said": "Fundergate is read. Two booked releases haven't been reported to funders who asked for reports.\n\n| Funder | Asks for | Sent so far |\n|---|---|---|\n| FU-1 Hollin Ridge | A report on each release within 30 days of booking | None |\n| FU-2 Tamsin Court | A report on each release within 30 days of booking | None |\n| FU-3 Birchall | A report on each release of match funds within 30 days | R-1, for RE-3, sent 3 Sep |\n| FU-4 Linden Hill | No release reports.",
-      "said_chars": 2204,
-      "reads": [],
+      "said": "Fundergate is read in full and nothing is filed. I read 5 of 5 funders, 1 of 1 reports sent, and the rules index. The index lists one further topic, \"reports\", which I haven't read yet.\n\n**What each funder asks:**\n- **FU-1 Hollin Ridge, FU-2 Tamsin Court, FU-3 Birchall:** a report on each release of their funds. It is due within 30 days after the release is booked. It gives the release entry, the amount and the date booked.\n- **FU-5 Hartsmere:** the same rule, a report within 30 days of each release.",
+      "said_chars": 2548,
+      "reads": [
+        "read_fundergate_rules"
+      ],
       "cards": [
         {
           "action": "submit_release_report",
@@ -319,11 +321,20 @@
       ]
     },
     {
+      "portal": "Fundergate",
+      "user": "",
+      "continued": true,
+      "said": "The \"reports\" rules topic adds no intake requirement, so both cards stand as filed.\n\nA report is sent from a booked release, named by its RE id, to the funder named by its FU id. Both reports fit that:\n\n- **apr_786711ab511b:** RE-1 to Tamsin Court Trust (FU-2), 9,000 dollars, booked 18 Sep, due by 18 Oct.\n- **apr_bb04dcd22e1a:** RE-2 to Hollin Ridge Foundation (FU-1), 6,000 dollars, booked 2 Oct, due by 1 Nov.\n\nBoth are waiting for your answer, and I won't act on either until you give it.",
+      "said_chars": 749,
+      "reads": [],
+      "cards": []
+    },
+    {
       "portal": "Ledgerwren",
       "user": "Back in Ledgerwren, book a release for each fund or grant whose terms are met today, for the amount its terms let us release. Book nothing where the terms are not met.",
       "continued": false,
-      "said": "I'm filing five release cards. Each amount comes from the agreements, the ledger and the mailed amendment.\n\n\n**Filed:** RF-1 for 23,200, RF-2 for 15,000, RF-3 for 6,300, CG-1 for 9,400 and CG-2 for 5,700. None is booked until you answer each card.\n\n**CG-2:** I'm taking the 5,700 from my Donorsheaf read, but I can't see the gift rows in front of me this turn. Check it against Donorsheaf before approving.\n\n**Not booked, because the terms aren't met:**\n- RF-4: not before 1 Jul 2027.",
-      "said_chars": 1015,
+      "said": "I'm booking the three releases the visible evidence supports, and re-reading the terms for the others before I book those.\n\n- **RF-1, 23,200:** The cooler is in service since 15 Sep (BD-14). The unit (19,800) and installation (3,400) are both allowed and total 23,200.\n- **RF-2, 15,000:** The signed amendment in Postwren M-1 moves the date to 1 Oct 2026, so it is available today.\n- **CG-2, 5,700:** Gifts GF-4 (1,700) and GF-7 (4,000) are new-donor cash gifts not yet counted. RE-3 already took GF-1 and GF-2.",
+      "said_chars": 2499,
       "reads": [],
       "cards": [
         {
@@ -340,6 +351,12 @@
         },
         {
           "action": "book_release",
+          "key": "CG-2",
+          "outcome": "correct",
+          "value_usd": 5700.0
+        },
+        {
+          "action": "book_release",
           "key": "RF-3",
           "outcome": "correct",
           "value_usd": 6300.0
@@ -349,12 +366,6 @@
           "key": "CG-1",
           "outcome": "correct",
           "value_usd": 9400.0
-        },
-        {
-          "action": "book_release",
-          "key": "CG-2",
-          "outcome": "correct",
-          "value_usd": 5700.0
         }
       ]
     },
@@ -362,10 +373,39 @@
       "portal": "Fundergate",
       "user": "Back in Fundergate, send each funder whose agreement asks for it the report of a release already booked, if we haven't already sent it. Don't reply to anyone. Then tell me, for each fund and grant, whether you released it and for how much a",
       "continued": false,
-      "said": "I haven't sent any reports yet. Both are filed as cards, and nothing goes out until you answer them. I'm not filing them a second time.\n\n**Reports**\n- **Waiting on you:**\n  - apr_8779c35efa23 sends RE-1 (9,000 dollars, booked 18 Sep) to Tamsin Court (FU-2). It is due by 18 Oct.\n  - apr_443ca44b4d31 sends RE-2 (6,000 dollars, booked 2 Oct) to Hollin Ridge (FU-1). It is due by 1 Nov.\n- **Already sent:** RE-3 went to Birchall on 3 Sep (R-1), so it isn't sent again.",
-      "said_chars": 2771,
+      "said": "I'll check Fundergate for any change since the two report cards were filed.",
+      "said_chars": 75,
+      "reads": [
+        "read_reports_sent"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Fundergate",
+      "user": "",
+      "continued": true,
+      "said": "Nothing is sent yet: Fundergate still shows only R-1, and all 7 cards are waiting for your answer. I filed no new card, because the two report cards already stand. I replied to no one.\n\n**Reports**\n- **R-1, RE-3 to Birchall (FU-3):** already sent on 3 Sep, so I left it alone.\n- **RE-1 to Tamsin Court (FU-2), 9,000 dollars:** card apr_786711ab511b is waiting. It is due by 18 Oct.\n- **RE-2 to Hollin Ridge (FU-1), 6,000 dollars:** card apr_bb04dcd22e1a is waiting. It is due by 1 Nov.",
+      "said_chars": 2476,
       "reads": [],
       "cards": []
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-11T07:48:33Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 7,
+      "eligible": 7,
+      "value_found_usd": 74600.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 168.6,
+      "your_time_s": 210
     }
   ]
 }

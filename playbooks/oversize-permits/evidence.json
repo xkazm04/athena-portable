@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "oversize-permits",
-  "captured_at": "2026-10-10T12:00:20Z",
-  "bench_run_at": "2026-10-10T11:48:55Z",
-  "narration": {
-    "text": "A heavy hauler's oversize permits bought across Oklahoma, Arkansas and Tennessee: an excavator with each state's escorts, a start after Oklahoma City's curfew and a route around a failed bridge, a transformer only where it is too tall, and a culvert after the Memphis rush hour, while two tanks side by side and permits not needed are left alone. This is a chore for the permit coordinator of a small heavy-haul carrier in Oklahoma City, who buys every state's oversize permit for the week's loads himself. On the bench, she found 5 of 5 eligible items, worth 392 dollars and 50 cents of the 392 dollars and 50 cents there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 4 minutes. By hand, the same chore takes 2 hours, so she was about 30 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 60.507,
-    "sha256": "b3800059604fdb8d1630e02df168e60f4cafcb717cb3da7ce1e3cd634cd3f1e5"
-  },
-  "video": {
-    "path": "evidence/oversize-permits/evidence.mp4",
-    "duration_s": 60.52,
-    "bytes": 3471420,
-    "sha256": "af0e1ce41cdc9f4f1dbef523b508ef44b1214b0502633102e8fa12f923e54096"
-  },
-  "thumbnail": {
-    "path": "playbooks/oversize-permits/thumb.jpg",
-    "bytes": 84372,
-    "sha256": "700c985e2d643a83f85898b9ff7da5c0b852e61d2aa1817393b543240d824d35"
-  },
+  "captured_at": "2026-10-23T17:08:17Z",
+  "bench_run_at": "2026-10-23T16:17:35Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/oversize-permits/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23430,
-      "sha256": "c9c5b8d170c4712d3c749645d37fcab8e27aa25265cbf6e6cefcbfe548c7e47d"
+      "bytes": 42676,
+      "sha256": "d44b681c8518f694ac5a7d02f4f02ffe244e2b6849180d43722dcc79a0af1130",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/oversize-permits/story/02.webp",
+      "bytes": 29648,
+      "sha256": "549ad3a576ca7cbfe25f64486e8e9d12c8ee65d8ab876353913c65a203f3b883",
       "caption": "Turn 1 - Postwren dispatch inbox: I'm Joel, I do the permits at Kettle Ridge Heavy Haul",
-      "turn": 1,
-      "bytes": 23364,
-      "sha256": "993b9ad317860d9ffdbf0f8a5a720f4a615ede70cf4fc86971adebba0e26f469"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/oversize-permits/story/03.webp",
-      "caption": "Turn 6 - Pathcairn route planner, Athena: Pathcairn has all four loads and routes",
-      "turn": 6,
-      "bytes": 23182,
-      "sha256": "233fac420633969d4eaa543437d09acd26651d093ab4f74302211c3fa4f74e62"
+      "bytes": 41694,
+      "sha256": "6ec970c33a86613a6e99c6c1d4f30a6a256aec704a65853f19811ce05b466f7a",
+      "caption": "Turn 6 - Pathcairn route planner, Athena: Pathcairn is fully read",
+      "kind": "turn",
+      "turn": 6
     },
     {
+      "n": 4,
       "path": "playbooks/oversize-permits/story/04.webp",
-      "caption": "Turn 12 - Halvern Permit Desk (Arkansas), Athena: I'm filing one purchase, AR-5501 for L-1 with no escorts",
-      "turn": 12,
-      "bytes": 22826,
-      "sha256": "1a34db2f71657bfae6ae243b8d267736469138673137d517f4ff68d4d17bd3a2"
+      "bytes": 34854,
+      "sha256": "85fc452e62524c0d231c97c3667c151f88ec67e6bb4dc571fe3c3eb92bfcda36",
+      "caption": "Turn 10 - Halvern Permit Desk (Arkansas): This is Halvern, for Arkansas",
+      "kind": "turn",
+      "turn": 10
     },
     {
+      "n": 5,
       "path": "playbooks/oversize-permits/story/05.webp",
-      "caption": "Turn 17 - Halvern Permit Desk (Arkansas): I've switched to Halvern Permit Desk (Arkansas) as you asked",
-      "turn": 17,
-      "bytes": 22408,
-      "sha256": "47c0dee525067cee98ea522f1aff67cc20ca6d0df74866df7cd6d2576764fb1c"
-    },
-    {
-      "path": "playbooks/oversize-permits/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23190,
-      "sha256": "eb6a29901a4f544ee39f12b73ed2de0226ecce8dcb5da04f2f5b6a7cc952d973"
+      "bytes": 43876,
+      "sha256": "9df5950f05ee8d84a1ce0851f77c493c7a536052ad8b88e2157cf12c0dc1a807",
+      "caption": "Turn 15 - Fernaby Permits (Tennessee), Athena: I'm filing three Tennessee purchases for your approval",
+      "kind": "turn",
+      "turn": 15
     }
   ]
 }

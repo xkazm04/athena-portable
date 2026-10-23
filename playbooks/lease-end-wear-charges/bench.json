@@ -1,15 +1,16 @@
 {
   "playbook": "lease-end-wear-charges",
-  "run_at": "2026-10-10T19:47:29Z",
+  "run_at": "2026-10-23T16:07:51Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 65.4,
+  "comparable": "sha256:e9f3a86a83a63c01",
+  "wall_s": 100.0,
   "turns": 9,
   "nudges": 0,
   "follow_ups": 0,
   "reads": 19,
-  "cost_usd": 0.6862,
+  "cost_usd": 0.7065,
   "your_time_s": 150,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 1.1
+    "minutes": 1.7
   },
   "score": {
     "eligible": 5,
     "found": 5,
     "exact": 5,
+    "neutral": 0,
     "value_total_usd": 880.0,
     "value_found_usd": 880.0,
     "recall_value": 1.0,
@@ -96,6 +98,14 @@
     },
     {
       "action": "contest_charge",
+      "key": "C-5",
+      "outcome": "correct",
+      "value_usd": 210.0,
+      "exact": true,
+      "why": "C-5 bills the rear left tire as worn below the limit, but the inspection records its tread at 5/32 inch (I-5), above the lease's 4/32 inch minimum (section 11); her gauge photo agrees (PR-2). Easy to miss because the front right tire (C-6) is really below it. Weighted at the charge, 210 dollars"
+    },
+    {
+      "action": "contest_charge",
       "key": "C-7",
       "outcome": "correct",
       "value_usd": 150.0,
@@ -117,18 +127,10 @@
       "value_usd": 140.0,
       "exact": true,
       "why": "C-9 bills a stain on the driver seat, but the inspection records 18 mm with no tear (I-9), inside the lease's standard of up to 25 mm (section 11). Weighted at the charge, 140 dollars"
-    },
-    {
-      "action": "contest_charge",
-      "key": "C-5",
-      "outcome": "correct",
-      "value_usd": 210.0,
-      "exact": true,
-      "why": "C-5 bills the rear left tire as worn below the limit, but the inspection records its tread at 5/32 inch (I-5), above the lease's 4/32 inch minimum (section 11); her gauge photo agrees (PR-2). Easy to miss because the front right tire (C-6) is really below it. Weighted at the charge, 210 dollars"
     }
   ],
   "missed": [],
-  "closing_words": "Four charges are plainly inside the lease limits, so I'm filing those disputes now. The fifth, C-5, depends on the inspector's I-5 figure, which I don't have in front of me, so I'm re-reading page 1 of the report before I file it.\n\n- **C-3, dent, $285:** The dent is 38 mm across, not creased, and the paint is intact (I-2, photo PR-1). The limit is 50 mm.\n- **C-7, windshield chip, $150:** The chip is 12 mm with no crack (I-7, photo PR-3). The limit is under 25 mm.\n- **C-8, wheel scuff, $95:** The scuff is 20 mm with no bend or crack (I-8, photo PR-4). The limit is 25 mm.\n- **C-9, seat stain, $140:** The stain is 18 mm with no tear (I-9, photo PR-5). The limit is 25 mm.\n\nI'll recall what I read in the Linestone tab about I-5.\n\nI-5 is a rear left tire with tread 5/32 inch, and the lease minimum is 4/32. So C-5 is inside the limit, and I'm filing it now.\n\n\n**Disputed (five cards filed, waiti",
+  "closing_words": "I'm disputing 5 of the 12 charges (C-3, C-5, C-7, C-8, C-9). The lease's own limits and the inspector's measurements don't support them. The other 7 are right.\n\n\n**Disputed (5 cards filed, waiting for your approval).** Torvane signs these as you, so nothing goes in until you approve each one. The deadline is 5 November 2026.\n- **C-3, dent, $285:** 38 mm, uncreased, paint intact. The limit is 50 mm.\n- **C-5, rear left tire, $210:** tread is 5/32. The minimum is 4/32.\n- **C-7, windshield chip, $150:** 12 mm, no crack. The limit is under 25 mm.\n- **C-8, wheel scuff, $95:** 20 mm, no bend or crack. The limit is 25 mm.\n- **C-9, seat stain, $140:** 18 mm, no tear. The limit is 25 mm.\n\nEach card cites the Linestone item and your Lenswick photo. If all five succeed, the statement drops by $880 before any change to the $500 allowance.\n\n**Left alone, because they're correct:**\n- **C-1, mileage, $6",
   "trace": [
     {
       "portal": "Postwren",
@@ -145,8 +147,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "Four messages in the inbox. I'll read all four.",
-      "said_chars": 47,
+      "said": "Four messages in the inbox. I'll read all four now.",
+      "said_chars": 51,
       "reads": [
         "read_message",
         "read_message",
@@ -159,8 +161,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "I've read all four messages. The main facts: the statement totals $2,785.00 and the last day to dispute is 5 November 2026.\n\n- **M-1, Torvane Finance, 24 Aug:** The lease ends 30 September. Torvane charges what the inspection records beyond the lease's wear standard, at the lease's price list.\n- **M-2, Torvane Finance, 28 Sep:** You returned the car with the odometer at 38,420 miles. Both keys and the owner's manual were received.\n- **M-3, Linestone Inspect, 29 Sep:** The report covers 14 items with measurements.",
-      "said_chars": 1195,
+      "said": "I've read all four messages. I haven't proposed or filed anything.\n\n- **M-1, 24 Aug, Torvane:** The lease ends 30 Sep 2026. Torvane charges only what the inspection records beyond the lease's wear standard, at the lease's price list. The lease also says how to handle charges you disagree with.\n- **M-2, 28 Sep, return receipt:** You returned the car on 28 Sep. The odometer read 38,420 miles. Both keys and the owner's manual were received.",
+      "said_chars": 1495,
       "reads": [],
       "cards": []
     },
@@ -181,8 +183,8 @@
       "portal": "Linestone Inspect",
       "user": "",
       "continued": true,
-      "said": "I read all 14 items on the 3 pages of the inspection report. The measurements are below, with no judgement yet on which are over the limit. That needs the lease's wear standard.",
-      "said_chars": 1489,
+      "said": "I've read all 14 items on the 3 pages (showing 14 of 14). I haven't filed anything.\n\n**Inspection report, as measured:**\n- I-1 Odometer: 38,420 miles.\n- I-2 Driver door dent: 38 mm, not creased, paint intact.\n- I-3 Hood paint chips: five chips of 3 mm each, not through to metal.\n- I-4 Rear bumper scratch: 110 mm, through the paint to the primer.\n- I-5 Rear left tire: tread 5/32 inch.\n- I-6 Front right tire: tread 3/32 inch.\n- I-7 Windshield chip, driver side: 12 mm, no crack.",
+      "said_chars": 2095,
       "reads": [],
       "cards": []
     },
@@ -190,8 +192,8 @@
       "portal": "Lenswick photos",
       "user": "These are the photos I took before I returned the car, at Lenswick. Read every page.",
       "continued": false,
-      "said": "Reading the photos now, all pages.",
-      "said_chars": 34,
+      "said": "I'll read both pages of your Lenswick photos.",
+      "said_chars": 45,
       "reads": [
         "list_photos",
         "list_photos"
@@ -202,8 +204,8 @@
       "portal": "Lenswick photos",
       "user": "",
       "continued": true,
-      "said": "I read all 9 photos on both pages (showing 9 of 9). Photos PR-1, PR-3, PR-4 and PR-5 back the inspector's measurements for the dent, windshield chip, wheel scuff and seat stain. PR-6, PR-7, PR-8 and PR-9 match the items that look right, and I won't dispute those.",
-      "said_chars": 1652,
+      "said": "All 9 photos are read (showing 9 of 9). I haven't filed anything yet.\n\n**Photos, all taken 26 Sep unless noted:**\n- PR-1: driver door dent, 38 mm, with a ruler.\n- PR-2: rear left tire, tread 5/32.\n- PR-3: windshield chip, about 12 mm, no crack.\n- PR-4: right front wheel scuff, 20 mm.\n- PR-5: driver seat stain, 18 mm.\n- PR-6: rear bumper scratch to grey primer, about 11 cm.\n- PR-7: front right tire, tread 3/32.\n- PR-8: left headlight lens, cracked. There's no measurement.\n- PR-9 (28 Sep): odometer, 38,420 miles.",
+      "said_chars": 1544,
       "reads": [],
       "cards": []
     },
@@ -211,8 +213,8 @@
       "portal": "Torvane Finance",
       "user": "This is Torvane Finance, my lessor. Read my lease, every topic, and the lease-end statement, on every page. Then dispute each charge that the lease's own standards and the inspection do not support, with my proof and the reason. Leave alone",
       "continued": false,
-      "said": "I'll read the lease on every topic and the statement on all three pages before I dispute anything.",
-      "said_chars": 98,
+      "said": "I'll read the whole lease, every topic, and all three statement pages first.\n\n\nI've started reading the lease and the statement. I haven't disputed anything yet. Once the results come back, I'll compare each charge with the lease limits and the inspection, then file the disputes.",
+      "said_chars": 280,
       "reads": [
         "read_lease",
         "read_lease",
@@ -230,8 +232,8 @@
       "portal": "Torvane Finance",
       "user": "",
       "continued": true,
-      "said": "Four charges are plainly inside the lease limits, so I'm filing those disputes now. The fifth, C-5, depends on the inspector's I-5 figure, which I don't have in front of me, so I'm re-reading page 1 of the report before I file it.\n\n- **C-3, dent, $285:** The dent is 38 mm across, not creased, and the paint is intact (I-2, photo PR-1). The limit is 50 mm.\n- **C-7, windshield chip, $150:** The chip is 12 mm with no crack (I-7, photo PR-3). The limit is under 25 mm.",
-      "said_chars": 2438,
+      "said": "I'm disputing 5 of the 12 charges (C-3, C-5, C-7, C-8, C-9). The lease's own limits and the inspector's measurements don't support them. The other 7 are right.\n\n\n**Disputed (5 cards filed, waiting for your approval).** Torvane signs these as you, so nothing goes in until you approve each one. The deadline is 5 November 2026.\n- **C-3, dent, $285:** 38 mm, uncreased, paint intact. The limit is 50 mm.\n- **C-5, rear left tire, $210:** tread is 5/32. The minimum is 4/32.",
+      "said_chars": 2021,
       "reads": [],
       "cards": [
         {
@@ -239,6 +241,12 @@
           "key": "C-3",
           "outcome": "correct",
           "value_usd": 285.0
+        },
+        {
+          "action": "contest_charge",
+          "key": "C-5",
+          "outcome": "correct",
+          "value_usd": 210.0
         },
         {
           "action": "contest_charge",
@@ -257,14 +265,26 @@
           "key": "C-9",
           "outcome": "correct",
           "value_usd": 140.0
-        },
-        {
-          "action": "contest_charge",
-          "key": "C-5",
-          "outcome": "correct",
-          "value_usd": 210.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-10T19:47:29Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 880.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 65.4,
+      "your_time_s": 150
     }
   ]
 }

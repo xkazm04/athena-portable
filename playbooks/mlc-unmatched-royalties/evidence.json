@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "mlc-unmatched-royalties",
-  "captured_at": "2026-10-10T17:39:19Z",
+  "captured_at": "2026-10-23T17:06:59Z",
   "bench_run_at": "2026-10-10T17:36:36Z",
-  "narration": {
-    "text": "A songwriter's six songs registered with the collective so that their unmatched mechanical royalties reach her, each at her own share, while a namesake's recording, her cover of another's song, a work already matched, a share a publisher administers, a co-writer's song and money from radio and Germany are left alone. This is a chore for a singer-songwriter in Asheville, North Carolina, who releases her own records, writes with two co-writers and has never looked at what the collective is holding for her. On the bench, she found 6 of 6 eligible items, worth 1,338 dollars and 95 cents of the 1,338 dollars and 95 cents there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 71 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 61.766,
-    "sha256": "fc454122812a9ea2cafee033e99aaa4208ce392adfed8d8d48848346e3041a4b"
-  },
-  "video": {
-    "path": "evidence/mlc-unmatched-royalties/evidence.mp4",
-    "duration_s": 61.766,
-    "bytes": 2994485,
-    "sha256": "af6491bbf8c06a951f009c7496e77f05a277ffa20c35ee6b300440d23de79c02"
-  },
-  "thumbnail": {
-    "path": "playbooks/mlc-unmatched-royalties/thumb.jpg",
-    "bytes": 78200,
-    "sha256": "8dad9711f882c8e0f9886216d032b685afaa466d9e4263c548a45159e425dfb8"
-  },
   "story": [
     {
+      "n": 1,
       "path": "playbooks/mlc-unmatched-royalties/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23344,
-      "sha256": "1f7407735d4c0cb17c4acd720875d867288741b21580c3e7b7268bd0ba832fec"
+      "bytes": 39350,
+      "sha256": "44b782a3efaeb19a6e3f317e7de4850b1f1800e3ad1b4266e63f172260cc71bc",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/mlc-unmatched-royalties/story/02.webp",
+      "bytes": 38602,
+      "sha256": "6a6dcebb7d635048345a37b63f8b5b5b477b8a172313344fda8e233769e536d7",
       "caption": "Turn 1 - Royaltyline: I'm Nell Harrowgate",
-      "turn": 1,
-      "bytes": 23724,
-      "sha256": "fd92d6bc412e31c3f648bb1a5719aeeb9178611da41696e5d306641532d7f60d"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/mlc-unmatched-royalties/story/03.webp",
+      "bytes": 32424,
+      "sha256": "8c5e301cb7abbf6ced618f43f43fac0fc6807a70fa89e8e7ae106952d7b90351",
       "caption": "Turn 4 - Releasewick distributor, Athena: All 10 releases are listed (6 on page 1, 4 on page 2)",
-      "turn": 4,
-      "bytes": 23200,
-      "sha256": "0546c2a79c5b86121287c79a5a9e67437940e36b0206cd6f60f80a9bb3b75fab"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/mlc-unmatched-royalties/story/04.webp",
+      "bytes": 29560,
+      "sha256": "15a16f22768ef2d99b6286c0ff4042b00d0481b919e6358bef23bede054024cf",
       "caption": "Turn 8 - Binderwell: These are my papers",
-      "turn": 8,
-      "bytes": 23392,
-      "sha256": "43df8c49617fd1ef4f316b7f643f0374e5d11dc4d600a672bfe172733a4895fd"
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/mlc-unmatched-royalties/story/05.webp",
+      "bytes": 42604,
+      "sha256": "783b0be7c48d6a05e95add38724748a63d11b96d63da99f0b7336e8ae7ab7998",
       "caption": "Turn 11 - Royaltyline: Back at Royaltyline",
-      "turn": 11,
-      "bytes": 23858,
-      "sha256": "2d5913058183fa4e7dc6982c1dfc9a32fe02057e21e02f69cc690d109a0cfad8"
-    },
-    {
-      "path": "playbooks/mlc-unmatched-royalties/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23322,
-      "sha256": "5e4805a5d99ffb3af4c319bb06a28ef0ba9ce9d3c5cbafe8233b06e5a990361e"
+      "kind": "turn",
+      "turn": 11
     }
   ]
 }

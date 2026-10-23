@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "lease-end-wear-charges",
-  "captured_at": "2026-10-10T19:50:36Z",
-  "bench_run_at": "2026-10-10T19:47:29Z",
-  "narration": {
-    "text": "A physical therapist's lease-end statement is checked against his lease's wear limits and the inspection: a dent, a tire, a chip, a scuff and a stain inside the limits are disputed, while the mileage, the disposition fee, a long scratch, a worn tire, a cracked lens, a gouged wheel, a seat burn and the wear allowance are left alone, across four portals. This is a chore for a physical therapist in Tacoma, Washington, who has returned a leased car and received a bill for wear and mileage. On the bench, she found 5 of 5 eligible items, worth 880 dollars of the 880 dollars there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 1 minute. By hand, the same chore takes about 2 hours, so she was about 82 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 57.364,
-    "sha256": "d79b2f952fe407cb4b0e264312ddd01aecd1c7918f6cc48b8f2deb169b951887"
-  },
-  "video": {
-    "path": "evidence/lease-end-wear-charges/evidence.mp4",
-    "duration_s": 57.4,
-    "bytes": 2605831,
-    "sha256": "c6970618773d5d634aca7d09888ac5f167d83d9947ddd2d768cf49ad92309ba6"
-  },
-  "thumbnail": {
-    "path": "playbooks/lease-end-wear-charges/thumb.jpg",
-    "bytes": 77780,
-    "sha256": "05973f8e72a2817bb612b129ed742c5978292fa1c5cabdc2f2ed59d7a7dff215"
-  },
+  "captured_at": "2026-10-23T17:05:20Z",
+  "bench_run_at": "2026-10-23T16:07:51Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/lease-end-wear-charges/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22370,
-      "sha256": "d98d4d4873028789974c421229299e798f0991a49541ebff7fc571787975ba4d"
+      "bytes": 32712,
+      "sha256": "4aeb9347bb6ff4500d960cb4af988a308b43fe945f7362d1271740a9dc1c1258",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/lease-end-wear-charges/story/02.webp",
+      "bytes": 29822,
+      "sha256": "c828875450f91a01fdb8e051c9866105b7f69ba421faf173fc0a7fdf4f2eea38",
       "caption": "Turn 1 - Postwren: I'm Anselm Rowe",
-      "turn": 1,
-      "bytes": 23210,
-      "sha256": "857e208fd70ccb23d95910292d15d1b1b50c96ef87bcc744deee05708186c4dc"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/lease-end-wear-charges/story/03.webp",
+      "bytes": 25504,
+      "sha256": "b5a952745b04fde0258a1e61aae4fd24a0cfba4ccbfffe48026f26c64fe986f3",
       "caption": "Turn 4 - Linestone Inspect: This is Linestone Inspect",
-      "turn": 4,
-      "bytes": 22710,
-      "sha256": "f2917952e6bf59e72ef24417ab21d5946a233825ee0e4d241cb686bab5d23062"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/lease-end-wear-charges/story/04.webp",
+      "bytes": 25056,
+      "sha256": "64ae08d47ff7881e237ebb7569e6621ffa693d5c578a4be957434a7aec3ddc45",
       "caption": "Turn 6 - Lenswick photos: These are the photos I took before I returned the car, at Lenswick",
-      "turn": 6,
-      "bytes": 22226,
-      "sha256": "9366a967276a84fae96890e9ac44a07bd89a3f571d2af2f3e597ea25ac6f5d44"
+      "kind": "turn",
+      "turn": 6
     },
     {
+      "n": 5,
       "path": "playbooks/lease-end-wear-charges/story/05.webp",
-      "caption": "Turn 9 - Torvane Finance, Athena: Four charges are plainly inside the lease limits, so I'm filing those disputes…",
-      "turn": 9,
-      "bytes": 23862,
-      "sha256": "3a0aedfe21edb06ec18fd52d9cfba833e7d69cfa708b1e0e1cd123b5b59b2a19"
-    },
-    {
-      "path": "playbooks/lease-end-wear-charges/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22332,
-      "sha256": "6f3b5ec75df166fab3d68408538b35af26da77025661a4de9aa14b4026f2cdc2"
+      "bytes": 42082,
+      "sha256": "36b86dcf4579a9534ca0c6b5217d27f9546ffb0e5fe711141569a618ec6ff3fb",
+      "caption": "Turn 9 - Torvane Finance, Athena: I'm disputing 5 of the 12 charges (C-3, C-5, C-7, C-8, C-9)",
+      "kind": "turn",
+      "turn": 9
     }
   ]
 }

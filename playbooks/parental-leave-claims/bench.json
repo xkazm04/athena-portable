@@ -1,15 +1,16 @@
 {
   "playbook": "parental-leave-claims",
-  "run_at": "2026-10-11T02:34:26Z",
+  "run_at": "2026-10-23T16:18:04Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 106.5,
+  "comparable": "sha256:74fabdfbf3038c45",
+  "wall_s": 101.7,
   "turns": 11,
   "nudges": 0,
   "follow_ups": 0,
   "reads": 20,
-  "cost_usd": 1.0008,
+  "cost_usd": 0.6185,
   "your_time_s": 90,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 1.8
+    "minutes": 1.7
   },
   "score": {
     "eligible": 3,
     "found": 3,
     "exact": 3,
+    "neutral": 0,
     "value_total_usd": 5585.2,
     "value_found_usd": 5585.2,
     "recall_value": 1.0,
@@ -118,14 +120,14 @@
     }
   ],
   "missed": [],
-  "closing_words": "I've read your account and all seven forms. I'm filing two of them, DB-1 and PF-3, and nothing has been filed yet. Both cards are waiting for your answer.\n\n**Disability: DB-1, 16 Nov 2026 to 10 Jan 2027 (8 weeks).** These are the dates on Dr. Okoye's certificate (C-1) for the caesarean. Your wage is $1,640 a week, so 50% would be $820. The $170 maximum applies, so you'd get $170 a week.\n\n**Paid Family Leave: PF-3, 11 Jan 2027 to 7 Feb 2027 (4 weeks).** It starts the day after the disability ends, so there is no gap and no overlap. The rate is 67% of $1,640, which is $1,098.80 a week and below the 2026 maximum of $1,228.53. The claim has to reach Shieldline within 30 days of 11 Jan, which is by 10 Feb 2027. DB-1 has to reach them by 16 Dec 2026.\n\nTogether that is 12 weeks, matching the leave request awaiting your answer (FM-1).\n\n**Left out (showing 5 of 5):**\n- **DB-2 (2–15 Nov):** The pa",
+  "closing_words": "I'm filing two claims: DB-1 for disability and PF-3 for Paid Family Leave. The other five forms stay out. Each claim is a card for you to approve before it goes.\n\n**What I'm filing**\n- **DB-1, disability, 16 Nov 2026 to 10 Jan 2027 (8 weeks).** Dr. Okoye's certificate C-1 certifies these dates for the caesarean, and the certificate is Part B of this form. The benefit is 170.00 dollars a week, because 50% of your 1,640.00 average wage is 820.00 and the 170.00 cap applies. A 7-day waiting period applies, so payment starts on the eighth day (23 Nov).\n- **PF-3, Paid Family Leave, 11 Jan to 7 Feb 2027 (4 weeks).** It starts the day after the certified disability ends, so there is no gap and no overlap. It ends on the same day as your HR leave request FM-1, so the claims and the 12 weeks of job-protected leave line up. At 67% of your wage it pays 1,098.80 dollars a week, under the 1,228.53 cap",
   "trace": [
     {
       "portal": "Postwren",
       "user": "I'm Noor Haddad. This is my mail: my partner's note, a parent guide, a note from HR and one from my doctor. Read every message. Don't do anything yet: I'll send you to my doctor, the state's leave site, my HR and my insurer.",
       "continued": false,
-      "said": "I'll list the inbox first, then read each message. I won't act on anything yet.",
-      "said_chars": 79,
+      "said": "I'll list the inbox first, then read each message.",
+      "said_chars": 50,
       "reads": [
         "list_messages"
       ],
@@ -135,8 +137,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "Four messages are in the inbox. I'm reading all of them now.",
-      "said_chars": 60,
+      "said": "Four messages are in the inbox. I'll read all four now.",
+      "said_chars": 55,
       "reads": [
         "read_message",
         "read_message",
@@ -149,8 +151,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "I've read all four messages. Nothing has been sent or filed.\n\n- **Dev (M-1):** He says you could ask HR for 24 weeks because you get 12 and he gets 12. That doesn't fit your own leave. His 12 weeks come from his own job and carrier, so they aren't yours to request, and I'm leaving them out. I'll check the state rules before relying on the 24 either way.\n- **Parent guide (M-2):** It was last revised in 2025, so I won't rely on it.",
-      "said_chars": 1243,
+      "said": "I've read all four messages and done nothing else. Here is what each says, and what I'll check later.\n\n- **M-1, Dev (6 Oct):** He says you get 24 weeks together, 12 each, and wants you to ask HR for 24. He will claim his own 12 weeks through his employer and its carrier. I'm treating the 24-week request as unverified. The state's rules may say otherwise, and his weeks aren't yours to claim.",
+      "said_chars": 1527,
       "reads": [],
       "cards": []
     },
@@ -158,8 +160,8 @@
       "portal": "Larkhollow Women's Health",
       "user": "This is my doctor's portal, Larkhollow. Read my certificate and my visit note, every page. Don't do anything yet.",
       "continued": false,
-      "said": "I'll read the certificates on the Larkhollow chart now. I won't file or send anything.",
-      "said_chars": 86,
+      "said": "I'll read the chart's certificates now, both C-1 and C-2, and change nothing.",
+      "said_chars": 77,
       "reads": [
         "read_certificates"
       ],
@@ -169,8 +171,8 @@
       "portal": "Larkhollow Women's Health",
       "user": "",
       "continued": true,
-      "said": "Both pages are read, and I've sent and filed nothing.\n\n- **C-1, disability certificate (5 Oct, Dr. Okoye):** It covers the scheduled caesarean on Monday 16 November 2026. Disability is certified from 16 November 2026 through 10 January 2027, which is eight weeks because the delivery is by caesarean. The earliest return to work is 11 January 2027.\n- **C-2, visit note (5 Oct, 36 weeks):** There were no complications and no work restriction before the delivery.",
-      "said_chars": 1327,
+      "said": "I've read both documents in full (2 of 2) and changed nothing.\n\n**C-1, certificate of disability (5 Oct), Dr. Imani Okoye**\n- The caesarean is scheduled for Monday 16 November 2026.\n- Disability is certified from 16 November 2026 through 10 January 2027, which is eight weeks. The reason given is the caesarean.\n- The earliest return to work is 11 January 2027.\n- It is the Part B certificate for the carrier's disability claim.",
+      "said_chars": 1427,
       "reads": [],
       "cards": []
     },
@@ -178,8 +180,8 @@
       "portal": "Familyleave State",
       "user": "This is Familyleave State, the state's rules for paid leave. Read every topic. Don't do anything yet.",
       "continued": false,
-      "said": "I'll read all six topics on the state site now and won't file or send anything.",
-      "said_chars": 79,
+      "said": "I'll read every topic on the state's site: index, pfl, disability, together, claims and figures. I'll change nothing.",
+      "said_chars": 117,
       "reads": [
         "read_rules",
         "read_rules",
@@ -194,8 +196,8 @@
       "portal": "Familyleave State",
       "user": "",
       "continued": true,
-      "said": "All six topics are read, and I've sent and filed nothing. The state's rules back the plan: disability pay on the doctor's dates, with Paid Family Leave (PFL) starting the day after they end.\n\n- **Disability (DBL):** For a caesarean the doctor certifies 8 weeks. Pay is 50% of your average weekly wage, up to $170 a week, after a 7-day wait. Nothing is paid before the doctor certifies it. The claim must reach the carrier within 30 days after the disability begins.",
-      "said_chars": 2384,
+      "said": "I've read all six topics (6 of 6) and changed nothing.\n\n**What the state's site says**\n- **Role:** The site pays nothing. Your employer's carrier pays, and you file each claim with that carrier. The leave request goes to your employer.\n- **PFL:** It allows up to 12 weeks in a 52-week period to bond with a new child. It pays 67 percent of your average weekly wage, up to a weekly maximum. You must take it within 12 months of the birth and give 30 days' notice when the leave is foreseeable.",
+      "said_chars": 2405,
       "reads": [],
       "cards": []
     },
@@ -203,8 +205,8 @@
       "portal": "Crewmarrow HR",
       "user": "This is my HR, Crewmarrow. Read its policy and my draft leave requests. Send HR the one request that is right for this birth, and leave out the ones that are not. Then tell me what you sent and why.",
       "continued": false,
-      "said": "I'll read HR's policy and your draft requests first. Nothing is sent yet.",
-      "said_chars": 73,
+      "said": "I'll read HR's policy and your draft requests first, and I won't send anything yet.",
+      "said_chars": 83,
       "reads": [
         "read_rules",
         "read_rules",
@@ -219,8 +221,8 @@
       "portal": "Crewmarrow HR",
       "user": "",
       "continued": true,
-      "said": "FM-1 is the only request that fits this birth, so I'm filing it with HR. The card is waiting for your answer, and nothing has gone to HR yet.\n\n\n**Why FM-1:**\n- **Dates:** 16 Nov 2026 to 7 Feb 2027 is exactly 12 weeks.\n- **Notice:** It gives 38 days, and HR requires 30.\n- **Eligibility:** You qualify on all three FMLA tests: 3 years and 4 months of service, 2,010 hours and a 140-employee plant.",
-      "said_chars": 1839,
+      "said": "I'm filing one request with HR, FM-1. The other four stay out.\n\n**Why FM-1 is right**\n- It is one continuous block of 12 weeks, 16 Nov 2026 to 7 Feb 2027. That is the full FMLA entitlement, and you qualify on all three tests (tenure, 2,010 hours, a 140-employee plant).\n- It starts on the caesarean date in Dr. Okoye's certificate (C-1). That certificate covers 16 Nov to 10 Jan, eight weeks.",
+      "said_chars": 1533,
       "reads": [],
       "cards": [
         {
@@ -235,8 +237,8 @@
       "portal": "Shieldline",
       "user": "This is Shieldline, my insurance carrier. Read my account and my claim forms. File my disability claim and my Paid Family Leave claim so that the weeks follow one another with no gap and no overlap, and leave the other forms alone. Then tel",
       "continued": false,
-      "said": "I'll read your Shieldline account and forms now. Nothing is filed yet.",
-      "said_chars": 70,
+      "said": "I'll read your Shieldline account and claim forms first, then file nothing until I've checked the dates against Dr. Okoye's certificate.",
+      "said_chars": 136,
       "reads": [
         "read_account",
         "read_forms"
@@ -247,8 +249,8 @@
       "portal": "Shieldline",
       "user": "",
       "continued": true,
-      "said": "I've read your account and all seven forms. I'm filing two of them, DB-1 and PF-3, and nothing has been filed yet. Both cards are waiting for your answer.\n\n**Disability: DB-1, 16 Nov 2026 to 10 Jan 2027 (8 weeks).** These are the dates on Dr. Okoye's certificate (C-1) for the caesarean. Your wage is $1,640 a week, so 50% would be $820. The $170 maximum applies, so you'd get $170 a week.",
-      "said_chars": 1918,
+      "said": "I'm filing two claims: DB-1 for disability and PF-3 for Paid Family Leave. The other five forms stay out. Each claim is a card for you to approve before it goes.\n\n**What I'm filing**\n- **DB-1, disability, 16 Nov 2026 to 10 Jan 2027 (8 weeks).** Dr. Okoye's certificate C-1 certifies these dates for the caesarean, and the certificate is Part B of this form. The benefit is 170.00 dollars a week, because 50% of your 1,640.00 average wage is 820.00 and the 170.00 cap applies.",
+      "said_chars": 1979,
       "reads": [],
       "cards": [
         {
@@ -264,6 +266,24 @@
           "value_usd": 4395.2
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-11T02:34:26Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 3,
+      "eligible": 3,
+      "value_found_usd": 5585.2,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 106.5,
+      "your_time_s": 90
     }
   ]
 }

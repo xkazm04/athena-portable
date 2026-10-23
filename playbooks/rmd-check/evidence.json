@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "rmd-check",
-  "captured_at": "2026-10-10T06:10:01Z",
-  "bench_run_at": "2026-10-10T06:06:10Z",
-  "narration": {
-    "text": "A mother's required minimum distributions taken at two custodians, each from the account it must come from, the year she missed from the IRA she inherited corrected with the waiver asked for, and nothing taken that she does not owe. This is a chore for a daughter who holds her mother's power of attorney and keeps her mother's retirement accounts and tax filings in order. Athena works it across 4 portals: Mailnest, Pinebrook Investments, Harborline IRA and Docshelf. On the bench, she found 5 of 5 eligible items, worth 2,900 dollars of the 2,900 dollars there was to find. All 5 were filed at the exact amount the rules allow. She made no false claim. The world held 9 traps, and she walked past 9. She took 4 minutes. By hand, the same chore takes 3 hours, so she was about 42 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 60.796,
-    "sha256": "73ce76b6977ff10b0fdd2a246c5d102c856f6a3f7ebc511610ed9c58c1429f3a"
-  },
-  "video": {
-    "path": "evidence/rmd-check/evidence.mp4",
-    "duration_s": 60.8,
-    "bytes": 3432985,
-    "sha256": "0606c7faf7898cb0ce5694be705af1c2b559a72a68e24856a98fda83ff6b7dc6"
-  },
-  "thumbnail": {
-    "path": "playbooks/rmd-check/thumb.jpg",
-    "bytes": 96435,
-    "sha256": "8febb93561d2883280a20d84167548335e1ea9b0ad69a12817471a1af887bd0e"
-  },
+  "captured_at": "2026-10-23T17:10:32Z",
+  "bench_run_at": "2026-10-23T16:24:30Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/rmd-check/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23386,
-      "sha256": "be5754654bf49e4f3d1894004fc054ae7dd5e3c85b32dfa6eb50786f17b959dd"
+      "bytes": 42870,
+      "sha256": "7d1ea14d6b1e8c5cdf151a671e7ae461f7e397dc7c5a4008df3f943bf0279146",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/rmd-check/story/02.webp",
+      "bytes": 43030,
+      "sha256": "4541d585c95704c0bd33f6a13e1a19e5274a7962f518b3f89bbd3c2930b7cc13",
       "caption": "Turn 1 - Mailnest: I hold Mom's power of attorney and I look after her retirement accounts",
-      "turn": 1,
-      "bytes": 23742,
-      "sha256": "f8dc6f51d9256eace9d22b7a1ef942598272a59d8b234698fb607ff16df46828"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/rmd-check/story/03.webp",
-      "caption": "Turn 5 - Pinebrook Investments, Athena: Next I'll read every rules topic and open each account",
-      "turn": 5,
-      "bytes": 23444,
-      "sha256": "99eb9c1207e05c0e287765a36ef8b6c5e8434a51d3078f15fa6d5c664da9873e"
+      "bytes": 35734,
+      "sha256": "b50769ecbb766f6aa9b777dbf7b6d13e346f9d8f57165e7c24e65a12bdd76938",
+      "caption": "Turn 5 - Pinebrook Investments, Athena: Three accounts came back, and I haven't read any figures yet",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/rmd-check/story/04.webp",
-      "caption": "Turn 9 - Harborline IRA, Athena: Harborline's figures are below",
-      "turn": 9,
-      "bytes": 22688,
-      "sha256": "362f8e1eb7bd4c34d6b9ef9196cac91ff8898df6afe0746982fd082f0ec3be12"
+      "bytes": 30820,
+      "sha256": "38c918aacbdc44f792f9442e88e618ea76090b2cf3fa865ccdae127d081cc2a2",
+      "caption": "Turn 8 - Harborline IRA, Athena: Next I'll read both accounts and the guide topics on inherited IRAs",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/rmd-check/story/05.webp",
-      "caption": "Turn 13 - Pinebrook Investments: I've switched to Pinebrook Investments as you asked",
-      "turn": 13,
-      "bytes": 21932,
-      "sha256": "c57fcbcaa5fa6808f3f42177769aeede6c03099c21dfbed9af7d5f98c5174de3"
-    },
-    {
-      "path": "playbooks/rmd-check/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23370,
-      "sha256": "6ec60b2fb60ccac2db25063fa730922330e1408e4cbc5dd9e0526a4e5ba7c1dc"
+      "bytes": 41472,
+      "sha256": "100996bf236a9e5365a5eb9fc6b13aee08554b530d35a8eb43c88a58340be7a9",
+      "caption": "Turn 12 - Docshelf, Athena: The 2025 Form 5329 should be filed with the full $6,000.00 shortfall waived…",
+      "kind": "turn",
+      "turn": 12
     }
   ]
 }

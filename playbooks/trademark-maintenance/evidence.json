@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "trademark-maintenance",
-  "captured_at": "2026-10-10T16:34:53Z",
-  "bench_run_at": "2026-10-10T16:25:40Z",
-  "narration": {
-    "text": "An outdoor brand's twelve trademark registrations checked against their windows, four maintained before they lapse, a renewal that deletes discontinued gloves and two in their grace period among them, while a registration not yet open, one accepted, one sold, one lapsed, unsold sleeping bags and discontinued snowshoes are left alone. This is a chore for the owner of a small outdoor goods brand in Vermont, who registered her marks one at a time over ten years and has no docket software. On the bench, she found 4 of 4 eligible items, worth 45,500 dollars of the 45,500 dollars there was to find. All 4 were filed at the exact amount the rules allow. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes 3 hours, so she was about 90 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 62.148,
-    "sha256": "b21f0003e4a48734f94d8b50a2bf2108659534e4b449a41349d3ab18c9cd50e0"
-  },
-  "video": {
-    "path": "evidence/trademark-maintenance/evidence.mp4",
-    "duration_s": 62.16,
-    "bytes": 2974524,
-    "sha256": "3d5f7d25d4729ef53a440a0f4719260dc76f50b6e21d490f0ad78808502dfb9c"
-  },
-  "thumbnail": {
-    "path": "playbooks/trademark-maintenance/thumb.jpg",
-    "bytes": 88158,
-    "sha256": "5c5f428d0a51f55ebef690aa65cfb979e53885637c18d2698eacf1fb23096dd5"
-  },
+  "captured_at": "2026-10-23T17:11:51Z",
+  "bench_run_at": "2026-10-23T16:29:29Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/trademark-maintenance/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23202,
-      "sha256": "9d537d47ea2f53c2ab0ae2098ebd45cc455b6435bec788205a3727547cbed56a"
+      "bytes": 38864,
+      "sha256": "8248c41b0dd12af638656cec3ae8d1a9845b366a0e9eb7b77e30aa3f012e136d",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/trademark-maintenance/story/02.webp",
+      "bytes": 32888,
+      "sha256": "c67418154360065aa8d68744558077dbf03f4e3d3b5831fc45e3701bb2c0a19c",
       "caption": "Turn 1 - Markwick filing desk: I'm Marit, Tarnbrook Outfitters",
-      "turn": 1,
-      "bytes": 22800,
-      "sha256": "f9dea49247978b9aa28367904f0fbccf9e352dfcd2ca0093d4a02aacba4c86bc"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/trademark-maintenance/story/03.webp",
-      "caption": "Turn 5 - Storeline, Athena: Sixteen products, so I'll read all of them in full",
-      "turn": 5,
-      "bytes": 23456,
-      "sha256": "03c2174f0a308ed1636cf7f0d7e2ea09e2b116b9287f391b7ca76bb157a0c0b2"
+      "bytes": 26922,
+      "sha256": "5d95256668d8c78c023e429536eae690d75b327440800fdd7c5efb670771ebd2",
+      "caption": "Turn 5 - Storeline, Athena: All 16 products are listed",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/trademark-maintenance/story/04.webp",
-      "caption": "Turn 9 - Binderwell, Athena: I've read all four Binderwell papers, and nothing is filed yet",
-      "turn": 9,
-      "bytes": 22348,
-      "sha256": "d6101be5e7ab3f2847b264f0e7ac591d9f4b0849690fc79d29b4b80eacd4cf88"
+      "bytes": 41996,
+      "sha256": "7ddafad457264f28e657e0f5190f313c16b43ba315862971174c9ff04af6a933",
+      "caption": "Turn 9 - Binderwell, Athena: I've read all four papers in Binderwell and filed nothing",
+      "kind": "turn",
+      "turn": 9
     },
     {
+      "n": 5,
       "path": "playbooks/trademark-maintenance/story/05.webp",
+      "bytes": 41592,
+      "sha256": "f91676cda9d699c8dc1a3ec2c4918ad8359c518213c3695acd437cca4fd460b5",
       "caption": "Turn 13 - Markwick filing desk: Back at the filing desk",
-      "turn": 13,
-      "bytes": 22382,
-      "sha256": "c47f6c229d6ba23e7a2f41c9666f6c2aca280c34b4517a5b76116d7895aa1c33"
-    },
-    {
-      "path": "playbooks/trademark-maintenance/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 21682,
-      "sha256": "9551f339c026e1cd8e5508420d13bafec438b1265b8bf8f32659c9586c24fd11"
+      "kind": "turn",
+      "turn": 13
     }
   ]
 }

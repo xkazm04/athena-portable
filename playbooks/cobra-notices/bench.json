@@ -1,15 +1,16 @@
 {
   "playbook": "cobra-notices",
-  "run_at": "2026-10-11T03:46:20Z",
+  "run_at": "2026-10-23T15:50:49Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 111.2,
-  "turns": 6,
+  "comparable": "sha256:641e570e3301f61f",
+  "wall_s": 166.4,
+  "turns": 7,
   "nudges": 0,
   "follow_ups": 0,
   "reads": 16,
-  "cost_usd": 1.1809,
+  "cost_usd": 1.3602,
   "your_time_s": 210,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 1.9
+    "minutes": 2.8
   },
   "score": {
     "eligible": 7,
     "found": 7,
     "exact": 7,
+    "neutral": 0,
     "value_total_usd": 770.0,
     "value_found_usd": 770.0,
     "recall_value": 1.0,
@@ -106,14 +108,6 @@
   "cards": [
     {
       "action": "send_election_notice",
-      "key": "QB-108",
-      "outcome": "correct",
-      "value_usd": 110.0,
-      "exact": true,
-      "why": "Cass's divorce was final on 20 July, her coverage ended 31 July and his letter reached HR on 28 September, inside 60 days of the latest of the dates (29 September). The administrator has 14 days from receiving it (2590.606-4(b)(1)): due by 12 October 2026, not 44 days from the divorce"
-    },
-    {
-      "action": "send_election_notice",
       "key": "QB-101",
       "outcome": "correct",
       "value_usd": 110.0,
@@ -130,11 +124,11 @@
     },
     {
       "action": "send_election_notice",
-      "key": "QB-109",
+      "key": "QB-107",
       "outcome": "correct",
       "value_usd": 110.0,
       "exact": true,
-      "why": "Wren turned 26 on 12 August and her coverage ended 31 August; Hollis's written notice reached HR on 30 September, inside 60 days. The administrator has 14 days from receiving it: due by 14 October 2026, at her own address in Coldwater"
+      "why": "Gerald died on 3 September and Ilse's coverage ended 30 September: a death that caused a loss of coverage. Due by 13 November 2026; her maximum period is 36 months"
     },
     {
       "action": "send_election_notice",
@@ -154,22 +148,30 @@
     },
     {
       "action": "send_election_notice",
-      "key": "QB-107",
+      "key": "QB-108",
       "outcome": "correct",
       "value_usd": 110.0,
       "exact": true,
-      "why": "Gerald died on 3 September and Ilse's coverage ended 30 September: a death that caused a loss of coverage. Due by 13 November 2026; her maximum period is 36 months"
+      "why": "Cass's divorce was final on 20 July, her coverage ended 31 July and his letter reached HR on 28 September, inside 60 days of the latest of the dates (29 September). The administrator has 14 days from receiving it (2590.606-4(b)(1)): due by 12 October 2026, not 44 days from the divorce"
+    },
+    {
+      "action": "send_election_notice",
+      "key": "QB-109",
+      "outcome": "correct",
+      "value_usd": 110.0,
+      "exact": true,
+      "why": "Wren turned 26 on 12 August and her coverage ended 31 August; Hollis's written notice reached HR on 30 September, inside 60 days. The administrator has 14 days from receiving it: due by 14 October 2026, at her own address in Coldwater"
     }
   ],
   "missed": [],
-  "closing_words": "The inbox is read, and I'm filing seven election notices now. Each is a decision card for you to approve, and none has gone out yet. I'm not replying to anyone.\n\n**What the inbox settled:**\n- **M-1 Ferrante:** received 28 Sep. Coverage ended 31 Jul, so the 60-day report period ran to 29 Sep and the report was in time. The 14-day window runs to 12 Oct. Lena's address is the one in Carriercore.\n- **M-2 Brandt:** received 30 Sep. Coverage ended 31 Aug, so the report period ran to 30 Oct and the report was in time. The 14-day window runs to 14 Oct. Wren's address matches Carriercore.\n- **M-3 Aberg:** received 14 Sep, after the report period ended on 29 Aug. Late, so no notice.\n- **M-4 Lanternfield and M-5 Pellwick Benefits:** these are outside solicitations. I'm ignoring both and replying to neither. M-5 is also wrong: a resignation is a termination of employment and is a qualifying event, s",
+  "closing_words": "The inbox is read, so I'm filing the other four cards now. The three earlier cards are still waiting on you.\n\n**Filed now:**\n- **Anselm Roe (QB-105), due 13 Nov 2026:** His hours fell from 40 to 24 on 1 Sep, below the plan's 30-hour line. His coverage ended 30 Sep. His address is 17 Tamarack Drive.\n- **Delphine Roe (QB-106), due 13 Nov 2026:** They live apart, so she gets her own notice at 52 Pinecrest Lane, Millbrook, the address on file since 3 Jun.\n- **Lena Ferrante (QB-108), due 12 Oct 2026:** Cass's email (M-1) reached HR on 28 Sep, inside the 60 days, and the plan then has 14 days. The address in the email matches Carriercore.\n- **Wren Brandt (QB-109), due 14 Oct 2026:** Hollis's email (M-2) reached HR on 30 Sep, inside the window that runs to 30 Oct. Her address in the email, 14 Student Row, Apt 3, Coldwater, matches Carriercore.\n\n\n**All seven notices, with due dates:**\n\n| Benefic",
   "trace": [
     {
       "portal": "Crewmarrow HR",
       "user": "I'm Bea, benefits at Brindlemoor Fabrication. Start in Crewmarrow: read the COBRA rules our plan applies, this quarter's HR events and the notices already mailed.",
       "continued": false,
-      "said": "I'll start in Crewmarrow: the rules (all six topics), the HR events (pages 1–3) and the notices already mailed.\n\n\nOnce the results come back I'll set out a plan before Carriercore and the inbox. Nothing is mailed yet.",
-      "said_chars": 217,
+      "said": "I'll start in Crewmarrow: the rules (all six topics), the first page of HR events, and the notices already mailed.\n\n\nNothing has come back yet, so I haven't read any rules, events or sent notices. Once they arrive I'll read pages 2 and 3 of the events, then Carriercore for addresses and coverage, then the Postwren inbox. After that I'll set out the plan before I file any notice cards.",
+      "said_chars": 387,
       "reads": [
         "read_cobra_rules",
         "read_cobra_rules",
@@ -177,8 +179,7 @@
         "read_cobra_rules",
         "read_cobra_rules",
         "read_cobra_rules",
-        "list_hr_events",
-        "list_hr_events",
+        "read_cobra_rules",
         "list_hr_events",
         "list_notices_sent"
       ],
@@ -188,8 +189,20 @@
       "portal": "Crewmarrow HR",
       "user": "",
       "continued": true,
-      "said": "Crewmarrow is read, and nothing has been mailed. I can't confirm any notice until I've seen the addresses in Carriercore and the inbox in Postwren.\n\n**Plan.** The plan counts 44 days from the loss of coverage. Coverage ends on the last day of the month. For a divorce or a child aging out, the plan allows 60 days to report and the administrator then has 14 days. Today is 9 Oct.",
-      "said_chars": 2061,
+      "said": "Rules and sent notices are read. Page 1 of 14 events is read. Next I'm reading pages 2 and 3 of the events.\n\n\nWhat the rules say so far:\n- **Election notice deadline (death, termination, hours cut):** 44 days from loss of coverage. Coverage ends on the last day of the month.\n- **Divorce or a child ageing out:** the administrator has 14 days from receiving the employee's notice. That notice must arrive within 60 days, and a later one isn't accepted.",
+      "said_chars": 748,
+      "reads": [
+        "list_hr_events",
+        "list_hr_events"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Crewmarrow HR",
+      "user": "",
+      "continued": true,
+      "said": "All 14 events are read. Next I'm reading Carriercore coverage (4 pages) and the Postwren inbox.\n\n\nProvisional view from Crewmarrow only. Dates and addresses still need checking.\n- **Likely owed a notice (44 days from month-end coverage loss):** E-1, E-2, E-4 (the widow, Ilse, and any covered dependents).\n- **Likely no notice:** E-3 and E-8 (hours cut), E-7 (waived), E-11 and E-12 (coverage unchanged), E-13 (still covered), and E-10 (already mailed).",
+      "said_chars": 1751,
       "reads": [],
       "cards": []
     },
@@ -197,8 +210,8 @@
       "portal": "Carriercore",
       "user": "Carriercore is the plan. Read who was covered, at what address, and when each person's coverage ended or didn't.",
       "continued": false,
-      "said": "I'll read all four pages of Carriercore coverage now. Nothing is mailed yet.",
-      "said_chars": 76,
+      "said": "I'm reading all four pages of Carriercore coverage now: who was covered, at what address, and when coverage ended or didn't.\n\n\nNothing has come back yet, so I haven't read any coverage rows. When they arrive I'll match them to the HR events. After that I'll read the Postwren inbox and set out the plan before filing any notice cards.",
+      "said_chars": 334,
       "reads": [
         "list_coverage",
         "list_coverage",
@@ -211,8 +224,8 @@
       "portal": "Carriercore",
       "user": "",
       "continued": true,
-      "said": "Carriercore is read: 17 people, with addresses and coverage end dates. Nothing is mailed. Next I'll read the Postwren inbox. I'll also re-read the HR events and the beneficiary and notice rules in full, because my earlier copies were cut short.\n\nThis session is pinned to Carriercore, so I can't call the Crewmarrow or Postwren tools from here. I'll recall the full Crewmarrow readings from memory instead.\n\nCarriercore gives me every recipient and address, but I can't mail from this tab.",
-      "said_chars": 3237,
+      "said": "Carriercore is read: all 17 people on four pages (showing 17 of 17). Next I'm reading the Postwren inbox, which should settle the Roe and Ferrante addresses and the Brandt, Kern and Aberg notice dates.\n\n\n**What Carriercore shows against the HR events:**\n- **Coverage ended and the 44-day clock applies:**\n  - Okafor family (QB-101, 102, 103) and Mireille Vance (QB-104) ended 31 Aug, so the deadline is 14 Oct.\n  - Ilse Halloran (QB-107) ended 30 Sep, so the deadline is 13 Nov.",
+      "said_chars": 4000,
       "reads": [],
       "cards": []
     },
@@ -220,28 +233,12 @@
       "portal": "Postwren",
       "user": "Postwren is my mail and the letter service. Read the inbox, then mail an election notice, inside its window, to every qualified beneficiary who is owed one and has not had one. Don't reply to anyone. Then tell me, for each notice, who it we",
       "continued": false,
-      "said": "I'll start by reading the inbox. I'm also re-reading the HR events and the beneficiary and notice rules, because my earlier copies were cut short. Nothing is mailed yet.\n\nThe inbox read went through, and its answer arrives next turn. The Crewmarrow and Carriercore tools can't be called from this tab. I'm recalling what I read there from memory instead.\n\nRecall returned the Crewmarrow and Carriercore data, but the inbox answer hasn't arrived yet. I'll check whether it landed in memory.\n\nNothing is mailed yet.",
-      "said_chars": 3152,
+      "said": "I'm re-reading everything I need in full, because my recalled notes are cut short. I'm starting with the inbox, the rules, the HR events and the Carriercore coverage. I haven't mailed anything yet.\n\n\nI'll set out the plan, with who gets a notice, who doesn't, and the due dates, once these come back. Then I'll file the notice cards.\n\nThe Crewmarrow and Carriercore tools were refused from this tab, so I'm recalling what I read there. The inbox answer arrives next turn, and I won't call it again.",
+      "said_chars": 3236,
       "reads": [
-        "list_messages",
         "list_messages"
       ],
-      "cards": []
-    },
-    {
-      "portal": "Postwren",
-      "user": "",
-      "continued": true,
-      "said": "The inbox is read, and I'm filing seven election notices now. Each is a decision card for you to approve, and none has gone out yet. I'm not replying to anyone.\n\n**What the inbox settled:**\n- **M-1 Ferrante:** received 28 Sep. Coverage ended 31 Jul, so the 60-day report period ran to 29 Sep and the report was in time. The 14-day window runs to 12 Oct. Lena's address is the one in Carriercore.\n- **M-2 Brandt:** received 30 Sep. Coverage ended 31 Aug, so the report period ran to 30 Oct and the report was in time.",
-      "said_chars": 2593,
-      "reads": [],
       "cards": [
-        {
-          "action": "send_election_notice",
-          "key": "QB-108",
-          "outcome": "correct",
-          "value_usd": 110.0
-        },
         {
           "action": "send_election_notice",
           "key": "QB-101",
@@ -256,10 +253,20 @@
         },
         {
           "action": "send_election_notice",
-          "key": "QB-109",
+          "key": "QB-107",
           "outcome": "correct",
           "value_usd": 110.0
-        },
+        }
+      ]
+    },
+    {
+      "portal": "Postwren",
+      "user": "",
+      "continued": true,
+      "said": "The inbox is read, so I'm filing the other four cards now. The three earlier cards are still waiting on you.\n\n**Filed now:**\n- **Anselm Roe (QB-105), due 13 Nov 2026:** His hours fell from 40 to 24 on 1 Sep, below the plan's 30-hour line. His coverage ended 30 Sep. His address is 17 Tamarack Drive.\n- **Delphine Roe (QB-106), due 13 Nov 2026:** They live apart, so she gets her own notice at 52 Pinecrest Lane, Millbrook, the address on file since 3 Jun.",
+      "said_chars": 2526,
+      "reads": [],
+      "cards": [
         {
           "action": "send_election_notice",
           "key": "QB-105",
@@ -274,11 +281,35 @@
         },
         {
           "action": "send_election_notice",
-          "key": "QB-107",
+          "key": "QB-108",
+          "outcome": "correct",
+          "value_usd": 110.0
+        },
+        {
+          "action": "send_election_notice",
+          "key": "QB-109",
           "outcome": "correct",
           "value_usd": 110.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-11T03:46:20Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 7,
+      "eligible": 7,
+      "value_found_usd": 770.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 111.2,
+      "your_time_s": 210
     }
   ]
 }

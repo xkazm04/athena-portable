@@ -1,16 +1,17 @@
 {
   "playbook": "good-faith-estimates",
-  "run_at": "2026-10-10T01:31:31Z",
+  "run_at": "2026-10-23T16:02:23Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 175.5,
-  "turns": 11,
+  "comparable": "sha256:aca1348f51f8d20f",
+  "wall_s": 139.2,
+  "turns": 9,
   "nudges": 0,
   "follow_ups": 0,
   "reads": 16,
-  "cost_usd": 1.3993,
-  "your_time_s": 270,
+  "cost_usd": 1.1461,
+  "your_time_s": 300,
   "verdict": {
     "word": "exceeds",
     "reasons": [],
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 2.9
+    "minutes": 2.3
   },
   "score": {
     "eligible": 8,
     "found": 8,
     "exact": 8,
+    "neutral": 2,
     "value_total_usd": 400.0,
     "value_found_usd": 400.0,
     "recall_value": 1.0,
@@ -117,6 +119,12 @@
       "why": "Telling the front desk why the estimate cannot be reissued after the service is fine"
     },
     {
+      "action": "reply",
+      "key": "M-1",
+      "outcome": "neutral",
+      "why": "Telling the patient the estimate is on its way is courteous; the estimate itself is the act that counts"
+    },
+    {
       "action": "issue_estimate",
       "key": "AP-1",
       "outcome": "correct",
@@ -158,14 +166,14 @@
     }
   ],
   "missed": [],
-  "closing_words": "Five estimates are due by Monday 12 October. I'm filing a card for each.\n\n\nEach total is Thornbury's own price-list items only, as the co-providers policy says.\n\n| Appointment | Services | Total | Why it's due |\n|---|---|---|---|\n| AP-1 | 99204 + 20610 | $350 | Booked Tue 6 Oct for 30 Oct. The 3-business-day deadline is today. |\n| AP-2 | 99213 + 93000 | $175 | Booked Thu 8 Oct for 14 Oct, which is 4 business days out. The 1-business-day deadline is today. |\n| AP-3 | 99213 + 11402 | $380 | Requested Wed 7 Oct. The deadline is Mon 12 Oct. |\n| AP-4 | 99214 + 11402 + 73030 | $520 | Dr. Ito added the X-ray on 7 Oct. This replaces GFE-1180 ($425). |\n| AP-10 | 99396 + 80053 | $285 | The patient declined a claim, so they are self-pay. The deadline is Mon 12 Oct. |\n\n**Collections queue:** The only item is ST-9 (account 6115). That patient opened dispute PPDR-26-0412 on 7 Oct, so I'm not filing a ",
+  "closing_words": "I need the full appointment entries before I can file estimates, because my recalled copy is cut short. I'm recalling them now.\n\n\nI haven't filed any estimates yet, because I won't guess an appointment's services or its total.\n\nI'm filing five estimates, all due by Monday 12 Oct. I'm not referring ST-9 to collections.\n\n\nEach total is the sum of the price-list items. Each card is waiting for your answer.\n\n**Collections queue:** ST-9 (account 6115, $780) stays out of collections, and I have not filed `send_to_collections`. The patient opened a dispute against GFE-1150 ($305), and the notice says the bill can't go to collection while the dispute is pending. The dispute reply card is already waiting for you.\n\n**What I left alone and why:**\n- **ST-3 ($375 over), ST-4 ($140 over), ST-5 (insured) and ST-8 ($45 over GFE-1171):** all under $400, so the policy says release them as they are. I have",
   "trace": [
     {
       "portal": "Chartmend PM",
       "user": "Self-pay desk for today. Start in Chartmend: read our self-pay policy, the price list, the estimates we've issued and the statements waiting to go out. Hold any statement that shouldn't go out as it is.",
       "continued": false,
-      "said": "I'll start by reading the policy, price list, issued estimates and the first page of statements.",
-      "said_chars": 96,
+      "said": "I'll start by reading the policy, price list, issued estimates and the first page of statements.\n\n\nI'll hold nothing until these results come back. Then I'll compare each statement's billed charges with its estimate and read the topic pages for estimates and disputes.",
+      "said_chars": 268,
       "reads": [
         "read_policy",
         "read_price_list",
@@ -178,10 +186,12 @@
       "portal": "Chartmend PM",
       "user": "",
       "continued": true,
-      "said": "Statements ST-1 and ST-2 look like holds. Before I file anything, I'll read page 2 and the billing and disputes policy topics.",
-      "said_chars": 126,
+      "said": "Before I file any holds, I need page 2 of the statements and the policy topics on billing, estimates and disputes.\n\n\nOn page 1, ST-1 is $445 over its estimate and ST-2 is $410 over, so both look like holds. ST-3 is $375 over and ST-4 is $140 over. I'll check them against the billing policy before deciding on those two.",
+      "said_chars": 320,
       "reads": [
         "list_statements",
+        "read_policy",
+        "read_policy",
         "read_policy",
         "read_policy"
       ],
@@ -191,8 +201,8 @@
       "portal": "Chartmend PM",
       "user": "",
       "continued": true,
-      "said": "Two statements need holding: ST-1 and ST-2. I'm filing a card for each.\n\n\nAll seven statements, checked against the last estimate given before the service:\n\n| Statement | Billed | Estimate | Over | Outcome |\n|---|---|---|---|---|\n| ST-1 (6106) | $845 | $400 (GFE-1162) | $445 | **Hold** |\n| ST-2 (6111) | $670 | $260 (GFE-1170) | $410 | **Hold** |\n| ST-3 (6112) | $945 | $570 (GFE-1166) | $375 | Release |\n| ST-4 (6113) | $565 | $425 (GFE-1168) | $140 | Release |\n| ST-5 (6105) | $85 | none | n/a | Release.",
-      "said_chars": 1579,
+      "said": "I'm holding two statements, ST-1 and ST-2. The policy says to compare Thornbury's billed charges with the total on the last estimate given before the service, and to hold anything $400 or more over.",
+      "said_chars": 1455,
       "reads": [],
       "cards": [
         {
@@ -213,9 +223,10 @@
       "portal": "Chartleaf scheduling",
       "user": "Now Chartleaf scheduling. Go through every self-pay appointment and estimate request.",
       "continued": false,
-      "said": "I'll read the first page of appointments, plus the estimates and co-providers policy.\n\nThe Chartmend policy reads were refused from this tab, so I'll recall what I read there earlier. The appointments page is still pending.\n\nMy last recall was malformed, so I'm re-issuing it in the correct form.\n\nThe Chartleaf appointments page hasn't come back yet, and I haven't read the estimates and co-providers policy, so I can't judge which estimates are due.",
-      "said_chars": 1577,
+      "said": "I'll read the self-pay list in Chartleaf, starting with the first two pages (five a page). Then I'll check each one against the estimates already issued.",
+      "said_chars": 153,
       "reads": [
+        "list_appointments",
         "list_appointments"
       ],
       "cards": []
@@ -224,19 +235,8 @@
       "portal": "Chartleaf scheduling",
       "user": "",
       "continued": true,
-      "said": "Page 1 of 2 is in (5 of 9). I'll fetch page 2 now.",
-      "said_chars": 50,
-      "reads": [
-        "list_appointments"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "Chartleaf scheduling",
-      "user": "",
-      "continued": true,
-      "said": "I've now seen all 9 appointments and estimate requests. Five need an estimate or a corrected one, and none can be issued from this tab.\n\nThe no-claim and timing rules below are my reading of the No Surprises Act, not Thornbury's policy text. I haven't read the estimates or co-providers topics.\n\n| ID | Account | Services | Status | Action |\n|---|---|---|---|---|\n| AP-1 | 6101 | 99204, 20610 | Scheduled Tue 6 Oct for Fri 30 Oct, no estimate | Due today.",
-      "said_chars": 2036,
+      "said": "I've read all 9 self-pay entries. The price list and the estimates policy were cut short in what I have, and I need the missing prices and deadline rules to work out totals and due dates. I'm re-reading both, plus the issued estimates.\n\nThose reads belong to Chartmend, so they're refused from this tab. The same material is in memory, so I'll recall it.\n\nFive estimates are due. The first four need a new or first estimate by Monday 12 Oct at the latest, and AP-10 is due Monday.",
+      "said_chars": 2533,
       "reads": [],
       "cards": []
     },
@@ -244,8 +244,8 @@
       "portal": "Mailnest",
       "user": "My Mailnest billing folder has patient requests and a couple of notices. Read them and answer what needs an answer from us.",
       "continued": false,
-      "said": "I'll start by listing the billing folder.\n\nThe mailbox search went through to the page. I'll read the folder listing and answer the messages that need a reply once it comes back, and I won't re-run the search.",
-      "said_chars": 209,
+      "said": "I'll list the billing folder first, then read what's in it.",
+      "said_chars": 59,
       "reads": [
         "search_mail"
       ],
@@ -255,8 +255,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "I'll read the four messages in full.",
-      "said_chars": 36,
+      "said": "Four messages are in the folder. I'll read M-1, M-3 and M-4 in full. M-5 is a vendor pitch, so I'll read it only to check for anything that needs an answer.",
+      "said_chars": 156,
       "reads": [
         "read_message",
         "read_message",
@@ -269,8 +269,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "I'm filing two replies for your approval: the dispute notice (M-3) and Priya's request (M-4). I'm not replying to M-1 or M-5.\n\n**M-3, Northwind dispute PPDR-26-0412 (account 6115).** The notice is dated 7 Oct. Ten business days from then is Wed 21 Oct. ST-9 was $780 against GFE-1150 at $305, which is $475 over. The reply gives the estimate and bill figures, and I wrote it to claim nothing more. I couldn't read ST-9's notes in full, so I have no evidence yet of unforeseen medically necessary items.",
-      "said_chars": 1850,
+      "said": "Two replies (M-1 and M-3) need figures I only have in part. I'll recall the price list, ST-9 and the account 6103 appointment before drafting.\n\nThree replies need answers. I'm filing cards for M-3 (the dispute), M-4 (Priya) and M-1 (the patient), and M-5 gets no reply.\n\n- **M-3, Northwind, PPDR-26-0412:** The reply goes out well inside the 10 business days. It carries GFE-1150 ($305) and ST-9 ($780) in the body, because I can't attach files.",
+      "said_chars": 1551,
       "reads": [],
       "cards": [
         {
@@ -283,6 +283,11 @@
           "action": "reply",
           "key": "M-4",
           "outcome": "neutral"
+        },
+        {
+          "action": "reply",
+          "key": "M-1",
+          "outcome": "neutral"
         }
       ]
     },
@@ -290,20 +295,8 @@
       "portal": "Chartmend PM",
       "user": "Back in Chartmend. Issue every good faith estimate that's due, with the right total, and deal with the collections queue. Then tell me what you left alone and why.",
       "continued": false,
-      "said": "I'll read the estimates and co-providers policy, and recall my Chartleaf appointment findings, since I can't reach Chartleaf from this tab.\n\nI've worked out the totals from the price list, but I'm waiting on the estimates and co-providers policy before I file cards. Those answers come with my next turn, so I'm not re-running them.\n\nThese are my draft totals:",
-      "said_chars": 742,
-      "reads": [
-        "read_policy",
-        "read_policy"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "Chartmend PM",
-      "user": "",
-      "continued": true,
-      "said": "Five estimates are due by Monday 12 October. I'm filing a card for each.\n\n\nEach total is Thornbury's own price-list items only, as the co-providers policy says.\n\n| Appointment | Services | Total | Why it's due |\n|---|---|---|---|\n| AP-1 | 99204 + 20610 | $350 | Booked Tue 6 Oct for 30 Oct. The 3-business-day deadline is today. |\n| AP-2 | 99213 + 93000 | $175 | Booked Thu 8 Oct for 14 Oct, which is 4 business days out. The 1-business-day deadline is today. |\n| AP-3 | 99213 + 11402 | $380 | Requested Wed 7 Oct.",
-      "said_chars": 2000,
+      "said": "I need the full appointment entries before I can file estimates, because my recalled copy is cut short. I'm recalling them now.\n\n\nI haven't filed any estimates yet, because I won't guess an appointment's services or its total.\n\nI'm filing five estimates, all due by Monday 12 Oct. I'm not referring ST-9 to collections.\n\n\nEach total is the sum of the price-list items. Each card is waiting for your answer.",
+      "said_chars": 1622,
       "reads": [],
       "cards": [
         {
@@ -337,6 +330,24 @@
           "value_usd": 50.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-10T01:31:31Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 8,
+      "eligible": 8,
+      "value_found_usd": 400.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 175.5,
+      "your_time_s": 270
     }
   ]
 }

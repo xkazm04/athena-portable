@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "lease-operator-escrow",
-  "captured_at": "2026-10-10T11:37:25Z",
-  "bench_run_at": "2026-10-10T11:33:42Z",
-  "narration": {
-    "text": "An owner-operator's escrow got back from the carrier he leased to, four days after its forty-five days ran out: an ELD charged though it was returned, a washout fee and a fee for leaving that the lease never names disputed, the third quarter's interest claimed at the Treasury bill rate, and the balance demanded, while the fuel, tolls, insurance, plate and tires the lease lets it keep are left alone. This is a chore for an owner-operator with one tractor, who ran under a carrier's authority on a lease for eleven months and keeps his own papers. On the bench, she found 5 of 5 eligible items, worth 1,538 dollars and 77 cents of the 1,538 dollars and 77 cents there was to find. She made no false claim. The world held 9 traps, and she walked past 9. She took 3 minutes. By hand, the same chore takes about 2 hours, so she was about 48 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 64.328,
-    "sha256": "3d3725d8956af4ef18de8c4154a0ae4728441c77e3c900199d48f2950ec09c2f"
-  },
-  "video": {
-    "path": "evidence/lease-operator-escrow/evidence.mp4",
-    "duration_s": 64.36,
-    "bytes": 3186573,
-    "sha256": "723333464a23cc6380db26b54cabf60ff5194e440d7677ca017cfda5d5dc5153"
-  },
-  "thumbnail": {
-    "path": "playbooks/lease-operator-escrow/thumb.jpg",
-    "bytes": 83365,
-    "sha256": "e7e785c360a83e2598df3f4d43963595d4948db751b0f46adef8f2c98ffad418"
-  },
+  "captured_at": "2026-10-23T17:05:29Z",
+  "bench_run_at": "2026-10-23T16:09:23Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/lease-operator-escrow/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22584,
-      "sha256": "dafbe2d4eb9610f5a600c7ce57be40f92ab578c9b525f0525244cd770af4ced5"
+      "bytes": 41016,
+      "sha256": "1e89314abcfc3e281261f1afbdd7f51234e2512dd1f9bb63ae90452d249d0023",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/lease-operator-escrow/story/02.webp",
+      "bytes": 30198,
+      "sha256": "076c695eb0b9288c6afa5fe2d8a8a5b57fc6e1acaabdeee27065460629ab11d2",
       "caption": "Turn 1 - Sheafbox: I'm Marcus, Okafor Trucking",
-      "turn": 1,
-      "bytes": 22782,
-      "sha256": "58e4bbb6660e119a6c6926e49325be7e6b42bcf8e74701627dbe74f7e857b7b9"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/lease-operator-escrow/story/03.webp",
+      "bytes": 33048,
+      "sha256": "18b847b47101e25cdf9ddc96b6e1ced050ce4f0743540121c0927eaa57d63f3c",
       "caption": "Turn 4 - Settlewick settlements: This is Vessmoor's settlements portal",
-      "turn": 4,
-      "bytes": 21846,
-      "sha256": "b7a481f7e8d84d7c56c15836c0a57d92e4510575d6361ae5167e7c975a4366d7"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/lease-operator-escrow/story/04.webp",
-      "caption": "Turn 8 - Ledgerwren bank, Athena: Nothing has come in from Vessmoor since 28 August, and nothing has come in…",
-      "turn": 8,
-      "bytes": 21660,
-      "sha256": "21634f43fa85b29183d196ea9ca8f9ee4aa75a1ef178058d31deefe9d9e7ee61"
+      "bytes": 43254,
+      "sha256": "357de115fd620b527b160f38ac63111036a36d910c0ef3e45734a96bcef2938f",
+      "caption": "Turn 8 - Ledgerwren bank, Athena: Vessmoor has paid you nothing since 28 August 2026, and no escrow check has…",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/lease-operator-escrow/story/05.webp",
-      "caption": "Turn 11 - Postwren, Athena: Nothing in the three messages changes the figures",
-      "turn": 11,
-      "bytes": 23704,
-      "sha256": "16048a19c1849ccebc0c9b955739d3a92c380f484135d0469bf181d73fe0da45"
-    },
-    {
-      "path": "playbooks/lease-operator-escrow/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 21614,
-      "sha256": "cae9aa62fc85d3503906de6424029193a448224a64a30f2b13abd3ac67c21a2c"
+      "bytes": 43400,
+      "sha256": "ad11b43be092c4b2abc539ca2caf362dbd034136a21882f2e37590ca507a2e0f",
+      "caption": "Turn 11 - Postwren, Athena: I'm filing the demand to Vessmoor for $1,514.65",
+      "kind": "turn",
+      "turn": 11
     }
   ]
 }

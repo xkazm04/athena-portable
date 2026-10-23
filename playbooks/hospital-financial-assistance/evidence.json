@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "hospital-financial-assistance",
-  "captured_at": "2026-10-10T02:41:48Z",
-  "bench_run_at": "2026-10-10T02:39:10Z",
-  "narration": {
-    "text": "A nonprofit hospital's charity care applied for on every account that qualifies, with the household's income as its own policy counts it. This is a chore for a working parent in a household of four, with a live-in mother who files her own taxes, facing a year of bills from the local nonprofit hospital after an appendectomy, a child's emergency visit and a spouse's MRI. Athena works it across 4 portals: Saint Ardent billing, Mailnest, Payroll Harbor and Ledgerline bank. On the bench, she found 4 of 4 eligible items, worth 7,560 dollars of the 7,560 dollars there was to find. All 4 were filed at the exact amount the rules allow. She made no false claim. The world held 9 traps, and she walked past 9. She took 2 minutes. By hand, the same chore takes 4 hours, so she was about 96 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 62.541,
-    "sha256": "c4882130ac81417f2bcf860c15103c8325ce021942992e2b6efeb8cbb6bf4a4f"
-  },
-  "video": {
-    "path": "evidence/hospital-financial-assistance/evidence.mp4",
-    "duration_s": 62.56,
-    "bytes": 3025079,
-    "sha256": "33552776f7286eae5925caf5ad192d0d7f1ba282a288ffb51d00743498b5345f"
-  },
-  "thumbnail": {
-    "path": "playbooks/hospital-financial-assistance/thumb.jpg",
-    "bytes": 79379,
-    "sha256": "cd65d62fbf03f73bb97a3dae225b13af50bdc6994cd7e708ba3ea23e388a7056"
-  },
+  "captured_at": "2026-10-23T17:04:21Z",
+  "bench_run_at": "2026-10-23T16:06:11Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/hospital-financial-assistance/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23618,
-      "sha256": "2a54ace3a3453da6b9e84a0f761244b932fe65efa19fac5c271b6fbb0576614a"
+      "bytes": 42402,
+      "sha256": "4f7a9873c8883491d8dc5f602cacf722a8683b9e397c665af07e1c3fa11f9c66",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/hospital-financial-assistance/story/02.webp",
+      "bytes": 27148,
+      "sha256": "3fad0f085ad075d83eb277f998c00cc61718d8179ad6ec785378066cf6b45b1f",
       "caption": "Turn 1 - Saint Ardent billing: We can't pay these Saint Ardent bills",
-      "turn": 1,
-      "bytes": 20572,
-      "sha256": "3f2428642acc1ddd2a3666a6e513c05030076f2b3891708eb9dc0d5894cd7c85"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/hospital-financial-assistance/story/03.webp",
-      "caption": "Turn 5 - Mailnest, Athena: Five messages",
-      "turn": 5,
-      "bytes": 19508,
-      "sha256": "22e5a667af0b9fe4d9cb2cb29aa38f34ced8f589ccf169264e7e8d553dda7ec7"
+      "bytes": 39822,
+      "sha256": "23f8fb3c72838901a1f71e8be1dc20e9df63d7250261b19c7ef2690cc014742b",
+      "caption": "Turn 5 - Mailnest, Athena: The household is four people, and A-1 has a hard deadline",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/hospital-financial-assistance/story/04.webp",
-      "caption": "Turn 9 - Ledgerline bank: Ledgerline, our joint checking",
-      "turn": 9,
-      "bytes": 20102,
-      "sha256": "0ee39ee5ffcb2e5c11471ba7a482dc8631bfcb82fd96402b08e06b5bd2f5f116"
+      "bytes": 36668,
+      "sha256": "785af1550767222e2419b69b3e4eeb3f64584a7b2dba4353f7977816ef3386a3",
+      "caption": "Turn 10 - Ledgerline bank, Athena: Page 1 of 3 is in (5 of 13 deposits)",
+      "kind": "turn",
+      "turn": 10
     },
     {
+      "n": 5,
       "path": "playbooks/hospital-financial-assistance/story/05.webp",
-      "caption": "Turn 13 - Mailnest: Back in my inbox",
-      "turn": 13,
-      "bytes": 23668,
-      "sha256": "f25cde8809aff862bc87df86e2490ba2510dea4869c925abf614482b80b92f9c"
-    },
-    {
-      "path": "playbooks/hospital-financial-assistance/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23110,
-      "sha256": "9437e45afb20d6ab86e499196c5b6591916f5b8b023f6a94f68d981cdeda57c5"
+      "bytes": 41542,
+      "sha256": "cafd3497c24324da0175c96db0442a94e5f5b4cf7241c961903053ce0b977f5d",
+      "caption": "Turn 14 - Mailnest, Athena: I haven't answered anything yet, because the applications aren't in",
+      "kind": "turn",
+      "turn": 14
     }
   ]
 }

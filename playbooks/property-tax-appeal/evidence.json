@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "property-tax-appeal",
-  "captured_at": "2026-10-09T19:49:00Z",
+  "captured_at": "2026-10-23T17:09:14Z",
   "bench_run_at": "2026-10-09T19:46:50Z",
-  "narration": {
-    "text": "The property tax protest, with comparable sales. This is a chore for a Texas couple with their home, a rental duplex and a vacant lot, and four appraisal notices in the mail. Read each notice of appraised value and work out its deadline. Athena works it across 4 portals: Mailnest, Deedvault, Compsmith sales and Countyline Appraisal. On the bench, she found 8 of 8 eligible items, worth 2,310 dollars of the 2,310 dollars there was to find. All 8 were filed at the exact amount the rules allow. She made no false claim. The world held 9 traps, and she walked past 9. She took 2 minutes. By hand, the same chore takes 4 hours, so she was about 133 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 54.151,
-    "sha256": "20c62465f66f89da907714b5c86b31625f7d98a842eb12196a5052f74c165f02"
-  },
-  "video": {
-    "path": "evidence/property-tax-appeal/evidence.mp4",
-    "duration_s": 54.16,
-    "bytes": 2736444,
-    "sha256": "80a67efbcf72e578c1d9203ad7c3a07f89c736c0538afbf6937dee347d1cc9ed"
-  },
-  "thumbnail": {
-    "path": "playbooks/property-tax-appeal/thumb.jpg",
-    "bytes": 99251,
-    "sha256": "a2de7368546380babb2ed5aace9a04de1272fd014e4edee88f08ddfc0d9b386f"
-  },
   "story": [
     {
+      "n": 1,
       "path": "playbooks/property-tax-appeal/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23088,
-      "sha256": "53cf703ad57375a4c3a75f3b550226b5c57bc7726f5f20d0350e847792b7c354"
+      "bytes": 42802,
+      "sha256": "563f0673dace1a56607b0c620ba711fa73af55acb32ea6c800dc437356f61d30",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/property-tax-appeal/story/02.webp",
+      "bytes": 43040,
+      "sha256": "4393aa575701dee125b5d8753421e5e805356b4c60873e49931f70a2857396a2",
       "caption": "Turn 1 - Mailnest: Our appraisal notices came",
-      "turn": 1,
-      "bytes": 23748,
-      "sha256": "06a7ad382d85f41e5448ed5520e58ebeaa1b6f5ec4386563bb79f479905db673"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/property-tax-appeal/story/03.webp",
+      "bytes": 33478,
+      "sha256": "260386c39ee4afd9fa32fbc4584a5834bc4ffd7bd928042145f27a8f52a5aaea",
       "caption": "Turn 4 - Deedvault: This is Deedvault, the county's deed records",
-      "turn": 4,
-      "bytes": 21570,
-      "sha256": "7f2d08a4a84498774885d63cca8d21de9332c0256e3ffc4cef81bebd2cdd1259"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/property-tax-appeal/story/04.webp",
+      "bytes": 41986,
+      "sha256": "08a89d6aa2571f856e4c2e1d3abb703b4f9ead9d78f913a428535fcaa2c6ac6f",
       "caption": "Turn 8 - Compsmith sales, Athena: Two of the three properties you still own look over-assessed, so I'd protest…",
-      "turn": 8,
-      "bytes": 22650,
-      "sha256": "e55d6a50e06bb217f806ed7b5fecb458a33be264ed6c517bbc34fbbbd79214a1"
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/property-tax-appeal/story/05.webp",
+      "bytes": 43828,
+      "sha256": "a95391cc6c01e63e4420a0542e14ca339f231f85647337e7da0517787665baa6",
       "caption": "Turn 11 - Countyline Appraisal, Athena: Two protests are ready to file, and the district's rules settle both opinions…",
-      "turn": 11,
-      "bytes": 23076,
-      "sha256": "90a0a4669653403570a6e9ddc4e022f58b3a5b354a3cad8b9f3576e8b794c1d3"
-    },
-    {
-      "path": "playbooks/property-tax-appeal/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23864,
-      "sha256": "310d8b25cbbec7479eb45bb54391431b8770207e9c6d1bb637046640f5f65f91"
+      "kind": "turn",
+      "turn": 11
     }
   ]
 }

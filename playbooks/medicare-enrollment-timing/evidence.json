@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "medicare-enrollment-timing",
-  "captured_at": "2026-10-10T05:14:14Z",
-  "bench_run_at": "2026-10-10T05:11:28Z",
-  "narration": {
-    "text": "Part B taken up through the special period the month a job ends, starting the day the employer coverage stops, with no lifetime penalty, and a spouse on retiree coverage told why she must wait. This is a chore for a worker of 67 retiring at the end of the month who never took Part B, managing Medicare for himself and, with her permission, his wife. Athena works it across 4 portals: Mailnest, Staffnest HR, Thistlewood Health and Benefitline. On the bench, she found 2 of 2 eligible items, worth 487 dollars of the 487 dollars there was to find. All 2 were filed at the exact amount the rules allow. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 88 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 59.919,
-    "sha256": "112c118e5309b5448529377734183bf3a3178e47d114082f8635ca3548fa2956"
-  },
-  "video": {
-    "path": "evidence/medicare-enrollment-timing/evidence.mp4",
-    "duration_s": 59.92,
-    "bytes": 2795611,
-    "sha256": "36abc73486156cbf8a9791c303e05852311aa3705f5639b5201d835333d5fa45"
-  },
-  "thumbnail": {
-    "path": "playbooks/medicare-enrollment-timing/thumb.jpg",
-    "bytes": 92958,
-    "sha256": "e5000d626d190e5c05323d94cf1223e73bd999cda3eb03d6235d51e273070f7f"
-  },
+  "captured_at": "2026-10-23T17:06:32Z",
+  "bench_run_at": "2026-10-23T16:11:22Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/medicare-enrollment-timing/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22690,
-      "sha256": "99475b765f8571329e2e7dcad544fb74cb6c7bc32f702a3ede0cc34a29b201ce"
+      "bytes": 42446,
+      "sha256": "e8715985ccf311ab3dbedfe30f83130981b54effda6058b691dd2b8d9fed07ae",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/medicare-enrollment-timing/story/02.webp",
+      "bytes": 42426,
+      "sha256": "d3b4f6524bf47105f4503b1e8bcb3e1b9d6842535fa9e7b3261b07a6ea5c5be6",
       "caption": "Turn 1 - Mailnest: I retire at the end of this month and I've never signed up for Part B. Start…",
-      "turn": 1,
-      "bytes": 19376,
-      "sha256": "37188d97e301bca3c31273b82648f3800631eb1a47b0f7ee6a339a4cce90c77b"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/medicare-enrollment-timing/story/03.webp",
+      "bytes": 25140,
+      "sha256": "84c3bd284454eedd7437b298b6319c14e4f6057a0a8ae596dba26d8c0ceac41d",
       "caption": "Turn 4 - Staffnest HR: Staffnest, Halberd's HR portal",
-      "turn": 4,
-      "bytes": 18758,
-      "sha256": "021b9c0dfe03f7b60c02851c64b79630b40f6bab0f3549eb79fe556c3c67ba01"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/medicare-enrollment-timing/story/04.webp",
+      "bytes": 25700,
+      "sha256": "1f4c5952c7d627363bcdc9fb47303c026aeeb788aca2d73628b3c8110051a41d",
       "caption": "Turn 6 - Thistlewood Health: Thistlewood, our insurer",
-      "turn": 6,
-      "bytes": 19102,
-      "sha256": "a5fa265f40561ee911aa0851754bd67748bec74fde38ca370444c61bbc49b4a5"
+      "kind": "turn",
+      "turn": 6
     },
     {
+      "n": 5,
       "path": "playbooks/medicare-enrollment-timing/story/05.webp",
-      "caption": "Turn 9 - Benefitline, Athena: Your Part B enrollment is filed as a card for you to answer",
-      "turn": 9,
-      "bytes": 23522,
-      "sha256": "c2f817661243b64d69d0ab6c1d017020e314c4c258055a969254550b98aaa23f"
-    },
-    {
-      "path": "playbooks/medicare-enrollment-timing/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22334,
-      "sha256": "02302c4f0a80b1d8b227352c6e071c8a8b1128d7e9d4293c169c6eb219a3e490"
+      "bytes": 41222,
+      "sha256": "515d4250f3082919357f4284de197ae27fbd7258bc3f5d0f6cfbeffe83aa35cf",
+      "caption": "Turn 9 - Benefitline, Athena: I'm filing Graham's Part B enrollment now, starting 1 November",
+      "kind": "turn",
+      "turn": 9
     }
   ]
 }

@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "funeral-price-check",
-  "captured_at": "2026-10-10T04:54:59Z",
-  "bench_run_at": "2026-10-10T04:51:25Z",
-  "narration": {
-    "text": "A mother's direct cremation priced at three funeral homes, every item the Funeral Rule says a home cannot require declined, and the home that is cheapest all in booked. This is a chore for an adult daughter arranging her mother's cremation in the week she died, as next of kin, with her brother's agreement. Athena works it across 5 portals: Docshelf, Mailnest, Hollis & Rowe, Greenmeadow and Calder. On the bench, she found 4 of 4 eligible items, worth 2,115 dollars of the 2,115 dollars there was to find. She made no false claim. The world held 10 traps, and she walked past 10. Among them: Declining the basic services fee, the only fee a home may require. Declining the county medical examiner's cremation authorization. She took 3 minutes. By hand, the same chore takes 5 hours, so she was about 111 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 62.875,
-    "sha256": "c40fc1ec3fa284b2731c84aa00cf9d6389c5b1f35de9f21cb2ec107cf238b8e3"
-  },
-  "video": {
-    "path": "evidence/funeral-price-check/evidence.mp4",
-    "duration_s": 62.88,
-    "bytes": 2844677,
-    "sha256": "5d1db926f50eb44f213995fe5baa2f02be16a2040232f9b4ca52511f6383d1ce"
-  },
-  "thumbnail": {
-    "path": "playbooks/funeral-price-check/thumb.jpg",
-    "bytes": 85684,
-    "sha256": "76b1d4fb3196d745f72c41196c4468efefadabb2cf0922173ef046abc46c569b"
-  },
+  "captured_at": "2026-10-23T17:03:31Z",
+  "bench_run_at": "2026-10-23T16:02:16Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/funeral-price-check/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23248,
-      "sha256": "47748ebafa32982c11bd067a0c6f084990beb13124ae3073bda0b68f96252f18"
+      "bytes": 42720,
+      "sha256": "b8017574f6f94fc8de8fc472809c88b23d7ce5aa4589e3a51c0815b16e32bd17",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/funeral-price-check/story/02.webp",
+      "bytes": 29110,
+      "sha256": "0af4788e5c6f15e17e2dd0b740ab1deebd9a6501add3c62c3ebca4bfd2a7126a",
       "caption": "Turn 1 - Docshelf: Mom died on Tuesday and I have three funeral homes' quotes",
-      "turn": 1,
-      "bytes": 22284,
-      "sha256": "fd074f324f14305c8ef741fa0d0c62ddffb238b5deb8f4a6128999417691edc0"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/funeral-price-check/story/03.webp",
-      "caption": "Turn 5 - Mailnest, Athena: Five messages are in the inbox",
-      "turn": 5,
-      "bytes": 22298,
-      "sha256": "f6480e6492e387df7b734badbcb5cae3174a078748cd18312410cb9f4f518d99"
+      "bytes": 29280,
+      "sha256": "57f776c40a5ac5bd5552c4319212755a64385d9feaa44dc649dbf47e5550bc2f",
+      "caption": "Turn 5 - Mailnest, Athena: Five messages",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/funeral-price-check/story/04.webp",
-      "caption": "Turn 9 - Greenmeadow: Greenmeadow",
-      "turn": 9,
-      "bytes": 22038,
-      "sha256": "bc33eefb77311601fa9964766a695a0d6ba5b376afbf619101997b753f8e25f1"
+      "bytes": 43076,
+      "sha256": "c6d88e6484684706fa9b9d402538aa7bfeb0068aa632aab5a1c8e90247597491",
+      "caption": "Turn 8 - Hollis & Rowe, Athena: Hollis & Rowe's statement HR-S1 comes to $4,635",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/funeral-price-check/story/05.webp",
-      "caption": "Turn 13 - Greenmeadow: I've switched to Greenmeadow as you asked",
-      "turn": 13,
-      "bytes": 23678,
-      "sha256": "d6a22793fda152731ae259c0f40fb472b2c06c95ca314b29d5b8a061b4ec3ecc"
-    },
-    {
-      "path": "playbooks/funeral-price-check/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22806,
-      "sha256": "e2047a18a9d0fa4ab3ad8c143468983bc61405a18c35f26135c540a9f7e93f74"
+      "bytes": 41278,
+      "sha256": "5717ac5606f6c4162275aafc5d61245c15c9fdc03d6017b4325b2cb8216efff4",
+      "caption": "Turn 12 - Calder, Athena: Greenmeadow comes out cheapest, so I haven't booked Calder",
+      "kind": "turn",
+      "turn": 12
     }
   ]
 }

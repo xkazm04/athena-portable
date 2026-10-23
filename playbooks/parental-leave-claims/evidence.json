@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "parental-leave-claims",
-  "captured_at": "2026-10-11T02:37:02Z",
-  "bench_run_at": "2026-10-11T02:34:26Z",
-  "narration": {
-    "text": "A mother-to-be's leave for a caesarean birth is lined up: twelve weeks of job-protected leave, eight weeks of disability pay on the doctor's certificate and four of paid family leave from the day after it ends, while an early start, a split leave, a partner's weeks, overlaps and a claim past the year are left out, across five portals. This is a chore for a project coordinator at a print works in Rochester, New York, due in November with a planned caesarean, who has read a parent guide and a note from her partner. On the bench, she found 3 of 3 eligible items, worth 5,585 dollars and 20 cents of the 5,585 dollars and 20 cents there was to find. She made no false claim. The world held 9 traps, and she walked past 9. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 83 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 62.182,
-    "sha256": "9f3b95bc531f23413449f462409fa199ba56c5554858286d854c8f4fa6a97c64"
-  },
-  "video": {
-    "path": "evidence/parental-leave-claims/evidence.mp4",
-    "duration_s": 62.2,
-    "bytes": 2892279,
-    "sha256": "28631e18028a0a0f876da047fe253e621481305da2a9476b211b65912d952664"
-  },
-  "thumbnail": {
-    "path": "playbooks/parental-leave-claims/thumb.jpg",
-    "bytes": 78294,
-    "sha256": "6df8e8660bc19ba65f1c6f89063f7e9b1d66bd4e7497edd412bf102cb00888e9"
-  },
+  "captured_at": "2026-10-23T17:08:35Z",
+  "bench_run_at": "2026-10-23T16:18:04Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/parental-leave-claims/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23766,
-      "sha256": "139e8dd1b6045f0f6435784750ce91482da411b6fb14a9ad4beb3a918622d889"
+      "bytes": 40128,
+      "sha256": "809921485ce4be16031aba7bf528099e36923a03ad85b2adf4a6be2c5d297434",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/parental-leave-claims/story/02.webp",
+      "bytes": 27774,
+      "sha256": "c7064c8ef35330b80b04984a116ee2d5c3cd5d38ae2c89faf672536433430188",
       "caption": "Turn 1 - Postwren: I'm Noor Haddad",
-      "turn": 1,
-      "bytes": 22802,
-      "sha256": "6a87bc15b0c72f355c1226e375c0d2ad89fdd429bc828d49e8c357f11c6cc5a9"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/parental-leave-claims/story/03.webp",
+      "bytes": 26078,
+      "sha256": "e601fb4ef471afdb80e67686f305f3c0826af82144d97411b457e7c6e63ff768",
       "caption": "Turn 4 - Larkhollow Women's Health: This is my doctor's portal, Larkhollow",
-      "turn": 4,
-      "bytes": 22754,
-      "sha256": "939f7aa0a762f2217daf0c62cd599edbde3349a321a152c73431caa5380430a5"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/parental-leave-claims/story/04.webp",
+      "bytes": 29088,
+      "sha256": "fb814d5463605baa03bca3cd5d608a35ce68d9214e83cb1cd8eee1931e2f5907",
       "caption": "Turn 8 - Crewmarrow HR: This is my HR, Crewmarrow",
-      "turn": 8,
-      "bytes": 22598,
-      "sha256": "f92a65f828abf4c380e91683c5bcd1a4a5c9c8a4937d6fbc49bf25674a072128"
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/parental-leave-claims/story/05.webp",
-      "caption": "Turn 11 - Shieldline, Athena: I've read your account and all seven forms",
-      "turn": 11,
-      "bytes": 22700,
-      "sha256": "50778051a7cc35306649d04de19bc8f58232a8e277c4481c2f8c334dfbab0172"
-    },
-    {
-      "path": "playbooks/parental-leave-claims/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23242,
-      "sha256": "40f495f48857422235a2dc0f3a52f75bb17ef87ad1cfc844890c1661e8653315"
+      "bytes": 41766,
+      "sha256": "926d09fe1f20ce8fcce1514ef5e7e0d34d55ae34eeb7a4a4a1b65528cbcb4406",
+      "caption": "Turn 11 - Shieldline, Athena: I'm filing two claims",
+      "kind": "turn",
+      "turn": 11
     }
   ]
 }

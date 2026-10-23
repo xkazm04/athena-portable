@@ -1,15 +1,16 @@
 {
   "playbook": "fsa-claims-substantiation",
-  "run_at": "2026-10-10T22:14:23Z",
+  "run_at": "2026-10-23T16:01:05Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 92.8,
+  "comparable": "sha256:f98e075f9cf4235a",
+  "wall_s": 108.7,
   "turns": 11,
   "nudges": 0,
   "follow_ups": 0,
   "reads": 20,
-  "cost_usd": 0.8089,
+  "cost_usd": 0.7773,
   "your_time_s": 210,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 1.5
+    "minutes": 1.8
   },
   "score": {
     "eligible": 7,
     "found": 7,
     "exact": 7,
+    "neutral": 0,
     "value_total_usd": 966.47,
     "value_found_usd": 966.47,
     "recall_value": 1.0,
@@ -129,14 +131,6 @@
   },
   "cards": [
     {
-      "action": "submit_documentation",
-      "key": "CS-1",
-      "outcome": "correct",
-      "value_usd": 86.0,
-      "exact": true,
-      "why": "CS-1 is an FSA card swipe of 86.00 at Wrenfield Orthodontics on 18 June 2026 that no copay match or item check approved, so it is pending; the Paylance EOB E-5 is the independent third-party statement (date 18 June 2026, orthodontic adjustment visit, 86.00 she owes), and it is due by 14 October 2026, five days from today, within the plan's 30 days. Weighted at 86.00 dollars"
-    },
-    {
       "action": "submit_claim",
       "key": "E-1",
       "outcome": "correct",
@@ -183,10 +177,23 @@
       "value_usd": 190.0,
       "exact": true,
       "why": "D-2 is Tumblewick after-school care for Wren, age 9, in April 2026, inside the plan year; the invoice is the provider's statement. Weighted at 190.00 dollars"
+    },
+    {
+      "action": "submit_documentation",
+      "key": "CS-1",
+      "outcome": "correct",
+      "value_usd": 86.0,
+      "exact": true,
+      "why": "CS-1 is an FSA card swipe of 86.00 at Wrenfield Orthodontics on 18 June 2026 that no copay match or item check approved, so it is pending; the Paylance EOB E-5 is the independent third-party statement (date 18 June 2026, orthodontic adjustment visit, 86.00 she owes), and it is due by 14 October 2026, five days from today, within the plan's 30 days. Weighted at 86.00 dollars"
     }
   ],
   "missed": [],
-  "closing_words": "I need the exact invoice, EOB and receipt details from the earlier tabs before I file anything, so I'm recalling them now.\n\nI'm filing six claims and the answer to the pending swipe. Each one is a card for you to approve, and I haven't filed anything yet.\n\n**Claims, each backed by a third-party statement**\n- **CS-1, Wrenfield Orthodontics, 18 Jun, $86.00:** the swipe is answered with EOB E-5. It matches on date, provider and amount. It is due 14 October, so it comes first.\n- **E-1, crown, 11 Feb 2026, $164.00:** I'm claiming only your share. The plan's $656.00 is not claimable. The EOB is the statement.\n- **E-2, physical therapy, 6, 13 and 20 Apr, $75.00:** this is your share at $25.00 a visit. The EOB is the statement.\n- **P-1, allergy tablets, 22 Apr, $18.49:** the plan covers over-the-counter drugs. The Fennimoor receipt is the statement.\n- **P-2, menstrual care products, 31 Jan, $12.",
+  "closing_words": "I need the full figures from the earlier tabs before I file anything, so I'm recalling them now.\n\nI'm filing seven cards: six claims totalling $539.47, and an answer to the pending card swipe. Dana signs each one.\n\nThe plan page and the Flexwell page both give today as 9 October 2026. The CS-1 deadline of 14 October has not passed. Earlier I said it had, which was wrong. The run-out ends 31 October.\n\n**Claims**\n\n| Item | Amount | Why it qualifies |\n|---|---|---|\n| E-1 crown | $164.00 | Your share on the EOB. Care given 11 Feb 2026, inside your coverage. |\n| E-2 physical therapy | $75.00 | Your share on the EOB. Visits 6, 13 and 20 Apr 2026, at $25 each. |\n| P-1 allergy tablets | $18.49 | An over-the-counter drug is covered. Bought 22 Apr 2026. |\n| P-2 menstrual care products | $12.98 | Named as covered in the plan's rules. Bought 31 Jan 2026. |\n| D-1 Fernwick day camp | $420.00 | A day c",
+  "prose_audit": {
+    "said_usd": 539.47,
+    "record_usd": 966.47,
+    "agrees": false
+  },
   "trace": [
     {
       "portal": "Postwren",
@@ -203,8 +210,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "Seven messages are in the inbox. I'll read all of them now.",
-      "said_chars": 59,
+      "said": "Seven messages are in the inbox, and I'm reading all of them now.",
+      "said_chars": 65,
       "reads": [
         "read_message",
         "read_message",
@@ -220,8 +227,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "I've read all seven messages. Nothing has been claimed or filed.\n\n\n**What the mail shows**\n- **M-1, Flexwell notice:**\n  - The plan year ended 30 June, and the run-out ends 31 October.\n  - Swipe CS-1 (18 June, Wrenfield Orthodontics, $86.00) is pending.\n  - It needs a third-party statement of date, description and amount by **14 October**, or the $86.00 is repaid. That is the nearest deadline.\n- **D-1, Fernwick day camp:** Wren, 8 to 12 June, $420.00. This looks claimable.",
-      "said_chars": 1899,
+      "said": "I've read all seven messages and done nothing else, as you asked.\n\n| Msg | What it says | Provisional view |\n|---|---|---|\n| M-1 Flexwell | The plan year ended 30 June 2026. The run-out ends 31 October, and later claims are denied. Card swipe CS-1 is pending: 18 June, Wrenfield Orthodontics, $86.00. It needs a third-party statement of date, description and amount by 14 October, or the $86.00 is repaid. | Answer CS-1 with the matching EOB from Paylance.",
+      "said_chars": 2003,
       "reads": [],
       "cards": []
     },
@@ -229,8 +236,8 @@
       "portal": "Ledgerwren bank",
       "user": "This is my bank, Ledgerwren. Read its note and my statement. Don't do anything yet.",
       "continued": false,
-      "said": "I'll read the Ledgerwren statement now. I won't file anything.",
-      "said_chars": 62,
+      "said": "I'll read your Ledgerwren statement now and won't change anything.",
+      "said_chars": 66,
       "reads": [
         "read_statement"
       ],
@@ -240,8 +247,8 @@
       "portal": "Ledgerwren bank",
       "user": "",
       "continued": true,
-      "said": "I read the Ledgerwren statement. It has four debits, and I filed nothing. There was no separate note on this page beyond the statement rows.\n\n- **B-1, Granitegate Fitness, $39.00, 1 Mar:** a gym membership. I'm leaving it out, because a gym is general wellness rather than medical care.\n- **B-2, Winterlea Dental, $289.00, 2 Mar:** teeth whitening. I'm leaving it out, because it is cosmetic.\n- **B-3, Paylance, $212.00, 1 Jun:** the June health plan premium. I'm leaving it out, because premiums aren't claimable.",
-      "said_chars": 1181,
+      "said": "I've read the Ledgerwren statement and changed nothing. It has four debits. I saw no separate bank note, only the statement.\n\n| Id | Date | Payee | What | Amount | Provisional view |\n|---|---|---|---|---|---|\n| B-1 | 1 Mar | Granitegate Fitness | monthly membership | $39.00 | Leave out. A gym is not care the plan covers (I'll confirm against the plan's rules). |\n| B-2 | 2 Mar | Winterlea Dental | teeth whitening | $289.00 | Leave out. Whitening is cosmetic (to confirm against the plan's rules).",
+      "said_chars": 1452,
       "reads": [],
       "cards": []
     },
@@ -249,8 +256,8 @@
       "portal": "Paylance member portal",
       "user": "This is my health plan's member portal, Paylance. Read my explanations of benefits, every page. Don't do anything yet.",
       "continued": false,
-      "said": "I'll read both pages of EOBs now. Nothing will be filed.",
-      "said_chars": 56,
+      "said": "I'll read page 1 of your explanations of benefits, then page 2. I won't change anything.",
+      "said_chars": 88,
       "reads": [
         "read_eobs",
         "read_eobs"
@@ -261,8 +268,8 @@
       "portal": "Paylance member portal",
       "user": "",
       "continued": true,
-      "said": "I read both pages of your EOBs (6 of 6). Nothing has been filed.\n\n**What the EOBs show**\n- **E-1, Winterlea Dental, crown, 11 Feb 2026:** billed $820.00, plan paid $656.00, you owe **$164.00**. This looks claimable.\n- **E-2, Corvane Physical Therapy, 3 visits (6, 13 and 20 Apr 2026):** billed $375.00, plan paid $300.00, you owe **$75.00** ($25.00 a visit). This looks claimable.\n- **E-3, Winterlea Dermatology, office visit, 22 Aug 2025:** you owe $60.00. The date falls before the plan year that ended 30 June 2026.",
-      "said_chars": 1708,
+      "said": "I've read both pages of your EOBs (6 of 6) and changed nothing.\n\n| Id | Date of service | Provider | Service | Billed | Plan paid | You owe | Provisional view |\n|---|---|---|---|---|---|---|---|\n| E-1 | 11 Feb 2026 | Winterlea Dental | crown | $820.00 | $656.00 | $164.00 | Claim $164.00, your share. |\n| E-2 | 6, 13 and 20 Apr 2026 | Corvane Physical Therapy | 3 visits | $375.00 | $300.00 | $75.00 | Claim $75.00 ($25.00 a visit).",
+      "said_chars": 1603,
       "reads": [],
       "cards": []
     },
@@ -270,8 +277,8 @@
       "portal": "Fennimoor Pharmacy",
       "user": "This is my pharmacy, Fennimoor. Read my receipts. Don't do anything yet.",
       "continued": false,
-      "said": "I'll read your Fennimoor receipts now. I won't file anything.",
-      "said_chars": 61,
+      "said": "I'll read your Fennimoor receipt lines now and change nothing.",
+      "said_chars": 62,
       "reads": [
         "read_receipts"
       ],
@@ -281,8 +288,8 @@
       "portal": "Fennimoor Pharmacy",
       "user": "",
       "continued": true,
-      "said": "I read all five Fennimoor receipt lines (5 of 5) and filed nothing.\n\n- **P-1, 22 Apr 2026, allergy tablets (no prescription), $18.49, paid by Ledgerwren debit card:** This looks claimable if the plan's eligible list covers non-prescription medicine. I'll check that on Flexwell.\n- **P-2, 31 Jan 2026, menstrual care products, $12.98, Ledgerwren debit card:** This also depends on the plan's eligible list. I'll check it on Flexwell.",
-      "said_chars": 1451,
+      "said": "I've read all five Fennimoor receipt lines and changed nothing.\n\n| Id | Date | Item | Price | Paid with | Provisional view |\n|---|---|---|---|---|---|\n| P-1 | 22 Apr 2026 | Allergy tablets, no prescription | $18.49 | Ledgerwren debit card | Likely claim. I'll confirm against the plan's eligible list. |\n| P-2 | 31 Jan 2026 | Menstrual care products | $12.98 | Ledgerwren debit card | Likely eligible, but I need to check the plan's rules.",
+      "said_chars": 1639,
       "reads": [],
       "cards": []
     },
@@ -290,8 +297,8 @@
       "portal": "Flexwell",
       "user": "This is Flexwell, my FSA. Read its rules, my claims and my card. Claim every eligible expense with the statement the plan asks for, answer the pending card swipe, and leave out what the plan does not cover. Then tell me what you claimed, wh",
       "continued": false,
-      "said": "I'll read the plan's rules, your claims and your card first. Nothing is filed yet.",
-      "said_chars": 82,
+      "said": "I'll read the plan's rules, your claims and your card first, and I won't file anything yet.",
+      "said_chars": 91,
       "reads": [
         "read_plan",
         "read_plan",
@@ -308,16 +315,10 @@
       "portal": "Flexwell",
       "user": "",
       "continued": true,
-      "said": "I need the exact invoice, EOB and receipt details from the earlier tabs before I file anything, so I'm recalling them now.\n\nI'm filing six claims and the answer to the pending swipe. Each one is a card for you to approve, and I haven't filed anything yet.\n\n**Claims, each backed by a third-party statement**\n- **CS-1, Wrenfield Orthodontics, 18 Jun, $86.00:** the swipe is answered with EOB E-5. It matches on date, provider and amount. It is due 14 October, so it comes first.",
-      "said_chars": 2619,
+      "said": "I need the full figures from the earlier tabs before I file anything, so I'm recalling them now.\n\nI'm filing seven cards: six claims totalling $539.47, and an answer to the pending card swipe. Dana signs each one.\n\nThe plan page and the Flexwell page both give today as 9 October 2026. The CS-1 deadline of 14 October has not passed. Earlier I said it had, which was wrong. The run-out ends 31 October.\n\n**Claims**\n\n| Item | Amount | Why it qualifies |\n|---|---|---|\n| E-1 crown | $164.00 | Your share on the EOB.",
+      "said_chars": 2382,
       "reads": [],
       "cards": [
-        {
-          "action": "submit_documentation",
-          "key": "CS-1",
-          "outcome": "correct",
-          "value_usd": 86.0
-        },
         {
           "action": "submit_claim",
           "key": "E-1",
@@ -353,11 +354,17 @@
           "key": "D-2",
           "outcome": "correct",
           "value_usd": 190.0
+        },
+        {
+          "action": "submit_documentation",
+          "key": "CS-1",
+          "outcome": "correct",
+          "value_usd": 86.0
         }
       ]
     }
   ],
-  "note": "world.json only: the submit_claim and submit_documentation descriptions now say the expense is named by its id (E-, P-, D- or B-) and the swipe by its CS- id; run 1 chose the right seven expenses but keyed six claims by free text, so six scored unfounded",
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
   "history": [
     {
       "run_at": "2026-10-10T22:12:04Z",
@@ -367,6 +374,22 @@
       "eligible": 7,
       "value_found_usd": 86.0,
       "false_claims": 6
+    },
+    {
+      "run_at": "2026-10-10T22:14:23Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 7,
+      "eligible": 7,
+      "value_found_usd": 966.47,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 92.8,
+      "your_time_s": 210,
+      "note": "world.json only: the submit_claim and submit_documentation descriptions now say the expense is named by its id (E-, P-, D- or B-) and the swipe by its CS- id; run 1 chose the right seven expenses but keyed six claims by free text, so six scored unfounded"
     }
   ]
 }

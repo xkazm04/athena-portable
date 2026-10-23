@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "overpayment-refunds",
-  "captured_at": "2026-10-10T01:07:17Z",
-  "bench_run_at": "2026-10-10T01:04:35Z",
-  "narration": {
-    "text": "Every credit balance traced to whose money it is: Medicare overpayments returned inside 60 days, patients refunded, and posting errors corrected rather than refunded. This is a chore for the practice administrator of a three-clinician family practice that bills Medicare Part B and takes patient payments online and at the desk. Athena works it across 4 portals: Chartmend PM, Ledgerline, Novabridge MAC and Carenook. On the bench, she found 9 of 9 eligible items, worth 866 dollars and 8 cents of the 866 dollars and 8 cents there was to find. All 9 were filed at the exact amount the rules allow. She made no false claim. The world held 13 traps, and she walked past 13. She took 3 minutes. By hand, the same chore takes about 2 hours, so she was about 52 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 61.217,
-    "sha256": "85dad5b64c48bf28eb50e3afb86587e7d11b4e601e913daa613d19755f592c1a"
-  },
-  "video": {
-    "path": "evidence/overpayment-refunds/evidence.mp4",
-    "duration_s": 61.217,
-    "bytes": 3036078,
-    "sha256": "57e6e82d39b66d11e19bd35354561ca75dbb3db2c359c192b6a0ccd1a562b970"
-  },
-  "thumbnail": {
-    "path": "playbooks/overpayment-refunds/thumb.jpg",
-    "bytes": 77580,
-    "sha256": "ddf7305bab3cdcb6cc164a3580409b0e39c2088ccc67d9d3a0d35785eb02ae0e"
-  },
+  "captured_at": "2026-10-23T17:08:07Z",
+  "bench_run_at": "2026-10-23T15:40:58Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/overpayment-refunds/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23900,
-      "sha256": "8734cf6504ec81e259fa4992955406f6b689e93a0c1f50916502489692e4e3e4"
+      "bytes": 43656,
+      "sha256": "ec8ce1083e438376237cc73970ba559f1e5f009c5e854b5ee44da0cd82651393",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/overpayment-refunds/story/02.webp",
+      "bytes": 35884,
+      "sha256": "fa142cb849eca3347f0bf64215b6b2fb20fad98b6744e6badd615290c1a449e7",
       "caption": "Turn 1 - Chartmend PM: Our credit balance report has gotten long",
-      "turn": 1,
-      "bytes": 22500,
-      "sha256": "e1573850ae07fcc9cc30338b81ab768de18b794fd3bbe6074c40806f852a277e"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/overpayment-refunds/story/03.webp",
+      "bytes": 33292,
+      "sha256": "9a0590110d63ebb70db3d03cde033cb4d87bb0e12ec43c1843552226169223f3",
       "caption": "Turn 4 - Ledgerline: Now Ledgerline",
-      "turn": 4,
-      "bytes": 21446,
-      "sha256": "9e7a0a7ec03757a09bb022075555a2bec888552c37fded2e25aad9d9826a28d6"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/overpayment-refunds/story/04.webp",
-      "caption": "Turn 7 - Novabridge MAC, Athena: I'm filing three Medicare refund cards",
-      "turn": 7,
-      "bytes": 23992,
-      "sha256": "8f8a354ca036044f4535f1d37d63480ccbcf6e2e02d612b94a69c6353ceab93d"
+      "bytes": 41256,
+      "sha256": "6c5fa2e344cc59ebef1fe872bf270d654d8a6c09c619c6256cf3be0c9544cc05",
+      "caption": "Turn 8 - Novabridge MAC, Athena: The three cards are still waiting on you, and the rules confirm the plan",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/overpayment-refunds/story/05.webp",
-      "caption": "Turn 10 - Chartmend PM: Back in Chartmend",
-      "turn": 10,
-      "bytes": 23826,
-      "sha256": "c7e158292219db7a7681468cc83a3444acf458dfff6b74f79d500a4852f2d432"
-    },
-    {
-      "path": "playbooks/overpayment-refunds/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22822,
-      "sha256": "c82ddde4539481399dfdf001f99cf1b1beae1adeec87c665be94a321f2cdb9e8"
+      "bytes": 43030,
+      "sha256": "13850460aa2afb380e86479c3fe5f7b643dcfdb930bd77e63614f35d91bbd49e",
+      "caption": "Turn 11 - Chartmend PM: Back in Chartmend",
+      "kind": "turn",
+      "turn": 11
     }
   ]
 }

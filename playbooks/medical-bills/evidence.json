@@ -1,8 +1,8 @@
 {
   "schema": 3,
   "playbook": "medical-bills",
-  "captured_at": "2026-10-23T15:06:26Z",
-  "bench_run_at": "2026-10-07T23:06:25Z",
+  "captured_at": "2026-10-23T17:06:13Z",
+  "bench_run_at": "2026-10-23T16:42:01Z",
   "story": [
     {
       "n": 1,
@@ -15,8 +15,8 @@
     {
       "n": 2,
       "path": "playbooks/medical-bills/story/02.webp",
-      "bytes": 42334,
-      "sha256": "934b79213558cf8dbcd0e814cd7c5806d9cbf117cbed7a53f28725d11100dbdc",
+      "bytes": 32272,
+      "sha256": "56a0d7f85424a15c7e12c8eac0a0a43b62f4361e818660bfadc7bd923496a193",
       "caption": "Turn 1 - Bluepoint Health member portal: My medical bills are a mess",
       "kind": "turn",
       "turn": 1
@@ -24,26 +24,26 @@
     {
       "n": 3,
       "path": "playbooks/medical-bills/story/03.webp",
-      "bytes": 42426,
-      "sha256": "f00300e19c0a774f0573ad83a9ebb4d738a994d9eefd000f1e3432bc3a0ada85",
-      "caption": "Turn 4 - Bluepoint Health member portal, Athena: Here's what I can establish from the insurance portal",
+      "bytes": 33952,
+      "sha256": "873e51ecb0b6631dd440064300b8819726745928978e24b2419301fbf785579d",
+      "caption": "Turn 4 - Bluepoint Health member portal, Athena: Of the 10 claims, 9 have a decided EOB and one (C-1006) is still in process",
       "kind": "turn",
       "turn": 4
     },
     {
       "n": 4,
       "path": "playbooks/medical-bills/story/04.webp",
-      "bytes": 42224,
-      "sha256": "67f3e8ed84a2ca46c42a3294c80b5c398d6c9152fe2b059a931a43d5d68f4e2f",
-      "caption": "Turn 7 - MyChart (Valley Medical), Athena: Three of the five bills I opened match their EOBs, and two don't",
+      "bytes": 42652,
+      "sha256": "163c2f7c22f3d89b00113163d2ce9a937e1a59715d00984ea1450248367b06ea",
+      "caption": "Turn 7 - MyChart (Valley Medical), Athena: B-1 and B-2 are overbilled, and B-10 is not a separate charge",
       "kind": "turn",
       "turn": 7
     },
     {
       "n": 5,
       "path": "playbooks/medical-bills/story/05.webp",
-      "bytes": 42870,
-      "sha256": "cb56a67613163a6a64afbd3d0a599653ebb304a7dddd1c193333354bdf45f305",
+      "bytes": 42290,
+      "sha256": "7f8832e4fe23782530021d58d12112cface2a0beedc140b6cfb696e4a5b2920c",
       "caption": "Turn 10 - Bluepoint Health member portal: Back in the insurance portal",
       "kind": "turn",
       "turn": 10

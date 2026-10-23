@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "pmi-cancellation",
-  "captured_at": "2026-10-10T00:09:24Z",
-  "bench_run_at": "2026-10-10T00:06:57Z",
-  "narration": {
-    "text": "Mortgage insurance taken off as soon as the law allows, on the household's loan and a parent's. This is a chore for a homeowner who bought in 2021 with 5 percent down, has been paying extra principal since 2024, and handles her widowed mother's mortgage under a power of attorney. Athena works it across 4 portals: Northgate Servicing, Ledgerline, Deedvault and Mailnest. On the bench, she found 3 of 3 eligible items, worth 2,732 dollars of the 2,732 dollars there was to find. All 3 were filed at the exact amount the rules allow. She made no false claim. The world held 9 traps, and she walked past 9. She took 3 minutes. By hand, the same chore takes about 2 hours, so she was about 33 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 58.293,
-    "sha256": "908576a0ee00609a7908e92900c9d2bbc79cefa6c7664e529fa9b40a72b2a125"
-  },
-  "video": {
-    "path": "evidence/pmi-cancellation/evidence.mp4",
-    "duration_s": 58.293,
-    "bytes": 2645424,
-    "sha256": "385c2668bafa5885fd3e3cfe8e970183443ec8e0cf969c095454182efafdb4cb"
-  },
-  "thumbnail": {
-    "path": "playbooks/pmi-cancellation/thumb.jpg",
-    "bytes": 74077,
-    "sha256": "594aed9022a5e73d560ebce85cf93d4b25f1c6190c4f2b8b8197fec155fdb294"
-  },
+  "captured_at": "2026-10-23T17:08:54Z",
+  "bench_run_at": "2026-10-23T16:20:09Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/pmi-cancellation/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22364,
-      "sha256": "58fdb2f5bd1b54071445953b7d0c1fe4ede8b85c14f33434e0667134ee2a3fc0"
+      "bytes": 43980,
+      "sha256": "1b32a4020e10dc573e60156ae3a04b0c9e896b41195f7bb22be90b7d1fbb8e5f",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/pmi-cancellation/story/02.webp",
+      "bytes": 30032,
+      "sha256": "1fedc48381f7822515cca6fb4dedbadab99f3da9f8011150401184a40da854d0",
       "caption": "Turn 1 - Northgate Servicing: We're still paying mortgage insurance on our house, and Mom's loan still shows…",
-      "turn": 1,
-      "bytes": 22656,
-      "sha256": "01d68e6d36b3284d8b0e2a0031c8c2af9d309888785315fb94ef09aaee2e0e62"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/pmi-cancellation/story/03.webp",
+      "bytes": 25506,
+      "sha256": "9a247c8830e6073cd0a9969be3b813757c65bbeef15b2d06133d4cc321db1dfa",
       "caption": "Turn 4 - Ledgerline: Now Ledgerline",
-      "turn": 4,
-      "bytes": 17876,
-      "sha256": "6a79af5366530627e1d032363b567f01946bd7e17a5b47f024d4eed7d2734f40"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/pmi-cancellation/story/04.webp",
+      "bytes": 27364,
+      "sha256": "bf4a21fd38346e1d689cf7ba9b123dfb9f017cb7d83f8af0b146f1b00931f257",
       "caption": "Turn 8 - Mailnest: My Mailnest mortgage folder has the closing papers, Northgate's letters and a…",
-      "turn": 8,
-      "bytes": 19508,
-      "sha256": "cd90fbf720d8d787e0985139a4f4367da1eef484cbc8b4fdcd7a0d344b839908"
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/pmi-cancellation/story/05.webp",
+      "bytes": 42466,
+      "sha256": "86c59cd5e3171d24f8992007fad0ce99a14aa8a1e1d1b6181f86fd660bef9260",
       "caption": "Turn 11 - Northgate Servicing: Back in Northgate",
-      "turn": 11,
-      "bytes": 23374,
-      "sha256": "03c42017da5385a061b339f39bdb05af830736ff3e54fb0d4487f0d56bd30d62"
-    },
-    {
-      "path": "playbooks/pmi-cancellation/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 21714,
-      "sha256": "b73c166c456eecd398be5cbfa7431ec3731d3c6379aae39fea81e6f951dfdd03"
+      "kind": "turn",
+      "turn": 11
     }
   ]
 }

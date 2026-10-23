@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "veteran-burial-benefits",
-  "captured_at": "2026-10-10T04:59:24Z",
-  "bench_run_at": "2026-10-10T04:56:26Z",
-  "narration": {
-    "text": "A veteran father's burial allowance claimed two days before its two years run out, with the plot allowance and the government marker his cemetery allows, and nothing his record does not support. This is a chore for an adult son who paid for his widowed father's funeral and burial two years ago and has not claimed anything from the VA. Athena works it across 4 portals: Docshelf, Wrenfield Funeral Home, Ledgerline bank and Vetserve. On the bench, she found 3 of 3 eligible items, worth 3,196 dollars of the 3,196 dollars there was to find. All 3 were filed at the exact amount the rules allow. She made no false claim. The world held 11 traps, and she walked past 11. She took 3 minutes. By hand, the same chore takes 4 hours, so she was about 89 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 59.423,
-    "sha256": "f28606f6a22caa3ef0fe135760a518ce76cd0c4db5e9cb1bd831af1c4697abe4"
-  },
-  "video": {
-    "path": "evidence/veteran-burial-benefits/evidence.mp4",
-    "duration_s": 59.44,
-    "bytes": 2789895,
-    "sha256": "f3ad303747c59c272fe90c10099d03761358754a7e56b05583c54298ec35ba1c"
-  },
-  "thumbnail": {
-    "path": "playbooks/veteran-burial-benefits/thumb.jpg",
-    "bytes": 98443,
-    "sha256": "254ceff53ef21e68f7309fa358f48824d424c3f848d2054fa564f825460f6e66"
-  },
+  "captured_at": "2026-10-23T17:12:39Z",
+  "bench_run_at": "2026-10-23T16:31:30Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/veteran-burial-benefits/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23968,
-      "sha256": "cef4e7953c5ded7fc6d9561e90699b088c137f0aafb178509de1af5e255738a9"
+      "bytes": 41184,
+      "sha256": "64e7b587a1fdd9225b870a311df472028db2e416ac3b3479ad32dbe8b8538bae",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/veteran-burial-benefits/story/02.webp",
+      "bytes": 26096,
+      "sha256": "4d2ecc29eddbd407cbf0ba4d4dcae263faa2339ca9d071b559c24763ba5a3492",
       "caption": "Turn 1 - Docshelf: Dad died two years ago and we never claimed anything from the VA for his burial",
-      "turn": 1,
-      "bytes": 21466,
-      "sha256": "1917f673018430f07a6e2e1876eb152f9bbb02dbd48b59e005a6cb051f538ad4"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/veteran-burial-benefits/story/03.webp",
+      "bytes": 25066,
+      "sha256": "f21f726637108878362a5bd995d7c9a159726f68f293836a1d8ead224c5c9523",
       "caption": "Turn 4 - Wrenfield Funeral Home: Wrenfield did Dad's funeral",
-      "turn": 4,
-      "bytes": 20174,
-      "sha256": "8de6bbcb71006e76fb4916b6dfa4ec96f04342daf7618ce7fcc4ac6adb4f3e74"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/veteran-burial-benefits/story/04.webp",
+      "bytes": 25280,
+      "sha256": "b2325af5fc3c0ab9404bc87c874f997c79347e3d200d5a9446b5e3f3632fb706",
       "caption": "Turn 6 - Ledgerline bank: My checking at Ledgerline",
-      "turn": 6,
-      "bytes": 20946,
-      "sha256": "d1d88d0086c4bcaefe69a0e0b2051750fd459a5fc31edd963307e836fcfe7582"
+      "kind": "turn",
+      "turn": 6
     },
     {
+      "n": 5,
       "path": "playbooks/veteran-burial-benefits/story/05.webp",
-      "caption": "Turn 9 - Vetserve, Athena: The burial allowance has to be received by 11 October 2026, which is two days…",
-      "turn": 9,
-      "bytes": 22564,
-      "sha256": "f03ca785427f5fe773af664a9f6a2fcf6777dedae58ef41796c581f5e4b65756"
-    },
-    {
-      "path": "playbooks/veteran-burial-benefits/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23972,
-      "sha256": "30186a859cbd8f2db72be412ee5822a97a058dd321e39c98d44ca7eb0b149330"
+      "bytes": 42146,
+      "sha256": "024f52fc31b62404dd47fe7d5cf32ef5a2914b0e1b0c3303f23615a4e74f939f",
+      "caption": "Turn 9 - Vetserve, Athena: The burial allowance can still be filed, but the deadline is 11 October 2026",
+      "kind": "turn",
+      "turn": 9
     }
   ]
 }

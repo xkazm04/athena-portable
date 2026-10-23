@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "counterfeit-takedowns",
-  "captured_at": "2026-10-10T16:19:52Z",
-  "bench_run_at": "2026-10-10T16:17:34Z",
-  "narration": {
-    "text": "A linen brand's suspect listings sorted on two marketplaces, copied photographs taken down with copyright notices on four listings, counterfeit aprons on two with trademark complaints that carry a test purchase, while an authorised retailer, a reseller of genuine goods with its own photographs, a name-only title, a customer's photograph, a listing already removed and a listing on neither marketplace are left alone. This is a chore for the owner of a small linen goods brand in Maine, who sells on her own site and finds copies of her photographs on other sellers' listings. On the bench, she found 6 of 6 eligible items, worth 11,030 dollars of the 11,030 dollars there was to find. She made no false claim. The world held 14 traps, and she walked past 14. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 88 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 62.324,
-    "sha256": "f529908dc267968804f5270eea4de5ae7133b58e4a6032bb41d740d0cd56f210"
-  },
-  "video": {
-    "path": "evidence/counterfeit-takedowns/evidence.mp4",
-    "duration_s": 62.36,
-    "bytes": 3128410,
-    "sha256": "66137edf676bffe647b679d283917baa327fdb60920b8291d9345a898530e856"
-  },
-  "thumbnail": {
-    "path": "playbooks/counterfeit-takedowns/thumb.jpg",
-    "bytes": 84169,
-    "sha256": "41912faa954534e384a3ed122b3c569515a59dc7f418bb4a5c59c363a3bc3a6f"
-  },
+  "captured_at": "2026-10-23T16:59:51Z",
+  "bench_run_at": "2026-10-23T15:51:09Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/counterfeit-takedowns/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23648,
-      "sha256": "86ab5bc3af2315f997f663ee2a9b233ed183b2253d3d8397c524abd2b25534ce"
+      "bytes": 41118,
+      "sha256": "818af66864cf35e064b2d76356561c06bf37ca4dcbe7e0f4037ad013fd587721",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/counterfeit-takedowns/story/02.webp",
+      "bytes": 37580,
+      "sha256": "397ed438ee428a1113202cdaf719a30e4e5d4cc7876b400f3ec7dbe2f6e3c758",
       "caption": "Turn 1 - Brandwick registry: I'm Ines, Marrowby Linen",
-      "turn": 1,
-      "bytes": 22928,
-      "sha256": "515c2f0eb208db1275c4035368ca2b07ae0f90416207e4d81e215978c864e097"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/counterfeit-takedowns/story/03.webp",
-      "caption": "Turn 5 - Binderwell, Athena: Six documents are listed",
-      "turn": 5,
-      "bytes": 23090,
-      "sha256": "18df2ea3111a7591aa808ff44b30cbe01be631d96cd573ef654df83c790f2cec"
+      "bytes": 28030,
+      "sha256": "d4146397aa9d4fae861e577458390b92b1c64a9137ba895d4c007d5f15eedbf1",
+      "caption": "Turn 4 - Binderwell, Athena: Six papers are listed, and I'm reading all of them now",
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/counterfeit-takedowns/story/04.webp",
-      "caption": "Turn 8 - Stallwick seller, Athena: Both listing pages are read",
-      "turn": 8,
-      "bytes": 23844,
-      "sha256": "efc551aaf5ef5bd51ad9abc4af898470e8a9b57afb434d1eddfac957871c7d61"
+      "bytes": 42376,
+      "sha256": "fa0be1c85183bee373bb0ff5fbd9e89c80380cc7cfb1d568b4d67abb711dad49",
+      "caption": "Turn 8 - Stallwick seller, Athena: Three of the six live listings are supported by our papers and Stallwick's…",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/counterfeit-takedowns/story/05.webp",
-      "caption": "Turn 12 - Stallwick seller: I've switched to Stallwick seller as you asked",
-      "turn": 12,
-      "bytes": 22320,
-      "sha256": "379022d583a0e8b96b3205b7f92e9446686169c43ab9106037b2d4c5ac8908b7"
-    },
-    {
-      "path": "playbooks/counterfeit-takedowns/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23864,
-      "sha256": "92ed00e0cf391905e790f7c8c275103b80b3be15cd2c072ba1e9b166ab13a265"
+      "bytes": 43414,
+      "sha256": "39f280b9be8c4e4c50437817ffab199c2ffa84ff2b15e27757be8d41585089e6",
+      "caption": "Turn 11 - Hawkerbrook seller, Athena: I'm filing two of the five Hawkerbrook listings",
+      "kind": "turn",
+      "turn": 11
     }
   ]
 }

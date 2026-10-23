@@ -1,15 +1,16 @@
 {
   "playbook": "denied-party-screening",
-  "run_at": "2026-10-10T09:45:28Z",
+  "run_at": "2026-10-23T15:53:54Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 172.6,
+  "comparable": "sha256:823e78e4698603ba",
+  "wall_s": 168.8,
   "turns": 12,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 45,
-  "cost_usd": 2.0659,
+  "reads": 46,
+  "cost_usd": 1.7986,
   "your_time_s": 330,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 2.9
+    "minutes": 2.8
   },
   "score": {
     "eligible": 10,
     "found": 10,
     "exact": 10,
+    "neutral": 1,
     "value_total_usd": 10.0,
     "value_found_usd": 10.0,
     "recall_value": 1.0,
@@ -139,28 +141,18 @@
       "why": "The listed party on the Unverified List, but its UVL statement meets 15 CFR 744.15(b): in writing on letterhead, signed and dated 2 October 2026 by its Managing Director, who certifies his authority; the complete physical address, phone, fax, email and website; the items (TS-200, EAR99); the end use, end user and country; agreement to abide by the EAR, to cooperate with end-use checks and to provide records (M-2). An EAR99 export needing no license may proceed with it, the EEI filed and the export logged (758.1(b)(8), 744.15(b)(1)). Released. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
     },
     {
+      "action": "release_order",
+      "key": "O-4110",
+      "outcome": "neutral",
+      "why": "Wuxi Qiaoyun is 55 percent owned by the Entity List's Qiaolin Microsystems (S-6) but is not itself listed. BIS's affiliates rule, which would extend the Entity List license requirement to it, is stayed by 90 FR 50857 until 9 November 2026, and Red Flag 29 with it; the order ships today, so no license is required on the ground of its owner alone. Quillmont's policy leaves it to the coordinator: releasing it is lawful today, and holding it for a closer look at the owner is prudent"
+    },
+    {
       "action": "place_compliance_hold",
       "key": "O-4105",
       "outcome": "correct",
       "value_usd": 1.0,
       "exact": true,
       "why": "A true match under an a.k.a.: the order's Chengdu Qiaolin Microsystems Technology Co. is the first a.k.a. of the Entity List's Qiaolin Microsystems Co., Ltd., at the same address in Chengdu, though the screening scored it only 86. The entry requires a license for all items subject to the EAR, EAR99 included, with a presumption of denial (744.11, Supplement No. 4 to Part 744), and Quillmont holds none. Held: it does not ship. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
-    },
-    {
-      "action": "place_compliance_hold",
-      "key": "O-4108",
-      "outcome": "correct",
-      "value_usd": 1.0,
-      "exact": true,
-      "why": "The listed party on the Unverified List, with no statement that meets 744.15(b): the one received on 7 October (M-6) is signed by a sales executive with no certification of authority, gives a post office box, not a complete physical address, has no phone, fax, email or website, and declares no end use, end user or country and no agreement to provide records. Without a valid statement the export may not proceed. Held until a statement that meets the rule arrives. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
-    },
-    {
-      "action": "place_compliance_hold",
-      "key": "O-4111",
-      "outcome": "correct",
-      "value_usd": 1.0,
-      "exact": true,
-      "why": "Red flags unresolved after asking: Marrow Bay Logistics is a freight forwarder named as the final destination (red flag 9), gave no end use and, asked on 6 October (M-4), refused to name its buyer (red flags 1 and 12; M-7); it paid $4,000 over the invoice from a bank in the Seychelles, and asked that the sensors be marked 'spare parts', a false description (764.2(g)). Under Supplement No. 3 to Part 732 the exporter refrains or puts the facts to BIS. Held. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
     },
     {
       "action": "place_compliance_hold",
@@ -172,6 +164,14 @@
     },
     {
       "action": "place_compliance_hold",
+      "key": "O-4108",
+      "outcome": "correct",
+      "value_usd": 1.0,
+      "exact": true,
+      "why": "The listed party on the Unverified List, with no statement that meets 744.15(b): the one received on 7 October (M-6) is signed by a sales executive with no certification of authority, gives a post office box, not a complete physical address, has no phone, fax, email or website, and declares no end use, end user or country and no agreement to provide records. Without a valid statement the export may not proceed. Held until a statement that meets the rule arrives. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
+    },
+    {
+      "action": "place_compliance_hold",
       "key": "O-4109",
       "outcome": "correct",
       "value_usd": 1.0,
@@ -179,22 +179,25 @@
       "why": "Blocked by ownership: since 1 September 2026, 60 percent of Lumen Harbor Trading Ltd. is owned by Dravik Capital Holdings Ltd. (M-3), which Aiko's own search of 6 October found on the SDN List, same name, address and registration HE 412907 (S-7). Under OFAC's 50 Percent Rule (revised guidance of 13 August 2014) an entity 50 percent or more owned by a blocked person is itself blocked, though no list names it and the screening found no match. Held. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
     },
     {
-      "action": "release_order",
-      "key": "O-4110",
-      "outcome": "neutral",
-      "why": "Wuxi Qiaoyun is 55 percent owned by the Entity List's Qiaolin Microsystems (S-6) but is not itself listed. BIS's affiliates rule, which would extend the Entity List license requirement to it, is stayed by 90 FR 50857 until 9 November 2026, and Red Flag 29 with it; the order ships today, so no license is required on the ground of its owner alone. Quillmont's policy leaves it to the coordinator: releasing it is lawful today, and holding it for a closer look at the owner is prudent"
+      "action": "place_compliance_hold",
+      "key": "O-4111",
+      "outcome": "correct",
+      "value_usd": 1.0,
+      "exact": true,
+      "why": "Red flags unresolved after asking: Marrow Bay Logistics is a freight forwarder named as the final destination (red flag 9), gave no end use and, asked on 6 October (M-4), refused to name its buyer (red flags 1 and 12; M-7); it paid $4,000 over the invoice from a bank in the Seychelles, and asked that the sensors be marked 'spare parts', a false description (764.2(g)). Under Supplement No. 3 to Part 732 the exporter refrains or puts the facts to BIS. Held. Weighted at $1, a count weight: no public per-search price was found, and the Consolidated Screening List's own search is free (ADR 0056, 2026-10-09 amendment); a price avoided, not money recovered"
     }
   ],
   "missed": [],
-  "closing_words": "I can file eight of the eleven now. The other three, O-4106, O-4109 and O-4110, need a recall first, because my notes on their screening and ownership results are cut off.\n\n**Release (5):**\n- **O-4101 Halden, O-4102 Agricola:** no screening match.\n- **O-4103 Corvane:** the Entity List entry is a different company in Shenzhen. Address, country and identifier differ, and M-5 confirms the Toronto company has no China ties.\n- **O-4104 Sorvan:** the SDN entry is a different company in Tehran. The address, country and ID differ, and the owners were searched in S-5 with no entry above 80.\n- **O-4107 Ashvant:** the UVL statement in M-2 meets 744.15(b). The release note records the AES filing and the statement log.\n\n**Hold (3):**\n- **O-4105 Chengdu Qiaolin:** the order name is a listed a.k.a. at the listed address, and there is no license.\n- **O-4108 Zarnab:** the UVL statement in M-6 has a P.O. ",
+  "closing_words": "Eleven cards are filed: six releases and five holds. Nothing ships or is held until you answer each one.\n\n**Release (6)**\n- **O-4101 Halden, O-4102 Agricola:** no screening match, and the customer master shows nothing against either.\n- **O-4103 Corvane:** the listed entity is a Shenzhen company with a different name, address and registration code. Corvane's Ontario business number, 1002893417, matches the master and M-5.\n- **O-4104 Sorvan:** the SDN entry is a Tehran company with a different country, address and ID. The owners, the Sorvanis, had no hit in S-5.\n- **O-4107 Ashvant:** the UVL statement in M-2 (2 Oct) is signed and dated by the Managing Director. It has the full address and contacts, EAR99 items, and the no-misuse and no-reexport undertakings. It also gives end use, end user and country, and agrees to post-shipment checks and records. Policy requires an AES filing, whatever ",
   "trace": [
     {
       "portal": "Orderwick storefront",
       "user": "I'm Aiko, I do export compliance at Quillmont Sensors. Start in Orderwick: read this week's export orders, and open each one for its ship-to address, the end use the customer gave, the payment and its note.",
       "continued": false,
-      "said": "Plan: read the order list (both pages if there are more than six), then open each order. Screenlist, Mailnest and Ledgerline come after.",
-      "said_chars": 136,
+      "said": "I'll start by listing this week's orders, then open each one.",
+      "said_chars": 61,
       "reads": [
+        "list_orders",
         "list_orders"
       ],
       "cards": []
@@ -203,10 +206,14 @@
       "portal": "Orderwick storefront",
       "user": "",
       "continued": true,
-      "said": "Page 1 shows 6 of 11 orders. I'll read page 2, then open all 11 orders.",
-      "said_chars": 71,
+      "said": "There are 11 orders (O-4101 to O-4111). I'll open each one now.",
+      "said_chars": 63,
       "reads": [
-        "list_orders",
+        "view_order",
+        "view_order",
+        "view_order",
+        "view_order",
+        "view_order",
         "view_order",
         "view_order",
         "view_order",
@@ -220,23 +227,8 @@
       "portal": "Orderwick storefront",
       "user": "",
       "continued": true,
-      "said": "Orders O-4101 to O-4106 are open (6 of 11). The remaining five are O-4107 to O-4111, so I'll open those now.",
-      "said_chars": 108,
-      "reads": [
-        "view_order",
-        "view_order",
-        "view_order",
-        "view_order",
-        "view_order"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "Orderwick storefront",
-      "user": "",
-      "continued": true,
-      "said": "All 11 orders are read in Orderwick. I haven't released or held anything yet.\n\n**What Orderwick shows (ship-to, end use given, payment, note):**\n\n| Order | Customer | Country | Notable |\n|---|---|---|---|\n| O-4101 | Halden Process Controls GmbH | Germany | Calibration rigs, net 30 |\n| O-4102 | Agricola Los Quillayes S.A. | Chile | Orchard soil monitoring, \"same as last season\" |\n| O-4103 | Corvane Instruments Ltd.",
-      "said_chars": 2988,
+      "said": "I've read all 11 orders and opened each one. Nothing is released or held yet.\n\n| Order | Customer | Ship-to | Value | Payment | What the page says |\n|---|---|---|---|---|---|\n| O-4101 | Halden Process Controls GmbH | Stuttgart, DE | $9,600 | net 30 | Calibration rigs for food-processing panels. |\n| O-4102 | Agricola Los Quillayes S.A. | Rancagua, CL | $7,200 | net 30 | Orchard soil monitoring. Note: \"same as last season\". |\n| O-4103 | Corvane Instruments Ltd.",
+      "said_chars": 2869,
       "reads": [],
       "cards": []
     },
@@ -244,9 +236,17 @@
       "portal": "Screenlist",
       "user": "Screenlist has the screening of every party to these orders and the searches I ran by hand. Read the guidance, then review every result and every potential match field by field against its list entry, and read my searches.",
       "continued": false,
-      "said": "I'll start with the guidance index, every screening result and your hand searches.",
-      "said_chars": 82,
+      "said": "I'll read the guidance, the screening results and your hand searches first. Then I'll open each potential match.",
+      "said_chars": 112,
       "reads": [
+        "read_guidance",
+        "read_guidance",
+        "read_guidance",
+        "read_guidance",
+        "read_guidance",
+        "read_guidance",
+        "read_guidance",
+        "read_guidance",
         "read_guidance",
         "list_screenings",
         "list_searches"
@@ -257,17 +257,9 @@
       "portal": "Screenlist",
       "user": "",
       "continued": true,
-      "said": "The guidance index only listed topics, so I'm reading all eight now. I'm also opening the match review for each of the six potential matches.",
-      "said_chars": 141,
+      "said": "Next I'll open the seven potential matches field by field.\n\n\nI'm skipping O-4109, O-4110 and O-4111 for now. They screened \"no match\", but your searches S-6 and S-7 bear on O-4109 and O-4110, so I'll come back to them after the matches.",
+      "said_chars": 236,
       "reads": [
-        "read_guidance",
-        "read_guidance",
-        "read_guidance",
-        "read_guidance",
-        "read_guidance",
-        "read_guidance",
-        "read_guidance",
-        "read_guidance",
         "view_match",
         "view_match",
         "view_match",
@@ -281,8 +273,20 @@
       "portal": "Screenlist",
       "user": "",
       "continued": true,
-      "said": "Screenlist is done for all 11 orders. Two of them still depend on other tabs.\n\n\n**Screenlist is read, and I've filed nothing yet.** Here is where each order stands:\n\n| Order | Finding | Standing |\n|---|---|---|\n| O-4101 Halden, O-4102 Agricola | No match | Clear |\n| O-4103 Corvane (Toronto) | The Entity List entry is a different company in Shenzhen. Only the name is close. Address, country and identifier all differ, and no a.k.a. fits. | Clear. Record the reason.",
-      "said_chars": 3000,
+      "said": "Screening is reviewed field by field, but nothing is filed yet. Mailnest and Ledgerline still have to settle O-4107, O-4108, O-4109 and O-4104.\n\n| Order | Finding |\n|---|---|\n| O-4103 Corvane (Canada) | Not the listed party. The entry is a Shenzhen company with a different name, address and registration code, and the entry gives no address outside Shenzhen. Clear. |\n| O-4104 Sorvan (UAE) | Not the listed party. The SDN entry is a Tehran company with a different country, address and registration ID.",
+      "said_chars": 3563,
+      "reads": [
+        "view_match",
+        "view_match"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Screenlist",
+      "user": "",
+      "continued": true,
+      "said": "The two reviews for O-4109 and O-4110 add nothing new. Both names and addresses scored no higher than 80, and Screenlist doesn't screen owners. Your hand searches S-6 and S-7 are the only owner screening on file.\n\nI'm saving the Screenlist findings so they carry into the other tabs.\n\n\nNothing more can be done from Screenlist, and no cards are filed yet. Switch me to Mailnest and I'll read the Ashvant and Zarnab UVL statements against every element of the guidance, and read the rest of the compliance inbox.",
+      "said_chars": 867,
       "reads": [],
       "cards": []
     },
@@ -290,8 +294,8 @@
       "portal": "Mailnest",
       "user": "Mailnest is our export compliance inbox: the customers' answers and statements. Read them all.",
       "continued": false,
-      "said": "Reading the inbox list first.",
-      "said_chars": 29,
+      "said": "I'll list the inbox first, then open every message.",
+      "said_chars": 51,
       "reads": [
         "list_messages"
       ],
@@ -301,8 +305,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "Seven messages in the inbox. I'm reading all of them now.",
-      "said_chars": 57,
+      "said": "Seven messages are in the inbox. I'm opening all of them now.",
+      "said_chars": 61,
       "reads": [
         "read_message",
         "read_message",
@@ -318,8 +322,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "Mailnest is read: all 7 messages. I haven't released or held anything yet.\n\n| Message | What it says | Bearing on the order |\n|---|---|---|\n| M-1 | Your 1 Oct request to Zarnab for a UVL statement. | Context only. |\n| M-2 | Ashvant's statement is signed and dated 2 Oct by Rohan Mehta, Managing Director, who certifies he can bind the company. It gives the full street address in Pune, phone, fax, email and website.",
-      "said_chars": 2830,
+      "said": "Six of the seven messages bear on a decision. I haven't filed any cards, and Ledgerline is still unread.\n\n| Order | What Mailnest shows | Leans |\n|---|---|---|\n| O-4103 Corvane | M-5: Ontario company, business number 1002893417 (the number on the order). Same Toronto address. It says it has no China office, owner or affiliate. This fits the earlier finding that it is not the Shenzhen listed entity.",
+      "said_chars": 2726,
       "reads": [],
       "cards": []
     },
@@ -327,10 +331,9 @@
       "portal": "Ledgerline ERP",
       "user": "Ledgerline is the release queue; whatever is released by 3 pm ships today. Read our policy and the customer master, then release every order that can lawfully ship and hold every order that can't, each with its reason. Don't hold a customer",
       "continued": false,
-      "said": "I'll read the policy and the customer master first, then file the release and hold cards.\n\nThe policy and customer master reads are filed, but their answers haven't come back yet. I haven't released or held anything.\n\nThe recall for the Screenlist and Mailnest findings returned only the Orderwick summary. I'm not going to file cards on that alone.",
-      "said_chars": 523,
+      "said": "I'll read Ledgerline's policy and customer master first, and recall what earlier tabs found. Nothing is released or held yet.\n\nThe Ledgerline policy and customer master reads are sent, but their answers haven't arrived. I'm not re-calling them, and I won't release or hold anything until I've read them.\n\nMemory already holds what the other tabs showed:\n- **Hold:**\n  - O-4105: the listed Entity List party, under an a.k.a. at the same address.\n  - O-4106: Denied Persons, with the same name, address and country.",
+      "said_chars": 1531,
       "reads": [
-        "read_policy",
         "read_policy",
         "read_policy",
         "read_policy",
@@ -344,8 +347,8 @@
       "portal": "Ledgerline ERP",
       "user": "",
       "continued": true,
-      "said": "I can file eight of the eleven now. The other three, O-4106, O-4109 and O-4110, need a recall first, because my notes on their screening and ownership results are cut off.\n\n**Release (5):**\n- **O-4101 Halden, O-4102 Agricola:** no screening match.\n- **O-4103 Corvane:** the Entity List entry is a different company in Shenzhen. Address, country and identifier differ, and M-5 confirms the Toronto company has no China ties.\n- **O-4104 Sorvan:** the SDN entry is a different company in Tehran.",
-      "said_chars": 3607,
+      "said": "Eleven cards are filed: six releases and five holds. Nothing ships or is held until you answer each one.\n\n**Release (6)**\n- **O-4101 Halden, O-4102 Agricola:** no screening match, and the customer master shows nothing against either.\n- **O-4103 Corvane:** the listed entity is a Shenzhen company with a different name, address and registration code. Corvane's Ontario business number, 1002893417, matches the master and M-5.",
+      "said_chars": 2272,
       "reads": [],
       "cards": [
         {
@@ -379,20 +382,13 @@
           "value_usd": 1.0
         },
         {
+          "action": "release_order",
+          "key": "O-4110",
+          "outcome": "neutral"
+        },
+        {
           "action": "place_compliance_hold",
           "key": "O-4105",
-          "outcome": "correct",
-          "value_usd": 1.0
-        },
-        {
-          "action": "place_compliance_hold",
-          "key": "O-4108",
-          "outcome": "correct",
-          "value_usd": 1.0
-        },
-        {
-          "action": "place_compliance_hold",
-          "key": "O-4111",
           "outcome": "correct",
           "value_usd": 1.0
         },
@@ -404,16 +400,41 @@
         },
         {
           "action": "place_compliance_hold",
+          "key": "O-4108",
+          "outcome": "correct",
+          "value_usd": 1.0
+        },
+        {
+          "action": "place_compliance_hold",
           "key": "O-4109",
           "outcome": "correct",
           "value_usd": 1.0
         },
         {
-          "action": "release_order",
-          "key": "O-4110",
-          "outcome": "neutral"
+          "action": "place_compliance_hold",
+          "key": "O-4111",
+          "outcome": "correct",
+          "value_usd": 1.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-10T09:45:28Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 10,
+      "eligible": 10,
+      "value_found_usd": 10.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 172.6,
+      "your_time_s": 330
     }
   ]
 }

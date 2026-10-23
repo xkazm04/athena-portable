@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "bid-opportunity-triage",
-  "captured_at": "2026-10-11T07:55:48Z",
-  "bench_run_at": "2026-10-11T07:51:10Z",
-  "narration": {
-    "text": "A small firm triages solicitations on 9 October 2026: six are kept, one because a mailed amendment changed its set-aside, and four questions go in on time, while set-asides it lacks, a size standard it exceeds, a plan over the 50 percent limit, dead notices, a local-only bid, late questions and paid services are left alone. This is a chore for the owner and president of a 96-person IT support and facilities services firm, who decides each week which new solicitations to chase. On the bench, she found 10 of 10 eligible items, worth 10 dollars of the 10 dollars there was to find. She made no false claim. The world held 12 traps, and she walked past 12. She took 2 minutes. By hand, the same chore takes 2 hours, so she was about 50 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 58.571,
-    "sha256": "a62f9e7815c43cc90bc58e90297a233e6e7a9e963e8e709b44f4cd0e794f26b3"
-  },
-  "video": {
-    "path": "evidence/bid-opportunity-triage/evidence.mp4",
-    "duration_s": 58.6,
-    "bytes": 3941765,
-    "sha256": "7758d322adc39a8489c96a055624331a6c6380a2b17a50bd41ddc49372b0fedd"
-  },
-  "thumbnail": {
-    "path": "playbooks/bid-opportunity-triage/thumb.jpg",
-    "bytes": 89226,
-    "sha256": "b9ba64d1d80c6a77805a0e2ddb33a7be423d54a3835f96895ecce7dbd37343ae"
-  },
+  "captured_at": "2026-10-23T16:58:12Z",
+  "bench_run_at": "2026-10-23T15:46:14Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/bid-opportunity-triage/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23714,
-      "sha256": "f6828c5640d76618315064204b441bc5c699dff393eea7b1be530f8a7324ef69"
+      "bytes": 42590,
+      "sha256": "e304b04500733eee3205d0aa34ebab6d964ee784381ee4517293d8eea235802c",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/bid-opportunity-triage/story/02.webp",
+      "bytes": 38690,
+      "sha256": "a7a6b11f597876808a1949754fb97e90252bd929531067faf05b842b01d44da6",
       "caption": "Turn 1 - Noticewick: I'm Marian Oyelaran",
-      "turn": 1,
-      "bytes": 23194,
-      "sha256": "d422e64bc17f8978095b6311af4bda0a882d4be3f7501d7f487e5e5f53d5b496"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/bid-opportunity-triage/story/03.webp",
-      "caption": "Turn 6 - Bidmoor, Athena: Three notices are listed",
-      "turn": 6,
-      "bytes": 22384,
-      "sha256": "ef9732a071e4029959ec80709c38dfbf6ad2270925a83df70b816391203d4a0b"
+      "bytes": 27988,
+      "sha256": "b72e7f8a03b17fb94749d5e0f13e61fcaed828278c82fb0f032d12656169d800",
+      "caption": "Turn 6 - Bidmoor, Athena: The rules and the notice list (3 of 3) are in",
+      "kind": "turn",
+      "turn": 6
     },
     {
+      "n": 4,
       "path": "playbooks/bid-opportunity-triage/story/04.webp",
+      "bytes": 32762,
+      "sha256": "7bd7390c51b7e6b7b1a1ebabf47faa7a9a03c1f0a26163b2954018302f0c4783",
       "caption": "Turn 11 - Postwren: Postwren is our mail",
-      "turn": 11,
-      "bytes": 22970,
-      "sha256": "a6ea040f04da28a559574d629ab56b5b4d103104c29ce0d60ee6cca14a834e7e"
+      "kind": "turn",
+      "turn": 11
     },
     {
+      "n": 5,
       "path": "playbooks/bid-opportunity-triage/story/05.webp",
+      "bytes": 43522,
+      "sha256": "2fac6f2926ecec2973c0deb1f4c8a5e03c820563011f261aa48b3c99367137d9",
       "caption": "Turn 16 - Bidmoor: In Bidmoor, send the worksheet's open question for a county notice we can win…",
-      "turn": 16,
-      "bytes": 22934,
-      "sha256": "6ccf17d0fc996d67994b5bd8b1215879b72185a58888267b8878ba50529e8d6f"
-    },
-    {
-      "path": "playbooks/bid-opportunity-triage/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22980,
-      "sha256": "b3dc2f6b07a0e3b5b672ecdac60cb9289629706451cb3ce559551630ef4daff0"
+      "kind": "turn",
+      "turn": 16
     }
   ]
 }

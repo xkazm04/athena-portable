@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "fsa-claims-substantiation",
-  "captured_at": "2026-10-10T22:16:30Z",
-  "bench_run_at": "2026-10-10T22:14:23Z",
-  "narration": {
-    "text": "A planner's flexible spending account is claimed before the run-out ends: a crown's and physical therapy's share on the EOBs, two pharmacy items, a day camp and after-school care, and a card swipe answered with its EOB, while whitening, a gym, vitamins, a premium, an overnight camp, a teen's care and a child of 13 are left out. This is a chore for a warehouse operations planner in Tulsa, Oklahoma, with a health FSA and a dependent care FSA through her employer, three children, an insurer and a pharmacy. On the bench, she found 7 of 7 eligible items, worth 966 dollars and 47 cents of the 966 dollars and 47 cents there was to find. She made no false claim. The world held 15 traps, and she walked past 15. She took 2 minutes. By hand, the same chore takes 2 hours, so she was about 80 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 63.768,
-    "sha256": "ead8bc912a39b1cc9e5d117eb50dfebe5885d50600d4ea3e6ae3b607d9774994"
-  },
-  "video": {
-    "path": "evidence/fsa-claims-substantiation/evidence.mp4",
-    "duration_s": 63.768,
-    "bytes": 2960773,
-    "sha256": "e9c05e6f29dfc1c6d2f97fc1f9d81b2c72d0667b11d74c3e470e19d8a80be737"
-  },
-  "thumbnail": {
-    "path": "playbooks/fsa-claims-substantiation/thumb.jpg",
-    "bytes": 86031,
-    "sha256": "7433aaa0a20fc69cbebd902ded7ae07a1ae6fb399868357360b80dd96c1d917a"
-  },
+  "captured_at": "2026-10-23T17:03:21Z",
+  "bench_run_at": "2026-10-23T16:01:05Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/fsa-claims-substantiation/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22894,
-      "sha256": "867a43177a1ed7ed381e47fa02194a5a9d08b440ed538dbe655fa4e811389b56"
+      "bytes": 36704,
+      "sha256": "7377899ff47958f0caafa4f674fe7fc96747e66c0f0c8ee679292efea85810f3",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/fsa-claims-substantiation/story/02.webp",
+      "bytes": 31292,
+      "sha256": "49ff71db672902a107f1a8835dcbb2788c774617288b7099efb3da706d496fa0",
       "caption": "Turn 1 - Postwren: I'm Dana Whitcombe",
-      "turn": 1,
-      "bytes": 23740,
-      "sha256": "3b36bf0d8da9221da3a06f1113b53160748581a43d49e775ba3d2a7396d0dab2"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/fsa-claims-substantiation/story/03.webp",
+      "bytes": 28984,
+      "sha256": "a6dcbf4a2cf30000dbb5a5789b4dfebeb7300355d7dff11dc14ee9f09ea6e5cf",
       "caption": "Turn 4 - Ledgerwren bank: This is my bank, Ledgerwren",
-      "turn": 4,
-      "bytes": 23924,
-      "sha256": "b28f93e625c27ba160d754fb8d1764e1abdbcfa866826b7817b5ce39c0020e6b"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/fsa-claims-substantiation/story/04.webp",
+      "bytes": 28508,
+      "sha256": "4b2b6cf1559792a18c105c834da5188a750ce38c3ba82dd4eabf1f829c62fa05",
       "caption": "Turn 8 - Fennimoor Pharmacy: This is my pharmacy, Fennimoor",
-      "turn": 8,
-      "bytes": 23744,
-      "sha256": "8b8a65f567899ce47fe59b74f51b3fca4fff2050834f47f42720adb5a1e2764a"
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/fsa-claims-substantiation/story/05.webp",
-      "caption": "Turn 11 - Flexwell, Athena: I need the exact invoice, EOB and receipt details from the earlier tabs before…",
-      "turn": 11,
-      "bytes": 23332,
-      "sha256": "0b914f40b51708cc4ebd74dd3b3d3a560d076ff7d672178cf3b1cad0f38a4b10"
-    },
-    {
-      "path": "playbooks/fsa-claims-substantiation/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23844,
-      "sha256": "9041e50e6ec13f87b75e6b9507c4c0f37d5b6c7a564e8b62046b8f5ce13d5654"
+      "bytes": 43648,
+      "sha256": "ae67b3080e82bfb9c1024190f1c335895813f933def9da96adaa86edea44e87a",
+      "caption": "Turn 11 - Flexwell, Athena: I need the full figures from the earlier tabs before I file anything, so I'm…",
+      "kind": "turn",
+      "turn": 11
     }
   ]
 }

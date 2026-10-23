@@ -1,15 +1,16 @@
 {
   "playbook": "observation-status-appeal",
-  "run_at": "2026-10-10T06:12:09Z",
+  "run_at": "2026-10-23T16:15:18Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 112.6,
-  "turns": 11,
+  "comparable": "sha256:6d0d781e150809e5",
+  "wall_s": 139.2,
+  "turns": 10,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 24,
-  "cost_usd": 0.9245,
+  "reads": 23,
+  "cost_usd": 0.9557,
   "your_time_s": 60,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 1.9
+    "minutes": 2.3
   },
   "score": {
     "eligible": 2,
     "found": 2,
     "exact": 2,
+    "neutral": 0,
     "value_total_usd": 10200.0,
     "value_found_usd": 10200.0,
     "recall_value": 1.0,
@@ -128,14 +130,14 @@
     }
   ],
   "missed": [],
-  "closing_words": "I'm asking Oakview to hold OV-2610, the $10,200 statement, which is the only one the appeal could change.\n\n\n**What I did:** I filed the hold request above for your approval. I paid nothing and replied to no one.\n\n**What I left alone, and why**\n- **OV-2610 ($10,200, due 15 Oct):** I did not pay it. If the appeal is won, Oakview bills Part A and refunds anything paid for those days. Without a hold, it goes to collections 30 days after the due date. Oakview's policy says a hold can be requested the same day as the appeal, and the hold covers only the days the appeal could cover. That is why the appeal card (apr_3ac4973c433c) needs your answer too, since the hold note names the appeal.\n- **OV-2610P ($64 salon and phone, due 15 Oct):** Medicare never covers these, so the appeal can't change them. They're the one bill here that is simply owed. I did not pay it, because paying is your decision,",
+  "closing_words": "I'm asking Oakview to hold OV-2610 ($10,200), the one statement the appeal could change.\n\n\n**Two cards are waiting for you: the appeal (apr_411865c75e64) and this hold.** I paid nothing and replied to nothing.\n\n**The hold.**\n- OV-2610 is $10,200 for 20 private-pay days, 18 Sep to 7 Oct. It's due 15 Oct.\n- Oakview's policy says a held statement isn't due, gets no late fee and isn't sent to collections.\n- Without a hold, it goes to Corbel Recovery 30 days after the due date, with a 1.5% fee.\n- If the appeal is won, Oakview bills Part A and refunds or credits anything paid. If it's lost, the statement is due 15 days after the decision.\n- Oakview's rule says the hold can be asked the same day as the appeal, so the hold doesn't have to wait for the appeal card.\n\n**What I left alone, and why:**\n- **OV-2610 ($10,200):** not paid, because the appeal could replace it.\n- **OV-2610P ($64, salon and",
   "trace": [
     {
       "portal": "Carenook",
       "user": "Mom has been at Oakview since her hospital stay in September, and they're billing her privately because Medicare says she was never really an inpatient. Start in Carenook: read every Saint Ardent stay, the orders, the notes and every notice",
       "continued": false,
-      "said": "I'll start by listing every Saint Ardent stay on Evelyn's record, then open each one.",
-      "said_chars": 85,
+      "said": "I'll start with the list of Saint Ardent stays on Evelyn's Carenook record, then open each one.",
+      "said_chars": 95,
       "reads": [
         "list_stays"
       ],
@@ -145,7 +147,7 @@
       "portal": "Carenook",
       "user": "",
       "continued": true,
-      "said": "Four stays are on record. I'll open all four so I can read the orders, notes and notices.",
+      "said": "There are four stays on the record. I'll open each one for its orders, notes and notices.",
       "said_chars": 89,
       "reads": [
         "view_stay",
@@ -159,8 +161,8 @@
       "portal": "Carenook",
       "user": "",
       "continued": true,
-      "said": "Evelyn has four Saint Ardent stays, and only S-2609 (September 2026) looks like a status-change appeal.\n\n| Stay | What the record shows |\n|---|---|\n| **S-2609**, 14–18 Sep 2026, pneumonia with sepsis | Dr. Rourke wrote an inpatient order on 14 Sep at 13:05 and noted she expected care past two midnights. On 15 Sep at 11:30 the utilization review committee changed it to observation (Condition Code 44), with the same room and the same IV antibiotics. Teresa signed a MOON on 16 Sep and an MCSN on 17 Sep.",
-      "said_chars": 2675,
+      "said": "Four stays are on Carenook, and only the September one (S-2609) looks appealable. In that stay the hospital admitted her as an inpatient, then changed her to observation the next day.\n\n| Stay | What the record shows | Appealable? |\n|---|---|---|\n| S-2411, 4–8 Nov 2024 | Admitted inpatient, changed to observation the next day, MOON signed. Discharged to Oakview. | Probably not. It is nearly two years old, and I'll check Medicare's rules on timing before I rule it out.",
+      "said_chars": 4000,
       "reads": [],
       "cards": []
     },
@@ -168,21 +170,10 @@
       "portal": "Saint Ardent billing",
       "user": "Saint Ardent's billing portal. Read how each stay was billed and their billing policy. Don't pay a bill an appeal could change.",
       "continued": false,
-      "said": "I'll read Saint Ardent's accounts and its billing policy. I won't pay anything.",
-      "said_chars": 79,
+      "said": "I'll read Saint Ardent's accounts and both billing policy topics.\n\n\nI'm not paying anything. I'll report what I find once the results come back.",
+      "said_chars": 144,
       "reads": [
         "list_accounts",
-        "read_billing_policy"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "Saint Ardent billing",
-      "user": "",
-      "continued": true,
-      "said": "Only the policy index came back, so I'll read the two topics it lists.",
-      "said_chars": 70,
-      "reads": [
         "read_billing_policy",
         "read_billing_policy"
       ],
@@ -192,8 +183,8 @@
       "portal": "Saint Ardent billing",
       "user": "",
       "continued": true,
-      "said": "Nothing here needs paying now, and I haven't paid anything. Only SA-2609 is tied to the appeal.\n\n| Account | Stay | Billed as | Balance |\n|---|---|---|---|\n| SA-2609 | 14–18 Sep 2026 | Part B outpatient (inpatient order changed to observation, Condition Code 44) | $1,912.40, due 30 Oct 2026 |\n| SA-2603 | 9–12 Mar 2026 | Observation from the ER (Part B) | $0, paid |\n| SA-2411 | Nov 2024 | Observation after Condition Code 44 | $0, paid |\n| SA-2605 | 31 May–5 Jun 2026 | Inpatient Part A | $0, deductible paid |\n|",
-      "said_chars": 2125,
+      "said": "Saint Ardent billed all five accounts, and only SA-2609 (September) is one the appeal could change. I paid nothing.\n\n| Account | Service | Billed as | Balance | Pay it? |\n|---|---|---|---|---|\n| SA-2609 | 14–18 Sep 2026 | Part B outpatient, Condition Code 44 | $1,912.40, due 30 Oct 2026 | **No, hold.** The appeal could swap this for the Part A deductible. |\n| SA-2607 | 2 Jul 2026 | Part B lab visit | $18.40, due 16 Oct 2026 | Not part of any appeal.",
+      "said_chars": 1876,
       "reads": [],
       "cards": []
     },
@@ -201,12 +192,11 @@
       "portal": "Myline Medicare",
       "user": "Myline, Mom's Medicare account; I'm her appointed representative. Read the rules, her record and her claims, then appeal whatever can still be appealed, the right way, so Medicare covers her rehab. She was in a regular room for three nights",
       "continued": false,
-      "said": "I'll read Evelyn's Medicare record, her claims and the rules first. I'm filing nothing yet.",
-      "said_chars": 91,
+      "said": "I'll read Myline's rules, Evelyn's record and her claims first. I won't file anything until I've seen them.",
+      "said_chars": 107,
       "reads": [
         "view_beneficiary",
         "list_claims",
-        "read_rules",
         "read_rules",
         "read_rules",
         "read_rules",
@@ -219,8 +209,20 @@
       "portal": "Myline Medicare",
       "user": "",
       "continued": true,
-      "said": "The September stay (MC-2609) qualifies for a standard QIO appeal, and I'm filing it for your approval. The March and 2024 stays don't qualify.\n\n**September 2026 (MC-2609): appeal.**\n- Dr. Rourke wrote an inpatient order on 14 Sep at 13:05. The utilization review committee changed it to observation on 15 Sep at 11:30.\n- She was in the hospital 14–17 Sep, which is 4 consecutive days counted as Medicare counts a qualifying stay. The day of admission counts and the day of discharge doesn't.",
-      "said_chars": 2030,
+      "said": "The September stay (MC-2609) fits the QIO status-appeal rule. Before I file, I'm reading the how-to-appeal and help topics for deadlines and what the request needs.",
+      "said_chars": 164,
+      "reads": [
+        "read_rules",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Myline Medicare",
+      "user": "",
+      "continued": true,
+      "said": "I'm filing one appeal, for September (MC-2609). The other two stays don't qualify.\n\n| Stay | Claim | Appeal? | Why |\n|---|---|---|---|\n| 14–18 Sep 2026 | MC-2609 | **Yes, standard QIO status appeal** | She had an inpatient order on 14 Sep, then was changed to observation on 15 Sep. She was in the hospital 4 days but an inpatient for fewer than 3. She didn't ask before discharge, so it is standard. The rules give no deadline for a standard request.",
+      "said_chars": 1808,
       "reads": [],
       "cards": [
         {
@@ -235,11 +237,13 @@
       "portal": "Oakview Care",
       "user": "Oakview Care. Read her record, the statements, the billing policy and the messages. Then do what protects her while the appeal is decided, and don't pay anything the appeal could change or anyone to file it. Then tell me what you left alone",
       "continued": false,
-      "said": "I'll read Oakview's record, statements, billing policy and messages first. I won't pay or file anything yet.",
-      "said_chars": 108,
+      "said": "I'm reading Oakview's resident record, statements, billing policy and messages now. I won't pay or reply to anything until I've seen them.",
+      "said_chars": 138,
       "reads": [
         "view_resident",
         "list_statements",
+        "read_billing_policy",
+        "read_billing_policy",
         "read_billing_policy",
         "list_messages"
       ],
@@ -249,21 +253,8 @@
       "portal": "Oakview Care",
       "user": "",
       "continued": true,
-      "said": "I've read the record, statements and messages. The billing policy only returned its index, so I'll read its three topics before I ask for a hold.",
-      "said_chars": 145,
-      "reads": [
-        "read_billing_policy",
-        "read_billing_policy",
-        "read_billing_policy"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "Oakview Care",
-      "user": "",
-      "continued": true,
-      "said": "I'm asking Oakview to hold OV-2610, the $10,200 statement, which is the only one the appeal could change.\n\n\n**What I did:** I filed the hold request above for your approval. I paid nothing and replied to no one.\n\n**What I left alone, and why**\n- **OV-2610 ($10,200, due 15 Oct):** I did not pay it. If the appeal is won, Oakview bills Part A and refunds anything paid for those days. Without a hold, it goes to collections 30 days after the due date.",
-      "said_chars": 2196,
+      "said": "I'm asking Oakview to hold OV-2610 ($10,200), the one statement the appeal could change.\n\n\n**Two cards are waiting for you: the appeal (apr_411865c75e64) and this hold.** I paid nothing and replied to nothing.\n\n**The hold.**\n- OV-2610 is $10,200 for 20 private-pay days, 18 Sep to 7 Oct. It's due 15 Oct.\n- Oakview's policy says a held statement isn't due, gets no late fee and isn't sent to collections.\n- Without a hold, it goes to Corbel Recovery 30 days after the due date, with a 1.5% fee.",
+      "said_chars": 2335,
       "reads": [],
       "cards": [
         {
@@ -273,6 +264,24 @@
           "value_usd": 0.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-10T06:12:09Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 2,
+      "eligible": 2,
+      "value_found_usd": 10200.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 112.6,
+      "your_time_s": 60
     }
   ]
 }

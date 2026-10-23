@@ -1,15 +1,16 @@
 {
   "playbook": "baggage-delay-claims",
-  "run_at": "2026-10-10T20:35:04Z",
+  "run_at": "2026-10-23T15:44:17Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 95.8,
+  "comparable": "sha256:6765dd6082d92eab",
+  "wall_s": 68.9,
   "turns": 9,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 25,
-  "cost_usd": 0.9159,
+  "reads": 24,
+  "cost_usd": 0.5511,
   "your_time_s": 180,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 1.6
+    "minutes": 1.1
   },
   "score": {
     "eligible": 6,
     "found": 6,
     "exact": 6,
+    "neutral": 0,
     "value_total_usd": 203.3,
     "value_found_usd": 203.3,
     "recall_value": 1.0,
@@ -148,7 +150,12 @@
     }
   ],
   "missed": [],
-  "closing_words": "Six filings are going to you for approval: five receipt lines and the bag fee for B-1. I've left out eight lines and two bag fees.\n\n\n**What I claimed (total 143.30 USD of expenses, plus the 45.00 fee)**\n- **E-1:** Farmacia Rossio, 18.50. Toiletries and medicine.\n- **E-3:** the toiletries on the Mercado Alma receipt, 9.80.\n- **E-4:** Loja Baixa basics, 64.00.\n- **E-5:** charger and adapter, 21.00.\n- **E-6:** the workshop shirt, 45.00.\n- **Bag fee for B-1:** 45.00, refunded to your card if approved.\n\n**What I left out, and why**\n- **E-2, 11.20:** the food, which you would have bought anyway.\n- **E-7, 59.00:** the rain jacket. Cardhollow already paid it under BD-7731, and the airline doesn't pay an item another source has paid.\n- **E-8, 340.00:** the silk dress. It's a luxury item and not an essential.\n- **E-9, 412.00:** four shirts, two blazers and two pairs of trousers. That is a new ward",
+  "closing_words": "I'm filing five receipt lines and the bag fee request. All six are cards for Imani to approve and sign. The site says today is 9 October, so the 21 October deadline is still open. Earlier the system clock read 23 October. If that clock is right, the deadline has passed.\n\n\n**Claimed (5 lines, showing 5 of 13), total $158.30:**\n- E-1, pharmacy: $18.50\n- E-3, toiletries from the grocery receipt: $9.80\n- E-4, basic clothing: $64.00\n- E-5, charger and adapter: $21.00\n- E-6, shirt for the workshop: $45.00\n\n**Bag fee:** B-1, $45.00. It is owed because the bag was delivered about 4 days late on a 6 h 55 min flight, you filed a report, and the fee hasn't been refunded.\n\n**Left out (8 of 13 lines), and why:**\n- E-2, food ($11.20): you would have bought food anyway.\n- E-7, rain jacket ($59.00): Cardhollow already paid this under BD-7731, and the airline doesn't pay what another source has paid.\n- E",
+  "prose_audit": {
+    "said_usd": 158.3,
+    "record_usd": 203.3,
+    "agrees": false
+  },
   "trace": [
     {
       "portal": "Postwren",
@@ -165,8 +172,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "Reading all six messages now.",
-      "said_chars": 29,
+      "said": "Six messages in the inbox. I'm reading all of them now.",
+      "said_chars": 55,
       "reads": [
         "read_message",
         "read_message",
@@ -181,8 +188,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "All six messages are read, and I've done nothing else. I'm saving the key facts as a note so they carry into the other tabs.\n\n\n**What the mail says**\n- **Delay:** Your bag didn't arrive on AL 41 on Sat 26 Sep. Report LIS-55302 was filed at 09:20, and the bag reached your hotel on Wed 30 Sep at 17:30.\n- **Deadline:** The written complaint is due Wed 21 Oct 2026.\n- **Bag fee:** Aerolark says it hasn't refunded the fee for this trip.",
-      "said_chars": 1653,
+      "said": "I've read all six messages and done nothing else, as you asked. One date needs your attention first. Aerolark's deadline for the written complaint was Wednesday 21 October 2026, and today is later than that.\n\nThe system date reads 23 October, though the page state says 9 October. I can't tell which is right. If it is 9 October, you have 12 days left. If it is 23 October, the deadline has passed. Please confirm today's date. The claims site may also say whether it still accepts the complaint.",
+      "said_chars": 1845,
       "reads": [],
       "cards": []
     },
@@ -190,10 +197,9 @@
       "portal": "Cardhollow",
       "user": "This is my Cardhollow card. Read the baggage benefit and my statement, every page. Don't do anything yet.",
       "continued": false,
-      "said": "I'll read the benefit topics and all three statement pages now.",
-      "said_chars": 63,
+      "said": "I'll read the baggage benefit and all three statement pages, and I won't act on anything.",
+      "said_chars": 89,
       "reads": [
-        "read_benefits",
         "read_benefits",
         "read_statement",
         "read_statement",
@@ -205,8 +211,8 @@
       "portal": "Cardhollow",
       "user": "",
       "continued": true,
-      "said": "Your Cardhollow statement and baggage benefit are read, all 3 pages (14 of 14 charges and credits). I've done nothing else.\n\n**The benefit**\n- It pays up to $100 a trip for essential purchases made before the bag arrives.\n- Anything it pays can't be claimed again from the airline.\n- It has paid one thing for this trip: claim BD-7731, $59.00 on 5 Oct, for the Atlantico Outdoor receipt of 27 Sep. That receipt stays out of the Aerolark complaint.",
-      "said_chars": 2338,
+      "said": "I've read the baggage benefit and all three statement pages (14 charges and credits). I've changed nothing.\n\n**The benefit**\n- It pays up to $100 a trip for essential purchases made before the bag arrives.\n- Anything it pays can't be claimed again from the airline.\n- It has paid one claim: BD-7731, $59.00, for Atlantico Outdoor on 27 Sep. That receipt is off the airline claim.\n\n**The statement (showing 14 of 14)**\n- 25 Sep, Aerolark, checked bag fee AL 41: $45.00. This is the bag fee to ask for.",
+      "said_chars": 2323,
       "reads": [],
       "cards": []
     },
@@ -226,8 +232,8 @@
       "portal": "Tripcairn",
       "user": "",
       "continued": true,
-      "said": "Tripcairn is read: 2 trips and 3 flight legs. I've done nothing else.\n\n- **T-1, Lisbon (the claim):** Fri 25 Sep to Sun 4 Oct 2026, on Aerolark.\n  - **Outbound:** AL 41, Boston to Lisbon, 6 h 55 min, arriving Sat 26 Sep at 07:55. Your bag was checked on this leg.\n  - **Return:** AL 42, 7 h 30 min.\n  - **Hotel:** Hotel Praca Velha.\n  - **Purpose:** a conference where you speak at a workshop on Mon 28 Sep.\n  - **Tomas Brandt:** he travelled on a separate ticket, and his bag arrived.",
-      "said_chars": 1485,
+      "said": "I've read both trips and all three flights. I changed nothing.\n\n**Trips (showing 2 of 2)**\n- T-1: Fri 25 Sep to Sun 4 Oct 2026, Boston to Lisbon on Aerolark. You and Tomas Brandt were on separate tickets with one bag each. You stayed at Hotel Praca Velha. The conference was the reason for the trip, and you spoke at a workshop on Mon 28 Sep.\n- T-2: Fri 12 Jun to Sat 20 Jun 2026, Boston to Porto. This was the June trip, and its report POR-30871 is closed.",
+      "said_chars": 1578,
       "reads": [],
       "cards": []
     },
@@ -235,17 +241,17 @@
       "portal": "Aerolark baggage claims",
       "user": "This is Aerolark baggage claims. Read its rules, my report, my claim file on every page and my bags. Then put the right receipt lines in my written complaint, each with a reason, and ask for the bag fee refund where it is owed. Leave out wh",
       "continued": false,
-      "said": "I'll read the Aerolark rules, report, bags and claim file first, then decide the lines.\n\n\nLet me address them with the correct names.\n\n\nI've asked for all the reads. I'll file the claim lines once the results arrive.\n\nNothing is filed yet, because the Aerolark answers haven't reached me.\n\nThe page says my reads went through and that their answers arrive with my next turn. I'm not repeating them. My first line was also malformed and was dropped, but it was only a duplicate rules read.",
-      "said_chars": 920,
+      "said": "I'll read the rules, the report, the bags and all three pages of the claim file first, and I won't file anything until I've read them.",
+      "said_chars": 134,
       "reads": [
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
+        "read_rules",
         "read_report",
         "read_bags",
-        "read_rules",
-        "read_rules",
-        "read_rules",
-        "read_rules",
-        "read_rules",
-        "read_rules",
         "read_claim_file",
         "read_claim_file",
         "read_claim_file"
@@ -256,8 +262,8 @@
       "portal": "Aerolark baggage claims",
       "user": "",
       "continued": true,
-      "said": "Six filings are going to you for approval: five receipt lines and the bag fee for B-1. I've left out eight lines and two bag fees.\n\n\n**What I claimed (total 143.30 USD of expenses, plus the 45.00 fee)**\n- **E-1:** Farmacia Rossio, 18.50. Toiletries and medicine.\n- **E-3:** the toiletries on the Mercado Alma receipt, 9.80.\n- **E-4:** Loja Baixa basics, 64.00.\n- **E-5:** charger and adapter, 21.00.\n- **E-6:** the workshop shirt, 45.00.\n- **Bag fee for B-1:** 45.00, refunded to your card if approved.",
-      "said_chars": 1598,
+      "said": "I'm filing five receipt lines and the bag fee request. All six are cards for Imani to approve and sign. The site says today is 9 October, so the 21 October deadline is still open. Earlier the system clock read 23 October. If that clock is right, the deadline has passed.\n\n\n**Claimed (5 lines, showing 5 of 13), total $158.30:**\n- E-1, pharmacy: $18.50\n- E-3, toiletries from the grocery receipt: $9.80\n- E-4, basic clothing: $64.00\n- E-5, charger and adapter: $21.00\n- E-6, shirt for the workshop: $45.00",
+      "said_chars": 1537,
       "reads": [],
       "cards": [
         {
@@ -297,6 +303,24 @@
           "value_usd": 45.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-10T20:35:04Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 6,
+      "eligible": 6,
+      "value_found_usd": 203.3,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 95.8,
+      "your_time_s": 180
     }
   ]
 }

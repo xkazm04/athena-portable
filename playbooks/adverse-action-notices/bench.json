@@ -1,15 +1,16 @@
 {
   "playbook": "adverse-action-notices",
-  "run_at": "2026-10-11T05:43:21Z",
+  "run_at": "2026-10-23T15:43:19Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 83.3,
-  "turns": 7,
+  "comparable": "sha256:08b4c53f871b7728",
+  "wall_s": 128.6,
+  "turns": 6,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 23,
-  "cost_usd": 0.8606,
+  "reads": 21,
+  "cost_usd": 1.0401,
   "your_time_s": 240,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 1.4
+    "minutes": 2.1
   },
   "score": {
     "eligible": 8,
     "found": 8,
     "exact": 8,
+    "neutral": 0,
     "value_total_usd": 8000.0,
     "value_found_usd": 8000.0,
     "recall_value": 1.0,
@@ -183,6 +185,14 @@
   },
   "cards": [
     {
+      "action": "forward_dispute_to_vendor",
+      "key": "R-208",
+      "outcome": "correct",
+      "value_usd": 1000.0,
+      "exact": true,
+      "why": "Tomas Brandl wrote on 2 October that the theft record belongs to another man of his name born in 1988; only his message in Postwren shows it, and Veritarn's page logs no dispute. The policy sends the candidate's statement to the vendor the day HR reads it, and holds his final notice"
+    },
+    {
       "action": "send_pre_adverse_notice",
       "key": "C-101",
       "outcome": "correct",
@@ -205,14 +215,6 @@
       "value_usd": 1000.0,
       "exact": true,
       "why": "Desmond's rejection rests in part on the report (the interview scored 2 of 5, and the employment check R-103 shows a dismissal he left off): a decision based in whole or in part on a report needs the notice (604(b)(3)(A)). The report arrived 5 October, so the notice was due 7 October and is overdue; nothing has been sent"
-    },
-    {
-      "action": "send_pre_adverse_notice",
-      "key": "C-214",
-      "outcome": "correct",
-      "value_usd": 1000.0,
-      "exact": true,
-      "why": "Ingrid's notice of 24 September (N-1) carried the copy of the report and no summary of rights, so it did not meet 604(b)(3)(A) and the policy says to send it again complete, with the wait starting from the new date. Only the notice log shows what was attached"
     },
     {
       "action": "send_final_notice",
@@ -239,36 +241,23 @@
       "why": "Kenji's complete pre-adverse notice went on Thursday 1 October (N-8). The five full business days are 2, 5, 6, 7 and 8 October, so today, Friday 9 October, is the sixth business day and the earliest the final notice may go; no dispute"
     },
     {
-      "action": "forward_dispute_to_vendor",
-      "key": "R-208",
+      "action": "send_pre_adverse_notice",
+      "key": "C-214",
       "outcome": "correct",
       "value_usd": 1000.0,
       "exact": true,
-      "why": "Tomas Brandl wrote on 2 October that the theft record belongs to another man of his name born in 1988; only his message in Postwren shows it, and Veritarn's page logs no dispute. The policy sends the candidate's statement to the vendor the day HR reads it, and holds his final notice"
+      "why": "Ingrid's notice of 24 September (N-1) carried the copy of the report and no summary of rights, so it did not meet 604(b)(3)(A) and the policy says to send it again complete, with the wait starting from the new date. Only the notice log shows what was attached"
     }
   ],
   "missed": [],
-  "closing_words": "Eight cards are going to you for approval: 4 pre-adverse notices, 3 final notices and 1 dispute forward. Nothing has been sent yet. I'm counting business days from today, Friday 9 Oct, with Monday 12 Oct as a company holiday.\n\n**Pre-adverse notices.** Each one attaches the report copy and the CFPB *Summary of Your Rights*.\n- **C-101 Varnham** (R-101, delivered 7 Oct): no notice is in the log.\n- **C-102 Sorrel** (R-102, delivered 8 Oct): no notice is in the log.\n- **C-103 Hale** (R-103, delivered 5 Oct): no notice is in the log. The 2-business-day window ended 7 Oct, so this one is late. It is still owed, because the rejection rests partly on the report.\n- **C-214 Lowe** (R-214): her 24 Sep notice (N-1) went without the summary of rights. It is sent again complete, and the wait restarts from today.\n\n\n**Final notices.** Each wait has ended and there is no open dispute. Each uses the agency",
+  "closing_words": "The inbox is read. I need the names, ids and notice log in full before I file anything, so I'm recalling them now.\n\n\nI've filed nothing yet. The next turn will have the full log, and then I'll file the notices.\n\nEight cards are ready to file. The ninth, C-214's pre-adverse resend, waits until I've checked its report id.\n\n- **Tomas Brandl is C-208.** His report is R-208 and his pre-adverse notice went on 25 Sep. His 2 Oct message (M-1) says the record belongs to another Tomas Brandl. Veritarn's page shows no dispute, so I'm sending it on.\n- **C-208's final notice waits** until Veritarn answers.\n- **Pre-adverse notices for C-101, C-102 and C-103.** Each goes with a copy of its report and the CFPB summary of rights. None has had a notice.\n  - R-101 was delivered 7 Oct, so it's due today.\n  - R-102 was delivered 8 Oct, so it's due by 13 Oct, because 12 Oct is a holiday. It's in time today.\n ",
   "trace": [
     {
       "portal": "Applyrook ATS",
       "user": "I'm Odalys, HR at Brackenmere Distribution. Start in Applyrook: read our hiring policy on background reports (every topic), the candidates and the notices already sent.",
       "continued": false,
-      "said": "I'll read the policy index first, along with the candidates and the notices already sent.",
-      "said_chars": 89,
-      "reads": [
-        "read_hiring_policy",
-        "list_candidates",
-        "list_notices_sent"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "Applyrook ATS",
-      "user": "",
-      "continued": true,
-      "said": "Only the policy index and the first page of each list came back (4 of 16 candidates, 5 of 10 notices). I'll read all seven policy topics and the remaining pages.",
-      "said_chars": 161,
+      "said": "I'll read the full policy, all candidate pages and both notice pages in Applyrook.",
+      "said_chars": 82,
       "reads": [
         "read_hiring_policy",
         "read_hiring_policy",
@@ -277,9 +266,12 @@
         "read_hiring_policy",
         "read_hiring_policy",
         "read_hiring_policy",
+        "read_hiring_policy",
         "list_candidates",
         "list_candidates",
         "list_candidates",
+        "list_candidates",
+        "list_notices_sent",
         "list_notices_sent"
       ],
       "cards": []
@@ -288,8 +280,8 @@
       "portal": "Applyrook ATS",
       "user": "",
       "continued": true,
-      "said": "Applyrook is read, and 6 of the 16 candidates need no notice. I can't finish the rest from this tab. Switch me to Veritarn and I'll read the reports and the agency details there, then the Postwren inbox.\n\n**Leave alone (no notice):**\n- **C-209 Frost:** he was rejected on the skills test, not the report.\n- **C-210 Lindqvist:** hired, report clear.\n- **C-212 Venn:** both notices are already sent.\n- **C-213 Strand:** he withdrew.\n- **C-211 Teale:** no authorization on file, so no rejection can rest on R-211.",
-      "said_chars": 2208,
+      "said": "Applyrook is read: 16 candidates, 10 notices sent (showing all of both). Next I'll read Veritarn's reports and agency details, then the Postwren inbox. I need the report dates, the disputes and any corrections before I work out which notices are due.\n\nI need you to switch me to the Veritarn tab. Veritarn and Postwren are both outside this session's pinned origin (Applyrook), so those reads were refused.",
+      "said_chars": 2058,
       "reads": [],
       "cards": []
     },
@@ -297,8 +289,8 @@
       "portal": "Veritarn Screening",
       "user": "Veritarn is our background vendor. Read the agency's details and every report it has delivered.",
       "continued": false,
-      "said": "Reading the agency details and all four pages of Veritarn reports now.",
-      "said_chars": 70,
+      "said": "Reading the agency's details and the first page of reports now. I'll read the other pages once this comes back.",
+      "said_chars": 111,
       "reads": [
         "read_agency_details",
         "list_reports",
@@ -312,8 +304,8 @@
       "portal": "Veritarn Screening",
       "user": "",
       "continued": true,
-      "said": "Veritarn is read: the agency details and all 16 reports (4 pages of 4). Nothing is filed yet, because the Postwren inbox could still change what's due.\n\n**Agency, for the final notices:** Veritarn Screening, LLC, 2210 Mercer Row, Suite 4, Dunmore Falls, Texas 75099, phone 800-555-0147. It supplies the CFPB *Summary of Your Rights* with each report. HR attaches the report copies by report id.",
-      "said_chars": 1622,
+      "said": "Veritarn is read: the agency's details and all 16 reports (showing 16 of 16).\n\n**Agency:** Veritarn Screening, LLC, 2210 Mercer Row, Suite 4, Dunmore Falls, Texas 75099, phone 800-555-0147. It supplies the CFPB summary of rights with every report.\n\n**What the reports change:**\n- **C-207 (Lucinda Marsh):** R-207 was disputed on 18 Sep and reissued clear on 5 Oct, with the first report withdrawn. That ends it, so no final notice goes out.\n- **C-208:** no dispute is logged on the vendor page.",
+      "said_chars": 1600,
       "reads": [],
       "cards": []
     },
@@ -321,11 +313,9 @@
       "portal": "Postwren",
       "user": "Postwren is my mail and the letter service. Read the inbox, then, by our policy, send each pre-adverse notice that is owed and has not gone, and each final notice that the policy allows today, and send Veritarn any candidate's dispute of a ",
       "continued": false,
-      "said": "I'll start by reading the inbox. I'm also re-reading the full candidate, report, notice and policy data, because my recalled copy was cut short.\n\nThe Applyrook and Veritarn tools can't be called from this tab, so I'll recall what I read there. The inbox answers arrive next turn.\n\nThe inbox answers haven't come back yet, so I'll look for them in memory.\n\nThe inbox results never arrived, so I'm calling the inbox read again. It's a read and changes nothing.",
-      "said_chars": 458,
+      "said": "I'll read the inbox first, and recall the truncated policy and report details.\n\nI've asked for both inbox pages and the answers come with my next turn. I'm holding the notices until I've read them, because a dispute in the inbox could change who gets a final notice. I haven't filed anything.",
+      "said_chars": 292,
       "reads": [
-        "list_messages",
-        "list_messages",
         "list_messages",
         "list_messages"
       ],
@@ -335,10 +325,16 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "Eight cards are going to you for approval: 4 pre-adverse notices, 3 final notices and 1 dispute forward. Nothing has been sent yet. I'm counting business days from today, Friday 9 Oct, with Monday 12 Oct as a company holiday.\n\n**Pre-adverse notices.** Each one attaches the report copy and the CFPB *Summary of Your Rights*.\n- **C-101 Varnham** (R-101, delivered 7 Oct): no notice is in the log.\n- **C-102 Sorrel** (R-102, delivered 8 Oct): no notice is in the log.",
-      "said_chars": 2636,
+      "said": "The inbox is read. I need the names, ids and notice log in full before I file anything, so I'm recalling them now.\n\n\nI've filed nothing yet. The next turn will have the full log, and then I'll file the notices.\n\nEight cards are ready to file. The ninth, C-214's pre-adverse resend, waits until I've checked its report id.\n\n- **Tomas Brandl is C-208.** His report is R-208 and his pre-adverse notice went on 25 Sep. His 2 Oct message (M-1) says the record belongs to another Tomas Brandl.",
+      "said_chars": 3110,
       "reads": [],
       "cards": [
+        {
+          "action": "forward_dispute_to_vendor",
+          "key": "R-208",
+          "outcome": "correct",
+          "value_usd": 1000.0
+        },
         {
           "action": "send_pre_adverse_notice",
           "key": "C-101",
@@ -354,12 +350,6 @@
         {
           "action": "send_pre_adverse_notice",
           "key": "C-103",
-          "outcome": "correct",
-          "value_usd": 1000.0
-        },
-        {
-          "action": "send_pre_adverse_notice",
-          "key": "C-214",
           "outcome": "correct",
           "value_usd": 1000.0
         },
@@ -382,12 +372,30 @@
           "value_usd": 1000.0
         },
         {
-          "action": "forward_dispute_to_vendor",
-          "key": "R-208",
+          "action": "send_pre_adverse_notice",
+          "key": "C-214",
           "outcome": "correct",
           "value_usd": 1000.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-11T05:43:21Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 8,
+      "eligible": 8,
+      "value_found_usd": 8000.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 83.3,
+      "your_time_s": 240
     }
   ]
 }

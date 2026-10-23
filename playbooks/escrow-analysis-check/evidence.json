@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "escrow-analysis-check",
-  "captured_at": "2026-10-10T00:16:38Z",
+  "captured_at": "2026-10-23T17:01:27Z",
   "bench_run_at": "2026-10-10T00:12:37Z",
-  "narration": {
-    "text": "The escrow analysis checked against the real tax and insurance bills, and the surplus claimed. This is a chore for a homeowner whose mortgage payment just went up after the servicer's annual escrow analysis, though the tax bill went down and the insurance got cheaper. Athena works it across 4 portals: Northgate Servicing, Countyline Tax, Hearthguard and Mailnest. On the bench, she found 6 of 6 eligible items, worth 4,439 dollars and 98 cents of the 4,439 dollars and 98 cents there was to find. She made no false claim. The world held 12 traps, and she walked past 12. Among them: A flood premium projected at this year's real renewal. A supplemental tax bill for the new pool, which is real. She took 2 minutes. By hand, the same chore takes about 2 hours, so she was about 41 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 62.173,
-    "sha256": "a0028adb9febfe3b7b83483365ef13bd0000ef3fd143e8c056cf3bcef88fc345"
-  },
-  "video": {
-    "path": "evidence/escrow-analysis-check/evidence.mp4",
-    "duration_s": 62.173,
-    "bytes": 2816089,
-    "sha256": "d5806eaf908e00863c615decab94f6c0cd5efb584ea4946ca680bab7c7119707"
-  },
-  "thumbnail": {
-    "path": "playbooks/escrow-analysis-check/thumb.jpg",
-    "bytes": 81985,
-    "sha256": "3587663c74d4076949bbfbce9050743e35f0c3b84982832c9e7e6039a25258e3"
-  },
   "story": [
     {
+      "n": 1,
       "path": "playbooks/escrow-analysis-check/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23918,
-      "sha256": "d3231c82beb2db14c3b7e79ff891cc2f0ffb1a5d924df1c51531aba9a2d725e5"
+      "bytes": 42114,
+      "sha256": "7d19b826fe75407b98fb4a26f078181362cf98d01fd549db56838caf7bf67d81",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/escrow-analysis-check/story/02.webp",
+      "bytes": 32944,
+      "sha256": "21da293e9005ae5cdce67860ff5d5d0258ec992e44ec2564265d13f6e8bf4c39",
       "caption": "Turn 1 - Northgate Servicing: Northgate's escrow analysis came in and something looks off",
-      "turn": 1,
-      "bytes": 22528,
-      "sha256": "5aea7cf3ddbd1415e767140ebb493c957887b1d859b925d80e5d9cd579c7bb8d"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/escrow-analysis-check/story/03.webp",
+      "bytes": 42020,
+      "sha256": "34b45bd6a20d1bfd4f823ef577d731802ba6b2e26a3ec4f85d09850c5b4b73d2",
       "caption": "Turn 4 - Countyline Tax, Athena: Countyline confirms two Northgate errors and shows no double tax payment",
-      "turn": 4,
-      "bytes": 23432,
-      "sha256": "32e4cd611ab79ca1c18f2e26e14546448273277843576fbca71b8755119388dd"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/escrow-analysis-check/story/04.webp",
+      "bytes": 34442,
+      "sha256": "a019fa205b70d8b50b9a77e3b1d91145b00806d26a0f15193086cc59f42e48dd",
       "caption": "Turn 7 - Mailnest: My Mailnest house bills folder has the notices and a couple of offers",
-      "turn": 7,
-      "bytes": 23604,
-      "sha256": "d173807d08066ab3e8b38e2782c7768fb7efade09c8611da127ee74a2726738f"
+      "kind": "turn",
+      "turn": 7
     },
     {
+      "n": 5,
       "path": "playbooks/escrow-analysis-check/story/05.webp",
+      "bytes": 42502,
+      "sha256": "3fc8df59da7d357243cd9f1ef644f42254728ddb9951c0e98cfa3d3e617bf197",
       "caption": "Turn 10 - Northgate Servicing: Back in Northgate",
-      "turn": 10,
-      "bytes": 23498,
-      "sha256": "855ca427868eb1dba59c9b7c695e97be81a3cc2f25d323f85a4700d6c4c02e4f"
-    },
-    {
-      "path": "playbooks/escrow-analysis-check/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23030,
-      "sha256": "1c37352254847382e1c89a62a1235eb45343b1642c72693db0eb35ebfb6b247d"
+      "kind": "turn",
+      "turn": 10
     }
   ]
 }

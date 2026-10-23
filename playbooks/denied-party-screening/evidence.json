@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "denied-party-screening",
-  "captured_at": "2026-10-10T09:48:47Z",
-  "bench_run_at": "2026-10-10T09:45:28Z",
-  "narration": {
-    "text": "A sensor maker's export orders screened before they ship: two near-matches to listed names cleared on address, country and identifier, and an unverified buyer with a sound statement released, while a buyer listed under another name, a denied company, an unverified one whose statement falls short, a company its sanctioned owner blocks and a forwarder that will not name its buyer are held. This is a chore for the export compliance coordinator of a small maker of industrial temperature sensors, who clears every export order before the warehouse ships it. On the bench, she found 10 of 10 eligible items, worth 10 dollars of the 10 dollars there was to find. She made no false claim. The world held 10 traps, and she walked past 10. She took 3 minutes. By hand, the same chore takes 70 minutes, so she was about 24 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 59.2,
-    "sha256": "f2e398d8e159778cd511968784818c4a63b3895ebfd971f298341a42e3e3436e"
-  },
-  "video": {
-    "path": "evidence/denied-party-screening/evidence.mp4",
-    "duration_s": 59.2,
-    "bytes": 4159375,
-    "sha256": "28b209da9d70c9312548fbd43f8d6fe3de8e9ab80d5069cd89111c5b963100ea"
-  },
-  "thumbnail": {
-    "path": "playbooks/denied-party-screening/thumb.jpg",
-    "bytes": 87513,
-    "sha256": "559d7e9da0fb65efa10f91693ab1d9966ddd8f35b51c028e2cc3d5f68cedeae8"
-  },
+  "captured_at": "2026-10-23T17:00:39Z",
+  "bench_run_at": "2026-10-23T15:53:54Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/denied-party-screening/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22998,
-      "sha256": "49e3ba54a6c1adf17205dc7a02c7b9d807a64589850f092b2b04f8ee1c938757"
+      "bytes": 34342,
+      "sha256": "627ce5fd512bef1dd6173dfce4dba3ef8e2e163e57c7f8ecc217797511590df3",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/denied-party-screening/story/02.webp",
+      "bytes": 31178,
+      "sha256": "bfaddb616ed37cc7e38980e741b3ce7b9c600a3c70800faea731e20992c0a5f2",
       "caption": "Turn 1 - Orderwick storefront: I'm Aiko, I do export compliance at Quillmont Sensors",
-      "turn": 1,
-      "bytes": 22576,
-      "sha256": "be17fb584e34c5ccf7daac34fe3c4cd71e40c0fe71b784eb83055a01a15db94d"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/denied-party-screening/story/03.webp",
-      "caption": "Turn 5 - Screenlist: Screenlist has the screening of every party to these orders and the searches I…",
-      "turn": 5,
-      "bytes": 22368,
-      "sha256": "35e38e3164eb27090f0635c013790714a132db5bbdfea98c0ba3d30f3ecb550f"
+      "bytes": 33626,
+      "sha256": "3093741b9e0ff69539d282f92184ab3d059f8246d626bc9d4f39b74d11e8b7d2",
+      "caption": "Turn 5 - Screenlist, Athena: Next I'll open the seven potential matches field by field",
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/denied-party-screening/story/04.webp",
+      "bytes": 27442,
+      "sha256": "7bbfd0136f62be74e5337f13e9f3b6c2765ba0e9c3b17916aff8c95274ae2b9e",
       "caption": "Turn 8 - Mailnest: Mailnest is our export compliance inbox",
-      "turn": 8,
-      "bytes": 22054,
-      "sha256": "16c189626164ea33363677b316ec2284834ad746c8ffaf11702b84463a448b82"
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/denied-party-screening/story/05.webp",
-      "caption": "Turn 12 - Ledgerline ERP, Athena: I can file eight of the eleven now",
-      "turn": 12,
-      "bytes": 22292,
-      "sha256": "9e44261fa4fcfb27443cd9353de733108c0c380d4f4188ad20cfd75e09d27265"
-    },
-    {
-      "path": "playbooks/denied-party-screening/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23526,
-      "sha256": "7f5b2818911e657448b001d8858bfe704ad6db141bb3467f4e3cc91e9d2710d5"
+      "bytes": 43540,
+      "sha256": "e3b15227b31cde4f926722308bd929f0a93967962a92d7f3aa2bc280df245174",
+      "caption": "Turn 12 - Ledgerline ERP, Athena: Eleven cards are filed",
+      "kind": "turn",
+      "turn": 12
     }
   ]
 }

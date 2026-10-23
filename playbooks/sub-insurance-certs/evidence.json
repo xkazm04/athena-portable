@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "sub-insurance-certs",
-  "captured_at": "2026-10-10T03:23:48Z",
-  "bench_run_at": "2026-10-10T03:20:28Z",
-  "narration": {
-    "text": "Every subcontractor's insurance checked on the policy, not the certificate, before it mobilizes. This is a chore for the project administrator of a general contractor building a three-storey medical office building, with ten subcontractors mobilizing over six weeks. Athena works it across 4 portals: Sitegrid, Subhub, Coverwell and Mailnest. On the bench, she found 9 of 9 eligible items, worth 7,200 dollars of the 7,200 dollars there was to find. She made no false claim. The world held 11 traps, and she walked past 11. Among them: A certificate that says 'ongoing and completed operations' on a policy with CG 20 10 only. A certificate that says 'additional insured per written contract' on a policy with no endorsement at all. She took 3 minutes. By hand, the same chore takes about 2 hours, so she was about 47 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 63.999,
-    "sha256": "484f6388bcf0c4899d72adb8fbe19fd39562eea3702c7455dc0cd4b6f9292f54"
-  },
-  "video": {
-    "path": "evidence/sub-insurance-certs/evidence.mp4",
-    "duration_s": 64.0,
-    "bytes": 3348005,
-    "sha256": "e8bb76eaad181e364b95ef7bc081568ff857d8d963d4e2b85eebd2728a555230"
-  },
-  "thumbnail": {
-    "path": "playbooks/sub-insurance-certs/thumb.jpg",
-    "bytes": 85940,
-    "sha256": "f549bab9d7cd19b54f37b9cc67cad88f30b65b3901bbbe908f97fd9f288ff3c7"
-  },
+  "captured_at": "2026-10-23T17:11:21Z",
+  "bench_run_at": "2026-10-23T15:47:21Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/sub-insurance-certs/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23886,
-      "sha256": "6dcbfaf3e6510b321f083b0a328082bb51e4fb67144871eb22e8a6b4479dacaf"
+      "bytes": 42156,
+      "sha256": "617c9b2af3673b721370494b92c05ae3abd605ca1e834aa72914842e089722cd",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/sub-insurance-certs/story/02.webp",
+      "bytes": 29654,
+      "sha256": "be50f62050e791f56678b65eb3fa17cffb76b6515aab4dddb13a52d156dc8812",
       "caption": "Turn 1 - Sitegrid: Subs are starting to mobilize on Alder Street and I don't trust our insurance…",
-      "turn": 1,
-      "bytes": 23510,
-      "sha256": "6cab1f6d0d69268c042a5ca35d5f72c91ab3d71e15811e97ed6f2511a75e2426"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/sub-insurance-certs/story/03.webp",
-      "caption": "Turn 5 - Subhub, Athena: Subhub is read",
-      "turn": 5,
-      "bytes": 23956,
-      "sha256": "569df983667bf14282d33c249acff1506f0cbdc645af3a5ff63bc5ec7852e674"
+      "bytes": 24948,
+      "sha256": "670aa44f9f0405756574de1c297aea1db0a3808bd6fc4cab53e8faac6389a673",
+      "caption": "Turn 4 - Subhub, Athena: Reading all ten Subhub compliance files now",
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/sub-insurance-certs/story/04.webp",
-      "caption": "Turn 8 - Coverwell, Athena: Coverwell is read",
-      "turn": 8,
-      "bytes": 23312,
-      "sha256": "ba1f7b04bb94e3031c44112ebea344a9209ee829058a9afebedf642b4324f5cf"
+      "bytes": 28096,
+      "sha256": "282e65c969bc1b01f39cb4a4a6a3b1ae336b2a70058126b9b9f66d0db4e03027",
+      "caption": "Turn 8 - Mailnest: My Mailnest folder has what the subs and their agents have sent us lately",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/sub-insurance-certs/story/05.webp",
-      "caption": "Turn 12 - Subhub: Back in Subhub",
-      "turn": 12,
-      "bytes": 23560,
-      "sha256": "a9417345e794266318a625a4d21621a96c0ea6d0c518ff6310d38268e0e7dec4"
-    },
-    {
-      "path": "playbooks/sub-insurance-certs/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22200,
-      "sha256": "b86343cbf3515241a2857d798680442276b2ce4f48705e9d0ce3d0c239ca37f1"
+      "bytes": 43312,
+      "sha256": "98edac5805d76bb4f794dd4ef1a2373988c88ef40d350dba68daf7a4641c4aaa",
+      "caption": "Turn 11 - Subhub: Back in Subhub",
+      "kind": "turn",
+      "turn": 11
     }
   ]
 }

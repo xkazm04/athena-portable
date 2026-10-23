@@ -1,16 +1,17 @@
 {
   "playbook": "data-broker-deletion",
-  "run_at": "2026-10-09T17:56:03Z",
+  "run_at": "2026-10-23T15:52:58Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 116.9,
+  "comparable": "sha256:69a479f0a536f08e",
+  "wall_s": 128.8,
   "turns": 12,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 25,
-  "cost_usd": 0.8527,
-  "your_time_s": 150,
+  "reads": 19,
+  "cost_usd": 0.8769,
+  "your_time_s": 180,
   "verdict": {
     "word": "exceeds",
     "reasons": [],
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 1.9
+    "minutes": 2.1
   },
   "score": {
     "eligible": 5,
     "found": 5,
     "exact": 5,
+    "neutral": 0,
     "value_total_usd": 32.25,
     "value_found_usd": 32.25,
     "recall_value": 1.0,
@@ -95,9 +97,13 @@
     ],
     "duplicates": 0,
     "forbidden": 0,
-    "other_cards": 0
+    "other_cards": 1
   },
   "cards": [
+    {
+      "action": "write_fact",
+      "outcome": "other"
+    },
     {
       "action": "add_identifier",
       "key": "NOORSALEH",
@@ -140,14 +146,14 @@
     }
   ],
   "missed": [],
-  "closing_words": "LA-81 is yours, and I'm filing a removal for it. I haven't done anything else on Lookabout.\n\n\n**What I found on Lookabout (4 listings)**\n- **LA-77, Noor Haddad, Oakland:** this is your old listing. It is Removed as of 2026-09-02, and the record is empty. Lookabout did delete it.\n- **LA-81, Noor N. Haddad, age 41, Oakland:** this is yours. It's Live, listed 2026-09-20, and has your 1290 Alcatraz Ave address. It's the one I'm filing the removal for.\n- **LA-90, Noor Haddad, age 35, San Diego:** this is someone who shares your name, so I'm leaving it alone.\n- **LA-92, Karim Haddad, age 19:** I'm leaving it alone. His email (PV-5) says he'll handle his own listing.\n\nThe search for \"Noor Saleh\" returned the same four rows, so there is no Saleh listing on Lookabout. I read the listings but didn't open their full pages.\n\n**No complaint against Lookabout.** LA-81 appeared 18 days after its deleti",
+  "closing_words": "One of the three Lookabout listings is yours, and I'm filing a removal for it.\n\n- **LA-77 (Oakland, 41):** Already removed on 2 Sep. I'm doing nothing.\n- **LA-81 (Noor N. Haddad, 41, Oakland):** This is yours. It has your address, 1290 Alcatraz Ave, and the same age and city. It was listed on 20 Sep, 18 days after Lookabout said it deleted your records. It names Karim as a relative, but the listing is yours, not his. Removing it doesn't touch any listing of his.\n- **LA-90 (Noor Haddad, 35, San Diego):** Not you. The address is different (3301 Adams Ave) and so is the relative (Leila). I'm leaving it alone.\n- **Former name:** Searching \"Noor Saleh\" found nothing on Lookabout.\n\n\n**What I did**\n- I searched Lookabout under both names and opened the live matches.\n- I filed one removal card, for LA-81. It runs only after you approve it.\n- I filed no complaint against Lookabout.\n\n**Cards waiti",
   "trace": [
     {
       "portal": "Mailnest",
       "user": "I asked the state's Erasepoint to make data brokers delete me back in January, and I'm still on people-search sites. Start with my Privacy folder: what has each broker told me?",
       "continued": false,
-      "said": "I'll list everything in the Privacy folder first.",
-      "said_chars": 49,
+      "said": "I'll list the Privacy folder first, then open each broker's message.",
+      "said_chars": 68,
       "reads": [
         "search_mail"
       ],
@@ -157,10 +163,9 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "Six messages. I'll read the four broker and Erasepoint ones, and your brother's, since it's about these sites. I'll skip the PrivacyPro ad.",
-      "said_chars": 139,
+      "said": "The Privacy folder holds 6 messages. Four relate to the request, so I'll open those. PV-5 is from Karim Haddad, who may be family, and PV-6 is a PrivacyPro ad. I'm skipping both for now.",
+      "said_chars": 186,
       "reads": [
-        "read_message",
         "read_message",
         "read_message",
         "read_message",
@@ -172,20 +177,37 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "Here is what each broker told you. I haven't checked any of it against Erasepoint yet.\n\n- **Erasepoint (PV-1, Jan 14):** Your request is ER-2026-0114-88213. Brokers were due to start processing on Aug 1.\n- **Peoplegrid (Aug 19):** It says it holds only Fair Credit Reporting Act (FCRA) consumer-report data, which it says California exempts, and it reported you as exempt. I can't tell yet whether that holds up.\n- **Findwho (Aug 28):** It couldn't match you to a verified identity.",
-      "said_chars": 1844,
-      "reads": [],
+      "said": "Three brokers have answered, and none has simply deleted everything.\n\n- **Peoplegrid (19 Aug):** It says it only holds consumer-report data covered by the federal Fair Credit Reporting Act, which California's law exempts, so it reported your record as exempt. That claim may be legitimate. I haven't checked it.\n- **Findwho (28 Aug):** It says it couldn't match your request to a verified identity, so it only opted you out of sale and sharing. It deleted nothing.",
+      "said_chars": 1811,
+      "reads": [
+        "read_message"
+      ],
       "cards": []
+    },
+    {
+      "portal": "Mailnest",
+      "user": "",
+      "continued": true,
+      "said": "Karim is your son. He wrote on 25 Sep that he's on Lookabout and will deal with it himself, so I'll leave his listing alone.\n\nI'll record that as a standing fact so it holds in later conversations. It files a card for you to approve.\n\n\nHere is where the work stands:\n- **Brokers' emailed answers:** I have all three. Peoplegrid says it is exempt. Findwho only opted you out and deleted nothing. Lookabout says it deleted your records.\n- **Registry side:** I couldn't read the Erasepoint tab from here.",
+      "said_chars": 827,
+      "reads": [],
+      "cards": [
+        {
+          "action": "write_fact",
+          "key": "",
+          "outcome": "other"
+        }
+      ]
     },
     {
       "portal": "Erasepoint registry",
       "user": "This is my request on Erasepoint. Check each broker's status, fix anything my request is missing, and complain about any broker that's ignoring the law.",
       "continued": false,
-      "said": "I'll read your request and each broker's reported status, plus the platform rules on what a request needs and when a complaint applies.",
-      "said_chars": 135,
+      "said": "I'll start by reading the registry: each broker's status, your request's identifiers, and the platform rules.",
+      "said_chars": 109,
       "reads": [
-        "read_my_request",
         "list_broker_status",
+        "read_my_request",
         "read_rules"
       ],
       "cards": []
@@ -194,22 +216,8 @@
       "portal": "Erasepoint registry",
       "user": "",
       "continued": true,
-      "said": "Findwho, Lookabout and Peoplegrid have answered. Tracelane and Datahive haven't. Your request also lacks your former name, Noor Saleh. Next I'll read the rules on requests, brokers, statuses and complaints, so I know which of these are actual violations.",
-      "said_chars": 254,
-      "reads": [
-        "read_rules",
-        "read_rules",
-        "read_rules",
-        "read_rules"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "Erasepoint registry",
-      "user": "",
-      "continued": true,
-      "said": "Tracelane is the only broker that is clearly ignoring the law. It retrieved your request on 2026-08-03, so its 45 days ran out on 2026-09-17. It still hasn't reported a status, 22 days later.\n\nThe other brokers:\n- **Datahive** retrieved your request on 2026-09-29. Its deadline is 2026-11-13, so I'm not complaining yet.\n- **Peoplegrid** (exempt) and **Findwho** (opted out, unverified) gave statuses the rules call lawful, so neither is a violation. Findwho still has to be handled listing by listing.",
-      "said_chars": 1121,
+      "said": "Two things on the registry need action: your request is missing your former name, and Tracelane has gone past the legal deadline.\n\n**Broker statuses**\n- **Tracelane:** it retrieved your request on 2026-08-03 and has reported nothing. The 45 days ran out on 2026-09-17, so this is a violation. I'm filing a complaint.\n- **Datahive:** it retrieved your request on 2026-09-29, and its 45 days don't end until 2026-11-13. No complaint yet.",
+      "said_chars": 1702,
       "reads": [],
       "cards": [
         {
@@ -230,10 +238,9 @@
       "portal": "Findwho",
       "user": "Now Findwho. Find what's still up about me and get my listings removed. Leave my family and anyone who just shares my name alone.",
       "continued": false,
-      "said": "I'll search Findwho under your current name and your former name.",
-      "said_chars": 65,
+      "said": "I'll search Findwho under your current name and your former name, Saleh. Then I'll open the matches to see which ones are yours.",
+      "said_chars": 128,
       "reads": [
-        "search_people",
         "search_people",
         "search_people"
       ],
@@ -243,10 +250,9 @@
       "portal": "Findwho",
       "user": "",
       "continued": true,
-      "said": "Five listings came back. I'll read each one in full to see which are yours.",
-      "said_chars": 75,
+      "said": "I'll open the candidate listings to see which are yours: FW-1001 and FW-1003 are the likely ones, and FW-1002 and FW-1005 are probably people who share your name.",
+      "said_chars": 162,
       "reads": [
-        "read_listing",
         "read_listing",
         "read_listing",
         "read_listing",
@@ -258,8 +264,8 @@
       "portal": "Findwho",
       "user": "",
       "continued": true,
-      "said": "Two of the five Findwho listings are yours: FW-1001 and FW-1003. I'm filing a removal for each.\n\n- **FW-1001, Noor Haddad, Oakland:** this matches your phone (510) 555-0147 and your 1290 Alcatraz Ave address. Its relatives are Samira and Karim.\n- **FW-1003, Noor Saleh, Berkeley:** this is your former name. It matches the same phone and your 2519 Russell St address.\n\nI'm leaving the other three alone:\n- **FW-1004, Samira Haddad:** this is a family listing.",
-      "said_chars": 1041,
+      "said": "Two of the four listings are yours. The other two belong to other people.\n\n- **FW-1001 (Noor Haddad, 41, Oakland):** This is yours. The phone number (510) 555-0147 and the address 1290 Alcatraz Ave both match your Erasepoint request. It also lists Samira and Karim as relatives. I'm removing only your own listing, and Karim's stays as he asked.\n- **FW-1003 (Noor Saleh, 41, Berkeley):** This is yours under your former name. It has the same phone number and your old Russell St address.",
+      "said_chars": 858,
       "reads": [],
       "cards": [
         {
@@ -280,8 +286,8 @@
       "portal": "Lookabout",
       "user": "And Lookabout. Same here, then tell me what you did and when I should check again.",
       "continued": false,
-      "said": "I'm on Lookabout now. I'll search for your current name and your former name.",
-      "said_chars": 77,
+      "said": "I'll search Lookabout under your current name and your former name, then open the matches to see which are yours.",
+      "said_chars": 113,
       "reads": [
         "search_people",
         "search_people"
@@ -292,8 +298,8 @@
       "portal": "Lookabout",
       "user": "",
       "continued": true,
-      "said": "Lookabout shows LA-77, your old listing, as removed on 2026-09-02. A new one, LA-81, went up on 2026-09-20. I'll read both in full to check that LA-81 is you.",
-      "said_chars": 158,
+      "said": "LA-77 is already removed. Two others are live, LA-81 and LA-90. I'll open both to see whether either is you.",
+      "said_chars": 108,
       "reads": [
         "read_listing",
         "read_listing"
@@ -304,8 +310,8 @@
       "portal": "Lookabout",
       "user": "",
       "continued": true,
-      "said": "LA-81 is yours, and I'm filing a removal for it. I haven't done anything else on Lookabout.\n\n\n**What I found on Lookabout (4 listings)**\n- **LA-77, Noor Haddad, Oakland:** this is your old listing. It is Removed as of 2026-09-02, and the record is empty. Lookabout did delete it.\n- **LA-81, Noor N. Haddad, age 41, Oakland:** this is yours. It's Live, listed 2026-09-20, and has your 1290 Alcatraz Ave address. It's the one I'm filing the removal for.",
-      "said_chars": 2359,
+      "said": "One of the three Lookabout listings is yours, and I'm filing a removal for it.\n\n- **LA-77 (Oakland, 41):** Already removed on 2 Sep. I'm doing nothing.\n- **LA-81 (Noor N. Haddad, 41, Oakland):** This is yours. It has your address, 1290 Alcatraz Ave, and the same age and city. It was listed on 20 Sep, 18 days after Lookabout said it deleted your records. It names Karim as a relative, but the listing is yours, not his. Removing it doesn't touch any listing of his.\n- **LA-90 (Noor Haddad, 35, San Diego):** Not you.",
+      "said_chars": 1827,
       "reads": [],
       "cards": [
         {
@@ -317,7 +323,7 @@
       ]
     }
   ],
-  "note": "world: the request already lists the old Berkeley address, so only the former name is missing; run 1 added the address, which the truth did not hold",
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
   "history": [
     {
       "run_at": "2026-10-09T17:51:27Z",
@@ -327,6 +333,22 @@
       "eligible": 5,
       "value_found_usd": 32.25,
       "false_claims": 1
+    },
+    {
+      "run_at": "2026-10-09T17:56:03Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 5,
+      "eligible": 5,
+      "value_found_usd": 32.25,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 116.9,
+      "your_time_s": 150,
+      "note": "world: the request already lists the old Berkeley address, so only the former name is missing; run 1 added the address, which the truth did not hold"
     }
   ]
 }

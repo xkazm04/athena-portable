@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "vehicle-recall-reimbursement",
-  "captured_at": "2026-10-10T19:46:06Z",
-  "bench_run_at": "2026-10-10T19:42:49Z",
-  "narration": {
-    "text": "A bookkeeper's repair invoices are claimed under a fuel pump recall: the labour and shop fee of one repair and a part she bought herself, with its tax, while a relay fixed before the window opens, a valve, an oil change and a rotation, a warranty repair, a tow, a refunded deposit and her husband's car outside the recall are left alone. This is a chore for a bookkeeper in Boise, Idaho, with a recall letter for her car and a drawer of repair invoices and receipts. On the bench, she found 4 of 4 eligible items, worth 674 dollars and 2 cents of the 674 dollars and 2 cents there was to find. She made no false claim. The world held 8 traps, and she walked past 8. She took 2 minutes. By hand, the same chore takes 75 minutes, so she was about 47 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 59.568,
-    "sha256": "eb817883ca81c8ffea88f4b84ab89eef85089a78e49ebe02a9d90acaa832daf6"
-  },
-  "video": {
-    "path": "evidence/vehicle-recall-reimbursement/evidence.mp4",
-    "duration_s": 59.6,
-    "bytes": 2721565,
-    "sha256": "21a258eec0e9c5e9083b95ec8952e383883f8eb79a7490f139ec9e9903519980"
-  },
-  "thumbnail": {
-    "path": "playbooks/vehicle-recall-reimbursement/thumb.jpg",
-    "bytes": 93172,
-    "sha256": "fe2153ededb167075632a59d55cb7f92c6b6aacd028214375092de900e372016"
-  },
+  "captured_at": "2026-10-23T17:12:29Z",
+  "bench_run_at": "2026-10-23T16:30:50Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/vehicle-recall-reimbursement/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22654,
-      "sha256": "d394bd9fdb1f1ece109e3e9415887703e3a3415831157571711cfb4562263bb9"
+      "bytes": 29466,
+      "sha256": "fd86be0be9f077b18119daa4620ca28a87338623226692756b3c965221fd73b5",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/vehicle-recall-reimbursement/story/02.webp",
+      "bytes": 29864,
+      "sha256": "0a4cedebbf86372398522a830d2d9f8a041638e08a69fbe68b4e7a260f041609",
       "caption": "Turn 1 - Postwren: I'm Tamsin Okafor",
-      "turn": 1,
-      "bytes": 22888,
-      "sha256": "bee607cae3dd0cc4843a2b0d8c3510103517a3777e8d143c40441ca0ec76b9df"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/vehicle-recall-reimbursement/story/03.webp",
+      "bytes": 28408,
+      "sha256": "d92dc53bd82509227b69888e33c218a28bda0ca71a946f4c9444172d4da4fbb6",
       "caption": "Turn 4 - Recallmoor: This is Recallmoor",
-      "turn": 4,
-      "bytes": 23988,
-      "sha256": "34aeb0a894ef2e7a48c3b0daaa8d6923ff0f6632c3b8edc1abf51e2679733cce"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/vehicle-recall-reimbursement/story/04.webp",
+      "bytes": 24950,
+      "sha256": "bb00e1cd53aebdc4d516b52542cb0875974f81232941bd6747809c67c32d89ec",
       "caption": "Turn 6 - Garrowby Service: This is Garrowby Service, my repair shop",
-      "turn": 6,
-      "bytes": 23416,
-      "sha256": "c3970e21a0bb2653173906fa44c21e25699816ae3142e78cc800453e3e9ae4b8"
+      "kind": "turn",
+      "turn": 6
     },
     {
+      "n": 5,
       "path": "playbooks/vehicle-recall-reimbursement/story/05.webp",
-      "caption": "Turn 9 - Torvane Owners, Athena: Nothing in the plan excludes the four items you expected to be claimable, so…",
-      "turn": 9,
-      "bytes": 21976,
-      "sha256": "189c0fa492e0e54534fdc212c60323fd86d5f7da1b41775e29d45c6c221e4eb0"
-    },
-    {
-      "path": "playbooks/vehicle-recall-reimbursement/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22594,
-      "sha256": "7d04307100d16484d8a65d1d3daf7293607507b7d5144223cab8b9c29f251b5e"
+      "bytes": 41556,
+      "sha256": "d8cd44d4f1af134c50c7cebbf02c82e9a258861a4246a4698fc5bba97f739876",
+      "caption": "Turn 9 - Torvane Owners, Athena: I'm filing four claims, one per line, all for your Kestrel (VIN…",
+      "kind": "turn",
+      "turn": 9
     }
   ]
 }

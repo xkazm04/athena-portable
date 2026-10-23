@@ -1,15 +1,16 @@
 {
   "playbook": "eu261-flight-compensation",
-  "run_at": "2026-10-09T17:18:02Z",
+  "run_at": "2026-10-23T15:57:16Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 188.7,
-  "turns": 12,
+  "comparable": "sha256:20f8c076d228f52e",
+  "wall_s": 227.4,
+  "turns": 13,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 59,
-  "cost_usd": 1.9992,
+  "reads": 60,
+  "cost_usd": 1.6884,
   "your_time_s": 120,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 3.1
+    "minutes": 3.8
   },
   "score": {
     "eligible": 4,
     "found": 4,
     "exact": 4,
+    "neutral": 0,
     "value_total_usd": 5445.0,
     "value_found_usd": 5445.0,
     "recall_value": 1.0,
@@ -126,14 +128,14 @@
     }
   ],
   "missed": [],
-  "closing_words": "I'm filing one Skyrail claim, SR 89, for 1,800 euros. The other three delayed flights don't qualify.\n\n**Filed**\n- **SR 89, 5 Sept (SR6PW2):** Lisbon to New York is 5,410 km, which is the 600 euro band. We reached the gate at 18:05 against 13:45 scheduled, 4h20 late, so it's paid in full with no halving. The cause was a late inbound aircraft held for a bleed-air valve repair. Skyrail's own rules say that is a technical fault and not extraordinary. Maren and Tomas paid fares. Ines flew on a miles award ticket, which the rules cover. That makes 3 passengers at 600 euros, 1,800 euros.\n\n\n**Left alone**\n- **SR 88, 20 June (JFK to Lisbon):** it was 5h12 late, but it departed New York. Skyrail's scope rule covers only departures from the EU, Iceland, Norway or Switzerland, so EU 261 doesn't apply. The brake fault wouldn't have excused it. A claim would have to be made under US rules, not here.\n-",
+  "closing_words": "One Skyrail claim holds up: SR 89 on 5 September, for €1,800. I'm filing it now.\n\n\n| Flight | Booking | Cause | Result |\n|---|---|---|---|\n| SR 88, JFK to LIS, 20 June | SR4LJ7 | Brake fault, aircraft change | **Left alone.** It departed New York, so Reg. 261 doesn't apply (Art. 3(1)). |\n| SR 92, LIS to EWR, 30 July | SR2KB9 | French air traffic controllers' strike, Eurocontrol slot cuts | **Left alone.** It departed the EU, but an ATC strike is extraordinary, so nothing is owed. |\n| SR 89, LIS to JFK, 5 September | SR6PW2 | Late aircraft held for a technical repair | **Filed:** 3 × €600 = €1,800. It departed Lisbon, 5,410 km, 4h20 late, and the cause isn't extraordinary. |\n| SR 1450, JFK to MIA, 8 September | SR3MV5 | Engine sensor fault | **Left alone.** It's a US domestic flight, outside Reg. 261. |\n\n- **Ines:** She is covered because her award ticket was paid with miles. That's why t",
   "trace": [
     {
       "portal": "Tripfold itineraries",
       "user": "Our flights this year were a mess and I want what we're owed. Start here in Tripfold: go through every booking and note the distance, the scheduled arrival and who flew on what fare, for anything that might have been disrupted.",
       "continued": false,
-      "said": "Starting with the full booking list; I'll open each one after.",
-      "said_chars": 62,
+      "said": "I'll list the bookings first, and pull both airlines' disruption archives so I know which ones to open.\n\nThe Tripfold booking list has been requested, but the answer comes with my next turn. Both airline disruption lookups were refused because this session is pinned to Tripfold. I'll read the airline archives when you switch me to those tabs.\n\nI'm not calling `list_bookings` again. Once the list arrives I'll open each booking with `read_booking` and note the distance, scheduled arrival, and each traveller's fare.",
+      "said_chars": 518,
       "reads": [
         "list_bookings"
       ],
@@ -143,8 +145,8 @@
       "portal": "Tripfold itineraries",
       "user": "",
       "continued": true,
-      "said": "Page 1 of 2 is back (showing 7 of 14 bookings). I'll fetch page 2 and open the seven bookings from page 1.",
-      "said_chars": 106,
+      "said": "Page 1 shows 7 of 14 bookings. I'll fetch page 2 and open all seven on page 1 now.",
+      "said_chars": 82,
       "reads": [
         "list_bookings",
         "read_booking",
@@ -161,8 +163,8 @@
       "portal": "Tripfold itineraries",
       "user": "",
       "continued": true,
-      "said": "All 14 bookings are listed, and I've opened the 7 from page 1. Now I'll open the 7 from page 2.",
-      "said_chars": 95,
+      "said": "Seven bookings are read. Seven more remain on page 2, so I'm opening them now.",
+      "said_chars": 78,
       "reads": [
         "read_booking",
         "read_booking",
@@ -178,8 +180,8 @@
       "portal": "Tripfold itineraries",
       "user": "",
       "continued": true,
-      "said": "Tripfold is done: all 14 bookings are read (14 of 14), and I'm saving the notes so I can use them in the other tabs.\n\n\nI've noted distance, scheduled arrival and fares for every booking, but I haven't checked which flights were actually disrupted yet.\n\n**Aerolark (9 bookings)**\n\n| Ref | Flight | Date | Route | km | Sched.",
-      "said_chars": 2442,
+      "said": "All 14 bookings are read. The table below has the distance, scheduled arrival and fares for each. I'm also saving it as a checkpoint so it's in memory when you switch tabs.\n\n| Ref | Flight | Date | Route | km | Scheduled arrival | Fares |\n|---|---|---|---|---|---|---|\n| SR9CC1 | SR 15 | 04-12 | LIS-JFK | 5410 | 13:25 JFK | Maren, Tomas paid |\n| AL1ON9 | AL 1210 | 05-10 | LIS-OPO | 274 | 08:10 OPO | Tomas paid |\n| AL8CN6 | AL 760 | 06-02 | LIS-CDG | 1460 | 10:25 CDG | Maren paid |\n| SR4LJ7 | SR 88 | 06-20 | JFK-LIS",
+      "said_chars": 2583,
       "reads": [],
       "cards": []
     },
@@ -187,8 +189,8 @@
       "portal": "Mailnest",
       "user": "Now my Mailnest travel folder. Find what the airlines wrote about each delay and cancellation: when it was announced, and when we actually got to the gate.",
       "continued": false,
-      "said": "I'll list every message in the travel folder first, then open the airline ones.",
-      "said_chars": 79,
+      "said": "I'll list the whole travel folder first, then open the messages about delays and cancellations.",
+      "said_chars": 95,
       "reads": [
         "search_mail"
       ],
@@ -198,8 +200,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "Page 1 of the travel folder shows 8 of 14 messages. I'll fetch page 2 and open the 8 messages from page 1.",
-      "said_chars": 106,
+      "said": "Page 1 shows 8 of 14 messages. I'm fetching page 2 and opening all eight page-1 messages now.",
+      "said_chars": 93,
       "reads": [
         "search_mail",
         "read_message",
@@ -217,8 +219,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "Nine messages are read. Six more are on page 2, and I'm opening them now.",
-      "said_chars": 73,
+      "said": "Eight of the 14 messages are read. I'm opening the six on page 2 now.",
+      "said_chars": 69,
       "reads": [
         "read_message",
         "read_message",
@@ -233,8 +235,8 @@
       "portal": "Mailnest",
       "user": "",
       "continued": true,
-      "said": "The folder has 14 messages, and I've read all of them. Eleven flights have an arrival time or a cancellation notice, and one of those is already paid. I haven't checked causes or rules yet, so none of this is a verdict. The \"late\" figures below are scheduled arrival against the time the airline says we reached the gate.\n\n**Cancellations**\n- **AL 760, 2 June (AL8CN6):** announced 16 May, 17 days ahead. We were moved to AL 762, arriving 16:25 instead of 10:25, so 6h late.",
-      "said_chars": 2730,
+      "said": "All 14 messages are read. I'm saving the findings as a checkpoint so they're in memory when you switch tabs.\n\n\n**I've found the announcement and gate times for 12 flights.** Two bookings, SR 15 and AL 1210, have no mail about them.",
+      "said_chars": 2849,
       "reads": [],
       "cards": []
     },
@@ -242,12 +244,24 @@
       "portal": "Aerolark claims",
       "user": "This is Aerolark's claims portal. Check why each Aerolark flight was disrupted and file a claim for every one the rule entitles us to, at the right amount.",
       "continued": false,
-      "said": "I'll start with Aerolark's disruption archive, claims, offers and rules, plus the status page for each flight we have emails about.\n\n\nNothing is filed yet. I'm waiting on these pages, then I'll check each flight's cause, distance band and passenger count and file claims for the ones that qualify.",
-      "said_chars": 297,
+      "said": "I'll start with Aerolark's disruption archive, existing claims, offers and rules, then open each flight for its cause.\n\n\nI'll read the cause of each flight and the rules on amounts, extraordinary circumstances and passengers once these results arrive.",
+      "said_chars": 251,
       "reads": [
         "list_disruptions",
         "list_my_claims",
         "list_offers",
+        "read_rules"
+      ],
+      "cards": []
+    },
+    {
+      "portal": "Aerolark claims",
+      "user": "",
+      "continued": true,
+      "said": "Next I'll read the rules topics and the status page for each disrupted Aerolark flight.\n\n\nAL 1433 is already paid (AC-2231), so I'm not reopening it. Once these answer, I'll file the claims that hold up.",
+      "said_chars": 203,
+      "reads": [
+        "read_rules",
         "read_rules",
         "read_rules",
         "read_rules",
@@ -268,8 +282,8 @@
       "portal": "Aerolark claims",
       "user": "",
       "continued": true,
-      "said": "Three Aerolark flights qualify so far: AL 218, AL 1432 and AL 1904. I still need the booking ref, distance and paid travellers for AL 1432 and AL 1904. I read those in Tripfold earlier, so I'm checking memory first.\n\n\nFindings so far, before any claim:\n- **AL 760 (2 June):** no claim. It was announced 17 days ahead, which is outside the 14-day window.\n- **AL 218 (3 July):** owed. It was cancelled on 1 July, 2 days ahead, because of a crew shortage, which isn't extraordinary.",
-      "said_chars": 1982,
+      "said": "Two claims hold up as they stand, and I'm filing them now. AL 1904 holds up on cause, but I don't have its booking's distance or travellers yet, so I'm looking those up first.",
+      "said_chars": 2232,
       "reads": [],
       "cards": [
         {
@@ -296,12 +310,11 @@
       "portal": "Skyrail claims",
       "user": "And Skyrail's claims portal. Same here, then tell me what you filed and what you left alone, and why.",
       "continued": false,
-      "said": "Nothing is filed on Skyrail yet. I'm reading its disruption archive and rules, plus the Skyrail bookings in Tripfold and the Skyrail emails in Mailnest.\n\nSkyrail's disruption list and rules are still loading. In the meantime I'm recalling the Skyrail booking details I read in Tripfold, because that tab's tools can't be called from here.\n\nI have SR 15, SR 88, SR 89 and SR 1450 from the Tripfold notes, but the recall cut off the rest of the list, including SR 92.",
-      "said_chars": 709,
+      "said": "I'm starting with Skyrail's disruption archive and rules, and recalling what I already have on those bookings.\n\n\nOnce these answer, I'll read the cause of each Skyrail flight and the rules on amounts, extraordinary circumstances and passengers. Then I'll file the claims that hold up.\n\nThe disruption list and rules index haven't answered yet, so I won't repeat those calls. I'm opening the four Skyrail flights I know were late, plus the rules topics I need.\n\n\nNothing is filed yet.",
+      "said_chars": 527,
       "reads": [
         "list_disruptions",
         "read_rules",
-        "read_flight_status",
         "read_flight_status",
         "read_flight_status",
         "read_flight_status",
@@ -317,8 +330,8 @@
       "portal": "Skyrail claims",
       "user": "",
       "continued": true,
-      "said": "I'm filing one Skyrail claim, SR 89, for 1,800 euros. The other three delayed flights don't qualify.\n\n**Filed**\n- **SR 89, 5 Sept (SR6PW2):** Lisbon to New York is 5,410 km, which is the 600 euro band. We reached the gate at 18:05 against 13:45 scheduled, 4h20 late, so it's paid in full with no halving. The cause was a late inbound aircraft held for a bleed-air valve repair. Skyrail's own rules say that is a technical fault and not extraordinary. Maren and Tomas paid fares.",
-      "said_chars": 1726,
+      "said": "One Skyrail claim holds up: SR 89 on 5 September, for €1,800. I'm filing it now.\n\n\n| Flight | Booking | Cause | Result |\n|---|---|---|---|\n| SR 88, JFK to LIS, 20 June | SR4LJ7 | Brake fault, aircraft change | **Left alone.** It departed New York, so Reg. 261 doesn't apply (Art. 3(1)). |\n| SR 92, LIS to EWR, 30 July | SR2KB9 | French air traffic controllers' strike, Eurocontrol slot cuts | **Left alone.** It departed the EU, but an ATC strike is extraordinary, so nothing is owed.",
+      "said_chars": 1436,
       "reads": [],
       "cards": [
         {
@@ -328,6 +341,24 @@
           "value_usd": 1980.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-09T17:18:02Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 4,
+      "eligible": 4,
+      "value_found_usd": 5445.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 188.7,
+      "your_time_s": 120
     }
   ]
 }

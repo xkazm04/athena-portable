@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "carrier-accessorials",
-  "captured_at": "2026-10-09T15:51:56Z",
-  "bench_run_at": "2026-10-07T23:40:31Z",
-  "narration": {
-    "text": "Detention, lumper and TONU, collected. This is a chore for a three-truck owner-operator carrier hauling for C.H. Robinson, TQL, Uber Freight and a small email-only broker, factored through RTS. Drivers sit at docks on four stops in ten. Athena works it across 6 portals: Motive, Dispatch inbox, C.H. Robinson Navisphere Carrier, TQL Carrier Dashboard, Uber Freight and RTS Pro. On the bench, she found 9 of 9 eligible items, worth 1,580 dollars of the 1,580 dollars there was to find. She made no false claim. The world held 13 traps, and she walked past 13. Among them: ELD times typed into a CHR request, where the signed BOL's times are the ones checked. A detention request over the rate con's cap. She took 4 minutes. By hand, the same chore takes about 2 hours, so she was about 33 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 30 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 65.735,
-    "sha256": "89306aef9733abc6aab9dbec3141546ed5f7f13e34b84c9ee474750e13c86b55"
-  },
-  "video": {
-    "path": "evidence/carrier-accessorials/evidence.mp4",
-    "duration_s": 65.735,
-    "bytes": 3619691,
-    "sha256": "0ccc1e114e5e025353a1e469579d68c8366fac1f92dd1bd9a8d35913f48dfad0"
-  },
-  "thumbnail": {
-    "path": "playbooks/carrier-accessorials/thumb.jpg",
-    "bytes": 98615,
-    "sha256": "288bae07cf325f1ce2cdcad8c9fee3e96dc2002b0898d6a050b5998cf8afb1f1"
-  },
+  "captured_at": "2026-10-23T16:58:23Z",
+  "bench_run_at": "2026-10-23T15:47:57Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/carrier-accessorials/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23784,
-      "sha256": "bc0e7a6d2dde0c9c8d48b65a8097f0226a502d652e6c46ccf40d6fc9b562aa75"
+      "bytes": 42170,
+      "sha256": "dc4343c9b1811f9e7c54964e484dffb4222de38b90e13a0b0271c0bb02b8cf55",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/carrier-accessorials/story/02.webp",
+      "bytes": 43710,
+      "sha256": "65607111e7cb0839b3d518e632c6ad6de0fd227958eab6c15efef90caae82456",
       "caption": "Turn 1 - Motive: Accessorials day",
-      "turn": 1,
-      "bytes": 22524,
-      "sha256": "66504f824341691323dd4c0a5af23e2829c549a952b303218c758d680c027b6b"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/carrier-accessorials/story/03.webp",
-      "caption": "Turn 9 - C.H. Robinson Navisphere Carrier: Navisphere",
-      "turn": 9,
-      "bytes": 23006,
-      "sha256": "89cd5637926ed18bf69101823360aabef6c8aaeb8fb59c111a560ebcec392d5f"
+      "bytes": 43732,
+      "sha256": "c75def0e1597d30b653528ea840592e2479efef0f6543d891720bb73d0c60446",
+      "caption": "Turn 6 - Dispatch inbox, Athena: I've read the terms for all 13 rate cons and the lumper and rep emails (every…",
+      "kind": "turn",
+      "turn": 6
     },
     {
+      "n": 4,
       "path": "playbooks/carrier-accessorials/story/04.webp",
-      "caption": "Turn 17 - Dispatch inbox: Back in the inbox",
-      "turn": 17,
-      "bytes": 23888,
-      "sha256": "5ef7ca5ad8b5190e4f4eeb3dd9c02f467eb3ca4476924a2226c84d9929754c21"
+      "bytes": 43502,
+      "sha256": "7bc5c95035ff2467933f2841a6bd5ecd2a182ccc038bbde44030772ab6a93b5b",
+      "caption": "Turn 10 - TQL Carrier Dashboard, Athena: TQL-5502's lumper can be filed now, and the detention loads need their exact…",
+      "kind": "turn",
+      "turn": 10
     },
     {
+      "n": 5,
       "path": "playbooks/carrier-accessorials/story/05.webp",
-      "caption": "Turn 25 - C.H. Robinson Navisphere Carrier, Athena: CHR-1188 qualifies for $250, and I'm filing it on the BOL times, 06:00 to…",
-      "turn": 25,
-      "bytes": 23914,
-      "sha256": "dda0a01f4be37bfedd07ddb660cce5c64dc58242ffa03ff49ed8008c8faa2592"
-    },
-    {
-      "path": "playbooks/carrier-accessorials/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22366,
-      "sha256": "e834c7f5e2f2a652d709a033d8d7e5026924604da1d3be7657400b346a82d02d"
+      "bytes": 43350,
+      "sha256": "adc9547b868af0398bce270d0092d89d6bee677445c26d1bab5ca8a59f78cda3",
+      "caption": "Turn 15 - Dispatch inbox: Back in the inbox",
+      "kind": "turn",
+      "turn": 15
     }
   ]
 }

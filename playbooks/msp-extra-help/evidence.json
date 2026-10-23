@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "msp-extra-help",
-  "captured_at": "2026-10-10T06:13:13Z",
-  "bench_run_at": "2026-10-10T06:08:16Z",
-  "narration": {
-    "text": "A mother living on her Social Security is applied for the Medicare Savings Program her income really fits, with only the savings the rules count, and gets Extra Help with it, while a father who already has it is left alone. This is a chore for a daughter who handles the paperwork for her mother, seventy-five and living alone on her Social Security, and keeps an eye on her father's Medicare in a nursing home. On the bench, she found 4 of 4 eligible items, worth 3,797 dollars and 20 cents of the 3,797 dollars and 20 cents there was to find. All 4 were filed at the exact amount the rules allow. She made no false claim. The world held 10 traps, and she walked past 10. She took 2 minutes. By hand, the same chore takes 3 hours, so she was about 100 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 59.878,
-    "sha256": "ef9aeecb1094f478c349de1aa9b33fc5141c5859e7314d8bdc078b62231d6ad3"
-  },
-  "video": {
-    "path": "evidence/msp-extra-help/evidence.mp4",
-    "duration_s": 59.88,
-    "bytes": 2963189,
-    "sha256": "d5004752a0e8612becbe5f748ac4febee0364b07bb6ad5786f77b1e8066f9f28"
-  },
-  "thumbnail": {
-    "path": "playbooks/msp-extra-help/thumb.jpg",
-    "bytes": 93152,
-    "sha256": "58f925337afcb148b99bae166293c8731ea869feee8f21f3f5cf49ed9d93113f"
-  },
+  "captured_at": "2026-10-23T17:07:09Z",
+  "bench_run_at": "2026-10-23T16:13:45Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/msp-extra-help/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22836,
-      "sha256": "aeda7e279b06fcebdb8f9e8857a0e0a352c5e964bc33798acbb830498ec8e900"
+      "bytes": 42874,
+      "sha256": "78ebd73a0298d75a684d9f5ce93923c03a64dc350e1bc7ea7db3cea205ab3b29",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/msp-extra-help/story/02.webp",
+      "bytes": 28312,
+      "sha256": "d39c8a765fd4e0180a26787a633a9444ad01f848a11513a58e9e48654be91f77",
       "caption": "Turn 1 - Mailnest: Mom lives on her Social Security and I think she can get help with her…",
-      "turn": 1,
-      "bytes": 22658,
-      "sha256": "eca2809e7f210971aee887fef84e64bdf27e47d931c82579ff2ab958f4efd1a2"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/msp-extra-help/story/03.webp",
+      "bytes": 25490,
+      "sha256": "56e475e9add74e146cccc7e19f095d8a48c073727e11def10bd323b30291d456",
       "caption": "Turn 4 - Ledgerline bank: Ledgerline, Mom's bank",
-      "turn": 4,
-      "bytes": 20600,
-      "sha256": "084c9a37d43713908cf4dc789f281908fb38ab8ca130ca08d469296fa6fa2e44"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/msp-extra-help/story/04.webp",
+      "bytes": 32158,
+      "sha256": "e92154affb04b94489ff0fcd08030ffc7ca22ec144f3f5642328554429846a37",
       "caption": "Turn 6 - Benefitline: Benefitline, Mom's and Dad's Social Security and Medicare",
-      "turn": 6,
-      "bytes": 23372,
-      "sha256": "78f42ed2bce3d64a058f117c834d164e79c9271f5040df0be36e1ef04ff19b4a"
+      "kind": "turn",
+      "turn": 6
     },
     {
+      "n": 5,
       "path": "playbooks/msp-extra-help/story/05.webp",
-      "caption": "Turn 9 - Statecare Benefits, Athena: Mom qualifies for QMB. I'm filing cards for the three resource lines that…",
-      "turn": 9,
-      "bytes": 22438,
-      "sha256": "7b6b4db8dd70436abeb5cc0be49832f9085871444265f14fd2ad249e552b7811"
-    },
-    {
-      "path": "playbooks/msp-extra-help/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23384,
-      "sha256": "5b4898421a6ba47c590590bb0d8094de542b5d9b844c5dcb14e40bedf217e353"
+      "bytes": 43650,
+      "sha256": "5d5ea74d4d3920002dcecab5fe1d90b60d9f2b1a6a4d8a4a2886bb71ba3b492e",
+      "caption": "Turn 9 - Statecare Benefits, Athena: Irene qualifies for QMB. I've filed four cards for you to approve, but nothing…",
+      "kind": "turn",
+      "turn": 9
     }
   ]
 }

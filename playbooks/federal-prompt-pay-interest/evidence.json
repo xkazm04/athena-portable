@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "federal-prompt-pay-interest",
-  "captured_at": "2026-10-09T19:04:39Z",
-  "bench_run_at": "2026-10-09T19:01:44Z",
-  "narration": {
-    "text": "The interest federal agencies owe on late payments, claimed with the penalty. This is a chore for the office manager of a forty-person facility services contractor in Kansas City that bills three federal contracts. Athena works it across 4 portals: Invoicepoint, Contractdesk, Ledgerline bank and Mailnest. On the bench, she found 7 of 7 eligible items, worth 440 dollars and 16 cents of the 440 dollars and 16 cents there was to find. All 7 were filed at the exact amount the rules allow. She made no false claim. The world held 11 traps, and she walked past 11. Among them: A supplies invoice with 1,400 dollars held back in a quantity dispute. An invoice due on a Saturday and paid on the Monday. She took 5 minutes. By hand, the same chore takes 3 hours, so she was about 39 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 61.785,
-    "sha256": "562932d64d3fb09246346974c6d044e8069e192c714c2e697ba3c7a16e8bf9ad"
-  },
-  "video": {
-    "path": "evidence/federal-prompt-pay-interest/evidence.mp4",
-    "duration_s": 61.8,
-    "bytes": 2780078,
-    "sha256": "1b8f169784b4a27736fb26d8391cb06bd57860458c56d9d7062c76ee26273f1c"
-  },
-  "thumbnail": {
-    "path": "playbooks/federal-prompt-pay-interest/thumb.jpg",
-    "bytes": 80020,
-    "sha256": "2994f8d332e7e7b2340cd9ad58ca52c51af0a7a8a58e588f54293ee0275e3b4e"
-  },
+  "captured_at": "2026-10-23T17:02:22Z",
+  "bench_run_at": "2026-10-23T15:59:16Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/federal-prompt-pay-interest/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23598,
-      "sha256": "e618d92a9c1ce571c84ded5ad79b05351b5c3a4ceaa18064f009660d617e0f3f"
+      "bytes": 43610,
+      "sha256": "4a492533ff16c9db52c64b5cf2680d8d2ba37f96b0e87a4b00395553c39d9476",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/federal-prompt-pay-interest/story/02.webp",
+      "bytes": 40636,
+      "sha256": "365d93b6811e7eca2c41a586524fc68f9e744d2401f1404649284d995055ff15",
       "caption": "Turn 1 - Invoicepoint: I think the agencies have been paying us late and skipping the interest",
-      "turn": 1,
-      "bytes": 23318,
-      "sha256": "1968642f9ca254ad43f84eef80526efdfa90a0003902694b8204c6a59dc79da0"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/federal-prompt-pay-interest/story/03.webp",
+      "bytes": 37688,
+      "sha256": "78e154f0a7642307c4923a2eb6c6d6f9866277548a4c3b0a107f9626377918b4",
       "caption": "Turn 5 - Contractdesk: Now Contractdesk",
-      "turn": 5,
-      "bytes": 20706,
-      "sha256": "2b69e00b0a3785f4666d5ed54f98663df402244d725efcd00b5b8e7bbb420599"
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/federal-prompt-pay-interest/story/04.webp",
-      "caption": "Turn 9 - Ledgerline bank, Athena: Ledgerline shows 10 Treasury deposits since 1 July (showing 10 of 10)",
-      "turn": 9,
-      "bytes": 23070,
-      "sha256": "4e656be823d5d2a12aff65593afd47aba6b12b798567e073ca04b01009080ec5"
+      "bytes": 42660,
+      "sha256": "d99e8b434ae44b76605209aaf8cc220a6505d351835ef0ccd4d24f52cc2c69ee",
+      "caption": "Turn 9 - Ledgerline bank, Athena: The Ledgerline deposits are in",
+      "kind": "turn",
+      "turn": 9
     },
     {
+      "n": 5,
       "path": "playbooks/federal-prompt-pay-interest/story/05.webp",
+      "bytes": 43304,
+      "sha256": "66d5cea32bb6e71095b1240970094dfaf46cb9e0cc6153b89d4c66d553abc5a8",
       "caption": "Turn 13 - Invoicepoint: Back in Invoicepoint",
-      "turn": 13,
-      "bytes": 23962,
-      "sha256": "f8db2e665bdb45e33de856b18d225b5f123230820a357f2a08b2f01d2ac7bd07"
-    },
-    {
-      "path": "playbooks/federal-prompt-pay-interest/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23598,
-      "sha256": "18dea3c77eb4488fa211a9dced89b7803c3e43745e2ce548c59c911b18633ae1"
+      "kind": "turn",
+      "turn": 13
     }
   ]
 }

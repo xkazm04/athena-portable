@@ -1,15 +1,16 @@
 {
   "playbook": "chargeback-representment",
-  "run_at": "2026-10-10T15:16:40Z",
+  "run_at": "2026-10-23T15:48:02Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 165.0,
-  "turns": 13,
+  "comparable": "sha256:9c86703552ab06d2",
+  "wall_s": 193.6,
+  "turns": 12,
   "nudges": 0,
   "follow_ups": 0,
   "reads": 55,
-  "cost_usd": 2.1166,
+  "cost_usd": 1.6733,
   "your_time_s": 210,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 2.8
+    "minutes": 3.2
   },
   "score": {
     "eligible": 7,
     "found": 7,
     "exact": 7,
+    "neutral": 0,
     "value_total_usd": 957.0,
     "value_found_usd": 957.0,
     "recall_value": 1.0,
@@ -103,6 +105,14 @@
     },
     {
       "action": "submit_representment",
+      "key": "C-702",
+      "outcome": "correct",
+      "value_usd": 312.0,
+      "exact": true,
+      "why": "Visa 10.4: Compelling Evidence 3.0 is met. Orders 5150 (4 December 2025) and 5260 (11 February 2026) were on the same card, never disputed, 298 and 229 days before the 28 September dispute processing date (more than 120, not more than 365), and share the device ID, IP address and delivery address with order 5530. Paycurrent due 23 October"
+    },
+    {
+      "action": "submit_representment",
       "key": "C-703",
       "outcome": "correct",
       "value_usd": 96.0,
@@ -116,6 +126,14 @@
       "value_usd": 75.0,
       "exact": true,
       "why": "Visa 13.6: Storeline shows refund R-77 of $75 credited to the card on 24 September, before the 2 October dispute. The answer is the credit the issuer did not address; accepting would pay twice. Paycurrent due 27 October"
+    },
+    {
+      "action": "submit_representment",
+      "key": "C-705",
+      "outcome": "correct",
+      "value_usd": 240.0,
+      "exact": true,
+      "why": "Mastercard 4837: the account s.vance has the same device ID and IP on the disputed order 5541 and on undisputed orders 5100 (18 March) and 5570 (4 October) on the same card, delivered to the same address; the Guide's compelling evidence is other undisputed purchases and a registered device and IP. Paycurrent due 24 October"
     },
     {
       "action": "accept_dispute",
@@ -132,33 +150,17 @@
       "value_usd": 25.0,
       "exact": true,
       "why": "The shop promised a $60 refund on 28 August (M-1) for the returned brackets (the return was received on 27 August) and never issued it; Visa 13.6 has no answer for a credit not issued, so the right act is to accept"
-    },
-    {
-      "action": "submit_representment",
-      "key": "C-702",
-      "outcome": "correct",
-      "value_usd": 312.0,
-      "exact": true,
-      "why": "Visa 10.4: Compelling Evidence 3.0 is met. Orders 5150 (4 December 2025) and 5260 (11 February 2026) were on the same card, never disputed, 298 and 229 days before the 28 September dispute processing date (more than 120, not more than 365), and share the device ID, IP address and delivery address with order 5530. Paycurrent due 23 October"
-    },
-    {
-      "action": "submit_representment",
-      "key": "C-705",
-      "outcome": "correct",
-      "value_usd": 240.0,
-      "exact": true,
-      "why": "Mastercard 4837: the account s.vance has the same device ID and IP on the disputed order 5541 and on undisputed orders 5100 (18 March) and 5570 (4 October) on the same card, delivered to the same address; the Guide's compelling evidence is other undisputed purchases and a registered device and IP. Paycurrent due 24 October"
     }
   ],
   "missed": [],
-  "closing_words": "I'll pull the full Storeline, Parcelwick and Postwren findings from memory before filing anything, because the recalled lines are cut short.\n\nFive of the ten are clear from what I've recalled, so I'm filing those now: C-701, C-703, C-704 and the accepts C-706 and C-707. For C-702 and C-705 I'm missing the item descriptions and dates the rules require, so I'm recalling those before I file them.\n\nThe earlier orders are confirmed. I still need the disputed orders' own records, 5530 and 5541, for the item descriptions and the device and IP match.\n\nBoth are now backed by order records, so I'm filing them.\n\n\nI've filed seven decision cards for you to answer. Nothing has run yet. Each one runs only when you approve it.\n\n**Contests (5)**\n| Case | Amount | Evidence |\n|---|---|---|\n| C-701 (13.1) | $184 | Parcelwick delivery on 3 Sep to the full address, 41 Cedar Row, Albany, NY 12207, signed R. O",
+  "closing_words": "I'm pulling back my earlier findings from Storeline, Parcelwick and Postwren, since I need the exact figures before I file anything.\n\nThe recalled summaries leave out the Storeline detail I need (device and IP matches, the refund fields, the 13.3 listing). I'll re-read that evidence directly.\n\nI'm filing seven cards: five contests that can win and two accepts. I'm leaving C-708, C-709 and C-710 alone. Nothing is filed until you approve each card.\n\n**Contest (5 cases, $907 at stake)**\n- **C-701, Visa 13.1, $184:** Parcelwick shows delivery on 3 Sep at 12:41 to 41 Cedar Row, Albany, NY 12207, which is the full address. It was signed by R. Okonkwo, and her 3 Sep email says \"the bench top arrived today\".\n- **C-702, Visa 10.4, $312:** this meets Compelling Evidence 3.0.\n  - Earlier orders 5150 (4 Dec 2025) and 5260 (11 Feb 2026) fall inside the 120–365 day window. They were delivered and neve",
   "trace": [
     {
       "portal": "Paycurrent dashboard",
       "user": "I'm Maya, Lowfield Joinery. We have ten open card disputes. First, in Paycurrent, read every dispute and the guide to the networks' rules. Don't answer anything yet: I'll send you to the order records next.",
       "continued": false,
-      "said": "I'll start with the dispute lists (both pages) and the guide index.",
-      "said_chars": 67,
+      "said": "I'll start by listing the disputes (both pages) and the guide.",
+      "said_chars": 62,
       "reads": [
         "list_disputes",
         "list_disputes",
@@ -170,8 +172,8 @@
       "portal": "Paycurrent dashboard",
       "user": "",
       "continued": true,
-      "said": "Next I'm reading all ten disputes and all six guide rules.",
-      "said_chars": 58,
+      "said": "Ten disputes and six guide rules listed; now reading all ten disputes and every rule in full.",
+      "said_chars": 93,
       "reads": [
         "read_dispute",
         "read_dispute",
@@ -196,8 +198,8 @@
       "portal": "Paycurrent dashboard",
       "user": "",
       "continued": true,
-      "said": "I've read all ten disputes and all six guide rules, and I haven't answered or accepted anything.\n\n**C-709 is already closed to evidence.** Its Paycurrent date was 7 Oct, two days ago, so it will be decided against us whatever we send. Its network date is 12 Oct, but Paycurrent's own cut-off is what matters. I'll leave it alone.\n\n| Case | Code | Order | Amount | Paycurrent due | What decides it |\n|---|---|---|---|---|---|\n| C-701 | Visa 13.1 | 5521 | $184 | 20 Oct | Delivery record with the full address.",
-      "said_chars": 3008,
+      "said": "I've read all ten disputes and all six guide rules, and I've answered nothing. The one case already out of time is C-709, which you should leave alone.\n\n**Dates:** the page says today is Friday 9 October 2026, so I've used that. My system clock says 23 October, which would put several of these past due, so tell me if 9 October is wrong.",
+      "said_chars": 2528,
       "reads": [],
       "cards": []
     },
@@ -205,8 +207,8 @@
       "portal": "Storeline",
       "user": "This is our shop. Read the orders behind the disputes, and any earlier orders on the same cards, in full.",
       "continued": false,
-      "said": "I'm reading the ten disputed orders in Storeline, plus the order list so I can find earlier orders on the same cards.",
-      "said_chars": 117,
+      "said": "I'll start with the Storeline order list, which gives the card last-four for each order. I'll read the orders behind the disputes in the same step.\n\nC-710 is on order 5548, so I'm reading that one now. The answers for the other nine orders and the order list arrive with my next turn. I won't call those again.",
+      "said_chars": 310,
       "reads": [
         "list_orders",
         "list_orders",
@@ -227,8 +229,8 @@
       "portal": "Storeline",
       "user": "",
       "continued": true,
-      "said": "The disputed orders are read. Four cards have other orders on them, so I'm reading those too: 5560 (5150, 5260), 6184 (5290, 5470), 1197 (5170, 5240) and 8826 (5100, 5570).",
-      "said_chars": 172,
+      "said": "The orders behind all ten disputes are read. Next I'm reading the earlier orders on the same cards: 5150 and 5260 (card 5560), 5290 and 5470 (card 6184), 5170 and 5240 (card 1197), and 5100 and 5570 (card 8826).",
+      "said_chars": 211,
       "reads": [
         "read_order",
         "read_order",
@@ -245,8 +247,8 @@
       "portal": "Storeline",
       "user": "",
       "continued": true,
-      "said": "Storeline is read. Five disputes look winnable, two look like accepts, and C-708, C-710 and C-709 look like leave-alone. I haven't filed anything yet.\n\n| Case | Order | What Storeline shows | Reading |\n|---|---|---|---|\n| C-701 (13.1) | 5521 | Shipped to Rita Okonkwo, 41 Cedar Row, Albany, NY 12207. | Contest if Parcelwick shows delivery to that full address. |\n| C-702 (10.4) | 5530 | Card 5560 has earlier orders 5150 (4 Dec 2025) and 5260 (11 Feb 2026).",
-      "said_chars": 3961,
+      "said": "I've read all ten orders and the eight earlier orders on the same cards. That settles the three 10.4 disputes and gives me a first view on the rest. I've filed nothing yet.\n\n**Visa 10.4 (the window is 120 to 365 days before the processing date, with the device, or the IP plus the account or full address, matching)**\n- **C-702, order 5530, $312: contest.** Two earlier orders on card 5560 qualify: 5150 (4 Dec 2025) and 5260 (11 Feb 2026).",
+      "said_chars": 2856,
       "reads": [],
       "cards": []
     },
@@ -254,20 +256,10 @@
       "portal": "Parcelwick",
       "user": "This is our shipping account. Read the delivery record for each disputed order.",
       "continued": false,
-      "said": "I'll start with the shipment list, then read each disputed order's record.",
-      "said_chars": 74,
+      "said": "I'll list the shipments and recall the dispute-to-order table, so I read the right order ids.\n\nI'm reading the Parcelwick record for each of the ten disputed orders. The shipment list arrives with my next turn, so I won't call it again.",
+      "said_chars": 236,
       "reads": [
-        "list_shipments"
-      ],
-      "cards": []
-    },
-    {
-      "portal": "Parcelwick",
-      "user": "",
-      "continued": true,
-      "said": "The shipment list covers all ten disputed orders. I'm reading each record in full for the delivery address and who signed.",
-      "said_chars": 122,
-      "reads": [
+        "list_shipments",
         "read_shipment",
         "read_shipment",
         "read_shipment",
@@ -285,8 +277,8 @@
       "portal": "Parcelwick",
       "user": "",
       "continued": true,
-      "said": "I read all ten delivery records. Four are usable as delivery evidence, two cases have no delivery to prove, and one carrier record shows only a city.\n\n| Order | Parcelwick shows | Reading |\n|---|---|---|\n| 5521 (C-701, 13.1) | Delivered 3 Sep 12:41 to 41 Cedar Row, Albany, NY 12207 (full address). Signed R. Okonkwo. | Matches the Storeline ship-to. This is a full address with a signature, so contest. |\n| 5530 (C-702, 10.4) | Delivered 16 Sep to 9 Lantern Ln, Austin, TX 78701. No signature.",
-      "said_chars": 2406,
+      "said": "I've read the Parcelwick record for all ten disputed orders (10 of 10) and filed nothing. Two orders (5517 and 5494) point to accepting, one (5560) is a dead end, and seven were delivered.\n\n| Case | Order | Parcelwick record | What it means |\n|---|---|---|---|\n| C-701, 13.1 | 5521 | Delivered 3 Sep 12:41 to 41 Cedar Row, Albany, NY 12207 (full address). Signed R. Okonkwo. | It matches the Storeline ship-to and shows the full address, so it meets the 13.1 delivery proof. Contest.",
+      "said_chars": 2749,
       "reads": [],
       "cards": []
     },
@@ -294,8 +286,8 @@
       "portal": "Postwren",
       "user": "This is my mail. Read what customers have told us about these orders.",
       "continued": false,
-      "said": "I'll list your Postwren messages first, then read the ones about these orders.",
-      "said_chars": 78,
+      "said": "I'm listing your Postwren messages and recalling the dispute-to-order table, so I can match each message to a case. I'll read the relevant messages once the list arrives.\n\n\nBoth are READ or AUTO calls, so nothing is waiting on you and nothing has been filed.\n\nI've recalled the dispute-to-order table, but the Postwren message list hasn't come back yet. I won't call it again.\n\nThe ten cases map to these orders:",
+      "said_chars": 989,
       "reads": [
         "list_messages"
       ],
@@ -305,8 +297,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "Four messages are listed. I'll read all four.",
-      "said_chars": 45,
+      "said": "Four messages came back, all about disputed orders. I'm reading all four now.\n\n\n- **M-1** is from Callum Reyes about the bracket set return, order 5494 (C-707).\n- **M-2** is from Rita Okonkwo about order 5521 (C-701).\n- **M-3** is from Petra Lindqvist about the oak shelf, order 5502 (C-703).\n- **M-4** is from Hana Nakamura about the cutting board, order 5517 (C-706).\n\nThe other six orders have no mail. I've filed nothing, and the message contents arrive with my next turn.",
+      "said_chars": 476,
       "reads": [
         "read_message",
         "read_message",
@@ -319,8 +311,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "All four messages bear on a case. Two back contests, and two back accepts.\n\n| Msg | Order | What they say | Effect |\n|---|---|---|---|\n| M-2 Rita Okonkwo, 3 Sep | 5521 (C-701, 13.1) | \"The bench top arrived today and it looks great.\" | Backs the contest. It matches Parcelwick's delivery on 3 Sep to the full address, signed R. Okonkwo. |\n| M-3 Petra Lindqvist, 25 Aug | 5502 (C-703, 13.3) | She wanted a paler wood.",
-      "said_chars": 2047,
+      "said": "I've read all four messages and filed nothing. The mail supports contesting C-701 and C-703, and accepting C-706 and probably C-707.\n\n| Case | Order | What the customer wrote | What it means |\n|---|---|---|---|\n| C-701, Visa 13.1 | 5521 | Rita Okonkwo, 3 Sep: \"the bench top arrived today and it looks great.\" | It confirms receipt on the day Parcelwick logged the delivery. I'd contest and cite the Parcelwick record and this message. |\n| C-703, Visa 13.3 | 5502 | Petra Lindqvist, 25 Aug: she wanted paler wood.",
+      "said_chars": 2219,
       "reads": [],
       "cards": []
     },
@@ -328,8 +320,8 @@
       "portal": "Paycurrent dashboard",
       "user": "Back in Paycurrent. For each dispute, answer it with the evidence its reason code needs if we can win it, and accept the ones that are right. Leave alone what has no winning answer or is already past our deadline. Then tell me what you answ",
       "continued": false,
-      "said": "I'll pull the full Storeline, Parcelwick and Postwren findings from memory before filing anything, because the recalled lines are cut short.\n\nFive of the ten are clear from what I've recalled, so I'm filing those now: C-701, C-703, C-704 and the accepts C-706 and C-707. For C-702 and C-705 I'm missing the item descriptions and dates the rules require, so I'm recalling those before I file them.\n\nThe earlier orders are confirmed.",
-      "said_chars": 2874,
+      "said": "I'm pulling back my earlier findings from Storeline, Parcelwick and Postwren, since I need the exact figures before I file anything.\n\nThe recalled summaries leave out the Storeline detail I need (device and IP matches, the refund fields, the 13.3 listing). I'll re-read that evidence directly.\n\nI'm filing seven cards: five contests that can win and two accepts. I'm leaving C-708, C-709 and C-710 alone. Nothing is filed until you approve each card.",
+      "said_chars": 2979,
       "reads": [],
       "cards": [
         {
@@ -337,6 +329,12 @@
           "key": "C-701",
           "outcome": "correct",
           "value_usd": 184.0
+        },
+        {
+          "action": "submit_representment",
+          "key": "C-702",
+          "outcome": "correct",
+          "value_usd": 312.0
         },
         {
           "action": "submit_representment",
@@ -351,6 +349,12 @@
           "value_usd": 75.0
         },
         {
+          "action": "submit_representment",
+          "key": "C-705",
+          "outcome": "correct",
+          "value_usd": 240.0
+        },
+        {
           "action": "accept_dispute",
           "key": "C-706",
           "outcome": "correct",
@@ -361,20 +365,26 @@
           "key": "C-707",
           "outcome": "correct",
           "value_usd": 25.0
-        },
-        {
-          "action": "submit_representment",
-          "key": "C-702",
-          "outcome": "correct",
-          "value_usd": 312.0
-        },
-        {
-          "action": "submit_representment",
-          "key": "C-705",
-          "outcome": "correct",
-          "value_usd": 240.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-10T15:16:40Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 7,
+      "eligible": 7,
+      "value_found_usd": 957.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 165.0,
+      "your_time_s": 210
     }
   ]
 }

@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "certified-payroll",
-  "captured_at": "2026-10-09T22:48:59Z",
-  "bench_run_at": "2026-10-09T22:44:28Z",
-  "narration": {
-    "text": "Weekly certified payroll filed on a prevailing-wage job, so the held pay estimates are released. This is a chore for the payroll and compliance administrator of a twenty-person site and concrete contractor, prime on a city bridge job paid with federal-aid funds. Athena works it across 4 portals: Wagecheck, Docshelf, Clockyard and Crewpay. On the bench, she found 10 of 10 eligible items, worth 81,417 dollars and 95 cents of the 81,417 dollars and 95 cents there was to find. She made no false claim. The world held 9 traps, and she walked past 9. Among them: A week already accepted, and one under review. A week with no work on the bridge, which takes a no-work statement and not a payroll. She took 3 minutes. By hand, the same chore takes 5 hours, so she was about 88 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 62.431,
-    "sha256": "79d071add566e4fbb6fd4715f51bee41b6e4088634b046596da297f6b44ff8f4"
-  },
-  "video": {
-    "path": "evidence/certified-payroll/evidence.mp4",
-    "duration_s": 62.44,
-    "bytes": 3282280,
-    "sha256": "3903d21b56b6ccb2d695be941849e5798f08aebcc617268c5db590007409c0b2"
-  },
-  "thumbnail": {
-    "path": "playbooks/certified-payroll/thumb.jpg",
-    "bytes": 82007,
-    "sha256": "ceb3baba3dd83836cbdb84a6930c658c542ea70818c702872969a10e7da01f4c"
-  },
+  "captured_at": "2026-10-23T16:58:34Z",
+  "bench_run_at": "2026-10-22T08:59:28Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/certified-payroll/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22012,
-      "sha256": "bd0ff1f7ee99096cc1e7f9f3212236794cbc26085bc6ae7ce2f116395a1b4b4d"
+      "bytes": 41698,
+      "sha256": "26dd00d188130d4db550f57a8e506c78aea91c8aeb8c9eb067aaf06d9f08ca83",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/certified-payroll/story/02.webp",
+      "bytes": 38946,
+      "sha256": "cbcc38a0cfaa017e07beb60a96d3aba88c3e45c2dc44964047c64b1d6edf3159",
       "caption": "Turn 1 - Wagecheck: The City is holding our pay estimates on Larkin Street because the certified…",
-      "turn": 1,
-      "bytes": 22752,
-      "sha256": "a6fe22c313d8691bcdb682d78facdc4b7504314c06b48fab417bc25f17fd0455"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/certified-payroll/story/03.webp",
+      "bytes": 29994,
+      "sha256": "6dff61505bbea983de48f5fbbae7655c9335e0d5488bbc93c9397c3403046e10",
       "caption": "Turn 4 - Docshelf: Now Docshelf",
-      "turn": 4,
-      "bytes": 20688,
-      "sha256": "77cca89ef45cbfb34e89f7b1df00154ecfc197f35c2ab42fbd18c0eb0b0447c8"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/certified-payroll/story/04.webp",
-      "caption": "Turn 8 - Clockyard, Athena: Clockyard is read",
-      "turn": 8,
-      "bytes": 23460,
-      "sha256": "60cd60bc9fead7357fadf3036d10ab89f5264c05fd27e39ac2ff844f8c4b6f4f"
+      "bytes": 35176,
+      "sha256": "3b69759b1ef9a193b5e467c9f24845ed9f1bb1d01f3f6417d2d72c712590db9e",
+      "caption": "Turn 8 - Clockyard, Athena: I read all seven unfiled weeks",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/certified-payroll/story/05.webp",
+      "bytes": 43430,
+      "sha256": "89d06e69cc3b42f9efdfe21c573f92fb153c03f8ce8ce1f8232f73ae7f5d9ec1",
       "caption": "Turn 11 - Wagecheck: Back in Wagecheck",
-      "turn": 11,
-      "bytes": 22720,
-      "sha256": "ffa273d60944324cd11ae43c919be56d7dc8259ed89f2886679496f411dae72b"
-    },
-    {
-      "path": "playbooks/certified-payroll/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23590,
-      "sha256": "5e6d7e846ee00905c34a4b66b60afc964d33663f08e0a42c6e78512037deb1a3"
+      "kind": "turn",
+      "turn": 11
     }
   ]
 }

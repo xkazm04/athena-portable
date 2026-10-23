@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "eu261-flight-compensation",
-  "captured_at": "2026-10-09T17:20:45Z",
-  "bench_run_at": "2026-10-09T17:18:02Z",
-  "narration": {
-    "text": "A family's delayed flights, claimed under EU 261. This is a chore for a family of four in Lisbon that flew fourteen times this year, two airlines, one baby on a lap. Athena works it across 4 portals: Tripfold itineraries, Mailnest, Aerolark claims and Skyrail claims. On the bench, she found 4 of 4 eligible items, worth 5,445 dollars of the 5,445 dollars there was to find. She made no false claim. The world held 9 traps, and she walked past 9. Among them: A flight four hours late because thunderstorms closed Berlin's airport: an extraordinary circumstance, so nothing is owed. A flight that left three hours late and reached the gate two hours and 48 minutes late: the arrival is what counts. She took 3 minutes. By hand, the same chore takes 4 hours, so she was about 77 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 63.075,
-    "sha256": "cf85b82e749a23e97383aa7da99a4e8464fa1b264f9730b89bafd2fb5573e3ec"
-  },
-  "video": {
-    "path": "evidence/eu261-flight-compensation/evidence.mp4",
-    "duration_s": 63.08,
-    "bytes": 2739139,
-    "sha256": "eab40c88e0f82cbe65c3a3576b93ff590dd05c2b7ec37b3bd79b2f1979a27fdb"
-  },
-  "thumbnail": {
-    "path": "playbooks/eu261-flight-compensation/thumb.jpg",
-    "bytes": 89302,
-    "sha256": "3560f2aab471ceb2de1c6c111bf3e26e6fcd057229aa7f9f0e7110701fab96cd"
-  },
+  "captured_at": "2026-10-23T17:01:51Z",
+  "bench_run_at": "2026-10-23T15:57:16Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/eu261-flight-compensation/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23040,
-      "sha256": "b9e9e2401f8ccae6735e54ba884f9e24dab238b0d2535e8dc90cc6456cdd8942"
+      "bytes": 42396,
+      "sha256": "8f80c93734f630b692062548426d604cfc2c775fca915d96ddab9a1eb8ed002b",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/eu261-flight-compensation/story/02.webp",
+      "bytes": 42964,
+      "sha256": "1b94c72e66a59cca9ea57ff762b818b9138188d97a12b1cbe4bf21541fdeb5e8",
       "caption": "Turn 1 - Tripfold itineraries: Our flights this year were a mess and I want what we're owed",
-      "turn": 1,
-      "bytes": 20092,
-      "sha256": "2dad32f3ace6d26675a89a0c345aece819456f5b91d29fbd765964322e079575"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/eu261-flight-compensation/story/03.webp",
+      "bytes": 29294,
+      "sha256": "868fa29b9bcae3212b503bed761ff52b572704571b6c2782e86ac1c5b58806b9",
       "caption": "Turn 5 - Mailnest: Now my Mailnest travel folder",
-      "turn": 5,
-      "bytes": 18290,
-      "sha256": "46bf300e32f71148467af8e6e4e40b021aab471b8f3faa940707fcb9beb32f7d"
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/eu261-flight-compensation/story/04.webp",
-      "caption": "Turn 8 - Mailnest, Athena: The folder has 14 messages, and I've read all of them",
-      "turn": 8,
-      "bytes": 23978,
-      "sha256": "e4a709c04652d01692385c4b3b09767e672a68d2fccaab9aba67b647b6e1d6ad"
+      "bytes": 36710,
+      "sha256": "48417e94a16992d5019bdfae69ecdce2c3a3c2aea97c59a7ab10000689f62a8f",
+      "caption": "Turn 9 - Aerolark claims: This is Aerolark's claims portal",
+      "kind": "turn",
+      "turn": 9
     },
     {
+      "n": 5,
       "path": "playbooks/eu261-flight-compensation/story/05.webp",
-      "caption": "Turn 12 - Skyrail claims, Athena: I'm filing one Skyrail claim, SR 89, for 1,800 euros",
-      "turn": 12,
-      "bytes": 23308,
-      "sha256": "becf299adee83b39e65c4c69a75024f10f68e62592e0e510d22c7bef9df8962f"
-    },
-    {
-      "path": "playbooks/eu261-flight-compensation/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 23726,
-      "sha256": "cb57f29b65754aa9f76e96254451734d31aac7f8d841e3aa18b2f3036a5c97a6"
+      "bytes": 38752,
+      "sha256": "852959ee4625724ce07f8174b51c8a8bdb88caf1b02f6f0a4da8066a31b4e7d1",
+      "caption": "Turn 13 - Skyrail claims, Athena: One Skyrail claim holds up",
+      "kind": "turn",
+      "turn": 13
     }
   ]
 }

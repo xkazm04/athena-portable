@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "closeout-package",
-  "captured_at": "2026-10-09T23:00:21Z",
-  "bench_run_at": "2026-10-09T22:57:26Z",
-  "narration": {
-    "text": "The closeout package assembled, so the general contractor releases the retainage. This is a chore for the office manager of a thirty-person plumbing and HVAC subcontractor closing out a public library job, under a subcontract that incorporates AIA A201-2017. Athena works it across 5 portals: Primeline GC, Sitegrid, Partsmith, Fixturely and Docshelf. On the bench, she found 10 of 10 eligible items, worth 48,600 dollars of the 48,600 dollars there was to find. All 10 were filed at the exact amount the rules allow. She made no false claim. The world held 10 traps, and she walked past 10. Among them: Three progress waivers: Brookhollow's, Coldline's and Partsmith's. The insurance certificate that expired on 30 June. She took 2 minutes. By hand, the same chore takes 3 hours, so she was about 72 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 60 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 65.645,
-    "sha256": "0343d9ccb6f58c20ff783f24daef7671895363c8582ef903c2fb442eca34b9f7"
-  },
-  "video": {
-    "path": "evidence/closeout-package/evidence.mp4",
-    "duration_s": 65.68,
-    "bytes": 3299642,
-    "sha256": "add10bae4298624642c77996557c8c5bc3e0c3b166c622d559024c28c5164837"
-  },
-  "thumbnail": {
-    "path": "playbooks/closeout-package/thumb.jpg",
-    "bytes": 79105,
-    "sha256": "1641dd0361ac044744aa8ee502c8b39f551aa1b02ef93ea8acfeaca72e4bc2dd"
-  },
+  "captured_at": "2026-10-23T16:59:32Z",
+  "bench_run_at": "2026-10-23T15:51:05Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/closeout-package/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23300,
-      "sha256": "a5bf273d0ead46c26dde7695d153aa67ee6ffe96f9d641be599ded051df3af88"
+      "bytes": 41162,
+      "sha256": "01264c11828e779ac4a8387605f335c61a1b7c5683df7b52151ddfd17986aabc",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/closeout-package/story/02.webp",
+      "bytes": 36414,
+      "sha256": "f2632591d2206590b90aa6e4598eabd1e6a7177c71f9b74e7d7c26db27106c63",
       "caption": "Turn 1 - Primeline GC: Primeline won't release our $48,600 retainage on Harbor Point until the…",
-      "turn": 1,
-      "bytes": 22870,
-      "sha256": "b487aa4f17988335019ca6a7859d207db92f4ba9b14d57fed4e725108d229ea3"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/closeout-package/story/03.webp",
+      "bytes": 34868,
+      "sha256": "7ca8ae3f5994cb14c54c7985b74430fc3d90c5ae9e4b6d2556c0ed848a5e210a",
       "caption": "Turn 5 - Partsmith: This is Partsmith",
-      "turn": 5,
-      "bytes": 20376,
-      "sha256": "d50319df414fdf71167705e7620c8899d9c349ec52677d235481dabc87e4baea"
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/closeout-package/story/04.webp",
-      "caption": "Turn 8 - Fixturely, Athena: Fixturely settles CL-07",
-      "turn": 8,
-      "bytes": 23138,
-      "sha256": "08aca40b3bc732e1f2503153f022385baed1156adf56712ef04ca9a792b3714e"
+      "bytes": 43482,
+      "sha256": "82ebd0b969115dfbe008007b213db94a047e1659cbf0c2d9febf0ca246d4cf82",
+      "caption": "Turn 8 - Fixturely, Athena: Fixturely has the right manual for CL-07, so I'm filing one card",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/closeout-package/story/05.webp",
+      "bytes": 43716,
+      "sha256": "1933019ee94d2e1e9da260fdeaf543448dc6abe58415fc323be84d558a296053",
       "caption": "Turn 12 - Primeline GC: Back in Primeline",
-      "turn": 12,
-      "bytes": 22782,
-      "sha256": "4596626219c3d49318d82efe8aa28f2038ada9ff3e7eb3c06ebcfc18fef5fe83"
-    },
-    {
-      "path": "playbooks/closeout-package/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22260,
-      "sha256": "2247d43e9bc455a902eb47b08f7e284206db42276c999571acb55013825aeba6"
+      "kind": "turn",
+      "turn": 12
     }
   ]
 }

@@ -1,15 +1,16 @@
 {
   "playbook": "gpsr-listings",
-  "run_at": "2026-10-10T15:07:49Z",
+  "run_at": "2026-10-23T16:04:21Z",
   "engine": "claude_code",
   "model": "sonnet",
   "approve": "none",
-  "wall_s": 134.1,
+  "comparable": "sha256:8fb062ab4b14cf9a",
+  "wall_s": 195.2,
   "turns": 13,
   "nudges": 0,
   "follow_ups": 0,
-  "reads": 41,
-  "cost_usd": 2.0283,
+  "reads": 40,
+  "cost_usd": 1.7931,
   "your_time_s": 180,
   "verdict": {
     "word": "exceeds",
@@ -19,12 +20,13 @@
       "false_claims": 0,
       "minutes": 60.0
     },
-    "minutes": 2.2
+    "minutes": 3.3
   },
   "score": {
     "eligible": 6,
     "found": 6,
     "exact": 6,
+    "neutral": 0,
     "value_total_usd": 7100.0,
     "value_found_usd": 7100.0,
     "recall_value": 1.0,
@@ -95,14 +97,6 @@
   "cards": [
     {
       "action": "update_gpsr_info",
-      "key": "S-101",
-      "outcome": "correct",
-      "value_usd": 900.0,
-      "exact": true,
-      "why": "The board's maker, Brandvik Holzwaren GmbH, is established in Germany (T-01), so it needs no separate responsible person, but the listing shows no postal or email address for it (Article 19(a)); the folder has both. No warning is needed. 90-day EU sales 900"
-    },
-    {
-      "action": "update_gpsr_info",
       "key": "S-102",
       "outcome": "correct",
       "value_usd": 1450.0,
@@ -116,6 +110,14 @@
       "value_usd": 1200.0,
       "exact": true,
       "why": "The kettle's maker is in Turkey (T-08); the listing lacks its address, the Union operator (Kesselmoor Europe SARL, Lyon, M-4), the model KT-15 is shown but the warning 'Do not immerse the base in water' is not. 90-day EU sales 1200"
+    },
+    {
+      "action": "update_gpsr_info",
+      "key": "S-101",
+      "outcome": "correct",
+      "value_usd": 900.0,
+      "exact": true,
+      "why": "The board's maker, Brandvik Holzwaren GmbH, is established in Germany (T-01), so it needs no separate responsible person, but the listing shows no postal or email address for it (Article 19(a)); the folder has both. No warning is needed. 90-day EU sales 900"
     },
     {
       "action": "submit_compliance_form",
@@ -143,7 +145,7 @@
     }
   ],
   "missed": [],
-  "closing_words": "Three of the five in-scope listings are missing something, so I'm filing three compliance-form cards. H-204 and H-205 are already complete.\n\n- **H-201 (power bank):** it has no Union responsible person. The maker's address, the model and batch, and the warning are already shown.\n- **H-202 (shears):** it has no model or batch. The maker is in France, so no responsible person is needed, and the shears carry no warning.\n- **H-203 (diffuser):** it has no maker address and no responsible person. The model and warning are already shown.\n\n\n**Summary so far**\n\nI've only filed cards. Nothing has changed on either marketplace until you answer them.\n\n**Hawkerbrook: filed, waiting on you** (EU sales, last 90 days)\n\n| Listing | What's missing | Sales protected |\n|---|---|---|\n| H-201 power bank | Union responsible person (Voltarra GmbH, Munich) | $2,100 |\n| H-202 shears | Model PS-8 and batch 26-114 ",
+  "closing_words": "Three of the five need a fix: H-201, H-202 and H-203. H-204 and H-205 look complete. Before I file anything, I'm recalling the exact Binderwell wording for the shears' model (T-11) and the diffuser's maker address (T-03).\n\nThree cards below, one per listing that needs a fix. Two listings need nothing.\n\n**H-201 power bank ($2,100 EU sales).** The Union responsible person is blank. The maker's contact, model, batch and warning are already on the page. M-5 names Voltarra GmbH, Munich.\n\n\n**H-202 shears ($650 EU sales).** The model is blank. T-11 gives PS-8, batch 26-114. The maker, Atelier Verdane, is in France, so no responsible person is needed. The report says no warning is needed.\n\n\n**H-203 diffuser ($800 EU sales).** The maker's address, email and Union responsible person are blank. The model AD-22 and the warning are already shown. T-03 gives the maker's address and email, and M-6 name",
   "trace": [
     {
       "portal": "Binderwell",
@@ -160,20 +162,14 @@
       "portal": "Binderwell",
       "user": "",
       "continued": true,
-      "said": "Page 1 of 2 shows 10 of 19 documents. I'll read the four rule and shop-note documents, the six product files on this page, and page 2 of the list.",
+      "said": "The folder has 19 documents and page 1 showed 10 of them. I'm reading the rules and shop note, then page 2 of the list and the first test reports.",
       "said_chars": 146,
       "reads": [
-        "list_documents",
         "read_document",
         "read_document",
         "read_document",
         "read_document",
-        "read_document",
-        "read_document",
-        "read_document",
-        "read_document",
-        "read_document",
-        "read_document"
+        "list_documents"
       ],
       "cards": []
     },
@@ -181,8 +177,8 @@
       "portal": "Binderwell",
       "user": "",
       "continued": true,
-      "said": "Binderwell is mostly read. I still need the last four documents, T-16 to T-19, which weren't on either list page I saw. The page 2 list showed 9 rows, so I'll list it again to get their ids.I was wrong a moment ago, and that Read call was a mistake. The two list pages add up to 19 (10 + 9), so nothing is missing. T-07 to T-15 are listed but I haven't read them yet. I'll read them now.",
-      "said_chars": 387,
+      "said": "The rules and shop note are read. Page 2 lists T-07 to T-15, so the folder is P-1 to P-4 plus T-01 to T-15, which makes 19. Now I'm reading all 15 test reports and product files.",
+      "said_chars": 178,
       "reads": [
         "read_document",
         "read_document",
@@ -192,6 +188,12 @@
         "read_document",
         "read_document",
         "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
+        "read_document",
         "read_document"
       ],
       "cards": []
@@ -200,8 +202,8 @@
       "portal": "Binderwell",
       "user": "",
       "continued": true,
-      "said": "Binderwell is done: all 19 documents are read. Next is the mail, where the Union responsible persons should be named. I'll list the messages.\n\nHere is what the folder says about each product:",
-      "said_chars": 2706,
+      "said": "Binderwell is read: all 19 documents, P-1 to P-4 and T-01 to T-15.\n\n**Out of scope, leave alone**\n- T-04 honey: food.\n- T-05 candlestick: antique, per your shop note.\n- T-15 tomato seed: seed for sowing.\n- T-07 apron and T-14 mittens: not shipped to the EU.\n\n**Maker is in the Union, so no responsible person is needed**\n- T-01 board, T-06 mug, T-11 shears and T-13 tray all say \"no warning needed\". Their makers are in Germany, Portugal, France and Finland.",
+      "said_chars": 2078,
       "reads": [],
       "cards": []
     },
@@ -209,10 +211,9 @@
       "portal": "Postwren",
       "user": "This is my mail. Read what the marketplaces and the makers have sent. The makers outside the EU named their Union operators here.",
       "continued": false,
-      "said": "I address host operations with an `\n\nMy last `",
-      "said_chars": 46,
+      "said": "I'll start with the list of messages in your mailbox.",
+      "said_chars": 53,
       "reads": [
-        "list_messages",
         "list_messages"
       ],
       "cards": []
@@ -221,8 +222,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "Six messages came back. M-3 to M-6 should name the Union operators, and M-1 and M-2 are the marketplace notices. I'm reading all six now.",
-      "said_chars": 137,
+      "said": "Six messages. I'll read all of them, since the makers' ones name the Union operators.",
+      "said_chars": 85,
       "reads": [
         "read_message",
         "read_message",
@@ -237,8 +238,8 @@
       "portal": "Postwren",
       "user": "",
       "continued": true,
-      "said": "The mail names all four Union operators, and neither marketplace notice adds anything beyond the 1 November deadline. I'm saving them in a checkpoint so they carry over to the marketplace tabs.\n\n\nThe mail is done. The only thing left is the marketplace listings, and I can't reach those from this tab.\n\n**Plan:**\n1. Stallwick: list the listings and read each one. Where something Article 19 asks for is missing, I'll file a GPSR card for that listing.\n2. Hawkerbrook: do the same with its compliance form.\n3.",
-      "said_chars": 1075,
+      "said": "The mail gives all four Union operators, and the two marketplace notices say where to enter them. The writes happen on the marketplace tabs.\n\n**Union operators from the mail**\n- M-3 Lumenvale (lamp LM-220): Lumenvale Europe B.V., Kade 9, 3011 Rotterdam, Netherlands, eu@lumenvale.example.\n- M-4 Kesselmoor (kettle KT-15): Kesselmoor Europe SARL, 14 rue Mercière, 69002 Lyon, France, eu@kesselmoor.example.\n- M-5 Voltarra (power bank PB-10): Voltarra GmbH, Leopoldstrasse 40, 80802 München, Germany, eu@voltarra.example.",
+      "said_chars": 1616,
       "reads": [],
       "cards": []
     },
@@ -246,8 +247,8 @@
       "portal": "Stallwick seller",
       "user": "This is my Stallwick seller account. Read every listing, and bring each listing offered in the EU up to Article 19 with what the folder and the mail say. Leave alone every listing that is complete, out of scope or not offered to EU buyers.",
       "continued": false,
-      "said": "Starting with the Stallwick listings.\n\nThe Stallwick listing list is still on its way, so I'm waiting for it before I read any listing. Recall returned only part of the folder (8 of 41 episodes). It gave me the four Union operators, the throw (T-12), and the rules. I'll re-read the other product files when I need them.",
-      "said_chars": 320,
+      "said": "I'll start by listing the Stallwick listings and recalling the Binderwell and mail facts I need.\n\nThe Stallwick listing list was requested, but its answer hasn't come back yet. I won't call it again. Next turn I'll read each listing with `read_listing`.\n\nI have the Binderwell facts and the four Union operators from the mail (M-3 to M-6). That's enough to compare each Stallwick listing against Article 19 once it's listed.",
+      "said_chars": 424,
       "reads": [
         "list_listings"
       ],
@@ -257,8 +258,8 @@
       "portal": "Stallwick seller",
       "user": "",
       "continued": true,
-      "said": "The Stallwick list shows 8 listings. I'm reading the five EU listings that are in scope: S-101, S-102, S-106, S-109 and S-110. I'm leaving the honey (food), the candlestick (antique) and the apron (not offered in the EU) alone.",
-      "said_chars": 227,
+      "said": "Eight Stallwick listings came back. I'll read the six that need checking: the board, lamp, mug, kettle, trivet and the S-107 apron. I'll skip the honey (food) and the candlestick (antique).\n\n\nThe apron (S-107) isn't offered in the EU, so I'm leaving it unread.",
+      "said_chars": 260,
       "reads": [
         "read_listing",
         "read_listing",
@@ -272,16 +273,10 @@
       "portal": "Stallwick seller",
       "user": "",
       "continued": true,
-      "said": "Three of the five listings need fixes now. I'm filing those cards and checking my memory for the trivet's warning.\n\n- **S-101 (cutting board):** it needs the maker's postal and email address. The maker is in Germany, so no responsible person is needed.\n- **S-102 (lamp):** it needs the model, the maker's address, the responsible person and the warning.\n- **S-109 (kettle):** it needs the maker's address, the responsible person and the warning.\n- **S-106 (mug):** it is already complete, so I'm leaving it alone.",
-      "said_chars": 1917,
+      "said": "Two of the five listings I read are complete and stay as they are: S-106 mug and S-110 trivet. The lamp and kettle each have the full facts on file, so I'm filing a card for each. For the board, I need Brandvik's full street address, so I'm searching for it first.\n\n**S-102 lamp ($1,450 EU sales).** The page shows the maker's name only, with address, email, model, Union person and warning all blank.\n- The maker's address, email and model come from T-02.\n- The Union person comes from M-3.",
+      "said_chars": 1953,
       "reads": [],
       "cards": [
-        {
-          "action": "update_gpsr_info",
-          "key": "S-101",
-          "outcome": "correct",
-          "value_usd": 900.0
-        },
         {
           "action": "update_gpsr_info",
           "key": "S-102",
@@ -293,6 +288,12 @@
           "key": "S-109",
           "outcome": "correct",
           "value_usd": 1200.0
+        },
+        {
+          "action": "update_gpsr_info",
+          "key": "S-101",
+          "outcome": "correct",
+          "value_usd": 900.0
         }
       ]
     },
@@ -300,8 +301,8 @@
       "portal": "Hawkerbrook seller",
       "user": "This is my Hawkerbrook seller account. Do the same here with its own form. Then tell me what you fixed, what it protects in sales, and what you left alone and why.",
       "continued": false,
-      "said": "I'll start by listing the Hawkerbrook listings and recalling the folder and mail facts I saved.\n\nThe Hawkerbrook listing list arrives next turn. Meanwhile I'll recall the responsible persons I saved from the mail.\n\nI have the folder facts and all four responsible persons from the mail: lamp, kettle, power bank and diffuser. I'm still waiting for the Hawkerbrook listing list. It hasn't come back yet, and I won't file any compliance form until I've read each listing.",
-      "said_chars": 577,
+      "said": "I'll start by listing the Hawkerbrook listings and recalling what I saved from the folder and the mail.\n\nI've asked the Hawkerbrook tab for its listings. The answer comes with my next turn, so I'll wait for it before reading or filing anything.\n\nNothing relevant to Hawkerbrook came back from memory. The recall only returned the Binderwell and mail checkpoints. Those give me the makers, the four Union operators and the warnings I'll compare each listing against.",
+      "said_chars": 465,
       "reads": [
         "list_listings"
       ],
@@ -311,8 +312,8 @@
       "portal": "Hawkerbrook seller",
       "user": "",
       "continued": true,
-      "said": "Hawkerbrook has 7 listings. Five are offered in the EU and in scope: H-201, H-202, H-203, H-204 and H-205. I'm reading those now. I'm leaving H-206 (mittens, US only) and H-207 (tomato seeds, outside the Regulation) alone.",
-      "said_chars": 222,
+      "said": "Seven Hawkerbrook listings came back. I'll read the five in-scope EU ones: H-201 power bank, H-202 shears, H-203 diffuser, H-204 throw and H-205 tray. I'm skipping H-206 mittens, which isn't offered in the EU, and H-207 tomato seed, which is out of scope.",
+      "said_chars": 255,
       "reads": [
         "read_listing",
         "read_listing",
@@ -326,8 +327,8 @@
       "portal": "Hawkerbrook seller",
       "user": "",
       "continued": true,
-      "said": "Three of the five in-scope listings are missing something, so I'm filing three compliance-form cards. H-204 and H-205 are already complete.\n\n- **H-201 (power bank):** it has no Union responsible person. The maker's address, the model and batch, and the warning are already shown.\n- **H-202 (shears):** it has no model or batch. The maker is in France, so no responsible person is needed, and the shears carry no warning.\n- **H-203 (diffuser):** it has no maker address and no responsible person.",
-      "said_chars": 1861,
+      "said": "Three of the five need a fix: H-201, H-202 and H-203. H-204 and H-205 look complete. Before I file anything, I'm recalling the exact Binderwell wording for the shears' model (T-11) and the diffuser's maker address (T-03).\n\nThree cards below, one per listing that needs a fix. Two listings need nothing.\n\n**H-201 power bank ($2,100 EU sales).** The Union responsible person is blank. The maker's contact, model, batch and warning are already on the page. M-5 names Voltarra GmbH, Munich.",
+      "said_chars": 1494,
       "reads": [],
       "cards": [
         {
@@ -349,6 +350,24 @@
           "value_usd": 800.0
         }
       ]
+    }
+  ],
+  "note": "world text cells bulleted, same facts (spark refilm-prep)",
+  "history": [
+    {
+      "run_at": "2026-10-10T15:07:49Z",
+      "engine": "claude_code",
+      "model": "sonnet",
+      "approve": "none",
+      "verdict": "exceeds",
+      "found": 6,
+      "eligible": 6,
+      "value_found_usd": 7100.0,
+      "recall_value": 1.0,
+      "false_claims": 0,
+      "traps_filed": 0,
+      "wall_s": 134.1,
+      "your_time_s": 180
     }
   ]
 }
