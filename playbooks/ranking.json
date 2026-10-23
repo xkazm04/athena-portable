@@ -2683,63 +2683,6 @@
     },
     {
       "rank": 48,
-      "playbook": "wotc-screening",
-      "domain": "Hiring",
-      "audience": "work",
-      "category": "employment",
-      "job": "claim",
-      "score": 6.54,
-      "points": {
-        "money": 0,
-        "time": 2.54,
-        "edge": 4
-      },
-      "money": {
-        "value_usd": 0,
-        "value_kind": "money_back",
-        "counted": true,
-        "per": "year",
-        "annual_usd": 0,
-        "recurs": true,
-        "recall_value": 1.0,
-        "proven_usd_year": 0,
-        "incumbent_fee_pct": 15,
-        "fee_avoided_usd_year": 0
-      },
-      "minutes": {
-        "manual": 180,
-        "person": 5.24,
-        "saved_per_time": 174.76,
-        "times_per_year": 12,
-        "times_per_year_stated": true,
-        "saved_per_year": 2097.1
-      },
-      "edge": {
-        "difficulty": 4,
-        "usefulness": 4
-      },
-      "bench": {
-        "run_at": "2026-10-22T09:40:29Z",
-        "model": "sonnet",
-        "verdict": "exceeds",
-        "found": 5,
-        "eligible": 5,
-        "false_claims": 0,
-        "traps_filed": 0,
-        "traps_total": 9,
-        "runs": {
-          "n": 3,
-          "comparable": "sha256:77e3ba234eef259f",
-          "exceeds": 3,
-          "recall_min": 1.0,
-          "recall_median": 1.0,
-          "false_claims_max": 0,
-          "traps_filed_max": 0
-        }
-      }
-    },
-    {
-      "rank": 49,
       "playbook": "certified-payroll",
       "domain": "Construction",
       "audience": "work",
@@ -2796,7 +2739,7 @@
       }
     },
     {
-      "rank": 50,
+      "rank": 49,
       "playbook": "escrow-analysis-check",
       "domain": "Mortgage",
       "audience": "home",
@@ -2853,7 +2796,7 @@
       }
     },
     {
-      "rank": 51,
+      "rank": 50,
       "playbook": "isf-filings",
       "domain": "Customs & trade",
       "audience": "work",
@@ -2910,7 +2853,7 @@
       }
     },
     {
-      "rank": 52,
+      "rank": 51,
       "playbook": "overpayment-refunds",
       "domain": "Clinics",
       "audience": "work",
@@ -2967,7 +2910,7 @@
       }
     },
     {
-      "rank": 53,
+      "rank": 52,
       "playbook": "bid-opportunity-triage",
       "domain": "Government contracting",
       "audience": "work",
@@ -3024,7 +2967,7 @@
       }
     },
     {
-      "rank": 54,
+      "rank": 53,
       "playbook": "sub-insurance-certs",
       "domain": "Construction",
       "audience": "work",
@@ -3081,7 +3024,7 @@
       }
     },
     {
-      "rank": 55,
+      "rank": 54,
       "playbook": "stormwater-permit-log",
       "domain": "Construction",
       "audience": "work",
@@ -3138,7 +3081,7 @@
       }
     },
     {
-      "rank": 56,
+      "rank": 55,
       "playbook": "ui-claim-responses",
       "domain": "Unemployment insurance",
       "audience": "work",
@@ -3195,7 +3138,7 @@
       }
     },
     {
-      "rank": 57,
+      "rank": 56,
       "playbook": "unclaimed-property-sweep",
       "domain": "Personal finance",
       "audience": "home",
@@ -3252,7 +3195,7 @@
       }
     },
     {
-      "rank": 58,
+      "rank": 57,
       "playbook": "section8-landlord",
       "domain": "Rental property",
       "audience": "work",
@@ -3309,7 +3252,7 @@
       }
     },
     {
-      "rank": 59,
+      "rank": 58,
       "playbook": "public-records-requests",
       "domain": "Government transparency",
       "audience": "work",
@@ -3366,7 +3309,7 @@
       }
     },
     {
-      "rank": 60,
+      "rank": 59,
       "playbook": "inspection-scheduling",
       "domain": "Construction",
       "audience": "work",
@@ -3423,7 +3366,7 @@
       }
     },
     {
-      "rank": 61,
+      "rank": 60,
       "playbook": "denied-party-screening",
       "domain": "Customs & trade",
       "audience": "work",
@@ -3480,7 +3423,7 @@
       }
     },
     {
-      "rank": 62,
+      "rank": 61,
       "playbook": "lease-end-wear-charges",
       "domain": "Vehicles",
       "audience": "home",
@@ -3537,7 +3480,7 @@
       }
     },
     {
-      "rank": 63,
+      "rank": 62,
       "playbook": "erate-applications",
       "domain": "Schools & libraries",
       "audience": "work",
@@ -3594,7 +3537,7 @@
       }
     },
     {
-      "rank": 64,
+      "rank": 63,
       "playbook": "household-employer-tax",
       "domain": "Family care",
       "audience": "home",
@@ -3651,7 +3594,7 @@
       }
     },
     {
-      "rank": 65,
+      "rank": 64,
       "playbook": "restricted-funds-release",
       "domain": "Nonprofit",
       "audience": "work",
@@ -3708,7 +3651,7 @@
       }
     },
     {
-      "rank": 66,
+      "rank": 65,
       "playbook": "adverse-action-notices",
       "domain": "Hiring",
       "audience": "work",
@@ -3765,7 +3708,7 @@
       }
     },
     {
-      "rank": 67,
+      "rank": 66,
       "playbook": "name-change-everywhere",
       "domain": "Family affairs",
       "audience": "home",
@@ -3822,7 +3765,7 @@
       }
     },
     {
-      "rank": 68,
+      "rank": 67,
       "playbook": "baggage-delay-claims",
       "domain": "Air travel",
       "audience": "home",
@@ -3879,7 +3822,7 @@
       }
     },
     {
-      "rank": 69,
+      "rank": 68,
       "playbook": "grant-drawdown-reporting",
       "domain": "Nonprofit",
       "audience": "work",
@@ -3936,7 +3879,7 @@
       }
     },
     {
-      "rank": 70,
+      "rank": 69,
       "playbook": "trademark-maintenance",
       "domain": "Intellectual property",
       "audience": "work",
@@ -3993,7 +3936,7 @@
       }
     },
     {
-      "rank": 71,
+      "rank": 70,
       "playbook": "rmd-check",
       "domain": "Retirement & Medicare",
       "audience": "home",
@@ -4050,7 +3993,7 @@
       }
     },
     {
-      "rank": 72,
+      "rank": 71,
       "playbook": "vehicle-recall-reimbursement",
       "domain": "Vehicles",
       "audience": "home",
@@ -4107,7 +4050,7 @@
       }
     },
     {
-      "rank": 73,
+      "rank": 72,
       "playbook": "medical-records-gather",
       "domain": "Patient health",
       "audience": "home",
@@ -4164,7 +4107,7 @@
       }
     },
     {
-      "rank": 74,
+      "rank": 73,
       "playbook": "oversize-permits",
       "domain": "Trucking",
       "audience": "work",
@@ -4221,7 +4164,7 @@
       }
     },
     {
-      "rank": 75,
+      "rank": 74,
       "playbook": "good-faith-estimates",
       "domain": "Clinics",
       "audience": "work",
@@ -4278,7 +4221,7 @@
       }
     },
     {
-      "rank": 76,
+      "rank": 75,
       "playbook": "remote-payroll-registration",
       "domain": "Payroll",
       "audience": "work",
@@ -4335,7 +4278,7 @@
       }
     },
     {
-      "rank": 77,
+      "rank": 76,
       "playbook": "driver-qualification-files",
       "domain": "Trucking",
       "audience": "work",
@@ -4392,7 +4335,7 @@
       }
     },
     {
-      "rank": 78,
+      "rank": 77,
       "playbook": "ifta-quarterly",
       "domain": "Trucking",
       "audience": "work",
@@ -4449,7 +4392,7 @@
       }
     },
     {
-      "rank": 79,
+      "rank": 78,
       "playbook": "closeout-package",
       "domain": "Construction",
       "audience": "work",
@@ -4506,7 +4449,7 @@
       }
     },
     {
-      "rank": 80,
+      "rank": 79,
       "playbook": "food-recall-trace",
       "domain": "Food & beverage",
       "audience": "work",
@@ -4563,7 +4506,7 @@
       }
     },
     {
-      "rank": 81,
+      "rank": 80,
       "playbook": "medicaid-renewal",
       "domain": "Public benefits",
       "audience": "home",
@@ -4620,7 +4563,7 @@
       }
     },
     {
-      "rank": 82,
+      "rank": 81,
       "playbook": "counterfeit-takedowns",
       "domain": "E-commerce",
       "audience": "work",
@@ -4677,7 +4620,7 @@
       }
     },
     {
-      "rank": 83,
+      "rank": 82,
       "playbook": "sales-tax-exemption-certs",
       "domain": "Sales tax",
       "audience": "work",
@@ -4734,7 +4677,7 @@
       }
     },
     {
-      "rank": 84,
+      "rank": 83,
       "playbook": "medicare-enrollment-timing",
       "domain": "Retirement & Medicare",
       "audience": "home",
@@ -4791,7 +4734,7 @@
       }
     },
     {
-      "rank": 85,
+      "rank": 84,
       "playbook": "401k-late-deposits",
       "domain": "Benefits administration",
       "audience": "work",
@@ -4848,7 +4791,7 @@
       }
     },
     {
-      "rank": 86,
+      "rank": 85,
       "playbook": "class-action-claims",
       "domain": "Consumer settlements",
       "audience": "home",
@@ -4905,7 +4848,7 @@
       }
     },
     {
-      "rank": 87,
+      "rank": 86,
       "playbook": "ssdi-work-reporting",
       "domain": "Public benefits",
       "audience": "home",
@@ -4962,7 +4905,7 @@
       }
     },
     {
-      "rank": 88,
+      "rank": 87,
       "playbook": "gpsr-listings",
       "domain": "E-commerce",
       "audience": "work",
@@ -5019,7 +4962,7 @@
       }
     },
     {
-      "rank": 89,
+      "rank": 88,
       "playbook": "fafsa-verification",
       "domain": "Student aid",
       "audience": "home",
@@ -5076,7 +5019,7 @@
       }
     },
     {
-      "rank": 90,
+      "rank": 89,
       "playbook": "cobra-notices",
       "domain": "Benefits administration",
       "audience": "work",
@@ -5133,7 +5076,7 @@
       }
     },
     {
-      "rank": 91,
+      "rank": 90,
       "playbook": "data-broker-deletion",
       "domain": "Privacy",
       "audience": "home",
@@ -5190,7 +5133,7 @@
       }
     },
     {
-      "rank": 92,
+      "rank": 91,
       "playbook": "organic-annual-update",
       "domain": "Food & beverage",
       "audience": "work",
@@ -5247,178 +5190,7 @@
       }
     },
     {
-      "rank": 93,
-      "playbook": "provider-revalidation",
-      "domain": "Clinics",
-      "audience": "work",
-      "category": "health",
-      "job": "comply",
-      "score": 4.87,
-      "points": {
-        "money": 0,
-        "time": 1.87,
-        "edge": 3
-      },
-      "money": {
-        "value_usd": 0,
-        "value_kind": "money_back",
-        "counted": true,
-        "per": "year",
-        "annual_usd": 0,
-        "recurs": true,
-        "recall_value": 1.0,
-        "proven_usd_year": 0,
-        "incumbent_fee_pct": null,
-        "fee_avoided_usd_year": null
-      },
-      "minutes": {
-        "manual": 120,
-        "person": 7.58,
-        "saved_per_time": 112.42,
-        "times_per_year": 4,
-        "times_per_year_stated": true,
-        "saved_per_year": 449.67
-      },
-      "edge": {
-        "difficulty": 3,
-        "usefulness": 3
-      },
-      "bench": {
-        "run_at": "2026-10-10T01:24:38Z",
-        "model": "sonnet",
-        "verdict": "exceeds",
-        "found": 8,
-        "eligible": 8,
-        "false_claims": 0,
-        "traps_filed": 0,
-        "traps_total": 10,
-        "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
-          "recall_min": 1.0,
-          "recall_median": 1.0,
-          "false_claims_max": 0,
-          "traps_filed_max": 0
-        }
-      }
-    },
-    {
-      "rank": 94,
-      "playbook": "fsa-acreage-reporting",
-      "domain": "Agriculture",
-      "audience": "work",
-      "category": "public",
-      "job": "comply",
-      "score": 4.84,
-      "points": {
-        "money": 0,
-        "time": 1.38,
-        "edge": 3.46
-      },
-      "money": {
-        "value_usd": 0,
-        "value_kind": "money_protected",
-        "counted": false,
-        "per": "year",
-        "annual_usd": 0,
-        "recurs": true,
-        "recall_value": 1.0,
-        "proven_usd_year": 0,
-        "incumbent_fee_pct": null,
-        "fee_avoided_usd_year": null
-      },
-      "minutes": {
-        "manual": 150,
-        "person": 5.83,
-        "saved_per_time": 144.17,
-        "times_per_year": 1,
-        "times_per_year_stated": true,
-        "saved_per_year": 144.17
-      },
-      "edge": {
-        "difficulty": 4,
-        "usefulness": 3
-      },
-      "bench": {
-        "run_at": "2026-10-11T07:42:31Z",
-        "model": "sonnet",
-        "verdict": "exceeds",
-        "found": 7,
-        "eligible": 7,
-        "false_claims": 0,
-        "traps_filed": 0,
-        "traps_total": 8,
-        "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
-          "recall_min": 1.0,
-          "recall_median": 1.0,
-          "false_claims_max": 0,
-          "traps_filed_max": 0
-        }
-      }
-    },
-    {
-      "rank": 95,
-      "playbook": "credit-report-disputes",
-      "domain": "Credit",
-      "audience": "home",
-      "category": "consumer",
-      "job": "contest",
-      "score": 4.84,
-      "points": {
-        "money": 0,
-        "time": 1.38,
-        "edge": 3.46
-      },
-      "money": {
-        "value_usd": 1000,
-        "value_kind": "money_protected",
-        "counted": false,
-        "per": "year",
-        "annual_usd": 1000,
-        "recurs": true,
-        "recall_value": 1.0,
-        "proven_usd_year": 0,
-        "incumbent_fee_pct": null,
-        "fee_avoided_usd_year": null
-      },
-      "minutes": {
-        "manual": 150,
-        "person": 5.95,
-        "saved_per_time": 144.05,
-        "times_per_year": 1,
-        "times_per_year_stated": true,
-        "saved_per_year": 144.05
-      },
-      "edge": {
-        "difficulty": 4,
-        "usefulness": 3
-      },
-      "bench": {
-        "run_at": "2026-10-10T18:53:31Z",
-        "model": "sonnet",
-        "verdict": "exceeds",
-        "found": 8,
-        "eligible": 8,
-        "false_claims": 0,
-        "traps_filed": 0,
-        "traps_total": 8,
-        "runs": {
-          "n": 1,
-          "comparable": null,
-          "exceeds": 1,
-          "recall_min": 1.0,
-          "recall_median": 1.0,
-          "false_claims_max": 0,
-          "traps_filed_max": 0
-        }
-      }
-    },
-    {
-      "rank": 96,
+      "rank": 92,
       "playbook": "subscription-audit",
       "domain": "Subscriptions",
       "audience": "home",
@@ -5487,10 +5259,6 @@
     {
       "playbook": "ltc-claims",
       "why": "short in 2 of 3 comparable runs"
-    },
-    {
-      "playbook": "osha-300-log",
-      "why": "short: found 7 of 10 items, expected 75%"
     }
   ]
 }

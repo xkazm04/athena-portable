@@ -96,7 +96,7 @@ def test_each_character_parses_and_carries_its_judgement(path: Path) -> None:
 def test_pairs_cover_every_playbook_twice_with_distinct_characters() -> None:
     rows = _pairs()
     playbooks = _playbooks()
-    assert len(rows) == 2 * len(playbooks) == 200
+    assert len(rows) == 2 * len(playbooks) == 190
     per_playbook = Counter(r["playbook_id"] for r in rows)
     assert set(per_playbook) == set(playbooks)
     assert set(per_playbook.values()) == {2}

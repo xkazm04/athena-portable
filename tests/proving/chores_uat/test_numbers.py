@@ -50,7 +50,7 @@ def rows() -> dict[str, dict[str, Any]]:
 def test_every_playbook_has_a_row(rows: dict[str, dict[str, Any]]) -> None:
     assert LIBRARY is not None
     assert set(rows) == set(read_library(LIBRARY))
-    assert len(rows) == 100
+    assert len(rows) == 95
 
 
 def test_clinic_denials_per_month(rows: dict[str, dict[str, Any]]) -> None:
@@ -153,7 +153,7 @@ def test_headline_and_summary(rows: dict[str, dict[str, Any]]) -> None:
     assert lines[0] == "In the example case: $2,120 back, in the invented example"
     assert lines[-1] == "Typical value: about $50,400 a year, author's estimate"
     counts = summary({"playbooks": list(rows.values())})
-    assert counts["playbooks"] == 100
+    assert counts["playbooks"] == 95
     assert counts["world_ratio_gt_10"] <= counts["world_ratio_gt_3"]
 
 

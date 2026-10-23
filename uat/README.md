@@ -82,5 +82,5 @@ Character in the real adopt conversation ("Make it yours"); a judge scores each 
 against that Character's scored acceptance criteria and the chores units in `rubric.md`.
 
 - **Run.** `uv run python -m athena.proving.chores_uat numbers|cases|run|report` from the repo root.
-- **Inputs.** Pairs in `uat/chores/pairs.json` (200 rows: 100 playbooks x 2); case cards in `uat/chores/cases/`.
+- **Inputs.** Pairs in `uat/chores/pairs.json` (190 rows: 95 playbooks x 2; five weak chores were cut 2026-10-23, ADR 0137); case cards in `uat/chores/cases/`.
 - **Outputs.** Runs land in `proving-runs/chores-uat/<run-id>/` (gitignored); reports in `uat/runs/<date>-chores/`.
