@@ -1,0 +1,695 @@
+[
+ {
+  "id": "housing-01",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Value tile disagrees with the same persona's brief and flow total on every housing chore, and shows no basis",
+  "expected": "One figure per quantity on the topic page, with its basis (author's estimate, or measured on invented data) beside it",
+  "got": "9/9 chores show three figures for one persona: escrow $700/yr vs $4,440 brief and flow; homestead 1,200 vs 2,893; lease 900 vs 880; pmi 1,500 vs 2,732; ptax 1,100 vs 2,310; recdep 6,500 vs 15,190; s8 9,000 vs 4,970; deposit 1,500 vs 1,445; recall 700 vs 674.02. The tile says only 'for the persona'.",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:188-192",
+   "apps/desktop/src/scenes/chores/topic.tsx:246",
+   "apps/desktop/src/lib/playbooks.ts:42-54",
+   "apps/desktop/src/lib/playbooks.ts:496-505",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json",
+   "dump:escrow-analysis-check--marcus#judge",
+   "dump:pmi-cancellation--rosa#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Every money figure on the topic page names its basis on the same line; the Value tile and the brief total agree or the tile says how they differ"
+ },
+ {
+  "id": "housing-02",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Rehearsal dollar figure appears only when the world was NOT shaped, yet is labelled 'shaped like your case'",
+  "expected": "A rehearsal figure is either computed on a world that holds the person's facts, or labelled as the invented household's total, not as theirs",
+  "got": "In 6/6 dollar rehearsals found_usd equals the bench world total exactly (880, 2,310, 15,190, 4,970, 1,445, 674.02), because dollars are kept only for renames-only worlds. Rosa's $1,445 'found' exceeds her whole $1,142.60 deduction. Marcus's recdep claimable is $2,350, not $15,190; his recall total is $600.54, not $674.02.",
+  "evidence": [
+   "src/athena/adopt/showcase.py:220-223",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:40",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:113-118",
+   "dump:tenant-deposit-return--rosa#rehearsal",
+   "dump:recoverable-depreciation--marcus#rehearsal",
+   "dump:vehicle-recall-reimbursement--marcus#rehearsal",
+   "uat/chores/cases/tenant-deposit-return--rosa.json"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A renames-only rehearsal is labelled 'the example household's figures, with your app names', never 'shaped like your case'; a dollar figure is never larger than the person's own disputed total"
+ },
+ {
+  "id": "housing-03",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "completion",
+  "title": "The brief has no deadlines: no date, no property, no rule named",
+  "expected": "A 'Deadlines' block first: each deadline as a date, with the property and the rule (e.g. 'House: protest by 18 May, Tex. Tax Code 41.44')",
+  "got": "The brief template has only lead/setup/claim/left_alone. Rosa's criterion 2 failed 8/8 and Ruth's criterion 4 failed. Deadlines appear as 'read from your papers (my guess)' or 'about 12 August 2028 (my guess)'.",
+  "evidence": [
+   "src/athena/adopt/prompts.py:117-133",
+   "dump:property-tax-appeal--rosa#brief",
+   "dump:tenant-deposit-return--rosa#brief",
+   "dump:section8-landlord--ruth#brief",
+   "dump:lease-end-wear-charges--rosa#brief"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Every approved brief of a chore with a statutory or notice deadline lists it as a date, with its property and rule, before 'What I'll claim'"
+ },
+ {
+  "id": "housing-04",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "playbook-data",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Single-state chores are offered and run out of state with nothing said",
+  "expected": "The catalogue, topic and onboarding say which state's law a chore applies, and onboarding stops or adapts when the person's state differs",
+  "got": "homestead and property-tax are Texas law, deposit and recdep California. 6/18 pairs ran out of state. Recdep briefs put California's 36-month rule into a Washington claim ('window ends 14 Mar 2028') and a Texas one ('about 12 August 2028'). The homestead chore ran for a Washington household, where no general homestead exemption exists.",
+  "evidence": [
+   "playbooks/recoverable-depreciation/playbook.json#economics.sources",
+   "playbooks/homestead-exemption/playbook.json#caveat",
+   "dump:recoverable-depreciation--marcus#brief",
+   "dump:recoverable-depreciation--rosa#brief",
+   "dump:homestead-exemption--marcus#brief",
+   "dump:tenant-deposit-return--marcus#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Each single-jurisdiction chore names its state on the catalogue row and topic page; adopting it with a person in another state yields a brief that names the governing state's rule or says the chore does not fit"
+ },
+ {
+  "id": "housing-05",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "'(my guess)' also marks the rules the playbook itself cites",
+  "expected": "Three labels: 'you told me', 'the rule (source)', 'my guess'. A statute in the playbook's sources is cited, not guessed.",
+  "got": "45 guessed lines in 18 briefs. They include the RESPA one-sixth cushion and 30-day surplus (escrow M/R), Tex. Tax Code 41.44 (ptax-R), the 60-day HAP notice (s8 R/W) and Cal. Ins. 2051.5 (recdep). The slot status has only confirmed/guessed/open, and prompt rule 7 folds research into guesses. Every judge read it as 'she doesn't know the law'.",
+  "evidence": [
+   "src/athena/adopt/loop.py:467",
+   "src/athena/adopt/loop.py:479-486",
+   "src/athena/adopt/prompts.py:103-106",
+   "dump:escrow-analysis-check--rosa#brief",
+   "dump:property-tax-appeal--rosa#brief",
+   "dump:section8-landlord--walt#brief"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A brief line restating a rule from economics.sources carries its source label, not '(my guess)'"
+ },
+ {
+  "id": "housing-06",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "time-saved",
+  "title": "Time-saved ratio leaves out the person's review; the review and incumbent lines are computed but never shown",
+  "expected": "The ratio counts the person's review time, says it is one bench run, and shows the incumbent's fee",
+  "got": "41x for escrow becomes 17x with the 3-minute review; ptax 135x becomes 38x; recdep 103x becomes 55x. beforeAfterOf builds 'your review N min' and the incumbent line; the topic KPI renders only band.ratio.",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:148-166",
+   "apps/desktop/src/scenes/chores/topic.tsx:194-205",
+   "apps/desktop/src/modules/playbooks/model.ts:216",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The Time saved tile shows review time inside the ratio (or beside it) and 'one run' when bench runs n=1"
+ },
+ {
+  "id": "housing-07",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "Topic hero tells the invented persona's story with no 'invented' label beside it; the caveat is rendered nowhere",
+  "expected": "The hero brief is marked 'An example household, invented' on the same block",
+  "got": "Briefs open 'A Tacoma physical therapist...' (Marcus himself), 'An Oakland teacher...', 'A Boise bookkeeper...'. The caveat is parsed and never rendered. Marcus, Rosa and Ruth read it as someone else's real case or their own.",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:160-164",
+   "apps/desktop/src/lib/playbooks.ts:522",
+   "dump:lease-end-wear-charges--marcus#judge",
+   "dump:tenant-deposit-return--rosa#judge",
+   "dump:vehicle-recall-reimbursement--rosa#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The topic hero shows an 'example, invented' tag and the caveat's first sentence"
+ },
+ {
+  "id": "housing-08",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "effort",
+  "title": "Questions locate portals but never point to a paper and line; the first card offers invented portals and leaks persona facts",
+  "expected": "Questions name the paper and the line ('On the escrow letter, the line Projected tax...'); app options are open ('Which site do you use?')",
+  "got": "Rosa's criterion 5 failed 7/8. 13/18 pairs corrected a portal guess. Marcus was asked about 'your husband's driver license' (he is the husband), and Ruth about 'your five apartments' (she has two houses).",
+  "evidence": [
+   "dump:homestead-exemption--marcus#turn:1",
+   "dump:section8-landlord--ruth#turn:2",
+   "dump:pmi-cancellation--rosa#turn:1",
+   "dump:section8-landlord--walt#judge"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "No first-round question names a playbook-world portal or a persona attribute; every question that asks for a figure names its paper and line"
+ },
+ {
+  "id": "housing-09",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "daemon",
+  "cert_level": "L1",
+  "type": "broken-flow",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "missing",
+  "title": "Cadence for yearly chores is 'every 365 days from today', so seasonal deadlines and one-off episodes get a nonsense schedule",
+  "expected": "Yearly chores anchor to their season (property tax: early April; escrow: analysis month). Episode chores suggest no cadence.",
+  "got": "suggest() turns times_per_year=1 into every_days=365 starting today+365. A property-tax chore adopted on 23 Oct first runs in Oct 2027, after the April-May window. No rule kind can anchor a date. The copy reads 'the playbook says 1 times a year'.",
+  "evidence": [
+   "src/athena/adopt/cadence.py:265-288",
+   "apps/desktop/src/lib/adopt.ts:313-321",
+   "apps/desktop/src/scenes/chores/due.tsx:257",
+   "playbooks/property-tax-appeal/playbook.json#economics.times_per_year"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Due suggests a date-anchored yearly rule for seasonal chores and none for episode chores; 'once a year' grammar"
+ },
+ {
+  "id": "housing-10",
+  "journey": "J7",
+  "character": "rosa",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "missing",
+  "title": "The cost against the consultant is never answered",
+  "expected": "'A consultant keeps 25-35% (here about $X); Athena's run costs about $Y of model time'",
+  "got": "incumbent_fee_pct exists (escrow 35, homestead 30, ptax 25, recdep 15, s8 8) and bench model cost is computed. Neither is rendered. Rosa asked in 5 pairs.",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:156",
+   "apps/desktop/src/scenes/chores/model.ts:162",
+   "dump:property-tax-appeal--rosa#judge",
+   "dump:homestead-exemption--rosa#judge"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Topic page shows the incumbent fee as a share and an amount, and Athena's own cost"
+ },
+ {
+  "id": "housing-11",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "Jargon on every screen, and raw card ids in Athena's replayed words",
+  "expected": "No rubric vocabulary word unexplained on the screens a person needs",
+  "got": "Catalogue 3 (bench, benched, exceed the bar), topic 6 (persona, trap, bench, world, claim, turn), studio 7 (brief, draft, slot, world, rehearsal, lane, session), showcase 4 (rehearsal, world, card, turn) plus 'rows the answer key was written for'. Replayed prose shows 'apr_f88b43841612'. Walt's criterion 4 failed.",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:100-108",
+   "apps/desktop/src/scenes/chores/topic.tsx:191",
+   "apps/desktop/src/scenes/chores/flow.tsx:118",
+   "apps/desktop/src/scenes/chores/adopt/casepanel.tsx:268-292",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:104-110",
+   "playbooks/homestead-exemption/bench.json#closing_words"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A JARGON sweep of catalogue, topic, studio and showcase counts 0 unexplained words; no apr_ id renders"
+ },
+ {
+  "id": "housing-12",
+  "journey": "J7",
+  "character": "rosa",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "The brief is not laid out by property",
+  "expected": "One block per property, named as the person names it (the house, the duplex, the lot)",
+  "got": "Flat lists; the duplex and the lot share one 'Left alone' line (homestead-R, ptax-R, escrow-R).",
+  "evidence": [
+   "src/athena/adopt/loop.py:490-500",
+   "dump:property-tax-appeal--rosa#brief",
+   "dump:escrow-analysis-check--rosa#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A brief for a person with 2+ properties groups claims and deadlines under each property's name"
+ },
+ {
+  "id": "housing-13",
+  "journey": "J7",
+  "character": "ruth",
+  "playbook_id": "section8-landlord",
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "broken-flow",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "completion",
+  "title": "Onboarding ended 'clear' after 2 questions without the failed items, the deadline date or what was already fixed",
+  "expected": "Clear only once the failed items, the notice date and the completed repairs are known",
+  "got": "Ruth was asked only about apps and which units have vouchers. The brief says 'correction deadline is on the notice (my guess)' though her notice says Nov 7. Dale's Oct 9 smoke-alarm fix was never asked about.",
+  "evidence": [
+   "dump:section8-landlord--ruth#brief",
+   "uat/chores/cases/section8-landlord--ruth.json",
+   "src/athena/adopt/prompts.py:103-106"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "For section8-landlord, 'clear' requires the failed-item list and notice date as confirmed slots"
+ },
+ {
+  "id": "housing-14",
+  "journey": "J7",
+  "character": "rosa",
+  "playbook_id": "property-tax-appeal",
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Out-of-season protest: 'house deadline has likely passed; Athena will check', with no next step",
+  "expected": "It says plainly whether the window is closed and what remains: correction motions, notifying the district about the sold condo, next April's window",
+  "got": "The April 18 notice had a May 18 deadline, and the brief was approved in October. Rosa was left alarmed with no plan.",
+  "evidence": [
+   "dump:property-tax-appeal--rosa#brief",
+   "dump:property-tax-appeal--rosa#judge",
+   "playbooks/property-tax-appeal/playbook.json#caveat"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "When every deadline has passed, the brief states it and lists the remaining remedies and the next window"
+ },
+ {
+  "id": "housing-15",
+  "journey": "J7",
+  "character": "rosa",
+  "playbook_id": "property-tax-appeal",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "No 10% homestead cap check and no unequal-appraisal ground",
+  "expected": "Check Tex. Tax Code 23.23 (10% homestead cap) and 23.231 (20% non-homestead cap, 2024-26), and consider 41.43(b)(3) unequal appraisal",
+  "got": "Rosa's house rose from $248k to $286k (+15.3%). The playbook protests only on market comps. (offline knowledge)",
+  "evidence": [
+   "playbooks/property-tax-appeal/playbook.json#steps",
+   "uat/chores/cases/property-tax-appeal--rosa.json"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Playbook steps include the cap checks and the equity ground with citations"
+ },
+ {
+  "id": "housing-16",
+  "journey": "J7",
+  "character": "marcus",
+  "playbook_id": "homestead-exemption",
+  "surface": "playbook-data",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Texas homestead logic run for a Washington household; the Texas age-65 school tax ceiling is missing",
+  "expected": "Washington: senior or disabled exemption with an income test (RCW 84.36.381). Texas: mention the 11.26 school tax ceiling.",
+  "got": "The brief promises 'exemptions on your home for each year' in Pierce County and never asks about income. (offline knowledge)",
+  "evidence": [
+   "dump:homestead-exemption--marcus#brief",
+   "playbooks/homestead-exemption/playbook.json#promise"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Adopted out of Texas, the brief names the local programme and its eligibility test; the Texas promise lists the tax ceiling"
+ },
+ {
+  "id": "housing-17",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "tenant-deposit-return",
+  "surface": "playbook-data",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Deposit chore is California-only; the Washington checklist rule and Texas remedies are missing",
+  "expected": "Washington: ask first for the signed move-in checklist (RCW 59.18.260). Texas: forwarding address (92.107) and bad-faith remedy (92.109).",
+  "got": "Marcus's brief: 'Deposit law follows the address on your statement (my guess)'. Rosa's: '30 days... (my guess)' with no remedy. (offline knowledge)",
+  "evidence": [
+   "dump:tenant-deposit-return--marcus#brief",
+   "dump:tenant-deposit-return--rosa#brief",
+   "playbooks/tenant-deposit-return/playbook.json#chore"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "A non-California adoption names its state's statute, deadline and remedy in the brief"
+ },
+ {
+  "id": "housing-18",
+  "journey": "J7",
+  "character": "marcus",
+  "playbook_id": "escrow-analysis-check",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Notices of error 'filed in the servicer portal'; the designated address and PMI's value-evidence condition are missing",
+  "expected": "Send each notice of error to the designated address (12 CFR 1024.35(c)); warn that a PMI request may need evidence that value has not declined (12 USC 4902(a)(4))",
+  "got": "Steps file disputes in the portal only; pmi-cancellation is silent on a possible appraisal. (offline knowledge)",
+  "evidence": [
+   "playbooks/escrow-analysis-check/playbook.json#steps",
+   "playbooks/pmi-cancellation/playbook.json#gates"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Both playbooks carry the address step; PMI's gate text mentions value evidence"
+ },
+ {
+  "id": "housing-19",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "low",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Weak economics bases: recdep 'a third of an average claim', ptax survivor-only Ownwell average quoted second-hand, s8 sized at 4-5 voucher units",
+  "expected": "Primary sources, or the bench world's own per-unit figure",
+  "got": "Recdep $6,500 vs Marcus's $2,350; s8 $9,000/yr vs Ruth's single $690/mo HAP; ptax $1,100 from the 'average saving for customers it won'.",
+  "evidence": [
+   "playbooks/recoverable-depreciation/playbook.json#economics.basis",
+   "playbooks/property-tax-appeal/playbook.json#economics.basis",
+   "playbooks/section8-landlord/playbook.json#economics.basis"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Each basis cites a primary source for its central ratio and states the household size it assumes"
+ },
+ {
+  "id": "housing-20",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "REFUTED judge lead: 'practice result not labelled as invented'",
+  "expected": "Practice labelled as invented",
+  "got": "The showcase labels it 'Rehearsal on invented data shaped like your case, nothing was sent' and '$X found in the rehearsal, on invented data'. The judge saw only the summary. The real defect is the overclaim in housing-02.",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:40",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:117",
+   "dump:pmi-cancellation--marcus#judge"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n/a"
+ },
+ {
+  "id": "housing-21",
+  "journey": "J7",
+  "character": "marcus",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "high",
+   "reachability": "low",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "Judge lead 'no per-line math or legitimate-charge reasons in the rehearsal': present in the trace player but hidden behind turn stepping, and about invented data",
+  "expected": "The per-line table and left-alone reasons are visible without stepping, and in the brief",
+  "got": "turn.tsx renders Athena's prose (e.g. '6,212.40 + 1,980.00 + 795.00 + 412.00 + 186.00 = $9,585.40') and each card's amount and outcome, but only per turn. The brief carries no math.",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/turn.tsx:44-78",
+   "playbooks/escrow-analysis-check/bench.json#closing_words",
+   "dump:escrow-analysis-check--marcus#judge"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "The showcase ends on a summary table of each card: line, amount, rule and verdict, including the lines left alone"
+ },
+ {
+  "id": "housing-22",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "REFUTED scout hypothesis: Value tile annualises while 'Worth' does not",
+  "expected": "Value and Worth agree",
+  "got": "Housing uses only per=year (5) and per=episode (4); valueCell and the PER map give the same unit for both branches.",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:84-87",
+   "apps/desktop/src/modules/playbooks/model.ts:104-110",
+   "apps/desktop/src/modules/playbooks/model.ts:215"
+  ],
+  "code_check": "n-a",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n/a"
+ },
+ {
+  "id": "housing-23",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "flow",
+  "cert_level": "L1",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Strength: approval-first is drawn on the topic page and honoured in every brief",
+  "expected": "",
+  "got": "Every gate renders as 'Athena asks you first'. Rosa's criterion 6 passed 8/8 and Marcus's criterion 1 passed 9/9.",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/flow.tsx:70",
+   "apps/desktop/src/scenes/chores/flow.tsx:110"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep"
+ },
+ {
+  "id": "housing-24",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "senior-quality",
+  "title": "Strength: left-alone lists faithfully keep what the Character said is legitimate",
+  "expected": "",
+  "got": "$412 supplemental bill, umbrella premium, laptop, Hector's truck, $174 rent and $61.60 water, the mother's late payment: all left alone with reasons. The bench scored 100% recall and 0 false claims on 9/9 chores.",
+  "evidence": [
+   "dump:escrow-analysis-check--marcus#brief",
+   "dump:pmi-cancellation--rosa#brief",
+   "dump:tenant-deposit-return--rosa#brief"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep"
+ }
+]

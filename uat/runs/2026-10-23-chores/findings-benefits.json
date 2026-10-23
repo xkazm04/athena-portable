@@ -1,0 +1,935 @@
+[
+ {
+  "id": "benefits-01",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Topic page shows two different values for the persona's case in 9 of 12 benefits chores",
+  "expected": "One figure for what the chore is worth for the persona, the same in the Value tile, the Worth line, the brief and the flow result",
+  "got": "Value tile/Worth line vs brief/flow result: medicare-enrollment $1,000 vs $487 (2.05x over), pslf $40,000 vs $20,000 (2.0x), rep-payee $500 vs $315 (1.59x), plan-review $1,200 vs $1,516, fsa $900 vs $966.47, fafsa $5,000 vs $7,000, rmd $2,000 vs $2,900, msp $2,500 vs $3,797.20, fema $8,000 vs $12,400; only aid, medicaid, ssdi agree",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:160-161",
+   "apps/desktop/src/scenes/chores/topic.tsx:188-191",
+   "apps/desktop/src/scenes/chores/topic.tsx:246",
+   "apps/desktop/src/scenes/chores/flow.tsx:120-123",
+   "apps/desktop/src/scenes/chores/model.ts:84-87",
+   "apps/desktop/src/scenes/chores/model.ts:127-131",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json (world_ratio)"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "For every benefits chore, the Value tile, Worth line, brief headline and flow result show the same figure, or each is labelled as a different quantity (author's estimate vs measured on the invented case)"
+ },
+ {
+  "id": "benefits-02",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "No dollar figure carries its source; economics.basis is never parsed, sources and caveat are rendered nowhere",
+  "expected": "Each dollar figure says where it comes from (author's estimate with basis, measured on invented data, or your records)",
+  "got": "basis absent from the parsed Economics; sources parsed but unrendered; caveat parsed but unrendered. 11 of 12 benefits bases say 'An estimate'; the page never says so. Criterion 3 failed 24/24",
+  "evidence": [
+   "apps/desktop/src/lib/playbooks.ts:43-54",
+   "apps/desktop/src/lib/playbooks.ts:495-505",
+   "apps/desktop/src/lib/playbooks.ts:522",
+   "grep caveat|.sources over apps/desktop/src/scenes and modules: no renderer",
+   "dump:*--denise#judge",
+   "dump:*--lan#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Topic page shows, beside the Value figure, 'author's estimate' plus the basis's first sentence and a link list of economics.sources; caveat is reachable from the page"
+ },
+ {
+  "id": "benefits-03",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "completion",
+  "title": "Brief has no deadlines section; interview is barred from asking for deadlines, so briefs say 'my guess' or 'read during the run'",
+  "expected": "The approved brief lists every deadline in the person's case with its date and what happens if missed",
+  "got": "Denise c5 0/12, Lan c6 0/12. e.g. aid-denise: 'before the deadline' (her case card says 30 Oct); fafsa-denise: due date 'read during the run (my guess)'; msp both: no dates at all",
+  "evidence": [
+   "src/athena/adopt/prompts.py:68",
+   "src/athena/adopt/prompts.py:125-136",
+   "dump:aid-professional-judgment--denise#brief",
+   "dump:msp-extra-help--lan#brief",
+   "dump:fsa-claims-substantiation--lan#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "BRIEF_SYSTEM schema has a 'deadlines' list of {what, date, if_missed}; every benefits brief in a rerun carries at least one dated deadline with its consequence, or says which portal page holds it and why it is unknown"
+ },
+ {
+  "id": "benefits-04",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Nothing says up front what will be asked (sensitive numbers) or whether the chore costs money; the person's own turn-0 question goes unanswered",
+  "expected": "Before the first question, a plain panel: what she will ask for, whether any SSN or bank detail is needed and why, and 'using this chore costs you nothing'",
+  "got": "Denise c1 0/12 (asked at turn 0 every time); Lan c4 2/12 (only msp and ssdi briefs happened to say 'nothing here costs you money'); 'you are told before anything costs money' read as a hidden fee",
+  "evidence": [
+   "src/athena/adopt/prompts.py:49-77",
+   "grep free|costs you|what she will ask over apps/desktop/src/scenes/chores: none",
+   "dump:medicaid-renewal--lan#judge",
+   "dump:rmd-check--denise#judge",
+   "dump:medicare-plan-review--denise#turn:1"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Studio shows a static 'What she will ask / What it costs' block before card 1, and the interview's first card answers any question the person asked up front"
+ },
+ {
+  "id": "benefits-05",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "First card offers the playbook's invented app names (Mailnest, Postwren, Ledgerline, Carenook...) as answer options",
+  "expected": "Questions name the person's paper or kind of site in plain words, not invented brand names",
+  "got": "Nearly every pair typed 'not Mailnest/Postwren/Ledgerline/Rxmeadow/PlanCompass'; Denise reads near-miss names as a scam pattern; Lan answered 'something else' 3 times",
+  "evidence": [
+   "src/athena/adopt/slots.py:130-141",
+   "dump:medicare-plan-review--denise#turn:1",
+   "dump:aid-professional-judgment--lan#turn:1",
+   "dump:msp-extra-help--lan#turn:1"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Portal questions in the first card ask the kind of site ('Which email do you use?') with common real-world options or free text; no invented world name appears as an option"
+ },
+ {
+  "id": "benefits-06",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "time-saved",
+  "title": "'N x faster' (42-152x) omits the person's review time; the bench's own review figure is computed but not rendered",
+  "expected": "Time saved counts the person's own review and approvals and says it is measured on invented data",
+  "got": "Shown 42x-152x; with bench review 17x-72x; on the Characters' own estimates 3.4x (Denise) / 3.75x (Lan). athena.line ('your review 3.5 min...') never rendered on topic",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:193-203",
+   "apps/desktop/src/scenes/chores/model.ts:149-166",
+   "apps/desktop/src/lib/playbooks.ts:591-595",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json (speedup_with_review)"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Topic tile shows manual vs (Athena + your review) and the ratio uses both; the review time is visible next to it"
+ },
+ {
+  "id": "benefits-07",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "Judge lead 'topic page is one very long sentence' - refuted",
+  "expected": "n/a",
+  "got": "The app's topic hero renders the bulleted brief (10-15 short lines); the long promise only shows when brief is empty; every benefits chore has a brief. The judge was fed the promise",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:160-164",
+   "apps/desktop/src/scenes/chores/catalogue.tsx:87",
+   "src/athena/proving/chores_uat/judge.py:5-7"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n/a"
+ },
+ {
+  "id": "benefits-08",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Judge lead 'rehearsal figure not labelled as invented' - refuted (residue: renames-only rehearsal shows the persona's total under 'shaped like your case')",
+  "expected": "n/a",
+  "got": "Showcase tags 'Rehearsal on invented data shaped like your case - nothing was sent' and 'found in the rehearsal, on invented data'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:40",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:113-118"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n/a"
+ },
+ {
+  "id": "benefits-09",
+  "journey": "J8",
+  "character": "lan",
+  "playbook_id": "rmd-check",
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "med",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Rehearsal's dollar figure hides what it missed: rmd-lan shows '$2,120 found' against a $2,900 answer key",
+  "expected": "The practice result says found X of Y and names what was missed",
+  "got": "'$2,120 found in the rehearsal, on invented data'; 5 cards vs 6 recorded; the $780 gap equals the Pinebrook IRA 2026 RMD weight in truth.json - a missed RMD reads as success. msp-lan '2 cards ... against 5' shown in jargon with no verdict",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:102-118",
+   "dump:rmd-check--lan#rehearsal",
+   "dump:msp-extra-help--lan#rehearsal",
+   "playbooks/rmd-check/truth.json"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "When the answer key holds, the result shows found/total and lists the unfiled eligible items; a shortfall is worded as a miss"
+ },
+ {
+  "id": "benefits-10",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Brief imports the persona's fee offers ($189, $149, $299, $695) into the person's brief as if in her case",
+  "expected": "Left-alone lines only name things in the person's case, or say 'if you get an offer like...'",
+  "got": "msp-lan brief: 'A $189 fee to file forms that are free' (never mentioned by Lan); fafsa-lan $149; medicare-enrollment-denise $299; Lan read them as hidden fees",
+  "evidence": [
+   "dump:msp-extra-help--lan#brief",
+   "dump:fafsa-verification--lan#judge",
+   "dump:medicare-enrollment-timing--denise#judge",
+   "src/athena/adopt/prompts.py:118-136"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "BRIEF_SYSTEM forbids persona amounts the person did not state; rerun briefs carry no unstated dollar figure"
+ },
+ {
+  "id": "benefits-11",
+  "journey": "J7",
+  "character": "lan",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "effort",
+  "title": "Athena asks for what she will read herself in the person's portals",
+  "expected": "She asks only what she cannot read; otherwise says 'I'll read it in X'",
+  "got": "msp-lan: which state (in Statecare); rep-payee both: report year (in the SSA letter); fafsa-lan: aid held (in Aidcenter); fsa-denise: coverage start (in Flexwell); aid-lan: earlier 2024 cut then stated as fact",
+  "evidence": [
+   "src/athena/adopt/prompts.py:68",
+   "dump:msp-extra-help--lan#turn:2",
+   "dump:rep-payee-accounting--lan#turn:2",
+   "dump:fafsa-verification--lan#turn:2"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "INTERVIEW_SYSTEM bars questions whose answer sits in a portal the run reads; rerun cards contain none"
+ },
+ {
+  "id": "benefits-12",
+  "journey": "J7",
+  "character": "denise",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "effort",
+  "title": "Cards bundle up to 4 questions with no stated purpose",
+  "expected": "One question at a time, each saying what it is for",
+  "got": "Denise c4 0/12; cards of 3-4 questions (medicare-plan-review, medicaid, pslf, rep-payee)",
+  "evidence": [
+   "src/athena/adopt/prompts.py:43",
+   "src/athena/adopt/prompts.py:55",
+   "dump:medicare-plan-review--denise#turn:1",
+   "dump:medicaid-renewal--denise#judge"
+  ],
+  "code_check": "by-design",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "For a low-tech profile, cards carry one question with a one-line why"
+ },
+ {
+  "id": "benefits-13",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "Internal jargon on every screen and benefits terms unexplained",
+  "expected": "Plain words; each field term explained once",
+  "got": "catalogue: bench, exceed the bar, Best edge; topic: persona, trap, world, claim, turn; studio: slot, draft, session; showcase: rehearsal, card, answer key; field: QMB/SLMB/QI/QDWI, Extra Help, deemed, run-out, EOB, CMS-L564, COBRA, SEP, trial work month, inherited IRA, Form 5329, dependency override. Denise c2 0/12",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/catalogue.tsx:38",
+   "apps/desktop/src/scenes/chores/model.ts:104",
+   "apps/desktop/src/scenes/chores/topic.tsx:191",
+   "apps/desktop/src/scenes/chores/flow.tsx:118",
+   "apps/desktop/src/scenes/chores/model.ts:130",
+   "apps/desktop/src/scenes/chores/topic.tsx:286",
+   "apps/desktop/src/scenes/chores/adopt/casepanel.tsx:163",
+   "apps/desktop/src/scenes/chores/adopt/casepanel.tsx:271",
+   "apps/desktop/src/scenes/chores/adopt/conversation.tsx:151",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:107-109"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Zero rubric-list jargon on catalogue/topic/studio/showcase; each benefits chore carries a glossary line per field term shown"
+ },
+ {
+  "id": "benefits-14",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "pslf-employment-certification",
+  "surface": "catalogue",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "med",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "'Most value' sorts per-episode values raw against yearly ones (pslf $40,000, fema $8,000 top the list)",
+  "expected": "Values compared on one scale or episode rows marked",
+  "got": "annualValue default branch returns episode value unchanged; times_per_year=1 unused",
+  "evidence": [
+   "apps/desktop/src/modules/playbooks/model.ts:191-200",
+   "apps/desktop/src/modules/playbooks/model.ts:351",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json (quirks)"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Sort uses value x times_per_year, or episode rows are grouped separately"
+ },
+ {
+  "id": "benefits-15",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "catalogue",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "'Exceed the bar' claimed on one run; verdict sentence and n=1 sample computed but never rendered",
+  "expected": "Verdict says how many runs it stands on",
+  "got": "11 of 12 benefits chores bench_runs_n=1 (pslf 3); totals line says 'N of M benched exceed the bar'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:99-109",
+   "apps/desktop/src/modules/playbooks/model.ts:132-152",
+   "grep verdict.sentence|.sample: no renderer"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Topic page renders verdict.sentence including 'One run so far.'"
+ },
+ {
+  "id": "benefits-16",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "The persona's fixed dates read as live deadlines; past dates are shown with no 'example case' label",
+  "expected": "The page says the dates are the example family's; past example dates are not presented as current",
+  "got": "aid/fafsa '16 October', fema '19 October' read on 23 Oct; Denise thought she had missed Maya's deadline (her own is 30 Oct)",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:160-161",
+   "dump:aid-professional-judgment--denise#judge",
+   "dump:fafsa-verification--lan#judge",
+   "uat/chores/cases/aid-professional-judgment--denise.json"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Topic brief is headed 'An example case (invented)' and dates in it are marked as the example's"
+ },
+ {
+  "id": "benefits-17",
+  "journey": "J7",
+  "character": "denise",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Judge lead 'page does not say approval is needed before I begin' - partly refuted",
+  "expected": "n/a",
+  "got": "Topic flow shows legend 'Athena asks you first' and a diamond per gate before onboarding; wording is generic (no 'nothing is sent to an agency')",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/flow.tsx:69-70",
+   "apps/desktop/src/scenes/chores/flow.tsx:106-111"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n/a"
+ },
+ {
+  "id": "benefits-18",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "med",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "Composer placeholder is an airline example on every chore",
+  "expected": "A placeholder in the chore's own field",
+  "got": "'My airline is Skylindle, and I paid with two cards...' in benefits chores",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/conversation.tsx:38-39"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Placeholder derived from the playbook (e.g. its first portal or persona)"
+ },
+ {
+  "id": "benefits-19",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "daemon",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "high",
+   "reachability": "low",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "chores_uat judge is fed title + promise as 'the page', not the rendered brief - clarity verdicts are about text the app does not show",
+  "expected": "Judge sees the topic page as rendered (brief, KPI tiles, flow result, gates legend)",
+  "got": "14 'page is one long sentence' judge findings in benefits rest on the promise",
+  "evidence": [
+   "src/athena/proving/chores_uat/judge.py:5-7",
+   "apps/desktop/src/scenes/chores/topic.tsx:160-164"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Judge page material = shortTitle + brief + the three KPI tiles + flow result + gates legend"
+ },
+ {
+  "id": "benefits-20",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "pslf-employment-certification",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "PSLF value $40,000 per episode exceeds both Characters' entire balances and is 2x the world",
+  "expected": "A value tied to the person's remaining balance and months",
+  "got": "$40,000 shown; world $20,000; Denise and Lan each owe $31,400; Lan has no qualifying employer since Jan 2021",
+  "evidence": [
+   "playbooks/pslf-employment-certification/playbook.json (economics.basis)",
+   "uat/chores/cases/pslf-employment-certification--lan.json",
+   "uat/chores/cases/pslf-employment-certification--denise.json"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "value_usd <= world total, labelled estimate; brief states when no current employer qualifies"
+ },
+ {
+  "id": "benefits-21",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "medicare-enrollment-timing",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Value $1,000 a year is 2.05x the $487 penalty the brief and world state",
+  "expected": "One figure: $487 a year for life (20% x $202.90 x 12 = $486.96)",
+  "got": "Tile $1,000 a year, brief '$487 a year', rehearsal '$487.00 found'",
+  "evidence": [
+   "playbooks/medicare-enrollment-timing/playbook.json (economics)",
+   "apps/desktop/src/scenes/chores/topic.tsx:188-191"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "value_usd = 487 or a separately labelled estimate"
+ },
+ {
+  "id": "benefits-22",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "fsa-claims-substantiation",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "med",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Health FSA dollars under a $660 carryover are counted as forfeitable money recovered",
+  "expected": "Value splits carryover-protected health dollars from dependent care and swipe exposure",
+  "got": "World health items $270.47 < $660 carryover the world's plan has; counted as recovered",
+  "evidence": [
+   "playbooks/fsa-claims-substantiation/playbook.json (economics.basis: carryover)",
+   "offline knowledge: Notice 2013-71 carryover"
+  ],
+  "code_check": "n-a",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Basis and page state which part is forfeit risk and which carries over"
+ },
+ {
+  "id": "benefits-23",
+  "journey": "J7",
+  "character": "lan",
+  "playbook_id": "msp-extra-help",
+  "surface": "playbook-data",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "med",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Burial fund 'at a funeral home' may be an irrevocable contract, excluded entirely; chore always counts it above the reduced $1,500 exclusion",
+  "expected": "A fact slot: revocable fund or irrevocable prepaid funeral contract",
+  "got": "Brief: 'Burial fund counted only above its reduced exclusion' for Lan's $3,800 funeral-home fund",
+  "evidence": [
+   "dump:msp-extra-help--lan#brief",
+   "playbooks/msp-extra-help/playbook.json (traps)",
+   "offline knowledge: SSI irrevocable burial contracts"
+  ],
+  "code_check": "n-a",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Playbook asks revocable vs irrevocable and excludes an irrevocable contract"
+ },
+ {
+  "id": "benefits-24",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "medicare-enrollment-timing",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "med",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Dates Part B sets off are missing: Medigap 6-month open enrollment, Part D creditable coverage/63 days, stopping HSA contributions",
+  "expected": "A SHIP-level brief lists the windows Part B opens",
+  "got": "None in steps, traps or brief",
+  "evidence": [
+   "playbooks/medicare-enrollment-timing/playbook.json (steps, traps)",
+   "offline knowledge"
+  ],
+  "code_check": "n-a",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Playbook has fact slots and brief lines for Medigap OEP and Part D"
+ },
+ {
+  "id": "benefits-25",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "ssdi-work-reporting",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "med",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Reports months but never says trial work months used, when TWP ends, or what EPE/SGA means",
+  "expected": "Brief says 'N of 9 trial work months used; after 9, earnings over $1,690 can stop benefits'",
+  "got": "No TWP count; Lan's July $1,092 is not a TWP month",
+  "evidence": [
+   "playbooks/ssdi-work-reporting/playbook.json (economics.basis)",
+   "uat/chores/cases/ssdi-work-reporting--lan.json"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Brief carries TWP months used and the next consequence"
+ },
+ {
+  "id": "benefits-26",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "medicaid-renewal",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "Value $7,000 is the state's spending per enrollee, shown as the family's value and not labelled estimate; 90-day reconsideration consequence missing",
+  "expected": "Say whose money it is; brief states what happens if the date is missed",
+  "got": "basis_says_estimate=false; Lan c6 failed: 'November 14' twice, no consequence",
+  "evidence": [
+   "playbooks/medicaid-renewal/playbook.json (economics.basis, sources)",
+   "dump:medicaid-renewal--lan#brief"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Basis labelled estimate 'value of coverage, not cash'; brief has if-missed line citing 435.916 90 days"
+ },
+ {
+  "id": "benefits-27",
+  "journey": "J7",
+  "character": "lan",
+  "playbook_id": "fema-individual-assistance",
+  "surface": "playbook-data",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "med",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Car appeal lacks vehicle-eligibility trap; no guidance for an appeal just past 60 days",
+  "expected": "Trap for only-vehicle/insurance-first; a plain step for a late appeal",
+  "got": "Lan was 4 days late; brief: 'Athena will check if it can still be filed'",
+  "evidence": [
+   "playbooks/fema-individual-assistance/playbook.json (traps)",
+   "dump:fema-individual-assistance--lan#brief",
+   "offline knowledge: 44 CFR 206.119 transportation"
+  ],
+  "code_check": "n-a",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Playbook carries the vehicle conditions and a late-appeal rule"
+ },
+ {
+  "id": "benefits-28",
+  "journey": "J7",
+  "character": "denise",
+  "playbook_id": "rep-payee-accounting",
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "time-saved",
+  "title": "'8 h -> 3 min, 152x faster' for a year's federal accounting she must sign",
+  "expected": "Realistic review time for checking a year of statements",
+  "got": "bench your_time_s 210 s; speedup 152x (72x with review)",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:193-203",
+   "playbooks/rep-payee-accounting/bench.json"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Time saved states prepare vs review, review >= the author's estimate of checking the report"
+ },
+ {
+  "id": "benefits-29",
+  "journey": "J7",
+  "character": "denise",
+  "playbook_id": "rmd-check",
+  "surface": "playbook-data",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "med",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Inherited IRA's 10-year final distribution date is in neither brief",
+  "expected": "Every deadline: 31 Dec RMDs and the 10-year emptying date",
+  "got": "Briefs list no dates",
+  "evidence": [
+   "dump:rmd-check--denise#brief",
+   "playbooks/rmd-check/playbook.json (economics.basis: 10-year rule)"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Brief lists 31 December and the 10-year date"
+ },
+ {
+  "id": "benefits-30",
+  "journey": "J7",
+  "character": "lan",
+  "playbook_id": "medicare-plan-review",
+  "surface": "catalogue",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "med",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "Short title states 'Parents moved to their cheapest drug plans' as done",
+  "expected": "Title says what she will compare/propose",
+  "got": "Lan noted 'moved' vs enroll-after-approval",
+  "evidence": [
+   "playbooks/medicare-plan-review/playbook.json (short_title)",
+   "dump:medicare-plan-review--lan#judge"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Short title in future/proposal form"
+ },
+ {
+  "id": "benefits-31",
+  "journey": "J7",
+  "character": "denise",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Approval gates trusted: Denise c6 11/12; gate is fixed policy, shown before onboarding",
+  "expected": "n/a",
+  "got": "Every brief states 'asks you first'; flow diamonds",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/flow.tsx:106-111",
+   "src/athena/adopt/slots.py:144-158"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep"
+ },
+ {
+  "id": "benefits-32",
+  "journey": "J7",
+  "character": "lan",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "effort",
+  "title": "Onboarding converges: 24/24 clear in 1-3 cards, never asked twice (Lan c5 12/12), briefs adopt the person's own facts",
+  "expected": "n/a",
+  "got": "e.g. aid-lan 'Linh only, nothing for Danny'; rmd-denise Yahoo/Dropbox",
+  "evidence": [
+   "dump:aid-professional-judgment--lan#brief",
+   "dump:rmd-check--denise#brief"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep"
+ },
+ {
+  "id": "benefits-33",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Rehearsals 24/24 done; shaped worlds refuse a dollar claim; bench 0 false claims and all traps avoided in 12/12",
+  "expected": "n/a",
+  "got": "showcase shaped branch; bench.json scores",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:102-111",
+   "playbooks/*/bench.json (score)"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep"
+ }
+]

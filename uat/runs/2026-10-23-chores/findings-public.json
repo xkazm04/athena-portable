@@ -1,0 +1,1009 @@
+[
+ {
+  "id": "public-01",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Value figure shown with no basis or source; fsa and prompt-pay values contradict their own basis",
+  "expected": "Each Value states it is the author's estimate with its basis and sources beside it, agreeing with the basis text",
+  "got": "economics.basis is never parsed; sources parsed but rendered by no chores view; only label is 'for the persona'. fsa basis says no programme dollar exists yet shows $10,000/yr (75x world $132.65); prompt-pay $3,500/yr is 8x world $440.16 and ~130x Devon's own ~$27 (18,600 x 4.75% x 11/360)",
+  "evidence": [
+   "apps/desktop/src/lib/playbooks.ts:43-54",
+   "apps/desktop/src/lib/playbooks.ts:495-505",
+   "apps/desktop/src/scenes/chores/topic.tsx:189-191",
+   "apps/desktop/src/scenes/chores/topic.tsx:246",
+   "playbooks/fsa-acreage-reporting/playbook.json#economics.basis",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json#fsa-acreage-reporting"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Topic Value tile shows an 'estimate' label and an expandable basis with sources; a test fails if value_usd > 10x world_total without a basis sentence explaining it"
+ },
+ {
+  "id": "public-02",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "time-saved",
+  "title": "Time saved and 'x faster' exclude the person's review time, which is computed but not rendered",
+  "expected": "Time saved counts the person's review and says it was measured on invented data, n runs",
+  "got": "beforeAfterOf builds 'your review N min' but topic renders only the two figures and ratio. Shown vs with-review: bid 50x/16x, crop 66x/39x, erate 129x/62x, prompt 39x/22x, fsa 64x/26x, grant 142x/75x, records 69x/22x, restricted 64x/29x; Characters expect ~4x (Devon) and ~3x (Ruth)",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:149-166",
+   "apps/desktop/src/scenes/chores/topic.tsx:193-203",
+   "apps/desktop/src/modules/playbooks/model.ts:216",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json#speedup_with_review"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Ratio uses manual / (bench + your_time); the review minutes and 'measured on invented data, n=1' render under the figure"
+ },
+ {
+  "id": "public-03",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "'Rehearsal shaped like your case' plays the example persona's script and ignores the brief's scope",
+  "expected": "The rehearsal speaks as the person's case and does only what the approved brief says",
+  "got": "All 16 traces open with the persona's user turns rendered under 'You' ('I'm Marian Oyelaran; I run Larkfield Systems', 'I'm the technology director of Larchmoor Unified'). Ruth's crop brief claimed only 'a list of each field needing notice'; the rehearsal filed 3 claims and showed '$34,527 found'",
+  "evidence": [
+   "dump:bid-opportunity-triage--devon#rehearsal",
+   "dump:crop-insurance-notice--ruth#rehearsal",
+   "dump:crop-insurance-notice--ruth#brief",
+   "apps/desktop/src/scenes/chores/turn.tsx:35",
+   "src/athena/adopt/showcase.py:196-203"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "No rehearsal user turn names the playbook persona; a brief whose claim list excludes an action yields a rehearsal with no card of that action"
+ },
+ {
+  "id": "public-04",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "No brief or page names a rule's source; Ruth's deadlines lack calendar dates and rules",
+  "expected": "Every rule applied is named with its citation; every deadline has a date and the rule it comes from",
+  "got": "BRIEF_SYSTEM asks for neither; gate 'why' (e.g. 7 CFR 718.106) only in a hover title; economics.sources unrendered. Devon C2 failed 8/8; Ruth C4 failed 7/7 judged ('before the 15th', 'within 72 hours of the freeze', no SF-425 date)",
+  "evidence": [
+   "src/athena/adopt/prompts.py:117-135",
+   "apps/desktop/src/scenes/chores/flow.tsx:106",
+   "dump:fsa-acreage-reporting--ruth#brief",
+   "dump:grant-drawdown-reporting--ruth#brief",
+   "dump:public-records-requests--devon#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Each brief line that applies a rule ends with its citation from the playbook's sources; each deadline line carries a calendar date"
+ },
+ {
+  "id": "public-05",
+  "journey": "J8",
+  "character": "devon",
+  "playbook_id": "bid-opportunity-triage",
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Shaped rehearsals show stale answer-key outcomes: correct acts labelled 'Fell for a trap' / 'Unfounded'",
+  "expected": "When the answer key no longer fits, cards carry no right/wrong verdict",
+  "got": "Showcase says 'no dollar figure is claimed' yet turn cards render OUTCOME_WORDS: Devon's BL-107 (NAICS 238220 bid he qualifies for at $5.32M; key written for $21.4M) shows 'Fell for a trap'; Ruth's PAY-Q3-DALE (Dale at timesheet share, as her brief said) shows 'Unfounded'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:102-111",
+   "apps/desktop/src/scenes/chores/turn.tsx:65-75",
+   "dump:bid-opportunity-triage--devon#rehearsal",
+   "dump:grant-drawdown-reporting--ruth#rehearsal",
+   "playbooks/bid-opportunity-triage/truth.json:36"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "With found_reason 'shaped', TurnView renders no outcome word or tone on cards"
+ },
+ {
+  "id": "public-06",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Three kinds of 'money' on one page with no key; count weights and wage weights shown as dollars; restricted double-counts",
+  "expected": "Every dollar on a page is money of one stated kind; counts render as counts",
+  "got": "Value estimate vs 'Filed on the bench' vs rehearsal 'found'. bid '$10' and records '$9' are $1 count weights; fsa '$132.65' is 7 x $18.95 wage weights; restricted shows '$74,600' filed under a hero 'Released - $59,600' (the extra $15,000 is the 9,000 + 6,000 reports of already-counted releases)",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:127-131",
+   "apps/desktop/src/scenes/chores/flow.tsx:120-124",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:113-119",
+   "playbooks/restricted-funds-release/playbook.json#brief",
+   "playbooks/bid-opportunity-triage/playbook.json#economics.basis"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A playbook whose basis calls its weights 'count' or 'price avoided' renders 'N of M right', never $; the restricted total equals the hero's released sum"
+ },
+ {
+  "id": "public-07",
+  "journey": "J7",
+  "character": "devon",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "Brief headings fixed to Setup / What I'll claim / Left alone; approvals buried; 'claim' in its internal sense",
+  "expected": "Brief lists, in order: what she prepares, what needs approval, what she never does alone",
+  "got": "Headings hard-coded; approvals appear as 'Athena asks you before ...' setup bullets; Devon C5 failed 8/8",
+  "evidence": [
+   "src/athena/adopt/loop.py:492-497",
+   "src/athena/adopt/prompts.py:129-135",
+   "dump:restricted-funds-release--devon#brief"
+  ],
+  "code_check": "by-design",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Brief renders 'She prepares / Needs your OK / Never on her own' sections; no 'claim' heading outside claim chores"
+ },
+ {
+  "id": "public-08",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "effort",
+  "title": "Interview offers the template's invented portals and the persona's scale as options",
+  "expected": "Options in the person's terms; ask what they use rather than naming bench fictions",
+  "got": "Nearly every first card offered Bidmoor/Contractdesk/Postwren/Ledgerwren/Binderwell/Mailnest; Ruth: 'Never heard of Contractdesk or Postwren'. Bid chore offered Ruth IT/HVAC work and receipts 'in millions' (hers $338,000)",
+  "evidence": [
+   "dump:bid-opportunity-triage--ruth#turn:1",
+   "dump:bid-opportunity-triage--ruth#turn:2",
+   "dump:erate-applications--devon#turn:1",
+   "src/athena/adopt/prompts.py:58-60"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "No question card shows an invented portal name as an option; numeric options are derived from the person's stated scale"
+ },
+ {
+  "id": "public-09",
+  "journey": "J7",
+  "character": "devon",
+  "playbook_id": "public-records-requests",
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Brief restates the example world's facts as the person's case",
+  "expected": "Brief states only what the person said or research found; anything else is marked as a guess",
+  "got": "After one apps-only question, Devon's records brief lists 12 open requests, $12 of $584, $1,840 estimate, F-2's lapsed window and 'Requestbright's $249 offer' (world fictions) with no guess marker; _brief_sections seeds claim/left lists from the playbook's brief",
+  "evidence": [
+   "src/athena/adopt/loop.py:507-520",
+   "dump:public-records-requests--devon#brief",
+   "dump:restricted-funds-release--devon#brief"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A brief line whose figure or name does not appear in the person's answers or a research finding carries '(my guess)' or is dropped"
+ },
+ {
+  "id": "public-10",
+  "journey": "J7",
+  "character": "ruth",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "Topic page never says in words whether Athena files or only prepares",
+  "expected": "A plain line: what she prepares, that nothing is sent until you approve, who submits",
+  "got": "Titles and steps say 'filed' / 'Files a Form 471' / 'files the SF-425'; ask-first only as diamond legend (judges' 'never says asks first' is refuted). Ruth raised it in asides on 8/8 chores",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/flow.tsx:59-72",
+   "apps/desktop/src/scenes/chores/flow.tsx:106-112",
+   "playbooks/erate-applications/playbook.json#steps",
+   "dump:fsa-acreage-reporting--ruth#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Topic hero carries one sentence 'She prepares X; nothing goes to <office> until you approve each one'"
+ },
+ {
+  "id": "public-11",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "missing-feature",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "'Start for real' does not state its consequence",
+  "expected": "Says what she will do on real accounts, what needs approval, and where to see it (Due, Runs)",
+  "got": "Only 'Hands the brief's command to Athena. It waits in her composer until you send it.'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:126-147"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Under Start for real: 'On your real <apps>, she will prepare...; each <gate> waits for your OK; results appear under Runs'"
+ },
+ {
+  "id": "public-12",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "missing-feature",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "Rehearsal cards show no reason, and the items she left alone are not shown",
+  "expected": "Each act and each left-alone item says why",
+  "got": "BenchCard.why exists; turn card renders key, action, outcome word and value only; no left-alone list",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/turn.tsx:65-80",
+   "apps/desktop/src/lib/playbooks.ts:86-93"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Each rehearsal card shows its why; a 'Left alone' list follows the last turn"
+ },
+ {
+  "id": "public-13",
+  "journey": "J7",
+  "character": "ruth",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "effort",
+  "title": "Several questions per card (2-4) for a phone user who wants one at a time",
+  "expected": "At most one question at a time for low-tech users",
+  "got": "Prompt allows 'At most 4 questions'; Ruth C5 failed 8/8",
+  "evidence": [
+   "src/athena/adopt/prompts.py:55",
+   "dump:federal-prompt-pay-interest--ruth#turn:1",
+   "dump:grant-drawdown-reporting--ruth#turn:1"
+  ],
+  "code_check": "by-design",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Studio has a one-question-per-card mode (or narrow-width default)"
+ },
+ {
+  "id": "public-14",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "Internal jargon on every screen",
+  "expected": "No rubric jargon without explanation",
+  "got": "Catalogue: 'benched exceed the bar', 'found on the bench', 'Best edge' (3). Topic: persona, Traps avoided/on the bench, world, claims right, brief, turn (7). Studio+showcase: The brief, draft N, slot, rehearses, world, What I'll claim, benched run, cards, answer key, Turn N, Fell for a trap (9-10)",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:104-105",
+   "apps/desktop/src/scenes/chores/catalogue.tsx:38",
+   "apps/desktop/src/scenes/chores/topic.tsx:191",
+   "apps/desktop/src/scenes/chores/topic.tsx:205-207",
+   "apps/desktop/src/scenes/chores/flow.tsx:118-123",
+   "apps/desktop/src/scenes/chores/adopt/casepanel.tsx:163",
+   "apps/desktop/src/scenes/chores/adopt/casepanel.tsx:268-271",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:46"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A copy test fails on any rubric jargon word in rendered chores strings"
+ },
+ {
+  "id": "public-15",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Rules of law left as '(my guess)' in briefs (harness ran research off)",
+  "expected": "Rules settled by research and cited; the person is never asked a rule",
+  "got": "27 guess lines across 16 briefs; ~18 are rules or arithmetic (50% limit, 72 h, 28 days, $1 floor, 40 days, Iowa ch. 22, double-crop, PP, ASC 958 corpus). Bid interview asked Devon the 50% rule despite 'Never ask what public sources can answer'. Research lanes were off in the UAT, so production may confirm these",
+  "evidence": [
+   "src/athena/adopt/prompts.py:68-69",
+   "src/athena/proving/chores_uat/run.py:6",
+   "dump:bid-opportunity-triage--devon#turn:2",
+   "dump:federal-prompt-pay-interest--devon#brief"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Rerun J7 with research lanes on: no rule-of-law slot remains 'guessed'; interview never asks a rule"
+ },
+ {
+  "id": "public-16",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "missing-feature",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Verdict sentence and n=1 sample computed but never rendered",
+  "expected": "A claim resting on one run says n=1 where it is shown",
+  "got": "verdictOf builds sentence/runs/sample; no .tsx renders them (judges' quoted 'Exceeds (n=1)' came from numbers.json, not the UI)",
+  "evidence": [
+   "apps/desktop/src/modules/playbooks/model.ts:112-152"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The time-saved figure carries 'one run' / 'n of m runs'"
+ },
+ {
+  "id": "public-17",
+  "journey": "J7",
+  "character": "ruth",
+  "playbook_id": "crop-insurance-notice",
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Freeze brief misstates the notice trigger and over-generalises 'no second notice'",
+  "expected": "72 hours from initial discovery of damage; a noticed unit needs no second notice only for the same cause",
+  "got": "Brief: 'notice is due within 72 hours of the freeze' (confirmed slot) and 'Units you already gave notice on get no second notice (my guess)'; Athena's own rehearsal read 'one per unit and cause'",
+  "evidence": [
+   "dump:crop-insurance-notice--ruth#brief",
+   "dump:crop-insurance-notice--ruth#rehearsal",
+   "playbooks/crop-insurance-notice/playbook.json#chore"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Brief says 'within 72 hours of finding the damage (7 CFR 457.8 s14)' and 'no second notice for the same cause'"
+ },
+ {
+  "id": "public-18",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "crop-insurance-notice",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "med",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Crop playbook omits 'don't harvest or destroy before appraisal / leave samples' and Revenue Protection",
+  "expected": "Policy duties an agent would name: preserve damaged crop or leave representative samples; RP harvest-price terms",
+  "got": "Chore covers notice, causes and YP indemnity only; caveat says YP kept simple (offline knowledge for the omitted duties)",
+  "evidence": [
+   "playbooks/crop-insurance-notice/playbook.json#chore",
+   "playbooks/crop-insurance-notice/playbook.json#caveat"
+  ],
+  "code_check": "n-a",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Playbook steps/traps include the appraisal-before-harvest duty; topic states the RP limitation"
+ },
+ {
+  "id": "public-19",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "fsa-acreage-reporting",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "FSA value $10,000/yr contradicts its own basis",
+  "expected": "value_usd matches the basis",
+  "got": "Basis: 'no programme dollar is built on it', weights 7 x $18.95 = $132.65; value_usd 10,000",
+  "evidence": [
+   "playbooks/fsa-acreage-reporting/playbook.json#economics",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json#fsa-acreage-reporting"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "value_usd is 0 with 'mostly minutes', or a priced exposure the basis states"
+ },
+ {
+  "id": "public-20",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "fsa-acreage-reporting",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "med",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Wet unplanted field 'left alone' rather than reported as idle cropland",
+  "expected": "All cropland reported; an unplanted field without a PP notice still goes on as idle or fallow",
+  "got": "Trap and Ruth's brief leave the wet field off the report entirely (offline knowledge, verify against FSA handbook 2-CP)",
+  "evidence": [
+   "playbooks/fsa-acreage-reporting/playbook.json#traps",
+   "dump:fsa-acreage-reporting--ruth#brief"
+  ],
+  "code_check": "n-a",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Trap reworded: 'not reported as prevented planting; reported as idle'"
+ },
+ {
+  "id": "public-21",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "grant-drawdown-reporting",
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Grant briefs give no SF-425 due date; match and cost share missing",
+  "expected": "SF-425 due 30 days after the quarter (2 CFR 200.328); cost share documented for matched awards",
+  "got": "Neither brief has a date (quarter ended 30 Sep, so due 30 Oct); Ruth's USDA value-added grant needs a 1:1 match (offline knowledge); playbook has no match step",
+  "evidence": [
+   "dump:grant-drawdown-reporting--devon#brief",
+   "dump:grant-drawdown-reporting--ruth#brief",
+   "playbooks/grant-drawdown-reporting/playbook.json#economics.sources"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Brief line 'SF-425 due 30 October (2 CFR 200.328)'; a match slot when the award has cost share"
+ },
+ {
+  "id": "public-22",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "grant-drawdown-reporting",
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "med",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Hero '$31,492' disagrees with flow '$31,493'",
+  "expected": "One rendering of one quantity",
+  "got": "Hero brief text truncates 31,492.60; usd() rounds to $31,493",
+  "evidence": [
+   "playbooks/grant-drawdown-reporting/playbook.json#brief",
+   "apps/desktop/src/lib/playbooks.ts:573-582"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Both read $31,493 (or $31,492.60)"
+ },
+ {
+  "id": "public-23",
+  "journey": "J8",
+  "character": "ruth",
+  "playbook_id": "public-records-requests",
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "California records law applied to Ruth's Iowa county",
+  "expected": "The city or county leg applies the person's state law (Iowa Code ch. 22)",
+  "got": "Playbook hard-codes CPRA (10 days, duplication-only fees, no appeal); Ruth's rehearsal ran Pellmoor Bay's CPRA rules with GovQA renamed; Iowa allows reasonable retrieval and supervision fees (offline knowledge). Ruth: adopt 'no'",
+  "evidence": [
+   "playbooks/public-records-requests/playbook.json#chore",
+   "dump:public-records-requests--ruth#rehearsal",
+   "dump:public-records-requests--ruth#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "State law is a slot; a non-California case either gets its state's rules or the chore says it covers California only"
+ },
+ {
+  "id": "public-24",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "restricted-funds-release",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Restricted bench total $74,600 double-counts $15,000 of reports",
+  "expected": "Bench total = released dollars ($59,600), as the hero says",
+  "got": "23,200 + 15,000 + 6,300 + 9,400 + 5,700 = 59,600; truth adds 9,000 + 6,000 reports of the same releases",
+  "evidence": [
+   "playbooks/restricted-funds-release/playbook.json#economics.basis",
+   "playbooks/restricted-funds-release/bench.json#score"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "value_total_usd = 59,600 or reports weighted 0"
+ },
+ {
+  "id": "public-25",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "erate-applications",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "med",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "E-Rate $40,000/yr is a district figure; Ruth's library is about $18,800",
+  "expected": "Value scaled or ranged for the applicant type",
+  "got": "Ruth's bids: 9,800 + 6,400 + 4,100 + 3,200 = 23,500, at 80% = 18,800; library Category Two budgets are per square foot, not per student",
+  "evidence": [
+   "playbooks/erate-applications/playbook.json#economics.basis",
+   "uat/chores/cases/erate-applications--ruth.json"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Topic shows a range or 'for a 1,100-student district' beside the figure"
+ },
+ {
+  "id": "public-26",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "federal-prompt-pay-interest",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "med",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Prompt-pay omits constructive acceptance and the contracts-only scope; value doubles on penalties",
+  "expected": "7-day constructive acceptance; PPA covers procurement contracts, not grants; penalty only when requested within 40 days",
+  "got": "Chore text has neither; Devon's brief 'Every federal invoice gets checked (my guess)'; basis 'the same again in additional penalties' (offline knowledge for 1315.4(g))",
+  "evidence": [
+   "playbooks/federal-prompt-pay-interest/playbook.json#chore",
+   "playbooks/federal-prompt-pay-interest/playbook.json#economics.basis",
+   "dump:federal-prompt-pay-interest--devon#brief"
+  ],
+  "code_check": "n-a",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Chore names both rules; basis states the penalty assumption"
+ },
+ {
+  "id": "public-27",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "bid-opportunity-triage",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "med",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "50% subcontracting trap lacks its condition and measure",
+  "expected": "Limit applies to set-aside and sole-source awards, measured on the amount paid to the prime",
+  "got": "Trap states 70% vs 50% without the set-aside condition; Ruth's brief says 'of the price'",
+  "evidence": [
+   "playbooks/bid-opportunity-triage/playbook.json#traps",
+   "dump:bid-opportunity-triage--ruth#brief"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Trap and brief name 13 CFR 125.6 and the set-aside condition"
+ },
+ {
+  "id": "public-28",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "minor",
+  "impact": {
+   "frequency": "high",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "REFUTED: 'Page promise is one long unreadable sentence'",
+  "expected": "-",
+  "got": "Judges read playbook.promise; the topic hero renders playbook.brief (short, bulleted) whenever present, and all 8 public playbooks have one",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:160-164",
+   "dump:restricted-funds-release--devon#judge"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n/a"
+ },
+ {
+  "id": "public-29",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "high",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "REFUTED: 'Rehearsal result not labelled invented'",
+  "expected": "-",
+  "got": "Showcase labels 'Rehearsal on invented data shaped like your case - nothing was sent' and '$X found in the rehearsal, on invented data'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:40",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:113-119"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n/a"
+ },
+ {
+  "id": "public-30",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "grant-drawdown-reporting",
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "REFUTED for this category: Value tile annualises while 'Worth' line does not",
+  "expected": "-",
+  "got": "All public chores are per year except grant (per quarter); both renderings say 'per quarter' (valueCell yearly only for year/month/week). Remaining quarter issue is the global ledger value sort",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:84-87",
+   "apps/desktop/src/modules/playbooks/model.ts:104-110",
+   "apps/desktop/src/modules/playbooks/model.ts:190-201"
+  ],
+  "code_check": "n-a",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n/a"
+ },
+ {
+  "id": "public-31",
+  "journey": "J7",
+  "character": "devon",
+  "playbook_id": "erate-applications",
+  "surface": "topic",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "REFUTED: '129x does not match 240 min vs 2 min'",
+  "expected": "-",
+  "got": "240 / 1.862 bench minutes = 128.9; '2 min' is the rounded display",
+  "evidence": [
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json#erate-applications",
+   "apps/desktop/src/lib/playbooks.ts:583-595"
+  ],
+  "code_check": "n-a",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n/a"
+ },
+ {
+  "id": "public-32",
+  "journey": "J7",
+  "character": "devon",
+  "playbook_id": "restricted-funds-release",
+  "surface": "topic",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "REFUTED: 'Dates differ between page and brief (1 Jan vs 1 Feb 2027)'",
+  "expected": "-",
+  "got": "The 1 January date is in playbook.promise, which the topic does not render when a brief exists; the brief's 1 Feb 2027 is a different gift (a world trap)",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:160-164",
+   "playbooks/restricted-funds-release/playbook.json#traps"
+  ],
+  "code_check": "n-a",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n/a"
+ },
+ {
+  "id": "public-33",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "polish",
+  "impact": {
+   "frequency": "med",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "PARTLY REFUTED: 'Rehearsal shows only a count'",
+  "expected": "-",
+  "got": "The showcase plays every turn with what she said, read and filed (Player + TurnView); what is missing is the why per card (see public-12)",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:150-233",
+   "apps/desktop/src/scenes/chores/turn.tsx:30-80"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n/a"
+ },
+ {
+  "id": "public-34",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Gate model holds end to end",
+  "expected": "-",
+  "got": "Every gate slot confirmed 'asks you before' (16/16); every brief keeps submission or payment with the person; Flow draws an amber 'Athena asks you first' diamond per gate",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/flow.tsx:106-112",
+   "dump:grant-drawdown-reporting--devon#brief"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep"
+ },
+ {
+  "id": "public-35",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "L1",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Briefs faithful to case-specific exclusions",
+  "expected": "-",
+  "got": "grant (pre-award, other award's rent, alcohol, lobbying, penalty, timesheet pay) both Characters; crop-devon church acres; erate conflicted 470 drafter; restricted-ruth reserve vs endowment",
+  "evidence": [
+   "dump:grant-drawdown-reporting--ruth#brief",
+   "dump:erate-applications--devon#brief"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep"
+ },
+ {
+  "id": "public-36",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Playbook economics bases are thorough and self-critical",
+  "expected": "-",
+  "got": "Bases cite sections and dates; restricted openly declines an unsupported $30,000 roster figure. The fix is to surface them",
+  "evidence": [
+   "playbooks/restricted-funds-release/playbook.json#economics.basis"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep"
+ }
+]

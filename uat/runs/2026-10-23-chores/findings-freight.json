@@ -1,0 +1,856 @@
+[
+ {
+  "id": "freight-01",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Statutory deadlines and rules are labelled '(my guess)' in the brief, with no citation",
+  "expected": "A rule the playbook or research knows (180-day protest, 24 h before lading, 30-day invoice, 45 days from termination) shows as a rule with its citation",
+  "got": "23/24 freight briefs carry '(my guess)'; 2/24 cite any rule. Rules are slots that only the person's words can confirm, so sourced law reads as Athena's guess",
+  "evidence": [
+   "src/athena/adopt/loop.py:467",
+   "src/athena/adopt/loop.py:479-486",
+   "src/athena/adopt/slots.py:65",
+   "src/athena/adopt/prompts.py:66-67",
+   "src/athena/adopt/prompts.py:131",
+   "dump:customs-protests--lorna#brief",
+   "dump:isf-filings--lorna#brief",
+   "dump:ocean-demurrage-disputes--lorna#brief"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A rule slot filled from the playbook or a research lane renders 'rule: <text> (<citation>)'; every freight brief names at least one deadline with its CFR/U.S.C. section; '(my guess)' appears only on facts about the person"
+ },
+ {
+  "id": "freight-02",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Value figures carry no source on the catalogue, the Value tile or 'Worth $X'",
+  "expected": "Each value says author's estimate or measured on invented data, with its basis one line away",
+  "got": "'$30,000 a year, for the persona' and the catalogue cell with no source; economics.basis is not parsed by the desktop",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/catalogue.tsx:121-134",
+   "apps/desktop/src/scenes/chores/topic.tsx:189-191",
+   "apps/desktop/src/scenes/chores/topic.tsx:246",
+   "apps/desktop/src/lib/playbooks.ts:494-505",
+   "dump:customs-protests--lorna#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Every value rendering carries a source word (estimate or invented data) and the basis is reachable from the tile; lib/playbooks.ts parses economics.basis"
+ },
+ {
+  "id": "freight-03",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Price-avoided and protection weights are shown as dollars 'Filed on the bench' and 'found in the rehearsal'",
+  "expected": "Weights (count $1, ISF $5,000 protection, permit and DQ service price avoided) show as counts done right, never with a $ sign",
+  "got": "denied-party '$10 found' and cards at '$1' each; ISF '$25,000 found' (Lorna); DQ '$540'; oversize '$392.50'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:129",
+   "apps/desktop/src/scenes/chores/flow.tsx:121-122",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:113-119",
+   "apps/desktop/src/scenes/chores/turn.tsx:74",
+   "dump:isf-filings--lorna#rehearsal",
+   "dump:denied-party-screening--dario#rehearsal",
+   "dump:driver-qualification-files--dario#rehearsal"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A playbook whose truth weights are not recovered money declares value_kind; the flow, showcase and turn cards render 'N of M right' for it and no $ figure"
+ },
+ {
+  "id": "freight-04",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "duty-drawback",
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "The topic brief's figure disagrees with the flow result on the same page",
+  "expected": "The brief and the result show the same figure for the same run",
+  "got": "drawback brief '$13,747' vs result '$11,033' (bench found 3 of 4); lease brief '$1,515' vs '$1,539'; IFTA brief '$56.15 net tax' vs result '$1,845' filed",
+  "evidence": [
+   "playbooks/duty-drawback/playbook.json#brief",
+   "playbooks/duty-drawback/bench.json#score",
+   "playbooks/lease-operator-escrow/playbook.json#brief",
+   "playbooks/ifta-quarterly/playbook.json#brief",
+   "apps/desktop/src/scenes/chores/model.ts:129"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A test asserts each playbook brief's headline $ equals usd(bench.value_found_usd) or carries an explicit 'of $X held' wording"
+ },
+ {
+  "id": "freight-05",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "time-saved",
+  "title": "'Time saved' leaves out the person's review time and hides the sample size",
+  "expected": "The ratio counts review time and shows its run count; the computed review line is shown",
+  "got": "Shown 20-99x against 8-63x with review; the 'your review X min' line is computed but never rendered; n=1 or 3 is hidden",
+  "evidence": [
+   "apps/desktop/src/lib/playbooks.ts:591-595",
+   "apps/desktop/src/scenes/chores/model.ts:152-158",
+   "apps/desktop/src/scenes/chores/topic.tsx:194-202",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The topic tile renders band.athena.line; the speedup divides by bench minutes plus review minutes; the run count shows beside the ratio"
+ },
+ {
+  "id": "freight-06",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "effort",
+  "title": "The interview offers the playbook's invented app names as answer options",
+  "expected": "Options are real product names for the role, or a generic role label plus free text",
+  "got": "Ledgerline, Forwarden, Sheafbox, Postwren, Ledgerwren offered in 11/12 chores; 20/24 pairs had to type corrections",
+  "evidence": [
+   "dump:customs-protests--lorna#turn:1",
+   "dump:lease-operator-escrow--lorna#turn:1",
+   "dump:freight-claims--lorna#turn:1",
+   "dump:ifta-quarterly--lorna#turn:1",
+   "src/athena/adopt/prompts.py:57-59"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "No interview option names an invented portal from playbook.apps; an LC re-run shows correction rate under 25%"
+ },
+ {
+  "id": "freight-07",
+  "journey": "J7",
+  "character": "dario",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "effort",
+  "title": "Cards carry 2-4 questions at once",
+  "expected": "One question per message for a second-language reader (Dario C5)",
+  "got": "29/39 cards held more than one question; the prompt allows 4",
+  "evidence": [
+   "src/athena/adopt/prompts.py:43",
+   "src/athena/adopt/prompts.py:55",
+   "dump:carrier-accessorials--dario#turn:1",
+   "dump:denied-party-screening--dario#turn:1"
+  ],
+  "code_check": "by-design",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A plain-reader setting caps questions per card at 1; LC re-run: Dario C5 passes in at least 9/12"
+ },
+ {
+  "id": "freight-08",
+  "journey": "J8",
+  "character": "lorna",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "missing-feature",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "Items she left alone, and why, are counted but never listed",
+  "expected": "The topic and the rehearsal list each left-alone item with its reason (J8 DoD, Lorna C7)",
+  "got": "trapLedger feeds only the 'Traps avoided x/y' count; no chores view lists it; Lorna C7 0 passes, 11/12 not evaluable",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:122-124",
+   "apps/desktop/src/lib/playbooks.ts#Bench.trapLedger",
+   "apps/desktop/src/scenes/chores/topic.tsx:204-208",
+   "dump:carrier-accessorials--lorna#judge"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "grep trapLedger under scenes/chores finds a render that lists action, key and why; the shaped rehearsal lists its own left-alone items"
+ },
+ {
+  "id": "freight-09",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "catalogue",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "Internal vocabulary on every chores screen",
+  "expected": "No rubric jargon without an explanation on the same screen",
+  "got": "Catalogue 4 (benched, exceed the bar, bench, edge); topic 6-7 (persona, traps, bench, world, claim, turn, brief); studio 7-8 (lanes, slot, brief, draft, world, rehearsal, card, turn); runs adds ledger row, gate, daemon",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:104-105",
+   "apps/desktop/src/scenes/chores/catalogue.tsx:38",
+   "apps/desktop/src/scenes/chores/topic.tsx:191",
+   "apps/desktop/src/scenes/chores/topic.tsx:205-207",
+   "apps/desktop/src/scenes/chores/flow.tsx:118-121",
+   "apps/desktop/src/scenes/chores/adopt/state.ts:333",
+   "apps/desktop/src/scenes/chores/adopt/casepanel.tsx:163",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:85",
+   "apps/desktop/src/scenes/chores/runs.tsx:90"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A copy test fails on any rubric jargon word in rendered chores strings without a same-screen gloss"
+ },
+ {
+  "id": "freight-10",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "ifta-quarterly",
+  "surface": "catalogue",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "med",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "The 'per quarter' and 'per episode' values sort as if yearly under 'Most value'",
+  "expected": "IFTA sorts at $4,800 a year (times_per_year 4); an episode value is marked as not comparable",
+  "got": "annualValue: month x12 and week x52 are clean; quarter falls to the default (x1); episode, run and claim are raw. PER map: year/month/week/run/claim clean, quarter/episode -> 'per X'. For freight, topic.tsx:191 and :246 agree on all three units in use",
+  "evidence": [
+   "apps/desktop/src/modules/playbooks/model.ts:104-110",
+   "apps/desktop/src/modules/playbooks/model.ts:191-201",
+   "apps/desktop/src/scenes/chores/model.ts:84-87"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "annualValue multiplies a quarter by 4, or uses times_per_year where given; a test sorts IFTA above a $1,500-a-year chore"
+ },
+ {
+  "id": "freight-11",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "catalogue",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "The catalogue total adds weights and tax credits into '$X found on the bench'",
+  "expected": "The 'found' total counts only recovered money",
+  "got": "Freight adds $65,601.51; $25,942.50 (39.5%) is non-money weights (ISF, DQ, oversize, denied); with IFTA credits, $27,787.33 (42.4%)",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:100-108",
+   "apps/desktop/src/modules/playbooks/model.ts:224"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "totals.foundUsd excludes playbooks whose value_kind is not 'recovered'; the totals line names the count of those separately"
+ },
+ {
+  "id": "freight-12",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "denied-party-screening",
+  "surface": "catalogue",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "denied-party shows '$0 a year' as its value",
+  "expected": "A minutes-only chore shows its time value (about 60 h a year per basis), not $0",
+  "got": "The catalogue cell and Value tile read '$0 a year'",
+  "evidence": [
+   "playbooks/denied-party-screening/playbook.json#economics",
+   "apps/desktop/src/scenes/chores/model.ts:84-87",
+   "apps/desktop/src/scenes/chores/topic.tsx:190"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "When value_usd is 0, the value cell renders the hours a year from manual_minutes x times_per_year with its source"
+ },
+ {
+  "id": "freight-13",
+  "journey": "J8",
+  "character": "lorna",
+  "playbook_id": "ifta-quarterly",
+  "surface": "playbook-data",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "IFTA counts tax-paid credits as value and shows them as 'found'",
+  "expected": "Value = penalty and interest avoided (R1220, R1230) plus credits a wrong return would lose; never the credits themselves",
+  "got": "World values the jurisdiction lines at the tax already paid ($1,844.83) while the net due is $56.15; Lorna saw '$1,844.83 found in the rehearsal'",
+  "evidence": [
+   "playbooks/ifta-quarterly/playbook.json#economics.basis",
+   "dump:ifta-quarterly--lorna#rehearsal",
+   "dump:ifta-quarterly--lorna#judge"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "IFTA truth weights the late penalty and interest; the bench found total for a correct return is at most $50 plus interest"
+ },
+ {
+  "id": "freight-14",
+  "journey": "J8",
+  "character": "lorna",
+  "playbook_id": "isf-filings",
+  "surface": "playbook-data",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "ISF is valued at two full $5,000 liquidated damages a year and shown as '$25,000 found'",
+  "expected": "Protection valued at the mitigated figure or as on-time filings, never 'found'",
+  "got": "The basis itself says a first violation is cancelled for $1,000-2,000; the rehearsal said '$25,000 found' (the judge rated it a blocker)",
+  "evidence": [
+   "playbooks/isf-filings/playbook.json#economics.basis",
+   "dump:isf-filings--lorna#rehearsal",
+   "dump:isf-filings--lorna#judge"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "isf-filings value_usd reflects mitigation, or value_kind is protection; no ISF rehearsal renders a $ found figure"
+ },
+ {
+  "id": "freight-15",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "lease-operator-escrow",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "The lease escrow is valued at the whole $2,500 escrow per episode",
+  "expected": "Value = what the chore adds: disputed deductions plus interest ($969.12 in the world)",
+  "got": "'$2,500 per episode, for the persona'; the world counts the $569.65 the carrier already admits as found",
+  "evidence": [
+   "playbooks/lease-operator-escrow/playbook.json#economics",
+   "dump:lease-operator-escrow--lorna#judge"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "lease value_usd equals the contested amount; the brief carries one reconciled figure"
+ },
+ {
+  "id": "freight-16",
+  "journey": "J7",
+  "character": "dario",
+  "playbook_id": "duty-drawback",
+  "surface": "playbook-data",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "med",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Drawback offers only direct tracing; substitution drawback is absent",
+  "expected": "Steps and rules cover 19 U.S.C. 1313(b) and (j)(2) substitution at the 8-digit HTS level, and the 190.35 notice of intent to export (offline knowledge)",
+  "got": "Dario has no part-to-kit list; the brief still plans claims 'tied through Larissa's invoice matches' and he fears a weak claim",
+  "evidence": [
+   "playbooks/duty-drawback/playbook.json#steps",
+   "dump:duty-drawback--dario#brief",
+   "dump:duty-drawback--dario#turn:3"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The playbook names the substitution provisions and a trap for claims with neither tracing nor a substitutable HTS; the brief states which provision each claim uses"
+ },
+ {
+  "id": "freight-17",
+  "journey": "J7",
+  "character": "lorna",
+  "playbook_id": "lease-operator-escrow",
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "The brief anchors deadlines wrongly",
+  "expected": "45 days from termination (376.12(k)); for non-delivery, nine months after a reasonable time for delivery",
+  "got": "lease-lorna: '45 days after final settlement (my guess)'; freight-claims-lorna: 'nine months from delivery (my guess)' applied to a pallet that was never delivered",
+  "evidence": [
+   "dump:lease-operator-escrow--lorna#brief",
+   "dump:freight-claims--lorna#brief",
+   "playbooks/lease-operator-escrow/playbook.json#economics.basis"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Briefs take the anchor phrase from the playbook's rule text; an LC re-run of both pairs shows the correct anchor"
+ },
+ {
+  "id": "freight-18",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "Persona and other-chore leaks in the studio",
+  "expected": "The composer hint and the questions use the person's domain and terms",
+  "got": "The placeholder 'My airline is Skylindle, and I paid with two cards...' shows in every freight chore; IFTA-dario was asked 'file ... with Texas'; customs-dario was offered skewers, grills and knives",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/conversation.tsx:37-43",
+   "apps/desktop/src/scenes/chores/adopt/studio.tsx",
+   "dump:ifta-quarterly--dario#turn:1",
+   "dump:customs-protests--dario#turn:2"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The studio passes a playbook-specific placeholder; no interview question names the persona's jurisdiction or products before the person does"
+ },
+ {
+  "id": "freight-19",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "missing-feature",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "'Start for real' does not say what happens next",
+  "expected": "It states what she will do on real accounts, which acts need approval, and where Due and Runs show it (J8 DoD)",
+  "got": "'Hands the brief's command to Athena. It waits in her composer until you send it.'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:128-143"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The Start-for-real note names the gated acts from the playbook and points to Due and Runs on the topic page"
+ },
+ {
+  "id": "freight-20",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "severity": "minor",
+  "impact": {
+   "frequency": "high",
+   "reachability": "med",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Rehearsal spend is not shown in dollars",
+  "expected": "The practice run's model spend is on screen",
+  "got": "Pairs cost $1.22-3.16 adopt included; the studio shows only 'N model calls so far · s'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/studio.tsx:277",
+   "proving-runs/chores-uat/2026-10-23-chores/pairs/freight-claims--lorna.json#cost_usd"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The studio usage line carries the dollar cost of the conversation and the rehearsal"
+ },
+ {
+  "id": "freight-21",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Judge: 'the practice figure has no invented-data label'",
+  "expected": "-",
+  "got": "The judge harness showed 'it found $X' without the UI's label",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:113-119",
+   "src/athena/proving/chores_uat/judge.py:156-159"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "- (refuted: the showcase renders 'found in the rehearsal, on invented data'; the topic's 'Filed on the bench' is the remaining gap, see freight-09)"
+ },
+ {
+  "id": "freight-22",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "driver-qualification-files",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "DQ value is over-scaled for both Characters",
+  "expected": "Value scales by drivers, per the basis ($30 per driver a month)",
+  "got": "$3,000 a year shown; by the basis's own formula Dario (3 drivers) gets $1,080 and Lorna (6) gets $2,160",
+  "evidence": [
+   "playbooks/driver-qualification-files/playbook.json#economics.basis",
+   "uat/chores/cases/driver-qualification-files--dario.json"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The value shows per driver, or names its 8-driver basis next to the figure"
+ },
+ {
+  "id": "freight-23",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "The topic brief tells the persona's story and outcomes with no 'example' label",
+  "expected": "The brief is marked as an example case on invented data, with every figure in it labelled",
+  "got": "Light-fixture maker, chandelier, El Paso carrier and 'Collected — $1,580' read as the reader's; the invented-data note sits two sections lower",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:160-164",
+   "apps/desktop/src/scenes/chores/topic.tsx:220",
+   "dump:freight-claims--dario#judge",
+   "dump:ifta-quarterly--dario#judge"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The topic brief renders under 'An example: <persona>, on invented data'"
+ },
+ {
+  "id": "freight-24",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Judge: 'Verdict: Exceeds (n=1)' sits on the page",
+  "expected": "-",
+  "got": "verdictOf is computed but not rendered by any chores scene; the judge got it from numbers.py headline()",
+  "evidence": [
+   "apps/desktop/src/modules/playbooks/model.ts:112-152",
+   "src/athena/proving/chores_uat/numbers.py:314-320"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "- (refuted for the UI; the hidden n is filed under freight-05)"
+ },
+ {
+  "id": "freight-25",
+  "journey": "J7",
+  "character": "lorna",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "effort",
+  "title": "Judge: 'she asked for facts in documents I already gave her'",
+  "expected": "-",
+  "got": "No documents were given in these flows; at adopt time she cannot read accounts; the defect is the invented options (freight-06)",
+  "evidence": [
+   "src/athena/adopt/prompts.py:66-67",
+   "dump:ifta-quarterly--lorna#turn:2"
+  ],
+  "code_check": "by-design",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "- (refuted)"
+ },
+ {
+  "id": "freight-26",
+  "journey": "J7",
+  "character": "dario",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "Judge: 'the page promise is one long jargon sentence'",
+  "expected": "-",
+  "got": "The topic renders the short brief; the promise only shows when the brief is empty, and all 12 freight briefs are set",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:160-164",
+   "apps/desktop/src/scenes/chores/catalogue.tsx:87",
+   "src/athena/proving/chores_uat/judge.py:194-198"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "- (refuted; the brief's persona framing is freight-23)"
+ },
+ {
+  "id": "freight-27",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Approval is promised in every brief and drawn on the flow",
+  "expected": "-",
+  "got": "Lorna C4 12/12; the judge's understood sentence matches the job in 24/24",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/flow.tsx:105-112",
+   "src/athena/adopt/prompts.py:62-63"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep"
+ },
+ {
+  "id": "freight-28",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "A shaped world claims no dollar figure",
+  "expected": "-",
+  "got": "6 pairs saw 'no dollar figure is claimed'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:102-111",
+   "src/athena/adopt/showcase.py:575-584"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep"
+ },
+ {
+  "id": "freight-29",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "senior-quality",
+  "title": "Athena honours 'do not file this' and flags stale cases",
+  "expected": "-",
+  "got": "The brake drums and forklift (freight-claims-dario), CRVU (ocean-dario) and the ruling over the ERP (customs) went to Left alone; oversize-lorna's brief flagged the past week",
+  "evidence": [
+   "dump:freight-claims--dario#brief",
+   "dump:ocean-demurrage-disputes--dario#brief",
+   "dump:oversize-permits--lorna#brief"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep"
+ },
+ {
+  "id": "freight-30",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "senior-quality",
+  "title": "The freight playbooks are well researched: dated citations, realistic traps, honest caveats",
+  "expected": "-",
+  "got": "6/12 sound, and none wrong in law; the defects are economics and wiring, not rules",
+  "evidence": [
+   "playbooks/customs-protests/playbook.json#caveat",
+   "playbooks/ocean-demurrage-disputes/playbook.json#economics.basis"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep"
+ }
+]

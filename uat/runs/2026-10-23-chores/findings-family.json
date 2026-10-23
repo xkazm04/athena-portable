@@ -1,0 +1,917 @@
+[
+ {
+  "id": "family-01",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Two or three different dollar figures per chore on one page, none with its source",
+  "expected": "One value per chore, its basis and sources beside it, and any other figure (bench world, rehearsal) labelled as what it is",
+  "got": "Estate hero $111,644 / tile $20,000 / flow $104,460; funeral $2,115 / $2,500 / rehearsal $1,915; veteran $3,196 / $2,000; name change $0 / $39.96; household $818 / $800. basis not parsed, sources and caveat rendered nowhere. Category honest numbers 76/192.",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:160-161",
+   "apps/desktop/src/scenes/chores/topic.tsx:188-191",
+   "apps/desktop/src/scenes/chores/topic.tsx:246",
+   "apps/desktop/src/scenes/chores/flow.tsx:120-124",
+   "apps/desktop/src/lib/playbooks.ts:43-54",
+   "apps/desktop/src/lib/playbooks.ts:501",
+   "apps/desktop/src/lib/playbooks.ts:522",
+   "dump:estate-settlement--grace#judge",
+   "dump:funeral-price-check--samira#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "On every family topic page each rendered dollar figure has a source line within the same tile; the hero brief carries no unlabelled world total; a test asserts basis text renders under the Value tile"
+ },
+ {
+  "id": "family-02",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "The studio's first line tells the person the world's story and app names",
+  "expected": "An opening about the chore in general and the person's own case, with no invented brand names offered as theirs",
+  "got": "prompts.opening() quotes the playbook brief's first paragraph and its app list: Grace (daughter) heard 'A son paid for his veteran father's funeral' and '$111,644 to handle'; all 10 pairs were asked if they use Docshelf/Hourquill/Ledgerline/IDway, and the cards repeated them as options; 7/10 pairs had to correct names",
+  "evidence": [
+   "src/athena/adopt/prompts.py:373-386",
+   "dump:veteran-burial-benefits--grace#turn:1",
+   "dump:household-employer-tax--grace#turn:1",
+   "dump:name-change-everywhere--grace#turn:1",
+   "dump:funeral-price-check--samira#turn:1"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "No adopt.say or card option in a fresh family session contains a name the playbook's caveat lists as invented, or the world's value total"
+ },
+ {
+  "id": "family-03",
+  "journey": "J7",
+  "character": "samira",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Approved briefs state world facts as the person's own (a son, a CPA)",
+  "expected": "Every setup and left-alone line traceable to the person's answers or marked (my guess)",
+  "got": "household-employer-tax--samira brief: 'Your nineteen-year-old son's wages, which are exempt' - her case has no son. estate-settlement--samira brief: 'your CPA's disclaimer advice' - her case: 'She hasn't hired a lawyer or accountant'. Neither was said in her answers.",
+  "evidence": [
+   "dump:household-employer-tax--samira#brief",
+   "dump:estate-settlement--samira#brief",
+   "uat/chores/cases/household-employer-tax--samira.json",
+   "uat/chores/cases/estate-settlement--samira.json",
+   "src/athena/adopt/prompts.py:117-121"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A brief audit rejects any line naming a person, relation or adviser absent from the answers and slots; replaying both sessions yields briefs without the son or the CPA"
+ },
+ {
+  "id": "family-04",
+  "journey": "J7",
+  "character": "samira",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "Briefs have no order, deadlines or consequences",
+  "expected": "A 'When' section: steps in order, each with its date and what happens if missed",
+  "got": "Brief schema is lead/setup/claim/left_alone only; Samira C4 failed or null 5/5; her case dates (disclaimer ~14 Nov, I-9 due 14 Oct, payday 23 Oct, VA 25 Oct) never reached a brief as a dated list",
+  "evidence": [
+   "src/athena/adopt/prompts.py:130-134",
+   "src/athena/adopt/loop.py:496-497",
+   "dump:estate-settlement--samira#judge",
+   "dump:household-employer-tax--samira#judge",
+   "dump:name-change-everywhere--samira#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Brief JSON has a 'when' list; each family brief shows at least one dated step with its consequence where the case holds a deadline"
+ },
+ {
+  "id": "family-05",
+  "journey": "J7",
+  "character": "grace",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "Gain and speed wording beside a death",
+  "expected": "Bereavement chores framed as what she may refuse and what is owed back, without 'value' and 'x faster' headlines",
+  "got": "Value '$20,000 per estate, for the persona', '158x faster', 'Traps avoided', rehearsal 'found $1,915'; Grace C4 failed 4/5",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:187-209",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:113-119",
+   "dump:estate-settlement--grace#judge",
+   "dump:funeral-price-check--grace#judge",
+   "dump:veteran-burial-benefits--grace#judge"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Family playbooks render no 'x faster' ratio and label money 'owed back' or 'not yours to pay' instead of 'Value'"
+ },
+ {
+  "id": "family-06",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "time-saved",
+  "title": "Time saved leaves out the person's review and is implausibly large",
+  "expected": "Time saved counts her review time, rendered beside the figure, with a realistic review estimate",
+  "got": "Shown estate 158x, funeral 113x, household 52x, name 338x, veteran 89x; with bench review: 95x, 45x, 28x, 126x, 57x; the bench allows 1.5-5 min to approve signed filings incl. a $93,200 disclaimer. 'your review' is computed but not rendered.",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:149-166",
+   "apps/desktop/src/scenes/chores/topic.tsx:193-202",
+   "apps/desktop/src/lib/playbooks.ts:591-595",
+   "playbooks/estate-settlement/bench.json"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The Time saved tile shows 'your review N min' and the ratio uses wall time plus review time"
+ },
+ {
+  "id": "family-07",
+  "journey": "J7",
+  "character": "grace",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "effort",
+  "title": "Cards hold up to four questions and never say what she will read herself or what comes next",
+  "expected": "One or two questions per card; a line naming what she reads from the papers and what follows",
+  "got": "MAX_QUESTIONS=4; Grace C2 failed 5/5, C5 passed 1/5; county asked twice (Grace) and three times (Samira) though it is in the letters/returns in Drive; veteran burial date asked though it is in the funeral statement",
+  "evidence": [
+   "src/athena/adopt/prompts.py:43",
+   "src/athena/adopt/loop.py:545-553",
+   "dump:estate-settlement--grace#turn:1",
+   "dump:estate-settlement--samira#turn:3",
+   "dump:veteran-burial-benefits--grace#turn:2"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "For audience home, a card holds at most 2 questions and each card ends with 'I'll read X myself; next: Y'"
+ },
+ {
+  "id": "family-08",
+  "journey": "J7",
+  "character": "samira",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "No line says when to see a professional",
+  "expected": "Where the playbook's caveat names a professional (probate lawyer, accountant), the brief says so for her case",
+  "got": "Caveats ('an executor works with a probate lawyer') are parsed but never rendered; the brief schema has no field for it; Samira C5 failed 4/5, null 1/5",
+  "evidence": [
+   "apps/desktop/src/lib/playbooks.ts:522",
+   "src/athena/adopt/prompts.py:130-134",
+   "dump:household-employer-tax--samira#judge",
+   "dump:veteran-burial-benefits--samira#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Each family brief carries a 'Worth a professional' line when the caveat or a guessed legal fact calls for one"
+ },
+ {
+  "id": "family-09",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "A rehearsal labelled 'shaped like your case' keeps the world's dates and deaths",
+  "expected": "Load-bearing dates (death, burial, deadlines, today) shaped to the case, or the label says they were not",
+  "got": "estate-grace rehearsal: 'Ruth died Jan 15', 'disclaimer by October 15' (Grace's mother died 6 Oct 2026); 'born 2024-11-02 ... makes her 81' and still a $6,000 'Right claim'; veteran-samira rehearsal: '16 days from today' (hers is 2) and calls her uncle 'Dad'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:40",
+   "apps/desktop/src/scenes/chores/adopt/casepanel.tsx:290",
+   "dump:estate-settlement--grace#rehearsal",
+   "dump:veteran-burial-benefits--samira#rehearsal"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Shaped worlds carry the case's death/burial dates and today's date; when they do not, the label reads 'invented data; the dates are not yours'"
+ },
+ {
+  "id": "family-10",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "Internal vocabulary on every screen",
+  "expected": "No rubric jargon word without an explanation on screen",
+  "got": "Catalogue: benched, exceed the bar, Best edge. Topic: persona, traps, on the bench, world, brief (+ claims for non-claim jobs). Studio/showcase: brief, draft, slot, world, rehearsal, cards, turn/run loop, 'Fell for a trap'/'Right claim', 'What I'll claim'. Count: cat 3 / topic 5-6 / studio 8-9.",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:104",
+   "apps/desktop/src/scenes/chores/catalogue.tsx:38",
+   "apps/desktop/src/scenes/chores/topic.tsx:191",
+   "apps/desktop/src/scenes/chores/topic.tsx:205-207",
+   "apps/desktop/src/scenes/chores/flow.tsx:118",
+   "apps/desktop/src/scenes/chores/adopt/casepanel.tsx:163",
+   "apps/desktop/src/scenes/chores/adopt/casepanel.tsx:265-268",
+   "apps/desktop/src/scenes/chores/turn.tsx:41",
+   "apps/desktop/src/modules/playbooks/model.ts:154-162",
+   "src/athena/adopt/loop.py:496"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A copy test over the family path finds zero rubric jargon words outside a glossary tooltip"
+ },
+ {
+  "id": "family-11",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": "funeral-price-check",
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "med",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "'Found' money from a rehearsal that stopped before booking",
+  "expected": "An unfinished rehearsal says it stopped and which acts it did not reach, and claims no total",
+  "got": "Both funeral rehearsals ended at 'please switch me to the Greenmeadow tab' (4 and 7 cards vs 8 recorded), yet both show '$1,915 found in the rehearsal'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:113-119",
+   "dump:funeral-price-check--grace#rehearsal",
+   "dump:funeral-price-check--samira#rehearsal"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "When rehearsal cards < recorded cards, the result line says 'stopped before: <act>' and shows no found_usd"
+ },
+ {
+  "id": "family-12",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "minor",
+  "impact": {
+   "frequency": "high",
+   "reachability": "med",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "Slot tiles read as broken sentences",
+  "expected": "Plain one-line questions per portal",
+  "got": "'Do you use Estate bank account for what came in and went out, the scheduled distribution, bill pay, or something else?'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/casepanel.tsx:139",
+   "dump:estate-settlement--grace#turn:0"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Every slot label in a family session is a grammatical question under 15 words"
+ },
+ {
+  "id": "family-13",
+  "journey": "J8",
+  "character": "grace",
+  "playbook_id": "estate-settlement",
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "med",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "'I'll read this during the run' shown as a portal name",
+  "expected": "The rehearsal names a real portal, or 'a portal she will find'",
+  "got": "RUN_LOOKUP, written as a slot value, becomes the portal chip in the trace (the unclaimed-property and probate-docket turns)",
+  "evidence": [
+   "src/athena/adopt/loop.py:361",
+   "src/athena/adopt/loop.py:371",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:189",
+   "dump:estate-settlement--grace#rehearsal"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "No trace portal equals RUN_LOOKUP; the portal map skips deferred slots"
+ },
+ {
+  "id": "family-14",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "missing-feature",
+  "severity": "minor",
+  "impact": {
+   "frequency": "high",
+   "reachability": "med",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "'Start for real' does not say what happens on real accounts or where approvals appear; rehearsal spend unseen",
+  "expected": "A line naming the acts that will need approval and that they appear in Due/Runs; the rehearsal's cost shown",
+  "got": "'Hands the brief's command to Athena. It waits in her composer until you send it.' Estate rehearsals cost $3.71 and $3.63, shown nowhere",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:128-143",
+   "dump:estate-settlement--grace#rehearsal"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The Start for real note lists the gated acts and names Due/Runs; the showcase shows the rehearsal's cost"
+ },
+ {
+  "id": "family-15",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "A shaped rehearsal still shows 'Right claim' on its cards",
+  "expected": "When the answer key no longer fits, cards carry no scorer verdict",
+  "got": "The header says no dollar figure is claimed because the answer key no longer fits, yet every card reads 'Right claim' (outcome 'correct')",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:102-111",
+   "apps/desktop/src/scenes/chores/turn.tsx:68-73",
+   "dump:estate-settlement--grace#rehearsal"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "In a shaped rehearsal the turn view shows 'proposed' instead of outcome words"
+ },
+ {
+  "id": "family-16",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "estate-settlement",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Estate value is not plausible for either case, and the hero counts a disclaimer as value",
+  "expected": "A value with its basis for an estate of the persona's size; disclaimed money not counted as value",
+  "got": "$20,000 per estate rests on California fees for a $1M estate; the probate estates here are $11,300 (Grace) and $23,400 (Samira), plus IRAs outside probate -> CA statutory 4% = ~$452 / ~$936 (offline, Cal. Prob. Code 10810); hero '$111,644 handled' includes a $93,200 disclaimer; basis cites '570 hours' while manual is 20 h",
+  "evidence": [
+   "playbooks/estate-settlement/playbook.json",
+   "uat/chores/cases/estate-settlement--grace.json",
+   "uat/chores/cases/estate-settlement--samira.json",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "economics.value_usd is justified in the basis for a sub-$150k estate; the brief total excludes the disclaimer"
+ },
+ {
+  "id": "family-17",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "estate-settlement",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "med",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "A trap misstates IRA disclaimer law; 'IRS first' is too simple",
+  "expected": "Traps that match IRS guidance and state priority statutes",
+  "got": "Trap: 'Taking the IRA's required distribution first, which would void the disclaimer' - Rev. Rul. 2005-36 holds that taking the year-of-death RMD does not bar disclaiming the rest (offline knowledge). Brief: 'debts paid in legal order, IRS first' - state statutes put administration and funeral costs first; 31 U.S.C. 3713 bites on insolvency (offline knowledge)",
+  "evidence": [
+   "playbooks/estate-settlement/playbook.json"
+  ],
+  "code_check": "n-a",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "The trap is reworded per Rev. Rul. 2005-36 and the order line cites state priority; a probate reviewer signs off"
+ },
+ {
+  "id": "family-18",
+  "journey": "J7",
+  "character": "grace",
+  "playbook_id": "estate-settlement",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "missing-feature",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "med",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "No step produces the record the court accepts",
+  "expected": "An inventory/accounting step, plus reminders for Form 56, the final 1040 and the 1041",
+  "got": "Steps cover mail, claims, creditors and the disclaimer; nothing produces the inventory or accounting the probate court needs (Grace's senior bar)",
+  "evidence": [
+   "playbooks/estate-settlement/playbook.json",
+   "uat/characters/chores/grace.md"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "playbook.steps includes an inventory/accounting step"
+ },
+ {
+  "id": "family-19",
+  "journey": "J7",
+  "character": "samira",
+  "playbook_id": "household-employer-tax",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "missing-feature",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "No check of past-year W-2 / Schedule H for an employer who never filed; no EIN step",
+  "expected": "A step that finds unfiled prior years above the threshold, states the exposure and refers back-filing to a payroll service or CPA",
+  "got": "Rosalind has been paid since January at ~$620/week (above the $3,000 threshold); the basis says W-2s and Schedule H are not in this world; Samira 'has not filed anything'; no EIN step, though the basis cites SS-4",
+  "evidence": [
+   "playbooks/household-employer-tax/playbook.json",
+   "uat/chores/cases/household-employer-tax--samira.json",
+   "uat/characters/chores/samira.md"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "playbook.steps includes a prior-year filing check and an EIN check"
+ },
+ {
+  "id": "family-20",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "household-employer-tax",
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "med",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "A late I-9 promised as on time; a dead employer not flagged",
+  "expected": "'Sign Section 2 now; it was due 14 Oct', and for a deceased employer a stop saying the estate is now the employer",
+  "got": "Samira's brief: 'Sign his I-9 Section 2 by his third business day' (case: due 14 Oct, run 23 Oct). Grace's mother, the employer, died 6 Oct; the chore adopted the case without saying so; the rehearsal's exempt 'son, 19' maps onto Grace's Anders, a grandson, whom the under-21 child exemption does not cover (offline, Pub 926)",
+  "evidence": [
+   "dump:household-employer-tax--samira#brief",
+   "uat/chores/cases/household-employer-tax--samira.json",
+   "dump:household-employer-tax--grace#brief",
+   "uat/chores/cases/household-employer-tax--grace.json"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The brief compares deadlines with today and says 'late'; a deceased-employer case raises a gate"
+ },
+ {
+  "id": "family-21",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "name-change-everywhere",
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "'$0' tile beside '$39.96 filed on the bench' and rehearsal 'found $39.96'",
+  "expected": "One figure, called what the basis says it is (a kit price avoided)",
+  "got": "value_usd 0 renders '$0 per episode'; the flow says 'Filed on the bench $39.96'; the rehearsal says 'found $39.96'; the basis says 'not money recovered'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:188-191",
+   "apps/desktop/src/scenes/chores/flow.tsx:120-124",
+   "dump:name-change-everywhere--samira#rehearsal",
+   "playbooks/name-change-everywhere/playbook.json"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The name-change topic shows one figure, worded 'kit price avoided'"
+ },
+ {
+  "id": "family-22",
+  "journey": "J7",
+  "character": "samira",
+  "playbook_id": "name-change-everywhere",
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Load-bearing facts guessed, not asked",
+  "expected": "Social Security status, passport issue date and the spouse's name asked before the brief",
+  "got": "The brief says: SS record updated (my guess), passport qualifies for DS-5504 (my guess), husband took the name (my guess). None was asked; they are right only because the world mirrors her case",
+  "evidence": [
+   "dump:name-change-everywhere--samira#brief",
+   "dump:name-change-everywhere--samira#turn:1"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "These three facts are required slots that block the brief until answered or read"
+ },
+ {
+  "id": "family-23",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "veteran-burial-benefits",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Service-connected allowance written off without a presumptive check",
+  "expected": "A step that reads service dates and locations and checks the cause of death against presumptive lists before ruling out $2,000",
+  "got": "The trap calls pancreatic cancer 'unrelated'; it is a PACT Act presumptive for Gulf War/post-9/11 burn-pit exposure (offline knowledge); Samira's uncle's service era is never read",
+  "evidence": [
+   "playbooks/veteran-burial-benefits/playbook.json",
+   "playbooks/veteran-burial-benefits/truth.json",
+   "uat/chores/cases/veteran-burial-benefits--samira.json"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "playbook.steps includes the presumptive check; trap B-SC is conditioned on it"
+ },
+ {
+  "id": "family-24",
+  "journey": "J7",
+  "character": "samira",
+  "playbook_id": "veteran-burial-benefits",
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Never says a niece who paid can claim; weekday of the deadline wrong",
+  "expected": "'Anyone who paid may claim (38 CFR 3.1702)'; the deadline with its real weekday and 'file today'",
+  "got": "Her relation to him is never asked; the brief repeats 'this Saturday, 25 Oct 2026', but 25 Oct 2026 is a Sunday (computed)",
+  "evidence": [
+   "dump:veteran-burial-benefits--samira#brief",
+   "dump:veteran-burial-benefits--samira#judge",
+   "uat/chores/cases/veteran-burial-benefits--samira.json"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The brief states the claimant rule and a date with the correct weekday"
+ },
+ {
+  "id": "family-25",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "veteran-burial-benefits",
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "med",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "'$2,000' value equals the $2,000 trap amount",
+  "expected": "Value shown as $978 + $978 cash plus a marker in kind, or explained",
+  "got": "value_usd 2000; truth has B-NSC $978 + B-PLOT $978; the B-SC trap is $2,000; the hero brief says $3,196",
+  "evidence": [
+   "playbooks/veteran-burial-benefits/playbook.json",
+   "playbooks/veteran-burial-benefits/truth.json"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The veteran tile no longer reads $2,000 without a basis line"
+ },
+ {
+  "id": "family-26",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "funeral-price-check",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "med",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Value above its own world and both cases; no rule on who must sign the cremation authorization",
+  "expected": "value_usd <= world $2,115 with the basis shown; a step checking the state's right-of-disposition order",
+  "got": "value $2,500 vs world $2,115 (1.18x); savings from the case cards approx Grace $1,400-1,800, Samira $1,100-1,500 (computed approx); Samira's 'does Tobi have to sign?' was answered only 'Athena will check'",
+  "evidence": [
+   "playbooks/funeral-price-check/playbook.json",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json",
+   "dump:funeral-price-check--samira#brief"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "value_usd <= 2115; steps include a next-of-kin authorization check"
+ },
+ {
+  "id": "family-27",
+  "journey": "J7",
+  "character": "grace",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Judge lead: 'Exceeds' shown on the page - refuted",
+  "expected": "n/a",
+  "got": "verdict.label is rendered by no chores view; only the catalogue header 'N of M benched exceed the bar' uses the word. The judges saw numbers.json, not the UI.",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:104",
+   "dump:estate-settlement--grace#judge",
+   "dump:veteran-burial-benefits--grace#judge"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n/a"
+ },
+ {
+  "id": "family-28",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Judge lead: practice run not labelled invented / shows only a turn count - refuted",
+  "expected": "n/a",
+  "got": "showcase.tsx:40 reads 'Rehearsal on invented data shaped like your case - nothing was sent'; :117 reads 'found in the rehearsal, on invented data'; the Player plays every turn (:148-235). The real defect is family-09.",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:40",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:117",
+   "dump:funeral-price-check--grace#judge",
+   "dump:name-change-everywhere--grace#judge"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n/a"
+ },
+ {
+  "id": "family-29",
+  "journey": "J7",
+  "character": "samira",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "missing",
+  "title": "Judge lead: caregiver taxes / name mismatch ignored in the estate and name-change briefs - by design",
+  "expected": "n/a",
+  "got": "Each chore is one job; the other worries belong to their own chores. A cross-chore pointer would be a feature request.",
+  "evidence": [
+   "dump:estate-settlement--samira#judge",
+   "dump:name-change-everywhere--samira#judge"
+  ],
+  "code_check": "by-design",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n/a"
+ },
+ {
+  "id": "family-30",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Ask-first gates are stated plainly in every brief",
+  "expected": "n/a",
+  "got": "C6 passed 10/10; every brief says Athena asks before each filing or payment",
+  "evidence": [
+   "dump:veteran-burial-benefits--grace#brief",
+   "dump:funeral-price-check--grace#brief"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep: C6 stays 10/10 on re-run"
+ },
+ {
+  "id": "family-31",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Shaped rehearsals claim no invented dollar figure",
+  "expected": "n/a",
+  "got": "6/10 rehearsals were shaped; each showed cards proposed and 'no dollar figure is claimed'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:102-111"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep"
+ },
+ {
+  "id": "family-32",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "senior-quality",
+  "title": "Left-alone lists carry the field's traps right",
+  "expected": "n/a",
+  "got": "The basic services fee as the only required funeral fee (16 CFR 453), no medallion for an unmarked grave (38 CFR 38.630), no fee for a free VA filing (14.636), DS-5504 over paid forms; 0 traps filed across 5 benches",
+  "evidence": [
+   "playbooks/funeral-price-check/playbook.json",
+   "playbooks/veteran-burial-benefits/truth.json"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep"
+ }
+]

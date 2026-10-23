@@ -1,0 +1,937 @@
+[
+ {
+  "id": "construction-01",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Value figures carry no basis and no 'estimate' label on catalogue, topic KPI or 'Worth' line",
+  "expected": "Each money figure says it is the author's estimate and shows its basis and sources on the same screen",
+  "got": "'$40,000 a year, for the persona' and 'Worth $40,000 a year for ...' with no basis; economics.basis never parsed, sources parsed but rendered nowhere",
+  "evidence": [
+   "apps/desktop/src/lib/playbooks.ts:495-502",
+   "apps/desktop/src/scenes/chores/topic.tsx:187-192",
+   "apps/desktop/src/scenes/chores/topic.tsx:246",
+   "apps/desktop/src/scenes/chores/catalogue.tsx:121-134",
+   "dump:*--gina#judge (c3 0/7)",
+   "dump:*--ray#judge (c3 0 pass)"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Every rendering of value_usd has an adjacent 'estimate' label and an expandable basis with its sources; a test asserts basis text is in the topic DOM for all 7 construction playbooks"
+ },
+ {
+  "id": "construction-02",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Six of seven construction 'Value' figures are not money gained (released receivables, exposure, expected loss, minutes counted twice)",
+  "expected": "'Value' means money the person gets or keeps; cash released early, exposure protected and hours saved are shown as their own kinds",
+  "got": "certified-payroll $40k and closeout $30k are payments released sooner (time value ~$526 and ~$592 at 8%); lien-desk $380k is exposure; inspection/stormwater value the same hours shown as Time saved; sub-insurance is expected loss; only change-order-notices is recovered money",
+  "evidence": [
+   "playbooks/certified-payroll/playbook.json#economics.basis",
+   "playbooks/closeout-package/playbook.json#economics.basis",
+   "playbooks/lien-desk/playbook.json#economics.basis",
+   "playbooks/inspection-scheduling/playbook.json#economics.basis",
+   "playbooks/stormwater-permit-log/playbook.json#economics.basis",
+   "playbooks/sub-insurance-certs/playbook.json#economics.basis"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "economics gains a 'kind' (recovered|released|protected|minutes); the UI labels each kind differently and 'Most value' sorts recovered money only"
+ },
+ {
+  "id": "construction-03",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "time-saved",
+  "title": "Time saved ratio ignores the person's review; the review line is computed and dropped",
+  "expected": "Time saved counts the person's review of every document, as both Characters say they will",
+  "got": "36x-442x shown; with bench your_time_s it is 16x-179x; Characters expect ~4x. band.athena.line ('your review N min') never rendered",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:149-166",
+   "apps/desktop/src/scenes/chores/topic.tsx:193-202",
+   "apps/desktop/src/modules/playbooks/model.ts:216",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json#speedup_with_review"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Topic KPI and catalogue show Athena time = wall + your_time_s, and the review minutes are visible next to it"
+ },
+ {
+  "id": "construction-04",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "'found $X' in the rehearsal names released receivables and per-act weights as found money",
+  "expected": "A rehearsal figure says what kind of figure it is (weight, payment released) and never coincides unexplained with the person's own real amount",
+  "got": "Label 'on invented data' is present (judge lead refuted) but 'found $81,056' is mostly the company's own held estimates; stormwater $1,500 = 6x$250 weight; sub-insurance $7,200 = 9x$800; closeout '$48,600 found' equals Gina's real retainage",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:40",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:113-119",
+   "dump:closeout-package--gina#rehearsal",
+   "uat/chores/cases/closeout-package--gina.json#facts"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Showcase replaces 'found' with the economics kind wording ('weighted at $250 an act', 'payments released') and never shows a figure equal to a case fact without saying it is the invented world's"
+ },
+ {
+  "id": "construction-05",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Shaped rehearsal still shows per-card verdicts and dollar values scored against an answer key it says no longer holds",
+  "expected": "When found_reason is 'shaped', cards show no outcome word and no $ (or say 'not scored')",
+  "got": "Truth is renamed only on a shaped world, so 'Right claim'/'Fell for a trap' and per-card $ still render under 'no dollar figure is claimed' (5/14 runs shaped)",
+  "evidence": [
+   "src/athena/adopt/showcase.py:219-229",
+   "src/athena/adopt/showcase.py:271-275",
+   "apps/desktop/src/scenes/chores/turn.tsx:65-77",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:102-112"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "On a shaped showcase, TurnView renders cards without outcome or value; a test feeds a shaped event and asserts no '$' and no OUTCOME_WORDS in the turn"
+ },
+ {
+  "id": "construction-06",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "missing-feature",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "The practice run never shows the document she would send (notice, waiver, payroll, booking)",
+  "expected": "Each proposed act opens to its full document text with job, GC, date, clause and amount",
+  "got": "Cards carry only action, key, outcome, value; her words truncated. Gina c4 null 7/7, Ray c5 null 7/7",
+  "evidence": [
+   "apps/desktop/src/lib/playbooks.ts:137-148",
+   "apps/desktop/src/scenes/chores/turn.tsx:49-51",
+   "apps/desktop/src/scenes/chores/turn.tsx:65-77",
+   "dump:*#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Trace cards carry the tool call's arguments; the showcase renders each card as the document with its fields"
+ },
+ {
+  "id": "construction-07",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "missing-feature",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "The run does not say why each item was left alone",
+  "expected": "Every item she left alone listed with its reason (and whether that was right against the key)",
+  "got": "No record of skipped items in the trace; Gina c6 null 7/7",
+  "evidence": [
+   "apps/desktop/src/lib/playbooks.ts:137-148",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:123-126",
+   "dump:*--gina#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Showcase ends with a 'Left alone' list, one line per trap item with her reason"
+ },
+ {
+  "id": "construction-08",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "L1",
+  "type": "missing-feature",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Briefs never name the rule, clause or date behind a deadline",
+  "expected": "Each tracked deadline in the brief names job, counterparty, date and the clause/statute it comes from",
+  "got": "Brief schema is lead/setup/claim/left_alone with 15-word bullets; no rule field. Gina c2 0/7, Ray c2 0/7; playbook sources with cites never reach the brief",
+  "evidence": [
+   "src/athena/adopt/prompts.py:126-135",
+   "src/athena/adopt/loop.py:495-497",
+   "dump:*#brief"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Brief has a 'Deadlines and the rule behind each' section populated from playbook rules/sources; every construction brief in a rerun cites at least one clause or statute"
+ },
+ {
+  "id": "construction-09",
+  "journey": "J7",
+  "character": "ray",
+  "playbook_id": "change-order-notices",
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "'(my guess)' marks both Athena's defaults and the person's own stated values awaiting verification",
+  "expected": "A value the person stated reads 'you said, I'll check against <doc>'; only Athena's own defaults read 'my guess'",
+  "got": "Ray said 7 days and 12%; brief: 'Notice window is 7 days ... (my guess)'. '(my guess)' in 11/14 briefs",
+  "evidence": [
+   "src/athena/adopt/loop.py:364-379",
+   "src/athena/adopt/loop.py:467-485",
+   "dump:change-order-notices--ray#brief",
+   "dump:change-order-notices--ray#turn:2"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Slot status distinguishes 'stated-unverified' from 'guessed'; brief renders them with different words"
+ },
+ {
+  "id": "construction-10",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "effort",
+  "title": "Answer options name the bench world's invented apps",
+  "expected": "Options are real product names or an open 'which app' question",
+  "got": "Clockyard, Primeline GC, Sitegrid, Dailylog, Estimato, Partsmith, Mailnest, Rainlog, Permitflow offered in 13/14 pairs; slots source 'default'",
+  "evidence": [
+   "dump:certified-payroll--gina#turn:1",
+   "dump:change-order-notices--ray#turn:1",
+   "dump:sub-insurance-certs--ray#turn:1",
+   "dump:lien-desk--gina#onboarding.events[adopt.slots]"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "No invented portal name from world.json appears in any question option shown to a person"
+ },
+ {
+  "id": "construction-11",
+  "journey": "J7",
+  "character": "ray",
+  "playbook_id": "change-order-notices",
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Options pre-fill the invented contract's terms as answers about the person's real contract",
+  "expected": "Contract terms are read from the person's document or asked open; never offered as a one-click default",
+  "got": "'21 days, 15%, 5%' offered to Ray (his are 7 days, 12%); '15% own, 5% on subs' to Gina",
+  "evidence": [
+   "dump:change-order-notices--ray#turn:2",
+   "dump:change-order-notices--gina#turn:2",
+   "uat/chores/cases/change-order-notices--ray.json#facts"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "No numeric contract term from truth/world appears as an option; a test checks option text against world values"
+ },
+ {
+  "id": "construction-12",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "daemon",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "med",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "'Start for real' hands the playbook command naming the invented GC/job/city, with 'My case' appended",
+  "expected": "The real command names the person's job, GC and agency only",
+  "got": "fitted_command = playbook command ('The City of Halvern ... Larkin Street', 'Primeline is holding our $48,600 retainage on Harbor Point') + 'My case:' lines",
+  "evidence": [
+   "src/athena/adopt/loop.py:453-469",
+   "apps/desktop/src/scenes/chores/adopt/studio.tsx:252",
+   "playbooks/certified-payroll/playbook.json#command",
+   "playbooks/closeout-package/playbook.json#command"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The handed command contains no proper noun from the playbook's caveat list"
+ },
+ {
+  "id": "construction-13",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "22-23 internal-vocabulary words per journey",
+  "expected": "No internal word on a chores screen without an explanation",
+  "got": "Catalogue: benched, bench, exceed the bar, edge; topic: persona, trap, bench, world, claim, turn; studio: brief, draft, rehearses, world, claim; showcase: rehearsal, benched, world, turn, card, claim, trap, brief",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:100-109",
+   "apps/desktop/src/scenes/chores/catalogue.tsx:38",
+   "apps/desktop/src/scenes/chores/topic.tsx:191",
+   "apps/desktop/src/scenes/chores/topic.tsx:205-207",
+   "apps/desktop/src/scenes/chores/topic.tsx:220",
+   "apps/desktop/src/scenes/chores/flow.tsx:118-121",
+   "apps/desktop/src/scenes/chores/adopt/casepanel.tsx:267-271",
+   "apps/desktop/src/scenes/chores/adopt/casepanel.tsx:290",
+   "src/athena/adopt/loop.py:496",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:40-47",
+   "apps/desktop/src/modules/playbooks/model.ts:154-162"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A test scans rendered catalogue/topic/studio/showcase text for the rubric word list and finds none outside field-term exceptions"
+ },
+ {
+  "id": "construction-14",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "catalogue",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "Catalogue row says nothing of what the chore does; description only in a hover title",
+  "expected": "Each row carries a one-line plain description readable on a tablet",
+  "got": "Row = short title, job chip, two times, value; promise/brief only in title attribute",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/catalogue.tsx:82-91"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Ledger row renders lead(brief) or promise as visible text"
+ },
+ {
+  "id": "construction-15",
+  "journey": "J7",
+  "character": "gina",
+  "playbook_id": "lien-desk",
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "broken-flow",
+  "severity": "major",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "completion",
+  "title": "Lien-desk onboarding asked only about software, repeated Textura, approved with the job's state unknown",
+  "expected": "Questions about her jobs, states and deadlines; no brief approved while a job's state is unknown",
+  "got": "One card; r1q3 Textura asked after she ticked it; brief 'Textura: Mission Bay ... state not yet known'; none of her case's jobs (Alvarado direct, Bayshore NOC 9 Oct) in the brief; adopt no, 0/4 decided",
+  "evidence": [
+   "dump:lien-desk--gina#turn:1",
+   "dump:lien-desk--gina#brief",
+   "dump:lien-desk--gina#judge",
+   "uat/chores/cases/lien-desk--gina.json#facts"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A rerun of lien-desk--gina asks for each job's state and no approved brief contains 'state not yet known'"
+ },
+ {
+  "id": "construction-16",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "lien-desk",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "lien-desk shows $380,000 a year of exposure as value and 25 h manual against its own 35-minute expectation",
+  "expected": "Protected receivables labelled as exposure, not yearly value; manual minutes consistent with the expectation",
+  "got": "value_usd 380000 per year, basis 'Protection, not recovery'; manual_minutes 1500 vs expectation.minutes 35 ('right in a day'); 442x shown; no times_per_year",
+  "evidence": [
+   "playbooks/lien-desk/playbook.json#economics",
+   "playbooks/lien-desk/playbook.json#expectation",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json#lien-desk"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "lien-desk economics kind 'protected', manual_minutes within 2x of expectation.minutes, times_per_year set"
+ },
+ {
+  "id": "construction-17",
+  "journey": "J7",
+  "character": "gina",
+  "playbook_id": "lien-desk",
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Brief applies 'weekend deadlines move to the business day before' to both states",
+  "expected": "Weekend rule stated per state with cites (TX Prop. Code 53.003 forward; CA CCP 12a forward, earlier filing as advice)",
+  "got": "Both lien briefs: 'Move weekend deadlines to the business day before'; the truth's own TX items move forward (RR-DC Sun 10-18 -> Mon 10-19)",
+  "evidence": [
+   "dump:lien-desk--gina#brief",
+   "dump:lien-desk--ray#brief",
+   "playbooks/lien-desk/truth.json#send_retainage_notice",
+   "playbooks/lien-desk/world.json (rules page: 'California deadline ... business day before')"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Lien brief and rules page state the weekend rule per state; CA law point marked offline knowledge pending counsel check"
+ },
+ {
+  "id": "construction-18",
+  "journey": "J8",
+  "character": "gina",
+  "playbook_id": "certified-payroll",
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Back pay weighted at 0.5% of the value: missing 2 of 3 adjustment checks still shows 99.6% found",
+  "expected": "A missed restitution (a precondition of a true Statement of Compliance) visibly fails the run",
+  "got": "Restitution $417.95 of $81,417.95; Gina rehearsal 7 of 10 cards, found $81,056 (missing E-21 $246 + E-14 $115.95 = $361.95)",
+  "evidence": [
+   "playbooks/certified-payroll/truth.json#pay_restitution",
+   "dump:certified-payroll--gina#rehearsal"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Scorer marks a run short when any restitution target is missed, regardless of $ share"
+ },
+ {
+  "id": "construction-19",
+  "journey": "J7",
+  "character": "gina",
+  "playbook_id": "certified-payroll",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "certified-payroll models federal DBRA only; no state prevailing wage, apprentice ratio or fringe annualization",
+  "expected": "Rules that ask which regime governs, check apprentice ratio, annualize plan credit across private hours",
+  "got": "Caveat and steps are 29 CFR 5.5/CWHSSA only; Gina's job is a county job in CA/TX and Luis works a private job (annualization case)",
+  "evidence": [
+   "playbooks/certified-payroll/playbook.json#caveat",
+   "playbooks/certified-payroll/playbook.json#traps",
+   "uat/chores/cases/certified-payroll--gina.json#facts"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Playbook has a 'which wage law' question and traps for apprentice ratio and fringe annualization (offline knowledge: CA Labor Code 1776, DOL annualization principle)"
+ },
+ {
+  "id": "construction-20",
+  "journey": "J7",
+  "character": "ray",
+  "playbook_id": "change-order-notices",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Defaults to A201's 21 days and silently skips late items",
+  "expected": "Window read from the subcontract (often shorter than the GC's); late items drafted as notice with reservation and flagged",
+  "got": "Default 21 days offered; trap 'past their 21 days' = leave alone though the caveat says waiver varies by state",
+  "evidence": [
+   "playbooks/change-order-notices/playbook.json#traps",
+   "playbooks/change-order-notices/playbook.json#caveat",
+   "uat/chores/cases/change-order-notices--ray.json#facts"
+  ],
+  "code_check": "present-broken",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Late-item trap becomes 'flag with a reservation draft'; the subcontract window is a required read"
+ },
+ {
+  "id": "construction-21",
+  "journey": "J7",
+  "character": "gina",
+  "playbook_id": "closeout-package",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Promise overstates retainage release; 'final waivers' shown without 'conditional'",
+  "expected": "'Conditional final waivers' on page and brief; promise says it clears the paperwork reason for holding retainage",
+  "got": "Truth uses a conditional final (DS-11) but brief/page say 'final lien waivers'; promise 'so the GC releases the retainage'",
+  "evidence": [
+   "playbooks/closeout-package/playbook.json#brief",
+   "playbooks/closeout-package/truth.json#DS-11",
+   "dump:closeout-package--gina#brief"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Brief text contains 'conditional final'; promise no longer states release as the outcome"
+ },
+ {
+  "id": "construction-22",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "inspection-scheduling",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "polish",
+  "impact": {
+   "frequency": "med",
+   "reachability": "med",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Cites IBC 110 only for townhomes and trade inspections; value double-counts minutes",
+  "expected": "IRC R109 for townhouses, IPC/IMC 107 for trade inspections; request cutoff times; value excludes hours shown as time saved",
+  "got": "Caveat/sources IBC 110 only; value $8,000 = 75 h x $50 + unsourced failures",
+  "evidence": [
+   "playbooks/inspection-scheduling/playbook.json#caveat",
+   "playbooks/inspection-scheduling/playbook.json#economics"
+  ],
+  "code_check": "present-broken",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Rules cite IRC/IPC/IMC where they apply (offline knowledge)"
+ },
+ {
+  "id": "construction-23",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "stormwater-permit-log",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "EPA CGP rules applied to sites likely under state permits (TX 0.5 in trigger, CA QPE)",
+  "expected": "Ask which permit covers the site and load that permit's trigger and deadlines",
+  "got": "Only EPA 2022 CGP; both briefs mark 0.25 in/24 h/7 days '(my guess)' with no source; caveat not shown",
+  "evidence": [
+   "playbooks/stormwater-permit-log/playbook.json#caveat",
+   "dump:stormwater-permit-log--gina#brief",
+   "dump:stormwater-permit-log--ray#brief"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Playbook selects rules by permit (EPA CGP / CA CGP / TXR150000) - offline knowledge, verify against the permits"
+ },
+ {
+  "id": "construction-24",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "sub-insurance-certs",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "high",
+   "reachability": "med",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Checks only GL additional-insured endorsements and limits",
+  "expected": "Also primary/non-contributory, waiver of subrogation, WC/auto limits, umbrella follow-form, endorsement edition (CG 20 10 07 04 lacks completed ops)",
+  "got": "Traps cover AI endorsements, limits, expiry, names/address only; caveat mentions editions but no trap",
+  "evidence": [
+   "playbooks/sub-insurance-certs/playbook.json#traps",
+   "playbooks/sub-insurance-certs/playbook.json#caveat"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Truth includes at least edition and waiver-of-subrogation traps"
+ },
+ {
+  "id": "construction-25",
+  "journey": "J8",
+  "character": "ray",
+  "playbook_id": "change-order-notices",
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "A 0-card shaped rehearsal cannot tell the person whether 0 was right",
+  "expected": "When shaped, the page says what she checked and why nothing qualified",
+  "got": "0 of 5 cards, shaped; ASI 11 (16 Oct) sits on day 7 of a 7-day window on 23 Oct",
+  "evidence": [
+   "dump:change-order-notices--ray#rehearsal",
+   "uat/chores/cases/change-order-notices--ray.json#facts",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:102-112"
+  ],
+  "code_check": "n-a",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "A zero-card rehearsal lists each candidate item and the reason it was not acted on"
+ },
+ {
+  "id": "construction-26",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "Caveat ('invented', 'not legal advice') parsed and rendered nowhere",
+  "expected": "Each chore page shows its caveat near the rules and figures",
+  "got": "caveat parsed at lib/playbooks.ts:522; no chores view renders it; numbers.json caveat_rendered=false for all 7",
+  "evidence": [
+   "apps/desktop/src/lib/playbooks.ts:522",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Topic page renders playbook.caveat; test asserts it for a construction playbook"
+ },
+ {
+  "id": "construction-27",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Judge lead: 'Exceeds' verdict on n=1 shown on the page",
+  "expected": "-",
+  "got": "Verdict word/sentence/runs/sample are computed but rendered nowhere in scenes/chores; judges read them from numbers.json",
+  "evidence": [
+   "apps/desktop/src/modules/playbooks/model.ts:112-152",
+   "dump:inspection-scheduling--ray#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n-a (refuted; note the opposite gap: the n=1 hedge is never shown either)"
+ },
+ {
+  "id": "construction-28",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Judge lead: rehearsal not labelled as invented data",
+  "expected": "-",
+  "got": "Label 'Rehearsal on invented data shaped like your case - nothing was sent' and 'found in the rehearsal, on invented data' are rendered",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:40",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:117"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n-a (refuted; see construction-04 for what is actually wrong)"
+ },
+ {
+  "id": "construction-29",
+  "journey": "J7",
+  "character": "ray",
+  "playbook_id": "lien-desk",
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "completion",
+  "title": "Judge lead: never asked where the contracts are; no change-order notices",
+  "expected": "-",
+  "got": "Card r1q1 asks 'Where do you keep your contracts...'; change-order notices are a separate chore (change-order-notices)",
+  "evidence": [
+   "dump:lien-desk--ray#turn:1"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n-a (refuted)"
+ },
+ {
+  "id": "construction-30",
+  "journey": "J7",
+  "character": "gina",
+  "playbook_id": "certified-payroll",
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "completion",
+  "title": "Judge lead: brief hedges on Luis's back pay",
+  "expected": "-",
+  "got": "The hedge is right: her case says the determination calls compactor and saw work laborer's work (a trap), so no back pay is owed",
+  "evidence": [
+   "dump:certified-payroll--gina#brief",
+   "uat/chores/cases/certified-payroll--gina.json#facts"
+  ],
+  "code_check": "n-a",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n-a (refuted)"
+ },
+ {
+  "id": "construction-31",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Approval before every act stated plainly in every brief; setup inside one sitting",
+  "expected": "-",
+  "got": "14/14 briefs state ask-first gates; Ray c4 7/7 and c6 6/7; all onboardings ended clear in 1-2 rounds",
+  "evidence": [
+   "dump:*#brief",
+   "dump:*--ray#judge",
+   "apps/desktop/src/scenes/chores/flow.tsx:105-112"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep: rerun keeps c4 and c6 pass rates"
+ },
+ {
+  "id": "construction-32",
+  "journey": "J8",
+  "character": "ray",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Shaped rehearsal claims no dollar figure when the answer key no longer fits",
+  "expected": "-",
+  "got": "lien-desk and change-order-notices Ray judges credited 'no dollar figure claimed'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:102-112",
+   "src/athena/adopt/showcase.py:575-584"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep"
+ },
+ {
+  "id": "construction-33",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "senior-quality",
+  "title": "Strong field rules in lien-desk, closeout and change-order worlds",
+  "expected": "-",
+  "got": "lien-desk: CC 8204 20 days, NOC 30 days, 8136/8138, Exceptions, TX 53.284; closeout conditional final; change-order 14-day concealed conditions",
+  "evidence": [
+   "playbooks/lien-desk/truth.json",
+   "playbooks/closeout-package/truth.json#DS-11",
+   "playbooks/change-order-notices/world.json (3.7.4)"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Keep"
+ }
+]

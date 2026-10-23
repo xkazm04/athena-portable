@@ -1,0 +1,1138 @@
+[
+ {
+  "id": "consumer-01",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Every money figure on catalogue and topic is the author's estimate for an invented persona, with no 'estimate' label and no basis",
+  "expected": "Each value figure says 'estimate by the playbook's author' with its one-line basis and is plausible for the person's case",
+  "got": "Value tile '$500 per episode, for the persona', catalogue value and 'Worth $X ... for <persona>' with no basis; economics.basis is never parsed and caveat is parsed but rendered nowhere; vs Characters' own cases: baggage $500 vs Bev ~$207.75, eu261 $1,300 vs ~EUR 800, eitc $3,000 vs ~$3,449 (Aisha) / ~$7,892 (Bev)",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:189-191",
+   "apps/desktop/src/scenes/chores/topic.tsx:246",
+   "apps/desktop/src/scenes/chores/catalogue.tsx:121-134",
+   "apps/desktop/src/lib/playbooks.ts:43-54",
+   "apps/desktop/src/lib/playbooks.ts:495-505",
+   "apps/desktop/src/lib/playbooks.ts:522",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json (basis_rendered=false, caveat_rendered=false x11)",
+   "dump:baggage-delay-claims--aisha#judge",
+   "dump:eitc-claim--bev#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Every rendered value figure has an adjacent source label ('author's estimate' + basis, or 'measured on invented data'); a test asserts basis text is parsed and rendered for all consumer playbooks"
+ },
+ {
+  "id": "consumer-02",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "Two 'worth' dollar figures on one topic page disagree with no explanation (Value tile vs 'Filed on the bench')",
+  "expected": "One headline worth figure, or both labelled as different quantities (estimate per episode vs measured on an invented case)",
+  "got": "10 of 11 consumer chores show different numbers: baggage $500 vs $203, eu261 $1,300 vs $5,445, unclaimed $400 vs $1,016; only credit-report agrees",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:187-191",
+   "apps/desktop/src/scenes/chores/flow.tsx:120-124",
+   "apps/desktop/src/scenes/chores/model.ts:127-131",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json world_ratio"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "On every consumer topic page the flow result and Value tile carry distinct labels naming their source, or a single reconciled figure is shown"
+ },
+ {
+  "id": "consumer-03",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "eitc-claim",
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Bench per-act weights are rendered as dollars 'Filed on the bench' and summed into the catalogue's 'found on the bench'",
+  "expected": "Weighted exposure units are never shown as money; only recovered dollars are",
+  "got": "eitc 'Filed on the bench $4,000' = 4 x $1,000 weight ('an exposure unit and not money recovered'); credit-report $1,000 = 8 x $125; data-broker $32 = 5 x $6.45 while its Value says $0",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:129",
+   "apps/desktop/src/scenes/chores/model.ts:105",
+   "apps/desktop/src/modules/playbooks/model.ts:229",
+   "playbooks/eitc-claim/playbook.json economics.basis",
+   "playbooks/credit-report-disputes/playbook.json economics.basis",
+   "playbooks/data-broker-deletion/playbook.json economics.basis"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Playbooks whose truth values are weights carry a flag; the flow shows 'N of N acts' instead of $ and totalsLine excludes them"
+ },
+ {
+  "id": "consumer-04",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "time-saved",
+  "title": "'N x faster' leaves out the person's own review time (computed but not rendered) and the onboarding conversation",
+  "expected": "Time saved counts the person's review and setup, says the hand minutes are an estimate, and says it is one bench run",
+  "got": "Shown 35-92x; with review 18-47x (baggage 63x->22x, travel 92x->32x); beforeAfterOf builds 'your review N min' but topic.tsx renders only band.ratio",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:149-167",
+   "apps/desktop/src/scenes/chores/topic.tsx:193-203",
+   "apps/desktop/src/lib/playbooks.ts:591-595",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json speedup_with_review"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Topic shows athena minutes including your_time_s and the line 'your review N min'; ratio computed on (wall + review)"
+ },
+ {
+  "id": "consumer-05",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "The topic hero tells an invented persona's story with nothing on the hero saying it is invented",
+  "expected": "Hero says 'An example, invented for testing' before the story; the caveat is reachable",
+  "got": "Judges in 18 of 22 pairs read the page as 'about someone else' (Boston vet tech, San Diego office manager); only the gallery caption says 'invented portal world'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:157-164",
+   "apps/desktop/src/scenes/chores/topic.tsx:220",
+   "apps/desktop/src/lib/playbooks.ts:522",
+   "dump:eitc-claim--aisha#judge",
+   "dump:unclaimed-property-sweep--bev#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Hero shows an 'Example case (invented)' label above p.brief and a disclosure that renders playbook.caveat"
+ },
+ {
+  "id": "consumer-06",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "Internal vocabulary on every chores screen: catalogue 4, topic 6-7, practice run 5 words",
+  "expected": "No rubric-list word unexplained on screens a home user reads",
+  "got": "Catalogue: benched, exceed the bar, bench, edge ('Best edge'); topic: persona, bench, trap, world, turn, brief (+claim in internal sense on 4 chores); showcase: rehearsal, world, card, turn, brief. Bev C5 fail 10/10, Walt C4 fail",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:104-105",
+   "apps/desktop/src/scenes/chores/catalogue.tsx:38",
+   "apps/desktop/src/scenes/chores/topic.tsx:191",
+   "apps/desktop/src/scenes/chores/topic.tsx:205-207",
+   "apps/desktop/src/scenes/chores/topic.tsx:286",
+   "apps/desktop/src/scenes/chores/flow.tsx:118-121",
+   "apps/desktop/src/scenes/chores/model.ts:130",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:97-111",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:135"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A copy test fails if any rubric jargon word renders on catalogue/topic/showcase for a home-audience chore without an inline gloss"
+ },
+ {
+  "id": "consumer-07",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "First-round answer options are the playbook's invented brands, which no real person uses",
+  "expected": "Options are generic ('Gmail / Outlook / Yahoo / something else') or the person's own apps",
+  "got": "19 of 22 cases use at least one other portal; options offered Postwren, Cardhollow, Tripcairn, Aerolark, Streamquill; asides in 13 pairs ('I had to pick around them', 'made me nervous I was doing it wrong')",
+  "evidence": [
+   "src/athena/adopt/prompts.py:58-60",
+   "dump:baggage-delay-claims--bev#turn:1",
+   "dump:subscription-audit--bev#turn:1",
+   "dump:travel-credit-refunds--bev#turn:1",
+   "dump:eu261-flight-compensation--aisha#turn:1"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Portal questions offer common real providers plus 'other'; invented bench names never appear as options in a live adopt"
+ },
+ {
+  "id": "consumer-08",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "Rules the playbook researched and sourced are labelled '(my guess)' in the brief, and so are facts the person typed",
+  "expected": "Statutory facts show their source ('Montreal Art. 31: 21 days after delivery'); the person's own answers read as confirmed",
+  "got": "49 '(my guess)' lines across 22 briefs (21-day complaint, 3h/6h thresholds, 30 days, 7/10 years); reg-e-bev 'told the bank 3 October (my guess)' though she said it",
+  "evidence": [
+   "src/athena/adopt/prompts.py:97-98",
+   "src/athena/adopt/loop.py:467",
+   "src/athena/adopt/loop.py:479-485",
+   "dump:baggage-delay-claims--bev#brief",
+   "dump:reg-e-fraud-claims--bev#brief",
+   "dump:first-time-abate--gina#brief"
+  ],
+  "code_check": "by-design",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A new slot status 'from the rule' renders with its citation, not '(my guess)'; answers the person typed are confirmed"
+ },
+ {
+  "id": "consumer-09",
+  "journey": "J7",
+  "character": "aisha",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "missing-feature",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "missing",
+  "title": "'What do I get back and when' is never answered, even where the case makes it computable",
+  "expected": "The brief states an estimate for this case with its basis and an expected wait",
+  "got": "Aisha asked in all 10 pairs; no brief gave a figure or timeline; baggage brief promised 'an exact total, not an up to' and gave none; computable: eitc ~$3,449, eu261 2 x EUR 400, class $117",
+  "evidence": [
+   "dump:baggage-delay-claims--aisha#brief",
+   "dump:eitc-claim--aisha#judge",
+   "dump:eu261-flight-compensation--aisha#judge",
+   "uat/chores/cases/eitc-claim--aisha.json",
+   "uat/chores/cases/class-action-claims--aisha.json"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Each brief has an 'Expected for you' line: amount or range from her facts, labelled estimate, plus typical response time"
+ },
+ {
+  "id": "consumer-10",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "A dollar figure appears in the practice run only when the world was NOT shaped like the case, yet it is labelled 'shaped like your case'",
+  "expected": "A $ figure from the unmodified persona world is labelled 'the example's case, not yours'",
+  "got": "found_usd is set only when the shape edited no row and kept the date; shown in 8/22 pairs: eu261 $5,445 (family of four) vs ~EUR 800 for Aisha and Bev; subscription-bev $613.50 vs ~$426; unclaimed-bev $1,016.43 vs $940.75; class-aisha $158 vs $117",
+  "evidence": [
+   "src/athena/adopt/showcase.py:24-27",
+   "src/athena/adopt/showcase.py:575-584",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:38-41",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:113-118",
+   "dump:eu261-flight-compensation--bev#rehearsal",
+   "uat/chores/cases/eu261-flight-compensation--bev.json"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "When found_usd is non-null the label says 'on the example's invented case (not shaped to yours)'"
+ },
+ {
+  "id": "consumer-11",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "The 'shaped' practice-run result gives a card count and 'answer key ... rows' that nobody can check",
+  "expected": "A plain summary: the letters she would send, to whom, for how much, by when, and what she left alone and why",
+  "got": "14 of 22 pairs: 'N cards proposed, against M in the recorded run. Your case changed rows the answer key was written for'; Aisha C6 null 10/10; the turn Player exists but there is no summary",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:102-112",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:121-124",
+   "dump:credit-report-disputes--aisha#rehearsal"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Showcase renders a list of proposed acts (company, amount, rule, deadline) above the player"
+ },
+ {
+  "id": "consumer-12",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Judge lead 'Exceeds (n=1) on the page' refuted; the single-run sample is computed but shown nowhere",
+  "expected": "Next to 'N x faster' the page says 'one run so far'",
+  "got": "verdict.label/sentence/sample are unused in scenes/chores; judges saw numbers.json, not the UI",
+  "evidence": [
+   "apps/desktop/src/modules/playbooks/model.ts:112-152",
+   "dump:credit-report-disputes--bev#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n=1 shown beside the time and value figures"
+ },
+ {
+  "id": "consumer-13",
+  "journey": "J7",
+  "character": "aisha",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "med",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "Lead 'topic page never says what she asks first' refuted: gate diamonds render it, but each reason is hover-only",
+  "expected": "Each gate's reason is visible as text on touch devices",
+  "got": "flow.tsx renders 'Athena asks you first <label>' per gate; the why is only a title attribute; Aisha is phone-first",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/flow.tsx:106-112",
+   "dump:baggage-delay-claims--aisha#judge"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "Gate reason rendered as visible text under the label"
+ },
+ {
+  "id": "consumer-14",
+  "journey": "J7",
+  "character": "bev",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "med",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "Back and close exist, but no plain 'you can stop at any point; nothing leaves without your yes' before starting",
+  "expected": "One sentence on topic and studio head stating stop/undo and approval",
+  "got": "Crumb 'All playbooks', 'Close', 'Leave anyway?' and post-approval 'nothing was sent' exist; Bev C2 fail 6/10, null 4/10",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:147-149",
+   "apps/desktop/src/scenes/chores/adopt/studio.tsx:132-145",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:40",
+   "dump:reg-e-fraud-claims--bev#judge"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Studio head carries the stop/approval sentence; L2 checks Bev can find it"
+ },
+ {
+  "id": "consumer-15",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "daemon",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "Facts from the playbook's persona leak into questions and briefs",
+  "expected": "Questions and briefs use only the person's facts once they have named their own",
+  "got": "'your son' to pregnant Aisha; 'which of your two partnerships' to Walt; 'Flights between Dublin and Lisbon' and '2 hour 10 minute' delay in Bev's travel brief; Gina brief 'two partnerships (my guess)'",
+  "evidence": [
+   "src/athena/adopt/prompts.py:63-64",
+   "dump:subscription-audit--aisha#turn:2",
+   "dump:first-time-abate--walt#turn:2",
+   "dump:travel-credit-refunds--bev#brief",
+   "dump:first-time-abate--gina#brief"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A check rejects briefs/questions naming persona-only entities (from playbook persona/promise) absent from the person's answers"
+ },
+ {
+  "id": "consumer-16",
+  "journey": "J7",
+  "character": "bev",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "The person's own questions go unanswered, and sensitive questions come without need or reason",
+  "expected": "A typed question is answered before the next card; sensitive questions only when the case needs them, with a reason",
+  "got": "eitc-bev 'why do you need where IRS letters arrive' and 'what does Form 8332 do' unanswered; unclaimed-bev 'what will you open' unanswered; travel-bev asked about disability; credit-aisha asked for card digits with no reason",
+  "evidence": [
+   "dump:eitc-claim--bev#turn:1",
+   "dump:eitc-claim--bev#turn:2",
+   "dump:unclaimed-property-sweep--bev#turn:1",
+   "dump:travel-credit-refunds--bev#turn:2",
+   "dump:credit-report-disputes--aisha#turn:2"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Interview prompt answers any question in the person's text first; LC detector shows 0 unanswered questions"
+ },
+ {
+  "id": "consumer-17",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "subscription-audit",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Chores built on one state's law are offered to everyone with no residency gate",
+  "expected": "A residency precondition is asked first, and the rule set adapts or the chore says it does not apply",
+  "got": "data-broker = California Delete Act/DROP (Bev in Virginia, brief still adds her maiden name to the California request); subscription = California Automatic Renewal Law (Aisha AZ, Bev VA); unclaimed = RUUPA as IL/VT enacted it, run for OH/VA (offline: neither enacted RUUPA)",
+  "evidence": [
+   "playbooks/data-broker-deletion/playbook.json chore",
+   "playbooks/subscription-audit/playbook.json chore",
+   "playbooks/unclaimed-property-sweep/playbook.json caveat",
+   "dump:data-broker-deletion--bev#brief",
+   "dump:unclaimed-property-sweep--bev#brief"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Each state-law playbook declares a jurisdiction; adopt asks residency and the brief states which law applies"
+ },
+ {
+  "id": "consumer-18",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "data-broker-deletion",
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "data-broker shows '$0 a year' and 'Worth $0 a year', honest but it reads as worthless",
+  "expected": "Value in its real unit: ~12 hours a year, or a $129/yr removal service avoided",
+  "got": "Catalogue and topic show $0; basis has 180 min x 4 and DeleteMe $129",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:84-87",
+   "apps/desktop/src/scenes/chores/topic.tsx:246",
+   "playbooks/data-broker-deletion/playbook.json economics"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A playbook with value_usd 0 renders its time/price-avoided value instead of $0"
+ },
+ {
+  "id": "consumer-19",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "catalogue",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "med",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "'Most value' sort compares per-episode values raw against yearly ones",
+  "expected": "Values compared on a stated common unit",
+  "got": "5 of 11 consumer chores are per episode; eu261 $1,300/episode ranks above credit $1,000/yr",
+  "evidence": [
+   "apps/desktop/src/modules/playbooks/model.ts:191-200",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json quirks"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Sort uses value x times_per_year or separates episode chores"
+ },
+ {
+  "id": "consumer-20",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Scouts' hypothesis 'Value tile annualises while Worth line does not' refuted for consumer",
+  "expected": "Tile and line agree",
+  "got": "All 11 use per=year (6) or episode (5); valueCell changes neither; PER gives 'per episode'; 11/11 agree",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:84-87",
+   "apps/desktop/src/modules/playbooks/model.ts:104-110",
+   "apps/desktop/src/modules/playbooks/model.ts:215"
+  ],
+  "code_check": "n-a",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n/a"
+ },
+ {
+  "id": "consumer-21",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "credit-report-disputes",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Identity-theft account handled only as a 1681i dispute; no 1681c-2 block, fraud alert or freeze",
+  "expected": "For an account she never opened: an identity-theft block (bureau must block within 4 business days of an identity theft report) plus a fraud alert/freeze",
+  "got": "Both Characters had such an account (Harbor Crest Visa, Brightmart); the playbook cites only 1681i, 1681s-2, 1681c (offline knowledge of 1681c-2)",
+  "evidence": [
+   "playbooks/credit-report-disputes/playbook.json chore",
+   "dump:credit-report-disputes--aisha#brief",
+   "dump:credit-report-disputes--bev#brief"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Playbook adds a block_identity_theft target with 1681c-2 cited in sources"
+ },
+ {
+  "id": "consumer-22",
+  "journey": "J7",
+  "character": "aisha",
+  "playbook_id": "credit-report-disputes",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "No warning that obsolete items can still appear on a mortgage report (1681c(b))",
+  "expected": "Brief warns that on credit of $150,000 or more, 'too old' items may still be reported",
+  "got": "Aisha's case goal: corrected reports before a spring mortgage pre-approval; the playbook basis knows 1681c(b) but neither the steps nor the brief say it",
+  "evidence": [
+   "uat/chores/cases/credit-report-disputes--aisha.json",
+   "playbooks/credit-report-disputes/playbook.json economics.basis",
+   "dump:credit-report-disputes--aisha#brief"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A brief for a case naming a mortgage/large loan carries the 1681c(b) caveat"
+ },
+ {
+  "id": "consumer-23",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "credit-report-disputes",
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "med",
+   "trust_erosion": "low"
+  },
+  "dimension": "senior-quality",
+  "title": "'Paid medical collections must come off (my guess)' states as law what is bureau policy",
+  "expected": "Dispute rests on inaccuracy or bureau policy (paid medical, or under $500), not on a statute",
+  "got": "No FCRA section requires it; the CFPB 2025 medical-debt rule was vacated (offline knowledge)",
+  "evidence": [
+   "dump:credit-report-disputes--aisha#brief",
+   "dump:credit-report-disputes--bev#brief"
+  ],
+  "code_check": "n-a",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Playbook names the policy basis for medical-collection disputes"
+ },
+ {
+  "id": "consumer-24",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "eitc-claim",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "missing-feature",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "EITC chore never estimates the credit, though the IRS table makes it deterministic",
+  "expected": "An 'about $X, the IRS decides' estimate from the W-2s and number of children",
+  "got": "Aisha MFJ $52,300, 3 kids: ~$3,449; Bev $31,200: ~$7,892 (phase-out from offline Rev. Proc. 2024-40 parameters: start $30,470, rate 21.06%); page shows $3,000/yr and a $4,000 weight",
+  "evidence": [
+   "uat/chores/cases/eitc-claim--aisha.json",
+   "uat/chores/cases/eitc-claim--bev.json",
+   "playbooks/eitc-claim/playbook.json economics.basis"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The brief shows a computed estimate with its inputs"
+ },
+ {
+  "id": "consumer-25",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "eitc-claim",
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Past the 15 Oct extension the brief says 'filed late' with no next step; the judge lead 'contradicts my extension' is refuted",
+  "expected": "Brief says: still claim it; no failure-to-file penalty when a refund is due; the refund window is 3 years",
+  "got": "Both briefs: 'past its 15 October due date, so it will be filed late' / 'that date has passed', with no remedy; run date 2026-10-23 (offline: IRC 6511, 6651(a)(1))",
+  "evidence": [
+   "dump:eitc-claim--aisha#brief",
+   "dump:eitc-claim--bev#brief",
+   "playbooks/eitc-claim/playbook.json promise"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Playbook has a late-filing branch in steps/rules"
+ },
+ {
+  "id": "consumer-26",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "eitc-claim",
+  "surface": "catalogue",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "Catalogue titles bake in the persona ('...for three children', 'Delayed family flights')",
+  "expected": "Generic titles",
+  "got": "short_title is persona-specific for eitc-claim and eu261",
+  "evidence": [
+   "playbooks/eitc-claim/playbook.json short_title",
+   "playbooks/eu261-flight-compensation/playbook.json short_title",
+   "apps/desktop/src/scenes/chores/catalogue.tsx:84-90"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Titles name the job, not the example family"
+ },
+ {
+  "id": "consumer-27",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "eu261-flight-compensation",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "med",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "The EU261 rule omits Art. 7(2) halving and claim time limits; amounts shown in USD at a fixed $1.10",
+  "expected": "Rule includes the Art. 7(2) reductions; amounts in EUR with a dated conversion",
+  "got": "Chore text: 'a fixed 250, 400 or 600 euros by distance'; basis uses $1.10/EUR (offline knowledge of Art. 7(2), Sturgeon)",
+  "evidence": [
+   "playbooks/eu261-flight-compensation/playbook.json chore",
+   "playbooks/eu261-flight-compensation/playbook.json economics.basis"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Playbook rule lists 7(2) and the world holds one reduced case"
+ },
+ {
+  "id": "consumer-28",
+  "journey": "J7",
+  "character": "bev",
+  "playbook_id": "reg-e-fraud-claims",
+  "surface": "playbook-data",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "A self-sent scam payment is 'left alone' with no word on where to report it; the judge lead on the code-tricked top-up is refuted",
+  "expected": "Brief tells Bev Regulation E does not cover it and names her avenues (bank fraud report, FTC/IC3, elder-fraud)",
+  "got": "Bev's $600 grandparent-scam payment is only listed as left alone; the code-tricked top-up is correctly unauthorised under Supp. I 2(m)-3 (offline for the avenues)",
+  "evidence": [
+   "uat/chores/cases/reg-e-fraud-claims--bev.json",
+   "dump:reg-e-fraud-claims--bev#brief",
+   "dump:reg-e-fraud-claims--aisha#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Left-alone items carry a 'what you can do instead' line"
+ },
+ {
+  "id": "consumer-29",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "reg-e-fraud-claims",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "senior-quality",
+  "title": "Missing the Reg E 1005.11(c)(3) extended timelines (new account, POS, foreign)",
+  "expected": "Rule covers the 20-business-day and 90-day variants",
+  "got": "Basis cites only 10 business days / 45 days (offline knowledge)",
+  "evidence": [
+   "playbooks/reg-e-fraud-claims/playbook.json economics.basis"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Rule text lists the variants"
+ },
+ {
+  "id": "consumer-30",
+  "journey": "J7",
+  "character": "walt",
+  "playbook_id": "first-time-abate",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Late partnership return goes straight to first-time abate; Rev. Proc. 84-35 small-partnership relief would keep the one waiver",
+  "expected": "Ask 84-35 relief first for a partnership with 10 or fewer partners",
+  "got": "Target asks FTA on the late 1065 (offline knowledge of Rev. Proc. 84-35)",
+  "evidence": [
+   "playbooks/first-time-abate/playbook.json chore",
+   "uat/chores/cases/first-time-abate--walt.json"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Playbook adds an 84-35 step ahead of FTA for small partnerships"
+ },
+ {
+  "id": "consumer-31",
+  "journey": "J7",
+  "character": "bev",
+  "playbook_id": "unclaimed-property-sweep",
+  "surface": "playbook-data",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Late spouse's listing only 'left alone'; no heir/estate route",
+  "expected": "Brief says how a surviving spouse claims as heir or estate",
+  "got": "Walter J Shaw $389 in Virginia: she is his widow; the playbook trap treats a dead person's property as never hers to act on",
+  "evidence": [
+   "uat/chores/cases/unclaimed-property-sweep--bev.json",
+   "playbooks/unclaimed-property-sweep/playbook.json traps"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Playbook adds an heir-claim branch with the state's documentation"
+ },
+ {
+  "id": "consumer-32",
+  "journey": "J7",
+  "character": "bev",
+  "playbook_id": "subscription-audit",
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "completion",
+  "title": "Bev's brief captured 1 of her 4 dead plans",
+  "expected": "Brief covers every unused plan in her case: duplicate, unreminded trial, unnoticed price rise, unused storage",
+  "got": "Only the duplicate Netflix is in 'What I'll claim'; the meditation trial ($5.99), Walking Club ($7.99->$10.99) and unused 200 GB storage are missing; nothing asked about add-ons or storage",
+  "evidence": [
+   "uat/chores/cases/subscription-audit--bev.json",
+   "dump:subscription-audit--bev#brief"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Interview asks about add-ons, trials and storage tiers when the playbook targets them"
+ },
+ {
+  "id": "consumer-33",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "baggage-delay-claims",
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "The 21-day written-complaint date is arithmetic but shown as '(my guess)' and not flagged urgent",
+  "expected": "'Your written complaint is due 27 October (21 days after delivery, Montreal Art. 31)' at the top",
+  "got": "Aisha 'due by 26 October (my guess)'; Bev '27 October ... (my guess)', 4 days after the run, mid-list",
+  "evidence": [
+   "dump:baggage-delay-claims--aisha#brief",
+   "dump:baggage-delay-claims--bev#brief",
+   "src/athena/adopt/prompts.py:97-98"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Deadline facts derived from a rule render as computed, with the rule, first in the brief"
+ },
+ {
+  "id": "consumer-34",
+  "journey": "J7",
+  "character": "bev",
+  "playbook_id": "data-broker-deletion",
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "For a Virginia resident the brief still adds her maiden name to California's deletion platform",
+  "expected": "Out-of-state: DROP steps dropped, site opt-out forms only",
+  "got": "Brief: 'Add Beverly Anne Tolliver to your Erasepoint request, if you approve' and '45-day deadline binds brokers only for California residents (my guess)'",
+  "evidence": [
+   "dump:data-broker-deletion--bev#brief",
+   "playbooks/data-broker-deletion/playbook.json persona"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Non-CA case gets no add_identifier on DROP"
+ },
+ {
+  "id": "consumer-35",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "senior-quality",
+  "title": "Bench answer keys right in their fields: 11/11 chores at 100% recall, 0 false claims, 0 traps filed",
+  "expected": "kept",
+  "got": "Traps are those a pro sets (card-benefit jacket, opt-out, Toronto purchase, disabled-only connecting airport, Form 8332 not moving the EITC, FTA earliest period)",
+  "evidence": [
+   "playbooks/<consumer x11>/bench.json score"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Protect: a regression test or LC invariant keeps this"
+ },
+ {
+  "id": "consumer-36",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "senior-quality",
+  "title": "Briefs left alone exactly what each case said to leave alone",
+  "expected": "kept",
+  "got": "Moira's cardigan and Bev's wrap, opted-out yogurt and coffee, Delta inbound leg, Dan's and Marcus's plans, cousin Jamal, the Mesa namesake",
+  "evidence": [
+   "dump:baggage-delay-claims--bev#brief",
+   "dump:class-action-claims--aisha#brief",
+   "dump:subscription-audit--aisha#brief"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Protect: a regression test or LC invariant keeps this"
+ },
+ {
+  "id": "consumer-37",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "senior-quality",
+  "title": "Onboarding short with no sensitive numbers",
+  "expected": "kept",
+  "got": "Aisha C5 pass 10/10, Walt C5 pass; 1-3 rounds; no SSN, password or account number asked in 22 pairs",
+  "evidence": [
+   "proving-runs/chores-uat/2026-10-23-chores/pairs/<consumer x22>.json judge C5"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Protect: a regression test or LC invariant keeps this"
+ },
+ {
+  "id": "consumer-38",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "senior-quality",
+  "title": "Ask-first gates stated in every brief and drawn on the topic flow",
+  "expected": "kept",
+  "got": "Bev C1 pass 10/10; flow gate diamonds",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/flow.tsx:106-112",
+   "dump:credit-report-disputes--bev#brief"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Protect: a regression test or LC invariant keeps this"
+ },
+ {
+  "id": "consumer-39",
+  "journey": "J7",
+  "character": "aisha",
+  "playbook_id": "data-broker-deletion",
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "senior-quality",
+  "title": "Athena found the California-residency precondition on her own",
+  "expected": "kept",
+  "got": "Round 3: 'Erasepoint is California's platform... Did you live in California when you sent your request?'",
+  "evidence": [
+   "dump:data-broker-deletion--aisha#turn:3"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Protect: a regression test or LC invariant keeps this"
+ },
+ {
+  "id": "consumer-40",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "senior-quality",
+  "title": "The practice run refuses a dollar figure when the answer key no longer fits, and labels its dollars 'on invented data'",
+  "expected": "kept",
+  "got": "showcase.tsx shaped branch claims no $; found branch says 'on invented data'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:102-118"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Protect: a regression test or LC invariant keeps this"
+ }
+]

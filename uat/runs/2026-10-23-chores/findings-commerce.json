@@ -1,0 +1,976 @@
+[
+ {
+  "id": "commerce-01",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Headline value shown with no source: basis unparsed, sources and caveat parsed but rendered nowhere",
+  "expected": "Every Value figure says it is the author's estimate and shows its basis (and links its sources) on the same screen",
+  "got": "'$8,000 / a year, for the persona' on the topic tile, the catalogue cell and 'Worth $X'; economics.basis absent from the parser; sources and caveat parsed, never read by a view",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:188-192",
+   "apps/desktop/src/scenes/chores/topic.tsx:246",
+   "apps/desktop/src/scenes/chores/catalogue.tsx:121-133",
+   "apps/desktop/src/lib/playbooks.ts:494-503",
+   "apps/desktop/src/lib/playbooks.ts:522",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json (basis_rendered=false, caveat_rendered=false)",
+   "dump:chargeback-representment--hana#judge",
+   "dump:cpg-deductions--reggie#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A grep for basis/caveat/sources under apps/desktop/src/scenes finds a rendering site; the Value tile says 'estimate' and opens its basis with source links"
+ },
+ {
+  "id": "commerce-02",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Authored values are 8x to 110x what the playbooks' own arithmetic gives for a one-person shop",
+  "expected": "A value that fits the stated audience, or a per-unit figure the person can scale to their size",
+  "got": "cpg $60,000/yr vs $547-1,094 at Hana's $45.6k wholesale x 1.2-2.4%; sales-tax $15,000/yr vs ~$197 on her $2,715 Ohio letter; merchant $4,000 vs $472/yr implied by its own $118-per-quarter world; chargeback $8,000 vs ~$1,600/yr total disputed (estimate); fba $5,000 vs $400-1,200 (Hana) / $1,400-4,200 (Reggie)",
+  "evidence": [
+   "playbooks/cpg-deductions/playbook.json economics.basis",
+   "uat/chores/cases/cpg-deductions--hana.json",
+   "uat/chores/cases/sales-tax-exemption-certs--hana.json",
+   "dump:sales-tax-exemption-certs--hana#turn:2",
+   "playbooks/merchant-fee-audit/playbook.json economics.basis",
+   "uat/chores/cases/fba-reimbursements--hana.json",
+   "dump:fba-reimbursements--reggie#turn:2"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Each commerce playbook carries a fit band and a per-unit value; for the hana case cards the shown value is within 3x of the case-derived figure"
+ },
+ {
+  "id": "commerce-03",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "blocker",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "'Found' / 'Filed on the bench' used for sales protected, exposure avoided and invented weights (6 of 11 chores)",
+  "expected": "The verb and label say what the figure is: money recovered vs sales protected vs a weighted estimate",
+  "got": "trademark shows Value $5,000/yr and 'found $45,500 in the rehearsal' (annual sales under registrations); food recall 'found $20,000' = 8 x $2,500 invented weights; organic $75/item; counterfeit and gpsr 90-day listing sales; sales-tax exposure",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:113-119",
+   "apps/desktop/src/scenes/chores/flow.tsx:121-123",
+   "apps/desktop/src/scenes/chores/model.ts:105",
+   "playbooks/trademark-maintenance/playbook.json economics.basis ('protection, not money recovered')",
+   "playbooks/food-recall-trace/truth.json",
+   "dump:trademark-maintenance--reggie#judge"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "A playbook value_kind drives the word: 'found' only for recovered money; the trademark showcase reads 'sales protected $45,500'"
+ },
+ {
+  "id": "commerce-04",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "catalogue",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "trust",
+  "title": "Catalogue totals '$X found on the bench' sums money with non-money values",
+  "expected": "The totals line sums only like quantities, or drops the dollar total",
+  "got": "Commerce contributes $102,136 to the total, of which $88,480 (87%) is sales protected, exposure avoided or weighted acts",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:100-108",
+   "apps/desktop/src/modules/playbooks/model.ts:221-226 (foundUsd sum)",
+   "playbooks/*/bench.json score.value_found_usd"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "totalsLine sums value_found_usd only over value_kind=recovered"
+ },
+ {
+  "id": "commerce-05",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "time-saved",
+  "title": "'N x faster' leaves out the person's review; the built 'your review' line is not wired",
+  "expected": "Time saved counts the person's review and says it was measured on one invented run",
+  "got": "chargeback '2.5 h -> 3 min, 55x faster' (24x with review); organic 145x (42x); sales-tax 69x (22x). beforeAfterOf builds 'your review N min' but topic.tsx renders only the figures and the ratio; the Characters expect 20 / 45 min with the app",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:193-203",
+   "apps/desktop/src/scenes/chores/model.ts:149-167",
+   "apps/desktop/src/lib/playbooks.ts:591-595",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json speedup_with_review",
+   "uat/characters/chores/hana.md (with_app_minutes 20)",
+   "uat/characters/chores/reggie.md (with_app_minutes 45)"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The Time saved tile shows bench + review minutes and its line names 'your review N min, one run on invented data'"
+ },
+ {
+  "id": "commerce-06",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": null,
+  "surface": "daemon",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "The 'is this for a shop my size?' question is never answered",
+  "expected": "Within the first screen or first reply: who the chore is for and what it is worth at her size",
+  "got": "Hana asked in turn 0 of 11/11 conversations; C1 failed 10/11. The interviewer prompt has no rule to answer a direct question; playbooks have no fit field; the persona appears only in the 'Worth $X for ...' sentence",
+  "evidence": [
+   "src/athena/adopt/prompts.py:49-79",
+   "apps/desktop/src/scenes/chores/topic.tsx:246",
+   "dump:chargeback-representment--hana#turn:0",
+   "dump:fba-reimbursements--hana#judge",
+   "dump:merchant-fee-audit--hana#judge"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Re-run the 11 hana pairs: C1 passes in at least 9; the first 'say' line answers the fit question"
+ },
+ {
+  "id": "commerce-07",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "Topic hero shows the example's business as if it were the chore, with no 'example' label",
+  "expected": "The hero says it is an invented example, or leads with what the chore does for anyone",
+  "got": "'A $4M natural-foods snack brand faces...', 'A Vermont outdoor brand keeps twelve...'; the only invented-data note is in the gallery below",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/topic.tsx:160-161",
+   "apps/desktop/src/scenes/chores/topic.tsx:220",
+   "dump:cpg-deductions--hana#judge",
+   "dump:trademark-maintenance--hana#judge",
+   "dump:counterfeit-takedowns--reggie#judge",
+   "dump:organic-annual-update--hana#judge"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The hero brief is prefixed 'Example (invented):'; judges no longer report 'describes a different business'"
+ },
+ {
+  "id": "commerce-08",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "daemon",
+  "cert_level": "LC",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "effort",
+  "title": "First question card offers the playbook's invented apps as answers",
+  "expected": "Options name real apps, or none; invented names are never offered",
+  "got": "18 of 22 first cards offered Paycurrent, Binderwell, Postwren, Storeline, Markwick...; ~22 of 66 round-1 answers had to type a correction",
+  "evidence": [
+   "src/athena/adopt/prompts.py:58-60",
+   "src/athena/adopt/prompts.py:213-224",
+   "dump:chargeback-representment--hana#turn:1",
+   "dump:trademark-maintenance--reggie#turn:1",
+   "dump:sales-tax-exemption-certs--reggie#turn:1"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "playbook_block marks the apps as invented and the interviewer rule forbids offering them; a re-run shows 0 invented names in options"
+ },
+ {
+  "id": "commerce-09",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "high",
+   "reachability": "med",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "Approved briefs carry '(my guess)' lines with no plan for checking them",
+  "expected": "Each guess says how and when it is checked; public rules and fees are researched, not guessed",
+  "got": "Every brief has 2-5 '(my guess)' lines; trademark-reggie: 'Current USPTO per-class fees ... (my guess)' in a sworn filing, while the playbook basis cites 37 CFR 2.6(a) exactly",
+  "evidence": [
+   "src/athena/adopt/loop.py:467-485",
+   "apps/desktop/src/scenes/chores/adopt/casepanel.tsx:272-274",
+   "dump:trademark-maintenance--reggie#brief",
+   "dump:chargeback-representment--reggie#brief"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "No brief marks a fee, deadline or rule published by law as '(my guess)'; each remaining guess carries 'checked at <step>'"
+ },
+ {
+  "id": "commerce-10",
+  "journey": "J8",
+  "character": "reggie",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "Practice result has no itemised list that adds up to its total",
+  "expected": "Under the found figure: one line per card (item, what it was checked against, decision, amount) and a total",
+  "got": "40px total; lines exist only as per-turn cards in a player that auto-advances every 2.8 s. The judges' 'no lines at all' is partly refuted (present-but-missed)",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:113-126",
+   "apps/desktop/src/scenes/chores/turn.tsx (cards list)",
+   "apps/desktop/src/scenes/chores/replay.tsx:35",
+   "dump:cpg-deductions--reggie#judge",
+   "dump:gpsr-listings--reggie#judge"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The showcase renders a static list of cards whose amounts sum to the shown figure; Reggie C2 and C5 become evaluable"
+ },
+ {
+  "id": "commerce-11a",
+  "journey": "J8",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "high",
+   "reachability": "med",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Judge lead: rehearsal figure not labelled as invented data",
+  "expected": "Practice figures labelled as invented",
+  "got": "The UI does label it: 'Rehearsal on invented data shaped like your case — nothing was sent' and 'found in the rehearsal, on invented data'. The judge saw a summary line, not the UI. Residual: the label is 14px muted grey beside a 40px figure",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:39-40",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:117",
+   "apps/desktop/src/scenes/chores/adopt/adopt.css:104-108",
+   "apps/desktop/src/scenes/chores/adopt/adopt.css:880-884",
+   "dump:counterfeit-takedowns--reggie#judge"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "The invented label sits at foreground contrast on the same line as the figure"
+ },
+ {
+  "id": "commerce-11b",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "LC",
+  "type": "trust",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Judge lead: an 'Exceeds (n=1)' verdict is shown on the page",
+  "expected": "n/a",
+  "got": "No chores view renders verdict.label, .sentence, .sample or .runs; the judges read numbers.json. What is rendered is 'N x faster' (see commerce-05, -12)",
+  "evidence": [
+   "apps/desktop/src/modules/playbooks/model.ts:112-152",
+   "apps/desktop/src/scenes/chores/topic.tsx:202"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "refuted",
+  "resolution": "open",
+  "suggested_acceptance": "n/a"
+ },
+ {
+  "id": "commerce-12",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "high",
+   "reachability": "med",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "The speed and found figures rest on one bench run, and nothing says so",
+  "expected": "'one run so far' beside any bench figure when n=1",
+  "got": "bench_runs_n=1 for 10/11 commerce chores; verdict.sample and runs are computed but never rendered",
+  "evidence": [
+   "apps/desktop/src/modules/playbooks/model.ts:125-130",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json bench_runs_n"
+  ],
+  "code_check": "present-but-missed",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Bench-sourced tiles show 'one run' when n=1"
+ },
+ {
+  "id": "commerce-13",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "topic",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "major",
+  "impact": {
+   "frequency": "high",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "clarity",
+  "title": "14 internal words on the J7 path (bench, benched, exceed the bar, edge, persona, trap, world, claim, turn, brief, draft, slot, rehearsal, card)",
+  "expected": "No internal vocabulary, or a gloss on the same screen",
+  "got": "Distinct words per screen: catalogue 4, topic 6, studio 6, showcase 7",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/model.ts:104-105",
+   "apps/desktop/src/scenes/chores/catalogue.tsx:38",
+   "apps/desktop/src/scenes/chores/topic.tsx:191",
+   "apps/desktop/src/scenes/chores/topic.tsx:205-207",
+   "apps/desktop/src/scenes/chores/flow.tsx:118-123",
+   "apps/desktop/src/scenes/chores/adopt/casepanel.tsx:163",
+   "apps/desktop/src/scenes/chores/adopt/casepanel.tsx:268-292",
+   "src/athena/adopt/loop.py:496",
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:39-56"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Jargon count per J7 screen is at most 1 by the rubric unit"
+ },
+ {
+  "id": "commerce-14",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "food-recall-trace",
+  "surface": "catalogue",
+  "cert_level": "L1",
+  "type": "confusion",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "Catalogue title names the example's ingredient ('Recalled almond butter traced...')",
+  "expected": "A title that fits any ingredient recall",
+  "got": "short_title is example-specific; a peanut or flour recall does not look like a fit",
+  "evidence": [
+   "playbooks/food-recall-trace/playbook.json short_title",
+   "apps/desktop/src/scenes/chores/catalogue.tsx:86-90"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "short_title reads 'Recalled ingredient traced to every customer'"
+ },
+ {
+  "id": "commerce-15",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "food-recall-trace",
+  "surface": "catalogue",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "$20,000 per episode sorted raw against yearly values under 'Most value'",
+  "expected": "Per-episode values annualised by times_per_year, or sorted apart",
+  "got": "annualValue defaults to the raw value; times_per_year=1 is unused",
+  "evidence": [
+   "apps/desktop/src/modules/playbooks/model.ts:191-201",
+   "apps/desktop/src/modules/playbooks/model.ts:168-174",
+   "proving-runs/chores-uat/2026-10-23-chores/numbers.json quirks"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "annualValue uses economics.times_per_year when per is not year, month or week"
+ },
+ {
+  "id": "commerce-16",
+  "journey": "J8",
+  "character": "reggie",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "med",
+   "trust_erosion": "low"
+  },
+  "dimension": "clarity",
+  "title": "Showcase turn dots mark 'has cards' by styling only",
+  "expected": "Meaning not carried by colour or shape alone",
+  "got": "data-cards styles the dot; its aria-label says only 'Turn i, portal'",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx (Player, ad-route__dot)"
+  ],
+  "code_check": "present-broken",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The dot's aria-label and a visible count say 'N cards'"
+ },
+ {
+  "id": "commerce-17",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": null,
+  "surface": "daemon",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "med",
+   "reachability": "high",
+   "trust_erosion": "low"
+  },
+  "dimension": "effort",
+  "title": "Asked facts that live in her connected files (lead)",
+  "expected": "What she can read, she reads",
+  "got": "C4 failed 6/11: which marketplaces the disputes came from, where Faire shows payouts, which listings ship to the EU, which makers are EU-based (in Drive). The first card's portal questions are by design",
+  "evidence": [
+   "dump:gpsr-listings--hana#turn:2",
+   "dump:chargeback-representment--hana#turn:2",
+   "dump:cpg-deductions--hana#turn:2",
+   "src/athena/adopt/prompts.py:68-69"
+  ],
+  "code_check": "n-a",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "L2: with a connected Drive, the 'EU makers' question is replaced by a research lane"
+ },
+ {
+  "id": "commerce-18",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": "chargeback-representment",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Acceptances valued at a flat $25 'fee avoided'; no small-order contest economics",
+  "expected": "Value per dispute = win odds x amount minus contest cost; a small-order rule",
+  "got": "The basis values two acceptances at $25 each; Hana's disputes are ~$40 orders (offline knowledge: the dispute fee is usually charged either way)",
+  "evidence": [
+   "playbooks/chargeback-representment/playbook.json economics.basis",
+   "uat/chores/cases/chargeback-representment--hana.json"
+  ],
+  "code_check": "n-a",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "The basis models the contest fee per processor; the chore says when a $40 dispute is not worth contesting"
+ },
+ {
+  "id": "commerce-19",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": "cpg-deductions",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "Grocery-distributor chore offered to a Faire / regional-gift maker; the Faire window is left a guess",
+  "expected": "Fit stated as UNFI/KeHE-style distributor brands",
+  "got": "Brief: 'Faire's dispute window is its published one (my guess)'; Faire takes a commission, not distributor deductions (offline knowledge)",
+  "evidence": [
+   "dump:cpg-deductions--hana#brief",
+   "playbooks/cpg-deductions/playbook.json persona"
+  ],
+  "code_check": "n-a",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "The fit line names distributor brands; Faire cases get a different path or a 'not a fit' verdict"
+ },
+ {
+  "id": "commerce-20",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": "fba-reimbursements",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "No economics.basis; the brief accepts an unwritten box count and a self-reckoned cost with no warning",
+  "expected": "A basis; rules that a case needs an invoice or packing list and that self-made goods need proof of cost",
+  "got": "economics has no basis; brief: 'Your box count is unwritten; you have no packing list', 'Mugs valued at $6.80 each, by your own reckoning'",
+  "evidence": [
+   "playbooks/fba-reimbursements/playbook.json economics",
+   "dump:fba-reimbursements--hana#brief",
+   "dump:fba-reimbursements--hana#turn:2"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The basis is written; the brief warns when the proof a case needs is missing"
+ },
+ {
+  "id": "commerce-21",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": "food-recall-trace",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "No consumer-level notice for a direct-to-consumer seller; invented $2,500 weights shown as 'found $20,000'",
+  "expected": "A path for consumers who bought direct (21 CFR 7.42(b)(1) depth) and a decision on notifying a regulator",
+  "got": "The world and rules are B2B only; Hana sells jars on Shopify; the value is eight $2,500 weights",
+  "evidence": [
+   "playbooks/food-recall-trace/playbook.json economics.basis",
+   "playbooks/food-recall-trace/truth.json",
+   "uat/chores/cases/food-recall-trace--hana.json",
+   "dump:food-recall-trace--hana#rehearsal"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The playbook has a consumer-notice step and trap; the value is relabelled 'cost avoided (estimate)'"
+ },
+ {
+  "id": "commerce-22",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": "gpsr-listings",
+  "surface": "playbook-data",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Maker-outside-the-EU case missed: Hana makes her goods and herself needs an EU responsible person",
+  "expected": "Ask whether she makes or resells; for makers outside the EU, a gate to appoint a responsible person (not a fill from files)",
+  "got": "Athena asked about 'makers whose goods you resell'; the brief promises to add an EU responsible person from Drive files",
+  "evidence": [
+   "dump:gpsr-listings--hana#turn:2",
+   "dump:gpsr-listings--hana#brief",
+   "playbooks/gpsr-listings/playbook.json persona"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Re-run gpsr--hana: Athena asks maker vs reseller, and the brief names appointing an EU responsible person as the person's own act"
+ },
+ {
+  "id": "commerce-23",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": "organic-annual-update",
+  "surface": "playbook-data",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "A March site change is reported only in the November update; the importer of record is not asked",
+  "expected": "Flag late notice of a new handling site (offline: 7 CFR 205.400(f)(2)); ask who imports before logging NOP Import Certificates",
+  "got": "Brief: 'Report your move of blending to the Alder Street shared kitchen' in the annual update; imports listed by origin only",
+  "evidence": [
+   "dump:organic-annual-update--hana#brief",
+   "dump:organic-annual-update--hana#turn:2",
+   "playbooks/organic-annual-update/playbook.json traps"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "The playbook carries a 'change should already have been notified' rule and an importer-of-record question"
+ },
+ {
+  "id": "commerce-24",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": "sales-tax-exemption-certs",
+  "surface": "playbook-data",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "major",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "high"
+  },
+  "dimension": "senior-quality",
+  "title": "Answers Ohio without asking about registration or nexus for an Oregon seller with three Ohio sales",
+  "expected": "First step: is she registered in, or over the nexus threshold of, the requesting state",
+  "got": "The brief goes straight to certificates and the Ohio reply; $2,715 of Ohio sales (~$197 tax) against a $15,000/yr value",
+  "evidence": [
+   "dump:sales-tax-exemption-certs--hana#brief",
+   "dump:sales-tax-exemption-certs--hana#turn:2",
+   "playbooks/sales-tax-exemption-certs/playbook.json steps"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Playbook step 1 checks registration or nexus; trap: answering a state the seller owes nothing to"
+ },
+ {
+  "id": "commerce-25",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "merchant-fee-audit",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "$4,000/yr vs $472/yr implied by its own three-statement world",
+  "expected": "A value consistent with its world and its audience",
+  "got": "$118 over three statements; the basis says 'a few hundred dollars a month'",
+  "evidence": [
+   "playbooks/merchant-fee-audit/playbook.json economics.basis",
+   "playbooks/merchant-fee-audit/bench.json score"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "value_usd within 2x of the world total x 4"
+ },
+ {
+  "id": "commerce-26",
+  "journey": "J7",
+  "character": "hana",
+  "playbook_id": "mlc-unmatched-royalties",
+  "surface": "playbook-data",
+  "cert_level": "LC",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "$1,500/yr is implausible for a small forgotten catalogue; the handshake-label song is dropped unexplained",
+  "expected": "A per-stream value; help deciding an informal label deal",
+  "got": "Hana left 'Kettle Hymn' out after 'not sure'; the value needs ~1M+ US streams a year (offline estimate)",
+  "evidence": [
+   "dump:mlc-unmatched-royalties--hana#turn:3",
+   "dump:mlc-unmatched-royalties--hana#brief",
+   "playbooks/mlc-unmatched-royalties/playbook.json economics"
+  ],
+  "code_check": "n-a",
+  "verdict": "uncertain",
+  "resolution": "open",
+  "suggested_acceptance": "Value stated per 100k US streams; the brief explains what an informal deal means for her share"
+ },
+ {
+  "id": "commerce-27",
+  "journey": "J7",
+  "character": "reggie",
+  "playbook_id": "trademark-maintenance",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "quality-gap",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "senior-quality",
+  "title": "§15 not offered with §8; fees marked 'my guess' though they are public",
+  "expected": "The combined §8+§15 offered where eligible; fees stated as researched",
+  "got": "Brief: 'Current USPTO per-class fees and grace-period surcharges apply (my guess)'",
+  "evidence": [
+   "dump:trademark-maintenance--reggie#brief",
+   "playbooks/trademark-maintenance/playbook.json steps"
+  ],
+  "code_check": "confirmed-absent",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The brief lists fees with their source; §15 is offered on 5-6 year §8 filings"
+ },
+ {
+  "id": "commerce-28",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": "counterfeit-takedowns",
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "trust",
+  "severity": "minor",
+  "impact": {
+   "frequency": "low",
+   "reachability": "high",
+   "trust_erosion": "med"
+  },
+  "dimension": "trust",
+  "title": "Value counts the copier's 90-day listing sales as the brand's money; no counter-notice step",
+  "expected": "Value as recaptured margin; a 512(g) counter-notice follow-up",
+  "got": "basis: 'counted at a listing's sales, not at the brand's lost margin'",
+  "evidence": [
+   "playbooks/counterfeit-takedowns/playbook.json economics.basis",
+   "dump:counterfeit-takedowns--hana#judge"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "The basis values recaptured margin; the steps include counter-notice handling"
+ },
+ {
+  "id": "commerce-S1",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Every brief keeps 'asks you first' before each filing, dispute, hold or notice (22/22)",
+  "expected": "keep",
+  "got": "Every brief keeps 'asks you first' before each filing, dispute, hold or notice (22/22)",
+  "evidence": [
+   "dump:chargeback-representment--reggie#brief",
+   "dump:food-recall-trace--reggie#brief",
+   "src/athena/adopt/prompts.py:66-67"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Unchanged in the next run"
+ },
+ {
+  "id": "commerce-S2",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "studio",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Onboarding ended clear in 1-3 rounds in 22/22; hana C5 11/11, reggie C4 11/11",
+  "expected": "keep",
+  "got": "Onboarding ended clear in 1-3 rounds in 22/22; hana C5 11/11, reggie C4 11/11",
+  "evidence": [
+   "proving-runs/chores-uat/2026-10-23-chores/pairs (onboarding.ended)"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Unchanged in the next run"
+ },
+ {
+  "id": "commerce-S3",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "rehearsal",
+  "cert_level": "L1",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Shaped rehearsals claim no dollar figure and compare cards instead",
+  "expected": "keep",
+  "got": "Shaped rehearsals claim no dollar figure and compare cards instead",
+  "evidence": [
+   "apps/desktop/src/scenes/chores/adopt/showcase.tsx:105-112",
+   "src/athena/adopt/showcase.py:575-584",
+   "dump:fba-reimbursements--reggie#rehearsal"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Unchanged in the next run"
+ },
+ {
+  "id": "commerce-S4",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "brief",
+  "cert_level": "LC",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Briefs carry the person's specifics (Sept 10/15 price, lots 0411/0419, Fern & Fig unshipped)",
+  "expected": "keep",
+  "got": "Briefs carry the person's specifics (Sept 10/15 price, lots 0411/0419, Fern & Fig unshipped)",
+  "evidence": [
+   "dump:cpg-deductions--reggie#brief",
+   "dump:food-recall-trace--reggie#brief",
+   "dump:food-recall-trace--hana#brief"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Unchanged in the next run"
+ },
+ {
+  "id": "commerce-S5",
+  "journey": "J7",
+  "character": "all",
+  "playbook_id": null,
+  "surface": "playbook-data",
+  "cert_level": "L1",
+  "type": "strength",
+  "severity": "polish",
+  "impact": {
+   "frequency": "low",
+   "reachability": "low",
+   "trust_erosion": "low"
+  },
+  "dimension": "trust",
+  "title": "Playbook bases cite exact, dated rules (Visa CE 3.0, Reg II, 37 CFR 2.6, SSUTA 317)",
+  "expected": "keep",
+  "got": "Playbook bases cite exact, dated rules (Visa CE 3.0, Reg II, 37 CFR 2.6, SSUTA 317)",
+  "evidence": [
+   "playbooks/chargeback-representment/playbook.json economics.basis",
+   "playbooks/trademark-maintenance/playbook.json economics.basis"
+  ],
+  "code_check": "n-a",
+  "verdict": "confirmed",
+  "resolution": "open",
+  "suggested_acceptance": "Unchanged in the next run"
+ }
+]
