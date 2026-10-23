@@ -1,0 +1,1605 @@
+{
+  "schema": 1,
+  "pairs": [
+    {
+      "id": "401k-late-deposits--carmen",
+      "playbook_id": "401k-late-deposits",
+      "character": "carmen",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "401k-late-deposits--walt",
+      "playbook_id": "401k-late-deposits",
+      "character": "walt",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "abn-liability-sweep--maribel",
+      "playbook_id": "abn-liability-sweep",
+      "character": "maribel",
+      "audience": "work",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "abn-liability-sweep--tom",
+      "playbook_id": "abn-liability-sweep",
+      "character": "tom",
+      "audience": "work",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "adverse-action-notices--carmen",
+      "playbook_id": "adverse-action-notices",
+      "character": "carmen",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "adverse-action-notices--walt",
+      "playbook_id": "adverse-action-notices",
+      "character": "walt",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "aid-professional-judgment--denise",
+      "playbook_id": "aid-professional-judgment",
+      "character": "denise",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "aid-professional-judgment--lan",
+      "playbook_id": "aid-professional-judgment",
+      "character": "lan",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "baggage-delay-claims--aisha",
+      "playbook_id": "baggage-delay-claims",
+      "character": "aisha",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "baggage-delay-claims--bev",
+      "playbook_id": "baggage-delay-claims",
+      "character": "bev",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "bid-opportunity-triage--devon",
+      "playbook_id": "bid-opportunity-triage",
+      "character": "devon",
+      "audience": "work",
+      "category": "public",
+      "reuse_note": null
+    },
+    {
+      "id": "bid-opportunity-triage--ruth",
+      "playbook_id": "bid-opportunity-triage",
+      "character": "ruth",
+      "audience": "work",
+      "category": "public",
+      "reuse_note": null
+    },
+    {
+      "id": "carrier-accessorials--dario",
+      "playbook_id": "carrier-accessorials",
+      "character": "dario",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "carrier-accessorials--lorna",
+      "playbook_id": "carrier-accessorials",
+      "character": "lorna",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "certified-payroll--gina",
+      "playbook_id": "certified-payroll",
+      "character": "gina",
+      "audience": "work",
+      "category": "construction",
+      "reuse_note": null
+    },
+    {
+      "id": "certified-payroll--ray",
+      "playbook_id": "certified-payroll",
+      "character": "ray",
+      "audience": "work",
+      "category": "construction",
+      "reuse_note": null
+    },
+    {
+      "id": "change-order-notices--gina",
+      "playbook_id": "change-order-notices",
+      "character": "gina",
+      "audience": "work",
+      "category": "construction",
+      "reuse_note": null
+    },
+    {
+      "id": "change-order-notices--ray",
+      "playbook_id": "change-order-notices",
+      "character": "ray",
+      "audience": "work",
+      "category": "construction",
+      "reuse_note": null
+    },
+    {
+      "id": "chargeback-representment--hana",
+      "playbook_id": "chargeback-representment",
+      "character": "hana",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "chargeback-representment--reggie",
+      "playbook_id": "chargeback-representment",
+      "character": "reggie",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "class-action-claims--aisha",
+      "playbook_id": "class-action-claims",
+      "character": "aisha",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "class-action-claims--bev",
+      "playbook_id": "class-action-claims",
+      "character": "bev",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "clinic-denials--maribel",
+      "playbook_id": "clinic-denials",
+      "character": "maribel",
+      "audience": "work",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "clinic-denials--tom",
+      "playbook_id": "clinic-denials",
+      "character": "tom",
+      "audience": "work",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "clinic-underpayments--maribel",
+      "playbook_id": "clinic-underpayments",
+      "character": "maribel",
+      "audience": "work",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "clinic-underpayments--tom",
+      "playbook_id": "clinic-underpayments",
+      "character": "tom",
+      "audience": "work",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "closeout-package--gina",
+      "playbook_id": "closeout-package",
+      "character": "gina",
+      "audience": "work",
+      "category": "construction",
+      "reuse_note": null
+    },
+    {
+      "id": "closeout-package--ray",
+      "playbook_id": "closeout-package",
+      "character": "ray",
+      "audience": "work",
+      "category": "construction",
+      "reuse_note": null
+    },
+    {
+      "id": "cobra-notices--carmen",
+      "playbook_id": "cobra-notices",
+      "character": "carmen",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "cobra-notices--walt",
+      "playbook_id": "cobra-notices",
+      "character": "walt",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "counterfeit-takedowns--hana",
+      "playbook_id": "counterfeit-takedowns",
+      "character": "hana",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "counterfeit-takedowns--reggie",
+      "playbook_id": "counterfeit-takedowns",
+      "character": "reggie",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "cpg-deductions--hana",
+      "playbook_id": "cpg-deductions",
+      "character": "hana",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "cpg-deductions--reggie",
+      "playbook_id": "cpg-deductions",
+      "character": "reggie",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "credit-report-disputes--aisha",
+      "playbook_id": "credit-report-disputes",
+      "character": "aisha",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "credit-report-disputes--bev",
+      "playbook_id": "credit-report-disputes",
+      "character": "bev",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "crop-insurance-notice--devon",
+      "playbook_id": "crop-insurance-notice",
+      "character": "devon",
+      "audience": "work",
+      "category": "public",
+      "reuse_note": null
+    },
+    {
+      "id": "crop-insurance-notice--ruth",
+      "playbook_id": "crop-insurance-notice",
+      "character": "ruth",
+      "audience": "work",
+      "category": "public",
+      "reuse_note": null
+    },
+    {
+      "id": "customs-protests--dario",
+      "playbook_id": "customs-protests",
+      "character": "dario",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "customs-protests--lorna",
+      "playbook_id": "customs-protests",
+      "character": "lorna",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "data-broker-deletion--aisha",
+      "playbook_id": "data-broker-deletion",
+      "character": "aisha",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "data-broker-deletion--bev",
+      "playbook_id": "data-broker-deletion",
+      "character": "bev",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "denied-party-screening--dario",
+      "playbook_id": "denied-party-screening",
+      "character": "dario",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "denied-party-screening--lorna",
+      "playbook_id": "denied-party-screening",
+      "character": "lorna",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "driver-qualification-files--dario",
+      "playbook_id": "driver-qualification-files",
+      "character": "dario",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "driver-qualification-files--lorna",
+      "playbook_id": "driver-qualification-files",
+      "character": "lorna",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "duty-drawback--dario",
+      "playbook_id": "duty-drawback",
+      "character": "dario",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "duty-drawback--lorna",
+      "playbook_id": "duty-drawback",
+      "character": "lorna",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "eitc-claim--aisha",
+      "playbook_id": "eitc-claim",
+      "character": "aisha",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "eitc-claim--bev",
+      "playbook_id": "eitc-claim",
+      "character": "bev",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "erate-applications--devon",
+      "playbook_id": "erate-applications",
+      "character": "devon",
+      "audience": "work",
+      "category": "public",
+      "reuse_note": null
+    },
+    {
+      "id": "erate-applications--ruth",
+      "playbook_id": "erate-applications",
+      "character": "ruth",
+      "audience": "work",
+      "category": "public",
+      "reuse_note": null
+    },
+    {
+      "id": "escrow-analysis-check--marcus",
+      "playbook_id": "escrow-analysis-check",
+      "character": "marcus",
+      "audience": "home",
+      "category": "housing",
+      "reuse_note": null
+    },
+    {
+      "id": "escrow-analysis-check--rosa",
+      "playbook_id": "escrow-analysis-check",
+      "character": "rosa",
+      "audience": "home",
+      "category": "housing",
+      "reuse_note": null
+    },
+    {
+      "id": "estate-settlement--grace",
+      "playbook_id": "estate-settlement",
+      "character": "grace",
+      "audience": "home",
+      "category": "family",
+      "reuse_note": null
+    },
+    {
+      "id": "estate-settlement--samira",
+      "playbook_id": "estate-settlement",
+      "character": "samira",
+      "audience": "home",
+      "category": "family",
+      "reuse_note": null
+    },
+    {
+      "id": "eu261-flight-compensation--aisha",
+      "playbook_id": "eu261-flight-compensation",
+      "character": "aisha",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "eu261-flight-compensation--bev",
+      "playbook_id": "eu261-flight-compensation",
+      "character": "bev",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "fafsa-verification--denise",
+      "playbook_id": "fafsa-verification",
+      "character": "denise",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "fafsa-verification--lan",
+      "playbook_id": "fafsa-verification",
+      "character": "lan",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "fba-reimbursements--hana",
+      "playbook_id": "fba-reimbursements",
+      "character": "hana",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "fba-reimbursements--reggie",
+      "playbook_id": "fba-reimbursements",
+      "character": "reggie",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "federal-prompt-pay-interest--devon",
+      "playbook_id": "federal-prompt-pay-interest",
+      "character": "devon",
+      "audience": "work",
+      "category": "public",
+      "reuse_note": null
+    },
+    {
+      "id": "federal-prompt-pay-interest--ruth",
+      "playbook_id": "federal-prompt-pay-interest",
+      "character": "ruth",
+      "audience": "work",
+      "category": "public",
+      "reuse_note": null
+    },
+    {
+      "id": "fema-individual-assistance--denise",
+      "playbook_id": "fema-individual-assistance",
+      "character": "denise",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "fema-individual-assistance--lan",
+      "playbook_id": "fema-individual-assistance",
+      "character": "lan",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "first-time-abate--gina",
+      "playbook_id": "first-time-abate",
+      "character": "gina",
+      "audience": "work",
+      "category": "consumer",
+      "reuse_note": "Only work chore in consumer: an IRS penalty letter for a small trades business. Walt owns such a firm and reads its tax letters; Gina handles her owner's tax letters."
+    },
+    {
+      "id": "first-time-abate--walt",
+      "playbook_id": "first-time-abate",
+      "character": "walt",
+      "audience": "work",
+      "category": "consumer",
+      "reuse_note": "Only work chore in consumer: an IRS penalty letter for a small trades business. Walt owns such a firm and reads its tax letters; Gina handles her owner's tax letters."
+    },
+    {
+      "id": "food-recall-trace--hana",
+      "playbook_id": "food-recall-trace",
+      "character": "hana",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "food-recall-trace--reggie",
+      "playbook_id": "food-recall-trace",
+      "character": "reggie",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "freelancer-receivables--carmen",
+      "playbook_id": "freelancer-receivables",
+      "character": "carmen",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "freelancer-receivables--walt",
+      "playbook_id": "freelancer-receivables",
+      "character": "walt",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "freight-claims--dario",
+      "playbook_id": "freight-claims",
+      "character": "dario",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "freight-claims--lorna",
+      "playbook_id": "freight-claims",
+      "character": "lorna",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "fsa-acreage-reporting--devon",
+      "playbook_id": "fsa-acreage-reporting",
+      "character": "devon",
+      "audience": "work",
+      "category": "public",
+      "reuse_note": null
+    },
+    {
+      "id": "fsa-acreage-reporting--ruth",
+      "playbook_id": "fsa-acreage-reporting",
+      "character": "ruth",
+      "audience": "work",
+      "category": "public",
+      "reuse_note": null
+    },
+    {
+      "id": "fsa-claims-substantiation--denise",
+      "playbook_id": "fsa-claims-substantiation",
+      "character": "denise",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "fsa-claims-substantiation--lan",
+      "playbook_id": "fsa-claims-substantiation",
+      "character": "lan",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "funeral-price-check--grace",
+      "playbook_id": "funeral-price-check",
+      "character": "grace",
+      "audience": "home",
+      "category": "family",
+      "reuse_note": null
+    },
+    {
+      "id": "funeral-price-check--samira",
+      "playbook_id": "funeral-price-check",
+      "character": "samira",
+      "audience": "home",
+      "category": "family",
+      "reuse_note": null
+    },
+    {
+      "id": "good-faith-estimates--maribel",
+      "playbook_id": "good-faith-estimates",
+      "character": "maribel",
+      "audience": "work",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "good-faith-estimates--tom",
+      "playbook_id": "good-faith-estimates",
+      "character": "tom",
+      "audience": "work",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "gpsr-listings--hana",
+      "playbook_id": "gpsr-listings",
+      "character": "hana",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "gpsr-listings--reggie",
+      "playbook_id": "gpsr-listings",
+      "character": "reggie",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "grant-drawdown-reporting--devon",
+      "playbook_id": "grant-drawdown-reporting",
+      "character": "devon",
+      "audience": "work",
+      "category": "public",
+      "reuse_note": null
+    },
+    {
+      "id": "grant-drawdown-reporting--ruth",
+      "playbook_id": "grant-drawdown-reporting",
+      "character": "ruth",
+      "audience": "work",
+      "category": "public",
+      "reuse_note": null
+    },
+    {
+      "id": "homestead-exemption--marcus",
+      "playbook_id": "homestead-exemption",
+      "character": "marcus",
+      "audience": "home",
+      "category": "housing",
+      "reuse_note": null
+    },
+    {
+      "id": "homestead-exemption--rosa",
+      "playbook_id": "homestead-exemption",
+      "character": "rosa",
+      "audience": "home",
+      "category": "housing",
+      "reuse_note": null
+    },
+    {
+      "id": "hospital-financial-assistance--joel",
+      "playbook_id": "hospital-financial-assistance",
+      "character": "joel",
+      "audience": "home",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "hospital-financial-assistance--nadia",
+      "playbook_id": "hospital-financial-assistance",
+      "character": "nadia",
+      "audience": "home",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "household-employer-tax--grace",
+      "playbook_id": "household-employer-tax",
+      "character": "grace",
+      "audience": "home",
+      "category": "family",
+      "reuse_note": null
+    },
+    {
+      "id": "household-employer-tax--samira",
+      "playbook_id": "household-employer-tax",
+      "character": "samira",
+      "audience": "home",
+      "category": "family",
+      "reuse_note": null
+    },
+    {
+      "id": "ifta-quarterly--dario",
+      "playbook_id": "ifta-quarterly",
+      "character": "dario",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "ifta-quarterly--lorna",
+      "playbook_id": "ifta-quarterly",
+      "character": "lorna",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "inspection-scheduling--gina",
+      "playbook_id": "inspection-scheduling",
+      "character": "gina",
+      "audience": "work",
+      "category": "construction",
+      "reuse_note": null
+    },
+    {
+      "id": "inspection-scheduling--ray",
+      "playbook_id": "inspection-scheduling",
+      "character": "ray",
+      "audience": "work",
+      "category": "construction",
+      "reuse_note": null
+    },
+    {
+      "id": "isf-filings--dario",
+      "playbook_id": "isf-filings",
+      "character": "dario",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "isf-filings--lorna",
+      "playbook_id": "isf-filings",
+      "character": "lorna",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "layoff-sixty-days--lan",
+      "playbook_id": "layoff-sixty-days",
+      "character": "lan",
+      "audience": "home",
+      "category": "employment",
+      "reuse_note": "Home employment has two chores and no own pair: Marcus was just laid off from a hospital system; Lan's hours were cut and she handles the family's benefits."
+    },
+    {
+      "id": "layoff-sixty-days--marcus",
+      "playbook_id": "layoff-sixty-days",
+      "character": "marcus",
+      "audience": "home",
+      "category": "employment",
+      "reuse_note": "Home employment has two chores and no own pair: Marcus was just laid off from a hospital system; Lan's hours were cut and she handles the family's benefits."
+    },
+    {
+      "id": "lease-end-wear-charges--marcus",
+      "playbook_id": "lease-end-wear-charges",
+      "character": "marcus",
+      "audience": "home",
+      "category": "housing",
+      "reuse_note": null
+    },
+    {
+      "id": "lease-end-wear-charges--rosa",
+      "playbook_id": "lease-end-wear-charges",
+      "character": "rosa",
+      "audience": "home",
+      "category": "housing",
+      "reuse_note": null
+    },
+    {
+      "id": "lease-operator-escrow--dario",
+      "playbook_id": "lease-operator-escrow",
+      "character": "dario",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "lease-operator-escrow--lorna",
+      "playbook_id": "lease-operator-escrow",
+      "character": "lorna",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "lien-desk--gina",
+      "playbook_id": "lien-desk",
+      "character": "gina",
+      "audience": "work",
+      "category": "construction",
+      "reuse_note": null
+    },
+    {
+      "id": "lien-desk--ray",
+      "playbook_id": "lien-desk",
+      "character": "ray",
+      "audience": "work",
+      "category": "construction",
+      "reuse_note": null
+    },
+    {
+      "id": "ltc-claims--joel",
+      "playbook_id": "ltc-claims",
+      "character": "joel",
+      "audience": "home",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "ltc-claims--nadia",
+      "playbook_id": "ltc-claims",
+      "character": "nadia",
+      "audience": "home",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "medicaid-renewal--denise",
+      "playbook_id": "medicaid-renewal",
+      "character": "denise",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "medicaid-renewal--lan",
+      "playbook_id": "medicaid-renewal",
+      "character": "lan",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "medical-bills--joel",
+      "playbook_id": "medical-bills",
+      "character": "joel",
+      "audience": "home",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "medical-bills--nadia",
+      "playbook_id": "medical-bills",
+      "character": "nadia",
+      "audience": "home",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "medical-records-gather--joel",
+      "playbook_id": "medical-records-gather",
+      "character": "joel",
+      "audience": "home",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "medical-records-gather--nadia",
+      "playbook_id": "medical-records-gather",
+      "character": "nadia",
+      "audience": "home",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "medicare-enrollment-timing--denise",
+      "playbook_id": "medicare-enrollment-timing",
+      "character": "denise",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "medicare-enrollment-timing--lan",
+      "playbook_id": "medicare-enrollment-timing",
+      "character": "lan",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "medicare-plan-review--denise",
+      "playbook_id": "medicare-plan-review",
+      "character": "denise",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "medicare-plan-review--lan",
+      "playbook_id": "medicare-plan-review",
+      "character": "lan",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "merchant-fee-audit--hana",
+      "playbook_id": "merchant-fee-audit",
+      "character": "hana",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "merchant-fee-audit--reggie",
+      "playbook_id": "merchant-fee-audit",
+      "character": "reggie",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "mlc-unmatched-royalties--hana",
+      "playbook_id": "mlc-unmatched-royalties",
+      "character": "hana",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "mlc-unmatched-royalties--reggie",
+      "playbook_id": "mlc-unmatched-royalties",
+      "character": "reggie",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "msp-extra-help--denise",
+      "playbook_id": "msp-extra-help",
+      "character": "denise",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "msp-extra-help--lan",
+      "playbook_id": "msp-extra-help",
+      "character": "lan",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "name-change-everywhere--grace",
+      "playbook_id": "name-change-everywhere",
+      "character": "grace",
+      "audience": "home",
+      "category": "family",
+      "reuse_note": null
+    },
+    {
+      "id": "name-change-everywhere--samira",
+      "playbook_id": "name-change-everywhere",
+      "character": "samira",
+      "audience": "home",
+      "category": "family",
+      "reuse_note": null
+    },
+    {
+      "id": "observation-status-appeal--joel",
+      "playbook_id": "observation-status-appeal",
+      "character": "joel",
+      "audience": "home",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "observation-status-appeal--nadia",
+      "playbook_id": "observation-status-appeal",
+      "character": "nadia",
+      "audience": "home",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "ocean-demurrage-disputes--dario",
+      "playbook_id": "ocean-demurrage-disputes",
+      "character": "dario",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "ocean-demurrage-disputes--lorna",
+      "playbook_id": "ocean-demurrage-disputes",
+      "character": "lorna",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "organic-annual-update--hana",
+      "playbook_id": "organic-annual-update",
+      "character": "hana",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "organic-annual-update--reggie",
+      "playbook_id": "organic-annual-update",
+      "character": "reggie",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "osha-300-log--carmen",
+      "playbook_id": "osha-300-log",
+      "character": "carmen",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "osha-300-log--walt",
+      "playbook_id": "osha-300-log",
+      "character": "walt",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "out-of-network-claims--joel",
+      "playbook_id": "out-of-network-claims",
+      "character": "joel",
+      "audience": "home",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "out-of-network-claims--nadia",
+      "playbook_id": "out-of-network-claims",
+      "character": "nadia",
+      "audience": "home",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "overpayment-refunds--maribel",
+      "playbook_id": "overpayment-refunds",
+      "character": "maribel",
+      "audience": "work",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "overpayment-refunds--tom",
+      "playbook_id": "overpayment-refunds",
+      "character": "tom",
+      "audience": "work",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "oversize-permits--dario",
+      "playbook_id": "oversize-permits",
+      "character": "dario",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "oversize-permits--lorna",
+      "playbook_id": "oversize-permits",
+      "character": "lorna",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "parcel-guarantee-refunds--dario",
+      "playbook_id": "parcel-guarantee-refunds",
+      "character": "dario",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "parcel-guarantee-refunds--lorna",
+      "playbook_id": "parcel-guarantee-refunds",
+      "character": "lorna",
+      "audience": "work",
+      "category": "freight",
+      "reuse_note": null
+    },
+    {
+      "id": "parental-leave-claims--aisha",
+      "playbook_id": "parental-leave-claims",
+      "character": "aisha",
+      "audience": "home",
+      "category": "employment",
+      "reuse_note": "Home employment has two chores and no own pair: Aisha and Samira are both expecting a child and working."
+    },
+    {
+      "id": "parental-leave-claims--samira",
+      "playbook_id": "parental-leave-claims",
+      "character": "samira",
+      "audience": "home",
+      "category": "employment",
+      "reuse_note": "Home employment has two chores and no own pair: Aisha and Samira are both expecting a child and working."
+    },
+    {
+      "id": "part-d-exception--joel",
+      "playbook_id": "part-d-exception",
+      "character": "joel",
+      "audience": "home",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "part-d-exception--nadia",
+      "playbook_id": "part-d-exception",
+      "character": "nadia",
+      "audience": "home",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "pmi-cancellation--marcus",
+      "playbook_id": "pmi-cancellation",
+      "character": "marcus",
+      "audience": "home",
+      "category": "housing",
+      "reuse_note": null
+    },
+    {
+      "id": "pmi-cancellation--rosa",
+      "playbook_id": "pmi-cancellation",
+      "character": "rosa",
+      "audience": "home",
+      "category": "housing",
+      "reuse_note": null
+    },
+    {
+      "id": "prior-auth-renewals--maribel",
+      "playbook_id": "prior-auth-renewals",
+      "character": "maribel",
+      "audience": "work",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "prior-auth-renewals--tom",
+      "playbook_id": "prior-auth-renewals",
+      "character": "tom",
+      "audience": "work",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "property-tax-appeal--marcus",
+      "playbook_id": "property-tax-appeal",
+      "character": "marcus",
+      "audience": "home",
+      "category": "housing",
+      "reuse_note": null
+    },
+    {
+      "id": "property-tax-appeal--rosa",
+      "playbook_id": "property-tax-appeal",
+      "character": "rosa",
+      "audience": "home",
+      "category": "housing",
+      "reuse_note": null
+    },
+    {
+      "id": "provider-revalidation--maribel",
+      "playbook_id": "provider-revalidation",
+      "character": "maribel",
+      "audience": "work",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "provider-revalidation--tom",
+      "playbook_id": "provider-revalidation",
+      "character": "tom",
+      "audience": "work",
+      "category": "health",
+      "reuse_note": null
+    },
+    {
+      "id": "pslf-employment-certification--denise",
+      "playbook_id": "pslf-employment-certification",
+      "character": "denise",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "pslf-employment-certification--lan",
+      "playbook_id": "pslf-employment-certification",
+      "character": "lan",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "public-records-requests--devon",
+      "playbook_id": "public-records-requests",
+      "character": "devon",
+      "audience": "work",
+      "category": "public",
+      "reuse_note": null
+    },
+    {
+      "id": "public-records-requests--ruth",
+      "playbook_id": "public-records-requests",
+      "character": "ruth",
+      "audience": "work",
+      "category": "public",
+      "reuse_note": null
+    },
+    {
+      "id": "recoverable-depreciation--marcus",
+      "playbook_id": "recoverable-depreciation",
+      "character": "marcus",
+      "audience": "home",
+      "category": "housing",
+      "reuse_note": null
+    },
+    {
+      "id": "recoverable-depreciation--rosa",
+      "playbook_id": "recoverable-depreciation",
+      "character": "rosa",
+      "audience": "home",
+      "category": "housing",
+      "reuse_note": null
+    },
+    {
+      "id": "reg-e-fraud-claims--aisha",
+      "playbook_id": "reg-e-fraud-claims",
+      "character": "aisha",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "reg-e-fraud-claims--bev",
+      "playbook_id": "reg-e-fraud-claims",
+      "character": "bev",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "remote-payroll-registration--carmen",
+      "playbook_id": "remote-payroll-registration",
+      "character": "carmen",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "remote-payroll-registration--walt",
+      "playbook_id": "remote-payroll-registration",
+      "character": "walt",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "rep-payee-accounting--denise",
+      "playbook_id": "rep-payee-accounting",
+      "character": "denise",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "rep-payee-accounting--lan",
+      "playbook_id": "rep-payee-accounting",
+      "character": "lan",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "restricted-funds-release--devon",
+      "playbook_id": "restricted-funds-release",
+      "character": "devon",
+      "audience": "work",
+      "category": "public",
+      "reuse_note": null
+    },
+    {
+      "id": "restricted-funds-release--ruth",
+      "playbook_id": "restricted-funds-release",
+      "character": "ruth",
+      "audience": "work",
+      "category": "public",
+      "reuse_note": null
+    },
+    {
+      "id": "rmd-check--denise",
+      "playbook_id": "rmd-check",
+      "character": "denise",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "rmd-check--lan",
+      "playbook_id": "rmd-check",
+      "character": "lan",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "sales-tax-exemption-certs--hana",
+      "playbook_id": "sales-tax-exemption-certs",
+      "character": "hana",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "sales-tax-exemption-certs--reggie",
+      "playbook_id": "sales-tax-exemption-certs",
+      "character": "reggie",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "section8-landlord--ruth",
+      "playbook_id": "section8-landlord",
+      "character": "ruth",
+      "audience": "work",
+      "category": "housing",
+      "reuse_note": "Only work chore in housing: a small rental LLC. Walt owns rental units through an LLC; Ruth's farm family rents out two houses in town."
+    },
+    {
+      "id": "section8-landlord--walt",
+      "playbook_id": "section8-landlord",
+      "character": "walt",
+      "audience": "work",
+      "category": "housing",
+      "reuse_note": "Only work chore in housing: a small rental LLC. Walt owns rental units through an LLC; Ruth's farm family rents out two houses in town."
+    },
+    {
+      "id": "ssdi-work-reporting--denise",
+      "playbook_id": "ssdi-work-reporting",
+      "character": "denise",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "ssdi-work-reporting--lan",
+      "playbook_id": "ssdi-work-reporting",
+      "character": "lan",
+      "audience": "home",
+      "category": "benefits",
+      "reuse_note": null
+    },
+    {
+      "id": "stormwater-permit-log--gina",
+      "playbook_id": "stormwater-permit-log",
+      "character": "gina",
+      "audience": "work",
+      "category": "construction",
+      "reuse_note": null
+    },
+    {
+      "id": "stormwater-permit-log--ray",
+      "playbook_id": "stormwater-permit-log",
+      "character": "ray",
+      "audience": "work",
+      "category": "construction",
+      "reuse_note": null
+    },
+    {
+      "id": "sub-insurance-certs--gina",
+      "playbook_id": "sub-insurance-certs",
+      "character": "gina",
+      "audience": "work",
+      "category": "construction",
+      "reuse_note": null
+    },
+    {
+      "id": "sub-insurance-certs--ray",
+      "playbook_id": "sub-insurance-certs",
+      "character": "ray",
+      "audience": "work",
+      "category": "construction",
+      "reuse_note": null
+    },
+    {
+      "id": "subscription-audit--aisha",
+      "playbook_id": "subscription-audit",
+      "character": "aisha",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "subscription-audit--bev",
+      "playbook_id": "subscription-audit",
+      "character": "bev",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "tenant-deposit-return--marcus",
+      "playbook_id": "tenant-deposit-return",
+      "character": "marcus",
+      "audience": "home",
+      "category": "housing",
+      "reuse_note": null
+    },
+    {
+      "id": "tenant-deposit-return--rosa",
+      "playbook_id": "tenant-deposit-return",
+      "character": "rosa",
+      "audience": "home",
+      "category": "housing",
+      "reuse_note": null
+    },
+    {
+      "id": "trademark-maintenance--hana",
+      "playbook_id": "trademark-maintenance",
+      "character": "hana",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "trademark-maintenance--reggie",
+      "playbook_id": "trademark-maintenance",
+      "character": "reggie",
+      "audience": "work",
+      "category": "commerce",
+      "reuse_note": null
+    },
+    {
+      "id": "travel-credit-refunds--aisha",
+      "playbook_id": "travel-credit-refunds",
+      "character": "aisha",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "travel-credit-refunds--bev",
+      "playbook_id": "travel-credit-refunds",
+      "character": "bev",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "ui-claim-responses--carmen",
+      "playbook_id": "ui-claim-responses",
+      "character": "carmen",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "ui-claim-responses--walt",
+      "playbook_id": "ui-claim-responses",
+      "character": "walt",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "unclaimed-property-sweep--aisha",
+      "playbook_id": "unclaimed-property-sweep",
+      "character": "aisha",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "unclaimed-property-sweep--bev",
+      "playbook_id": "unclaimed-property-sweep",
+      "character": "bev",
+      "audience": "home",
+      "category": "consumer",
+      "reuse_note": null
+    },
+    {
+      "id": "vehicle-recall-reimbursement--marcus",
+      "playbook_id": "vehicle-recall-reimbursement",
+      "character": "marcus",
+      "audience": "home",
+      "category": "housing",
+      "reuse_note": null
+    },
+    {
+      "id": "vehicle-recall-reimbursement--rosa",
+      "playbook_id": "vehicle-recall-reimbursement",
+      "character": "rosa",
+      "audience": "home",
+      "category": "housing",
+      "reuse_note": null
+    },
+    {
+      "id": "veteran-burial-benefits--grace",
+      "playbook_id": "veteran-burial-benefits",
+      "character": "grace",
+      "audience": "home",
+      "category": "family",
+      "reuse_note": null
+    },
+    {
+      "id": "veteran-burial-benefits--samira",
+      "playbook_id": "veteran-burial-benefits",
+      "character": "samira",
+      "audience": "home",
+      "category": "family",
+      "reuse_note": null
+    },
+    {
+      "id": "workers-comp-premium-audit--carmen",
+      "playbook_id": "workers-comp-premium-audit",
+      "character": "carmen",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "workers-comp-premium-audit--walt",
+      "playbook_id": "workers-comp-premium-audit",
+      "character": "walt",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "wotc-screening--carmen",
+      "playbook_id": "wotc-screening",
+      "character": "carmen",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    },
+    {
+      "id": "wotc-screening--walt",
+      "playbook_id": "wotc-screening",
+      "character": "walt",
+      "audience": "work",
+      "category": "employment",
+      "reuse_note": null
+    }
+  ]
+}

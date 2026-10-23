@@ -15,8 +15,28 @@ the Athena companion window (seal, tape, hear, slip, welcome, ledger, tab).
 mira (owner, primary) - jonas (skeptic, trust) - priya (first-time, Codex only) - ana (keyboard-first,
 low vision, 150% scaling) - juror (five-minute evaluator, external buyer).
 
+**The chores cast (22, `characters/chores/`).** Users of the chore library, two per playbook, always of the
+playbook's own audience (home or work); the rows are `chores/pairs.json`. One pair per segment:
+- work, freight: dario (three-truck owner-operator, English second language), lorna (importer's compliance manager, burned by "AI savings")
+- work, commerce: hana (one-person online shop), reggie (part-time deductions finance, low vision, 175% zoom)
+- work, employment: carmen (one-person HR at a manufacturer), walt (field-services owner, 66, low tech)
+- work, public: ruth (Iowa farm family's books, phone-first), devon (nonprofit finance manager, 26, first grant cycle)
+- work, health: maribel (veteran clinic biller), tom (practice administrator, not a billing expert)
+- work, construction: gina (subcontractor office manager, liens and portals), ray (project manager on site)
+- home, benefits: denise (caregiver daughter, scam-wary), lan (pharmacy technician, English second language)
+- home, consumer: aisha (night-shift nurse, phone-first), bev (retired teacher, 72, first time with AI, anxious)
+- home, housing: marcus (homeowner who redoes every number), rosa (Texas homeowner with rentals, large text)
+- home, health: joel (family on a PPO, a year of bills), nadia (chronic pain, short sessions, large text)
+- home, family: grace (grieving executor), samira (newlywed household employer, expecting)
+- thin segments reuse a neighbour of the same audience (work consumer, work housing, home employment); each
+  such row says why in its `reuse_note`.
+
+These files sit in a subfolder, so the LC run's `load_personas` (which reads `characters/*.md`) does not pick
+them up; the chores UAT reads them through `chores/pairs.json`.
+
 ## Journeys
-J1 first-launch - J2 live-with-her - J3 decide-a-card - J4 trust-record - J5 workday-main.
+J1 first-launch - J2 live-with-her - J3 decide-a-card - J4 trust-record - J5 workday-main -
+J6 connect-and-use - J7 chore-onboarding (LC+L1) - J8 chore-in-use (LC+L1).
 
 ## Drain homes
 - analysis docs: `docs/uat-insights/<run-id>.md`
@@ -55,3 +75,12 @@ drive the desktop UI, so it certifies conversations, never windows (README §9; 
   `--turns`, `--no-claude` and `--no-nemotron` narrow a run. The report lands in
   `proving-runs/<run-id>/` (gitignored): `report.md`, `report.json` and `ledger.jsonl`, one row per
   model call, failures included.
+
+## Chores UAT
+Every chore, onboarded and used by two Characters of its own audience (J7 and J8). Sonnet plays the
+Character in the real adopt conversation ("Make it yours"); a judge scores each pair in the Character's voice
+against that Character's scored acceptance criteria and the chores units in `rubric.md`.
+
+- **Run.** `uv run python -m athena.proving.chores_uat numbers|cases|run|report` from the repo root.
+- **Inputs.** Pairs in `uat/chores/pairs.json` (200 rows: 100 playbooks x 2); case cards in `uat/chores/cases/`.
+- **Outputs.** Runs land in `proving-runs/chores-uat/<run-id>/` (gitignored); reports in `uat/runs/<date>-chores/`.

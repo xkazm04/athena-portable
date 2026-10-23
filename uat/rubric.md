@@ -21,3 +21,19 @@ path; nothing readable under 12px; both themes; 100/125/150% scaling; 900x600 to
 never a new denominator.
 **Unit of every count:** a count of "windows" means OS-level windows; "states" means the named companion states
 in ADR 0026; "modules" means entries in `src/modules/registry.ts`.
+
+## Chores: honesty and comprehension units
+
+Shared units for J7 and J8 and the chores cast (`uat/chores/pairs.json`); every walker and judge counts with these.
+
+- **NUMBER.** Any figure rendered on a chores surface (catalogue, topic page, studio, practice result, Due,
+  Runs): money, minutes, hours, percentages, counts of items. One rendering is one NUMBER.
+- **HONEST NUMBER.** A NUMBER whose source is stated next to it - measured on invented data, the author's
+  estimate (with its basis), or your own records - AND which agrees with every other rendering of the same
+  quantity. A NUMBER missing either half is dishonest. Count: honest / all NUMBERS seen in the journey.
+- **JARGON.** A rendered word from the internal vocabulary list used without an explanation on the same
+  screen: bench, benched, exceed the bar, trap, world, rehearsal, lane, slot, persona, brief, draft, card,
+  claim, ledger, turn, daemon, session, edge. Count each distinct word once per screen.
+  A word that is the chore's own field term in its ordinary sense (a claim in a freight-claims chore, a draft
+  of a letter the person asked for) is not JARGON; the same word in Athena's internal sense (a card she files,
+  a draft revision of the brief) is.
