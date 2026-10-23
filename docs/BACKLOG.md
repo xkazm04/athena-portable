@@ -47,3 +47,25 @@ A shipped item is not done at merge: it re-enters `/uat recertify` against the o
 - The slip stays answerable in one key without Main; "Nothing runs until you sign" stays; Approve and Decline stay on the first screen of the 488x316 slip.
 - Failed turns stay ledgered, cost per round stays visible, and the run loop keeps running while she is hidden.
 - First launch stays one window; the resting form stays 92x92; type floor stays 12px; paper contrast stays at 4.87:1 or better.
+
+## From run 2026-10-23-chores
+
+Analysis: `docs/uat-insights/2026-10-23-chores.md`. Spark `chores-uat` builds B-C1..B-C7 in its fix wave; each is
+done only after `recertify` re-runs the touched pairs.
+
+### Build
+
+| id | pri | item | justified by | acceptance | notes |
+|---|---|---|---|---|---|
+| B-C1 | critical | One money figure per chore (example case's money back, derived) + a labelled author estimate with basis, sources, caveat | all `*-01`; health-03, family-01, housing-01 | no topic page shows two different totals for one quantity; every dollar figure states its source on the same screen | WP-N + WP-K; standard: measurement-honesty/co-published-numbers-must-reconcile, public-claim-provenance/no-data-source-labelled-inline |
+| B-C2 | critical | Figures labelled by kind; only money back sums | commerce-03, construction-02, freight-03/11, employment-04 | "found" totals equal the money-back sum; no scoring weight renders with "$" | WP-N, WP-R, WP-K |
+| B-C3 | critical | Brief: playbook rules "(from the playbook)", never "(my guess)"; a "Dates that matter" section | freight-01, health-01, employment-03, benefits-03, construction-08 | re-run pairs: zero playbook-sourced rules marked "my guess"; every brief with a known anchor shows a date | WP-B |
+| B-C4 | high | No example-world leak (first-card options, opening line, brief facts, Start-for-real command) | benefits-05, family-02/03, construction-12, health-06 | re-run pairs: no invented app name offered; no example fact stated as the person's; the real command names no invented entity | WP-B |
+| B-C5 | high | Rehearsal honesty: true label, no stale grading, not the example's script, "would propose" for list-only | housing-02, consumer-10, public-03/05, family-09 | an unshaped rehearsal never says "shaped like your case"; a shaped one shows no outcome words | WP-R |
+| B-C6 | high | Time saved with review; verdict and runs shown | employment-02, public-02, health-04 | the ratio on screen equals manual / (bench + review); "fell short" is visible where it is true | WP-N |
+| B-C7 | high | Fit stated (where, not for, asks for, costs) and answered in the interview | housing-04, commerce-06, benefits-04 | a person outside `fit.where` is told on the first card | WP-K, WP-N, WP-B |
+| B-C8 | medium | Due cadence anchored to the chore's window for yearly chores | housing (Due) | a property-tax chore adopted in October comes due before the protest window | backlog |
+
+### Concept-docs
+- **C-C1 Answer keys a walker doubts** (parental-leave NY PFL weeks, estate RMD-disclaimer trap, stormwater thresholds): verify against a source; a truth.json fix re-keys the bench (ADR 0128), so re-bench in the same change.
+- **C-C2 What a proposed card must show** (the document she would send): extends C1 from run r1.
