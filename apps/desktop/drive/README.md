@@ -73,9 +73,10 @@ profile. `launch()` therefore refuses the user's identifier, and needs a build w
 identifier. That build also loads its UI from `dist`, so it needs no dev server on 1431:
 
 ```bash
-# from apps/desktop, in a checkout or worktree whose target is not the running app's
+# from apps/desktop; a running dev app locks src-tauri/target/debug, so build elsewhere
 echo '{"identifier":"com.athena.portable.e2e","productName":"Athena E2E"}' > /tmp/athena-e2e.conf.json
-pnpm tauri build --debug --no-bundle --config /tmp/athena-e2e.conf.json
+CARGO_TARGET_DIR=/tmp/athena-e2e-target pnpm tauri build --debug --no-bundle --config /tmp/athena-e2e.conf.json
+ATHENA_DESKTOP=1 ATHENA_DESKTOP_EXE=/tmp/athena-e2e-target/debug/athena-desktop.exe pnpm test:e2e:desktop
 ```
 
 Everything that instance writes lands under `%APPDATA%\com.athena.portable.e2e` and
