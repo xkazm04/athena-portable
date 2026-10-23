@@ -1,0 +1,87 @@
+/* The seal's own skin (`seal.tsx`), Tideline's dome as the athena-mini-window merge round carried
+ * it. Reads tokens only (`tokens.css`); its one input is [data-seal]. The host places .seal or
+ * .seal-tab; nothing here knows about the window around it. */
+
+/* ---- the dome ---- */
+.seal { position: relative; width: var(--seal); height: var(--seal); }
+.seal .seal-hit { all: unset; cursor: pointer; display: block; width: var(--seal); height: var(--seal); border-radius: 50%; }
+.seal .seal-hit:focus-visible { outline: 2px solid var(--seal-line); outline-offset: 2px; }
+.seal .seal-dome { display: block; width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0 0 10px var(--seal-glow)); transition: filter var(--seal-fade), opacity var(--seal-fade); }
+.seal .seal-stop-a { stop-color: var(--seal-dome-a); }
+.seal .seal-stop-b { stop-color: var(--seal-dome-b); }
+.seal .seal-orb-0 { stop-color: var(--seal-orb-core); stop-opacity: 0.55; }
+.seal .seal-orb-1 { stop-color: var(--seal-orb-edge); stop-opacity: 0.25; }
+.seal .seal-orb-2 { stop-color: var(--seal-orb-edge); stop-opacity: 0; }
+.seal .seal-cap { stroke: var(--seal-line); stroke-width: 1.6; }
+.seal .seal-gleam { fill: none; stroke: var(--seal-gleam); stroke-width: 1.4; stroke-linecap: round; }
+.seal .seal-orb { transform-origin: 38px 33px; animation: seal-breathe var(--seal-breathe) ease-in-out infinite; }
+.seal .seal-ring { fill: none; stroke: var(--seal-line); stroke-width: 1.6; stroke-dasharray: 22 78; opacity: 0; transform-origin: 38px 33px; stroke-linecap: round; }
+.seal .seal-mark { fill: none; stroke: var(--seal-mark); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; transition: opacity var(--seal-swap); }
+.seal .seal-tent path { fill: none; stroke: var(--seal-line); stroke-width: 1.2; stroke-linecap: round; opacity: 0.55; transform-origin: top center; animation: seal-sway var(--seal-sway) ease-in-out infinite; }
+.seal .seal-tent path:nth-child(2) { animation-delay: calc(var(--seal-sway) * -0.25); }
+.seal .seal-tent path:nth-child(3) { animation-delay: calc(var(--seal-sway) * -0.5); }
+.seal .seal-tent path:nth-child(4) { animation-delay: calc(var(--seal-sway) * -0.75); }
+.seal .seal-check { fill: none; stroke: var(--ok); stroke-width: 3.6; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 100; stroke-dashoffset: 100; opacity: 0; }
+.seal .seal-cross { fill: none; stroke: var(--muted-fg); stroke-width: 3.2; stroke-linecap: round; opacity: 0; transition: opacity var(--seal-swap); }
+.seal .seal-sign { fill: none; stroke: var(--human); stroke-width: 3; stroke-linecap: round; stroke-dasharray: 100; stroke-dashoffset: 100; opacity: 0; transform: rotate(-90deg); transform-origin: 38px 38px; }
+/* waiting on you: the one place the human colour sits on the seal - a ring of ink around the dome */
+.seal::after { content: ""; position: absolute; inset: -5px; border-radius: 50%; border: 2px solid var(--human); opacity: 0; transform: scale(0.9); transition: opacity var(--seal-ring-in), transform var(--seal-ring-in) var(--ease-out); pointer-events: none; }
+.seal .seal-count {
+  position: absolute; right: -8px; bottom: -3px; min-width: 22px; height: 22px; padding: 0 6px; box-sizing: border-box; border-radius: 11px;
+  background: var(--human); color: var(--on-human); font: 700 13px/22px var(--font-body); text-align: center; box-shadow: 0 2px 8px var(--human-glow);
+  transform: scale(0); transition: transform var(--seal-ring-in) var(--ease-settle); pointer-events: none;
+}
+.seal[data-counted="1"] .seal-count { transform: scale(1); }
+
+@keyframes seal-breathe { 0%, 100% { opacity: 0.75; transform: scale(0.94); } 50% { opacity: 1; transform: scale(1.06); } }
+@keyframes seal-sway { 0%, 100% { transform: skewX(0deg); } 50% { transform: skewX(9deg); } }
+@keyframes seal-spin { to { transform: rotate(360deg); } }
+@keyframes seal-listen { 0%, 100% { transform: scale(0.9); } 50% { transform: scale(1.25); } }
+@keyframes seal-speak { from { transform: scale(0.95); opacity: 0.8; } to { transform: scale(1.22); opacity: 1; } }
+@keyframes seal-inkpulse { 0% { box-shadow: 0 0 0 0 var(--human-glow); } 70% { box-shadow: 0 0 0 12px transparent; } 100% { box-shadow: 0 0 0 0 transparent; } }
+@keyframes seal-draw { to { stroke-dashoffset: 0; } }
+@keyframes seal-flash { 0% { filter: drop-shadow(0 0 18px var(--seal-line)); } 100% { filter: drop-shadow(0 0 10px var(--seal-glow)); } }
+
+/* ---- the state input ---- */
+.seal[data-seal="quiet"] .seal-dome { opacity: 0.9; }
+.seal[data-seal="welcome"] .seal-orb { animation-duration: var(--seal-greet); }
+.seal[data-seal="working"] .seal-ring { opacity: 1; animation: seal-spin var(--seal-spin) linear infinite; }
+.seal[data-seal="working"] .seal-tent path { animation-duration: var(--seal-sway-busy); }
+.seal[data-seal="hearing"] .seal-orb { animation: seal-listen var(--seal-listen) ease-in-out infinite; }
+.seal[data-seal="speaking"] .seal-orb { animation: seal-speak var(--seal-speak) ease-in-out infinite alternate; }
+.seal[data-seal="done"] .seal-ring { opacity: 1; stroke-dasharray: 100 0; stroke: var(--ok); transition: opacity var(--seal-done-fade); }
+.seal[data-seal="stopped"] .seal-ring { opacity: 1; stroke-dasharray: 100 0; stroke: var(--warn); }
+.seal[data-seal="waiting"]::after, .seal[data-seal="signing"]::after { opacity: 1; transform: scale(1); }
+.seal[data-seal="waiting"]::after { animation: seal-inkpulse var(--seal-ink) ease-out var(--seal-ink-beats); }
+/* the approve beat: the ink ring closes, then the dome settles into a drawn check */
+.seal[data-seal="signing"] .seal-sign { opacity: 1; animation: seal-draw var(--seal-sign) linear forwards; }
+.seal[data-seal="signed"] .seal-ring { opacity: 1; stroke-dasharray: 100 0; stroke: var(--ok); }
+.seal[data-seal="signed"] .seal-dome { animation: seal-flash var(--seal-sign) var(--ease) both; }
+.seal[data-seal="signed"] .seal-check { opacity: 1; animation: seal-draw var(--seal-settle) var(--ease) forwards; }
+.seal[data-seal="declined"] .seal-ring { opacity: 1; stroke-dasharray: 100 0; stroke: var(--muted-fg); }
+.seal[data-seal="declined"] .seal-cross { opacity: 1; }
+.seal[data-seal="signed"] .seal-mark, .seal[data-seal="declined"] .seal-mark { opacity: 0; }
+
+/* ---- docked: the A mark, the count and the working light, on the screen edge ---- */
+.seal-tab { position: absolute; inset: 0; }
+.seal-tab .seal-hit { all: unset; position: absolute; inset: 0; cursor: pointer; display: flex; flex-direction: column; align-items: center; justify-content: space-between; padding: 10px 0; box-sizing: border-box; }
+.seal-tab .seal-hit:hover { background: var(--wash); }
+.seal-tab .seal-hit:focus-visible { outline: 2px solid var(--seal-line); outline-offset: -3px; }
+.seal-tab .seal-a { width: 16px; height: 20px; overflow: visible; }
+.seal-tab .seal-mark { fill: none; stroke: var(--seal-line); stroke-width: 2.6; stroke-linecap: round; stroke-linejoin: round; }
+.seal-tab .seal-count { width: 20px; height: 20px; border-radius: 50%; background: var(--human); color: var(--on-human); font: 700 12px/20px var(--font-body); text-align: center; visibility: hidden; }
+.seal-tab[data-counted="1"] .seal-count { visibility: visible; animation: seal-inkpulse var(--seal-ink) ease-out 3; }
+.seal-tab .seal-light { position: absolute; left: 3px; top: 36px; width: 2px; height: 22px; border-radius: 2px; background: var(--seal-line); opacity: 0; }
+.seal-tab[data-seal="working"] .seal-light { opacity: 1; animation: seal-sweep var(--seal-tab-sweep) ease-in-out infinite; }
+@keyframes seal-sweep { 0% { top: 10px; } 50% { top: 64px; } 100% { top: 10px; } }
+
+/* ---- calm: nothing travels, nothing loops; every state still reads by colour and shape ---- */
+@media (prefers-reduced-motion: reduce) {
+  .seal *, .seal::after, .seal-tab * { animation: none !important; transition-duration: 0.001s !important; }
+  .seal[data-seal="signing"] .seal-sign { stroke-dashoffset: 50; }
+  .seal[data-seal="signed"] .seal-check { stroke-dashoffset: 0; }
+}
+:root[data-motion="calm"] .seal *, :root[data-motion="calm"] .seal::after,
+:root[data-motion="calm"] .seal-tab * { animation: none !important; transition-duration: 0.001s !important; }
+:root[data-motion="calm"] .seal[data-seal="signing"] .seal-sign { stroke-dashoffset: 50; }
+:root[data-motion="calm"] .seal[data-seal="signed"] .seal-check { stroke-dashoffset: 0; }

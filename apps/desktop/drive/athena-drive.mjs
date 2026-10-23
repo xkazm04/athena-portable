@@ -270,10 +270,23 @@ export class AthenaDriver {
     return tab;
   }
 
-  /** Open the companion's tab (`talk`, `record` or `origins`). */
+  /**
+   * Open the companion's page (`talk`, `record` or `origins`). Her ledger is one conversation; the
+   * Record and the apps she may act on are pages beside it (header buttons), and a page or an
+   * opened step rises back to the conversation with its own "Rise" button.
+   */
   async athenaTab(name) {
     await this.showAthena();
-    await this.athena.locator(`[data-tab="${name}"]`).first().click();
+    const rise = this.athena.locator('.aw-depth.open [data-act="rise"]');
+    if (name === "talk") {
+      if (await rise.count()) await rise.first().click();
+      return;
+    }
+    await this.athena.locator(`.lg-tools [data-act="${name}"]`).first().click();
+    await waitFor(() => this.athena.locator(`.aw-depth.open[aria-label="${name === "record" ? "Record" : "Origins"}"]`).count(), {
+      label: `the ${name} page`,
+      timeout: 15_000,
+    });
   }
 
   /**
@@ -285,15 +298,15 @@ export class AthenaDriver {
     return this.athena.evaluate((h) => {
       const region = document.querySelector('[aria-label="Origins"]');
       if (!region) return null;
-      // "This page offers": each row is a class chip, the tool's short name in <b>, a description.
+      // "This page offers": each row is the tool's short name in <b>, its class as a tag, a description.
       // The list is paged; its footer ("showing N of M") is returned beside it.
       const tools = {};
       for (const li of region.querySelectorAll("ul.offers > li")) {
         const name = li.querySelector("b")?.textContent?.trim();
-        const cls = /^(AUTO|GATED|READ)/.exec((li.textContent ?? "").trim())?.[1];
+        const cls = /^(AUTO|GATED|READ)$/.exec((li.querySelector('.tag[class*="cls-"]')?.textContent ?? "").trim())?.[1];
         if (name && cls) tools[name] = cls;
       }
-      const footers = [...region.querySelectorAll("p.lg-foot")].map((p) => (p.textContent ?? "").trim()).filter(Boolean);
+      const footers = [...region.querySelectorAll("p.lg-note")].map((p) => (p.textContent ?? "").trim()).filter(Boolean);
       const enable = region.querySelector(`button[aria-label="Enable ${h}"]`);
       const disable = region.querySelector(`button[aria-label="Disable ${h}"]`);
       return { host: h, enabled: Boolean(disable) && !enable, listed: Boolean(enable || disable), tools, footers };
@@ -340,40 +353,48 @@ export class AthenaDriver {
   async showAthena() {
     await this.invoke("athena_show", { focus: false }).catch(() => undefined);
     const box = this.athena.locator('textarea[name="message"]');
-    if (await box.isVisible().catch(() => false)) return;
-    const talk = this.athena.locator('[data-tab="talk"]');
+    const ledger = this.athena.locator('.aw[data-form="ledger"]');
+    const rise = this.athena.locator('.aw-depth.open [data-act="rise"]');
+    if ((await ledger.count()) && !(await rise.count()) && (await box.isVisible().catch(() => false))) return;
     // Card-forward ("waiting on you"): a decision is in front and that IS the view to read; the
     // ledger opens again once it is answered.
-    if (!(await talk.count()) && (await this.athena.locator("article.slip").count())) return;
-    // Collapsed to her seal: pressing it opens the ledger, where the conversation lives. (With
-    // the ledger open the seal would put it away, so it is pressed only when there is no rail.)
-    if (!(await talk.count())) {
-      const seal = this.athena.locator(".aw-seal");
+    if (!(await ledger.count()) && (await this.athena.locator('.aw[data-form="slip"] article.decision').count())) return;
+    // Collapsed to her seal (or her docked tab): pressing it opens the ledger, where the
+    // conversation lives. With the ledger open the seal would put it away, so it is pressed only
+    // when there is no ledger.
+    if (!(await ledger.count())) {
+      const seal = this.athena.locator(".anchor .seal-hit, .seal-tab .seal-hit");
       if (await seal.count()) await seal.first().click();
     }
-    await waitFor(() => talk.count(), { label: "her ledger", timeout: 15_000 });
-    if ((await talk.first().getAttribute("aria-selected")) !== "true") await talk.first().click();
+    await waitFor(() => ledger.count(), { label: "her ledger", timeout: 15_000 });
+    // A page or an opened step sits over the conversation: rise back to it.
+    if (await rise.count()) await rise.first().click();
     await waitFor(() => box.isVisible(), { label: "the message box", timeout: 15_000 });
   }
 
   /** Every message in the conversation log, oldest first. */
   async transcript() {
     await this.showAthena();
-    // The log's children in order: `.msg` rows (a `.msg-who` label, then the body), each turn's
-    // "What ran" list as the sibling after Athena's message, cards and sheets.
+    // The rail's rows in order: what was said (`.msg-user`, `.msg-her`: a `.msg-who` label, then
+    // the words) and what was done (`.msg-step`, `.msg-declined`: one plain sentence, its tool in
+    // `data-tool`). Each step is an act of the message before it. A stopped turn is an error,
+    // read by `errors()`; the waiting decision is read by `cards()`.
     return await this.athena.evaluate(() => {
       const log = document.querySelector('[role="log"][aria-label="Conversation"]');
       const out = [];
-      for (const el of log ? [...log.children] : []) {
-        if (el.classList.contains("msg")) {
-          const who = el.classList.contains("msg-you") ? "you" : el.classList.contains("msg-athena") ? "athena" : "other";
-          const label = el.querySelector(".msg-who")?.textContent ?? "";
-          const text = (el.textContent ?? "").slice(label.length).trim();
-          out.push({ who, text, acts: [] });
-        } else if (el.matches('ul.acts[aria-label="What ran"]') && out.length) {
-          out[out.length - 1].acts.push(
-            ...[...el.querySelectorAll("li")].map((li) => ({ text: (li.textContent ?? "").trim(), ok: li.getAttribute("data-ok") })),
-          );
+      for (const el of log ? [...log.querySelectorAll(".rail > .msg")] : []) {
+        if (el.matches(".msg-user, .msg-her")) {
+          const who = el.classList.contains("msg-user") ? "you" : "athena";
+          out.push({ who, text: (el.querySelector(".txt")?.textContent ?? "").trim(), acts: [] });
+        } else if (el.matches(".msg-step, .msg-declined")) {
+          if (!out.length) out.push({ who: "other", text: "", acts: [] });
+          const tone = el.getAttribute("data-tone");
+          out[out.length - 1].acts.push({
+            tool: el.getAttribute("data-tool") ?? "",
+            text: (el.querySelector(".st-title")?.textContent ?? "").trim(),
+            sub: (el.querySelector(".st-sub")?.textContent ?? "").trim(),
+            ok: tone === "ok" ? "1" : "0",
+          });
         }
       }
       return out;
@@ -387,7 +408,7 @@ export class AthenaDriver {
 
   /** The conversation's visible errors. */
   errors() {
-    return this.athena.evaluate(() => [...document.querySelectorAll(".msg-error")].map((e) => (e.textContent ?? "").trim()));
+    return this.athena.evaluate(() => [...document.querySelectorAll(".msg-stop .txt")].map((e) => (e.textContent ?? "").trim()));
   }
 
   /**
@@ -424,14 +445,14 @@ export class AthenaDriver {
   }
 
   /**
-   * Every decision on screen: single cards (`article.slip[data-card]`, id = the card id) and batch
-   * sheets (`article.slip[data-sheet]`, id = `sheet:<data-sheet>`), with `decision` absent while
-   * pending. `waiting` is the ledger's "and N more waiting" count beyond the ones shown.
+   * Every decision on screen: the slip's card or the ledger's gate (`article.decision[data-card]`,
+   * id = the card id) and batch sheets (`article.decision[data-sheet]`, id = `sheet:<data-sheet>`),
+   * with `decision` absent while pending.
    */
   async cards() {
     await this.showAthena();
     return await this.athena.evaluate(() =>
-      [...document.querySelectorAll("article.slip[data-card], article.slip[data-sheet]")].map((a) => ({
+      [...document.querySelectorAll("article.decision[data-card], article.decision[data-sheet]")].map((a) => ({
         id: a.hasAttribute("data-card") ? a.getAttribute("data-card") : `sheet:${a.getAttribute("data-sheet")}`,
         kind: a.hasAttribute("data-card") ? "card" : "sheet",
         label: a.getAttribute("aria-label") ?? "",
@@ -444,8 +465,8 @@ export class AthenaDriver {
 
   #slip(id) {
     return id.startsWith("sheet:")
-      ? this.athena.locator(`article.slip[data-sheet="${id.slice("sheet:".length)}"]`)
-      : this.athena.locator(`article.slip[data-card="${id}"]`);
+      ? this.athena.locator(`article.decision[data-sheet="${id.slice("sheet:".length)}"]`)
+      : this.athena.locator(`article.decision[data-card="${id}"]`);
   }
 
   async #decide(id, act) {

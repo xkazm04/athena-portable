@@ -1,0 +1,82 @@
+/* The companion preview harness only (`preview.tsx`).
+ * A neutral backdrop with her rectangle outlined. Nothing here ships in her window: `athena.html`
+ * never renders `.pv-*`. Its colours are literal on purpose: the harness is not a theme. */
+.pv-stage {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  background: #8a8f94;
+  font: calc(12px + var(--type-step))/1.4 var(--font-sans, system-ui, sans-serif);
+}
+.pv-backdrop {
+  position: absolute;
+  inset: 0;
+  background-color: #d4d7da;
+  background-image: linear-gradient(45deg, #c2c6ca 25%, transparent 25%, transparent 75%, #c2c6ca 75%),
+    linear-gradient(45deg, #c2c6ca 25%, transparent 25%, transparent 75%, #c2c6ca 75%);
+  background-size: 24px 24px;
+  background-position: 0 0, 12px 12px;
+}
+.pv-stage[data-wall="light"] .pv-backdrop {
+  background: radial-gradient(1100px 640px at 72% 18%, #ffffff, transparent 62%), linear-gradient(160deg, #e3ecef, #c5d6dd 60%, #a9c0c9);
+}
+.pv-stage[data-wall="dark"] .pv-backdrop {
+  background: radial-gradient(900px 600px at 28% 82%, #123640, transparent 62%), linear-gradient(160deg, #0b1519, #04090b 70%);
+}
+.pv-label {
+  position: absolute;
+  right: 12px;
+  bottom: 10px;
+  margin: 0;
+  padding: 3px 8px;
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #222;
+}
+.pv-bar {
+  position: absolute;
+  left: 12px;
+  bottom: 10px;
+  display: flex;
+  gap: 10px;
+  padding: 6px 10px;
+  border: 1px dashed #6b757c;
+  border-radius: 6px;
+  background: #f6f7f8;
+  color: #16191c;
+}
+.pv-bar label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 700;
+}
+.pv-bar select {
+  font: inherit;
+  padding: 2px 4px;
+}
+.pv-win {
+  position: absolute;
+  left: 56px;
+  top: 64px;
+}
+.pv-win.outline::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  outline: 1.5px dashed #e0306a;
+  pointer-events: none;
+}
+.pv-rl {
+  position: absolute;
+  left: 0;
+  top: -20px;
+  padding: 0 4px;
+  background: rgba(255, 255, 255, 0.88);
+  color: #c21f57;
+  font: calc(12px + var(--type-step)) var(--font-mono, monospace);
+  white-space: nowrap;
+}
+.pv-win:not(.outline) .pv-rl {
+  display: none;
+}

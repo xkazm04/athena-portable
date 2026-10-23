@@ -2,8 +2,9 @@
  * Every state and every fixture renders, as static markup — ADR 0026, README section 3.5.
  *
  * The view is a pure function of the model (no store, no shell), so `renderToStaticMarkup` is the
- * whole harness. The assertions are the ones a screenshot cannot make: what is on the paper, what
- * a screen reader is told, that a gate class is a word, that a waiting card shows every parameter.
+ * whole harness. The assertions are the ones a screenshot cannot make: what a person reads (plain
+ * words, never a tool's JSON), what a screen reader is told, that a waiting card carries every
+ * parameter, and that nothing runs until the person signs.
  */
 import { createElement } from "react";
 import { renderToStaticMarkup } from "react-dom/server";
@@ -15,7 +16,8 @@ import { SIZES } from "@/lib/companion";
 import { CARDS, TOOLS, fixtureIds, fixtures } from "./fixtures";
 import { modelFor, readQuery } from "./preview";
 import { cardView } from "./model";
-import CompanionView, { CaptureShown } from "./views";
+import { CaptureShown } from "./slip";
+import CompanionView from "./views";
 
 const html = (id: string) => renderToStaticMarkup(createElement(CompanionView, { model: fixtures[id]() }));
 
@@ -23,136 +25,152 @@ test("every fixture renders without throwing, and carries the state it is named 
   for (const id of fixtureIds) {
     const out = html(id);
     const form = fixtures[id]().form;
-    expect(out, id).toContain(`data-state="${form}"`);
+    expect(out, id).toContain(`data-form="${form}"`);
     expect(SIZES[form], id).toBeDefined();
   }
 });
 
-test("the seal and the tab carry no paper; every other state does", () => {
-  expect(html("seal")).not.toContain("aw-paper");
-  expect(html("tab")).not.toContain("aw-paper");
-  for (const form of ["tape", "hear", "face", "slip", "welcome", "ledger"]) {
-    expect(html(form)).toContain(`data-kind="${form}"`);
+test("no fixture shows a person a tool's raw JSON, a proposal line or a tool's arrow", () => {
+  for (const id of fixtureIds) {
+    // The technical record is the one place raw text may live, and it is closed until asked.
+    const shown = html(id).replace(/<pre class="d-raw">[\s\S]*?<\/pre>/g, "");
+    expect(shown, id).not.toMatch(/\{&quot;|OP: |TTS: |→/);
   }
+});
+
+test("the seal is the anchor in every form but the docked tab, where it is the tab itself", () => {
+  for (const form of ["seal", "tape", "hear", "face", "slip", "welcome", "ledger"]) {
+    const out = html(form);
+    expect(out, form).toContain('class="anchor"');
+    expect(out, form).toContain('class="seal"');
+  }
+  expect(html("tab")).not.toContain('class="anchor"');
+  expect(html("tab")).toContain('class="seal-tab"');
 });
 
 test("the face form draws her chosen face with what she heard or is doing under it; no other fixture draws a face", () => {
   const hearing = html("face");
   expect(hearing).toContain('data-avatar="b04-owl"');
-  expect(hearing).toContain("listening · release to send");
+  expect(hearing).toContain("Listening");
   expect(hearing).toContain("Find every invoice over 30 days and draft a chase");
   const speaking = html("face speaking");
   expect(speaking).toContain('data-avatar="d08-origami"');
-  expect(speaking).toContain("speaking");
-  expect(speaking).toContain('data-tone="work"');
+  expect(speaking).toContain("Speaking");
+  expect(speaking).toContain('data-seal="speaking"');
   for (const id of fixtureIds.filter((f) => !f.startsWith("face"))) expect(html(id), id).not.toContain("data-avatar");
 });
 
-test("the seal is one button with a label that says what is waiting", () => {
+test("the seal is one button with a label that says what is waiting, and a count only while something waits", () => {
   expect(html("seal")).toContain("Athena. Resting. Nothing is waiting on you.");
+  expect(html("seal")).toContain('data-seal="rest"');
   const waiting = html("seal waiting");
   expect(waiting).toContain("2 decisions waiting on you");
-  expect(waiting).toContain('data-cards="2"');
-  expect(waiting).toContain('data-tone="human"');
-  expect(waiting).toContain(">2</span>");
+  expect(waiting).toContain('data-seal="waiting" data-counted="1"');
+  expect(waiting).toContain('<span class="seal-count" aria-hidden="true">2</span>');
   expect(html("tab waiting")).toContain("1 decision waiting on you");
+  expect(html("tab waiting")).toContain('data-counted="1"');
+  expect(html("seal quiet")).toContain('data-seal="quiet"');
+  expect(html("tape thinking")).toContain('data-seal="working"');
 });
 
-test("the slip shows the action, the rationale, every parameter and both keys", () => {
+test("the slip says what happens to whom in plain words, carries every parameter, and both keys", () => {
   const out = html("slip");
-  expect(out).toContain("host.ledgerbox.chase");
+  expect(out).toContain("Send a reminder for INV-118");
+  expect(out).toContain("Once it is sent it cannot be taken back.");
   expect(out).toContain(CARDS[0].rationale);
-  expect(out).toContain("INV-118");
+  // every parameter, uncut, on the back of the card ("Read it first")
+  expect(out).toContain("inv_118");
   expect(out).toContain("ap@northwind.example");
+  expect(out).toContain('data-act="read"');
   expect(out).toContain('data-act="approve"');
   expect(out).toContain('data-act="decline"');
   expect(out).toContain("<kbd>A</kbd>");
-  expect(out).toContain("1 waiting");
+  expect(out).toContain("<kbd>D</kbd>");
+  expect(out).toContain("Waiting on you");
   expect(out).toContain("Nothing runs until you sign");
-  // a gate class is a word in a box, never colour alone
-  expect(out).toContain('class="chip chip-gated">GATED');
   // the page capture is labelled as a sketch wherever it is shown
   expect(out).toContain("page capture, stylised");
 });
 
-test("several cards: a count, a pip each, and the first one is the slip on show", () => {
+test("several cards: a count, a stack behind the first, and the first one is the slip on show", () => {
   const out = html("slip many");
-  expect(out).toContain("3 waiting");
-  expect(out.match(/<i class="(cur)?"><\/i>/g)).toHaveLength(3);
+  expect(out).toContain("Waiting on you · 3 decisions");
+  expect(out).toContain('data-stack="many"');
+  expect(html("slip")).toContain('data-stack="1"');
 });
 
-test("while the answer is on its way nothing is stamped and the buttons say Sending", () => {
+test("while the answer is on its way nothing is stamped and the buttons say so", () => {
   const out = html("slip sending");
-  expect(out).toContain("Sending…");
-  expect(out).not.toContain("sl-stamp");
+  expect(out).toMatch(/Signing…|Declining…/);
   expect(out).not.toContain("data-decision=");
-  expect(out).not.toContain("APPROVED");
   expect(out).toMatch(/data-act="approve"[^>]*disabled/);
   expect(out).toMatch(/data-act="decline"[^>]*disabled/);
-  // the card is still the card: the action and the parameters are on it
-  expect(out).toContain("host.ledgerbox.chase");
-  expect(out).toContain("INV-118");
+  // the card is still the card: what it does and its parameters are on it
+  expect(out).toContain("Send a reminder for INV-118");
+  expect(out).toContain("inv_118");
   expect(out).toContain("Nothing runs until you sign");
 });
 
-test("a refused answer leaves the card with the buttons back on and one plain sentence under them", () => {
+test("a refused answer leaves the card with the buttons back on and one plain sentence on it", () => {
   const out = html("slip refused");
   expect(out).toContain("That answer was refused: this decision belongs to a different app");
   expect(out).toContain("Focus the app this decision is about and try again.");
-  expect(out).not.toContain("sl-stamp");
+  expect(out).not.toContain("data-decision=");
   expect(out).not.toMatch(/data-act="approve"[^>]*disabled/);
   expect(out).toContain("<kbd>A</kbd>");
-  // the refusal sits after the buttons
-  expect(out.indexOf('data-act="decline"')).toBeLessThan(out.indexOf("data-refusal"));
+  expect(out).toContain('role="alert"');
   expect(html("slip")).not.toContain("data-refusal");
 });
 
-test("a stamped slip carries the impression and its buttons are disabled, so it cannot be answered twice", () => {
+test("a signed slip says so and its buttons are disabled, so it cannot be answered twice", () => {
   const approved = html("slip approved");
   expect(approved).toContain('data-decision="approved"');
-  expect(approved).toContain("APPROVED");
-  expect(approved).toContain("COUNTERSIGNED BY YOU");
+  expect(approved).toContain("Signed.");
   expect(approved).toMatch(/data-act="approve"[^>]*disabled/);
-  expect(approved).toContain('data-decided="approve"');
+  expect(approved).toContain('data-decided="stamped"');
+  expect(approved).toContain('data-seal="signed"');
   const declined = html("slip declined");
   expect(declined).toContain('data-decision="declined"');
-  expect(declined).toContain("NOTHING WAS SENT");
-  expect(html("slip tearing")).toContain('data-tear="1"');
-  expect(html("slip")).not.toContain("sl-stamp");
+  expect(declined).toContain("Declined.");
+  expect(declined).toContain("Nothing was changed.");
+  expect(declined).toContain('data-seal="declined"');
+  expect(html("slip tearing")).toContain('data-decided="tearing"');
+  expect(html("slip")).not.toContain("data-decision=");
 });
 
-test("the tape has the previous step dim and the current one live, each with its gate class", () => {
+test("the tape says what she is doing in plain words, which step it is, and what came of it", () => {
   const out = html("tape");
-  expect(out).toContain("tp-line dim");
-  expect(out).toContain("tp-line on in");
-  expect(out).toContain('class="chip chip-auto">AUTO');
-  expect(out).toContain("ledgerbox");
-  expect(html("tape thinking")).toContain("thinking");
+  expect(out).toContain("Done · step 2");
+  expect(out).toContain('data-beat="ok"');
+  expect(out).toContain("Draft saved on INV-118 in Ledgerbox");
+  expect(out).toContain('class="thread"');
+  expect(out).not.toContain("draft_reminder");
+  expect(html("tape thinking")).toContain("Thinking");
   const done = html("tape done");
-  expect(done).toContain("done");
-  // the finished line comes in as the working line did, not by replacing it in one frame
-  expect(done).toContain('class="tp-line on in"');
-  expect(done).toContain("The record has every call");
+  expect(done).toContain(">Done<");
+  expect(done).toContain("tape-swap");
+  expect(done).not.toContain('class="thread"');
 });
 
 test("the hear tape shows the words so far", () => {
   const out = html("hear");
-  expect(out).toContain("listening · release to send");
+  expect(out).toContain("Listening · release to send");
   expect(out).toContain("Find every invoice over 30 days and draft a chase");
-  expect(out).toContain('data-listening="1"');
+  expect(out).toContain('data-seal="hearing"');
 });
 
-test("welcome: the four tiers, the two promises, and the two buttons with their keys", () => {
+test("welcome: who she is, the three promises, the engine, and the two buttons with their keys", () => {
   const out = html("welcome");
   expect(out).toContain("Athena is here.");
-  expect(out).toContain("remembers");
-  expect(out).toContain("reaches");
+  expect(out).toContain("She reads the page you are on.");
+  expect(out).toContain("She asks first.");
+  expect(out).toContain("It all runs on this machine.");
   expect(out).toContain("Engine: Claude Code, ready.");
   expect(out).toContain("She never asks for a key.");
   expect(out).toContain("Open your first app");
   expect(out).toContain("<kbd>Enter</kbd>");
   expect(out).toContain("Later");
-  expect(out).toContain("ASKS FIRST");
+  expect(out).toContain('data-seal="welcome"');
 });
 
 test("welcome: no tick until the probe has answered, and nothing in it is jargon", () => {
@@ -191,15 +209,20 @@ test("after Later the empty Talk says Main is hidden and offers the way back", (
   expect(html("ledger empty")).not.toContain("Main is hidden");
 });
 
-test("the ledger has three tabs, the waiting card inline in Talk, and a composer", () => {
+test("the ledger is one conversation with the waiting card at its foot, the Record and the apps a press away, and a composer", () => {
   const talk = html("ledger");
-  expect(talk).toContain('role="tablist"');
-  expect(talk.match(/role="tab"/g)).toHaveLength(3);
-  expect(talk).toContain('aria-selected="true"');
-  expect(talk).toContain("slip slip-inline");
+  expect(talk).toContain('class="rail"');
+  expect(talk).toContain('class="gate decision"');
   expect(talk).toContain('aria-label="Message Athena"');
+  expect(talk).toContain('data-act="record"');
+  expect(talk).toContain('data-act="origins"');
   expect(talk).toContain("Keep Athena on top of other windows");
-  expect(talk).toContain("Put the ledger away");
+  expect(talk).toContain("Fold back into the seal");
+  // every step opens one level down
+  expect(talk).toContain('class="step"');
+  expect(talk).toContain("Read 4 overdue invoices in Ledgerbox");
+  // a level below that is not open is inert
+  expect(talk).toMatch(/class="aw-depth"[^>]*inert/);
 });
 
 test("the ledger says why the composer is off, and offers a question to ask otherwise", () => {
@@ -213,7 +236,7 @@ test("the ledger says why the composer is off, and offers a question to ask othe
   expect(degraded).toContain("The turn stopped");
   expect(degraded).toContain("<details");
   expect(degraded).toContain("engine_error");
-  const sentence = /<p>(Athena could not start[^<]*)<\/p>/.exec(degraded)?.[1] ?? "";
+  const sentence = /<div class="txt">(Athena could not start[^<]*)<\/div>/.exec(degraded)?.[1] ?? "";
   expect(sentence).not.toMatch(/engine_error|FileNotFoundError|origin|manifest|session/);
 });
 
@@ -222,15 +245,14 @@ test("Record has two labelled lists, each with its own (showing N of M), and the
   expect(out).toContain("This window");
   expect(out).toContain("Earlier (kept on this computer)");
   expect(out).not.toContain("This session");
-  expect(out).toContain("host.ledgerbox.list_overdue");
+  // what happened in plain words, the tool's name beside it for the technical eye
+  expect(out).toContain("Read 4 overdue invoices in Ledgerbox");
+  expect(out).toContain("host.ledgerbox.read_inbox");
   expect(out).toContain("approved");
   expect(out).toContain("refused");
-  // the app (origin host) and the gate class on a decision row
   expect(out).toContain("ledgerbox");
-  expect(out).toContain('class="chip chip-gated">GATED');
-  // a clock on every row that carries a time
-  expect(out).toMatch(/class="rec-c">\d{2}:\d{2}</);
-  // every list says how much of itself it shows
+  expect(out).toContain('class="rec-cls">GATED');
+  expect(out).toMatch(/<span>\d{2}:\d{2}<\/span>/);
   expect(out).toContain("(showing 4 of 4)");
   expect(out).toContain("(showing 2 of 5)");
   expect(out).toContain("(showing 2 of 14)");
@@ -250,7 +272,7 @@ test("the Record's header claims completeness only when every list is whole", ()
 test("Origins lists what the page offers with the gate's class, and the apps she has seen", () => {
   const out = html("ledger origins");
   expect(out).toContain("This page offers");
-  expect(out).toContain('class="chip chip-gated">GATED');
+  expect(out).toContain('class="tag cls-gated">GATED');
   expect(out).toContain("ledgerbox.local");
   expect(out).toContain("calendar.example");
   expect(out).toContain("Enable");
@@ -259,7 +281,7 @@ test("Origins lists what the page offers with the gate's class, and the apps she
   expect(out).toContain("hand, tier 2");
 });
 
-test("the paper is keyed so it unrolls again, and orientation mirrors the drawing", () => {
+test("orientation is the model's: Rust seats the seal, the drawing follows", () => {
   const left = html("slip");
   expect(left).toContain('data-side="left"');
   const flipped = renderToStaticMarkup(
@@ -287,7 +309,7 @@ test("a handed-over playbook shows her plan before the first turn: steps, tabs, 
   expect(out).toContain("Open a reimbursement case");
   expect(out).toContain("Working on");
   // The generic suggestions give way to the plan.
-  expect(out).not.toContain("aw-btn-sugg");
+  expect(out).not.toContain('class="chip"');
 });
 
 test("a card that carries a capture draws that capture, and a missing one says why", () => {
@@ -416,7 +438,7 @@ test("each Enable or Disable button names its app and says its state once, in it
   const out = html("ledger origins");
   expect(out).toMatch(/aria-label="(Enable|Disable) calendar\.example"/);
   expect(out).toMatch(/aria-label="(Enable|Disable) ledgerbox\.local"/);
-  expect(out).not.toMatch(/<button[^>]*aw-btn-toggle[^>]*aria-pressed/);
+  expect(out).not.toMatch(/<button[^>]*aria-label="(Enable|Disable)[^"]*"[^>]*aria-pressed/);
 });
 
 test("the Speak button's accessible name contains its visible word, and says what holding it does", () => {
@@ -492,7 +514,7 @@ test("one turn's cards in two apps are one checklist, labelled by app and tab in
   expect(out).toContain("3 requests in ledgerbox and tidycrm");
   const groups = [...out.matchAll(/data-group="true">([^<]*)</g)].map((m) => m[1]);
   expect(groups).toEqual(["ledgerbox - Invoices", "tidycrm - Contacts"]);
-  expect(out.indexOf("host.ledgerbox.send_reminder")).toBeLessThan(out.indexOf("host.tidycrm.add_note"));
+  expect(out.indexOf("Send a reminder")).toBeLessThan(out.indexOf("Add a note"));
   expect(out).toContain("Approve 3 of 3");
 });
 
@@ -519,6 +541,7 @@ test("Stop is offered wherever she is shown working, and nowhere else (ADR 0115)
   expect(working).toContain('data-act="stop"');
   // A word a screen reader can act on, not an icon alone.
   expect(working).toMatch(/<button[^>]*data-act="stop"[^>]*>Stop<\/button>/);
+  expect(html("tape")).toMatch(/<button[^>]*data-act="stop"[^>]*aria-label="Stop her working"/);
 });
 
 test("case 4: a connector card says who it acts as under its where line, in Gmail's name (ADR 0116)", () => {

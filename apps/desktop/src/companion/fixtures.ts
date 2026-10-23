@@ -33,9 +33,9 @@ import {
 const ORIGIN = "https://ledgerbox.local";
 
 export const TOOLS: ToolRow[] = [
-  { name: "host.ledgerbox.list_overdue", origin: "host:ledgerbox", class: "AUTO", tier: 1, description: "Invoices past their due date." },
-  { name: "host.ledgerbox.read_client", origin: "host:ledgerbox", class: "READ", tier: 1, description: "One client and their open invoices." },
-  { name: "host.ledgerbox.chase", origin: "host:ledgerbox", class: "GATED", tier: 1, description: "Send a chase for one invoice." },
+  { name: "host.ledgerbox.read_inbox", origin: "host:ledgerbox", class: "AUTO", tier: 1, description: "Invoices under a filter, worst first." },
+  { name: "host.ledgerbox.draft_reminder", origin: "host:ledgerbox", class: "AUTO", tier: 1, description: "Write a payment reminder and save it as a draft." },
+  { name: "host.ledgerbox.send_reminder", origin: "host:ledgerbox", class: "GATED", tier: 1, description: "Send the saved draft reminder to the client's billing contact." },
   { name: "host.ledgerbox.page_read", origin: "host:ledgerbox", class: "AUTO", tier: 2, description: "Read the page, or the part a ref names." },
   { name: "core.recall", origin: "core", class: "READ", tier: 0, description: "Search memory; the capped answer returns as a system episode." },
 ];
@@ -45,8 +45,8 @@ function card(id: string, invoice: string, to: string, why: string): DecisionReq
     kind: "decision.requested",
     id,
     decision_kind: "approve",
-    action: "host.ledgerbox.chase",
-    params: { invoice, to },
+    action: "host.ledgerbox.send_reminder",
+    params: { id: `inv_${invoice.slice(4)}`, to },
     rationale: why,
     options: [
       { id: "approve", label: "approve" },
@@ -96,9 +96,14 @@ export const CARDS: DecisionRequested[] = [
 
 const TURN: TranscriptEntry[] = [
   { id: "u1", kind: "user", text: "Find every invoice over 30 days and draft a chase for each." },
-  { id: "a1", kind: "assistant", text: "Let me read the list." },
-  { id: "c1", kind: "tool", text: "host.ledgerbox.list_overdue → INV-118, INV-124, INV-131", tier: 1, ok: true, at: "2026-09-30 09:41:20" },
-  { id: "c2", kind: "tool", text: "host.ledgerbox.read_client → Northwind, 3 open invoices", tier: 1, ok: true, at: "2026-09-30 09:41:24" },
+  {
+    id: "a1",
+    kind: "assistant",
+    text: 'Let me read the inbox first.\nOP: {"op": "propose_action", "action": "host.ledgerbox.read_inbox", "params": {"filter": "overdue"}}',
+  },
+  // The tool rows are the run store's own shape: the app's answer as raw JSON (the recorded sessions).
+  { id: "c1", kind: "tool", text: "host.ledgerbox.read_inbox → {\"showing\":4,\"of\":4,\"page\":1,\"pages\":1,\"items\":[{\"id\":\"inv_118\",\"number\":\"INV-118\",\"client\":\"Northwind Traders\",\"contact_name\":\"Ana Ruiz\",\"contact_email\":\"ap@northwind.example\",\"state\":\"overdue\",\"category\":\"design\",\"due_at\":\"2026-09-01\",\"days_overdue\":41,\"amount\":4800,\"paid\":0,\"balance\":4800,\"paid_ratio\":0,\"last_payment_at\":null,\"candidates\":0,\"has_draft_reminder\":false,\"reminders_sent\":1},{\"id\":\"inv_124\",\"number\":\"INV-124\",\"client\":\"Kestrel & Co\",\"contact_name\":\"Tom Hale\",\"contact_email\":\"ap@kestrel.example\",\"state\":\"overdue\",\"category\":\"design\",\"due_at\":\"2026-09-01\",\"days_overdue\":36,\"amount\":2250,\"paid\":1800,\"balance\":450,\"paid_ratio\":0.8,\"last_payment_at\":\"2026-08-14\",\"candidates\":0,\"has_draft_reminder\":false,\"reminders_sent\":1},{\"id\":\"inv_131\",\"number\":\"INV-131\",\"client\":\"Pinegrove Studio\",\"contact_name\":\"Lena Ott\",\"contact_email\":\"ap@pinegrove.example\",\"state\":\"overdue\",\"category\":\"design\",\"due_at\":\"2026-09-01\",\"days_overdue\":33,\"amount\":1250,\"paid\":0,\"balance\":1250,\"paid_ratio\":0,\"last_payment_at\":null,\"candidates\":0,\"has_draft_reminder\":false,\"reminders_sent\":0},{\"id\":\"inv_137\",\"number\":\"INV-137\",\"client\":\"Halden Ferry\",\"contact_name\":\"Ivo Brandt\",\"contact_email\":\"billing@halden.example\",\"state\":\"overdue\",\"category\":\"design\",\"due_at\":\"2026-09-18\",\"days_overdue\":12,\"amount\":960,\"paid\":0,\"balance\":960,\"paid_ratio\":0,\"last_payment_at\":null,\"candidates\":0,\"has_draft_reminder\":false,\"reminders_sent\":0,\"dispute\":\"Client says the second revision was out of scope.\"}],\"filter\":\"overdue\"}", tier: 1, ok: true, at: "2026-09-30 09:41:20" },
+  { id: "c2", kind: "tool", text: "host.ledgerbox.draft_reminder → {\"ok\":true,\"message\":\"Draft saved on INV-118.\",\"draft\":{\"to\":\"ap@northwind.example\",\"subject\":\"INV-118 is 41 days past due\",\"body\":\"Hello Ana,\\n\\nA reminder that INV-118 for $4,800.00 was due on 12 September and is now 41 days past due. Could you let me know when we can expect payment?\\n\\nThank you,\\nMira - Lumen Studio\"}}", tier: 1, ok: true, at: "2026-09-30 09:41:24" },
   {
     id: "a2",
     kind: "assistant",
@@ -146,7 +151,7 @@ const LEDGER_WHOLE: LedgerSnapshot = { ...LEDGER, footer: "", showing: 2, total:
 const DECISIONS: SessionDecision[] = [
   {
     id: "apr_0000000000a0",
-    action: "host.ledgerbox.chase",
+    action: "host.ledgerbox.send_reminder",
     origin: "host:ledgerbox",
     result: "approved",
     reason: null,
@@ -154,7 +159,7 @@ const DECISIONS: SessionDecision[] = [
   },
   {
     id: "apr_00000000009f",
-    action: "host.ledgerbox.chase",
+    action: "host.ledgerbox.send_reminder",
     origin: "host:ledgerbox",
     result: "refused",
     reason: "foreign_origin",
@@ -170,7 +175,7 @@ const EARLIER: EarlierRecord = {
       ts: "2026-09-29 16:20:00",
       tab_id: null,
       origin: "host:ledgerbox",
-      tool: "host.ledgerbox.chase",
+      tool: "host.ledgerbox.send_reminder",
       tier: 1,
       class: "GATED",
       outcome: "declined",
@@ -183,7 +188,7 @@ const EARLIER: EarlierRecord = {
       ts: "2026-09-29 16:12:30",
       tab_id: null,
       origin: "host:ledgerbox",
-      tool: "host.ledgerbox.chase",
+      tool: "host.ledgerbox.send_reminder",
       tier: 1,
       class: "GATED",
       outcome: "approved",
@@ -265,7 +270,8 @@ function model(setup: Setup): CompanionModel {
     machine: machineAfter(...setup.events),
     run: {
       phase: setup.phase ?? "idle",
-      transcript: setup.transcript ?? [],
+      // Cards are filed by a turn: the turn is on the transcript, so a card can name who it reaches.
+      transcript: setup.transcript ?? (setup.cards?.length ? TURN : []),
       cards,
       summary: null,
       error: setup.phase === "error" ? { reason: "engine_error", detail: "the CLI reported an error and stopped" } : null,
@@ -458,6 +464,19 @@ export const fixtures: Record<string, () => CompanionModel> = {
   ledger: () =>
     model({
       events: [INIT, { t: "cards", n: 1 }, { t: "seal" }],
+      cards: one,
+      transcript: TURN,
+    }),
+  // A step opened one level below the conversation: the overdue list as its table.
+  "ledger step": () =>
+    model({
+      events: [INIT, { t: "cards", n: 1 }, { t: "seal" }, { t: "descend", id: "c1" }],
+      cards: one,
+      transcript: TURN,
+    }),
+  "ledger read first": () =>
+    model({
+      events: [INIT, { t: "cards", n: 1 }, { t: "seal" }, { t: "descend", id: "decision:apr_0000000000a1" }],
       cards: one,
       transcript: TURN,
     }),

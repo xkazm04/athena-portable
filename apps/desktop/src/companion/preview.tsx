@@ -22,6 +22,8 @@ import type { LedgerTab } from "./machine";
 import type { CompanionModel } from "./model";
 import CompanionView from "./views";
 
+import "./preview.css";
+
 export interface PreviewQuery {
   fixture: string;
   tab: LedgerTab | null;

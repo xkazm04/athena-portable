@@ -551,3 +551,31 @@ test("growing out of the seal is marked as an opening, and nothing else is", () 
   expect(first.s().form).toBe("welcome");
   expect(first.s().opened).toBe(false);
 });
+
+test("a step opens one level below the conversation; Esc rises before it closes, and leaving the ledger forgets the level", () => {
+  const r = rig();
+  r.d.dispatch({ t: "seal" });
+  expect(r.s().form).toBe("ledger");
+  r.d.dispatch({ t: "descend", id: "t1" });
+  expect(r.s().depth).toBe("t1");
+  r.d.dispatch({ t: "esc" });
+  expect(r.s().depth).toBeNull();
+  expect(r.s().form).toBe("ledger");
+  r.d.dispatch({ t: "tab", tab: "record" });
+  r.d.dispatch({ t: "esc" });
+  expect(r.s().tab).toBe("talk");
+  expect(r.s().form).toBe("ledger");
+  r.d.dispatch({ t: "descend", id: "t2" });
+  r.d.dispatch({ t: "rise" });
+  expect(r.s().depth).toBeNull();
+  r.d.dispatch({ t: "descend", id: "t3" });
+  r.d.dispatch({ t: "seal" });
+  expect(r.s().form).not.toBe("ledger");
+  expect(r.s().depth).toBeNull();
+});
+
+test("a descent asked for outside the ledger opens nothing", () => {
+  const r = rig();
+  r.d.dispatch({ t: "descend", id: "t1" });
+  expect(r.s().depth).toBeNull();
+});
