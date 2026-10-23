@@ -1,0 +1,17 @@
+# SYNTHETIC, for apps/desktop/e2e/shadowrunr. One blank line separates two provider rounds; a '#'
+# line is a note. The `claude -p - --output-format stream-json` shape the other e2e transcripts use.
+# {{NAME}} is filled at run time by support/athena.ts renderTranscript (escaped for this line).
+# list_sessions, then open_moment on a real session line, then the answer.
+{"type":"system","subtype":"init","session_id":"01J9E2ESHADOW","model":"scripted-opus","tools":[],"cwd":"~"}
+{"type":"assistant","message":{"id":"msg_01","role":"assistant","content":[{"type":"text","text":"Here are the sandbox sessions.\n"}]}}
+{"type":"assistant","message":{"id":"msg_01","role":"assistant","content":[{"type":"text","text":"OP: {\"op\":\"propose_action\",\"action\":\"host.shadowrunr.list_sessions\",\"params\":{\"limit\":5},\"rationale\":\"find the latest session\"}"}]}}
+{"type":"result","subtype":"success","is_error":false,"duration_ms":1200,"num_turns":1,"total_cost_usd":0.0123,"usage":{"input_tokens":1840,"output_tokens":96},"session_id":"01J9E2ESHADOW"}
+
+{"type":"system","subtype":"init","session_id":"01J9E2ESHADOW","model":"scripted-opus","tools":[],"cwd":"~"}
+{"type":"assistant","message":{"id":"msg_01","role":"assistant","content":[{"type":"text","text":"Opening the moment.\n"}]}}
+{"type":"assistant","message":{"id":"msg_01","role":"assistant","content":[{"type":"text","text":"OP: {\"op\":\"propose_action\",\"action\":\"host.shadowrunr.open_moment\",\"params\":{\"session\":\"{{SESSION}}\",\"line\":{{LINE}}},\"rationale\":\"the weakest moment of the latest session\"}"}]}}
+{"type":"result","subtype":"success","is_error":false,"duration_ms":1200,"num_turns":1,"total_cost_usd":0.0123,"usage":{"input_tokens":1840,"output_tokens":96},"session_id":"01J9E2ESHADOW"}
+
+{"type":"system","subtype":"init","session_id":"01J9E2ESHADOW","model":"scripted-opus","tools":[],"cwd":"~"}
+{"type":"assistant","message":{"id":"msg_01","role":"assistant","content":[{"type":"text","text":"That line is where the session sagged.\n"}]}}
+{"type":"result","subtype":"success","is_error":false,"duration_ms":1200,"num_turns":1,"total_cost_usd":0.0123,"usage":{"input_tokens":1840,"output_tokens":96},"session_id":"01J9E2ESHADOW"}

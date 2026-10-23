@@ -1,0 +1,13 @@
+# SYNTHETIC, for apps/desktop/e2e/shadowrunr. One blank line separates two provider rounds; a '#'
+# line is a note. The `claude -p - --output-format stream-json` shape the other e2e transcripts use.
+# {{NAME}} is filled at run time by support/athena.ts renderTranscript (escaped for this line).
+# read_character_doc bible, then set_character_doc (GATED); a decline runs nothing and asks the engine nothing more.
+{"type":"system","subtype":"init","session_id":"01J9E2ESHADOW","model":"scripted-opus","tools":[],"cwd":"~"}
+{"type":"assistant","message":{"id":"msg_01","role":"assistant","content":[{"type":"text","text":"Reading Malakor's bible.\n"}]}}
+{"type":"assistant","message":{"id":"msg_01","role":"assistant","content":[{"type":"text","text":"OP: {\"op\":\"propose_action\",\"action\":\"host.shadowrunr.read_character_doc\",\"params\":{\"id\":\"malakor\",\"doc\":\"bible.md\"},\"rationale\":\"read before proposing an edit\"}"}]}}
+{"type":"result","subtype":"success","is_error":false,"duration_ms":1200,"num_turns":1,"total_cost_usd":0.0123,"usage":{"input_tokens":1840,"output_tokens":96},"session_id":"01J9E2ESHADOW"}
+
+{"type":"system","subtype":"init","session_id":"01J9E2ESHADOW","model":"scripted-opus","tools":[],"cwd":"~"}
+{"type":"assistant","message":{"id":"msg_01","role":"assistant","content":[{"type":"text","text":"One sharper line for the bible needs your approval.\n"}]}}
+{"type":"assistant","message":{"id":"msg_01","role":"assistant","content":[{"type":"text","text":"OP: {\"op\":\"propose_action\",\"action\":\"host.shadowrunr.set_character_doc\",\"params\":{\"id\":\"malakor\",\"doc\":\"bible.md\",\"text\":\"{{TEXT}}\",\"base_digest\":\"{{DIGEST}}\"},\"rationale\":\"a sharper bible line\"}"}]}}
+{"type":"result","subtype":"success","is_error":false,"duration_ms":1200,"num_turns":1,"total_cost_usd":0.0123,"usage":{"input_tokens":1840,"output_tokens":96},"session_id":"01J9E2ESHADOW"}
