@@ -28,6 +28,17 @@ answer key was written for other rows, so no dollar figure is claimed. Every mod
 turn the rehearsal ran is also written to the live ledger under this session's conversation, so
 the spend is on the record the person reads. One showcase per session; closing the session stops
 it at the next turn boundary.
+
+**Honest labels** (chores UAT 2026-10-23, theme 5). The rehearsal is the person's practice run,
+not the example's: :func:`for_the_person` drops the example persona's self-introduction from the
+world's phase lines and opens with "Run the chore we agreed: <the brief's command>". ``found_usd``
+sums only ``money_back`` cards (``economics.kinds`` of ``playbook.json``, default ``money_back``;
+``None`` when no target is money back), and the trace's cards each carry their ``kind`` — a
+``count`` card carries no dollar value. On a shaped world (:func:`answer_key_holds` false) the
+trace's cards carry the outcome ``"proposed"`` and no value — the old answer key no longer grades
+them — and the first turn carries ``adjusted``, the number of things the shape changed
+(:func:`adjusted_count`). The bench runs with ``approve="none"``, so every card is one Athena
+proposed for signature and nothing was sent; the studio words them as "would propose".
 """
 
 from __future__ import annotations
@@ -61,10 +72,16 @@ __all__ = [
     "SHAPE_SYSTEM",
     "SHOWCASE_MODEL",
     "SHOWN_FILES",
+    "VALUE_KINDS",
     "ShapeFailed",
     "Showcase",
+    "adjusted_count",
+    "annotate_trace",
     "answer_key_holds",
     "apply_shape",
+    "for_the_person",
+    "kinds_of",
+    "money_back_found",
     "shape_prompt",
     "shape_world",
 ]
@@ -78,6 +95,10 @@ SHOWCASE_MODEL = "claude-sonnet-5-5"
 TABLES_CAP = 24_000
 CELL_CAP = 500
 NAME_CAP = 80
+#: How much of the brief's command the rehearsal's opening line quotes.
+OPENING_CAP = 240
+#: What a figure is (the fix contract's kinds); only ``money_back`` is money that comes back.
+VALUE_KINDS = ("money_back", "money_protected", "penalty_avoided", "count")
 
 SHAPE_SYSTEM = f"""\
 You shape a practice world for a rehearsal. A person approved a brief for a playbook (a chore \
@@ -194,6 +215,7 @@ def shape_world(
         raise ShapeFailed(f"the shape leg failed: {why}")
     spec = result.value
     shaped_world, shaped_truth, shaped_playbook = apply_shape(world, truth, playbook, spec, renames)
+    shaped_world = for_the_person(shaped_world, brief, shaped_playbook)
     if brief.command.strip():
         # The rehearsal works toward the person's own command, the one they approved.
         shaped_playbook["command"] = brief.command.strip()
@@ -226,6 +248,137 @@ def answer_key_holds(spec: Mapping[str, Any], world: Mapping[str, Any]) -> bool:
         return False
     today = spec.get("today", "")
     return not today or today == world.get("today", "")
+
+
+def adjusted_count(spec: Mapping[str, Any], world: Mapping[str, Any]) -> int:
+    """How many things the shape changed: one per row edit, and one when it moved ``today``."""
+    rows = spec.get("rows")
+    today = spec.get("today", "")
+    moved = bool(today) and today != world.get("today", "")
+    return (len(rows) if isinstance(rows, list) else 0) + (1 if moved else 0)
+
+
+#: A sentence in which the example persona introduces themself ("I'm Marian Oyelaran; ...");
+#: "I'm in Procore Pay." says where she is, not who, and stays.
+_INTRO = re.compile(
+    r"^\s*(?:I['\u2019]m|I am|I run|My name is|My name's)\b(?!\s+(?:in|on|at)\b)", re.IGNORECASE
+)
+_SENTENCE_END = re.compile(r"(?<=[.!?])\s+")
+
+
+def for_the_person(
+    world: Mapping[str, Any], brief: Brief, playbook: Mapping[str, Any]
+) -> dict[str, Any]:
+    """``world`` with its phase lines spoken for the person, not the example persona; a new object.
+
+    Every sentence in which the example persona introduces themself is dropped from every phase
+    line, and the first phase opens with "Run the chore we agreed: <the brief's command>" (the
+    playbook's short title when the brief has no command), so the rehearsal never tells Athena it
+    is someone the person is not. The rest of each line (which portal, what to read, what to do)
+    stays: it is the chore's own script.
+    """
+    out = copy.deepcopy(dict(world))
+    phases = out.get("phases")
+    if not isinstance(phases, list):
+        return out
+    agreed = " ".join(brief.command.split()) or str(
+        playbook.get("short_title") or playbook.get("title") or ""
+    )
+    if len(agreed) > OPENING_CAP:
+        cut = agreed[:OPENING_CAP].rsplit(" ", 1)[0]
+        agreed = f"{cut} (the rest is in the brief)"
+    opening = f"Run the chore we agreed: {agreed.rstrip('.')}." if agreed else ""
+    first = True
+    for phase in phases:
+        if not isinstance(phase, dict) or not isinstance(phase.get("message"), str):
+            continue
+        kept = [
+            part
+            for part in _SENTENCE_END.split(phase["message"].strip())
+            if part and not _INTRO.match(part)
+        ]
+        line = " ".join(kept)
+        if first and opening:
+            line = f"{opening} {line}".strip()
+        first = False
+        phase["message"] = line or opening
+    return out
+
+
+def kinds_of(playbook: Mapping[str, Any]) -> dict[str, str]:
+    """``economics.kinds`` of a ``playbook.json``: target tool -> kind, unknown kinds dropped
+    (a tool it does not name is ``money_back``, the fix contract's default)."""
+    economics = playbook.get("economics")
+    raw = economics.get("kinds") if isinstance(economics, Mapping) else None
+    if not isinstance(raw, Mapping):
+        return {}
+    return {str(k): str(v) for k, v in raw.items() if v in VALUE_KINDS}
+
+
+def money_back_found(
+    score: Mapping[str, Any], kinds: Mapping[str, str], targets: Sequence[str]
+) -> float | None:
+    """The money that comes back in a bench score: right cards on ``money_back`` tools only.
+
+    ``None`` when no target tool of the playbook is ``money_back`` (unmeasured, not zero). When
+    every target is money back the bench's own ``value_found_usd`` is the figure (the same sum);
+    otherwise the right cards are summed by kind, and a score without ``cards`` is ``None``.
+    """
+    money = [t for t in targets if kinds.get(t, "money_back") == "money_back"]
+    if not money:
+        return None
+    whole = score.get("value_found_usd")
+    if len(money) == len(targets) and isinstance(whole, int | float):
+        return round(float(whole), 2)
+    cards = score.get("cards")
+    if not isinstance(cards, list):
+        return None
+    total = 0.0
+    for card in cards:
+        if not isinstance(card, Mapping) or card.get("outcome") != "correct":
+            continue
+        if kinds.get(str(card.get("action", "")), "money_back") != "money_back":
+            continue
+        value = card.get("value_usd")
+        if isinstance(value, int | float):
+            total += float(value)
+    return round(total, 2)
+
+
+def annotate_trace(
+    trace: Sequence[Mapping[str, Any]],
+    kinds: Mapping[str, str],
+    *,
+    holds: bool,
+    adjusted: int,
+) -> tuple[dict[str, Any], ...]:
+    """The rehearsal's trace as the studio may show it; new objects.
+
+    Each card carries its ``kind``; a ``count`` card loses its value (a scoring weight is never
+    dollars). When the answer key does not hold, each card's outcome is ``"proposed"`` and it
+    carries no value (the key was written for other rows, so it grades nothing), and the first
+    turn carries ``adjusted``, how many things the shape changed.
+    """
+    out: list[dict[str, Any]] = []
+    for turn in trace:
+        shown = dict(turn)
+        raw_cards = turn.get("cards")
+        if isinstance(raw_cards, list):
+            cards = []
+            for raw in raw_cards:
+                card = dict(raw) if isinstance(raw, Mapping) else {}
+                kind = kinds.get(str(card.get("action", "")), "money_back")
+                card["kind"] = kind
+                if kind == "count" or not holds:
+                    card["value_usd"] = None
+                if not holds:
+                    card["outcome"] = "proposed"
+                cards.append(card)
+            shown["cards"] = cards
+        out.append(shown)
+    if out and not holds:
+        out[0]["adjusted"] = adjusted
+    return tuple(out)
 
 
 def apply_shape(
@@ -567,20 +720,23 @@ class Showcase:
         )
         if session.cancelled.is_set():
             raise ShowcaseCancelled
-        trace = tuple(trace_of(report))
+        raw_trace = trace_of(report)
         errors = [str(e) for e in report.get("errors", [])]
-        if not trace:
+        if not raw_trace:
             raise ShapeFailed(errors[0][:300] if errors else "the rehearsal ran no turn")
         score = report.get("score")
-        found = score.get("value_found_usd") if isinstance(score, Mapping) else None
-        holds = _key_holds(source, shaped)
+        holds, adjusted = _key_holds(source, shaped)
+        kinds = kinds_of(_read_json(shaped / "playbook.json"))
+        targets = [t.tool for t in playbook.targets]
+        found = money_back_found(score, kinds, targets) if isinstance(score, Mapping) else None
+        trace = annotate_trace(raw_trace, kinds, holds=holds, adjusted=adjusted)
         session.emit(
             ShowcaseEvent(
                 status="done",
                 turn=len(trace),
                 total=len(trace),
                 trace=trace,
-                found_usd=float(found) if holds and isinstance(found, int | float) else None,
+                found_usd=found if holds else None,
                 found_reason="" if holds else "shaped",
                 detail=errors[0][:300] if errors else "",
             )
@@ -652,14 +808,22 @@ def _forward(ledger: Any, conversation: str, row: Mapping[str, Any]) -> None:
         return
 
 
-def _key_holds(source: Path, shaped: Path) -> bool:
-    """:func:`answer_key_holds` for the spec ``shape_world`` wrote; unreadable is not holding."""
+def _key_holds(source: Path, shaped: Path) -> tuple[bool, int]:
+    """:func:`answer_key_holds` and :func:`adjusted_count` for the spec ``shape_world`` wrote;
+    unreadable is not holding, with nothing counted as adjusted."""
+    spec = _read_json(shaped / "shape.json")
+    world = _read_json(source / "world.json")
+    if not spec or not world:
+        return False, 0
+    return answer_key_holds(spec, world), adjusted_count(spec, world)
+
+
+def _read_json(path: Path) -> dict[str, Any]:
     try:
-        spec = json.loads((shaped / "shape.json").read_text(encoding="utf-8"))
-        world = json.loads((source / "world.json").read_text(encoding="utf-8"))
+        doc = json.loads(path.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return False
-    return isinstance(spec, dict) and isinstance(world, dict) and answer_key_holds(spec, world)
+        return {}
+    return doc if isinstance(doc, dict) else {}
 
 
 def _recorded_turns(source: Path) -> int | None:

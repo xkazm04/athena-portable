@@ -201,14 +201,24 @@ def inline(fn: Any, name: str) -> None:
     fn()
 
 
-def fake_report(turns: int) -> dict[str, Any]:
+#: Two right cards on 401k-late-deposits: lost earnings paid back, and an offer accepted.
+SCORED = [
+    {"action": "pay_lost_earnings", "key": "r-01", "outcome": "correct", "value_usd": 25.87},
+    {"action": "accept_offer", "key": "o-2", "outcome": "correct", "value_usd": 900.0},
+]
+
+
+def fake_report(turns: int, scored: list[dict[str, Any]] | None = None) -> dict[str, Any]:
+    cards = SCORED[:1] if scored is None else scored
+    transcript: list[dict[str, Any]] = [
+        {"app": "payrollharbor", "user": "hi", "said": f"turn {i}", "calls": [], "cards": []}
+        for i in range(turns)
+    ]
+    transcript[-1]["cards"] = [{"action": c["action"], "params": {}} for c in cards]
     return {
         "portals": {"payrollharbor": "Gusto"},
-        "transcript": [
-            {"app": "payrollharbor", "user": "hi", "said": f"turn {i}", "calls": [], "cards": []}
-            for i in range(turns)
-        ],
-        "score": {"cards": [], "value_found_usd": 25.87},
+        "transcript": transcript,
+        "score": {"cards": cards, "value_found_usd": sum(c["value_usd"] for c in cards)},
         "errors": [],
     }
 
@@ -251,6 +261,12 @@ def test_the_rehearsal_streams_turns_and_ends_done(rig: Rig, tmp_path: Path) -> 
         assert len(showcases(session)) == 5
 
 
+@pytest.fixture
+def all_money_back(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Every target money back, whatever kinds the library's playbook.json declares today."""
+    monkeypatch.setattr(showcase, "kinds_of", lambda book: {})
+
+
 def _done(rig: Rig, tmp_path: Path, spec: dict[str, Any]) -> ShowcaseEvent:
     rig.model.script = {"shape": [spec]}
     show = Showcase(bench=lambda *a, **k: fake_report(1), spawn=inline)
@@ -261,12 +277,14 @@ def _done(rig: Rig, tmp_path: Path, spec: dict[str, Any]) -> ShowcaseEvent:
     return last
 
 
+@pytest.mark.usefixtures("all_money_back")
 def test_a_renames_only_rehearsal_claims_its_dollars(rig: Rig, tmp_path: Path) -> None:
     """ADR 0125: the truth is kept by renames, so a renames-only world is still scored by it."""
     last = _done(rig, tmp_path, {"today": "", "rows": [], "note": "Nothing to change."})
     assert last.found_usd == 25.87 and last.found_reason == ""
 
 
+@pytest.mark.usefixtures("all_money_back")
 def test_a_today_that_stays_put_is_no_shift(rig: Rig, tmp_path: Path) -> None:
     today = json.loads((SOURCE / "world.json").read_text(encoding="utf-8"))["today"]
     last = _done(rig, tmp_path, {"today": today, "rows": []})
@@ -438,3 +456,141 @@ def test_no_world_app_is_renamed_on_a_tie_or_a_thin_match() -> None:
     assert showcase._world_app("Life insurer and group-life insurer", world["apps"]) == ""
     tie = [{"name": "Beacon IRA"}, {"name": "Northgate IRA"}]
     assert showcase._world_app("IRA custodian", tie) == ""
+
+
+# --- honest labels (chores UAT 2026-10-23, theme 5) -----------------------------------------------
+
+
+def test_the_rehearsal_speaks_for_the_person_not_the_example_persona(tmp_path: Path) -> None:
+    """public-03: no phase line introduces the example persona; the first runs the agreed chore."""
+    shaped = shape_world(SOURCE, BRIEF, run_leg=leg_answering(SPEC), dest=tmp_path)
+    phases = world_of(shaped, "world.json")["phases"]
+    first = phases[0]["message"]
+    assert first.startswith(
+        "Run the chore we agreed: Find the late deposits for my 12-person plan. Start in Gusto"
+    )
+    assert "Neil" not in json.dumps(phases) and "I'm" not in first
+    # The rest of the script stays: the same portals, the same number of phases.
+    original = world_of(SOURCE, "world.json")["phases"]
+    assert [p["app"] for p in phases] == [p["app"] for p in original]
+    assert phases[1]["message"] == original[1]["message"].replace("Payroll Harbor", "Gusto")
+
+
+def test_no_library_persona_introduces_itself_in_a_rehearsal() -> None:
+    brief = Brief(rev=1, command="Keep the bids we can win.")
+    world = world_of(LIBRARY / "bid-opportunity-triage", "world.json")
+    spoken = showcase.for_the_person(world, brief, {})
+    assert "Marian" in world["phases"][0]["message"]  # the example's own script
+    assert "Marian" not in json.dumps(spoken["phases"])
+    assert spoken["phases"][0]["message"].startswith(
+        "Run the chore we agreed: Keep the bids we can win. Start in Noticewick"
+    )
+    assert world["phases"][0]["message"].startswith("I'm Marian")  # the input is untouched
+
+
+def test_the_opening_falls_back_to_the_title_and_cuts_a_long_command() -> None:
+    world = {"phases": [{"app": "a", "message": "I am Rosa."}, {"app": "a", "message": "Go on."}]}
+    titled = showcase.for_the_person(world, Brief(rev=1), {"short_title": "Deposit back"})
+    assert [p["message"] for p in titled["phases"]] == [
+        "Run the chore we agreed: Deposit back.",
+        "Go on.",
+    ]
+    long = Brief(rev=1, command="word " * 100)
+    cut = showcase.for_the_person(world, long, {})["phases"][0]["message"]
+    assert cut.endswith("(the rest is in the brief).") and len(cut) < 320
+
+
+def test_kinds_are_read_from_the_playbook_and_unknown_ones_dropped() -> None:
+    book = {"economics": {"kinds": {"a": "count", "b": "money_protected", "c": "dollars"}}}
+    assert showcase.kinds_of(book) == {"a": "count", "b": "money_protected"}
+    assert showcase.kinds_of({}) == {}
+
+
+def test_found_counts_only_money_back_cards() -> None:
+    score = {"cards": [*SCORED, {"action": "x", "outcome": "trap", "value_usd": 5}]}
+    targets = ["pay_lost_earnings", "accept_offer"]
+    assert showcase.money_back_found(score, {}, targets) == 925.87
+    protected = {"accept_offer": "money_protected"}
+    assert showcase.money_back_found(score, protected, targets) == 25.87
+    # No target gives money back: unmeasured, never zero.
+    none_back = {"pay_lost_earnings": "count", "accept_offer": "penalty_avoided"}
+    assert showcase.money_back_found(score, none_back, targets) is None
+    # A score without cards: value_found_usd stands in only when every target is money back.
+    assert showcase.money_back_found({"value_found_usd": 7.5}, {}, targets) == 7.5
+    assert showcase.money_back_found({"value_found_usd": 7.5}, protected, targets) is None
+
+
+def test_a_renames_only_trace_keeps_its_grades_and_drops_count_dollars() -> None:
+    trace = [{"portal": "Gusto", "cards": [dict(c) for c in SCORED]}]
+    shown = showcase.annotate_trace(trace, {"accept_offer": "count"}, holds=True, adjusted=0)
+    cards = shown[0]["cards"]
+    assert [(c["kind"], c["outcome"], c["value_usd"]) for c in cards] == [
+        ("money_back", "correct", 25.87),
+        ("count", "correct", None),
+    ]
+    assert "adjusted" not in shown[0]
+    assert trace[0]["cards"][1]["value_usd"] == 900.0  # the input is untouched
+
+
+def test_a_shaped_trace_grades_nothing_and_says_how_much_was_adjusted() -> None:
+    """public-05, construction-05: the old answer key marks no card right or wrong."""
+    trace = [{"portal": "Gusto", "cards": [dict(c) for c in SCORED]}, {"portal": "Gusto"}]
+    shown = showcase.annotate_trace(trace, {}, holds=False, adjusted=3)
+    assert {(c["outcome"], c["value_usd"]) for c in shown[0]["cards"]} == {("proposed", None)}
+    assert shown[0]["adjusted"] == 3 and "adjusted" not in shown[1]
+
+
+def test_adjusted_counts_row_edits_and_a_moved_date() -> None:
+    world = {"today": "2026-10-09"}
+    assert showcase.adjusted_count(SPEC, world) == 3
+    assert showcase.adjusted_count({"today": "2026-10-09", "rows": []}, world) == 0
+    assert showcase.adjusted_count({"rows": [{}]}, world) == 1
+
+
+def test_the_done_event_sums_money_back_and_labels_each_card(
+    rig: Rig, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(showcase, "kinds_of", lambda book: {"accept_offer": "money_protected"})
+    rig.model.script = {"shape": [{"today": "", "rows": []}]}
+    show = Showcase(bench=lambda *a, **k: fake_report(1, SCORED), spawn=inline)
+    with real_session(rig, tmp_path) as (_, session):
+        show.start(session, 1)
+        last = showcases(session)[-1]
+    assert last.found_usd == 25.87 and last.found_reason == ""
+    cards = last.trace[-1]["cards"]
+    assert [(c["kind"], c["outcome"]) for c in cards] == [
+        ("money_back", "correct"),
+        ("money_protected", "correct"),
+    ]
+
+
+def test_a_shaped_done_event_carries_proposals_and_the_adjusted_count(
+    rig: Rig, tmp_path: Path
+) -> None:
+    rig.model.script = {"shape": [SPEC]}
+    show = Showcase(bench=lambda *a, **k: fake_report(2, SCORED), spawn=inline)
+    with real_session(rig, tmp_path) as (_, session):
+        show.start(session, 1)
+        last = showcases(session)[-1]
+    assert last.found_usd is None and last.found_reason == "shaped"
+    assert last.trace[0]["adjusted"] == 3
+    assert {(c["outcome"], c["value_usd"]) for c in last.trace[-1]["cards"]} == {("proposed", None)}
+
+
+def test_a_line_that_says_where_she_is_is_kept() -> None:
+    world = {"phases": [{"app": "a", "message": "I'm in Procore Pay. I'm Ray, the PM. Read it."}]}
+    spoken = showcase.for_the_person(world, Brief(rev=1, command="Chase the liens."), {})
+    assert spoken["phases"][0]["message"] == (
+        "Run the chore we agreed: Chase the liens. I'm in Procore Pay. Read it."
+    )
+
+
+def test_a_playbook_with_no_money_back_target_claims_no_found_dollars(
+    rig: Rig, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """Unmeasured is not zero: a chore whose answer key holds no money back sends no figure."""
+    kinds = {"pay_lost_earnings": "money_protected", "accept_offer": "count"}
+    monkeypatch.setattr(showcase, "kinds_of", lambda book: kinds)
+    last = _done(rig, tmp_path, {"today": "", "rows": []})
+    assert last.found_usd is None and last.found_reason == ""
+    assert last.trace[-1]["cards"][0]["kind"] == "money_protected"
