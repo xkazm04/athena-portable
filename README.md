@@ -26,7 +26,10 @@ Factory Sandboxes are spiked as branching worlds, checkpointed and forked once p
 is run under test on her Claude CLI and on Nemotron through the `nebius` engine. The Gauntlet is
 built, and its first live run held: 93 hostile turns, zero breaches. The model-played Characters are
 built: Nemotron Lightning plays the users reliably, and Nemotron Super as a second judge did not
-hold up across repeat runs, so Haiku stays the judge of record.
+hold up across repeat runs, so Haiku stays the judge of record. A retest on the newer models
+(2026-10-22) found Super, Super-VL and Ultra all agreeing with Haiku at three seeds, and Nemotron
+3.5 Super-VL reading people's documents at 91% accuracy against the Claude lane's 96%, at about a
+thirtieth of the cost; it is now an opt-in reader in the product's documents lane.
 An approve-path probe checks that an approved card runs exactly what was approved, once; the gate
 now spends an approval when it lets the action through (ADR 0038). A trigger page starts a run and
 streams it, locally today; the Serverless container is built and not deployed. The Sandbox spike
@@ -557,6 +560,53 @@ control, so they compare with the runs above):
   judge of record; a Nemotron judge's scores are reported beside it, never instead of it.
 - Cost of the four repeat runs: Nemotron $0.12, Claude CLI $22.1.
 
+### Retest on newer Nemotron models (2026-10-22)
+
+Token Factory's catalog grew after the first runs: Nemotron 3.5 Super-VL (vision, $0.30 / $0.90
+per 1M tokens) and Nemotron 3 Ultra ($1.00 / $3.00) are now served. Two questions were retested,
+each with a proof test and a kill criterion written before the run.
+
+**The judge, again.** `uv run python -m athena.proving characters --judge-rungs super super-vl ultra`
+runs the Characters with Lightning playing the users and Claude Haiku 5.5 as the judge of record;
+the extra Nemotron judges score the same 168 transcript and criterion pairs blind and never decide
+the proof. Proof: rubric agreement (Spearman) of 0.5 or above at all three seeds.
+
+| Nemotron judge against Haiku 5.5 | seed 11 | seed 12 | seed 13 | proof |
+|---|---|---|---|---|
+| Lightning | 0.28 | – | – | kill, escalated |
+| Super | 0.591 | 0.595 | 0.654 | pass |
+| Super-VL | 0.571 | 0.622 | 0.634 | pass, on an offset scale (exact match 27% to 34%) |
+| Ultra | 0.598 | 0.586 | 0.685 | pass |
+
+Runs `20261022T194851Z`, `20261022T195805Z`, `20261022T200647Z`; Claude $17.96, Nemotron $0.53.
+Super's 0.360 from the earlier repeat did not recur, but the control changed too (Haiku 4.5 then,
+5.5 now), so the two tables are not one series. Haiku stays the judge of record; what changed is
+that a Nemotron second judge now agrees with it at every seed.
+
+**Nemotron reads a person's documents.** While adopting a playbook, a person can drop in a letter,
+a bill or an agency notice, and the documents lane reads it against the playbook's facts (ADR 0097).
+`uv run python -m athena.proving.docread all` renders a corpus whose answers are known by
+construction: for each of the nine `adopt_tiers` scenarios, a letter, a statement and a notice
+written from the scenario's fact sheet, each at three degradations (clean; skewed with noise; a
+low-resolution greyscale scan), plus the letter as a PDF. Nemotron 3.5 Super-VL reads each picture
+in one call with reasoning off; the control is the real Claude documents lane (Sonnet, `Read` only).
+Proof: Super-VL's accuracy at least 90% of the control's, and its false-fact rate (a value given
+for a fact the document does not state) at most 5 points above it.
+
+| Reader (90 paired documents, 133 stated fields, 230 probes) | field accuracy | false facts | median time | cost per document |
+|---|---|---|---|---|
+| Claude documents lane | 96.2% | 2.2% | 8.6 s | $0.0209 |
+| Nemotron 3.5 Super-VL | 91.0% | 5.2% | 2.0 s | $0.0007 |
+
+Run `20261022T195808Z`: ratio 0.945, false-fact delta +3.05 points, so the proof passes. Super-VL
+held 89.7% at every degradation, the scan included; its misses were mostly on trap entries,
+where it answered "No" or echoed the question instead of the stated value, and one OCR slip. The lane now takes
+it as an opt-in reader for pictures (section 10).
+
+A third experiment, Nemotron forging variant worlds for the playbook bench, did not make the cut:
+Lightning produced no valid world in 24 tries, and Super's 14 valid worlds needed a Claude audit
+that overturned 16 of its 28 labels.
+
 ### The trigger page (built)
 
 `uv run python -m athena.proving.server` serves the Proving Ground's own page. Anyone with the URL
@@ -675,7 +725,16 @@ is not served by Token Factory, so no role uses it; the control judges attack va
 | Attacker: writes the Gauntlet's attacks on three surfaces | Lightning, escalating to Super | Claude Haiku writes the same number (4.5 in the runs reported here; 5.5 from 2026-10-07 on) | built |
 | Athena under test | Lightning through the `nebius` engine | Athena on the Claude CLI (Sonnet) | built |
 | User simulator: plays mira, jonas, priya and ana from `uat/characters` | Lightning (held its proof; Super not needed) | Claude Haiku judges fidelity, blind | built |
-| Judge: scores conversations against `uat/rubric.md`, nonce-fenced | Super (Lightning failed agreement, rho 0.18) | Claude Haiku, judging the same transcripts blind | built |
+| Judge: scores conversations against `uat/rubric.md`, nonce-fenced | Super (Lightning failed agreement, rho 0.18); Super, Super-VL and Ultra all held agreement at three seeds on 2026-10-22 | Claude Haiku, judging the same transcripts blind | built |
+| Document reader: reads a picture a person drops in while adopting a playbook, against its facts | Nemotron 3.5 Super-VL, reasoning off | the Claude documents lane (Sonnet, `Read` only) | built; opt-in in the product with `ATHENA_DOCUMENT_READER=nemotron-vl` |
+
+The document reader is the one Nemotron role that reaches the product rather than the bench. With
+`ATHENA_DOCUMENT_READER=nemotron-vl` and `NEBIUS_API_KEY` set, the documents lane sends a PNG, JPEG
+or WebP of at most 1600 px to Super-VL in one call, with the same prompt material, answer schema
+and parser as the Claude leg, and ledgers it under the `nebius` engine. A PDF, a text file, a
+larger picture, or any failure of the call (no key, an HTTP error, a 60 s timeout, an answer that
+is not the schema) reads the document with the Claude leg instead, so the opt-in can only make a
+read cheaper, never make it fail. Unset, the lane is unchanged.
 
 Every Nemotron role sends `chat_template_kwargs: {"enable_thinking": false}`, the only reasoning
 switch Token Factory honoured in a five-way probe (ADR 0034). Athena under test does not, unless
