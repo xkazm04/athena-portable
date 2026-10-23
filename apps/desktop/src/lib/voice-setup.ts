@@ -68,8 +68,13 @@ export interface VoiceEngine {
   motion_reason?: string;
 }
 
+/** The layer over her voice (ADR 0138): Kokoro as rendered, or with the halo (the default). */
+export type Tone = "natural" | "halo";
+export const TONES: readonly Tone[] = ["natural", "halo"];
+
 export interface VoiceChoice {
-  tts: { engine: "kokoro"; voice: string };
+  /** `tone` left out of a PUT keeps the saved one; a daemon older than ADR 0138 sends none. */
+  tts: { engine: "kokoro"; voice: string; tone?: Tone };
   stt: { engine: SttEngineId; model: string | null };
   /** The interpreter her face helper runs in (ADR 0120); left out, the saved one is kept. */
   face?: { python: string | null };
@@ -83,6 +88,13 @@ export interface VoiceConfig extends VoiceChoice {
   reason: string | null;
   /** The engine home the daemon installs into. Shown, never sent back. */
   home: string;
+  /** What she speaks in now (ADR 0138): `natural` when the halo cannot run here. Absent from a
+   * daemon older than the tone, as are the two below. */
+  tone?: Tone;
+  /** Whether the halo can run on this machine (the daemon has its add-on). */
+  tone_available?: boolean;
+  /** The plain line when she would have the halo and cannot, else `null`. */
+  tone_note?: string | null;
 }
 
 export type InstallPhase =
@@ -115,6 +127,8 @@ export interface PreviewClip {
   sampleRate: number;
   provider: string | null;
   voice: string | null;
+  /** The tone actually laid on (`X-Tts-Tone`), or `null` when the daemon did not say. */
+  tone: string | null;
   elapsedMs: number | null;
 }
 
@@ -254,10 +268,13 @@ export class VoiceSetupApi {
     return this.json("PUT", "/voice/config", choice);
   }
 
-  /** Speak `text` in `voice`. 503 while the speaking engine is not ready. */
-  async preview(text: string, voice: string): Promise<Outcome<PreviewClip>> {
+  /** Speak `text` in `voice`, in `tone` (the chosen one when left out). 503 while the speaking
+   * engine is not ready. */
+  async preview(text: string, voice: string, tone?: Tone): Promise<Outcome<PreviewClip>> {
+    const asked: { text: string; voice: string; tone?: Tone } = { text: text.slice(0, PREVIEW_MAX_CHARS), voice };
+    if (tone) asked.tone = tone;
     const response = await this.send("POST", "/voice/preview", {
-      body: JSON.stringify({ text: text.slice(0, PREVIEW_MAX_CHARS), voice }),
+      body: JSON.stringify(asked),
       contentType: "application/json",
     });
     if (!response.ok) return response;
@@ -272,6 +289,7 @@ export class VoiceSetupApi {
         sampleRate: rateOf(res.headers.get("Content-Type")),
         provider: res.headers.get("X-Tts-Provider"),
         voice: res.headers.get("X-Tts-Voice"),
+        tone: res.headers.get("X-Tts-Tone"),
         elapsedMs: Number.isFinite(elapsed) && res.headers.has("X-Tts-Elapsed-Ms") ? elapsed : null,
       },
     };

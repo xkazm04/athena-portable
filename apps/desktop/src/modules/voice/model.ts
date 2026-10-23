@@ -21,6 +21,7 @@ import {
   type InstallState,
   type SttEngineId,
   type SttModel,
+  type Tone,
   type VoiceConfig,
   type VoiceEngine,
   type VoiceOption,
@@ -311,10 +312,49 @@ export interface PreviewState {
   phase: PreviewPhase;
   /** The voice being previewed, or `null`. */
   voice: string | null;
+  /** The tone a tone preview asked for; `null` or absent for a voice's own Play. */
+  tone?: Tone | null;
   error: string | null;
 }
 
-export const PREVIEW_IDLE: PreviewState = { phase: "idle", voice: null, error: null };
+export const PREVIEW_IDLE: PreviewState = { phase: "idle", voice: null, tone: null, error: null };
+
+// -- her tone (ADR 0138) ---------------------------------------------------------------------------
+
+/** What a tone preview says: one line, the same for both tones, so the two can be compared. */
+export const TONE_SAMPLE_LINE = "This is how I sound. Tell me which one feels like me.";
+
+/** Each tone in one plain line, for the control's description. */
+export const TONE_COPY: Record<Tone, { label: string; line: string }> = {
+  natural: { label: "Natural", line: "Her voice exactly as Kokoro renders it, untouched." },
+  halo: {
+    label: "Halo",
+    line: "A light, airy layer over her voice: a touch brighter, with a soft room around it.",
+  },
+};
+
+/** The tone as the settings show it, or `null` for a daemon older than the tone. */
+export interface ToneView {
+  /** The saved choice. */
+  chosen: Tone;
+  /** What she speaks in now: `natural` when the halo cannot run here. */
+  speaking: Tone;
+  /** Whether the halo can run on this machine. */
+  available: boolean;
+  /** The daemon's plain line when she would have the halo and cannot, else `null`. */
+  note: string | null;
+}
+
+export function toneOf(config: VoiceConfig | null): ToneView | null {
+  const chosen = config?.tts.tone;
+  if (!config || !chosen) return null;
+  return {
+    chosen,
+    speaking: config.tone ?? chosen,
+    available: config.tone_available ?? true,
+    note: config.tone_note ?? null,
+  };
+}
 
 export type TakeState = "idle" | "pending" | "done" | "failed";
 
@@ -446,8 +486,13 @@ export interface VoiceActions {
   /** Move the studio. Effects (a PUT, a preview) are the live wiring's, around the move. */
   studio: (event: StudioEvent) => void;
   install: (component: string) => void;
-  /** Play `voice`, or stop it when it is the one playing. Previews never overlap. */
-  togglePreview: (voice: string) => void;
+  /**
+   * Play `voice`, or stop it when it is the one playing. Previews never overlap. With `tone` it is
+   * the tone preview: the sample line in that tone, which never chooses a voice.
+   */
+  togglePreview: (voice: string, tone?: Tone) => void;
+  /** Settings: choose her tone and apply it live. */
+  chooseTone: (tone: Tone) => void;
   stopPreview: () => void;
   /** Hold-to-talk in the studio: every ready engine takes the same take. */
   recordStart: () => void;
@@ -537,6 +582,8 @@ export interface VoiceModel {
   kokoro: VoiceEngine | null;
   /** The voice tile the studio and settings offer (Heart), or `null` when Kokoro lists none. */
   voice: VoiceOption | null;
+  /** Her tone (ADR 0138), or `null` when the daemon does not offer one. */
+  tone: ToneView | null;
   whisper: VoiceEngine | null;
   openai: VoiceEngine | null;
   whisperModels: readonly SttModel[];
@@ -709,6 +756,7 @@ export function selectVoice(source: VoiceSources): VoiceModel {
     reason,
     kokoro,
     voice,
+    tone: toneOf(config),
     whisper,
     openai,
     whisperModels: whisper?.models ?? [],
@@ -759,6 +807,7 @@ export const INERT_ACTIONS: VoiceActions = {
   studio: () => {},
   install: () => {},
   togglePreview: () => {},
+  chooseTone: () => {},
   stopPreview: () => {},
   recordStart: () => {},
   recordStop: () => {},

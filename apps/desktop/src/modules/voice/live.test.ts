@@ -14,7 +14,7 @@ import { VoiceSetupApi, type InstallState, type VoiceConfig } from "@/lib/voice-
 import type { PreviewPlayer, TakeRecorder } from "./audio";
 import { fixtures } from "./fixtures";
 import { INSTALL_POLL_MS, resetVoiceSetupForTests, setVoiceSetupDeps, useVoiceSetup } from "./live";
-import { TEST_LINE } from "./model";
+import { TEST_LINE, TONE_SAMPLE_LINE } from "./model";
 
 const AT = { url: "http://daemon", token: "t" };
 const READY_CONFIG = fixtures.typical.config as VoiceConfig;
@@ -242,6 +242,46 @@ describe("previews", () => {
     expect(S().studio.step).toBe("hear");
     expect(S().preview.phase).toBe("idle");
     expect(p.stops()).toBeGreaterThan(0);
+  });
+});
+
+describe("her tone (ADR 0138)", () => {
+  it("choosing a tone PUTs it with the voice and applies the daemon's answer", async () => {
+    const { d } = wire(READY_CONFIG);
+    await S().connect(AT);
+    S().actions.chooseTone("natural");
+    await settle();
+    const put = d.calls.find((c) => c.method === "PUT" && c.path === "/voice/config");
+    expect(put?.body).toEqual({
+      tts: { engine: "kokoro", voice: "af_heart", tone: "natural" },
+      stt: { engine: "whisper", model: "base.en" },
+    });
+    expect(S().config?.tts.tone).toBe("natural");
+  });
+
+  it("a tone preview says the sample line in that tone and chooses no voice", async () => {
+    const { d } = wire(READY_CONFIG);
+    await S().connect(AT);
+    S().actions.togglePreview("af_heart", "halo");
+    await settle();
+    const preview = d.calls.find((c) => c.path === "/voice/preview");
+    expect(preview?.body).toEqual({ text: TONE_SAMPLE_LINE, voice: "af_heart", tone: "halo" });
+    expect(S().preview).toMatchObject({ phase: "playing", voice: "af_heart", tone: "halo" });
+    expect(S().studio.wokeUp).toBe(false);
+    expect(d.calls.some((c) => c.method === "PUT")).toBe(false);
+  });
+
+  it("the other tone's preview replaces the one playing rather than stopping it", async () => {
+    const { d } = wire(READY_CONFIG);
+    await S().connect(AT);
+    S().actions.togglePreview("af_heart", "halo");
+    await settle();
+    S().actions.togglePreview("af_heart", "natural");
+    await settle();
+    expect(d.calls.filter((c) => c.path === "/voice/preview")).toHaveLength(2);
+    expect(S().preview).toMatchObject({ phase: "playing", tone: "natural" });
+    S().actions.togglePreview("af_heart", "natural"); // the same tone again: stop
+    expect(S().preview.phase).toBe("idle");
   });
 });
 

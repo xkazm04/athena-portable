@@ -449,6 +449,20 @@ time, under 0.1 s against a render of about 3.5 s. The first start pays the subg
 once and JoyVASA's load, warm-up and probe on every start; until the probe has chosen a line
 plays with visemes only.
 
+### Her tone
+
+Each Kokoro sentence can carry a light layer, the `halo` (ADR 0138): half a semitone up with
+formants x1.04, air and a little presence, a short bright plate, as loud as the dry line. It is
+laid on after her face has been worked out on the dry audio and keeps every sample, so the mouth
+shapes still line up. `tts.tone` is `natural` or `halo` (the default) in `GET`/`PUT /voice/config`;
+a `PUT` whose `tts` has no `tone` keeps it. The answer also carries `tone` (what she speaks in now),
+`tone_available` and `tone_note`. `POST /voice/preview` takes an optional `"tone"` and answers
+`X-Tts-Tone`. The layer needs numpy, the `voice-fx` extra (`uv run --extra voice-fx athena serve`;
+the desktop's dev fallback and the sidecar both carry it). Without it, or when the layer fails on
+a sentence, the sentence plays dry and `tone_note` says "The halo tone needs an add-on that is not
+installed; she speaks in her natural tone." A pinned OpenAI speaker gets no tone. About 12 ms per
+second of audio on a desktop CPU.
+
 ## The connectors
 
 A connector is one JSON spec under `src/athena/connectors/builtin/` (Gmail and Notion ship) whose

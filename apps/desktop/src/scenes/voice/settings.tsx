@@ -22,7 +22,7 @@ import StatusDot from "@/components/StatusDot";
 import type { SttEngineId } from "@/lib/voice-setup";
 import { sttName, voiceMeta, type VoiceModel } from "@/modules/voice/model";
 import { EngineState, HoldToTalk, InstallBlock, Kbd } from "@/modules/voice/parts";
-import { KeyField, WhisperModels } from "@/modules/voice/pieces";
+import { KeyField, ToneControl, WhisperModels } from "@/modules/voice/pieces";
 import { Waveform } from "@/modules/voice/waveform";
 
 import { FacePicker } from "./face";
@@ -113,7 +113,8 @@ function Row({ label, fact, children }: { label: string; fact: string; children:
 function Output({ model, avatar, onAvatar }: { model: VoiceModel; avatar: AvatarId; onAvatar: (avatar: AvatarId) => void }) {
   const { kokoro, voice, preview } = model;
   const kokoroInstalling = model.installComponent === "kokoro" && model.install.busy;
-  const mine = voice !== null && preview.voice === voice.id;
+  // The tone's own play button lights for a tone preview; this one for her voice's.
+  const mine = voice !== null && preview.voice === voice.id && !preview.tone;
   const playing = mine && preview.phase === "playing";
   const synth = mine && preview.phase === "synth";
   return (
@@ -161,6 +162,9 @@ function Output({ model, avatar, onAvatar }: { model: VoiceModel; avatar: Avatar
         ) : (
           <span className="typo-caption">Kokoro lists no voices until it is installed.</span>
         )}
+      </Row>
+      <Row label="Tone" fact="A light layer over her voice, or none.">
+        <ToneControl model={model} />
       </Row>
       <Row label="Her face" fact="How she appears while she listens and speaks, here and in her window.">
         <FacePicker avatar={avatar} onAvatar={onAvatar} />

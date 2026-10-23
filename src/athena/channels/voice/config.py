@@ -30,6 +30,12 @@ the interpreter of an environment that can run the face helper
 it. The helper's standing is one more row of ``engines``: ``direction`` ``face``, its ``state``,
 and whether it gives ``visemes`` and ``motion``. Without it Athena speaks exactly as before.
 
+**Her tone is a fourth** (ADR 0138). ``tts.tone`` is ``natural`` or ``halo`` (the default):
+:mod:`athena.channels.voice.ether` laid over each Kokoro sentence after her face has been worked
+out on the dry audio. A body whose ``tts`` has no ``tone`` keeps the saved one. The layer needs the
+``voice-fx`` extra; without it she speaks in her natural tone, and the view says so in one plain
+line (``tone_note``) beside ``tone`` (what she speaks in now) and ``tone_available``.
+
 **The provider key is sealed.** ``PUT /voice/key`` seals it with the connectors' seal
 (:mod:`athena.connectors.seal`) under ``voice.openai``; the environment variable is the fallback.
 The key is read when a backend is composed and is never in a view, a reason or an error.
@@ -46,7 +52,7 @@ from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import TYPE_CHECKING, Any
 
-from athena.channels.voice import kokoro, whisper
+from athena.channels.voice import ether, kokoro, whisper
 from athena.channels.voice.backends import (
     OPENAI_KEY_ENV,
     ComposedBackend,
@@ -82,6 +88,10 @@ STT_ENGINES: tuple[str, ...] = ("whisper", "openai")
 KEY_PROVIDERS: tuple[str, ...] = ("openai",)
 #: The seal handle the provider key rests under.
 OPENAI_SEAL_NAME = "voice.openai"
+#: What the view says when she would speak with the halo and the layer cannot run here.
+TONE_UNAVAILABLE_NOTE = (
+    "The halo tone needs an add-on that is not installed; she speaks in her natural tone."
+)
 #: What the socket says when the daemon was started with voice switched off.
 OFF_REASON = "Voice was switched off when the daemon started (--voice-backend none)."
 #: A key longer than this is not a key.
@@ -106,10 +116,12 @@ class VoiceChoice:
     stt_model: str | None = whisper.DEFAULT_MODEL
     #: The interpreter her face helper runs in (ADR 0120); ``None`` when she has none.
     face_python: str | None = None
+    #: The layer over her voice (ADR 0138): one of :data:`~athena.channels.voice.ether.TONES`.
+    tone: str = ether.TONE_DEFAULT
 
     def to_dict(self) -> dict[str, Any]:
         return {
-            "tts": {"engine": self.tts_engine, "voice": self.tts_voice},
+            "tts": {"engine": self.tts_engine, "voice": self.tts_voice, "tone": self.tone},
             "stt": {"engine": self.stt_engine, "model": self.stt_model},
             "face": {"python": self.face_python},
         }
@@ -129,6 +141,9 @@ class VoiceChoice:
         if kokoro.find_voice(voice) is None:
             names = ", ".join(v.id for v in kokoro.VOICES)
             raise ConfigError(f"unknown voice {voice!r}; one of {names}")
+        tone = str(tts.get("tone", ether.TONE_DEFAULT))
+        if tone not in ether.TONES:
+            raise ConfigError(f"unknown tone {tone!r}; one of {', '.join(ether.TONES)}")
         stt_engine = str(stt.get("engine", ""))
         if stt_engine not in STT_ENGINES:
             raise ConfigError(f"unknown stt engine {stt_engine!r}; one of {', '.join(STT_ENGINES)}")
@@ -139,7 +154,7 @@ class VoiceChoice:
             if whisper.find_model(model) is None:
                 names = ", ".join(m.id for m in whisper.MODELS)
                 raise ConfigError(f"unknown whisper model {model!r}; one of {names}")
-        return cls(tts_engine, voice, stt_engine, model, face_python_from(raw.get("face")))
+        return cls(tts_engine, voice, stt_engine, model, face_python_from(raw.get("face")), tone)
 
 
 def face_python_from(raw: Any) -> str | None:
@@ -292,14 +307,21 @@ class VoiceStudio:
             "No OpenAI key is set; add one in the voice studio to transcribe in the cloud.",
         )
 
-    def speaker(self, voice_id: str) -> tuple[Speaker | None, str | None]:
+    def speaker(self, voice_id: str, tone: str | None = None) -> tuple[Speaker | None, str | None]:
+        """Kokoro in ``voice_id``, in ``tone`` (the chosen one when ``None``), or why not."""
         voice = kokoro.find_voice(voice_id)
         if voice is None:
             return None, f"Kokoro has no voice {voice_id!r}."
         found = self.probe_kokoro()
         if not found.ready:
             return None, found.reason
-        speaker = kokoro.KokoroTTS(self.homes, voice, command=self.kokoro_command, face=self.face)
+        speaker = kokoro.KokoroTTS(
+            self.homes,
+            voice,
+            command=self.kokoro_command,
+            face=self.face,
+            tone=self.choice.tone if tone is None else tone,
+        )
         return speaker, None
 
     def listener(self, engine: str, model: str | None = None) -> tuple[Listener | None, str | None]:
@@ -320,7 +342,7 @@ class VoiceStudio:
 
     def compose(self, choice: VoiceChoice) -> tuple[VoiceBackend | None, str | None]:
         """The backend the choice describes, or ``None`` and the first reason it cannot be."""
-        speaker, reason = self.speaker(choice.tts_voice)
+        speaker, reason = self.speaker(choice.tts_voice, choice.tone)
         if speaker is None:
             return None, reason
         listener, reason = self.listener(choice.stt_engine, choice.stt_model)
@@ -400,23 +422,41 @@ class VoiceStudio:
             choice = self.choice
             # What the socket has, not what the choice would compose: a pinned backend is ready
             # and an empty slot is not, whatever the engines on disk say.
-            _, reason = self.refresh()
+            backend, reason = self.refresh()
         return {
             **choice.to_dict(),
             "engines": self.engines(),
             "ready": reason is None,
             "reason": reason,
             "home": str(self.homes.root),
+            **self.tone_view(choice, pinned=self.pinned is not None and backend is self.pinned),
         }
+
+    @staticmethod
+    def tone_view(choice: VoiceChoice, *, pinned: bool = False) -> dict[str, Any]:
+        """``tone`` (what she speaks in now), ``tone_available`` (whether the layer can run here)
+        and ``tone_note`` (the plain line when she would have the halo and cannot, else ``None``).
+
+        A pinned backend (``--voice-backend openai``) streams the provider's audio as it arrives,
+        not sentence by sentence, so no tone is laid over it: she speaks ``natural`` there."""
+        can = ether.available()
+        wanted = choice.tone
+        note = TONE_UNAVAILABLE_NOTE if wanted != "natural" and not can else None
+        speaking = wanted if can and not pinned else "natural"
+        return {"tone": speaking, "tone_available": can, "tone_note": note}
 
     def update(self, raw: Any) -> dict[str, Any]:
         """Validate, persist, swap. :class:`ConfigError` for an unknown id, before anything.
 
-        A body without ``face`` keeps the face helper that was picked."""
+        A body without ``face`` keeps the face helper that was picked, and one whose ``tts`` has no
+        ``tone`` keeps the tone."""
         choice = VoiceChoice.from_dict(raw)
         with self._lock:
             if isinstance(raw, Mapping) and "face" not in raw:
                 choice = replace(choice, face_python=self.choice.face_python)
+            tts = raw.get("tts") if isinstance(raw, Mapping) else None
+            if isinstance(tts, Mapping) and "tone" not in tts:
+                choice = replace(choice, tone=self.choice.tone)
             save_choice(self.root, choice)
             self.choice = choice
             self.face.configure(choice.face_python)

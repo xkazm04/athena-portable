@@ -42,6 +42,12 @@ build = [
 connectors = [
   "keyring>=25",
 ]
+# Athena's halo tone (ADR 0138): `athena.channels.voice.ether` lays it over each Kokoro sentence.
+# Optional: without numpy she speaks in her natural tone and the Voice module says why. The dev
+# fallback (`uv run --extra voice-fx athena serve`) and the frozen sidecar both carry it.
+voice-fx = [
+  "numpy>=2",
+]
 
 # One console script, and it is the only entry point a person types. ``athena serve`` hands its
 # flags straight to ``athena.daemon.server.serve``; ``athena doctor`` and ``athena brain
@@ -93,6 +99,13 @@ strict = true
 packages = ["athena"]
 mypy_path = "src"
 ignore_missing_imports = true
+
+# numpy is the optional `voice-fx` extra (ADR 0138), imported inside `athena.channels.voice.ether`
+# as `Any`. Its stubs use 3.12 syntax this 3.11 target cannot parse, so mypy does not read them.
+[[tool.mypy.overrides]]
+module = ["numpy", "numpy.*"]
+follow_imports = "skip"
+follow_imports_for_stubs = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

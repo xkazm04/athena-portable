@@ -86,12 +86,15 @@ function openai(over: Partial<VoiceEngine> = {}): VoiceEngine {
 
 export function config(over: Partial<VoiceConfig> = {}): VoiceConfig {
   return {
-    tts: { engine: "kokoro", voice: "af_heart" },
+    tts: { engine: "kokoro", voice: "af_heart", tone: "halo" },
     stt: { engine: "whisper", model: "base.en" },
     engines: [kokoro(), whisper(), openai()],
     ready: true,
     reason: null,
     home: "~/.personas/companion-tts",
+    tone: "halo",
+    tone_available: true,
+    tone_note: null,
     ...over,
   };
 }
@@ -179,6 +182,10 @@ const heavy = model({
     ready: false,
     reason: "Whisper small.en is not installed.",
     home: "C:\\Users\\a-long-account-name\\AppData\\Local\\personas-data\\companion-tts\\with\\a\\deep\\path",
+    // The halo chosen on a machine without its add-on: she speaks natural, and the line says why.
+    tone: "natural",
+    tone_available: false,
+    tone_note: "The halo tone needs an add-on that is not installed; she speaks in her natural tone.",
   }),
   install: install({ component: "whisper:small.en", state: "downloading_model", received_bytes: 187 * 1024 * 1024 }),
   saveError: "validator_failed: the key does not look like an OpenAI key",

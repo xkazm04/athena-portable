@@ -34,6 +34,8 @@ request and caps each host tool result at 1,600 characters with `(showing N of M
 `channels/voice/`: RFC 6455 WebSocket in the stdlib on the daemon's port (ADR 0019). PCM16 at
 16 kHz in, events and audio out. One `Speaker` and one `Listener` are composed separately: local
 Kokoro and whisper.cpp by default (ADR 0028), a cloud provider for hearing when the person picks it.
+Kokoro speaks with the `halo` tone by default, laid over each sentence after her face is worked out
+(ADR 0138; `tts.tone`, the optional `voice-fx` extra, natural with a plain note when it is missing).
 Spoken commands that answer a card are parsed by `commands.py`, never by a backend. Push-to-talk is
 a held key (ADR 0020); the microphone stops when the key comes up, the window loses focus or
 becomes hidden, the socket closes or a `turn.error` arrives, and a press whose key is already up

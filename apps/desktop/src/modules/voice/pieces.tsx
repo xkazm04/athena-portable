@@ -13,8 +13,59 @@ import Button from "@/components/Button";
 import PillGroup from "@/components/PillGroup";
 import { TextInput } from "@/components/FormField";
 
-import type { VoiceModel } from "./model";
+import type { Tone } from "@/lib/voice-setup";
+
+import { TONE_COPY, type VoiceModel } from "./model";
 import { InstallBlock } from "./parts";
+
+const TONE_OPTIONS: { value: Tone; label: string; hint: string }[] = (["natural", "halo"] as const).map((value) => ({
+  value,
+  label: TONE_COPY[value].label,
+  hint: TONE_COPY[value].line,
+}));
+
+/**
+ * Her tone (ADR 0138): Natural or Halo, the chosen one's line, and a play button that says the
+ * sample line in it through the same preview as her voice. Without the add-on the daemon's plain
+ * line is shown and she keeps speaking in her natural tone; the choice stays as it was.
+ */
+export function ToneControl({ model }: { model: VoiceModel }) {
+  const { tone, voice, preview } = model;
+  if (!tone) return <span className="typo-caption">This daemon does not offer a tone yet.</span>;
+  const mine = voice !== null && preview.voice === voice.id && preview.tone === tone.chosen;
+  const playing = mine && preview.phase === "playing";
+  const synth = mine && preview.phase === "synth";
+  const label = TONE_COPY[tone.chosen].label;
+  return (
+    <div className="stack">
+      <PillGroup ariaLabel="Tone" value={tone.chosen} onChange={(next) => model.actions.chooseTone(next)} options={TONE_OPTIONS} />
+      <p className="typo-caption">{TONE_COPY[tone.chosen].line}</p>
+      <span className="row">
+        <Button
+          size="sm"
+          variant={playing ? "primary" : "secondary"}
+          aria-pressed={playing}
+          disabledReason={
+            voice === null ? "Kokoro lists no voices until it is installed." : model.kokoro?.state === "ready" ? undefined : "Install Kokoro first."
+          }
+          onClick={() => (voice ? model.actions.togglePreview(voice.id, tone.chosen) : undefined)}
+        >
+          {playing ? "Stop" : synth ? "Getting ready..." : `Hear ${label}`}
+        </Button>
+      </span>
+      {tone.note ? (
+        <p className="typo-caption" role="status">
+          {tone.note}
+        </p>
+      ) : null}
+      {mine && preview.phase === "error" && preview.error ? (
+        <p className="typo-caption vs-error" role="alert">
+          {preview.error}
+        </p>
+      ) : null}
+    </div>
+  );
+}
 
 /** What Enter does on the current step, as one call. */
 export function primary(model: VoiceModel): () => void {

@@ -815,8 +815,9 @@ pub fn start(app: &AppHandle, engine: &str) -> Result<(), String> {
             let root = repo_root()
                 .ok_or("no athena-daemon binary and no Athena checkout to fall back to")?;
             let mut command = Command::new("uv");
+            // `--extra voice-fx` brings numpy for her halo tone (ADR 0138), as the sidecar has it.
             command
-                .args(["run", "athena", "serve"])
+                .args(["run", "--extra", "voice-fx", "athena", "serve"])
                 .args(&args)
                 .current_dir(root);
             ("uv", command)

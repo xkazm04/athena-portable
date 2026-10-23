@@ -65,7 +65,7 @@ def _attach(studio: VoiceStudio, **kwargs: Any) -> Slot:
 
 def test_the_default_is_kokoro_heart_and_local_base_en() -> None:
     assert DEFAULT_CHOICE.to_dict() == {
-        "tts": {"engine": "kokoro", "voice": "af_heart"},
+        "tts": {"engine": "kokoro", "voice": "af_heart", "tone": "halo"},
         "stt": {"engine": "whisper", "model": "base.en"},
         "face": {"python": None},
     }

@@ -1,7 +1,8 @@
 """Freeze ``athena serve`` into the binary the desktop shell spawns (README §3.1; ADR 0015).
 
-    uv sync --extra build
-    uv run python scripts/build-sidecar.py [--clean] [--target-triple X] [--out DIR]
+    uv sync --extra build --extra voice-fx
+    uv run --extra build --extra voice-fx python scripts/build-sidecar.py \
+        [--clean] [--target-triple X] [--out DIR]
 
 One PyInstaller one-file binary, named the way Tauri wants an external binary —
 ``athena-daemon-<target-triple>`` with ``.exe`` on Windows — dropped in
@@ -19,6 +20,10 @@ cross-compilation: a mac build happens on a mac.
 to ``uv run athena serve`` when no binary is there, so a missing build is a slower start and not
 a broken app — which is also why PyInstaller is an optional ``build`` extra and not a dev
 dependency: the daily loop never runs it.
+
+**numpy goes in** (ADR 0138). Her halo tone (:mod:`athena.channels.voice.ether`) imports numpy
+inside a function, so it is a hidden import PyInstaller's analysis cannot see; a build without the
+``voice-fx`` extra is refused rather than shipping a sidecar that speaks without her tone.
 """
 
 from __future__ import annotations
@@ -58,10 +63,12 @@ HIDDEN_IMPORTS = [
     "athena.harness.engines",
     "athena.core.brain.reconcile",
     "sqlite3",
+    # Her halo tone (ADR 0138): imported lazily by athena.channels.voice.ether.
+    "numpy",
 ]
 
 #: The dev toolchain never goes inside a shipped binary.
-EXCLUDES = ["pytest", "mypy", "ruff", "IPython", "tkinter", "matplotlib", "numpy"]
+EXCLUDES = ["pytest", "mypy", "ruff", "IPython", "tkinter", "matplotlib"]
 
 #: ``(source, destination inside the bundle)``. A one-file binary unpacks into ``sys._MEIPASS``,
 #: and ``athena.core.constitution`` looks there *first* (``Source("frozen", ...)``) precisely so a
@@ -176,7 +183,15 @@ def build(triple: str, out_dir: Path, clean: bool) -> Path:
         raise SystemExit(
             "PyInstaller is not installed. It is a build tool, not a runtime dependency and not\n"
             "part of the daily loop:\n"
-            "  uv sync --extra build\n"
+            "  uv sync --extra build --extra voice-fx\n"
+            f"({exc})"
+        ) from exc
+    try:
+        import numpy  # noqa: F401  - only asked whether it is here: it ships for her halo tone
+    except ImportError as exc:  # pragma: no cover - depends on the machine's environment
+        raise SystemExit(
+            "numpy is not installed, and the sidecar carries it for her halo tone (ADR 0138):\n"
+            "  uv sync --extra build --extra voice-fx\n"
             f"({exc})"
         ) from exc
 

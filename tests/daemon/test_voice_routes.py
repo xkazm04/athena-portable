@@ -6,6 +6,10 @@ The daemon is the one ``conftest.py`` builds; the only change is the studio it i
 engine home under ``tmp_path`` and ``fake_engine.py`` in place of the two executables — so what
 these prove is the wire: status codes, headers, the null convention, the 503s, the live swap, and
 that a provider key never comes back out.
+
+The fake Kokoro echoes each sentence back as its PCM, so the studio here is saved speaking in her
+natural tone and the bytes can be compared as text; the halo (ADR 0138) has its own tests at the
+end, which compare lengths and provenance instead.
 """
 
 from __future__ import annotations
@@ -18,8 +22,14 @@ from typing import Any
 
 import pytest
 
+from athena.channels.voice import ether
 from athena.channels.voice.backends import Meter, VoiceBackendError
-from athena.channels.voice.config import VoiceStudio
+from athena.channels.voice.config import (
+    TONE_UNAVAILABLE_NOTE,
+    VoiceChoice,
+    VoiceStudio,
+    save_choice,
+)
 from athena.channels.voice.gateway import LEDGER_ROW_LOST, VOICE_PATH, VoiceGateway
 from athena.channels.voice.home import EngineHomes
 from athena.channels.voice.ws import connect
@@ -38,6 +48,7 @@ HEART = {"tts": {"engine": "kokoro", "voice": "af_heart"}}
 @pytest.fixture
 def studio(tmp_path: Path) -> VoiceStudio:
     log = tmp_path / "runs.jsonl"
+    save_choice(tmp_path / "voice", VoiceChoice(tone="natural"))
     return VoiceStudio(
         tmp_path / "voice",
         homes=EngineHomes(tmp_path / "personas"),
@@ -89,7 +100,10 @@ def test_the_config_is_the_whole_shape_with_nulls_not_omissions(live: Live) -> N
     assert reply.status == 200
     body = reply.body
     assert {"tts", "stt", "engines", "ready", "reason", "home"} <= set(body)
-    assert body["tts"] == {"engine": "kokoro", "voice": "af_heart"}
+    assert body["tts"] == {"engine": "kokoro", "voice": "af_heart", "tone": "natural"}
+    assert body["tone"] == "natural"
+    assert isinstance(body["tone_available"], bool)
+    assert body["tone_note"] is None
     assert body["stt"] == {"engine": "whisper", "model": "base.en"}
     assert body["ready"] is False
     assert isinstance(body["reason"], str)
@@ -434,3 +448,62 @@ def test_every_voice_route_wants_the_token(live: Live) -> None:
         ("DELETE", "/voice/key"),
     ):
         assert live.request(path, method=method, token=None).status == 401, f"{method} {path}"
+
+
+# -- the halo (ADR 0138) ---------------------------------------------------------------------------
+
+needs_numpy = pytest.mark.skipif(
+    not ether.available(), reason="the halo tone needs numpy (the 'voice-fx' extra)"
+)
+
+
+def _preview(live: Live, tone: str | None) -> Response:
+    body: dict[str, Any] = {"text": "Hello, I am Athena.", "voice": "af_heart"}
+    if tone is not None:
+        body["tone"] = tone
+    return live.request("/voice/preview", method="POST", origin=SHELL_ORIGIN, json_body=body)
+
+
+@needs_numpy
+def test_a_preview_in_the_halo_keeps_the_length_and_says_its_tone(
+    live: Live, installed: Path
+) -> None:
+    natural = _preview(live, "natural")
+    halo = _preview(live, "halo")
+
+    assert natural.header("X-Tts-Tone") == "natural"
+    assert halo.status == 200 and halo.header("X-Tts-Tone") == "halo"
+    assert len(halo.raw) == len(natural.raw) == len(b" Hello, I am Athena.")
+    assert halo.raw != natural.raw
+    assert "X-Tts-Tone" in halo.header("Access-Control-Expose-Headers").split(", ")
+
+
+def test_a_preview_with_an_unknown_tone_is_refused(live: Live, installed: Path) -> None:
+    reply = _preview(live, "choir")
+    assert reply.status == 400 and reply.body["reason"] == "validator_failed"
+
+
+def test_without_numpy_the_halo_preview_speaks_natural_and_the_config_says_why(
+    live: Live, installed: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    def gone() -> Any:
+        raise ether.EtherUnavailable("numpy is not installed")
+
+    monkeypatch.setattr(ether, "_np", gone)
+    halo = _preview(live, "halo")
+    assert halo.status == 200, "a missing add-on is never a silence"
+    assert halo.header("X-Tts-Tone") == "natural"
+    assert halo.raw == b" Hello, I am Athena."
+
+    chosen = live.request(
+        "/voice/config",
+        method="PUT",
+        json_body={
+            "tts": {"engine": "kokoro", "voice": "af_heart", "tone": "halo"},
+            "stt": {"engine": "whisper"},
+        },
+    )
+    assert chosen.status == 200
+    assert chosen.body["tts"]["tone"] == "halo"
+    assert (chosen.body["tone"], chosen.body["tone_available"]) == ("natural", False)
+    assert chosen.body["tone_note"] == TONE_UNAVAILABLE_NOTE

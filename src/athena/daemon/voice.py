@@ -9,11 +9,15 @@ error shape, and an absent value on the wire is ``null``, never a missing key.
     validates against the catalogs (``validator_failed`` for an unknown id), persists, and swaps
     the socket's backend at once. ``face.python`` points at the environment her face helper runs
     in (ADR 0120), and the ``face`` row of ``engines`` says whether her face is live; a PUT
-    without ``face`` keeps the one that was saved.
+    without ``face`` keeps the one that was saved. ``tts.tone`` is ``natural`` or ``halo`` (ADR
+    0138; a PUT whose ``tts`` has no ``tone`` keeps it), and the answer carries ``tone`` (what she
+    speaks in now), ``tone_available`` and ``tone_note`` (why the halo is not heard, or ``null``).
 
 ``POST /voice/preview``
-    ``{"text", "voice"}`` → raw PCM16LE mono, ``Content-Type: audio/L16;rate=<n>``, with
-    ``X-Tts-Provider``, ``X-Tts-Voice`` and ``X-Tts-Elapsed-Ms``. 503 while Kokoro is not ready.
+    ``{"text", "voice", "tone"?}`` → raw PCM16LE mono, ``Content-Type: audio/L16;rate=<n>``, with
+    ``X-Tts-Provider``, ``X-Tts-Voice``, ``X-Tts-Tone`` and ``X-Tts-Elapsed-Ms``. 503 while Kokoro
+    is not ready. ``tone`` defaults to the chosen one, so a tone is heard before it is chosen;
+    ``X-Tts-Tone`` says the tone actually laid on (``natural`` when the layer cannot run here).
     It speaks through the engine directly, so a voice can be picked before a listener exists.
 
 ``POST /voice/transcribe?engine=whisper|openai``
@@ -34,7 +38,7 @@ from __future__ import annotations
 import time
 from typing import TYPE_CHECKING, Any
 
-from athena.channels.voice import kokoro
+from athena.channels.voice import ether, kokoro
 from athena.channels.voice.backends import VoiceBackendError, hearing_meter
 from athena.channels.voice.config import STT_ENGINES, ConfigError, VoiceStudio
 from athena.channels.voice.gateway import record_speech
@@ -83,7 +87,10 @@ def preview(studio: VoiceStudio, request: Request) -> Reply | BinaryReply:
         return error(400, "validator_failed", f"text is 1 to {kokoro.TEXT_CAP} characters")
     if kokoro.find_voice(voice) is None:
         return error(400, "validator_failed", f"unknown voice {voice!r}")
-    speaker, reason = studio.speaker(voice)
+    tone = str(request.body.get("tone") or studio.choice.tone)
+    if tone not in ether.TONES:
+        return error(400, "validator_failed", f"unknown tone {tone!r}")
+    speaker, reason = studio.speaker(voice, tone)
     if speaker is None:
         return error(503, "engine_error", reason or "Kokoro is not ready.")
     started = time.monotonic()
@@ -99,6 +106,7 @@ def preview(studio: VoiceStudio, request: Request) -> Reply | BinaryReply:
         headers={
             "X-Tts-Provider": speaker.name,
             "X-Tts-Voice": voice,
+            "X-Tts-Tone": tone if tone == "natural" or ether.available() else "natural",
             "X-Tts-Elapsed-Ms": str(elapsed),
         },
     )

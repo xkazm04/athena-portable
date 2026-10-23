@@ -13,7 +13,8 @@
  * - **Previews never overlap.** A play stops the clip before it; a reply that arrives after a
  *   newer play (or a stop) is dropped by its token; leaving the pick step stops playback.
  * - **The first preview that plays chooses her voice** (`previewed`, then `PUT /voice/config`),
- *   and says a greeting for the hour; every later one says the test line.
+ *   and says a greeting for the hour; every later one says the test line. A tone preview (ADR
+ *   0138) says the tone's sample line in the tone asked for, and chooses nothing.
  * - **A column shows the newest take.** A transcript of an older take that lands after a newer
  *   take began is dropped, as an older preview's reply is.
  * - **An install is polled every 250 ms while it runs**, and only while it runs. The poll ends on
@@ -34,6 +35,7 @@ import {
   refusalText,
   type InstallState,
   type SttEngineId,
+  type Tone,
   type VoiceChoice,
   type VoiceConfig,
 } from "@/lib/voice-setup";
@@ -44,6 +46,7 @@ import {
   HEAR_IDLE,
   PREVIEW_IDLE,
   STUDIO_START,
+  TONE_SAMPLE_LINE,
   engineOf,
   previewText,
   readySttEngines,
@@ -231,30 +234,33 @@ export const useVoiceSetup = create<VoiceSetupState>((set, get) => {
     if (next.step !== "pick" && get().preview.phase !== "idle") stopPreview();
   }
 
-  async function togglePreview(voice: string): Promise<void> {
+  async function togglePreview(voice: string, tone?: Tone): Promise<void> {
     const now = get().preview;
-    if (now.voice === voice && (now.phase === "playing" || now.phase === "synth")) {
+    const asked = tone ?? null;
+    if (now.voice === voice && (now.tone ?? null) === asked && (now.phase === "playing" || now.phase === "synth")) {
       stopPreview();
       return;
     }
     if (!rt.api) return;
     rt.player?.stop();
     const mine = ++rt.token;
-    const first = !get().studio.wokeUp;
-    set({ preview: { phase: "synth", voice, error: null } });
-    const out = await rt.api.preview(previewText(!first, deps.now()), voice);
+    // A tone preview compares two layers over a voice already chosen: it never wakes her up.
+    const first = asked === null && !get().studio.wokeUp;
+    set({ preview: { phase: "synth", voice, tone: asked, error: null } });
+    const text = asked === null ? previewText(!first, deps.now()) : TONE_SAMPLE_LINE;
+    const out = await rt.api.preview(text, voice, tone);
     if (mine !== rt.token) return;
     if (!out.ok) {
-      set({ preview: { phase: "error", voice, error: refusalText(out) } });
+      set({ preview: { phase: "error", voice, tone: asked, error: refusalText(out) } });
       return;
     }
     rt.player ??= deps.player();
     if (!rt.player) {
-      set({ preview: { phase: "error", voice, error: "this webview has no audio output" } });
+      set({ preview: { phase: "error", voice, tone: asked, error: "this webview has no audio output" } });
       return;
     }
     const ended = rt.player.play(out.value.pcm, out.value.sampleRate);
-    set({ preview: { phase: "playing", voice, error: null } });
+    set({ preview: { phase: "playing", voice, tone: asked, error: null } });
     if (first) {
       dispatch({ t: "previewed", voice });
       void choose({ tts: { engine: "kokoro", voice } });
@@ -351,7 +357,12 @@ export const useVoiceSetup = create<VoiceSetupState>((set, get) => {
         void poll();
       });
     },
-    togglePreview: (voice) => void togglePreview(voice),
+    togglePreview: (voice, tone) => void togglePreview(voice, tone),
+    chooseTone: (tone) => {
+      const current = get().config;
+      if (!current) return;
+      void choose({ tts: { ...current.tts, tone } });
+    },
     stopPreview,
     recordStart,
     recordStop: () => void recordStop(),

@@ -133,6 +133,15 @@ describe("preview", () => {
     if (!out.ok) expect(refusalText(out)).toBe("Kokoro is not installed");
   });
 
+  it("asks for a tone only when given one, and reads the tone laid on back (ADR 0138)", async () => {
+    const { api, calls } = fake(
+      () => new Response(new Uint8Array(0), { status: 200, headers: { "X-Tts-Tone": "natural" } }),
+    );
+    const out = await api.preview("Hi", "af_heart", "halo");
+    expect(JSON.parse(calls[0].body as string)).toEqual({ text: "Hi", voice: "af_heart", tone: "halo" });
+    expect(out.ok && out.value.tone).toBe("natural");
+  });
+
   it("clips text to the contract's 1200 characters", async () => {
     const { api, calls } = fake(() => new Response(new Uint8Array(0), { status: 200 }));
     await api.preview("a".repeat(1500), "af_heart");

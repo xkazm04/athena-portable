@@ -15,6 +15,11 @@ does. Each run reloads the model (a second or so cold); 90 s is the ceiling for 
 an argument in a list, so nothing a model wrote can become a command. On Windows the run carries
 ``CREATE_NO_WINDOW``.
 
+**Her tone is laid on last** (ADR 0138). With ``tone`` ``halo`` each sentence's PCM passes
+:func:`athena.channels.voice.ether.apply` on its render thread, after her face has been worked out
+on the dry audio; the layer keeps the sample count, so the mouth shapes still line up. Without
+numpy, or if the layer fails, the sentence plays dry: a tone is never worth a silence.
+
 **The catalog is one voice.** ``af_heart`` is speaker 3 of ``kokoro-multi-lang-v1_0`` — verified
 against the upstream speaker table by Personas, and a wrong sid silently speaks as somebody else,
 so a voice is added here only with a verified sid.
@@ -37,6 +42,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
+from athena.channels.voice import ether
 from athena.channels.voice.backends import VoiceBackendError
 from athena.channels.voice.face import (
     FACE_ARGS,
@@ -357,6 +363,14 @@ def read_pcm(wav_path: Path) -> bytes:
         raise VoiceBackendError(f"kokoro's output was not a WAV ({type(exc).__name__})") from None
 
 
+@functools.lru_cache(maxsize=1)
+def _note_dry_once() -> None:
+    """Say once per process that the halo was asked for and numpy is not here."""
+    logging.getLogger(__name__).info(
+        "voice: the halo tone needs the '%s' extra; speaking in the natural tone", ether.EXTRA
+    )
+
+
 #: How many started sentences ``KokoroTTS.started`` keeps.
 STARTED_KEPT = 32
 
@@ -488,6 +502,9 @@ class KokoroTTS:
     #: Her face helper (ADR 0120). Only :meth:`synthesize_face` uses it, and only while it is
     #: ready; :meth:`synthesize` - the studio's preview - never does.
     face: FaceHelper | None = None
+    #: The layer over each sentence (ADR 0138). ``natural`` here, so an engine built without a
+    #: choice speaks as Kokoro rendered; the studio passes the person's (default ``halo``).
+    tone: str = "natural"
 
     @property
     def name(self) -> str:
@@ -539,8 +556,21 @@ class KokoroTTS:
                 raise VoiceBackendError(f"kokoro exited with {job.proc.returncode}: {snippet}")
             pcm = read_pcm(output)
         if face is None:
+            return self._toned(job, pcm)
+        return self._toned(job, self._faced(job, face, pcm, (stdout or b"") + stderr))
+
+    def _toned(self, job: _Render, pcm: bytes) -> bytes:
+        """``pcm`` with her tone laid over it, the same number of samples; dry when the tone is
+        ``natural``, the sentence was cancelled, numpy is missing, or the layer fails."""
+        if self.tone == "natural" or job.cancelled or not pcm:
             return pcm
-        return self._faced(job, face, pcm, (stdout or b"") + stderr)
+        try:
+            return ether.apply(pcm, self.sample_rate, self.tone)
+        except ether.EtherUnavailable:
+            _note_dry_once()
+        except Exception:  # the tone is never worth the sentence
+            logging.getLogger(__name__).exception("voice: a sentence's tone failed; played dry")
+        return pcm
 
     def _faced(self, job: _Render, face: FaceHelper, raw: bytes, output: bytes) -> bytes:
         """The uncut sentence cut as the engine would have cut it, and its face asked for.
