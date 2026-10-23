@@ -1,7 +1,7 @@
 {
   "$schema": "../gen/schemas/desktop-schema.json",
   "identifier": "athena",
-  "description": "The Athena companion window (ADR 0026). It holds exactly one webview and that webview is privileged, so, unlike `ui.json` whose window also holds page webviews, it may name its window. What it is granted is what her stores need and nothing of Main's: her own window commands, the tab list and the bridge (the run loop runs a page's tools on the focused tab), the daemon's status, the store, and the hands. It is given no tabs_create, tabs_close, tabs_focus, tabs_navigate or layout_*: she reads what Main has open and never opens, closes or selects anything in it.",
+  "description": "The Athena companion window (ADR 0026). It holds exactly one webview and that webview is privileged, so, unlike `ui.json` whose window also holds page webviews, it may name its window. What it is granted is what her stores need and nothing of Main's: her own window commands, the tab list and the bridge (the run loop runs a page's tools on the focused tab), the daemon's status, the store, and the hands, with `captures_sweep` because a capture she takes through `hands_call` files a `captures` row and she holds that table to its cap as Main does (ADR 0066). It is given no tabs_create, tabs_close, tabs_focus, tabs_navigate or layout_*: she reads what Main has open and never opens, closes or selects anything in it.",
   "local": true,
   "windows": [
     "athena"
@@ -27,6 +27,7 @@
     "allow-store-set",
     "allow-store-list",
     "allow-store-delete",
+    "allow-captures-sweep",
     "allow-hands-call",
     "allow-hands-list",
     "allow-hands-describe"
