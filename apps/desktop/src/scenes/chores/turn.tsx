@@ -108,17 +108,61 @@ function Prose({ text }: { text: string }) {
       bullets = [];
     }
   };
+  let rows: string[][] = [];
+  const flushTable = () => {
+    if (rows.length) {
+      const [head, ...body] = rows;
+      out.push(
+        <table key={`t-${out.length}`} className="ch-prose-table">
+          <thead>
+            <tr>
+              {head.map((c, i) => (
+                <th key={i}>{inline(c)}</th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {body.map((r, i) => (
+              <tr key={i}>
+                {r.map((c, j) => (
+                  <td key={j}>{inline(c)}</td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>,
+      );
+      rows = [];
+    }
+  };
   for (const line of text.split("\n")) {
     const t = line.trim();
+    // A markdown table row: her words often carry one. A separator row (|---|) only shapes it.
+    if (t.startsWith("|")) {
+      flush();
+      if (!/^\|[\s:|-]+\|?$/.test(t)) rows.push(cells(t));
+      continue;
+    }
+    flushTable();
     if (/^[-*] /.test(t)) {
       bullets.push(t.slice(2));
       continue;
     }
     flush();
-    if (t) out.push(<p key={`p-${out.length}`}>{inline(t)}</p>);
+    if (t) out.push(<p key={`p-${out.length}`}>{inline(t.replace(/^#{1,6} /, ""))}</p>);
   }
+  flushTable();
   flush();
   return <>{out}</>;
+}
+
+/** The cells of one table row; a row cut short by the shown-of-total bound keeps what it has. */
+export function cells(row: string): string[] {
+  return row
+    .replace(/^\|/, "")
+    .replace(/\|$/, "")
+    .split("|")
+    .map((c) => c.trim());
 }
 
 function inline(text: string): ReactNode[] {

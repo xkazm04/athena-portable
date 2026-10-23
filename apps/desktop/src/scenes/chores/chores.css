@@ -1730,3 +1730,21 @@ h4.ch-title {
   align-items: center;
   gap: 8px 12px;
 }
+
+/* A table in her words (the replay): compact, ruled, never wider than the turn. */
+.ch-prose-table {
+  border-collapse: collapse;
+  margin: 0.4em 0 0.6em;
+  font-size: 0.86em;
+  width: 100%;
+}
+.ch-prose-table th,
+.ch-prose-table td {
+  border-bottom: 1px solid var(--border-default);
+  padding: 0.25em 0.6em 0.25em 0;
+  text-align: left;
+  vertical-align: top;
+}
+.ch-prose-table th {
+  font-weight: 600;
+}
