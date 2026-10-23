@@ -224,9 +224,11 @@ export interface ConsoleServer {
 
 /**
  * The built console, served from this process (no child to lose). Bound on 127.0.0.1 and
- * opened by the name `localhost`, which Chromium always resolves to loopback.
+ * opened by the name `localhost`, which Chromium always resolves to loopback. `port` 0 (the
+ * default) is ephemeral; a fixed one keeps the origin stable across runs, which matters when the
+ * suite drives a person's own Athena and every new origin would be a new row in their trust table.
  */
-export async function serveConsole(dist: string = CONSOLE_DIST): Promise<ConsoleServer> {
+export async function serveConsole(dist: string = CONSOLE_DIST, port = 0): Promise<ConsoleServer> {
   const root = resolve(dist);
   const server: Server = createServer((req, res) => {
     const path = decodeURIComponent(new URL(req.url ?? "/", "http://localhost").pathname);
@@ -239,10 +241,13 @@ export async function serveConsole(dist: string = CONSOLE_DIST): Promise<Console
     res.writeHead(200, { "content-type": TYPES[extname(file)] ?? "application/octet-stream", "cache-control": "no-store" });
     res.end(readFileSync(file));
   });
-  await new Promise<void>((ok) => server.listen(0, "127.0.0.1", ok));
-  const port = (server.address() as AddressInfo).port;
+  await new Promise<void>((ok, fail) => {
+    server.once("error", fail);
+    server.listen(port, "127.0.0.1", ok);
+  });
+  const bound = (server.address() as AddressInfo).port;
   return {
-    origin: `http://localhost:${port}`,
+    origin: `http://localhost:${bound}`,
     stop: () =>
       new Promise<void>((ok) => {
         server.closeAllConnections();

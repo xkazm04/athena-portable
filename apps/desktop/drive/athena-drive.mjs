@@ -21,6 +21,8 @@ import { createServer } from "node:net";
 import { join } from "node:path";
 import { chromium } from "playwright-core";
 
+import { rawConnect } from "./raw-cdp.mjs";
+
 export const E2E_IDENTIFIER = "com.athena.portable.e2e";
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -136,29 +138,41 @@ export async function launch({
     },
     { label: "the CDP endpoint", timeout: bootTimeout, every: 500 },
   );
-  const driver = await attach({ cdp, timeout: bootTimeout });
+  const driver = await attach({ cdp, timeout: bootTimeout, transport: "playwright" });
   driver.process = { pid: child.pid, identifier, created: !existing.length, output: () => output, exited: () => exited };
   return driver;
 }
 
-/** Attach to a running Athena whose WebView2 listens on `cdp` (e.g. `http://127.0.0.1:9222`). */
-export async function attach({ cdp = "http://127.0.0.1:9222", timeout = 30_000 } = {}) {
-  const browser = await chromium.connectOverCDP(cdp);
-  const driver = new AthenaDriver(browser, cdp);
+/**
+ * Attach to a running Athena whose WebView2 listens on `cdp` (e.g. `http://127.0.0.1:9222`).
+ *
+ * `transport` is `"raw"` by default: page-level CDP (raw-cdp.mjs), because a dev build's blob
+ * shared worker makes Playwright's browser-level attach throw from inside an event handler, which
+ * kills the process rather than rejecting. `"playwright"` uses `connectOverCDP` (`launch()` does:
+ * its bundled build has no such worker). `ATHENA_DRIVE_TRANSPORT` overrides the default.
+ */
+export async function attach({ cdp = "http://127.0.0.1:9222", timeout = 30_000, transport = process.env.ATHENA_DRIVE_TRANSPORT ?? "raw" } = {}) {
+  let conn;
+  if (transport === "playwright") {
+    const browser = await chromium.connectOverCDP(cdp);
+    conn = { transport, pages: () => browser.contexts().flatMap((c) => c.pages()), close: () => browser.close() };
+  } else conn = await rawConnect(cdp);
+  const driver = new AthenaDriver(conn, cdp);
   await waitFor(() => driver.chrome && driver.athena, { label: "chrome.html and athena.html", timeout });
   return driver;
 }
 
 export class AthenaDriver {
-  constructor(browser, cdp) {
-    this.browser = browser;
+  /** `conn` is `{ transport, pages(), close() }`: Playwright's pages, or raw-cdp.mjs's. */
+  constructor(conn, cdp) {
+    this.conn = conn;
     this.cdp = cdp;
     /** Set by `launch()`; `null` when attached to someone else's instance. */
     this.process = null;
   }
 
   pages() {
-    return this.browser.contexts().flatMap((c) => c.pages());
+    return this.conn.pages();
   }
   #byUrl(fragment) {
     return this.pages().find((p) => p.url().includes(fragment));
@@ -228,6 +242,12 @@ export class AthenaDriver {
   async register(url) {
     const before = new Set((await this.tabs()).map((t) => t.id));
     const input = this.chrome.locator('input[aria-label="Address of the app to register"]');
+    // A collapsed Main (the pill: a chrome webview a few pixels tall) shows no surface at all.
+    // Bring it forward the way the shell's own "open Main" does.
+    if ((await this.chrome.evaluate(() => innerHeight)) < 200) {
+      await this.invoke("athena_open_main").catch(() => undefined);
+      await waitFor(async () => (await this.chrome.evaluate(() => innerHeight)) >= 200, { label: "Main to open", timeout: 15_000 });
+    }
     if (!(await input.isVisible().catch(() => false))) {
       // The form lives on the Apps scene: the surface's "Apps, ..." light opens it.
       await this.invoke("layout_select", { shape: "scene" }).catch(() => undefined);
@@ -434,9 +454,26 @@ export class AthenaDriver {
     // In the ledger a slip carries its own buttons; in the card-forward view ("waiting on you")
     // the one slip shown is answered by the window's Approve/Decline, outside the article.
     const own = slip.locator(`[data-act="${act}"]`);
-    if (await own.count()) await own.first().click();
-    else await this.athena.locator(`button[data-act="${act}"]`).first().click();
-    // A decided slip is marked, or leaves the ledger (a sheet is replaced by its rows' results).
+    const button = (await own.count()) ? own.first() : this.athena.locator(`button[data-act="${act}"]`).first();
+    // Answered: the slip is stamped, leaves the ledger (a sheet is replaced by its rows' results),
+    // or the button reads "Sending…" (aria-busy) while the daemon confirms.
+    const answered = async () =>
+      (await slip.count()) === 0 ||
+      Boolean(await slip.getAttribute("data-decision")) ||
+      !/waiting on you/.test((await slip.getAttribute("aria-label")) ?? "") ||
+      (await button.getAttribute("aria-busy")) === "true";
+    // A click that lands just as a card arrives can be dropped: the companion's machine ignores a
+    // decision while it still holds the previous one or has not counted the new card yet
+    // (companion/machine.ts, "decide"). Pressing again is safe for the same reason (an answer
+    // already taken makes every later press a no-op), so press until it takes, up to 60 s.
+    const end = Date.now() + 60_000;
+    for (;;) {
+      await button.click();
+      const took = await waitFor(answered, { label: `${id} to be ${act}d`, timeout: 5_000 }).catch(() => false);
+      if (took) break;
+      if (Date.now() > end) throw new Error(`${id} was never ${act}d after repeated presses`);
+    }
+    // Then wait for the stamp itself (or the slip leaving).
     await waitFor(
       async () => (await slip.count()) === 0 || Boolean(await slip.getAttribute("data-decision")) || !/waiting on you/.test((await slip.getAttribute("aria-label")) ?? ""),
       { label: `${id} to be ${act}d`, timeout: 30_000 },
@@ -460,7 +497,7 @@ export class AthenaDriver {
 
   /** Disconnect; with `stop`, also kill the instance this driver launched and remove its data. */
   async close({ stop = false } = {}) {
-    await this.browser.close().catch(() => undefined);
+    await Promise.resolve(this.conn.close()).catch(() => undefined);
     if (stop && this.process) stopInstance(this.process);
   }
 }

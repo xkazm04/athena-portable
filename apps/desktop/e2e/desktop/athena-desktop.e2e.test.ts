@@ -9,6 +9,13 @@
  * the card's own Approve and Decline buttons. Shadowrunr is the scripted daemon on scratch copies
  * plus its built console, as in `../shadowrunr`.
  *
+ * Attach mode: with `ATHENA_CDP` (e.g. `http://127.0.0.1:9222`) it drives an Athena that is already
+ * running instead, the user's own included. Nothing is launched or stopped then, the console is
+ * served on a fixed port (`SHADOWRUNR_CONSOLE_PORT`, default 5193) so repeat runs reuse one origin
+ * row, and teardown closes only the tab it opened. What it leaves in that Athena: the origin
+ * registered and trusted, the conversation in her brain, and its ledger rows. Shadowrunr's writes
+ * still land on scratch copies.
+ *
  * It spends quota (four short real turns), so it runs only with `ATHENA_DESKTOP=1`, and skips
  * with a reason when a piece is missing. Each run writes transcripts, the ledger and screenshots
  * to `out/<UTC stamp>/`.
@@ -19,7 +26,7 @@ import { fileURLToPath } from "node:url";
 
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 
-import { launch, type AthenaDriver, type Settled, type Slip } from "../../drive/athena-drive.mjs";
+import { attach, launch, type AthenaDriver, type Settled, type Slip } from "../../drive/athena-drive.mjs";
 import {
   OVERLORD,
   makeScratch,
@@ -40,7 +47,9 @@ const EXE =
   resolve(HERE, "..", "..", "src-tauri", "target", "debug", process.platform === "win32" ? "athena-desktop.exe" : "athena-desktop");
 
 const LIVE = process.env.ATHENA_DESKTOP === "1";
-const missing = [...missingPieces(), ...(existsSync(EXE) ? [] : [`no Athena exe at ${EXE} (drive/README.md builds one)`])];
+const ATTACH = process.env.ATHENA_CDP;
+const CONSOLE_PORT = Number(process.env.SHADOWRUNR_CONSOLE_PORT ?? (ATTACH ? 5193 : 0));
+const missing = [...missingPieces(), ...(ATTACH || existsSync(EXE) ? [] : [`no Athena exe at ${EXE} (drive/README.md builds one)`])];
 const skipWhy = !LIVE ? "set ATHENA_DESKTOP=1 (spends quota)" : missing.join("; ");
 if (skipWhy) console.warn(`[athena-desktop e2e] skipped: ${skipWhy}`);
 
@@ -55,6 +64,7 @@ describe.skipIf(Boolean(skipWhy))("the Athena desktop app drives Shadowrunr thro
   let host = "";
   let outDir = "";
   let realBefore = "";
+  let startedAt = "";
   const log: Array<{ step: string; settled?: Settled; note?: string }> = [];
 
   const shot = async (name: string) => {
@@ -71,19 +81,31 @@ describe.skipIf(Boolean(skipWhy))("the Athena desktop app drives Shadowrunr thro
     mkdirSync(outDir, { recursive: true });
     scratch = makeScratch();
     shadow = await startShadowDaemon(scratch);
-    web = await serveConsole();
+    web = await serveConsole(undefined, CONSOLE_PORT);
     host = new URL(web.origin).host;
-    d = await launch({ exe: EXE });
-    await d.ready();
-    await d.onboard();
+    startedAt = new Date().toISOString();
+    if (ATTACH) {
+      d = await attach({ cdp: ATTACH });
+      await d.ready();
+    } else {
+      d = await launch({ exe: EXE });
+      await d.ready();
+      await d.onboard();
+    }
   }, 300_000);
 
   afterAll(async () => {
     if (outDir) {
-      const ledger = await d?.daemon("/ledger?limit=100").catch(() => null);
-      writeFileSync(join(outDir, "run.json"), JSON.stringify({ log, ledger }, null, 2));
+      // Only this run's rows: an attached Athena's ledger holds the user's other conversations.
+      const all = await d?.daemon<{ rows?: Array<{ created_at?: string; origin?: string; cost_usd?: number }> }>("/ledger?limit=200").catch(() => null);
+      const rows = (all?.rows ?? []).filter((r) => (r.created_at ?? "") >= startedAt && r.origin === "host:shadowrunr");
+      const cost = rows.reduce((a, r) => a + (r.cost_usd ?? 0), 0);
+      writeFileSync(join(outDir, "run.json"), JSON.stringify({ mode: ATTACH ? "attach" : "launch", log, ledger: { rows, cost_usd: cost } }, null, 2));
     }
-    await d?.close({ stop: true }).catch(() => undefined);
+    if (ATTACH) {
+      if (tabId) await d?.invoke("tabs_close", { id: tabId }).catch(() => undefined);
+      await d?.close().catch(() => undefined);
+    } else await d?.close({ stop: true }).catch(() => undefined);
     await web?.stop().catch(() => undefined);
     await shadow?.stop().catch(() => undefined);
     if (scratch) removeScratch(scratch.root);
@@ -92,18 +114,23 @@ describe.skipIf(Boolean(skipWhy))("the Athena desktop app drives Shadowrunr thro
   it("pairs in the real UI: register, switch the console's toggle on, trust its tools", async () => {
     const tab = await d.register(`${web.origin}/?daemon=${shadow.url}`);
     tabId = tab.id;
-    // The console publishes nothing until its own "Athena" toggle is on.
-    expect((await d.tools(tabId)).tools ?? []).toHaveLength(0);
-    // The tab has just opened: wait for the console to render its toggle before looking for it.
+    // The tab has just opened: wait for the console to render its toggle ("Athena" when off,
+    // "Athena driving" when on) before looking for it.
+    const TOGGLE = /^(ref_\S+)\s+button\s+(Athena(?: driving)?)$/m;
     let found = await d.hand(tabId, "page_find", { query: "Athena" });
-    for (let i = 0; i < 60 && !/button\s+Athena$/m.test(found.output ?? ""); i++) {
+    for (let i = 0; i < 60 && !TOGGLE.test(found.output ?? ""); i++) {
       await new Promise((r) => setTimeout(r, 500));
       found = await d.hand(tabId, "page_find", { query: "Athena" });
     }
-    const ref = /^(ref_\S+)\s+button\s+Athena$/m.exec(found.output ?? "")?.[1];
+    const [, ref, label] = TOGGLE.exec(found.output ?? "") ?? [];
     expect(ref, found.output ?? found.error ?? "").toBeTruthy();
-    const clicked = await d.hand(tabId, "page_click", { ref, expect: "Athena" });
-    expect(clicked.ok).toBe(true);
+    // The opt-in persists in the browsing profile: an Athena that ran this suite before (attach
+    // mode) already has it on. Off, the console publishes nothing until it is pressed.
+    if (label === "Athena") {
+      expect((await d.tools(tabId)).tools ?? []).toHaveLength(0);
+      const clicked = await d.hand(tabId, "page_click", { ref, expect: "Athena" });
+      expect(clicked.ok).toBe(true);
+    }
     const listed = await (async () => {
       for (let i = 0; i < 40; i++) {
         const l = await d.tools(tabId);

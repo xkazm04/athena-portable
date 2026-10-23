@@ -1,5 +1,5 @@
 // Types for athena-drive.mjs, so the TypeScript e2e suites can import the driver.
-import type { Browser, Page } from "playwright-core";
+import type { Page } from "playwright-core";
 
 export const E2E_IDENTIFIER: string;
 
@@ -72,11 +72,18 @@ export interface LaunchOptions {
 }
 
 export function launch(options: LaunchOptions): Promise<AthenaDriver>;
-export function attach(options?: { cdp?: string; timeout?: number }): Promise<AthenaDriver>;
+/** `transport`: "raw" (default; page-level CDP, see raw-cdp.mjs) or "playwright". */
+export function attach(options?: { cdp?: string; timeout?: number; transport?: "raw" | "playwright" }): Promise<AthenaDriver>;
 export function stopInstance(p: { pid: number; identifier: string; created: boolean }): void;
 
+export interface Connection {
+  transport: "raw" | "playwright";
+  pages(): Page[];
+  close(): Promise<void> | void;
+}
+
 export class AthenaDriver {
-  browser: Browser;
+  conn: Connection;
   cdp: string;
   process: LaunchedProcess | null;
   pages(): Page[];

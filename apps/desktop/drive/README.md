@@ -18,6 +18,54 @@ the chrome page:
 - `bridge_list` and `bridge_call` for the page's own WebMCP tools (no model, no gate);
 - `hands_call` for the DOM hands (`page_find`, `page_click`, `page_read`, ...).
 
+### Two transports
+
+`launch()` uses Playwright's `connectOverCDP`. `attach()` defaults to `raw-cdp.mjs`, which reads
+`/json/list` and speaks CDP to each page target over its own socket. A dev build (UI from Vite on
+1431) runs a blob shared worker that WebView2 reports without a `browserContextId`. Playwright
+1.63 and 1.64 assert on it from inside an event handler, which kills the process rather than
+rejecting, so this cannot be caught and retried.
+
+The raw transport covers what the driver uses:
+- `evaluate`;
+- a small `locator` with `count`, `isVisible`, `getAttribute`, `click`, `fill` and `press("Enter")`;
+- `screenshot`.
+
+Its clicks are real `Input.dispatchMouseEvent`s, made once the element is actionable: enabled,
+topmost at its centre, and not moving. Pass `transport: "playwright"`, or set
+`ATHENA_DRIVE_TRANSPORT=playwright`, to use Playwright instead.
+
+### Pressing Approve and Decline
+
+A press that lands just as a card arrives can be dropped. The companion's machine ignores a
+decision while it still holds the previous one, or before it has counted the new card
+(`companion/machine.ts`, `decide`). Pressing again is safe for the same reason, so `approve` and
+`decline` press until the card shows "Sending…" or its stamp, for up to 60 s.
+
+## Your own running Athena
+
+```bash
+pnpm drive --cdp http://127.0.0.1:9222 status
+ATHENA_DESKTOP=1 ATHENA_CDP=http://127.0.0.1:9222 pnpm test:e2e:desktop
+```
+
+In attach mode the e2e:
+- launches and stops nothing;
+- brings Main forward when it is collapsed (`athena_open_main`);
+- serves the console on a fixed port (`SHADOWRUNR_CONSOLE_PORT`, default 5193), so every run
+  reuses one origin row;
+- closes the tab it opened.
+
+It leaves in that Athena:
+- the origin registered and trusted;
+- the conversation in her brain, which she remembers across runs ("You approved this exact call
+  at 21:06...");
+- its ledger rows. `run.json` keeps only this run's `host:shadowrunr` rows.
+
+That conversation keeps growing, and her Clear empties only the panel, not the daemon's session.
+So an attach run costs more each time: 2026-10-23 measured $5.68, against $1.38 for an isolated
+launch of the same six tests. Use the isolated instance for repeated runs.
+
 ## An isolated instance
 
 A second instance of the user's build shares their store, brain, daemon token file and WebView2
