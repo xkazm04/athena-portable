@@ -21,7 +21,8 @@ import {
   OFFERS_SHOWN,
   blockedBecause,
   cardView,
-  groupMessages,
+  plainMessages,
+  sealStateOf,
   hostOf,
   ledgerFrom,
   moodOf,
@@ -53,18 +54,21 @@ function inputs(over: Partial<CompanionInputs> = {}): CompanionInputs {
   };
 }
 
-test("consecutive deltas are one message and consecutive tools are one stretch of activity", () => {
-  const blocks = groupMessages([
+test("consecutive deltas are one message, every tool row is its own plain step, and no JSON reaches a person", () => {
+  const messages = plainMessages([
     { id: "u1", kind: "user", text: "Which are overdue?" },
-    { id: "a1", kind: "assistant", text: "Let me read the list." },
-    { id: "t1", kind: "tool", text: "host.x.list → 3 rows", tier: 1, ok: true },
-    { id: "t2", kind: "tool", text: "host.x.read → ok", tier: 1, ok: true },
+    { id: "a1", kind: "assistant", text: 'Let me read the list.\nOP: {"op": "propose_action", "action": "host.x.list_overdue"}' },
+    { id: "t1", kind: "tool", text: 'host.x.list_overdue → {"items": [{"id": "inv_118", "client": "Northwind", "balance": 4800}], "of": 1}', tier: 1, ok: true },
+    { id: "t2", kind: "tool", text: "host.x.read_client → ok", tier: 1, ok: true },
     { id: "a2", kind: "assistant", text: "Three are late." },
-    { id: "a3", kind: "assistant", text: "The oldest is INV-118." },
+    { id: "a3", kind: "assistant", text: 'The oldest is INV-118.\nTTS: "The oldest is one eighteen."' },
   ]);
-  expect(blocks.map((b) => b.kind)).toEqual(["user", "assistant", "activity", "assistant"]);
-  expect(blocks[2].kind === "activity" && blocks[2].steps.length).toBe(2);
-  expect(blocks[3].kind === "assistant" && blocks[3].text).toBe("Three are late.\n\nThe oldest is INV-118.");
+  expect(messages.map((m) => m.role)).toEqual(["user", "her", "step", "step", "her"]);
+  expect(messages[1]!.title).toBe("Let me read the list.");
+  expect(messages[2]!.title).toBe("Listed 1 invoice in X");
+  expect(messages[2]!.detail.kind).toBe("table");
+  expect(messages[4]!.title).toBe("Three are late.\n\nThe oldest is INV-118.");
+  for (const m of messages) expect(m.title + m.sub).not.toMatch(/\{"|OP:|TTS:|→/);
 });
 
 test("suggestions come from the page's own words, never from a gated tool, three at most", () => {
@@ -177,8 +181,8 @@ test("the seal says what it carries by its mood: a count and a pink ripple for a
 });
 
 test("a step's class is the catalog's answer when the page offers the tool, and absent when it does not", () => {
-  const offered = stepOf({ id: "1", kind: "tool", text: "host.ledgerbox.chase → refused", ok: false }, TOOLS);
-  expect(offered).toMatchObject({ cls: "GATED", app: "ledgerbox", what: "chase: refused", ok: false });
+  const offered = stepOf({ id: "1", kind: "tool", text: 'host.ledgerbox.send_reminder → {"ok": false, "error": "No draft is saved"}', ok: false }, TOOLS);
+  expect(offered).toMatchObject({ cls: "GATED", app: "ledgerbox", what: "Could not send a reminder in Ledgerbox", sub: "No draft is saved", ok: false });
   const core = stepOf({ id: "2", kind: "tool", text: "core.recall → 2 facts", ok: true }, []);
   expect(core.cls).toBeNull();
   expect(core.app).toBe("core");
@@ -194,7 +198,8 @@ test("the tape shows the last two steps of the turn in progress, and what she wa
   const fresh = selectCompanion(inputs({ machine, run: { phase: "running", transcript, cards: [], summary: null, error: null } }));
   expect(fresh.tape.prev).toBeNull();
   expect(fresh.tape.note).toBe("acting on “Chase the oldest.”");
-  expect(fresh.tape.cur.what).toBe("thinking");
+  expect(fresh.tape.cur.what).toBe("Thinking");
+  expect(fresh.tape.count).toBe(0);
 
   const two = [
     ...transcript,
@@ -202,8 +207,10 @@ test("the tape shows the last two steps of the turn in progress, and what she wa
     { id: "t2", kind: "tool" as const, text: "host.x.read → ok", ok: true },
   ];
   const busy = selectCompanion(inputs({ machine, run: { phase: "acting", transcript: two, cards: [], summary: null, error: null } }));
-  expect(busy.tape.prev?.what).toBe("list: 3 rows");
-  expect(busy.tape.cur.what).toBe("read: ok");
+  expect(busy.tape.prev?.what).toBe("Listed in X");
+  expect(busy.tape.cur.what).toBe("Read in X");
+  expect(busy.tape.cur.sub).toBe("ok");
+  expect(busy.tape.count).toBe(2);
   expect(busy.lit).toBe(7);
 });
 
@@ -483,7 +490,7 @@ test("a command Main offers becomes the composer's draft, and nothing is sent (A
   expect(selectCompanion(inputs()).talk.draft).toEqual({ n: 0, text: "" });
   const offered = selectCompanion(inputs({ offer: { n: 2, text: "It's reimbursement day." } }));
   expect(offered.talk.draft).toEqual({ n: 2, text: "It's reimbursement day." });
-  expect(offered.talk.blocks).toEqual([]);
+  expect(offered.talk.messages).toEqual([]);
 });
 
 test("the active playbook is named above the composer, and absent when there is none (ADR 0044)", () => {
@@ -642,4 +649,26 @@ test("a step names its app as the card and the Record's decisions do, never by i
     ledger: null,
   });
   expect(new Set(view.session.map((r) => r.app))).toEqual(new Set(["ledger.test"]));
+});
+
+test("the seal shows one state, first match wins: a stamp, a stop, a card, her voice, work, rest", () => {
+  const base = { decision: null, stopped: false, waiting: 0, hearing: false, speaking: false, working: false, done: false, form: "seal" as const, quiet: false };
+  expect(sealStateOf(base)).toBe("rest");
+  expect(sealStateOf({ ...base, quiet: true })).toBe("quiet");
+  expect(sealStateOf({ ...base, working: true })).toBe("working");
+  expect(sealStateOf({ ...base, working: true, waiting: 2 })).toBe("waiting");
+  expect(sealStateOf({ ...base, waiting: 2, decision: { kind: "approve", sending: true } })).toBe("signing");
+  expect(sealStateOf({ ...base, decision: { kind: "approve", sending: false } })).toBe("signed");
+  expect(sealStateOf({ ...base, decision: { kind: "decline", sending: false } })).toBe("declined");
+  expect(sealStateOf({ ...base, stopped: true, waiting: 1 })).toBe("stopped");
+  expect(sealStateOf({ ...base, form: "welcome" })).toBe("welcome");
+  expect(sealStateOf({ ...base, hearing: true, speaking: true })).toBe("hearing");
+});
+
+test("a card says what it will do to whom, naming the client the turn already read", async () => {
+  const { fixtures } = await import("./fixtures");
+  const card = fixtures.ledger().cards[0]!;
+  expect(card.words.title).toBe("Send a reminder for INV-118 to Northwind Traders");
+  expect(card.words.effect).toContain("Once it is sent it cannot be taken back.");
+  expect(card.words.letter?.subject).toBe("INV-118 is 41 days past due");
 });

@@ -99,7 +99,7 @@ function liveDeps(): RuntimeDeps {
     onboard: () => void useSettings.getState().setOnboarded(true).catch(report("onboard")),
     focus: (target) => {
       requestAnimationFrame(() => {
-        const selector = target === "approve" ? '.aw [data-act="approve"]' : ".aw .aw-seal";
+        const selector = target === "approve" ? '.aw [data-act="approve"]' : ".aw .anchor .seal-hit, .aw .seal-tab .seal-hit";
         document.querySelector<HTMLElement>(selector)?.focus();
       });
     },
@@ -419,6 +419,8 @@ export default function Live() {
     },
     goToTab: (tabId) => void useTabs.getState().focus(tabId).catch(report("tabs_focus")),
     tick: (id) => run.tick(id),
+    descend: (id) => rt.dispatch({ t: "descend", id }),
+    rise: () => rt.dispatch({ t: "rise" }),
   };
 
   const originViews: OriginView[] = known.map((o) => ({

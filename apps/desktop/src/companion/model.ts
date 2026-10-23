@@ -41,6 +41,9 @@ import type { VoicePhase } from "@/stores/voice";
 
 import { shown, type By, type Choice, type Dock, type LedgerTab, type MachineState } from "./machine";
 import { plainFailure } from "./plain";
+import type { SealState } from "./seal";
+import { EMPTY_CONTEXT, buildContext, translate, translateAll, type PlainMessage, type TurnContext } from "./translate";
+import { describeDecision, type DecisionWords } from "./translate/decision";
 
 // -- actions -----------------------------------------------------------------------------------
 
@@ -80,6 +83,9 @@ export interface CompanionActions {
   goToTab: (tabId: number) => void;
   /** Tick or untick one row of a sheet (ADR 0104). */
   tick: (id: string) => void;
+  /** Open one message as its own level below the conversation, and rise back from it. */
+  descend: (id: string) => void;
+  rise: () => void;
 }
 
 export const NO_ACTIONS: CompanionActions = {
@@ -105,6 +111,8 @@ export const NO_ACTIONS: CompanionActions = {
   retryEngine: () => {},
   goToTab: () => {},
   tick: () => {},
+  descend: () => {},
+  rise: () => {},
 };
 
 // -- the pieces --------------------------------------------------------------------------------
@@ -119,15 +127,6 @@ export interface PanelVoice {
 }
 
 export const NO_VOICE: PanelVoice = { phase: "off", available: false, partial: "" };
-
-/**
- * One block of the conversation. Consecutive assistant deltas read as one message; consecutive
- * tool rows read as one stretch of activity; a user line is always its own block.
- */
-export type MessageBlock =
-  | { kind: "user"; id: string; text: string }
-  | { kind: "assistant"; id: string; text: string }
-  | { kind: "activity"; id: string; steps: readonly TranscriptEntry[] };
 
 /**
  * What a card shows of its page. `shot` is the capture the daemon filed with the card (ADR 0066),
@@ -180,6 +179,10 @@ export interface CardView {
    * (ADR 0116); `null` for every other card. Display only: it never turns a button off.
    */
   connector: ConnectorLine | null;
+  /** What it will do, to whom, in plain words, from the action and what the turn has shown. */
+  words: DecisionWords;
+  /** Local `HH:MM` the request stops waiting, or "" when the card carries no deadline. */
+  expires: string;
 }
 
 /**
@@ -266,7 +269,10 @@ export function boundTabOf(card: DecisionRequested, tabs: readonly Tab[]): Bound
 export interface StepView {
   cls: GateClass | null;
   app: string;
+  /** What she did, in plain words: "Read 4 overdue invoices in Ledgerbox". Never the tool's raw answer. */
   what: string;
+  /** The line under it: a sum, the worst one, a reason. "" when there is none. */
+  sub: string;
   ok: boolean | null;
 }
 
@@ -276,6 +282,8 @@ export interface TapeView {
   /** When there is no previous step: what she was asked. */
   note: string;
   cur: StepView;
+  /** How many steps the turn in flight has taken so far. */
+  count: number;
   /** The turn has ended and this is its last word. */
   done: { text: string; detail: string } | null;
 }
@@ -283,6 +291,8 @@ export interface TapeView {
 /** One line of the Record: a call or a decision, with the app, the tool, the gate's class and the clock. */
 export interface RecordRow {
   id: string;
+  /** What happened, in plain words; the tool's name below it is for the technical eye. */
+  title: string;
   tool: string;
   app: string;
   cls: GateClass | null;
@@ -396,6 +406,10 @@ export interface CompanionModel {
    * ledger or the welcome says what it is itself).
    */
   mood: Mood;
+  /** What the seal shows (`seal.tsx`), from {@link sealStateOf}. */
+  seal: SealState;
+  /** The message opened one level below the conversation (`talk.messages` id, or `decision:<card id>`). */
+  depth: string | null;
   /**
    * A collapse to the seal in progress: the form the window is still sized for, and its paper's
    * epoch. The view keeps drawing that form and folds it into the seal over `SHRINK_MS`, so the
@@ -425,7 +439,8 @@ export interface CompanionModel {
   pinned: boolean;
   say: { n: number; text: string };
   talk: {
-    blocks: readonly MessageBlock[];
+    /** Every entry of the transcript in plain words (athena-mini-window's translator). */
+    messages: readonly PlainMessage[];
     suggestions: readonly string[];
     /** The sentence a person reads, and the code and detail kept for the expanded record. */
     error: { sentence: string; reason: string; detail: string } | null;
@@ -567,6 +582,42 @@ export function moodOf(form: AthenaState, cards: number, listening: boolean, voi
   return form === "seal" ? "sleep" : "none";
 }
 
+/** The facts the seal reads. */
+export interface SealFacts {
+  decision: { kind: Choice; sending: boolean } | null;
+  stopped: boolean;
+  waiting: number;
+  hearing: boolean;
+  speaking: boolean;
+  working: boolean;
+  done: boolean;
+  form: AthenaState;
+  quiet: boolean;
+}
+
+/**
+ * Her facts as one seal state (Bell's `SEAL_STATE`, athena-mini-window): the first row whose test
+ * holds wins, so a stamp in progress outranks a card, a card outranks her voice, and so on down.
+ */
+const SEAL_TABLE: readonly (readonly [SealState, (f: SealFacts) => boolean])[] = [
+  ["signing", (f) => f.decision?.sending === true],
+  ["signed", (f) => f.decision?.kind === "approve"],
+  ["declined", (f) => f.decision !== null],
+  ["stopped", (f) => f.stopped],
+  ["waiting", (f) => f.waiting > 0],
+  ["hearing", (f) => f.hearing],
+  ["speaking", (f) => f.speaking],
+  ["working", (f) => f.working],
+  ["done", (f) => f.done],
+  ["welcome", (f) => f.form === "welcome"],
+  ["quiet", (f) => f.quiet && (f.form === "seal" || f.form === "tab")],
+  ["rest", () => true],
+];
+
+export function sealStateOf(f: SealFacts): SealState {
+  return SEAL_TABLE.find(([, when]) => when(f))?.[0] ?? "rest";
+}
+
 /** Build the view-model. Pure: every argument is a snapshot the caller already read. */
 export function selectCompanion(i: CompanionInputs): CompanionModel {
   const m = i.machine;
@@ -583,6 +634,7 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     i.drifts ?? {},
     i.tabs ?? [],
     i.connectors,
+    buildContext(i.run.transcript),
   );
   const n = shown(m);
   const busy = i.run.phase === "running" || i.run.phase === "acting";
@@ -592,6 +644,18 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
   const quietCard = n > 0 && form !== "slip" && form !== "ledger";
   const mood = moodOf(form, n, m.listening, i.voice.phase, working);
   const caption = mood === "none" ? CAPTION[form] : "";
+  const finished = !working && i.run.phase !== "running" && i.run.phase !== "acting";
+  const seal = sealStateOf({
+    decision: m.decided ? { kind: m.decided.kind, sending: m.decided.sending } : null,
+    stopped: finished && i.run.error !== null && m.lingering,
+    waiting: n,
+    hearing: m.listening || i.voice.phase === "listening",
+    speaking: i.voice.phase === "speaking",
+    working,
+    done: finished && m.lingering,
+    form,
+    quiet: m.quiet,
+  });
 
   return {
     form,
@@ -606,6 +670,8 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     epoch: m.epoch,
     arrive: m.arrive,
     mood,
+    seal,
+    depth: m.depth,
     exit:
       m.leaving && (form === "seal" || form === "tab") && m.leaving.form !== "slip" && m.leaving.form !== "seal" && m.leaving.form !== "tab"
         ? m.leaving
@@ -627,7 +693,7 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     pinned: m.pinned,
     say: m.say,
     talk: {
-      blocks: groupMessages(i.run.transcript),
+      messages: plainMessages(i.run.transcript),
       suggestions: suggestionsFor(i.tools),
       error: i.run.error
         ? {
@@ -683,10 +749,11 @@ function cardsOf(
   drifts: Readonly<Record<string, ContractDrift>> = {},
   tabs: readonly Tab[] = [],
   connectors?: ConnectorsMirror,
+  turn?: TurnContext,
 ): CardView[] {
   const list = m.decided && held && !cards.some((c) => c.id === held.id) ? [held, ...cards] : cards;
   return list.map((card, index) => ({
-    ...cardView(card, captureWhy[card.id] ?? null, { tools, targets: targets[card.id], drift: drifts[card.action], tabs, connectors }),
+    ...cardView(card, captureWhy[card.id] ?? null, { tools, targets: targets[card.id], drift: drifts[card.action], tabs, connectors, turn }),
     sending: answering[card.id] !== undefined || (index === 0 && m.decided?.sending === true),
     refusal: refusals[card.id] ?? null,
   }));
@@ -783,6 +850,8 @@ export function cardView(
     drift?: ContractDrift;
     tabs?: readonly Tab[];
     connectors?: ConnectorsMirror;
+    /** What the turn has shown so far, so the card can name people and drafts. */
+    turn?: TurnContext;
   } = {},
 ): CardView {
   const mirror = context.connectors;
@@ -819,7 +888,16 @@ export function cardView(
     refusal: null,
     drift: context.drift ?? null,
     connector,
+    words: describeDecision(card, context.turn ?? EMPTY_CONTEXT, actsAs(card.origin, mirror)),
+    expires: card.expires_at ? clockOf(card.expires_at) : "",
   };
+}
+
+/** The account a connector card acts as, when the mirror knows it (ADR 0116); "" otherwise. */
+function actsAs(origin: string, mirror: ConnectorsMirror | undefined): string {
+  if (!origin.startsWith("connector:")) return "";
+  const c = mirror?.items.find((item) => item.id === origin.slice(10))?.connection;
+  return c && c.status !== "disconnected" && c.identity ? c.identity : "";
 }
 
 /** A parameter as it will be run: strings as written, anything else as JSON. Never cut. */
@@ -862,22 +940,22 @@ export function stepsOfTurn(transcript: readonly TranscriptEntry[]): TranscriptE
 }
 
 /** `host.ledgerbox.list_overdue → 3 rows` as a step. The class is the catalog's, looked up. */
-export function stepOf(entry: TranscriptEntry, tools: readonly ToolRow[]): StepView {
+export function stepOf(entry: TranscriptEntry, tools: readonly ToolRow[], turn?: TurnContext): StepView {
   const arrow = entry.text.indexOf(" → ");
   const name = arrow === -1 ? entry.text : entry.text.slice(0, arrow);
-  const result = arrow === -1 ? "" : entry.text.slice(arrow + 3);
   const parts = name.split(".");
   // Named as the card names it (`appOf`): a derived id is its host, a connector its label.
   const app =
     parts.length > 2
       ? appOf(`${parts[0] === "connector" ? "connector" : "host"}:${parts[1]}`)
       : parts[0] || "athena";
-  const bare = (parts.length > 2 ? parts.slice(2).join(".") : (parts[parts.length - 1] ?? name)).replace(/[_-]+/g, " ");
   const found = tools.find((t) => t.name === name);
+  const plain = translate(entry, turn);
   return {
     cls: found ? found.class : null,
     app,
-    what: result ? `${bare}: ${result}` : bare,
+    what: plain.title,
+    sub: plain.sub,
     ok: entry.ok ?? null,
   };
 }
@@ -893,12 +971,14 @@ function tapeOf(
   const note = lastUser ? `acting on “${lastUser.text}”` : "acting on what she was asked";
   const last = steps[steps.length - 1];
   const before = steps[steps.length - 2];
+  const turn = buildContext(run.transcript);
   const cur: StepView = last
-    ? stepOf(last, tools)
+    ? stepOf(last, tools, turn)
     : {
         cls: null,
         app: "Athena",
-        what: run.phase === "acting" ? "acting on the page" : "thinking",
+        what: run.phase === "acting" ? "Acting on the page" : "Thinking",
+        sub: "",
         ok: null,
       };
   const finished = !m.working && run.phase !== "running" && run.phase !== "acting";
@@ -916,7 +996,7 @@ function tapeOf(
             .join(", "),
         };
   }
-  return { prev: before ? stepOf(before, tools) : null, note, cur, done };
+  return { prev: before ? stepOf(before, tools, turn) : null, note, cur, count: steps.length, done };
 }
 
 /** This session's calls, newest first, every one of them. */
@@ -928,6 +1008,7 @@ export function recordOf(transcript: readonly TranscriptEntry[], tools: readonly
       const arrow = e.text.indexOf(" → ");
       return {
         id: e.id,
+        title: s.what,
         tool: arrow === -1 ? e.text : e.text.slice(0, arrow),
         app: s.app,
         cls: s.cls,
@@ -961,6 +1042,7 @@ function wordOf(result: AnswerResult): string {
 export function decisionRow(d: SessionDecision): RecordRow {
   return {
     id: d.id,
+    title: describeDecision({ action: d.action, params: {} }, EMPTY_CONTEXT).title,
     tool: d.action,
     app: appOf(d.origin) || "unknown app",
     cls: "GATED",
@@ -975,6 +1057,7 @@ export function activityRow(row: ActivityRow, nowMs: number | undefined): Record
   const cls = row.class === "GATED" || row.class === "READ" || row.class === "AUTO" ? row.class : null;
   return {
     id: row.approval_id ?? String(row.id),
+    title: describeDecision({ action: row.tool, params: {} }, EMPTY_CONTEXT).title,
     tool: row.tool,
     app: appOf(row.origin) || "unknown app",
     cls,
@@ -1149,28 +1232,21 @@ export function ledgerFrom(reply: Record<string, unknown>): LedgerSnapshot {
   return { rows, footer, showing, total, problem: null };
 }
 
-// -- the conversation (moved from the Panel module, unchanged) ---------------------------------
+// -- the conversation ----------------------------------------------------------------------
 
-/** The transcript as blocks: a run of assistant lines is one message, a run of tools one stretch. */
-export function groupMessages(entries: readonly TranscriptEntry[]): MessageBlock[] {
-  const blocks: MessageBlock[] = [];
+/**
+ * The transcript as a person reads it (athena-mini-window): a run of assistant deltas is one
+ * message, and every entry is translated into plain words, its detail one level down.
+ */
+export function plainMessages(entries: readonly TranscriptEntry[]): PlainMessage[] {
+  const merged: TranscriptEntry[] = [];
   for (const entry of entries) {
-    const last = blocks[blocks.length - 1];
-    if (entry.kind === "user") {
-      blocks.push({ kind: "user", id: entry.id, text: entry.text });
-    } else if (entry.kind === "assistant") {
-      if (last?.kind === "assistant") {
-        blocks[blocks.length - 1] = { ...last, text: joinProse(last.text, entry.text) };
-      } else {
-        blocks.push({ kind: "assistant", id: entry.id, text: entry.text });
-      }
-    } else if (last?.kind === "activity") {
-      blocks[blocks.length - 1] = { ...last, steps: [...last.steps, entry] };
-    } else {
-      blocks.push({ kind: "activity", id: entry.id, steps: [entry] });
-    }
+    const last = merged[merged.length - 1];
+    if (entry.kind === "assistant" && last?.kind === "assistant") {
+      merged[merged.length - 1] = { ...last, text: joinProse(last.text, entry.text) };
+    } else merged.push(entry);
   }
-  return blocks;
+  return translateAll(merged).filter((m) => m.role !== "her" || m.title !== "");
 }
 
 /** Two deltas of one reply, with one blank line between them so paragraphs stay paragraphs. */

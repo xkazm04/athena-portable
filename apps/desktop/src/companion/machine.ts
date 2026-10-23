@@ -88,6 +88,8 @@ export interface MachineState {
   quiet: boolean;
   pinned: boolean;
   tab: LedgerTab;
+  /** The message opened one level below the conversation, by id; `null` at the conversation itself. */
+  depth: string | null;
   /** Bumped when the paper should unroll again; the view keys the paper on it. */
   epoch: number;
   /** Bumped when she comes back from hidden; the view keys the figure on it. */
@@ -119,6 +121,9 @@ export type Event =
   | { t: "esc" }
   | { t: "expand" }
   | { t: "tab"; tab: LedgerTab }
+  /** Open one message of the conversation as its own level, or close that level. */
+  | { t: "descend"; id: string }
+  | { t: "rise" }
   | { t: "summon" }
   | { t: "show" }
   | { t: "hide" }
@@ -171,6 +176,7 @@ export const INITIAL: MachineState = {
   quiet: false,
   pinned: true,
   tab: "talk",
+  depth: null,
   epoch: 0,
   arrive: 0,
   form: "seal",
@@ -403,6 +409,11 @@ function step(s: MachineState, prev: MachineState, event: Event, fx: Effect[]): 
         if (s.decided) return;
         s.snoozed = true;
         say(s, "The decision is still waiting. Open her again when you are ready.");
+      } else if (form === "ledger" && s.depth !== null) {
+        // Esc rises one level before it closes anything (the descent, athena-mini-window).
+        s.depth = null;
+      } else if (form === "ledger" && s.tab !== "talk") {
+        s.tab = "talk";
       } else if (form === "ledger") {
         s.mode = "auto";
       } else if (form === "seal" && s.docked) {
@@ -421,6 +432,15 @@ function step(s: MachineState, prev: MachineState, event: Event, fx: Effect[]): 
     }
     case "tab": {
       s.tab = event.tab;
+      s.depth = null;
+      return;
+    }
+    case "descend": {
+      if (s.mode === "ledger") s.depth = event.id;
+      return;
+    }
+    case "rise": {
+      s.depth = null;
       return;
     }
     case "summon": {
@@ -518,6 +538,8 @@ function finalize(s: MachineState, prev: MachineState, event: Event, fx: Effect[
   s.form = form;
 
   if (form !== "seal" && s.peek) s.peek = false;
+  // A level opened below the conversation lives only while the ledger is drawn.
+  if (form !== "ledger") s.depth = null;
 
   if (changed) {
     if (s.epoch === prev.epoch) s.epoch += 1;

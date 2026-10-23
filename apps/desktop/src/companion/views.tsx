@@ -1,108 +1,79 @@
 /**
- * The companion's surface — ADR 0026 ("Named states"), README section 3.1; the drawing is The
- * Countersign's (`athena.js` templates of the winning entry), written as a pure function of
- * `CompanionModel`.
+ * Her window - ADR 0026 ("Named states"), README section 3.1; the drawing is Bell with Tideline's
+ * seal, the winner of the athena-mini-window contest and its merge round, written as a pure
+ * function of `CompanionModel`.
  *
- * Her body is a housing whose top square is the seal. Every state is the seal plus something
- * attached to it: a tape while she works, a slip when a card waits, a book when she is expanded.
- * The view fetches nothing, subscribes to nothing and imports no store; `preview.html?surface=athena`
- * renders it against fixtures with inert actions, and `views.test.tsx` renders every one of them
- * to static markup. The only effect is the ledger keeping its newest line in view.
- *
- * Nothing readable is under 12px, body is 15px, and a gate class is always a word in a box.
+ * The seal is the fixed anchor of every resize; a pane of Main's water grows out of it into each
+ * named state: a tape while she works, a slip when a decision waits, a ledger whose conversation
+ * is a descent. The view fetches nothing, subscribes to nothing and imports no store;
+ * `preview.html?surface=athena` renders it against fixtures with inert actions, and
+ * `views.test.tsx` renders every one of them to static markup.
  */
-import { useEffect, useRef, useState, type CSSProperties, type FormEvent, type KeyboardEvent } from "react";
+import { useState, type CSSProperties, type PointerEvent } from "react";
 
 import { Avatar } from "@/avatar/Avatar";
+import { SIZES } from "@/lib/companion";
 import { localFaceSource } from "@/lib/face";
 
-import { Chip, Defs, Icon, Mark, Mood, Ring, Sketch, Stamp } from "./drawing";
-import { SHRINK_MS, type LedgerTab } from "./machine";
-import { readCapture, type CaptureRead } from "./capture";
-import type { ContractDrift } from "@/lib/contract";
-import type { ConnectorLine } from "@/modules/connectors/model";
-import { showingOf, type CardCapture } from "./model";
-import type {
-  CardView,
-  CompanionModel,
-  SheetView,
-  EngineView,
-  MessageBlock,
-  ProjectView,
-  RecordRow,
-  StepView,
-} from "./model";
+import { Icon } from "./icons";
+import { Ledger } from "./ledger";
+import type { CompanionModel } from "./model";
+import { Seal } from "./seal";
+import { Slip } from "./slip";
+import { Welcome } from "./welcome";
 
+import "./tokens.css";
 import "./companion.css";
 
-const TIERS = [
-  { n: 0, name: "remembers" },
-  { n: 1, name: "acts" },
-  { n: 2, name: "native" },
-  { n: 3, name: "reaches" },
-];
+/** A press on the water that is not on a control may become a drag of her window (4px, ADR 0026). */
+const CONTROL = "button,input,textarea,select,label,a,summary,details,pre,[role=log],[role=region]";
 
 export default function CompanionView({ model }: { model: CompanionModel }) {
-  const { actions, exit } = model;
-  // During a collapse she is drawn in the form the window still has, folding (see `exit`).
-  const form = exit?.form ?? model.form;
-  const hasPaper = form !== "seal" && form !== "tab";
-  const cardCount = model.cards.length;
+  const { actions } = model;
+  const form = model.form;
+  const size = SIZES[form];
+  const n = model.cards.length;
+  const drag = (e: PointerEvent<HTMLElement>) => {
+    if (e.target instanceof Element && e.target.closest(CONTROL)) return;
+    actions.drag(e);
+  };
   return (
     <div
       className="aw"
-      data-state={form}
+      data-form={form}
       data-side={model.side}
       data-valign={model.valign}
       data-dock={model.docked ?? ""}
-      data-tone={model.tone}
-      data-cards={String(cardCount)}
       data-attn={model.attn ? "1" : "0"}
       data-quiet={model.quiet ? "1" : "0"}
-      data-decided={model.decision && !model.decision.sending ? model.decision.kind : undefined}
-      data-sending={model.decision?.sending ? "1" : undefined}
-      data-listening={model.listening ? "1" : "0"}
-      data-mood={model.mood}
-      data-exit={exit ? "1" : undefined}
-      data-open={!exit && model.opening ? "1" : undefined}
-      style={{ "--dur-fold": `${SHRINK_MS}ms` } as CSSProperties}
+      data-decided={model.decision ? (model.decision.sending ? "sending" : model.decision.tearing ? "tearing" : "stamped") : undefined}
+      data-open={model.opening ? "1" : undefined}
+      style={{ "--form-w": `${size.w - (form === "tab" ? 0 : 16)}px`, "--form-h": `${size.h - (form === "tab" ? 0 : 16)}px` } as CSSProperties}
     >
-      <Defs />
-      <div key={`arrive-${model.arrive}`} className={`aw-fig${model.arrive > 0 ? " arrive" : ""}`}>
-        <div className="aw-house" onPointerDown={(e) => actions.drag(e)}>
-          <div className="aw-sealwrap">
-            <button type="button" className="aw-seal" aria-label={model.sealLabel} onClick={actions.seal}>
-              <Ring lit={model.lit} working={model.tone === "work"} />
-              <Mood />
-              <span className="aw-face">
-                <Mark className="aw-mk" field="var(--house-glow)" cut="#081417" />
-              </span>
-              <span className="aw-cap">{model.caption}</span>
-              <span className="aw-badge" aria-hidden="true">
-                {model.badge}
-              </span>
-            </button>
-          </div>
-          <div className="aw-rail">
-            <Rail model={model} form={form} />
-          </div>
+      <div className="aw-water" onPointerDown={drag}>
+        <div className="rays" aria-hidden="true" />
+        <div className="dust" aria-hidden="true">
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <i key={i} />
+          ))}
         </div>
-        {hasPaper ? (
-          <div
-            key={exit ? exit.epoch : model.epoch}
-            className={`aw-paper ${exit ? "leave" : "enter"}`}
-            data-kind={form}
-            data-tear={form === "slip" && model.decision?.tearing ? "1" : undefined}
-          >
-            {form === "slip" ? <Slip model={model} card={model.cards[0]} inline={false} /> : null}
-            {form === "tape" ? <Tape model={model} /> : null}
-            {form === "hear" ? <Hear model={model} /> : null}
-            {form === "face" ? <Face model={model} /> : null}
-            {form === "welcome" ? <Welcome model={model} /> : null}
-            {form === "ledger" ? <Ledger model={model} /> : null}
-          </div>
-        ) : null}
+        <section key={`${form}-${model.epoch}`} className={`sec sec-${form}`} aria-label={LABELS[form]}>
+          {form === "tape" ? <Tape model={model} /> : null}
+          {form === "hear" ? <Hear model={model} /> : null}
+          {form === "face" ? <Face model={model} /> : null}
+          {form === "slip" ? <Slip model={model} /> : null}
+          {form === "welcome" ? <Welcome model={model} /> : null}
+          {form === "ledger" ? <Ledger model={model} /> : null}
+          {form === "tab" ? (
+            <Seal kind="tab" state={model.seal} count={n} label={model.sealLabel} onActivate={actions.seal} onPointerDown={actions.drag} />
+          ) : null}
+        </section>
       </div>
+      {form === "tab" ? null : (
+        <div className="anchor">
+          <Seal state={model.seal} count={n} label={model.sealLabel} onActivate={actions.seal} onPointerDown={actions.drag} />
+        </div>
+      )}
       {/* One region for her whole life: a reader voices a change inside a region it already watches,
           and a region mounted with its text in it is silent. Keying the words, not the region, makes
           the same sentence said twice a new node, so it is heard twice. */}
@@ -113,943 +84,105 @@ export default function CompanionView({ model }: { model: CompanionModel }) {
   );
 }
 
-// -- the rail ----------------------------------------------------------------------------------
-
-function Rail({ model, form }: { model: CompanionModel; form: CompanionModel["form"] }) {
-  if (form === "ledger") {
-    const n = model.cards.length;
-    const tabs: Array<[LedgerTab, string, "talk" | "record" | "origin"]> = [
-      ["talk", "Talk", "talk"],
-      ["record", "Record", "record"],
-      ["origins", "Origins", "origin"],
-    ];
-    const onKey = (e: KeyboardEvent<HTMLDivElement>) => {
-      if (e.key !== "ArrowDown" && e.key !== "ArrowUp") return;
-      const order = tabs.map((t) => t[0]);
-      const next = order[(order.indexOf(model.tab) + (e.key === "ArrowDown" ? 1 : -1) + order.length) % order.length];
-      model.actions.tab(next);
-      e.currentTarget.querySelector<HTMLElement>(`[data-tab="${next}"]`)?.focus();
-      e.preventDefault();
-    };
-    return (
-      <div className="tabs" role="tablist" aria-label="Athena" aria-orientation="vertical" onKeyDown={onKey}>
-        {tabs.map(([id, label, icon]) => (
-          <button
-            key={id}
-            type="button"
-            role="tab"
-            data-tab={id}
-            aria-selected={model.tab === id}
-            tabIndex={model.tab === id ? 0 : -1}
-            onClick={() => model.actions.tab(id)}
-          >
-            <Icon name={icon} />
-            <span>{label}</span>
-            {id === "talk" && n ? <i className="pip-n">{n}</i> : null}
-          </button>
-        ))}
-      </div>
-    );
-  }
-  if (form === "slip") {
-    const total = Math.max(1, model.cards.length);
-    return (
-      <div className="rl-slip">
-        <span className="rl-pips" aria-hidden="true">
-          {Array.from({ length: total }, (_, i) => (
-            <i key={i} className={i === 0 ? "cur" : ""} />
-          ))}
-        </span>
-        <span className="rl-lbl">
-          waiting
-          <br />
-          on you
-        </span>
-        <span className="rl-key">
-          <kbd>A</kbd>
-          <kbd>D</kbd>
-        </span>
-      </div>
-    );
-  }
-  if (form === "welcome") {
-    return (
-      <ol className="rl-ladder" aria-label="What she can do, by tier">
-        {TIERS.map((t) => (
-          <li key={t.n} className={t.n === 0 ? "cur" : ""}>
-            <b>{t.n}</b>
-            <span>{t.name}</span>
-          </li>
-        ))}
-      </ol>
-    );
-  }
-  return null;
-}
-
-// -- the slip ----------------------------------------------------------------------------------
-
-/**
- * The capture the daemon filed with the card, read back from the store (ADR 0066). A read is kept
- * with the id it was for: when the next card takes the slip, the last card's picture is not shown
- * under the new id while that card's is read.
- */
-function ShotFigure({ id }: { id: string }) {
-  const [read, setRead] = useState<{ id: string; read: CaptureRead } | null>(null);
-  useEffect(() => {
-    let current = true;
-    void readCapture(id).then((found) => current && setRead({ id, read: found }));
-    return () => {
-      current = false;
-    };
-  }, [id]);
-  return <CaptureShown id={id} read={read?.id === id ? read.read : null} />;
-}
-
-/** The figure for one read: the picture, or the sentence that says why there is none. */
-export function CaptureShown({ id, read }: { id: string; read: CaptureRead | null }) {
-  if (read === null) return <p className="sl-nocap">Reading the capture…</p>;
-  if (read.src === null) return <p className="sl-nocap">{`Capture ${id}: ${read.problem}.`}</p>;
-  return (
-    <figure className="sl-thumb sl-shot">
-      <img src={read.src} alt="The page as it was when this was proposed" />
-      <figcaption>{`page capture ${id}`}</figcaption>
-    </figure>
-  );
-}
-
-function CaptureFigure({ capture }: { capture: CardCapture }) {
-  if (capture.kind === "shot") return <ShotFigure id={capture.id} />;
-  if (capture.kind !== "sketch") return null;
-  return (
-    <figure className="sl-thumb">
-      <Sketch />
-      <figcaption>page capture, stylised</figcaption>
-    </figure>
-  );
-}
-
-/** A card that went without a capture says so, and why when the shell knows. */
-function NoCapture({ why }: { why: string | null }) {
-  return <p className="sl-nocap">{why ? `No capture was taken: ${why}.` : "No capture was taken for this request."}</p>;
-}
-
-/**
- * A page tool whose contract changed since the user trusted it (ADR 0100): what it said then beside
- * what it says now. Both are the page's words, neutralised, and cut where they were long.
- */
-function ContractChange({ drift }: { drift: ContractDrift }) {
-  return (
-    <div className="sl-drift" data-drift={drift.tool}>
-      <p className="sl-claim">
-        {drift.before ? "This tool changed since you trusted this app." : "This tool appeared after you trusted this app."}
-      </p>
-      <dl className="sl-params">
-        {drift.before ? (
-          <>
-            <div>
-              <dt>before</dt>
-              <dd>{drift.before.description}</dd>
-            </div>
-            {drift.before.schema !== drift.after.schema ? (
-              <div>
-                <dt>inputs before</dt>
-                <dd>{drift.before.schema}</dd>
-              </div>
-            ) : null}
-          </>
-        ) : null}
-        <div>
-          <dt>{drift.before ? "now" : "says"}</dt>
-          <dd>{drift.after.description}</dd>
-        </div>
-        {!drift.before || drift.before.schema !== drift.after.schema ? (
-          <div>
-            <dt>inputs now</dt>
-            <dd>{drift.after.schema}</dd>
-          </div>
-        ) : null}
-      </dl>
-    </div>
-  );
-}
-
-/**
- * Who a connector card acts as, and the one cause the record says will stop it (ADR 0116). It sits
- * under the where line and turns nothing off: Approve and Decline stay the person's, and the gate
- * decides at replay. Accounts lives in Main, so the way to put it right is to bring Main forward.
- */
-function ConnectorStanding({ line, openMain }: { line: ConnectorLine; openMain: () => void }) {
-  return (
-    <>
-      <p className="sl-tab" data-connector>
-        <span>{line.line}</span>
-      </p>
-      {line.warning ? (
-        <p className="sl-tab" data-connector-warning role="note">
-          <Icon name="warn" className="warn" />
-          <span>{line.warning.text}</span>
-          <button
-            type="button"
-            className="aw-btn aw-btn-ghost sl-tab-go"
-            data-act="open-main"
-            aria-label="Open Main, where Accounts can put this right"
-            onClick={openMain}
-          >
-            Open Main
-          </button>
-        </p>
-      ) : null}
-    </>
-  );
-}
-
-function Slip({ model, card, inline }: { model: CompanionModel; card: CardView | undefined; inline: boolean }) {
-  const { actions, decision } = model;
-  if (!card) {
-    return (
-      <article className={`slip${inline ? " slip-inline" : ""}`}>
-        <p className="sl-why">Nothing is waiting on you.</p>
-      </article>
-    );
-  }
-  const total = model.cards.length;
-  const count = total > 1 ? `${total} waiting` : "1 waiting";
-  // The answer is on its way, or already given: either way the buttons are off.
-  const decided = decision !== null || card.sending;
-  // Nothing is stamped until the daemon has said yes.
-  const stamped = decision !== null && !decision.sending;
-  const sendingNow = (kind: "approve" | "decline") =>
-    card.sending && (decision === null || decision.kind === kind);
-  // The card heads a sheet: one press answers every row, in order, each its own grant (ADR 0104).
-  const sheet = model.sheet && model.sheet.rows[0]?.id === card.id ? model.sheet : null;
-  if (sheet) return <Sheet model={model} sheet={sheet} inline={inline} decided={decided} sendingNow={sendingNow} />;
-  return (
-    <article
-      className={`slip${inline ? " slip-inline" : ""}`}
-      data-card={card.id}
-      data-sending={card.sending ? "1" : undefined}
-      data-decision={stamped ? (decision.kind === "approve" ? "approved" : "declined") : undefined}
-      aria-label={`Decision card: ${card.action} ${card.id}, waiting on you`}
-    >
-      <header className="sl-head">
-        <Chip cls="GATED" />
-        <code className="sl-action">{card.action}</code>
-        <span className="sl-count">{count}</span>
-      </header>
-      <div className="sl-scroll">
-        <p className="sl-why">{card.rationale}</p>
-        <p className="sl-where" data-tier={card.tier}>{card.where}</p>
-        {card.connector ? <ConnectorStanding line={card.connector} openMain={actions.openMain} /> : null}
-        {card.bound ? (
-          <p className="sl-tab" data-bound-tab={card.bound.tabId} data-moved={card.bound.moved ? "1" : undefined}>
-            <span>
-              Proposed on {card.bound.label}
-              {card.bound.moved ? " (it has reloaded since)" : ""}
-            </span>
-            {card.bound.open && !card.bound.focused ? (
-              <button type="button" className="aw-btn aw-btn-ghost sl-tab-go" data-act="go-to-tab" onClick={() => actions.goToTab(card.bound!.tabId)}>
-                Go to that tab
-              </button>
-            ) : null}
-          </p>
-        ) : null}
-        <div className="sl-mid">
-          <dl className="sl-params">
-            {card.params.map((p) => (
-              <div key={p.key}>
-                <dt>{p.key}</dt>
-                <dd>{p.value}</dd>
-              </div>
-            ))}
-          </dl>
-          {!inline ? <CaptureFigure capture={card.capture} /> : null}
-        </div>
-        {card.claimed ? <p className="sl-claim">The element names are the page&apos;s own labels.</p> : null}
-        {card.targetNote ? <p className="sl-claim">{card.targetNote}</p> : null}
-        {card.drift ? <ContractChange drift={card.drift} /> : null}
-        {card.capture.kind === "none" ? <NoCapture why={card.capture.why} /> : null}
-      </div>
-      <div className="sl-sign">
-        <button type="button" className="aw-btn aw-btn-stamp" data-act="approve" aria-keyshortcuts="A" aria-busy={sendingNow("approve") || undefined} disabled={decided} onClick={() => actions.approve("click")}>
-          {sendingNow("approve") ? (
-            "Sending…"
-          ) : (
-            <>
-              Approve <kbd>A</kbd>
-            </>
-          )}
-        </button>
-        <button type="button" className="aw-btn aw-btn-ink" data-act="decline" aria-keyshortcuts="D" aria-busy={sendingNow("decline") || undefined} disabled={decided} onClick={() => actions.decline("click")}>
-          {sendingNow("decline") ? (
-            "Sending…"
-          ) : (
-            <>
-              Decline <kbd>D</kbd>
-            </>
-          )}
-        </button>
-        <button
-          type="button"
-          className="aw-btn aw-btn-ghost"
-          data-act="mic"
-          aria-label="Speak: hold and say approve or decline"
-          title={model.micAvailable ? "Hold and say approve or decline" : "Voice is not available on this computer yet"}
-          disabled={!model.micAvailable || decided}
-          onPointerDown={(e) => {
-            actions.micDown();
-            const up = () => {
-              document.removeEventListener("pointerup", up);
-              document.removeEventListener("pointercancel", up);
-              actions.micUp();
-            };
-            document.addEventListener("pointerup", up);
-            document.addEventListener("pointercancel", up);
-            e.preventDefault();
-          }}
-        >
-          <Icon name="mic" />
-          <span>Speak</span>
-        </button>
-      </div>
-      {card.refusal ? (
-        <p className="sl-refuse" data-refusal>
-          <Icon name="warn" className="warn" />
-          <span>{card.refusal}</span>
-        </p>
-      ) : null}
-      <p className="sl-note">
-        <span className="sl-note-a">
-          {model.micAvailable ? "Nothing runs until you sign. Or say “approve”." : "Nothing runs until you sign."}
-        </span>
-        <span className="sl-listen">
-          <i className="wave">
-            {Array.from({ length: 6 }, (_, i) => (
-              <b key={i} />
-            ))}
-          </i>
-          <span data-tr>{model.heard || "listening…"}</span>
-        </span>
-      </p>
-      {stamped ? (
-        <div className="sl-stamp" aria-hidden="true">
-          <Stamp kind={decision.kind} by={decision.by} />
-        </div>
-      ) : null}
-    </article>
-  );
-}
-
-/**
- * A turn's cards as one sheet (ADR 0104): the app once, then every row whole with its tick, and one
- * press that says how many rows it runs. Nothing is cut: past the cap the rest stay cards and the
- * footer says so.
- */
-function Sheet({
-  model,
-  sheet,
-  inline,
-  decided,
-  sendingNow,
-}: {
-  model: CompanionModel;
-  sheet: SheetView;
-  inline: boolean;
-  decided: boolean;
-  sendingNow: (kind: "approve" | "decline") => boolean;
-}) {
-  const { actions } = model;
-  const n = sheet.rows.length;
-  const others = model.cards.length - n;
-  return (
-    <article
-      className={`slip slip-sheet${inline ? " slip-inline" : ""}`}
-      data-sheet={sheet.key}
-      data-rows={String(n)}
-      aria-label={`Decision sheet: ${n} requests in ${sheet.app}, waiting on you`}
-    >
-      <header className="sl-head">
-        <Chip cls="GATED" />
-        <span className="sl-action">
-          {n} requests in {sheet.app}
-        </span>
-        <span className="sl-count">{others > 0 ? `${model.cards.length} waiting` : `${n} waiting`}</span>
-      </header>
-      <div className="sl-scroll">
-        <p className="sl-why">One turn asked for these, in this order. They run top to bottom, and stop at the first one that fails.</p>
-        <ol className="sh-rows">
-          {sheet.rows.map((row, at) => (
-            <li key={row.id} className="sh-row" data-card={row.id} data-ticked={row.ticked ? "1" : "0"} data-tier={row.tier}>
-              {row.group ? (
-                <p className="sh-group" data-group>
-                  {row.group}
-                </p>
-              ) : null}
-              <label className="sh-tick">
-                <input
-                  type="checkbox"
-                  checked={row.ticked}
-                  disabled={decided}
-                  onChange={() => actions.tick(row.id)}
-                  aria-label={`Row ${at + 1}: ${row.action}`}
-                />
-                <span className="sh-n">{at + 1}</span>
-                <code className="sl-action">{row.action}</code>
-              </label>
-              <p className="sl-where" data-tier={row.tier}>{row.where}</p>
-              {row.connector ? <ConnectorStanding line={row.connector} openMain={actions.openMain} /> : null}
-              {row.rationale ? <p className="sh-why">{row.rationale}</p> : null}
-              <dl className="sl-params">
-                {row.params.map((p) => (
-                  <div key={p.key}>
-                    <dt>{p.key}</dt>
-                    <dd>{p.value}</dd>
-                  </div>
-                ))}
-              </dl>
-              {row.targetNote ? <p className="sl-claim">{row.targetNote}</p> : null}
-              {row.drift ? <ContractChange drift={row.drift} /> : null}
-              {row.refusal ? <p className="sl-claim" data-refusal>{row.refusal}</p> : null}
-            </li>
-          ))}
-        </ol>
-        {sheet.rows.some((r) => r.claimed) ? <p className="sl-claim">The element names are the page&apos;s own labels.</p> : null}
-        {sheet.footer ? <p className="sh-footer" data-footer>{sheet.footer}</p> : null}
-      </div>
-      <div className="sl-sign">
-        <button type="button" className="aw-btn aw-btn-stamp" data-act="approve" aria-keyshortcuts="A" aria-busy={sendingNow("approve") || undefined} disabled={decided || sheet.ticked === 0} onClick={() => actions.approve("click")}>
-          {sendingNow("approve") ? (
-            "Sending…"
-          ) : (
-            <>
-              {sheet.approve} <kbd>A</kbd>
-            </>
-          )}
-        </button>
-        <button type="button" className="aw-btn aw-btn-ink" data-act="decline" aria-keyshortcuts="D" aria-busy={sendingNow("decline") || undefined} disabled={decided} onClick={() => actions.decline("click")}>
-          {sendingNow("decline") ? (
-            "Sending…"
-          ) : (
-            <>
-              Decline all <kbd>D</kbd>
-            </>
-          )}
-        </button>
-      </div>
-      {sheet.ran ? (
-        <p className="sl-refuse" data-ran>
-          <Icon name="warn" className="warn" />
-          <span>{sheet.ran}</span>
-        </p>
-      ) : null}
-      <p className="sl-note">
-        <span className="sl-note-a">Nothing runs until you sign. An unticked row is declined.</span>
-      </p>
-    </article>
-  );
-}
+const LABELS: Record<CompanionModel["form"], string> = {
+  seal: "Athena, resting",
+  tape: "She is working",
+  hear: "She is listening",
+  face: "Her face",
+  slip: "A decision is waiting for you",
+  welcome: "Welcome",
+  ledger: "Conversation",
+  tab: "Athena, docked",
+};
 
 // -- the tape ----------------------------------------------------------------------------------
 
-function Line({ step }: { step: StepView }) {
+function Tape({ model }: { model: CompanionModel }) {
+  const { tape, talk } = model;
+  const said = [...talk.messages].reverse().find((m) => m.role === "her")?.title ?? "";
+  const stopped = tape.done?.text === "stopped";
+  // A step that has come back is its own beat (Bell's "result"): done in green, failed in red,
+  // until the next one starts.
+  const beat = stopped ? "fail" : tape.done ? "ok" : tape.count && tape.cur.ok !== null ? (tape.cur.ok ? "ok" : "fail") : "run";
+  const eyebrow = stopped
+    ? "Stopped"
+    : tape.done
+      ? "Done"
+      : beat === "ok"
+        ? `Done · step ${tape.count}`
+        : beat === "fail"
+          ? `Could not · step ${tape.count}`
+          : tape.count
+            ? `Working · step ${tape.count + 1}`
+            : "Working";
+  const line = stopped ? (tape.done?.detail ?? "") : tape.done ? said || "She is done." : tape.cur.what;
+  const sub = stopped ? "" : tape.done ? tape.done.detail : tape.cur.sub || (tape.prev ? tape.prev.what : tape.note);
   return (
     <>
-      {step.cls ? <Chip cls={step.cls} /> : null}
-      <b>{step.app}</b>
-      <span>{step.what}</span>
+      <div key={line} className="tape tape-swap" data-beat={beat}>
+        <div className="eyebrow">{eyebrow}</div>
+        <div className={`tape-line${stopped ? " long" : ""}`}>{line}</div>
+        {sub ? <div className="tape-sub">{sub}</div> : null}
+      </div>
+      {tape.done ? null : (
+        <div className="thread" aria-hidden="true">
+          {Array.from({ length: tape.count + 1 }, (_, i) => (
+            <i key={i} className={i < tape.count ? "done" : "live"} />
+          ))}
+        </div>
+      )}
+      {talk.working ? (
+        <button type="button" className="tape-stop" data-act="stop" aria-label="Stop her working" title="Stop" onClick={model.actions.stop}>
+          <Icon name="stop" />
+        </button>
+      ) : null}
     </>
-  );
-}
-
-function Tape({ model }: { model: CompanionModel }) {
-  const { tape } = model;
-  if (tape.done) {
-    return (
-      <div className="tape" data-done="1">
-        <div key="done" className="tp-line on in">
-          <b>{tape.done.text}</b>
-          <span>{tape.done.detail}</span>
-        </div>
-        <div className="tp-line dim">
-          <span className="tp-note">The record has every call. Nothing else is waiting on you.</span>
-        </div>
-      </div>
-    );
-  }
-  return (
-    <div className="tape">
-      <div className="tp-line dim">
-        {model.talk.working ? <StopButton onStop={model.actions.stop} /> : null}
-        {tape.prev ? <Line step={tape.prev} /> : <span className="tp-note">{tape.note}</span>}
-      </div>
-      <div key={`${tape.cur.app}/${tape.cur.what}`} className="tp-line on in">
-        <Line step={tape.cur} />
-      </div>
-    </div>
-  );
-}
-
-/** Stop her, wherever she is shown working (ADR 0115). A word, so it is never an icon alone. */
-function StopButton({ onStop }: { onStop: () => void }) {
-  return (
-    <button type="button" className="aw-textbtn" data-act="stop" aria-label="Stop her working" onClick={onStop}>
-      Stop
-    </button>
   );
 }
 
 function Hear({ model }: { model: CompanionModel }) {
   return (
-    <div className="hear">
-      <i className="wave">
-        {Array.from({ length: 14 }, (_, i) => (
-          <b key={i} />
-        ))}
-      </i>
-      <div className="hr-txt">
-        <span className="hr-lbl">listening · release to send</span>
-        <span className="hr-tr" data-tr>
-          {model.heard || "…"}
-        </span>
-      </div>
-    </div>
-  );
-}
-
-/** Her face in the 240px face form: the panel beside the 76px seal, less its padding. */
-const FACE_SIZE = 120;
-
-/**
- * Her face while she talks (the ADR on Athena's face): the chosen form, fed by her own window's
- * signal every frame, with one line under it so what she heard or is doing stays readable.
- * With the halo chosen there is no face form at all; this draws nothing then, defensively.
- */
-function Face({ model }: { model: CompanionModel }) {
-  const [source] = useState(localFaceSource);
-  if (model.avatar === "halo") return null;
-  const line = model.listening ? model.heard || "…" : model.talk.working ? `${model.tape.cur.app}: ${model.tape.cur.what}` : "";
-  return (
-    <div className="fc">
-      <Avatar avatar={model.avatar} size={FACE_SIZE} source={source} className="fc-face" />
-      <div className="fc-txt">
-        <span className="fc-lbl">{model.listening ? "listening · release to send" : model.mood === "speak" ? "speaking" : "thinking"}</span>
-        {line ? <span className="fc-line">{line}</span> : null}
-      </div>
-    </div>
-  );
-}
-
-// -- welcome -----------------------------------------------------------------------------------
-
-function Welcome({ model }: { model: CompanionModel }) {
-  const { actions } = model;
-  return (
-    <div className="wl" style={{ ["--stamp-delay" as string]: "520ms" }}>
-      <p className="eyebrow">First launch</p>
-      <h2>Athena is here.</h2>
-      <p>
-        She works inside the web apps you already have open. She reads one page, decides, acts in another, and asks
-        before anything that cannot be undone.
-      </p>
-      <ul className="wl-facts">
-        <EngineFact view={model.welcome.engineView} actions={actions} />
-        <li>
-          <Icon name="lock" className="ok" />
-          <span>Runs on this machine. No account, no cloud, no telemetry.</span>
-        </li>
-      </ul>
-      <div className="wl-act">
-        <button type="button" className="aw-btn aw-btn-primary" data-act="open" onClick={actions.open}>
-          Open your first app <kbd>Enter</kbd>
-        </button>
-        <button type="button" className="aw-btn aw-btn-ghost-ink" data-act="later" onClick={actions.later}>
-          Later <kbd>Esc</kbd>
-        </button>
-      </div>
-      <div className="sl-stamp wl-stamp" aria-hidden="true">
-        <Stamp kind="welcome" />
-      </div>
-    </div>
-  );
-}
-
-/**
- * The engine line. A tick means a probe found it; until one has answered there is no tick, and when
- * the engine is missing the mark is amber, a triangle, with the remedy and a way to look again.
- */
-function EngineFact({ view, actions }: { view: EngineView; actions: CompanionModel["actions"] }) {
-  const icon = view.state === "ready" ? "check" : view.state === "missing" ? "warn" : "wait";
-  return (
-    <li className="wl-engine" data-engine={view.state}>
-      <Icon name={icon} className={view.state === "ready" ? "ok" : view.state === "missing" ? "warn" : "wait"} />
-      <span role="status">
-        <b>{view.text}</b> {view.sub}
-        {view.state === "missing" ? (
-          <span className="wl-engine-act">
-            {view.retry ? (
-              <button type="button" className="aw-btn aw-btn-ghost-ink" data-act="retry-engine" onClick={() => actions.retryEngine(view.retry!.id)}>
-                {view.retry.label}
-              </button>
-            ) : (
-              <button type="button" className="aw-btn aw-btn-ghost-ink" data-act="check-engines" disabled={view.checking} onClick={actions.checkEngines}>
-                {view.checking ? "Checking…" : "Check again"}
-              </button>
-            )}
-            {view.offer ? (
-              <button type="button" className="aw-btn aw-btn-ghost-ink" data-act="use-engine" onClick={() => actions.useEngine(view.offer!.id)}>
-                Use {view.offer.label}
-              </button>
-            ) : null}
-          </span>
-        ) : null}
-      </span>
-    </li>
-  );
-}
-
-// -- the ledger --------------------------------------------------------------------------------
-
-function Ledger({ model }: { model: CompanionModel }) {
-  const { actions, tab } = model;
-  const head = { talk: "Talk", record: "Record", origins: "Origins" }[tab];
-  return (
-    <div className="lg">
-      <header className="lg-head">
-        <h2>{head}</h2>
-        <span className="lg-tools">
-          {tab === "talk" && model.talk.blocks.length ? (
-            <button type="button" className="aw-btn aw-btn-ghost" data-act="clear" onClick={actions.clear}>
-              Clear
-            </button>
-          ) : null}
-          <button
-            type="button"
-            className={`ico-btn${model.pinned ? " on" : ""}`}
-            data-act="pin"
-            aria-pressed={model.pinned}
-            aria-label="Keep Athena on top of other windows"
-            title="Keep Athena on top of other windows"
-            onClick={actions.pin}
-          >
-            <Icon name="pin" />
-          </button>
-          <button type="button" className="ico-btn" data-act="collapse" aria-label="Put the ledger away (Escape)" title="Put the ledger away (Escape)" onClick={actions.esc}>
-            <Icon name="down" />
-          </button>
-        </span>
-      </header>
-      {tab === "talk" ? <Talk model={model} /> : null}
-      {tab === "record" ? <Record model={model} /> : null}
-      {tab === "origins" ? <Origins model={model} /> : null}
-    </div>
-  );
-}
-
-/** A handed-over playbook before the first turn: her plan, the tabs she will ask for, her stops. */
-function Plan({ project }: { project: ProjectView }) {
-  return (
-    <div className="lg-plan" aria-label={`The plan for ${project.title}`}>
-      <p className="lg-plan__eyebrow">The plan</p>
-      <p className="lg-plan__title">{project.title}</p>
-      <ol className="lg-plan__steps">
-        {project.steps.map((step) => (
-          <li key={step}>{step}</li>
-        ))}
-      </ol>
-      {project.portals.length ? (
-        <div className="lg-plan__row">
-          <span className="lg-plan__label">Tabs she will ask for</span>
-          <span className="lg-plan__chips">
-            {project.portals.map((p) => (
-              <span key={p} className="lg-plan__chip">
-                {p}
-              </span>
-            ))}
-          </span>
-        </div>
-      ) : null}
-      {project.stops.length ? (
-        <div className="lg-plan__row">
-          <span className="lg-plan__label">She stops for your signature to</span>
-          <span className="lg-plan__chips">
-            {project.stops.map((g) => (
-              <span key={g} className="lg-plan__chip lg-plan__chip--gate">
-                {g}
-              </span>
-            ))}
-          </span>
-        </div>
-      ) : null}
-      <p className="lg-plan__note">The command is in the box below. Send it when you are on the first tab.</p>
-    </div>
-  );
-}
-
-function Talk({ model }: { model: CompanionModel }) {
-  const { talk, actions } = model;
-  const end = useRef<HTMLDivElement>(null);
-  const count = talk.blocks.length + model.cards.length;
-  useEffect(() => {
-    // The newest thing is what she is waiting for; keep it in view as it arrives.
-    end.current?.scrollIntoView({ block: "end" });
-  }, [count, talk.working]);
-
-  const empty = talk.blocks.length === 0 && model.cards.length === 0 && !talk.error;
-  const submit = (e: FormEvent<HTMLFormElement>) => {
-    e.preventDefault();
-    const input = e.currentTarget.elements.namedItem("message") as HTMLTextAreaElement | null;
-    const value = input?.value.trim() ?? "";
-    if (!value || talk.blocked) return;
-    if (input) input.value = "";
-    actions.send(value);
-  };
-  return (
     <>
-      <div className="lg-scroll" tabIndex={0} role="log" aria-label="Conversation">
-        {empty && talk.project?.steps.length ? (
-          <Plan project={talk.project} />
-        ) : empty ? (
-          <div className="lg-empty">
-            <p className="lg-lead">
-              {talk.host ? `Ask about ${talk.host}.` : "Open a page, then ask about it."} Nothing she does there runs
-              without the gate.
-            </p>
-            <div className="lg-sugg">
-              {talk.suggestions.map((s) => (
-                <button key={s} type="button" className="aw-btn aw-btn-sugg" disabled={!!talk.blocked} onClick={() => actions.send(s)}>
-                  {s}
-                </button>
-              ))}
-            </div>
-            {talk.mainHidden ? (
-              <p className="lg-main">
-                <button type="button" className="aw-textbtn" data-act="open-main" onClick={actions.openMain}>
-                  Main is hidden. Click here or use the tray to open it.
-                </button>
-              </p>
-            ) : null}
-          </div>
-        ) : (
-          talk.blocks.map((b) => <Block key={b.id} block={b} />)
-        )}
-        {talk.error ? (
-          <div className="msg msg-error" role="alert">
-            <span className="msg-who">The turn stopped</span>
-            <p>{talk.error.sentence}</p>
-            <details className="msg-tech">
-              <summary>Technical detail</summary>
-              <p>
-                <code>{talk.error.reason}</code> {talk.error.detail}
-              </p>
-            </details>
-          </div>
-        ) : null}
-        {talk.working ? (
-          <div className="msg msg-athena" aria-live="polite">
-            <span className="msg-who">Athena</span>
-            <p>{talk.phrase}…</p>
-            <StopButton onStop={actions.stop} />
-          </div>
-        ) : null}
-        {model.cards.length ? <Slip model={model} card={model.cards[0]} inline /> : null}
-        {model.cards.length > 1 ? <p className="lg-foot">and {model.cards.length - 1} more waiting after this one</p> : null}
-        <div ref={end} />
+      <div className="tape">
+        <div className="eyebrow">Listening · release to send</div>
+        <div className="hear-text">
+          <span className="hear-words caret" data-tr>
+            {model.heard || "…"}
+          </span>
+        </div>
       </div>
-      {talk.project ? (
-        <p className="lg-project" role="status">
-          <span className="lg-project__label">Working on</span>
-          <span className="lg-project__title">{talk.project.title}</span>
-          <button type="button" className="aw-textbtn" aria-label={`Stop working on ${talk.project.title}`} onClick={actions.clearProject}>
-            done
-          </button>
-        </p>
-      ) : null}
-      <form className="lg-compose" onSubmit={submit}>
-        {/* Keyed by the offer, so a command Main hands over (ADR 0040) lands as the draft and the
-            person's own typing is never overwritten by a re-render. */}
-        <textarea
-          key={talk.draft.n}
-          name="message"
-          aria-label="Message Athena"
-          placeholder="Tell Athena what to do"
-          autoComplete="off"
-          rows={talk.draft.text ? 3 : 1}
-          defaultValue={talk.draft.text}
-          autoFocus={talk.draft.n > 0}
-          disabled={!!talk.blocked}
-          onKeyDown={(e) => {
-            // Enter sends, as it did when this was one line; Shift+Enter starts a new one.
-            if (e.key === "Enter" && !e.shiftKey) {
-              e.preventDefault();
-              e.currentTarget.form?.requestSubmit();
-            }
-          }}
-        />
-        <button type="submit" className="aw-btn aw-btn-primary aw-btn-icon" aria-label="Send" disabled={!!talk.blocked}>
-          <Icon name="send" />
-        </button>
-      </form>
-      {talk.blocked ? <p className="lg-note">{talk.blocked}</p> : null}
+      <div className="meter" aria-hidden="true">
+        {[1, 2, 3, 4, 5].map((i) => (
+          <i key={i} />
+        ))}
+      </div>
     </>
   );
 }
 
-function Block({ block }: { block: MessageBlock }) {
-  if (block.kind === "activity") {
-    return (
-      <ul className="acts" aria-label="What ran">
-        {block.steps.map((s) => (
-          <li key={s.id} data-ok={s.ok === false ? "0" : "1"}>
-            {s.text}
-          </li>
-        ))}
-      </ul>
-    );
-  }
-  return (
-    <div className={`msg msg-${block.kind === "user" ? "you" : "athena"}`}>
-      <span className="msg-who">{block.kind === "user" ? "You" : "Athena"}</span>
-      <p>{block.text}</p>
-    </div>
-  );
-}
+/** Her face in the face form: the panel's width, less nothing; the caption sits under it. */
+const FACE_SIZE = 224;
 
-function RecordLine({ row }: { row: RecordRow }) {
+/**
+ * Her face while she talks (the ADR on Athena's face): the chosen form, fed by her own window's
+ * signal every frame, with one line under it so what she heard or is saying stays readable. With
+ * the halo chosen there is no face form at all; this draws nothing then, defensively.
+ */
+function Face({ model }: { model: CompanionModel }) {
+  const [source] = useState(localFaceSource);
+  if (model.avatar === "halo") return null;
+  const said = [...model.talk.messages].reverse().find((m) => m.role === "her")?.title ?? "";
+  const line = model.listening ? model.heard || "…" : model.mood === "speak" ? said : model.talk.working ? model.tape.cur.what : said;
   return (
-    <li>
-      {row.cls ? <Chip cls={row.cls} /> : null}
-      <span className="rec-t">{row.tool}</span>
-      <span className={`rec-r rec-${row.result}`}>{row.result}</span>
-      <span className="rec-meta">
-        <span className="rec-a">{row.app}</span>
-        {row.clock ? <span className="rec-c">{row.clock}</span> : null}
-      </span>
-    </li>
-  );
-}
-
-function Record({ model }: { model: CompanionModel }) {
-  const { session, earlier, ledger, header } = model.record;
-  return (
-    <div className="lg-scroll" tabIndex={0} role="region" aria-label="Record">
-      <p className="lg-lead" data-complete={model.record.complete ? "1" : "0"}>
-        {header}
-      </p>
-      <h3 className="lg-h">This window</h3>
-      {session.length === 0 ? (
-        <p className="lg-foot">Nothing has run in this window yet.</p>
-      ) : (
-        <ol className="rec" aria-label="This window">
-          {session.map((r) => (
-            <RecordLine key={`${r.id}/${r.result}/${r.at}`} row={r} />
-          ))}
-        </ol>
-      )}
-      <p className="lg-foot">{showingOf(session.length, session.length)}</p>
-      <h3 className="lg-h">Earlier (kept on this computer)</h3>
-      {earlier === null ? (
-        <p className="lg-foot">Not read yet.</p>
-      ) : earlier.problem ? (
-        <p className="lg-foot" role="alert">
-          Could not be read: {earlier.problem}
-        </p>
-      ) : (
-        <>
-          {earlier.rows.length === 0 ? (
-            <p className="lg-foot">Nothing was kept from earlier windows.</p>
-          ) : (
-            <ol className="rec" aria-label="Earlier">
-              {earlier.rows.map((r) => (
-                <RecordLine key={`${r.id}/${r.result}/${r.at}`} row={r} />
-              ))}
-            </ol>
-          )}
-          <p className="lg-foot">{earlier.footer}</p>
-        </>
-      )}
-      <h3 className="lg-h">Model calls</h3>
-      {ledger === null ? (
-        <p className="lg-foot">Athena has not answered yet.</p>
-      ) : ledger.problem ? (
-        <p className="lg-foot" role="alert">
-          Could not be read: {ledger.problem}
-        </p>
-      ) : ledger.rows.length === 0 ? (
-        <p className="lg-foot">No model call has been made. {showingOf(0, 0)}</p>
-      ) : (
-        <>
-          <ol className="rec">
-            {ledger.rows.map((r) => (
-              <li key={r.id}>
-                <span className="rec-t">{r.clock}</span>
-                <span className="rec-a">{r.model}</span>
-                <span className={`rec-r ${r.isError ? "rec-user_denied" : ""}`}>
-                  {r.isError ? r.reason || "error" : `${r.rounds} round${r.rounds === 1 ? "" : "s"}, ${r.cost}`}
-                </span>
-              </li>
-            ))}
-          </ol>
-          <p className="lg-foot">{ledger.footer || showingOf(ledger.rows.length, ledger.total)}</p>
-        </>
-      )}
-    </div>
-  );
-}
-
-function Origins({ model }: { model: CompanionModel }) {
-  const { origins, actions } = model;
-  return (
-    <div className="lg-scroll" tabIndex={0} role="region" aria-label="Origins">
-      <p className="lg-lead">
-        {origins.host ? `What ${origins.host} offers her, and who she may act for.` : "No page is open."}
-      </p>
-      <h3 className="lg-h">This page offers</h3>
-      {origins.pageProblem ? (
-        <p className="lg-foot" role="alert">
-          This page could not be read: {origins.pageProblem}
-          {origins.offers.length > 0 ? ". Only her own hands are listed." : ""}
-        </p>
-      ) : origins.pageSilent ? (
-        <p className="lg-foot">This page publishes no tools of its own.</p>
-      ) : null}
-      {origins.offers.length === 0 ? (
-        origins.pageProblem || origins.pageSilent ? null : (
-          <p className="lg-foot">Nothing has been read from this page yet.</p>
-        )
-      ) : (
-        <ul className="offers">
-          {origins.offers.map((o) => (
-            <li key={o.name}>
-              <Chip cls={o.cls} />
-              <b>{o.name.split(".").slice(-1)[0]}</b>
-              {o.tier === 2 ? <i className="offer-tier">hand, tier 2</i> : null}
-              <span>{o.description || o.name}</span>
-            </li>
-          ))}
-        </ul>
-      )}
-      {origins.offersFooter ? <p className="lg-foot">{origins.offersFooter}</p> : null}
-      <h3 className="lg-h">Apps she has seen</h3>
-      {origins.known.length === 0 ? (
-        <p className="lg-foot">None yet. The first time she sees a page, what she wants to do there waits for your answer.</p>
-      ) : (
-        <ul className="offers">
-          {origins.known.map((k) => (
-            <li key={k.origin}>
-              <b>{k.origin.replace(/^https?:\/\//, "")}</b>
-              <span>{k.enabled ? "enabled" : "off"}{k.overrides ? `, ${k.overrides} pinned` : ""}</span>
-              <button
-                type="button"
-                className="aw-btn aw-btn-ghost aw-btn-toggle"
-                aria-label={`${k.enabled ? "Disable" : "Enable"} ${k.origin.replace(/^https?:\/\//, "")}`}
-                onClick={() => actions.setOrigin(k.origin, !k.enabled)}
-              >
-                {k.enabled ? "Disable" : "Enable"}
-              </button>
-            </li>
-          ))}
-        </ul>
-      )}
-    </div>
+    <>
+      <div className="face-art">
+        <Avatar avatar={model.avatar} size={FACE_SIZE} source={source} className="fc-face" />
+      </div>
+      <div className="face-glow" aria-hidden="true" />
+      <div className="face-cap">
+        <div className="eyebrow">{model.listening ? "Listening" : model.mood === "speak" ? "Speaking" : "Thinking"}</div>
+        {line ? <p className="caret">{line}</p> : null}
+      </div>
+    </>
   );
 }

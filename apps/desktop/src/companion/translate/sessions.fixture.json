@@ -1,0 +1,318 @@
+{
+  "generated": "2026-10-23",
+  "note": "Raw entries exactly as the companion window receives them from the run store. `text` on a tool entry is `<tool name> → <raw output>` where the output is usually a JSON string. Assistant text can carry `OP: {json}` (a proposal) and `TTS: \"...\"` (spoken) lines. The current window prints all of it verbatim.",
+  "sessions": [
+    {
+      "id": "chase-overdue",
+      "title": "Chase every invoice over 30 days",
+      "app": "ledgerbox",
+      "origin": "host:ledgerbox",
+      "tab": {
+        "title": "Ledgerbox - Inbox",
+        "url": "https://ledgerbox.local/inbox"
+      },
+      "entries": [
+        {
+          "kind": "user",
+          "text": "Find every invoice over 30 days and draft a chase for each."
+        },
+        {
+          "kind": "assistant",
+          "text": "Let me read the inbox first.\nOP: {\"op\":\"propose_action\",\"action\":\"host.ledgerbox.read_inbox\",\"params\":{\"filter\":\"overdue\",\"page\":1},\"rationale\":\"the user asked what is overdue\"}"
+        },
+        {
+          "kind": "tool",
+          "tier": 1,
+          "ok": true,
+          "at": "2026-10-23 09:41:20",
+          "text": "host.ledgerbox.read_inbox → {\"showing\":4,\"of\":4,\"page\":1,\"pages\":1,\"items\":[{\"id\":\"inv_118\",\"number\":\"INV-118\",\"client\":\"Northwind Traders\",\"contact_name\":\"Ana Ruiz\",\"contact_email\":\"ap@northwind.example\",\"state\":\"overdue\",\"category\":\"design\",\"due_at\":\"2026-09-01\",\"days_overdue\":41,\"amount\":4800,\"paid\":0,\"balance\":4800,\"paid_ratio\":0,\"last_payment_at\":null,\"candidates\":0,\"has_draft_reminder\":false,\"reminders_sent\":1},{\"id\":\"inv_124\",\"number\":\"INV-124\",\"client\":\"Kestrel & Co\",\"contact_name\":\"Tom Hale\",\"contact_email\":\"ap@kestrel.example\",\"state\":\"overdue\",\"category\":\"design\",\"due_at\":\"2026-09-01\",\"days_overdue\":36,\"amount\":2250,\"paid\":1800,\"balance\":450,\"paid_ratio\":0.8,\"last_payment_at\":\"2026-08-14\",\"candidates\":0,\"has_draft_reminder\":false,\"reminders_sent\":1},{\"id\":\"inv_131\",\"number\":\"INV-131\",\"client\":\"Pinegrove Studio\",\"contact_name\":\"Lena Ott\",\"contact_email\":\"ap@pinegrove.example\",\"state\":\"overdue\",\"category\":\"design\",\"due_at\":\"2026-09-01\",\"days_overdue\":33,\"amount\":1250,\"paid\":0,\"balance\":1250,\"paid_ratio\":0,\"last_payment_at\":null,\"candidates\":0,\"has_draft_reminder\":false,\"reminders_sent\":0},{\"id\":\"inv_137\",\"number\":\"INV-137\",\"client\":\"Halden Ferry\",\"contact_name\":\"Ivo Brandt\",\"contact_email\":\"billing@halden.example\",\"state\":\"overdue\",\"category\":\"design\",\"due_at\":\"2026-09-18\",\"days_overdue\":12,\"amount\":960,\"paid\":0,\"balance\":960,\"paid_ratio\":0,\"last_payment_at\":null,\"candidates\":0,\"has_draft_reminder\":false,\"reminders_sent\":0,\"dispute\":\"Client says the second revision was out of scope.\"}],\"filter\":\"overdue\"}"
+        },
+        {
+          "kind": "assistant",
+          "text": "Three invoices are over 30 days: INV-118 (Northwind, 41 days, $4,800), INV-124 (Kestrel, 36 days, $450 left of $2,250) and INV-131 (Pinegrove, 33 days, $1,250).\nTTS: \"Three invoices are over thirty days. I will draft a chase for each.\""
+        },
+        {
+          "kind": "tool",
+          "tier": 1,
+          "ok": true,
+          "at": "2026-10-23 09:41:31",
+          "text": "host.ledgerbox.draft_reminder → {\"ok\":true,\"message\":\"Draft saved on INV-118.\",\"draft\":{\"to\":\"ap@northwind.example\",\"subject\":\"INV-118 is 41 days past due\",\"body\":\"Hello Ana,\\n\\nA reminder that INV-118 for $4,800.00 was due on 12 September and is now 41 days past due. Could you let me know when we can expect payment?\\n\\nThank you,\\nMira - Lumen Studio\"}}"
+        },
+        {
+          "kind": "tool",
+          "tier": 1,
+          "ok": true,
+          "at": "2026-10-23 09:41:36",
+          "text": "host.ledgerbox.draft_reminder → {\"ok\":true,\"message\":\"Draft saved on INV-124.\",\"draft\":{\"to\":\"ap@kestrel.example\",\"subject\":\"Balance of $450 on INV-124\",\"body\":\"Hello Tom,\\n\\nThank you for the $1,800 in August. A balance of $450.00 remains on INV-124 ...\"}}"
+        },
+        {
+          "kind": "tool",
+          "tier": 1,
+          "ok": true,
+          "at": "2026-10-23 09:41:40",
+          "text": "host.ledgerbox.draft_reminder → {\"ok\":true,\"message\":\"Draft saved on INV-131.\",\"draft\":{\"to\":\"ap@pinegrove.example\",\"subject\":\"INV-131 is 33 days past due\",\"body\":\"Hello Lena, ...\"}}"
+        },
+        {
+          "kind": "assistant",
+          "text": "Three drafts are saved. Sending each one waits for you.\nOP: {\"op\":\"propose_action\",\"action\":\"host.ledgerbox.send_reminder\",\"params\":{\"id\":\"inv_118\"},\"rationale\":\"It is 41 days past due and this client has answered a chase before.\"}"
+        }
+      ],
+      "cards": [
+        {
+          "id": "apr_a1",
+          "decision_kind": "approve",
+          "action": "host.ledgerbox.send_reminder",
+          "class": "GATED",
+          "params": {
+            "id": "inv_118",
+            "to": "ap@northwind.example",
+            "subject": "INV-118 is 41 days past due"
+          },
+          "rationale": "It is 41 days past due and this client has answered a chase before.",
+          "origin": "host:ledgerbox",
+          "expires_at": "2026-10-23T10:00:00Z"
+        },
+        {
+          "id": "apr_a2",
+          "decision_kind": "approve",
+          "action": "host.ledgerbox.send_reminder",
+          "class": "GATED",
+          "params": {
+            "id": "inv_124",
+            "to": "ap@kestrel.example",
+            "subject": "Balance of $450 on INV-124"
+          },
+          "rationale": "It is 36 days past due and the last reminder went unanswered.",
+          "origin": "host:ledgerbox",
+          "expires_at": "2026-10-23T10:00:00Z"
+        },
+        {
+          "id": "apr_a3",
+          "decision_kind": "approve",
+          "action": "host.ledgerbox.send_reminder",
+          "class": "GATED",
+          "params": {
+            "id": "inv_131",
+            "to": "ap@pinegrove.example",
+            "subject": "INV-131 is 33 days past due"
+          },
+          "rationale": "It is 33 days past due and no chase has gone out yet.",
+          "origin": "host:ledgerbox",
+          "expires_at": "2026-10-23T10:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "books-glance",
+      "title": "How is the quarter going?",
+      "app": "ledgerbox",
+      "origin": "host:ledgerbox",
+      "tab": {
+        "title": "Ledgerbox - Books",
+        "url": "https://ledgerbox.local/books"
+      },
+      "entries": [
+        {
+          "kind": "user",
+          "text": "How is this quarter going compared to last?"
+        },
+        {
+          "kind": "tool",
+          "tier": 1,
+          "ok": true,
+          "at": "2026-10-23 10:02:05",
+          "text": "host.ledgerbox.read_books → {\"periods\":[{\"period\":\"2026-Q3\",\"invoices\":42,\"invoiced\":61850,\"collected\":48200,\"outstanding\":13650,\"overdue\":9260,\"overdue_count\":4,\"unmatched_credits\":3,\"disputed\":1},{\"period\":\"2026-Q2\",\"invoices\":38,\"invoiced\":54300,\"collected\":51900,\"outstanding\":2400,\"overdue\":0,\"overdue_count\":0,\"unmatched_credits\":0,\"disputed\":0}],\"studio\":{\"name\":\"Lumen Studio\",\"inbox\":\"mira@lumen.example\"},\"screen\":{\"level\":\"books\",\"area_open\":null,\"invoice_open\":null,\"filter\":\"all\",\"client\":null,\"period\":\"2026-Q3\",\"selected\":0}}"
+        },
+        {
+          "kind": "assistant",
+          "text": "You invoiced $61,850 this quarter, 14% more than Q2, but collected $48,200 against $51,900. $9,260 is overdue across 4 invoices, and 3 bank credits are not matched yet.\nTTS: \"Invoicing is up fourteen percent, but nine thousand is overdue.\""
+        }
+      ],
+      "cards": []
+    },
+    {
+      "id": "crm-followup",
+      "title": "Log the call and book a follow-up",
+      "app": "tidycrm",
+      "origin": "host:tidycrm",
+      "tab": {
+        "title": "TidyCRM - Northwind",
+        "url": "https://tidycrm.local/accounts/northwind"
+      },
+      "entries": [
+        {
+          "kind": "user",
+          "text": "I just spoke to Ana at Northwind, they will pay Friday. Log it and remind me Monday if nothing came in."
+        },
+        {
+          "kind": "tool",
+          "tier": 1,
+          "ok": true,
+          "at": "2026-10-23 11:15:02",
+          "text": "host.tidycrm.read_account → {\"account\":{\"id\":\"acc_northwind\",\"name\":\"Northwind Traders\",\"owner\":\"Mira\",\"stage\":\"customer\",\"contacts\":[{\"name\":\"Ana Ruiz\",\"role\":\"Accounts payable\",\"email\":\"ap@northwind.example\"}],\"open_tasks\":1,\"last_touch\":\"2026-09-29\"}}"
+        },
+        {
+          "kind": "tool",
+          "tier": 1,
+          "ok": true,
+          "at": "2026-10-23 11:15:09",
+          "text": "host.tidycrm.log_activity → {\"ok\":true,\"activity\":{\"id\":\"act_5521\",\"type\":\"call\",\"with\":\"Ana Ruiz\",\"summary\":\"Will pay INV-118 on Friday 30 Oct.\",\"at\":\"2026-10-23T11:15:09Z\"}}"
+        },
+        {
+          "kind": "tool",
+          "tier": 2,
+          "ok": false,
+          "at": "2026-10-23 11:15:14",
+          "text": "host.tidycrm.create_task → {\"ok\":false,\"error\":\"due_at must be an ISO date (got \\\"Monday\\\")\"}"
+        },
+        {
+          "kind": "tool",
+          "tier": 1,
+          "ok": true,
+          "at": "2026-10-23 11:15:18",
+          "text": "host.tidycrm.create_task → {\"ok\":true,\"task\":{\"id\":\"tsk_903\",\"title\":\"Check INV-118 payment from Northwind\",\"due_at\":\"2026-11-02\",\"assignee\":\"Mira\"}}"
+        },
+        {
+          "kind": "assistant",
+          "text": "Logged the call with Ana. I will remind you on Monday 2 November if INV-118 is still open."
+        }
+      ],
+      "cards": []
+    },
+    {
+      "id": "mail-connector",
+      "title": "Send the chase by mail",
+      "app": "gmail",
+      "origin": "connector:gmail",
+      "tab": null,
+      "entries": [
+        {
+          "kind": "user",
+          "text": "Send the Northwind chase from my own address instead."
+        },
+        {
+          "kind": "assistant",
+          "text": "This goes out by mail, from mira@example.com.\nOP: {\"op\":\"propose_action\",\"action\":\"connector.gmail.send_mail\",\"params\":{\"to\":\"ap@northwind.example\",\"subject\":\"INV-118 is 41 days past due\",\"body\":\"Hello Ana, a reminder that INV-118 is now 41 days past due.\"},\"rationale\":\"The chase for INV-118 goes by mail, from the studio's own address.\"}"
+        }
+      ],
+      "cards": [
+        {
+          "id": "apr_m1",
+          "decision_kind": "approve",
+          "action": "connector.gmail.send_mail",
+          "class": "GATED",
+          "params": {
+            "to": "ap@northwind.example",
+            "subject": "INV-118 is 41 days past due",
+            "body": "Hello Ana, a reminder that INV-118 is now 41 days past due."
+          },
+          "rationale": "The chase for INV-118 goes by mail, from the studio's own address.",
+          "origin": "connector:gmail",
+          "identity": "mira@example.com",
+          "expires_at": "2026-10-23T12:00:00Z"
+        }
+      ]
+    },
+    {
+      "id": "refused-and-failed",
+      "title": "Things going wrong",
+      "app": "ledgerbox",
+      "origin": "host:ledgerbox",
+      "tab": {
+        "title": "Ledgerbox - Inbox",
+        "url": "https://ledgerbox.local/inbox"
+      },
+      "entries": [
+        {
+          "kind": "user",
+          "text": "Void INV-099."
+        },
+        {
+          "kind": "tool",
+          "tier": 1,
+          "ok": false,
+          "at": "2026-10-23 12:30:01",
+          "text": "host.ledgerbox.read_invoice → {\"ok\":false,\"error\":\"No invoice matches \\\"INV-099\\\". Closest: INV-090, INV-109.\"}"
+        },
+        {
+          "kind": "assistant",
+          "text": "I could not find INV-099. Did you mean INV-090 or INV-109?"
+        },
+        {
+          "kind": "user",
+          "text": "INV-109"
+        },
+        {
+          "kind": "assistant",
+          "text": "Voiding is permanent, so it waits for you.\nOP: {\"op\":\"propose_action\",\"action\":\"host.ledgerbox.void_invoice\",\"params\":{\"id\":\"inv_109\"},\"rationale\":\"The user named INV-109.\"}"
+        },
+        {
+          "kind": "tool",
+          "ok": false,
+          "text": "declined: host.ledgerbox.void_invoice"
+        },
+        {
+          "kind": "user",
+          "text": "Mark INV-131 paid, 1250."
+        },
+        {
+          "kind": "tool",
+          "tier": 1,
+          "ok": false,
+          "at": "2026-10-23 12:31:40",
+          "text": "host.ledgerbox.mark_paid → not run: the tab this was proposed on reloaded or moved to another page since"
+        }
+      ],
+      "error": {
+        "reason": "outcome_unknown",
+        "detail": "page call timed out after 20000 ms: host.ledgerbox.export_summary"
+      },
+      "cards": []
+    },
+    {
+      "id": "browser-tabs",
+      "title": "Read another tab",
+      "app": "hirelane",
+      "origin": "host:hirelane",
+      "tab": {
+        "title": "Hirelane - Candidates",
+        "url": "https://hirelane.local/roles/designer"
+      },
+      "entries": [
+        {
+          "kind": "user",
+          "text": "Which of the designer candidates have we not replied to in a week?"
+        },
+        {
+          "kind": "tool",
+          "tier": 1,
+          "ok": true,
+          "at": "2026-10-23 14:02:11",
+          "text": "host.hirelane.list_candidates → {\"showing\":3,\"of\":11,\"role\":\"Product designer\",\"items\":[{\"id\":\"cand_7\",\"name\":\"Jo Park\",\"stage\":\"screen\",\"last_contact\":\"2026-10-12\",\"days_waiting\":11},{\"id\":\"cand_9\",\"name\":\"Sam Ade\",\"stage\":\"portfolio\",\"last_contact\":\"2026-10-14\",\"days_waiting\":9},{\"id\":\"cand_2\",\"name\":\"Rhea Lind\",\"stage\":\"offer\",\"last_contact\":\"2026-10-21\",\"days_waiting\":2}]}"
+        },
+        {
+          "kind": "tool",
+          "tier": 2,
+          "ok": true,
+          "at": "2026-10-23 14:02:15",
+          "text": "tabs.read → {\"tab\":{\"id\":4,\"title\":\"Gmail - Inbox\",\"origin\":\"https://mail.example\"},\"text\":\"... Jo Park - Re: portfolio follow-up (Oct 12) ...\",\"truncated\":true,\"chars\":18233}"
+        },
+        {
+          "kind": "assistant",
+          "text": "Two candidates have waited more than a week: Jo Park (11 days, screening) and Sam Ade (9 days, portfolio). I read your mail tab to check - neither has a reply from you there."
+        }
+      ],
+      "cards": []
+    }
+  ],
+  "voice": {
+    "phases": [
+      "idle",
+      "listening",
+      "transcribing",
+      "speaking"
+    ],
+    "partial_example": "find every invoice over thirty da",
+    "tts_lines": "Lines starting `TTS:` in assistant text are what she says aloud; they are NOT shown as text."
+  }
+}

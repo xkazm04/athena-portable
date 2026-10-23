@@ -1,0 +1,120 @@
+/* Her window's tokens, declared once - Bell's `tokens.css` (athena-mini-window, merged with
+ * Tideline's seal). Every colour, ease and timing her window uses lives here; `companion.css` and
+ * `seal.css` only read them. Machine = teal; the one human role colour (--human) is spent on
+ * "waiting on you" and nothing else.
+ *
+ * A value the shared sheet (`styles/app.css`) already names is read from there, so the two windows
+ * cannot drift; only what her small window adds (the glass, the seal, the water) is chosen here.
+ * Outfit is bundled (`@fontsource/outfit`), so the display face is the winner's offline too. */
+@import "@fontsource/outfit/300.css";
+@import "@fontsource/outfit/400.css";
+@import "@fontsource/outfit/500.css";
+
+.aw {
+  --font-display: "Outfit", "Segoe UI Variable Display", "Segoe UI", system-ui, sans-serif;
+  --font-body: "Segoe UI Variable Text", "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  --aw-mono: var(--font-mono);
+  --ease: cubic-bezier(0.22, 0.8, 0.2, 1);
+  --ease-settle: cubic-bezier(0.3, 0.9, 0.3, 1);
+  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  --grow: 0.46s;
+  --fade-top: linear-gradient(180deg, transparent 0, #000 36px); /* alpha masks, not colours */
+  --fade-start: linear-gradient(90deg, transparent 0, #000 28px);
+  --margin: 8px;
+  /* the window's own beats: a press, a hover, a fade, a step rising, a page sliding in, a flip */
+  --t-press: 0.15s;
+  --t-hover: 0.2s;
+  --t-fade: 0.3s;
+  --t-rise: 0.5s;
+  --t-slide: 0.42s;
+  --t-stack: 0.4s;
+  --t-flip: 0.55s;
+  --t-tear: 0.7s;
+
+  /* the seal: Main's jellyfish dome, the fixed anchor of every resize */
+  --seal: 76px;
+  --seal-breathe: 7s; /* the orb at rest */
+  --seal-greet: 3s; /* the orb on first launch */
+  --seal-sway: 6s; /* the tendrils at rest */
+  --seal-sway-busy: 2.2s; /* the tendrils while she works */
+  --seal-spin: 1.3s; /* the working ring, one turn */
+  --seal-listen: 1.1s; /* the orb while she hears you */
+  --seal-speak: 0.42s; /* the orb while she speaks */
+  --seal-ink: 2.6s; /* the waiting-on-you ink pulse */
+  --seal-ink-beats: 4; /* how many times it pulses before it holds still */
+  --seal-sign: 0.9s; /* the approve beat: the ink ring closes */
+  --seal-settle: 0.5s; /* the check or cross drawing in */
+  --seal-tab-sweep: 1.6s; /* the light running down the docked tab while she works */
+  --seal-swap: 0.25s; /* the mark giving way to a check or a cross */
+  --seal-fade: 0.8s; /* dimming to quiet */
+  --seal-ring-in: 0.4s; /* the ink ring and the count arriving */
+  --seal-done-fade: 1.2s; /* the done ring fading in after a turn */
+
+  /* shared with Main: the same role in both windows */
+  --fg: var(--foreground);
+  --muted-fg: var(--muted-foreground);
+  --btn: var(--btn-primary);
+  --on-btn: var(--on-primary);
+  --line: var(--border-default);
+  --line-strong: var(--border-emphasis);
+  --human: var(--role-human);
+  --ok: var(--status-success);
+  --warn: var(--status-warning);
+  --bad: var(--status-error);
+
+  /* dark (the default theme) */
+  --faint: #7fb0bf;
+  --ink-accent: #5fe0f2; /* accent as ink: brighter than --accent on the dark glass */
+  --glass: radial-gradient(130% 90% at 15% 0%, #0f3b45 0%, #0b2a31 38%, #07161b 100%);
+  --glass-solid: #0b2a31;
+  --edge: rgba(34, 211, 238, 0.22);
+  --recess: rgba(3, 10, 12, 0.5);
+  --raised: rgba(18, 48, 57, 0.78);
+  --wash: rgba(34, 211, 238, 0.08);
+  --on-human: #2a0a1a;
+  --human-wash: rgba(244, 114, 182, 0.12);
+  --human-glow: rgba(244, 114, 182, 0.38);
+  --press: rgba(255, 255, 255, 0.35);
+  --shadow: 0 14px 34px rgba(0, 0, 0, 0.5), 0 2px 6px rgba(0, 0, 0, 0.4);
+  --ray: rgba(34, 211, 238, 0.14);
+  --face-well: transparent;
+
+  --seal-dome-a: #0f5563;
+  --seal-dome-b: #072a31;
+  --seal-line: var(--accent);
+  --seal-glow: rgba(34, 211, 238, 0.28);
+  --seal-gleam: rgba(255, 255, 255, 0.35);
+  --seal-mark: #e9fbff;
+  --seal-orb-core: #2fd9f0;
+  --seal-orb-edge: #0e7490;
+}
+
+[data-theme="light"] .aw {
+  --faint: #52627a;
+  --ink-accent: var(--accent-text);
+  --glass: radial-gradient(130% 90% at 15% 0%, #ffffff 0%, #edf6f8 42%, #dcedf1 100%);
+  --glass-solid: #edf6f8;
+  --edge: rgba(8, 145, 178, 0.35);
+  --recess: rgba(15, 23, 42, 0.05);
+  --raised: rgba(255, 255, 255, 0.85);
+  --wash: rgba(14, 116, 144, 0.08);
+  --on-human: #ffffff;
+  --human-wash: rgba(157, 23, 77, 0.09);
+  --human-glow: rgba(190, 24, 93, 0.28);
+  --shadow: 0 12px 28px rgba(15, 40, 60, 0.26), 0 2px 5px rgba(15, 40, 60, 0.2);
+  --ray: rgba(255, 255, 255, 0.9);
+  --face-well: #0b2a31;
+
+  --seal-dome-a: #1c8aa0;
+  --seal-dome-b: #0b5566;
+  --seal-glow: rgba(8, 145, 178, 0.22);
+}
+
+:root[data-motion="calm"] .aw {
+  --grow: 0.001s;
+}
+@media (prefers-reduced-motion: reduce) {
+  .aw {
+    --grow: 0.001s;
+  }
+}

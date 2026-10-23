@@ -73,7 +73,7 @@ describe.skipIf(Boolean(skipWhy))("the Athena desktop app drives Shadowrunr thro
   };
   const pendingFor = (settled: Settled, action: string): Slip | undefined =>
     settled.cards.find((c) => c.pending && c.label.includes(action));
-  const acted = (settled: Settled) => settled.messages.flatMap((m) => m.acts.map((a) => a.text));
+  const acted = (settled: Settled) => settled.messages.flatMap((m) => m.acts);
 
   beforeAll(async () => {
     realBefore = treeDigest(join(OVERLORD, "characters"));
@@ -162,7 +162,7 @@ describe.skipIf(Boolean(skipWhy))("the Athena desktop app drives Shadowrunr thro
     await shot("02-orient");
     expect(s.errors).toEqual([]);
     expect(s.cards.filter((c) => c.pending)).toEqual([]);
-    expect(acted(s).some((a) => a.startsWith("host.shadowrunr.where_am_i →") && !a.includes("pending_approval"))).toBe(true);
+    expect(acted(s).some((a) => a.tool === "host.shadowrunr.where_am_i" && a.ok === "1")).toBe(true);
     expect(s.reply?.text.toLowerCase()).toMatch(/segment/);
   });
 
@@ -178,7 +178,7 @@ describe.skipIf(Boolean(skipWhy))("the Athena desktop app drives Shadowrunr thro
     log.push({ step: "walk", settled: s });
     await shot("03-walk");
     expect(s.errors).toEqual([]);
-    expect(acted(s).some((a) => a.startsWith("host.shadowrunr.open_moment →") && !a.includes("pending_approval"))).toBe(true);
+    expect(acted(s).some((a) => a.tool === "host.shadowrunr.open_moment" && a.ok === "1")).toBe(true);
     // The console moved: its own where_am_i says so (called through the shell, not the model).
     const where = await d.call(tabId, "where_am_i", {});
     expect(JSON.stringify(where)).toContain(`#/review/${session}/timeline/20`);

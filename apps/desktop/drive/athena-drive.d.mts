@@ -12,8 +12,15 @@ export interface Tab {
   nav: number;
 }
 
+/** One step she took, as her window shows it: the plain sentence and the tool it was. */
 export interface Act {
+  /** The tool's registry name (`host.shadowrunr.where_am_i`), from the row's `data-tool`. */
+  tool: string;
+  /** The plain sentence a person reads. */
   text: string;
+  /** The line under it: a sum, the worst one, a reason. */
+  sub: string;
+  /** "1" when the step went through, "0" when it failed, was held back or declined. */
   ok: string | null;
 }
 

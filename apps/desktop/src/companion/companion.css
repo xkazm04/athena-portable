@@ -1,16 +1,13 @@
-/* Athena's own window: a housing (stamp pad) with a seal, and paper that comes out of it.
- * ADR 0026 ("Identity"), README section 3.1. Ported from The Countersign (`athena.css` and the
- * physical half of `tokens.css` of the winning entry).
+/* Her window: Bell, with Tideline's seal - the athena-mini-window contest and its merge round.
+ * Deep water, one organism; the conversation is a descent. ADR 0026 ("Named states").
  *
- * The housing, the paper, the stamp and the ring are PHYSICAL OBJECTS: their colours are fixed
- * here and are identical in both themes (they read on a light or a dark wallpaper), so a change to
- * the shared token values in `styles/app.css` cannot reach them. What is shared is the typeface
- * (`--font-sans`, `--font-mono`) and the primary button's teal (`--btn-primary`); every other
- * name below is defined on `.aw` itself. The window's background is TRANSPARENT: `body.athena`.
+ * Reads `tokens.css` only. The seal is its own component (`seal.tsx` + `seal.css`): this sheet only
+ * places it (.anchor) and never styles its parts. Classes `styles/app.css` also spells (`.btn`,
+ * `.empty`, `.depth`) carry an `aw-` prefix here, so neither sheet can leak into the other.
  *
- * Classes that `styles/app.css` also spells (`.btn`, `.fact`) carry an `aw-` prefix here, so
- * neither sheet can leak into the other.
- */
+ * Sizes are the winner's at the default reading step (Comfortable); `--aw-step` moves the reading
+ * tiers with the app's Text size, never the display tiers. Nothing readable is under 12px: the
+ * winner's 11.5px eyebrow and key labels are raised to 12px, the product's floor. */
 
 html:has(body.athena),
 body.athena {
@@ -22,130 +19,40 @@ body.athena {
 }
 
 .aw {
-  /* the dark palette's roles, fixed: the housing is dark in both themes */
-  --h-human: #f472b6;
-  --h-ok: #34d399;
-  --h-info: #22d3ee;
-  --h-focus: #67e8f9;
-
-  --house-1: #123640;
-  --house-2: #0d2025;
-  --house-3: #081417;
-  --house-rim: rgba(103, 232, 249, 0.34);
-  --house-rim-out: rgba(224, 242, 254, 0.16);
-  --house-ink: #94c5d4;
-  --house-ink-2: #6f9dab;
-  --house-glow: #22d3ee;
-
-  --paper: #eef3f2;
-  --paper-2: #e1e9e8;
-  --paper-3: #cfdcdb;
-  --paper-ink: #0a1214;
-  --paper-ink-2: #3e5560;
-  --paper-rule: rgba(10, 18, 20, 0.2);
-  --paper-stamp: #9d174d;
-  --paper-agent: #6d28d9;
-  --paper-external: #075985;
-  --paper-ok: #047857;
-  --paper-info: #1d4ed8;
-  --paper-warn: #92400e;
-  --paper-grain: rgba(6, 40, 50, 0.028);
-
-  --mk-field: #06b6d4;
-  --mk-cut: #070d0f;
-
-  --font-ui: var(--font-sans, "Segoe UI Variable", "Segoe UI", system-ui, -apple-system, sans-serif);
-  --aw-mono: var(--font-mono, "Cascadia Mono", Consolas, ui-monospace, monospace);
-
-  /* type: six sizes, nothing readable under 12, body 15; the four reading tiers take the
-   * app's text-size step (app.css), the head and the display do not */
-  --t-label: calc(12px + var(--type-step));
-  --t-caption: calc(13px + var(--type-step));
-  --t-body: calc(15px + var(--type-step));
-  --t-title: calc(17px + var(--type-step));
-  --t-head: 22px;
-  --t-display: 34px;
-  --lh-body: 1.5;
-  --ls-label: 0.12em;
-
-  --icon-s: 16px;
-  --icon-m: 20px;
-  --icon-l: 26px;
-
-  --r-ctl: 6px;
-  --r-card: 8px;
-  --r-slip: 3px;
-  --r-house: 16px;
-
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
-  --ease-thump: cubic-bezier(0.55, 0, 0.85, 0.4);
-  --ease-soft: cubic-bezier(0.4, 0, 0.2, 1);
-  --dur-fast: 140ms;
-  --dur: 320ms;
-  --dur-slow: 680ms;
-  --dur-stamp: 340ms;
-
-  --aw-m: 8px;
-  --aw-house: 76px;
-
-  /* on paper the gate classes use the light values, because paper is light in both themes */
-  --gate-read: var(--paper-info);
-  --gate-auto: var(--paper-ok);
-  --gate-gated: var(--paper-stamp);
-  --btn-primary-ink: var(--btn-primary, #0e7490);
+  --aw-step: calc(var(--type-step) - 2px);
+  position: absolute;
+  inset: 0;
+  color: var(--fg);
+  font: 400 calc(14px + var(--aw-step)) / 1.45 var(--font-body);
+  -webkit-font-smoothing: antialiased;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .aw {
-    --dur-fast: 1ms;
-    --dur: 100ms;
-    --dur-slow: 140ms;
-    --dur-stamp: 140ms;
-  }
-}
-/* Calm (lib/motion.ts, ADR 0089) is the person's choice resolved with the OS's: the same stillness
- * as the block above, for a person who chose Calm on a machine that does not ask for less motion. */
-:root[data-motion="calm"] .aw {
-  --dur-fast: 1ms;
-  --dur: 100ms;
-  --dur-slow: 140ms;
-  --dur-stamp: 140ms;
-}
-
-.aw,
 .aw *,
 .aw *::before,
 .aw *::after {
   box-sizing: border-box;
-}
-.aw {
-  /* the dark palette's roles, fixed: the housing is dark in both themes */
-  --h-human: #f472b6;
-  --h-ok: #34d399;
-  --h-info: #22d3ee;
-  --h-focus: #67e8f9;
-  position: relative;
-  width: 100%;
-  height: 100%;
-  padding: var(--aw-m);
-  font-family: var(--font-ui);
-  font-size: var(--t-body);
-  line-height: var(--lh-body);
-  color: var(--paper-ink);
-  -webkit-font-smoothing: antialiased;
-}
-.aw[data-state="tab"] {
-  padding: 0;
 }
 .aw button {
   font: inherit;
   color: inherit;
   cursor: pointer;
 }
-.aw [hidden] {
-  display: none !important;
+.aw button:disabled {
+  cursor: default;
 }
-.aw-sr {
+.aw :focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+  border-radius: var(--radius-interactive);
+}
+.aw p,
+.aw h2,
+.aw h3,
+.aw figure,
+.aw ol,
+.aw ul {
+  margin: 0;
+}
+.aw .aw-sr {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -153,2234 +60,1768 @@ body.athena {
   clip-path: inset(50%);
   white-space: nowrap;
 }
-
-/* ---------------------------------------------------------------- the figure */
-.aw-fig {
-  display: flex;
-  height: 100%;
-  filter: drop-shadow(0 1px 1.5px rgba(0, 0, 0, 0.5)) drop-shadow(0 6px 10px rgba(0, 0, 0, 0.32));
-  transition: opacity 1.2s var(--ease-soft);
-}
-.aw[data-side="right"] .aw-fig {
-  flex-direction: row-reverse;
-}
-.aw[data-state="tab"] .aw-fig {
-  filter: none;
-}
-.aw[data-quiet="1"] .aw-fig {
-  opacity: 0.55;
-}
-.aw[data-quiet="1"]:hover .aw-fig,
-.aw[data-quiet="1"]:focus-within .aw-fig {
-  opacity: 1;
-  transition-duration: 160ms;
-}
-
-/* ---------------------------------------------------------------- the housing */
-.aw-house {
-  position: relative;
-  flex: none;
-  width: var(--aw-house);
-  display: flex;
-  flex-direction: column;
-  border-radius: var(--r-house);
-  background: linear-gradient(168deg, var(--house-1), var(--house-2) 52%, var(--house-3));
-  box-shadow: inset 0 0 0 1px var(--house-rim-out), inset 0 1.5px 0 var(--house-rim), inset 0 -12px 20px rgba(0, 0, 0, 0.34);
-  color: var(--house-ink);
-  user-select: none;
-  -webkit-user-select: none;
-  cursor: grab;
-}
-.aw[data-valign="up"] .aw-house {
-  flex-direction: column-reverse;
-}
-.aw-sealwrap {
-  flex: none;
-  width: var(--aw-house);
-  height: var(--aw-house);
-}
-.aw-seal {
-  position: relative;
-  display: block;
-  width: var(--aw-house);
-  height: var(--aw-house);
-  padding: 0;
-  border: 0;
-  border-radius: var(--r-house);
-  background: none;
-  color: inherit;
-}
-.aw-seal:focus-visible {
-  outline: 2px solid var(--h-focus);
-  outline-offset: -3px;
-}
-.aw-ring {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  pointer-events: none;
-}
-.aw-ring circle {
-  fill: var(--house-ink-2);
-  opacity: 0.4;
-  transition: fill var(--dur), opacity var(--dur);
-}
-.aw-ring circle.on {
-  fill: var(--h-info);
-  opacity: 1;
-}
-.aw-ring circle.next {
-  fill: var(--h-info);
-  animation: dot-next 1.1s ease-in-out infinite;
-}
-.aw[data-tone="human"] .aw-ring circle {
-  fill: var(--h-human);
-  opacity: 0.95;
-}
-.aw[data-tone="idle"] .aw-ring {
-  animation: ring-breathe 7s ease-in-out infinite;
-}
-@keyframes ring-breathe {
-  50% {
-    opacity: 0.55;
-  }
-}
-@keyframes dot-next {
-  50% {
-    opacity: 0.15;
-  }
-}
-.aw[data-attn="1"] .aw-ring circle {
-  animation: dot-attn 1.8s ease-in-out infinite;
-}
-@keyframes dot-attn {
-  50% {
-    opacity: 0.3;
-  }
-}
-.aw[data-attn="1"] .aw-house {
-  animation: rim-attn 2.4s ease-in-out infinite;
-}
-@keyframes rim-attn {
-  50% {
-    box-shadow: inset 0 0 0 1px var(--house-rim-out), inset 0 1.5px 0 var(--house-rim), inset 0 -12px 20px rgba(0, 0, 0, 0.34), 0 0 0 3px rgba(244, 114, 182, 0.55);
-  }
-}
-
-/* the stamp face: the mark on a round pad. It is the thing she would press down. */
-.aw-face {
-  position: absolute;
-  left: 50%;
-  top: 31px;
-  width: 34px;
-  height: 34px;
-  margin: -17px 0 0 -17px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: radial-gradient(circle at 36% 28%, #16414d, #0a1c21 70%);
-  box-shadow: inset 0 0 0 1px rgba(103, 232, 249, 0.3), 0 2px 3px rgba(0, 0, 0, 0.55);
-  transition: translate 260ms var(--ease-out), scale 260ms var(--ease-out), box-shadow 260ms;
-  pointer-events: none;
-}
-.aw-mk {
-  width: 22px;
-  height: 22px;
-}
-/* the seal answers a pointer: the face leans in (scale rides the face's own transition). A raised
- * stamp (a card waits) and the hearing face already stand higher, so they keep their own scale. */
-.aw[data-cards="0"]:not([data-mood="hear"]) .aw-seal:hover .aw-face {
-  scale: 1.08;
-}
-.aw[data-state="seal"] .aw-face {
-  animation: stamp-breathe 9s ease-in-out infinite;
-}
-@keyframes stamp-breathe {
-  0%,
-  86%,
-  100% {
-    translate: 0 0;
-  }
-  92% {
-    translate: 0 -2px;
-  }
-}
-/* a card waits: the stamp is raised, poised, and stays raised until you bring it down */
-.aw:not([data-cards="0"]) .aw-face {
-  translate: 0 -3px;
-  scale: 1.1;
-  box-shadow: inset 0 0 0 1px rgba(244, 114, 182, 0.7), 0 7px 8px rgba(0, 0, 0, 0.5);
-  animation: none;
-}
-.aw[data-decided] .aw-face {
-  animation: thump var(--dur-stamp) var(--ease-thump) both;
-}
-@keyframes thump {
-  0% {
-    translate: 0 -3px;
-    scale: 1.1;
-  }
-  70% {
-    translate: 0 3px;
-    scale: 0.92;
-  }
-  100% {
-    translate: 0 0;
-    scale: 1;
-  }
-}
-.aw-cap {
-  position: absolute;
-  left: 0;
-  right: 0;
-  bottom: 4px;
-  text-align: center;
-  font-size: var(--t-label);
-  line-height: 14px;
-  letter-spacing: 0.03em;
-  font-weight: 600;
-  color: var(--house-ink);
-  pointer-events: none;
-}
-.aw-badge {
-  position: absolute;
-  top: 3px;
-  right: 3px;
-  min-width: 20px;
-  height: 20px;
-  padding: 0 5px;
-  border-radius: 10px;
-  background: var(--h-human);
-  color: #0a1214;
-  font-size: var(--t-label);
-  font-weight: 800;
-  line-height: 20px;
-  text-align: center;
-  pointer-events: none;
-}
-.aw-badge:empty {
-  display: none;
-}
-/* -- the mood: what the seal is doing, drawn instead of written (drawing.tsx `Mood`) ----------- */
-
-.aw-mood {
-  position: absolute;
-  inset: 0;
-  width: 100%;
-  height: 100%;
-  overflow: visible;
-  pointer-events: none;
-}
-.aw-mood .md {
-  opacity: 0;
-  transition: opacity var(--dur-slow) ease-out;
-}
-.aw-mood * {
-  transform-box: view-box;
-}
-.aw[data-mood="sleep"] .md-sleep,
-.aw[data-mood="work"] .md-work,
-.aw[data-mood="hear"] .md-hear,
-.aw[data-mood="speak"] .md-speak,
-.aw[data-mood="wait"] .md-wait {
-  opacity: 1;
-}
-/* a mood that is not showing does not move: no hidden animation runs */
-.aw:not([data-mood="sleep"]) .md-sleep *,
-.aw:not([data-mood="work"]) .md-work *,
-.aw:not([data-mood="hear"]) .md-hear *,
-.aw:not([data-mood="speak"]) .md-speak *,
-.aw:not([data-mood="wait"]) .md-wait * {
-  animation-play-state: paused;
-}
-
-/* sleep: the face sinks and dims, the ring all but goes out, and three Zs drift off up and right */
-.aw[data-mood="sleep"] .aw-face {
-  opacity: 0.62;
-  scale: 0.94;
-}
-.aw[data-mood="sleep"] .aw-ring {
-  opacity: 0.4;
-  animation: none;
-}
-.md-sleep .z {
-  fill: none;
-  stroke: var(--house-glow);
-  stroke-width: 1.6;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-  opacity: 0;
-  transform-origin: 52.75px 20.5px;
-  animation: drift-z 4.2s ease-out infinite;
-}
-.md-sleep .z1 {
-  animation-delay: 1.4s;
-}
-.md-sleep .z2 {
-  animation-delay: 2.8s;
-}
-@keyframes drift-z {
-  0% {
-    opacity: 0;
-    transform: translate(0, 0) scale(0.55);
-  }
-  18% {
-    opacity: 0.95;
-  }
-  75% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 0;
-    transform: translate(9px, -16px) scale(1.15);
-  }
-}
-
-/* work: a comet runs round the ring, its tail a fainter arc behind it */
-.md-work circle {
-  fill: none;
-  stroke-linecap: round;
-  transform-origin: 38px 31px;
-  animation: orbit 1.25s linear infinite;
-}
-.md-work .comet {
-  stroke: var(--house-glow);
-  stroke-width: 2.4;
-  stroke-dasharray: 9 91;
-  filter: drop-shadow(0 0 2.5px var(--house-glow));
-}
-.md-work .comet-tail {
-  stroke: var(--house-glow);
-  stroke-width: 1.6;
-  stroke-dasharray: 0 9 22 69;
-  stroke-dashoffset: 22;
-  opacity: 0.35;
-}
-@keyframes orbit {
-  to {
-    transform: rotate(360deg);
-  }
-}
-.aw[data-mood="work"] .aw-face {
-  box-shadow: inset 0 0 0 1px rgba(103, 232, 249, 0.55), 0 0 10px rgba(34, 211, 238, 0.35), 0 2px 3px rgba(0, 0, 0, 0.55);
-}
-
-/* hearing: ripples leave the face, the way a voice arrives */
-.md-hear .ripple,
-.md-wait .ripple {
-  fill: none;
-  stroke-width: 1.4;
-  transform-origin: 38px 31px;
-  animation: ripple 1.7s ease-out infinite;
-}
-.md-hear .ripple {
-  stroke: #a5f3fc;
-}
-.md-hear .r1 {
-  animation-delay: 0.85s;
-}
-@keyframes ripple {
-  0% {
-    opacity: 0.85;
-    transform: scale(1);
-  }
-  100% {
-    opacity: 0;
-    transform: scale(1.75);
-  }
-}
-.aw[data-mood="hear"] .aw-face {
-  scale: 1.05;
-  box-shadow: inset 0 0 0 1px rgba(165, 243, 252, 0.8), 0 0 12px rgba(165, 243, 252, 0.45), 0 2px 3px rgba(0, 0, 0, 0.55);
-}
-
-/* speaking: five bars under the face, each on its own beat */
-.md-speak .bar {
-  fill: var(--house-glow);
-  transform-box: fill-box;
-  transform-origin: center;
-  animation: talk 0.9s ease-in-out infinite alternate;
-}
-.md-speak .b1 {
-  animation-duration: 0.63s;
-  animation-delay: -0.2s;
-}
-.md-speak .b2 {
-  animation-duration: 0.78s;
-  animation-delay: -0.45s;
-}
-.md-speak .b3 {
-  animation-duration: 0.55s;
-  animation-delay: -0.1s;
-}
-.md-speak .b4 {
-  animation-duration: 0.84s;
-  animation-delay: -0.6s;
-}
-@keyframes talk {
-  0% {
-    transform: scaleY(0.25);
-  }
-  100% {
-    transform: scaleY(1);
-  }
-}
-.aw[data-mood="speak"] .aw-face {
-  animation: face-talk 0.9s ease-in-out infinite alternate;
-}
-@keyframes face-talk {
-  to {
-    box-shadow: inset 0 0 0 1px rgba(103, 232, 249, 0.6), 0 0 12px rgba(34, 211, 238, 0.5), 0 2px 3px rgba(0, 0, 0, 0.55);
-  }
-}
-
-/* waiting: the stamp is already raised (above); a slow pink ripple says it is for you */
-.md-wait .ripple {
-  stroke: var(--h-human);
-  animation-duration: 2.4s;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .aw-mood *,
-  .aw[data-mood] .aw-face {
-    animation: none !important;
-  }
-  .md-sleep .z {
-    opacity: 0.8;
-  }
-  .md-sleep .z1 {
-    transform: translate(4px, -7px) scale(0.85);
-    opacity: 0.6;
-  }
-  .md-sleep .z2 {
-    transform: translate(8px, -14px) scale(1.05);
-    opacity: 0.4;
-  }
-  .md-hear .r1,
-  .md-wait .ripple {
-    opacity: 0.5;
-    transform: scale(1.3);
-  }
-  .md-speak .bar {
-    transform: scaleY(0.6);
-  }
-}
-/* Calm (lib/motion.ts, ADR 0089) is the person's choice resolved with the OS's: the same stillness
- * as the block above, for a person who chose Calm on a machine that does not ask for less motion. */
-:root[data-motion="calm"] .aw-mood *,
-:root[data-motion="calm"] .aw[data-mood] .aw-face {
-  animation: none !important;
-}
-:root[data-motion="calm"] .md-sleep .z {
-  opacity: 0.8;
-}
-:root[data-motion="calm"] .md-sleep .z1 {
-  transform: translate(4px, -7px) scale(0.85);
-  opacity: 0.6;
-}
-:root[data-motion="calm"] .md-sleep .z2 {
-  transform: translate(8px, -14px) scale(1.05);
-  opacity: 0.4;
-}
-:root[data-motion="calm"] .md-hear .r1,
-:root[data-motion="calm"] .md-wait .ripple {
-  opacity: 0.5;
-  transform: scale(1.3);
-}
-:root[data-motion="calm"] .md-speak .bar {
-  transform: scaleY(0.6);
-}
-
-.aw[data-state="seal"] .aw-cap,
-.aw[data-state="tape"] .aw-cap,
-.aw[data-state="hear"] .aw-cap,
-.aw[data-state="face"] .aw-cap {
-  color: var(--house-ink);
-}
-.aw:not([data-cards="0"]) .aw-cap {
-  color: var(--h-human);
-}
-
-/* the rail: the housing's column below the seal (navigation, hints) */
-.aw-rail {
-  flex: 1;
-  min-height: 0;
-  display: flex;
-  flex-direction: column;
-  align-items: stretch;
-  justify-content: center;
-  padding: 2px 9px 10px 3px;
-}
-.aw[data-valign="up"] .aw-rail {
-  padding: 10px 9px 2px 3px;
-}
-.aw[data-side="right"] .aw-rail {
-  padding-left: 9px;
-  padding-right: 3px;
-}
-.aw[data-state="seal"] .aw-rail,
-.aw[data-state="tape"] .aw-rail,
-.aw[data-state="hear"] .aw-rail,
-.aw[data-state="face"] .aw-rail {
-  display: none;
-}
-.rl-slip {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  text-align: center;
-}
-.rl-pips {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.rl-pips i {
-  width: 9px;
-  height: 9px;
-  border-radius: 50%;
-  border: 1.5px solid var(--h-human);
-}
-.rl-pips i.cur {
-  background: var(--h-human);
-}
-.rl-pips i.done {
-  background: var(--house-ink-2);
-  border-color: var(--house-ink-2);
-}
-.rl-lbl {
-  font-size: var(--t-label);
-  line-height: 1.25;
-  font-weight: 700;
-  color: var(--h-human);
-  letter-spacing: 0.02em;
-}
-.rl-key {
-  display: flex;
-  gap: 4px;
-}
-.rl-key kbd {
-  font: 700 calc(12px + var(--type-step))/calc(16px + var(--type-step)) var(--aw-mono);
-  min-width: 20px;
-  padding: 1px 3px;
-  border-radius: 4px;
-  border: 1px solid rgba(148, 197, 212, 0.45);
-  color: var(--house-ink);
-}
-.rl-ladder {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.rl-ladder li {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  line-height: 1.1;
-  opacity: 0.82;
-}
-.rl-ladder li.cur {
-  opacity: 1;
-}
-.rl-ladder b {
-  font-size: 18px;
-  color: var(--h-info);
-}
-.rl-ladder span {
-  font-size: var(--t-label);
-}
-.tabs {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  margin-bottom: auto;
-  padding-top: 8px;
-}
-.aw[data-valign="up"] .tabs {
-  margin-bottom: 0;
-  margin-top: auto;
-  padding: 0 0 8px;
-}
-.tabs button {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 3px;
-  padding: 8px 2px 7px;
-  border: 0;
-  border-radius: 10px;
-  background: none;
-  color: var(--house-ink);
-  font-size: var(--t-label);
-  font-weight: 600;
-  overflow: hidden;
-  transition: background var(--dur-fast), color var(--dur-fast);
-}
-/* the selected edge is a bar that fades in, not a box-shadow that snaps; the button's own radius clips it */
-.tabs button::before {
-  content: "";
-  position: absolute;
-  inset: 0 auto 0 0;
-  width: 2px;
-  background: var(--h-info);
-  opacity: 0;
-  transition: opacity var(--dur-fast);
-}
-.aw[data-side="right"] .tabs button::before {
-  left: auto;
-  right: 0;
-}
-.tabs button[aria-selected="true"]::before {
-  opacity: 1;
-}
-.tabs button .ic {
-  width: var(--icon-m);
-  height: var(--icon-m);
-}
-.tabs button:hover {
-  background: rgba(34, 211, 238, 0.09);
-}
-.tabs button[aria-selected="true"] {
-  background: rgba(34, 211, 238, 0.16);
-  color: #e0f2fe;
-}
-.tabs button:focus-visible {
-  outline: 2px solid var(--h-focus);
-  outline-offset: -2px;
-}
-.pip-n {
-  position: absolute;
-  top: 3px;
-  right: 6px;
-  min-width: 18px;
-  height: 18px;
-  border-radius: 9px;
-  background: var(--h-human);
-  color: #0a1214;
-  font: 800 calc(12px + var(--type-step))/18px var(--font-ui);
-  text-align: center;
-}
-
-/* ---------------------------------------------------------------- the tab (docked) */
-.aw[data-state="tab"] .aw-house {
-  width: 28px;
-  height: 96px;
-  border-radius: 14px 0 0 14px;
-}
-.aw[data-state="tab"][data-dock="left"] .aw-house {
-  border-radius: 0 14px 14px 0;
-}
-.aw[data-state="tab"] .aw-sealwrap,
-.aw[data-state="tab"] .aw-seal {
-  width: 28px;
-  height: 96px;
-  border-radius: inherit;
-}
-.aw[data-state="tab"] .aw-ring,
-.aw[data-state="tab"] .aw-cap {
-  display: none;
-}
-.aw[data-state="tab"] .aw-face {
-  top: 38px;
-  width: 22px;
-  height: 22px;
-  margin: -11px 0 0 -11px;
-}
-.aw[data-state="tab"] .aw-mk {
-  width: 14px;
-  height: 14px;
-}
-.aw[data-state="tab"] .aw-badge {
-  top: auto;
-  bottom: 8px;
-  right: 50%;
-  margin-right: -10px;
-}
-.aw[data-state="tab"]:not([data-cards="0"]) .aw-house {
-  box-shadow: inset 0 0 0 2px var(--h-human), inset 0 1.5px 0 var(--house-rim);
-}
-
-/* ---------------------------------------------------------------- the paper */
-.aw-paper {
-  position: relative;
-  z-index: 1;
-  flex: 1;
-  min-width: 0;
-  margin-left: -6px;
-  padding: 14px 16px 12px 24px;
-  color: var(--paper-ink);
-  background-color: var(--paper);
-  background-image: linear-gradient(180deg, rgba(255, 255, 255, 0.55), rgba(255, 255, 255, 0) 40%, rgba(10, 60, 70, 0.06)),
-    repeating-linear-gradient(0deg, var(--paper-grain) 0 1px, transparent 1px 3px);
-  border-radius: var(--r-slip) 10px 10px var(--r-slip);
-  -webkit-mask: radial-gradient(circle at 0 50%, transparent 4.6px, #000 5.2px) 0 0 / 100% 14px repeat-y;
-  mask: radial-gradient(circle at 0 50%, transparent 4.6px, #000 5.2px) 0 0 / 100% 14px repeat-y;
-  --gate-gated: var(--paper-stamp);
-  --gate-read: var(--paper-info);
-  --gate-auto: var(--paper-ok);
-  --focus: var(--paper-ink);
-  --line: var(--paper-rule);
-}
-.aw[data-side="right"] .aw-paper {
-  margin-left: 0;
-  margin-right: -6px;
-  padding: 14px 24px 12px 16px;
-  border-radius: 10px var(--r-slip) var(--r-slip) 10px;
-  -webkit-mask: radial-gradient(circle at 100% 50%, transparent 4.6px, #000 5.2px) 0 0 / 100% 14px repeat-y;
-  mask: radial-gradient(circle at 100% 50%, transparent 4.6px, #000 5.2px) 0 0 / 100% 14px repeat-y;
-}
-.aw-paper.enter {
-  animation: unroll-l 460ms var(--ease-out) both;
-}
-.aw[data-side="right"] .aw-paper.enter {
-  animation-name: unroll-r;
-}
-@keyframes unroll-l {
-  from {
-    clip-path: inset(0 100% 0 0);
-    translate: -18px 0;
-  }
-  to {
-    clip-path: inset(0);
-    translate: 0 0;
-  }
-}
-@keyframes unroll-r {
-  from {
-    clip-path: inset(0 0 0 100%);
-    translate: 18px 0;
-  }
-  to {
-    clip-path: inset(0);
-    translate: 0 0;
-  }
-}
-/* -- the unfold: growing out of the seal is the fold played backwards -------------------------
- * Same clock, same corner, same linear pace: the housing opens away from the seal and the paper
- * unrolls out of it, their free edges travelling together. */
-.aw[data-open] {
-  --fold: calc(100% - var(--aw-house));
-}
-.aw[data-open] .aw-house {
-  animation: unfold-d var(--dur-fold) linear both;
-}
-.aw[data-open][data-valign="up"] .aw-house {
-  animation-name: unfold-u;
-}
-.aw[data-open] .aw-rail {
-  animation: unfold-fade var(--dur-fold) linear both;
-}
-.aw[data-open] .aw-paper.enter {
-  animation: unroll-dl var(--dur-fold) linear both;
-}
-.aw[data-open][data-side="right"] .aw-paper.enter {
-  animation-name: unroll-dr;
-}
-.aw[data-open][data-valign="up"] .aw-paper.enter {
-  animation-name: unroll-ul;
-}
-.aw[data-open][data-side="right"][data-valign="up"] .aw-paper.enter {
-  animation-name: unroll-ur;
-}
-@keyframes unfold-d {
-  from {
-    clip-path: inset(0 0 var(--fold) 0 round var(--r-house));
-  }
-  to {
-    clip-path: inset(0 0 0 0 round var(--r-house));
-  }
-}
-@keyframes unfold-u {
-  from {
-    clip-path: inset(var(--fold) 0 0 0 round var(--r-house));
-  }
-  to {
-    clip-path: inset(0 0 0 0 round var(--r-house));
-  }
-}
-@keyframes unfold-fade {
-  from {
-    opacity: 0;
-  }
-}
-@keyframes unroll-dl {
-  from {
-    clip-path: inset(0 100% var(--fold) 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-@keyframes unroll-dr {
-  from {
-    clip-path: inset(0 0 var(--fold) 100%);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-@keyframes unroll-ul {
-  from {
-    clip-path: inset(var(--fold) 100% 0 0);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-@keyframes unroll-ur {
-  from {
-    clip-path: inset(var(--fold) 0 0 100%);
-  }
-  to {
-    clip-path: inset(0 0 0 0);
-  }
-}
-
-/* -- the fold: a collapse to the seal, drawn inside the rectangle the window still has ----------
- * The housing and the paper close toward the seal's corner on one clock: linear, `--dur-fold`
- * (the machine's SHRINK_MS), so the housing's free edge and the paper's travel together and the
- * last frame is exactly the seal the window then shrinks to. Clip-path only: no layout moves. */
-.aw[data-exit] {
-  --fold: calc(100% - var(--aw-house));
-}
-.aw[data-exit] .aw-house {
-  animation: fold-d var(--dur-fold) linear both;
-}
-.aw[data-exit][data-valign="up"] .aw-house {
-  animation-name: fold-u;
-}
-.aw[data-exit] .aw-rail {
-  animation: fold-fade var(--dur-fold) linear both;
-}
-.aw-paper.leave {
-  animation: roll-dl var(--dur-fold) linear both;
-}
-.aw[data-side="right"] .aw-paper.leave {
-  animation-name: roll-dr;
-}
-.aw[data-valign="up"] .aw-paper.leave {
-  animation-name: roll-ul;
-}
-.aw[data-side="right"][data-valign="up"] .aw-paper.leave {
-  animation-name: roll-ur;
-}
-@keyframes fold-d {
-  from {
-    clip-path: inset(0 0 0 0 round var(--r-house));
-  }
-  to {
-    clip-path: inset(0 0 var(--fold) 0 round var(--r-house));
-  }
-}
-@keyframes fold-u {
-  from {
-    clip-path: inset(0 0 0 0 round var(--r-house));
-  }
-  to {
-    clip-path: inset(var(--fold) 0 0 0 round var(--r-house));
-  }
-}
-@keyframes fold-fade {
-  to {
-    opacity: 0;
-  }
-}
-@keyframes roll-dl {
-  from {
-    clip-path: inset(0 0 0 0);
-  }
-  to {
-    clip-path: inset(0 100% var(--fold) 0);
-  }
-}
-@keyframes roll-dr {
-  from {
-    clip-path: inset(0 0 0 0);
-  }
-  to {
-    clip-path: inset(0 0 var(--fold) 100%);
-  }
-}
-@keyframes roll-ul {
-  from {
-    clip-path: inset(0 0 0 0);
-  }
-  to {
-    clip-path: inset(var(--fold) 100% 0 0);
-  }
-}
-@keyframes roll-ur {
-  from {
-    clip-path: inset(0 0 0 0);
-  }
-  to {
-    clip-path: inset(var(--fold) 0 0 100%);
-  }
-}
-
-.aw-paper[data-tear] {
-  transform-origin: 0 0;
-  animation: tear 560ms cubic-bezier(0.5, 0, 0.8, 0.4) both;
-}
-.aw[data-side="right"] .aw-paper[data-tear] {
-  transform-origin: 100% 0;
-  animation-name: tear-r;
-}
-@keyframes tear {
-  to {
-    transform: translate(10px, 46px) rotate(7deg);
-    opacity: 0;
-  }
-}
-@keyframes tear-r {
-  to {
-    transform: translate(-10px, 46px) rotate(-7deg);
-    opacity: 0;
-  }
-}
-.aw.arrive .aw-fig {
-  animation: arrive 520ms var(--ease-out) both;
-}
-@keyframes arrive {
-  from {
-    opacity: 0;
-    translate: 0 -14px;
-    scale: 0.92;
-  }
-}
-.aw.drop .aw-fig {
-  animation: drop 1000ms cubic-bezier(0.3, 1.2, 0.5, 1) both;
-}
-@keyframes drop {
-  0% {
-    opacity: 0;
-    translate: 0 -340px;
-    scale: 1.25;
-  }
-  18% {
-    opacity: 1;
-  }
-  58% {
-    translate: 0 0;
-    scale: 1;
-  }
-  66% {
-    scale: 1.06 0.9;
-  }
-  100% {
-    scale: 1;
-  }
-}
-
-/* ---------------------------------------------------------------- shared pieces on paper */
-.chip {
-  --c: var(--gate-gated);
-  display: inline-block;
-  flex: none;
-  padding: 0 6px;
-  border: 1.5px solid var(--c);
-  border-radius: 3px;
-  color: var(--c);
-  font-size: var(--t-label);
-  font-weight: 700;
-  line-height: 17px;
-  letter-spacing: 0.09em;
-  text-transform: uppercase;
-}
-.chip-read {
-  --c: var(--gate-read);
-}
-.chip-auto {
-  --c: var(--gate-auto);
-}
-.chip-gated {
-  --c: var(--gate-gated);
-}
-.aw .aw-btn {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  min-height: 38px;
-  padding: 0 14px;
-  border: 1.5px solid var(--paper-ink);
-  border-radius: 4px;
-  background: transparent;
-  color: var(--paper-ink);
-  font-size: calc(14px + var(--type-step));
-  font-weight: 650;
-  white-space: nowrap;
-  transition: background var(--dur-fast), transform var(--dur-fast), color var(--dur-fast), opacity var(--dur-fast);
-}
-.aw .aw-btn:hover:not(:disabled) {
-  background: rgba(10, 18, 20, 0.08);
-}
-.aw .aw-btn:active:not(:disabled) {
-  transform: translateY(1px);
-}
-.aw .aw-btn:disabled {
-  opacity: 0.45;
-  cursor: default;
-}
-.aw .aw-btn:focus-visible {
-  outline: 2px solid var(--paper-ink);
-  outline-offset: 2px;
-  box-shadow: 0 0 0 5px rgba(255, 255, 255, 0.9);
-}
-.aw .aw-btn-stamp {
-  background: var(--paper-stamp);
-  border-color: var(--paper-stamp);
-  color: #fff;
-}
-.aw .aw-btn-stamp:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--paper-stamp) 85%, #000);
-}
-.aw .aw-btn-primary {
-  background: var(--btn-primary-ink);
-  border-color: var(--btn-primary-ink);
-  color: #fff;
-}
-.aw .aw-btn-primary:hover:not(:disabled) {
-  background: color-mix(in srgb, var(--btn-primary-ink) 85%, #000);
-}
-.aw .aw-btn-ghost,
-.aw .aw-btn-ghost-ink {
-  border-color: transparent;
-  color: var(--paper-ink-2);
-  font-size: calc(13px + var(--type-step));
-  font-weight: 600;
-  padding: 0 8px;
-}
-.aw .aw-btn-ghost .ic {
-  width: 18px;
-  height: 18px;
-}
-.aw .aw-btn-icon {
-  min-width: 38px;
-  padding: 0;
-}
-.aw kbd {
-  font: 700 calc(12px + var(--type-step))/calc(16px + var(--type-step)) var(--aw-mono);
-  padding: 0 4px;
-  border-radius: 3px;
-  border: 1px solid currentColor;
-  opacity: 0.85;
-}
 .aw .ic {
-  width: var(--icon-s);
-  height: var(--icon-s);
+  width: 17px;
+  height: 17px;
   fill: none;
   stroke: currentColor;
-  stroke-width: 1.75;
+  stroke-width: 1.8;
   stroke-linecap: round;
   stroke-linejoin: round;
   flex: none;
 }
+.aw .ic.warn {
+  stroke: var(--warn);
+}
 .aw .ic.ok {
-  color: var(--paper-ok);
-  width: var(--icon-m);
-  height: var(--icon-m);
+  stroke: var(--ok);
 }
-.eyebrow {
-  margin: 0;
-  font-size: var(--t-label);
-  font-weight: 700;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-}
-.aw .ico-btn {
-  display: grid;
-  place-items: center;
-  width: 32px;
-  height: 32px;
-  border: 1.5px solid transparent;
-  border-radius: 4px;
-  background: none;
-  color: var(--paper-ink-2);
-  transition: background var(--dur-fast), color var(--dur-fast), border-color var(--dur-fast);
-}
-.aw .ico-btn:hover {
-  background: rgba(10, 18, 20, 0.08);
-}
-.aw .ico-btn.on {
-  color: var(--paper-ink);
-  border-color: var(--paper-rule);
-}
-.aw .ico-btn:focus-visible {
-  outline: 2px solid var(--paper-ink);
-  outline-offset: 1px;
+.aw .ic.wait {
+  stroke: var(--muted-fg);
 }
 
-/* ---------------------------------------------------------------- the slip (a card waits) */
-.slip {
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  gap: 8px;
-}
-.sl-head {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-height: 22px;
-}
-.sl-action {
-  font: 600 calc(13px + var(--type-step))/1.2 var(--aw-mono);
-  letter-spacing: -0.02em;
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-.sl-count {
-  margin-left: auto;
-  font-size: var(--t-label);
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  color: var(--paper-stamp);
-  white-space: nowrap;
-}
-.sl-why {
-  margin: 4px 0 0;
-  font-size: var(--t-title);
-  font-weight: 700;
-  line-height: 1.25;
-  letter-spacing: -0.012em;
-  text-wrap: balance;
-}
-.sl-mid {
-  display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 12px;
-  margin-top: 2px;
-}
-.sl-params {
-  flex: 1;
-  min-width: 0;
-  margin: 0;
-  display: grid;
-  gap: 4px;
-}
-.sl-params div {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-}
-.sl-params dt {
-  flex: none;
-  /* 64px for the short keys (to, invoice); a longer one (recipient_email) grows to fit, to 45% of the
-   * row, and breaks inside the word after that, instead of running over the value */
-  min-width: 64px;
-  max-width: 45%;
-  overflow-wrap: anywhere;
-  font-size: var(--t-label);
-  font-weight: 700;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--paper-ink-2);
-}
-.sl-params dd {
-  margin: 0;
-  min-width: 0;
-  font: 650 calc(14px + var(--type-step))/1.4 var(--aw-mono);
-  overflow-wrap: anywhere;
-  background: radial-gradient(circle, var(--paper-rule) 1px, transparent 1.4px) 0 calc(100% - 3px) / 6px 6px repeat-x;
-}
-.sl-thumb {
-  flex: none;
-  width: 96px;
-  margin: 0;
-}
-.sl-thumb svg {
-  width: 96px;
-  height: auto;
-  display: block;
-  filter: drop-shadow(0 1px 1px rgba(10, 18, 20, 0.25));
-}
-.sl-thumb img {
-  width: 96px;
-  height: auto;
-  display: block;
-  border: 1px solid var(--paper-rule);
-}
-/* Where the call happens (ADR 0099): the app, and whether it is the app's own tool or Athena's hand */
-.sl-where {
-  margin: 4px 0 6px;
-  font-size: var(--t-label);
-  font-weight: 700;
-  line-height: 1.3;
-  color: var(--paper-ink-2);
-}
-/* The tab the card was proposed on (ADR 0103), and the way back to it */
-.sl-tab {
-  display: flex;
-  flex-wrap: wrap;
-  align-items: center;
-  gap: 6px;
-  margin: -2px 0 6px;
-  font-size: var(--t-label);
-  line-height: 1.3;
-  color: var(--paper-ink-2);
-}
-.sl-tab[data-moved] span {
-  font-weight: 700;
-}
-.sl-nocap,
-.sl-claim {
-  margin: 6px 0 0;
-  font-size: var(--t-label);
-  line-height: 1.3;
-  color: var(--paper-ink-2);
-}
-.sl-thumb figcaption {
-  margin-top: 3px;
-  font-size: var(--t-label);
-  line-height: 1.2;
-  color: var(--paper-ink-2);
-}
-/* A turn's cards as one sheet (ADR 0104): every row whole, numbered in proposal order, with its tick */
-.sh-rows {
-  margin: 8px 0 0;
-  padding: 0;
-  list-style: none;
-  display: grid;
-  gap: 8px;
-}
-.sh-row {
-  padding: 6px 0 8px;
-  border-top: 1px solid var(--paper-rule);
-}
-.sh-row[data-ticked="0"] {
-  opacity: 0.6;
-}
-.sh-group {
-  margin: 0 0 4px;
-  font-size: var(--t-label);
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  color: var(--paper-ink);
-}
-.sh-tick {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  cursor: pointer;
-}
-.sh-n {
-  flex: none;
-  min-width: 18px;
-  font-size: var(--t-label);
-  font-weight: 700;
-  color: var(--paper-ink-2);
-}
-.sh-why,
-.sh-footer {
-  margin: 2px 0 4px;
-  font-size: var(--t-label);
-  line-height: 1.3;
-  color: var(--paper-ink-2);
-}
-.sl-sign {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-top: auto;
-  padding-top: 10px;
-  border-top: 1.5px solid var(--paper-rule);
-}
-.sl-note {
-  margin: 0;
-  min-height: 20px;
-  font-size: var(--t-label);
-  font-weight: 600;
-  letter-spacing: 0.03em;
-  color: var(--paper-ink-2);
-}
-.sl-listen {
-  display: none;
-  align-items: center;
-  gap: 10px;
-  color: var(--paper-stamp);
-  font-size: calc(13px + var(--type-step));
-  letter-spacing: 0;
-}
-.sl-listen [data-tr] {
-  min-width: 0;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  font-weight: 700;
-}
-.aw[data-listening="1"] .sl-listen {
-  display: flex;
-}
-.aw[data-listening="1"] .sl-note-a {
-  display: none;
-}
-.slip-inline {
-  height: auto;
-  margin-top: 12px;
-  padding: 12px 14px 10px;
-  background: var(--paper-2);
-  border: 1.5px solid var(--paper-rule);
-  border-radius: var(--r-slip);
-  gap: 8px;
-}
-.slip-inline .sl-thumb {
-  display: none;
-}
-
-/* the impression */
-.sl-stamp {
+/* ---- the water panel: it grows out of the seal ---- */
+.aw .aw-water {
   position: absolute;
-  right: 4px;
-  bottom: 42px;
-  width: 196px;
-  color: var(--paper-stamp);
+  left: var(--margin);
+  top: var(--margin);
+  width: var(--form-w);
+  height: var(--form-h);
+  border-radius: 30px;
+  overflow: hidden;
+  background: var(--glass);
+  border: 1px solid var(--edge);
+  box-shadow: var(--shadow);
+  transition:
+    width var(--grow) var(--ease),
+    height var(--grow) var(--ease),
+    border-radius var(--grow) var(--ease),
+    opacity var(--t-fade) ease;
+}
+.aw[data-form="seal"] .aw-water {
   opacity: 0;
+  border-radius: 38px;
+}
+.aw[data-form="tape"] .aw-water,
+.aw[data-form="hear"] .aw-water {
+  border-radius: 38px;
+}
+.aw[data-form="tab"] .aw-water {
+  left: 0;
+  top: 0;
+  border-radius: 0 16px 16px 0;
+  border-left: 0;
+}
+.aw[data-dock="left"][data-form="tab"] .aw-water {
+  border-radius: 0 16px 16px 0;
+}
+.aw[data-dock="right"][data-form="tab"] .aw-water {
+  border-radius: 16px 0 0 16px;
+  border-left: 1px solid var(--edge);
+  border-right: 0;
+}
+.aw[data-form="tab"][data-attn="1"] .aw-water {
+  box-shadow: inset -2px 0 0 var(--human), var(--shadow);
+}
+.aw .rays {
+  position: absolute;
+  inset: 0;
   pointer-events: none;
-  mix-blend-mode: multiply;
-  transform: rotate(-8deg);
-  z-index: 3;
+  overflow: hidden;
 }
-.sl-stamp svg {
-  display: block;
-  width: 100%;
-  height: auto;
-  overflow: visible;
-}
-.sl-stamp .bleed {
-  opacity: 0;
-}
-.slip[data-decision] .sl-stamp {
-  opacity: 0.94;
-  animation: stamp-down var(--dur-stamp) var(--ease-thump) both;
-}
-.slip[data-decision] .sl-stamp .bleed {
-  animation: bleed 900ms var(--ease-out) var(--dur-stamp) both;
-}
-.slip[data-decision="declined"] .sl-stamp {
-  color: var(--paper-ink);
-  transform: rotate(5deg);
-}
-.slip[data-decision] {
-  animation: press var(--dur-stamp) var(--ease-thump) both;
-}
-@keyframes stamp-down {
-  0% {
-    opacity: 0;
-    scale: 2.4;
-    translate: 10px -60px;
-  }
-  35% {
-    opacity: 0.95;
-  }
-  82% {
-    scale: 0.97;
-    translate: 0 0;
-  }
-  100% {
-    scale: 1;
-    translate: 0 0;
-  }
-}
-@keyframes press {
-  60% {
-    translate: 0 0;
-  }
-  82% {
-    translate: 0 2px;
-  }
-  100% {
-    translate: 0 0;
-  }
-}
-@keyframes bleed {
-  0% {
-    opacity: 0;
-  }
-  30% {
-    opacity: 0.55;
-  }
-  100% {
-    opacity: 0.24;
-  }
-}
-.slip[data-decision="declined"] .sl-params dd {
-  text-decoration: line-through;
-  text-decoration-thickness: 2px;
-}
-
-/* ---------------------------------------------------------------- the tape (working, listening) */
-.aw-paper[data-kind="tape"],
-.aw-paper[data-kind="hear"] {
-  padding-top: 10px;
-  padding-bottom: 10px;
-  display: flex;
-  align-items: center;
-}
-.aw-paper[data-kind="tape"]::before,
-.aw-paper[data-kind="tape"]::after,
-.aw-paper[data-kind="hear"]::before,
-.aw-paper[data-kind="hear"]::after {
+.aw .rays::before,
+.aw .rays::after {
   content: "";
   position: absolute;
-  left: 22px;
-  right: 8px;
-  height: 4px;
-  background: radial-gradient(circle, var(--paper-3) 1.5px, transparent 1.9px) 0 0 / 14px 4px repeat-x;
-  animation: feed 1.4s linear infinite;
+  top: -40%;
+  width: 34%;
+  height: 170%;
+  background: linear-gradient(180deg, var(--ray), transparent 72%);
+  filter: blur(12px);
+  transform: rotate(16deg);
+  animation: aw-ray 11s ease-in-out infinite alternate;
 }
-.aw-paper[data-kind="tape"]::before,
-.aw-paper[data-kind="hear"]::before {
-  top: 3px;
+.aw .rays::before {
+  left: 12%;
 }
-.aw-paper[data-kind="tape"]::after,
-.aw-paper[data-kind="hear"]::after {
-  bottom: 3px;
+.aw .rays::after {
+  left: 52%;
+  width: 22%;
+  animation-duration: 15s;
+  animation-delay: -6s;
+  opacity: 0.7;
 }
-.aw[data-side="right"] .aw-paper[data-kind="tape"]::before,
-.aw[data-side="right"] .aw-paper[data-kind="tape"]::after {
-  left: 8px;
-  right: 22px;
-}
-@keyframes feed {
+@keyframes aw-ray {
+  from {
+    opacity: 0.35;
+    transform: rotate(16deg) translateX(-6%);
+  }
   to {
-    background-position-x: -14px;
+    opacity: 1;
+    transform: rotate(19deg) translateX(8%);
   }
 }
-/* ---------------------------------------------------------------- her face (while she talks) */
-/* The face form is the seal beside a panel of the housing's own material: her face is light drawn
- * on the dark housing, not ink on paper, so the panel takes the housing's gradient and rim. Only
- * the seal is housing on the side; the panel carries the rest. */
-.aw[data-state="face"] .aw-house {
-  align-self: flex-start;
+.aw .dust i {
+  position: absolute;
+  width: 3px;
+  height: 3px;
+  border-radius: 50%;
+  background: var(--accent);
+  opacity: 0;
+  animation: aw-dust 18s linear infinite;
 }
-.aw[data-state="face"][data-valign="up"] .aw-house {
-  align-self: flex-end;
+.aw .dust i:nth-child(1) { left: 22%; top: 90%; animation-delay: -2s; }
+.aw .dust i:nth-child(2) { left: 41%; top: 96%; animation-delay: -7s; animation-duration: 23s; }
+.aw .dust i:nth-child(3) { left: 63%; top: 92%; animation-delay: -11s; animation-duration: 16s; }
+.aw .dust i:nth-child(4) { left: 82%; top: 98%; animation-delay: -4s; animation-duration: 26s; }
+.aw .dust i:nth-child(5) { left: 12%; top: 94%; animation-delay: -14s; animation-duration: 21s; }
+.aw .dust i:nth-child(6) { left: 91%; top: 88%; animation-delay: -9s; animation-duration: 19s; }
+@keyframes aw-dust {
+  0% { transform: translateY(0); opacity: 0; }
+  15% { opacity: 0.5; }
+  100% { transform: translateY(-560px) translateX(14px); opacity: 0; }
 }
-.aw-paper[data-kind="face"] {
-  margin-left: 4px;
-  padding: 12px 10px 14px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  color: var(--house-ink);
-  background: linear-gradient(168deg, var(--house-1), var(--house-2) 52%, var(--house-3));
-  box-shadow: inset 0 0 0 1px var(--house-rim-out), inset 0 1.5px 0 var(--house-rim), inset 0 -12px 20px rgba(0, 0, 0, 0.34);
-  border-radius: var(--r-house);
-  -webkit-mask: none;
-  mask: none;
+[data-theme="light"] .aw .dust i {
+  opacity: 0 !important;
 }
-.aw[data-side="right"] .aw-paper[data-kind="face"] {
-  margin-left: 0;
-  margin-right: 4px;
-  padding: 12px 10px 14px;
-  border-radius: var(--r-house);
-  -webkit-mask: none;
-  mask: none;
+
+/* each named state is one section, faded in as the water reaches its size */
+.aw .sec {
+  position: absolute;
+  inset: 0;
+  animation: aw-sec var(--t-fade) ease 0.16s both;
 }
-.fc {
-  width: 100%;
-  height: 100%;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
+@keyframes aw-sec {
+  from { opacity: 0; }
 }
-.fc-face {
-  flex: none;
-}
-.fc-txt {
-  width: 100%;
-  min-width: 0;
-  display: grid;
-  gap: 4px;
-  text-align: center;
-}
-.fc-lbl {
-  font-size: var(--t-label);
-  font-weight: 700;
-  letter-spacing: 0.06em;
+
+.aw .eyebrow {
+  font: 600 12px/1.2 var(--font-body);
+  letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--house-glow);
+  color: var(--ink-accent);
+  white-space: nowrap;
 }
-.fc-line {
-  font-size: calc(14px + var(--type-step));
-  line-height: 20px;
-  color: var(--house-ink);
-  overflow-wrap: anywhere;
+.aw .eyebrow.human {
+  color: var(--human);
+}
+.aw .display {
+  font-family: var(--font-display);
+  font-weight: 300;
+  letter-spacing: -0.01em;
+}
+.aw .tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 1px 8px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+  font-size: 12px;
+  color: var(--muted-fg);
+}
+.aw .tag.ok {
+  color: var(--ok);
+  border-color: color-mix(in srgb, var(--ok) 50%, transparent);
+}
+.aw .tag.human,
+.aw .tag.cls-gated {
+  color: var(--human);
+  border-color: color-mix(in srgb, var(--human) 50%, transparent);
+}
+
+/* ---- the anchor: where the seal sits. It never moves; every form grows out of it ---- */
+.aw .anchor {
+  position: absolute;
+  left: var(--margin);
+  top: var(--margin);
+  width: var(--seal);
+  height: var(--seal);
+  z-index: 4;
+}
+
+/* ---- tape and hear ---- */
+.aw .tape {
+  position: absolute;
+  left: 90px;
+  right: 62px;
+  top: 0;
+  height: 76px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  overflow: hidden;
+}
+.aw .tape-line {
+  font: 500 calc(15px + var(--aw-step)) / 1.28 var(--font-body);
   display: -webkit-box;
-  -webkit-line-clamp: 4;
+  -webkit-line-clamp: 2;
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
-
-.tape {
-  width: 100%;
-  display: grid;
-  gap: 4px;
-  overflow: hidden;
+.aw .tape-sub + .tape-line,
+.aw .tape:has(.tape-sub) .tape-line {
+  -webkit-line-clamp: 1;
 }
-.tp-line {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  min-width: 0;
-  font-size: calc(14px + var(--type-step));
-  line-height: 20px;
+.aw .tape-line.long {
+  font-size: calc(13.5px + var(--aw-step));
+  -webkit-line-clamp: 3;
+}
+.aw .caret::after {
+  content: "";
+  display: inline-block;
+  width: 2px;
+  height: 1em;
+  margin-left: 2px;
+  vertical-align: -2px;
+  background: var(--accent);
+  animation: aw-blink 1s steps(2) infinite;
+}
+@keyframes aw-blink {
+  50% { opacity: 0; }
+}
+.aw .tape-sub {
+  font-size: calc(13px + var(--aw-step));
+  color: var(--muted-fg);
   white-space: nowrap;
-}
-.tp-line b {
-  flex: none;
-  font-weight: 700;
-  color: var(--paper-external);
-}
-.tp-line span:last-child {
-  min-width: 0;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.tp-line.dim {
-  font-size: calc(13px + var(--type-step));
-  color: var(--paper-ink-2);
+.aw .tape-swap {
+  animation: aw-swap var(--t-slide) var(--ease) both;
 }
-.tp-line.dim b {
-  color: var(--paper-ink-2);
+@keyframes aw-swap {
+  from { opacity: 0; transform: translateY(10px); }
 }
-.tp-line.in {
-  animation: line-in 380ms var(--ease-out) both;
-}
-.tp-note {
-  font-size: calc(13px + var(--type-step));
-}
-@keyframes line-in {
-  from {
-    opacity: 0;
-    translate: 0 10px;
-  }
-}
-.hear {
-  width: 100%;
+.aw .thread {
+  position: absolute;
+  left: 76px;
+  right: 28px;
+  bottom: 7px;
+  height: 3px;
   display: flex;
-  align-items: center;
-  gap: 14px;
+  gap: 5px;
 }
-.hr-txt {
-  display: grid;
-  min-width: 0;
-}
-.hr-lbl {
-  font-size: var(--t-label);
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--paper-stamp);
-}
-.hr-tr {
-  font-size: calc(14px + var(--type-step));
-  font-weight: 600;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  direction: rtl;
-  text-align: left;
-}
-.wave {
-  display: inline-flex;
-  align-items: center;
-  gap: 3px;
-  height: 28px;
-  flex: none;
-}
-.wave b {
-  width: 3px;
-  height: 100%;
+.aw .thread i {
+  flex: 1;
+  height: 3px;
   border-radius: 2px;
-  background: var(--paper-stamp);
-  transform: scaleY(0.2);
-  animation: wv 860ms ease-in-out infinite;
-}
-.wave b:nth-child(2n) {
-  animation-delay: -220ms;
-}
-.wave b:nth-child(3n) {
-  animation-delay: -470ms;
-}
-.wave b:nth-child(5n) {
-  animation-delay: -640ms;
-}
-@keyframes wv {
-  50% {
-    transform: scaleY(1);
-  }
-}
-
-/* ---------------------------------------------------------------- welcome (first launch) */
-.wl {
+  background: var(--line);
   position: relative;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  height: 100%;
-}
-.wl .eyebrow {
-  color: var(--paper-stamp);
-}
-.wl h2 {
-  margin: 0;
-  font-size: 30px;
-  line-height: 1.05;
-  letter-spacing: -0.035em;
-  font-weight: 780;
-}
-.wl p {
-  margin: 0;
-}
-.wl-facts {
-  list-style: none;
-  margin: 2px 0 0;
-  padding: 10px 0;
-  display: grid;
-  gap: 8px;
-  border-block: 1.5px solid var(--paper-rule);
-  font-size: calc(14px + var(--type-step));
-}
-.wl-facts li {
-  display: flex;
-  gap: 8px;
-  align-items: flex-start;
-}
-.wl-facts .ic {
-  margin-top: 1px;
-}
-.wl-act {
-  margin-top: auto;
-  display: flex;
-  gap: 8px;
-  align-items: center;
-}
-.wl-stamp {
-  top: auto;
-  right: 2px;
-  bottom: 64px;
-  width: 170px;
-  animation: stamp-down 380ms var(--ease-thump) var(--stamp-delay, 0ms) both;
-  opacity: 0.94;
-}
-.wl-stamp .bleed {
-  animation: bleed 900ms var(--ease-out) calc(var(--stamp-delay, 0ms) + 340ms) both;
-}
-
-/* ---------------------------------------------------------------- the ledger (expanded) */
-.aw-paper[data-kind="ledger"] {
-  padding-bottom: 12px;
-}
-.lg {
-  display: flex;
-  flex-direction: column;
-  height: 100%;
-  min-height: 0;
-}
-.lg-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding-bottom: 8px;
-  border-bottom: 1.5px solid var(--paper-rule);
-}
-.lg-head h2 {
-  margin: 0;
-  font-size: var(--t-head);
-  font-weight: 750;
-  letter-spacing: -0.03em;
-}
-.lg-tools {
-  display: flex;
-  gap: 2px;
-}
-.lg-scroll {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  padding: 10px 4px 4px 0;
-  user-select: text;
-  -webkit-user-select: text;
-}
-.lg-scroll:focus-visible {
-  outline: 2px solid var(--paper-ink);
-  outline-offset: -2px;
-}
-.msg {
-  padding: 2px 0 2px 10px;
-  margin-bottom: 10px;
-  border-left: 3px solid var(--paper-agent);
-}
-.msg-you {
-  border-left-color: var(--paper-stamp);
-}
-.msg-who {
-  font-size: var(--t-label);
-  font-weight: 700;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--paper-agent);
-}
-.msg-you .msg-who {
-  color: var(--paper-stamp);
-}
-.msg p {
-  margin: 0;
-  font-size: calc(14px + var(--type-step));
-  line-height: 1.45;
-}
-.lg-compose {
-  display: flex;
-  align-items: flex-end;
-  gap: 8px;
-  padding-top: 10px;
-  border-top: 1.5px solid var(--paper-rule);
-}
-.lg-compose textarea {
-  flex: 1;
-  min-width: 0;
-  min-height: 38px;
-  max-height: 120px;
-  padding: 9px 10px;
-  resize: none;
-  line-height: 1.35;
-  border: 1.5px solid var(--paper-rule);
-  border-radius: 4px;
-  background: #fff;
-  color: var(--paper-ink);
-  font: inherit;
-  font-size: calc(14px + var(--type-step));
-  transition: background var(--dur-fast), border-color var(--dur-fast);
-}
-.lg-compose textarea:hover:not(:disabled) {
-  border-color: var(--paper-ink-2);
-}
-.lg-compose textarea::placeholder {
-  color: var(--paper-ink-2);
-  opacity: 1;
-}
-.lg-compose textarea:focus-visible {
-  outline: 2px solid var(--paper-ink);
-  outline-offset: 1px;
-}
-.lg-lead {
-  margin: 0 0 10px;
-  font-size: calc(14px + var(--type-step));
-  color: var(--paper-ink-2);
-}
-.lg-h {
-  margin: 14px 0 6px;
-  font-size: var(--t-label);
-  font-weight: 700;
-  letter-spacing: var(--ls-label);
-  text-transform: uppercase;
-  color: var(--paper-ink-2);
-}
-.lg-foot {
-  margin: 10px 0 0;
-  font-size: var(--t-label);
-  color: var(--paper-ink-2);
-}
-.rec,
-.offers {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-}
-.rec li,
-.offers li {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  padding: 7px 0;
-  border-bottom: 1px solid var(--paper-rule);
-  font-size: calc(13px + var(--type-step));
-}
-.rec-t {
-  font-family: var(--aw-mono);
-  font-weight: 600;
-}
-.rec-a {
-  color: var(--paper-external);
-  font-weight: 600;
-  min-width: 0;
   overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
 }
-.rec-r {
-  margin-left: auto;
-  font-weight: 700;
-  color: var(--paper-ink-2);
-  white-space: nowrap;
+.aw .thread i.done {
+  background: var(--accent);
 }
-.rec-approved {
-  color: var(--paper-ok);
-}
-.rec-user_denied {
-  color: var(--paper-stamp);
-}
-.offers b {
-  color: var(--paper-external);
-}
-.offers span {
-  color: var(--paper-ink-2);
-  min-width: 0;
-}
-.offers .offer-tier {
-  font-style: normal;
-  font-size: var(--t-label);
-  color: var(--paper-ink-2);
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .aw *,
-  .aw *::before,
-  .aw *::after {
-    animation-duration: 1ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 1ms !important;
-  }
-  .aw-paper.enter {
-    animation: none;
-  }
-  .wave b {
-    transform: scaleY(0.6);
-    animation: none !important;
-  }
-  .aw[data-attn="1"] .aw-house {
-    box-shadow: inset 0 0 0 1px var(--house-rim-out), inset 0 0 0 3px rgba(244, 114, 182, 0.55);
-  }
-}
-/* Calm (lib/motion.ts, ADR 0089) is the person's choice resolved with the OS's: the same stillness
- * as the block above, for a person who chose Calm on a machine that does not ask for less motion. */
-:root[data-motion="calm"] .aw *,
-:root[data-motion="calm"] .aw *::before,
-:root[data-motion="calm"] .aw *::after {
-  animation-duration: 1ms !important;
-  animation-iteration-count: 1 !important;
-  transition-duration: 1ms !important;
-}
-:root[data-motion="calm"] .aw-paper.enter {
-  animation: none;
-}
-:root[data-motion="calm"] .wave b {
-  transform: scaleY(0.6);
-  animation: none !important;
-}
-:root[data-motion="calm"] .aw[data-attn="1"] .aw-house {
-  box-shadow: inset 0 0 0 1px var(--house-rim-out), inset 0 0 0 3px rgba(244, 114, 182, 0.55);
-}
-
-.aw[data-state="slip"] .aw-cap {
-  display: none;
-}
-
-/* at rest she is the counterfoil stub: the seam is already on her edge, waiting for paper */
-.aw[data-state="seal"] .aw-house {
-  -webkit-mask: radial-gradient(circle at 100% 50%, transparent 4.6px, #000 5.2px) 0 0 / 100% 14px repeat-y;
-  mask: radial-gradient(circle at 100% 50%, transparent 4.6px, #000 5.2px) 0 0 / 100% 14px repeat-y;
-}
-.aw[data-state="seal"][data-side="right"] .aw-house {
-  -webkit-mask: radial-gradient(circle at 0 50%, transparent 4.6px, #000 5.2px) 0 0 / 100% 14px repeat-y;
-  mask: radial-gradient(circle at 0 50%, transparent 4.6px, #000 5.2px) 0 0 / 100% 14px repeat-y;
-}
-
-/* ---------------------------------------------------------------- additions for the live surface
- * Things the prototype did not need: a scrollable slip body (a decision's every parameter must be
- * reachable, never cut), the conversation's activity rows, the composer's reason, suggestions. */
-.aw .sl-scroll {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  scrollbar-width: thin;
-}
-.aw .sl-scroll:focus-visible {
-  outline: 2px solid var(--paper-ink);
-  outline-offset: -2px;
-}
-.aw .slip-inline .sl-scroll {
-  overflow: visible;
-}
-.aw .lg-scroll {
-  scrollbar-width: thin;
-}
-.aw .acts {
-  list-style: none;
-  margin: 0 0 10px;
-  padding: 4px 0 4px 10px;
-  border-left: 3px solid var(--paper-external);
-  display: grid;
-  gap: 2px;
-}
-.aw .acts li {
-  font: 600 calc(13px + var(--type-step))/1.4 var(--aw-mono);
-  color: var(--paper-ink-2);
-  overflow-wrap: anywhere;
-}
-.aw .acts li[data-ok="0"] {
-  color: var(--paper-stamp);
-}
-.aw .msg p {
-  white-space: pre-wrap;
-  overflow-wrap: anywhere;
-}
-.aw .msg-error {
-  border-left-color: var(--paper-stamp);
-}
-.aw .msg-error .msg-who {
-  color: var(--paper-stamp);
-}
-.aw .lg-empty {
-  display: grid;
-  gap: 10px;
-}
-.aw .lg-sugg {
-  display: grid;
-  gap: 6px;
-}
-.aw .aw-btn-sugg {
-  justify-content: flex-start;
-  height: auto;
-  min-height: 38px;
-  padding: 6px 12px;
-  white-space: normal;
-  text-align: left;
-  font-weight: 600;
-}
-.aw .lg-note {
-  margin: 6px 0 0;
-  font-size: var(--t-label);
-  line-height: 1.3;
-  color: var(--paper-ink-2);
-}
-.aw .lg-compose textarea:disabled {
-  background: var(--paper-2);
-}
-.aw .offers li .aw-btn-toggle {
-  margin-left: auto;
-  min-height: 32px;
-  border-color: var(--paper-rule);
-  color: var(--paper-ink);
-}
-.aw .offers li {
-  flex-wrap: wrap;
-}
-.aw .aw-btn-ink {
-  color: var(--paper-ink);
-}
-.aw .rec li {
-  min-width: 0;
-}
-
-/* ---------------------------------------------------------------- the preview harness only
- * A neutral backdrop with her rectangle outlined. Nothing here ships in her window: `athena.html`
- * never renders `.pv-*`. Its colours are literal on purpose: the harness is not a theme. */
-.pv-stage {
-  position: fixed;
-  inset: 0;
-  overflow: hidden;
-  background: #8a8f94;
-  font: calc(12px + var(--type-step))/1.4 var(--font-sans, system-ui, sans-serif);
-}
-.pv-backdrop {
-  position: absolute;
-  inset: 0;
-  background-color: #d4d7da;
-  background-image: linear-gradient(45deg, #c2c6ca 25%, transparent 25%, transparent 75%, #c2c6ca 75%),
-    linear-gradient(45deg, #c2c6ca 25%, transparent 25%, transparent 75%, #c2c6ca 75%);
-  background-size: 24px 24px;
-  background-position: 0 0, 12px 12px;
-}
-.pv-stage[data-wall="light"] .pv-backdrop {
-  background: radial-gradient(1100px 640px at 72% 18%, #ffffff, transparent 62%), linear-gradient(160deg, #e3ecef, #c5d6dd 60%, #a9c0c9);
-}
-.pv-stage[data-wall="dark"] .pv-backdrop {
-  background: radial-gradient(900px 600px at 28% 82%, #123640, transparent 62%), linear-gradient(160deg, #0b1519, #04090b 70%);
-}
-.pv-label {
-  position: absolute;
-  right: 12px;
-  bottom: 10px;
-  margin: 0;
-  padding: 3px 8px;
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.88);
-  color: #222;
-}
-.pv-bar {
-  position: absolute;
-  left: 12px;
-  bottom: 10px;
-  display: flex;
-  gap: 10px;
-  padding: 6px 10px;
-  border: 1px dashed #6b757c;
-  border-radius: 6px;
-  background: #f6f7f8;
-  color: #16191c;
-}
-.pv-bar label {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-weight: 700;
-}
-.pv-bar select {
-  font: inherit;
-  padding: 2px 4px;
-}
-.pv-win {
-  position: absolute;
-  left: 56px;
-  top: 64px;
-}
-.pv-win.outline::after {
+.aw .thread i.live::after {
   content: "";
   position: absolute;
   inset: 0;
-  outline: 1.5px dashed #e0306a;
-  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--accent), transparent);
+  animation: aw-slide 1.4s ease-in-out infinite;
 }
-.pv-rl {
+@keyframes aw-slide {
+  from { transform: translateX(-100%); }
+  to { transform: translateX(100%); }
+}
+.aw .tape-stop {
   position: absolute;
-  left: 0;
-  top: -20px;
-  padding: 0 4px;
-  background: rgba(255, 255, 255, 0.88);
-  color: #c21f57;
-  font: calc(12px + var(--type-step)) var(--aw-mono, monospace);
-  white-space: nowrap;
+  right: 18px;
+  top: 50%;
+  transform: translateY(-50%);
+  min-width: 40px;
+  height: 40px;
+  border-radius: 20px;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  color: var(--fg);
+  display: grid;
+  place-items: center;
+  transition: background var(--t-hover);
 }
-.pv-win:not(.outline) .pv-rl {
-  display: none;
+.aw .tape-stop:hover {
+  background: var(--wash);
+}
+.aw .tape-stop .ic {
+  width: 18px;
+  height: 18px;
+  fill: currentColor;
+  stroke: none;
+}
+.aw .tape[data-beat="fail"] .eyebrow {
+  color: var(--bad);
+}
+.aw .tape[data-beat="ok"] .eyebrow {
+  color: var(--ok);
+}
+.aw .meter {
+  display: flex;
+  gap: 3px;
+  align-items: center;
+  height: 24px;
+  position: absolute;
+  right: 22px;
+  top: 26px;
+}
+.aw .meter i {
+  width: 3px;
+  height: 8px;
+  border-radius: 2px;
+  background: var(--accent);
+  animation: aw-meter 0.9s ease-in-out infinite;
+}
+.aw .meter i:nth-child(2) { animation-delay: -0.2s; }
+.aw .meter i:nth-child(3) { animation-delay: -0.5s; }
+.aw .meter i:nth-child(4) { animation-delay: -0.1s; }
+.aw .meter i:nth-child(5) { animation-delay: -0.7s; }
+@keyframes aw-meter {
+  50% { height: 22px; }
+}
+.aw .hear-text {
+  font: 300 19px/1.25 var(--font-display);
+  direction: rtl;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  -webkit-mask-image: var(--fade-start);
+  mask-image: var(--fade-start);
+}
+.aw .hear-words {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+/* a scroller whose top row has slid under its header fades that row out instead of slicing it */
+.aw .fades[data-scrolled="1"] {
+  -webkit-mask-image: var(--fade-top);
+  mask-image: var(--fade-top);
 }
 
-/* the keycap on the teal button is full strength: at .85 it measures 4.35:1, under the 4.5 floor */
-.aw .aw-btn-primary kbd {
+/* ---- buttons ---- */
+.aw .aw-btn {
+  white-space: nowrap;
+  height: 42px;
+  padding: 0 18px;
+  border-radius: 21px;
+  border: 1px solid var(--line-strong);
+  background: transparent;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+  font-size: calc(14px + var(--aw-step));
+  transition:
+    transform var(--t-press),
+    background var(--t-hover),
+    border-color var(--t-hover),
+    opacity var(--t-hover);
+}
+.aw .aw-btn:hover:not(:disabled) {
+  background: var(--wash);
+  border-color: var(--accent);
+}
+.aw .aw-btn:active:not(:disabled) {
+  transform: scale(0.97);
+}
+.aw .aw-btn:disabled {
+  opacity: 0.55;
+}
+.aw kbd {
+  font: 600 12px/1 var(--font-mono);
+  padding: 3px 6px;
+  border-radius: 5px;
+  border: 1px solid currentColor;
+  opacity: 0.85;
+}
+.aw .aw-btn-approve {
+  background: var(--human);
+  border-color: var(--human);
+  color: var(--on-human);
+  min-width: 140px;
+  justify-content: center;
+  position: relative;
+  overflow: hidden;
+}
+.aw .aw-btn-approve:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--human) 88%, white);
+  border-color: var(--human);
+}
+.aw .aw-btn-approve .fill {
+  position: absolute;
+  inset: 0;
+  background: var(--press);
+  transform: scaleX(0);
+  transform-origin: left;
+}
+.aw .aw-btn-approve .lbl,
+.aw .aw-btn-approve kbd {
+  position: relative;
+}
+.aw[data-decided="sending"] .aw-btn-approve .fill {
+  animation: aw-fill var(--seal-sign) linear forwards;
+}
+.aw[data-decided="sending"] .aw-btn-approve:disabled {
   opacity: 1;
 }
+@keyframes aw-fill {
+  to { transform: scaleX(1); }
+}
+.aw .aw-btn-ghost {
+  border-color: transparent;
+  color: var(--muted-fg);
+  padding: 0 12px;
+}
+.aw .aw-btn-sm {
+  height: 36px;
+  font-size: calc(13.5px + var(--aw-step));
+  padding: 0 14px;
+}
+.aw .aw-btn-main {
+  background: var(--btn);
+  border-color: var(--btn);
+  color: var(--on-btn);
+}
+.aw .aw-btn-main:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--btn) 86%, white);
+  border-color: var(--accent);
+}
+.aw .aw-textbtn {
+  border: 0;
+  background: none;
+  padding: 4px 0;
+  color: var(--ink-accent);
+  font-size: calc(13px + var(--aw-step));
+  font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color var(--t-hover);
+}
+.aw .aw-textbtn:hover {
+  color: var(--fg);
+}
+.aw .iconbtn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 0;
+  background: transparent;
+  color: var(--muted-fg);
+  display: grid;
+  place-items: center;
+  transition:
+    background var(--t-hover),
+    color var(--t-hover);
+}
+.aw .iconbtn:hover,
+.aw .iconbtn.on {
+  background: var(--wash);
+  color: var(--fg);
+}
 
-/* ---------------------------------------------------------------- the daemon decides (UAT backlog B1, B4, B5, B6)
- * A refusal under the buttons, the engine line that says what a probe found, the way back to Main,
- * and the Record's second line (app and clock). Tokens only; nothing under 12px. */
-.aw .ic.warn {
-  color: var(--paper-warn);
-  width: var(--icon-m);
-  height: var(--icon-m);
+/* ---- the slip: a decision rising ---- */
+.aw .slip {
+  position: absolute;
+  inset: 0;
 }
-.aw .ic.wait {
-  color: var(--paper-ink-2);
-  width: var(--icon-m);
-  height: var(--icon-m);
+.aw .sheets {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 28px;
+  pointer-events: none;
+  display: none;
 }
-.aw .sl-refuse {
+.aw .slip[data-stack="many"] .sheets {
+  display: block;
+}
+.aw .sheets i {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  bottom: 7px;
+  height: 20px;
+  border-radius: 0 0 20px 20px;
+  background: var(--raised);
+  border: 1px solid color-mix(in srgb, var(--human) 55%, transparent);
+  border-top: 0;
+}
+.aw .sheets i:nth-child(2) {
+  left: 32px;
+  right: 32px;
+  bottom: 0;
+  opacity: 0.6;
+}
+.aw .sl-card {
+  position: absolute;
+  inset: 0;
+  perspective: 1200px;
+  transition: bottom var(--t-stack) var(--ease);
+}
+.aw .slip[data-stack="many"] .sl-card {
+  bottom: 14px;
+  background: var(--glass);
+  border-bottom: 1px solid var(--line-strong);
+  border-radius: 0 0 26px 26px;
+}
+.aw .sl-face {
+  position: absolute;
+  inset: 0;
+  padding: 0 22px 18px 22px;
+  backface-visibility: hidden;
+  transition:
+    transform var(--t-flip) var(--ease),
+    opacity var(--t-fade);
+}
+.aw .sl-back {
+  transform: rotateY(180deg);
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  pointer-events: none;
+}
+.aw .sl-card.flipped .sl-front {
+  transform: rotateY(-180deg);
+  pointer-events: none;
+}
+.aw .sl-card.flipped .sl-back {
+  transform: rotateY(0);
+  pointer-events: auto;
+}
+.aw .sl-front {
+  display: flex;
+  flex-direction: column;
+}
+.aw .sl-head {
+  flex: none;
+  min-height: 76px;
+  padding-left: 78px;
+  padding-top: 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.aw .sl-toprow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+}
+.aw .sl-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-top: 10px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+.aw .sl-count {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  color: var(--human);
+  font: 600 12px/1 var(--font-body);
+}
+.aw .sl-count i {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--human);
+  display: inline-block;
+}
+.aw .sl-count i.on {
+  animation: aw-pulse 2s ease-out infinite;
+}
+@keyframes aw-pulse {
+  0% { box-shadow: 0 0 0 0 color-mix(in srgb, var(--human) 55%, transparent); }
+  80%,
+  100% { box-shadow: 0 0 0 8px transparent; }
+}
+.aw .sl-voice {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  height: 26px;
+  padding: 0 10px 0 8px;
+  border-radius: 13px;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--muted-fg);
+  font-size: 12px;
+  font-weight: 600;
+  max-width: 180px;
+  overflow: hidden;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  transition:
+    background var(--t-hover),
+    color var(--t-hover);
+}
+.aw .sl-voice:hover:not(:disabled) {
+  background: var(--wash);
+  color: var(--fg);
+}
+.aw .sl-voice:disabled {
+  opacity: 0.55;
+}
+.aw .sl-voice .ic {
+  width: 14px;
+  height: 14px;
+}
+.aw .sl-title {
+  font: 300 24px/1.15 var(--font-display);
+  letter-spacing: -0.012em;
+  margin-top: 2px;
+}
+.aw .sl-effect {
+  margin-top: 0;
+  font-size: calc(14.5px + var(--aw-step));
+  line-height: 1.45;
+}
+.aw .sl-why {
+  margin-top: 6px;
+  font-size: calc(13px + var(--aw-step));
+  color: var(--muted-fg);
+}
+.aw .sl-sign-note {
+  margin-top: 6px;
+  font-size: calc(13px + var(--aw-step));
+  color: var(--human);
+}
+.aw .facts-inline {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px 14px;
+  margin-top: 10px;
+}
+.aw .facts-inline span {
+  font-size: calc(13px + var(--aw-step));
+  color: var(--muted-fg);
+}
+.aw .facts-inline b {
+  color: var(--fg);
+  font-weight: 500;
+}
+.aw .sl-line {
+  margin-top: 8px;
+  font-size: calc(13px + var(--aw-step));
+  color: var(--muted-fg);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.aw .sl-notice {
+  margin-top: 10px;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border-left: 3px solid var(--warn);
+  background: var(--recess);
+  font-size: calc(13px + var(--aw-step));
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.aw .sl-notice.bad {
+  border-left-color: var(--bad);
+}
+.aw .sl-claim {
+  margin-top: 8px;
+  font-size: calc(13px + var(--aw-step));
+  color: var(--muted-fg);
+}
+.aw .sl-nocap {
+  margin-top: 10px;
+  font-size: calc(13px + var(--aw-step));
+  color: var(--faint);
+}
+.aw .sl-thumb {
+  margin-top: 12px;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  overflow: hidden;
+  background: var(--recess);
+}
+.aw .sl-thumb img,
+.aw .sl-thumb .sketch {
+  display: block;
+  width: 100%;
+  height: auto;
+}
+.aw .sl-thumb figcaption {
+  padding: 6px 10px;
+  font-size: 12px;
+  color: var(--muted-fg);
+  border-top: 1px solid var(--line);
+}
+.aw .sketch .sk-page { fill: var(--raised); stroke: var(--line); }
+.aw .sketch .sk-bar { fill: var(--wash); }
+.aw .sketch .sk-line { fill: var(--muted-fg); opacity: 0.5; }
+.aw .sketch .sk-line.strong { fill: var(--fg); opacity: 0.75; }
+.aw .sketch .sk-line.human { fill: var(--human); opacity: 0.8; }
+.aw .sketch .sk-btn { fill: none; stroke: var(--human); stroke-width: 1.2; }
+.aw .sl-drift {
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--warn) 55%, transparent);
+  background: var(--recess);
+  display: grid;
+  gap: 8px;
+}
+.aw .sl-drift .sl-claim {
+  margin: 0;
+  color: var(--fg);
+}
+.aw .sl-actions {
+  flex: none;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding-top: 12px;
+}
+.aw .sl-sp {
+  flex: 1;
+}
+.aw .sl-done {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  text-align: center;
+  gap: 6px;
+  background: var(--glass);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity var(--t-fade);
+  padding-left: 60px;
+}
+.aw[data-decided="stamped"] .sl-done,
+.aw[data-decided="tearing"] .sl-done {
+  opacity: 1;
+}
+.aw .sl-done h3 {
+  font: 300 30px/1.1 var(--font-display);
+}
+.aw .sl-done p {
+  color: var(--muted-fg);
+  font-size: calc(14px + var(--aw-step));
+  max-width: 320px;
+}
+.aw[data-decided="tearing"] .sl-card {
+  animation: aw-tear var(--t-tear) var(--ease) forwards;
+}
+@keyframes aw-tear {
+  to { transform: translateY(-26px) scale(0.98); opacity: 0; }
+}
+.aw .sl-back-head {
+  flex: none;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding-left: 78px;
+  height: 48px;
+}
+.aw .sl-back-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  margin-top: 8px;
+  padding: 8px 2px 0 0;
+}
+
+/* a sheet: one turn's cards as rows with their ticks */
+.aw .sheet {
+  display: grid;
+  gap: 10px;
+}
+.aw .sh-rows {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 8px;
+}
+.aw .sh-row {
+  border: 1px solid var(--line);
+  background: var(--recess);
+  border-radius: 14px;
+  padding: 9px 12px;
+}
+.aw .sh-row[data-ticked="0"] {
+  opacity: 0.6;
+}
+.aw .sh-group {
+  margin-bottom: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-accent);
+}
+.aw .sh-tick {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+.aw .sh-tick input {
+  accent-color: var(--human);
+  width: 16px;
+  height: 16px;
+}
+.aw .sh-n {
+  font: 600 12px/1 var(--font-mono);
+  color: var(--muted-fg);
+}
+.aw .sh-title {
+  font-size: calc(14.5px + var(--aw-step));
+  font-weight: 500;
+}
+.aw .sh-more {
+  margin-top: 6px;
+}
+.aw .sh-more summary {
+  cursor: pointer;
+  font-size: calc(13px + var(--aw-step));
+  color: var(--faint);
+}
+.aw .sh-footer {
+  font-size: 12px;
+  color: var(--muted-fg);
+}
+
+/* ---- the detail content ---- */
+.aw .d-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  background: var(--recess);
+}
+.aw .d-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: calc(13.5px + var(--aw-step));
+}
+.aw .d-table th {
+  padding: 7px 10px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--muted-fg);
+  border-bottom: 1px solid var(--line);
+  white-space: nowrap;
+}
+.aw .d-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--line);
+  vertical-align: baseline;
+}
+.aw .d-table tr:last-child td {
+  border-bottom: 0;
+}
+.aw .d-table .r {
+  text-align: right;
+}
+.aw .d-table .num {
+  font-variant-numeric: tabular-nums;
+}
+.aw .d-table tbody th {
+  color: var(--fg);
+  font-size: calc(13.5px + var(--aw-step));
+  font-weight: 500;
+}
+.aw .d-note td {
+  color: var(--muted-fg);
+  font-size: calc(13px + var(--aw-step));
+  padding-top: 0;
+  background: var(--wash);
+}
+.aw .d-compare small {
+  font-size: 12px;
+  margin-left: 4px;
+  color: var(--ok);
+}
+.aw .d-compare small.down {
+  color: var(--bad);
+}
+.aw .d-letter {
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  background: var(--raised);
+  overflow: hidden;
+}
+.aw .d-l-head {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 3px;
+  font-size: calc(13.5px + var(--aw-step));
+}
+.aw .d-l-head span {
+  display: inline-block;
+  width: 64px;
+  color: var(--muted-fg);
+  font-size: calc(12.5px + var(--aw-step));
+}
+.aw .d-l-body {
+  padding: 12px 14px;
+  font-size: calc(14.5px + var(--aw-step));
+  line-height: 1.55;
+}
+.aw .d-l-body p {
+  margin: 0 0 10px;
+}
+.aw .d-l-body p:last-child {
+  margin-bottom: 0;
+}
+.aw .d-l-cut {
+  padding: 8px 14px;
+  font-size: calc(12.5px + var(--aw-step));
+  color: var(--muted-fg);
+  border-top: 1px dashed var(--line-strong);
+}
+.aw .d-facts {
+  margin: 0;
+  display: grid;
+  grid-template-columns: max-content minmax(0, 1fr);
+  gap: 6px 16px;
+  font-size: calc(14px + var(--aw-step));
+}
+.aw .d-fact {
+  display: contents;
+}
+.aw .d-facts dt {
+  color: var(--muted-fg);
+  text-transform: capitalize;
+  font-size: calc(13px + var(--aw-step));
+  overflow-wrap: anywhere;
+}
+.aw .d-facts dd {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.aw .sl-params {
+  margin-top: 12px;
+}
+.aw .d-quote {
+  padding: 12px 14px;
+  border-left: 3px solid var(--accent);
+  background: var(--recess);
+  border-radius: 0 12px 12px 0;
+}
+.aw .d-quote blockquote {
+  margin: 0;
+  font-size: calc(14.5px + var(--aw-step));
+  line-height: 1.5;
+  font-style: italic;
+}
+.aw .d-quote figcaption {
+  margin-top: 6px;
+  font-size: calc(12.5px + var(--aw-step));
+  color: var(--muted-fg);
+}
+.aw .d-rawbox {
+  margin-top: 14px;
+}
+.aw .d-rawbtn {
+  border: 0;
+  background: none;
+  padding: 6px 0;
+  color: var(--faint);
+  font-size: calc(13px + var(--aw-step));
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color var(--t-hover);
+}
+.aw .d-rawbtn:hover {
+  color: var(--fg);
+}
+.aw .d-raw {
+  margin: 6px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: var(--recess);
+  border: 1px solid var(--line);
+  font: calc(12.5px + var(--aw-step)) / 1.5 var(--font-mono);
+  color: var(--muted-fg);
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  max-height: 220px;
+  overflow: auto;
+}
+
+/* ---- the ledger: a descent ---- */
+.aw .lg {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+}
+.aw .lg-head {
+  position: relative;
+  flex: none;
+  height: 84px;
+  padding: 16px 18px 0 90px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  border-bottom: 1px solid var(--line);
+}
+.aw .crumbs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  padding-right: 150px;
+}
+.aw .crumbs .eyebrow {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aw .lg-title {
+  font: 300 21px/1.15 var(--font-display);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  letter-spacing: -0.01em;
+}
+.aw .lg-tools {
+  position: absolute;
+  right: 12px;
+  top: 8px;
+  display: flex;
+  gap: 2px;
+}
+.aw .lg-scroll {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 18px 18px 16px 18px;
+  scroll-padding-top: 22px;
+  scrollbar-width: thin;
+  scrollbar-color: var(--line-strong) transparent;
+}
+.aw .rail {
+  position: relative;
+  padding-left: 34px;
+}
+.aw .rail:empty {
+  display: none;
+}
+.aw .rail::before {
+  content: "";
+  position: absolute;
+  left: 7px;
+  top: 8px;
+  bottom: 8px;
+  width: 1px;
+  background: linear-gradient(180deg, var(--accent), var(--line) 30%, var(--line));
+}
+.aw .msg {
+  position: relative;
+  padding: 7px 0 9px;
+  animation: aw-rise var(--t-rise) var(--ease) both;
+}
+@keyframes aw-rise {
+  from { opacity: 0; transform: translateY(14px); }
+}
+.aw .node {
+  position: absolute;
+  left: -34px;
+  top: 13px;
+  width: 15px;
+  height: 15px;
+  display: grid;
+  place-items: center;
+}
+.aw .node::before {
+  content: "";
+  width: 9px;
+  height: 9px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 4px var(--glass-solid);
+}
+.aw .msg-user .node::before {
+  background: transparent;
+  border: 2px solid var(--fg);
+}
+.aw .msg-her .node::before {
+  background: var(--ink-accent);
+  width: 7px;
+  height: 7px;
+}
+.aw .msg[data-tone="running"] .node::before {
+  background: var(--accent);
+  animation: aw-nodepulse 1.4s ease-in-out infinite;
+}
+@keyframes aw-nodepulse {
+  50% { box-shadow: 0 0 0 4px var(--glass-solid), 0 0 0 8px color-mix(in srgb, var(--accent) 35%, transparent); }
+}
+.aw .msg[data-tone="fail"] .node::before {
+  background: var(--glass-solid);
+  border: 2px solid var(--bad);
+}
+.aw .msg[data-tone="blocked"] .node::before {
+  background: var(--glass-solid);
+  border: 2px solid var(--warn);
+}
+.aw .msg-declined .node::before {
+  background: var(--muted-fg);
+}
+.aw .msg-who {
+  margin-bottom: 3px;
+}
+.aw .msg-stop .msg-who {
+  color: var(--bad);
+}
+.aw .msg-user .txt {
+  font: 300 18px/1.3 var(--font-display);
+}
+.aw .msg-her .txt,
+.aw .msg-stop .txt {
+  font-size: calc(14.5px + var(--aw-step));
+  line-height: 1.5;
+  white-space: pre-line;
+}
+.aw .txt.working {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  color: var(--muted-fg);
+}
+.aw .step {
+  display: block;
+  width: 100%;
+  text-align: left;
+  border: 1px solid var(--line);
+  background: var(--recess);
+  border-radius: 14px;
+  padding: 9px 40px 10px 14px;
+  position: relative;
+  transition:
+    border-color var(--t-hover),
+    background var(--t-hover),
+    transform var(--t-hover);
+}
+.aw .step:hover {
+  border-color: var(--accent);
+  background: var(--wash);
+}
+.aw .step:active {
+  transform: scale(0.995);
+}
+.aw .step .st-title {
+  display: block;
+  font-size: calc(14.5px + var(--aw-step));
+  font-weight: 500;
+  line-height: 1.3;
+}
+.aw .step .st-sub {
+  display: block;
+  font-size: calc(13px + var(--aw-step));
+  color: var(--muted-fg);
+  margin-top: 2px;
+  line-height: 1.35;
+}
+.aw .step .st-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  margin-top: 5px;
+  font-size: 12px;
+  color: var(--faint);
+}
+.aw .step .st-chev {
+  position: absolute;
+  right: 12px;
+  top: 50%;
+  width: 18px;
+  height: 18px;
+  margin-top: -9px;
+  stroke: var(--muted-fg);
+  stroke-width: 2;
+  transition: transform var(--t-hover);
+}
+.aw .step:hover .st-chev {
+  transform: translateX(3px);
+  stroke: var(--accent);
+}
+.aw .step[data-tone="fail"] {
+  border-color: color-mix(in srgb, var(--bad) 55%, transparent);
+}
+.aw .step[data-tone="blocked"] {
+  border-color: color-mix(in srgb, var(--warn) 55%, transparent);
+}
+.aw .gate {
+  margin: 6px 0 4px;
+  padding: 12px 14px 14px;
+  border-radius: 16px;
+  border: 1.5px solid var(--human);
+  background: var(--human-wash);
+}
+.aw .gate .sl-title {
+  font-size: 19px;
+  margin: 6px 0 6px;
+}
+.aw .gate .sl-effect {
+  font-size: calc(14px + var(--aw-step));
+}
+.aw .gate .row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+.aw .gate .more {
+  font-size: calc(13px + var(--aw-step));
+  color: var(--human);
+}
+.aw .msg-gate .node::before {
+  background: var(--human);
+  box-shadow: 0 0 0 4px var(--glass-solid), 0 0 0 7px color-mix(in srgb, var(--human) 30%, transparent);
+}
+.aw .lg-clear {
+  margin: 10px 0 0 34px;
+  color: var(--faint);
+  font-weight: 400;
+}
+.aw .aw-empty {
+  padding: 8px 6px 0 6px;
+  display: grid;
+  gap: 6px;
+  justify-items: start;
+}
+.aw .aw-empty .display {
+  font-size: 26px;
+}
+.aw .aw-empty p {
+  color: var(--muted-fg);
+  font-size: calc(14px + var(--aw-step));
+}
+.aw .chips {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin: 10px 0 6px;
+  align-self: stretch;
+}
+.aw .chip {
+  text-align: left;
+  border: 1px solid var(--line);
+  background: var(--recess);
+  border-radius: 14px;
+  padding: 9px 14px;
+  font-size: calc(14px + var(--aw-step));
+  transition:
+    border-color var(--t-hover),
+    background var(--t-hover);
+}
+.aw .chip:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: var(--wash);
+}
+.aw .lg-plan {
+  display: grid;
+  gap: 10px;
+  padding: 4px 6px 12px;
+}
+.aw .lg-plan .display {
+  font-size: 24px;
+}
+.aw .lg-plan__steps {
+  padding-left: 20px;
+  display: grid;
+  gap: 4px;
+  font-size: calc(14px + var(--aw-step));
+}
+.aw .lg-plan__row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  align-items: center;
+}
+.aw .lg-plan__label,
+.aw .lg-plan__note {
+  font-size: calc(13px + var(--aw-step));
+  color: var(--muted-fg);
+}
+.aw .lg-plan__label {
+  width: 100%;
+}
+.aw .lg-foot {
+  flex: none;
+  padding: 12px 18px;
+  display: grid;
+  gap: 8px;
+  border-top: 1px solid var(--line);
+  background: color-mix(in srgb, var(--glass-solid) 70%, transparent);
+}
+.aw .lg-project {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+  min-width: 0;
+}
+.aw .lg-project__title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: calc(14px + var(--aw-step));
+}
+.aw .lg-compose {
   display: flex;
   gap: 8px;
-  align-items: flex-start;
-  margin: 0;
-  padding: 6px 8px;
-  border-left: 3px solid var(--paper-warn);
-  background: var(--paper-2);
-  font-size: calc(13px + var(--type-step));
-  line-height: 1.3;
-  font-weight: 600;
-  color: var(--paper-ink);
+  align-items: flex-end;
 }
-.aw .slip[data-sending="1"] .sl-sign .aw-btn {
-  cursor: progress;
+.aw .composer {
+  flex: 1;
+  min-height: 42px;
+  max-height: 120px;
+  resize: none;
+  border-radius: 21px;
+  border: 1px solid var(--line-strong);
+  background: var(--recess);
+  color: var(--fg);
+  padding: 11px 16px;
+  font: 400 calc(14px + var(--aw-step)) / normal var(--font-body);
+  min-width: 0;
+  transition:
+    border-color var(--t-hover),
+    box-shadow var(--t-hover),
+    opacity var(--t-hover);
+}
+.aw .lg-compose .iconbtn.talk {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border: 1px solid var(--line-strong);
+}
+.aw .iconbtn:disabled {
+  opacity: 0.5;
+}
+.aw .composer::placeholder {
+  color: var(--muted-fg);
+}
+.aw .composer:focus {
+  border-color: var(--accent);
+  outline: none;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 25%, transparent);
+}
+.aw .composer:disabled {
+  opacity: 0.6;
+}
+.aw .sendbtn {
+  width: 42px;
+  height: 42px;
+  flex: none;
+  border-radius: 50%;
+  border: 0;
+  background: var(--btn);
+  color: var(--on-btn);
+  display: grid;
+  place-items: center;
+  transition:
+    background var(--t-hover),
+    opacity var(--t-hover);
+}
+.aw .sendbtn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--btn) 85%, white);
+}
+.aw .sendbtn:disabled {
+  opacity: 0.5;
+}
+.aw .sendbtn .ic {
+  width: 18px;
+  height: 18px;
+  stroke-width: 2;
+}
+.aw .lg-note {
+  font-size: calc(13px + var(--aw-step));
+  color: var(--muted-fg);
+}
+
+/* a level below the conversation: a step opened, a decision read, the Record, the apps */
+.aw .aw-depth {
+  position: absolute;
+  inset: 0;
+  background: var(--glass);
+  transform: translateX(104%);
+  transition: transform var(--t-slide) var(--ease);
+  display: flex;
+  flex-direction: column;
+  z-index: 2;
+}
+.aw .aw-depth.open {
+  transform: translateX(0);
+}
+.aw .depth-top {
+  flex: none;
+  height: 84px;
+  padding: 14px 18px 0 90px;
+  border-bottom: 1px solid var(--line);
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.aw .rise {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  align-self: flex-start;
+  height: 32px;
+  padding: 0 12px 0 8px;
+  border-radius: 16px;
+  border: 1px solid var(--edge);
+  background: var(--wash);
+  color: var(--ink-accent);
+  font-size: 13px;
+  font-weight: 600;
+  transition: background var(--t-hover);
+}
+.aw .rise kbd {
+  margin-left: 4px;
+  padding: 2px 5px;
+  border-radius: 4px;
+  opacity: 0.75;
+}
+.aw .rise:hover {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+}
+.aw .rise .ic {
+  width: 16px;
+  height: 16px;
+  stroke-width: 2;
+}
+.aw .depth-crumb {
+  font-size: calc(12.5px + var(--aw-step));
+  color: var(--muted-fg);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.aw .depth-body {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding: 18px 22px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.aw .depth-body h2 {
+  font: 300 28px/1.12 var(--font-display);
+  letter-spacing: -0.012em;
+}
+.aw .depth-body .lead {
+  font-size: calc(15px + var(--aw-step));
+  color: var(--muted-fg);
+  margin-top: -6px;
+}
+.aw .depth-body h3.eyebrow {
+  margin-top: 6px;
+}
+.aw .depth-meta {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.aw .rec,
+.aw .offers {
+  list-style: none;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.aw .rec-row,
+.aw .offers li {
+  border: 1px solid var(--line);
+  background: var(--recess);
+  border-radius: 12px;
+  padding: 8px 12px;
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 2px 10px;
+  align-items: baseline;
+}
+.aw .rec-t {
+  font-size: calc(14px + var(--aw-step));
+  font-weight: 500;
+}
+.aw .rec-meta {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 10px;
+  font-size: 12px;
+  color: var(--faint);
+}
+.aw .rec-meta code {
+  font: 12px/1.4 var(--font-mono);
+  overflow-wrap: anywhere;
+}
+.aw .rec-refused,
+.aw .rec-declined {
+  color: var(--warn);
+}
+.aw .rec-ok,
+.aw .rec-approved {
+  color: var(--ok);
+}
+.aw .offers li {
+  grid-template-columns: auto auto 1fr;
+}
+.aw .offers .offer-d {
+  grid-column: 1 / -1;
+  font-size: calc(13px + var(--aw-step));
+  color: var(--muted-fg);
+}
+.aw .offers .aw-btn {
+  grid-row: 1;
+  grid-column: 3;
+  justify-self: end;
+}
+
+/* ---- face, welcome ---- */
+.aw .face-art {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: 224px;
+  height: 224px;
+  background: var(--face-well);
+  border-radius: 0 0 40% 40% / 0 0 20% 20%;
+  overflow: hidden;
+}
+.aw .face-glow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 150px;
+  height: 90px;
+  background: radial-gradient(60% 60% at 50% 20%, color-mix(in srgb, var(--accent) 35%, transparent), transparent);
+}
+.aw .face-cap {
+  position: absolute;
+  left: 14px;
+  right: 14px;
+  bottom: 14px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  align-items: center;
+}
+.aw .face-cap p {
+  font: 400 calc(14px + var(--aw-step)) / 1.35 var(--font-body);
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+/* light: the caption is dark ink, so the dark portrait well stops above it */
+[data-theme="light"] .aw .face-art {
+  height: 194px;
+}
+[data-theme="light"] .aw .face-glow {
+  display: none;
+}
+.aw .wl-body {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  top: 0;
+  bottom: 0;
+  padding-top: 18px;
+}
+.aw .wl-top {
+  height: 58px;
+  padding-left: 70px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 4px;
+}
+.aw .wl-title {
+  font: 300 38px/1.05 var(--font-display);
+  letter-spacing: -0.02em;
+  margin-top: 12px;
+}
+.aw .wl-copy {
+  margin-top: 8px;
+  font-size: calc(14.5px + var(--aw-step));
+  line-height: 1.5;
+  max-width: 400px;
+}
+.aw .wl-list {
+  list-style: none;
+  margin: 14px 0 0;
+  padding: 0;
+  display: grid;
+  gap: 9px;
+}
+.aw .wl[data-missing="1"] .wl-list li:nth-child(n + 3) {
+  display: none;
+}
+.aw .wl-list li {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+  font-size: calc(13.5px + var(--aw-step));
+  line-height: 1.35;
+}
+.aw .wl-list .ic {
+  width: 22px;
+  height: 22px;
+  stroke: var(--ink-accent);
+  stroke-width: 1.5;
+  margin-top: 1px;
+}
+.aw .wl-list .ic.warn {
+  stroke: var(--warn);
+}
+.aw .wl-list .ic.ok {
+  stroke: var(--ok);
+}
+.aw .wl-list b {
+  font-weight: 600;
 }
 .aw .wl-engine[data-engine="missing"] {
-  padding-left: 8px;
-  border-left: 3px solid var(--paper-warn);
-}
-/* the daemon's own error text (a path, a command line) is one long word; it breaks, it does not push the
- * paper's edge out */
-.aw .wl-engine {
+  padding: 10px 12px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, var(--warn) 60%, transparent);
+  background: var(--recess);
   overflow-wrap: anywhere;
 }
 .aw .wl-engine-act {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 6px;
+  margin-top: 8px;
 }
-.aw .wl-engine-act .aw-btn {
-  min-height: 32px;
-  border: 1.5px solid var(--paper-rule);
-  color: var(--paper-ink);
-}
-.aw .rec li {
-  flex-wrap: wrap;
-}
-.aw .rec-meta {
-  flex-basis: 100%;
+.aw .wl-foot {
+  position: absolute;
+  left: 24px;
+  right: 24px;
+  bottom: 22px;
   display: flex;
-  gap: 10px;
-  font-size: var(--t-label);
-  color: var(--paper-ink-2);
+  align-items: center;
+  gap: 12px;
 }
-.aw .rec-meta .rec-a {
-  color: var(--paper-external);
+
+/* ---- orientation: Rust may seat the seal on the right edge, or at the bottom (ADR 0026) ---- */
+.aw[data-side="right"] .anchor {
+  left: auto;
+  right: var(--margin);
 }
-.aw .rec-declined,
-.aw .rec-refused {
-  color: var(--paper-stamp);
+.aw[data-side="right"] .aw-water {
+  left: auto;
+  right: var(--margin);
 }
-.aw .lg-main {
-  margin: 4px 0 0;
+.aw[data-side="right"] .tape {
+  left: 62px;
+  right: 90px;
 }
-.aw .aw-textbtn {
-  padding: 0;
-  border: 0;
-  background: none;
-  font: inherit;
-  font-size: calc(13px + var(--type-step));
-  font-weight: 600;
-  color: var(--paper-external);
-  text-decoration: underline;
-  text-align: left;
-  cursor: pointer;
-  transition: color var(--dur-fast);
+.aw[data-side="right"] .tape-stop {
+  right: auto;
+  left: 18px;
 }
-.aw .aw-textbtn:hover {
-  color: var(--paper-ink);
+.aw[data-side="right"] .meter {
+  right: auto;
+  left: 22px;
 }
-.aw .aw-textbtn:focus-visible {
-  outline: 2px solid var(--paper-ink);
-  outline-offset: 2px;
+.aw[data-side="right"] .thread {
+  left: 28px;
+  right: 76px;
 }
-.aw .msg-tech {
-  margin-top: 6px;
-  font-size: var(--t-label);
-  color: var(--paper-ink-2);
+.aw[data-side="right"] .sl-head,
+.aw[data-side="right"] .sl-back-head {
+  padding-left: 0;
+  padding-right: 78px;
 }
-.aw .msg-tech summary {
-  cursor: pointer;
-  font-weight: 700;
+.aw[data-side="right"] .lg-head,
+.aw[data-side="right"] .depth-top {
+  padding: 16px 90px 0 18px;
 }
-.aw .msg-tech summary:focus-visible {
-  outline: 2px solid var(--paper-ink);
-  outline-offset: 2px;
+.aw[data-side="right"] .lg-tools {
+  right: auto;
+  left: 12px;
+  top: 44px;
 }
-.aw .wl-stamp {
-  pointer-events: none;
+.aw[data-side="right"] .crumbs {
+  padding-right: 0;
 }
-.aw .wl:has(.wl-engine[data-engine="missing"]) .wl-stamp {
+.aw[data-side="right"] .wl-top {
+  padding-left: 0;
+  padding-right: 70px;
+}
+.aw[data-valign="up"] .anchor {
+  top: auto;
+  bottom: var(--margin);
+}
+.aw[data-valign="up"] .aw-water {
+  top: auto;
+  bottom: var(--margin);
+}
+.aw[data-valign="up"] .sl-head,
+.aw[data-valign="up"] .sl-back-head,
+.aw[data-valign="up"] .lg-head,
+.aw[data-valign="up"] .depth-top,
+.aw[data-valign="up"] .wl-top {
+  padding-left: 18px;
+  padding-right: 18px;
+}
+.aw[data-valign="up"] .crumbs {
+  padding-right: 150px;
+}
+.aw[data-valign="up"] .sl-actions,
+.aw[data-valign="up"] .lg-foot {
+  padding-left: 90px;
+}
+.aw[data-valign="up"][data-side="right"] .sl-actions,
+.aw[data-valign="up"][data-side="right"] .lg-foot {
+  padding-left: 18px;
+  padding-right: 90px;
+}
+.aw[data-valign="up"] .wl-foot {
+  left: 90px;
+}
+
+/* ---- calm: nothing travels, nothing loops; every state still reads by colour and shape ---- */
+@media (prefers-reduced-motion: reduce) {
+  .aw *,
+  .aw *::before,
+  .aw *::after {
+    animation-duration: 0.001s !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001s !important;
+    transition-delay: 0s !important;
+  }
+  .aw .rays,
+  .aw .dust {
+    display: none;
+  }
+  .aw .meter i {
+    height: 14px;
+  }
+}
+:root[data-motion="calm"] .aw *,
+:root[data-motion="calm"] .aw *::before,
+:root[data-motion="calm"] .aw *::after {
+  animation-duration: 0.001s !important;
+  animation-iteration-count: 1 !important;
+  transition-duration: 0.001s !important;
+  transition-delay: 0s !important;
+}
+:root[data-motion="calm"] .aw .rays,
+:root[data-motion="calm"] .aw .dust {
   display: none;
 }
-
-/* The active playbook (ADR 0044): one line above the composer, on her paper, that says what every
-   turn is working toward and lets the person end it. */
-.lg-project {
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
-  margin: 8px 0 0;
-  padding: 6px 10px;
-  border-left: 3px solid var(--paper-ink);
-  background: rgba(0, 0, 0, 0.04);
-  font-size: calc(13px + var(--type-step));
-  color: var(--paper-ink);
-}
-.lg-project__label {
-  color: var(--paper-ink-2);
-  font-weight: 600;
-}
-.lg-project__title {
-  flex: 1;
-  min-width: 0;
-  font-weight: 700;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-/* -- a handed-over playbook's plan, before the first turn (ADR 0044) ----------------------------- */
-.lg-plan {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin: 4px 0;
-  padding: 12px 14px;
-  border: 1px solid var(--paper-rule);
-  border-left: 3px solid var(--paper-agent);
-  border-radius: var(--r-card);
-  background: rgba(255, 255, 255, 0.55);
-  color: var(--paper-ink);
-}
-
-.lg-plan__eyebrow {
-  margin: 0;
-  font-size: var(--t-label);
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--paper-agent);
-}
-
-.lg-plan__title {
-  margin: 0;
-  font-weight: 700;
-}
-
-.lg-plan__steps {
-  margin: 0;
-  padding-left: 1.2rem;
-  font-size: var(--t-caption);
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.lg-plan__row {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-}
-
-.lg-plan__label {
-  font-size: calc(12px + var(--type-step));
-  color: var(--paper-ink-2);
-}
-
-.lg-plan__chips {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 4px;
-}
-
-.lg-plan__chip {
-  padding: 2px 8px;
-  border: 1px solid var(--paper-rule);
-  border-radius: 999px;
-  font-size: calc(12px + var(--type-step));
-  color: var(--paper-ink);
-}
-
-.lg-plan__chip--gate {
-  border-color: var(--paper-stamp);
-  color: var(--paper-stamp);
-}
-
-.lg-plan__note {
-  margin: 0;
-  font-size: calc(12px + var(--type-step));
-  color: var(--paper-ink-2);
+:root[data-motion="calm"] .aw .meter i {
+  height: 14px;
 }

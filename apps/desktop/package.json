@@ -32,6 +32,7 @@
   },
   "dependencies": {
     "@athena/bridge": "workspace:*",
+    "@fontsource/outfit": "5.2.6",
     "@tauri-apps/api": "^2.11.1",
     "react": "^19.3.0",
     "react-dom": "^19.3.0",

@@ -116,14 +116,22 @@ is an escape hatch for inspection, and it can read anything the page can.
 
 ## What the companion looks like to a driver
 
-- **Collapsed:** the seal button `.aw-seal`. Pressing it opens the ledger.
-- **Ledger open:** a rail (`[data-tab=talk|record|origins]`), and in Talk the
-  `[role=log][aria-label=Conversation]` holds:
-  - `.msg.msg-you` and `.msg.msg-athena` messages, with the speaker in `.msg-who`;
-  - a `ul.acts[aria-label="What ran"]` list after each of her messages;
-  - cards (`article.slip[data-card]`) and batch sheets (`article.slip[data-sheet]`) that carry
-    their own `[data-act=approve|decline]`.
-- **Card-forward ("waiting on you"):** one slip in front and no log. The window's own
-  `button[data-act=approve|decline]` sit outside the article.
+Her window is Bell with Tideline's seal (the athena-mini-window contest). Her root is `.aw` and
+its `data-form` names the state (`seal`, `tape`, `slip`, `ledger`, `tab`, ...).
+
+- **Collapsed:** the seal's button `.anchor .seal-hit` (or `.seal-tab .seal-hit` when docked).
+  Pressing it opens the ledger.
+- **Ledger open (`data-form="ledger"`):** one conversation, `[role=log][aria-label=Conversation]`,
+  whose `.rail` holds, in order:
+  - what was said: `.msg.msg-user` and `.msg.msg-her`, the speaker in `.msg-who`, the words in `.txt`;
+  - what was done: `.msg.msg-step` (and `.msg-declined`), one plain sentence in `.st-title`, the
+    tool's registry name in `data-tool`, and `data-tone` (`ok`, `fail`, `blocked`);
+  - a stopped turn: `.msg.msg-stop`;
+  - the waiting decision: `article.decision[data-card]` (or `[data-sheet]` for a batch) with its
+    own `[data-act=approve|decline]`.
+  The Record and the apps she may act on are pages beside it (`.lg-tools [data-act=record|origins]`);
+  a page or an opened step is `.aw-depth.open`, and its `[data-act=rise]` returns to the conversation.
+- **Card-forward ("waiting on you", `data-form="slip"`):** one `article.decision` in front with its
+  own buttons, and no log.
 
 `showAthena`, `cards`, `transcript` and the decisions handle all three states.
