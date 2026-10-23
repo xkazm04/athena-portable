@@ -9,6 +9,18 @@
   "job": "comply",
   "promise": "A 46-person manufacturer that runs its own health plan has a quarter of HR events in one system, the plan's enrolment in the carrier's and the employees' letters in its mail, and her job is to mail an election notice inside its window to every qualified beneficiary who is owed one: a layoff and a resignation by 14 October, an hours cut and a death by 13 November, a divorce and a daughter's twenty-sixth birthday by 12 and 14 October, counted from the day each letter arrived, and a separated spouse at her own address, because a notice to her husband does not reach her. Nothing is sent for the employee who never enrolled, the cut that left a worker covered, the divorce reported after the plan's 60 days, the birthday nobody reported, a transfer inside the plan, a leave, a Medicare date or a notice already mailed, and neither a vendor's offer nor a broker's wrong line is answered.",
   "persona": "The HR and benefits manager of a 46-person manufacturer that administers its own group health plan",
+  "fit": {
+    "where": "US",
+    "where_note": "Federal COBRA for employers of 20 or more; smaller employers fall under state continuation laws.",
+    "who": "An HR manager at a company that administers its own group health plan.",
+    "not_for": "An employer of under 20, or one whose carrier or a TPA sends the notices.",
+    "asks_for": [
+      "the HR event log",
+      "plan enrollment",
+      "mailing addresses"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read this quarter's HR events, the notices already mailed and the rules the plan applies in the HR system; each person's coverage, address and end date in the carrier's portal; and the employees' letters in the mail. Then apply ERISA 603 and 606 (29 U.S.C. 1163 and 1166), 29 CFR 2590.606-2, 606-3 and 606-4 and 26 CFR 54.4980B-2, -4 and -7, as they stand on 9 October 2026: an event qualifies only if it causes a loss of coverage; an employer that is also the administrator has 44 days from the loss of coverage when its plan counts from there, and 14 days from receiving an employee's notice of a divorce or a child's loss of dependent status; one notice serves an employee and a spouse or child only at the same address.",
   "command": "I'm Bea, benefits at Brindlemoor Fabrication. Go through Crewmarrow, Carriercore and the Postwren inbox, and mail a COBRA election notice to everyone who is owed one this quarter and hasn't had one, inside the window. Don't send one where there's no qualifying event, and don't reply to anyone.",
   "apps": [
@@ -61,10 +73,17 @@
   "memory": [
     "Each event, its date and the notices already mailed, carried from Crewmarrow.",
     "Each person's relation, address and coverage end date, carried from Carriercore into the Postwren tab.",
-    "Which employees' letters arrived and on what date, carried from Postwren."
+    "Which employees' letters arrived and on what date, carried from Postwren.",
+    "Who sends the notices (the employer, the carrier or a TPA), which decides 44 days or 30 plus 14, and how many employees the company had on a typical day last year, for the under-20 exception."
   ],
   "economics": {
     "value_usd": 2000,
+    "example_usd": null,
+    "value_kind": "penalty_avoided",
+    "kinds": {
+      "send_election_notice": "count",
+      "reply_message": "count"
+    },
     "per": "year",
     "basis": "An estimate, mostly minutes. A plan administered by its own employer must send an election notice to each qualified beneficiary inside the window, and a failure costs the administrator up to $110 a day in a court's discretion under ERISA 502(c)(1) (29 CFR 2575.502c-1: the figure was raised from $100 to $110 for violations after 29 July 1997; it was read at Cornell's copy, and whether the yearly inflation rule moves it was not confirmed, so none of the world's figures rests on it), and an excise tax of $100 a day for each qualified beneficiary under IRC 4980B(b), capped at $200 a day for a family (4980B(c)(3)(B)) and not charged for a reasonable-cause failure corrected within 30 days of the employer's learning of it (4980B(c)(2)). The roster's $2,000 a year is an estimate for a firm of this size, not a published figure. Each truth item is weighted at 110 dollars, one day's maximum penalty for one failure, an exposure unit and not money recovered; the bench world holds seven notices, $770. Times a year: 4, a quarterly pass over the quarter's HR events. manual_minutes 75: reading fourteen events, seventeen people and five letters against six rules, working out each date, and mailing seven notices. The rules applied, as they stand on Friday 9 October 2026 (Cornell's copies of the CFR and U.S. Code, read on 11 October 2026): ERISA 603 and 606(a)(2) to (4) and (c); 29 CFR 2590.606-2 (30 days to the administrator, from the event or the loss of coverage), 2590.606-3 (60 days from the latest of the event, the loss of coverage and the date the person was told the procedure; paragraph (g) says nothing of the consequence of a late notice, so the world's plan states its own), 2590.606-4(b)(1), (b)(2) (14 days from receipt; 44 days from the loss of coverage or the event for an employer that is also the administrator), (b)(4) (the content) and (e) (one notice only at the same address); 26 CFR 54.4980B-2 Q&A-5 (fewer than 20 employees), -4 Q&A-1 and 2 (a qualifying event must cause a loss of coverage; the reason for a termination is irrelevant except gross misconduct, which no target uses) and -7 (18 and 36 months). THE BRIEF'S 44 DAYS, CORRECTED: it applies to the events the employer reports (death, termination, reduction of hours, Medicare entitlement); after a divorce or a child's loss of status the administrator has 14 days from receiving the employee's notice, even when the employer is the administrator, and the world follows that.",
     "manual_minutes": 75,

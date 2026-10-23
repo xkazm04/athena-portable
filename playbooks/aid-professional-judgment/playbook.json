@@ -9,6 +9,18 @@
   "job": "claim",
   "promise": "A family whose daughter's 2026-27 aid rests on 2024 income has a father laid off in June and a mother whose hours fell in July, and her job is to ask the college's aid office to recompute: one special-circumstances request for each, by 16 October 2026, with the earner's estimated 2026 income built as the college says (the father's 35,000 dollars of wages with his vacation, 13,400 of severance in two payments and 13,520 of unemployment benefits to their maximum, 61,920; the mother's 27,300 paid and seven periods at 1,200, 35,700, found only in her pay stubs) and the ids of the proof. Nothing is filed for the 2024 cut in hours already in the income, the lifeguard job that ends every year, the brother's award at another college, the tuition rise for everyone or the insurance premium, no dependency override is asked for on a job loss, and neither an appeal service's offer nor a college's invitation is answered.",
   "persona": "A parent whose husband was laid off and whose daughter's college aid still rests on 2024 income",
+  "fit": {
+    "where": "US",
+    "where_note": "Federal student aid; each college sets its own deadline and papers.",
+    "who": "A parent or student whose aid rests on income the family no longer has, after a job loss or a pay cut.",
+    "not_for": "A family whose income has not changed.",
+    "asks_for": [
+      "the college's aid portal",
+      "the layoff letter or pay records",
+      "the college's deadline for the request"
+    ],
+    "costs": "No fees; the request is free."
+  },
   "chore": "Read the college's special-circumstances rules, the award and the changes the family reported in the aid portal; the husband's determination and benefits in the unemployment desk; both parents' pay records in the payroll portal; and the letters in the mail. Then apply HEA 479A (20 U.S.C. 1087tt) and chapter 5 of the 2026-27 FSA Handbook Application and Verification Guide, as they stand on 9 October 2026: the aid administrator adjusts the data behind the aid index case by case, on adequate documentation; a parent's recent unemployment can be a special circumstance and is not a dependency override; the 2026-27 award uses 2024 income; the college may not deny every request, and its decision is final and cannot be appealed to the Department of Education.",
   "command": "I'm Leona Ashdown. My husband Gareth was laid off in June and Perrin's aid at Thornbury Hollow College still rests on 2024. Go through Aidcenter, the Fernhollow Unemployment Desk, Payroll Harbor and the Postwren inbox, and ask the college to recompute her aid for every real change since 2024, with the proof, before its deadline. Don't ask for anything else and don't reply to anyone.",
   "apps": [
@@ -73,10 +85,18 @@
     "Each change's id, whose it is and what the family wrote, carried from Aidcenter.",
     "The father's determination, benefits paid and weeks left, carried from the Fernhollow Unemployment Desk.",
     "Each pay record's id, hours, gross and year to date, carried from Payroll Harbor into the request.",
-    "The college's deadline of 16 October 2026 and its income rule, carried into every request."
+    "The college's deadline of 16 October 2026 and its income rule, carried into every request.",
+    "Whether the next year's FAFSA, which uses more recent income, changes the picture: a question a financial aid officer would also ask."
   ],
   "economics": {
     "value_usd": 4000,
+    "example_usd": null,
+    "value_kind": "money_back",
+    "kinds": {
+      "submit_special_circumstances_request": "count",
+      "submit_dependency_override_request": "count",
+      "reply_message": "count"
+    },
     "per": "year",
     "basis": "An estimate. The roster's 4,000 dollars a year is the aid a household can win back when a college recomputes an award that rests on income the family no longer has; it is not a published figure. The cap on what one recomputation can reach is the maximum Federal Pell Grant, 7,395 dollars for 2026-27 (the Department's GEN-26-01, read at fsapartners.ed.gov on 11 October 2026), and the college's own grants and loan eligibility move with the student aid index too. Each of the world's two filings is weighted at 2,000 dollars, half of the 4,000: a per-act weight, an exposure unit, not money recovered, since the college decides the new award and no page here computes it. Times a year: 1, as the family asks once for each award year, in the weeks after a change. manual_minutes 150: reading six rules topics, seven reported changes, two unemployment records, seven pay records and five letters, working out which changes are real, building two estimated incomes from three kinds of income and from pay periods, and filing two requests with their proof. Rules applied, as they stand on Friday 9 October 2026: HEA 479A, 20 U.S.C. 1087tt (Cornell's copy, read on 11 October 2026; last amended by Pub. L. 119-21, with a change to (b)(1)(B) effective 1 July 2026 that removes the foreign-income clause): (a)(1) case-by-case adjustments on adequate documentation, (a)(2)(A) no policy of denying all requests, (a)(3) documentation must substantiate the circumstances, (b)(1) a condition that differentiates the student from a group, including recent unemployment of a family member and a dislocated worker, (b)(2) the aid index adjustments, including changes in income, (c) unusual circumstances for a dependency override; and the 2026-27 Application and Verification Guide chapter 5 (FSA Partner Connect, last modified 17 August 2026): an adjustment is valid only at the college making it, the decision is final and cannot be appealed to the Department, recurring costs are not a reason to reduce income, no adjustment after the student is no longer eligible, and Example 1, a parent no longer employed whose income from work the aid administrator sets to zero. THE BRIEF'S PREMISES, CHECKED: the Handbook does not name a separation letter or pay stub for a job loss (it names a documented interview and, only for a qualifying emergency, documentation of unemployment benefits within 90 days), so the documents the world asks for are the invented college's; the Handbook says nothing of severance, so counting it is the invented college's rule; and 479A(e), the refusal 'case by case', is the rule for loan certification, not for these adjustments. The 2026-27 award's use of 2024 income is from the FAFSA form and the Handbook's chapter 2.",
     "manual_minutes": 150,

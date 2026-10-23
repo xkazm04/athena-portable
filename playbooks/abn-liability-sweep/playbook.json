@@ -2,13 +2,25 @@
   "id": "abn-liability-sweep",
   "title": "Every Medicare denial billed to the patient only where a valid ABN was signed, and refunded where it was not",
   "short_title": "Medicare denials billed to patients or refunded",
-  "brief": "A two-doctor practice's billing manager checks this month's **denied Medicare lines** against their ABNs.\n\n**Settled rightly — $539:**\n- $352 billed on three lines patients owe\n- Two valid ABNs and a routine physical\n- $187 refunded on four payments\n- Refunds where the ABN was generic, late or outdated\n\n**Left alone:**\n- Lines Medicare paid, and units over the MUE\n- Lines with no ABN at all\n- Lines the patient already paid in full\n- Coinsurance owed and payments already refunded",
+  "brief": "A two-doctor practice's billing manager checks this month's **denied Medicare lines** against their ABNs.\n\n**Settled rightly — $352 billed, $187 refunded:**\n- $352 billed on three lines patients owe\n- Two valid ABNs and a routine physical\n- $187 refunded on four payments\n- Refunds where the ABN was generic, late or outdated\n\n**Left alone:**\n- Lines Medicare paid, and units over the MUE\n- Lines with no ABN: never billed to the patient\n- Lines the patient already paid in full\n- Coinsurance owed and payments already refunded",
   "domain": "Clinics",
   "audience": "work",
   "category": "health",
   "job": "comply",
   "promise": "Each Medicare line denied this month is read against its remittance and the ABN scanned in the chart. A patient is billed only where a valid notice was signed before the item, on the current form, with a specific reason, or where the service is excluded by law. A patient who paid for a line with a generic, late, outdated or routine notice is refunded in full. No one is billed for a line Medicare paid, a unit over a medically unlikely edit, a line with no notice, or a line already paid, and no payment the patient owes or that was already refunded goes back.",
   "persona": "The billing manager of a two-physician internal medicine practice that bills Original Medicare and has every Medicare patient sign notices for lab tests that may not be covered",
+  "fit": {
+    "where": "US",
+    "where_note": "Original Medicare rules; Medicare Advantage plans have their own notices.",
+    "who": "A practice's billing staff who bill Original Medicare and collect ABNs.",
+    "not_for": "A practice that bills only Medicare Advantage or commercial plans.",
+    "asks_for": [
+      "this month's Medicare remittances",
+      "where the signed ABNs are scanned",
+      "your patient payment records"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read every denied Medicare line on the practice management system's check list, with what the patient has paid; Novabridge's remittance for each line, with its group and reason codes; and every scanned Advance Beneficiary Notice in the chart, as the scan reads: the form's printed expiry, when it was signed against when the item was given, the reason written in and the cost. Then apply Social Security Act section 1879 and CMS's ABN instructions as they stand: a notice moves a medical-necessity or frequency denial to the patient only when it is valid; GA, GZ and GX say what the clinic reported, not whether the notice holds; an MUE denial or a paid line is never the patient's; and a patient who paid for a line with no valid notice is refunded. None of the four systems shares data with another.",
   "command": "Do this month's ABN sweep on our Medicare denials. Go through Chartmend, the Novabridge remittances in Relaywave, the ABNs in Chartleaf and the payments in Carenook: bill the patients who signed a valid ABN, refund the ones who paid where we had no valid ABN, and don't bill anyone we can't.",
   "apps": [
@@ -74,9 +86,15 @@
     "Each payment's line and whether it was already refunded, from Carenook."
   ],
   "economics": {
-    "value_usd": 1800,
+    "value_usd": 1200,
+    "example_usd": 352,
+    "value_kind": "money_back",
+    "kinds": {
+      "release_statement": "money_back",
+      "refund_patient": "money_protected"
+    },
     "per": "month",
-    "basis": "An estimate. A practice that has Medicare patients sign ABNs for lab tests and screening loses twice when nobody checks them against the denials: it writes off charges a valid notice made the patient's, and it keeps payments for lines whose notice was generic, late, routine or on an outdated form, which the law says must be refunded and which an audit or a complaint turns into a larger problem. For a two-physician internal medicine practice with several hundred Medicare visits a month, the roster's $1,800 a month is the denied charges billed rightly or refunded rightly in a month, an estimate. The bench world holds $539: $352 billed rightly on three lines (two valid notices and a routine physical excluded by law) and $187 refunded on four payments. The rules as they stand on the world's date, Friday 9 October 2026: Social Security Act section 1879 (limitation on liability) and section 1842(l) (a physician refunds what a patient paid for a line denied as not reasonable and necessary without a valid notice, timely meaning within 30 days of the remittance); CMS's ABN instructions and MLN booklet MLN006266 (May 2025) for GA, GZ, GX and GY, the routine-notice prohibition, a specific reason, a notice signed before the item, and no ABN for an MUE denial or a paid line; and form CMS-R-131 in its version approved 13 March 2026, printed 'expires 03/31/2029', with the version printed 'expires 01/31/2026' accepted only until 12 May 2026. Times a year: twelve, a month-end sweep.",
+    "basis": "An estimate. A practice that has Medicare patients sign ABNs for lab tests and screening loses twice when nobody checks them against the denials: it writes off charges a valid notice made the patient's, and it keeps payments for lines whose notice was generic, late, routine or on an outdated form, which the law says must be refunded and which an audit or a complaint turns into a larger problem. For a two-physician internal medicine practice with several hundred Medicare visits a month, denied charges handled rightly come to about $1,800 a month, and they split as the bench world's do (352 billed to 187 refunded, 65% billed): $1,800 x 352 / 539 = $1,175, rounded to the roster's $1,200 a month billed rightly, which is money back to the practice, an estimate. The other $600 or so is refunds owed to patients under section 1842(l): not income, and not counted. The bench world holds $539: $352 billed rightly on three lines (two valid notices and a routine physical excluded by law) and $187 refunded on four payments. The rules as they stand on the world's date, Friday 9 October 2026: Social Security Act section 1879 (limitation on liability) and section 1842(l) (a physician refunds what a patient paid for a line denied as not reasonable and necessary without a valid notice, timely meaning within 30 days of the remittance); CMS's ABN instructions and MLN booklet MLN006266 (May 2025) for GA, GZ, GX and GY, the routine-notice prohibition, a specific reason, a notice signed before the item, and no ABN for an MUE denial or a paid line; and form CMS-R-131 in its version approved 13 March 2026, printed 'expires 03/31/2029', with the version printed 'expires 01/31/2026' accepted only until 12 May 2026. Times a year: twelve, a month-end sweep.",
     "manual_minutes": 150,
     "times_per_year": 12,
     "incumbent": "Outsourced medical billing services take a share of collections for Medicare billing, denials and refunds; the world's own offer is 6%, and the figure used is 6%, an estimate.",

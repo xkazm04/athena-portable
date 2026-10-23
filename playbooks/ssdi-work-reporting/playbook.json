@@ -9,6 +9,18 @@
   "job": "comply",
   "promise": "A disabled worker who went back to part-time work in March has not told Social Security about her second employer or about June to September, and her job is to report both now: her gross earnings for each month in the month they were earned, which are 1,447 dollars for June, 1,408 for July, 1,274 for August, whose total passes 1,210 only with a garden supply's stub that came by mail, and 1,320 for September, which was paid on 5 October; and the second employer, Larkspur Garden Supply. She reports no month twice, no October, none of her husband's work and no expense taken off a month, and she answers no advocate or text.",
   "persona": "A woman on a disabled worker's Social Security benefit, back at part-time work since March, with a husband who works full time",
+  "fit": {
+    "where": "US",
+    "where_note": "Social Security disability (SSDI) work rules.",
+    "who": "Someone on Social Security disability benefits who works part time.",
+    "not_for": "SSI alone, which is reported by the 10th of each month under other rules.",
+    "asks_for": [
+      "pay stubs by month",
+      "each employer's name",
+      "letters from Social Security"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read the rules, the months and employers on file in Benefitline; the pay records of both spouses in Payroll Harbor; and the mail, scanned letters included, in Postwren. Then apply 20 CFR 404.1588 and 404.1592 with POMS DI 10505.005 and DI 13010.035, as they stand on 9 October 2026: a trial work month is a month of gross earnings of more than 1,210 dollars, the 2026 amount; nine in 60 months end the period; wages count in the month earned and not the month paid; impairment-related work expenses are not deducted when counting; a beneficiary reports a return to work, a new employer and her earnings promptly, and not a spouse's.",
   "command": "I'm Marguerite Tolland. I've been back at part-time work since March. Go through Benefitline, Payroll Harbor and the Postwren inbox, and report to Social Security what I haven't yet: my own earnings for each month, in the month earned, and any employer of mine it doesn't have. Don't report anything twice or anything of my husband's, and don't reply to anyone.",
   "apps": [
@@ -68,10 +80,18 @@
     "Each month already reported, its amount and how it was counted, carried from Benefitline.",
     "Each pay record, whose it is, the month it was earned for and its gross, carried from Payroll Harbor.",
     "Each attachment in the mail, its document id, the employer and the months it covers, carried from Postwren.",
-    "The 2026 trial work amount and the rule that wages count in the month earned, carried from the rules."
+    "The 2026 trial work amount and the rule that wages count in the month earned, carried from the rules.",
+    "How many trial work months are used so far, when the nine end, and what the 36-month extended period and substantial gainful activity then mean for the benefit."
   ],
   "economics": {
     "value_usd": 4000,
+    "example_usd": null,
+    "value_kind": "money_protected",
+    "kinds": {
+      "report_month_earnings": "count",
+      "report_new_employer": "count",
+      "reply_message": "count"
+    },
     "per": "year",
     "basis": "An estimate, mostly an exposure. A beneficiary who works and does not report, or reports the wrong month, can be paid a benefit that Social Security later finds she was not due and must collect back; and one whose trial work months are miscounted can lose the nine-month period's protection or enter it late. The roster's 4,000 dollars a year is an estimate of the benefit months at risk in a year of part-time work and is kept; it is not an average of anything published. The bench world holds five acts, the earnings of four months and one employer, each weighted at 800 dollars, a per-act weight, an exposure unit and not money recovered: the benefit and any overpayment are Social Security's to decide, and no page of the world computes them. Times a year: 1, because a beneficiary who works reports each month and the year's reports are the chore; the world holds the last four of seven months. manual_minutes 90: reading six rules, three months on file, ten pay records, four letters and three employers, building four monthly totals from two employers and matching each stub to the month earned, and sending five reports. The rules applied, as they stand on Friday 9 October 2026: 20 CFR 404.1592 (the trial work period: nine months, not consecutive, in a rolling 60; for an employee a month counts when gross earnings are more than the year's amount) and 404.1592a (the 36-month reentitlement period after it, which the fact sheet calls the extended period of eligibility); 20 CFR 404.1588 (a beneficiary should promptly tell Social Security about a return to work, a new employer and increased earnings, with no day of the month named); POMS DI 13010.035 (no work incentive, impairment-related work expenses among them, is applied to the existence of trial work months), DI 13010.060 (a month counts when earnings are more than the amount) and DI 10505.005 (revised 10 January 2025: determine when earnings were earned, and presume the month paid only when nothing supports a pay period); and Social Security's fact sheet on the trial work period, which gives 1,210 dollars for 2026 and says 'or more' where the regulation and POMS say 'more than'. THE BRIEF'S PREMISES: nine months in 60, the earned-not-paid rule and the no-deduction rule are right as stated; the reporting duty is 'promptly' with no day, as the brief allowed, and the 10th of the month belongs to SSI and is used nowhere. The substantial gainful activity amounts for 2026, 1,690 dollars a month and 2,830 for a blind beneficiary, were read in secondary sources only, because ssa.gov refused every fetch of its figures page, and no target uses them. 20 CFR 404.1574, 404.1576 and the Red Book were not opened.",
     "manual_minutes": 90,

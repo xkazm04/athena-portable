@@ -2,7 +2,7 @@
   "id": "chargeback-representment",
   "title": "A woodworker's ten open card disputes answered with the evidence each reason code needs, five contested and won on delivery, Compelling Evidence 3.0, a matching listing, a credit already issued and a registered device, and two accepted because the board never shipped and the refund was never paid, while disputes that cannot be won and one past its processor's date are left alone",
   "short_title": "Card disputes answered or accepted on evidence",
-  "brief": "An Idaho woodworking shop has **10 open card disputes** with its processor.\n\n**Settled — 7 disputes, $957:**\n- Contested with proof of delivery to the address\n- Two matching earlier orders on the same card\n- A listing that matched what shipped\n- A credit already issued, a registered device\n- Accepted where nothing shipped or no refund came\n\n**Left alone:**\n- Fraud claims with one earlier order or IP only\n- A dispute past the processor's date\n- Disputes already refunded",
+  "brief": "An Idaho woodworking shop has **10 open card disputes** with its processor.\n\n**Settled — 7 disputes: 5 contested for $907, 2 accepted:**\n- Contested with proof of delivery to the address\n- Two matching earlier orders on the same card\n- A listing that matched what shipped\n- A credit already issued, a registered device\n- Accepted where nothing shipped or no refund came\n\n**Left alone:**\n- Fraud claims with one earlier order or IP only\n- A dispute past the processor's date\n- Disputes already refunded",
   "domain": "Payments",
   "audience": "work",
   "category": "commerce",
@@ -42,6 +42,7 @@
     "Reads the orders and the earlier orders on the same cards in Storeline.",
     "Reads each delivery record in Parcelwick.",
     "Reads the customers' mail in Postwren.",
+    "Before contesting a small order, weighs the chance of winning against the processor's contest fee, and accepts where contesting would cost more than it can win back.",
     "Back in Paycurrent, answers the five winnable disputes and accepts the two that are right."
   ],
   "gates": [
@@ -71,9 +72,15 @@
     "Which orders shipped and where, and what the customers wrote, carried back to the last Paycurrent tab."
   ],
   "economics": {
-    "value_usd": 8000,
+    "value_usd": 3000,
+    "example_usd": 907,
     "per": "year",
-    "basis": "An estimate. A small shop with a few hundred orders a month sees a few disputes a month, and a merchant who contests with the right evidence wins back a large share while one who contests blindly loses the sale and a fee (the world's processor charges 25 dollars on a lost contest). The roster's $8,000 a year is a small shop's disputed sales won back and fees avoided. The bench world holds $957: five answers valued at the disputed amounts (184, 312, 96, 75 and 240) and two acceptances valued at the 25 dollar fee each avoids. Times a year: twelve, a monthly dispute review. manual_minutes 150: reading ten disputes and the networks' rules, finding each order, earlier orders, delivery record and message, and writing seven responses. Rules applied, as they stand on Friday 9 October 2026: the Visa Core Rules and Visa Product and Service Rules of 18 April 2026 (dispute conditions 10.4, 13.1, 13.3 and 13.6 and their responses; Compelling Evidence 3.0: two earlier undisputed transactions on the same credential, more than 120 and not more than 365 days before the dispute processing date, matched on device ID or fingerprint or on IP address with one more element; the text changes on 24 October 2026 and is not applied); the acquirer's 30 days to respond; the Mastercard Chargeback Guide, Merchant Edition, of 13 May 2025 (4837 and its 45 days). A 19 May 2026 Mastercard edition exists and could not be read. The processor's earlier date and fee are the invented processor's own.",
+    "value_kind": "money_back",
+    "kinds": {
+      "submit_representment": "money_back",
+      "accept_dispute": "penalty_avoided"
+    },
+    "basis": "An estimate. A small shop with a few hundred orders a month sees a few disputes a month: about 36 a year. If about half can be answered with the evidence the reason code needs and are won, at the bench world's average answered dispute of $181.40 ($907 / 5), that is 36 x 50% x $181.40 = $3,265, about $3,000 a year after the processor's fees on the ones that still lose; the roster's earlier $8,000 a year was more than a small shop's whole disputed volume. Per dispute, contest only where the chance of winning times the order beats the contest fee. The bench world holds $957: five answers valued at the disputed amounts (184, 312, 96, 75 and 240, $907 back) and two acceptances valued at the $25 fee each avoids ($50 avoided, not money back). Times a year: twelve, a monthly dispute review. manual_minutes 150: reading ten disputes and the networks' rules, finding each order, earlier orders, delivery record and message, and writing seven responses. Rules applied, as they stand on Friday 9 October 2026: the Visa Core Rules and Visa Product and Service Rules of 18 April 2026 (dispute conditions 10.4, 13.1, 13.3 and 13.6 and their responses; Compelling Evidence 3.0: two earlier undisputed transactions on the same credential, more than 120 and not more than 365 days before the dispute processing date, matched on device ID or fingerprint or on IP address with one more element; the text changes on 24 October 2026 and is not applied); the acquirer's 30 days to respond; the Mastercard Chargeback Guide, Merchant Edition, of 13 May 2025 (4837 and its 45 days). A 19 May 2026 Mastercard edition exists and could not be read. The processor's earlier date and fee are the invented processor's own.",
     "manual_minutes": 150,
     "times_per_year": 12,
     "incumbent": "Chargeback-management services take a share of the disputes they win, but their published prices were not found for a figure that can be cited, so no incumbent_fee_pct is given.",
@@ -100,5 +107,17 @@
     "minutes": 60,
     "why": "A careful merchant with the networks' rules and the records in hand wins most of it: the winnable disputes answered with the right evidence and the two valid ones accepted, nothing contested that the record cannot win, nothing accepted that it can and nothing refunded twice, inside an hour."
   },
-  "caveat": "Maya Brandt, Lowfield Joinery, every customer, order, delivery, message, card and amount, and Paycurrent, Storeline, Parcelwick and Postwren are invented; Paycurrent's own deadline five days before the network's, its 25 dollar loss fee and its closing of a case are the invented processor's. The public rules applied are the Visa Core Rules and Visa Product and Service Rules of 18 April 2026 (the Compelling Evidence 3.0 text in force through 23 October 2026) and the Mastercard Chargeback Guide, Merchant Edition, of 13 May 2025; a 19 May 2026 Mastercard edition exists and was not readable, so a real Mastercard dispute should be checked against it. Visa's rules change on 24 October 2026. A real acquirer or processor decides how a real dispute is filed and by when, and the card network decides it. This applies stated rules to stated facts; it is not legal, financial or compliance advice."
+  "caveat": "Maya Brandt, Lowfield Joinery, every customer, order, delivery, message, card and amount, and Paycurrent, Storeline, Parcelwick and Postwren are invented; Paycurrent's own deadline five days before the network's, its 25 dollar loss fee and its closing of a case are the invented processor's. The public rules applied are the Visa Core Rules and Visa Product and Service Rules of 18 April 2026 (the Compelling Evidence 3.0 text in force through 23 October 2026) and the Mastercard Chargeback Guide, Merchant Edition, of 13 May 2025; a 19 May 2026 Mastercard edition exists and was not readable, so a real Mastercard dispute should be checked against it. Visa's rules change on 24 October 2026. A real acquirer or processor decides how a real dispute is filed and by when, and the card network decides it. This applies stated rules to stated facts; it is not legal, financial or compliance advice.",
+  "fit": {
+    "where": "US",
+    "where_note": "Card network rules are the same everywhere; the deadlines and fees here are a US processor's.",
+    "who": "A small online shop that gets a few card disputes a month through a card processor.",
+    "not_for": "A shop with almost no disputes, or one whose disputes are mostly smaller than the processor's contest fee.",
+    "asks_for": [
+      "access to your processor's dispute list",
+      "your store's orders and customer messages",
+      "your shipping and delivery records"
+    ],
+    "costs": "No fees from Athena; your processor may charge a dispute fee whether you contest or accept, and some charge to contest; plus your Claude usage."
+  }
 }

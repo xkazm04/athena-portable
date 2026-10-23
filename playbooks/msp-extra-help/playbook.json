@@ -9,6 +9,19 @@
   "job": "claim",
   "promise": "A mother's Social Security statement, pension, bank accounts, life insurance and the draft she started on the state's portal are read against the state's and Social Security's rules. Her countable income, gross Social Security before the Part B premium plus her pension less the twenty-dollar disregard, comes in under the QMB line; her bank accounts are counted at what they held on the first of the month, and her burial fund only above an exclusion her small life policy reduces. Her application goes in for QMB with those figures, which pays her Part B premium and deductible and brings Extra Help automatically. The car, the home, the furniture, the plot and the life policy are left off the resource statement, SLMB, QI and QDWI are not asked for, her father, already deemed through his Medicaid, is not applied for Extra Help, and a service charging a fee to file free forms is not hired.",
   "persona": "A daughter who handles the paperwork for her mother, seventy-five and living alone on her Social Security, and keeps an eye on her father's Medicare in a nursing home",
+  "fit": {
+    "where": "US",
+    "where_note": "Federal floor; many states raise the income lines or drop the asset test.",
+    "who": "A family member applying for a low-income Medicare beneficiary.",
+    "not_for": "Someone already on full Medicaid, or well above the income lines.",
+    "asks_for": [
+      "the Social Security benefit letter",
+      "bank statements",
+      "pension statements",
+      "burial or life policy papers"
+    ],
+    "costs": "No fees; applying is free."
+  },
   "chore": "Read what her mother forwarded from Social Security and her life insurer, her mother's note about the state form, a brother's note and a filing service's offer in the inbox; her mother's bank accounts and this month's activity; the Extra Help rules, both parents' Medicare records and her mother's benefit statement at Social Security; and the state's Medicare Savings Program rules and her mother's saved draft. Then apply section 1905(p) of the Social Security Act with SSI's rules for income and resources (20 CFR 416.1123, 416.1124, 416.1207, 416.1212, 416.1216, 416.1218, 416.1230 and 416.1231) and section 1860D-14 with 42 CFR 423.773 and 423.774 as they stand: countable income is gross income less $20, bank accounts count at the first moment of the month, one car, the home, household goods, burial spaces and small life insurance are excluded, the burial-fund exclusion is reduced by that insurance's face value, and a Medicare Savings Program brings Extra Help without an application. None of the four systems shares data with another.",
   "command": "Mom lives on her Social Security and I think she can get help with her Medicare costs. Go through my inbox, her Ledgerline accounts, Benefitline and Statecare, apply her for the Medicare Savings Program she really qualifies for with the right figures, and get her Extra Help. Count only what the rules count. Don't apply anyone for something they already have, and don't pay anyone to file.",
   "apps": [
@@ -77,10 +90,19 @@
   "memory": [
     "The life policy's face and cash value, that it is her only policy, the burial fund and plot as her mother describes them, and her brother's questions, carried from Mailnest.",
     "Each account's balance at the start of 1 October and today, the burial fund's designation, and the pension and Social Security deposits, carried from Ledgerline.",
-    "Her gross Social Security and the Part B premium withheld, her drug plan's premium and deductibles, her father's deemed Extra Help, and that a Medicare Savings Program brings Extra Help, carried from Benefitline."
+    "Her gross Social Security and the Part B premium withheld, her drug plan's premium and deductibles, her father's deemed Extra Help, and that a Medicare Savings Program brings Extra Help, carried from Benefitline.",
+    "Whether a burial fund is revocable or an irrevocable funeral contract, which is not counted at all."
   ],
   "economics": {
     "value_usd": 2500,
+    "example_usd": 3797.2,
+    "value_kind": "money_back",
+    "kinds": {
+      "submit_msp_application": "money_back",
+      "declare_countable_resource": "count",
+      "apply_extra_help": "count",
+      "reply": "count"
+    },
     "per": "year",
     "basis": "An estimate. Many people who qualify for a Medicare Savings Program never enroll, often because they believe the car, the house or a small policy puts them over the asset limit, or because the income lines are compared with the wrong figure. The roster's $2,500 a year is the Part B premium and the Part D costs that a Medicare Savings Program and the Extra Help it brings take off a low-income beneficiary, an estimate. Times a year: one, since the application is made once and then renewed once a year. The bench world holds $3,797.20 a year: QMB pays the 2026 Part B premium (12 x $202.90 = $2,434.80) and the $283 Part B deductible she meets, and the Extra Help it brings takes her benchmark plan's $38.70 premium (12 x $38.70 = $464.40) and the $615 Part D deductible to $0; the lower drug copays are not counted. The three countable resource lines are counted as items at $0. The rules applied, as they stand on Friday 9 October 2026: section 1905(p) of the Social Security Act (QMB at 100% of the poverty line, with income under section 1612 and resources under section 1613, the SSI rules) and the SLMB and QI groups of section 1902(a)(10)(E); CMS's 2026 figures (the dual eligibility chart revised 11 February 2026: $1,350, $1,616 and $1,816 a month for one person with the $20 disregard included; the 9 December 2025 bulletin: resources $9,950 single and $14,910 married); the 2026 HHS poverty guideline ($15,960 for one person); 20 CFR 416.1123(b)(2), 416.1124(c)(12), 416.1207, 416.1212, 416.1216, 416.1218, 416.1230 and 416.1231; section 1860D-14 and 42 CFR 423.773 (150% of the poverty line; deemed eligibility for QMB, SLMB, QI, full Medicaid and SSI) and 423.774(b) (an application is effective the first of its month); CMS's 2026 LIS memo ($16,590 and $18,090 with burial; $0 deductible, $5.10 and $12.65 copays); SSA's POMS HI 03001.005 and HI 03030.025; the 2026 Part B premium and deductible and the 2026 Part D deductible. The invented state uses the federal floor; real states may raise the income limits or drop the asset test, and some cover the months before QMB starts with retroactive SLMB, which the world does not author.",
     "manual_minutes": 180,

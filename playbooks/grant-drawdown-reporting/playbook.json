@@ -2,7 +2,7 @@
   "id": "grant-drawdown-reporting",
   "title": "A federal grant drawn down against what was spent, and the quarter's SF-425 filed",
   "short_title": "Federal grant costs drawn down and reported",
-  "brief": "A Spokane literacy nonprofit's finance manager has a federal award's quarter **nine days closed**.\n\n**Drawn down — $31,492:**\n- Each allowable, paid cost read against the award\n- Staff pay checked against timesheets\n- Each cost at the share the award may carry\n- The SF-425 filed with what the ledger supports\n\n**Left alone:**\n- Pre-award costs and items already drawn\n- Wine, a gala deposit, lobbying, an IRS penalty\n- Rent that belongs to another award\n- Workbooks invoiced but not yet paid\n- A fundraiser's pay charged to the award",
+  "brief": "A Spokane literacy nonprofit's finance manager has a federal award's quarter **nine days closed**.\n\n**Drawn down — $31,492.60, SF-425 due 30 October:**\n- Each allowable, paid cost read against the award\n- Staff pay checked against timesheets\n- Each cost at the share the award may carry\n- The SF-425 filed with what the ledger supports\n\n**Left alone:**\n- Pre-award costs and items already drawn\n- Wine, a gala deposit, lobbying, an IRS penalty\n- Rent that belongs to another award\n- Workbooks invoiced but not yet paid\n- A fundraiser's pay charged to the award",
   "domain": "Nonprofit",
   "audience": "work",
   "category": "public",
@@ -42,7 +42,10 @@
     "Reads the notice of award, the budget and the letters in Docshelf.",
     "Reads every ledger entry coded to an award in Ledgerline: what it bought, when it was paid, and the bookkeeper's notes.",
     "Reads the quarter's pay against the timesheets in Payroll Harbor.",
-    "Back in Grantflow, adds each allowable paid cost at its allowable share, then files the SF-425 with the cumulative expenditures."
+    "Puts the SF-425's due date in the brief: 30 days after the quarter ends (2 CFR 200.328), 30 October for a quarter ending 30 September.",
+    "Checks any cost share or match the award requires against each draw, and applies the de minimis indirect rate of up to 15% only where the organization has no negotiated rate (2 CFR 200.414(f)).",
+    "Back in Grantflow, adds each allowable paid cost at its allowable share, then files the SF-425 with the cumulative expenditures.",
+    "Uses the payment system the agency names (PMS, ASAP, or the Department of Education's G6) and asks which one if unsure."
   ],
   "gates": [
     {
@@ -75,8 +78,14 @@
   ],
   "economics": {
     "value_usd": 2500,
+    "example_usd": null,
     "per": "quarter",
-    "basis": "Mostly minutes. A quarter's draw and SF-425 take a small nonprofit's finance lead about two working days; bought in, that is about sixteen hours of a nonprofit finance consultant at the $159 an hour average of Nonprofit.ist's 2025 survey, about $2,500 a quarter, an estimate. The bench world's items are the reimbursement itself, $31,492.60 of allowable costs paid, which the award would pay in time anyway; an unallowable draw would have to be repaid. Times a year: four, one per quarter, as the world holds one.",
+    "value_kind": "money_protected",
+    "kinds": {
+      "claim_cost": "money_protected",
+      "file_sf425": "count"
+    },
+    "basis": "Mostly minutes. A quarter's draw and SF-425 take a small nonprofit's finance lead about two working days; bought in, that is about sixteen hours of a nonprofit finance consultant at the $159 an hour average of Nonprofit.ist's 2025 survey, about $2,500 a quarter, an estimate. The bench world's items are the reimbursement itself, $31,492.60 of allowable costs paid, which the award would pay in time anyway; an unallowable draw would have to be repaid. Times a year: four, one per quarter, as the world holds one. The draw itself is payment released sooner, not money recovered: the award would pay the allowable costs in time anyway.",
     "manual_minutes": 480,
     "times_per_year": 4,
     "incumbent": "An outsourced nonprofit accountant or consultant, billed monthly or by the hour; nobody takes a share of the grant.",
@@ -115,5 +124,18 @@
     "minutes": 60,
     "why": "A careful finance manager draws most of it and files on time; the bar is most of the allowable costs, no unallowable draw, inside an hour."
   },
-  "caveat": "Riverbend Literacy Alliance, award FA-2025-0417 and its terms, Grantflow, Docshelf, Ledgerline, Payroll Harbor and every person here are invented. The rules are the Uniform Guidance (2 CFR 200) as revised in 2024, fixed in the bench world as of October 2026; a real award's terms and the agency's grants officer decide. This is not legal or accounting advice."
+  "caveat": "Riverbend Literacy Alliance, award FA-2025-0417 and its terms, Grantflow, Docshelf, Ledgerline, Payroll Harbor and every person here are invented. The rules are the Uniform Guidance (2 CFR 200) as revised in 2024, fixed in the bench world as of October 2026; a real award's terms and the agency's grants officer decide. This is not legal or accounting advice.",
+  "fit": {
+    "where": "US",
+    "where_note": "Federal Uniform Guidance (2 CFR 200); state and foundation grants set their own rules.",
+    "who": "A small nonprofit's finance lead drawing down a federal grant and filing its quarterly SF-425.",
+    "not_for": "A grant from a state or foundation with its own reporting rules.",
+    "asks_for": [
+      "your award notice and budget",
+      "payroll and timesheets charged to the award",
+      "the general ledger for the quarter",
+      "your payment system login"
+    ],
+    "costs": "No fees; only your Claude usage."
+  }
 }

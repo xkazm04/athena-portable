@@ -1,7 +1,7 @@
 {
   "id": "property-tax-appeal",
   "title": "The property tax protest, with comparable sales",
-  "short_title": "Property tax protested with real comps",
+  "short_title": "Texas property tax protested with real comps",
   "brief": "A Texas couple got **four appraisal notices** for their home, a duplex and a lot.\n\n**Protested — 2 properties, $2,310 a year:**\n- Each deadline worked out from the delivery date\n- Comps within 24 months, open-market, truly alike\n- Home protested at $70,000 lower\n- Duplex protested at $40,000 lower\n- A defect the house had on January 1, with its quote\n\n**Left alone:**\n- A lot whose value is fair\n- A condo sold before January 1\n- Family, old, auction or unlike sales\n- A remodel quote and a roof already replaced",
   "domain": "Housing",
   "audience": "home",
@@ -42,7 +42,10 @@
     "Checks the deeds in Deedvault: which properties the couple owned on January 1.",
     "Pulls the sales for each property in Compsmith, and keeps only those inside 24 months, sold on the open market, and alike in location, size and condition.",
     "Reads Countyline's rules, then files one protest per property that the comps support, attaches the comps and the defect's estimate, and states the opinion of value the rule gives.",
-    "Leaves alone the lot the sales say is fairly valued, the condo sold last year, and every sale and document that would not hold up."
+    "On a homestead, checks the 10% cap on yearly increases in appraised value (Tax Code 23.23); on other property under about $5 million, the 20% cap for tax years 2024 to 2026 (23.231).",
+    "Considers unequal appraisal as a ground too (Tax Code 41.43(b)(3)), not only market value.",
+    "Leaves alone the lot the sales say is fairly valued, the condo sold last year, and every sale and document that would not hold up.",
+    "Out of season, says plainly that this year's protest window has closed, names the correction motions that may still be open (Tax Code 25.25), and sets the next window."
   ],
   "gates": [
     {
@@ -79,11 +82,18 @@
   ],
   "economics": {
     "value_usd": 1100,
+    "example_usd": 2310,
     "per": "year",
-    "basis": "Ownwell publishes an average saving of $774 a year for each customer it won a reduction for in 2025; a household that protests a home and a rental, as here, is put at about $1,100 a year, an estimate. The bench world holds $2,310 a year: $70,000 off the home and $40,000 off the duplex at a combined rate of 2.10%. Times a year: once, as notices come once a year.",
+    "value_kind": "money_back",
+    "kinds": {
+      "file_protest": "money_back",
+      "attach_comparable": "count",
+      "attach_document": "count"
+    },
+    "basis": "An estimate. A protest that wins takes value off at the combined tax rate: each $10,000 off at 2.10% saves $210 a year. Ownwell reports an average saving of $774 a year among the customers it won a reduction for in 2025, a figure among winners only and quoted second-hand (Money Crashers), so it overstates what an average protest saves. The roster's $1,100 a year for a household protesting a home and a rental sits near the bench world's $1,155 a property ($2,310 / 2). The bench world holds $2,310 a year: $70,000 off the home and $40,000 off the duplex at 2.10% ($1,470 + $840). Times a year: once, as notices come once a year.",
     "manual_minutes": 240,
     "times_per_year": 1,
-    "incumbent": "Property tax consultants such as Ownwell keep 25% of the first year's savings in Texas (35% in some states), and re-enrol every year.",
+    "incumbent": "Property tax consultants such as Ownwell keep 25% of the first year's savings in Texas (35% in some states), and re-enrol every year. Some local consultants charge more, up to a third of the savings.",
     "incumbent_fee_pct": 25,
     "sources": [
       {
@@ -116,5 +126,19 @@
     "minutes": 60,
     "why": "A careful owner with an evening finds most of it; the bar is most of the protests and the evidence, no protest the facts do not support and no evidence that would not hold up, inside an hour."
   },
-  "caveat": "Countyline, Compsmith, Deedvault, Mailnest and the Ferreira household are invented; the rules are the Texas Tax Code's, fixed in the bench world as of May 2026 for a county under 150,000 people. This is not legal or tax advice, and an appraisal review board decides every value."
+  "caveat": "Countyline, Compsmith, Deedvault, Mailnest and the Ferreira household are invented; the rules are the Texas Tax Code's, fixed in the bench world as of May 2026 for a county under 150,000 people. This is not legal or tax advice, and an appraisal review board decides every value.",
+  "fit": {
+    "where": [
+      "TX"
+    ],
+    "where_note": "Texas Tax Code deadlines and rules; other states' appeals work differently and are not applied.",
+    "who": "A Texas owner with an appraisal notice that looks too high, inside the protest window (usually May 15 or 30 days after the notice).",
+    "not_for": "An owner outside Texas, or one whose protest deadline has passed (then only correction motions may be open).",
+    "asks_for": [
+      "your appraisal notices",
+      "your deeds, or which properties you owned on January 1",
+      "repair estimates or photos of defects"
+    ],
+    "costs": "Filing a protest is free; only your Claude usage. Consultants usually keep a share of the first year's savings."
+  }
 }

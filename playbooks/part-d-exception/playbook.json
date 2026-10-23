@@ -9,6 +9,18 @@
   "job": "claim",
   "promise": "Each of a father's prescriptions is read against his drug plan's tiers and rules, his medication history in the doctor's portal and the pharmacy's rejected claims. Where every formulary alternative failed and the doctor has signed a statement, a formulary exception goes in, expedited only where she says waiting may seriously jeopardize his health; where a statement is missing and his history supports one, the doctor is asked for it. A drug whose step therapy was never tried, a specialty-tier drug, an exception already approved for the year, a drug the law excludes, and a brand drug at the generics' price are left alone, and nothing is bought at cash outside the plan while a decision is days away.",
   "persona": "An adult daughter who manages her father's Medicare drug plan as his authorized representative, with proxy access to his doctor's portal",
+  "fit": {
+    "where": "US",
+    "where_note": "Medicare Part D; Medicaid and employer drug plans differ.",
+    "who": "A family member managing a parent's Medicare drug plan as authorized representative.",
+    "not_for": "Drugs Part D excludes by law, such as cosmetic or hair-growth drugs.",
+    "asks_for": [
+      "the drug list and what each costs now",
+      "the plan's portal",
+      "access to the prescriber's portal or statements"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read the drug plan's tiers, exception rules, decision timeframes and exclusions, his drug list with each drug's tier, rule and alternatives, and the exceptions already decided; his medication history and the doctor's posted statements and notes in her portal; and the pharmacy's fills, rejections and days of supply. Then apply 42 CFR 423.578 with the timeframes of 423.568 and 423.570 as they stand: a formulary exception where every formulary alternative failed, a tiering exception where the lower tier's alternatives failed, each resting on the prescriber's statement, 72 hours standard and 24 hours expedited from its receipt, no tiering exception for the specialty tier or to a generics-only tier, an approval lasting the plan year, and no exception for a drug the law excludes. None of the three systems shares data with another.",
   "command": "Dad's drug plan is costing him too much. Go through Rxmeadow, Dr. Petrov's portal in Carenook and Corner Pharmacy, and ask the plan for every exception his history really supports, with the doctor's statement, expedited only where she says so. Ask her for a statement where one's missing and justified. Don't ask for anything his history doesn't back up, and don't buy anything at cash we don't need to.",
   "apps": [
@@ -32,6 +44,7 @@
     }
   ],
   "steps": [
+    "Checks first for a transition fill (the first 90 days in a new plan, or after a mid-year formulary change) before asking for an exception.",
     "Reads the plan's rules, his drug list and the exceptions on file in Rxmeadow.",
     "Reads his medication history and the doctor's statements in Carenook, and asks her for the one statement missing.",
     "Reads the rejected claims and days of supply at Corner Pharmacy.",
@@ -67,10 +80,18 @@
   "memory": [
     "The tiers, the exception rules, the timeframes and the exclusions, each drug's tier, rule and alternatives, and the exception already approved, carried from Rxmeadow.",
     "Which alternatives were tried, when, and why each stopped, and which statements are signed and which is missing, carried from Carenook.",
-    "Each drug's rejection, next fill date and days of supply, carried from Corner Pharmacy."
+    "Each drug's rejection, next fill date and days of supply, carried from Corner Pharmacy.",
+    "When fewer than 7 days of a drug are left, the request asks for an expedited decision (24 hours) instead of the standard 72."
   ],
   "economics": {
     "value_usd": 2400,
+    "example_usd": 799,
+    "value_kind": "money_back",
+    "kinds": {
+      "submit_exception_request": "money_back",
+      "request_statement": "money_back",
+      "pay_cash_fill": "count"
+    },
     "per": "year",
     "basis": "An estimate. A Medicare enrollee taking a drug that is off the formulary or on a non-preferred tier pays the cash price or the higher tier's cost until someone gathers which alternatives failed, gets the prescriber's statement and asks for an exception; most never ask. For a retiree on several maintenance drugs, the roster's $2,400 a year is about $200 a month of cost-sharing avoided, an estimate. The bench world holds $799 for the rest of the 2026 plan year: $400 on Felotrex (two fills at $95 instead of $295 cash), $255 on Haldamine (three fills at $95 instead of $180) and $144 on Ostavia (about three fills at $47 instead of $95), with his out-of-pocket spending at $620 of 2026's $2,100 limit. The rules as they stand on Friday 9 October 2026: 42 CFR 423.578 (formulary and tiering exceptions on the prescriber's supporting statement; no tiering exception required for a brand to a generics-only tier, (a)(6)(i), or from a specialty tier, (a)(6)(iii)(B); an approval lasting the plan year, (c)(4)), 423.568(b) (a standard decision within 72 hours of receiving the supporting statement) and 423.570(d) (24 hours expedited), and Social Security Act section 1860D-2(e)(2) (drugs excluded from Part D, among them cosmetic and hair-growth drugs). The plan's tiers and prices are an invented world document. Times a year: two, as each approval ends with the plan year and a new prescription or formulary change brings another round.",
     "manual_minutes": 120,

@@ -7,8 +7,20 @@
   "audience": "work",
   "category": "health",
   "job": "contest",
-  "promise": "Every denied claim read by its reason code, fixed or appealed in the payer's own portal with the proof it needs, and written off only when it truly cannot be won — before the windows close.",
+  "promise": "Every denied claim read by its reason code (a CO-16 corrected, a CO-197 checked for the authorisation, a CO-29 answered with proof of timely filing, a CO-18 left to wait for the original), fixed or appealed in the payer's own portal with the proof it needs, and written off only when it truly cannot be won — before the windows close.",
   "persona": "A three-doctor family practice billing four payers, with one part-time biller",
+  "fit": {
+    "where": "US",
+    "where_note": "Each payer's own filing and appeal limits apply; the bench reads them in the portal.",
+    "who": "A small medical practice's biller working denied claims across several payers.",
+    "not_for": "A practice that cannot use a model path covered by a business associate agreement for real patient data.",
+    "asks_for": [
+      "your denial worklist or remittances",
+      "the payer portals you use",
+      "your clearinghouse acceptance reports"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Pull the denial worklist from the practice management system and read each claim's reason code. For a missing modifier or a wrong NPI, correct and resubmit — inside the payer's filing limit. For a timely-filing denial, find the clearinghouse report that proves the payer received the claim in time. For a missing authorisation, look it up in the payer portal. Never resubmit a duplicate, never file a secondary before the primary pays, never appeal what is out of time — and write off what cannot be won so it stops sitting on the books. Each payer's portal is different and UI-only.",
   "command": "Work this week's denial worklist: fix and resubmit what can be corrected, file a reconsideration where we have proof, write off only what can't be won, and leave anything still pending alone.",
   "apps": [
@@ -73,8 +85,15 @@
   ],
   "economics": {
     "value_usd": 4200,
+    "example_usd": 2120,
+    "value_kind": "money_back",
+    "kinds": {
+      "submit_corrected_claim": "money_back",
+      "file_reconsideration": "money_back",
+      "write_off": "count"
+    },
     "per": "month",
-    "basis": "A practice collecting about $70k a month with a 10–12% initial denial rate, of which most is recoverable and much is never reworked. The bench world alone holds $2,120 across fifteen denials.",
+    "basis": "An estimate, and a gross one. A practice collecting about $70,000 a month with a 10 to 12% initial denial rate has about $7,000 to $8,400 a month denied ($70,000 x 11% = $7,700 at the middle). The roster's $4,200 a month is 55% of that middle figure, the share assumed recoverable and not already reworked by the biller. It is not netted against this practice's own rework rate, which no source gives: a practice whose biller already reworks most denials should count much less. The bench world alone holds $2,120 across fifteen denials.",
     "manual_minutes": 600,
     "incumbent": "Revenue-cycle outsourcers take about 4–9% of all collections, not just the denials; in-house, reworking one claim costs a practice around $25 of staff time.",
     "sources": [

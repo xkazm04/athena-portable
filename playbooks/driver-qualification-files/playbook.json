@@ -9,6 +9,19 @@
   "job": "comply",
   "promise": "A small carrier's eight drivers are read across its ELD, its qualification files, its driving record orders and its Clearinghouse desk, and every clock that has run out is reset the way Parts 391 and 382 require: a full Clearinghouse query for a driver whose limited query found something, inside the twenty-four hours, before her afternoon load; an annual query a month overdue; annual driving records for two drivers, one of them from the two states that licensed him, and one without a CDL; a driving record for a driver re-examined last week, because her medical status now reaches the carrier only on the state's record and the paper exemption ends on Sunday; and an annual review signed on a record received last week. The driver with no CDL is kept out of the Clearinghouse, the driver who left in September is owed nothing, and every query, record and review done this year is left alone.",
   "persona": "The safety and compliance manager of a small trucking company with eight drivers, who keeps the driver qualification files herself",
+  "fit": {
+    "where": "US",
+    "where_note": "FMCSA rules for interstate motor carriers.",
+    "who": "A small carrier's safety manager who keeps the driver qualification files.",
+    "not_for": "A fleet that runs only inside one state under that state's own rules.",
+    "asks_for": [
+      "your driver list",
+      "your Clearinghouse account",
+      "your driving-record vendor",
+      "medical certificate dates"
+    ],
+    "costs": "Driving records and Clearinghouse queries carry their own small fees; nothing else."
+  },
   "chore": "Read each driver's licence, unit, status and dispatch in the ELD; each qualification file's dates, licensing states and medical record, and the rules, in HR; every driving record obtained and its content in the record ordering portal; and every Clearinghouse query and consent on the Clearinghouse desk. Then apply 49 CFR 391.51 (the file and how long), 391.25 (the annual inquiry from each licensing state and the annual review; 391.27 reserved since 2022), 391.45 and 391.23(m) with the National Registry II rule (a CDL holder's medical status on the CDLIS record since 23 June 2025, and the CVSA exemption that lets paper serve until 11 October 2026), and 382.103, 382.701 and 382.703 (the annual query, the limited query on general consent, and the full query within 24 hours when the limited one finds something), as they stand on 9 October 2026. Four clocks per driver, in four systems.",
   "command": "I'm Marisa, safety and compliance at Pell Ridge Transport. Go through Logmarrow, the Crewmarrow files, Screenmoor and our Specimoor Clearinghouse desk, and bring every driver's qualification file up to date: every query, driving record and annual review that's due, done the right way. Don't do anything for a driver the rule doesn't cover or that's already done.",
   "apps": [
@@ -74,9 +87,16 @@
     "Which records are in and what they show, carried from Screenmoor into the Specimoor tab."
   ],
   "economics": {
-    "value_usd": 3000,
+    "value_usd": 0,
+    "example_usd": null,
+    "value_kind": "money_back",
+    "kinds": {
+      "run_query": "count",
+      "order_mvr": "count",
+      "sign_annual_review": "count"
+    },
     "per": "year",
-    "basis": "An estimate, mostly minutes. A carrier keeps a qualification file for every driver and resets four clocks on each: the annual driving record from every state that licensed the driver, the annual review, the medical certification (since 23 June 2025 a CDL holder's reaches the carrier on the state's CDLIS record), and the annual Clearinghouse query, with a full query within 24 hours when a limited one finds something. A recordkeeping violation can cost up to $1,584 a day, to $15,846 (49 CFR Part 386, Appendix B, as adjusted for 2025), and a driver without a current file or query cannot lawfully drive. The roster's $3,000 a year is about what a compliance service charges to keep eight drivers' files ($30 a driver a month, DotFleet Compliance's published price). Each truth item is weighted at $90, a quarter of that service's $360 a driver a year for the four annual tasks, a price avoided, not money recovered; the bench world holds six acts, $540. Times a year: 12, a monthly pass over the files. manual_minutes 90: reading eight files against four systems and the rules, and placing six orders, queries and reviews. The rules applied, as they stand on Friday 9 October 2026 (eCFR title 49 through its versioner API, up to date as of 7 October 2026; federalregister.gov): 391.15, 391.23(m)(1) and (2), 391.25(a), (b) and (c)(2), 391.27 [Reserved] (removed by the Record of Violations rule, 87 FR 13192, 9 March 2022), 391.45(b), 391.51(b), (c) and (d); 382.103, 382.701(b)(1) to (3) and 382.703; the National Registry II rule (80 FR 22790, 2015), required from 23 June 2025, and FMCSA's notice of 8 October 2026 (91 FR 64454): Alaska alone has not implemented it, and the CVSA exemption (91 FR 19255, 14 April 2026), which lets a paper certificate serve for up to 60 days, expires on 11 October 2026. The brief's premise that 391.27's annual list of violations still exists was checked and is wrong: 391.27 is reserved, and the world says so.",
+    "basis": "An estimate, mostly minutes. A carrier keeps a qualification file for every driver and resets four clocks on each: the annual driving record from every state that licensed the driver, the annual review, the medical certification (since 23 June 2025 a CDL holder's reaches the carrier on the state's CDLIS record), and the annual Clearinghouse query, with a full query within 24 hours when a limited one finds something. A recordkeeping violation can cost up to $1,584 a day, to $15,846 (49 CFR Part 386, Appendix B, as adjusted for 2025), and a driver without a current file or query cannot lawfully drive. No money comes back, so the roster's value is $0 a year. A compliance service would charge about $3,000 a year to keep eight drivers' files ($30 a driver a month, DotFleet Compliance's published price): the price of the hours, which scale with the number of drivers. Each truth item is weighted at $90, a quarter of that service's $360 a driver a year for the four annual tasks, a price avoided, not money recovered; the bench world holds six acts, $540. Times a year: 12, a monthly pass over the files. manual_minutes 90: reading eight files against four systems and the rules, and placing six orders, queries and reviews. The rules applied, as they stand on Friday 9 October 2026 (eCFR title 49 through its versioner API, up to date as of 7 October 2026; federalregister.gov): 391.15, 391.23(m)(1) and (2), 391.25(a), (b) and (c)(2), 391.27 [Reserved] (removed by the Record of Violations rule, 87 FR 13192, 9 March 2022), 391.45(b), 391.51(b), (c) and (d); 382.103, 382.701(b)(1) to (3) and 382.703; the National Registry II rule (80 FR 22790, 2015), required from 23 June 2025, and FMCSA's notice of 8 October 2026 (91 FR 64454): Alaska alone has not implemented it, and the CVSA exemption (91 FR 19255, 14 April 2026), which lets a paper certificate serve for up to 60 days, expires on 11 October 2026. The brief's premise that 391.27's annual list of violations still exists was checked and is wrong: 391.27 is reserved, and the world says so.",
     "manual_minutes": 90,
     "times_per_year": 12,
     "incumbent": "Compliance services keep driver qualification files for a flat fee a driver a month, $5 for software to $30 for a managed service (DotFleet Compliance); no share of anything, so no incumbent_fee_pct is given.",

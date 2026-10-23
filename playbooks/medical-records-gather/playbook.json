@@ -2,13 +2,25 @@
   "id": "medical-records-gather",
   "title": "Every record a second opinion needs requested from five providers, at the fee the rule allows, and the late one chased",
   "short_title": "Records gathered for a second opinion",
-  "brief": "A patient with a spine problem needs records from **five providers** within three weeks.\n\n**Gathered before the second opinion:**\n- Notes and labs from her doctor's portal\n- Her own images, matched by birth date\n- Orthopedic notes by fax to the new number\n- Hospital overcharge disputed to the $6.50 flat fee\n- A fair itemized paper copy paid\n- Therapy clinic chased, past its 30 days\n\n**Left alone:**\n- Her spouse's record and a namesake's images\n- The insurer's copy, which the fee cap doesn't reach\n- The old fax number, now another business\n- A $199 retrieval service and a look-alike request",
+  "brief": "A patient with a spine problem needs records from **five providers** within three weeks.\n\n**Gathered before the second opinion:**\n- Notes and labs from her doctor's portal\n- Her own images, matched by birth date\n- Orthopedic notes by fax to the new number\n- Hospital overcharge disputed to its own $6.50 flat fee\n- A fair itemized paper copy paid\n- Therapy clinic chased, past its 30 days\n\n**Left alone:**\n- Her spouse's record and a namesake's images\n- The insurer's copy, which the fee cap doesn't reach\n- The old fax number, now another business\n- A $199 retrieval service and a look-alike request",
   "domain": "Patient health",
   "audience": "home",
   "category": "health",
   "job": "claim",
-  "promise": "Each record the second-opinion clinic lists is asked for where it lives: the primary care notes and labs through the doctor's portal, the images through the imaging center's portal for the patient whose birth date is hers, the orthopedic notes by signed fax to the practice's new number. The hospital's invoices are read against the access rule and its own schedule: a retrieval fee and per-page charges on her own electronic copy are disputed down to the 6 dollars 50 flat fee, a fair itemized paper copy is paid, and the copy she sent to her insurer is left on the third-party schedule the rule does not cap. The therapy clinic, past its 30 days with no extension notice, is chased. A spouse's chart, a namesake's images, a reassigned fax number, a 199 dollar retrieval service and a look-alike demand are left alone.",
+  "promise": "Each record the second-opinion clinic lists is asked for where it lives: the primary care notes and labs through the doctor's portal, the images through the imaging center's portal for the patient whose birth date is hers, the orthopedic notes by signed fax to the practice's new number. The hospital's invoices are read against the access rule and its own schedule: a retrieval fee and per-page charges on her own electronic copy are disputed down to the reasonable, cost-based fee the rule allows (here the hospital's own 6 dollars 50 flat fee; another provider's may differ), a fair itemized paper copy is paid, and the copy she sent to her insurer is left on the third-party schedule the rule does not cap. The therapy clinic, past its 30 days with no extension notice, is chased. A spouse's chart, a namesake's images, a reassigned fax number, a 199 dollar retrieval service and a look-alike demand are left alone.",
   "persona": "A patient with a spine problem gathering her own records from five providers before a second opinion in three weeks",
+  "fit": {
+    "where": "US",
+    "where_note": "Federal HIPAA access right; a state law may set a lower fee.",
+    "who": "A patient gathering her own records from several providers before a second opinion.",
+    "not_for": "Records sent straight to a lawyer or an insurer, which the fee limit does not cover.",
+    "asks_for": [
+      "the list of records the new clinic wants",
+      "your patient portal logins",
+      "the providers' names and your date of birth"
+    ],
+    "costs": "Providers may charge a reasonable, cost-based copy fee; no other fees."
+  },
   "chore": "Read the second-opinion clinic's list of records, each provider's messages and the moving notice in the inbox; the record sets in the primary care portal; the hospital's statement of the right of access, its fee schedule, her requests and their invoices in its release-of-information portal; the studies under her name in the imaging portal; and the saved contacts and log in the fax app. Then apply HIPAA's right of access, 45 CFR 164.524, as it stands: her own copy within 30 days, with one 30-day extension only on written notice; a reasonable, cost-based fee with no search or retrieval charge for her own request; and, since Ciox Health v. Azar (D.D.C. 2020), no such limit on a copy she directs to a third party. None of the five systems shares data with another.",
   "command": "I need every record Westbrook asked for before my second opinion on 30 October. Go through my inbox, Alder Creek's portal in Carenook, Harlow Valley's records portal in Clinora, Brightline's images in Patientry and Faxline for Bayside. Request what's needed, pay only the fees the rule allows, dispute the rest, and chase anyone who's late. Don't send my details anywhere they shouldn't go.",
   "apps": [
@@ -100,9 +112,19 @@
     "Which patient id carries her birth date, from Patientry."
   ],
   "economics": {
-    "value_usd": 150,
+    "value_usd": 100,
+    "example_usd": 102.5,
+    "value_kind": "money_back",
+    "kinds": {
+      "request_copy": "count",
+      "dispute_invoice": "money_back",
+      "pay_invoice": "count",
+      "request_images": "count",
+      "send_fax": "count",
+      "reply": "count"
+    },
     "per": "episode",
-    "basis": "An estimate, and mostly minutes. Before a second opinion a patient spends most of a working day finding where each record lives, filling five different request forms, chasing the one that goes quiet and querying fees, and a records-retrieval service charges about $199 a case to do it. The roster's $150 an episode is the fees and service charges avoided, an estimate; most of the value is the patient's time, which manual_minutes carries (about 8 hours). The episode is one second opinion; times a year: one, since a patient seldom gathers a full record twice a year. The bench world holds $342.50: six acts weighted at $40 each, a fifth of the service's $199 for the case, a price avoided and not money recovered, and $102.50 of an invoice not owed. The rule as it stands on Friday 9 October 2026: 45 CFR 164.524 (30 days, one 30-day extension on written notice within the first 30; a reasonable, cost-based fee for the individual's own copy, with no search or retrieval charge). HHS's proposed rule of January 2021 to shorten the time to 15 days had not been finalized, so 30 days applies. Since Ciox Health, LLC v. Azar (D.D.C. 23 January 2020), the fee limit applies only to the individual's own request, not to a copy she directs to a third party, and HHS's own notice says so. The hospital's fee schedule is an invented world document.",
+    "basis": "An estimate, and mostly minutes. Before a second opinion a patient spends most of a working day finding where each record lives, filling five different request forms, chasing the one that goes quiet and querying fees, and a records-retrieval service charges about $199 a case to do it. The roster's $100 an episode is copy fees not owed, an estimate (the bench world's one overcharged invoice is $102.50); the $199 a retrieval service would charge is not money back, and the rest of the value is the patient's time, which manual_minutes carries (about 8 hours). The episode is one second opinion; times a year: one, since a patient seldom gathers a full record twice a year. The bench world holds $342.50: six acts weighted at $40 each, a fifth of the service's $199 for the case, a price avoided and not money recovered, and $102.50 of an invoice not owed. The rule as it stands on Friday 9 October 2026: 45 CFR 164.524 (30 days, one 30-day extension on written notice within the first 30; a reasonable, cost-based fee for the individual's own copy, with no search or retrieval charge). HHS's proposed rule of January 2021 to shorten the time to 15 days had not been finalized, so 30 days applies. Since Ciox Health, LLC v. Azar (D.D.C. 23 January 2020), the fee limit applies only to the individual's own request, not to a copy she directs to a third party, and HHS's own notice says so. The hospital's fee schedule is an invented world document.",
     "manual_minutes": 480,
     "times_per_year": 1,
     "incumbent": "Records-retrieval services charge a flat fee per case rather than a share; the world's own offer is $199 a case, so no incumbent_fee_pct is given.",

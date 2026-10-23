@@ -41,6 +41,7 @@
     "Reads Exhibit D and the look-ahead in Sitegrid.",
     "Reads every subcontractor's certificate, uploaded endorsements and notices in Subhub.",
     "Reads each policy's forms schedule in Coverwell: the limits, whether it is in force, and the endorsements' schedules.",
+    "Where the subcontract asks for them, also checks primary and non-contributory wording, a waiver of subrogation (CG 24 04), workers' compensation and auto limits, an umbrella that follows form, and the endorsement's edition (CG 20 10 07 04 alone covers no finished work).",
     "Reads the subcontractors' and agents' mail in Mailnest.",
     "Back in Subhub, approves each subcontractor whose policy meets the exhibit and sends a deficiency notice to each one that does not, naming the gap."
   ],
@@ -75,8 +76,14 @@
   ],
   "economics": {
     "value_usd": 25000,
+    "example_usd": null,
     "per": "year",
-    "basis": "An estimate, and protection rather than money recovered. A certificate of insurance is information only and changes nothing in the policy; a general contractor is an additional insured only through an endorsement on the subcontractor's policy, and CG 20 10 covers the work in progress while CG 20 37 covers the finished work. A claim tendered to a subcontractor's insurer without them lands on the general contractor's own policy: its deductible, its loss history and the defence. The $25,000 a year is that exposure spread over a year, about one uncovered claim of $200,000 every eight years for a general contractor that signs about thirty subcontracts a year, an estimate. Each act in the bench world is weighted at $800, about a thirtieth of the $25,000, one subcontract's share of the protection; the world holds nine acts, $7,200. Times a year: twelve, a monthly sweep before each month's mobilizations.",
+    "value_kind": "money_protected",
+    "kinds": {
+      "approve_compliance": "count",
+      "send_deficiency": "count"
+    },
+    "basis": "An estimate, and protection rather than money recovered. A certificate of insurance is information only and changes nothing in the policy; a general contractor is an additional insured only through an endorsement on the subcontractor's policy, and CG 20 10 covers the work in progress while CG 20 37 covers the finished work. A claim tendered to a subcontractor's insurer without them lands on the general contractor's own policy: its deductible, its loss history and the defence. The $25,000 a year is that exposure spread over a year, about one uncovered claim of $200,000 every eight years for a general contractor that signs about thirty subcontracts a year, an estimate. Each act in the bench world is weighted at $800, about a thirtieth of the $25,000, a scoring weight for one subcontract's share of the protection, not money recovered; the world holds nine acts, $7,200. Times a year: twelve, a monthly sweep before each month's mobilizations.",
     "manual_minutes": 150,
     "times_per_year": 12,
     "incumbent": "None takes a share: certificate tracking services charge a subscription by the vendor, and in a general contractor of this size the project administrator does it.",
@@ -111,5 +118,17 @@
     "minutes": 60,
     "why": "A careful project administrator gets most of it; the bar is most of the approvals and notices, no crew cleared on a certificate's say-so and no notice to a compliant sub, inside an hour."
   },
-  "caveat": "Kestrel Ridge Builders, Alder Street Partners, every subcontractor, agent and insurer, Sitegrid, Subhub, Coverwell, Mailnest and every person here are invented. CG 20 10 and CG 20 37 are ISO's published standard endorsements and ACORD 25 is ACORD's published certificate; their effect is described here in the world's own words and no form's text is reproduced. The requirements are this invented subcontract's exhibit, fixed in the bench world as of October 2026; a real subcontract, the form editions on a real policy, and a state's anti-indemnity law decide what is required and what is covered. This is not legal or insurance advice."
+  "caveat": "Kestrel Ridge Builders, Alder Street Partners, every subcontractor, agent and insurer, Sitegrid, Subhub, Coverwell, Mailnest and every person here are invented. CG 20 10 and CG 20 37 are ISO's published standard endorsements and ACORD 25 is ACORD's published certificate; their effect is described here in the world's own words and no form's text is reproduced. The requirements are this invented subcontract's exhibit, fixed in the bench world as of October 2026; a real subcontract, the form editions on a real policy, and a state's anti-indemnity law decide what is required and what is covered. This is not legal or insurance advice. This example checks only the general liability endorsements and limits; a real exhibit usually asks for more, and a broker reads the policy.",
+  "fit": {
+    "where": "US",
+    "where_note": "Standard US insurance forms (ISO CG endorsements); each subcontract's insurance exhibit decides what is required.",
+    "who": "A general contractor's project administrator clearing subcontractors to mobilize.",
+    "not_for": "A job where the owner runs a wrap-up insurance programme (OCIP or CCIP) that replaces the subcontractors' own cover.",
+    "asks_for": [
+      "your subcontracts' insurance requirements",
+      "each subcontractor's certificate and endorsements",
+      "the mobilization schedule"
+    ],
+    "costs": "No fees; only your Claude usage."
+  }
 }

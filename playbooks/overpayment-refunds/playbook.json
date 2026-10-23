@@ -9,6 +9,18 @@
   "job": "comply",
   "promise": "Each credit on the books is traced to the bank and the payer before anything is sent. Medicare's overpayments are reported and returned inside the 60 days that run under 42 CFR 401.305 as amended from 1 January 2025, the duplicate payment before next Tuesday and the coding audit from the day its investigation closed. Patients who paid twice, or paid a coinsurance that was not owed, are refunded. Credits that exist only in the books (an offset never posted, a payment on a transposed account, a remittance posted twice) are corrected, not refunded, and a deposit for next week's procedure is left alone.",
   "persona": "The practice administrator of a three-clinician family practice that bills Medicare Part B and takes patient payments online and at the desk",
+  "fit": {
+    "where": "US",
+    "where_note": "The Medicare Part B 60-day rule; patient refund timing follows your state and your own policy.",
+    "who": "A practice administrator who reviews credit balances each month.",
+    "not_for": "A practice that does not bill Medicare, for the 60-day part.",
+    "asks_for": [
+      "your credit balance report",
+      "your bank deposits",
+      "Medicare remittances"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read the practice's billing policy, every credit balance with its posting history and notes, and the compliance log; the bank's deposits and offsets; the Medicare contractor's overpayment rules, its paid claims by account and its demand letters; and the patient payments and the appointments that carry deposits. Then decide, for each credit and finding, whose money it is and whether it was really received: report and return a Medicare overpayment on the contractor's voluntary refund form within 60 days of identification (suspended, up to 180 days, while a timely, good-faith investigation of related claims runs); refund a patient's overpayment; correct a posting error. None of the four systems shares data with another.",
   "command": "Our credit balance report is getting long and some of it is Medicare's. Go through Chartmend, the Ledgerline account, Novabridge and Carenook: return what we owe Medicare before the deadline, refund the patients we owe, and fix the postings that aren't really anyone's money. Don't refund anything twice.",
   "apps": [
@@ -78,6 +90,13 @@
   ],
   "economics": {
     "value_usd": 8000,
+    "example_usd": null,
+    "value_kind": "money_protected",
+    "kinds": {
+      "submit_overpayment_refund": "money_protected",
+      "refund_patient": "money_protected",
+      "correct_posting": "count"
+    },
     "per": "year",
     "basis": "An estimate, and not money the practice recovers: the value is overpayments returned on time and patients' money refunded. An overpayment kept past its 60 days becomes an obligation under the False Claims Act, with treble damages and a penalty per claim, and patient credits left on the books grow into complaints and unclaimed-property filings. For a three-clinician practice, the roster's $8,000 a year is about $650 a month of credits resolved, an estimate. The bench world holds $866.08 to return or refund: $112.40 of a duplicate Medicare payment due by 13 October, $535.78 from a coding audit due by 27 November because its investigation closed on 28 September, $64.80 for an ECG not performed, and $153.10 to three patients; three posting errors carry no value and count as items. The Medicare deadlines are those of 42 CFR 401.305 as amended from 1 January 2025 by the CY 2025 Physician Fee Schedule final rule (89 FR 98553): identified on actual knowledge, reckless disregard or deliberate ignorance, with the 60 days suspended for up to 180 days during a timely, good-faith investigation of related overpayments. The patient refund window is the practice's own policy. Times a year: twelve, a monthly credit balance review.",
     "manual_minutes": 150,

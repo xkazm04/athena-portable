@@ -9,6 +9,20 @@
   "job": "recover",
   "promise": "Every stop of the last two weeks checked against its rate con, the signed BOL and the ELD, then filed in each broker's own tool, by that broker's rules, before its window shuts. The loads that don't qualify are left alone.",
   "persona": "A three-truck owner-operator carrier hauling for C.H. Robinson, TQL, Uber Freight and a small email-only broker, factored through RTS",
+  "fit": {
+    "where": "US",
+    "where_note": "Each broker's own detention terms and filing window apply.",
+    "who": "A small trucking carrier hauling for brokers, with or without a factor.",
+    "not_for": "A carrier whose rate confirmations carry no detention, lumper or TONU terms.",
+    "asks_for": [
+      "your rate confirmations",
+      "ELD stop times",
+      "signed BOLs",
+      "your broker portal logins",
+      "your factor's statements"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Drivers sit at docks on four stops in ten. The money for that time is owed only on terms that differ on every rate con: free time, rate, cap, a notice rule and a filing window that can be 24 hours. The carrier compares the ELD's geofence times, the signed BOL and the rate con for every stop. Then they file in the broker's own tool, in the form it checks: CHR wants the BOL times, TQL wants receipts in one document category, Uber wants the request within a day. They also check that what the broker approved actually arrived through the factor. Most small carriers bill for detention a fraction of the time and collect on fewer.",
   "command": "Go through the last two weeks of loads. For each stop, check the rate con, the signed BOL and the ELD times, and file detention, lumper, layover or TONU wherever we qualify, in each broker's own tool and by its rules. Ask the rep about anything a portal window has closed on. Chase anything the factor didn't pass through. Leave alone whatever doesn't qualify.",
   "apps": [
@@ -48,9 +62,18 @@
     "What each broker approved, so the factor's remittances can be checked next week."
   ],
   "economics": {
-    "value_usd": 12000,
+    "value_usd": 14000,
+    "example_usd": 1580,
+    "value_kind": "money_back",
+    "kinds": {
+      "request_detention": "money_back",
+      "submit_lumper": "money_back",
+      "short_pay_inquiry": "money_back",
+      "send_email": "money_back",
+      "request_lumper": "money_back"
+    },
     "per": "year",
-    "basis": "ATRI found drivers detained at 39% of stops, with lost revenue of $11–19k per driver a year. Only 29% of carriers collect all the detention they bill. A three-truck carrier recovering a fraction of that is about $8–20k a year. The bench world holds $1,580 across two weeks.",
+    "basis": "An estimate. ATRI found drivers detained at 39% of stops, with lost revenue of $11-19k per driver a year, and only 29% of carriers collect all the detention they bill. For three trucks that is 3 x $11,000-19,000 = $33,000-57,000 of detention revenue lost a year; recovering roughly a quarter to a third of it is about $8,000-20,000, and the roster's $14,000 a year is the middle of that range. The bench world holds $1,580 across two weeks.",
     "manual_minutes": 150,
     "incumbent": "Dispatch services charge 5–10% of gross revenue and file accessorials when they get to it. Factors advance the linehaul and chase accessorials last. Mostly, nobody files.",
     "sources": [

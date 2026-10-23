@@ -59,9 +59,14 @@
     "What the processor already debited and credited, from Ledgerwren, carried back to the last Paycurrent tab."
   ],
   "economics": {
-    "value_usd": 4000,
+    "value_usd": 470,
+    "example_usd": 118,
     "per": "year",
-    "basis": "An estimate. A small shop on an interchange-plus agreement that nobody audits carries a few hundred dollars a month in fees the agreement does not allow, rates above the networks' published ones, and price changes made without the notice the contract requires; the roster's $4,000 a year is a small shop's share of those, recovered by asking for credits. The bench world holds $118: five lines on three statements (9.00, 34.20, 29.85, 15.00 and 29.95). Times a year: twelve, a monthly statement review. manual_minutes 120: reading three statements, the agreement and the notices, finding each card category's published rate, recomputing the lines, checking the bank for credits already paid and writing five requests. Rules applied, as they stand on Friday 9 October 2026: Visa USA Interchange Reimbursement Fees, Visa Supplemental Requirements, rates effective 18 April 2026 (consumer credit and debit, Card Not Present: Product 1, Non-Qualified, CPS/e-Commerce Basic and regulated debit); the Federal Reserve's Regulation II, 12 CFR 235.3(b) (21 cents plus 5 basis points) and 235.4(a) (a 1 cent fraud-prevention adjustment), whose 2023 proposal to lower the ceiling is not adopted and not used. Mastercard's own schedule (the April 2026 edition) could not be read, so no Mastercard line is in the world. The networks do not publish assessments in their interchange schedules: the world's 0.14% and 0.13% are the invented processor's pass-through schedule, at the level published processor schedules show. What moves a sale into Non-Qualified is the invented processor's own statement note, not a Visa text the world rests on.",
+    "value_kind": "money_back",
+    "kinds": {
+      "request_fee_credit": "money_back"
+    },
+    "basis": "An estimate from the example's own statements. The bench world holds $118 of overcharges on three monthly statements (9.00, 34.20, 29.85, 15.00 and 29.95); a year at the same rate is $118 x 4 = $472, about $470 a year. The roster's earlier $4,000 a year assumed a few hundred dollars a month of fees the agreement does not allow, which a shop of this size does not show; a bigger shop's overcharges grow with its card volume. Times a year: twelve, a monthly statement review. manual_minutes 120: reading three statements, the agreement and the notices, finding each card category's published rate, recomputing the lines, checking the bank for credits already paid and writing five requests. Rules applied, as they stand on Friday 9 October 2026: Visa USA Interchange Reimbursement Fees, Visa Supplemental Requirements, rates effective 18 April 2026 (consumer credit and debit, Card Not Present: Product 1, Non-Qualified, CPS/e-Commerce Basic and regulated debit); the Federal Reserve's Regulation II, 12 CFR 235.3(b) (21 cents plus 5 basis points) and 235.4(a) (a 1 cent fraud-prevention adjustment), whose 2023 proposal to lower the ceiling is not adopted and not used. Mastercard's own schedule (the April 2026 edition) could not be read, so no Mastercard line is in the world. The networks do not publish assessments in their interchange schedules: the world's 0.14% and 0.13% are the invented processor's pass-through schedule, at the level published processor schedules show. What moves a sale into Non-Qualified is the invented processor's own statement note, not a Visa text the world rests on.",
     "manual_minutes": 120,
     "times_per_year": 12,
     "incumbent": "Statement-audit services exist, but their published prices were not found for a figure that can be cited, so no incumbent_fee_pct is given.",
@@ -92,5 +97,17 @@
     "minutes": 60,
     "why": "A careful merchant with the agreement, the rate table and the bank in hand finds most of the five overcharges and claims none of the lookalikes, each for its exact amount, inside an hour."
   },
-  "caveat": "Nora Whitlock, Wrenfield Ceramics, every statement, line, sale and amount, the Paycurrent Merchant Agreement and its clauses, the merchant IDs W-4471 and W-9020, the notices, and Paycurrent, Binderwell and Ledgerwren are invented; the processor's markup, its pass-through assessments at 0.14% and 0.13%, its settlement and address-verification conditions for its best category, its 60-day rule and its fees are the invented processor's own. The public rules applied are Visa's USA Interchange Reimbursement Fees of 18 April 2026 and the Federal Reserve's Regulation II as in force on 9 October 2026 (12 CFR 235.3(b) and 235.4(a)); Mastercard's edition could not be read, so no Mastercard rate is used, and Visa's qualification guide, which decides what makes a real sale downgrade, was not found public. A real processor's statement, a real contract and the issuer's actual category decide real cases. This applies stated rules to stated facts; it is not legal, tax or compliance advice."
+  "caveat": "Nora Whitlock, Wrenfield Ceramics, every statement, line, sale and amount, the Paycurrent Merchant Agreement and its clauses, the merchant IDs W-4471 and W-9020, the notices, and Paycurrent, Binderwell and Ledgerwren are invented; the processor's markup, its pass-through assessments at 0.14% and 0.13%, its settlement and address-verification conditions for its best category, its 60-day rule and its fees are the invented processor's own. The public rules applied are Visa's USA Interchange Reimbursement Fees of 18 April 2026 and the Federal Reserve's Regulation II as in force on 9 October 2026 (12 CFR 235.3(b) and 235.4(a)); Mastercard's edition could not be read, so no Mastercard rate is used, and Visa's qualification guide, which decides what makes a real sale downgrade, was not found public. A real processor's statement, a real contract and the issuer's actual category decide real cases. This applies stated rules to stated facts; it is not legal, tax or compliance advice.",
+  "fit": {
+    "where": "US",
+    "where_note": "Visa's US interchange schedule and the Federal Reserve's Regulation II; other countries cap card fees differently.",
+    "who": "A small US shop on an interchange-plus card processing agreement.",
+    "not_for": "A shop on flat-rate pricing (one rate for every card), where there is no interchange line to check.",
+    "asks_for": [
+      "your last three processor statements",
+      "your processing agreement and any fee notices",
+      "your bank's record of processor debits and credits"
+    ],
+    "costs": "No fees; only your Claude usage."
+  }
 }

@@ -38,6 +38,7 @@
     }
   ],
   "steps": [
+    "First checks that you are registered in the state asking, or over its sales threshold; if you are not, says so and asks no buyer for a certificate.",
     "Reads the orders and the cert desk notes in Storeline.",
     "Reads the mail in Postwren for certificates not yet filed.",
     "Reads every certificate in Clientwren against its order and requests a fully completed one where it is missing, incomplete, unsigned on paper, for the wrong state or lapsed.",
@@ -72,8 +73,14 @@
   ],
   "economics": {
     "value_usd": 15000,
+    "example_usd": null,
     "per": "year",
-    "basis": "An estimate. A wholesaler whose buyers claim resale usually has some exempt sales with no usable certificate, and an audit assesses the tax on them against the seller (Streamlined Sales and Use Tax Agreement, Section 317: the seller is relieved only if it holds a fully completed certificate, or gets one within the periods the Agreement gives). A small wholesaler with a few thousand dollars of tax at risk on a quarter's exempt sales, and a few such exposures a year, is the roster's $15,000 a year of tax kept from an assessment. The bench world holds $4,250: six requests (300, 360, 300, 440, 150 and 750) and three answers to the state (900, 450 and 600). Times a year: four, a quarterly review of the certificates behind the quarter's exempt sales. manual_minutes 150: reading eighteen orders against thirteen certificates field by field and the mail, working the 90 and 120 days and twelve months, writing six requests and three answers. Rules applied as they stand on Friday 9 October 2026: the Agreement as amended through 16 May 2024 (Section 317 A to G; Rule 317.1 A.1, A.10 and B.8), the Certificate of Exemption instructions, and the Governing Board's list of states (23 full members and Tennessee as an associate member, page updated 26 September 2025). The twelve-month recurring relationship is Section 317.F; no certificate expires on a date.",
+    "value_kind": "money_protected",
+    "kinds": {
+      "request_certificate": "money_protected",
+      "substantiate_exemption": "money_protected"
+    },
+    "basis": "An estimate. A wholesaler whose buyers claim resale usually has some exempt sales with no usable certificate, and an audit assesses the tax on them against the seller (Streamlined Sales and Use Tax Agreement, Section 317: the seller is relieved only if it holds a fully completed certificate, or gets one within the periods the Agreement gives). A small wholesaler with a few thousand dollars of tax at risk on a quarter's exempt sales, and a few such exposures a year, is the roster's $15,000 a year of tax kept from an assessment: tax protected, not money back. The bench world's quarter holds $4,250, and four such quarters would be $17,000. For another seller: exempt sales with no usable certificate x the state's rate (three Ohio sales of $2,715 at 7.25% put about $197 at risk). The bench world holds $4,250: six requests (300, 360, 300, 440, 150 and 750) and three answers to the state (900, 450 and 600). Times a year: four, a quarterly review of the certificates behind the quarter's exempt sales. manual_minutes 150: reading eighteen orders against thirteen certificates field by field and the mail, working the 90 and 120 days and twelve months, writing six requests and three answers. Rules applied as they stand on Friday 9 October 2026: the Agreement as amended through 16 May 2024 (Section 317 A to G; Rule 317.1 A.1, A.10 and B.8), the Certificate of Exemption instructions, and the Governing Board's list of states (23 full members and Tennessee as an associate member, page updated 26 September 2025). The twelve-month recurring relationship is Section 317.F; no certificate expires on a date.",
     "manual_minutes": 150,
     "times_per_year": 4,
     "incumbent": "Certificate-management services charge a subscription, not a share of the tax they protect, so no incumbent_fee_pct is given.",
@@ -108,5 +115,17 @@
     "minutes": 60,
     "why": "A careful bookkeeper with the Agreement's rules and the certificates in hand gets most of it: the six requests for the right reasons and the three answers the complete certificates support, with nothing asked of a buyer whose certificate is fine and nothing sent to the state it did not ask, inside an hour."
   },
-  "caveat": "Dana Whitcomb, Alderkeep Candle Works, every buyer, Ines Varga and Luis Moreno, every certificate, order, total and date, and Storeline, Clientwren, Postwren and Taxline State are invented; Taxline State is not any state's real portal and the Ohio notice, guide and tax rates are invented. The public rule applied is the Streamlined Sales and Use Tax Agreement as amended through 16 May 2024 (Section 317 and Rule 317.1) and the Certificate of Exemption instructions, as they stand on 9 October 2026; Ohio, Kentucky, Michigan and Wisconsin are full members on the Governing Board's list (updated 26 September 2025), and Texas is not a member. Each real state decides its own exemptions, may allow a seller longer than 90 or 120 days, and may take a certificate for its own reasons, so a real audit turns on that state's rules and its auditors. This applies stated rules to stated facts; it is not legal, tax or compliance advice."
+  "caveat": "Dana Whitcomb, Alderkeep Candle Works, every buyer, Ines Varga and Luis Moreno, every certificate, order, total and date, and Storeline, Clientwren, Postwren and Taxline State are invented; Taxline State is not any state's real portal and the Ohio notice, guide and tax rates are invented. The public rule applied is the Streamlined Sales and Use Tax Agreement as amended through 16 May 2024 (Section 317 and Rule 317.1) and the Certificate of Exemption instructions, as they stand on 9 October 2026; Ohio, Kentucky, Michigan and Wisconsin are full members on the Governing Board's list (updated 26 September 2025), and Texas is not a member. Each real state decides its own exemptions, may allow a seller longer than 90 or 120 days, and may take a certificate for its own reasons, so a real audit turns on that state's rules and its auditors. This applies stated rules to stated facts; it is not legal, tax or compliance advice.",
+  "fit": {
+    "where": "US",
+    "where_note": "The Streamlined Sales Tax rules of its member states; states outside it (Texas, California and New York among them) use their own forms.",
+    "who": "A small wholesaler whose buyers claim resale or another exemption, in states where it collects sales tax.",
+    "not_for": "A seller with no exempt sales, or one not registered to collect tax in the buyer's state.",
+    "asks_for": [
+      "your wholesale orders and which claimed an exemption",
+      "the certificates you have on file",
+      "any letter from the state asking for proof"
+    ],
+    "costs": "No fees; only your Claude usage."
+  }
 }

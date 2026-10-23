@@ -1,6 +1,6 @@
 {
   "id": "lease-end-wear-charges",
-  "title": "A physical therapist's lease-end statement is checked against his lease's wear limits and the inspection: a dent, a tire, a chip, a scuff and a stain inside the limits are disputed, while the mileage, the disposition fee, a long scratch, a worn tire, a cracked lens, a gouged wheel, a seat burn and the wear allowance are left alone, across four portals",
+  "title": "A leased car's lease-end statement checked against the lease's own wear limits and the inspection, and each charge inside them disputed",
   "short_title": "Lease-end wear charges disputed",
   "brief": "A Tacoma physical therapist returned his leased car and got a **$2,785** lease-end bill.\n\n**Disputed — 5 charges, $880:**\n- A 38 mm door dent\n- A rear tire at 5/32 inch\n- A 12 mm windshield chip\n- A 20 mm wheel scuff\n- An 18 mm seat stain\n\n**Left alone:**\n- The extra miles he drove and the disposition fee\n- A long bumper scratch, a worn front tire\n- A cracked headlight, a gouged wheel, a seat burn\n- The wear allowance already credited",
   "domain": "Vehicles",
@@ -38,6 +38,7 @@
     }
   ],
   "steps": [
+    "First reads the lease's own dispute deadline and the lessor's written review window.",
     "Reads the lessor's and the inspector's letters in Postwren.",
     "Reads the fourteen items of the inspection in Linestone Inspect.",
     "Reads nine photos in Lenswick.",
@@ -64,7 +65,12 @@
   ],
   "economics": {
     "value_usd": 900,
+    "example_usd": 880,
     "per": "episode",
+    "value_kind": "money_back",
+    "kinds": {
+      "contest_charge": "money_back"
+    },
     "basis": "An estimate. A lessee who returns a car can be billed for wear the lease's own standard allows, and few contest the lines; the roster's $900 an episode is one such bill's wrongly charged wear. The bench world holds five wrongly charged lines worth $880 (285, 210, 150, 95 and 140) in a $2,785.00 statement, with seven charges left alone worth $2,405.00 (605 mileage, 395 disposition fee, and 320, 210, 340, 275 and 260 for real excess wear) and the 500 wear allowance already applied as a credit; the money is recovered, not a price avoided. Times a year: once, the episode in the year it happens (ADR 0056). manual_minutes 90: reading four letters, a five-topic lease, a fourteen-item inspection, nine photos and a thirteen-line statement, setting each charge against the lease's standard and the measurement the inspector took, and disputing five with the proof. Rules applied, as they stand on Friday 9 October 2026 (12 CFR Part 1013 in the eCFR, current to 7 October 2026, with its Supplement I, effective 1 January 2026; 15 U.S.C. 1667b in the Legal Information Institute's copy): 12 CFR 1013.4(h)(1) (who maintains the car), (h)(2) (a statement of the lessor's standards for wear and use, if any, which must be reasonable) and (h)(3) (for a motor vehicle lease, a notice substantially similar to \"Excessive Wear and Use. You may be charged for excessive wear based on our standards for normal use.\", which also specifies the amount or method for any excess mileage charge), with Supplement I, comment 4(h)-1 (no disclosure if the lessor sets no standards or charges for wear and use, such as excess mileage); 15 U.S.C. 1667b(a) (the lease may set standards for wear and use if they are not unreasonable); 1013.4(l) (a right to an independent appraisal, binding on both, when the lessee's liability is based on the realized value of the car) and Supplement I, comment 4(l)-1, which says the lessee does not have that right merely because the lessee is liable for unreasonable wear or use; 1013.4(m) (liability at the end of an open-end lease based on residual value; Supplement I, comment 4(m)-1, applies it only to open-end leases). The world's lease is closed-end, and its charges are mileage, a fee and wear, so neither the Act nor Regulation M gives her an independent inspection or appraisal, and the world rests only on the lease's own terms: its stated standards, its price list, its wear allowance and its written dispute review. The roster cites 1013.4(l) for wear standards that must be reasonable. The wear standard is in 1013.4(h)(2), with the motor vehicle notice in (h)(3). The brief called (l) end-of-term liability in an open-end lease; (l) is the right of appraisal, and the open-end liability is (m). The roster's row is not edited.",
     "manual_minutes": 90,
     "times_per_year": 1,
@@ -96,5 +102,18 @@
     "minutes": 60,
     "why": "A careful lessee with the lease, the inspection and the statement disputes the five charges inside the standard and none of the eight that are right, inside an hour."
   },
-  "caveat": "Anselm Rowe, Torvane Finance, the 2023 Torvane Heron, Linestone Inspect, every measurement, photo, price, date and charge on the statement, and Lenswick photos and Postwren are invented; no real lessor, carmaker, dealer or inspection company is named. The public rule applied is the Consumer Leasing Act, 15 U.S.C. 1667b(a) (a lease may set standards for wear and use that are not unreasonable), and Regulation M, 12 CFR 1013.4(h)(2) and (h)(3) (the lessor's wear and use standard, which must be reasonable, and the motor vehicle notice and excess mileage method), as in the eCFR current to 7 October 2026, with its Supplement I and the Legal Information Institute's copy of the Act. Neither the Act nor Regulation M gives a lessee an independent inspection or appraisal for wear on a closed-end lease (Supplement I, comment 4(l)-1; the appraisal right in 1013.4(l) is for liability based on the car's realized value), so the world rests only on the invented lease's own standards, price list, wear allowance and written dispute review, and a real lease differs. The standards, the price list, the allowance and the review are the world's. What decides a real dispute is the lease, the lessor's review and, if need be, a court. This applies stated rules to stated facts; it is not legal or financial advice."
+  "caveat": "Anselm Rowe, Torvane Finance, the 2023 Torvane Heron, Linestone Inspect, every measurement, photo, price, date and charge on the statement, and Lenswick photos and Postwren are invented; no real lessor, carmaker, dealer or inspection company is named. The public rule applied is the Consumer Leasing Act, 15 U.S.C. 1667b(a) (a lease may set standards for wear and use that are not unreasonable), and Regulation M, 12 CFR 1013.4(h)(2) and (h)(3) (the lessor's wear and use standard, which must be reasonable, and the motor vehicle notice and excess mileage method), as in the eCFR current to 7 October 2026, with its Supplement I and the Legal Information Institute's copy of the Act. Neither the Act nor Regulation M gives a lessee an independent inspection or appraisal for wear on a closed-end lease (Supplement I, comment 4(l)-1; the appraisal right in 1013.4(l) is for liability based on the car's realized value), so the world rests only on the invented lease's own standards, price list, wear allowance and written dispute review, and a real lease differs. The standards, the price list, the allowance and the review are the world's. What decides a real dispute is the lease, the lessor's review and, if need be, a court. This applies stated rules to stated facts; it is not legal or financial advice.",
+  "fit": {
+    "where": "US",
+    "where_note": "Federal Regulation M and the lease's own terms; they apply in every state.",
+    "who": "Someone who returned a leased car on a closed-end lease and got a bill for wear and mileage.",
+    "not_for": "An open-end lease, or a bill already paid and closed out.",
+    "asks_for": [
+      "your lease, with its wear standards",
+      "the lease-end inspection report",
+      "your own photos at return",
+      "the lease-end statement"
+    ],
+    "costs": "No fees; only your Claude usage."
+  }
 }

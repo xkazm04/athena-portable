@@ -2,13 +2,26 @@
   "id": "lease-operator-escrow",
   "title": "An owner-operator's escrow got back from the carrier he leased to, four days after its forty-five days ran out: an ELD charged though it was returned, a washout fee and a fee for leaving that the lease never names disputed, the third quarter's interest claimed at the Treasury bill rate, and the balance demanded, while the fuel, tolls, insurance, plate and tires the lease lets it keep are left alone",
   "short_title": "Escrow got back from a former carrier",
-  "brief": "An owner-operator wants back **a $2,500 escrow** from the carrier he leased to for 11 months.\n\n**Demanded back — $1,515:**\n- $350 ELD charge for a unit he returned\n- $95 washout fee the lease never names\n- $500 fee for leaving, not in the lease\n- Third-quarter interest at the T-bill rate, $24.12\n- Written demand, 4 days past the 45-day limit\n\n**Left alone:**\n- Fuel, tolls, tires and insurance the lease names\n- Plate cost for the months left\n- Interest for a quarter already paid\n- The old carrier that paid back in 2024",
+  "brief": "An owner-operator wants back **a $2,500 escrow** from the carrier he leased to for 11 months.\n\n**Demanded back — $1,514.65, plus $24.12 interest claimed:**\n- $350 ELD charge for a unit he returned\n- $95 washout fee the lease never names\n- $500 fee for leaving, not in the lease\n- Third-quarter interest at the T-bill rate, $24.12\n- Written demand: the 45 days from the lease's end ran out 4 days ago (49 CFR 376.12(k))\n\n**Left alone:**\n- Fuel, tolls, tires and insurance the lease names\n- Plate cost for the months left\n- Interest for a quarter already paid\n- The old carrier that paid back in 2024",
   "domain": "Trucking",
   "audience": "work",
   "category": "freight",
   "job": "recover",
   "promise": "An owner-operator's ended lease is read across his papers, the carrier's settlements portal, his bank and his mail, and his escrow is got back the way the Truth-in-Leasing rule allows: three deductions disputed, an ELD unit the carrier's own terminal signed for, a trailer washout fee and a five hundred dollar fee for leaving that the lease never names; the third quarter's interest claimed at the investment rate of the 13-week bill auction before the quarter began; and a written demand for the balance after only the deductions the lease allows, four days after its forty-five days ran out. The fuel, tolls, insurance, plate and tires the lease names and documents, the quarters already paid, and the old carrier that returned its escrow years ago are left alone.",
   "persona": "An owner-operator with one tractor, who ran under a carrier's authority on a lease for eleven months and keeps his own papers",
+  "fit": {
+    "where": "US",
+    "where_note": "The federal Truth-in-Leasing rule (49 CFR 376.12).",
+    "who": "An owner-operator whose lease with a carrier has ended and whose escrow is not back.",
+    "not_for": "A company driver, or a lease that holds no escrow.",
+    "asks_for": [
+      "the lease and its schedules",
+      "settlement statements",
+      "the final accounting",
+      "receipts for equipment returned"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read the lease's compensation, chargeback and escrow sections and its schedules, the termination notice, the equipment return receipt, the Treasury bill results and an old carrier's final accounting in the papers; the escrow ledger, the final statement and every deduction's clause and documents in the carrier's settlements portal; the bank's deposits; and the carrier's mail. Then apply 49 CFR 376.12(k) (the escrow's items, accounting, quarterly interest at least at the 13-week Treasury bill rate, and its return less only the items the lease names, within 45 days of termination, with a final accounting) and 376.12(h) (chargebacks the lease names, with the documents behind each), as they stand on 9 October 2026. The carrier holds the ledger, the lessor holds the receipts, and the bank holds what actually came back.",
   "command": "I'm Marcus, Okafor Trucking. My lease with Vessmoor ended in August and they still haven't returned my escrow. Go through Sheafbox, Vessmoor's Settlewick portal, my Ledgerwren bank and my Postwren mail, dispute every deduction the lease doesn't allow, claim any interest they owe me, and demand the escrow back at the right amount. Don't fight the charges the lease lets them take.",
   "apps": [
@@ -74,9 +87,16 @@
     "That no escrow has reached the bank from Vessmoor, and that Brindlecote's came back in 2024, carried from Ledgerwren."
   ],
   "economics": {
-    "value_usd": 2500,
+    "value_usd": 1000,
+    "example_usd": 1538.77,
+    "value_kind": "money_back",
+    "kinds": {
+      "dispute_deduction": "money_back",
+      "claim_interest": "money_back",
+      "send_escrow_demand": "money_back"
+    },
     "per": "episode",
-    "basis": "An estimate. An owner-operator leased to a carrier usually has an escrow held from his settlements or paid at signing, often $1,000 to $2,500, and when the lease ends the carrier may keep only what the lease names, must pay interest on it at least quarterly at the 13-week Treasury bill rate, and must return it within 45 days with a final accounting (49 CFR 376.12(k)). Escrows are held back late, cut by charges the lease never names, and returned without interest; the roster's $2,500 an episode is one lease's escrow got back in full. The bench world holds $1,538.77: three deductions disputed ($350 for an ELD returned, $95 for a washout fee and $500 for a fee for leaving that the lease does not name), the third quarter's interest ($24.12) and the $569.65 the carrier's own statement admits but has not paid by its 45 days; the demand is for $1,514.65, the escrow less only the five deductions the lease allows. Times a year: once, one lease ending; an owner-operator changes carriers every year or two, and each move ends a lease. manual_minutes 150: reading the lease and schedules against eight deductions and their documents, working out the interest, and writing three disputes, a claim and a demand. The rule applied, as it stands on Friday 9 October 2026 (eCFR title 49, current to 7 October 2026; no change to 376.12 since 2018, and no Federal Register document since 2023 amends Part 376): 49 CFR 376.12(k)(1) to (6), 376.12(h), (f) and (g). The 13-week bill auction results are Treasury's own (fiscaldata.treasury.gov): 29 September 2025, 3.953%; 29 December 2025, 3.652%; 30 March 2026, 3.704%; 29 June 2026, 3.828%; 28 September 2026, 4.211% (investment rates). The lease's choice of the last auction before the quarter begins, and of actual days over 365, is the invented lease's reading of the rule's 'established on the date the interest period begins'.",
+    "basis": "An estimate. An owner-operator leased to a carrier usually has an escrow held from his settlements or paid at signing, often $1,000 to $2,500, and when the lease ends the carrier may keep only what the lease names, must pay interest on it at least quarterly at the 13-week Treasury bill rate, and must return it within 45 days with a final accounting (49 CFR 376.12(k)). Escrows are held back late, cut by charges the lease never names, and returned without interest; the roster's $1,000 an episode is what the chore adds when a lease ends: the deductions the lease does not name and the interest owed, as in the bench world's $945 of disputed deductions plus $24.12 of interest = $969.12, rounded to $1,000. The escrow itself is his money either way and is not counted. The bench world holds $1,538.77: three deductions disputed ($350 for an ELD returned, $95 for a washout fee and $500 for a fee for leaving that the lease does not name), the third quarter's interest ($24.12) and the $569.65 the carrier's own statement admits but has not paid by its 45 days; the demand is for $1,514.65, the escrow less only the five deductions the lease allows. Times a year: once, one lease ending; an owner-operator changes carriers every year or two, and each move ends a lease. manual_minutes 150: reading the lease and schedules against eight deductions and their documents, working out the interest, and writing three disputes, a claim and a demand. The rule applied, as it stands on Friday 9 October 2026 (eCFR title 49, current to 7 October 2026; no change to 376.12 since 2018, and no Federal Register document since 2023 amends Part 376): 49 CFR 376.12(k)(1) to (6), 376.12(h), (f) and (g). The 13-week bill auction results are Treasury's own (fiscaldata.treasury.gov): 29 September 2025, 3.953%; 29 December 2025, 3.652%; 30 March 2026, 3.704%; 29 June 2026, 3.828%; 28 September 2026, 4.211% (investment rates). The lease's choice of the last auction before the quarter begins, and of actual days over 365, is the invented lease's reading of the rule's 'established on the date the interest period begins'.",
     "manual_minutes": 150,
     "times_per_year": 1,
     "incumbent": "No service was found that recovers an owner-operator's escrow for a share of it; OOIDA reviews leases for members, and lawyers bill by the hour, so no incumbent_fee_pct is given.",

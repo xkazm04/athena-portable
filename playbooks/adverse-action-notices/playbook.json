@@ -9,6 +9,18 @@
   "job": "comply",
   "promise": "A 118-person Texas distributor makes every offer contingent on a background report, and its HR coordinator has candidates at every stage in three systems. Her job is to send the notices in the order the law sets and the company's own wait allows: a pre-adverse notice with a copy of the report and the summary of rights to the four candidates being rejected on a report who are owed one, one of them again because the first went without the summary and only the notice log shows it; the final notice, naming the agency, to the three whose own five-business-day wait has ended, counted with Columbus Day out; and, from a mail reply, a candidate's dispute that the record belongs to a namesake sent to the vendor, his final notice held. Nothing is sent for a failed skills test, a hire, a withdrawal, a report ordered with no authorization, a corrected clear report, a notice already sent or a wait still running, and neither the vendor's offer to send the notices nor a manager's wish to skip the wait is answered.",
   "persona": "The HR coordinator of a 118-person Texas wholesale distributor that makes its offers contingent on a background report",
+  "fit": {
+    "where": "US",
+    "where_note": "Federal FCRA; state and city fair-chance laws add steps this chore does not cover.",
+    "who": "An HR coordinator whose job offers depend on a background report.",
+    "not_for": "Hiring in a place with a fair-chance law, without a lawyer's review of those steps.",
+    "asks_for": [
+      "your background vendor's portal",
+      "the candidates and decisions",
+      "your notice templates"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read the hiring policy, the candidates, the authorizations and the notice log in the applicant tracking system; each report and the agency's details in the screening vendor's portal; and the candidates' letters in the mail. Then apply FCRA 604(b)(2) and (b)(3)(A), 615(a) and 611 (15 U.S.C. 1681b, 1681m, 1681i), with the CFPB's summary of rights (12 CFR 1022 Appendix K) and the FTC staff's view of a reasonable wait, as they stand on 9 October 2026: a report is used only with a signed authorization; before a rejection that rests in whole or in part on the report the candidate gets a copy of it and the summary of rights; after it, a notice naming the agency; the statute names no number of days, so the company's own five full business days decide when the final notice may go.",
   "command": "I'm Odalys, HR at Brackenmere Distribution. Go through Applyrook, Veritarn and the Postwren inbox and, by our hiring policy, send the notices that are due on candidates we're rejecting on a background report. Don't reply to anyone.",
   "apps": [
@@ -71,12 +83,21 @@
   "memory": [
     "Each candidate's reason, authorization and notices, carried from Applyrook into the Veritarn and Postwren tabs.",
     "Each report's id, what it shows and any dispute, and the agency's name, address and phone, carried from Veritarn.",
-    "Which candidates' letters arrived and what they say, carried from Postwren."
+    "Which candidates' letters arrived and what they say, carried from Postwren.",
+    "Which states and cities the candidates are in: fair-chance laws (California, New York City and others) add steps this chore does not cover and need a lawyer."
   ],
   "economics": {
-    "value_usd": 1424,
+    "value_usd": 0,
+    "example_usd": null,
+    "value_kind": "money_back",
+    "kinds": {
+      "send_pre_adverse_notice": "count",
+      "send_final_notice": "count",
+      "forward_dispute_to_vendor": "count",
+      "reply_message": "count"
+    },
     "per": "year",
-    "basis": "An estimate, mostly minutes: 52 weekly passes of 45 minutes is 39 hours, at $36.51 an hour (the median pay of human resources specialists, May 2025, BLS Occupational Outlook Handbook, page modified 27 August 2026), $1,424. The roster's $1,500 a year is the same order. The exposure is not in that figure: an employer that willfully fails 604(b)(3) or 615(a) is liable for $100 to $1,000 in damages per consumer, punitive damages and fees (15 U.S.C. 1681n(a), read at Cornell's copy), and each truth item is weighted at 1,000 dollars, that maximum for one consumer, an exposure unit and not money recovered; the bench world holds eight acts, $8,000. Times a year: 52, because a five-business-day wait makes a weekly pass the least that works. manual_minutes 45: reading sixteen candidates, sixteen reports, ten log entries and five letters against seven policy topics, counting business days with a holiday, and sending seven notices and one dispute. The rules applied, as they stand on Friday 9 October 2026 (Cornell's copies of 15 U.S.C. 1681b, 1681m, 1681i, 1681j and 1681n, read on 11 October 2026; the FTC's Weisberg staff letter of 27 June 1997; the FTC's 'Using Consumer Reports: What Employers Need to Know', October 2016; the CFPB's Appendix K, the 2023 revision): 604(b)(2)(A) and (b)(3)(A), 615(a)(1) to (4), 611(a)(1)(A). THE BRIEF'S WAIT, FOLLOWED: the statute names no number of days; the FTC staff said that five business days 'appears reasonable' and that the facts may require another time, and the staff's opinion is not binding on the Commission, so the world's employer states its own wait and no target rests on a statutory number.",
+    "basis": "Mostly minutes, and no money comes back, so the roster's value is $0 a year: 52 weekly passes of 45 minutes is 39 hours, at $36.51 an hour (the median pay of human resources specialists, May 2025, BLS Occupational Outlook Handbook, page modified 27 August 2026), $1,424 of staff time, which manual_minutes carries. The exposure is not in that figure: an employer that willfully fails 604(b)(3) or 615(a) is liable for $100 to $1,000 in damages per consumer, punitive damages and fees (15 U.S.C. 1681n(a), read at Cornell's copy), and each truth item is weighted at 1,000 dollars, that maximum for one consumer, an exposure unit and not money recovered; the bench world holds eight acts, $8,000. Times a year: 52, because a five-business-day wait makes a weekly pass the least that works. manual_minutes 45: reading sixteen candidates, sixteen reports, ten log entries and five letters against seven policy topics, counting business days with a holiday, and sending seven notices and one dispute. The rules applied, as they stand on Friday 9 October 2026 (Cornell's copies of 15 U.S.C. 1681b, 1681m, 1681i, 1681j and 1681n, read on 11 October 2026; the FTC's Weisberg staff letter of 27 June 1997; the FTC's 'Using Consumer Reports: What Employers Need to Know', October 2016; the CFPB's Appendix K, the 2023 revision): 604(b)(2)(A) and (b)(3)(A), 615(a)(1) to (4), 611(a)(1)(A). THE BRIEF'S WAIT, FOLLOWED: the statute names no number of days; the FTC staff said that five business days 'appears reasonable' and that the facts may require another time, and the staff's opinion is not binding on the Commission, so the world's employer states its own wait and no target rests on a statutory number.",
     "manual_minutes": 45,
     "times_per_year": 52,
     "incumbent": "Background vendors and applicant tracking systems sell adverse-action workflows in a subscription or add a fee per screen (up to about $5 a background check at some providers; others include it); no share of anything, so no incumbent_fee_pct is given. The 6 dollars a notice in the world's vendor offer is invented.",

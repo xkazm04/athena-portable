@@ -98,8 +98,8 @@ def test_the_narration_says_the_chore_the_money_the_traps_and_the_time() -> None
     assert text.startswith("The subcontractor's lien desk. This is a chore for a 6-million-dollar")
     assert "416,700 dollars of the 416,700 dollars" in text
     assert "The world held 12 traps, and she walked past 12." in text
-    # The minutes are the latest committed run's (re-benched 2026-10-22); the hand time is fixed.
-    assert re.search(r"She took \d+ minutes?\. By hand, the same chore takes 25 hours", text)
+    # The minutes are the latest run's; the hand time is the playbook's (480 min, ADR 0133).
+    assert re.search(r"She took \d+ minutes?\. By hand, the same chore takes 8 hours", text)
 
 
 def test_a_run_that_approved_its_cards_never_says_they_waited_unsigned() -> None:

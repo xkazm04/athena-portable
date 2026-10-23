@@ -11,6 +11,7 @@
     uv run python -m athena.proving.playbooks evidence <id>|--all [--dry] [--verify]
         [--stills-only] [--desktop apps/desktop]
     uv run python -m athena.proving.playbooks rank [--check | --tau]
+    uv run python -m athena.proving.playbooks derive [<id> ...] [--check]
     uv run python -m athena.proving.playbooks followthrough <id> [--branch approve|decline|
         lost_answer|all] [--repeats 3] [--model sonnet] [--cap 5.0] [--engine claude_code]
         [--out proving-runs] [--no-write]
@@ -47,6 +48,13 @@ committed files alone. ``--check`` writes nothing and exits 1 when the file diff
 writes nothing and prints each playbook's score on its first comparable run against the median of
 the rest, with their Kendall tau-b (ADR 0128).
 
+``derive`` writes each playbook's ``economics.example_usd`` from its own truth (ADR 0133,
+:func:`.spec.derive_example_usd`): the example case's money back, the sum of the eligible items of
+its ``money_back`` targets. It edits that one value in place and keeps the rest of the file byte for
+byte, so a hand-formatted file stays as it was written; a second run changes nothing. With ids it
+derives those alone. ``--check`` writes nothing and exits 1 when a stored figure differs. ``check``
+refuses a playbook whose stored figure is absent or differs, so the figure is never typed.
+
 ``followthrough`` drives a playbook that has a ``followthrough.json`` overlay (ADR 0129,
 :mod:`.followthrough`) through two sessions on one brain with a restart between, once per branch
 per repeat, writes each run's full record under ``proving-runs/<ts>/followthrough-<id>/``, appends
@@ -59,6 +67,7 @@ from __future__ import annotations
 
 import argparse
 import json
+import re
 import sys
 from collections.abc import Sequence
 from pathlib import Path
@@ -103,6 +112,8 @@ from athena.proving.playbooks.spec import (
     PLAYBOOKS_DIRNAME,
     Playbook,
     PlaybookError,
+    derive_example_usd,
+    example_problems,
     load_all,
     load_playbook,
 )
@@ -169,6 +180,11 @@ def build_parser() -> argparse.ArgumentParser:
     how.add_argument(
         "--tau", action="store_true", help="run 1's order against the rest's, as Kendall tau-b"
     )
+    d = verbs.add_parser(
+        "derive", help="write each playbook's economics.example_usd from its truth (ADR 0133)"
+    )
+    d.add_argument("ids", nargs="*", help="playbook ids; every playbook when none is given")
+    d.add_argument("--check", action="store_true", help="exit 1 if a stored figure would change")
     f = verbs.add_parser(
         "followthrough", help="approve, decline or lose the answers, restart, run again (ADR 0129)"
     )
@@ -395,6 +411,10 @@ def main(argv: Sequence[str] | None = None) -> int:
         except PlaybookError as exc:
             print(f"refused: {exc}", file=sys.stderr)
             return 2
+        drift = [line for book in books for line in example_problems(book)]
+        if drift:
+            print("refused: " + "; ".join(drift), file=sys.stderr)
+            return 2
         cut = 0
         for book in books:
             print(
@@ -409,6 +429,8 @@ def main(argv: Sequence[str] | None = None) -> int:
         return 1 if cut else 0
     if args.verb == "evidence":
         return evidence(args)
+    if args.verb == "derive":
+        return derive(Path(args.dir), args.ids, check=args.check)
     if args.verb == "rank":
         if args.tau:
             return run_tau(Path(args.dir))
@@ -445,6 +467,120 @@ def main(argv: Sequence[str] | None = None) -> int:
         return second_run(book, config, out=Path(args.out))
     print(f"bench {book.id} on {config.engine} {config.model}", flush=True)
     return bench(book, config, runs=args.runs, out=Path(args.out), write=args.write, note=args.note)
+
+
+def derive(base: Path, ids: Sequence[str], *, check: bool) -> int:
+    """``derive``: each playbook's ``economics.example_usd`` written from its truth (ADR 0133).
+
+    Read from the raw files, not through :func:`load_playbook`, which may refuse a playbook for a
+    reason that has nothing to do with this figure. Exit 0, 1 when ``check`` finds drift, 2 when a
+    named playbook is missing or a file cannot be read or edited.
+    """
+    roots = (
+        [base / i for i in ids]
+        if ids
+        else sorted(p for p in base.iterdir() if (p / "playbook.json").is_file())
+    )
+    changed = failed = 0
+    for root in roots:
+        path = root / "playbook.json"
+        try:
+            text = path.read_bytes().decode("utf-8")
+            showcase = json.loads(text)
+            truth = json.loads((root / "truth.json").read_text(encoding="utf-8"))
+            economics = showcase["economics"]
+            targets = [
+                (str(t.get("tool", "")), t.get("eligible") or {})
+                for t in truth.get("targets", [])
+                if isinstance(t, dict)
+            ]
+            want = derive_example_usd(economics, targets)
+            if "example_usd" in economics and economics["example_usd"] == want:
+                continue
+            new = set_example_usd(text, want)
+        except (OSError, ValueError, KeyError, TypeError) as exc:
+            failed += 1
+            print(f"{root.name}: cannot derive: {exc}", file=sys.stderr)
+            continue
+        changed += 1
+        if check:
+            print(f"{root.name}: example_usd {economics.get('example_usd')!r} -> {want!r}")
+        else:
+            path.write_bytes(new.encode("utf-8"))
+            print(f"{root.name}: example_usd {want!r}")
+    print(f"{changed} of {len(roots)} {'would change' if check else 'changed'}")
+    if failed:
+        return 2
+    return 1 if check and changed else 0
+
+
+_WS = re.compile(r"[ \t\n\r]*")
+
+
+def _skip(text: str, i: int) -> int:
+    match = _WS.match(text, i)
+    return match.end() if match else i
+
+
+def _members(text: str, start: int) -> tuple[list[tuple[str, int, int]], int]:
+    """The members of the JSON object opening at ``start``, each ``(key, value_start,
+    value_end)``, and the index of its closing brace. A value is skipped whole by the decoder."""
+    decoder = json.JSONDecoder()
+    if text[start] != "{":
+        raise ValueError(f"no object at {start}")
+    i = _skip(text, start + 1)
+    members: list[tuple[str, int, int]] = []
+    if text[i] == "}":
+        return members, i
+    while True:
+        key, i = decoder.raw_decode(text, i)
+        i = _skip(text, i)
+        if text[i] != ":":
+            raise ValueError(f"expected ':' at {i}")
+        i = _skip(text, i + 1)
+        _, end = decoder.raw_decode(text, i)
+        members.append((str(key), i, end))
+        i = _skip(text, end)
+        if text[i] == "}":
+            return members, i
+        if text[i] != ",":
+            raise ValueError(f"expected ',' or '}}' at {i}")
+        i = _skip(text, i + 1)
+
+
+def set_example_usd(text: str, value: int | float | None) -> str:
+    """``text`` with ``economics.example_usd`` set to ``value`` and every other byte kept.
+
+    An existing value is replaced where it stands; a new one goes right after ``value_usd`` (or
+    before the first member when there is none), in the line style the object already has. The
+    result is parsed back and compared, so an edit that would change anything else is refused.
+    """
+    top, _ = _members(text, _skip(text, 0))
+    economics = next((s for k, s, _ in top if k == "economics"), None)
+    if economics is None:
+        raise KeyError("economics")
+    members, close = _members(text, economics)
+    member = f'"example_usd": {json.dumps(value)}'
+    existing = next(((s, e) for k, s, e in members if k == "example_usd"), None)
+    if existing is not None:
+        new = text[: existing[0]] + json.dumps(value) + text[existing[1] :]
+    elif not members:
+        new = text[:close] + member + text[close:]
+    else:
+        first_key = text.index('"', economics + 1)
+        indent = text[text.rfind("\n", 0, first_key) + 1 : first_key]
+        multiline = "\n" in text[economics:first_key]
+        sep = ",\n" + indent if multiline else ", "
+        anchor = next((e for k, _, e in members if k == "value_usd"), None)
+        if anchor is not None:
+            new = text[:anchor] + sep + member + text[anchor:]
+        else:
+            new = text[:first_key] + member + sep + text[first_key:]
+    expected = json.loads(text)
+    expected["economics"]["example_usd"] = value
+    if json.loads(new) != expected:
+        raise ValueError("the edit would change more than example_usd")
+    return new
 
 
 #: What ``--no-carry`` says: kept so the command that measured ADR 0130 still runs, and changes

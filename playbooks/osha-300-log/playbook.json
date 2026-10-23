@@ -9,6 +9,19 @@
   "job": "comply",
   "promise": "A 118-person machine shop closes its 2025 OSHA injury log on Friday 30 January 2026, two days before the summary must be posted and a month before the electronic submission is due. Sixteen supervisors' reports, thirteen clinic notes and the log's two existing entries are read against Part 1904, and seven cases are entered with the days the rule counts: five sutures, a back strain with six days away, a restricted hand with 21 days, a shoulder where the doctor recommended a prescription-strength drug that the worker declined, a privacy case entered without a name, a fingertip amputation already reported to OSHA with 13 days, and a shoulder surgery still away, entered at the 180-day cap. The annual summary goes to the general manager to certify, the 300A is submitted with 109 employees and 224,600 hours, and, because the shop is in a designated industry with more than 100 employees, so is the 300 and 301 data. A butterfly bandage, an over-the-counter tablet, a tetanus shot, a crash in the company lot, the flu, a sandwich, two repeats and a vendor's 395-dollar offer are left alone.",
   "persona": "The EHS coordinator of a 118-person machine shop, who keeps the OSHA 300 Log",
+  "fit": {
+    "where": "US",
+    "where_note": "Federal OSHA recordkeeping; a state-plan state may add its own rules.",
+    "who": "The person who keeps the OSHA 300 log at an establishment of more than 10 employees.",
+    "not_for": "An employer of 10 or fewer, or in an industry partly exempt from keeping the log.",
+    "asks_for": [
+      "incident reports",
+      "clinic notes",
+      "headcount and hours worked",
+      "the establishment's industry code"
+    ],
+    "costs": "No fees; the electronic submission is free."
+  },
   "chore": "Read the shop's 2025 employment figures and its executives in the HR system, the supervisors' incident reports in the mail, the clinic and hospital notes in the document store, and the rules and the entries already on the log in the tracking portal. Then apply 29 CFR Part 1904 as it stands on 30 January 2026: 1904.1 and .2 (the shop keeps records), 1904.5 (work-relatedness and its exceptions), 1904.6 and .7 (one case once; the first aid list; medical treatment; days counted from the day after, capped at 180; restricted work), 1904.29 (seven days; privacy cases), 1904.32 (the summary, certified by a company executive, posted by 1 February), 1904.39 (reports to OSHA) and 1904.41 (electronic submission by 2 March, with Appendices A and B).",
   "command": "I'm Dana, EHS coordinator at Larkmoor Precision Machining. We're closing the 2025 injury log. Go through Crewmarrow, the Postwren incident reports, the Binderwell clinic notes and Injurylog, enter every 2025 case the rules make recordable that isn't on the log yet, send the annual summary to the person the rule allows to certify it, and submit what we must submit to OSHA. Don't accept any offer.",
   "apps": [
@@ -78,12 +91,21 @@
   "memory": [
     "The shop's employment figures and the executives, carried from Crewmarrow.",
     "Each incident's report and what the clinic found, treated and advised, carried from Postwren and Binderwell into the Injurylog tab.",
-    "Which cases are already on the log, carried from Injurylog."
+    "Which cases are already on the log, carried from Injurylog.",
+    "What to submit depends on headcount and industry: 20 to 249 employees in an Appendix A industry submit the 300A only; 100 or more in an Appendix B industry also submit the 300 and 301. An owner may certify the summary (1904.32(b)(3))."
   ],
   "economics": {
-    "value_usd": 3000,
+    "value_usd": 0,
+    "example_usd": null,
+    "value_kind": "money_back",
+    "kinds": {
+      "record_case": "count",
+      "send_for_certification": "count",
+      "submit_to_ita": "count",
+      "accept_offer": "count"
+    },
     "per": "year",
-    "basis": "An estimate, mostly minutes. A shop with a hundred employees has a handful of recordable cases a year, a 7-day clock on each, an annual summary that must be certified and posted by 1 February, and an electronic submission by 2 March; a failure to record, certify, post or submit is a violation that OSHA can cite at up to $16,550 each (osha.gov/penalties: the maximum for a serious, other-than-serious or posting violation, effective 15 January 2025; OSHA did not raise it for 2026, and its memo of 21 May 2026 keeps it; the amount in force on 30 January 2026). The roster's $3,000 a year is a small shop's cost of doing this by hand or having a vendor do it, not a published figure. Each of the ten truth items is weighted at $16,550, the maximum for one violation, an upper bound and an exposure avoided, not money recovered: $165,500. Times a year: 12, a monthly pass over the incident reports (each case is due within 7 days, so monthly is a floor), with the annual close inside it. manual_minutes 120: reading sixteen reports, thirteen notes and eight rules, counting days, and making ten entries and filings. The rules applied, as they stand on Friday 30 January 2026 (eCFR title 29, Part 1904, version of that date, read on 11 October 2026): 1904.1(a), 1904.2 and Non-Mandatory Appendix A to Subpart B; 1904.4; 1904.5(b)(2)(iv), (vii) and (viii); 1904.6; 1904.7(b)(3), (4), (5) and (7); 1904.29(b)(3) and (b)(7); 1904.32(b)(2) to (6); 1904.39(a); 1904.41(a), (b) and (c) with Appendices A and B to Subpart E (amended 88 FR 47346, 21 July 2023). THE BRIEF'S PREMISES, CORRECTED: the commuting exception in 1904.5(b)(2)(vii) is only a motor vehicle accident on a company parking lot or access road while commuting (a fall on ice in the lot is not excepted), and the world uses that case; and a fatality, hospitalization or amputation reported under 1904.39 is also recorded on the log if it meets the criteria (1904.39(b)(3), (4), (6)), so it is not 'not on the log'. The brief's thresholds, first aid list, 180-day cap, restricted work, 7-day entry, privacy rule, certification and 1 February to 30 April posting were all confirmed in the text. The world's date, 30 January 2026, closes the 2025 log before the posting date of 1 February.",
+    "basis": "An estimate, mostly minutes. A shop with a hundred employees has a handful of recordable cases a year, a 7-day clock on each, an annual summary that must be certified and posted by 1 February, and an electronic submission by 2 March; a failure to record, certify, post or submit is a violation that OSHA can cite at up to $16,550 each (osha.gov/penalties: the maximum for a serious, other-than-serious or posting violation, effective 15 January 2025; OSHA did not raise it for 2026, and its memo of 21 May 2026 keeps it; the amount in force on 30 January 2026). No money comes back, so the roster's value is $0 a year; the value is the coordinator's hours, which a vendor would charge for, and a log that stands up to an inspection. Each of the ten truth items is weighted at $16,550, the maximum for one violation, an upper bound and an exposure avoided, not money recovered: $165,500. Times a year: 12, a monthly pass over the incident reports (each case is due within 7 days, so monthly is a floor), with the annual close inside it. manual_minutes 120: reading sixteen reports, thirteen notes and eight rules, counting days, and making ten entries and filings. The rules applied, as they stand on Friday 30 January 2026 (eCFR title 29, Part 1904, version of that date, read on 11 October 2026): 1904.1(a), 1904.2 and Non-Mandatory Appendix A to Subpart B; 1904.4; 1904.5(b)(2)(iv), (vii) and (viii); 1904.6; 1904.7(b)(3), (4), (5) and (7); 1904.29(b)(3) and (b)(7); 1904.32(b)(2) to (6); 1904.39(a); 1904.41(a), (b) and (c) with Appendices A and B to Subpart E (amended 88 FR 47346, 21 July 2023). THE BRIEF'S PREMISES, CORRECTED: the commuting exception in 1904.5(b)(2)(vii) is only a motor vehicle accident on a company parking lot or access road while commuting (a fall on ice in the lot is not excepted), and the world uses that case; and a fatality, hospitalization or amputation reported under 1904.39 is also recorded on the log if it meets the criteria (1904.39(b)(3), (4), (6)), so it is not 'not on the log'. The brief's thresholds, first aid list, 180-day cap, restricted work, 7-day entry, privacy rule, certification and 1 February to 30 April posting were all confirmed in the text. The world's date, 30 January 2026, closes the 2025 log before the posting date of 1 February.",
     "manual_minutes": 120,
     "times_per_year": 12,
     "incumbent": "Compliance vendors file the 300A and the 300 and 301 data for a flat fee per filing or a subscription (the 395 dollars in the world's offer is invented); no share of anything, so no incumbent_fee_pct is given.",

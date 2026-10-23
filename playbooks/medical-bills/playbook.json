@@ -9,6 +9,18 @@
   "job": "contest",
   "promise": "Every bill checked against what your insurer says you owe: overcharges and surprise bills disputed, a wrongful denial appealed with the records that prove it, refunds asked for, and only what is truly owed paid.",
   "persona": "A family on a PPO with an ER visit, a surgery and some follow-up care this year",
+  "fit": {
+    "where": "US",
+    "where_note": "US health plans with EOBs; the No Surprises Act applies to surprise bills.",
+    "who": "A family on a PPO or similar plan with hospital and doctor bills and EOBs.",
+    "not_for": "Bills from a plan with no EOBs, or bills already sold to a collector years ago.",
+    "asks_for": [
+      "your insurer's EOBs",
+      "the bills",
+      "what you have paid (card or HSA)"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Download every Explanation of Benefits from the insurer's member portal, then every bill from each provider's billing portal — the hospital's MyChart, the anesthesia group and the dermatologist on Cedar — and match them by date of service. Work out which bills ask for more than the EOB allows, which are duplicates or reminders of the same balance, which balance bills the No Surprises Act forbids, which EOBs are still pending, and which denials can still be appealed. Then write each billing office, file the appeal with the medical records, and pay the rest. Bills have no API; payer data does not reach provider portals.",
   "command": "My medical bills are a mess. Go through my insurer's EOBs and every provider's billing portal, dispute anything that's wrong, appeal any denial that's worth it and still in time, ask for any refund I'm owed, and pay only what I genuinely owe.",
   "apps": [
@@ -36,7 +48,8 @@
     "Walks every claim and its EOB, two pages of them, and notes what each provider may bill.",
     "In MyChart, matches each bill to its EOB line by date of service, and spots the duplicate line and the reminder that restates a balance.",
     "In Cedar, holds the out-of-network anesthesia group to the in-network cost share, and finds a payment the insurer later reduced.",
-    "Back at the insurer, appeals the denial that is still in time, citing the therapy visits it read in MyChart."
+    "Back at the insurer, appeals the denial that is still in time, citing the therapy visits it read in MyChart.",
+    "Before any hospital balance is paid, asks for the itemized bill and checks whether the hospital's financial assistance policy covers it."
   ],
   "gates": [
     {
@@ -76,8 +89,16 @@
   ],
   "economics": {
     "value_usd": 3423,
+    "example_usd": 3423.5,
+    "value_kind": "money_back",
+    "kinds": {
+      "dispute_bill": "money_back",
+      "request_refund": "money_back",
+      "file_appeal": "money_back",
+      "pay_bill": "count"
+    },
     "per": "episode",
-    "basis": "One year with an ER visit and a surgery, as in the bench world: $2,138.50 in billing errors and surprise bills, a $1,240 denial, a $45 refund. Not an average; a typical shape.",
+    "basis": "An estimate, and not an independent one: the figure is the bench world's own total, since no published average that fits was found. One year with an ER visit and a surgery, as in the bench world: $2,138.50 in billing errors and surprise bills, a $1,240 denial, a $45 refund. Not an average; a typical shape.",
     "manual_minutes": 480,
     "incumbent": "Patient advocates charge 25–30% of what they save you, or $50–250 an hour. AI letter tools draft one appeal for about $40 and reconcile nothing across portals.",
     "incumbent_fee_pct": 25,

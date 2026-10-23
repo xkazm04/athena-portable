@@ -9,6 +9,18 @@
   "job": "recover",
   "promise": "Every delayed or cancelled flight of the year checked against EU Regulation 261/2004: the ones the rule compensates claimed with each airline at the fixed amount for the right number of passengers, and the ones it excludes left alone.",
   "persona": "A family of four in Lisbon that flew fourteen times this year, two airlines, one baby on a lap",
+  "fit": {
+    "where": "EU",
+    "where_note": "EU Regulation 261/2004: flights leaving the EU, or arriving there on an EU airline.",
+    "who": "A traveller with long delays or cancellations on flights in or from the EU.",
+    "not_for": "Delays under three hours, or ones caused by extraordinary circumstances such as weather.",
+    "asks_for": [
+      "your booking references",
+      "the actual arrival times",
+      "the airline's messages"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Pull every booking from the travel organiser, find each delay and cancellation in the airlines' emails, and read the real arrival time and the cause on each airline's own status page. Then apply the rule: departing from the EU or on an EU airline, three hours late at the gate or cancelled inside 14 days, no extraordinary circumstance, a fixed 250, 400 or 600 euros by distance for every passenger who paid a fare, and nothing claimed twice. Each airline has its own claim form, and none of them shares data with the others.",
   "command": "Our flights this year were a mess. Go through Tripfold and my Mailnest inbox, work out which delayed or cancelled flights EU 261 compensates and for how many of us, and file a claim with each airline for every one that holds up, at the amount the rule sets. Don't settle for less than the rule gives.",
   "apps": [
@@ -75,8 +87,14 @@
   ],
   "economics": {
     "value_usd": 1300,
+    "example_usd": 5445,
+    "value_kind": "money_back",
+    "kinds": {
+      "file_claim": "money_back",
+      "accept_voucher": "count"
+    },
     "per": "episode",
-    "basis": "One episode is a year of a family's flights with at least one claimable disruption: three paying passengers on one intra-EU flight over 1,500 km that reached the gate three hours late are owed 1,200 euros, about $1,300. The bench world holds 4,950 euros owed across four bookings, $5,445 at the bench's fixed rate of $1.10 to the euro. Times a year: one sweep a year, after the summer's travel, as the bench world holds it; a family that flies more would sweep more often, which is not claimed here.",
+    "basis": "One episode is a year of a family's flights with at least one claimable disruption: three paying passengers on one intra-EU flight over 1,500 km that reached the gate three hours late are owed 1,200 euros, about $1,300. The amount is 250, 400 or 600 euros per passenger who paid a fare, by distance (Article 7(1)), halved under Article 7(2) when a rerouted arrival lands within 2, 3 or 4 hours of the original; a lap infant adds nothing. The bench world holds 4,950 euros owed across four bookings, $5,445 at the bench's fixed rate of $1.10 to the euro. Times a year: one sweep a year, after the summer's travel, as the bench world holds it; a family that flies more would sweep more often, which is not claimed here.",
     "manual_minutes": 240,
     "times_per_year": 1,
     "incumbent": "Claim agencies such as AirHelp keep about 35% of what the airline pays, including VAT, and more when a claim goes to court; airlines' own forms are free but one per airline and per booking.",

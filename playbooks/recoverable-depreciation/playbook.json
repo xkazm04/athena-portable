@@ -38,6 +38,7 @@
     }
   ],
   "steps": [
+    "Works out the window from the policy's replacement cost clause and the state's rule (California Insurance Code 2051.5 in this example), and says which one decides.",
     "Reads the policy, both claims and every estimate line in Hearthguard, and the payments made so far.",
     "Reads Buildmark's invoices and quotes: which lines are finished, when, and for how much.",
     "Reads the bank: which invoices were paid, and what was bought after the loss.",
@@ -58,7 +59,8 @@
     "A shed under an endorsement that pays actual cash value only: its depreciation is not recoverable.",
     "A laptop replaced for less than the cash value already paid: nothing more is owed.",
     "A furniture receipt dated before the storm: the original purchase, not a replacement.",
-    "Two lines of the older water claim, repaired after the extended window closed."
+    "Two lines of the older water claim, repaired after the extended window closed.",
+    "A claim outside California, where the policy's own deadline (often 180 days to 2 years) governs instead of 2051.5."
   ],
   "memory": [
     "Each claim's first cash-value payment, whether it relates to a state of emergency, and so its window.",
@@ -68,8 +70,13 @@
   ],
   "economics": {
     "value_usd": 6500,
+    "example_usd": 15190,
     "per": "episode",
-    "basis": "The average homeowners claim was $20,062 in 2023 (Triple-I, from ISO). Insurers hold back the depreciation on a replacement cost claim until the work is done; at about a third of an average claim, an estimate, that is about $6,500 an episode, and it is lost when the window closes unclaimed. The bench world holds $15,190 of holdback on four finished lines of one windstorm claim. Times a year: once, one claim's holdback swept when its repairs finish.",
+    "value_kind": "money_back",
+    "kinds": {
+      "request_depreciation": "money_back"
+    },
+    "basis": "The average homeowners claim was $20,062 in 2023 (Triple-I, from ISO). Insurers hold back the depreciation on a replacement cost claim until the work is done, and it is lost when the window closes unclaimed. The roster puts the holdback at about a third of an average claim, about $6,500 an episode: an assumption, not a sourced share, since no published average holdback was found. For your own claim, the figure is the depreciation line on the adjuster's estimate for each finished repair. The bench world holds $15,190 of holdback on four finished lines of one windstorm claim. Times a year: once, one claim's holdback swept when its repairs finish.",
     "manual_minutes": 240,
     "times_per_year": 1,
     "incumbent": "Public adjusters work on contingency, commonly 10 to 20% of what they recover; the California Department of Insurance reported complaints of fees of 30% and more after disasters. The figure used is 15%, an estimate.",
@@ -105,5 +112,20 @@
     "minutes": 60,
     "why": "A methodical homeowner finds most of it; the bar is most of the holdback, no request for work not done or money already paid, inside an hour."
   },
-  "caveat": "Hearthguard, Buildmark, Ledgerline, Mailnest and the Okafor household are invented, and so is the state of emergency on the claim; the rules are California Insurance Code §2051.5 and a common replacement cost policy, fixed in the bench world as of October 2026. A real policy's terms and endorsements decide; this is not legal advice."
+  "caveat": "Hearthguard, Buildmark, Ledgerline, Mailnest and the Okafor household are invented, and so is the state of emergency on the claim; the rules are California Insurance Code §2051.5 and a common replacement cost policy, fixed in the bench world as of October 2026. A real policy's terms and endorsements decide; this is not legal advice.",
+  "fit": {
+    "where": [
+      "CA"
+    ],
+    "where_note": "California Insurance Code 2051.5 sets the window here; elsewhere the policy's own deadline governs.",
+    "who": "A homeowner with a replacement cost policy whose insurer held back depreciation until the repairs are done.",
+    "not_for": "An actual cash value policy, or repairs not yet finished.",
+    "asks_for": [
+      "the adjuster's estimate",
+      "your contractor's invoices and completion dates",
+      "proof of payment",
+      "receipts for belongings you replaced"
+    ],
+    "costs": "No fees from Athena; only your Claude usage. Public adjusters usually keep a share of the claim."
+  }
 }

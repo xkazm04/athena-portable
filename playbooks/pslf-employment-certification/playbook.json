@@ -9,6 +9,18 @@
   "job": "claim",
   "promise": "Every employer period that counts toward Public Service Loan Forgiveness certified, every month the tracker miscounted put up for reconsideration with its reason, and nothing asked for that the rule does not give.",
   "persona": "A speech-language pathologist ten years into public service, with a 48,200-dollar consolidation loan and two part-time jobs",
+  "fit": {
+    "where": "US",
+    "where_note": "Federal Direct Loans and the federal PSLF rules.",
+    "who": "A borrower working in public service or for a nonprofit, with federal Direct Loans.",
+    "not_for": "Private student loans, or work only for for-profit employers.",
+    "asks_for": [
+      "your studentaid.gov account",
+      "each employer's EIN and dates",
+      "pay records showing part-time hours"
+    ],
+    "costs": "No fees; certifying is free."
+  },
   "chore": "Read the loan servicer's payment history, month by month, against the forgiveness tracker that says which months counted. Find the employment behind each month in two payrolls and ten years of mail, check each employer against the rule, and certify the ones that qualify with their dates and hours. Then ask for reconsideration of the months the tracker got wrong, and only those. The servicer, the payroll and the federal portal share nothing, and each employer is certified one form at a time.",
   "command": "My PSLF count looks too low. Go through my Loanbridge history, my payroll and my mail, certify every employer that counts, and ask for a recount of any month that was miscounted. Don't ask for anything the rules don't give me.",
   "apps": [
@@ -76,9 +88,16 @@
     "The count once the forms are processed, and the month it reaches 120."
   ],
   "economics": {
-    "value_usd": 40000,
+    "value_usd": 20000,
+    "example_usd": 20000,
+    "value_kind": "money_back",
+    "kinds": {
+      "submit_certification": "money_back",
+      "request_reconsideration": "money_back",
+      "request_buyback": "count"
+    },
     "per": "episode",
-    "basis": "The average Public Service Loan Forgiveness discharge is about $75,000 (Brookings, January 2026). One episode is a borrower's count put right once, and the figure is the part of an average discharge that rests on months the borrower has to certify or contest: about half, an estimate. The bench world holds 50 of 120 months that rest on it, valued at a 120th each of a $48,200 balance: $20,000. Times a year: once, as the Department asks borrowers to certify employment every year.",
+    "basis": "An estimate tied to the example's own balance. Each month put right is valued at a 120th of the remaining balance, the share of the forgiveness it brings closer. For the example's $48,200 balance and the 50 months that wait on a certification or a reconsideration, that is 50 x $48,200 / 120 = $20,083, rounded to $20,000; your own figure is your balance divided by 120, times the months that wait. The average Public Service Loan Forgiveness discharge is about $75,000 (Brookings, January 2026), so a larger balance or more months waiting gains more. Times a year: once, as the Department asks borrowers to certify employment every year.",
     "manual_minutes": 360,
     "times_per_year": 1,
     "incumbent": "Paid PSLF helpers sell flat-fee plans; the federal Help Tool is free but certifies one employer at a time and checks nothing against the payment history.",

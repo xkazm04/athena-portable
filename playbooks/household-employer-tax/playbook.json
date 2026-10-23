@@ -41,7 +41,11 @@
     "Reads who works in the home, Ingrid's notes on each and the hours week by week in Hourquill.",
     "Reads each worker's set-up and file, the wages by quarter and the guide in Hearthpay, makes the new caregiver an employee, signs his I-9 and corrects the W-2 number.",
     "Reads the tax payments, the activity and the bills at Ledgerline, and pays nothing twice and no filing fee.",
-    "Reads the state's rules, the account and the filings on Taxline State, files and pays the third quarter, and reports the new hire."
+    "Reads the state's rules, the account and the filings on Taxline State, files and pays the third quarter, and reports the new hire.",
+    "Checks every earlier year in which a worker passed the cash-wage threshold for W-2s, W-3 and Schedule H not filed, says the penalty exposure, and says a household payroll service or a CPA should file the back years.",
+    "Confirms the household has an employer number (EIN, Form SS-4) before any W-2.",
+    "If an I-9's third business day has passed, says so: Section 2 is signed now and dated as it is, not promised as on time.",
+    "Stops and tells you if the employer has died: the estate is then the employer, and final wages and the final W-2 go out under it."
   ],
   "gates": [
     {
@@ -101,8 +105,20 @@
   ],
   "economics": {
     "value_usd": 800,
+    "example_usd": null,
     "per": "year",
-    "basis": "An estimate, mostly minutes. A family that employs a parent's caregiver at home runs payroll taxes itself: the state's quarterly report and payment, the federal estimates, a hire's I-9 and new-hire report, the W-2s and Schedule H, with the employee-or-contractor and family-exemption questions that decide whose wages count. The roster's $800 a year is penalties and taxes avoided, an estimate; most of the value is the hours. The bench world holds $818.17: $345.17, the employee's share of Social Security and Medicare (7.65% of $4,512) that Ingrid would owe from her own money if the new caregiver stayed set up as a contractor; $288, the least paperwork fine for an I-9 not completed in time (8 CFR 274a.10(b)(2)); $60, the least IRS penalty for a W-2 with a wrong number, at the amounts published for returns due in 2026 (the 2027 amounts are not yet on the IRS's page); and the invented state's $75 late-report, $25 late-payment and $25 late new-hire penalties. Times a year: four, since the state's report and payment and the federal estimate come every quarter; a quarter without a hire takes less than this world's 180 minutes, and January's adds the W-2s and Schedule H, which this world does not hold. The rules applied, as they stand on Friday 9 October 2026: IRS Publication 926 for 2026 (the $3,000 cash-wage threshold, which SSA's notice for 2026 fixes at $3,000, up from 2025's $2,800; FUTA from $1,000 in a quarter of 2025 or 2026, 6.0% of the first $7,000 with up to 5.4% credit; the family exemptions; control decides employee or not, and an agency's worker it controls is not the family's; the EIN with Form SS-4; the W-2 and W-3 by Monday 1 February 2027; Schedule H with the 1040 by 15 April 2027; withholding or 1040-ES estimates against the underpayment penalty; the name and number as on the card; Form I-9), Form 1040-ES (2026) with its due dates of 15 April, 15 June, 15 September 2026 and 15 January 2027, USCIS's and 8 CFR 274a.2's three business days for Section 2, and the IRS's information return penalties. The state, Ostmere, its agency, its wage base ($16,000), rate (3.4%), report dates, new-hire rule and penalties are invented.",
+    "value_kind": "penalty_avoided",
+    "kinds": {
+      "set_up_as_household_employee": "money_protected",
+      "sign_i9_section2": "penalty_avoided",
+      "correct_w2_identity": "penalty_avoided",
+      "file_new_hire_report": "penalty_avoided",
+      "file_wage_report": "penalty_avoided",
+      "pay_ui_tax": "penalty_avoided",
+      "pay_federal_estimate": "count",
+      "pay_bill": "count"
+    },
+    "basis": "An estimate, mostly minutes. A family that employs a parent's caregiver at home runs payroll taxes itself: the state's quarterly report and payment, the federal estimates, a hire's I-9 and new-hire report, the W-2s and Schedule H, with the employee-or-contractor and family-exemption questions that decide whose wages count. The roster's $800 a year is penalties and taxes avoided, an estimate that assumes about one quarter's slip like this world's $818.17 caught once a year; a household that slipped every quarter, or never filed its W-2s and Schedule H, would face several times this. Most of the value is the hours. The bench world holds $818.17: $345.17, the employee's share of Social Security and Medicare (7.65% of $4,512) that Ingrid would owe from her own money if the new caregiver stayed set up as a contractor; $288, the least paperwork fine for an I-9 not completed in time (8 CFR 274a.10(b)(2)); $60, the least IRS penalty for a W-2 with a wrong number, at the amounts published for returns due in 2026 (the 2027 amounts are not yet on the IRS's page); and the invented state's $75 late-report, $25 late-payment and $25 late new-hire penalties. Times a year: four, since the state's report and payment and the federal estimate come every quarter; a quarter without a hire takes less than this world's 180 minutes, and January's adds the W-2s and Schedule H, which this world does not hold. The rules applied, as they stand on Friday 9 October 2026: IRS Publication 926 for 2026 (the $3,000 cash-wage threshold, which SSA's notice for 2026 fixes at $3,000, up from 2025's $2,800; FUTA from $1,000 in a quarter of 2025 or 2026, 6.0% of the first $7,000 with up to 5.4% credit; the family exemptions; control decides employee or not, and an agency's worker it controls is not the family's; the EIN with Form SS-4; the W-2 and W-3 by Monday 1 February 2027; Schedule H with the 1040 by 15 April 2027; withholding or 1040-ES estimates against the underpayment penalty; the name and number as on the card; Form I-9), Form 1040-ES (2026) with its due dates of 15 April, 15 June, 15 September 2026 and 15 January 2027, USCIS's and 8 CFR 274a.2's three business days for Section 2, and the IRS's information return penalties. The state, Ostmere, its agency, its wage base ($16,000), rate (3.4%), report dates, new-hire rule and penalties are invented.",
     "manual_minutes": 180,
     "times_per_year": 4,
     "incumbent": "Full-service household payroll services charge a flat fee, not a share: Care.com HomePay lists $59 a month (Essentials) or $75 (Plus), $708 to $900 a year. The figure used is the lower, $708 a year, stated as 88.5% of the roster's $800 a year so that the fee avoided at full recall equals the flat fee; as a share of the $818.17 the world holds it would be 86.5%. A flat fee is owed whatever is found, so the percent is a conversion, not a contingency.",
@@ -166,5 +182,18 @@
     "minutes": 60,
     "why": "A careful household employer with Publication 926 and the state's rules in hand gets most of it; the bar is the new caregiver made an employee and his I-9 signed today, the state's third quarter filed and paid on the covered wages, the agency's aide and her son left out, nothing paid twice, inside an hour."
   },
-  "caveat": "Ingrid, Walter and Felix Vale, Marisol Ferreira, Tomasz Bielski and Bielski Care LLC, Priya Nair, Fernhollow Home Care, Pennwick Household Filing, Hourquill, Hearthpay, Ledgerline and Taxline State are invented, and so is the State of Ostmere with its Department of Employment Security and every one of its rules. Its $16,000 wage base, 3.4% rate, report and payment dates, new-hire rule and penalties are the invented state's own, stated on its portal, and no real state's. The public rules applied are IRS Publication 926 for 2026 (with 2026's $3,000 threshold, as SSA's notice for 2026 also fixes it), Schedule H, Form 1040-ES (2026), Form SS-4, the IRS's information return penalties as published for returns due in 2026, and Form I-9 under 8 CFR 274a.1, 274a.2 and 274a.10, fixed in the bench world as of 9 October 2026. A real worker's facts, the IRS's and USCIS's own determinations and the family's real state's law decide real cases. This applies stated rules to stated facts; it is not tax, legal or employment advice."
+  "caveat": "Ingrid, Walter and Felix Vale, Marisol Ferreira, Tomasz Bielski and Bielski Care LLC, Priya Nair, Fernhollow Home Care, Pennwick Household Filing, Hourquill, Hearthpay, Ledgerline and Taxline State are invented, and so is the State of Ostmere with its Department of Employment Security and every one of its rules. Its $16,000 wage base, 3.4% rate, report and payment dates, new-hire rule and penalties are the invented state's own, stated on its portal, and no real state's. The public rules applied are IRS Publication 926 for 2026 (with 2026's $3,000 threshold, as SSA's notice for 2026 also fixes it), Schedule H, Form 1040-ES (2026), Form SS-4, the IRS's information return penalties as published for returns due in 2026, and Form I-9 under 8 CFR 274a.1, 274a.2 and 274a.10, fixed in the bench world as of 9 October 2026. A real worker's facts, the IRS's and USCIS's own determinations and the family's real state's law decide real cases. This applies stated rules to stated facts; it is not tax, legal or employment advice.",
+  "fit": {
+    "where": "US",
+    "where_note": "Federal household employer rules (IRS Publication 926); each state's payroll tax and new-hire rules differ, and this example's state is invented.",
+    "who": "A family that employs a caregiver or nanny at home directly and runs the payroll itself.",
+    "not_for": "A family whose caregiver is employed by an agency, or one whose payroll service already files for it.",
+    "asks_for": [
+      "your employer number (EIN)",
+      "each worker's W-4, I-9 and Social Security card",
+      "what you paid each worker and when",
+      "your state payroll tax account"
+    ],
+    "costs": "No fees from Athena; the taxes themselves are owed either way; plus your Claude usage."
+  }
 }

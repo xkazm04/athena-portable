@@ -1,4 +1,4 @@
-"""Rank the playbooks by the method ADR 0056 fixed (README §14; ADR 0056, 0064, 0128).
+"""Rank the playbooks by the method ADR 0056 fixed (README §14; ADR 0056, 0064, 0128, 0133).
 
 Computation over the committed ``playbook.json`` and ``bench.json`` files only: no model call, no
 bench. ``playbooks/ranking.json`` carries no timestamp and a stable key order, so the same inputs
@@ -7,6 +7,10 @@ give the same bytes, and ``rank --check`` compares the committed file with what 
 A playbook is ranked on every run its ``bench.json`` holds under the key a run benched today would
 carry (ADR 0128), not on its latest draw alone: the score takes the median recall, any comparable
 run that filed a trap or a false claim excludes it, and each row says how many runs it stands on.
+
+Only money that comes back to the person earns money points (ADR 0133): a playbook whose estimate is
+``money_protected`` or ``penalty_avoided`` is ranked on its minutes and its edge, and its row still
+carries the figure and its kind, so a reader sees what was left out of the sum and why.
 """
 
 from __future__ import annotations
@@ -25,6 +29,7 @@ from athena.proving.playbooks.bench import (
     content_digest,
     headline,
 )
+from athena.proving.playbooks.spec import DEFAULT_KIND
 
 METHOD = "docs/adr/0056-how-the-best-use-of-athena-is-ranked.md"
 RANKING_FILENAME = "ranking.json"
@@ -145,10 +150,13 @@ def _row(
     times, stated = _times_per_year(pid, economics)
     count, recurs = PERIODS[economics["per"]]
     value = economics.get("value_usd", 0)
+    kind = economics.get("value_kind", DEFAULT_KIND)
+    # ADR 0133: exposure protected and a penalty avoided are not money back; they score no money.
+    counted = kind == DEFAULT_KIND
     annual = value * count
     recalls = [_recall(r) for r in runs]
     recall = statistics.median(recalls)
-    proven = annual * recall
+    proven = annual * recall if counted else 0.0
     pct = economics.get("incumbent_fee_pct")
     manual = float(economics["manual_minutes"])
     person = (float(bench["wall_s"]) + float(bench["your_time_s"])) / 60
@@ -170,6 +178,8 @@ def _row(
         "points": {"money": _num(money_pts), "time": _num(time_pts), "edge": _num(edge_pts)},
         "money": {
             "value_usd": value,
+            "value_kind": kind,
+            "counted": counted,
             "per": economics["per"],
             "annual_usd": _num(annual),
             "recurs": recurs,

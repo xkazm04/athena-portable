@@ -9,6 +9,18 @@
   "job": "comply",
   "promise": "A heavy hauler's four loads for next week are read across its dispatch inbox, its route planner and three states' permit portals, and each permit it needs is bought the way the federal size rules and each state's own rules allow: the excavator, non-divisible because its counterweight takes twelve hours to remove, permitted in Oklahoma with the rear escort a twelve-foot load needs on a four-lane road and a start after Oklahoma County's morning curfew, in Arkansas with no escort and a pass through Little Rock outside its rush hours, and in Tennessee on the route around a bridge its weight failed; the transformer only in Tennessee, where it is over the height; and the culvert with its rear escort, leaving Memphis after the curfew escorted loads keep. Two tanks the customer wants side by side, which are divisible, a second Oklahoma start inside the curfew, an Arkansas permit for a load within Arkansas's limits and an Oklahoma permit for a load that never enters Oklahoma are left alone.",
   "persona": "The permit coordinator of a small heavy-haul carrier in Oklahoma City, who buys every state's oversize permit for the week's loads himself",
+  "fit": {
+    "where": "US",
+    "where_note": "Rules read here for Oklahoma, Arkansas and Tennessee; other states' limits, escorts and curfews differ.",
+    "who": "A heavy-haul carrier that buys state oversize and overweight permits itself.",
+    "not_for": "Legal-size loads that need no permit.",
+    "asks_for": [
+      "each load's dimensions and weight",
+      "the route",
+      "each state's permit portal account"
+    ],
+    "costs": "The states' permit fees are yours to pay; no other fees."
+  },
   "chore": "Read the dispatcher's notes and the customers' messages on what each load is and what can come off it; each load's dimensions, weight and route by state, county and time in the route planner; and each state's rules and the drafted applications in Oklahoma's, Arkansas's and Tennessee's permit portals, with Tennessee's bridge analysis. Then apply 23 CFR Part 658 (the 102-inch width and 80,000 lb limits, the non-divisible load of 658.5, and the states' special permits under 658.15(c) and 658.17(h)) and each state's own rules as they stand on 9 October 2026: the dimensions that need a permit, escorts by width, travel hours and county curfews, holidays, the non-divisible requirement, and bridge and route restrictions. Each state draws the lines in a different place, and the customer's request decides divisibility.",
   "command": "I'm Joel, I do the permits at Kettle Ridge Heavy Haul. Go through the dispatch inbox, Pathcairn, and the Tarnwide, Halvern and Fernaby permit portals, and buy every permit next week's loads need in Oklahoma, Arkansas and Tennessee, with the right escorts and times. Don't buy a permit we can't lawfully use or don't need.",
   "apps": [
@@ -81,9 +93,16 @@
     "Which loads need which state's permit, with the escorts and times each state's rules give, carried from tab to tab."
   ],
   "economics": {
-    "value_usd": 1500,
+    "value_usd": 0,
+    "example_usd": null,
+    "value_kind": "money_back",
+    "kinds": {
+      "purchase_ok_permit": "count",
+      "purchase_ar_permit": "count",
+      "purchase_tn_permit": "count"
+    },
     "per": "year",
-    "basis": "An estimate, mostly minutes. A heavy hauler buys a permit in each state an oversize or overweight load crosses, after checking each state's limits, escorts, hours, curfews, holidays and bridges, and after deciding whether the load is one a state may permit at all. Permit services charge for this by the permit: Highway Permits, Inc. publishes $72.50 for an oversize permit and $82.50 for an overweight one, effective 1 September 2026, before state fees. The roster's $1,500 a year is about twenty permits a year bought without a service. Each truth item is weighted at that price, a price avoided, not money recovered: the excavator's three overweight permits at $82.50, the transformer's and the culvert's oversize permits at $72.50; the bench world holds five, $392.50. Times a year: 12, one heavy week a month. manual_minutes 120: reading four loads and their routes against three states' rules and thirteen drafted applications, and buying five permits; TDOT says a single-trip permit may take up to 3 days to process, and no primary source gives the hours by hand. The rules applied, as they stand on Friday 9 October 2026: 23 CFR 658.5, 658.13, 658.15 and 658.17 (eCFR, version of 1 October 2026); Oklahoma: ODOT's size and weight permit page (read live on 10 October 2026) and OAC 730:50-5-3 and 730:50-5-18 (ODOT's published copy of November 2025), and 47 O.S. 14-101's holidays as compiled; Arkansas: the ArDOT Permit Rules (2023; a 2026 amendment was proposed for comment and is not adopted); Tennessee: TDOT's permit FAQ (its archived copy of February 2026, as tn.gov refused direct connections on 10 October 2026) and Rule 1680-07-01-.03. The bridge analysis result, structure B-4417 and its detour are the world's own, not TDOT's.",
+    "basis": "An estimate, mostly minutes. A heavy hauler buys a permit in each state an oversize or overweight load crosses, after checking each state's limits, escorts, hours, curfews, holidays and bridges, and after deciding whether the load is one a state may permit at all. Permit services charge for this by the permit: Highway Permits, Inc. publishes $72.50 for an oversize permit and $82.50 for an overweight one, effective 1 September 2026, before state fees. No money comes back, so the roster's value is $0 a year: a permit service would charge about $1,500 for twenty permits a year, the price of the coordinator's hours, not money back. The state permit fees are paid either way. Each truth item is weighted at that price, a price avoided, not money recovered: the excavator's three overweight permits at $82.50, the transformer's and the culvert's oversize permits at $72.50; the bench world holds five, $392.50. Times a year: 12, one heavy week a month. manual_minutes 120: reading four loads and their routes against three states' rules and thirteen drafted applications, and buying five permits; TDOT says a single-trip permit may take up to 3 days to process, and no primary source gives the hours by hand. The rules applied, as they stand on Friday 9 October 2026: 23 CFR 658.5, 658.13, 658.15 and 658.17 (eCFR, version of 1 October 2026); Oklahoma: ODOT's size and weight permit page (read live on 10 October 2026) and OAC 730:50-5-3 and 730:50-5-18 (ODOT's published copy of November 2025), and 47 O.S. 14-101's holidays as compiled; Arkansas: the ArDOT Permit Rules (2023; a 2026 amendment was proposed for comment and is not adopted); Tennessee: TDOT's permit FAQ (its archived copy of February 2026, as tn.gov refused direct connections on 10 October 2026) and Rule 1680-07-01-.03. The bridge analysis result, structure B-4417 and its detour are the world's own, not TDOT's.",
     "manual_minutes": 120,
     "times_per_year": 12,
     "incumbent": "Permit services charge a flat fee a permit ($72.50 oversize, $82.50 overweight at Highway Permits, Inc.); no share of anything, so no incumbent_fee_pct is given.",

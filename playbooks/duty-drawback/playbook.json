@@ -9,6 +9,18 @@
   "job": "recover",
   "promise": "Every export of the year traced back to the import lines it came from, through the work orders and the bills of materials: a drawback claim filed for each one that qualifies, at 99% of the duty to the cent, and nothing claimed on a used, domestic, duty-free, already-designated, out-of-time or unshipped good.",
   "persona": "The controller of a pump maker of about 140 people in Dayton, Ohio, that imports motors, housings and controllers and exports a fifth of what it makes",
+  "fit": {
+    "where": "US",
+    "where_note": "US Customs drawback (19 U.S.C. 1313).",
+    "who": "A manufacturer or exporter that pays duty on imports and exports goods made from them.",
+    "not_for": "A business that exports nothing made from duty-paid imports.",
+    "asks_for": [
+      "import entries",
+      "export records (ITN and bills of lading)",
+      "bills of materials"
+    ],
+    "costs": "No CBP fee; a licensed customs broker usually files the claim and charges for it."
+  },
   "chore": "Read every import entry line and what earlier claims already designated in the customs portal, every export and its proof at the forwarder, and what each export shipped and where each part came from in the ERP's traceability and bills of materials. Then apply the rule: a manufacturing claim for pumps made from imported parts, an unused-merchandise claim for parts exported as they came, five years from the import to file, each imported unit designated once, an export that left the country, and 99% of what was paid. File each claim on the customs portal; none of the four systems shares data with another.",
   "command": "We pay a lot of duty and export a fifth of what we make, and we've never kept up with drawback. Go through Portline, Forwarden, our Ledgerline ERP and Docshelf, and file a drawback claim in Portline for every export that qualifies, at the right amount. Leave out anything the rule doesn't allow.",
   "apps": [
@@ -42,7 +54,8 @@
     "Reads every export at Forwarden and its proof that the goods left.",
     "Traces each export in Ledgerline to its work order and the import lot of each part, and reads the bills of materials.",
     "Reads the ruling, the distributor's terms and the rental fleet policy in Docshelf.",
-    "Back in Portline, files one claim per export that qualifies, under the right provision, at units times duty times 0.99."
+    "Back in Portline, files one claim per export that qualifies, under the right provision, at units times duty times 0.99.",
+    "Notes where substitution drawback (19 U.S.C. 1313(b) or (j)(2)) or a notice of intent to export would reach more, for a person and a broker to decide; this world files direct identification only."
   ],
   "gates": [
     {
@@ -69,6 +82,11 @@
   ],
   "economics": {
     "value_usd": 30000,
+    "example_usd": 13747.14,
+    "value_kind": "money_back",
+    "kinds": {
+      "file_drawback_claim": "money_back"
+    },
     "per": "year",
     "basis": "Drawback returns 99% of the duties paid on imports that are exported or go into exported goods (19 U.S.C. 1313). The roster's $30,000 a year is an estimate for a mid-size manufacturer exporting a fifth of its output made from duty-paid parts, not a statistic. The bench world holds $13,747.14 owed across four exports in five months. Times a year: two, since the world holds five months of exports swept at once and the five years to file leave room to batch.",
     "manual_minutes": 300,

@@ -9,6 +9,18 @@
   "job": "claim",
   "promise": "The renewal form's income corrected to what the rule counts this month, the household as the tax rules define it, and only the proof the state asked for, sent before the due date, so a family's coverage does not lapse on stale data.",
   "persona": "A pharmacy technician raising two children, whose mother lives with them, and whose hours were cut in August",
+  "fit": {
+    "where": "US",
+    "where_note": "State Medicaid under federal rules; your state's renewal form and limits apply.",
+    "who": "A household renewing Medicaid whose income or household changed.",
+    "not_for": "Someone not on Medicaid.",
+    "asks_for": [
+      "your state's renewal notice or portal",
+      "recent pay stubs",
+      "who files taxes with whom"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read the state's prefilled renewal form, which found income from last winter's wage and benefit data. Check each line against this month's pay stubs, the bank and the mail, and correct it to current monthly income as the rule counts it. Then fix the household to the tax filer and her dependents, and upload the proof the form asks for and nothing that is not income. The form is answered only in the state's portal, and the facts are in three other places.",
   "command": "My Medicaid renewal is due on the 20th and the form has old numbers. Check my pay in Payroll Harbor, my Ledgerline bank and my Mailnest letters, then fix the form in Statecare and send the proof it needs, so we don't lose coverage.",
   "apps": [
@@ -78,8 +90,15 @@
   ],
   "economics": {
     "value_usd": 7000,
+    "example_usd": null,
+    "value_kind": "money_protected",
+    "kinds": {
+      "update_income": "money_protected",
+      "update_household": "count",
+      "upload_proof": "count"
+    },
     "per": "year",
-    "basis": "Medicaid spent $6,704 a year on each full-benefit expansion adult in 2022 (KFF), about $7,000: the value of the coverage a renewal answered wrongly or late takes away. The bench world puts the mother's coverage at stake: the state's stale data adds $4,770 a month against a limit she is under at $2,040. Times a year: once, at each annual renewal.",
+    "basis": "An estimate of coverage kept, not cash to you. Medicaid spent $6,704 a year on each full-benefit expansion adult in 2022 (KFF), about $7,000: what the state would pay for the coverage a renewal answered wrongly or late takes away. The bench world puts the mother's coverage at stake: the state's stale data adds $4,770 a month against a limit she is under at $2,040. If coverage ends for missing papers, the state must reconsider without a new application when the papers come within 90 days. Times a year: once, at each annual renewal.",
     "manual_minutes": 180,
     "times_per_year": 1,
     "incumbent": "No incumbent takes a share: navigators and legal aid help for free where they have the hours; many families miss the form, and most of the people disenrolled in 2023-24 lost coverage for procedural reasons.",

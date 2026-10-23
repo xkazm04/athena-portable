@@ -9,6 +9,18 @@
   "job": "recover",
   "promise": "A retired schoolteacher's checking account, payment app, credit card and mail are read for the charges she did not make. Four unauthorised transfers are reported, each with what she is liable for under Regulation E: an ACH debit and an online purchase with a copied card number, a cash machine withdrawal with a card lost two days before she told the bank, and a payment-app top-up made with a code a caller talked her out of. A claim the bank let run past its ten business days is chased for its provisional credit. A payment she made herself to a scammer, her son's fuel, a refunded and a pending charge, a subscription she signed up for, a credit card charge, and two claims that are not yet late are left alone.",
   "persona": "A retired schoolteacher in Roanoke, Virginia, with a checking account, a payment app, a credit card and a small pile of charges she does not recognise",
+  "fit": {
+    "where": "US",
+    "where_note": "Regulation E for bank accounts and payment apps; credit cards follow other rules.",
+    "who": "Someone who finds debits they did not make on a bank account or payment app.",
+    "not_for": "A payment you sent yourself to someone who tricked you.",
+    "asks_for": [
+      "your bank and app statements",
+      "the dates you noticed each debit",
+      "when the card was lost, if it was"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read her mail, the bank's rules, its statements, transactions and claims, the payment app's activity and the credit card's charges. Then apply 12 CFR 1005.2(m), 1005.6(b) and 1005.11 and Supplement I as they stand on 9 October 2026: report each transfer she did not authorise with her liability, ask for the provisional credit on the one claim the bank is late on, and nothing else.",
   "command": "I'm Marisol Teague. Go through my Postwren mail, my Ledgerwren bank account, Sendwren and my Cardhollow card. I don't recognise Brightwave Telecom, Hexa Outfitters, Corvane Utility Pay, Northpoint Warranty, Eldervale Services or Brindle Electronics, or the cash machine on the 28th. Report the transfers from my account that I didn't authorise, with what I owe on each under the rules, and chase the bank on any claim of mine that it's late on. Leave out what I did or allowed myself, what's refunded, and anything that isn't this account.",
   "apps": [
@@ -66,10 +78,17 @@
   ],
   "memory": [
     "The dates she learned of each loss and told the bank, the refund promised, her son's note and the subscription, from Postwren.",
-    "The bank's rules, the statement dates and the claims' deadlines, from Ledgerwren bank, and the device and time of each app event, from Sendwren, carried back to the last bank tab."
+    "The bank's rules, the statement dates and the claims' deadlines, from Ledgerwren bank, and the device and time of each app event, from Sendwren, carried back to the last bank tab.",
+    "A payment she sent herself to a scammer is not refunded under the rule; she is told who to report it to (the bank, the FTC, the police) and no claim is filed."
   ],
   "economics": {
     "value_usd": 900,
+    "example_usd": 1312,
+    "value_kind": "money_back",
+    "kinds": {
+      "report_unauthorized_transfer": "money_back",
+      "request_provisional_credit": "money_back"
+    },
     "per": "episode",
     "basis": "An estimate. A household that finds several unauthorised debits at once, a few hundred dollars each, can recover them in full or for at most $50 each if it reports inside the windows in 12 CFR 1005.6, and an unreported one ages out of the 60 days; the roster's $900 an episode is one such pile recovered. The bench world holds five acts worth $1,312.00: 186.00, 412.60, 350.00 (400 less her $50), 45.00 (95 less her $50) and a 318.40 provisional credit, the money she gets back or has credited, recovered, not a price avoided. Times a year: once, the episode in the year it happens (ADR 0056). manual_minutes 90: reading six messages, five rules, two statements, fifteen transactions, three claims, five app events and three card charges, working out for each transfer whether she authorised it, which window applies and what she owes, and entering five items. Rules applied, as they stand on Friday 9 October 2026 (eCFR title 12, current): 12 CFR 1005.2(m) (a transfer initiated by a person other than the consumer without actual authority and with no benefit to her; not one by a person she gave the device to, unless she has told the bank, as Supplement I, comment 2(m)-2 says), Supplement I, comment 2(m)-3 (a transfer by someone who obtained the access device from her through fraud or robbery is unauthorised), 1005.6(b)(1) ($50, or the transfers before notice if less, when she gives notice within two business days after learning of the loss or theft), 1005.6(b)(2) (up to $500 after that), 1005.6(b)(3) (60 days after a periodic statement is sent; and Supplement I, comment 6(b)(3)-2, the first two limits do not apply to a transfer made with no access device), and 1005.11(b) to (d) (notice within 60 days of the statement that first shows the error; 10 business days to investigate, or 45 days if the amount is provisionally credited within the 10 business days; the written explanation and the documents she may ask for). A credit card charge falls under 12 CFR 1026.12(b), not Regulation E, and is left out.",
     "manual_minutes": 90,

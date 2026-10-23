@@ -9,6 +9,18 @@
   "job": "comply",
   "promise": "Each patient in ongoing therapy is checked for the first scheduled visit past the current authorisation, by date or by visits used, and the renewal is sent on the last Friday its payer's clock allows: the 7 calendar days of CMS-0057-F for the Medicare Advantage and Medicaid managed care plans it covers, 15 days for the employer plan and the exchange plan it does not, and 10 business days around a holiday for the payer that only takes faxes. Requests a portal would not yet accept, a renewal already pending, a patient being discharged, Original Medicare, and faxes to payers that take portal requests only are left alone.",
   "persona": "The authorisation coordinator of an outpatient physical and occupational therapy group with eleven patients in ongoing care across five payers",
+  "fit": {
+    "where": "US",
+    "where_note": "CMS-0057-F clocks for Medicare Advantage and Medicaid; employer plans keep their own.",
+    "who": "A therapy or specialty practice's authorisation coordinator.",
+    "not_for": "A practice whose payers need no prior authorisation.",
+    "asks_for": [
+      "your authorisations with visits used",
+      "the schedule",
+      "payer portals or fax numbers"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read the group's authorisation policy and every patient's authorisation, schedule and plan of care in the EHR; each payer portal's decision clock, its acceptance window and what is already on file; and the fax directory and the fax-only payer's sheet. Then find, for each patient, the first visit the current authorisation does not cover, and decide whether waiting a week would let the payer's own clock run past it: CMS-0057-F's 7 days only for the payer types it names, the plan's own 15 days for the others, and 10 business days for the fax payer. Send each renewal that is due today, in the payer's own channel, for the visits the plan of care still needs. None of the four systems shares data with another.",
   "command": "It's Friday, so do the authorisation run. Go through Chartleaf, Authgate, Authwise and Faxline and send every renewal that has to go today so no visit runs past its authorisation. Don't send anything early, twice, or to a payer that won't take it.",
   "apps": [
@@ -73,10 +85,18 @@
     "Each patient's payer, authorisation, visits used, next visits and plan of care, carried from Chartleaf EHR.",
     "Which plans are on CMS-0057-F's 7-day clock and which keep their own 15 days, from Authgate and Authwise.",
     "Each portal's acceptance window and the renewal already pending.",
-    "The fax payer's 10 business days and the holiday, from Faxline."
+    "The fax payer's 10 business days and the holiday, from Faxline.",
+    "Each clock by payer type: Medicare Advantage and Medicaid managed care 7 calendar days (CMS-0057-F), an employer plan 15 days, a fax-only payer its own stated term."
   ],
   "economics": {
     "value_usd": 1500,
+    "example_usd": null,
+    "value_kind": "money_protected",
+    "kinds": {
+      "submit_continuation": "money_protected",
+      "submit_renewal": "money_protected",
+      "send_fax": "money_protected"
+    },
     "per": "month",
     "basis": "An estimate, and mostly minutes. A therapy visit given past an authorisation is usually not paid, and a renewal sent late leaves the patient's schedule waiting on a decision; a coordinator spends hours a week working out, payer by payer, which renewal is due when. For a therapy group with a few dozen authorised patients, the roster's $1,500 a month is about fifteen visits a month kept from running unauthorised, an estimate. The bench world holds $3,664 of visits covered by five renewals sent on time: 8 visits at $92, 6 at $68, 10 at $110, 8 at $104 and 6 at $98. Most of the value is the coordinator's time: manual_minutes is the weekly run over eleven patients, five payers and three channels. CMS-0057-F's 72-hour and 7-calendar-day decision timeframes apply from 1 January 2026 to Medicare Advantage organizations, state Medicaid and CHIP fee-for-service programs, and Medicaid and CHIP managed care plans (from their first rating period beginning on or after that date), and exclude qualified health plan issuers on the federally facilitated exchanges; employer plans are outside the rule and keep their own terms (15 days for a standard pre-service decision under 29 CFR 2560.503-1). Times a year: fifty-two, a weekly run.",
     "manual_minutes": 150,

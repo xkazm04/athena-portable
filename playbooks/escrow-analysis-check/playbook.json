@@ -42,7 +42,8 @@
     "Reads the 2025-26 and 2026-27 bills and the payments received in Countyline Tax.",
     "Reads the policies and payments in Hearthguard, and asks for the duplicate premium back.",
     "Reads the notices and offers in Mailnest.",
-    "Back in Northgate, disputes each wrong line with its right amount and claims the surplus."
+    "Back in Northgate, disputes each wrong line with its right amount and claims the surplus.",
+    "Sends each notice of error to the address the servicer names for notices of error (12 CFR 1024.35(c)), not only through the portal, where a message may not count."
   ],
   "gates": [
     {
@@ -74,18 +75,28 @@
     "The escrow's own insurance payment, which came first: the card's second payment is the duplicate.",
     "An umbrella premium paid by card that was never escrowed.",
     "An escrow audit firm keeping 35%.",
-    "A $149 'tax relief' firm not affiliated with the county."
+    "A $149 'tax relief' firm not affiliated with the county.",
+    "A surplus is refundable only to a borrower who is current on the loan; a late borrower's surplus may stay in escrow."
   ],
   "memory": [
     "Each projected line, the cushion, the surplus and last year's disbursements with their dates, carried from Northgate.",
     "The 2026-27 bill, its installments, the supplemental bill and when each payment arrived, carried from Countyline Tax.",
     "This term's premiums and who paid each one, carried from Hearthguard.",
-    "When the servicer was sent the bills, from the mail."
+    "When the servicer was sent the bills, from the mail.",
+    "The cushion rule as RESPA states it, 12 CFR 1024.17(c)(1): no more than one-sixth of the year's disbursements."
   ],
   "economics": {
     "value_usd": 700,
+    "example_usd": 4439.98,
     "per": "year",
-    "basis": "An estimate, and mostly the borrower's own money returned or not over-collected rather than money recovered. An escrow analysis projected from last year's bills over-collects whenever taxes or premiums fall, and the cushion may not exceed a sixth of the year's disbursements; a surplus of $50 or more must be refunded within 30 days. The roster's $700 a year is about one stale line or an excess cushion a year on a typical escrow of $8,000 to $10,000, an estimate. The bench world holds $4,439.98: $1,107.60 a year over-projected on two lines, $1,075.68 of excess cushion, a $62.10 penalty the servicer owes, the $214.60 surplus kept and a $1,980 premium paid twice. Times a year: once, at each annual analysis.",
+    "value_kind": "money_back",
+    "kinds": {
+      "dispute_escrow_line": "money_back",
+      "request_surplus_refund": "money_back",
+      "request_refund": "money_back",
+      "reply": "count"
+    },
+    "basis": "An estimate, and mostly the borrower's own money returned or not over-collected rather than money recovered. An escrow analysis projected from last year's bills over-collects whenever taxes or premiums fall, and the cushion may not exceed a sixth of the year's disbursements; a surplus of $50 or more must be refunded within 30 days. The roster's $700 a year is about one stale line or an excess cushion a year on a typical escrow of $8,000 to $10,000, an estimate. The bench world holds $4,439.98: $1,107.60 a year over-projected on two lines, $1,075.68 of excess cushion, a $62.10 penalty the servicer owes, the $214.60 surplus kept and a $1,980 premium paid twice. Times a year: once, at each annual analysis. The $700 a year is the recurring part. The bench world mixes over-collection that is stopped ($1,107.60 a year over-projected and $1,075.68 of excess cushion, $2,183.28) with one-off recoveries ($1,980 duplicate premium + $214.60 surplus + $62.10 penalty = $2,256.70); 2,183.28 + 2,256.70 = 4,439.98. The cushion limit is RESPA's, 12 CFR 1024.17(c)(1): no more than one-sixth of the year's disbursements.",
     "manual_minutes": 90,
     "times_per_year": 1,
     "incumbent": "Escrow audit firms take a contingency share of what they recover; the world's own offer is 35%, and the figure used is 35%, an estimate.",
@@ -117,5 +128,17 @@
     "minutes": 60,
     "why": "A careful homeowner gets most of it; the bar is most of the money returned and over-collection stopped, no dispute of a line that is right and no reply to a paid service, inside an hour."
   },
-  "caveat": "The Marchettis, Pell County, Northgate Servicing, Hearthguard, Countyline Tax, Mailnest and every person and business here are invented. The rules are RESPA section 10 and Regulation X (12 CFR 1024.17 and 1024.35), fixed in the bench world as of October 2026; a real servicer's analysis, its escrow computation month by month, and state rules on tax penalties decide real accounts. This is not legal or financial advice."
+  "caveat": "The Marchettis, Pell County, Northgate Servicing, Hearthguard, Countyline Tax, Mailnest and every person and business here are invented. The rules are RESPA section 10 and Regulation X (12 CFR 1024.17 and 1024.35), fixed in the bench world as of October 2026; a real servicer's analysis, its escrow computation month by month, and state rules on tax penalties decide real accounts. This is not legal or financial advice.",
+  "fit": {
+    "where": "US",
+    "where_note": "Federal RESPA and Regulation X rules for escrow accounts; they apply in every state.",
+    "who": "A homeowner whose mortgage payment changed after the servicer's yearly escrow analysis.",
+    "not_for": "A loan with no escrow account, where you pay the taxes and insurance yourself.",
+    "asks_for": [
+      "your servicer login or the escrow analysis",
+      "your property tax bills",
+      "your insurance declarations and premium notices"
+    ],
+    "costs": "No fees from Athena; only your Claude usage. Escrow audit firms usually keep a share of what they recover."
+  }
 }

@@ -30,6 +30,7 @@
     "Walks the inbound shipments, removals, customer returns, reimbursements and fee preview, a page at a time.",
     "Switches to the supplier inbox for the invoice, the packing list, the proof of delivery and the spec sheet each claim needs.",
     "Rules out what is not Amazon's to pay: the supplier's own short shipment, a transfer that has its own path, a window not yet open or already closed.",
+    "Files no short-receipt case without an invoice or packing list that shows what was sent, and for goods you make yourself, asks for proof of what each unit cost before valuing it.",
     "Values each claim at the cost on file, nets off credits Amazon already applied, and files one case per claim — each a card."
   ],
   "gates": [
@@ -62,7 +63,14 @@
   ],
   "economics": {
     "value_usd": 5000,
+    "example_usd": 359.78,
     "per": "year",
+    "value_kind": "money_back",
+    "kinds": {
+      "file_case": "money_back",
+      "request_remeasure": "money_back"
+    },
+    "basis": "An estimate. A vendor estimate puts unreimbursed FBA losses at 1–3% of FBA revenue (eComEngine); for this example's $500,000-a-year seller, 1% is $5,000 a year. This chore takes the low end because Amazon now reimburses more on its own (Sellerboard, July 2026). For another seller: FBA revenue x 1% to 3% ($40,000 a year gives $400 to $1,200). Claims are valued at manufacturing cost since 2025 (Riverbend), not at the sale price. The bench world holds $359.78: four cases ($72.00, $66.00, $34.99 and $29.99) and one fee remeasure ($156.80). manual_minutes 300: a month's ledgers matched to invoices and packing lists by hand, about five hours (Webgility puts it at 4–6 hours an account a month).",
     "manual_minutes": 300,
     "incumbent": "Reimbursement services such as Getida and Seller Investigators keep about 25% of what they recover, Eva about 10%, and all of them need a user login to your Seller Central, because cases can only be filed in its UI.",
     "sources": [
@@ -112,5 +120,17 @@
       "found": "Her closing summary added the cards up to $392.98; they total $359.78. The bench scores cards, and the module shows the mismatch."
     }
   ],
-  "caveat": "Northfold Goods, Pacific Freight Lines, the supplier, the 3PL and every person and business here, and both portals (modelled on the shape of Seller Central and a supplier's email inbox) are invented; no shipment, SKU or case is any real seller's. The public rules applied are Amazon's FBA reimbursement policies as the cited sources describe them (claim windows for inbound shipments, removals and returns, valuation at manufacturing cost since 2025, and what Amazon now reimburses automatically), fixed in the bench world as of 7 October 2026. Amazon's current help pages, a seller's own agreement and a case reviewer's judgement decide real claims differently. This applies stated rules to stated facts; it is not legal or financial advice."
+  "caveat": "Northfold Goods, Pacific Freight Lines, the supplier, the 3PL and every person and business here, and both portals (modelled on the shape of Seller Central and a supplier's email inbox) are invented; no shipment, SKU or case is any real seller's. The public rules applied are Amazon's FBA reimbursement policies as the cited sources describe them (claim windows for inbound shipments, removals and returns, valuation at manufacturing cost since 2025, and what Amazon now reimburses automatically), fixed in the bench world as of 7 October 2026. Amazon's current help pages, a seller's own agreement and a case reviewer's judgement decide real claims differently. This applies stated rules to stated facts; it is not legal or financial advice.",
+  "fit": {
+    "where": "US",
+    "where_note": "Amazon's US marketplace reimbursement rules; other Amazon marketplaces set their own windows.",
+    "who": "An Amazon seller who ships stock into Amazon's warehouses (FBA) and keeps invoices and packing lists.",
+    "not_for": "A seller who ships its own orders, or one with no invoice or packing list for what it sent in.",
+    "asks_for": [
+      "Seller Central access",
+      "your supplier invoices and packing lists",
+      "your cost per unit"
+    ],
+    "costs": "No fees from Athena; only your Claude usage. Reimbursement services usually keep 10 to 25% of what they recover."
+  }
 }

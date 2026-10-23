@@ -9,6 +9,18 @@
   "job": "contest",
   "promise": "A kitchenware importer's entries are read across its ERP's product master and duty ledger, its specifications, CBP ruling and tariff extracts, its customs broker's entries and notes, and its trade account with CBP, and every entry that paid duty under the wrong subheading is put right the way it still can be: two unliquidated entries corrected through the broker with a post-summary correction inside its window, and two liquidated entries protested within the hundred and eighty days, one of them due on Wednesday. Platters its own binding ruling classifies, which the stale product master contradicts, an entry whose protest window closed in September, one past its correction window that must wait for liquidation, and the entries already right are left alone.",
   "persona": "The trade compliance manager of a small importer of silicone and melamine kitchenware, who reviews the broker's entries against liquidations herself",
+  "fit": {
+    "where": "US",
+    "where_note": "US Customs (CBP) entries and their liquidation.",
+    "who": "An importer, or its compliance lead, who checks broker entries against liquidations.",
+    "not_for": "An importer whose broker already audits every classification against its rulings.",
+    "asks_for": [
+      "your entry summaries",
+      "product specifications and any classification ruling",
+      "your ACE account or broker reports"
+    ],
+    "costs": "No CBP fee to correct or protest; your broker may charge to transmit."
+  },
   "chore": "Read the product master's HTS numbers and the duty deposited on each entry in the ERP; the product specifications, the CBP ruling on the platters, the HTSUS extracts and the note on what the duty figures cover in the shared folder; each entry's declared subheading, its liquidation status and the broker's notes on its old classification database and on post-summary corrections in the broker's portal; and CBP's rules, the liquidations and the protests in the importer's trade account. Then classify each product under the HTSUS's General Rules of Interpretation and the ruling (19 CFR 177.9), and apply 19 U.S.C. 1514 and 19 CFR Part 174 (a protest within 180 days after, but not before, liquidation), CBP's post-summary correction test under 19 CFR 101.9(b) (91 FR 41053, 2026: within 300 days of entry or up to 15 days before the scheduled liquidation, whichever is earlier), 19 CFR 159.11 and 19 U.S.C. 1504 (liquidation, deemed after a year; about 314 days in CBP's practice) and 19 U.S.C. 1505 (the refund with interest). The ERP, the broker and CBP each hold a different part of every entry's story.",
   "command": "I'm Lucia, trade compliance at Ashby Kitchenworks. Go through Ledgerline, our Docshelf folder, Forwarden and Portline Entries, and put right every entry where we paid duty under the wrong tariff number: have Forwarden correct the ones that can still be corrected before liquidation, and protest the liquidated ones we can still protest, each at the right number and the right refund. Don't touch an entry that was classified right, and don't file anything that's too early or too late.",
   "apps": [
@@ -70,6 +82,12 @@
   ],
   "economics": {
     "value_usd": 30000,
+    "example_usd": 10998,
+    "value_kind": "money_back",
+    "kinds": {
+      "transmit_psc": "money_back",
+      "file_protest": "money_back"
+    },
     "per": "year",
     "basis": "An estimate. An importer whose broker keys a product under the wrong subheading pays the higher rate on every entry until someone compares the entries with the product's classification; each entry can still be corrected before liquidation with a post-summary correction, or protested within 180 days after it, and after that the duty is final. The roster's $30,000 a year is duty recovered, an estimate. The bench world holds $10,998, the column 1 duty overpaid: two unliquidated entries corrected by PSC ($1,824 on SP-12 spatulas declared under 3926.90.99, $2,604 on BM-40 baking molds declared under 3924.10.20) and two liquidated entries protested ($3,720 on baking molds, and $2,850 on spatulas due by Wednesday 14 October 2026). Interest under 19 U.S.C. 1505 and any chapter 99 duty are not counted. Times a year: four, a quarterly review of the entries against their liquidations; this world holds the entries of the last eighteen months. The rules applied, as they stand on Friday 9 October 2026 (the eCFR for title 19 current to 7 October 2026, law.cornell.edu, federalregister.gov, cbp.gov, hts.usitc.gov): 19 U.S.C. 1514(a) (the classification and rate and amount of duties, and the liquidation, are final unless protested), (c)(2) (the importer, its surety or its authorized agent may protest) and (c)(3) (within 180 days after but not before the date of liquidation); 19 CFR 174.11, 174.12(e), 174.13 and 174.21; CBP's post-summary correction test under 19 CFR 101.9(b), as republished at 91 FR 41053 (6 July 2026, operational 5 August 2026): within 300 days of the date of entry or up to 15 days before the scheduled liquidation date, whichever is earlier, and only before liquidation, after which a protest or prior disclosure; 19 U.S.C. 1504(a) and 19 CFR 159.11 (deemed liquidation after one year) and CBP's practice of scheduling liquidation about 314 days after entry, on Fridays (81 FR 89375; CBP's 2016 liquidation webinar); 19 U.S.C. 1505(b) and (c) (refunds with interest); the HTSUS (2026) General Rules of Interpretation 1 and 3(a) and subheadings 3924.10.20 (6.5%), 3924.10.40 (3.4%) and 3926.90.99 (5.3%), read on hts.usitc.gov; and 19 CFR 177.9 (a ruling binds CBP for the merchandise it describes). The ruling, NY N998214, is invented, like the importer it was issued to.",
     "manual_minutes": 300,

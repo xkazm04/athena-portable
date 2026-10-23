@@ -1,13 +1,13 @@
 {
   "id": "closeout-package",
-  "title": "The closeout package assembled, so the general contractor releases the retainage",
-  "short_title": "Closeout package done, retainage released",
-  "brief": "A plumbing and HVAC subcontractor's retainage waits on **9 open closeout items** for a library job.\n\n**Answered to release $48,600:**\n- Final lien waivers, not progress ones\n- The insurance certificate now in force\n- Compressor warranties matched by serial number\n- The manual for the faucet actually installed\n- The signed record set and the owner's receipt\n\n**Left alone:**\n- Three progress waivers and an expired certificate\n- Items already accepted\n- A warranty for a unit on another job\n- The manual for a substituted-out faucet\n- An unsigned markup and delivery ticket",
+  "title": "The closeout package assembled, so no paperwork holds the retainage back",
+  "short_title": "Closeout package done, so retainage can be released",
+  "brief": "A plumbing and HVAC subcontractor's retainage waits on **9 open closeout items** for a library job.\n\n**Answered to release $48,600:**\n- Conditional final lien waivers, not progress ones\n- The insurance certificate now in force\n- Compressor warranties matched by serial number\n- The manual for the faucet actually installed\n- The signed record set and the owner's receipt\n\n**Left alone:**\n- Three progress waivers and an expired certificate\n- Items already accepted\n- A warranty for a unit on another job\n- The manual for a substituted-out faucet\n- An unsigned markup and delivery ticket",
   "domain": "Construction",
   "audience": "work",
   "category": "construction",
   "job": "recover",
-  "promise": "Every open item on the subcontractor's closeout checklist is answered with the one document that satisfies it, found across the GC's portal, the project platform, the supplier's and the manufacturer's portals and the company's own files: final waivers and not progress ones, the certificate in force, the warranty for each installed unit by serial, the manual for the model actually installed, the signed record set and the owner's signed receipt. Nothing already accepted is sent again, and nothing for another job, an old period or a model substituted out.",
+  "promise": "Every open item on the subcontractor's closeout checklist is answered with the one document that satisfies it, found across the GC's portal, the project platform, the supplier's and the manufacturer's portals and the company's own files: conditional final lien waivers and not progress ones (unconditional only once the retainage is in the bank), the certificate in force, the warranty for each installed unit by serial, the manual for the model actually installed, the signed record set and the owner's signed receipt. Nothing already accepted is sent again, and nothing for another job, an old period or a model substituted out.",
   "persona": "The office manager of a thirty-person plumbing and HVAC subcontractor closing out a public library job, under a subcontract that incorporates AIA A201-2017",
   "chore": "Read the subcontract's terms on final payment, waivers, insurance and warranties and the closeout checklist in the general contractor's portal; the closeout specification sections, the approved submittals, the startup reports and the record drawing sets in the project platform; the supplier's lien waivers and warranty registrations in its portal; the faucet manuals in the manufacturer's library; and the company's own waivers, certificates, affidavit and receipts. Then match each open item to the document that answers it under A201-2017 section 9.10 as the subcontract states it and the specifications: a final conditional waiver, a current certificate, the installed unit's serial, the installed model, the final signed record set, the owner's signature. Attach each in the GC's portal. None of the five systems shares data with another.",
   "command": "Primeline is holding our $48,600 retainage on Harbor Point until the closeout package is complete. Go through Primeline GC, Sitegrid, Partsmith, Fixturely and our Docshelf, and attach the right document to every checklist item that still needs one. Don't resend anything they've accepted, and don't send anything that doesn't actually answer the item.",
@@ -65,7 +65,8 @@
     "A compressor warranty for a unit on another job.",
     "The manual for the faucet model that was substituted out.",
     "A record drawing markup, unsigned and unfinished.",
-    "An attic stock delivery ticket nobody signed."
+    "An attic stock delivery ticket nobody signed.",
+    "An open punch list or an unpaid owner: the package can be ready while the release still waits."
   ],
   "memory": [
     "The checklist's open items and what each requires, carried from Primeline GC.",
@@ -76,8 +77,13 @@
   ],
   "economics": {
     "value_usd": 30000,
+    "example_usd": null,
     "per": "year",
-    "basis": "An estimate, and payments released rather than money recovered. A plumbing and HVAC subcontractor billing about $3 million a year carries about $150,000 of retainage at 5%; a 2026 survey found 43% of subcontractors wait more than 90 days after the work for final payment and retainage, and missing closeout documents are a common cause. The $30,000 a year is about a fifth of a year's retainage released sooner by a complete package, an estimate. The bench world holds one job's $48,600 retainage, split evenly across the nine checklist items still open. Times a year: five, about the jobs such a subcontractor closes out in a year.",
+    "value_kind": "money_protected",
+    "kinds": {
+      "attach_closeout_document": "money_protected"
+    },
+    "basis": "An estimate, and payments released rather than money recovered. A plumbing and HVAC subcontractor billing about $3 million a year carries about $150,000 of retainage at 5%; a 2026 survey found 43% of subcontractors wait more than 90 days after the work for final payment and retainage, and missing closeout documents are a common cause. The $30,000 a year is about a fifth of a year's retainage released sooner by a complete package, an estimate. The bench world holds one job's $48,600 retainage, split evenly across the nine checklist items still open. Times a year: five, about the jobs such a subcontractor closes out in a year. Released sooner is not earned: $30,000 released 90 days earlier at 8% saves about $592 of financing ($30,000 x 8% x 90/365). Release also waits on the owner's final payment and the punch list.",
     "manual_minutes": 180,
     "times_per_year": 5,
     "incumbent": "None takes a share: the office manager or the project manager assembles it, and closeout software is sold by subscription.",
@@ -112,5 +118,17 @@
     "minutes": 60,
     "why": "A careful office manager gets most of it; the bar is most of the open items answered with the right document, nothing sent that does not answer its item or was already accepted, inside an hour."
   },
-  "caveat": "Brookhollow Mechanical, Primeline Builders, the Harbor Point Library District, Coldline Insulation, Partsmith, Fixturely, Northair, Ashmore Surety, Sitegrid, Docshelf and every person here are invented. The subcontract incorporates AIA Document A201-2017, a published standard form, and its final payment clause is stated in the world's own words, not quoted; the checklist and the specifications are the invented project's. Real projects change these clauses, and lien waiver forms are set by state law in many states. This is not legal advice."
+  "caveat": "Brookhollow Mechanical, Primeline Builders, the Harbor Point Library District, Coldline Insulation, Partsmith, Fixturely, Northair, Ashmore Surety, Sitegrid, Docshelf and every person here are invented. The subcontract incorporates AIA Document A201-2017, a published standard form, and its final payment clause is stated in the world's own words, not quoted; the checklist and the specifications are the invented project's. Real projects change these clauses, and lien waiver forms are set by state law in many states. This is not legal advice.",
+  "fit": {
+    "where": "US",
+    "where_note": "AIA A201-style closeout terms; lien waiver forms follow each state's law.",
+    "who": "A subcontractor's office manager closing out a job whose retainage waits on the closeout list.",
+    "not_for": "A job with an open punch list or an unpaid owner, where the paperwork is not what holds the money.",
+    "asks_for": [
+      "the GC's closeout checklist",
+      "your waivers, warranties, manuals and record drawings",
+      "your current insurance certificate"
+    ],
+    "costs": "No fees; only your Claude usage."
+  }
 }

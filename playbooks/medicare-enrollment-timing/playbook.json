@@ -9,6 +9,18 @@
   "job": "claim",
   "promise": "A retiring worker's employment and health plan record, the insurer's coverage for each of the household and Medicare's rules are read against the advice in his inbox. His employer is asked for the CMS-L564, and his Part B enrollment goes in through the special enrollment period for coverage based on current employment, starting the day after the employer coverage ends, so there is no gap and no penalty month. His wife's retiree coverage opened no such period, so no enrollment is filed for her before the general period in January. COBRA for him or for her, cancelling anyone's coverage early, a form for a son who is not on Medicare and a service charging a fee for free forms are left alone.",
   "persona": "A worker of 67 retiring at the end of the month who never took Part B, managing Medicare for himself and, with her permission, his wife",
+  "fit": {
+    "where": "US",
+    "where_note": "Medicare's special enrollment period for coverage from current work.",
+    "who": "Someone working past 65 on an employer plan, retiring soon, who has not taken Part B.",
+    "not_for": "Someone whose only coverage is COBRA or retiree coverage, which opens no special period.",
+    "asks_for": [
+      "the date your job coverage ends",
+      "your employer's HR contact for form CMS-L564",
+      "your Social Security account"
+    ],
+    "costs": "No fees; the forms are free."
+  },
   "chore": "Read HR's retirement packet, the insurer's COBRA notice, a broker's advice and his wife's question in the inbox; his employment and group health plan record and the documents HR posted; the household's coverage and plan documents at the insurer; and Medicare's Part B rules and both Medicare records. Then apply 42 CFR 406.24 and 407.20 (the special enrollment period for group health plan coverage based on current employment, and its 8 months), 406.24(e) (the start date) and 408.22 and 408.24 (10% for each full 12 months uncovered, the current-employment months excluded) as they stand: COBRA and retiree coverage are not current employment and open no period, and creditable coverage is a Part D term that says nothing about Part B. None of the four systems shares data with another.",
   "command": "I retire on 30 October and never signed up for Part B. Go through my inbox, Staffnest, Thistlewood and Benefitline, and do what has to happen now so I don't pay a lifetime penalty or go a day without coverage: get any form HR has to fill in and sign me up. Lena wants to sign up with me; only do it if she really can. Don't cancel anyone's coverage, don't take COBRA for anyone who doesn't need it, and don't pay anyone to file forms.",
   "apps": [
@@ -81,12 +93,22 @@
   "memory": [
     "The last day of work and the day the group coverage ends, the broker's wrong advice, and his wife's question, carried from Mailnest.",
     "That his group plan rests on his current employment since 2009, who it covers, and that the L564 is requested in Staffnest, carried from Staffnest HR.",
-    "That his wife's coverage is retiree coverage since February 2025, and what COBRA and the retiree plan pay beside Medicare, carried from Thistlewood."
+    "That his wife's coverage is retiree coverage since February 2025, and what COBRA and the retiree plan pay beside Medicare, carried from Thistlewood.",
+    "Dates Part B sets off: the six-month Medigap open enrollment from the Part B start, 63 days to join a Part D plan without a penalty after employer drug coverage ends, and stopping HSA contributions before Medicare starts."
   ],
   "economics": {
-    "value_usd": 1000,
+    "value_usd": 487,
+    "example_usd": null,
+    "value_kind": "penalty_avoided",
+    "kinds": {
+      "submit_part_b_enrollment": "penalty_avoided",
+      "request_l564": "count",
+      "elect_cobra": "count",
+      "cancel_coverage": "count",
+      "reply": "count"
+    },
     "per": "year",
-    "basis": "An estimate. People who work past 65 and then retire often take COBRA and wait to take Part B until it ends, which closes the special enrollment period and brings a late penalty for life and months without Part B; spouses on retiree coverage often believe they have the same period. The roster's $1,000 a year is the penalty and the gap avoided for a household, an estimate. Times a year: one, since this is decided once, the year the job ends. The bench world holds $487 a year: the 20% penalty, $40.58 a month at 2026's $202.90 premium, that waiting for COBRA to run out and enrolling in the January 2029 general period would add for as long as he has Part B. The L564 request is counted as an item at $0. The rules applied, as they stand on Friday 9 October 2026: 42 CFR 406.24 and 407.20 (the special enrollment period, current employment of any size of employer, 8 months), 406.24(e) (the start date), 407.15 (the general enrollment period), 408.22 and 408.24 (the penalty and the months excluded), Forms CMS-40B and CMS-L564, Social Security's rule that COBRA and retiree coverage are not current employment (POMS HI 00805.330), and 42 CFR 423.56 (creditable coverage, a Part D term). The employer's and the insurer's plans are invented world documents.",
+    "basis": "An estimate. People who work past 65 and then retire often take COBRA and wait to take Part B until it ends, which closes the special enrollment period and brings a late penalty for life and months without Part B; spouses on retiree coverage often believe they have the same period. The roster's $487 a year is the late penalty avoided, as in the bench world: 20% of 2026's $202.90 Part B premium is $40.58 a month, $487 a year, for as long as he has Part B; the months without Part B that waiting would also cost are not counted. An estimate for one person who would otherwise wait two years. Times a year: one, since this is decided once, the year the job ends. The bench world holds $487 a year: the 20% penalty, $40.58 a month at 2026's $202.90 premium, that waiting for COBRA to run out and enrolling in the January 2029 general period would add for as long as he has Part B. The L564 request is counted as an item at $0. The rules applied, as they stand on Friday 9 October 2026: 42 CFR 406.24 and 407.20 (the special enrollment period, current employment of any size of employer, 8 months), 406.24(e) (the start date), 407.15 (the general enrollment period), 408.22 and 408.24 (the penalty and the months excluded), Forms CMS-40B and CMS-L564, Social Security's rule that COBRA and retiree coverage are not current employment (POMS HI 00805.330), and 42 CFR 423.56 (creditable coverage, a Part D term). The employer's and the insurer's plans are invented world documents.",
     "manual_minutes": 150,
     "times_per_year": 1,
     "incumbent": "No incumbent takes a share: the forms are free, and State Health Insurance Assistance Program counselors help for free. The world's filing service charges a flat $299; no figure is used.",

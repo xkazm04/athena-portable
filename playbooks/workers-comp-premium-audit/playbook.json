@@ -9,6 +9,21 @@
   "job": "contest",
   "promise": "A New York renovation contractor's premium audit is read against its payroll firm's register and time records, its subcontract files, its agent's certificates and the rules of the New York manual, and the lines the auditor got wrong are disputed with the carrier by their deadline of 14 October: a bookkeeper who is never on a job site moves from the carpentry code to clerical, a salesman who sells from customers' homes to outside sales, the extra half of one crew's overtime comes off because the register records it separately, and the cost of two insured subs comes off, one on the agent's certificate and one on a certificate stapled only in the contract file. The office manager who directs crews on site, the estimator who frames, the other crew's overtime with no records, a general-liability certificate, an expired policy, an uninsured painter, an estimated split of payroll, last year's closed audit and a recovery firm's 40 percent are left alone.",
   "persona": "The president of a small New York renovation contractor with six carpenters and laborers and four office and sales staff",
+  "fit": {
+    "where": [
+      "NY"
+    ],
+    "where_note": "New York's rating manual; other states' manuals classify alike but differ in detail.",
+    "who": "A small contractor disputing its workers' compensation premium audit.",
+    "not_for": "A policy in another state, without reading that state's manual first.",
+    "asks_for": [
+      "the audit worksheet",
+      "payroll by employee",
+      "time records",
+      "subcontractors' insurance certificates"
+    ],
+    "costs": "No fees to dispute; only your Claude usage."
+  },
   "chore": "Read the carrier's rules and the auditor's worksheet in Auditwell; the register and the time records in Payroll Harbor; the subcontract files with whatever is stapled to them in Binderwell; and the policy, the certificates the agent holds and the offers in Coverwell. Then apply the New York Manual for Workers' Compensation and Employers' Liability Insurance, 2020 edition (Rule IV(B)(2), (E) and (F)(2); Rule V(E)(2); Rule VIII(C)(3); Rule I(J)) as it stands on 9 October 2026: duties, not title, decide the class; a payroll divides between classes only on records that allocate it; the extra half of overtime comes off only where the books show it separately; and a sub's cost stays in the premium unless evidence shows its own workers' compensation insurance in force for the work.",
   "command": "I'm Joan Delaplane, president of Delaplane Renovation. Our workers' comp audit is back. Go through Auditwell, Payroll Harbor, Binderwell and Coverwell, and dispute every line the rules and our records show the auditor got wrong, with the correction, while the carrier will still take it. Leave the lines that are right, and don't accept any offer.",
   "apps": [
@@ -73,10 +88,18 @@
   "memory": [
     "The auditor's lines, codes and rates, carried from Auditwell.",
     "Each person's duties by hours and the overtime records, carried from Payroll Harbor.",
-    "Each sub's dates and certificates, carried from Binderwell and Coverwell into the Auditwell tab."
+    "Each sub's dates and certificates, carried from Binderwell and Coverwell into the Auditwell tab.",
+    "The manual sets no deadline for a dispute (Rule I(J)), so a late one may still go to the Rating Board; the carrier's 30 days are its own."
   ],
   "economics": {
     "value_usd": 5000,
+    "example_usd": 19016.47,
+    "value_kind": "money_back",
+    "kinds": {
+      "dispute_audit_line": "money_back",
+      "request_payroll_division": "count",
+      "accept_offer": "count"
+    },
     "per": "year",
     "basis": "An estimate. A contractor with a handful of employees and several subs is audited once a year, and an auditor who classes by title or business, includes all overtime and charges a sub's cost for want of a certificate can add thousands of dollars to the premium; the roster's $5,000 a year is a small contractor's premium avoided on one audit, not a published figure. Each truth item is weighted at the premium its dispute takes off at the carrier's rates (the carrier's rates in the world are invented): the bookkeeper's 52,000.00 from 5645 to 8810, 5,730.40; the salesman's 71,500.00 to 8742, 7,757.75; crew A's extra overtime pay 4,960.00 excluded, 555.52; Marrow Roofing's 21,000.00, 2,352.00; Tarrow Decks' 23,400.00, 2,620.80; $19,016.47 in all. Times a year: 1, an annual audit. manual_minutes 150: reading a twelve-line worksheet, six staff records, five subcontract files, three certificates and six rules against the manual, and filing five disputes. The rules applied, as they stand on Friday 9 October 2026, are those of the New York Manual for Workers' Compensation and Employers' Liability Insurance, 2020 edition, original printing effective 1 May 2020 with pages of the 1st reprint effective 1 October 2021, as posted by the New York Compensation Insurance Rating Board (file dated 31 January 2022, read on 11 October 2026): Rule IV(B)(2) and the codes 8810 and 8742 (a clerical office employee works in an area separated by floors, walls or counters and is not regularly exposed to the operative hazards; an outside salesperson works away from the premises and not at merchandise or other work), Rule IV(C) and (E)(1) (the business is classified, not the individual), code 5606 note 1 (a person directly in charge of construction work takes the construction classification), Rule IV(F)(2) (division of payroll in construction only on original records disclosing an allocation; 8810, 8742, 8809, 8871 and 7380 cannot be divided), Rule V(E)(2) (overtime: (a) entire extra pay where records show it separately by employee and in summary by classification, (b) one-third of the total, (c) one-half for double time), Rule VIII(C)(3) (an uninsured sub's cost is charged unless satisfactory evidence shows workers' compensation insurance in force for the work; 50 percent of a labor-and-material price and 90 percent of a labor-only price as payroll without records), and Rule I(J) (appeal to the Rating Board, a staff conference, its Underwriting Committee, then a hearing at the Department of Financial Services). THE BRIEF'S MANUAL, AS FOUND: NCCI's Basic Manual is licensed; the North Carolina Rate Bureau, the Massachusetts and California bureaus publish theirs, but their sites refused the bench machine's connection or returned 403 on 11 October 2026, and Texas's manual is 1997 to 2013 text, so New York's, published free by its independent bureau and readable in full, is applied. NOT TAKEN OR NOT CONFIRMED, so no target rests on it: executive officers' minimum and maximum payroll (Rule VIII(A)(6) refers to values in Part Three, Loss Costs, not read), the payroll limitation law for construction (Rule V(G): the world's work is all one- and two-family residential, which it excludes), a later reprint of the manual, and any deadline for the Rule I(J) steps (the manual states none; the 30 days in the world is the invented carrier's).",
     "manual_minutes": 150,

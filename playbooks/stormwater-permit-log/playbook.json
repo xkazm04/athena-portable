@@ -38,6 +38,7 @@
     }
   ],
   "steps": [
+    "First asks which permit covers the site (EPA's Construction General Permit, California's CGP or Texas's TXR150000, for three) and uses that permit's rain trigger and deadlines; this example uses EPA's.",
     "Reads the stormwater plan's schedule, hours and rules in Docshelf.",
     "Reads every storm on the site's gauge in Rainlog.",
     "Reads every inspection report, finding and corrective action in Permitflow.",
@@ -79,9 +80,16 @@
     "What each photo shows finished and when, from Sitegrid."
   ],
   "economics": {
-    "value_usd": 5000,
+    "value_usd": 0,
+    "example_usd": null,
     "per": "year",
-    "basis": "An estimate, mostly minutes. Keeping a construction site's permit log by hand, against the gauge, the reports and the photos, takes a coordinator about two hours a week, about 50 hours a year on a site of this size, and a stormwater consultant bills about $100 an hour for it; with a missed inspection or a late corrective action avoided, about $5,000 a year. Each act in the bench world is weighted at $250, about two and a half hours of that time, an estimate; none is money recovered. Times a year: fifty, a weekly sweep while the site is open.",
+    "value_kind": "money_protected",
+    "kinds": {
+      "assign_inspection": "count",
+      "open_corrective_action": "count",
+      "close_corrective_action": "count"
+    },
+    "basis": "Mostly minutes, and $0 a year as money: keeping a construction site's permit log by hand, against the gauge, the reports and the photos, takes a coordinator about two hours a week, about 50 hours a year, shown as time saved (about $5,000 at a stormwater consultant's $100 an hour, if you would otherwise pay one) and counted once, there. A missed inspection or a late corrective action can bring a permit violation, which is not priced here. Each act in the bench world is weighted at $250, a scoring weight, not money recovered. Times a year: fifty, a weekly sweep while the site is open.",
     "manual_minutes": 120,
     "times_per_year": 50,
     "incumbent": "None takes a share: stormwater consultants and inspection services bill by the visit or the hour.",
@@ -112,5 +120,23 @@
     "minutes": 60,
     "why": "A careful coordinator gets most of it; the bar is most of the assignment, openings and closures with the right dates, nothing logged that the rules or the photos do not support, inside an hour."
   },
-  "caveat": "Tolliver Site Builders, Fenwick Crossing, its permit number and plan, Docshelf, Rainlog, Permitflow, Sitegrid and every person here are invented. The rules are EPA's 2022 Construction General Permit, which applies where EPA is the permitting authority (New Mexico among them), summarized in the world's own words and fixed as of October 2026; a state permit or the site's own plan can differ. This is not legal or environmental compliance advice."
+  "caveat": "Tolliver Site Builders, Fenwick Crossing, its permit number and plan, Docshelf, Rainlog, Permitflow, Sitegrid and every person here are invented. The rules are EPA's 2022 Construction General Permit, which applies where EPA is the permitting authority (New Mexico among them), summarized in the world's own words and fixed as of October 2026; a state permit or the site's own plan can differ. This is not legal or environmental compliance advice.",
+  "fit": {
+    "where": [
+      "MA",
+      "NH",
+      "NM",
+      "DC",
+      "PR"
+    ],
+    "where_note": "EPA's Construction General Permit, which governs where EPA issues the permit (and on tribal land and some federal sites); California, Texas and most states have their own permits with other triggers.",
+    "who": "A site contractor's compliance coordinator keeping the construction stormwater inspection and corrective-action log.",
+    "not_for": "A site under a state's own construction permit, such as California's CGP or Texas's TXR150000, whose rain triggers and deadlines differ.",
+    "asks_for": [
+      "your permit and stormwater plan",
+      "the rain gauge record",
+      "inspection reports and dated site photos"
+    ],
+    "costs": "No fees; only your Claude usage."
+  }
 }

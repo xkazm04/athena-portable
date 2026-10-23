@@ -9,6 +9,20 @@
   "job": "contest",
   "promise": "One deletion request to every registered data broker tracked to its answer: the former name added so the old listings are found, each listing that is still live and truly yours removed on the broker's own form, and a complaint only where a broker has run past its deadline, never for a namesake or for someone else.",
   "persona": "A Californian who sent the state's one-step deletion request in January and still finds herself on people-search sites",
+  "fit": {
+    "where": [
+      "CA"
+    ],
+    "where_note": "California's Delete Act and its one-step deletion platform; outside California, only each site's own form.",
+    "who": "A California resident who sent the state's deletion request and still finds listings.",
+    "not_for": "Someone outside California, for the state platform part.",
+    "asks_for": [
+      "the names you have used",
+      "your addresses",
+      "your state platform account"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read each broker's answer on the state's deletion platform: deleted, opted out, exempt, not found, or nothing yet. Search the people-search sites for every name she has used, and tell her listings from her namesakes' and her family's. Remove the live ones with each site's own form, add her former name to the request, and complain only about a broker past its 45 days. Each site has its own form, and none of them tells you which listing is yours.",
   "command": "I asked the state's Erasepoint to make data brokers delete me back in January, and I'm still on people-search sites. Check what each broker answered, find what's still up on Findwho and Lookabout, get my listings removed, and complain about any broker that's ignoring the law. Leave my family's listings and anyone who just shares my name alone.",
   "apps": [
@@ -79,6 +93,13 @@
   ],
   "economics": {
     "value_usd": 0,
+    "example_usd": null,
+    "value_kind": "money_back",
+    "kinds": {
+      "request_removal": "count",
+      "add_identifier": "count",
+      "file_complaint": "count"
+    },
     "per": "year",
     "basis": "Nothing is recovered: the value is hours and privacy. A sweep of the registry and two people-search sites takes about 3 hours by hand, and brokers re-collect, so it is repeated as the Delete Act's 45-day cycles and DeleteMe's quarterly reports suggest: four times a year, about 12 hours. In the bench world each act is weighted at $6.45, a fifth of $32.25, which is DeleteMe's $129 a year for one person over four sweeps; that weight is a price avoided, not money recovered.",
     "manual_minutes": 180,

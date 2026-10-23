@@ -7,8 +7,21 @@
   "audience": "home",
   "category": "health",
   "job": "recover",
-  "promise": "Every month of Mom's care claimed against her policy: the daily maximum applied to the right days, rejected and denied invoices put back inside their windows, and nothing filed that the policy excludes.",
+  "promise": "Every month of a parent's care claimed against her policy: the daily maximum applied to the right days, rejected and denied invoices put back inside their windows, and nothing filed that the policy excludes.",
   "persona": "An adult daughter in Chicago with power of attorney for her 82-year-old mother at home in Pittsburgh, who has a tax-qualified long-term-care policy bought in 2011",
+  "fit": {
+    "where": "US",
+    "where_note": "Tax-qualified US long-term-care policies; a real policy's own schedule governs.",
+    "who": "A family member with power of attorney who files a parent's long-term-care claims.",
+    "not_for": "A policy whose benefit trigger has not been certified, or care the policy excludes.",
+    "asks_for": [
+      "the policy schedule",
+      "the care agency's invoices and care notes",
+      "the insurer's EOBs and letters",
+      "your power of attorney"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "The policy pays real money for in-home care. The daughter has to earn it every month, at night. She gathers the agency's invoice and the visit care notes the insurer wants but the invoice leaves out. She applies a daily maximum that rose on the policy's anniversary and covers the agency and the adult day center combined. She leaves out hospital days, days Medicare paid and the granddaughter's help. Then she tracks three clocks: 120 days to file, 180 to resubmit a rejected invoice, 120 to appeal a denial. Agencies file only their own invoices, facilities only theirs, and nobody sees the hospital, Medicare and the bank together.",
   "command": "Catch up on Mom's long-term-care claims. Check every month of care against her policy: the agency, the adult day center, the home modification and her premiums. Use the hospital stay, Medicare and her bank to rule things out. File, resubmit or appeal everything that qualifies before its window closes, with the documents it needs. Get back any premiums she shouldn't have paid, stop anything still paying for what's waived, and leave alone anything the policy doesn't pay.",
   "apps": [
@@ -50,6 +63,7 @@
     }
   ],
   "steps": [
+    "Checks first that the benefit trigger stands: a practitioner's certification within the last 12 months (2 of 6 daily activities, or cognitive impairment) and a plan of care.",
     "Reads the policy schedule: elimination period, the daily maximum and its anniversary step, combined charges, exclusions, and the three clocks.",
     "Reads every invoice, EOB and rejection on file, and what each is still open to.",
     "Pulls the care notes for the invoices that need them, and the bills from outside the agency.",
@@ -102,8 +116,17 @@
   ],
   "economics": {
     "value_usd": 20000,
+    "example_usd": 26410.4,
+    "value_kind": "money_back",
+    "kinds": {
+      "submit_invoice": "money_back",
+      "resubmit_invoice": "money_back",
+      "file_appeal": "money_back",
+      "request_premium_refund": "money_back",
+      "stop_autopay": "count"
+    },
     "per": "year",
-    "basis": "Home-aide care runs about $77,800 a year (Genworth/CareScout 2024), and the average long-term-care claim is $185,572 (AHIP). A family that files late or loses a denial gives up whole months; the figure a year is an estimate. The bench world holds $26,410 owed and unclaimed across eight months.",
+    "basis": "An estimate. Home-aide care runs about $77,800 a year (Genworth/CareScout 2024), and the average long-term-care claim is $185,572 (AHIP). The bench world's eight months hold $22,558 of care benefits owed and unclaimed (about $2,820 a month) and a $3,852 premium refund, $26,410 in all. The roster's $20,000 a year assumes a family that loses about seven months of a year's benefits to late, rejected or unfiled invoices: 7 x $2,820 = $19,740, rounded to $20,000. It is not an average of anything published.",
     "manual_minutes": 360,
     "incumbent": "Agencies file their own invoices and nothing else; facilities file for residents only; consultants who handle claims for families charge by the hour. Mostly it is the family, at night.",
     "sources": [
@@ -145,5 +168,5 @@
     "minutes": 40,
     "why": "A practised claims consultant catches most of it in a long evening. The bar is most of the money with no claim the policy excludes."
   },
-  "caveat": "Harbor Mutual and its policy are invented; the rules are the common provisions of tax-qualified policies, fixed in the bench world. A real policy's schedule always wins."
+  "caveat": "Harbor Mutual and its policy are invented; the rules are the common provisions of tax-qualified policies, fixed in the bench world. A real policy's schedule always wins. Every claim also rests on the benefit trigger: a licensed practitioner's certification, renewed at least every 12 months, that the insured needs help with 2 of 6 activities of daily living or has a severe cognitive impairment, and a plan of care (IRC 7702B(c)); the world assumes both are on file."
 }

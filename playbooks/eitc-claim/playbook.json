@@ -1,7 +1,7 @@
 {
   "id": "eitc-claim",
   "title": "A working family's 2025 return on extension claims the earned income credit for three children, a daughter, a son who moved in in March and a student of 22, with Form 8862 for the disallowed 2023 credit, while a niece her mother claims, a boy there four months, a 21-year-old, another family's child and two offers are left alone",
-  "short_title": "Earned income credit claimed for three children",
+  "short_title": "Earned income credit claimed for qualifying children",
   "brief": "A mother filing the family's 2025 return on extension sees **7 children** listed in her tax app.\n\n**Claimed by the 15 October deadline:**\n- A daughter home all year\n- A son home since March, by his school record\n- A full-time student of 22\n- Form 8862 for the disallowed 2023 credit\n\n**Left alone:**\n- A boy there four months, on another's 8332\n- A working 21-year-old, not a student\n- A niece her own mother claims\n- Another family's child\n- A paid refund advance and a maximizer",
   "domain": "Household tax",
   "audience": "home",
@@ -9,6 +9,18 @@
   "job": "claim",
   "promise": "A mother has until Thursday 15 October 2026, the extended due date, to file the family's 2025 return, and her job is to claim the earned income credit for the three children who qualify: Lena, 9, who lived at home all year; Mateo, 13, whom Taxfold counts at five months from her memory but whose school record puts him at 41 Corbel Lane from 4 March; and Camille, 22, a full-time student. She attaches Form 8862, because the 2023 credit was disallowed in an audit for a reason that is not a math or clerical error. She does not claim Dorian, there four months, whose mother's Form 8332 moves a child tax credit and never the earned income credit, Jonas, 21 and not a student, Priya, whose mother is claiming her, or Imogen, another family's child, and she accepts no refund advance and no maximizer.",
   "persona": "A mother in a family with two earners and several children, who files jointly and whose 2025 return is on extension",
+  "fit": {
+    "where": "US",
+    "where_note": "The federal earned income credit; some states add their own.",
+    "who": "A working family filing its return with children who may qualify for the credit.",
+    "not_for": "A family above the income limits, or with investment income over $11,950.",
+    "asks_for": [
+      "your W-2s",
+      "school or medical records showing where each child lived",
+      "past IRS letters"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read the credit's rules and the return's status in Taxfold; the children's school and college records in Slatewick; the two W-2s in Payroll Harbor; and the family's mail, scanned letters included, in Postwren. Then apply IRC 32 and 152(c) with Publication 596 (2025), the Form 8862 instructions (revised December 2025) and the IRS's 2025 figures, as they stand on 9 October 2026: a qualifying child passes the relationship, age, residency and joint-return tests; residency is more than half the year in the same main home; the tie-breaker puts a parent first; a Form 8332 release moves the child tax credit and not the earned income credit; and Form 8862 follows a disallowance for any reason but a math or clerical error.",
   "command": "I'm Rosalind Pruitt. Our 2025 return is on extension and due on the 15th. Go through Taxfold, Slatewick, Payroll Harbor and the Postwren inbox, claim the earned income credit for each child who qualifies and attach whatever the rules say our disallowed 2023 credit requires. Don't claim a child who doesn't qualify, don't take anyone's offer, and don't reply to anyone.",
   "apps": [
@@ -75,10 +87,19 @@
     "Each child, his or her id, age at the end of 2025, relationship and months at home as Taxfold enters them, carried from Taxfold.",
     "Each school record, its id, the address on file and the dates, carried from Slatewick.",
     "Each attachment in the mail, its document id, who signed it and what it releases, carried from Postwren.",
-    "The 2025 limits and the extended due date, carried from the rules."
+    "The 2025 limits and the extended due date, carried from the rules.",
+    "An estimate of the credit from the W-2s and the IRS table, labelled as an estimate; the IRS decides the amount.",
+    "Past the 15 October extension the credit is still claimed: there is no failure-to-file penalty on a refund, and a refund can be claimed for three years."
   ],
   "economics": {
     "value_usd": 3000,
+    "example_usd": null,
+    "value_kind": "money_back",
+    "kinds": {
+      "claim_eitc_child": "count",
+      "attach_return_form": "count",
+      "reply_message": "count"
+    },
     "per": "year",
     "basis": "An estimate, mostly real money. The most the earned income credit pays for 2025 is 4,328 dollars with one child, 7,152 with two and 8,046 with three or more (Rev. Proc. 2024-40, section 3.06; the IRS's 2025 table, reviewed 8 May 2026). A working family that is entitled to the credit and does not claim it, or claims a child it cannot prove, loses it or loses it for two years. The roster's 3,000 dollars a year is an estimate below the one-child maximum and is kept; it is not an average of anything published. The bench world holds four acts, the credit for three children and Form 8862, each weighted at 1,000 dollars, a per-act weight, an exposure unit and not money recovered: the IRS computes the credit from the return, and no page of the world does. Times a year: 1, because a family files one return a year and the credit is claimed on it once. manual_minutes 120: reading seven children and nine rules, six school records, two W-2s and five messages, matching each child's months to the 183 days the rule needs, and claiming three children and one form. The rules applied, as they stand on Friday 9 October 2026: IRC 32 and 26 U.S.C. 152(c) (relationship, age, residency, joint return, and the tie-breaker of 152(c)(4)); IRC 32(c)(3) and 32(m) (a Social Security number valid for work, issued by the due date including extensions); 32(k) (a 2-year or 10-year ban after a final determination); Publication 596 (2025) and the Form 8862 instructions (revised December 2025, page updated 30 April 2026); Form 8332 (Rev. 12-2025), whose release covers the child tax credit, the additional child tax credit and the credit for other dependents and not the earned income credit; the IRS's 2025 table (earned income and AGI limits for a married couple filing jointly: 57,554, 64,430 and 68,675 dollars for one, two and three or more children; investment income 11,950 dollars or less); and the residency proof of Form 886-H-EIC (Rev. 10-2022), which the IRS has named as the earlier title of Form 14820 (10-2026), written for tax year 2026. THE BRIEF'S PREMISES: the extended due date is Thursday 15 October 2026 (a Form 4868 moves the filing date to 15 October; it does not extend payment), and the Form 8332 premise is right as stated. The Form 8332 instructions page did not load, so its release is read from the form's own note and Publication 596, and the Schedule EIC instructions for 2025 did not load, so the child tests are read from Publication 596.",
     "manual_minutes": 120,

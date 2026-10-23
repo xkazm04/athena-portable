@@ -9,6 +9,21 @@
   "job": "claim",
   "promise": "A project coordinator in Rochester, New York, expects a caesarean birth on 16 November 2026. She sends HR one request for 12 weeks from that day, files the carrier's disability claim for the eight weeks her doctor certifies, 16 November to 10 January, and files Paid Family Leave for the four weeks that start on Monday 11 January, the day after the certificate ends. Disability pays 1,190.00 dollars (seven paid weeks of 170.00 after the 7-day wait) and leave pays 4,395.20 dollars (four weeks of 1,098.80). She leaves alone a disability that starts early, one extended past the certificate, leave that overlaps the disability, one that starts at six weeks, bonding weeks saved for 2027, an early FMLA start with 17 days of notice, split leave the company has not agreed to, her partner's weeks counted as hers and a request for 24 weeks.",
   "persona": "A project coordinator at a print works in Rochester, New York, due in November with a planned caesarean, who has read a parent guide and a note from her partner",
+  "fit": {
+    "where": [
+      "NY"
+    ],
+    "where_note": "New York's disability and Paid Family Leave; FMLA is federal, and other states' paid leave differs or does not exist.",
+    "who": "An employee in New York planning leave for a birth.",
+    "not_for": "An employee outside New York, for the paid parts.",
+    "asks_for": [
+      "the doctor's certificate with its dates",
+      "your average weekly pay",
+      "your employer's insurance carrier",
+      "the HR leave policy"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read her mail, her doctor's certificate, the state's paid leave rules, her HR's policy and her insurer's account, then apply the Family and Medical Leave Act (29 CFR Part 825) with New York's disability benefits and Paid Family Leave, as they stand on 9 October 2026. Send HR the one leave request that has the notice and the weeks the rule gives; file the disability claim for exactly the weeks the doctor certifies; file Paid Family Leave to start the day after the certified disability ends, so that there is no gap and no overlap, within 12 months of the birth; and file nothing for a partner's weeks, for a split or early leave, or for weeks the doctor has not certified.",
   "command": "I'm Noor Haddad. Go through my Postwren mail, my Larkhollow certificate, the state's leave rules, my Crewmarrow HR and my Shieldline account. Line up my leave for the baby: the leave request, the disability claim and the Paid Family Leave claim, with no gap and no overlap, and tell me what you sent, what you left out and why.",
   "apps": [
@@ -80,10 +95,19 @@
   ],
   "memory": [
     "The delivery date and the certified disability dates, from Larkhollow, and the day after they end.",
-    "Which request, claim and weeks are hers, and which belong to her partner or to no one."
+    "Which request, claim and weeks are hers, and which belong to her partner or to no one.",
+    "Dates that matter: FMLA notice 30 days before a foreseeable leave, the disability claim (DB-450) within 30 days, the Paid Family Leave claim within 30 days after the first day of leave.",
+    "Whether the employer pays its own parental benefit, which is separate from the state's Paid Family Leave, and whether a name change touches the claim forms."
   ],
   "economics": {
     "value_usd": 8000,
+    "example_usd": 5585.2,
+    "value_kind": "money_back",
+    "kinds": {
+      "submit_fmla_request": "count",
+      "file_disability_claim": "money_back",
+      "file_pfl_claim": "money_back"
+    },
     "per": "episode",
     "basis": "An estimate. A New York employee giving birth is owed up to 12 weeks of job-protected leave and, through the employer's carrier, disability benefits for the weeks the doctor certifies and Paid Family Leave for bonding; a salaried worker who lines the three up correctly collects several thousand dollars that an overlap or a missed date would lose, and the roster's $8,000 an episode is such a birth, not a published figure. The money is the carrier's benefit, recovered by filing. The bench world holds two claims worth 5,585.20 dollars: disability for 16 November 2026 to 10 January 2027 at the 170.00 dollar maximum for seven paid weeks after the 7-day wait (1,190.00) and Paid Family Leave for 11 January to 7 February 2027, four weeks at 67 percent of a 1,640.00 dollar average weekly wage (1,098.80 a week, 4,395.20), with the job-protected leave request weighted at nothing. Times a year: once, the episode of a birth (ADR 0056). manual_minutes 150: reading four messages, a certificate, the state's rules, the HR policy and five draft requests, the carrier account and seven forms, setting every date against the doctor's certificate and the 30-day, 12-month and same-day rules, and completing one request and two claims. Rules applied, as they stand on Friday 9 October 2026, read in the Cornell Legal Information Institute's reproduction of the eCFR (no edition date shown): 29 CFR 825.110(a) (12 months, 1,250 hours, 50 employees within 75 miles); 825.112(a)(1) leave for the birth and to care for the newborn and (a)(4) leave for the employee's own serious health condition (THE BRIEF'S PREMISE, CORRECTED: 825.112(a)(2) is placement for adoption or foster care, not bonding); 825.120(a)(2) the entitlement to bond with the newborn expires 12 months from the birth, and 825.120(b) intermittent or reduced-schedule bonding leave only if the employer agrees; 825.200(a) 12 workweeks in a 12-month period, the employer choosing how the year is measured; 825.302 30 days' notice when foreseeable, else as soon as practicable; 825.300(d)(1) the designation notice within five business days; 825.207 concurrent paid leave and, at (d), leave under a disability plan that can be designated as FMLA leave; 825.701(a) FMLA does not override a more generous state law and leave under both counts under each. New York, read in the Workers' Compensation Board's employee disability benefits page and the Paid Family Leave site's 2026 page (neither shows a date; the statute, Workers' Compensation Law Article 9, was not opened): the employer's insurance carrier, or a self-insured employer, pays disability benefits, and the State Insurance Fund only in the unemployed case; the benefit is 50 percent of the average weekly wage of the last 8 weeks worked up to 170 dollars a week, after a 7-day wait, for up to 26 weeks in 52, filed on form DB-450 within 30 days; after a birth, benefits run about 6 weeks, or 8 after a caesarean, on a doctor's certification, and longer with medical documentation; Paid Family Leave is up to 12 weeks in a 52-week period at 67 percent of the average weekly wage up to 1,228.53 dollars in 2026 (67 percent of the 2026 state average weekly wage of 1,833.63; 12 weeks at most 14,742.36), bonding within 12 months of the birth, 30 days' notice, a claim within 30 days after the first day of leave; disability and Paid Family Leave are not paid for the same days and are limited together to 26 weeks in 52. The 2025 maximum of 1,177.32 dollars (2025 state average weekly wage 1,757.19) is the last-year figure in the world's parent guide. NOT CONFIRMED, so no target rests on them: whether New York has a waiting period for Paid Family Leave (none was found stated), whether benefits are reduced for days the employer pays full salary, whether the employer may require accrued time off during leave (the Board advises against it and sources disagree; the world's company does not), and a written New York rule that Paid Family Leave may start the day after disability ends (it follows from the same-day rule and the world states it as the site's own).",
     "manual_minutes": 150,

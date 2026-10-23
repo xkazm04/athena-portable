@@ -9,6 +9,18 @@
   "job": "recover",
   "promise": "Each therapy session is matched against the claims already on file and the plan's own terms. The sessions never claimed and still inside the 12-month filing limit are submitted, one with the shorter session's code the therapist's office corrected. A claim past its 30 days with no decision and no extension notice is chased. Two claims processed wrong are appealed inside their 180 days: one allowed at last year's rates, one charged a deductible already met. A session past the filing limit, sessions already claimed, a late-cancellation fee, couples counseling the plan excludes, a claim paid right, a denial past its appeal window, a claim pending under a valid extension, and surprise-billing complaints the law does not give for a therapist she chose are left alone.",
   "persona": "An employee seeing an out-of-network psychologist every week, who pays the therapist up front and is reimbursed by her employer's self-funded health plan",
+  "fit": {
+    "where": "US",
+    "where_note": "Employer plan claim rules (ERISA); your plan's own terms set the amounts.",
+    "who": "Someone who pays an out-of-network therapist up front and claims from an employer plan.",
+    "not_for": "A plan with no out-of-network benefit.",
+    "asks_for": [
+      "your therapist's superbills",
+      "the plan's claims portal",
+      "your EOBs"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read the plan's out-of-network benefit, filing rule, decision and appeal timeframes, exclusions and surprise-billing page, and every claim on file with its explanation of benefits, in the plan's member portal; every session and superbill in the therapist's portal; what she paid the therapist and what the plan reimbursed, in her bank; and the plan's notices and the therapist's correction in her inbox. Then apply 29 CFR 2560.503-1 for post-service claims as it stands, with the plan's own terms for its out-of-network benefit, deductible, allowed amounts and filing limit: a decision within 30 days with one 15-day extension on written notice, 180 days to appeal, and no surprise-billing protection for an out-of-network therapist she chose. None of the four systems shares data with another.",
   "command": "Sort out my therapy claims with Paylance. Go through the plan in Paylance, Dr. Varga's sessions in Sessionly, my checking in Ledgerline and my inbox: claim every session that should be claimed with the right code, chase anything overdue, and appeal anything they processed wrong while there's still time. Don't claim anything twice or anything the plan doesn't cover.",
   "apps": [
@@ -85,10 +97,20 @@
     "The allowed amounts, the deductible's state, the filing limit, the timeframes and the exclusions, and each claim's sessions, dates and payment, carried from Paylance.",
     "Each session's date, length, service, code and fee, carried from Sessionly.",
     "Which reimbursements arrived, from Ledgerline bank.",
-    "The overdue claim's receipt date, the extension's date and the corrected code, carried from Mailnest."
+    "The overdue claim's receipt date, the extension's date and the corrected code, carried from Mailnest.",
+    "Whether the plan allows far less for out-of-network therapy than for comparable medical care: a mental-health parity argument a patient advocate would raise on appeal."
   ],
   "economics": {
     "value_usd": 3000,
+    "example_usd": 921,
+    "value_kind": "money_back",
+    "kinds": {
+      "submit_claim": "money_back",
+      "send_inquiry": "money_back",
+      "file_appeal": "money_back",
+      "open_surprise_bill_dispute": "count",
+      "reply": "count"
+    },
     "per": "year",
     "basis": "An estimate. Weekly therapy with an out-of-network provider costs about $10,000 a year, and an employer plan that pays 60% of an allowed amount after a deductible owes a large share of it; but claims go unfiled, are processed at last year's rates or against a deductible already met, and sit undecided past their deadlines unless someone matches sessions to claims and chases them. The roster's $3,000 a year is the reimbursement such a patient loses to missed, wrong and stalled claims, an estimate. The bench world holds $921: three sessions to claim ($90, $69 and $90), $360 on an overdue claim, and appeals of $132 and $180. The out-of-network benefit, the deductible, the 2026 allowed amounts and the 12-month filing limit are the invented plan's own terms. The public rules as they stand on Friday 9 October 2026: 29 CFR 2560.503-1 for a post-service claim (a decision within 30 days, one extension of up to 15 days on written notice before the 30 days end, 180 days to appeal an adverse benefit determination, 60 days to decide the appeal). The No Surprises Act's balance-billing protections (45 CFR 149.410 and 149.420) reach emergency care, out-of-network care at an in-network facility and air ambulance, not office visits with an out-of-network therapist the patient chose, so no obligation is authored from it. Times a year: six, a round of superbills and follow-ups every two months.",
     "manual_minutes": 120,

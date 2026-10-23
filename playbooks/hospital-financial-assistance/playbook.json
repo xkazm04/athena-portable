@@ -2,13 +2,26 @@
   "id": "hospital-financial-assistance",
   "title": "A nonprofit hospital's charity care applied for on every account that qualifies, with the household's income as its own policy counts it",
   "short_title": "Hospital bills turned into free care",
-  "brief": "A household of four faces a year of nonprofit hospital bills after **three visits**.\n\n**Applied as free care — $7,560 on 3 accounts:**\n- Income added up the policy's way\n- Gross pay, unemployment and child support counted\n- Refunds, gifts and a teen's wages left out\n- Every account inside its 240 days applied for\n- The collector told before it reports the stay\n\n**Left alone:**\n- An account already decided or paid in full\n- Cosmetic surgery and an outside physicians' group\n- Paying anything while applications are pending\n- A 30% advocate, a look-alike payment demand",
+  "brief": "A household of four faces a year of nonprofit hospital bills after **three visits**.\n\n**Applied as free care — $7,560 on 3 accounts:**\n- Income added up the policy's way\n- Gross pay, unemployment and child support counted\n- Refunds, gifts and a teen's wages left out\n- Every account inside its 240 days applied for\n- The collector told before it reports the stay\n\n**Left alone:**\n- An account already decided or paid in full\n- Cosmetic surgery, and providers the policy's list does not cover\n- Paying anything while applications are pending\n- A 30% advocate, a look-alike payment demand",
   "domain": "Patient health",
   "audience": "home",
   "category": "health",
   "job": "claim",
-  "promise": "The hospital's published financial assistance policy is read for who is in the household, what counts as income, its income table and its windows. Three months of pay stubs and bank deposits are added up the policy's way: gross wages, unemployment and child support in; a tax refund, a gift, a transfer from savings, an expense reimbursement, a teenager's wages and a live-in grandmother's Social Security out. Every account still inside its 240 days is applied for with the household size and income that put the family under the free-care line, and the collection agency is told before it reports the stay to the credit bureaus. A decided account, a cosmetic surgery, an independent physicians' group, a closed account, a 30% advocate and a look-alike payment demand are left alone, and nothing is paid while the applications are pending.",
+  "promise": "The hospital's published financial assistance policy is read for who is in the household, what counts as income, its income table and its windows. Three months of pay stubs and bank deposits are added up the policy's way: gross wages, unemployment and child support in; a tax refund, a gift, a transfer from savings, an expense reimbursement, a teenager's wages and a live-in grandmother's Social Security out. Every account still inside its 240 days is applied for with the household size and income that put the family under the free-care line, and the collection agency is told before it reports the stay to the credit bureaus. A decided account, a cosmetic surgery, a physicians' group the policy's provider list does not cover, a closed account, a 30% advocate and a look-alike payment demand are left alone, and nothing is paid while the applications are pending.",
   "persona": "A working parent in a household of four, with a live-in mother who files her own taxes, facing a year of bills from the local nonprofit hospital after an appendectomy, a child's emergency visit and a spouse's MRI",
+  "fit": {
+    "where": "US",
+    "where_note": "Nonprofit hospitals under federal tax law (IRC 501(r)); each hospital's own policy sets the income lines.",
+    "who": "A household with bills from a nonprofit hospital, still inside the 240 days after the first bill.",
+    "not_for": "Bills from a for-profit hospital, or a household far above the policy's income lines.",
+    "asks_for": [
+      "your hospital bills and statements",
+      "three months of pay stubs",
+      "your bank statements",
+      "your last tax return"
+    ],
+    "costs": "No fees; applying for financial assistance is free."
+  },
   "chore": "Read the hospital's financial assistance policy and every account under the guarantor in its billing portal; the hospital's letter, the tax preparer's summary of last year's return and the collection agency's notice in the inbox; three months of everyone's pay stubs in payroll; and the non-payroll deposits into joint checking. Then apply IRC section 501(r) and 26 CFR 1.501(r)-1 to -6 as the hospital's policy carries them out: a household and an income as the policy defines them, an application on each covered account inside the 240 days after its first post-discharge statement, and extraordinary collection actions suspended once a complete application is in. None of the four systems shares data with another.",
   "command": "Apply for Saint Ardent's financial assistance on every account that qualifies. Go through their billing portal, my inbox, everyone's pay stubs in Payroll Harbor and our joint checking in Ledgerline, and work out our household income the way their policy counts it. Don't pay anything while we're applying, and deal with the collector.",
   "apps": [
@@ -80,6 +93,13 @@
   ],
   "economics": {
     "value_usd": 6000,
+    "example_usd": 7560,
+    "value_kind": "money_back",
+    "kinds": {
+      "submit_fap_application": "money_back",
+      "pay_balance": "count",
+      "reply": "count"
+    },
     "per": "episode",
     "basis": "An estimate. A nonprofit hospital must publish a financial assistance policy and take applications for 240 days after the first post-discharge statement, but most patients who qualify never apply, because the policy, the bills, the pay stubs and the bank statements sit in four places and the income has to be counted the policy's way. For a household with a hospital stay and two smaller visits in a year, the roster's $6,000 an episode is the balances free or discounted care writes off, an estimate. The episode is one bad health year with hospital bills; times a year: one, since a household applies once on the accounts open in their windows. The bench world holds $7,560 across three accounts written off as free care: $4,820, $1,260 and $1,480, and the collector told before it reports the stay to the credit bureaus, counted as an item at $0. The policy (its household and income definitions and its 2026 income table) is an invented world document; the public rules applied, as they stand on Friday 9 October 2026, are IRC section 501(r) and 26 CFR 1.501(r)-1 (the application period ends no earlier than 240 days after the first post-discharge billing statement), 1.501(r)-4 (a widely publicized written policy) and 1.501(r)-6 (no extraordinary collection action before 120 days, 30 days' written notice, and actions suspended once an application is submitted in the application period).",
     "manual_minutes": 240,

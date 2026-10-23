@@ -63,7 +63,7 @@ def test_clinic_denials_per_month(rows: dict[str, dict[str, Any]]) -> None:
     assert r["speedup_shown"] == 233.161
     assert r["speedup_with_review"] == 107.656
     assert r["verdict"] == "short" and r["bench_runs_n"] == 3
-    assert r["basis_says_estimate"] is False
+    assert r["basis_says_estimate"] is True  # ADR 0133 wave: the basis now says so
     assert r["sources_n"] == 5 and r["incumbent_fee_pct"] is None
     assert r["expectation_minutes"] == 30.0
     assert r["caveat_rendered"] is False and r["basis_rendered"] is False
@@ -72,8 +72,8 @@ def test_clinic_denials_per_month(rows: dict[str, dict[str, Any]]) -> None:
 
 def test_pslf_per_episode(rows: dict[str, dict[str, Any]]) -> None:
     r = rows["pslf-employment-certification"]
-    assert (r["annual_shown"], r["unit_shown"]) == (40000.0, "per episode")
-    assert r["world_total_usd"] == 20000.0 and r["world_ratio"] == 2.0
+    assert (r["annual_shown"], r["unit_shown"]) == (20000.0, "per episode")
+    assert r["world_total_usd"] == 20000.0 and r["world_ratio"] == 1.0
     assert r["speedup_shown"] == 140.169
     assert r["speedup_with_review"] == 64.651
     assert r["verdict"] == "exceeds" and r["bench_runs_n"] == 3
@@ -85,8 +85,8 @@ def test_pslf_per_episode(rows: dict[str, dict[str, Any]]) -> None:
 
 def test_carrier_accessorials_per_year(rows: dict[str, dict[str, Any]]) -> None:
     r = rows["carrier-accessorials"]
-    assert (r["annual_shown"], r["unit_shown"]) == (12000.0, "a year")
-    assert r["world_total_usd"] == 1580.0 and r["world_ratio"] == 7.595
+    assert (r["annual_shown"], r["unit_shown"]) == (14000.0, "a year")
+    assert r["world_total_usd"] == 1580.0 and r["world_ratio"] == 8.861
     assert r["speedup_shown"] == 33.309
     assert r["speedup_with_review"] == 16.66
     assert r["verdict"] == "exceeds" and r["bench_runs_n"] == 1

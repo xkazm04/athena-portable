@@ -9,6 +9,18 @@
   "job": "contest",
   "promise": "A mother's hospital records, the hospital's billing, her Medicare claims and the rules, and her nursing home's statements are read against one another. Her September stay, admitted as an inpatient and changed to observation the next day, is appealed to the BFCC-QIO as a standard change-of-status request with the date of the inpatient order and the four days Medicare counts, so the stay can become the qualifying stay her skilled nursing needs; the nursing home's private bill is put on hold while the QIO decides. A March stay that was observation from the start, a 2024 stay whose retrospective window has closed, a June stay that already had its inpatient days, a redetermination in place of the status appeal, paying bills the appeal could change and a firm taking thirty percent are left alone.",
   "persona": "A daughter, appointed representative for her mother of eighty-one, whose rehab after a hospital stay is being billed privately because the stay was changed to observation",
+  "fit": {
+    "where": "US",
+    "where_note": "Original Medicare; Medicare Advantage plans use their own appeal route.",
+    "who": "A family member or representative of a Medicare patient changed from inpatient to observation during a hospital stay.",
+    "not_for": "A stay that was observation from the start, or a patient in a Medicare Advantage plan.",
+    "asks_for": [
+      "the hospital's notices (the MOON and the Change of Status Notice)",
+      "the nursing home's statements",
+      "your representative form, if you act for a parent"
+    ],
+    "costs": "No fees; the review is free."
+  },
   "chore": "Read every Saint Ardent stay in the patient portal, with its status orders, notes and notices; how the hospital billed each stay and its policy; Medicare's rules, the mother's record and her claims in her Medicare account; and the nursing home's record, statements, billing policy and messages. Then apply 42 CFR 405.1210 to 405.1212 (the change-of-status appeal created after Alexander v. Azar, final rule CMS-4204-F, in force since 14 February 2025), 42 CFR 409.30 (three consecutive inpatient days, the admission day counted and the discharge day not, observation days never) and the NOTICE Act's MOON as they stand: only a formal inpatient admission later changed to observation can be appealed, a standard request after release has no deadline, the retrospective window for older stays closed on 2 January 2026, and a redetermination is not the status appeal. None of the four systems shares data with another.",
   "command": "Mom's hospital stay in September was switched to observation and now Oakview is billing her privately for her rehab. Go through Carenook, Saint Ardent's billing, her Myline Medicare account and Oakview, and appeal whatever can still be appealed, the right way, so Medicare covers it. She was in a regular room for three nights in March too, so do that one if it counts. Don't pay a bill the appeal could change, and don't pay anyone to file it.",
   "apps": [
@@ -41,7 +53,8 @@
     "Reads every stay's orders, notes and notices in Carenook.",
     "Reads how each stay was billed and the policy on a reversed status change at Saint Ardent.",
     "Reads the rules, the record and the claims in Myline, and asks the QIO to review the September change of status.",
-    "Reads the care record, statements, policy and messages at Oakview, and asks for a hold on the private bill while the QIO decides."
+    "Reads the care record, statements, policy and messages at Oakview, and asks for a hold on the private bill while the QIO decides.",
+    "Checks whether the hospital gave the Medicare Change of Status Notice (CMS-10868) and the MOON; a missing notice strengthens the review request."
   ],
   "gates": [
     {
@@ -91,6 +104,16 @@
   ],
   "economics": {
     "value_usd": 10000,
+    "example_usd": 10200,
+    "value_kind": "money_back",
+    "kinds": {
+      "request_status_appeal": "money_back",
+      "request_redetermination": "count",
+      "pay_balance": "count",
+      "request_billing_hold": "count",
+      "pay_statement": "count",
+      "reply": "count"
+    },
     "per": "episode",
     "basis": "An estimate. Hospitals change some admitted Medicare patients to observation, which leaves them short of the three inpatient days Part A needs before it covers skilled nursing care, and families then pay the nursing home privately without knowing that the change itself can now be appealed. The roster's $10,000 an episode is the skilled nursing care such a family pays for one stay, an estimate. The episode is one hospital stay followed by rehab; times a year: one, a hospital stay followed by rehab in the year it happens. The bench world holds $10,200: Oakview's 20 private days, 18 September to 7 October 2026 at $510, which Part A covers in full (days 1 to 20 at $0 in 2026) if the QIO reverses the change and the stay counts as 4 inpatient days. The hold at Oakview is counted as an item at $0, and the hospital's $1,912.40 Part B share turning into the $1,736 Part A deductible is not counted. The rules applied, as they stand on Friday 9 October 2026: 42 CFR 405.1210 to 405.1212 (final rule CMS-4204-F, 89 FR 83240, 15 October 2024, effective 11 October 2024, with the Medicare Change of Status Notice and the prospective process in use from 14 February 2025; the retrospective process's filing window closed on 2 January 2026); 42 CFR 409.30 and 409.60 (the qualifying stay, the 30 days and the benefit period); the NOTICE Act, Pub. L. 114-42, and 42 CFR 489.20(y) (the MOON, CMS-10611); 42 CFR 405.942 (120 days for a redetermination); and CMS's 2026 Part A deductible ($1,736) and skilled nursing coinsurance ($217 a day from day 21). The hospital's and the nursing home's billing policies are invented world documents.",
     "manual_minutes": 240,

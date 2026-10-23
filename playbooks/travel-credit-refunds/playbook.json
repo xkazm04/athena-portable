@@ -9,6 +9,19 @@
   "job": "recover",
   "promise": "A veterinary technician in Boston holds fifteen airline credits and fees from this year, from two airlines and a travel agency, and the airlines put most of them in her account without her asking. Six are refunds the Department of Transportation's rule owes back to her card: a domestic flight moved 3 hours 55 minutes later, an international one moved 6 hours 30 minutes later, a flight whose times held but which now lands at another airport, a non-stop flight that gained a stop, a fare class lowered, and a seat fee for a seat the aircraft did not have, 832 dollars in all. A change she made herself, a credit she chose in writing, a nonrefundable fare she cancelled, a delay of 2 hours 10 minutes, a connecting airport changed for a passenger with no disability, a flight with no United States airport, a credit already refunded and a credit already spent are left alone.",
   "persona": "A veterinary technician in Boston who holds travel credits from two airlines and a travel agency, most of them issued without her asking",
+  "fit": {
+    "where": "US",
+    "where_note": "The US DOT refund rule: flights to, from or within the US.",
+    "who": "A traveller holding airline credits for flights that were cancelled or changed a lot.",
+    "not_for": "Credits for trips you cancelled yourself on a nonrefundable fare.",
+    "asks_for": [
+      "your airline accounts",
+      "the list of credits",
+      "the original booking emails",
+      "your card statement"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read her mail, her card statement and the credits and fees at three airlines and an agency, with their rules. Apply 14 CFR Part 260 as it stands on 9 October 2026: ask for the refund of each item where the airline cancelled or significantly changed the flight, she declined it and did not choose the credit, or a fee was paid for a service not provided, and leave alone her own changes, a credit she chose, a change below the threshold, flights outside the rule and credits already refunded or spent.",
   "command": "I'm Lucia Ferreira. Go through my Postwren mail, my Cardhollow statement, and the credits and fees at Aerolark, Skylindle and Tripcairn. Ask for a refund to my card of each one the refund rule says is owed, with the reason. Leave out the changes I made myself, the credit I chose, what is not a significant change, and what is already refunded or spent.",
   "apps": [
@@ -73,6 +86,11 @@
   ],
   "economics": {
     "value_usd": 800,
+    "example_usd": 832,
+    "value_kind": "money_back",
+    "kinds": {
+      "request_refund": "money_back"
+    },
     "per": "year",
     "basis": "An estimate. A traveller whose airlines cancel or significantly change flights is owed back the fare of each one she declines, and most airlines issue a credit unasked, so the refund goes unclaimed; the roster's $800 a year is such a year's refunds recovered. The money is recovered, not a price avoided. The bench world holds six refunds worth $832.00 (142.00, 38.00, 188.00, 98.00, 210.00 and 156.00) in $1,997.00 of credits and fees, with nine items worth $1,165.00 left alone (120.00, 210.00, 34.00, 168.00, 96.00, 175.00, 118.00, 154.00 and 90.00). Times a year: once, the year's disruptions (ADR 0056). manual_minutes 150: reading eight notices, a card statement, fifteen credits and fees at three sites and three rule pages, setting each against the change, her choice and the status, and asking for six refunds. Rules applied, as they stand on Friday 9 October 2026, from 14 CFR Part 260 in the eCFR (read 10 October 2026), the DOT's final rule of 26 April 2024 (89 FR 32760, effective 25 June 2024) and its 12 August 2024 conforming rule: 260.2, the definition of a significantly delayed or changed flight (a departure or arrival 3 hours or more earlier or later on a domestic itinerary, 6 hours or more on an international one; a different origin or destination airport; more connection points; a lower class of service; and, for a passenger with a disability only, a different connecting airport or a substitute aircraft lacking an accessibility feature), the definition of a cancelled flight, and of a prompt refund (7 business days for a card purchase and 20 calendar days otherwise, after the earliest request); 260.4 (a prompt, automatic refund of an ancillary fee for a service not provided through no fault of the consumer); 260.6(a) (a nonrefundable ticket for a cancelled or significantly changed flight is refunded in full, fare, taxes and fees, when the passenger declines the flight, the rebooking and any compensation; automatic when no alternative is offered or she rejects it) and (c) (a voucher or credit only as an alternative, with the right to a refund stated and valid five years); 260.7 (a carrier may not treat a consumer as having accepted a credit or voucher without her affirmative acceptance); 260.10 (the refund goes to the original form of payment, with no processing fee); 260.3 (the covered flights are scheduled flights to, from or within the United States) and 260.6(d) and (e) (when a ticket agent is the merchant of record, the carrier tells the agent whether a refund is owed and the agent pays it). THE BRIEF'S PREMISE THAT A CHANGE OF CONNECTING AIRPORT IS A SIGNIFICANT CHANGE IS WRONG for a passenger without a disability: the connecting-airport clause is in 260.2's significant-change definition and in 260.6(b)(2) for an individual with a disability only. The world therefore makes a connecting airport change a trap (the passenger has no accessibility needs on file), and the easy-to-miss target is a changed arrival airport with the times unchanged. Nothing in force is left out of the targets, and nothing not in force is used: the only 2025 and 2026 action found in the Federal Register is DOT's enforcement discretion for a flight that is merely renumbered (90 FR 55999, 5 December 2025, to 30 June 2026; extended by 91 FR 41556, 7 July 2026, to 7 July 2027), and no target or trap in the world rests on a renumbered flight. Secondary sources report that the ancillary fee disclosure rule was vacated by the Fifth Circuit in 2026 and a passenger compensation rulemaking withdrawn; those are different rules, were not read at the source and nothing here rests on them.",
     "manual_minutes": 150,

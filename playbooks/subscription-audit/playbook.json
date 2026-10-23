@@ -2,13 +2,27 @@
   "id": "subscription-audit",
   "title": "A household's recurring charges are audited: a second streaming account on the bank, a trial that became a charge, an add-on raised without notice and an unused storage plan cancelled, two refunded, while a son's and a partner's weekly use, a service used this week, a one-time purchase and a plan renewed after its reminder are left alone",
   "short_title": "Unused subscriptions cancelled and refunds asked",
-  "brief": "A San Diego dental office manager pays **nine recurring charges** across three online services.\n\n**Cancelled and refunded — $613:**\n- A duplicate streaming account billed to her bank\n- A sports add-on whose free trial ended silently\n- A coaching add-on that rose with no notice\n- A storage plan unused since November\n- Refunds of $19.98 and $6 under the services' terms\n\n**Left alone:**\n- Plans her son, her partner or she still use\n- A one-time scanner licence\n- A refund on a renewal after its reminder\n- A charge already refunded",
+  "brief": "A San Diego dental office manager pays **nine recurring charges** across three online services.\n\n**Refunded $25.98, and $587.52 a year of charges cancelled:**\n- A duplicate streaming account billed to her bank\n- A sports add-on whose free trial ended silently\n- A coaching add-on that rose with no notice\n- A storage plan unused since November\n- Refunds of $19.98 and $6 under the services' terms\n\n**Left alone:**\n- Plans her son, her partner or she still use\n- A one-time scanner licence\n- A refund on a renewal after its reminder\n- A charge already refunded",
   "domain": "Subscriptions",
   "audience": "home",
   "category": "consumer",
   "job": "recover",
   "promise": "A dental office manager in San Diego finds nine recurring charges on her Cardhollow card and her Ledgerwren bank account, across three online services. Four are plans nobody uses and are cancelled online: a second Streamquill account billed to her bank for the same service her son watches on her card, a Sports add-on whose 60-day free trial ended on 12 August with no reminder, a Pacewick Coach add-on that went from 9.99 to 12.99 dollars with no notice, and a Vaultmoor Storage plan unused since November that renewed after its reminder. Refunds are asked for two of them under the services' own terms, 19.98 and 6.00 dollars. Her son's weekly viewing, her partner's training three times a week, a plan she used this week, a scanner licence bought once, a notes plan renewed after its reminder and the charge already refunded are left alone.",
   "persona": "A dental office manager in San Diego, California, who pays for streaming, a fitness app and cloud storage from a card and a bank account, with a son and a partner who use some of it",
+  "fit": {
+    "where": [
+      "CA"
+    ],
+    "where_note": "California's automatic renewal law; elsewhere the services' own terms and your state's law apply.",
+    "who": "A household paying for streaming, apps and storage from a card or a bank account.",
+    "not_for": "Someone outside California, for the state law part.",
+    "asks_for": [
+      "your card and bank statements",
+      "the account logins",
+      "who uses which plan, including add-ons, trials and storage tiers"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read her mail, her card and her bank, and the terms and plans at three services. Apply California's Automatic Renewal Law (Business and Professions Code 17600 to 17606) as it stands on 9 October 2026: cancel online each plan nobody in the household uses, and ask for a refund only where the service's own terms give one, because the Law gives none itself; leave alone a plan a family member uses, a plan used in the last month, a one-time purchase, an annual plan renewed after its reminder, and a charge already refunded.",
   "command": "I'm Rosa Delgado. Go through my Postwren mail, my Cardhollow card, my Ledgerwren bank, and my Streamquill, Pacewick and Vaultmoor accounts. Cancel the plans nobody in my house uses, and ask for a refund where the service's own terms give one. Leave alone anything my son, my partner or I use, and tell me what you did and why.",
   "apps": [
@@ -83,6 +97,12 @@
   ],
   "economics": {
     "value_usd": 600,
+    "example_usd": 25.98,
+    "value_kind": "money_protected",
+    "kinds": {
+      "cancel_subscription": "money_protected",
+      "request_refund": "money_back"
+    },
     "per": "year",
     "basis": "An estimate, mostly minutes. A household that pays for streaming, apps and storage carries plans nobody uses and prices that rose without notice, and an audit once a year cancels the dead ones; the roster's $600 a year is that cost avoided, not a published figure. The cancellations are weighted at a year of the plan's price and the refunds at the amount asked: the bench world holds four cancellations worth $587.52 (191.88, 119.88, 155.88 and 119.88, a price avoided and not money recovered) and two refunds worth $25.98 (19.98 and 6.00, recovered), $613.50 in all, with five plans and three refunds left alone. Times a year: once, the yearly audit (ADR 0056). manual_minutes 120: reading seven messages, a card statement of sixteen lines, a bank statement, three terms pages and nine plans, setting each plan against who uses it and what it was told, and acting on six. Rules applied, as they stand on Friday 9 October 2026, from California Business and Professions Code 17602 in the copy of California.Public.Law (statute text updated 1 January 2025; the page was marked up to date on 5 October 2026; the official leginfo.legislature.ca.gov page could not be opened, it returned 403): (a) the disclosures, the affirmative consent before a charge and the acknowledgment; (b)(1) for a free trial or promotional price of more than 31 days, a notice 3 to 21 days before it ends, and (b)(2) for an initial term of a year or more that renews, a notice 15 to 45 days before the renewal; (d) cancellation online, in the account, when the consumer signed up online; (f) cancellation through the same medium as the sign-up; (g)(2) a notice no less than 7 and no more than 30 days before a fee change takes effect; (h) an annual reminder through the same medium; and (j) the amendments of AB 2863 (2024) apply to contracts entered into, amended or extended on or after 1 July 2025. All the world's disputed events are after that date. THE REMEDY AS THE TEXT GIVES IT: 17603 makes goods sent without the affirmative consent of 17602 an unconditional gift, and it says goods, wares, merchandise or products, not a service; 17604(a) says a violation is not a crime and that all available civil remedies that apply may be employed, and (b) that a business that complies in good faith is not subject to civil remedies. The article gives no statutory right to a refund of a charge taken in breach, so no target rests on one: each refund request here rests on the service's own published refund terms in the world (Streamquill's for a trial converted without its reminder, Pacewick's for a price rise without notice), and the Law is the reason the notice was owed. THE FTC'S NEGATIVE OPTION ('CLICK TO CANCEL') RULE was vacated by the Eighth Circuit on 8 July 2025 (Custom Communications, Inc. v. FTC); the FTC issued an advance notice of proposed rulemaking in March 2026 and has proposed no replacement rule in what was read, so nothing here rests on it. The brief's understanding was right on AB 2863's reminder and price-change notice from 1 July 2025 and on the 7 to 30 days; online cancellation is in 17602(d) and (f), not only (a).",
     "manual_minutes": 120,

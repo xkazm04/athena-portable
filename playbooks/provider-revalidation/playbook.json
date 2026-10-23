@@ -9,6 +9,19 @@
   "job": "comply",
   "promise": "Each clinician's four clocks are read where they live and acted on when they allow it: Medicare revalidations submitted inside the seven months before their posted due dates (the clinic's DMEPOS supplier enrollment on its three-year cycle), the renewed liability certificate put on a profile before it is attested, the profiles whose 120 days have run out or are about to attested, and licenses renewed with the CME hours their transcripts show. Nothing is submitted for a TBD due date, a date too far out or an application already in review; nothing is attested or renewed for a clinician who has left; no license is renewed on hours not completed or before its window opens; and no quote is uploaded as a certificate.",
   "persona": "The credentialing coordinator of a family clinic with four clinicians and a DMEPOS supplier enrollment for the braces and crutches it dispenses",
+  "fit": {
+    "where": "US",
+    "where_note": "Medicare enrollment rules; state license and Medicaid rules vary.",
+    "who": "A clinic's credentialing coordinator tracking enrollments, profiles and licenses.",
+    "not_for": "A solo clinician with one enrollment and no date coming due.",
+    "asks_for": [
+      "each enrollment's posted due date",
+      "your credentialing profiles",
+      "the license board's portal",
+      "renewed certificates"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read the credentialing folder: each clinician's liability certificates, CME transcripts and the separation notice of a physician who left. Read the Medicare enrollment portal's revalidation rules and each enrollment's posted due date; the credentialing profiles' attestation rule, delegation and documents on file; and the licensing board's renewal windows and CME requirements. Then apply each clock: revalidation every five years under 42 CFR 424.515 (three for a DMEPOS supplier), only inside seven months of a posted due date; re-attestation every 120 days, with expired documents replaced first; renewal inside 60 days of expiry, sworn to the hours completed. None of the four systems shares data with another.",
   "command": "Do the quarterly credentialing check. Go through Docshelf, Enrollpoint, Credvault and Boardline and get every revalidation, attestation and license renewal done that's due and ready. Don't submit anything early or for anyone who's left, and don't renew anyone who's short on CME.",
   "apps": [
@@ -78,12 +91,21 @@
     "Each clinician's certificates, CME hours and the separation notice, carried from Docshelf.",
     "Each enrollment's posted due date, the seven-month window and the application in review, from Enrollpoint.",
     "Each profile's last attestation, status, documents and delegation, from Credvault.",
-    "Each license's expiry, renewal window and the hours required, from Boardline."
+    "Each license's expiry, renewal window and the hours required, from Boardline.",
+    "Clocks a coordinator also tracks outside this world: Medicaid revalidation, DEA registration and malpractice certificates."
   ],
   "economics": {
-    "value_usd": 3000,
+    "value_usd": 0,
+    "example_usd": null,
+    "value_kind": "money_back",
+    "kinds": {
+      "submit_revalidation": "count",
+      "upload_document": "count",
+      "attest_profile": "count",
+      "renew_license": "count"
+    },
     "per": "year",
-    "basis": "An estimate, and mostly minutes. A Medicare enrollment not revalidated by its due date is deactivated, and services in the gap cannot be billed; a credentialing profile left unattested past 120 days stops health plans from credentialing the clinician; a lapsed license stops the clinician practicing. A coordinator tracks these clocks per clinician across four portals that share nothing. For a clinic of four or five clinicians, the roster's $3,000 a year is about twenty maintenance tasks at a credentialing service's price, an estimate. The bench world weights each of its eight acts at $150, an estimate of a credentialing service's price for one maintenance task, so it holds $1,200 of protection, not money recovered; most of the value is the coordinator's time, which manual_minutes carries. The rules as they stand on the world's date: revalidation every five years under 42 CFR 424.515 and every three for a DMEPOS supplier under 424.57(e), submitted within seven months of the due date CMS posts, and not at all while the date is TBD; re-attestation every 120 days. The license rules are the invented board's. Times a year: four, a quarterly check.",
+    "basis": "An estimate, and mostly minutes. A Medicare enrollment not revalidated by its due date is deactivated, and services in the gap cannot be billed; a credentialing profile left unattested past 120 days stops health plans from credentialing the clinician; a lapsed license stops the clinician practicing. A coordinator tracks these clocks per clinician across four portals that share nothing. No money comes back, so the roster's value is $0 a year: the value is the coordinator's hours and billing kept open. For a clinic of four or five clinicians a credentialing service would charge about $3,000 a year for some twenty maintenance tasks, the price of those hours, not money back. The bench world weights each of its eight acts at $150, an estimate of a credentialing service's price for one maintenance task, a count of tasks priced only as a weight, not money recovered; most of the value is the coordinator's time, which manual_minutes carries. The rules as they stand on the world's date: revalidation every five years under 42 CFR 424.515 and every three for a DMEPOS supplier under 424.57(e), submitted within seven months of the due date CMS posts, and not at all while the date is TBD; re-attestation every 120 days. The license rules are the invented board's. Times a year: four, a quarterly check.",
     "manual_minutes": 120,
     "times_per_year": 4,
     "incumbent": "Credentialing services charge a fee per clinician per month, commonly $100 to $200, rather than a share of collections, so no percentage is given.",

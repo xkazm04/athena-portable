@@ -1,7 +1,7 @@
 {
   "id": "medicare-plan-review",
   "title": "Two parents' drug plans tested in open enrollment on what they really take at the pharmacy they really use, and each moved to the plan that costs them least for the year, not the lowest premium",
-  "short_title": "Parents moved to their cheapest drug plans",
+  "short_title": "Parents' drug plans compared for next year",
   "brief": "A daughter handles **both parents' Medicare drug plans** during open enrollment.\n\n**Saved for 2027 — $1,516:**\n- Real drug lists from the doctor's portal\n- Prices at the pharmacy that delivers to them\n- Current plan's 2027 changes read\n- Four plans compared, premium and drugs together\n- Mother's new plan saves $1,188, father's $328\n\n**Left alone:**\n- A low-premium plan that leaves out their pharmacy\n- A plan finder estimate on an old drug list\n- A plan that drops one parent's inhaler\n- A pricier plan just to skip a prior authorization\n- Cancelling early or moving prescriptions",
   "domain": "Family care",
   "audience": "home",
@@ -9,6 +9,18 @@
   "job": "claim",
   "promise": "Each parent's real medication list in the doctor's portal and their real pharmacy at the drugstore that delivers to them are read against their current plan's changes for next year and four plans' premiums, deductibles, formularies, prior authorization rules and networks. Each parent is enrolled in the plan that costs them least for the year, premium and drugs together, where that is not the plan they have. The lowest-premium plan whose network leaves out their pharmacy, the plan finder's estimate on a stale drug list, a plan that suits one parent but drops the other's inhaler, a dearer plan chosen only to avoid a prior authorization the doctor will send, cancelling the old plan early and moving their prescriptions are left alone.",
   "persona": "An adult daughter who handles both parents' Medicare drug plans as their authorized representative during open enrollment",
+  "fit": {
+    "where": "US",
+    "where_note": "Medicare Part D open enrollment, 15 October to 7 December.",
+    "who": "An adult child acting as authorized representative for parents' Medicare drug plans.",
+    "not_for": "People whose drug coverage comes from an employer or from Medicaid.",
+    "asks_for": [
+      "each parent's drug list",
+      "the pharmacy they use",
+      "their Medicare account or plan letters"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read each parent's current medications and the doctor's notes, their prescriptions and delivery at the pharmacy, the current plan's annual notice of change, and four 2027 plans' terms, formularies and networks with the plan finder's estimates. Then, inside the annual election period of 42 CFR 423.38(b), enroll each parent in the plan whose premium and drug costs at their real pharmacy are lowest for 2027, knowing each plan's formulary, tiers, prior authorization and step rules, network, preferred pharmacies, premium and deductible are its own, and that enrolling in a new plan ends the old one when it starts. None of the four systems shares data with another.",
   "command": "It's open enrollment. Go through Dr. Osei's portal, Corner Pharmacy, Rxmeadow and PlanCompass, and put Mom and Dad each in the 2027 drug plan that really costs them least for the year on what they actually take, at the pharmacy they actually use. Don't go by the premium or the plan finder's guess, don't cancel anything that will leave them without coverage, and don't move their prescriptions.",
   "apps": [
@@ -41,7 +53,8 @@
     "Reads each parent's real medications and the doctor's notes in Carenook.",
     "Reads their prescriptions and delivery at Corner Pharmacy.",
     "Reads Rxmeadow's changes for 2027.",
-    "Prices each 2027 plan on their real drugs at Corner Pharmacy in PlanCompass, and enrolls each parent in the cheapest for the year."
+    "Prices each 2027 plan on their real drugs at Corner Pharmacy in PlanCompass, and enrolls each parent in the cheapest for the year.",
+    "Checks whether either parent may qualify for Extra Help or a Medicare Savings Program, as a SHIP counsellor would."
   ],
   "gates": [
     {
@@ -80,6 +93,13 @@
   ],
   "economics": {
     "value_usd": 1200,
+    "example_usd": 1516,
+    "value_kind": "money_back",
+    "kinds": {
+      "enroll": "money_back",
+      "disenroll": "count",
+      "transfer_prescriptions": "count"
+    },
     "per": "year",
     "basis": "An estimate. Most people with Medicare stay in their drug plan each year without testing it against their real drugs and pharmacy, and those who look tend to choose by premium or by a plan finder's estimate on an old drug list. For two parents on several drugs, the roster's $1,200 a year is the premium and drug costs saved by the right plan, an estimate. Times a year: one, since the annual election period comes once a year. The bench world holds $1,516 for 2027: $1,188 for the mother in Northstar against staying, and $328 for the father in Keystone. Each plan's formulary, tiers, rules, network, premium and deductible are an invented world document. The rules applied, as they stand on Monday 2 November 2026, inside the period: 42 CFR 423.38(b) (the annual election period, 15 October to 7 December) and 423.40 (a plan chosen in it starts on 1 January), 423.32(e) (enrolling in a new plan ends the old), 423.120(b)(3) (a transition supply in a new plan's first 90 days) and 423.124 (out-of-network fills only in limited cases); for 2027, a deductible of at most $700 and an out-of-pocket threshold of $2,400 (CMS's CY 2027 Rate Announcement, 6 April 2026). No parent's covered costs reach the threshold.",
     "manual_minutes": 180,

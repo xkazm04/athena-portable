@@ -1,6 +1,6 @@
-# 0132 - Chores are certified by a character-played onboarding and rehearsal
+# 0132. Chores are certified by a character-played onboarding and rehearsal
 
-Status: accepted (2026-10-23, spark chores-uat)
+Date: 2026-10-23 (spark chores-uat)
 
 ## Context
 Chores (playbooks) promise money and time figures, and a non-technical person has to understand them before

@@ -2,7 +2,7 @@
   "id": "lien-desk",
   "title": "The subcontractor's lien desk",
   "short_title": "Lien rights kept on every job",
-  "brief": "A $6M mechanical subcontractor runs **a dozen jobs** in California and Texas through each GC's portal.\n\n**Protected — 10 actions, $416,700:**\n- Notices and liens filed by each statute's date\n- Weekend deadlines moved to the day before\n- Waivers listing retention and disputed work\n- Statutory Texas form instead of the GC's version\n- Non-payment notice before Textura's 72h release\n- Pay app without pending change orders\n\n**Left alone:**\n- Notice on a job contracted with the owner\n- A notice already served last month\n- Unconditional waivers before the money lands\n- A final waiver while retention is unpaid",
+  "brief": "A $6M mechanical subcontractor runs **a dozen jobs** in California and Texas through each GC's portal.\n\n**Protected — 10 actions, $416,700:**\n- Notices and liens filed by each statute's date\n- Weekend deadlines worked out per state\n- Waivers listing retention and disputed work\n- Statutory Texas form instead of the GC's version\n- Non-payment notice before Textura's 72h release\n- Pay app without pending change orders\n\n**Left alone:**\n- Notice on a job contracted with the owner\n- A notice already served last month\n- Unconditional waivers before the money lands\n- A final waiver while retention is unpaid",
   "domain": "Construction",
   "audience": "work",
   "category": "construction",
@@ -40,7 +40,8 @@
   "steps": [
     "Reads the lien rules the office keeps for California, Texas and Textura before computing a single date.",
     "Walks every job: state, who the contract is with, first delivery, completion, a recorded Notice of Completion, notices already served.",
-    "Computes each deadline from the statute and today's date, moving weekend deadlines the way the rules say.",
+    "Gives a job whose state is not known no deadline until you confirm the state.",
+    "Computes each deadline from the statute and today's date, moving a weekend deadline the way each state's rule says (Texas: to the next business day, Property Code 53.003; California: the next court day under CCP 12a), and files a day early where that is safe.",
     "In Procore and Textura, reads each waiver request against what the bank actually received and what retention or disputed work is still owed.",
     "In GCPay, checks the pay app's change orders against the GC's log and the certificate of insurance against its expiry.",
     "Files each notice, lien, waiver answer and pay app as a card — each one a legal signature."
@@ -91,7 +92,7 @@
     "A job contracted directly with the owner needs no California preliminary notice.",
     "A preliminary notice already served on the 2nd of last month: serving it again is a duplicate.",
     "A late preliminary notice is still worth serving: it protects work from 20 days before service — but not the earlier work.",
-    "A recorded Notice of Completion shortens the lien window to 30 days; a weekend deadline is recorded the business day before.",
+    "A recorded Notice of Completion shortens the lien window to 30 days; when the 30th day falls on a weekend, record on the business day before to be safe (California's CCP 12a would carry it to the next court day).",
     "An unconditional waiver for a draw the bank has not received: do not sign; file Textura's non-payment notice before the 72 hours run out.",
     "An unconditional final waiver while retention is unpaid: decline it and offer the conditional final.",
     "A conditional progress waiver must list retention and disputed work under Exceptions, or they are waived.",
@@ -106,9 +107,21 @@
   ],
   "economics": {
     "value_usd": 380000,
+    "example_usd": null,
     "per": "year",
-    "basis": "Receivables and retainage whose lien rights or payment ride on this desk for a $6M subcontractor; the bench world holds $416,700 across ten actions. Protection, not recovery: what a missed day would put at risk.",
-    "manual_minutes": 1500,
+    "value_kind": "money_protected",
+    "kinds": {
+      "serve_preliminary_notice": "money_protected",
+      "record_lien": "money_protected",
+      "send_texas_notice": "money_protected",
+      "send_retainage_notice": "money_protected",
+      "file_nonpayment_notice": "money_protected",
+      "sign_waiver": "money_protected",
+      "decline_waiver": "money_protected",
+      "submit_pay_app": "money_protected"
+    },
+    "basis": "An estimate, not a sourced figure, and protection, not money back: the receivables and retainage whose lien rights or payment depend on a notice, lien or waiver decision on this desk in a year, for a $6M subcontractor put at about $380,000 (about 6% of a year's billing). A missed day would put them at risk; a kept day returns nothing new. The bench world holds $416,700 across ten actions in one week. manual_minutes 480: a seasoned office manager's day for the week's desk, as the expectation says ('gets most of it right in a day'); the earlier 1,500 minutes contradicted it.",
+    "manual_minutes": 480,
     "incumbent": "Lien-notice services charge about $19–59 per notice and $349 per lien, and only know what is typed into them; pay-app tools need portal access and cover the big GCs. No tool joins the GC's portal, the sub's own books and the statute.",
     "sources": [
       {
@@ -142,6 +155,22 @@
     ]
   },
   "caveat": "The rules are practitioner summaries, fixed in the bench world's rule page; this is not legal advice, and real use starts from your own counsel's deadline table.",
+  "fit": {
+    "where": [
+      "CA",
+      "TX"
+    ],
+    "where_note": "California and Texas lien law only; every other state's deadlines differ.",
+    "who": "A subcontractor or supplier on private jobs in California or Texas with lien deadlines to keep.",
+    "not_for": "Public jobs, where bond claims replace liens, or jobs in other states.",
+    "asks_for": [
+      "each job's contract, first delivery and completion dates",
+      "the GCs' portal logins",
+      "your unpaid ledger and bank receipts",
+      "your counsel's deadline table"
+    ],
+    "costs": "No fees from Athena; county recording fees for a lien and mailing costs for notices still apply; plus your Claude usage."
+  },
   "edge": {
     "difficulty": 5,
     "usefulness": 5,

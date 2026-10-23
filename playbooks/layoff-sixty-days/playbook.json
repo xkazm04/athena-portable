@@ -9,6 +9,21 @@
   "job": "claim",
   "promise": "A logistics analyst in New York is laid off on 25 September 2026 and her group coverage ends on 30 September. She files her unemployment claim this week, signs the severance option that pays 7,500.00 dollars on 2 November, more than 30 days after her last day, so that it does not bar her benefits, elects COBRA for October only, retroactive to 1 October, to cover a knee scan on 6 October that a marketplace plan could not, and chooses the Silver plan from 1 November with the premium tax credit for November and December. Her COBRA election deadline, 4 December, falls after her marketplace window closes on 29 November. She leaves alone the withdrawn draft that waives her benefits, the option paid inside the 30 days that would bar six weeks, a full 18 months of COBRA, three months that overlap the plan, a December start, a broker's Platinum plan that he says must be bought today, a claim delayed until November and the credit for October.",
   "persona": "A 52-year-old logistics analyst in New York, laid off with six weeks of severance and a scan on the sixth of October, who has a broker's rush, a friend's advice and a COBRA notice",
+  "fit": {
+    "where": [
+      "NY"
+    ],
+    "where_note": "New York's unemployment rule on severance timing; the COBRA and marketplace parts hold in every state.",
+    "who": "Someone laid off with a severance offer, a COBRA notice and a medical appointment coming.",
+    "not_for": "Someone whose new job starts right away with its own coverage.",
+    "asks_for": [
+      "the severance agreement",
+      "the COBRA notice",
+      "your last day worked and the day coverage ends",
+      "your expected income"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read her mail, her HR's severance agreement and COBRA elections, New York's unemployment rules and the marketplace's rules, and apply them as they stand on 9 October 2026: 45 CFR 155.420 (the 60-day special enrollment period after a loss of coverage), COBRA (ERISA, 29 CFR 2590.606-4 and 26 CFR 54.4980B-6 and -8: the election covers back to the loss, the first premium is due 45 days after the election), 26 CFR 1.36B-2(c)(3)(iv) (no premium tax credit for a month enrolled in COBRA), the OWBPA (29 U.S.C. 626(f): 21 days to consider, 7 to revoke) and New York Labor Law sections 591(6) and 595. File the unemployment claim now, sign the one severance option whose first payment comes more than 30 days after the last day of work, elect COBRA only for the month the marketplace cannot cover, choose the plan that starts on 1 November and apply the credit for the months she is not in COBRA; and do none of the choices that overlap, skip a month, rush or forfeit a right.",
   "command": "I'm Lena Okafor. Go through my Postwren mail, the Fernhollow unemployment desk, Coverfind and my Crewmarrow HR. After my layoff, file for unemployment, sign my severance the right way, and choose my health coverage between COBRA and a marketplace plan with no gap and no overlap. Tell me what you filed, signed, elected and chose, what you left out and why, and the dates I must not miss.",
   "apps": [
@@ -83,10 +98,22 @@
   ],
   "memory": [
     "The four dates and what starts each: coverage ended 30 September, the severance window to 19 October, the marketplace window to 29 November, the COBRA deadline of 4 December.",
-    "Which choices cover which months: October by COBRA, November and December by the marketplace plan."
+    "Which choices cover which months: October by COBRA, November and December by the marketplace plan.",
+    "The 30-day severance rule is New York's; in another state that state's own rule on dismissal pay is read instead.",
+    "The first week of the claim is an unpaid waiting week, so payments do not start the week it is filed.",
+    "If income falls under about 138% of the poverty line, Medicaid, and for children CHIP, are checked before buying a plan."
   ],
   "economics": {
     "value_usd": 3000,
+    "example_usd": 6025,
+    "value_kind": "money_back",
+    "kinds": {
+      "file_ui_claim": "money_back",
+      "sign_release": "money_back",
+      "elect_cobra": "money_back",
+      "select_plan": "count",
+      "apply_credit": "money_back"
+    },
     "per": "episode",
     "basis": "An estimate. A worker laid off with a severance offer has three clocks that start on different days and four decisions that each lose money when taken in the wrong order: when to file, which payment date to sign, whether COBRA is worth electing for a month the marketplace cannot cover, and which months carry the premium tax credit; the roster's $3,000 an episode is such a layoff, not a published figure. The money is benefits kept and a bill covered, not a price avoided. The bench world holds five items worth 6,025.00 dollars: the unemployment claim, weighted at one week's benefit rate (625.00); COBRA for October only, weighted at the 1,850.00 scan it covers less the 1,020.00 premium (830.00); the severance option paid after the 30 days, weighted at the six weeks of benefits it keeps (6 x 625.00 = 3,750.00); the plan chosen from 1 November, weighted at nothing; and the premium tax credit for November and December (2 x 410.00 = 820.00). Times a year: once, the episode of a layoff (ADR 0056). manual_minutes 180: reading five messages, three agreements, three COBRA elections, the unemployment and marketplace rules, three plans and three months of credit, setting the dates against four clocks, and completing five kinds of form. Rules applied, as they stand on Friday 9 October 2026, read in the Cornell Legal Information Institute's reproductions (no edition dates shown unless noted): 45 CFR 155.420(d)(1) a loss of minimum essential coverage is a triggering event, (c)(2) the window for a loss of coverage runs 60 days before and 60 days after the event, (e) a voluntary termination of coverage, or a failure to pay premiums, is not a loss, and (b)(2)(iv) coverage starts the first of the month after the event if the plan is chosen on or before it, otherwise at the exchange's timing (THE BRIEF'S (d)(1) PREMISE, REFINED: COBRA with an employer subsidy is (d)(15), not (d)(1); the world's COBRA is unsubsidised, so (d)(1) applies to the loss of the job-based coverage); HealthCare.gov's COBRA page (undated): a person who elected COBRA and is still within 60 days of losing job-based coverage can choose a marketplace plan, and ending COBRA early gives no special enrollment period of its own. COBRA: 29 U.S.C. 1162(2)(A) 18 months from the qualifying event, (3) 102 percent of the premium and no payment required before 45 days after the election; 29 U.S.C. 1165(a)(1) the election period is at least 60 days and ends no earlier than 60 days after the later of the loss of coverage and the date of the notice; 29 CFR 2590.606-4(b)(2) the administrator's notice within 44 days of the loss when the employer is the administrator; 26 CFR 54.4980B-6 Q&A-1 the same 60 days and Q&A-3 a timely election covers from the day coverage would have been lost; 26 CFR 54.4980B-8 Q&A-5 the first payment not required earlier than 45 days after the election and the other payments due within 30 days of their period; ERISA 602, 605 and 606 are the sections of 29 U.S.C. 1162, 1165 and 1166 (1166 was not opened). 26 CFR 1.36B-2(c)(3)(iv): a former employee who may enroll in continuation coverage is eligible for it only for months in which she is enrolled, so no credit for a month enrolled in COBRA and no bar for one offered and not enrolled. OWBPA, 29 U.S.C. 626(f)(1)(F)(i) at least 21 days to consider (45 for a group program), (G) at least 7 days after signing to revoke, and the agreement is not effective until they end; 29 CFR 1625.22(e)(6) an earlier signature is allowed if knowing and voluntary. New York: Labor Law 591(6) (nysenate.gov, revision of 15 August 2025) dismissal pay is any payment due to separation, excluding pension, accrued leave and health insurance, is allocated by the week from the day after the last day of employment, bars benefits for a week when the allocation exceeds the maximum weekly benefit rate plus the partial credit, and does not apply when the initial payment is made more than 30 days after the last day of employment; Labor Law 595 no agreement by an employee to waive her rights under the article is valid (revision of 22 September 2014); the NY Department of Labor's reference guide TC408 and its pages on filing (read through a search summary): a claim is effective on the Monday of the week it is filed, and the first week is an unpaid waiting week. New York's weekly benefit rate and maximum were not applied: the 625.00 dollar rate is the invented desk's, and the maximum announced in October 2025 (869 dollars) was not checked for a later change. The world's COBRA notice (5 October, 5 days after the loss) is not late; the clocks still differ: the marketplace window ends 29 November, 60 days after the loss on 30 September, and the COBRA election ends 4 December, 60 days after the notice, the later of the two dates.",
     "manual_minutes": 180,

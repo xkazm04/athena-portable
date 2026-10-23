@@ -42,6 +42,7 @@
     "Reads every product and its specimens in Storeline.",
     "Reads the assignment and memos in Binderwell.",
     "Reads the notices in Postwren.",
+    "Where a mark has five years of continuous use since registration and no pending challenge, offers a combined section 8 and 15 declaration (incontestability) for your OK, at $250 more per class.",
     "Back at the filing desk, files the four declarations that are due, with the fees."
   ],
   "gates": [
@@ -67,8 +68,13 @@
   ],
   "economics": {
     "value_usd": 5000,
+    "example_usd": null,
     "per": "year",
-    "basis": "An estimate. A small brand with a dozen registrations has a maintenance date every year or two; a missed window costs a new application and the loss of the registration's date, and a late one a surcharge on every class, so the roster's $5,000 a year is a small brand's yearly cost of lapsed or late filings, and mostly the minutes of keeping a docket by hand. The bench world holds $45,500 of annual sales under the four registrations that need a filing now (18,400, 11,200, 9,600 and 6,300): protection, not money recovered. Times a year: four, a quarterly docket review. manual_minutes 180: reading twelve registrations and the filing rules, working out each window from its date, matching sixteen products to registrations, finding a real specimen for each class, and filling four declarations. Rules applied, as they stand on Friday 9 October 2026: 15 U.S.C. 1058 and 1059 and 37 CFR 2.160 (section 8 between the fifth and sixth year and in the year before each tenth, with a six-month grace period), 37 CFR 2.161 (the declaration: the goods in use, one specimen per class, goods not in use deleted, excusable nonuse only for special circumstances), 37 CFR 2.56 (a computer illustration, digital image or similar mock-up is not a specimen), and the USPTO's electronic fees in 37 CFR 2.6(a), per class: 325 dollars for the section 8, 325 for the renewal, a 100 dollar surcharge for each in the grace period, and 250 dollars to delete goods after a section 8 is submitted and before it is accepted.",
+    "value_kind": "money_protected",
+    "kinds": {
+      "file_declaration": "money_protected"
+    },
+    "basis": "An estimate. A small brand with a dozen registrations has a maintenance date every year or two; a missed window costs a new application and the loss of the registration's date, and a late one a surcharge on every class, so the roster's $5,000 a year is a small brand's yearly cost of lapsed or late filings, and mostly the minutes of keeping a docket by hand. The bench world holds $45,500 of annual sales under the four registrations that need a filing now (18,400, 11,200, 9,600 and 6,300): sales protected, not money recovered. Times a year: four, a quarterly docket review. manual_minutes 180: reading twelve registrations and the filing rules, working out each window from its date, matching sixteen products to registrations, finding a real specimen for each class, and filling four declarations. Rules applied, as they stand on Friday 9 October 2026: 15 U.S.C. 1058 and 1059 and 37 CFR 2.160 (section 8 between the fifth and sixth year and in the year before each tenth, with a six-month grace period), 37 CFR 2.161 (the declaration: the goods in use, one specimen per class, goods not in use deleted, excusable nonuse only for special circumstances), 37 CFR 2.56 (a computer illustration, digital image or similar mock-up is not a specimen), and the USPTO's electronic fees in 37 CFR 2.6(a), per class: 325 dollars for the section 8, 325 for the renewal, a 100 dollar surcharge for each in the grace period, and 250 dollars to delete goods after a section 8 is submitted and before it is accepted.",
     "manual_minutes": 180,
     "times_per_year": 4,
     "incumbent": "Trademark docketing services and firms charge a flat or per-filing fee, not a share of anything recovered, so no incumbent_fee_pct is given.",
@@ -107,5 +113,17 @@
     "minutes": 60,
     "why": "A careful owner with the docket, the rules, the store and the papers files the four declarations that are due, each with the right fee and only the goods still sold, and none of the traps, inside an hour."
   },
-  "caveat": "Marit Aldous, Tarnbrook Outfitters LLC, Fellmoor Brands Inc., every mark, registration number, product, sale, photograph and date, and the Markwick filing desk, Storeline, Binderwell and Postwren are invented; the desk's page of rules is the world's summary of the public rules, and its docket is not the USPTO's. The public rules applied are 15 U.S.C. 1058 and 1059, 37 CFR 2.160, 2.161, 2.56 and 2.6(a) as in force on 9 October 2026, with the USPTO's electronic fees per class (325 dollars for a section 8 or a renewal, 100 dollars for each in the grace period, 250 dollars to delete goods after a section 8 is submitted); a registration's windows and the grace period are counted from its registration date. The world treats a good the owner stopped selling as deleted rather than as excusable nonuse, following the rule's text that nonuse is excused only by special circumstances, and a real examining attorney decides a real case. This applies stated rules to stated facts; it is not legal advice."
+  "caveat": "Marit Aldous, Tarnbrook Outfitters LLC, Fellmoor Brands Inc., every mark, registration number, product, sale, photograph and date, and the Markwick filing desk, Storeline, Binderwell and Postwren are invented; the desk's page of rules is the world's summary of the public rules, and its docket is not the USPTO's. The public rules applied are 15 U.S.C. 1058 and 1059, 37 CFR 2.160, 2.161, 2.56 and 2.6(a) as in force on 9 October 2026, with the USPTO's electronic fees per class (325 dollars for a section 8 or a renewal, 100 dollars for each in the grace period, 250 dollars to delete goods after a section 8 is submitted); a registration's windows and the grace period are counted from its registration date. The world treats a good the owner stopped selling as deleted rather than as excusable nonuse, following the rule's text that nonuse is excused only by special circumstances, and a real examining attorney decides a real case. This applies stated rules to stated facts; it is not legal advice.",
+  "fit": {
+    "where": "US",
+    "where_note": "US trademark registrations and USPTO fees; marks registered abroad follow other offices' rules.",
+    "who": "A small brand that maintains its own US trademark registrations, without a docketing service.",
+    "not_for": "A brand whose marks a law firm already dockets, or marks registered only outside the US.",
+    "asks_for": [
+      "your registration numbers or USPTO account",
+      "photos of each product as sold, with the mark on it",
+      "which products you still sell and which you stopped"
+    ],
+    "costs": "USPTO fees per class: $325 for a section 8 or a renewal, $100 more in the grace period; plus your Claude usage."
+  }
 }

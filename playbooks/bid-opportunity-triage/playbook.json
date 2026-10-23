@@ -40,6 +40,7 @@
   "steps": [
     "Reads the rules and every solicitation in Noticewick: set-aside as posted, NAICS code, size standard, status and dates.",
     "Reads the county's rules and notices in Bidmoor.",
+    "Checks that the firm's SAM registration is active and its representations current before keeping any federal bid.",
     "Reads the firm's size record, certifications, past performance, policy and worksheet in Contractdesk.",
     "Reads the mail in Postwren and takes the two amendments that changed a set-aside and a questions deadline.",
     "Keeps each solicitation the firm can win in Contractdesk, and sends the open questions in Noticewick and Bidmoor before their deadlines."
@@ -69,7 +70,7 @@
   "traps": [
     "Keeping a bid set aside for service-disabled veteran-owned or HUBZone firms, which the firm is not certified as.",
     "Keeping a total small business bid in NAICS 238220, whose 19.0 million dollar size standard the firm's five-year average receipts of 21.4 million exceeds.",
-    "Keeping a janitorial bid whose teaming plan gives a large business 70 percent of the price, over the 50 percent limit.",
+    "Keeping a janitorial small-business set-aside whose teaming plan would pay a large business 70 percent of the amount paid to the firm, over the 50 percent limit on set-aside services awards (13 CFR 125.6), which does not reach full-and-open bids.",
     "Keeping a cancelled notice, a closed one, and a bid a mailed amendment moved to an 8(a) set-aside.",
     "Keeping a county bid reserved for local business enterprises.",
     "Sending a question past its deadline on a federal bid or a county notice.",
@@ -82,7 +83,15 @@
   ],
   "economics": {
     "value_usd": 0,
+    "example_usd": null,
     "per": "year",
+    "value_kind": "money_back",
+    "kinds": {
+      "keep_for_bid": "count",
+      "send_question": "count",
+      "submit_question": "count",
+      "reply_message": "count"
+    },
     "basis": "Mostly minutes, and the roster's $0 a year: triaging solicitations recovers no money; it keeps a small firm from spending bid-team days on awards it cannot take, and from missing the questions window on ones it can. Per ADR 0056's 2026-10-09 amendment, each of the ten truth items (six kept, four questions) is weighted $1, a count weight: bid-matching is sold by subscription and no public price per bid kept or question sent was found, so the weight is a price avoided, not money recovered, and value_usd stays 0. By hand, one week's fourteen solicitations take about 120 minutes: the posted notices, the size record averaged over five years against each NAICS code's standard, each teaming plan against the 50 percent limit, the certifications against each set-aside, the mail's two amendments, and the questions. Times a year: 52, one sweep of new notices a week; 120 minutes a week is about 104 hours, about 100 hours a year. The rules applied, as they stand on Friday 9 October 2026 (read on 11 October 2026): FAR Part 19, which agencies apply by class deviation using the Revolutionary FAR Overhaul model text (the Part 19 model text released 26 September 2025; GSA from 3 November 2025, DoD from 1 February 2026, DHS and Treasury by their own deviations), the formal rulemaking for Part 19 not yet published; its set-aside categories and certifications (19.105-1 HUBZone, 19.106-1 SDVOSB, 19.107-1 WOSB, 19.108-2 8(a), each verified in SAM or SBA's systems), 19.103 (one NAICS code and size standard in effect on the issue date; size as of the offer with its price); 13 CFR 121.104 (annual receipts averaged over the most recently completed five fiscal years), 121.106 (employees averaged over the preceding 24 months), 121.201 and SBA's table of size standards effective 17 March 2023 (541512, 34.0 million dollars; 541330, 25.5 million; 561210, 47.0 million; 561720, 22.0 million; 238220, 19.0 million); 13 CFR 125.6(a)(1) and 125.1 (a services set-aside prime may not pay more than 50 percent of the amount paid to it to firms that are not similarly situated; for a small business set-aside a similarly situated firm is a small business) and clause 52.219-14; and the uniform contract format's Section L (instructions to offerors) and Section M (evaluation factors), FAR 15.204-5. Every solicitation, county notice and its deadline is invented. SBA's proposed overhaul of its size standards (published 20 August 2026, comments closed 21 September 2026) is not in force, so the 2023 table applies.",
     "manual_minutes": 120,
     "times_per_year": 52,
@@ -154,5 +163,18 @@
     "minutes": 60,
     "why": "A careful owner with the notices, the records, the worksheet and the mail in hand gets most of it: the bids she can win kept, the questions sent inside their deadlines, the set-asides she does not hold, the size she exceeds and the plan over the limit left alone, inside an hour."
   },
-  "caveat": "Marian Oyelaran, Larkfield Systems & Services LLC, Eastmere County, every agency office, solicitation, county notice, subcontractor, proposal writer and bid-matching service named here, and the portals Noticewick, Bidmoor, Contractdesk and Postwren are invented, and so is every receipts figure, plan, amendment, date and deadline. Noticewick is an invented stand-in for the federal contract opportunities page and Bidmoor for a county purchasing portal, and nothing in the world presents either as an agency's; Eastmere County's purchasing code, including its reserve for local businesses, is invented. The public rules applied are FAR Part 19 as agencies apply it on Friday 9 October 2026, by class deviation using the Revolutionary FAR Overhaul model text (the codified Part 19 has not been replaced by rulemaking, and agencies' deviations differ in date and detail), 13 CFR 121.104, 121.106, 121.201 and 125.6, and SBA's table of size standards effective 17 March 2023; the 13 CFR sections were read in Cornell's copy of the eCFR on 11 October 2026, and SBA's proposed new size standards of 20 August 2026 are not in force. Each solicitation's own Sections L and M and its amendments decide what it asks, and the contracting officer, SBA's size determination and certification, the agency's class deviation and the county's code decide real cases. The world does not test which NAICS codes a women-owned set-aside may use. This applies stated rules to stated facts; it is not legal, procurement, accounting or tax advice."
+  "caveat": "Marian Oyelaran, Larkfield Systems & Services LLC, Eastmere County, every agency office, solicitation, county notice, subcontractor, proposal writer and bid-matching service named here, and the portals Noticewick, Bidmoor, Contractdesk and Postwren are invented, and so is every receipts figure, plan, amendment, date and deadline. Noticewick is an invented stand-in for the federal contract opportunities page and Bidmoor for a county purchasing portal, and nothing in the world presents either as an agency's; Eastmere County's purchasing code, including its reserve for local businesses, is invented. The public rules applied are FAR Part 19 as agencies apply it on Friday 9 October 2026, by class deviation using the Revolutionary FAR Overhaul model text (the codified Part 19 has not been replaced by rulemaking, and agencies' deviations differ in date and detail), 13 CFR 121.104, 121.106, 121.201 and 125.6, and SBA's table of size standards effective 17 March 2023; the 13 CFR sections were read in Cornell's copy of the eCFR on 11 October 2026, and SBA's proposed new size standards of 20 August 2026 are not in force. Each solicitation's own Sections L and M and its amendments decide what it asks, and the contracting officer, SBA's size determination and certification, the agency's class deviation and the county's code decide real cases. The world does not test which NAICS codes a women-owned set-aside may use. This applies stated rules to stated facts; it is not legal, procurement, accounting or tax advice.",
+  "fit": {
+    "where": "US",
+    "where_note": "Federal small-business rules (FAR Part 19, SBA size standards); county bids follow each county's own rules.",
+    "who": "A small US contractor deciding each week which federal and local solicitations to chase.",
+    "not_for": "A large business, or a firm not registered in SAM.",
+    "asks_for": [
+      "your SAM registration and certifications",
+      "five years of receipts and your employee count",
+      "your teaming plans",
+      "the solicitations you are looking at"
+    ],
+    "costs": "No fees; only your Claude usage."
+  }
 }

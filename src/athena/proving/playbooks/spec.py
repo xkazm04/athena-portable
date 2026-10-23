@@ -19,6 +19,12 @@ Beside the directories, one file the whole library shares: ``playbooks/taxonomy.
 areas and four jobs a playbook's ``category`` and ``job`` may name (ADR 0096). It is the one list;
 the desktop imports the same file, so the bench and the ledger cannot disagree about an id.
 
+``playbook.json`` also says what its figures are (ADR 0133): ``economics.value_kind`` for the
+author's estimate, ``economics.kinds`` for each truth target's weights, ``economics.example_usd``
+for the example case's money back (derived from the truth by ``derive``, never typed), and ``fit``
+for where and for whom the chore works. The loader checks their shape; ``check`` also holds
+``example_usd`` to its derivation.
+
 A problem is reported as a list of sentences, every one of them, rather than the first: a
 playbook is authored by hand and a fix-one-rerun loop over a JSON file is a slow way to learn
 that it had five mistakes.
@@ -36,10 +42,15 @@ from athena.proving.manifests import FLAGS
 
 __all__ = [
     "BEFORE_ADR_0057",
+    "DEFAULT_KIND",
+    "FIT_REGIONS",
     "KINDS",
     "PER_TABLE",
     "PLAYBOOKS_DIRNAME",
+    "TARGET_KINDS",
     "TAXONOMY_FILENAME",
+    "USPS_CODES",
+    "VALUE_KINDS",
     "AppSpec",
     "Phase",
     "Playbook",
@@ -47,6 +58,9 @@ __all__ = [
     "Target",
     "Taxonomy",
     "ToolSpec",
+    "derive_example_usd",
+    "example_problems",
+    "kind_of",
     "load_all",
     "load_playbook",
     "load_taxonomy",
@@ -82,6 +96,31 @@ PER_TABLE: tuple[str, ...] = ("year", "quarter", "month", "week", "estate", "epi
 
 #: The one list of areas and jobs a playbook may name (ADR 0096), read by the bench and the desktop.
 TAXONOMY_FILENAME = "taxonomy.json"
+
+#: ADR 0133: what ``economics.value_usd``, the author's estimate, is. Only ``money_back`` is money
+#: that comes back to the person; the other two are named in their own words wherever they show.
+VALUE_KINDS: tuple[str, ...] = ("money_back", "money_protected", "penalty_avoided")
+
+#: ADR 0133: what one truth target's ``value_usd`` weights are, per target tool. ``count`` is a
+#: scoring weight and is never shown as dollars. A tool ``economics.kinds`` leaves out is
+#: ``money_back``, the default every reader shares.
+TARGET_KINDS: tuple[str, ...] = (*VALUE_KINDS, "count")
+
+#: The kind a reader assumes when a playbook names none (ADR 0133).
+DEFAULT_KIND = "money_back"
+
+#: ADR 0133: the region words ``fit.where`` may be besides a list of USPS state codes.
+FIT_REGIONS: tuple[str, ...] = ("US", "EU")
+
+#: USPS codes for the states, the District and the territories, the ones ``fit.where`` may list.
+# fmt: off
+USPS_CODES: frozenset[str] = frozenset({
+    "AL", "AK", "AZ", "AR", "CA", "CO", "CT", "DE", "DC", "FL", "GA", "HI", "ID", "IL", "IN",
+    "IA", "KS", "KY", "LA", "ME", "MD", "MA", "MI", "MN", "MS", "MO", "MT", "NE", "NV", "NH",
+    "NJ", "NM", "NY", "NC", "ND", "OH", "OK", "OR", "PA", "RI", "SC", "SD", "TN", "TX", "UT",
+    "VT", "VA", "WA", "WV", "WI", "WY", "PR", "GU", "VI", "AS", "MP",
+})
+# fmt: on
 
 MIN_PORTALS = 2  # ADR 0057 rule 1
 MIN_TRAPS = 8  # ADR 0057 rule 1
@@ -434,6 +473,7 @@ def load_playbook(root: str | Path, taxonomy: Taxonomy | None = None) -> Playboo
         problems.append("truth.json declares no targets")
     forbidden = _forbidden(truth.get("forbidden", []), tools_by_name, targets, problems)
     problems.extend(_authoring_problems(pid or root.name, showcase, apps, targets))
+    problems.extend(_kind_problems(pid or root.name, showcase, targets))
     if problems:
         raise PlaybookError(root.name, problems)
     return Playbook(
@@ -519,6 +559,137 @@ def _authoring_problems(
                 "economics.value_usd is 0 (weight each item at a per-act price), "
                 "or its bench can only come back short"
             )
+    return found
+
+
+def kind_of(economics: Mapping[str, Any], tool: str) -> str:
+    """The kind of ``tool``'s truth weights (ADR 0133); ``money_back`` when none is named."""
+    kinds = economics.get("kinds")
+    kind = kinds.get(tool) if isinstance(kinds, Mapping) else None
+    return kind if isinstance(kind, str) and kind in TARGET_KINDS else DEFAULT_KIND
+
+
+def derive_example_usd(
+    economics: Mapping[str, Any], targets: Sequence[tuple[str, Mapping[str, Any]]]
+) -> int | float | None:
+    """``economics.example_usd`` as ADR 0133 defines it: the example case's money back.
+
+    ``targets`` is each truth target as ``(tool, eligible)``. The sum of ``value_usd`` over the
+    eligible items of every ``money_back`` target, rounded to cents and written as an int when
+    whole, so the same truth gives the same bytes; ``None`` when no target is ``money_back``.
+    """
+    total = 0.0
+    any_money = False
+    for tool, eligible in targets:
+        if kind_of(economics, tool) != "money_back":
+            continue
+        any_money = True
+        for item in eligible.values():
+            value = item.get("value_usd", 0) if isinstance(item, Mapping) else 0
+            if isinstance(value, int | float) and not isinstance(value, bool):
+                total += float(value)
+    if not any_money:
+        return None
+    cents = round(total, 2) + 0.0
+    return int(cents) if cents == int(cents) else cents
+
+
+def example_problems(book: Playbook) -> list[str]:
+    """What ``check`` asks of ``economics.example_usd`` beyond its shape (ADR 0133).
+
+    It must be present and equal to :func:`derive_example_usd` over the playbook's own truth. The
+    loader does not ask this, so a playbook mid-edit still loads and benches; the committed library
+    is held to it by ``check``, and ``derive`` is the one way the figure is written.
+    """
+    economics = book.showcase.get("economics")
+    economics = economics if isinstance(economics, Mapping) else {}
+    want = derive_example_usd(economics, [(t.tool, t.eligible) for t in book.targets])
+    if "example_usd" not in economics:
+        return [f"{book.id}: ADR 0133 wants economics.example_usd, written by `derive`"]
+    have = economics["example_usd"]
+    if have is None and want is None:
+        return []
+    if (
+        have is None
+        or want is None
+        or isinstance(have, bool)
+        or not isinstance(have, int | float)
+        or abs(float(have) - float(want)) >= 0.005
+    ):
+        return [
+            f"{book.id}: economics.example_usd is {have!r} but its truth derives {want!r} "
+            "(ADR 0133): run `derive`, never type it"
+        ]
+    return []
+
+
+def _kind_problems(pid: str, showcase: Mapping[str, Any], targets: Sequence[Target]) -> list[str]:
+    """ADR 0133: the shape of ``value_kind``, ``kinds``, ``example_usd`` and ``fit``.
+
+    Each is optional to the loader (a reader has a default for every one, and an absent ``fit``
+    says nothing); when present it must be well formed. ``kinds`` names exactly the truth's target
+    tools, so a renamed target cannot leave a stale kind behind or a new one silently defaulted.
+    """
+    found: list[str] = []
+    economics = showcase.get("economics")
+    economics = economics if isinstance(economics, Mapping) else {}
+    if "value_kind" in economics and economics["value_kind"] not in VALUE_KINDS:
+        found.append(
+            f"{pid}: economics.value_kind {economics['value_kind']!r} is not one of "
+            f"{', '.join(VALUE_KINDS)} (ADR 0133)"
+        )
+    if "kinds" in economics:
+        kinds = economics["kinds"]
+        if not isinstance(kinds, Mapping):
+            found.append(f"{pid}: economics.kinds must map each truth target tool to a kind")
+        else:
+            for tool, kind in kinds.items():
+                if kind not in TARGET_KINDS:
+                    found.append(
+                        f"{pid}: economics.kinds[{tool!r}] {kind!r} is not one of "
+                        f"{', '.join(TARGET_KINDS)} (ADR 0133)"
+                    )
+            tools = {t.tool for t in targets}
+            extra = sorted(set(kinds) - tools)
+            missing = sorted(tools - set(kinds))
+            if extra:
+                found.append(f"{pid}: economics.kinds names {extra}, which truth does not target")
+            if missing:
+                found.append(f"{pid}: economics.kinds leaves out truth targets {missing}")
+    if "example_usd" in economics:
+        value = economics["example_usd"]
+        if value is not None and (isinstance(value, bool) or not isinstance(value, int | float)):
+            found.append(f"{pid}: economics.example_usd must be a number or null, not {value!r}")
+    if "fit" in showcase:
+        found.extend(_fit_problems(pid, showcase["fit"]))
+    return found
+
+
+def _fit_problems(pid: str, fit: Any) -> list[str]:
+    """ADR 0133: ``fit`` says where a chore works, for whom, what it asks for and what it costs."""
+    if not isinstance(fit, Mapping):
+        return [f"{pid}: fit must be an object (ADR 0133)"]
+    found: list[str] = []
+    where = fit.get("where")
+    if isinstance(where, list):
+        bad = [c for c in where if not isinstance(c, str) or c not in USPS_CODES]
+        if not where or bad:
+            found.append(f"{pid}: fit.where lists {bad or 'nothing'}, not USPS state codes")
+    elif not isinstance(where, str) or not where.strip():
+        found.append(
+            f"{pid}: fit.where must be {' or '.join(FIT_REGIONS)}, a region word or a list of "
+            "USPS state codes (ADR 0133)"
+        )
+    for key in ("where_note", "who", "not_for", "costs"):
+        value = fit.get(key)
+        if not isinstance(value, str) or not value.strip():
+            found.append(f"{pid}: fit.{key} must be one plain sentence (ADR 0133)")
+    asks = fit.get("asks_for")
+    if not isinstance(asks, list) or not all(isinstance(a, str) and a.strip() for a in asks):
+        found.append(f"{pid}: fit.asks_for must be a list of plain items (ADR 0133)")
+    extra = sorted(set(fit) - {"where", "where_note", "who", "not_for", "asks_for", "costs"})
+    if extra:
+        found.append(f"{pid}: fit carries {extra}, which ADR 0133 does not define")
     return found
 
 

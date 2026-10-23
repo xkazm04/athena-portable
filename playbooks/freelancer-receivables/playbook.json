@@ -9,6 +9,21 @@
   "job": "recover",
   "promise": "Every unpaid invoice traced through the client's own portal and your bank. The fixable ones are fixed in that portal, and the late ones get a demand under New York's freelancer law. What the contract says you are not owed is left alone.",
   "persona": "A solo product designer in Brooklyn, trading as a one-person LLC, with seven clients: three force a supplier portal (Coupa, Ariba, Tipalti), the rest pay by email invoice",
+  "fit": {
+    "where": [
+      "NY"
+    ],
+    "where_note": "New York's Freelance Isn't Free Act, statewide since 28 August 2024; elsewhere only the contract and your state's law apply.",
+    "who": "A solo freelancer or one-person LLC with clients who pay through supplier portals or by invoice.",
+    "not_for": "A business with employees, which the freelancer law does not cover.",
+    "asks_for": [
+      "your open invoices",
+      "your contracts",
+      "your bank deposits",
+      "client portal logins"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "The invoice leaves QuickBooks, and then it disappears. One client's Coupa rejects it because the purchase order is short. Another's Ariba approves it on payment terms the contract overrides. A third's Tipalti holds it over a tax form. Email clients pay late or keep part of it. To collect, she has to check each portal, the bank and the contracts. She also has to know when New York's Freelance Isn't Free Act applies: $800, counting a client's contracts across 120 days, and 30 days after completion when the contract names no date. Freelancers spend about 36 hours chasing each unpaid invoice, and invoicing apps cannot see inside a client's portal.",
   "command": "Go through everything clients owe me. Check each invoice against the client's portal, the bank and the contract, fix whatever a portal is holding, send a demand under the Freelance Isn't Free Act for anything that's legally late, and don't chase anything I'm not owed.",
   "apps": [
@@ -94,8 +109,17 @@
   ],
   "economics": {
     "value_usd": 6000,
+    "example_usd": 21550,
+    "value_kind": "money_back",
+    "times_per_year": 12,
+    "kinds": {
+      "submit_invoice": "money_back",
+      "send_demand_letter": "money_back",
+      "update_tax_form": "money_back",
+      "send_email": "count"
+    },
     "per": "year",
-    "basis": "Freelancers Union found 71% had trouble collecting and lost $5,968 a year on average, 13% of income, with 36 hours spent chasing each missing payment (2014–2015). The bench world holds $21,550 stuck across five invoices.",
+    "basis": "An estimate. Freelancers Union found 71% had trouble collecting and lost $5,968 a year on average, 13% of income, with 36 hours spent chasing each missing payment (2014–2015). The bench world holds $21,550 stuck across five invoices. Times a year: twelve, a monthly pass over open invoices.",
     "manual_minutes": 240,
     "incumbent": "Invoicing apps send reminders but cannot see inside Coupa, Ariba or Tipalti. Collection agencies take 25–50% and are slow. Mostly the freelancer chases, or writes it off.",
     "sources": [

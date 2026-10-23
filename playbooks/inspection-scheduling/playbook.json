@@ -40,10 +40,12 @@
   "steps": [
     "Reads Ashford's rules, holidays and every inspection on each permit in Permitway.",
     "Reads Merrow's policies and every inspection on each permit in Civicdesk.",
+    "Cites the code each inspection rests on: IRC R109 for one- and two-family dwellings and townhouses, IBC 110 for commercial work, and IPC and IMC 107 for plumbing and mechanical.",
     "Reads what is complete, ready and corrected on each job in Sitegrid.",
     "Reads who is on site each day next week in the crew calendar.",
     "Back in Permitway, requests each Ashford inspection that is ready, for the first day it can happen.",
-    "In Civicdesk, schedules each Merrow inspection that is ready, for the first day it can happen."
+    "In Civicdesk, schedules each Merrow inspection that is ready, for the first day it can happen.",
+    "Books before each city's request cutoff (often 3 pm the business day before)."
   ],
   "gates": [
     {
@@ -73,9 +75,15 @@
     "Who is on each site each day, carried from the crew calendar."
   ],
   "economics": {
-    "value_usd": 8000,
+    "value_usd": 4250,
+    "example_usd": null,
     "per": "year",
-    "basis": "An estimate, mostly minutes. A coordinator checking two cities' portals, the field status and the crew calendar every week spends about an hour and a half on it, about 75 hours a year, and a booking that fails for sequence, readiness or nobody on site costs a re-inspection fee and a day of a held crew. The $8,000 a year is those hours at about $50 and a few failed inspections avoided. Each booking in the bench world is weighted at $400, a day of site overhead that a booking in sequence and on time saves, an estimate. Times a year: fifty, a weekly sweep.",
+    "value_kind": "money_protected",
+    "kinds": {
+      "request_inspection": "count",
+      "schedule_inspection": "count"
+    },
+    "basis": "An estimate. A coordinator checking two cities' portals, the field status and the crew calendar every week spends about an hour and a half on it, about 75 hours a year, already shown as time saved and not counted again here. A booking that fails for sequence, readiness or nobody on site costs a re-inspection fee and a day of a held crew; the roster's earlier $8,000 a year less the 75 hours at $50 ($3,750) leaves $4,250 a year of those avoided, an estimate with no published source. Each booking in the bench world is weighted at $400, a scoring weight for a day of site overhead, not money recovered. Times a year: fifty, a weekly sweep.",
     "manual_minutes": 90,
     "times_per_year": 50,
     "incumbent": "None takes a share: the coordinator or the superintendents do it, and expediters bill by the hour or by the permit.",
@@ -102,5 +110,17 @@
     "minutes": 60,
     "why": "A careful coordinator gets most of it; the bar is most of the ready inspections booked on a day that works, nothing out of sequence, early or twice, inside an hour."
   },
-  "caveat": "Halberd Builders, Linden Court, Merrow Feed & Supply, the Cities of Ashford and Merrow, Permitway, Civicdesk, Sitegrid and every person here are invented. The rule is section 110 of the International Building Code, which each city adopts with its own amendments, fees and scheduling rules; the bench world fixes them as of October 2026. Real inspection sequences differ by jurisdiction. This is not legal or code advice."
+  "caveat": "Halberd Builders, Linden Court, Merrow Feed & Supply, the Cities of Ashford and Merrow, Permitway, Civicdesk, Sitegrid and every person here are invented. The rule is section 110 of the International Building Code, which each city adopts with its own amendments, fees and scheduling rules; the bench world fixes them as of October 2026. Real inspection sequences differ by jurisdiction. This is not legal or code advice.",
+  "fit": {
+    "where": "US",
+    "where_note": "City permit portals and the model building codes; each city sets its own cutoffs and holidays.",
+    "who": "A general contractor's coordinator booking city inspections on several jobs.",
+    "not_for": "A job whose inspections a third-party inspector hired by the owner books.",
+    "asks_for": [
+      "the cities' permit portal logins",
+      "the permit numbers",
+      "the field status and the crew calendar"
+    ],
+    "costs": "No fees from Athena; the cities' own re-inspection fees still apply; plus your Claude usage."
+  }
 }

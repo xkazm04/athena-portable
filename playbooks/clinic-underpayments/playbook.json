@@ -9,6 +9,18 @@
   "job": "recover",
   "promise": "Every remittance line from two commercial payers is checked against the contract's fee schedule in force on its date of service, its payment terms and its amendment. The lines paid short are disputed with the amount short, inside each payer's window: a rate the amendment raised, a surgeon paid as non-participating, an X-ray cut as a multiple procedure, and last year's rate. A line bundled under an NCCI edit, the patient's deductible, a sequestration cut, the lesser-of-billed rule, a line already in dispute and a window already closed are left alone.",
   "persona": "The billing manager of a three-clinician orthopedic clinic contracted with two commercial payers, one of which also runs a Medicare Advantage plan",
+  "fit": {
+    "where": "US",
+    "where_note": "Contract terms are your payers'; prompt-pay interest follows your state's law.",
+    "who": "A practice's billing manager who has payer contracts and fee schedules on file.",
+    "not_for": "A practice without its payer contracts or fee schedules at hand.",
+    "asks_for": [
+      "your payer contracts and amendments",
+      "your remittances",
+      "your fee schedules"
+    ],
+    "costs": "No fees; only your Claude usage."
+  },
   "chore": "Read every posted remittance line in the practice management system; the 835 remittances behind them, with each adjustment's group and reason code; both payer agreements, their fee schedules, the amendment and who is participating from when; and each payer's dispute window and the disputes already open. Then compare each line's allowed amount with the rate the contract gives on its date of service, after the contract's own rules: the lesser of billed and schedule, the multiple-procedure reduction for surgical codes only, NCCI bundling, cost-sharing, sequestration on the Medicare Advantage schedule. Dispute each line paid short, one line a dispute, with the contracted amount and the amount short, before its window closes. None of the four systems shares data with another.",
   "command": "Do the month-end underpayment check for Tallowbrook and Cindermoor. Go through Chartmend, the Relaywave remittances, the contracts in Docshelf and Paylance, and dispute every line they paid short of our contract, with the amount, before the windows close. Don't dispute anything that was paid right.",
   "apps": [
@@ -66,10 +78,16 @@
     "Each line's date of service, clinician, code, allowed amount and remittance date, carried from Chartmend PM.",
     "Each line's adjustment codes and the remarks that explain them, carried from Relaywave.",
     "Each payer's rates by date of service, the amendment, the payment rules and the participation dates, carried from Docshelf.",
-    "Each payer's dispute window, and the line already in dispute, from Paylance."
+    "Each payer's dispute window, and the line already in dispute, from Paylance.",
+    "Two checks a real contract decides: whether it lets a Medicare Advantage payer pass through the 2% sequestration cut, and the state's prompt-pay interest on a late payment, which is a claim of its own."
   ],
   "economics": {
     "value_usd": 2500,
+    "example_usd": 565,
+    "value_kind": "money_back",
+    "kinds": {
+      "file_underpayment_dispute": "money_back"
+    },
     "per": "month",
     "basis": "An estimate. A payer that loads a fee schedule late, misses an amendment, applies a reduction the contract does not allow or pays a newly credentialed clinician as out of network underpays a few lines in every hundred, and most practices never compare remittances with their contracts line by line. For an orthopedic group of three clinicians collecting about $150,000 a month from commercial payers, the roster's $2,500 a month is under 2% of collections, an estimate. The bench world holds $565.00 across five lines paid short: $400.00 for a surgeon paid as non-participating after his credentialing, $90.00 and $18.00 on an amendment the payer had not loaded, $29.00 on an X-ray reduced as a multiple procedure and $28.00 on last year's rate. The payer agreements, fee schedules and amendment are invented world documents; the public rule is CMS's NCCI, under which a bundled line is not a line paid short. Times a year: twelve, a month-end reconciliation.",
     "manual_minutes": 180,
