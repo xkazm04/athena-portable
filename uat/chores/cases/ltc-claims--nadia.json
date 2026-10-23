@@ -1,0 +1,112 @@
+{
+ "pair": "ltc-claims--nadia",
+ "playbook_id": "ltc-claims",
+ "character": "nadia",
+ "person": "Nadia Haddad is a 50-year-old part-time bookkeeper with a chronic spine condition. She can sit at a screen for about twenty minutes before she has to stop, and she uses large text. Her 81-year-old father Elias lives at home in Dearborn with an aide from an agency and goes to an adult day center twice a week. She holds power of attorney for him and has his long-term-care policy claims to keep up. They have fallen behind because she is also lining up records for her own second opinion and chasing reimbursement from her therapist's insurer. She wants short sessions, a plain answer on how sure any dollar figure is, and nothing that times out and loses her work.",
+ "stated_up_front": "I have about fifteen minutes a day. Dad's long-term care policy hasn't been claimed since June and I think we're missing money. Can you tell me first how long the setup takes, and what you need from me?",
+ "portals": [
+  {
+   "playbook_app": "Harbor Mutual policyholder portal",
+   "mine": "Great Lakes Life policyholder portal"
+  },
+  {
+   "playbook_app": "BrightPath family portal",
+   "mine": "CareBridge family portal"
+  },
+  {
+   "playbook_app": "Email",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "MyChart",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Medicare.gov",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Mom's bank (POA access)",
+   "mine": "Fifth Third online banking"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_invoice",
+   "mine": "ask"
+  },
+  {
+   "action": "resubmit_invoice",
+   "mine": "ask"
+  },
+  {
+   "action": "file_appeal",
+   "mine": "ask"
+  },
+  {
+   "action": "request_premium_refund",
+   "mine": "ask"
+  },
+  {
+   "action": "stop_autopay",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Whose policy and how long she has held power of attorney",
+   "truth": "Her father Elias Haddad, 81. The policy is tax-qualified and was bought in 2013. Nadia has had power of attorney since March 2025."
+  },
+  {
+   "about": "Elimination period",
+   "truth": "90 days. Care started August 4 last year, so the first paid day was early November. She believes the schedule says 90 days."
+  },
+  {
+   "about": "Daily maximum",
+   "truth": "$190 a day until the September 1 anniversary, then $199.50. The daily maximum covers the agency and the adult day center combined."
+  },
+  {
+   "about": "Agency billing",
+   "truth": "CareBridge bills 8-hour days at $240. The insurer pays at most $190 or $199.50 for the day, depending on the date. She has never worked out the difference herself."
+  },
+  {
+   "about": "Adult day center",
+   "truth": "Cedar Court Adult Day, $85 a day, Tuesdays and Thursdays. The statements arrive by email, and on two days in August the agency also billed the same day."
+  },
+  {
+   "about": "Hospital stay",
+   "truth": "Elias was admitted August 19 to 23 for a heart rhythm problem. The aide stayed with him at the hospital on two of those days, and the agency billed them anyway. The records are in MyChart."
+  },
+  {
+   "about": "Medicare statement",
+   "truth": "A home-health statement from a visiting nurse in September shows $0 owed. Medicare paid it in full. It looks like a bill, but it is not one."
+  },
+  {
+   "about": "Family help paid privately",
+   "truth": "Six Zelle payments of $60 each to her niece Rana in July, when the agency had no aide. Rana covered those days. The policy will not pay for family help."
+  },
+  {
+   "about": "Premium and waiver",
+   "truth": "The premium is $212 a month by autopay from Elias's Fifth Third account. The waiver started after the elimination period, and she thinks one premium was paid just before it started."
+  },
+  {
+   "about": "Rejected or denied items",
+   "truth": "One CareBridge invoice for July was rejected for a missing care note. A denial letter for part of August arrived by mail in early September, and she has not opened the whole letter."
+  },
+  {
+   "about": "Her time limits",
+   "truth": "She can work about twenty minutes at a stretch and has a second opinion in three weeks. Her father calls every week about the pharmacy."
+  }
+ ],
+ "unknowns": [
+  "Whether the denied August days are still inside the appeal window, and the date it closes",
+  "What the rejection code on the July invoice means and what exactly is missing",
+  "Whether the premium paid just before the waiver started can be refunded",
+  "How many days are left to file the oldest unclaimed month"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:51Z"
+ }
+}

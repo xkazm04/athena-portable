@@ -1,0 +1,88 @@
+{
+ "pair": "cpg-deductions--hana",
+ "playbook_id": "cpg-deductions",
+ "character": "hana",
+ "person": "Hana Kowalczyk, 34, makes ceramics and linen goods in a studio behind her house in Oregon and does every part of the business herself. Most of her money comes from her own site and two marketplaces. About $3,800 a month comes from wholesale to boutiques through Faire and a regional gift distributor, Cascade Gift Supply, which takes small deductions from its payouts. She mostly lets these slide because she's packing orders, and she once lost most of her disputes using a template-based 'chargeback protection' app. She wants to know right away whether this chore fits a shop her size, and she can only answer from memory. She dislikes unexplained codes and big 'recoverable' numbers.",
+ "stated_up_front": "Hi! Cascade and Faire keep shaving little amounts off my wholesale payouts and I never check them. Is this even worth doing for a shop my size? I have orders to pack, so tell me what you need from me.",
+ "portals": [
+  {
+   "playbook_app": "myUNFI Dispute Center",
+   "mine": "Faire"
+  },
+  {
+   "playbook_app": "KeHE K-Solve",
+   "mine": "Cascade Gift Supply vendor portal"
+  },
+  {
+   "playbook_app": "Brand Drive",
+   "mine": "Google Drive"
+  },
+  {
+   "playbook_app": "Warehouse portal",
+   "mine": "ShipStation"
+  }
+ ],
+ "gates": [
+  {
+   "action": "dispute_deduction",
+   "mine": "ask"
+  },
+  {
+   "action": "request_backup",
+   "mine": "go"
+  }
+ ],
+ "facts": [
+  {
+   "about": "wholesale size",
+   "truth": "About 14 boutique accounts, roughly $3,800 a month wholesale, split between Faire and Cascade Gift Supply."
+  },
+  {
+   "about": "last month's Cascade deductions",
+   "truth": "Five deductions on the October payout, $212 in total, all between $29 and $64."
+  },
+  {
+   "about": "promo deduction",
+   "truth": "$46 taken as a 10% fall mug promotion. She agreed to that promotion by email in August, so it's probably valid."
+  },
+  {
+   "about": "breakage deduction",
+   "truth": "$38 for two bowls marked broken. The delivery record in ShipStation carries a receiver note saying 'box crushed, 2 bowls broken', so it's probably valid."
+  },
+  {
+   "about": "pricing deduction",
+   "truth": "$64 pricing deduction. She raised linen towels from $24 to $27 on Oct 1 but invoiced one boutique's Sept 28 order at $27, so it's likely valid."
+  },
+  {
+   "about": "free-fill deduction",
+   "truth": "$35 for a free napkin set. Her Cascade terms promise one free set with a first order over $500, so it's valid."
+  },
+  {
+   "about": "old deduction",
+   "truth": "A $29 deduction from March 2026 that she only noticed now, which may be too old to dispute."
+  },
+  {
+   "about": "where documents live",
+   "truth": "Google Drive folder 'Wholesale' holds the signed Cascade terms PDF, the August promo email saved as PDF, and the price-change notice she sent in September."
+  },
+  {
+   "about": "shipping proof",
+   "truth": "She ships everything herself and buys labels in ShipStation, which keeps the tracking and delivery confirmations."
+  },
+  {
+   "about": "her time",
+   "truth": "She packs orders Tuesdays and Thursdays and can look at this for about 20 minutes on Wednesday evenings. Her accountant only comes in March."
+  }
+ ],
+ "unknowns": [
+  "How many days Cascade or Faire give her to dispute a deduction.",
+  "What Cascade's short deduction codes like 'PA-2' or 'D14' actually mean.",
+  "Whether her September price-change email counts as formal notice under the Cascade terms.",
+  "Whether the March $29 deduction can still be disputed."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:47:06Z"
+ }
+}

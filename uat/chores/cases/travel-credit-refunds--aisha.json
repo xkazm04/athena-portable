@@ -1,0 +1,88 @@
+{
+ "pair": "travel-credit-refunds--aisha",
+ "playbook_id": "travel-credit-refunds",
+ "character": "aisha",
+ "person": "Aisha Grant is a 31-year-old night-shift ER nurse in Tucson who does her money admin in bursts on days off, mostly from her phone. Over the year she ended up with a handful of airline credits and fees across two airlines and a travel agency, most issued automatically. She and her partner are saving for the baby due next spring, so she wants to know exactly what comes back to her card and when, with no 'up to' totals. She is quick and a bit sarcastic and will bail on anything with long setup.",
+ "stated_up_front": "I've got a pile of airline credits and fees from this year and I think some of them are actual refunds I'm owed. Go through them and tell me what I really get back and how long it takes, no 'up to' numbers please.",
+ "portals": [
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Cardhollow",
+   "mine": "Chase"
+  },
+  {
+   "playbook_app": "Aerolark",
+   "mine": "Southwest"
+  },
+  {
+   "playbook_app": "Skylindle",
+   "mine": "Delta"
+  },
+  {
+   "playbook_app": "Tripcairn",
+   "mine": "Expedia"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_refund",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Flight moved later by nearly four hours (Southwest, Tucson to Denver)",
+   "truth": "Southwest moved her Tucson-Denver flight 3 hours 50 minutes later in March; she declined the change and was given a $212 credit without asking."
+  },
+  {
+   "about": "International flight moved much later (Delta)",
+   "truth": "Delta moved her Phoenix to Mexico City flight 6 hours 20 minutes later; she never accepted the new time and holds a $389 credit."
+  },
+  {
+   "about": "Flight that gained a stop",
+   "truth": "A non-stop Expedia-booked Tucson to Seattle flight became a one-stop via Salt Lake City; $176 credit in Expedia, she never agreed to it."
+  },
+  {
+   "about": "Seat fee for a seat that did not exist",
+   "truth": "Southwest charged a $45 seat fee for a seat the aircraft did not have; she was never refunded."
+  },
+  {
+   "about": "Change she made herself",
+   "truth": "In June she moved her own Tucson to San Diego flight for a work shift swap; the resulting $98 credit is hers to keep."
+  },
+  {
+   "about": "Credit she chose in writing",
+   "truth": "Delta offered a refund or a $150 credit on a cancelled flight and she replied by email choosing the credit because she wanted to fly in the fall."
+  },
+  {
+   "about": "Short delay",
+   "truth": "A Delta flight to Chicago was delayed 2 hours 10 minutes, so no refund is owed there."
+  },
+  {
+   "about": "Credit already spent",
+   "truth": "A $120 Southwest credit was used on a Las Vegas booking in August."
+  },
+  {
+   "about": "Card used",
+   "truth": "All fares were paid on her Chase Sapphire card ending in the last four digits she can see in the app; she does not want to give more than that."
+  },
+  {
+   "about": "Refund timing expectation",
+   "truth": "She wants to know when the money lands on her card and will check Chase for it."
+  }
+ ],
+ "unknowns": [
+  "Whether the 3-hour or 6-hour delay thresholds in the refund rule are what qualify a flight for a refund, and what the exact cutoff is",
+  "Whether the airline's credit expires and whether accepting it counted as choosing it",
+  "How long the airlines take to process a refund back to the card",
+  "Whether the Salt Lake City stop counts as a significant change under the rule"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:55:07Z"
+ }
+}

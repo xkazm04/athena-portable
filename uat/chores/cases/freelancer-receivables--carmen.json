@@ -1,0 +1,100 @@
+{
+ "pair": "freelancer-receivables--carmen",
+ "playbook_id": "freelancer-receivables",
+ "character": "carmen",
+ "person": "Carmen Ruiz, 44, is the entire HR department at a 46-person manufacturer in Utica, New York. On weekends she runs a small side practice, Ruiz Benefits Advisory LLC, doing COBRA and benefits-compliance reviews for a handful of small companies. Her employer knows about it. She invoices from QuickBooks, never learned the supplier portals her bigger clients force on her, and has lost track of what is unpaid. She wants every deadline shown with the rule it comes from. She also wants nothing sent, signed or filed without her approval, and she wants to know whether Athena stops or guesses when unsure.",
+ "stated_up_front": "I have six side-consulting clients and I'm pretty sure about $4,000 is sitting unpaid across their portals and my bank. Can you trace each invoice and tell me which are fixable and which are legally late, with the rule for each? Don't send anything to anyone until I've seen it.",
+ "portals": [
+  {
+   "playbook_app": "QuickBooks",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Chase Business",
+   "mine": "Bank of America Business"
+  },
+  {
+   "playbook_app": "Coupa Supplier Portal",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "SAP Business Network (Ariba)",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Tipalti supplier hub",
+   "mine": "Bill.com supplier portal"
+  },
+  {
+   "playbook_app": "Gmail",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_invoice",
+   "mine": "ask"
+  },
+  {
+   "action": "update_tax_form",
+   "mine": "ask"
+  },
+  {
+   "action": "send_demand_letter",
+   "mine": "ask"
+  },
+  {
+   "action": "send_email",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Her business and tax form",
+   "truth": "Ruiz Benefits Advisory LLC, a single-member LLC in Utica, NY. Her W-9 on file with most clients was signed in 2023 under her own name as a sole proprietor, before the LLC existed."
+  },
+  {
+   "about": "Keystone Tool & Die (Coupa)",
+   "truth": "Invoice #1042 for $1,800 for a COBRA process audit was rejected. The buyer's comment says the PO has only $1,200 remaining. The contract is dated March 3 for $3,000 total."
+  },
+  {
+   "about": "Harlan Packaging (Ariba)",
+   "truth": "Invoice #1045 for $2,400 shows payment scheduled on Net 90 in Ariba. Her signed contract says payment within 30 days of invoice, and the invoice is dated August 18."
+  },
+  {
+   "about": "Delmar Foods (Bill.com supplier portal)",
+   "truth": "Invoice #1047 for $1,100 has been on hold since September 9. The portal says only 'tax information needed'. She suspects it is the old W-9 under her personal name."
+  },
+  {
+   "about": "Ostrander Dental (email invoice)",
+   "truth": "She billed $900 for a handbook review and received $600. The bank memo says 'less late deliverable credit'. She delivered four days late, and the contract has a $300 late-delivery credit clause."
+  },
+  {
+   "about": "Fernwood Bakery (email invoice)",
+   "truth": "Two separate small contracts, $450 in June and $500 in August, both for benefits-enrollment help. The June invoice is unpaid, and Fernwood has not answered her two emails."
+  },
+  {
+   "about": "Brightline Logistics (Ariba)",
+   "truth": "Invoice #1039 for $750 still shows 'pending' in Ariba, but a $750 deposit from Brightline arrived in her bank on October 2."
+  },
+  {
+   "about": "Her own deadline tracking",
+   "truth": "She keeps a paper calendar of deadlines and will compare anything Athena gives her against it. She has never sent a legal demand to a client."
+  },
+  {
+   "about": "Review and approval",
+   "truth": "She will read every draft herself. She'd rather an unsure step stop and ask than guess."
+  }
+ ],
+ "unknowns": [
+  "Whether New York's Freelance Isn't Free Act applies to her contracts, and what the dollar and day thresholds are",
+  "The exact date each unpaid invoice became legally late",
+  "Why Delmar's portal says 'tax information needed', and whether the old W-9 is really the cause",
+  "Whether Ariba's 'pending' status means anything once the bank shows the money arrived"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:49:04Z"
+ }
+}

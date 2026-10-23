@@ -1,0 +1,84 @@
+{
+ "pair": "lease-end-wear-charges--marcus",
+ "playbook_id": "lease-end-wear-charges",
+ "character": "marcus",
+ "person": "Marcus Webb is a 45-year-old physical therapist in Tacoma, laid off from a hospital system and now working per diem, so every dollar matters. He returned a leased 2023 Subaru Outback three weeks ago and got a lease-end statement for 2,785 dollars, about 900 of it labeled excess wear on a car he thinks was in good shape. He is the household spreadsheet person, checks every line's math, and answers to his wife, who wants money back. He wants to dispute only what the lease and inspection actually support and to be told plainly which charges he should just pay.",
+ "stated_up_front": "The leasing company sent me a $2,785 lease-end bill and I think some of the wear charges are bogus. Check each line against my lease's wear limits and the inspector's measurements, show me the math, and tell me which ones I should just pay.",
+ "portals": [
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Linestone Inspect",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Lenswick photos",
+   "mine": "Google Photos"
+  },
+  {
+   "playbook_app": "Torvane Finance",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "contest_charge",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "total on the lease-end statement",
+   "truth": "$2,785.00, which he expects to see broken into lines that add up exactly"
+  },
+  {
+   "about": "excess mileage",
+   "truth": "He drove about 1,900 miles over the 36,000 allowed; he knows he went over and expects to pay it"
+  },
+  {
+   "about": "disposition fee",
+   "truth": "$395, named in his lease; he assumes it is legitimate"
+  },
+  {
+   "about": "door dent",
+   "truth": "Inspector measured 38 mm; he thinks the lease allows dents up to about 2 inches, so he wants it disputed"
+  },
+  {
+   "about": "tires",
+   "truth": "Rear tire at 5/32 inch he believes is within limit; front tire at 3/32 inch he accepts as worn out"
+  },
+  {
+   "about": "windshield chip, wheel scuff and seat stain",
+   "truth": "Chip 12 mm, wheel scuff 20 mm, seat stain 18 mm; he took photos of all three before returning the car"
+  },
+  {
+   "about": "damage he admits to",
+   "truth": "A long bumper scratch from a parking garage, a cracked headlight lens, a gouged wheel and a cigarette-style seat burn from a passenger; he does not expect to dispute these"
+  },
+  {
+   "about": "return date and photos",
+   "truth": "He returned the car on 2 October 2026 and took photos the evening before, on 1 October"
+  },
+  {
+   "about": "wear allowance credit",
+   "truth": "The statement already applies a wear allowance credit that he does not recall being told about"
+  },
+  {
+   "about": "his goal",
+   "truth": "Get the unsupported wear charges removed, with a written dispute he can show his wife, and no claims that every charge is wrong"
+  }
+ ],
+ "unknowns": [
+  "The exact dent, chip, scuff and stain size limits written in his lease",
+  "The tread depth below which the lease counts a tire as worn",
+  "How much the wear allowance credit is worth or what it covers",
+  "Whether the lessor has a deadline for disputing charges after the statement date"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:23Z"
+ }
+}

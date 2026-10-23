@@ -1,0 +1,88 @@
+{
+ "pair": "freight-claims--dario",
+ "playbook_id": "freight-claims",
+ "character": "dario",
+ "person": "Dario Mendes, 47, runs three trucks outside Joliet and drives one himself. Born in Goiania, he reads English slowly and uses a phone translator for long letters. On the side he sells rebuilt truck parts such as turbochargers, brake chambers and differentials to other owner-operators, and he ships them by LTL. Some of those shipments arrived broken or never arrived, and he files the claims at night at the kitchen table. His wife keeps the books and asks about every dollar. He does not want a weak claim filed in his name, and he wants to know the load, the amount and the date he loses the money.",
+ "stated_up_front": "Please, I have some parts shipments that came broken or lost, by two LTL carriers. Help me file the claims that are good, and tell me simple which one has a deadline soon.",
+ "portals": [
+  {
+   "playbook_app": "Tracklog TMS",
+   "mine": "Google Sheets shipment list"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Docshelf",
+   "mine": "Google Drive"
+  },
+  {
+   "playbook_app": "Harrowgate Freight claims",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Larkfield LTL claims",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_claim",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_claim",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Lost pallet",
+   "truth": "Pallet of 12 rebuilt brake chambers shipped with Larkfield LTL, bill of lading dated 26 January 2026, never delivered. Invoice value $1,860. The customer is a fleet shop in Gary, Indiana. The search closed with no freight found."
+  },
+  {
+   "about": "Deadline for the lost pallet",
+   "truth": "Dario thinks the time ends Monday 26 October 2026 and wants it filed today or this weekend."
+  },
+  {
+   "about": "Two crushed cartons",
+   "truth": "Harrowgate delivered a Sept 2026 shipment to a shop in Rockford with 2 of 6 cartons crushed. The driver wrote 'crushed, 2 cartons' on the receipt. The two rebuilt turbochargers inside were worth $640 each, $1,280 total."
+  },
+  {
+   "about": "Concealed damage",
+   "truth": "Rebuilt air compressor sent with Harrowgate. The receipt was signed clean, but the customer opened the box 4 days later and found a cracked housing. A Harrowgate inspector came and wrote that a forklift hit the crate. Invoice $890."
+  },
+  {
+   "about": "Released-value item",
+   "truth": "A rebuilt differential, 210 lb, invoice $3,400. The bill of lading says released value $2 per pound, so the carrier owes at most $420. Dario signed that rate to pay less freight."
+  },
+  {
+   "about": "Claims to leave alone",
+   "truth": "Three cases. A shortage of 3 cartons delivered in December 2025 was only noted on the receipt, so it is too old. Wet cartons were carried by Sablecroft Transport alone. A customer's forklift crushed cartons after a clean delivery."
+  },
+  {
+   "about": "Own packing and claims already open",
+   "truth": "Two brake drums broke in undamaged cartons because his helper packed without the foam spec. A turbo shipment is already claimed with Harrowgate in June, and one with Larkfield in September."
+  },
+  {
+   "about": "Contingency offer",
+   "truth": "A claims service emailed an offer to file for him and keep 30% of what is recovered. He does not want this, because the dispatch service that once took 8% of his gross made him wary."
+  },
+  {
+   "about": "Where his papers are",
+   "truth": "Invoices, photos and the inspector's report are in a Google Drive folder called 'Claims Pecas'. The packing notes are written by hand and photographed."
+  }
+ ],
+ "unknowns": [
+  "Whether the nine months for the lost pallet runs from the bill of lading date or from the date it should have arrived",
+  "Whether the signed clean receipt hurts the concealed damage claim",
+  "Whether the released-value limit applies when he only checked a box at pickup without reading it",
+  "What proof each carrier needs besides the invoice and photos"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:49:07Z"
+ }
+}

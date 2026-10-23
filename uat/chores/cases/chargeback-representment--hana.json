@@ -1,0 +1,88 @@
+{
+ "pair": "chargeback-representment--hana",
+ "playbook_id": "chargeback-representment",
+ "character": "hana",
+ "person": "Hana Kowalczyk is a 34-year-old who runs a one-person shop selling ceramics and linen goods from a studio behind her house in Oregon, on her own site plus two marketplaces. In the busy season she has ten card disputes open at once, mostly on forty-dollar orders, and she cannot keep the reason codes straight. A 'chargeback protection' app once sent the same template to every dispute and lost most of them, so she is wary. She wants to know quickly whether this is meant for a shop her size and what Athena needs from her, because she has orders to pack.",
+ "stated_up_front": "Hi! I've got ten chargebacks open and honestly I can't tell which ones are worth fighting. Can you go through them and fight the ones I can win, and tell me which to just let go? Is this even meant for a tiny shop like mine?",
+ "portals": [
+  {
+   "playbook_app": "Paycurrent dashboard",
+   "mine": "Stripe"
+  },
+  {
+   "playbook_app": "Storeline",
+   "mine": "Shopify"
+  },
+  {
+   "playbook_app": "Parcelwick",
+   "mine": "Pirate Ship"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_representment",
+   "mine": "ask"
+  },
+  {
+   "action": "accept_dispute",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "How many disputes are open and typical size",
+   "truth": "Ten open, mostly around $40 each, the biggest is a $186 set of dinner plates."
+  },
+  {
+   "about": "A dispute she thinks is fair to fight (delivered)",
+   "truth": "A $64 linen table runner order shipped via USPS and shows delivered on 2 October 2026 to the full address in Portland, with a signature-free drop at the door."
+  },
+  {
+   "about": "An order that never shipped",
+   "truth": "A $52 mug set order from 12 September 2026 was never shipped because a kiln batch cracked, and she never got round to telling the customer."
+  },
+  {
+   "about": "A refund she promised but never paid",
+   "truth": "She told a customer in Postwren on 28 September 2026 that she would refund $38 for a chipped bowl but forgot to issue it."
+  },
+  {
+   "about": "A repeat customer on a fraud dispute",
+   "truth": "One customer, who she knows as 'Dana R.', bought three times since the spring from the same address and phone, then disputed the latest $45 order as not recognised."
+  },
+  {
+   "about": "A fraud dispute with just one earlier order",
+   "truth": "A $71 order disputed as fraud where the same card bought once before in July 2026 from a different phone."
+  },
+  {
+   "about": "A refund already given",
+   "truth": "She refunded $29 for a late coaster set on 6 October 2026 and the customer still disputed it."
+  },
+  {
+   "about": "Where her sales come from",
+   "truth": "About 60% on her own site, the rest on two marketplaces, and the disputes on her own site are the ones she has to answer herself."
+  },
+  {
+   "about": "Her time constraint",
+   "truth": "She packs orders in the mornings and can only look at this in the evening, after about 7pm Pacific."
+  },
+  {
+   "about": "Past chargeback experience",
+   "truth": "The protection app she paid $29 a month for lost seven of her last ten disputes, so she cancelled it in August 2026."
+  }
+ ],
+ "unknowns": [
+  "Which reason code each dispute carries or what it means",
+  "The processor's due date for each dispute, or the difference between the two dates shown",
+  "What counts as enough proof for a fraud dispute, such as matching device or IP on earlier orders",
+  "Whether the customer's IP address or device matched on the earlier orders"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:46:22Z"
+ }
+}

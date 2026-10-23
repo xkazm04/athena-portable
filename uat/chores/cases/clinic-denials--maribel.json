@@ -1,0 +1,92 @@
+{
+ "pair": "clinic-denials--maribel",
+ "playbook_id": "clinic-denials",
+ "character": "maribel",
+ "person": "Maribel Santos is a 52-year-old certified coder with twenty years in medical billing. She works part-time as the biller at a three-doctor family practice and freelances for two other small practices. She has watched three AI billing demos this year that appealed denials which should have been corrected and resubmitted, so she is wary and wants each denial handled by its reason code. She answers to the practice administrator and, when collections dip, to the doctors. Today she has a worklist of about a dozen denials across four payers and wants it worked before the windows close.",
+ "stated_up_front": "Pull the denial worklist and work it by reason code, not all the same. Corrections and resubmits only inside the filing limit, and show me anything you want to appeal or write off before you touch it.",
+ "portals": [
+  {
+   "playbook_app": "Practice management",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Clearinghouse",
+   "mine": "Waystar"
+  },
+  {
+   "playbook_app": "Availity",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_corrected_claim",
+   "mine": "ask"
+  },
+  {
+   "action": "file_reconsideration",
+   "mine": "ask"
+  },
+  {
+   "action": "write_off",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Practice and doctors",
+   "truth": "Three physicians: Dr. Alvarez, Dr. Brenner and Dr. Okafor. Each bills under their own rendering NPI."
+  },
+  {
+   "about": "Payers on the worklist",
+   "truth": "Four payers: Aetna, Blue Cross Blue Shield, UnitedHealthcare and Medicare."
+  },
+  {
+   "about": "Missing-modifier denial",
+   "truth": "Claim for Dr. Brenner's 99214 visit on 2026-08-12 denied CO-4 for a missing modifier 25 because a vaccine was given the same day. $142 billed. Correct it and resubmit."
+  },
+  {
+   "about": "Wrong-NPI denial",
+   "truth": "Two UnitedHealthcare claims from September went out under Dr. Alvarez's NPI when Dr. Okafor saw the patients. The fix is to correct the rendering NPI and resubmit."
+  },
+  {
+   "about": "Timely-filing denial",
+   "truth": "An Aetna claim with date of service 2026-04-20 was denied CO-29. The clearinghouse shows only a rejection at intake on 2026-05-02 and no acceptance, so there is no proof of receipt yet."
+  },
+  {
+   "about": "Missing authorisation denial",
+   "truth": "A BCBS MRI claim for $1,180 was denied CO-197. Maribel does not recall an auth being obtained, so she needs it looked up in Availity before anything else."
+  },
+  {
+   "about": "Duplicate denial",
+   "truth": "A CO-18 duplicate denial on a UnitedHealthcare claim of $96. The original is still in process, so it must not be resubmitted."
+  },
+  {
+   "about": "Already resubmitted",
+   "truth": "Two denials were resubmitted on 2026-10-09 and are pending. They must not go out a second time."
+  },
+  {
+   "about": "Secondary claim",
+   "truth": "A Medicare crossover patient has a secondary claim ready, but the primary has not yet paid. It waits for the primary EOB."
+  },
+  {
+   "about": "Write-off preference",
+   "truth": "She wants clear losses written off so they stop sitting on the books, but only after she has seen the reason and the window dates."
+  },
+  {
+   "about": "Reporting on recovered money",
+   "truth": "Any recovery figure must say whether it is net of write-offs and exclude money that would have been paid anyway."
+  }
+ ],
+ "unknowns": [
+  "The current reconsideration window for each payer, since she has never memorised them and they change.",
+  "Whether the BCBS office or the referring doctor obtained an authorisation for the MRI.",
+  "Why the clearinghouse rejected the Aetna claim at intake on 2026-05-02.",
+  "Whether the Aetna timely-filing limit for this contract is 90 or 180 days."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:46:26Z"
+ }
+}

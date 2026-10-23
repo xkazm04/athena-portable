@@ -1,0 +1,80 @@
+{
+ "pair": "clinic-underpayments--tom",
+ "playbook_id": "clinic-underpayments",
+ "character": "tom",
+ "person": "Tom Whitcomb, 39, is the practice administrator of a three-clinician orthopedic clinic. He came over from restaurant management two years ago and runs staff, schedule and money, but he is not a billing expert. The part-time biller, Dana, works Monday to Wednesday and is out today. The physician owners keep asking why collections are down, and he wants a clean list of short-paid lines he can defend to them, with no estimates. A vendor keeps pitching '20% more revenue' and he cannot check it.",
+ "stated_up_front": "Dana's out until Monday and the owners are on me about collections. Can you go through our payments from Brightline and Cascade Health and tell me which ones were paid short against our contracts? Explain it plainly so I can tell the doctors, and don't dispute anything wrong.",
+ "portals": [
+  {
+   "playbook_app": "Chartmend PM",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Relaywave",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Docshelf",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Paylance payer hub",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_underpayment_dispute",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The two commercial payers",
+   "truth": "Brightline Health and Cascade Mutual. Cascade also runs a Medicare Advantage plan that some of the patients are on."
+  },
+  {
+   "about": "The clinicians",
+   "truth": "Three: Dr. Priya Raman (surgeon, joined the Brightline network in March 2026), Dr. Alan Okafor (sports medicine, injections and visits), and a nurse practitioner, Kelsey Doyle."
+  },
+  {
+   "about": "Dispute windows",
+   "truth": "Dana's note says Brightline gives 180 days from the remittance date and Cascade gives 120 days. Tom is not sure this is current."
+  },
+  {
+   "about": "The contract amendment",
+   "truth": "Brightline raised its office-visit rates through an amendment effective 1 July 2026. Tom remembers the amendment but not the exact new rates."
+  },
+  {
+   "about": "What he wants out of the run",
+   "truth": "A short list of lines to dispute, each with the amount short in dollars, and a separate list of lines left alone with the reason in plain words."
+  },
+  {
+   "about": "The line already in dispute",
+   "truth": "Dana filed a dispute on a Cascade visit for Dr. Okafor in September. He does not remember the patient or the amount."
+  },
+  {
+   "about": "Lines that look short but may be paid right",
+   "truth": "Some patients show a deductible not paid, and one Medicare Advantage visit looks about 2% light. He has heard of bundling but cannot say which lines it applies to."
+  },
+  {
+   "about": "Money he is trying to explain",
+   "truth": "Collections are down roughly $14,000 for the quarter compared with last quarter. He cannot say how much of that is underpayment."
+  },
+  {
+   "about": "Who approves what",
+   "truth": "He answers to the owners and wants to see each dispute before it goes out under the clinic's name. Dana is not in to do it."
+  }
+ ],
+ "unknowns": [
+  "What the NCCI bundling edits are and which of his procedure codes they apply to",
+  "What the group and reason codes on the remittances mean",
+  "Whether the payers' dispute windows in Dana's note are still the current ones",
+  "The exact contracted rate for any given code on a given date"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:46:33Z"
+ }
+}

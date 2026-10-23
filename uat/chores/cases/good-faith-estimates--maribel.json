@@ -1,0 +1,96 @@
+{
+ "pair": "good-faith-estimates--maribel",
+ "playbook_id": "good-faith-estimates",
+ "character": "maribel",
+ "person": "Maribel Santos is a 52-year-old certified coder with twenty years in medical billing. She works part-time as the biller at a three-doctor family practice that sees a handful of uninsured and self-pay patients each week, and she freelances for two other practices. She has never had a formal good faith estimate routine; she has been keying them by hand from the price list when someone remembers to tell her, and she wants the timing and the $400 comparison watched so nothing slips. She answers to the practice administrator, Denise, and is wary of tools that act without understanding billing, so she wants to see numbers before anything goes to a patient or an agency.",
+ "stated_up_front": "I need the self-pay GFEs checked against what's booked, and every statement sitting in the release queue compared to its last estimate. Anything $400 or more over, show me before it goes out. Don't touch collections without me.",
+ "portals": [
+  {
+   "playbook_app": "Chartmend PM",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Chartleaf scheduling",
+   "mine": "OfficeSpan Scheduler"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Outlook"
+  }
+ ],
+ "gates": [
+  {
+   "action": "issue_estimate",
+   "mine": "ask"
+  },
+  {
+   "action": "hold_statement",
+   "mine": "ask"
+  },
+  {
+   "action": "send_to_collections",
+   "mine": "ask"
+  },
+  {
+   "action": "reply",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Practice and who she answers to",
+   "truth": "Three-doctor family practice, Lakeview Family Medicine; she reports to the practice administrator, Denise Okafor."
+  },
+  {
+   "about": "Self-pay patient with a visit coming up",
+   "truth": "Walter Brandt, uninsured, booked Monday Oct 19 for a Thursday Oct 29 visit: established-patient office visit 99214 at $165 and a CBC at $28."
+  },
+  {
+   "about": "Service added before the visit",
+   "truth": "Dr. Patel added a 12-lead EKG (93000) at $55 to Walter's visit on Oct 27, so a new estimate must go out by Oct 28 and total $248."
+  },
+  {
+   "about": "Statement under the threshold",
+   "truth": "Priya Raman's statement is $1,140 against an estimate of $765, which is $375 over, so it goes out as is."
+  },
+  {
+   "about": "Statement truly over the threshold",
+   "truth": "Calvin Hughes was estimated at $520 for a minor procedure and the statement waiting is $985, $465 over, with no revised estimate; it should be held."
+  },
+  {
+   "about": "Pathology lab charge",
+   "truth": "Estelle Marsh's statement is $610 over her $300 estimate, but $540 of the increase is the outside pathology lab's own bill, and that is the co-provider's charge, not the clinic's."
+  },
+  {
+   "about": "Dispute notice",
+   "truth": "An email from the dispute resolution entity about Hector Villanueva's $2,310 bill arrived Oct 20; the estimate and bill are due within 10 business days, by Nov 3."
+  },
+  {
+   "about": "Collections queue",
+   "truth": "Hector Villanueva's account is sitting in the collections queue at $2,310 and must be pulled out while the dispute is pending."
+  },
+  {
+   "about": "Vendor offer",
+   "truth": "A vendor, ClearEstimate, emailed offering to automate GFEs for 3% of self-pay collections; Maribel is not interested."
+  },
+  {
+   "about": "Cancelled visit",
+   "truth": "Tamsin Doyle cancelled her Oct 22 visit, so no estimate goes out for it."
+  },
+  {
+   "about": "Price list",
+   "truth": "Clinic's own fee schedule updated Jan 1; self-pay 99213 is $120 and 99214 is $165."
+  }
+ ],
+ "unknowns": [
+  "Whether HHS is currently enforcing the inclusion of co-providers' items in an estimate",
+  "The exact deadline in business days for the dispute resolution entity submission",
+  "Whether the Oct 27 EKG change counts as a change requiring a new estimate by the business day before the service",
+  "What the dispute resolution entity's case number format means"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:49:25Z"
+ }
+}

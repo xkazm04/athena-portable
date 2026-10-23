@@ -1,0 +1,100 @@
+{
+ "pair": "medicare-enrollment-timing--lan",
+ "playbook_id": "medicare-enrollment-timing",
+ "character": "lan",
+ "person": "Lan Tran is a 41-year-old pharmacy technician who works rotating shifts and handles the family's paperwork on her phone. Her mother, Thu, is 67 and lives with her. Thu retires from her laundry job at the end of this month and never took Medicare Part B. Lan manages Thu's Medicare with her permission, and also answers questions from Thu's husband, Bao, who has retiree coverage from his old job. Lan reads official letters slowly in English and worries about hidden fees, because she once paid a helper for nothing.",
+ "stated_up_front": "Hello, my mother Thu stops work on October 30 and I need to do her Medicare Part B. A man said to take COBRA, I am not sure. Please tell me if anything costs money.",
+ "portals": [
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Staffnest HR",
+   "mine": "ADP"
+  },
+  {
+   "playbook_app": "Thistlewood Health",
+   "mine": "Anthem"
+  },
+  {
+   "playbook_app": "Benefitline",
+   "mine": "my Social Security"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_part_b_enrollment",
+   "mine": "ask"
+  },
+  {
+   "action": "request_l564",
+   "mine": "go"
+  },
+  {
+   "action": "elect_cobra",
+   "mine": "ask"
+  },
+  {
+   "action": "cancel_coverage",
+   "mine": "ask"
+  },
+  {
+   "action": "reply",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Thu's last day of work",
+   "truth": "Friday, October 30, 2026"
+  },
+  {
+   "about": "Day Thu's work health coverage ends",
+   "truth": "October 31, 2026"
+  },
+  {
+   "about": "Thu's employer and how long she has had the plan",
+   "truth": "Bayview Hospital Laundry; she has been on its group health plan from her own job since 2011"
+  },
+  {
+   "about": "Thu's age and Medicare status",
+   "truth": "She is 67. She has Medicare Part A only and never signed up for Part B."
+  },
+  {
+   "about": "Who is on Thu's work plan",
+   "truth": "Thu and her son Tuan, 24, who is Lan's brother and is not on Medicare"
+  },
+  {
+   "about": "Bao's coverage",
+   "truth": "Bao Le, 70, Thu's husband, has retiree coverage from his old job at a bakery supply company since February 2025. He has no Part B and asks if he should sign up too."
+  },
+  {
+   "about": "The broker's advice",
+   "truth": "A broker, Mr. Kevin Doyle, emailed that Thu should take COBRA and wait on Part B. The COBRA notice says $812 a month."
+  },
+  {
+   "about": "The filing service offer",
+   "truth": "An email offers to file Medicare forms for $299. Lan does not want to pay."
+  },
+  {
+   "about": "Coverage Lan wants kept until new coverage starts",
+   "truth": "Thu's, Tuan's and Bao's coverage should stay as it is. Nothing should be cancelled yet."
+  },
+  {
+   "about": "Who Lan is to Thu",
+   "truth": "Lan is Thu's daughter and helps with her permission, using Thu's accounts on Lan's phone"
+  }
+ ],
+ "unknowns": [
+  "Whether Bao's retiree coverage lets him sign up for Part B now",
+  "What the form CMS-L564 is and who must fill it",
+  "How many months Thu has to sign up, and whether there is a penalty",
+  "Whether COBRA keeps Thu's Part B sign-up time open"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:51:18Z"
+ }
+}

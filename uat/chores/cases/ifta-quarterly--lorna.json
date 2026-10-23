@@ -1,0 +1,92 @@
+{
+ "pair": "ifta-quarterly--lorna",
+ "playbook_id": "ifta-quarterly",
+ "character": "lorna",
+ "person": "Lorna Pike is the 58-year-old office and compliance manager at a small Laredo importer that runs its own three tractors, a straight truck and a pickup. She has filed the quarterly IFTA return by hand for years and trusts only figures she can trace to a line in a source document. After a freight-audit AI vendor over-promised and left her redoing denied claims, she is wary of any tool that sounds sure of itself. She wants Athena to build the third-quarter return from the ELD, fuel card and folder, show the basis for each number, and stop before anything is transmitted or paid.",
+ "stated_up_front": "I need the Q3 IFTA return for the company built from the ELD miles and the fuel card, with the folder receipts checked against it. Show me where each number comes from, and don't file or pay anything until I've seen the lines.",
+ "portals": [
+  {
+   "playbook_app": "Odowren ELD",
+   "mine": "Samsara"
+  },
+  {
+   "playbook_app": "Pumpline fuel card",
+   "mine": "Comdata"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "SharePoint"
+  },
+  {
+   "playbook_app": "Tallyquart IFTA filing",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_jurisdiction_line",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_return",
+   "mine": "ask"
+  },
+  {
+   "action": "pay_balance",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Fleet makeup",
+   "truth": "Three Class 8 tractors (units 11, 12, 14), one 16,000 lb straight truck (unit 7) and one half-ton pickup (unit 3)."
+  },
+  {
+   "about": "Jurisdictions with qualified-vehicle miles this quarter",
+   "truth": "Texas, New Mexico, Arizona and Wyoming. The tractors ran a produce-and-parts lane west and a Wyoming run."
+  },
+  {
+   "about": "Wyoming private-road miles",
+   "truth": "Unit 12 logged 214 miles on a private oil-lease road near Gillette, marked off-public-road in the ELD."
+  },
+  {
+   "about": "Texas ranch road miles",
+   "truth": "Unit 14 logged 96 miles on a ranch road outside Hebbronville, which Texas taxes, so they stay in taxable miles."
+  },
+  {
+   "about": "Cash fill",
+   "truth": "A $212 cash fill in Lordsburg, NM for unit 11 with a slip showing no seller, unit or purchaser; the gallons go in the total but get no credit."
+  },
+  {
+   "about": "Duplicate receipt",
+   "truth": "A paper receipt for a 118-gallon Comdata purchase in Tucumcari, NM is in the folder; the card record already carries it, so it counts once."
+  },
+  {
+   "about": "Non-qualified vehicle trips",
+   "truth": "The pickup made one run to Oklahoma City and the straight truck made a delivery in Shreveport, Louisiana; neither is a qualified vehicle, so no lines."
+  },
+  {
+   "about": "Brokered load",
+   "truth": "One Kansas load to Salina was brokered to another carrier's truck, shown only by a dispatch record in the folder."
+  },
+  {
+   "about": "Mexico",
+   "truth": "The tractors made border crossings into Nuevo Laredo; the miles and fuel appear in the totals but get no line."
+  },
+  {
+   "about": "Payment and sign-off",
+   "truth": "Last quarter's return was filed on time; the payment comes from the operating account, and the owner signs anything over a few thousand dollars, though this balance is under that."
+  }
+ ],
+ "unknowns": [
+  "Why Texas treats ranch road miles as taxable while Wyoming exempts private oil-lease roads",
+  "Whether the Mexico miles must appear anywhere on the return under IFTA rules",
+  "The exact third-quarter 2026 tax rate per gallon for each jurisdiction",
+  "The date IFTA moves the due date to when it falls on a weekend"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:08Z"
+ }
+}

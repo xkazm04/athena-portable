@@ -1,0 +1,92 @@
+{
+ "pair": "homestead-exemption--marcus",
+ "playbook_id": "homestead-exemption",
+ "character": "marcus",
+ "person": "Marcus Webb is a 45-year-old physical therapist in Tacoma. He was laid off from a hospital system and now works per diem, so he is going through every bill and tax line for money his wife expects back. He bought the house with his wife Renee and her father Dennis Hale, who lives with them and is on the deed. Marcus only filed the homestead exemption this spring and suspects they overpaid in earlier years. He also owns his late mother's old house, which he rents out, and a vacant lot. He wants every filing backed by a stated rule and line-by-line figures, and he will recheck any number in his own spreadsheet.",
+ "stated_up_front": "We bought our house in late 2022 and I think we've been paying property tax without the exemptions we were owed. Go through the county records and tell me which years we can still claim, with the math, before you file anything.",
+ "portals": [
+  {
+   "playbook_app": "Countyline Appraisal",
+   "mine": "Pierce County Assessor-Treasurer"
+  },
+  {
+   "playbook_app": "Deedvault",
+   "mine": "Pierce County Auditor recorded documents"
+  },
+  {
+   "playbook_app": "IDway",
+   "mine": "Washington Dept of Licensing"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  }
+ ],
+ "gates": [
+  {
+   "action": "apply_homestead",
+   "mine": "ask"
+  },
+  {
+   "action": "apply_age_or_disability",
+   "mine": "ask"
+  },
+  {
+   "action": "change_address",
+   "mine": "ask"
+  },
+  {
+   "action": "reply",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The home and when they moved in",
+   "truth": "A single-family house in Tacoma, deeded to Marcus, Renee and Dennis Hale in November 2022. They moved in the week after closing and have lived there since."
+  },
+  {
+   "about": "Homestead exemption history",
+   "truth": "Marcus filed the first homestead application in March 2026, and it was approved in May 2026 for tax year 2026. Nothing was filed for 2023, 2024 or 2025."
+  },
+  {
+   "about": "Dennis's date of birth",
+   "truth": "Dennis Hale was born 14 June 1960, so he turned 65 in June 2025."
+  },
+  {
+   "about": "Dennis's driver license",
+   "truth": "His Washington license still shows his old apartment on Pacific Ave in Tacoma, not the house. He never changed it after moving in."
+  },
+  {
+   "about": "Marcus's mother's old house",
+   "truth": "A small house on the east side that Marcus inherited. It has been rented since January 2023 at $1,850 a month on a one-year lease that auto-renews. He has no exemption on it."
+  },
+  {
+   "about": "Vacant lot",
+   "truth": "He also owns a vacant lot he bought in 2019 with no building on it. It is a separate parcel on the assessor's list."
+  },
+  {
+   "about": "Dennis's injury",
+   "truth": "In spring 2026 Dennis hurt his back at work and received a workers' compensation letter for temporary time-loss benefits. He is expected to return to work and has not applied for Social Security disability."
+  },
+  {
+   "about": "Solicitations in his inbox",
+   "truth": "A records company wants $89 for a copy of the deed. A tax-refund filing service offers to recover the savings for 30% of whatever is refunded."
+  },
+  {
+   "about": "Marcus's own spreadsheet",
+   "truth": "He has the 2023, 2024 and 2025 tax bills in a spreadsheet and pays the tax through his mortgage escrow. He wants each year's exemption amount shown by line so he can check it."
+  }
+ ],
+ "unknowns": [
+  "The exact delinquency date for each tax year and the last day a late application is accepted",
+  "Whether any exemption can reach back to 2023, or whether that year is already closed",
+  "Whether Dennis's temporary workers' comp counts as a disability under the exemption rules",
+  "How the county would pay out any refund, and whether it goes to the mortgage escrow account or to the owners"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:49:48Z"
+ }
+}

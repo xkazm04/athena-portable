@@ -1,0 +1,96 @@
+{
+ "pair": "reg-e-fraud-claims--aisha",
+ "playbook_id": "reg-e-fraud-claims",
+ "character": "aisha",
+ "person": "Aisha Grant is a 31-year-old ED night-shift nurse in Tucson who does her money admin in bursts on days off, mostly from her phone. She is pregnant, and she and her partner Marcus are saving hard for the baby. After a run of odd charges on her checking account she wants to know exactly which ones the bank must cover, what she owes on each, and when money shows up. She has no patience for padded totals or long setup.",
+ "stated_up_front": "Some charges on my checking account aren't mine and one old claim the bank seems to be sitting on. Can you sort out which ones I can actually get back and how fast? Keep it short, I've got one day off.",
+ "portals": [
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Ledgerwren bank",
+   "mine": "Chase"
+  },
+  {
+   "playbook_app": "Sendwren",
+   "mine": "Venmo"
+  },
+  {
+   "playbook_app": "Cardhollow",
+   "mine": "Capital One"
+  }
+ ],
+ "gates": [
+  {
+   "action": "report_unauthorized_transfer",
+   "mine": "ask"
+  },
+  {
+   "action": "request_provisional_credit",
+   "mine": "go"
+  }
+ ],
+ "facts": [
+  {
+   "about": "ACH debit she did not authorise",
+   "truth": "$212.40 pulled on Sept 2 by a company called 'BRIGHTPATH SVC' that she has never dealt with"
+  },
+  {
+   "about": "Online purchase with a copied debit card number",
+   "truth": "$389.99 at an electronics site on Sept 11 while the card was still in her wallet"
+  },
+  {
+   "about": "ATM withdrawal after the card was lost",
+   "truth": "$400 cash withdrawal in Phoenix on Sept 14; she realised the card was gone from her work locker on Thursday Sept 17 and called the bank on Saturday Sept 19"
+  },
+  {
+   "about": "Payment-app top-up from a phone caller",
+   "truth": "$250 Venmo top-up on Sept 24, made when a man posing as bank fraud staff got her to read out a verification code"
+  },
+  {
+   "about": "Payment she sent a scammer herself",
+   "truth": "$300 she sent on Sept 6 to a 'seller' for a stroller she never received; she started it herself"
+  },
+  {
+   "about": "Partner's fuel",
+   "truth": "$48.17 at a Circle K on Sept 15, Marcus using her debit card with her okay"
+  },
+  {
+   "about": "Refunded charge",
+   "truth": "$64.20 meal-kit charge on Sept 9 that the company emailed her it refunded on Sept 12"
+  },
+  {
+   "about": "Subscription she signed up for",
+   "truth": "$15.99 a month streaming charge she meant to cancel but did sign up for"
+  },
+  {
+   "about": "Credit card charge",
+   "truth": "$89 unfamiliar charge on her Capital One card on Sept 20, which is not from the checking account"
+  },
+  {
+   "about": "Claim the bank is late on",
+   "truth": "A $175 unauthorised debit claim she filed on Aug 24 that has no credit yet, well past ten business days"
+  },
+  {
+   "about": "Claims not yet late",
+   "truth": "Two claims filed Oct 2 and Oct 5, both still inside the bank's ten business days"
+  },
+  {
+   "about": "Pending charge",
+   "truth": "A pending $37.50 pharmacy charge from Oct 8 that she recognises and expects to post"
+  }
+ ],
+ "unknowns": [
+  "What dollar amount she is personally liable for on each unauthorised transfer",
+  "Exactly how many days the bank has to investigate or when it must give provisional credit",
+  "Whether the 60-day reporting window has already closed for the earliest ACH debit",
+  "What the bank's internal claim status codes mean"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:54:00Z"
+ }
+}

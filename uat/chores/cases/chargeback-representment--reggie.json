@@ -1,0 +1,88 @@
+{
+ "pair": "chargeback-representment--reggie",
+ "playbook_id": "chargeback-representment",
+ "character": "reggie",
+ "person": "Reggie Banks is a 61-year-old part-time finance person, three days a week, at a small snack brand that also sells direct to consumers through an online store and takes cards through a processor. He has ten open card disputes and the founder wants to know how many are real losses versus ones the brand can prove. He is methodical, reads at 175% zoom with a high-contrast theme, and wants every dispute shown line by line with amounts he can add up. He signs nothing until he has seen the evidence behind it.",
+ "stated_up_front": "I have ten open card disputes on our web store and I need to know which ones we can win and which we should just accept. Go through them one at a time with the amounts, and don't submit or accept anything until I've seen the lines.",
+ "portals": [
+  {
+   "playbook_app": "Paycurrent dashboard",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Storeline",
+   "mine": "Shopify"
+  },
+  {
+   "playbook_app": "Parcelwick",
+   "mine": "ShipStation"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_representment",
+   "mine": "ask"
+  },
+  {
+   "action": "accept_dispute",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Number of open disputes",
+   "truth": "Ten open disputes, totaling $1,486.40 across all of them."
+  },
+  {
+   "about": "Business and what is sold",
+   "truth": "Crunchwell Snacks, direct web store selling cases of granola clusters and seed crackers; typical order $48 to $212."
+  },
+  {
+   "about": "Who signs",
+   "truth": "Reggie prepares everything but the founder, Dana Whitfield, wants him to be the one who signs, so he signs each representment and acceptance himself."
+  },
+  {
+   "about": "Disputes where goods never shipped",
+   "truth": "Order 4417 for $96.00 (a 6-case crackers order) never left the warehouse because the item was out of stock; the customer wrote twice asking where it was."
+  },
+  {
+   "about": "Promised refund never paid",
+   "truth": "Order 4388 for $58.50: Reggie told the customer by email on September 14 that a refund would be issued, and it was never processed, so she disputed it as 'credit not processed'."
+  },
+  {
+   "about": "Delivered orders",
+   "truth": "Order 4402 for $212.00 shows delivered September 22 to the full street address with signature 'M. Okafor'; the customer claims non-receipt."
+  },
+  {
+   "about": "Credit already issued",
+   "truth": "Order 4395 for $74.25 was already refunded on September 19 through the store, and the customer disputed afterward anyway."
+  },
+  {
+   "about": "Fraud dispute with thin history",
+   "truth": "One dispute for $189.90 where the cardholder has only one earlier undisputed order, from August."
+  },
+  {
+   "about": "Sandbox/readiness preference",
+   "truth": "He wants totals broken into lines he can add himself and a clear split between amounts that are already settled and amounts the brand might recover."
+  },
+  {
+   "about": "Where he reads",
+   "truth": "Works in a browser at 175% zoom with a high-contrast theme and loses his place in wide tables, so he wants short lists, not wide grids."
+  }
+ ],
+ "unknowns": [
+  "What Compelling Evidence 3.0 requires or how many earlier orders it needs",
+  "The exact processor response deadline for each dispute versus the network deadline",
+  "What the reason codes like 13.1, 13.3, 13.6, 10.4 and 4837 mean",
+  "Whether a device match counts if the customer changed browsers"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:46:23Z"
+ }
+}

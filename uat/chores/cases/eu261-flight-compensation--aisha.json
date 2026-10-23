@@ -1,0 +1,84 @@
+{
+ "pair": "eu261-flight-compensation--aisha",
+ "playbook_id": "eu261-flight-compensation",
+ "character": "aisha",
+ "person": "Aisha Grant is a 31-year-old night-shift ER nurse in Tucson who does her money admin in bursts on days off, mostly from her phone. In June she and her partner Theo flew to Lisbon via Frankfurt and back, and some legs ran late. She has a vague idea that Europe pays for delays but has never filed anything. She wants to know exactly what she'll get and how long it takes, with no \"up to\" totals. She is saving for the baby due next spring and will not give up cash for a voucher without being asked first.",
+ "stated_up_front": "My partner and I got delayed a bunch on our June Europe trip and I heard you can get cash back for that. Can you check which flights actually qualify and tell me what I'd really get and how long it takes?",
+ "portals": [
+  {
+   "playbook_app": "Tripfold itineraries",
+   "mine": "TripIt"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Aerolark claims",
+   "mine": "Lufthansa"
+  },
+  {
+   "playbook_app": "Skyrail claims",
+   "mine": "Delta"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_claim",
+   "mine": "ask"
+  },
+  {
+   "action": "accept_voucher",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Who flew on the June trip",
+   "truth": "Aisha and her partner Theo, two adults, both on paid fares; Theo's Phoenix-Frankfurt ticket was bought with miles but still had a fare."
+  },
+  {
+   "about": "Phoenix to Frankfurt outbound, June 6, on Delta",
+   "truth": "Landed about 5 hours late because of a maintenance problem; it is a US airline flying into the EU."
+  },
+  {
+   "about": "Frankfurt to Lisbon, June 7, on Lufthansa",
+   "truth": "Landed 3 hours 20 minutes late. The email said a crew shortage. About 2,300 km, so the 400 euro band for each of 2 passengers."
+  },
+  {
+   "about": "Lufthansa email after the Frankfurt-Lisbon delay",
+   "truth": "Offered a 150 euro travel voucher each, worded as full and final settlement. Aisha has not replied."
+  },
+  {
+   "about": "Lisbon to Frankfurt return, June 18, on Lufthansa",
+   "truth": "Left 4 hours late because thunderstorms closed Frankfurt airport; no compensation owed."
+  },
+  {
+   "about": "Frankfurt to Phoenix, June 19, on Lufthansa",
+   "truth": "Arrived 2 hours 50 minutes after schedule, which is under the 3-hour line."
+  },
+  {
+   "about": "Tucson to Atlanta domestic leg in March on Delta",
+   "truth": "Five hours late, but it is a US domestic flight, outside EU rules."
+  },
+  {
+   "about": "What she wants out of it",
+   "truth": "Cash, not vouchers, and she wants a realistic total with a time estimate. She'd guess 800 euros if everything qualified."
+  },
+  {
+   "about": "Where her records are",
+   "truth": "Bookings are in TripIt; the airline emails are in her Gmail, which she checks on her phone between shifts."
+  }
+ ],
+ "unknowns": [
+  "Whether a crew shortage counts as an extraordinary circumstance under the rule",
+  "How long she has to file a claim before it expires",
+  "How far apart the airports are, and which payment band that puts each flight in",
+  "Whether the delayed checked bag on the Delta flight has anything to do with this claim"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:48:21Z"
+ }
+}

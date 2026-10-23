@@ -1,0 +1,100 @@
+{
+ "pair": "pmi-cancellation--marcus",
+ "playbook_id": "pmi-cancellation",
+ "character": "marcus",
+ "person": "Marcus Webb is a 45-year-old physical therapist in Tacoma. He was laid off when his hospital system cut his department and now works per diem. He is going through every bill line by line, partly because his wife wants money recovered, not a hobby. He has paid extra principal on the household mortgage since 2024 and has power of attorney for his widowed mother's loan. He expects Athena to show the math behind every figure, and he will redo any number in his own spreadsheet. He wants to be told plainly where a charge is legitimate.",
+ "stated_up_front": "I think our PMI should be gone and my mom's too, and I've got $4,200 in extra principal the servicer never applied. Pull the numbers, show me the math line by line, and tell me which loans actually qualify before anything gets sent.",
+ "portals": [
+  {
+   "playbook_app": "Northgate Servicing",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Ledgerline",
+   "mine": "Columbia Credit Union online banking"
+  },
+  {
+   "playbook_app": "Deedvault",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_pmi_cancellation",
+   "mine": "ask"
+  },
+  {
+   "action": "send_notice_of_error",
+   "mine": "go"
+  },
+  {
+   "action": "send_payment",
+   "mine": "ask"
+  },
+  {
+   "action": "reply",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Household loan: purchase price and original value",
+   "truth": "Bought in 2020 for $465,000 with 5% down. Original loan was $441,750. The closing disclosure shows the $465,000 sale price. The servicer's page shows a $472,000 appraisal."
+  },
+  {
+   "about": "Household loan: 80% line",
+   "truth": "80% of $465,000 is $372,000. The servicer shows a balance of $371,300, but that figure leaves out the unapplied funds."
+  },
+  {
+   "about": "Extra principal on the household loan",
+   "truth": "$400 a month extra since January 2024, plus a $4,200 lump sum sent on March 3, 2026. The lump sum shows in his credit union history but sits unapplied in a suspense line on the servicer site."
+  },
+  {
+   "about": "Household payment history",
+   "truth": "One payment was 16 days late in January 2025, with a $62 late fee. Nothing else has been late in two years."
+  },
+  {
+   "about": "Second lien on the house",
+   "truth": "A $30,000 home equity line opened in 2022. It was paid off and closed in 2025, and Deedvault shows the reconveyance recorded. No other liens."
+  },
+  {
+   "about": "Household PMI charge",
+   "truth": "$142 a month, still being charged."
+  },
+  {
+   "about": "Mother's loan (Loretta Webb, widowed, he holds POA)",
+   "truth": "Original value is her $298,000 purchase price. 78% is $232,440. The schedule reached that on March 1, 2026, and she was current at that point."
+  },
+  {
+   "about": "Mother's late payment",
+   "truth": "Her May 2026 payment was 52 days late, because of a hospital stay. It came after the schedule reached 78%."
+  },
+  {
+   "about": "Mother's premiums charged since termination",
+   "truth": "$118 a month, April through October 2026. That is 7 payments, $826 total."
+  },
+  {
+   "about": "Mailnest items",
+   "truth": "The closing disclosure, the servicer's annual notice on his mother's loan, her hospital bill, and three solicitations. One is a $399 PMI-removal service. One is from a sender styled like the servicer, asking for banking login details."
+  },
+  {
+   "about": "Escrow",
+   "truth": "The servicer raised his escrow by $200 a month, though his property tax bill barely moved. He wants that checked separately, not mixed into this chore."
+  }
+ ],
+ "unknowns": [
+  "Whether the 52-day late payment in May 2026 changes his mother's automatic termination at 78%, since it came after the schedule reached that date",
+  "How long the servicer has to answer a notice of error, and what it must send back",
+  "What the servicer's suspense or unapplied-funds line means, and why it holds the $4,200 without applying it",
+  "Whether the $472,000 appraisal on the servicer's page has any effect on the cancellation, or the law uses the $465,000 price"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:53:16Z"
+ }
+}

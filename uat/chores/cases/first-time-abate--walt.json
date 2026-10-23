@@ -1,0 +1,80 @@
+{
+ "pair": "first-time-abate--walt",
+ "playbook_id": "first-time-abate",
+ "character": "walt",
+ "person": "Walt Brenner, 66, runs a 24-person surveying and renovation firm with crews in three states, and owns a few rental units through an LLC as his retirement plan. His old CPA retired and the new firm's emails go unfinished. A pile of twelve IRS notices has built up on his desk, scanned by his part-time bookkeeper Donna, and he prints them and has not called anyone. He wants to know which penalties he can ask the IRS to drop, and he distrusts anything that looks like it is selling him something.",
+ "stated_up_front": "I have a stack of IRS letters, twelve of them, and Donna scanned them but nobody called. Tell me which penalties I can ask them to take off and what it costs me if I leave the rest alone. I am not a computer person, so keep it plain.",
+ "portals": [
+  {
+   "playbook_app": "Taxline Federal",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Ledgerwren bank",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_abatement",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The three businesses and who owns what",
+   "truth": "Brenner Field Services Inc. (S corporation, surveying and renovation crews), Brenner Rentals LLC (taxed as a partnership, the rental units), and Walt personally. His wife Carol is on the joint personal return."
+  },
+  {
+   "about": "Late S corporation return penalty",
+   "truth": "Brenner Field Services 2024 Form 1120-S filed about six weeks late, penalty $2,730 on notice N-2. Nothing earlier on that return in three years."
+  },
+  {
+   "about": "First quarter payroll deposit penalty",
+   "truth": "Form 941 for Q1 2025, late deposits, penalty $1,184 on N-5. Clean history before that on the 941."
+  },
+  {
+   "about": "Second quarter payroll penalty",
+   "truth": "Q2 2025 Form 941 also has a deposit penalty of $962 on N-6. Donna says the same cause, a payroll service switch."
+  },
+  {
+   "about": "Personal late-payment penalty on an installment agreement",
+   "truth": "Walt and Carol's 2024 Form 1040 late-payment penalty of $1,310 on N-8. They pay $850 a month on an installment agreement set up in early 2026, paid from the business checking at Ledgerwren."
+  },
+  {
+   "about": "Late partnership return",
+   "truth": "Brenner Rentals LLC 2024 Form 1065 filed late, penalty $1,260 (3 months, 2 partners) on N-10. This is the first penalty on that return."
+  },
+  {
+   "about": "Earlier penalty on a payroll form",
+   "truth": "The Form 940 shows a $410 penalty from 2023, so a clean three years does not hold for that return and the new 940 notice N-7 is not one to ask on."
+  },
+  {
+   "about": "Penalties that are not for relief",
+   "truth": "N-3 is an accuracy-related penalty of $3,900 on the personal return, and N-9 is an estimated tax penalty of $640. N-12 is a math-error change, and N-4 is a tax balance of $5,200 due on the 941."
+  },
+  {
+   "about": "Bank record of payments",
+   "truth": "Ledgerwren shows $850 installments leaving on the 15th each month, and the 941 balance was paid in full in August 2026."
+  }
+ ],
+ "unknowns": [
+  "Whether the first-time abatement rule counts only the earliest period or lets him ask on later ones too",
+  "What the penalty codes on the notices mean",
+  "Exactly how many years back the IRS looks for earlier penalties",
+  "Whether the installment agreement keeps him eligible while he is still paying"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:48:39Z"
+ }
+}

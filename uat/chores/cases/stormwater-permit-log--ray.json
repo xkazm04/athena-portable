@@ -1,0 +1,91 @@
+{
+ "pair": "stormwater-permit-log--ray",
+ "playbook_id": "stormwater-permit-log",
+ "character": "ray",
+ "person": "Ray Okafor is a project manager and coordinator for a general contractor and its electrical arm, running two jobs at once. He is on site with a tablet all day and does paperwork in the hour after the site closes. He is the named person on the stormwater permit for his current job, a 3-acre warehouse addition and parking lot grading under the 2022 CGP. He knows the field and his contract better than software, and wants the permit log kept straight in one sitting because the GC's project manager reads every record looking for a reason to deny it.",
+ "stated_up_front": "I've got the stormwater log for the warehouse job and it needs to match the rain gauge and the photos. Go through the storms and findings, tell me what's due and what's late, and don't put anything in the permit that the plan doesn't back up.",
+ "portals": [
+  {
+   "playbook_app": "Docshelf",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Rainlog",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Permitflow",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Sitegrid photos",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "assign_inspection",
+   "mine": "ask"
+  },
+  {
+   "action": "open_corrective_action",
+   "mine": "ask"
+  },
+  {
+   "action": "close_corrective_action",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "the site and permit",
+   "truth": "Warehouse addition and parking lot grading, 3 acres, covered under the 2022 EPA Construction General Permit; Ray is the named contact on the permit."
+  },
+  {
+   "about": "working hours",
+   "truth": "Crews work Monday to Friday, 6:30 am to 4:00 pm; nobody is on site on weekends, so a weekend storm is inspected by end of Monday."
+  },
+  {
+   "about": "the rain gauge",
+   "truth": "Rainlog is the gauge on the site's trailer fence; Ray trusts it over the weather app on his phone."
+  },
+  {
+   "about": "last weekend's storm",
+   "truth": "A storm hit Saturday night, 0.42 inches by about 1 am Sunday. Ray's inspector walked the site Monday morning and the report is in Permitflow."
+  },
+  {
+   "about": "small storms",
+   "truth": "Thursday the 15th had 0.11 inches. Two light rains on the 8th and 10th added up to about 0.27 inches, roughly 35 hours apart."
+  },
+  {
+   "about": "sediment at the inlet protection",
+   "truth": "The inlet bag at the north catch basin was half full of sediment and the laborers cleaned it out the same afternoon. The second clean-out at the east silt fence this month is also just maintenance in his mind."
+  },
+  {
+   "about": "stockpile cover",
+   "truth": "A corner of the cover on the topsoil pile was flapping; the inspector had it re-secured during the walk."
+  },
+  {
+   "about": "silt fence along the west property line",
+   "truth": "The posts are set but the fabric is not hung yet, so it is not finished. Ray wants it left open."
+  },
+  {
+   "about": "existing corrective actions",
+   "truth": "The washed-out section of the east silt fence was already opened as a corrective action in Permitflow; one older corrective action, for a missing inlet bag, is already closed."
+  },
+  {
+   "about": "who signs",
+   "truth": "Ray signs the certified entries himself, and wants to see each one before it is signed because a wrong date can come back on him."
+  }
+ ],
+ "unknowns": [
+  "Whether the permit counts a weekend storm inspected on Monday as satisfying the 24-hour rule or the next-business-day rule.",
+  "The exact number of days the permit allows to complete a corrective action after it is opened.",
+  "Which section of the stormwater plan defines when repeated maintenance at the same spot becomes a corrective action."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:54:44Z"
+ }
+}

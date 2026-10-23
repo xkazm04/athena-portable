@@ -1,0 +1,100 @@
+{
+ "pair": "section8-landlord--walt",
+ "playbook_id": "section8-landlord",
+ "character": "walt",
+ "person": "Walt Brenner is 66 and runs a 24-person surveying and renovation firm. As his retirement plan he owns four rental units through an LLC, three of them leased to families with Housing Choice Vouchers and one at market rate. A housing authority inspection letter came on paper with a list of failed items and deadlines, and he has printed it and circled things in pen. He does not know which items are his and which are the tenants', and he does not want to pay a contractor twice or tell the authority something untrue. He wants plain big-print answers and wants to be asked before anything goes out under his name.",
+ "stated_up_front": "I got a long letter from the housing authority about my voucher units, failed inspection items and dates. I am not a computer person. Tell me what I have to fix, what the tenants broke, and what it costs me if I miss a date.",
+ "portals": [
+  {
+   "playbook_app": "Landlord Link",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Rentroll",
+   "mine": "AppFolio"
+  },
+  {
+   "playbook_app": "Repairly",
+   "mine": "Buildium maintenance requests"
+  },
+  {
+   "playbook_app": "Ledgerline",
+   "mine": "QuickBooks Online"
+  }
+ ],
+ "gates": [
+  {
+   "action": "create_work_order",
+   "mine": "ask"
+  },
+  {
+   "action": "certify_correction",
+   "mine": "ask"
+  },
+  {
+   "action": "report_tenant_damage",
+   "mine": "ask"
+  },
+  {
+   "action": "request_rent_increase",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Number of units and how many are on vouchers",
+   "truth": "Four units on two lots; three have vouchers (Units 1, 2 and 4), Unit 3 is market rate."
+  },
+  {
+   "about": "Unit 2 smoke alarm",
+   "truth": "The inspection letter says the bedroom smoke alarm in Unit 2 is missing; he has not had anyone replace it yet."
+  },
+  {
+   "about": "Unit 1 range hood fan",
+   "truth": "His handyman Ray replaced the bathroom exhaust fan in Unit 1 on October 9 and has an invoice for $142, but he never told the housing authority."
+  },
+  {
+   "about": "Unit 4 GFCI outlet",
+   "truth": "The kitchen GFCI outlet in Unit 4 failed the test; the tenant says it never worked right since she moved in, and it is not yet fixed."
+  },
+  {
+   "about": "Unit 4 broken window pane and door",
+   "truth": "A cracked bedroom window pane and a punched hollow-core closet door in Unit 4; the tenant's son admitted it in a note, and nothing has been repaired."
+  },
+  {
+   "about": "Unit 1 window latch",
+   "truth": "The living room window latch in Unit 1 is worn out and loose; the tenant says it has been that way for years."
+  },
+  {
+   "about": "Unit 2 lease start and rent",
+   "truth": "Lease began March 1, 2026, rent $1,350; he would like $1,425 but it is still the first year."
+  },
+  {
+   "about": "Unit 1 rent increase",
+   "truth": "Lease anniversary is December 15; rent $1,200 now, he wants $1,275, which he believes is within the range the authority posted."
+  },
+  {
+   "about": "Unit 4 anniversary",
+   "truth": "Lease anniversary is December 20, 2026 and he wants to raise the rent from $1,180 to $1,240; that is only 58 days away today."
+  },
+  {
+   "about": "Unit 3 market rate",
+   "truth": "The Unit 3 tenant pays $1,500 with no voucher; he thought of raising it to $1,575 but it is not an authority matter."
+  },
+  {
+   "about": "Where he keeps paperwork",
+   "truth": "The inspection letter is in a manila folder on his desk, dated October 14, 2026, with a deadline stamp of 30 days for most items and 24 hours for the smoke alarm."
+  }
+ ],
+ "unknowns": [
+  "Whether the housing authority has already abated any payment for the uncertified items.",
+  "What rent range the authority allows for each voucher unit.",
+  "How the 24-hour and 30-day deadlines are counted, and whether the clock started on the letter date or the inspection date.",
+  "Whether Ray's fan replacement counts as a correction the authority will accept without a photo or receipt."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:54:36Z"
+ }
+}

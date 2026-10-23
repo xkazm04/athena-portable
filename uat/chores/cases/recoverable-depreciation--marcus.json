@@ -1,0 +1,84 @@
+{
+ "pair": "recoverable-depreciation--marcus",
+ "playbook_id": "recoverable-depreciation",
+ "character": "marcus",
+ "person": "Marcus Webb is a 45-year-old physical therapist in Tacoma, laid off from a hospital system and now working per diem. He is the household's spreadsheet person, and his wife wants the insurance money collected, not a project. After a February 2025 windstorm (a declared state of emergency in Washington) and an older 2023 water claim, he has the adjuster's estimates, a contractor partway through the work, and a replacement cost policy. He wants every figure traced to an invoice and a payment before anything is sent to the insurer.",
+ "stated_up_front": "We had a windstorm claim and an older water claim with Hearthguard, and they held back depreciation on both. Go line by line and show me the math on what we can actually claim now, and don't send anything until I've checked it.",
+ "portals": [
+  {
+   "playbook_app": "Hearthguard claims",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Buildmark contractor",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Ledgerline bank",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_depreciation",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Windstorm claim first cash-value payment",
+   "truth": "Paid March 14, 2025, after the governor's windstorm emergency declaration, so he believes the three-year window applies, to March 2028."
+  },
+  {
+   "about": "Roof section repair",
+   "truth": "Replacement cost $11,800, depreciation held back $2,950, cash value paid $8,850. Contractor invoice $11,200, finished and paid from the bank in June 2025. Claimable is the lesser of $11,800 and $11,200, minus $8,850, which is $2,350."
+  },
+  {
+   "about": "Gutters",
+   "truth": "Replacement cost $2,400, depreciation $600. Hearthguard already released the $600 in a payment in August 2025, so there is nothing more to claim."
+  },
+  {
+   "about": "Fence",
+   "truth": "Adjuster line of $3,100 replacement cost with $775 depreciation. The contractor has only given a quote of $2,900, and no work has been done."
+  },
+  {
+   "about": "Kitchen cabinets",
+   "truth": "Replacement cost $6,500, depreciation $1,300. Contractor scheduled the install for November 2026, so the work is not done."
+  },
+  {
+   "about": "Shed",
+   "truth": "Replacement cost $1,800, depreciation $450. It has an actual cash value endorsement, so the depreciation is not recoverable."
+  },
+  {
+   "about": "Laptop",
+   "truth": "Replacement cost $1,400, depreciation $350, cash value paid $1,050. He replaced it for $980 with a Mailnest receipt, which is less than what was paid, so nothing more is owed."
+  },
+  {
+   "about": "Living room sofa receipt",
+   "truth": "A Mailnest receipt for a $1,250 sofa is dated October 2024, before the storm. It is the original purchase, not the replacement."
+  },
+  {
+   "about": "Older water claim",
+   "truth": "Loss in spring 2022 with the first payment in May 2022. It has two lines, the subfloor and the bathroom tile, repaired in 2025, which he thinks is after the extended window closed."
+  },
+  {
+   "about": "Contractor and bank records",
+   "truth": "The contractor's invoices are in Buildmark, tied to the estimate lines. The bank payments to the contractor are in Ledgerline, and he expects the amounts to match to the dollar."
+  }
+ ],
+ "unknowns": [
+  "Whether the older water claim's first payment fell under a state of emergency, and so which window applies to it",
+  "The exact deadline the law gives for the older water claim's depreciation",
+  "Whether the insurer will accept the contractor's invoice as proof or ask for more documents",
+  "What the endorsement code on the policy means beyond 'the shed is cash value only'"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:53:46Z"
+ }
+}

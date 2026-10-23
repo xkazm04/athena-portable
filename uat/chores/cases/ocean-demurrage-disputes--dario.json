@@ -1,0 +1,100 @@
+{
+ "pair": "ocean-demurrage-disputes--dario",
+ "playbook_id": "ocean-demurrage-disputes",
+ "character": "dario",
+ "person": "Dario Mendes, 47, runs Mendes Haul LLC, three trucks outside Joliet, and drives one himself. He does drayage of ocean containers from the Elwood rail ramp for two ocean lines, and for some boxes the lines bill his company for late-pickup and late-return days. He reads English slowly with a phone translator, and his wife Luciana, who keeps the books, asks every month why money went out. He wants nobody to file a weak claim in his name and hurt his standing, and he does not want to pay what the rule says he need not pay. He does the paperwork at night at the kitchen table.",
+ "stated_up_front": "Please, I have late-day invoices from two ocean lines for containers my trucks moved. Check which ones I do not need to pay, tell me simple, and do not pay anything before you ask me.",
+ "portals": [
+  {
+   "playbook_app": "Forwarden",
+   "mine": "DrayLink"
+  },
+  {
+   "playbook_app": "Berthgate terminal",
+   "mine": "RampView"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Halvard Lines",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Trident Ocean",
+   "mine": "Corvane Line"
+  }
+ ],
+ "gates": [
+  {
+   "action": "dispute_invoice",
+   "mine": "ask"
+  },
+  {
+   "action": "pay_invoice",
+   "mine": "ask"
+  },
+  {
+   "action": "request_waiver",
+   "mine": "ask"
+  },
+  {
+   "action": "pay_charges",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Halvard invoice issued too late",
+   "truth": "Halvard invoice H-55120 for $1,260 was issued 40 days after the last day charged, container HLVU 4471038, picked up in early August."
+  },
+  {
+   "about": "Second late invoice",
+   "truth": "Halvard invoice H-55391 for $840 was issued 34 days after the last day charged, container HLVU 4472250."
+  },
+  {
+   "about": "Invoice missing required information",
+   "truth": "Corvane invoice C-88014 for $1,680 shows no free-time dates and no date the box was available; container CRVU 2208815."
+  },
+  {
+   "about": "Terminal closed days",
+   "truth": "RampView shows the ramp closed or the box not released for 3 days in September (storm and a hold), and Halvard billed $1,050 of late-pickup days for those 3 days."
+  },
+  {
+   "about": "Empties refused",
+   "truth": "RampView shows the ramp refused Halvard empties for 3 days, and Halvard billed $720 of late-return charges for those days."
+  },
+  {
+   "about": "Free time owed",
+   "truth": "The broker's contract paperwork in DrayLink gives Corvane boxes 6 extra free days, but Corvane billed $1,500 for those days."
+  },
+  {
+   "about": "My own late charges",
+   "truth": "Container CRVU 2209977: my driver missed three appointments and the box was available every day, so the $1,200 is right and must be paid."
+  },
+  {
+   "about": "Already settled invoices",
+   "truth": "Corvane waived invoice C-87702 ($640) in an email. Halvard invoice H-54008 ($910) was paid in August by Luciana, who has the record."
+  },
+  {
+   "about": "Audit service",
+   "truth": "An audit service emailed offering to dispute for me and keep 35 percent of what is waived. I do not want this."
+  },
+  {
+   "about": "Who I deal with",
+   "truth": "The big broker sends loads by portal; the small email-only broker, Santos Freight, sends rate confirmations by email and is the one on the Corvane boxes."
+  }
+ ],
+ "unknowns": [
+  "Whether an invoice sent after 30 days must be paid under the federal rule, and what the rule number means.",
+  "Exactly which items an invoice must state, and whether the Corvane invoice is missing them.",
+  "How many days he has left to dispute each invoice.",
+  "Whether the 3 closed days at the ramp are charged back to him or to the ocean line."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:52:00Z"
+ }
+}

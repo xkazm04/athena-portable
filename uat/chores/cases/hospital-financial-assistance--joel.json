@@ -1,0 +1,97 @@
+{
+ "pair": "hospital-financial-assistance--joel",
+ "playbook_id": "hospital-financial-assistance",
+ "character": "joel",
+ "person": "Joel Martinez is a 38-year-old warehouse shift supervisor. He lives with his wife Carla, their two kids and his mother-in-law, and he does the family's bills on his laptop on Sunday nights. This year brought an ER visit for him, Carla's surgery and his mother-in-law's rehab stay, which the hospital billed as 'observation'. The balances are piling up, and a collection agency has now sent a notice. He suspects the hospital's own assistance policy should cover most of it, but he can't tell what counts as income or who counts as household. He'll pay what he really owes, but he wants every number traced to a line he can see.",
+ "stated_up_front": "Carla's surgery, my ER visit and her mom's rehab stay are all from Saint Ardent and I think their charity care policy covers us, and now a collection agency is sending letters. Can you figure out what we actually qualify for and get it applied for before they ruin our credit? I don't want to pay anything I don't owe.",
+ "portals": [
+  {
+   "playbook_app": "Saint Ardent billing",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Payroll Harbor",
+   "mine": "ADP"
+  },
+  {
+   "playbook_app": "Ledgerline bank",
+   "mine": "Chase"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_fap_application",
+   "mine": "ask"
+  },
+  {
+   "action": "pay_balance",
+   "mine": "ask"
+  },
+  {
+   "action": "reply",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Who lives in the house",
+   "truth": "Joel, his wife Carla, their son Marco (16) and daughter Lucia (9), plus Carla's mother Rosa, who lives with them and files her own taxes"
+  },
+  {
+   "about": "Who is on the 2025 tax return as dependents",
+   "truth": "Carla, Marco and Lucia on a joint return with Joel; Rosa is not listed"
+  },
+  {
+   "about": "Joel's pay",
+   "truth": "About $2,400 gross every two weeks, so roughly $15,600 gross for July to September"
+  },
+  {
+   "about": "Carla's pay",
+   "truth": "School aide, around $1,650 gross a month, about $4,950 for July to September"
+  },
+  {
+   "about": "Marco's job",
+   "truth": "Part-time at a grocery store, about $620 a month, paid into the joint account"
+  },
+  {
+   "about": "Rosa's Social Security",
+   "truth": "$1,420 a month deposited into the joint Chase account"
+  },
+  {
+   "about": "Other deposits in joint checking, July to September",
+   "truth": "A $1,500 transfer from savings in August, a $300 gift from Joel's brother, and a $212 mileage reimbursement from work"
+  },
+  {
+   "about": "The three balances he wants covered",
+   "truth": "His ER visit about $3,900, Carla's surgery about $7,600, Rosa's rehab 'observation' stay about $5,200, all billed under Joel as guarantor"
+  },
+  {
+   "about": "Other bills in the pile",
+   "truth": "A separate emergency physicians' group bill of about $860 that came through the same portal, and a $140 clinic bill he accidentally paid twice, with the refund still pending"
+  },
+  {
+   "about": "The collection agency notice",
+   "truth": "It arrived by email in October and says it will report to the credit bureaus if the ER balance isn't paid; he thinks the date is early November"
+  },
+  {
+   "about": "Insurance",
+   "truth": "Family PPO through Joel's employer; three explanations of benefits that don't match the hospital's bills"
+  }
+ ],
+ "unknowns": [
+  "What the hospital's policy counts as income and who it counts as household, including whether Rosa or Marco's wages are in",
+  "How many days he has to apply on each account, and which statement date starts that clock",
+  "The income cutoff for free care at his household size",
+  "Whether the collection agency has to stop once an application is in",
+  "What the codes and 'observation' status on Rosa's bill actually mean"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:49:54Z"
+ }
+}

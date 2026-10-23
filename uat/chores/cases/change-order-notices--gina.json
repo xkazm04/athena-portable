@@ -1,0 +1,84 @@
+{
+ "pair": "change-order-notices--gina",
+ "playbook_id": "change-order-notices",
+ "character": "gina",
+ "person": "Gina Russo is office manager at a thirty-person plumbing and mechanical subcontractor. She runs billing, lien deadlines, insurance certificates and closeout across a dozen jobs, and the project managers often forget to tell her about changes until invoice time. On a new school addition for one GC, she has to go through September's RFIs, ASIs, directives and foremen's logs, price the real changes from the estimator's numbers and give notice inside the 21 days. She trusts her whiteboard over software and wants to see every notice exactly as it would be sent, with job, GC, date and the clause it rests on, before anything goes out.",
+ "stated_up_front": "I need September's changes on the Maple Ridge school addition checked and noticed to Halvorsen Construction before their 21 days run out. Go through the RFIs, directives and the foremen's logs, price what's real, and show me each notice before it goes. Don't send anything I haven't seen.",
+ "portals": [
+  {
+   "playbook_app": "Primeline GC",
+   "mine": "Procore"
+  },
+  {
+   "playbook_app": "Sitegrid",
+   "mine": "Procore"
+  },
+  {
+   "playbook_app": "Dailylog",
+   "mine": "Fieldwire"
+  },
+  {
+   "playbook_app": "Estimato",
+   "mine": "Sage Estimating"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_change_notice",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Job and GC",
+   "truth": "Maple Ridge Elementary addition, general contractor Halvorsen Construction, subcontract incorporates AIA A201-2017 with a 21-day notice window"
+  },
+  {
+   "about": "Markup",
+   "truth": "Cost plus 15% on our own work, 5% on a lower-tier sub's work"
+  },
+  {
+   "about": "Real change: added floor drains",
+   "truth": "ASI 14 dated 9 September added two floor drains and trap primers in the new janitor closets; estimate shows labor $3,860 and material $2,140, our own work, so 15% markup"
+  },
+  {
+   "about": "Real change: relocated water heater",
+   "truth": "Change directive 6 dated 15 September moved the gas water heater to the east mechanical room; our estimate is $4,200 labor and material, plus $2,500 from our insulation sub, marked up 15% and 5% respectively"
+  },
+  {
+   "about": "Already a change order",
+   "truth": "The added hose bibs on the north wall were executed as CO 11 on 2 September, so no notice"
+  },
+  {
+   "about": "Already noticed",
+   "truth": "The rooftop unit gas-line reroute was noticed on 4 September and is under review, so not noticed again"
+  },
+  {
+   "about": "Base scope RFI",
+   "truth": "RFI 33 asked about the vent routing at the kitchen; the answer was 'as shown on P-301', so it is base scope"
+  },
+  {
+   "about": "Own rework",
+   "truth": "Our crew set the roof drain leaders at the wrong slope and redid them on 18 September, no claim"
+  },
+  {
+   "about": "Past window",
+   "truth": "Backflow preventer relocation instructed on 28 August has passed its 21 days"
+  },
+  {
+   "about": "Price escalation",
+   "truth": "Copper is up about 11% since bid, but the price is fixed, so it is not a change"
+  }
+ ],
+ "unknowns": [
+  "Whether the concealed-condition rule gives 14 days instead of 21 for the buried waste line the foreman found",
+  "Whether the subcontract's markup applies to the insulation sub's share or only to our own labor",
+  "Whether Halvorsen counts the day a directive is given or the day it is received in the portal",
+  "Whether the water heater directive's date in the platform is the date it was actually given"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:46:14Z"
+ }
+}

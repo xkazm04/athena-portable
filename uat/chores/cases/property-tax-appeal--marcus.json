@@ -1,0 +1,92 @@
+{
+ "pair": "property-tax-appeal--marcus",
+ "playbook_id": "property-tax-appeal",
+ "character": "marcus",
+ "person": "Marcus Webb is a 45-year-old physical therapist in Tacoma, Washington, laid off from a hospital system and now working per diem. He is the household's spreadsheet person and is going through every bill because his wife wants money back. He owns his home, a rental condo he rents out, and a vacant lot he inherited next to his sister's place. He has three appraisal notices from Pierce County and wants each one checked against the sales, with the math shown, before anyone files anything. He expects to be told plainly when a value is fair and he should leave it alone.",
+ "stated_up_front": "I got three assessment notices from the county this month, for the house, the rental condo and the lot. Go through each one against its deadline and the real comparable sales, show me the math, and tell me which are worth protesting and which are fair. Don't file anything until I've seen the numbers.",
+ "portals": [
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Deedvault",
+   "mine": "Pierce County Recorder"
+  },
+  {
+   "playbook_app": "Compsmith sales",
+   "mine": "Redfin"
+  },
+  {
+   "playbook_app": "Countyline Appraisal",
+   "mine": "Pierce County Assessor-Treasurer"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_protest",
+   "mine": "ask"
+  },
+  {
+   "action": "attach_comparable",
+   "mine": "ask"
+  },
+  {
+   "action": "attach_document",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "House notice value and deadline",
+   "truth": "Home on a 6,200 sq ft lot, 1,880 sq ft house, assessed at $612,000 on a notice mailed June 2; the notice gives a July 31 appeal deadline."
+  },
+  {
+   "about": "Rental condo notice",
+   "truth": "Assessed at $341,000; he still owns it per his deed, bought in 2017 for $258,000, and it has been rented since 2021."
+  },
+  {
+   "about": "Vacant lot notice",
+   "truth": "Assessed at $96,000; he thinks it is high but has not looked at lot sales."
+  },
+  {
+   "about": "House defect he can document",
+   "truth": "A crawlspace drainage and sill-plate rot problem found in November of last year, with a contractor estimate of $14,800 from a Tacoma contractor, saved in his email as a PDF."
+  },
+  {
+   "about": "Upgrade he wants, not a defect",
+   "truth": "He got a $38,000 kitchen remodel quote last spring but has not done it; he knows it is a want."
+  },
+  {
+   "about": "Old roof history",
+   "truth": "A roof leak in 2020 was fixed by a full roof replacement in 2022, with the invoice for $11,600 in his email."
+  },
+  {
+   "about": "Possible comps near the house",
+   "truth": "A neighbor two doors down sold for $575,000 in March with a similar 1,820 sq ft house; he also noticed a 2,900 sq ft house on the same street that sold for $720,000."
+  },
+  {
+   "about": "Odd sale he heard about",
+   "truth": "A house on his street sold to the seller's daughter for $390,000 last winter, which he assumes was a family deal."
+  },
+  {
+   "about": "Household stakes",
+   "truth": "His wife wants the tax bill lowered or confirmed fair; his escrow went up $200 a month and he wants to know how much of that is the property tax."
+  },
+  {
+   "about": "Deed knowledge",
+   "truth": "He sold a second rental, a duplex, in October two years ago, and thinks it should not appear on this year's notices."
+  }
+ ],
+ "unknowns": [
+  "Exactly how far back sales may be to count as comparable for the protest",
+  "What opinion of value he is expected to state on the form, and how a repair cost figures into it",
+  "Whether the county's appeal deadline for each notice is the same or counted from the mailing date",
+  "Whether the vacant lot's value is actually fair compared with lot sales"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:53:20Z"
+ }
+}

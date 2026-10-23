@@ -1,0 +1,92 @@
+{
+ "pair": "overpayment-refunds--maribel",
+ "playbook_id": "overpayment-refunds",
+ "character": "maribel",
+ "person": "Maribel Santos is a 52-year-old certified coder who bills part-time for a three-doctor family practice and freelances for two others. She has twenty years in medical billing and knows that Medicare overpayments are owed back within 60 days of identification, so she will not let one sit. This quarter she is cleaning up the practice's credit balances before the doctors review the numbers. She has seen AI billing tools mishandle things before and wants every credit traced to the bank and the payer before any money moves, with posting errors corrected and not refunded.",
+ "stated_up_front": "I've got a pile of credit balances in Chartmend I need sorted by whose money it is: Medicare back to the MAC, patients refunded, posting errors fixed and not refunded. Check the bank before you touch anything, and don't refund a deposit for a procedure that hasn't happened yet.",
+ "portals": [
+  {
+   "playbook_app": "Chartmend PM",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Ledgerline",
+   "mine": "QuickBooks Online"
+  },
+  {
+   "playbook_app": "Novabridge MAC",
+   "mine": "Noridian Medicare Portal"
+  },
+  {
+   "playbook_app": "Carenook",
+   "mine": "Stripe"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_overpayment_refund",
+   "mine": "ask"
+  },
+  {
+   "action": "refund_patient",
+   "mine": "ask"
+  },
+  {
+   "action": "correct_posting",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Duplicate Medicare payment on one claim, real, two deposits in the bank",
+   "truth": "Mrs. Edith Kowalczyk, DOS 2026-08-12, Medicare paid $142.18 twice; both deposits cleared. Identified 2026-10-14, so the 60 days run to 2026-12-13."
+  },
+  {
+   "about": "Medicare payment the contractor already recovered by offset",
+   "truth": "Walter Prince, second payment of $96.40; the MAC took it back as an offset on the 2026-09-30 remittance, so nothing is owed and no check goes out."
+  },
+  {
+   "about": "Payment posted twice from one remittance",
+   "truth": "Remittance dated 2026-09-18 for Dolores Venn, $118.75 posted twice in Chartmend, only one $118.75 deposit in the bank. A posting error to correct, not refund."
+  },
+  {
+   "about": "Payment posted to a transposed account number",
+   "truth": "A $87.30 Medicare payment went to account 40582 instead of 40852. Correct the posting by moving it; do not refund."
+  },
+  {
+   "about": "Deposit for upcoming excision",
+   "truth": "Ray Delgado paid a $200 deposit for a skin lesion excision scheduled 2026-10-30. Leave it alone."
+  },
+  {
+   "about": "Preventive visit coinsurance",
+   "truth": "Annette Cho paid a $24.00 coinsurance on a Medicare annual wellness visit on 2026-09-02; it was not owed, so refund her."
+  },
+  {
+   "about": "Coinsurance paid by both patient and Medigap",
+   "truth": "Harold Weiss paid $31.50 coinsurance at the desk and his Medigap supplement also paid it on 2026-09-25; refund Harold the $31.50."
+  },
+  {
+   "about": "Coding audit finding",
+   "truth": "The practice's internal coding audit on E/M levels was opened 2026-08-03 and its investigation closed 2026-10-09; she counts the 60 days from that close."
+  },
+  {
+   "about": "Balance paid twice by a patient",
+   "truth": "Luis Ortega paid a $65.00 balance twice online on 2026-10-01, both charges settled; refund $65.00."
+  },
+  {
+   "about": "Who approves",
+   "truth": "Maribel answers to the practice administrator, Dana Whitfield, who signs the refund checks."
+  }
+ ],
+ "unknowns": [
+  "Whether the 180-day suspension for a good-faith investigation applies to the coding audit under the 2025 amended rule",
+  "The exact number of claims the coding audit will end up touching beyond the sample",
+  "Whether the MAC's voluntary refund form needs a specific reason code for the duplicate payment",
+  "How long Stripe takes to return a card refund to the patient's bank"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:52:28Z"
+ }
+}

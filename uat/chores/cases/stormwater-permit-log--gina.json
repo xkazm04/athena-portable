@@ -1,0 +1,92 @@
+{
+ "pair": "stormwater-permit-log--gina",
+ "playbook_id": "stormwater-permit-log",
+ "character": "gina",
+ "person": "Gina Russo is the 49-year-old office manager of a thirty-person plumbing and mechanical subcontractor. Her company holds the stormwater permit coverage for the underground utility phase of a 4-acre warehouse pad, because the owner signed the NOI to win the job. The owner handed her the permit log, and she treats it like a lien deadline: every date must be backed by a rule and a document. She is not an environmental person and does not know the permit text. She wants each inspection and corrective action checked against the gauge, the reports and the photos before anything is signed, and she wants to see the actual entry that would be filed.",
+ "stated_up_front": "I need the Harbor Road warehouse stormwater log brought up to date against the rain gauge, the inspection reports and the photos. Show me what you'd assign, open or close, with the date and the reason for each, before anything goes in. I've got a deadline whiteboard, not a stormwater degree.",
+ "portals": [
+  {
+   "playbook_app": "Docshelf",
+   "mine": "Google Drive"
+  },
+  {
+   "playbook_app": "Rainlog",
+   "mine": "WeatherLink"
+  },
+  {
+   "playbook_app": "Permitflow",
+   "mine": "Procore"
+  },
+  {
+   "playbook_app": "Sitegrid photos",
+   "mine": "CompanyCam"
+  }
+ ],
+ "gates": [
+  {
+   "action": "assign_inspection",
+   "mine": "ask"
+  },
+  {
+   "action": "open_corrective_action",
+   "mine": "ask"
+  },
+  {
+   "action": "close_corrective_action",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "the site and her company's role",
+   "truth": "Harbor Road warehouse pad, about 4 acres. Her company is the operator for the underground utility phase, under the 2022 Construction General Permit."
+  },
+  {
+   "about": "working hours in the plan",
+   "truth": "Monday to Friday, 7:00 a.m. to 3:30 p.m. Saturday and Sunday are not business days."
+  },
+  {
+   "about": "the weekend storm",
+   "truth": "Saturday Oct 17 brought 0.62 inches. The gauge shows 0.25 inches reached at 2:40 p.m. The inspector's report is dated Monday Oct 19, so it was already inspected."
+  },
+  {
+   "about": "the two drizzles",
+   "truth": "Thursday Oct 8 had 0.14 inches ending around 6 p.m. Saturday Oct 10 had 0.13 inches ending around 5 a.m. They are about 35 hours apart and add up to 0.27, but neither reached 0.25 within 24 hours."
+  },
+  {
+   "about": "the small storm",
+   "truth": "Wednesday Oct 21 brought 0.11 inches, well under the trigger."
+  },
+  {
+   "about": "sediment at the inlet",
+   "truth": "On Oct 20 the inspector noted sediment at half height in the inlet bag at the storm drain by the gate. The crew cleaned it out that same afternoon. The photo is dated Oct 20."
+  },
+  {
+   "about": "stockpile cover",
+   "truth": "On the Oct 19 inspection, the cover on the pipe bedding stockpile was loose and was re-secured by the crew during the inspection."
+  },
+  {
+   "about": "the second sediment removal at the east fence",
+   "truth": "Sediment was removed from the east silt fence on Oct 2 and again on Oct 20. The second time is still routine maintenance, not the third."
+  },
+  {
+   "about": "existing corrective actions",
+   "truth": "CA-04 was opened Oct 19 for a missing inlet protection at the new manhole, due Oct 26, and is still open. CA-03 for a washed-out fence section was closed Oct 12."
+  },
+  {
+   "about": "silt fence with posts but no fabric",
+   "truth": "The west trench spoil silt fence replacement shows posts set on Oct 21 in CompanyCam, but no fabric on it yet. Discovered Oct 19."
+  }
+ ],
+ "unknowns": [
+  "Whether the permit counts the Oct 8 and Oct 10 drizzles together as one storm.",
+  "Which day the permit treats as discovery for the west fence finding: when the inspector saw it or when it was written up.",
+  "How many times the permit allows sediment removal at the same place before it becomes a corrective action.",
+  "Whether the inspector who did the Oct 19 visit is the qualified person who must do the next one."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:54:50Z"
+ }
+}

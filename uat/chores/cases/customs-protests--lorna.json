@@ -1,0 +1,88 @@
+{
+ "pair": "customs-protests--lorna",
+ "playbook_id": "customs-protests",
+ "character": "lorna",
+ "person": "Lorna Pike, 58, is the office and compliance manager at a small importer of trailer and cargo-securement hardware that runs its own trucks. She has handled customs entries, permits and claims for twenty-two years and checks the broker's entries against liquidations herself. Two years ago a freight-audit AI vendor promised 8% savings, delivered a fraction, took a share, and left her to redo two denied claims. She now wants every figure traced to a line and a rule, and she calls a practice run on made-up data a practice run. This quarter she suspects several entries paid duty under the wrong subheading because of a stale product master and the broker's old database. Some of those entries are still correctable and some are running out of time.",
+ "stated_up_front": "I think some of our entries went in under the wrong HTS number, and one protest window closes Wednesday. Go through the ERP, the broker's entries and the ACE account and tell me which ones can still be fixed and how, with the rule and the line for each. Don't file anything until I've seen it.",
+ "portals": [
+  {
+   "playbook_app": "Ledgerline ERP",
+   "mine": "Dynamics Business Central"
+  },
+  {
+   "playbook_app": "Docshelf",
+   "mine": "SharePoint"
+  },
+  {
+   "playbook_app": "Forwarden",
+   "mine": "Harborlink broker portal"
+  },
+  {
+   "playbook_app": "Portline Entries",
+   "mine": "ACE Portal"
+  }
+ ],
+ "gates": [
+  {
+   "action": "transmit_psc",
+   "mine": "ask"
+  },
+  {
+   "action": "file_protest",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The product with its own binding ruling",
+   "truth": "Molded rubber wheel chock sets. CBP ruling NY N3xxxxx (issued 2024) classifies them under 4016.99.60. The product master still shows an 8708 number that a buyer entered in 2023 and nobody reviewed."
+  },
+  {
+   "about": "Entries that can be corrected with a post-summary correction",
+   "truth": "Two unliquidated entries on ratchet tie-down straps, entered in March and June 2026. Both were filed under 8425.39 when they belong under 6307.90. Both are inside the 300-day window and more than 15 days before scheduled liquidation."
+  },
+  {
+   "about": "Entry to protest by Wednesday",
+   "truth": "A chain binder entry liquidated 1 May 2026, so its 180 days end Wednesday 28 October. It was declared under the wrong 7315 subheading, and the duty overpaid is about $2,140 on an entered value of $31,800."
+  },
+  {
+   "about": "Second liquidated entry to protest",
+   "truth": "A set of steel D-ring anchor entries liquidated 14 July 2026, with 180 days running to about 10 January 2027. It was declared under the broker's old-database number."
+  },
+  {
+   "about": "Entry past its protest window",
+   "truth": "Mud flap entry liquidated 12 March 2026. The 180 days ended 8 September, so it can't be protested and she wants it left alone."
+  },
+  {
+   "about": "Entry past the correction window but not yet liquidated",
+   "truth": "An LED marker lamp entry from December 2025, now past 300 days. It is scheduled to liquidate 6 November 2026 and must be protested after that, not corrected."
+  },
+  {
+   "about": "Entries already under the right number",
+   "truth": "Two entries of reflective tape and two of cargo nets were correct on entry. She wants them left alone."
+  },
+  {
+   "about": "What the duty figures cover",
+   "truth": "The note in the compliance folder says the ledger figures are column 1 general duty only. They exclude MPF and HMF, and any Section 301 duty is tracked on a separate sheet."
+  },
+  {
+   "about": "Who signs",
+   "truth": "The owner signs anything over a few thousand dollars, so the chain binder protest needs his sign-off before it is filed. The controller is copied on all refunds."
+  },
+  {
+   "about": "Broker note",
+   "truth": "The broker changed its classification database in January 2026. Entries filed before that date used the old database numbers."
+  }
+ ],
+ "unknowns": [
+  "Exactly how many days before scheduled liquidation CBP stops accepting a post-summary correction for each entry",
+  "Whether the 2024 ruling covers the newer wheel chock size the buyer started ordering this spring",
+  "How much interest CBP will add to the refunds and when the money will arrive",
+  "Whether the broker charges a fee per post-summary correction"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:47:25Z"
+ }
+}

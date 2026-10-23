@@ -1,0 +1,88 @@
+{
+ "pair": "inspection-scheduling--ray",
+ "playbook_id": "inspection-scheduling",
+ "character": "ray",
+ "person": "Ray Okafor, 42, is a project manager and coordinator for a small general contractor and its electrical arm. He is running a 6-unit townhome job in Ashford and a pharmacy addition with a fuel-island canopy in Merrow at the same time. He is on site most of the day with a tablet and does the inspection paperwork in the hour after the site closes. He distrusts software that needs setup, and wants each booking tied to the city's own rule and the field status, because the GC's PM will use any missed step against him.",
+ "stated_up_front": "I've got inspections to book for next week on the Ashford townhomes and the Merrow pharmacy addition. Check each city's rules and holidays, check what my supers say is ready and who's on site, and book the first day each one can really happen. Don't book anything that's not ready.",
+ "portals": [
+  {
+   "playbook_app": "Permitway",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Civicdesk",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Sitegrid",
+   "mine": "Procore"
+  },
+  {
+   "playbook_app": "Crew calendar",
+   "mine": "Google Calendar"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_inspection",
+   "mine": "ask"
+  },
+  {
+   "action": "schedule_inspection",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Ashford townhome job",
+   "truth": "Six-unit townhome building, Ashford permit set under building permit BP-24-3318, with separate electrical, plumbing and mechanical permits."
+  },
+  {
+   "about": "Ashford holiday next week",
+   "truth": "Ray thinks Ashford City Hall is closed Monday, Nov 2 for a city furlough day, so he does not want anything booked for that day. He is not sure it is on the portal calendar."
+  },
+  {
+   "about": "Townhome status from super Dale",
+   "truth": "Dale reports Units 1-4 rough electrical and rough plumbing are done and approved, rough mechanical is not yet approved, and insulation is not yet installed."
+  },
+  {
+   "about": "Gas piping",
+   "truth": "The gas piping inspection for the townhomes is already booked on Permitway for Wednesday, Nov 4. He does not want it booked again."
+  },
+  {
+   "about": "Merrow store addition",
+   "truth": "Pharmacy addition with a fuel canopy, building permit plus separate electrical and plumbing permits on Civicdesk. The addition slab is set for a pour on Friday, Nov 6."
+  },
+  {
+   "about": "Under-slab status in Merrow",
+   "truth": "Under-slab plumbing was roughed in last week by his sub and is ready for inspection. Under-slab electrical conduit is still being finished and is not ready."
+  },
+  {
+   "about": "Canopy correction",
+   "truth": "The canopy failed its framing inspection on Oct 14 for a missing guardrail. The guardrail is still at the fabricator and is due on site Nov 9 or later."
+  },
+  {
+   "about": "Crew presence",
+   "truth": "Dale is on the Ashford site Tuesday through Friday next week. Ray's Merrow super Luis is on site Monday, Wednesday and Thursday, and is off Tuesday and Friday."
+  },
+  {
+   "about": "Contract and notice habit",
+   "truth": "Ray expects each booking to cite the city rule or IBC section 110 it relies on, because the GC's PM reviews everything and a false certification to the city would be used against him."
+  },
+  {
+   "about": "Time available",
+   "truth": "Ray can spend about an hour in the evening after the site closes to set this up and does not want to revisit it."
+  }
+ ],
+ "unknowns": [
+  "Which edition of the International Building Code Ashford and Merrow each adopted, and whether either amended section 110.",
+  "How much notice each city requires before an inspection can be requested.",
+  "Whether Ashford's furlough day appears on its portal as a no-inspection day.",
+  "The exact re-inspection fee each city charges."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:12Z"
+ }
+}

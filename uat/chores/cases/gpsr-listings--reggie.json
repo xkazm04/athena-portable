@@ -1,0 +1,92 @@
+{
+ "pair": "gpsr-listings--reggie",
+ "playbook_id": "gpsr-listings",
+ "character": "reggie",
+ "person": "Reggie Banks is 61 and works three days a week as the finance person at a small snack brand. On the side he runs a small shop reselling homeware and garden tools to EU buyers on two marketplaces, and both have said they will hide non-compliant EU listings on 1 November. He has macular degeneration and works at 175% zoom with a high-contrast theme, so he wants things read to him line by line and totals he can add up himself. He is methodical and has never dealt with product-safety rules, so he is worried about missing a listing. He wants each listing's fix checked against the maker's own paperwork before anything goes public under his name.",
+ "stated_up_front": "Both my marketplaces are going to hide my EU listings on 1 November unless they carry the new product-safety information. Please go through my listings and the folder, tell me line by line what each one is missing, and fix only the ones that need it.",
+ "portals": [
+  {
+   "playbook_app": "Binderwell",
+   "mine": "Dropbox"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Stallwick seller",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Hawkerbrook seller",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "update_gpsr_info",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_compliance_form",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Deadline both marketplaces gave",
+   "truth": "Non-compliant EU listings are hidden on 1 November 2026; Reggie started on 9 October 2026."
+  },
+  {
+   "about": "Listings that need fixing",
+   "truth": "Six: a German maker's missing address, a desk lamp, an electric kettle, an aroma diffuser, a 10,000 mAh power bank, and a pair of pruning shears with no model number."
+  },
+  {
+   "about": "German maker missing its address",
+   "truth": "Kellermann Haushalt GmbH of Germany. Its postal address is in its product file in the Dropbox folder, but the Stallwick listing shows only the name."
+  },
+  {
+   "about": "Lamp, kettle and diffuser makers",
+   "truth": "All three are made outside the Union (a lamp maker, a kettle maker and a diffuser maker). Each maker's email names a Union responsible person, and Reggie keeps those emails in Postwren."
+  },
+  {
+   "about": "Power bank",
+   "truth": "The power bank's maker is outside the EU and its Hawkerbrook listing has no responsible person. The maker's mail should name one."
+  },
+  {
+   "about": "Shears",
+   "truth": "The shears are from a maker with a complete address, but the listing lacks a model number. The model, 'PS-21', is on the test report."
+  },
+  {
+   "about": "Things to leave alone",
+   "truth": "A jar of wildflower honey (food), a brass candlestick from 1925 (antique), packets of sunflower seeds (plant reproductive material), a tea-towel set offered only to UK and US buyers, and a linen throw that needs no warning."
+  },
+  {
+   "about": "Maker established in the EU",
+   "truth": "A Portuguese ceramics maker, Cerâmica Alvito, is established in the EU and needs no separate responsible person."
+  },
+  {
+   "about": "Listing already complete",
+   "truth": "A bamboo storage set on Stallwick already shows its maker's name, addresses, model and responsible person."
+  },
+  {
+   "about": "How he wants it reported",
+   "truth": "A short plain list per listing, with large readable text and one line per missing item, and no wide tables."
+  },
+  {
+   "about": "Who signs",
+   "truth": "Everything published goes out under Reggie's own seller name, so he wants to approve each change first."
+  }
+ ],
+ "unknowns": [
+  "Whether the antique candlestick is exempt from the rule or just not covered by this regulation.",
+  "What the exact cutoff time is on 1 November, and whether it is local time or UTC.",
+  "Whether a Union responsible person's email counts as the 'electronic address' or the maker's own does.",
+  "Whether the marketplaces require a model or a batch number when the report lists both."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:49:37Z"
+ }
+}

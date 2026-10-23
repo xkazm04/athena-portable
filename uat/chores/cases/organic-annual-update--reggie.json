@@ -1,0 +1,96 @@
+{
+ "pair": "organic-annual-update--reggie",
+ "playbook_id": "organic-annual-update",
+ "character": "reggie",
+ "person": "Reggie Banks is 61, a retired grocery-chain accounts payable man who now works three days a week doing finance for a small organic snack brand, Tallgrass Snack Co., in Dayton, Ohio. The brand makes organic trail mix and oat clusters plus one non-organic party mix, and its certifier's annual update is due in about three weeks. He reads at 175% zoom with a high-contrast theme, so he wants every finding as a short list of lines he can add up himself, with the reason beside each. The founder, Dana Pruitt, signed last year's plan and will sign this update, and she wants to know exactly what is being reported and why. Reggie is careful and would rather a thing be left out with a stated reason than reported on a guess.",
+ "stated_up_front": "Athena, I need our annual update for the certifier put together, and I read slowly so please give me one line per item with the reason. Report only what is real: changes we made or plan, suppliers that are truly not certified now, and imports whose certificates match what came in.",
+ "portals": [
+  {
+   "playbook_app": "Certifield Organic",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "Dropbox"
+  },
+  {
+   "playbook_app": "Ledgerwren ERP",
+   "mine": "QuickBooks Online"
+  },
+  {
+   "playbook_app": "Organicheck",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "report_plan_change",
+   "mine": "ask"
+  },
+  {
+   "action": "report_supplier_lapse",
+   "mine": "ask"
+  },
+  {
+   "action": "log_import_certificate",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Certifier and due date",
+   "truth": "The certifier's update is due 13 November 2026, and Reggie is working from last year's plan signed by Dana Pruitt."
+  },
+  {
+   "about": "Plan changes made this year",
+   "truth": "Two were made: they moved oat-cluster baking from a rented kitchen to their own leased unit in March 2026, and they switched the cluster binder from cane syrup to organic brown rice syrup in June 2026."
+  },
+  {
+   "about": "Plan change planned",
+   "truth": "They plan to add an organic dried-mango line in spring 2027, with a new co-packer for slicing; Dana has a memo dated 2 September 2026."
+  },
+  {
+   "about": "Change already accepted",
+   "truth": "A change to the label for the oat clusters, adding a new certifier seal, was accepted by the certifier in April 2026, so it is not reported again."
+  },
+  {
+   "about": "Memo that never happened",
+   "truth": "A memo from January proposed a second warehouse in Columbus, but the lease was never signed, so nothing changed."
+  },
+  {
+   "about": "Lapsed suppliers",
+   "truth": "Two organic ingredient suppliers show as not certified in the registry: Sunridge Seed Growers (pumpkin seeds) and Harlan Valley Oats (rolled oats, used in the organic clusters). The registry status is what counts."
+  },
+  {
+   "about": "Old paper certificate",
+   "truth": "Bellwater Raisin Co. has a paper certificate dated 2023 in the folder, but the registry shows it currently certified, so it is left alone."
+  },
+  {
+   "about": "Exempt distributor and non-organic mix",
+   "truth": "Coastline Nut Brokers is a distributor that handles product only in sealed packages and is exempt. Kessler Cashew Farm has lapsed, but its cashews go only into the non-organic party mix, so neither is reported."
+  },
+  {
+   "about": "Imports to log",
+   "truth": "Three organic imports match their certificates: Turkish apricots (3,000 kg), Sri Lankan coconut chips (2,400 kg) and Peruvian cacao nibs (1,200 kg). A fourth, Indian cashews, has a certificate covering 1,500 kg but 2,000 kg arrived, so it is not logged."
+  },
+  {
+   "about": "Items to leave out",
+   "truth": "A cancelled order for Ecuadorian banana chips never shipped; Ohio sunflower seeds are a domestic purchase; and a non-organic import of Vietnamese tapioca starch is not covered."
+  },
+  {
+   "about": "How Reggie wants results",
+   "truth": "He wants each reported item and each skipped item on its own line with the amount or date, so he can add them up and explain them to Dana."
+  }
+ ],
+ "unknowns": [
+  "Whether the certifier's rules count the planned mango line as reportable this year or only once it starts",
+  "Why the Indian cashew certificate covers only 1,500 kg, and whether a corrected one has been issued",
+  "What the date on the Harlan Valley Oats lapse in the registry means for oats already received this year",
+  "Whether the exemption for Coastline Nut Brokers needs to be stated anywhere on the update"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:52:12Z"
+ }
+}

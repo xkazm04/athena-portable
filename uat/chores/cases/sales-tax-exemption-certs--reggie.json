@@ -1,0 +1,88 @@
+{
+ "pair": "sales-tax-exemption-certs--reggie",
+ "playbook_id": "sales-tax-exemption-certs",
+ "character": "reggie",
+ "person": "Reggie Banks is a 61-year-old part-time finance person at a small natural-foods snack brand that sells wholesale to retailers in several states. A state sales tax department has just sent a request for substantiation on a few untaxed wholesale sales, and the founder wants to know which are really covered. Reggie is retired from grocery accounts payable, works three days a week, and reads at 175% zoom with a high-contrast theme because of macular degeneration. He goes line by line and wants each certificate checked against its order before anything is signed or sent.",
+ "stated_up_front": "The state sent us a substantiation request on some untaxed wholesale sales and I need to know which ones our resale certificates really cover. Please go through the orders and certificates one at a time, tell me the lines so I can add them up, and ask me before anything goes out under my name.",
+ "portals": [
+  {
+   "playbook_app": "Storeline admin",
+   "mine": "Shopwell wholesale admin"
+  },
+  {
+   "playbook_app": "Clientwren CRM",
+   "mine": "Clientwren CRM"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "Outlook"
+  },
+  {
+   "playbook_app": "Taxline State",
+   "mine": "Taxline State"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_certificate",
+   "mine": "ask"
+  },
+  {
+   "action": "substantiate_exemption",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Company and what it sells",
+   "truth": "Hollow Oak Snacks, a natural-foods snack brand selling cases to independent grocers and two distributors, based in Ohio"
+  },
+  {
+   "about": "The state's request",
+   "truth": "Lists three sales, and the answer is due 19 January 2027"
+  },
+  {
+   "about": "Who signs",
+   "truth": "Reggie prepares everything, but the founder, Dana Whitcomb, wants him to sign statements to the state as finance contact"
+  },
+  {
+   "about": "Tax at stake on the listed sales",
+   "truth": "About $1,140 in total tax across the three listed sales, which he wants shown line by line"
+  },
+  {
+   "about": "Buyers needing a certificate",
+   "truth": "Six buyers have a problem: one missing, one unsigned paper, one with a blank ID number, one claiming the wrong state, one lapsed, and one never sent"
+  },
+  {
+   "about": "Texas delivery",
+   "truth": "A Texas order to Prairie Dog Mercantile ships under Texas's own resale certificate and should not be asked for the Agreement's form"
+  },
+  {
+   "about": "Late certificate",
+   "truth": "One of the three listed sales is supported by a certificate received late, in the mail and not yet filed in the CRM"
+  },
+  {
+   "about": "Kentucky buyer",
+   "truth": "A Kentucky buyer appears in the orders and is not on the state's list, so it should not be answered"
+  },
+  {
+   "about": "Reading needs",
+   "truth": "He wants results as short lines of text in plain sentences, no wide tables, no icons without words, and each total with its lines shown"
+  },
+  {
+   "about": "Short-pay habit",
+   "truth": "He distrusts any total that does not add up from the shown lines, and will recheck sums himself"
+  }
+ ],
+ "unknowns": [
+  "How many days after a sale a certificate may still be accepted, or what the deadline is after a state's request",
+  "Whether a buyer's blanket certificate still counts after twelve months without an order",
+  "Whether an electronic certificate needs a signature line",
+  "What the state's code for the substantiation request type means"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:54:30Z"
+ }
+}

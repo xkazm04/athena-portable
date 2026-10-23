@@ -1,0 +1,96 @@
+{
+ "pair": "medicare-plan-review--lan",
+ "playbook_id": "medicare-plan-review",
+ "character": "lan",
+ "person": "Lan Tran is a 41-year-old pharmacy technician who works rotating shifts and does the family's paperwork on her phone. She helps her two parents with their Medicare drug plans: her mother lives with her, and her father lives alone ten minutes away. English is her second language and she reads official letters slowly, so she wants short, plain words. She worries about hidden fees, having paid a \"helper\" before who did nothing useful. She wants each parent to pay the least for the whole year, not just a low monthly premium.",
+ "stated_up_front": "Hello. I need to pick the drug plan for 2027 for my mother and my father, the open enrollment. Please check what they really take and the pharmacy, and tell me first if anything costs money.",
+ "portals": [
+  {
+   "playbook_app": "Carenook",
+   "mine": "MyChart"
+  },
+  {
+   "playbook_app": "Corner Pharmacy",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Rxmeadow",
+   "mine": "Humana"
+  },
+  {
+   "playbook_app": "PlanCompass",
+   "mine": "Medicare Plan Finder"
+  }
+ ],
+ "gates": [
+  {
+   "action": "enroll",
+   "mine": "ask"
+  },
+  {
+   "action": "disenroll",
+   "mine": "ask"
+  },
+  {
+   "action": "transfer_prescriptions",
+   "mine": "ask"
+  },
+  {
+   "action": "message_doctor",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Mother",
+   "truth": "Hoa Nguyen, 71, lives with Lan. Takes metformin 1000 mg, lisinopril 20 mg and atorvastatin 40 mg."
+  },
+  {
+   "about": "Mother's medication changes",
+   "truth": "Dr. Patel stopped glipizide in April. Jardiance 10 mg was started in September, and the doctor's office said it will send a prior authorization."
+  },
+  {
+   "about": "Father",
+   "truth": "Minh Tran, 73, lives alone in an apartment ten minutes away. Takes Spiriva inhaler daily, albuterol inhaler as needed, and amlodipine 5 mg."
+  },
+  {
+   "about": "Pharmacy",
+   "truth": "Both parents use only Corner Pharmacy, and it delivers to each home every 90 days. They do not use Lan's work pharmacy and Lan does not want to move them."
+  },
+  {
+   "about": "Current plan",
+   "truth": "Both parents are on the same plan through Humana, premium $18 a month each. The 2027 notice says the deductible goes from $400 to $590."
+  },
+  {
+   "about": "Plans she has seen",
+   "truth": "On Medicare Plan Finder she saw four 2027 plans. One has a $0 premium, but she thinks Corner Pharmacy is not in its network."
+  },
+  {
+   "about": "Her authority",
+   "truth": "Lan signed the authorized representative forms for both parents, and both parents agreed she should choose."
+  },
+  {
+   "about": "Timing",
+   "truth": "Today is October 23. Open enrollment ends December 7, and the parents' current coverage runs through December 31."
+  },
+  {
+   "about": "Doctor's portal",
+   "truth": "Dr. Patel's office is on MyChart, and Lan logs in on her phone with a code sent by text."
+  },
+  {
+   "about": "Money worry",
+   "truth": "Her work hours were cut in the summer, so she wants the lowest yearly cost for both parents and refuses anything with a fee."
+  }
+ ],
+ "unknowns": [
+  "Whether the insurer will approve the prior authorization for her mother's Jardiance",
+  "What 'step therapy' and 'tier' mean on a plan's drug list",
+  "Whether the new plan starts January 1 and the old plan ends by itself without a separate cancel",
+  "Whether Corner Pharmacy is a 'preferred' pharmacy on each plan, and what that changes in price"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:51:21Z"
+ }
+}

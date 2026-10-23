@@ -1,0 +1,92 @@
+{
+ "pair": "unclaimed-property-sweep--aisha",
+ "playbook_id": "unclaimed-property-sweep",
+ "character": "aisha",
+ "person": "Aisha Grant is a 31-year-old ED night-shift nurse in Tucson who does her money admin in bursts on days off, mostly from her phone. She was born Aisha Rahman and took Grant when she married Marcus in 2023. She did her nursing degree in Burlington, Vermont, then worked two years in Chicago before moving to Arizona. A finder's letter told her she has money waiting in Illinois, and she wants to know what is really hers, what she gets, and how fast. She hates 'up to' totals and long onboarding, and she balks at handing over a full SSN without a reason.",
+ "stated_up_front": "got a letter saying I have unclaimed money in Illinois and maybe Vermont, from when I lived there. can you check what's actually mine and get it back without me paying some finder a cut? keep it quick, I'm off till Thursday night",
+ "portals": [
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "Google Drive"
+  },
+  {
+   "playbook_app": "Heldwren Illinois",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Brackenholt Vermont",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Lostfunds",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_claim",
+   "mine": "ask"
+  },
+  {
+   "action": "sign_locator_agreement",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Names she has used",
+   "truth": "Aisha Rahman (birth name) until June 2023, Aisha Grant since her marriage to Marcus Grant."
+  },
+  {
+   "about": "Chicago address (2019-2021)",
+   "truth": "A rented apartment in Chicago's Lakeview neighborhood, on a lease and a hospital pay stub in her Drive folder under Rahman."
+  },
+  {
+   "about": "Burlington address (2015-2019)",
+   "truth": "A student rental near the UVM campus, shown by her old lease and a nursing school bill, all under Rahman."
+  },
+  {
+   "about": "Illinois listings that are hers",
+   "truth": "A payroll check of $212.60 from her old Chicago hospital, and a utility deposit refund of $138.45, both under Aisha Rahman."
+  },
+  {
+   "about": "Vermont listings that are hers",
+   "truth": "An insurance premium refund of $96.30 and an uncashed student-job paycheck of $64.75, both in Burlington under Aisha Rahman."
+  },
+  {
+   "about": "Finder letter",
+   "truth": "It came by email from Lostfunds, offering to recover a $230.28 Illinois dividend for 25 percent, with an agreement to sign."
+  },
+  {
+   "about": "Total she expects",
+   "truth": "Five listings, $742.38 combined, with the dividend counted. She will accept only an exact figure."
+  },
+  {
+   "about": "Listings that are not hers",
+   "truth": "An Aisha Grant in Illinois with a Naperville address she never lived at, a refund of $410 already paid to her in 2022, and a Texas listing for an Aisha Rahman in Houston."
+  },
+  {
+   "about": "Last four of SSN",
+   "truth": "Ends in 4417. She will give the last four but not the full number unless a form truly requires it."
+  },
+  {
+   "about": "Her mother",
+   "truth": "Her mother is alive, so there is no dead-relative listing in her case."
+  }
+ ],
+ "unknowns": [
+  "Whether the finder's 25 percent is legal, or what the state's cap on finder fees is.",
+  "How long each state takes to pay a claim after it is filed.",
+  "Whether Illinois wants a copy of her marriage certificate to link Rahman to Grant.",
+  "Whether the $230.28 dividend can be claimed free directly from the state."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:55:34Z"
+ }
+}

@@ -1,0 +1,92 @@
+{
+ "pair": "closeout-package--ray",
+ "playbook_id": "closeout-package",
+ "character": "ray",
+ "person": "Ray Okafor, 42, is a project manager and coordinator who started as an apprentice electrician. He runs the electrical arm of a small contractor and is closing out the electrical subcontract on a county middle school gym addition, with retainage still held by the GC. He does paperwork in the hour after the site closes, from a tablet. The GC's PM reads every submission looking for a reason to reject it, so Ray wants each closeout item tied to the subcontract clause and wants nothing sent that could reset review. He wants to finish setup in one sitting and has no patience for settings pages.",
+ "stated_up_front": "I need the closeout package for the Eastgate gym addition electrical sub so the GC releases our retainage. Go through their checklist and tell me what's open, which clause says so, and what you'd attach. Nothing goes to them until I see it.",
+ "portals": [
+  {
+   "playbook_app": "Primeline GC",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Sitegrid",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Partsmith",
+   "mine": "Graybar Connect"
+  },
+  {
+   "playbook_app": "Fixturely",
+   "mine": "Eaton Document Library"
+  },
+  {
+   "playbook_app": "Docshelf",
+   "mine": "Dropbox"
+  }
+ ],
+ "gates": [
+  {
+   "action": "attach_closeout_document",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Job and contract",
+   "truth": "Eastgate Middle School gym addition, electrical subcontract with Marlowe Builders for $1,420,000, incorporating AIA A201-2017."
+  },
+  {
+   "about": "Retainage held",
+   "truth": "10% of the contract, $142,000, released only after final payment requirements under 9.10 are met."
+  },
+  {
+   "about": "Supplier final waiver",
+   "truth": "The Graybar final conditional waiver is dated 9 October and covers all material through the last invoice. The two earlier ones from August and September are progress waivers."
+  },
+  {
+   "about": "Lighting sub waiver",
+   "truth": "Brightway Lighting, a lower-tier sub, has only sent a progress waiver through July. Their final waiver is still outstanding."
+  },
+  {
+   "about": "Insurance certificate",
+   "truth": "The certificate in the Dropbox folder expired 30 June. The renewed certificate, effective 1 July, is from the broker and is named as the current one."
+  },
+  {
+   "about": "Already accepted items",
+   "truth": "The surety's consent of surety and the arc-flash training record were both marked accepted on the GC's checklist in September."
+  },
+  {
+   "about": "Installed equipment",
+   "truth": "Two Eaton panelboards (serials ending 4471 and 4472) and one 150 kW generator transfer switch (serial ending 9018) were installed, per the startup reports in Sitegrid."
+  },
+  {
+   "about": "Substituted-out model",
+   "truth": "The original spec called for a different Eaton model of emergency lighting inverter. It was substituted by approved submittal in March, so only the manual for the substituted model applies."
+  },
+  {
+   "about": "Record drawings",
+   "truth": "The record set marked FINAL and signed by the architect is the 14 October revision. A markup dated 2 October is unsigned and unfinished."
+  },
+  {
+   "about": "Owner's receipt",
+   "truth": "The county's signed receipt covers the attic stock of spare lamps and ballasts. The delivery ticket for it was never signed."
+  },
+  {
+   "about": "Warranty from another job",
+   "truth": "A generator warranty in the Graybar portal is for a unit on the Riverside fire station job, not Eastgate."
+  }
+ ],
+ "unknowns": [
+  "The deadline in the subcontract for submitting final waivers before final payment is due.",
+  "Whether the architect requires wet signatures on the record drawings or accepts electronic ones.",
+  "What the endorsement codes on the renewed insurance certificate mean and whether they satisfy the subcontract's coverage requirement.",
+  "Whether the one-year warranty period starts at substantial completion or at final acceptance."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:46:49Z"
+ }
+}

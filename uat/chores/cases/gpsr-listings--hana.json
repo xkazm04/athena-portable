@@ -1,0 +1,88 @@
+{
+ "pair": "gpsr-listings--hana",
+ "playbook_id": "gpsr-listings",
+ "character": "hana",
+ "person": "Hana Kowalczyk, 34, runs a one-person shop from a studio behind her house in Oregon, selling handmade ceramics and linen goods. She sells on her own site and on two marketplaces, and some EU buyers order from her there. She got notices that both marketplaces will hide EU listings missing maker and safety information on 1 November. She does not know the regulation and wants to know quickly whether it applies to a shop her size. She packs orders herself and wants few questions, ones she can answer from memory.",
+ "stated_up_front": "Hey, both my marketplaces emailed me something about EU safety info on my listings and a 1 November cutoff. Is this even for a tiny shop like mine? Can you just sort out whatever I need to do, I have orders to pack.",
+ "portals": [
+  {
+   "playbook_app": "Binderwell",
+   "mine": "Google Drive"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Stallwick seller",
+   "mine": "Etsy"
+  },
+  {
+   "playbook_app": "Hawkerbrook seller",
+   "mine": "Shopify marketplace seller portal"
+  }
+ ],
+ "gates": [
+  {
+   "action": "update_gpsr_info",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_compliance_form",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Does she sell to EU buyers",
+   "truth": "Yes, about 15 EU orders a month, mostly Germany and the Netherlands, average order about $42."
+  },
+  {
+   "about": "Deadline",
+   "truth": "Both marketplaces said EU listings missing the information get hidden on 1 November."
+  },
+  {
+   "about": "Where her product info lives",
+   "truth": "A folder called 'Shop product files' with a one-page note she wrote and a PDF or sheet per product from the maker."
+  },
+  {
+   "about": "Her business name and contact",
+   "truth": "Kowalczyk Studio, studio@kowalczykstudio.example, a postal address she uses for returns in Oregon."
+  },
+  {
+   "about": "Which products she resells from other makers",
+   "truth": "She resells a few items by other makers alongside her own: a lamp, a kettle, a diffuser, a power bank, garden shears and a linen throw."
+  },
+  {
+   "about": "Honey and seeds",
+   "truth": "She has a honey listing from a neighbor and some flower seed packets, and does not think they count."
+  },
+  {
+   "about": "Antique",
+   "truth": "One brass candlestick from 1925 she found at an estate sale."
+  },
+  {
+   "about": "UK and US only listings",
+   "truth": "A few listings are set to ship to the UK and US only, not the EU."
+  },
+  {
+   "about": "Her preference on approvals",
+   "truth": "She wants to see what will be published on each listing before it goes live, since it is signed in her name."
+  },
+  {
+   "about": "The linen throw",
+   "truth": "It is plain linen with nothing electrical or hazardous, and she assumes it needs no warning."
+  }
+ ],
+ "unknowns": [
+  "Whether a maker based in the EU needs a separate responsible person listed",
+  "Which article of the regulation says what must be shown, and what counts as the 'Union responsible person'",
+  "Which of her listings are already complete on the marketplaces' forms",
+  "Whether a model or batch number is required when the maker did not give one on the product"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:49:28Z"
+ }
+}

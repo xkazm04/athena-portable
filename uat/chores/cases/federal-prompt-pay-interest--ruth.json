@@ -1,0 +1,88 @@
+{
+ "pair": "federal-prompt-pay-interest--ruth",
+ "playbook_id": "federal-prompt-pay-interest",
+ "character": "ruth",
+ "person": "Ruth Albers, 63, keeps the books for a thousand-acre corn and soybean farm in central Iowa that she runs with her husband and their son. Besides crops, the farm does custom work for three federal offices near the lake: mowing, gravel hauling and snow plowing, plus a fence repair job. She does the paperwork on her phone at night between field work and does not like long scrolling screens. A neighbour once lost a claim by missing a notice deadline, so she wants every date checked. She distrusts anything that files with a government office on its own, and she wants to know whether a thing is filed for her or only prepared for her to file.",
+ "stated_up_front": "I've got some government invoices from the lake office and the refuge this year and I think a few were paid late. Can you go through them and tell me which ones are owed interest, with dates? And don't send anything to them without showing me first.",
+ "portals": [
+  {
+   "playbook_app": "Invoicepoint",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Contractdesk",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Ledgerline bank",
+   "mine": "Heartland Savings Bank app"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_interest",
+   "mine": "ask"
+  },
+  {
+   "action": "request_penalty",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The three federal customers",
+   "truth": "The Corps of Engineers lake office (mowing and snow plowing), the wildlife refuge (gravel hauling), and a USDA service center (fence repair)."
+  },
+  {
+   "about": "Gravel invoice in dispute",
+   "truth": "The refuge's gravel invoice has $1,400 held back because they counted fewer loads than we billed. The rest of that invoice was paid, and we have not settled the $1,400."
+  },
+  {
+   "about": "Snow plowing invoice and the weekend",
+   "truth": "The lake office's plowing invoice came due on a Saturday, 14 March, and the money landed in our account Monday 16 March."
+  },
+  {
+   "about": "Mowing invoice paid with interest",
+   "truth": "One mowing invoice for the lake office was paid late, but the payment advice that came by email said it included interest, so I think that one is settled."
+  },
+  {
+   "about": "Small invoice",
+   "truth": "A $310 invoice for extra culvert gravel was paid two days late. I figure the interest comes to about eight cents."
+  },
+  {
+   "about": "Fence repair invoice",
+   "truth": "The USDA fence repair invoice looks about two weeks late if you count from the day they received it. Their contract gives 15 days to accept the work, and the work was accepted after that. Money came in 11 June."
+  },
+  {
+   "about": "Corrected invoice",
+   "truth": "The lake office sent back a mowing invoice as improper in May because of a wrong contract number. I sent a corrected one on 2 June, and they paid it 9 July."
+  },
+  {
+   "about": "August invoice",
+   "truth": "My August mowing invoice to the lake office was approved last week and has not come due yet."
+  },
+  {
+   "about": "June invoice and the 40 days",
+   "truth": "A June gravel invoice was paid late on 8 September. I know it's past the time to ask for the extra penalty because the deadline was 3 October."
+  },
+  {
+   "about": "Where the money lands",
+   "truth": "All federal payments come into the farm checking account at Heartland Savings Bank, and the memo line just says Treasury."
+  }
+ ],
+ "unknowns": [
+  "What interest rate the government used for each period",
+  "Whether the Saturday due date gives them until Monday",
+  "How many days the contract gives them to accept the work on each job, other than the fence job",
+  "What the code on the Treasury payment memo means"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:48:41Z"
+ }
+}

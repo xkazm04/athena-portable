@@ -1,0 +1,117 @@
+{
+ "pair": "ltc-claims--joel",
+ "playbook_id": "ltc-claims",
+ "character": "joel",
+ "person": "Joel Martinez is a 38-year-old warehouse shift supervisor with two kids. He does the family's bills on his laptop on Sunday nights. His wife's mother, Carmen Reyes, 79, has a long-term-care policy and gets in-home aides after her rehab stay. Carmen's rehab was billed as \"observation\", and Joel has been left holding the paperwork because his wife can't face the envelopes. He has already paid one bill twice this year and is waiting on that refund, so he distrusts any number he can't trace to a page. He wants the aide agency's invoices, the adult day statements and the policy's rules matched up line by line. He also wants a plain list of what to file, what to fix, and what to leave alone.",
+ "stated_up_front": "I've got my mother-in-law's long-term-care policy and a pile of home aide invoices going back to winter, and I don't know what's been paid, what got kicked back, and what I can even claim. Can you sort it out so I know what to file and what to leave out? I'm not typing in stuff that's printed on the bills.",
+ "portals": [
+  {
+   "playbook_app": "Harbor Mutual policyholder portal",
+   "mine": "Northstar Care policyholder portal"
+  },
+  {
+   "playbook_app": "BrightPath family portal",
+   "mine": "CareLink family portal"
+  },
+  {
+   "playbook_app": "Email",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "MyChart",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Medicare.gov",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Mom's bank (POA access)",
+   "mine": "Wells Fargo online banking"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_invoice",
+   "mine": "ask"
+  },
+  {
+   "action": "resubmit_invoice",
+   "mine": "ask"
+  },
+  {
+   "action": "file_appeal",
+   "mine": "ask"
+  },
+  {
+   "action": "request_premium_refund",
+   "mine": "go"
+  },
+  {
+   "action": "stop_autopay",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Whose policy and where she lives",
+   "truth": "Carmen Reyes, 79, Joel's mother-in-law, lives in her own house in Fresno. Joel's wife Alma is her daughter, and Joel handles the paperwork with Alma's okay."
+  },
+  {
+   "about": "Policy basics",
+   "truth": "Tax-qualified long-term-care policy from Northstar Care, bought in 2013. Premium is $212 a month by autopay from Carmen's Wells Fargo account."
+  },
+  {
+   "about": "Daily maximum",
+   "truth": "$185 a day until the September 1 anniversary, then $194.25 a day. It covers the aide agency and the adult day center together."
+  },
+  {
+   "about": "Elimination period",
+   "truth": "90 days. Joel thinks care started around November 20 last year, so February might still be inside it."
+  },
+  {
+   "about": "Agency billing",
+   "truth": "CareLink bills 8-hour days at $232, over the daily maximum. Joel worries he's been claiming the full $232."
+  },
+  {
+   "about": "Hospital stay",
+   "truth": "Carmen was in the hospital August 12 to 15 after a fall. The aide was still billed for three of those days because she sat with her."
+  },
+  {
+   "about": "Medicare statement",
+   "truth": "A home-health statement from Valley Home Health for $640 arrived by email and looks like a bill. Medicare paid it in full, so it shows $0 owed."
+  },
+  {
+   "about": "Family paid privately",
+   "truth": "Alma's cousin Daniela covered the agency's staffing gap for about ten days in June. Joel paid her by Zelle, $120 each, from Carmen's account."
+  },
+  {
+   "about": "Adult day center",
+   "truth": "Sunrise Adult Day, Tuesdays and Thursdays. On two days in July the agency also billed a full day."
+  },
+  {
+   "about": "Rejected or denied items",
+   "truth": "One invoice from April was denied and one from May was denied for the same reason. Joel remembers a letter but not the dates."
+  },
+  {
+   "about": "Premium waiver",
+   "truth": "Premiums were waived once benefits began, but he paid the January premium of $212 before the waiver began. He thinks later months were also charged by mistake."
+  },
+  {
+   "about": "Joel's own billing mess",
+   "truth": "He paid one of his own family's medical bills twice and still hasn't had that refund, so he double-checks anything that involves money coming back."
+  }
+ ],
+ "unknowns": [
+  "Whether February falls inside the 90-day elimination period, or exactly when it ended",
+  "The filing, resubmission and appeal deadlines, and which dates they count from",
+  "What the denial reason code on the April and May letters means",
+  "Whether the premium waiver reaches back to any months he already paid",
+  "Whether paying Daniela privately has any effect on the policy"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:53Z"
+ }
+}

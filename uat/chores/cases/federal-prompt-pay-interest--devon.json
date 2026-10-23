@@ -1,0 +1,88 @@
+{
+ "pair": "federal-prompt-pay-interest--devon",
+ "playbook_id": "federal-prompt-pay-interest",
+ "character": "devon",
+ "person": "Devon Clarke is the 26-year-old finance manager of a twenty-person community nonprofit that provides job-training and food programs, and he has held the job for eight months. His organization holds three federal awards and contracts, and it bills a few agencies for deliverables such as training sessions and supplies. He came from audit work and is comfortable with spreadsheets and portals, but he has never claimed Prompt Payment interest, and his predecessor never did either. The audit is four months away and he wants to claim only what the rules allow. He wants each request explained in plain terms, with the rule quoted, before anything is sent to an agency in the organization's name.",
+ "stated_up_front": "Hi, I think some of our federal invoices were paid late and we may be owed Prompt Payment interest, but I've never claimed it before. Can you go through every invoice and tell me what is actually owed, quoting the rule you use for each one, before anything is requested?",
+ "portals": [
+  {
+   "playbook_app": "Invoicepoint",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Contractdesk",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Ledgerline bank",
+   "mine": "First Prairie Credit Union online banking"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_interest",
+   "mine": "ask"
+  },
+  {
+   "action": "request_penalty",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Number of federal awards and contracts invoiced",
+   "truth": "Three: a workforce training contract, a food-supply contract, and a facilities-use agreement."
+  },
+  {
+   "about": "Training invoice received and paid",
+   "truth": "Invoice TR-0412 for $18,600 was received by the agency on 4 June and paid on 17 July."
+  },
+  {
+   "about": "Food-supply invoice with a dispute",
+   "truth": "Invoice FS-0233 for $6,200 has $1,150 held back by the agency in a quantity dispute, and the rest was paid."
+  },
+  {
+   "about": "Invoice paid with interest already",
+   "truth": "Invoice TR-0419 for $9,400 was paid late in August, and the payment advice in his email shows $14.62 of interest included."
+  },
+  {
+   "about": "Small late invoice",
+   "truth": "Invoice FU-0108 for $265 was paid two days late, so the interest is only a few cents."
+  },
+  {
+   "about": "Invoice returned as improper",
+   "truth": "Invoice TR-0425 for $12,300 was returned as improper on 2 June because of a wrong award number, and a corrected invoice was received on 12 June."
+  },
+  {
+   "about": "Not-yet-due invoice",
+   "truth": "Invoice FS-0261 for $7,850 was received 28 September, accepted 30 September, and is not paid or due yet."
+  },
+  {
+   "about": "Acceptance terms",
+   "truth": "The food-supply contract gives the agency 10 days to accept deliveries, and the training contract has no separate acceptance period."
+  },
+  {
+   "about": "Bank",
+   "truth": "Treasury payments arrive by ACH to the nonprofit's operating account, with the invoice number in the memo."
+  },
+  {
+   "about": "Approval preference",
+   "truth": "He wants to approve each interest request and each penalty request individually and be told whether it can be undone."
+  }
+ ],
+ "unknowns": [
+  "The Prompt Payment interest rate that applies to each invoice's period",
+  "Whether a weekend or holiday extends a due date",
+  "The deadline after which the additional penalty can no longer be claimed",
+  "Whether a request sent in the portal can be withdrawn after it is submitted"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:48:28Z"
+ }
+}

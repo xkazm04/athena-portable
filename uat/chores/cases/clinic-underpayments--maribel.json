@@ -1,0 +1,84 @@
+{
+ "pair": "clinic-underpayments--maribel",
+ "playbook_id": "clinic-underpayments",
+ "character": "maribel",
+ "person": "Maribel Santos is a 52-year-old certified coder with twenty years in billing. She works part-time at a three-doctor family practice and freelances for two others. At the family practice, two commercial payers (Harborline Health and Brightpath) pay on contracts she wants checked line by line, and Harborline also runs a Medicare Advantage plan. She has seen AI billing tools appeal denials that should have been corrected and resubmitted, so she wants only true underpayments disputed, and she wants them in the practice's name only after she has seen them. She answers to the practice administrator, Dolores, and to the doctors when collections drop.",
+ "stated_up_front": "Run the Harborline and Brightpath remits from the last 12 months against the contracts and find what's paid under the fee schedule. Don't touch NCCI bundles, deductible, sequestration or anything already in dispute, and show me each line before it goes out.",
+ "portals": [
+  {
+   "playbook_app": "Chartmend PM",
+   "mine": "Kareo"
+  },
+  {
+   "playbook_app": "Relaywave",
+   "mine": "Availity"
+  },
+  {
+   "playbook_app": "Docshelf",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Paylance payer hub",
+   "mine": "Harborline and Brightpath provider portals"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_underpayment_dispute",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Payers covered",
+   "truth": "Harborline Health (commercial plus its Medicare Advantage plan, Harborline Senior) and Brightpath Health Plan."
+  },
+  {
+   "about": "Harborline contract amendment",
+   "truth": "Amendment raised the E/M rates effective March 1, 2026; for example 99214 went from $118.00 to $131.00."
+  },
+  {
+   "about": "Doctors",
+   "truth": "Dr. Okafor, Dr. Lindqvist and Dr. Patel; Dr. Patel joined Brightpath's panel July 1, 2026 and was paid as non-participating on a few visits before then."
+  },
+  {
+   "about": "Example short-paid line",
+   "truth": "Harborline 99214 DOS April 9, 2026, allowed $118.00 where the amended rate is $131.00, so $13.00 short."
+  },
+  {
+   "about": "Medicare Advantage sequestration",
+   "truth": "Harborline Senior visits are cut 2% under the plan's schedule, which she knows is correct and not disputable."
+  },
+  {
+   "about": "Deductible line",
+   "truth": "A Brightpath 99213 on May 14, 2026 was allowed $96.00 with the whole amount applied to the patient's deductible; paid $0 is correct."
+  },
+  {
+   "about": "Bundled line",
+   "truth": "A 76942 ultrasound guidance billed with 20610 on June 2, 2026 was denied CO-97; it is bundled and she will not dispute it."
+  },
+  {
+   "about": "Dispute windows",
+   "truth": "Harborline gives 180 days from the remittance date; Brightpath gives 120 days. Two older Brightpath lines from May 2026 remittances are already past it."
+  },
+  {
+   "about": "Open dispute",
+   "truth": "A Harborline 99215 from March 2026 is already in dispute, filed September 3, 2026."
+  },
+  {
+   "about": "Money expectation",
+   "truth": "She expects roughly $1,500 to $2,500 in total shortfall and wants any recovery figure stated as the gross amount short, before write-offs."
+  }
+ ],
+ "unknowns": [
+  "Exactly which day each payer's dispute window closes for the older remittances",
+  "Whether the 2026 Brightpath fee schedule has a mid-year update she was never told about",
+  "What the multiple-procedure reduction percentage is in each contract",
+  "How long each payer will take to answer a dispute"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:46:35Z"
+ }
+}

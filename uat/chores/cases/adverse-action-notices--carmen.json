@@ -1,0 +1,96 @@
+{
+ "pair": "adverse-action-notices--carmen",
+ "playbook_id": "adverse-action-notices",
+ "character": "carmen",
+ "person": "Carmen Ruiz is the whole HR department at a 46-person manufacturer, and every offer there is contingent on a background check. She has a handful of candidates at different stages: some rejected on a report, one hired, one who walked away. She keeps a paper calendar of deadlines and does not trust automated reminders. She wants every notice tied to its rule and nothing mailed to a candidate without her approval, and she will check the day counts herself.",
+ "stated_up_front": "I've got a few candidates whose background checks came back and I need to figure out who is owed a pre-adverse notice and who is ready for the final one. Don't send anything to anyone until I've looked at it, and show me the rule and the dates you're counting from.",
+ "portals": [
+  {
+   "playbook_app": "Applyrook ATS",
+   "mine": "BambooHR"
+  },
+  {
+   "playbook_app": "Veritarn Screening",
+   "mine": "Checkr"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  }
+ ],
+ "gates": [
+  {
+   "action": "send_pre_adverse_notice",
+   "mine": "ask"
+  },
+  {
+   "action": "send_final_notice",
+   "mine": "ask"
+  },
+  {
+   "action": "forward_dispute_to_vendor",
+   "mine": "ask"
+  },
+  {
+   "action": "reply_message",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Company size and role of the person doing this",
+   "truth": "46 employees, a machining and assembly plant; Carmen is the only HR person"
+  },
+  {
+   "about": "Company wait before a final notice",
+   "truth": "Five full business days after the pre-adverse notice goes out, written in the hiring policy she wrote with the outside lawyer"
+  },
+  {
+   "about": "Candidate owed a first pre-adverse notice",
+   "truth": "Dale Whitcomb, forklift operator offer, report shows a 2023 felony theft conviction; reason recorded as background report; signed authorization on 29 September"
+  },
+  {
+   "about": "Candidate whose wait has ended",
+   "truth": "Marisol Pena, press operator, pre-adverse notice with report and summary of rights mailed 1 October; five business days with Columbus Day (12 October) not counted ends well before today"
+  },
+  {
+   "about": "Candidate rejected for a non-report reason",
+   "truth": "Tobias Lindqvist failed the blueprint-reading skills test on 5 October; the report was clear and plays no part"
+  },
+  {
+   "about": "Candidate who was hired",
+   "truth": "Renee Okafor, shipping clerk, started 12 October after a clear report"
+  },
+  {
+   "about": "Candidate who disputes the record",
+   "truth": "Gordon Haile emailed 14 October saying the DUI on his report belongs to another Gordon Haile with a different birth year"
+  },
+  {
+   "about": "Candidate who withdrew",
+   "truth": "Aaliyah Brandt withdrew by email on 8 October to take another job"
+  },
+  {
+   "about": "Vendor's pitch",
+   "truth": "Checkr's rep emailed offering to send all adverse action notices for a per-notice fee; Carmen has not answered and does not want to"
+  },
+  {
+   "about": "Where her deadline tracking lives",
+   "truth": "A paper desk calendar, where she writes the pre-adverse send date and the day the wait ends"
+  },
+  {
+   "about": "Who approves legal questions",
+   "truth": "Her outside employment lawyer, billed by the quarter hour, so she only calls with a real question"
+  }
+ ],
+ "unknowns": [
+  "Whether the law sets a specific number of days for the wait before a final notice",
+  "Which exact section of the FCRA requires the summary of rights to be sent with the report",
+  "Whether Checkr has already finished reinvestigating Gordon Haile's dispute",
+  "What the code on the Checkr report for Dale Whitcomb's record means"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:45:33Z"
+ }
+}

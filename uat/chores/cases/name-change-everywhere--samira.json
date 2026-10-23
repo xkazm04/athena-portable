@@ -1,0 +1,112 @@
+{
+ "pair": "name-change-everywhere--samira",
+ "playbook_id": "name-change-everywhere",
+ "character": "samira",
+ "person": "Samira Okoye is a 32-year-old marketing project coordinator, married six weeks ago. She and her husband Tobias both took the surname Okoye-Hart. She lives with her 84-year-old father and handles most of the household admin. She is great with apps and lost on government sites. She sent in her own Social Security change a few weeks ago, but she has not touched her licence, passport, bank or payroll, and she doesn't know what order they go in. She has a Thanksgiving flight and a December work trip to Lisbon, and her husband and father both assume she has it all handled.",
+ "stated_up_front": "Okay, I made a list! I got married in September and need my new name on everything: license, passport, bank, work. Can you tell me what order to do it in and what's actually urgent? I have a flight at Thanksgiving and a work trip to Lisbon in December.",
+ "portals": [
+  {
+   "playbook_app": "Benefitline",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "IDway",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Passdesk",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Ledgerline bank",
+   "mine": "Northfield Credit Union"
+  },
+  {
+   "playbook_app": "Staffnest",
+   "mine": "Workday"
+  }
+ ],
+ "gates": [
+  {
+   "action": "start_ss5",
+   "mine": "ask"
+  },
+  {
+   "action": "book_appointment",
+   "mine": "go"
+  },
+  {
+   "action": "prepare_application",
+   "mine": "ask"
+  },
+  {
+   "action": "request_name_change",
+   "mine": "ask"
+  },
+  {
+   "action": "update_legal_name",
+   "mine": "ask"
+  },
+  {
+   "action": "change_ticket_name",
+   "mine": "ask"
+  },
+  {
+   "action": "enroll_perk",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Wedding date and new name",
+   "truth": "Married 11 September 2026; she and her husband Tobias both now use Okoye-Hart. Her maiden name was Samira Okoye."
+  },
+  {
+   "about": "Her Social Security status",
+   "truth": "She filed her name change online and visited the field office on 28 September. Her new card arrived on 14 October, so her record shows Okoye-Hart."
+  },
+  {
+   "about": "Tobias's Social Security status",
+   "truth": "He has not done anything yet. His record still shows Tobias Hart. He would like a visit around early November."
+  },
+  {
+   "about": "Her driver's licence",
+   "truth": "A standard licence in the name Samira Okoye, expiring in 2029, with no REAL ID star."
+  },
+  {
+   "about": "Her passport",
+   "truth": "Issued 20 January 2026 in the name Samira Okoye, so it is under a year old."
+  },
+  {
+   "about": "Upcoming travel",
+   "truth": "A domestic flight on 25 November for Thanksgiving, and a work trip to Lisbon on 14 December booked through her employer's travel desk under her old name."
+  },
+  {
+   "about": "Her bank accounts",
+   "truth": "A checking and a savings account at Northfield Credit Union in her name. A joint account with Tobias and a separate account for her father's caregiver payroll."
+  },
+  {
+   "about": "Her work account",
+   "truth": "She is an employee at a marketing agency, and payroll still shows Samira Okoye."
+  },
+  {
+   "about": "Her priorities",
+   "truth": "She wants to know what is urgent and which steps carry a penalty if late, and wants no surprise fees."
+  },
+  {
+   "about": "Her father's caregivers",
+   "truth": "She pays two part-time caregivers out of pocket and has filed nothing for them. This is a separate worry from the name change."
+  }
+ ],
+ "unknowns": [
+  "Whether the passport can be renewed free of charge, or which form applies, given the passport's age",
+  "Whether the licence office will accept the appointment before Tobias's Social Security record is updated, and in what order things must happen",
+  "Whether the name change affects her taxes or the name her employer reports wages under",
+  "Whether she is legally a household employer, what tax filings that requires, and whether she needs an accountant"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:51:55Z"
+ }
+}

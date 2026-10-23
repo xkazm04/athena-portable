@@ -1,0 +1,84 @@
+{
+ "pair": "mlc-unmatched-royalties--hana",
+ "playbook_id": "mlc-unmatched-royalties",
+ "character": "hana",
+ "person": "Hana Kowalczyk is 34 and runs a one-person ceramics and linen shop from a studio behind her house in Oregon. Years ago she put out two small records of her own songs under the name Hana Kay, and she mostly forgot about them. A friend from her old band told her the mechanical royalty collective might be holding money for songs she never registered. She is unsure with official forms and has never looked at the collective's site. She wants to know quickly whether this is worth her time at her size, and she wants plain words instead of codes.",
+ "stated_up_front": "Hey, a friend said some royalty group might be sitting on money from my old songs from when I put music out as Hana Kay. Can you check what's there and get my songs registered? I have orders to pack so I need to know what you actually need from me.",
+ "portals": [
+  {
+   "playbook_app": "Royaltyline",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Releasewick distributor",
+   "mine": "DistroKid"
+  },
+  {
+   "playbook_app": "Lyrebank rights desk",
+   "mine": "BMI"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "Google Docs"
+  }
+ ],
+ "gates": [
+  {
+   "action": "register_work",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Artist name she released under",
+   "truth": "Hana Kay"
+  },
+  {
+   "about": "Her releases",
+   "truth": "An EP called 'Salt Kiln' (2019, 5 tracks) and an album called 'Low Tide Kitchen' (2022, 9 tracks), both through DistroKid"
+  },
+  {
+   "about": "Songs she believes she wrote herself or with her friend Dana",
+   "truth": "Six songs: 'Salt Kiln', 'Pour Over', 'Third Winter', 'Lantern Season', 'Kettle Hymn' and 'Slow Boat to Astoria'. She wrote the first four alone and wrote the last two with Dana Pruitt, 50/50."
+  },
+  {
+   "about": "Co-writer",
+   "truth": "Dana Pruitt, who also has her own song 'Fennel' on the album that Hana did not write and does not want touched"
+  },
+  {
+   "about": "Cover on her album",
+   "truth": "She covered 'Harbor Lights', which her uncle's old band wrote. It is on 'Low Tide Kitchen', and she does not own it."
+  },
+  {
+   "about": "Title clash",
+   "truth": "There is another 'Pour Over' by a different artist in the unmatched list. Hers is the one from 'Low Tide Kitchen'."
+  },
+  {
+   "about": "Performing-rights society",
+   "truth": "BMI, where she registered 'Third Winter' and 'Lantern Season' in 2022 and nothing else"
+  },
+  {
+   "about": "Publisher",
+   "truth": "No publisher. A small indie label friend administers only 'Kettle Hymn' for a few years, under a handshake deal."
+  },
+  {
+   "about": "Where it streams",
+   "truth": "Everywhere, including the US. The one exception is a single live bonus track that she uploaded only for Germany and the UK."
+  },
+  {
+   "about": "Her size of expectation",
+   "truth": "She guesses it is under a few hundred dollars total and would be happy with that"
+  }
+ ],
+ "unknowns": [
+  "What her writer number (the IPI) is",
+  "What ISRC means or what the code is for each of her recordings",
+  "Whether the collective has a deadline or rule for claiming money held for unmatched songs",
+  "Whether the label friend's handshake deal on 'Kettle Hymn' still counts as administering that share"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:51:36Z"
+ }
+}

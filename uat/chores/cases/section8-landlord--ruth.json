@@ -1,0 +1,92 @@
+{
+ "pair": "section8-landlord--ruth",
+ "playbook_id": "section8-landlord",
+ "character": "ruth",
+ "person": "Ruth Albers is 63 and farms about a thousand acres of corn and soybeans in central Iowa with her husband. She keeps the farm books and the county paperwork, mostly on her phone and at night. The family owns two rented houses in town, and one of them, the Maple Street house, is leased to a family with a housing voucher. After a recent inspection she has a notice with a few items and a deadline she is afraid of missing. She does not trust anything that files with the housing authority on its own, and wants to know what is filed and what is only prepared.",
+ "stated_up_front": "The housing authority sent a failed inspection on the Maple Street house and I don't want to miss the date. Can you go through what's fixed and what isn't, and tell me what's filed and what you only got ready for me?",
+ "portals": [
+  {
+   "playbook_app": "Landlord Link",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Rentroll",
+   "mine": "Google Sheets"
+  },
+  {
+   "playbook_app": "Repairly",
+   "mine": "Text messages with Dale the handyman"
+  },
+  {
+   "playbook_app": "Ledgerline",
+   "mine": "QuickBooks"
+  }
+ ],
+ "gates": [
+  {
+   "action": "create_work_order",
+   "mine": "ask"
+  },
+  {
+   "action": "certify_correction",
+   "mine": "ask"
+  },
+  {
+   "action": "report_tenant_damage",
+   "mine": "ask"
+  },
+  {
+   "action": "request_rent_increase",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The unit that failed",
+   "truth": "The Maple Street house, rented to the Okafor family on a voucher; the other town house, on Birch Lane, is market-rate with no voucher."
+  },
+  {
+   "about": "Inspection date and deadline",
+   "truth": "Inspected October 8; the notice says the 30-day items are due November 7, and the smoke alarm is a 24-hour item."
+  },
+  {
+   "about": "Failed items",
+   "truth": "A missing smoke alarm in the upstairs hall, a kitchen outlet without GFCI, a worn bedroom window latch, a cracked pane in the back door, and a punched hollow-core door in the kids' room."
+  },
+  {
+   "about": "What Dale already did",
+   "truth": "Dale replaced the smoke alarm on October 9 and told her by text, but she has not confirmed it with the authority; the GFCI is not done yet."
+  },
+  {
+   "about": "Tenant account of damage",
+   "truth": "Mrs. Okafor says her son's friend broke the back door pane and the son punched the bedroom door; she says the window latch has always been loose and just wore out."
+  },
+  {
+   "about": "Rent and lease",
+   "truth": "Maple Street rent is $875 a month, the lease started March 1, 2025, and she wants to raise it to $925."
+  },
+  {
+   "about": "Payments",
+   "truth": "The housing authority payment of $690 and the family share of $185 normally arrive by the 5th; the October payment arrived on October 5 in the farm checking account."
+  },
+  {
+   "about": "Where she keeps records",
+   "truth": "Leases and rent in a spreadsheet her son set up, expenses in QuickBooks, repair notes in Dale's texts."
+  },
+  {
+   "about": "Anniversary",
+   "truth": "The lease anniversary is March 1, so a rent request has to go in by about December 31."
+  }
+ ],
+ "unknowns": [
+  "Whether the housing authority's rent range for Maple Street allows $925",
+  "Whether the missing smoke alarm's 24 hours has already counted as a late cure since the inspection",
+  "Exactly how many days before the anniversary the authority needs a rent request",
+  "Whether Dale's smoke alarm install counts as certified yet or still needs her to file it"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:54:25Z"
+ }
+}

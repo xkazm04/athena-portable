@@ -1,0 +1,88 @@
+{
+ "pair": "credit-report-disputes--aisha",
+ "playbook_id": "credit-report-disputes",
+ "character": "aisha",
+ "person": "Aisha Grant is a 31-year-old ED night-shift nurse in Tucson, expecting her first baby next spring. During her yearly credit check on her phone she found a card account she never opened, plus a few other entries that look off, and she wants them cleaned up before she and her partner apply for a mortgage pre-approval. She keeps lender and collector letters in a mail folder and pays most things from her bank app. She does this admin in bursts on days off and wants a short setup, no 'up to' promises, and to be asked before anything is signed in her name.",
+ "stated_up_front": "Did my yearly credit check and there's a card I never opened plus some stuff that looks old or wrong. Can you go through all three reports against my mail and bank and dispute only what's actually wrong? How long till I see anything change?",
+ "portals": [
+  {
+   "playbook_app": "Postwren",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Ledgerwren bank",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Tallowgate Credit",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Pellmoor Credit",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Kessingham Reports",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_dispute",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The late payment on her car loan",
+   "truth": "Reported 60 days late on all three reports for a March 2025 payment; her bank shows the payment went out on March 12, due March 14."
+  },
+  {
+   "about": "The card she did not open",
+   "truth": "A Harbor Crest Visa with a $2,400 balance, opened in 2024; she never applied, and she has a letter from the issuer saying the account is not hers."
+  },
+  {
+   "about": "The medical collection",
+   "truth": "A $386 collection from an urgent care clinic, paid in full in June 2025; she has the paid-in-full letter, but it still shows as unpaid."
+  },
+  {
+   "about": "The old collection",
+   "truth": "A $912 collection from a gym membership, first delinquent in February 2018, which is past seven years."
+  },
+  {
+   "about": "The old bankruptcy",
+   "truth": "A Chapter 7 filed by her late father's name-matching file mixed into hers, or rather her own from 2015, still showing, which is past ten years."
+  },
+  {
+   "about": "The utility collection",
+   "truth": "A $214 electric utility collection that her first dispute in spring 2026 left 'verified' even though she sent a paid receipt."
+  },
+  {
+   "about": "A late payment that is accurate",
+   "truth": "A 30-day late on a store card in November 2024; she admits she missed it that month."
+  },
+  {
+   "about": "Inquiries she authorised",
+   "truth": "Two hard inquiries: one from a car loan lender in 2024 and one from an apartment rental application in 2025, both signed by her."
+  },
+  {
+   "about": "Disputes pending",
+   "truth": "She filed a dispute with one bureau 12 days ago on an unrelated entry, so its 30 days have not run."
+  },
+  {
+   "about": "What she wants",
+   "truth": "Corrected reports before a mortgage pre-approval in spring; she wants a straight answer on timing, not a promised score gain."
+  }
+ ],
+ "unknowns": [
+  "Whether the old collection's seven years run from February 2018 or from some later date the bureau uses",
+  "How long the bureau has to answer a dispute and whether her 12-day-old one counts as open",
+  "Which of the three bureaus reports which entries without checking each report",
+  "Whether a dispute with new proof counts as a new dispute or a repeat"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:47:04Z"
+ }
+}

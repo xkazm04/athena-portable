@@ -1,0 +1,108 @@
+{
+ "pair": "public-records-requests--devon",
+ "playbook_id": "public-records-requests",
+ "character": "devon",
+ "person": "Devon Clarke is 26 and the finance manager of a twenty-person community nonprofit. He is eight months into the job and has inherited the organization's public-records requests from his predecessor, along with a binder and a spreadsheet with tabs named FINAL and FINAL2. He has never filed a FOIA appeal. He is careful and wants every step explained so he can summarize it for his executive director in one paragraph. He wants the rules quoted, not paraphrased, and nothing sent in any portal without his approval. The audit is four months away, and he does not want to waste an appeal or pay something the law does not allow.",
+ "stated_up_front": "I inherited our public-records requests from my predecessor and I'm not sure what's actually fileable today, Friday 9 October. Can you go through each federal and city request, quote the rule you're applying, and tell me what you'd file? I need to approve anything before it goes out.",
+ "portals": [
+  {
+   "playbook_app": "Filerecords",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Agencydesk",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "Google Drive"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_appeal",
+   "mine": "ask"
+  },
+  {
+   "action": "narrow_request",
+   "mine": "ask"
+  },
+  {
+   "action": "accept_fee_terms",
+   "mine": "ask"
+  },
+  {
+   "action": "file_foia_request",
+   "mine": "ask"
+  },
+  {
+   "action": "file_cpra_request",
+   "mine": "ask"
+  },
+  {
+   "action": "pay_city_fee",
+   "mine": "ask"
+  },
+  {
+   "action": "reply_message",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Who the organization is and its policy",
+   "truth": "Harbor Lane Community Alliance publishes reports on flood-buyout programs. Its board policy is that staff file their own requests, pay no records service, and appeal an adverse determination if the records are still needed."
+  },
+  {
+   "about": "Number of requests",
+   "truth": "Six federal FOIA requests (F-1 to F-6) and three requests to the City of Tidewater Springs (C-1 to C-3)."
+  },
+  {
+   "about": "F-1, the mail-only denial",
+   "truth": "The Regional Flood Mitigation Office denied F-1 in a letter dated 31 July 2026 that arrived only by post and was scanned into Postwren. The letter states 90 days to appeal, so the deadline is Thursday 29 October 2026."
+  },
+  {
+   "about": "F-2, a denial already past its window",
+   "truth": "The Housing Recovery Division denied F-2 by letter dated 2 July 2026. Its 90 days ended on 30 September, so it is too late to appeal."
+  },
+  {
+   "about": "F-3, the fee category dispute",
+   "truth": "The Army-contractor payment records request F-3 was placed in the commercial-use category with an estimate of $1,260. The organization publishes reports and considers itself a news-media requester, so Devon does not want to accept that category or estimate."
+  },
+  {
+   "about": "F-4, an overdue request",
+   "truth": "The Coastal Grants Bureau received F-4 on 28 August 2026. The 20 working days ended on 28 September and no extension notice was sent, so it is overdue."
+  },
+  {
+   "about": "F-5, a request still inside its time",
+   "truth": "F-5, to the Emergency Management Agency, was received on 17 September 2026 and has had no determination. The 20 working days run out around 16 October, so it is still in time."
+  },
+  {
+   "about": "City request C-1 and the extension",
+   "truth": "The city's written notice extended C-1 by 14 days, so the city is not yet late on it."
+  },
+  {
+   "about": "City charge C-3",
+   "truth": "The city invoiced $438 for C-3. Of that, $426 is staff search and review time and only $12 is copying. Devon suspects it should not pay more than the direct copying cost."
+  },
+  {
+   "about": "Records service offer",
+   "truth": "A service called Requestbright emailed an offer to file requests for $249 each. Board policy forbids using it."
+  }
+ ],
+ "unknowns": [
+  "Whether the 90-day appeal window counts from the date on the letter or from the day it arrived in the mail",
+  "Whether a missed agency deadline gives the organization any administrative appeal right",
+  "What 'unusual circumstances' in an extension notice means and how long an agency can lawfully hold a request on that basis",
+  "Whether the city has any appeal process if it overcharges or denies a request"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:53:45Z"
+ }
+}

@@ -1,0 +1,92 @@
+{
+ "pair": "fsa-claims-substantiation--denise",
+ "playbook_id": "fsa-claims-substantiation",
+ "character": "denise",
+ "person": "Denise Holloway is a 55-year-old school office secretary who also handles her widowed mother's Social Security, Medicare and retirement paperwork. Her own household has a health FSA and a dependent care FSA through the school district. Her 9-year-old grandson Eli lives with her, and she claims him as a dependent. The plan year ended 30 June and the run-out is still open. She keeps receipts, EOBs and plan letters in the same kitchen drawer as her mother's mail, and she is afraid of missing a deadline or being asked to repay money. She is careful, tired and wary of any screen that asks for numbers she does not understand.",
+ "stated_up_front": "I got a letter from the FSA saying one of my card charges needs paperwork and there's some deadline, and I think there's money I can still claim. Can you look through my things and tell me what I have to do and by when? Please don't use any of my mother's information, this is just mine.",
+ "portals": [
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Ledgerwren bank",
+   "mine": "Territory Credit Union"
+  },
+  {
+   "playbook_app": "Paylance member portal",
+   "mine": "Blue Prairie Health member site"
+  },
+  {
+   "playbook_app": "Fennimoor Pharmacy",
+   "mine": "Walgreens"
+  },
+  {
+   "playbook_app": "Flexwell",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_claim",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_documentation",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Her health FSA plan year and run-out",
+   "truth": "The plan year ended 30 June 2026. She believes the letter said claims are open through the end of October, but she is not sure of the exact day."
+  },
+  {
+   "about": "Crown",
+   "truth": "Her dentist's EOB shows she owes $148.00 on a crown done 12 March 2026. The insurer paid the rest."
+  },
+  {
+   "about": "Physical therapy",
+   "truth": "Her EOB shows she owes $60.00 for a shoulder physical therapy visit on 21 April 2026."
+  },
+  {
+   "about": "Pharmacy items",
+   "truth": "Walgreens receipts show an allergy medicine for $18.49 on 3 May 2026 and first aid supplies for $12.30 on 17 May 2026. She bought both without a prescription and paid with her own debit card."
+  },
+  {
+   "about": "Dependent care for Eli",
+   "truth": "Eli's summer day camp was $320.00 in June 2026. After-school care at his school was $240.00 for April and May. Invoices came by email."
+  },
+  {
+   "about": "The pending card swipe",
+   "truth": "A $71.25 FSA card charge at a vision and ear clinic on 9 June 2026 is flagged as needing paperwork. The letter says to answer by 28 October."
+  },
+  {
+   "about": "Things she paid for that she thinks might not count",
+   "truth": "A teeth whitening kit for $39 and a $34 monthly gym membership, both on her credit union statement. Also her $55 monthly multivitamins and her own Medicare supplement premium for her mother, which she does not think belong to her."
+  },
+  {
+   "about": "Her older kids",
+   "truth": "Her 17-year-old granddaughter Marisol sometimes babysits Eli and was paid $90 in cash. A visit for her 14-year-old nephew was also in the pile."
+  },
+  {
+   "about": "Already reimbursed",
+   "truth": "An orthodontic visit for Eli of $85 was paid with the FSA card in February, so it is already covered and should not be claimed again."
+  },
+  {
+   "about": "Her mother's information",
+   "truth": "None of it belongs in this chore. Denise does not want her mother's Social Security number or bank details typed anywhere."
+  }
+ ],
+ "unknowns": [
+  "The exact last day the plan accepts claims and whether the 28 October swipe date is a hard cutoff",
+  "Whether a visit in January before her coverage began, or a dental visit in July, can be claimed",
+  "Why whitening, vitamins and the gym are not eligible, and what happens if she claims one by mistake",
+  "Whether the EOB alone is enough to answer the pending card charge, or whether the plan also needs something from the clinic"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:49:19Z"
+ }
+}

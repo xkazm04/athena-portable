@@ -1,0 +1,84 @@
+{
+ "pair": "tenant-deposit-return--marcus",
+ "playbook_id": "tenant-deposit-return",
+ "character": "marcus",
+ "person": "Marcus Webb is a 45-year-old physical therapist in Tacoma, laid off from a hospital system and now working per diem. He is the household spreadsheet person and checks every bill's math. His family rented a townhouse for 16 months while their own house was being renovated, and the landlord's manager has sent an itemised deposit statement that takes most of the deposit. His wife wants the money back, but Marcus wants each line checked on its merits and wants to be told which charges are fair so he can pay them. He will redo any number the tool shows him.",
+ "stated_up_front": "The property manager sent a deposit statement for the townhouse we moved out of on Sept 30, 13 lines and $2,207.17 taken out of a $2,400 deposit. Go through every line against our lease and the photos and show me the math. Tell me which ones are legit and which aren't, and don't re-ask me for what's already on the statement.",
+ "portals": [
+  {
+   "playbook_app": "Postwren",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Latchwick tenant portal",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Lenswick photos",
+   "mine": "Google Photos"
+  },
+  {
+   "playbook_app": "Gavelmoor claims",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "dispute_deduction",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Deposit and refund",
+   "truth": "Deposit was $2,400. The statement deducts $2,207.17 across 13 lines and leaves a refund of $192.83."
+  },
+  {
+   "about": "Tenancy dates",
+   "truth": "Moved in June 1, 2025 and moved out Sept 30, 2026, after 16 months. The lease ended Oct 5, 2026, and the statement arrived Oct 21."
+  },
+  {
+   "about": "Rent line",
+   "truth": "Rent of $2,150 a month, prorated for Oct 1-5 at $346.77. He agrees he owes it because the lease ran to Oct 5."
+  },
+  {
+   "about": "Water bill",
+   "truth": "$128.40 for the final water/sewer bill. The lease puts utilities on the tenant, so he owes it."
+  },
+  {
+   "about": "Repaint line",
+   "truth": "$620 to repaint all rooms after 16 months. The walls had only minor scuffs, and the move-in inspection noted the paint as 'fair'."
+  },
+  {
+   "about": "Carpet and blind lines",
+   "truth": "$310 for replacing living room carpet and $60 for a bedroom blind. The move-in report and photos show the carpet already matted and the blind already bent."
+  },
+  {
+   "about": "Oven and rekey lines",
+   "truth": "$95 for oven cleaning, though his Sept 29 move-out photos show a clean oven. $145 to rekey the front door, though he returned both keys and the fob at the Sept 30 walkthrough."
+  },
+  {
+   "about": "Wall hole lines",
+   "truth": "A drywall hole in the hallway from a door handle is billed as $85 'wall repair' and again as $85 'drywall patch'. He accepts one charge and contests the second."
+  },
+  {
+   "about": "Other damage and cleaning",
+   "truth": "$210 for a scorched kitchen counter, which the move-out photos show and the invoice backs. $65 for bathroom mildew cleaning, which was not there at move-in. $57 for two missing window screens ($28.50 each), which were in place at move-in."
+  },
+  {
+   "about": "Contested total",
+   "truth": "His own tally of the lines he thinks are contestable is $1,315: repaint 620, carpet 310, blind 60, oven 95, rekey 145, repeat hole 85."
+  }
+ ],
+ "unknowns": [
+  "How many days Washington gives a landlord to send the statement, and whether the 21-day timing here is lawful",
+  "Whether repainting after 16 months counts as normal wear under Washington law",
+  "The small claims dollar limit in Washington and what he has to do before filing",
+  "Whether the landlord can keep the whole $85 hole repair if the first charge was just a placeholder estimate"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:55:12Z"
+ }
+}

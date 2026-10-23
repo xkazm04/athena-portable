@@ -1,0 +1,92 @@
+{
+ "pair": "certified-payroll--gina",
+ "playbook_id": "certified-payroll",
+ "character": "gina",
+ "person": "Gina Russo is the office manager of a thirty-person plumbing and mechanical subcontractor. The company is a sub on a county water-treatment plant upgrade paid partly with federal-aid money, and the county requires weekly certified payroll. She handles it on top of billing, lien deadlines and insurance certificates. The owner signs waivers and hates surprises, so she wants to see every document before it goes out. She has the job's weeks on her whiteboard, but the underpayment math against the wage determination is new to her and she does not trust it by eye.",
+ "stated_up_front": "I need the certified payroll caught up on the Millbrook plant job so the county releases the two held pay estimates. Check every week against the wage determination and show me what you'd file before anything goes out.",
+ "portals": [
+  {
+   "playbook_app": "Wagecheck",
+   "mine": "CountyCompliance Portal"
+  },
+  {
+   "playbook_app": "Docshelf",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Clockyard",
+   "mine": "TimeTrak"
+  },
+  {
+   "playbook_app": "Crewpay",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "pay_restitution",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_payroll",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_no_work",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The job and who holds the pay estimates",
+   "truth": "Millbrook Water Treatment Plant upgrade for the county; the county is holding pay estimates #6 and #7, about $84,000 together"
+  },
+  {
+   "about": "Weeks the county shows as missing",
+   "truth": "Six weeks, ending 8/16 through 9/20, are missing; the week ending 8/9 was accepted and the week ending 9/27 is under review"
+  },
+  {
+   "about": "A week with no work",
+   "truth": "Nobody was on site the week ending 8/30 because the pipe delivery slipped, so that week needs a no-work statement"
+  },
+  {
+   "about": "A short week",
+   "truth": "One pipefitter worked 6 hours on site the week ending 9/6 to receive material, so that is a real payroll week, not no-work"
+  },
+  {
+   "about": "Apprentice",
+   "truth": "Dev Patel is a registered plumber apprentice at 60% of journeyman base under the state program, registration in Docshelf"
+  },
+  {
+   "about": "Journeyman plumber rate",
+   "truth": "Determination lists plumber at $52.40 base plus $18.75 fringe; company's health plan credit is $14.20 an hour, so $4.55 in cash fringe is owed"
+  },
+  {
+   "about": "Laborer doing pipefitter-type work",
+   "truth": "Luis Ortega is paid as a laborer but ran the trench compactor and the saw cutting; the foreman's notes in TimeTrak say so, and the determination calls that laborer work"
+  },
+  {
+   "about": "Overtime",
+   "truth": "Marcus Bell worked 46 hours on the bridge-equivalent job week ending 9/13 and was paid straight time on all of it"
+  },
+  {
+   "about": "Private job",
+   "truth": "Luis also worked the Harmon Street warehouse job, a private job at a lower rate, which the determination does not cover"
+  },
+  {
+   "about": "Current week",
+   "truth": "The week ending 10/25 is still in progress as of today, 10/23"
+  }
+ ],
+ "unknowns": [
+  "How long after a week ends the county considers a certified payroll late",
+  "Whether the county charges anything for the late weeks",
+  "What the classification code on the wage determination means for her pipefitters",
+  "Whether a corrected week already accepted can be re-filed"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:46:10Z"
+ }
+}

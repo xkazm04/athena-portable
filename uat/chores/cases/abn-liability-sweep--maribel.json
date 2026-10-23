@@ -1,0 +1,92 @@
+{
+ "pair": "abn-liability-sweep--maribel",
+ "playbook_id": "abn-liability-sweep",
+ "character": "maribel",
+ "person": "Maribel Santos is a 52-year-old certified coder who bills part-time for a three-doctor family practice in Original Medicare territory and freelances for two other offices. She has twenty years in and knows CARC/RARC codes cold. The practice has patients sign ABNs for labs, but the front desk is sloppy: some are signed after the draw, some on the old form, some with only 'Medicare may not pay' written in. She wants this month's denied Medicare lines sorted into bill, refund, or write off, and she won't have money collected that the clinic has to give back, nor a refund sent that the patient actually owes.",
+ "stated_up_front": "October Medicare denials are sitting on the worklist. Go line by line against the 835 and the scanned ABN, tell me who owes what, and don't bill or refund anything without showing me first.",
+ "portals": [
+  {
+   "playbook_app": "Chartmend PM",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Relaywave",
+   "mine": "Availity"
+  },
+  {
+   "playbook_app": "Chartleaf EHR",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Carenook",
+   "mine": "Square"
+  }
+ ],
+ "gates": [
+  {
+   "action": "release_statement",
+   "mine": "ask"
+  },
+  {
+   "action": "refund_patient",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Practice and payer",
+   "truth": "Three-doctor family practice, Original Medicare, Part B claims processed by Novabridge (the MAC)."
+  },
+  {
+   "about": "Denied lines this month",
+   "truth": "Nine denied Medicare lines on the October worklist, all lab or frequency related, none over $140 charge."
+  },
+  {
+   "about": "Routine check-in ABN",
+   "truth": "Front desk has every Medicare patient sign a blanket ABN at check-in listing 'any lab test' with no specific reason; she treats these as invalid."
+  },
+  {
+   "about": "Late ABN example",
+   "truth": "Patient Dolores Vance had a blood draw on 10/06 and signed the ABN on 10/07, a day after; she paid $38 at the desk."
+  },
+  {
+   "about": "Outdated form example",
+   "truth": "One ABN was signed 09/22/2026 on the CMS-R-131 form version whose approval expired in May; the patient paid $52 online."
+  },
+  {
+   "about": "Frequency edit",
+   "truth": "A second vitamin D draw for patient Harold Teague was denied as an MUE, CO-151 style; ABN on file, but she will not bill him."
+  },
+  {
+   "about": "Valid ABN, already paid",
+   "truth": "Patient Renee Okafor has a valid ABN with a specific reason and cost of $44, signed before the draw, and paid $44 in full at the desk; nothing to bill and nothing to refund."
+  },
+  {
+   "about": "Paid line with ABN",
+   "truth": "A lipid panel was paid by Medicare for patient Walt Brenner even though an ABN is on file; he owes only his normal coinsurance."
+  },
+  {
+   "about": "No ABN line",
+   "truth": "One A1c for a patient with no ABN at all was billed with a GZ modifier; the practice must absorb it."
+  },
+  {
+   "about": "Overpayment timing",
+   "truth": "She counts the 60-day clock for returning identified overpayments from the day a refund is found owed, and wants any such refund flagged the same day."
+  },
+  {
+   "about": "Recovery reporting",
+   "truth": "She wants any dollar figure of money recovered or refunded stated net of write-offs and with the source system named."
+  }
+ ],
+ "unknowns": [
+  "Whether the form version expiry date printed on an older ABN still allows a grace period for notices signed in the months after.",
+  "What the exact remark code on the vitamin D denial means beyond the MUE group code.",
+  "Whether Square has already refunded any of the online payments through a separate batch she cannot see.",
+  "Whether the CMS-R-131 form in the chart is the same version number the clinic last loaded into the EHR."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:45:34Z"
+ }
+}

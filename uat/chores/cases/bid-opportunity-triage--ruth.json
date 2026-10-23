@@ -1,0 +1,100 @@
+{
+ "pair": "bid-opportunity-triage--ruth",
+ "playbook_id": "bid-opportunity-triage",
+ "character": "ruth",
+ "person": "Ruth Albers, 63, has kept the books for her family's thousand-acre corn and soybean farm in central Iowa for forty years. Beyond farming, the family takes on a little custom work (roadside mowing, hay, hauling, snow plowing) and has begun bidding on county and federal notices for it. Her son is taking over the field work and expects her to keep the paperwork straight. She does most of it at night on her phone and wants to be told plainly which notices to keep, which to leave alone and which dates matter. She distrusts anything that sends or files on its own, and she has not forgotten the neighbour who lost a claim to a missed deadline.",
+ "stated_up_front": "I've got a pile of bid notices from this week, some federal and some from the county, and I need to know which ones we can actually go after and what dates to ask our questions by. Don't send anything off until I've seen it, please.",
+ "portals": [
+  {
+   "playbook_app": "Noticewick",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Bidmoor",
+   "mine": "Story County bid postings"
+  },
+  {
+   "playbook_app": "Contractdesk",
+   "mine": "QuickBooks Online"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "USPS Informed Delivery"
+  }
+ ],
+ "gates": [
+  {
+   "action": "keep_for_bid",
+   "mine": "ask"
+  },
+  {
+   "action": "send_question",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_question",
+   "mine": "ask"
+  },
+  {
+   "action": "reply_message",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Business name used on bids",
+   "truth": "Albers Farms & Custom Work LLC"
+  },
+  {
+   "about": "Custom work receipts, most recent year",
+   "truth": "$412,000 for 2025"
+  },
+  {
+   "about": "Custom work receipts, five-year average",
+   "truth": "about $338,000"
+  },
+  {
+   "about": "Certifications the farm holds",
+   "truth": "None. It is not certified as veteran-owned, HUBZone or 8(a). It is a small business."
+  },
+  {
+   "about": "Past performance",
+   "truth": "Roadside mowing for Marshall Township 2022 to 2025, and a hay contract with the county fairgrounds in 2024"
+  },
+  {
+   "about": "Who decides which bids to chase",
+   "truth": "Ruth with her husband Dale. Their son Tyler wants to hear about any bid before the team starts on it."
+  },
+  {
+   "about": "A mailed amendment this week",
+   "truth": "A paper amendment came in the mail for the roadside mowing notice. She has read it, and it changes the questions deadline to Friday, October 16."
+  },
+  {
+   "about": "A county bid she notices is local-only",
+   "truth": "The county snow plowing bid on the Story County page says it is for local vendors only, and the farm is not on their local list"
+  },
+  {
+   "about": "Paid offers in her mail",
+   "truth": "Two come in the mail: a bid-writing service at $249 a month and a bid-matching subscription. Both ask her to reply YES."
+  },
+  {
+   "about": "Her rule on sending things",
+   "truth": "She wants to see any question written out and be told the date before it goes to the government or county"
+  },
+  {
+   "about": "Where the farm's own records live",
+   "truth": "Receipts by year are in QuickBooks, and the green binder in the office holds the paper copies of the contracts"
+  }
+ ],
+ "unknowns": [
+  "Whether the farm's size standard for a given notice is met, because she doesn't know which code number applies to mowing versus hauling",
+  "What a set-aside or limitation on subcontracting means in practice for a partner she might hire",
+  "Which questions deadlines are still open once the mailed amendment is counted",
+  "Whether a notice marked cancelled or closed can still be answered"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:45:59Z"
+ }
+}

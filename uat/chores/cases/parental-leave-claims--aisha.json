@@ -1,0 +1,96 @@
+{
+ "pair": "parental-leave-claims--aisha",
+ "playbook_id": "parental-leave-claims",
+ "character": "aisha",
+ "person": "Aisha Grant is a 31-year-old ER night-shift nurse in Tucson who works three 12-hour nights a week. She is expecting her first baby on a scheduled caesarean on 13 April 2027. Her partner is saving up for the baby, and she wants the leave paperwork done in one sitting on her phone on a day off. She has read the hospital's benefits page only once and isn't sure how its short-term disability and paid parental benefit fit together. She wants a straight number for what lands in her account and when, not an 'up to' figure.",
+ "stated_up_front": "ok so I'm due in April with a scheduled c-section and need my leave sorted at work. What do I actually get paid and when, and can you just get the forms done without me digging through five sites?",
+ "portals": [
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Larkhollow Women's Health",
+   "mine": "MyChart"
+  },
+  {
+   "playbook_app": "Familyleave State",
+   "mine": "U.S. Department of Labor FMLA website"
+  },
+  {
+   "playbook_app": "Crewmarrow HR",
+   "mine": "Workday"
+  },
+  {
+   "playbook_app": "Shieldline",
+   "mine": "Lincoln Financial"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_fmla_request",
+   "mine": "ask"
+  },
+  {
+   "action": "file_disability_claim",
+   "mine": "ask"
+  },
+  {
+   "action": "file_pfl_claim",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Delivery date",
+   "truth": "Scheduled caesarean on Tuesday 13 April 2027."
+  },
+  {
+   "about": "Disability dates her OB certified",
+   "truth": "Eight weeks, 13 April to 7 June 2027."
+  },
+  {
+   "about": "Day the parental leave pay should start",
+   "truth": "Tuesday 8 June 2027, the day after the certificate ends, for four weeks through 5 July."
+  },
+  {
+   "about": "Her pay",
+   "truth": "About 36 hours a week at $48 an hour, so $1,728 gross a week."
+  },
+  {
+   "about": "Disability pay",
+   "truth": "60% of weekly pay, $1,036.80 a week, after a 7-day wait, so seven paid weeks come to $7,257.60."
+  },
+  {
+   "about": "Paid parental benefit",
+   "truth": "Four weeks at 60%, $1,036.80 a week, $4,147.20 in total, from the hospital's plan through the same carrier."
+  },
+  {
+   "about": "Her employer and tenure",
+   "truth": "She has worked at the hospital for 3 years and is full-time, so she qualifies for FMLA."
+  },
+  {
+   "about": "Partner's leave",
+   "truth": "Her partner works at a different company and has two weeks of his own leave, which has nothing to do with her claims."
+  },
+  {
+   "about": "Leave request she wants",
+   "truth": "One request for 12 weeks from 13 April 2027, sent to HR with more than 30 days of notice."
+  },
+  {
+   "about": "Her priorities",
+   "truth": "She wants no gap and no double-paid days, and she is not interested in splitting her leave or starting early."
+  }
+ ],
+ "unknowns": [
+  "Whether Arizona has any state paid family leave program she should check, since she assumes it doesn't.",
+  "How the carrier treats the 7-day wait and whether it counts calendar days or shifts.",
+  "The exact deadline for filing the disability claim before the birth.",
+  "Whether the hospital's parental benefit can be paid in the same weeks as her disability or must start after it."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:52:54Z"
+ }
+}

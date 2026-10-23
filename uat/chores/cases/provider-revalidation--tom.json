@@ -1,0 +1,96 @@
+{
+ "pair": "provider-revalidation--tom",
+ "playbook_id": "provider-revalidation",
+ "character": "tom",
+ "person": "Tom Whitcomb is the practice administrator of a three-clinician family clinic owned by Dr. Elena Marsh. He came over from restaurant management two years ago and handles staff, schedule and money, but credentialing deadlines are new to him and the biller, who works Mon-Wed, usually explains them. Dr. Marsh's partner, Dr. Paul Adeyemi, has a Medicare revalidation notice coming up, and a former associate, Dr. Lena Brandt, left in September. Tom wants Athena to read the four systems, tell him in plain words what is due and what is not, and give him numbers he can repeat to the owners without being corrected later.",
+ "stated_up_front": "Hey, I run the front office at Marsh Family Care and I need to know where each of our doctors stands on Medicare revalidation, the insurance credentialing profiles and license renewals. Biller's out till Monday and I don't want to miss something or file something we shouldn't. Please explain it like I'm the guy who has to tell the doctors.",
+ "portals": [
+  {
+   "playbook_app": "Docshelf",
+   "mine": "Google Drive"
+  },
+  {
+   "playbook_app": "Enrollpoint",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Credvault",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Boardline",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_revalidation",
+   "mine": "ask"
+  },
+  {
+   "action": "upload_document",
+   "mine": "ask"
+  },
+  {
+   "action": "attest_profile",
+   "mine": "ask"
+  },
+  {
+   "action": "renew_license",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Who the clinic's clinicians are",
+   "truth": "Dr. Elena Marsh (owner), Dr. Paul Adeyemi (owner), Nurse Practitioner Dana Okafor; Dr. Lena Brandt left on September 12, 2026"
+  },
+  {
+   "about": "Dr. Brandt's departure",
+   "truth": "Signed separation notice dated September 12, 2026 is in the Drive folder; she took a job at a hospital group and the clinic's access to her profile was withdrawn"
+  },
+  {
+   "about": "Dr. Adeyemi's Medicare revalidation",
+   "truth": "Enrollpoint shows a posted due date of March 31, 2027, so he should be inside the seven-month window"
+  },
+  {
+   "about": "Dr. Marsh's Medicare revalidation",
+   "truth": "Enrollpoint shows the due date as TBD; Tom saw this and was told by the biller last year that it shows up later"
+  },
+  {
+   "about": "Clinic group enrollment",
+   "truth": "The group enrollment application was submitted in early October 2026 and is showing 'in review'"
+  },
+  {
+   "about": "Liability certificates",
+   "truth": "Dr. Marsh and Dr. Adeyemi each have a 2026-27 certificate in Drive, effective July 1, 2026; Dana's renewal is only a quote from the carrier, not yet bound; her 2025-26 certificate expired June 30, 2026"
+  },
+  {
+   "about": "Dana Okafor's CME",
+   "truth": "Her transcript shows 28 of 40 required hours; her license expires January 31, 2027"
+  },
+  {
+   "about": "Dr. Marsh's license",
+   "truth": "Expires December 31, 2026 with all 40 CME hours on her transcript; the board's renewal window opens in November"
+  },
+  {
+   "about": "Credentialing attestation",
+   "truth": "Last attested on Credvault about 110 days ago for Dr. Marsh and Dr. Adeyemi, so they are close to the 120-day mark"
+  },
+  {
+   "about": "Who approves",
+   "truth": "Tom approves anything that files or costs money; the license renewal fee is about $400 per clinician"
+  }
+ ],
+ "unknowns": [
+  "Why Dr. Marsh's Medicare due date shows TBD and when it will be posted",
+  "Whether the Medicare group application in review will be approved soon or sent back",
+  "The exact date the licensing board's renewal window opens for each clinician",
+  "Whether Dr. Brandt's old profile on Credvault still has anything the clinic must close out"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:53:25Z"
+ }
+}

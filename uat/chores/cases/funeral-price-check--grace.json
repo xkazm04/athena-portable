@@ -1,0 +1,96 @@
+{
+ "pair": "funeral-price-check--grace",
+ "playbook_id": "funeral-price-check",
+ "character": "grace",
+ "person": "Grace Lindqvist is a 59-year-old retired librarian, appointed by the probate court as representative of her mother's estate, and she lives three states away from where her mother died earlier this month. Her mother left a short handwritten letter asking for a direct cremation with no viewing and her own urn, and Grace and her younger brother Pete agreed to that. She is tired, grieving and slow with her laptop, and she is wary because Hollis & Rowe quoted a package price hundreds above its own price list. She wants each step explained gently, one at a time, and does not want to be rushed into signing anything.",
+ "stated_up_front": "My mother died this week and I'm trying to arrange her cremation from far away. She wanted something simple, and I think the funeral home is charging us for things we don't need. Could you help me look at the three quotes, one step at a time?",
+ "portals": [
+  {
+   "playbook_app": "Docshelf",
+   "mine": "Google Drive"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Hollis & Rowe",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Greenmeadow",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Calder",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "decline_item",
+   "mine": "ask"
+  },
+  {
+   "action": "book_arrangement",
+   "mine": "ask"
+  },
+  {
+   "action": "reply",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "What her mother asked for",
+   "truth": "A handwritten letter from March asking for direct cremation, no viewing, no embalming, and her ashes placed in her own blue ceramic urn."
+  },
+  {
+   "about": "What the children decided",
+   "truth": "Grace and her brother Pete agreed by email on Tuesday to follow the letter exactly: direct cremation, no viewing, no embalming, their mother's urn."
+  },
+  {
+   "about": "The urn",
+   "truth": "Their mother bought a blue ceramic urn in 2023 for $146. The receipt is in the family folder."
+  },
+  {
+   "about": "Hollis & Rowe, which holds her mother",
+   "truth": "Their price list shows direct cremation at $1,895. Their unsigned statement came to $3,480 because it adds a casket, embalming, and a $175 fee to handle an outside urn. They also charge $240 to release her mother's body to another home."
+  },
+  {
+   "about": "Greenmeadow",
+   "truth": "Their list shows direct cremation at $1,640. Their statement adds a $395 required cremation casket and comes to $2,280 with the other charges."
+  },
+  {
+   "about": "Calder",
+   "truth": "Their price list was given in person and shows $1,450. Their statement adds a $310 embalming line and a $150 urn handling fee. Pete thinks Calder is cheapest."
+  },
+  {
+   "about": "Brother's view",
+   "truth": "Pete wrote that Calder looks cheapest and wants it settled this week so they can tell the church."
+  },
+  {
+   "about": "Church",
+   "truth": "The church confirmed the memorial for the following Saturday and prints the programs. They need the date and her mother's full name."
+  },
+  {
+   "about": "Advocate offer",
+   "truth": "An advocate emailed offering to negotiate everything for a quarter of whatever is saved. Grace does not want to hire anyone."
+  },
+  {
+   "about": "Other charges",
+   "truth": "Each statement lists a basic services fee and the county medical examiner's cremation authorization. Grace understands these are legitimate and should stay."
+  }
+ ],
+ "unknowns": [
+  "Whether the funeral home may require a casket or embalming for a direct cremation",
+  "Whether a home may charge a fee to handle an urn bought elsewhere",
+  "Which of the charges on each statement are legally required and which can be declined",
+  "Whether her late father's burial costs could have been reimbursed by the VA"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:49:17Z"
+ }
+}

@@ -1,0 +1,101 @@
+{
+ "pair": "parental-leave-claims--samira",
+ "playbook_id": "parental-leave-claims",
+ "character": "samira",
+ "person": "Samira Okoye is a 32-year-old marketing project coordinator in Albany, New York, newly married and due with a planned caesarean on Tuesday 24 November 2026. She is organised and good with apps, but government sites feel built to trip her up and she has never filed leave paperwork. She lives with her 84-year-old father and employs his two part-time caregivers, so she is already overwhelmed. Her husband and father both assume she has the leave handled. She wants a clear order of steps, which ones carry a penalty if late, and a straight answer on whether she qualifies. She would rather Athena ask before anything is sent or signed.",
+ "stated_up_front": "Okay, I made a list! My c-section is booked for November 24 and I need to sort out my maternity leave, but I have no idea what order to do things in or what's actually urgent. Can you look at everything and tell me what to send first?",
+ "portals": [
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Larkhollow Women's Health",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Familyleave State",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Crewmarrow HR",
+   "mine": "Workday"
+  },
+  {
+   "playbook_app": "Shieldline",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_fmla_request",
+   "mine": "ask"
+  },
+  {
+   "action": "file_disability_claim",
+   "mine": "ask"
+  },
+  {
+   "action": "file_pfl_claim",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Delivery date",
+   "truth": "Planned caesarean on Tuesday 24 November 2026."
+  },
+  {
+   "about": "Doctor's certified disability period",
+   "truth": "Her OB at Larkhollow certified 24 November 2026 to 18 January 2027, eight weeks, for a caesarean."
+  },
+  {
+   "about": "Employer",
+   "truth": "Halvorsen & Pike Marketing, about 140 employees. She has worked there three years as a project coordinator."
+  },
+  {
+   "about": "Salary",
+   "truth": "$74,000 a year, about $1,423 a week."
+  },
+  {
+   "about": "Today's position on notice",
+   "truth": "Today is 23 October. She has not yet sent HR anything, and HR's note asks for the leave request by the end of October."
+  },
+  {
+   "about": "Intended leave",
+   "truth": "One block of 12 weeks starting on the delivery day, 24 November. She wants no early start and no split."
+  },
+  {
+   "about": "Husband",
+   "truth": "Daniel Lindqvist. He plans to take his own leave from his own employer in the spring. It has nothing to do with her claims."
+  },
+  {
+   "about": "Name situation",
+   "truth": "She married six weeks ago. Her new name is only on the marriage certificate. Her employer, doctor and insurer still have her name as Samira Okoye."
+  },
+  {
+   "about": "Household",
+   "truth": "Her father, 84, lives with her and has two part-time caregivers she pays. She has filed no employer tax paperwork for them and wants to ask an accountant about that separately."
+  },
+  {
+   "about": "Expected disability pay",
+   "truth": "She expects $170 a week, the cap, after a 7-day wait, so seven paid weeks."
+  },
+  {
+   "about": "Expected family leave pay",
+   "truth": "She guesses around $950 a week for four weeks, starting Tuesday 19 January 2027."
+  }
+ ],
+ "unknowns": [
+  "Whether she qualifies for federal job-protected leave, meaning how long she has to have worked there and how many employees the company needs.",
+  "How many days of notice her employer needs for a planned birth.",
+  "Why there is a 7-day wait before disability pays, and whether it can be avoided.",
+  "How long after the birth she has to file for Paid Family Leave.",
+  "Whether her name mismatch will hold up a claim."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:53:05Z"
+ }
+}

@@ -1,0 +1,88 @@
+{
+ "pair": "sub-insurance-certs--gina",
+ "playbook_id": "sub-insurance-certs",
+ "character": "gina",
+ "person": "Gina Russo is office manager at Tri-County Mechanical, a thirty-person plumbing and mechanical subcontractor. On the Marlow Senior Apartments job, Tri-County has its own lower-tier subs (sheet metal, insulation, trenching, controls, test and balance), and she has to check them against the insurance exhibit Halvorsen Builders flowed down to her. She has been burned by paperwork before and does not trust a certificate by itself. Her owner hates surprises, so she wants to see every notice before it goes out and every clearance before a crew gets a badge. She tracks mobilization dates on her whiteboard and double-checks anything software tells her.",
+ "stated_up_front": "I've got six lower-tier subs mobilizing on Marlow Senior Apartments over the next five weeks and I need their insurance checked against the Halvorsen exhibit, on the actual policies, not just the certificates. Show me what you'd send before anything goes out.",
+ "portals": [
+  {
+   "playbook_app": "Sitegrid",
+   "mine": "Procore"
+  },
+  {
+   "playbook_app": "Subhub",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Coverwell",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Outlook"
+  }
+ ],
+ "gates": [
+  {
+   "action": "approve_compliance",
+   "mine": "ask"
+  },
+  {
+   "action": "send_deficiency",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The job and the parties",
+   "truth": "Marlow Senior Apartments, a four-storey building at 2240 Marlow Avenue. GC is Halvorsen Builders and the owner is Marlow Senior Housing LLC."
+  },
+  {
+   "about": "What the flowed-down exhibit requires",
+   "truth": "$1,000,000 per occurrence and $2,000,000 aggregate on a policy in force. CG 20 10 and CG 20 37 must both name Halvorsen Builders and Marlow Senior Housing LLC, at 2240 Marlow Avenue or with no location scheduled."
+  },
+  {
+   "about": "The six subs and their mobilization days",
+   "truth": "Keystone Sheet Metal on 2 Nov, Northside Trenching on 4 Nov, Ridgeline Insulation on 9 Nov, Calloway Controls on 12 Nov, Burke Fire Protection on 16 Nov, Apex Test & Balance on 30 Nov."
+  },
+  {
+   "about": "Keystone Sheet Metal",
+   "truth": "Its certificate says 'ongoing and completed operations', but she thinks only the CG 20 10 is on the policy. She hasn't checked."
+  },
+  {
+   "about": "Northside Trenching",
+   "truth": "Its policy expired 30 September. The agent emailed a renewal quote, but she doesn't think it has been bound."
+  },
+  {
+   "about": "Ridgeline Insulation",
+   "truth": "She was told its deficiency was cured when the agent added an endorsement on 7 October. She believes she already noticed them once in September."
+  },
+  {
+   "about": "Calloway Controls",
+   "truth": "Its certificate's additional insured box is blank, but their agent says both endorsements are on the policy."
+  },
+  {
+   "about": "Burke Fire Protection",
+   "truth": "Its limits are $500,000 and $1,000,000. They keep saying their umbrella makes up the difference, and the exhibit doesn't allow that."
+  },
+  {
+   "about": "Apex Test & Balance",
+   "truth": "It is a small shop that has worked with Tri-County for years. She thinks it was approved on an earlier job, but not on this one."
+  },
+  {
+   "about": "How she wants notices to look",
+   "truth": "Each notice must name the job, Halvorsen as GC, the sub's mobilization date and the exact gap, and she wants to read the full text before it is sent."
+  }
+ ],
+ "unknowns": [
+  "Whether Halvorsen accepts an umbrella policy toward the limits, or only primary limits",
+  "Whether a renewal that is quoted but not yet bound counts as a policy in force for Northside",
+  "What the wording on Keystone's endorsement forms means, and whether it is the real CG 20 37 edition",
+  "Whether Halvorsen requires a particular edition date of the CG forms"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:54:51Z"
+ }
+}

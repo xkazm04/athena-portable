@@ -1,0 +1,81 @@
+{
+ "pair": "merchant-fee-audit--hana",
+ "playbook_id": "merchant-fee-audit",
+ "character": "hana",
+ "person": "Hana Kowalczyk, 34, runs a one-person online shop out of a studio behind her house in Oregon, selling ceramics and linen goods on her own site and two marketplaces. She takes cards through a processor on an interchange-plus agreement and has never read past page two of the twelve-page statement. She is busy, friendly and scattered, and wants to know quickly whether this check is meant for a shop her size and what Athena needs from her. She can answer questions from memory but will not go download reports, and she signs off on anything that goes to the processor in her name.",
+ "stated_up_front": "Hey, my card processing statements are like twelve pages and I've never read them past page two. Can you check July through September for anything I got charged wrong? Is this even worth it for a shop my size? I have orders to pack.",
+ "portals": [
+  {
+   "playbook_app": "Paycurrent",
+   "mine": "Paycurrent"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "Dropbox"
+  },
+  {
+   "playbook_app": "Ledgerwren bank",
+   "mine": "Ledgerwren bank"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_fee_credit",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "What she sells and roughly her monthly card volume",
+   "truth": "Mugs, planters and linen towels, mostly $30-$60 orders, about $6,500 a month in Visa sales"
+  },
+  {
+   "about": "Her processor and how she's billed",
+   "truth": "Paycurrent, interchange plus a markup; she signed up in early 2024 and just remembers 'interchange plus'"
+  },
+  {
+   "about": "Where her agreement is",
+   "truth": "A PDF she saved in her Dropbox folder called 'Shop - contracts'"
+  },
+  {
+   "about": "Whether she got any notice of a price change",
+   "truth": "She remembers an email this summer about a markup change but did not read it closely; she thinks it said it applied from a later date"
+  },
+  {
+   "about": "Whether she ever closed a merchant account or gateway",
+   "truth": "Yes, she closed the old gateway account for her first site when she rebuilt the shop in 2025"
+  },
+  {
+   "about": "Chargebacks this year",
+   "truth": "Three Visa chargebacks in the summer, each around $40; she remembers one fee coming back to her as a credit"
+  },
+  {
+   "about": "Her debit card mix",
+   "truth": "A lot of her customers pay with debit cards from big banks; she has never heard of Regulation II"
+  },
+  {
+   "about": "Who sees her books",
+   "truth": "Her accountant, Dana, once a year in February; nobody checks statements in between"
+  },
+  {
+   "about": "What she wants out of this",
+   "truth": "Only claims that are really wrong, in plain words; she'd rather skip a small doubtful claim than sign something false"
+  },
+  {
+   "about": "Today's timing",
+   "truth": "She's doing this on 23 October and knows July is probably too old to claim but not exactly why"
+  }
+ ],
+ "unknowns": [
+  "Whether the processor's sixty-day claim window applies to her July statement",
+  "What interchange category or card product any given line was billed under",
+  "Whether her debit cards are from regulated or exempt issuers",
+  "Which fees her agreement names and which it doesn't, including any PCI fee",
+  "Whether a notice of a markup change can take effect before its own date"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:51:13Z"
+ }
+}

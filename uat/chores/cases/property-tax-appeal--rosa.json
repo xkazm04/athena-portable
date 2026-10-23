@@ -1,0 +1,96 @@
+{
+ "pair": "property-tax-appeal--rosa",
+ "playbook_id": "property-tax-appeal",
+ "character": "rosa",
+ "person": "Rosa Villanueva is a 64-year-old retired school cafeteria manager in Texas who owns the family home, a rental duplex and a vacant lot with her husband Hector. Four appraisal notices came this spring with higher values again, and Hector says 'just pay it' but she won't. She keeps a paper folder for each property and has a neighbour who pays a tax consultant a share of the savings, so she wants to know what doing it herself would cost. She uses email on a large-text desktop and is not comfortable with technology, and she wants each property handled on its own, with deadlines first.",
+ "stated_up_front": "I got four appraisal notices in the mail this spring, one each for the house, the duplex, the lot and the little condo, and the values all went up. Hector says just pay it but I don't want to. Can you tell me which ones are worth protesting and when each one is due, and what this would cost me compared to what my neighbour pays his consultant?",
+ "portals": [
+  {
+   "playbook_app": "Mailnest",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Deedvault",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Compsmith sales",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Countyline Appraisal",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_protest",
+   "mine": "ask"
+  },
+  {
+   "action": "attach_comparable",
+   "mine": "ask"
+  },
+  {
+   "action": "attach_document",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The house notice",
+   "truth": "The house is appraised at $286,000, up from $248,000 last year. The notice came in the mail on April 18."
+  },
+  {
+   "about": "The duplex notice",
+   "truth": "The duplex is appraised at $342,000, up from $310,000. It is a rental on Alder Street, and the house next door was fire-damaged and sold at auction as-is."
+  },
+  {
+   "about": "The vacant lot notice",
+   "truth": "The lot is appraised at $41,000, up from $36,500. Rosa suspects it is too high but has not looked at any sales."
+  },
+  {
+   "about": "The condo",
+   "truth": "She and Hector sold the small condo on Pecan Court last November for $158,000, but a notice for it still arrived at $171,000."
+  },
+  {
+   "about": "The house foundation",
+   "truth": "A foundation engineer's report from February says the back corner of the house has settled, with a repair estimate of $14,800. She believes the settling was there before January 1."
+  },
+  {
+   "about": "The kitchen remodel",
+   "truth": "She has a $22,000 kitchen remodel quote from a contractor. It is something they want to do someday, not something broken."
+  },
+  {
+   "about": "The roof",
+   "truth": "The roof was replaced in 2023 for $11,400. It leaked in 2019, before the replacement, and she still has the old inspection and the invoice in the house folder."
+  },
+  {
+   "about": "Neighbour's consultant",
+   "truth": "Her neighbour Dale pays his tax consultant a third of whatever he saves in the first year."
+  },
+  {
+   "about": "Exemption",
+   "truth": "She turns 65 next year and wonders whether she is missing a senior exemption. The house is her homestead."
+  },
+  {
+   "about": "Her paperwork",
+   "truth": "She keeps one paper folder for each property. The house deed is in both names, Rosa and Hector Villanueva."
+  },
+  {
+   "about": "Filing preference",
+   "truth": "She wants to be asked before anything is filed or sent, and wants the figures shown for one property at a time."
+  }
+ ],
+ "unknowns": [
+  "The deadline to protest on each notice, and how it is worked out from the delivery date",
+  "Which sales the law counts as comparable, and how far back they can go",
+  "Whether she would still qualify for any exemption after she turns 65, and how to claim it",
+  "What opinion of value she should put on each protest"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:53:22Z"
+ }
+}

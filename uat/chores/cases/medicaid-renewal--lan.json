@@ -1,0 +1,93 @@
+{
+ "pair": "medicaid-renewal--lan",
+ "playbook_id": "medicaid-renewal",
+ "character": "lan",
+ "person": "Lan Tran is a 41-year-old pharmacy technician who works rotating shifts at a chain pharmacy. She lives with her 18-year-old daughter, her 12-year-old son and her mother. Her hours were cut in August and her cleaning job ended in September, but the state's renewal form still shows her pay from last winter. She does the family's renewals on her phone, reads official English slowly, and worries that a mistake or a fee will cost her family their coverage. She once paid a helper for nothing and does not want that again.",
+ "stated_up_front": "Hello. My Medicaid renewal paper came and the pay on it is old, my hours are less now. Can you help me fix it before it is due? Does it cost money?",
+ "portals": [
+  {
+   "playbook_app": "Statecare Benefits",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Payroll Harbor",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Ledgerline bank",
+   "mine": "Chase"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "update_income",
+   "mine": "ask"
+  },
+  {
+   "action": "update_household",
+   "mine": "ask"
+  },
+  {
+   "action": "upload_proof",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Renewal due date",
+   "truth": "November 14, 2026"
+  },
+  {
+   "about": "Main job pay now",
+   "truth": "About $1,720 a month after the cut in August, after health insurance is taken out. Before the cut it was about $2,600."
+  },
+  {
+   "about": "Second job",
+   "truth": "Cleaning job at an office company ended September 12. It paid about $640 a month. She has a separation letter in the mail."
+  },
+  {
+   "about": "Unemployment",
+   "truth": "She got a few weeks of unemployment benefit from the cleaning job loss that ended October 3; the last letter from the unemployment office says so."
+  },
+  {
+   "about": "Child support",
+   "truth": "She gets $350 a month for her son from his father. It shows in the bank."
+  },
+  {
+   "about": "Money from brother",
+   "truth": "Her brother Minh sent $2,000 in August for a car repair. She will pay it back slowly. It is a loan."
+  },
+  {
+   "about": "Tax refund",
+   "truth": "A federal tax refund of $1,180 came in April."
+  },
+  {
+   "about": "Household",
+   "truth": "Lan, her daughter Mai (18, starting college), and her son Danny (12). Her mother, Hoa, lives in the house but files her own tax return and gets her own Social Security."
+  },
+  {
+   "about": "Old pay stub",
+   "truth": "She still has a March pay stub with the higher pay on her phone. It is from before the cut."
+  },
+  {
+   "about": "Cost",
+   "truth": "She is afraid of any fee and wants to hear that nothing costs money before she agrees to anything."
+  }
+ ],
+ "unknowns": [
+  "What rule the state uses to count income, and whether it is monthly or yearly",
+  "Whether child support counts as income",
+  "Whether her mother has to be on the case",
+  "How many days she has to ask again if coverage ends for a missing form",
+  "Which papers the state really needs her to upload"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:48Z"
+ }
+}

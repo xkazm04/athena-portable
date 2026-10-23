@@ -1,0 +1,88 @@
+{
+ "pair": "sales-tax-exemption-certs--hana",
+ "playbook_id": "sales-tax-exemption-certs",
+ "character": "hana",
+ "person": "Hana Kowalczyk is 34 and runs a one-person shop from a studio behind her house in Oregon. She sells ceramics and linen goods on her own site and two marketplaces, plus a small side of wholesale orders to gift and home shops in Ohio, Kentucky and Texas. In September a state tax notice arrived asking her to back up three wholesale sales that had no tax charged. She has never handled resale certificates formally; she just collected whatever form a shop sent. She wants to know quickly whether this is a big-business problem or a small one, and she wants questions she can answer from memory.",
+ "stated_up_front": "Hey, I got a scary letter from Ohio's tax department about three wholesale orders where I didn't charge tax, and I honestly don't know what paperwork I have. Can you check my shop orders, my certificate sheet and my email, and tell me what's missing? Keep it simple, I have orders to pack.",
+ "portals": [
+  {
+   "playbook_app": "Storeline admin",
+   "mine": "Shopify"
+  },
+  {
+   "playbook_app": "Clientwren CRM",
+   "mine": "Airtable"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Taxline State",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_certificate",
+   "mine": "ask"
+  },
+  {
+   "action": "substantiate_exemption",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "How many wholesale buyers she has",
+   "truth": "About a dozen retail shops in total, and eight of them bought this year. Her biggest wholesale order was about $1,400."
+  },
+  {
+   "about": "The state notice",
+   "truth": "It came by mail around 22 September 2026 from the Ohio Department of Taxation. It lists three sales and the answer is due 19 January 2027."
+  },
+  {
+   "about": "The three sales the state listed",
+   "truth": "Birchline Home in Columbus for $1,240, Tallow & Thread in Cincinnati for $860, and Harbor Lane Goods in Dayton for $615. All three were shipped with no tax charged."
+  },
+  {
+   "about": "The late certificate",
+   "truth": "Harbor Lane mailed their certificate well after the sale, and she only found it in her inbox last week. She thinks it came in early October."
+  },
+  {
+   "about": "Texas buyer",
+   "truth": "Prairie Dog Mercantile in Austin buys about $700 a quarter. They sent Texas's own resale certificate, and she doesn't want to bother them again."
+  },
+  {
+   "about": "Kentucky buyer",
+   "truth": "Bluegrass Porch Supply in Lexington bought once for $520 with no tax. The state did not list that sale, and she believes they sent a form."
+  },
+  {
+   "about": "A taxed sale",
+   "truth": "One Ohio shop, Lantern & Loom in Toledo, wasn't exempt. She charged them tax on a $310 order because they never claimed resale."
+  },
+  {
+   "about": "A buyer who lapsed",
+   "truth": "Maple & Moss in Cleveland last ordered in August 2025, so more than a year ago. They have since asked to reorder."
+  },
+  {
+   "about": "How she tracks certificates",
+   "truth": "An Airtable sheet with one row per shop, and a column she fills in when a form arrives. She knows some rows are half-empty."
+  },
+  {
+   "about": "Who signs for her",
+   "truth": "She signs everything herself. She wants to see any letter to a buyer or to the state before it goes."
+  }
+ ],
+ "unknowns": [
+  "Whether a certificate that arrived after the sale still counts for the state",
+  "What the rules say about how many days she has to collect a certificate",
+  "Whether a shop that hasn't ordered in over a year needs a fresh certificate",
+  "Whether an emailed certificate with no signature line counts as complete"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:54:27Z"
+ }
+}

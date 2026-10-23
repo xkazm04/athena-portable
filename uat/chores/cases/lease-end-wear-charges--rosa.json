@@ -1,0 +1,92 @@
+{
+ "pair": "lease-end-wear-charges--rosa",
+ "playbook_id": "lease-end-wear-charges",
+ "character": "rosa",
+ "person": "Rosa Villanueva is a 64-year-old retired school cafeteria manager in Texas. She and her husband returned a leased SUV last month, and the lease-end statement came in the mail and by email for $3,412. Her husband says \"just pay it,\" but she has read the inspector's sheet and thinks some of the charges are for things the lease allows. She keeps the papers in a folder labelled for the car, uses email and a desktop with large text, and has low tech comfort. She wants the charges handled one at a time, with the deadline first, and wants to know what this costs compared with what her neighbour pays a consultant.",
+ "stated_up_front": "I returned our leased SUV last month and they sent a bill for $3,412 that I don't think is all right. I have the papers right here. Can you check which charges are actually over what the lease allows and tell me the deadline first?",
+ "portals": [
+  {
+   "playbook_app": "Postwren",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Linestone Inspect",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Lenswick photos",
+   "mine": "Windows Photos folder on her desktop"
+  },
+  {
+   "playbook_app": "Torvane Finance",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "contest_charge",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "the car and the statement total",
+   "truth": "A 2023 midsize SUV leased for 36 months. The lease-end statement is $3,412 across thirteen charges."
+  },
+  {
+   "about": "when the car was returned",
+   "truth": "Returned to the dealership on Saturday, 19 September 2026. She has the return receipt in the folder."
+  },
+  {
+   "about": "mileage",
+   "truth": "The lease allowed 36,000 miles and the odometer read 39,100. The statement charges for 3,100 extra miles, and she knows they drove it."
+  },
+  {
+   "about": "door dent",
+   "truth": "The inspector measured a dent on the rear passenger door at 41 mm. She believes the lease allows dents up to about two inches."
+  },
+  {
+   "about": "rear tire",
+   "truth": "The inspection lists the rear tire tread at 5/32 inch. The front tire is listed at 3/32 inch."
+  },
+  {
+   "about": "windshield chip",
+   "truth": "The inspector measured a windshield chip at 10 mm. The lease sheet says something about a chip smaller than a quarter."
+  },
+  {
+   "about": "wheel scuff versus gouge",
+   "truth": "One wheel has a 22 mm scuff that she thinks is fine. A different wheel has a deep gouge from a curb that she admits is real damage."
+  },
+  {
+   "about": "seat stain and burn",
+   "truth": "There is a 16 mm coffee stain on the back seat. The driver's seat has a small cigarette-type burn that her husband's cousin caused, and she is not disputing it."
+  },
+  {
+   "about": "other real damage",
+   "truth": "She knows the cracked headlight lens and a long bumper scratch are real. The bumper scratch is longer than the lease allows."
+  },
+  {
+   "about": "disposition fee and wear credit",
+   "truth": "The statement has a $395 disposition fee, which is in the lease. It also shows a wear allowance credit that has already been taken off."
+  },
+  {
+   "about": "her photos",
+   "truth": "She photographed the car on 15 September 2026 on her phone. The pictures are in a folder called Car Return on her desktop."
+  },
+  {
+   "about": "what she wants",
+   "truth": "She wants every dispute to be a specific charge with a number, not a blanket complaint. She also wants to know what this costs compared with a consultant's share of the savings."
+  }
+ ],
+ "unknowns": [
+  "The exact deadline for disputing the lease-end statement.",
+  "What the federal rule on stating wear standards requires, or whether it helps her.",
+  "Whether the wear allowance credit on the bill can be disputed or is just a courtesy.",
+  "What the legal word 'disposition' covers in the fee, and whether it can be negotiated."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:32Z"
+ }
+}

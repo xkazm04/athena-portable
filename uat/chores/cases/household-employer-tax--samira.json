@@ -1,0 +1,112 @@
+{
+ "pair": "household-employer-tax--samira",
+ "playbook_id": "household-employer-tax",
+ "character": "samira",
+ "person": "Samira Okoye is a 32-year-old marketing project coordinator who married six weeks ago and is expecting in the autumn. Her father, 84, lives with her, and she employs his caregivers at home: a weekday daytime caregiver, Rosalind, and a new evening caregiver, Dev, whom she set up as a contractor because he asked. An agency also sends an overnight aide, and her brother-in-law's teenage son Tobias is not involved. She is good with apps but has never filed anything with the government and finds those sites built to trip her up. Her new surname is only on her marriage certificate, and her husband and father both assume she has it handled. She wants a clear order and to know what carries a penalty.",
+ "stated_up_front": "Okay, I made a list! My dad's caregivers are paid through a few different apps and I've never filed anything with the state. Can you tell me what order to do things in and what's actually urgent?",
+ "portals": [
+  {
+   "playbook_app": "Hourquill",
+   "mine": "Clockwell"
+  },
+  {
+   "playbook_app": "Hearthpay",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Ledgerline bank",
+   "mine": "Harborview Credit Union"
+  },
+  {
+   "playbook_app": "Taxline State",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "set_up_as_household_employee",
+   "mine": "ask"
+  },
+  {
+   "action": "sign_i9_section2",
+   "mine": "ask"
+  },
+  {
+   "action": "correct_w2_identity",
+   "mine": "ask"
+  },
+  {
+   "action": "file_wage_report",
+   "mine": "ask"
+  },
+  {
+   "action": "pay_ui_tax",
+   "mine": "ask"
+  },
+  {
+   "action": "file_new_hire_report",
+   "mine": "ask"
+  },
+  {
+   "action": "pay_federal_estimate",
+   "mine": "ask"
+  },
+  {
+   "action": "pay_bill",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Who works in the home",
+   "truth": "Rosalind Baptiste (weekday days, since last January), Dev Marchetti (evenings, started Monday 12 October 2026), and an overnight aide sent by Sunrise Home Care agency."
+  },
+  {
+   "about": "Who controls Dev's work",
+   "truth": "Samira sets his hours and tasks herself: 5pm to 10pm, Monday to Friday, with a list of things to do for her father."
+  },
+  {
+   "about": "How Dev is currently set up",
+   "truth": "As a contractor paid by the hour, because he asked for it that way; he has not been paid yet and his first pay day is Friday 23 October."
+  },
+  {
+   "about": "The overnight aide",
+   "truth": "Employed and paid by Sunrise Home Care, which sends her own invoice; Samira does not direct her work or pay her."
+  },
+  {
+   "about": "Rosalind's pay",
+   "truth": "About $620 a week, paid every Friday, roughly $8,000 in the third quarter."
+  },
+  {
+   "about": "Rosalind's name on her W-2 profile",
+   "truth": "Hearthpay has her as 'Rosalind Baptist', missing the final 'e' of Baptiste on her Social Security card."
+  },
+  {
+   "about": "Samira's state filings",
+   "truth": "She has registered an employer account with Taxline State, but nothing has been filed or paid for the third quarter, which ended 30 September."
+  },
+  {
+   "about": "Her checking account",
+   "truth": "Harborview Credit Union checking has the September 15 federal estimate paid and a $195 bill from a filing service waiting."
+  },
+  {
+   "about": "Dev's I-9",
+   "truth": "He started on Monday 12 October, so the third business day is Wednesday 14 October; she has not signed Section 2 yet and does not remember whether he showed documents."
+  },
+  {
+   "about": "Her view on the accountant",
+   "truth": "She would like to be told plainly if something needs an accountant, and she has not yet hired one."
+  }
+ ],
+ "unknowns": [
+  "Whether the state's wage base and rate apply to her and by what date the third-quarter report is due",
+  "Whether Rosalind's Social Security number is entered correctly in Hearthpay, as opposed to just her name",
+  "What Schedule H is and whether she owes anything on it this year",
+  "Whether the $195 filing service bill is a required fee or optional"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:00Z"
+ }
+}

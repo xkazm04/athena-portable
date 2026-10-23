@@ -1,0 +1,88 @@
+{
+ "pair": "sub-insurance-certs--ray",
+ "playbook_id": "sub-insurance-certs",
+ "character": "ray",
+ "person": "Ray Okafor, 42, is a project manager for a general contractor and its electrical arm, running two jobs at once. On the current job, a two-storey dental and urgent care clinic, eight subcontractors mobilize over the next five weeks. He came up as an electrician and knows the subcontract and the field better than the software. He does compliance checks in the hour after the site closes, and the GC's project manager reads every notice looking for a reason to deny it, so he wants each notice to cite the Exhibit D clause and be dead right.",
+ "stated_up_front": "I've got eight subs mobilizing over the next five weeks and I need their insurance checked against Exhibit D before any of them badges in. Check the actual policies, not just the certificates, and tell me who's clear and who gets a notice.",
+ "portals": [
+  {
+   "playbook_app": "Sitegrid",
+   "mine": "Procore"
+  },
+  {
+   "playbook_app": "Subhub",
+   "mine": "Textura"
+  },
+  {
+   "playbook_app": "Coverwell",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Outlook"
+  }
+ ],
+ "gates": [
+  {
+   "action": "approve_compliance",
+   "mine": "ask"
+  },
+  {
+   "action": "send_deficiency",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Job and address named in Exhibit D",
+   "truth": "Birchwood Family Clinic, 2240 Birchwood Avenue; endorsements must show that address or no location"
+  },
+  {
+   "about": "Limits required in Exhibit D, section D.2",
+   "truth": "$1,000,000 per occurrence and $2,000,000 aggregate, commercial general liability; no umbrella credit toward the base limits"
+  },
+  {
+   "about": "Additional insureds required",
+   "truth": "Both CG 20 10 and CG 20 37, naming the general contractor (Harlan Ridge Construction) and the owner (Birchwood Health Partners LLC)"
+  },
+  {
+   "about": "Number of subs and the mobilization window",
+   "truth": "Eight subs; the first, the concrete sub, mobilizes Monday 2 November, and the last, the finish carpentry sub, mobilizes Monday 30 November"
+  },
+  {
+   "about": "Sub already on site",
+   "truth": "Delgado Excavating has been on site since 12 October and was approved then; it should not be noticed again"
+  },
+  {
+   "about": "Sub with a cured deficiency",
+   "truth": "Pike Mechanical was short an endorsement, and its agent added CG 20 37 on 7 October; the policy now carries both"
+  },
+  {
+   "about": "Sub with an expiry problem",
+   "truth": "Summit Roofing's policy expired 30 September; the agent only quoted the renewal and has not said it is bound"
+  },
+  {
+   "about": "Where the notices go",
+   "truth": "Each notice goes to the sub's project contact and its insurance agent, in writing, citing Exhibit D"
+  },
+  {
+   "about": "Who reviews his notices",
+   "truth": "Dana Whitcombe, the GC's project manager, reads every notice and he copies her on each one"
+  },
+  {
+   "about": "Tone he wants",
+   "truth": "Short, factual, names the gap and the clause, no apologies and no threats"
+  }
+ ],
+ "unknowns": [
+  "Whether Summit Roofing's renewal has actually been bound, since the agent has only quoted it",
+  "What the endorsement edition dates on the forms schedules mean, or whether a later edition changes the coverage",
+  "Whether the other subs' agents will post the schedules before the mobilization dates",
+  "Whether the GC's contract with the owner allows any grace on a missing endorsement"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:54:51Z"
+ }
+}

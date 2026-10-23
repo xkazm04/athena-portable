@@ -1,0 +1,109 @@
+{
+ "pair": "carrier-accessorials--dario",
+ "playbook_id": "carrier-accessorials",
+ "character": "dario",
+ "person": "Dario Mendes, 47, owns three trucks outside Joliet and drives one himself. He is from Goiania, Brazil, and reads English slowly, using a phone translator for long letters. He hauls for C.H. Robinson, TQL, Uber Freight and one small broker who works only by email, and he is factored through RTS. Drivers wait at docks often, but he collects only about a third of what he bills because every broker has its own window and portal. His wife keeps the books and asks every month where the detention money went, so he wants only strong claims filed in his name.",
+ "stated_up_front": "Please, I want to check the last two weeks of my loads for detention and lumper. Tell me simple: which load, how much, and when I lose it if I do nothing. Do not file weak claims in my name.",
+ "portals": [
+  {
+   "playbook_app": "Motive",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Dispatch inbox",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "C.H. Robinson Navisphere Carrier",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "TQL Carrier Dashboard",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Uber Freight",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "RTS Pro (factor)",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_detention",
+   "mine": "ask"
+  },
+  {
+   "action": "request_lumper",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_lumper",
+   "mine": "ask"
+  },
+  {
+   "action": "short_pay_inquiry",
+   "mine": "ask"
+  },
+  {
+   "action": "send_email",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Trucks and drivers",
+   "truth": "Three trucks. Dario drives truck 1. Drivers Anselmo (truck 2) and Tiago (truck 3). Tiago sometimes turns off the tracking app on his phone."
+  },
+  {
+   "about": "Time window to review",
+   "truth": "The last 14 days, about 22 stops across the three trucks. Dario thinks about 8 of them had a long wait."
+  },
+  {
+   "about": "Gmail dispatch inbox",
+   "truth": "Rate confirmations and rep emails arrive at kazdanm@gmail.com. The small email-only broker is Prairie Line Freight, and its rep is Gail."
+  },
+  {
+   "about": "Typical rate con terms he remembers",
+   "truth": "Most say 2 hours free time, then $50 per hour, with a cap of $300 per stop. The small broker's rate con says $40 per hour with a cap of $240."
+  },
+  {
+   "about": "A stop where a driver waited a long time",
+   "truth": "Anselmo waited 5 hours 20 minutes at a cold storage warehouse in Elwood, Illinois, on a C.H. Robinson load. He thinks the signed BOL shows the in-time but the facility did not write an out-time."
+  },
+  {
+   "about": "Lumper",
+   "truth": "Tiago paid a $175 lumper at a grocery distribution center in Romeoville on a TQL load and kept the paper receipt. He sent a photo of it to Dario's phone."
+  },
+  {
+   "about": "Uber Freight load",
+   "truth": "One Uber Freight load had a 3-hour wait in Gary, Indiana, and Dario saw it only three days later. He suspects it is too late to file."
+  },
+  {
+   "about": "Late arrival",
+   "truth": "Dario's own truck arrived 90 minutes after the appointment at a Joliet warehouse on one load, and then waited 3 hours. He knows this may not count."
+  },
+  {
+   "about": "Factor",
+   "truth": "RTS pays him within 2 days of the broker's approval, minus 3% fee. He thinks one TQL payment last month came lower than the amount approved."
+  },
+  {
+   "about": "Who he answers to",
+   "truth": "His wife Renata keeps the books and wants a simple monthly list of what was requested, approved and paid."
+  }
+ ],
+ "unknowns": [
+  "How many free hours each broker's rate confirmation actually gives, and who has a notice rule.",
+  "How long each broker's filing window is for detention and lumper.",
+  "Which document category in the TQL portal gets a lumper receipt paid.",
+  "Whether the Motive geofence times match what is written on the signed BOLs at each facility.",
+  "Whether TQL's tracker was on during the long waits."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:46:09Z"
+ }
+}

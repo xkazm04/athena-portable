@@ -1,0 +1,88 @@
+{
+ "pair": "isf-filings--lorna",
+ "playbook_id": "isf-filings",
+ "character": "lorna",
+ "person": "Lorna Pike is the 58-year-old office and compliance manager at a small importer that runs its own trucks and brings in kitchen and storage goods from Asia. She has filed customs entries, permits and claims for twenty-two years and now files the company's own ISFs, with the controller and the owner (who signs anything large) behind her. A past 'freight audit AI' vendor cost the company money and rework, so she distrusts anything that sounds sure without showing its basis. She wants each filing tied to the rule and the line it came from, and she wants to approve what goes to CBP under the company's bond.",
+ "stated_up_front": "I need the ISFs checked for everything loading this week and filed where they're owed. Tell me which rule and which line each one comes from, and don't send anything to CBP until I've seen it.",
+ "portals": [
+  {
+   "playbook_app": "Sourcewick supplier portal",
+   "mine": "SupplyLink vendor portal"
+  },
+  {
+   "playbook_app": "Forwarden",
+   "mine": "Forwarden"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "Outlook"
+  },
+  {
+   "playbook_app": "Quayloft ISF desk",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_isf",
+   "mine": "ask"
+  },
+  {
+   "action": "update_isf",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Who files the ISF and under whose bond",
+   "truth": "The company files its own ISFs as ISF Importer under its continuous bond; Lorna signs off, the owner is told of anything that becomes a claim."
+  },
+  {
+   "about": "ISF due today, first",
+   "truth": "PO 44718, stainless storage bins, laden Ningbo on a vessel the carrier moved up five days; the 24-hour cutoff is today at 16:00 Chicago time."
+  },
+  {
+   "about": "ISF due today, second",
+   "truth": "PO 44725, enamel stockpots, laden Yantian, cutoff today at 22:30 Chicago time."
+  },
+  {
+   "about": "ISF due Sunday",
+   "truth": "PO 44731, silicone baking mats, laden Qingdao; filing due Sunday 25 October before the 24 hours run out."
+  },
+  {
+   "about": "Seller versus factory",
+   "truth": "The seller on PO 44725 is Harbor Bright Trading Ltd of Hong Kong; the factory is Taizhou Lanfeng Enamelware Co., country of origin China."
+  },
+  {
+   "about": "Flexible manufacturer update",
+   "truth": "An earlier filing on PO 44702 listed the manufacturer as flexible; the factory was named in an email on 8 October as Dongguan Hengli Metalworks, and the stuffing location needs adding."
+  },
+  {
+   "about": "Warehouse change",
+   "truth": "Ship-to on PO 44709 changed from the Joliet yard to a leased Memphis warehouse before arrival; the filing needs updating."
+  },
+  {
+   "about": "Items to leave alone",
+   "truth": "Air-freighted sample stockpots, a bulk shipment of decorative river pebbles, and a Canadian customer's container the carrier files as freight remaining on board at Seattle need no ISF; a roll to a later vessel on PO 44712 changes nothing."
+  },
+  {
+   "about": "Penalty exposure",
+   "truth": "The bond liquidated damages is $5,000 per violation, which is why she wants to see each filing before it goes."
+  },
+  {
+   "about": "Tariff numbers",
+   "truth": "She takes the HTS numbers from the supplier's invoice line, not from memory: 7323.93 for the stainless bins and 7323.91 for the enamel stockpots."
+  }
+ ],
+ "unknowns": [
+  "Whether CBP would treat the late-named factory on PO 44702 as a separate violation or accept the update as timely.",
+  "The exact time the carrier's advanced sailing was announced, versus when it reached her inbox.",
+  "Whether the Memphis warehouse change counts as an update the carrier must also be told about.",
+  "What the consolidator's stuffing location code is for the Qingdao shipment, which the supplier has not confirmed."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:23Z"
+ }
+}

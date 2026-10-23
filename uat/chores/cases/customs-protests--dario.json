@@ -1,0 +1,88 @@
+{
+ "pair": "customs-protests--dario",
+ "playbook_id": "customs-protests",
+ "character": "dario",
+ "person": "Dario Mendes, 47, runs a three-truck carrier near Joliet and drives one truck himself. On the side, with his wife keeping the books, he imports Brazilian churrasco kitchenware: silicone spatulas and brushes, and melamine serving platters. He reads English slowly and uses a phone translator for long letters. He found that his broker declared some entries under the wrong tariff numbers, so he overpaid duty. He wants to recover that money, but he does not want any weak claim filed in his name, and he wants to know the load-style specifics: which entry, how much, and when he loses it.",
+ "stated_up_front": "Please, I think the broker put wrong tariff number on some of my churrasco imports and I paid too much duty. Tell me simple: which entries, how much money I get back, and which one I lose if I do nothing.",
+ "portals": [
+  {
+   "playbook_app": "Ledgerline ERP",
+   "mine": "QuickBooks Online"
+  },
+  {
+   "playbook_app": "Docshelf",
+   "mine": "Google Drive"
+  },
+  {
+   "playbook_app": "Forwarden",
+   "mine": "Flexport"
+  },
+  {
+   "playbook_app": "Portline Entries",
+   "mine": "ACE Portal"
+  }
+ ],
+ "gates": [
+  {
+   "action": "transmit_psc",
+   "mine": "ask"
+  },
+  {
+   "action": "file_protest",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "his import side business",
+   "truth": "Mendes Churrasco Imports, ships silicone spatulas, silicone basting brushes and melamine serving platters from Goiás, Brazil"
+  },
+  {
+   "about": "platters and the ruling",
+   "truth": "A CBP ruling he got in 2024 puts his melamine platters under 3924.10.20. His QuickBooks item list still shows a lower number that a part-time buyer typed in 2023 and nobody checked."
+  },
+  {
+   "about": "unliquidated entries to correct",
+   "truth": "Two entries not yet liquidated: a silicone brush entry from February with $1,840 duty paid, and a spatula entry from April with $2,150 duty paid. The broker declared both under the wrong subheading."
+  },
+  {
+   "about": "liquidated entries to protest",
+   "truth": "Two entries already liquidated with the wrong number: a brush entry liquidated in June and a spatula entry liquidated in May. The May one is due on Wednesday, five days from now. Together they overpaid about $3,300."
+  },
+  {
+   "about": "spatula entry too late",
+   "truth": "A spatula entry liquidated in March. Its 180 days ended on 9 September, so the protest window is closed."
+  },
+  {
+   "about": "entry that must wait",
+   "truth": "One brush entry from late last year is past the correction window. It is scheduled to liquidate on 23 October, and after that it can be protested. Duty paid was $1,260."
+  },
+  {
+   "about": "entries already right",
+   "truth": "Two entries are already under the right number: a platter entry under 3924.10.20 and a brush entry. He does not want them touched."
+  },
+  {
+   "about": "what the duty figures cover",
+   "truth": "The duty figures in his notes are the basic duty rate only, with no other fees. His wife wrote this in a note in the Google Drive folder."
+  },
+  {
+   "about": "who signs and who keeps records",
+   "truth": "He is the importer of record and signs by phone. His wife keeps the books and asks every month where the money went."
+  },
+  {
+   "about": "broker",
+   "truth": "A small email-first broker who uses Flexport. It changed its old classification database in early 2025."
+  }
+ ],
+ "unknowns": [
+  "How many days he has to correct an entry before it liquidates, and how that differs from the protest deadline.",
+  "What 3924.10.20 means or why the platters count under it instead of the lower number.",
+  "Exactly how much interest CBP will add to the refund.",
+  "Whether the broker's old database change caused all the wrong numbers or only some."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:47:28Z"
+ }
+}

@@ -1,0 +1,104 @@
+{
+ "pair": "layoff-sixty-days--marcus",
+ "playbook_id": "layoff-sixty-days",
+ "character": "marcus",
+ "person": "Marcus Webb is a 45-year-old physical therapist in Tacoma, laid off from a hospital system when his department was cut, now picking up per diem shifts. He is the household spreadsheet person and checks every figure; his wife wants the money and coverage sorted properly. His group coverage ended at month end and he has a scheduled shoulder MRI in early October that he wants covered. He is working through unemployment, severance, COBRA and a marketplace plan and wants every number shown with its method.",
+ "stated_up_front": "I got laid off from the hospital on 25 September and my coverage ends on the 30th. I have a severance agreement, a COBRA notice and a marketplace window, and I want the dates and the math laid out before anything gets signed or elected.",
+ "portals": [
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Fernhollow Unemployment Desk",
+   "mine": "Washington ESD SecureAccess"
+  },
+  {
+   "playbook_app": "Coverfind",
+   "mine": "Washington Healthplanfinder"
+  },
+  {
+   "playbook_app": "Crewmarrow HR",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_ui_claim",
+   "mine": "ask"
+  },
+  {
+   "action": "sign_release",
+   "mine": "ask"
+  },
+  {
+   "action": "elect_cobra",
+   "mine": "ask"
+  },
+  {
+   "action": "select_plan",
+   "mine": "ask"
+  },
+  {
+   "action": "apply_credit",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Last day of work",
+   "truth": "25 September 2026; group coverage ended 30 September"
+  },
+  {
+   "about": "Severance option he wants",
+   "truth": "Option B: 6,200.00 dollars paid 2 November, more than 30 days after his last day"
+  },
+  {
+   "about": "Severance option he is wary of",
+   "truth": "Option A: same amount paid 23 October, 28 days after his last day, which he suspects could bar benefits"
+  },
+  {
+   "about": "COBRA premium",
+   "truth": "1,020.00 dollars a month, due 45 days after election"
+  },
+  {
+   "about": "Medical event driving the COBRA month",
+   "truth": "Shoulder MRI on 6 October, which a marketplace plan starting 1 November could not cover"
+  },
+  {
+   "about": "Marketplace plan he prefers",
+   "truth": "A Silver plan starting 1 November with the premium tax credit applied for November and December"
+  },
+  {
+   "about": "Marketplace enrollment window closes",
+   "truth": "29 November 2026"
+  },
+  {
+   "about": "COBRA election deadline in his notice",
+   "truth": "4 December 2026"
+  },
+  {
+   "about": "Household context",
+   "truth": "His wife works full time and wants the money and coverage settled; he also has a disputed 200 dollar a month escrow increase on the mortgage"
+  },
+  {
+   "about": "Unemployment claim status",
+   "truth": "Not yet filed; he wants it filed this week so it starts on the Monday of the week of filing"
+  },
+  {
+   "about": "Broker contact",
+   "truth": "A broker emailed saying a Platinum plan must be bought today; Marcus does not trust the pressure"
+  }
+ ],
+ "unknowns": [
+  "Whether a release with a payment inside 30 days of the last day actually bars unemployment weeks, and for how many",
+  "Whether electing COBRA for October lets him still get the premium tax credit for November",
+  "What the deadline for the first COBRA premium payment is in calendar terms",
+  "Whether the 21-day consideration and 7-day revoke periods run from the same date"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:20Z"
+ }
+}

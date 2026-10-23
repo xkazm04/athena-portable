@@ -1,0 +1,81 @@
+{
+ "pair": "fba-reimbursements--hana",
+ "playbook_id": "fba-reimbursements",
+ "character": "hana",
+ "person": "Hana Kowalczyk, 34, runs a one-person shop selling ceramics and linen goods from a studio behind her house in Oregon. Most of her sales go through her own site and two marketplaces, but she also sends a few SKUs (mugs, linen napkin sets, a tea towel) to Amazon FBA, maybe $40k a year there. She packs and ships her own inbound boxes, buys blanks and fabric from a couple of small suppliers, and has never downloaded an inventory ledger. She suspects Amazon has lost some of her units but can't say how many, and wants to know straight away whether this chore is worth it for a shop her size. She dislikes acronyms and big 'you could recover' numbers.",
+ "stated_up_front": "Hi! I think Amazon lost some of my mugs and napkin sets from my last couple of shipments, but I honestly don't know how to check. Is this even worth doing for a tiny shop like mine, and what do you need from me? I have orders to pack.",
+ "portals": [
+  {
+   "playbook_app": "Seller Central",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Supplier inbox",
+   "mine": "Gmail"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_case",
+   "mine": "ask"
+  },
+  {
+   "action": "request_remeasure",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Roughly how much she sells on Amazon per year",
+   "truth": "About $40,000 a year, across 6 SKUs"
+  },
+  {
+   "about": "Her main FBA products",
+   "truth": "Speckled stoneware mug (12 oz), linen napkin set of 4, and a waffle-weave tea towel"
+  },
+  {
+   "about": "Her most recent inbound shipment",
+   "truth": "She sent 240 mugs in a shipment she created on 9 September 2026; Amazon's page shows 228 received"
+  },
+  {
+   "about": "Who packed that shipment",
+   "truth": "She packed it herself in her studio and counted 240 twice before taping the boxes"
+  },
+  {
+   "about": "Her linen supplier",
+   "truth": "A small mill she calls 'the Lithuanian mill', which emails PDF invoices to her Gmail; last invoice was for 300 napkin sets at $11.50 each"
+  },
+  {
+   "about": "Her mug cost per unit",
+   "truth": "About $6.80 per mug for materials and kiln time, by her own reckoning"
+  },
+  {
+   "about": "Whether she has a 3PL",
+   "truth": "No 3PL; she ships from her own studio by UPS Ground to Amazon's warehouse and keeps the UPS delivery confirmation emails"
+  },
+  {
+   "about": "Whether she ever filed a reimbursement case",
+   "truth": "Never, but she once got a $14 reimbursement email from Amazon that she didn't understand"
+  },
+  {
+   "about": "How she wants to be contacted for approvals",
+   "truth": "Short text-style questions in the chat, one at a time, with the dollar amount stated"
+  },
+  {
+   "about": "Her time budget for this",
+   "truth": "About 20 minutes once a month, on a Sunday evening"
+  }
+ ],
+ "unknowns": [
+  "Whether Amazon's rules limit how long after a shipment she can still claim lost units",
+  "Whether the shipment of 240 mugs is still marked Receiving or is closed",
+  "What the $14 reimbursement from Amazon covered",
+  "Whether any of her items have already been remeasured and how many times",
+  "What the inventory ledger's reason codes mean"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:48:24Z"
+ }
+}

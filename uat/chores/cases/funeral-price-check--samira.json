@@ -1,0 +1,92 @@
+{
+ "pair": "funeral-price-check--samira",
+ "playbook_id": "funeral-price-check",
+ "character": "samira",
+ "person": "Samira Okoye is 32, a marketing project coordinator, married six weeks ago and expecting in the autumn. Her father, 84, who lived with her, died at home on October 20. She is next of kin and is arranging his direct cremation with the agreement of her older brother Tobi. She is organised and good with apps, but she has never dealt with a funeral home or government paperwork, and the price lists and statements overwhelm her. She wants to know what she has to pay, what the homes cannot make her pay, and which home is actually cheapest, because Tobi has fixed on Calder and she does not want a fight.",
+ "stated_up_front": "Hi, my dad died on Tuesday and we want a simple cremation like he asked, with no viewing and using his own urn. I have three funeral homes' price lists and statements and I can't tell which one is really cheapest or what they're allowed to charge me. Can you work through them and tell me what you'd do before anything gets signed?",
+ "portals": [
+  {
+   "playbook_app": "Docshelf",
+   "mine": "Google Drive"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Hollis & Rowe",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Greenmeadow",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Calder",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "decline_item",
+   "mine": "ask"
+  },
+  {
+   "action": "book_arrangement",
+   "mine": "ask"
+  },
+  {
+   "action": "reply",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "What her father asked for",
+   "truth": "A handwritten letter from 2023 asks for cremation, no viewing, no embalming, and his own brass urn. Samira and Tobi both signed a one-page decision on October 21 agreeing to this."
+  },
+  {
+   "about": "The urn",
+   "truth": "He bought a brass urn online in 2023 for $164. The receipt is in the Drive folder and the urn is in Samira's hall closet."
+  },
+  {
+   "about": "Hollis & Rowe, the home that holds him",
+   "truth": "Basic services fee $2,100. The statement adds embalming $795, which it calls 'required', and a $150 urn handling fee. It also lists refrigeration $275 (he has been there three days), crematory fee $425, transport $450, alternative container $95 and a $75 county medical examiner authorization fee. Corrected total is about $3,420 (as listed, $4,365), and there is no release charge since he is already there."
+  },
+  {
+   "about": "Greenmeadow",
+   "truth": "Basic services fee $1,650. The statement adds a $625 rental casket 'required for cremation'. The rest of the direct cremation, including crematory fee, container, refrigeration and county authorization, comes to $2,890 corrected. Hollis & Rowe charges $350 to release him, so all in it is $3,240."
+  },
+  {
+   "about": "Calder",
+   "truth": "Its price list was given in person by Mr. Calder, who quoted $2,490 for a direct cremation. The written statement adds $700 embalming 'required by law', a $175 urn handling fee and a separate $520 crematory fee. Corrected, with the $350 release charge, it comes to about $3,360."
+  },
+  {
+   "about": "Tobi's view",
+   "truth": "Tobi emailed that Calder is clearly the cheapest at $2,490 and wants to just book it. He is working from the quote Mr. Calder gave in person."
+  },
+  {
+   "about": "The church",
+   "truth": "St. Brendan's confirmed a memorial service on Saturday, November 7 at 11 a.m. The church office prints the programs."
+  },
+  {
+   "about": "The advocate's offer",
+   "truth": "A 'funeral savings advocate' emailed offering to negotiate for 25% of whatever she saves. Samira has not answered."
+  },
+  {
+   "about": "Saved rules",
+   "truth": "She saved the FTC Funeral Rule summary and her state's funeral page to the Drive folder, but has only skimmed them."
+  }
+ ],
+ "unknowns": [
+  "Whether the county medical examiner authorization fee is actually required for her father, since he died at home under hospice care",
+  "How long Hollis & Rowe can keep him before it charges more, and whether the release charge can be negotiated",
+  "Whether the alternative container each home lists is actually mandatory or just a default",
+  "Whether she alone can sign the cremation authorization as next of kin or Tobi also has to sign"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:49:34Z"
+ }
+}

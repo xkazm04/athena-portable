@@ -1,0 +1,92 @@
+{
+ "pair": "organic-annual-update--hana",
+ "playbook_id": "organic-annual-update",
+ "character": "hana",
+ "person": "Hana Kowalczyk, 34, runs a one-person online shop from a studio behind her house in Oregon. She sells handmade ceramics and linen, and a small line of certified organic herbal tea blends that she sells alongside her mugs. She packs, buys, blends and does the books herself. Her certifier's annual update is due next month, and she is nervous about anything official or signed. She would rather answer from memory than dig through reports, and she wants to know first whether this chore fits a shop her size.",
+ "stated_up_front": "Hi! My organic tea certifier wants my yearly update by mid-November and I honestly don't know where to start. Can you tell me quick if this is something a tiny shop like mine needs, and what you need from me? I have orders to pack.",
+ "portals": [
+  {
+   "playbook_app": "Certifield Organic",
+   "mine": "Cascade Organic Certifiers portal"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "Google Drive"
+  },
+  {
+   "playbook_app": "Ledgerwren ERP",
+   "mine": "QuickBooks Online"
+  },
+  {
+   "playbook_app": "Organicheck",
+   "mine": "USDA Organic Integrity Database"
+  }
+ ],
+ "gates": [
+  {
+   "action": "report_plan_change",
+   "mine": "ask"
+  },
+  {
+   "action": "report_supplier_lapse",
+   "mine": "ask"
+  },
+  {
+   "action": "log_import_certificate",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "What is certified organic in her business",
+   "truth": "Only the Heron Hill tea line: 6 herbal blends, packed in tins in a rented commercial kitchen share. The ceramics and linen are not organic."
+  },
+  {
+   "about": "When the update is due",
+   "truth": "Her certifier's email says Monday 16 November 2026."
+  },
+  {
+   "about": "Plan changes she actually made this year",
+   "truth": "In March she moved her blending from her studio to a shared kitchen on Alder Street. In June she switched from paper pouches to steel tins from a new tin supplier."
+  },
+  {
+   "about": "Plan change she only plans",
+   "truth": "She wants to add a seventh blend, a lavender-chamomile one, in spring 2027, not yet made."
+  },
+  {
+   "about": "Suppliers she believes have lost certification",
+   "truth": "Willow Creek Herbs (peppermint) and Sunridge Botanicals (nettle) both sent her a notice this summer that they were suspended."
+  },
+  {
+   "about": "A supplier with an old paper certificate",
+   "truth": "Hollis Mint Farm's paper certificate in her folder is dated 2023, but they are still selling her organic spearmint and she thinks they are fine."
+  },
+  {
+   "about": "A supplier whose product goes into a non-organic item",
+   "truth": "Tumbleweed Hibiscus is a grower she stopped hearing from, but their hibiscus goes only into her non-organic 'Cozy Evening' blend."
+  },
+  {
+   "about": "A distributor she thinks is exempt",
+   "truth": "Pacific Spice Depot only resells her sealed, already-packaged organic rooibos and never opens the bags."
+  },
+  {
+   "about": "Her imports",
+   "truth": "Egyptian chamomile (150 kg), South African rooibos (100 kg) and Sri Lankan ginger (80 kg) were all organic and arrived as ordered. Indian tulsi was ordered at 300 kg, but she thinks the paperwork said only 200 kg. Chinese jasmine is for the non-organic blend. Her lemon balm is bought from a farm in Oregon."
+  },
+  {
+   "about": "A change she does not think needs reporting",
+   "truth": "Her certifier already accepted the new tin supplier by email in July, so she is not sure if it needs reporting again."
+  }
+ ],
+ "unknowns": [
+  "Whether a distributor that only resells sealed packages needs its own certificate",
+  "What the rule says about which changes have to be reported and by when",
+  "How to tell from the import certificate how much quantity it covers compared with what arrived",
+  "Whether the registry or the paper certificate counts when they disagree"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:52:20Z"
+ }
+}

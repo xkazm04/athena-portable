@@ -1,0 +1,92 @@
+{
+ "pair": "parcel-guarantee-refunds--dario",
+ "playbook_id": "parcel-guarantee-refunds",
+ "character": "dario",
+ "person": "Dario Mendes, 47, owns three trucks near Joliet and drives one himself. He ships small overnight parcels on two carriers: original paperwork packets to his factoring company, ELD tablets, and tire sensors. Several came late this fall. He reads English slowly and uses a phone translator, so he wants short answers. His wife keeps the books and asks about every dollar. He will not file a weak claim, because he fears it hurts his standing, and he wants only the claims that are really owed.",
+ "stated_up_front": "Please, some of my overnight parcels came late in September and October. Check which ones the carrier must pay back, and tell me simple: which parcel, how much, and when I lose it.",
+ "portals": [
+  {
+   "playbook_app": "Labelyard",
+   "mine": "Pirate Ship"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Wrenpost",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Lanecourier",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_refund",
+   "mine": "ask"
+  },
+  {
+   "action": "claim_refund",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "What he ships and why it matters",
+   "truth": "Signed paperwork packets to his factoring company, Prairie Capital in Tulsa, plus ELD tablets and tire sensors. A late packet delays his factoring advance."
+  },
+  {
+   "about": "Wrenpost overnight packet to Prairie Capital",
+   "truth": "Due Tue 13 Oct by 10:30, delivered Wed 14 Oct at 11:05. The address was correct and he dropped it before the cut-off. Transportation charge $38.40, his real money."
+  },
+  {
+   "about": "Wrenpost second claim candidate",
+   "truth": "Standard overnight ELD tablet to a fleet-supply shop in Indianapolis, due Thu 15 Oct, arrived Fri 16 Oct. Transportation charge $27.15. Fuel surcharge was extra."
+  },
+  {
+   "about": "Wrenpost parcel delayed by storm",
+   "truth": "Overnight parts to Memphis on 8 Oct, late because of thunderstorms. He remembers the carrier sent a weather notice. He does not want to claim it."
+  },
+  {
+   "about": "Wrenpost Ground parcel",
+   "truth": "Box of tire sensors by Ground to Columbus, 3 days late, charge $14.90. He thinks it should be refunded, but is not sure."
+  },
+  {
+   "about": "Lanecourier parcel with missing suite",
+   "truth": "ELD vendor in Atlanta. He forgot Suite 210 on the label, and the vendor wrote that it sat at their front desk."
+  },
+  {
+   "about": "Lanecourier parcel nobody could sign",
+   "truth": "Adult-signature packet to a small broker, Ferncastle Freight. The office was closed and nobody could sign. The broker's email confirms this."
+  },
+  {
+   "about": "Lanecourier credit already given",
+   "truth": "He wrote himself a Gmail note asking for a $29.75 credit on a late overnight in early October. He believes Lanecourier already gave it."
+  },
+  {
+   "about": "Lanecourier overnight claim candidates",
+   "truth": "Two late overnight parcels on the weekly invoice dated 12 Oct. One cost $41.20 and one $33.60. He wants to check their addresses."
+  },
+  {
+   "about": "Old late parcels",
+   "truth": "Two parcels from mid-September were late, but he waited and thinks the time to ask has passed. Maybe about 6 October."
+  },
+  {
+   "about": "Audit service offer",
+   "truth": "An email from a refund audit company offers to file claims for him and keep half. He does not want it, since a dispatch service once took 8% of his gross."
+  }
+ ],
+ "unknowns": [
+  "How many days he has to claim with each carrier, or when each window starts",
+  "Which services each carrier's guarantee covers and which are suspended",
+  "Whether the carrier allows a few seconds of lateness before a parcel counts as late",
+  "Whether the carrier's weather notice is enough to refuse a claim"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:52:44Z"
+ }
+}

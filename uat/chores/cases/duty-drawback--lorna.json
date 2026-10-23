@@ -1,0 +1,91 @@
+{
+ "pair": "duty-drawback--lorna",
+ "playbook_id": "duty-drawback",
+ "character": "lorna",
+ "person": "Lorna Pike is the office and compliance manager at a small importer in Columbus, Ohio that brings in industrial fasteners, hydraulic fittings and a few finished hose assemblies, runs its own trucks, and does a modest amount of light assembly and some re-export to Canada and Mexico. She has done customs entries and claims for twenty-two years and files the drawback claims herself, but the company has never had anyone trace exports back to import lines systematically. The owner signs anything over a few thousand dollars and is wary of anything 'AI' after a freight-audit vendor overpromised and left her redoing denied claims. She wants every figure shown with its line and the rule's source, and any practice run called a practice run.",
+ "stated_up_front": "I need the year's exports matched back to our import entry lines for drawback. Show me the line behind every number, and don't file anything until I've looked at it.",
+ "portals": [
+  {
+   "playbook_app": "Portline Entries",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Forwarden broker",
+   "mine": "Harborlink freight portal"
+  },
+  {
+   "playbook_app": "Ledgerline ERP",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Docshelf",
+   "mine": "SharePoint document library"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_drawback_claim",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Who is the importer of record on the entries",
+   "truth": "Keystone Fluid Supply LLC, the company's own importer number, and she is the filer of record contact"
+  },
+  {
+   "about": "Rule for time to file",
+   "truth": "Claims must be filed within five years of the import date; she counts from the entry's import date, not the entry summary date"
+  },
+  {
+   "about": "Rate of refund",
+   "truth": "99% of the duty paid, computed per unit and to the cent"
+  },
+  {
+   "about": "Oldest import lot still in time",
+   "truth": "Entry lines from November 2021 forward; the August 2021 hydraulic fittings lot has run past five years"
+  },
+  {
+   "about": "Unused-merchandise export",
+   "truth": "About 4,200 stainless hydraulic fittings imported at 6.2% duty, re-exported to a Monterrey customer in March 2026 exactly as received"
+  },
+  {
+   "about": "Manufacturing case",
+   "truth": "Hose assemblies built in-house from imported hose and couplings, work order series HA-, exported to Ontario in spring 2026"
+  },
+  {
+   "about": "Already-claimed lines",
+   "truth": "A 2024 claim she filed herself already designated most of the 2022 coupling lot, leaving only a few hundred units free"
+  },
+  {
+   "about": "Duty-free goods",
+   "truth": "Gaskets and O-rings came in under a free tariff line, so no duty to claim"
+  },
+  {
+   "about": "Domestic-sourced goods",
+   "truth": "Some assemblies use couplings bought from an Ohio distributor with no delivery certificate, so they cannot be traced to an import"
+  },
+  {
+   "about": "Cancelled shipment",
+   "truth": "A June 2026 booking to Laredo was cancelled before the truck left and has no proof of export"
+  },
+  {
+   "about": "Her own equipment",
+   "truth": "Two demo fittings kits were taken back from the sales fleet after months of use, so they are used goods"
+  },
+  {
+   "about": "Approval for large claims",
+   "truth": "The owner signs anything over a few thousand dollars, so a claim above that goes to him first"
+  }
+ ],
+ "unknowns": [
+  "Whether the distributor's terms ever allowed passing import duty rights to the company by certificate",
+  "The exact deadline for filing a claim on the spring 2026 exports under the current rules",
+  "What a particular ITN rejection code on one Harborlink shipment means"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:47:45Z"
+ }
+}

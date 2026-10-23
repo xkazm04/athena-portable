@@ -1,0 +1,84 @@
+{
+ "pair": "tenant-deposit-return--rosa",
+ "playbook_id": "tenant-deposit-return",
+ "character": "rosa",
+ "person": "Rosa Villanueva is 64, a retired school cafeteria manager from Texas who owns her home, a rental duplex and a lot with her husband. While hail damage to her own house was being repaired, she rented a townhome in Tomball for four months. She moved out on 30 September, and the landlord's manager has now sent a deposit statement that takes $1,142.60 of her $1,800 deposit. She suspects some of it is wear and double billing, but she doesn't want to argue about things she really owes. She keeps papers in a folder per property, wants deadlines first, and is not comfortable with legal words or small text on screen. Her husband says to just pay it, but she won't.",
+ "stated_up_front": "I rented a townhome while my house was being fixed after the hail, and the manager sent a statement keeping $1,142.60 of my $1,800 deposit. I have the papers here. Can you go through the lines and tell me which ones are fair and which ones I should push back on, and by what date?",
+ "portals": [
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Latchwick tenant portal",
+   "mine": "RentCafe resident portal"
+  },
+  {
+   "playbook_app": "Lenswick photos",
+   "mine": "Google Photos"
+  },
+  {
+   "playbook_app": "Gavelmoor claims",
+   "mine": "Texas Courts Online justice court pages"
+  }
+ ],
+ "gates": [
+  {
+   "action": "dispute_deduction",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The rental and dates",
+   "truth": "A townhome in Tomball, Texas. Lease ran 1 June to 30 September 2026, with a move-out walkthrough on 30 September."
+  },
+  {
+   "about": "Deposit and statement",
+   "truth": "She paid a $1,800.00 deposit. The statement arrived by email on 21 October and has 14 lines totalling $1,142.60, leaving $657.40 to return."
+  },
+  {
+   "about": "Repaint of all rooms",
+   "truth": "The statement bills $480 to repaint every room after only four months. She lived there four months and hung nothing but a few pictures."
+  },
+  {
+   "about": "Carpet and blind worn at move-in",
+   "truth": "Her June move-in photos in Google Photos show a worn path in the bedroom carpet and a bent blind in the same room. The statement bills $210 for the carpet and $38 for the blind."
+  },
+  {
+   "about": "Oven cleaning",
+   "truth": "She scrubbed the oven herself on 29 September and has a move-out photo showing it clean. The statement bills $65 for oven cleaning."
+  },
+  {
+   "about": "Front lock rekey",
+   "truth": "She returned both keys on 30 September and has the manager's email acknowledging them. The statement bills $75 to rekey the front lock."
+  },
+  {
+   "about": "Wall hole billed twice",
+   "truth": "One hole in the hall wall from a mounted TV bracket is billed as 'drywall repair' at $90 and again as 'patch and texture' at $90. She admits to the hole once."
+  },
+  {
+   "about": "Amounts she owes and agrees with",
+   "truth": "Rent for 1 to 3 October, 3 days at $58 a day, is $174, and the water bill is $61.60 under the lease. A red wine stain on the living-room carpet is $120, and the bathroom was left dirty, so cleaning is $55. Two missing window screens are $44."
+  },
+  {
+   "about": "Estimate left open",
+   "truth": "A good-faith estimate of $130 for a cracked bathroom vanity top is marked as awaiting the contractor's invoice. She knows she cracked it."
+  },
+  {
+   "about": "Her paperwork",
+   "truth": "She has the lease, the move-in checklist she signed, and the manager's email about keys in her Tomball folder. She uses a desktop with enlarged text."
+  }
+ ],
+ "unknowns": [
+  "How many days the landlord has to send the statement and what happens if it is late",
+  "Whether four months counts as short enough to rule out repainting under Texas rules",
+  "Whether a good-faith estimate with no invoice yet can be challenged now",
+  "The justice court's dollar limit and what she must do before filing"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:55:10Z"
+ }
+}

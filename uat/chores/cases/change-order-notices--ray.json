@@ -1,0 +1,84 @@
+{
+ "pair": "change-order-notices--ray",
+ "playbook_id": "change-order-notices",
+ "character": "ray",
+ "person": "Ray Okafor, 42, is project manager for the electrical arm of a general contractor, working as a subcontractor on a dental and outpatient clinic build. He came up as an apprentice electrician and lives on site with a tablet, doing paperwork in the hour after the site closes. The GC's project manager reads every notice looking for a reason to deny it, and a late notice once cost his company forty thousand dollars of work already done. He wants Athena to read his subcontract, cite the clause she relies on, and tell him plainly what is due, what is late and what she will send.",
+ "stated_up_front": "Month-end sweep on the clinic job. Go through the RFIs, directives and the foremen's logs against our subcontract, tell me which are real changes still inside the notice window and what each is worth. Don't send anything to the GC without showing me.",
+ "portals": [
+  {
+   "playbook_app": "Primeline GC",
+   "mine": "Procore"
+  },
+  {
+   "playbook_app": "Sitegrid",
+   "mine": "Autodesk Build"
+  },
+  {
+   "playbook_app": "Dailylog",
+   "mine": "Raken"
+  },
+  {
+   "playbook_app": "Estimato",
+   "mine": "McCormick Estimating"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_change_notice",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Notice window in his subcontract",
+   "truth": "Written notice within 7 days of the event or of first recognizing the condition, sent through the GC's portal and to the address in Article 12"
+  },
+  {
+   "about": "Concealed or differing conditions",
+   "truth": "Notice within 7 days of observing the condition differs from the documents, before it is disturbed"
+  },
+  {
+   "about": "Markup on changes",
+   "truth": "Cost plus 12% on his own electrical work and 5% on lower-tier subs"
+  },
+  {
+   "about": "A change already executed",
+   "truth": "Change Order 07 for added corridor lighting was signed on 2 October and is already priced; do not notice it again"
+  },
+  {
+   "about": "A notice already on file",
+   "truth": "Notice 04 for relocated nurse call stations was submitted on 9 October and is under GC review"
+  },
+  {
+   "about": "Base scope RFI",
+   "truth": "RFI 52 on panel schedule feeder sizes was answered 'as shown on E-401'; he considers it base scope"
+  },
+  {
+   "about": "His own rework",
+   "truth": "His crew pulled the conduit in the east wing at the wrong elevation and redid it on 14 October, about 22 labor hours; this is his cost"
+  },
+  {
+   "about": "Price escalation",
+   "truth": "Copper rose about 11% since bid on a fixed-price subcontract; not a change"
+  },
+  {
+   "about": "A real change with a lower-tier sub",
+   "truth": "Architect's supplemental instruction ASI 11 dated 16 October added 14 data drops in the imaging suite, installed by his low-voltage sub, quoted $6,800 before markup"
+  },
+  {
+   "about": "A stale item",
+   "truth": "Standby on 6 and 7 October while the GC resolved a ceiling conflict; the 7-day window has already closed"
+  }
+ ],
+ "unknowns": [
+  "Whether the GC's general conditions measure the notice window from the date a direction is given or the date it is received",
+  "How the GC's project manager treats a notice that arrives on the last day of the window",
+  "Whether the estimating system's labor rate includes burden and overtime",
+  "Whether the architect will issue a formal change directive or leave ASI 11 as an instruction"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:46:15Z"
+ }
+}

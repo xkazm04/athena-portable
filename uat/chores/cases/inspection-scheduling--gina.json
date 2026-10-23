@@ -1,0 +1,84 @@
+{
+ "pair": "inspection-scheduling--gina",
+ "playbook_id": "inspection-scheduling",
+ "character": "gina",
+ "person": "Gina Russo is the office manager of a thirty-person plumbing and mechanical subcontractor. She normally handles billing, lien deadlines, insurance certificates and closeout. This quarter the owner has asked her to book the company's own inspections, because the foremen keep calling the city at the wrong time. Her jobs are an eight-unit townhome building in Ashford, where the company does under-slab, rough plumbing and gas piping, and a store addition with a rooftop mechanical unit in Merrow. She wants every request shown with the job, the GC, the permit and inspection id, and the rule behind the date. A failed inspection costs the owner a fee and a day, and he hates surprises.",
+ "stated_up_front": "I need next week's plumbing and mechanical inspections booked for the Ashford townhomes and the Merrow store, but only the ones that are really ready. Show me each one with the job, permit number and date before anything goes in.",
+ "portals": [
+  {
+   "playbook_app": "Permitway",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Civicdesk",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Sitegrid",
+   "mine": "Procore"
+  },
+  {
+   "playbook_app": "Crew calendar",
+   "mine": "Google Calendar"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_inspection",
+   "mine": "ask"
+  },
+  {
+   "action": "schedule_inspection",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Ashford job",
+   "truth": "Birchfield Townhomes, 8 units in one building, GC is Harlan Brothers Construction. Our permit is P-26-4417 (plumbing) and the gas piping is on the same permit."
+  },
+  {
+   "about": "Ashford under-slab plumbing",
+   "truth": "Foreman Dale Ostrowski reported the under-slab plumbing complete and tested on Wednesday 10/21. It has not been inspected yet. The slab pour is set for Thursday 11/5."
+  },
+  {
+   "about": "Ashford gas piping",
+   "truth": "The gas piping inspection is already booked in Permitway for Tuesday 10/27. Don't book it again."
+  },
+  {
+   "about": "Ashford holiday",
+   "truth": "The city office is closed Monday 10/26 for a local observance. I think inspections start again Tuesday."
+  },
+  {
+   "about": "Merrow job",
+   "truth": "Calloway Market store addition, GC is Pine & Vale Builders. Our mechanical permit is M-2026-0382 and the plumbing permit is PL-2026-0391."
+  },
+  {
+   "about": "Merrow rooftop unit",
+   "truth": "The rooftop unit's duct and refrigerant line rough-in is ready according to Procore, as noted by foreman Tomas Beltran on 10/22. A failed mechanical rough on 10/14 was corrected by replacing the damper."
+  },
+  {
+   "about": "Who is on site",
+   "truth": "Dale's crew is at Birchfield Monday to Thursday. Tomas is at Calloway Tuesday to Friday and nobody from us is there Monday. The inspector needs someone on site to meet him."
+  },
+  {
+   "about": "Not ready",
+   "truth": "Insulation at Birchfield isn't installed, and a final on either job is nowhere near ready. Don't touch those."
+  },
+  {
+   "about": "Who approves",
+   "truth": "The owner, Frank Russo, wants to hear about anything that costs a re-inspection fee. The fee is about $150 in each city."
+  }
+ ],
+ "unknowns": [
+  "Which edition of the International Building Code each city has adopted, and what their section 110 amendments say.",
+  "Whether Merrow needs a cutoff time the day before for same-week inspection requests.",
+  "Whether the Birchfield slab pour could proceed if the under-slab inspection slips by a day.",
+  "What the inspector's failure code from 10/14 means beyond the damper."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:14Z"
+ }
+}

@@ -1,0 +1,81 @@
+{
+ "pair": "first-time-abate--gina",
+ "playbook_id": "first-time-abate",
+ "character": "gina",
+ "person": "Gina Russo is the 49-year-old office manager of a thirty-person plumbing and mechanical subcontractor, and she also handles the owner's tax letters. The owner, Dale Hutchins, owns the S corporation and co-owns two real-estate partnerships. A pile of twelve IRS notices has built up since spring. The outside bookkeeper scanned them into the shared folder and never called the numbers on them. Gina wants each notice laid out with its entity, tax period and code, and she wants to read the actual request before anything is signed. Dale hates surprises, so nothing goes to the IRS without her seeing it first.",
+ "stated_up_front": "Dale's got twelve IRS notices in the scan folder and I need to know which penalties we can get waived and which we leave alone. Go through them by entity and tax period, and don't send anything to the IRS until I've seen the actual request.",
+ "portals": [
+  {
+   "playbook_app": "Taxline Federal",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "the shared Dropbox folder 'IRS Scans'"
+  },
+  {
+   "playbook_app": "Ledgerwren bank",
+   "mine": "Wells Fargo Business Online"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "Outlook"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_abatement",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The owner and his main company",
+   "truth": "Dale Hutchins owns Hutchins Mechanical Inc., an S corporation with about thirty employees. He also co-owns two partnerships, Birchline Properties LP and Tenth Street Holdings LP."
+  },
+  {
+   "about": "Late S corporation return",
+   "truth": "The 2025 Form 1120-S was filed 41 days late. The penalty is $2,870 (notice N-3). The 2022 to 2024 returns were all filed on time with no penalties."
+  },
+  {
+   "about": "Payroll deposits (Form 941)",
+   "truth": "Q1 2026 deposits were late and carry a penalty of $1,940. The balance was paid from the Wells Fargo account in July. The Q2 2026 notice is also a late-deposit penalty, of $1,215, and it follows the Q1 one."
+  },
+  {
+   "about": "Dale's personal tax on an installment agreement",
+   "truth": "Dale's 2025 Form 1040 balance of $18,400 was paid late. The failure-to-pay penalty is $690. He is on an installment agreement paying $950 on the 15th of each month, and every payment has gone through."
+  },
+  {
+   "about": "Partnerships",
+   "truth": "Birchline's 2025 Form 1065 was filed late with a penalty of $1,560. Tenth Street's 2023 penalty was waived last year, and the 2024 penalty notice on it is the second year. The bookkeeper's email mentions the 2023 waiver."
+  },
+  {
+   "about": "Penalties she expects to leave alone",
+   "truth": "There is an accuracy-related penalty of $3,300 on the 2024 return, and an estimated tax penalty of $410 on Dale's 2025 Form 1040. There is also a payroll form penalty on Form 940 whose history includes a 2023 penalty, plus one penalty the IRS already removed, which she has the old letter for."
+  },
+  {
+   "about": "Notices that are not penalties",
+   "truth": "Notice N-8 is a balance-due notice for $2,150 of tax on the 2025 return, and N-11 is a math-error change that reduced Dale's refund by $312. She knows neither is a penalty."
+  },
+  {
+   "about": "Who signs",
+   "truth": "Dale signs anything that goes to the IRS. Gina prepares it and puts it on his desk, and he has said not to send anything without his seeing it."
+  },
+  {
+   "about": "Notice dates and deadlines",
+   "truth": "Most notices are dated between July and September 2026. She wrote the response-by dates on her whiteboard, and the earliest is November 9."
+  }
+ ],
+ "unknowns": [
+  "Whether the first-time abatement rule applies to each entity and return separately or to the owner as a whole",
+  "What the penalty codes printed on the notices mean",
+  "Whether the preparer's note about 'automatic relief' means any of these penalties will be removed without a request",
+  "Whether using the waiver on one return affects any later year for the same return",
+  "Whether the Q2 deposit penalty could still be waived on some other ground"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:48:50Z"
+ }
+}

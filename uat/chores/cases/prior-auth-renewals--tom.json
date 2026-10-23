@@ -1,0 +1,96 @@
+{
+ "pair": "prior-auth-renewals--tom",
+ "playbook_id": "prior-auth-renewals",
+ "character": "tom",
+ "person": "Tom Whitcomb is the practice administrator of a three-clinician physical therapy clinic. He came over from running restaurants two years ago and handles staff, schedule and money, but billing is still something he learns by asking the biller, who is in three days a week. She is out today, so he wants this chore done without her setting anything up. He has nine patients in ongoing therapy across four payers and has been bitten before by renewals sent too early and by visits that went unpaid. He needs to explain to the physician owners in plain words what got sent and why.",
+ "stated_up_front": "Hi, it's Tom at the clinic. Our biller's out today and I need to make sure no patient's authorization runs out before their visits do. Can you go through everybody and send whatever's due, and tell me in plain English what you sent and what you left alone and why?",
+ "portals": [
+  {
+   "playbook_app": "Chartleaf EHR",
+   "mine": "WebPT"
+  },
+  {
+   "playbook_app": "Authgate",
+   "mine": "Availity"
+  },
+  {
+   "playbook_app": "Authwise",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Faxline",
+   "mine": "eFax"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_continuation",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_renewal",
+   "mine": "ask"
+  },
+  {
+   "action": "send_fax",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Patients in ongoing care",
+   "truth": "Nine patients across four payers: a Medicare Advantage plan, a Medicaid managed care plan, an employer plan with an exchange plan, and one small regional payer that only takes faxes. One patient is on Original Medicare."
+  },
+  {
+   "about": "Today",
+   "truth": "Friday, October 23, 2026. The next Friday run is October 30."
+  },
+  {
+   "about": "Medicaid managed care patient due today",
+   "truth": "Marcus Teel's authorization covers visits through Nov 4. His first uncovered visit is Thursday, Nov 5, so the 7-day clock means the continuation has to go today. His plan of care still needs 8 more visits."
+  },
+  {
+   "about": "Medicaid managed care patient who can wait",
+   "truth": "Renata Alvarez's authorization ends Nov 11 and her first uncovered visit is Nov 12. Next Friday, Oct 30, still leaves the 7 days, so it is not due today."
+  },
+  {
+   "about": "Medicare Advantage patient too early",
+   "truth": "Dolores Pruitt's authorization runs to Nov 13, about three weeks out. Tom was told the portal returns anything sent this early."
+  },
+  {
+   "about": "Employer plan patient far out",
+   "truth": "Kevin Ostrander's employer plan authorization runs until late December. Tom thinks the portal won't accept a renewal for another month or so."
+  },
+  {
+   "about": "Renewal already pending",
+   "truth": "An exchange plan renewal for Priya Nambiar was submitted on Oct 19 and is still pending. The biller did it before she left."
+  },
+  {
+   "about": "Patient being discharged",
+   "truth": "Walt Brennan is being discharged next Friday, Oct 30. His authorization runs through Nov 20, so he needs no renewal."
+  },
+  {
+   "about": "Original Medicare patient",
+   "truth": "Lorraine Fitch is on Original Medicare, so there is no prior authorization for her outpatient therapy."
+  },
+  {
+   "about": "Fax-only payer",
+   "truth": "One patient, Hector Dominguez, is with a small regional payer that only takes faxes. His authorization ends Nov 20, and Thanksgiving on Nov 26 falls inside the payer's 10-business-day window."
+  },
+  {
+   "about": "What Tom needs afterward",
+   "truth": "A plain-language list of what was sent, what was skipped and why, which he can take to the owners at the monthly meeting."
+  }
+ ],
+ "unknowns": [
+  "Whether the employer plan and the exchange plan are covered by the federal 7-day rule or keep their own clock",
+  "How early each portal will accept a renewal request",
+  "Whether the fax number on file for the regional payer is still current",
+  "How the fax payer counts the Thanksgiving holiday against its 10 business days"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:53:23Z"
+ }
+}

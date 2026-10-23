@@ -1,0 +1,84 @@
+{
+ "pair": "cobra-notices--walt",
+ "playbook_id": "cobra-notices",
+ "character": "walt",
+ "person": "Walt Brenner is 66 and owns a 24-person surveying and renovation firm, where he does his own HR. The firm runs its own health plan, and a part-time bookkeeper helps with payroll. This quarter he has a layoff, a quit, a divorce and a daughter aging off the plan, and he has been told letters must go out on a deadline. He has heard 'a quit gets no COBRA' from his broker and does not know whether that is right. He prints everything, distrusts anything that looks like a sales pitch, and wants to be told plainly which letters go out, by when, and what it costs him if one is missed.",
+ "stated_up_front": "I am not a computer person. I have a couple of people who left or lost their insurance this quarter and somebody told me there's a letter I have to mail them on a deadline. Figure out who gets one and tell me plain what it costs me if I skip it.",
+ "portals": [
+  {
+   "playbook_app": "Crewmarrow HR",
+   "mine": "QuickBooks Payroll"
+  },
+  {
+   "playbook_app": "Carriercore",
+   "mine": "Blue Cross employer portal"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  }
+ ],
+ "gates": [
+  {
+   "action": "send_election_notice",
+   "mine": "ask"
+  },
+  {
+   "action": "reply_message",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The layoff this quarter",
+   "truth": "Surveyor Dale Ostrowski was laid off September 4; his coverage on the Blue Cross portal ended September 30."
+  },
+  {
+   "about": "The resignation",
+   "truth": "Office hand Tamika Reese quit October 2; her coverage runs through October 31. His broker says a quit gets no COBRA."
+  },
+  {
+   "about": "The divorce",
+   "truth": "Foreman Ray Pruitt's letter about his divorce reached Walt's office October 14, and the divorce was final in late September. His wife Carol is on the plan."
+  },
+  {
+   "about": "Carol Pruitt's address",
+   "truth": "The carrier shows Carol at a separate rental on Alder Street, not Ray's address, because they separated last spring."
+  },
+  {
+   "about": "The daughter aging off",
+   "truth": "Estimator Gil Navarro wrote a letter that arrived October 12 saying his daughter Marisol turned 26 on October 9; she is on his plan."
+  },
+  {
+   "about": "A laid-off worker who was never enrolled",
+   "truth": "Seasonal laborer Eddie Cass was let go September 18; he turned down the health plan when hired and was never enrolled."
+  },
+  {
+   "about": "The hours cut",
+   "truth": "Crew hand Luis Varga was cut to 32 hours a week in September and is still on the plan."
+  },
+  {
+   "about": "A notice already mailed",
+   "truth": "Roofer Hank Dwyer was laid off in July, and an election notice went to him on August 12 on the plan's letterhead."
+  },
+  {
+   "about": "The vendor's offer",
+   "truth": "An email from a company called BenefitBridge offers to send all the COBRA notices for $85 a month per person; he has not answered it."
+  },
+  {
+   "about": "Where Walt looks things up",
+   "truth": "The plan's COBRA rules are in the three-ring binder with the carrier contract, and he has the payroll stubs for the firm's numbers."
+  }
+ ],
+ "unknowns": [
+  "Whether the plan counts its deadline from the day coverage ended or from the day the employee's letter arrived.",
+  "Whether someone who quits is owed a COBRA notice (his broker says no; he can't tell if that is right).",
+  "How many days after a divorce an employee can report it before the plan no longer has to send a notice.",
+  "Whether Carol Pruitt needs her own notice mailed to her separate address."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:46:59Z"
+ }
+}

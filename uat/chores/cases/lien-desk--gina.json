@@ -1,0 +1,112 @@
+{
+ "pair": "lien-desk--gina",
+ "playbook_id": "lien-desk",
+ "character": "gina",
+ "person": "Gina Russo is the 49-year-old office manager at a thirty-person plumbing and mechanical subcontractor with about a dozen jobs in California and Texas. She bills monthly across five GC portals, tracks lien deadlines on a whiteboard, and chases insurance certificates and closeout. A missed preliminary notice once cost the company a $60,000 receivable, so she checks every notice herself. The owner signs waivers and hates surprises, and the project managers tell her about change orders late. This month she wants the October billing run done without a forfeited lien right.",
+ "stated_up_front": "October billing is due and I've got jobs with three different GCs and two states. Go through each job, tell me which deadlines are coming up and which waivers are waiting, and show me the actual documents before anything goes out.",
+ "portals": [
+  {
+   "playbook_app": "Office (ERP and mail)",
+   "mine": "QuickBooks Contractor Edition"
+  },
+  {
+   "playbook_app": "Procore",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Oracle Textura",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "GCPay",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "serve_preliminary_notice",
+   "mine": "ask"
+  },
+  {
+   "action": "send_texas_notice",
+   "mine": "ask"
+  },
+  {
+   "action": "send_retainage_notice",
+   "mine": "ask"
+  },
+  {
+   "action": "record_lien",
+   "mine": "ask"
+  },
+  {
+   "action": "sign_waiver",
+   "mine": "ask"
+  },
+  {
+   "action": "decline_waiver",
+   "mine": "ask"
+  },
+  {
+   "action": "file_nonpayment_notice",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_pay_app",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Mission Bay job on Textura",
+   "truth": "Harbor Ridge Builders is the GC. The September draw is $148,200. The owner has a waiver request waiting, and Gina has not seen the bank deposit."
+  },
+  {
+   "about": "California preliminary notice already served",
+   "truth": "The notice for the Sunset Medical Plaza tenant improvement job (GC Calder Construction, Procore) was served on September 2, 2026."
+  },
+  {
+   "about": "Direct-with-owner job",
+   "truth": "The Alvarado Dental office buildout in San Jose is contracted directly with the owner, so no preliminary notice is needed."
+  },
+  {
+   "about": "Texas job and GC",
+   "truth": "Lone Star Medical Pavilion in Plano, GC Brennan-Hale, billed through GCPay. First delivery of pipe was July 28, 2026, and the contract is $412,000."
+  },
+  {
+   "about": "Texas retention",
+   "truth": "Retention held on Lone Star Medical Pavilion is $20,600, which is 5% of the work billed to date."
+  },
+  {
+   "about": "Pending change order",
+   "truth": "Change Order 7 on Lone Star ($18,750 for added medical gas lines) is still pending approval by Brennan-Hale. The PM, Dale, has not confirmed it, so it stays out of the October pay app."
+  },
+  {
+   "about": "Insurance certificate",
+   "truth": "The certificate of insurance on file with GCPay expired on October 15, 2026. The renewal from the broker, Pacific Coast Insurance, was emailed on October 12."
+  },
+  {
+   "about": "Custom waiver",
+   "truth": "Brennan-Hale sent a custom waiver with hold-harmless language for the October payment. Gina wants the statutory Texas form returned."
+  },
+  {
+   "about": "Final waiver request",
+   "truth": "Calder Construction asked for an unconditional final waiver on the Sunset Medical Plaza TI, but $31,400 in retention is still unpaid."
+  },
+  {
+   "about": "Notice of Completion",
+   "truth": "A Notice of Completion was recorded on Friday, October 9, 2026 for the Bayshore Elementary mechanical job. Gina is not sure whether the 30-day lien window ends on a weekend."
+  }
+ ],
+ "unknowns": [
+  "Whether the 30-day lien window after the Bayshore Notice of Completion lands on a weekend, and which business day she must record by",
+  "Whether Texas requires the retainage notice on Lone Star to go out before the next monthly notice, and by what date",
+  "Whether Harbor Ridge's Textura 72-hour waiver clock has already started on the Mission Bay draw",
+  "Whether the broker's renewal certificate lists the additional insured wording Brennan-Hale requires"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:36Z"
+ }
+}

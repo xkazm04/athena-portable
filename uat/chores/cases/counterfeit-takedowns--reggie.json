@@ -1,0 +1,92 @@
+{
+ "pair": "counterfeit-takedowns--reggie",
+ "playbook_id": "counterfeit-takedowns",
+ "character": "reggie",
+ "person": "Reggie Banks is a 61-year-old part-time finance person for a small snack brand called Harvest Crumb that sells through two national distributors. He now has a different problem from deductions: the founder asked him to clean up knock-off listings of the brand's bars and photos because he is the one who keeps the paperwork. He reads at 175% zoom with a high-contrast theme and wants every decision shown line by line, with the reason for each one. He is cautious about signing anything under penalty of perjury and wants to see the proof for each listing before it goes in.",
+ "stated_up_front": "The founder asked me to deal with the fake and copied listings of our snack bars on the two marketplaces. I have 13 sightings in our registry. Go through them line by line and file only where we can prove it, and please keep the text big and plain.",
+ "portals": [
+  {
+   "playbook_app": "Brandwick registry",
+   "mine": "Shelfmark brand registry"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "Binderwell"
+  },
+  {
+   "playbook_app": "Stallwick seller",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Hawkerbrook seller",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_copyright_notice",
+   "mine": "ask"
+  },
+  {
+   "action": "file_trademark_complaint",
+   "mine": "ask"
+  },
+  {
+   "action": "file_ip_complaint",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Brand name and products",
+   "truth": "Harvest Crumb, oat-and-seed snack bars and a granola pouch, sold to two national distributors and on its own site"
+  },
+  {
+   "about": "Number of sightings in the registry",
+   "truth": "13 suspect listings across Stallwick and Hawkerbrook, plus one on a third marketplace the brand has no portal for"
+  },
+  {
+   "about": "Who owns the product photographs",
+   "truth": "The brand owns them through a signed assignment from its photographer, Dana Ortiz, dated March 2024, filed in Binderwell"
+  },
+  {
+   "about": "Licensed retailer",
+   "truth": "Greenlane Pantry is an authorised retailer with a licence to use the photos; he believes it runs to the end of 2026"
+  },
+  {
+   "about": "Genuine reseller",
+   "truth": "A reseller called Pennywhistle Foods sells real Harvest Crumb bars bought on a wholesale invoice, with its own photos; the brand leaves it alone"
+  },
+  {
+   "about": "Counterfeit proof",
+   "truth": "Test purchases of two counterfeit granola pouches, bought in September 2026 for $14.80 and $15.25, with reports in Binderwell"
+  },
+  {
+   "about": "Trademark",
+   "truth": "The brand has a registered word mark; he keeps the registration number in the registry"
+  },
+  {
+   "about": "Listings to leave alone",
+   "truth": "One listing only uses the brand name in the title, one uses a customer's photo, and one was already removed by the marketplace last week"
+  },
+  {
+   "about": "Who signs",
+   "truth": "Reggie signs filings as the brand's authorised person, after the founder, Marcy, approves"
+  },
+  {
+   "about": "Reading needs",
+   "truth": "He needs each listing shown as lines: seller, photo, goods, sales, decision, with no wide tables"
+  }
+ ],
+ "unknowns": [
+  "Whether a licence that was ended earlier this year still lets a seller use the photos after its end date",
+  "What the legal test for a valid copyright notice requires beyond naming the photo",
+  "Whether selling genuine goods bought from the brand gives a reseller the right to resell them",
+  "Which marketplace's form is needed for a trademark complaint versus a copyright notice"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:46:50Z"
+ }
+}

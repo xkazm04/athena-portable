@@ -1,0 +1,92 @@
+{
+ "pair": "prior-auth-renewals--maribel",
+ "playbook_id": "prior-auth-renewals",
+ "character": "maribel",
+ "person": "Maribel Santos is a 52-year-old certified coder with twenty years in medical billing. She works part-time at a three-doctor family practice and freelances for two others, one of them a small outpatient PT/OT clinic where she also handles the therapy authorisations. She tracks nine patients in ongoing care by hand across the EHR and four separate payer sites, and she has been burned by billing tools that treat every denial alike. She wants each renewal sent on the right day for its payer, no earlier and no later, and she wants anything unusual explained in plain billing terms.",
+ "stated_up_front": "It's Friday, so run the therapy auth renewals for the PT clinic. Check every patient's next visit against their auth and only send what's actually due today, and don't send anything a portal will bounce back as too early.",
+ "portals": [
+  {
+   "playbook_app": "Chartleaf EHR",
+   "mine": "WebPT"
+  },
+  {
+   "playbook_app": "Authgate",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Authwise",
+   "mine": "Evicore"
+  },
+  {
+   "playbook_app": "Faxline",
+   "mine": "eFax"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_continuation",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_renewal",
+   "mine": "ask"
+  },
+  {
+   "action": "send_fax",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "patients in ongoing therapy at the clinic",
+   "truth": "Nine patients across five payers: a Medicare Advantage plan, a Medicaid managed care plan, an employer plan, an exchange plan, and one fax-only commercial payer. One patient has Original Medicare."
+  },
+  {
+   "about": "today's date and the next run",
+   "truth": "Today is Friday, October 23, 2026. The next Friday run is October 30."
+  },
+  {
+   "about": "Medicare Advantage patient due today",
+   "truth": "Dolores Fenwick, a knee replacement patient. Her auth ends November 6, and her first uncovered visit is Monday, November 9. A 7-day decision clock means the request goes today."
+  },
+  {
+   "about": "Medicare Advantage patient too early",
+   "truth": "Walter Okafor's auth runs through November 13 and his first uncovered visit is November 16. That is three weeks out, so the portal would return a request sent today."
+  },
+  {
+   "about": "Medicaid managed care patient",
+   "truth": "Tamika Reyes has 24 visits authorised and has used 21. Her fourth visit past the limit falls on Tuesday, November 10. Waiting until the October 30 run still leaves 7 days, so nothing goes today."
+  },
+  {
+   "about": "employer plan renewal too early",
+   "truth": "Greg Lindqvist's employer plan auth runs through December 31. That is two months out, before the plan's acceptance window opens."
+  },
+  {
+   "about": "renewal already pending",
+   "truth": "Priya Natarajan's exchange plan renewal was submitted on October 19. It shows as pending in Evicore, so no second request goes."
+  },
+  {
+   "about": "patient being discharged",
+   "truth": "Hal Brenner is discharged on October 30, inside his current auth. He gets no renewal."
+  },
+  {
+   "about": "Original Medicare patient",
+   "truth": "Eunice Pappas is on Original Medicare. There is no prior auth for outpatient therapy, so nothing is sent for her."
+  },
+  {
+   "about": "fax-only payer and holiday",
+   "truth": "The fax-only payer needs 10 business days, and Thanksgiving on Thursday, November 26 falls inside that window. The payer's sheet gives its fax number, and the directory marks two other payers as portal-only."
+  }
+ ],
+ "unknowns": [
+  "Exactly when the employer plan's acceptance window opens before an auth ends",
+  "Whether the fax-only payer counts the Friday after Thanksgiving as a business day",
+  "Which of the clinic's plans fall under CMS-0057-F's 7-day rule and which keep their own 15 days",
+  "Whether the fax number in the directory is still current for the fax-only payer"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:53:12Z"
+ }
+}

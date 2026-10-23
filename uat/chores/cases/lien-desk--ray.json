@@ -1,0 +1,112 @@
+{
+ "pair": "lien-desk--ray",
+ "playbook_id": "lien-desk",
+ "character": "ray",
+ "person": "Ray Okafor is 42, an ex-apprentice electrician who now runs two jobs at once as project manager and coordinator for a general contractor and its electrical arm. On two current jobs the electrical arm is the subcontractor under someone else's GC: a school job in Texas and a clinic fit-out in California. He does the billing, waivers and notices in the hour after the site closes. He knows his contracts cold, but he does not know the statutory deadlines by heart. A late change order notice once cost the company $40,000 of work already done, so he wants Athena to cite the clause she relies on and to ask before anything goes out under his name. He has no patience for settings pages.",
+ "stated_up_front": "I've got two electrical subcontracts, one in Texas and one in California, and the pay apps and waivers are due this month. Read the contracts first and tell me what's due, what's late, and what you'd send. Nothing goes out without me okaying it.",
+ "portals": [
+  {
+   "playbook_app": "Office (ERP and mail)",
+   "mine": "QuickBooks and Outlook"
+  },
+  {
+   "playbook_app": "Procore",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Oracle Textura",
+   "mine": "Autodesk Construction Cloud"
+  },
+  {
+   "playbook_app": "GCPay",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "serve_preliminary_notice",
+   "mine": "ask"
+  },
+  {
+   "action": "send_texas_notice",
+   "mine": "ask"
+  },
+  {
+   "action": "send_retainage_notice",
+   "mine": "ask"
+  },
+  {
+   "action": "record_lien",
+   "mine": "ask"
+  },
+  {
+   "action": "sign_waiver",
+   "mine": "ask"
+  },
+  {
+   "action": "decline_waiver",
+   "mine": "ask"
+  },
+  {
+   "action": "file_nonpayment_notice",
+   "mine": "go"
+  },
+  {
+   "action": "submit_pay_app",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Texas job",
+   "truth": "Westbrook Intermediate School electrical, Houston area. The subcontract is with Brightline Constructors for $1,840,000, signed March 9, 2026. Pay apps go through GCPay."
+  },
+  {
+   "about": "Texas retainage",
+   "truth": "Brightline holds 10% retainage. About $112,000 is held to date, and it is not billed separately."
+  },
+  {
+   "about": "Texas first delivery",
+   "truth": "First conduit and switchgear delivery was June 22, 2026. Monthly notices are needed for work from then on."
+  },
+  {
+   "about": "California job",
+   "truth": "Cedar Row Dental Clinic tenant improvement in Sacramento. The subcontract is with Pacific Ridge Builders for $486,000, signed July 14, 2026. Billing and waiver requests run through Procore."
+  },
+  {
+   "about": "California preliminary notice",
+   "truth": "Ray's office served the preliminary notice on August 3, 2026, after the first material delivery on July 29. He has the proof of service in his Outlook sent folder."
+  },
+  {
+   "about": "Notice clause",
+   "truth": "Article 12 of both subcontracts requires written notice of changes within 7 days. It must be sent to the GC's project manager at the address listed in Article 12, not to the site trailer."
+  },
+  {
+   "about": "Pending change order",
+   "truth": "Change Order 4 on Westbrook is $38,500 for added panel circuits. Brightline's PM has not approved it, so it should stay out of this month's pay app."
+  },
+  {
+   "about": "Insurance certificate",
+   "truth": "The certificate of insurance on file with Brightline expired October 15. The renewal from the broker, Hartwell Insurance, should be in his email, but he has not opened it."
+  },
+  {
+   "about": "GC waiver form",
+   "truth": "Brightline sends its own waiver form with hold-harmless wording. Ray does not like it and wants the Texas statutory form instead."
+  },
+  {
+   "about": "Billing this month",
+   "truth": "Westbrook is billed against its schedule of values at 62% complete. The October pay app is due to Brightline by October 28."
+  }
+ ],
+ "unknowns": [
+  "Whether the owner on the California clinic has recorded a Notice of Completion yet, and so how many days he has to lien.",
+  "The exact statutory deadline for the Texas retainage notice on Westbrook.",
+  "Whether the Hartwell renewal certificate has already been sent and what its new expiry date is.",
+  "Whether Pacific Ridge's Procore waiver request is conditional or unconditional, and whether it covers retention."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:43Z"
+ }
+}

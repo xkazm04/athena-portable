@@ -1,0 +1,85 @@
+{
+ "pair": "duty-drawback--dario",
+ "playbook_id": "duty-drawback",
+ "character": "dario",
+ "person": "Dario Mendes, 47, runs a three-truck carrier outside Joliet and drives one truck himself. With his wife Larissa he also runs a small side business, Mendes Parts. It imports Brazilian air-brake chambers, slack adjusters and LED lamp controllers, builds them into axle and brake kits, and ships some kits to Paraguay and Brazil. Larissa keeps the books in QuickBooks. He has heard that duty paid on imports can be refunded when the goods are exported, but he does not know the rules. He reads English slowly and fears filing a weak claim in the company's name. He wants every claim to say which shipment, how much money, and by what date he loses it.",
+ "stated_up_front": "Please, I pay duty on parts from Brazil and I send some kits out again to Paraguay. I think I can get money back, but I do not know which shipments. Tell me simple: which shipment, how much, and when I lose it.",
+ "portals": [
+  {
+   "playbook_app": "Portline Entries",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Forwarden broker",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Ledgerline ERP",
+   "mine": "QuickBooks Online"
+  },
+  {
+   "playbook_app": "Docshelf",
+   "mine": "Google Drive"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_drawback_claim",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "What the side business imports",
+   "truth": "Brake chambers, slack adjusters and LED lamp controllers from a maker in Goiania, Brazil. Mendes Parts LLC is the importer of record."
+  },
+  {
+   "about": "Duty paid per unit on brake chambers",
+   "truth": "About $6.40 per chamber on the 2024 entry of 600 units. 200 units are still free to designate."
+  },
+  {
+   "about": "Lamp controllers entry",
+   "truth": "One entry in July 2021, 300 units at $2.10 duty each. Nobody has claimed on them."
+  },
+  {
+   "about": "Export that qualifies as made-into-kits",
+   "truth": "In March 2026 he shipped 80 axle kits to a trucking firm in Ciudad del Este, Paraguay. Each has 2 chambers from the 2024 entry. The ITN and bill of lading are in the forwarder portal."
+  },
+  {
+   "about": "Chambers bought from a US distributor",
+   "truth": "120 chambers from a Chicago distributor, Midwest Brake Supply, with no paperwork showing the duty was paid or passed on to him. These went into the kits he sent in May 2026."
+  },
+  {
+   "about": "Chambers pulled from his own trucks",
+   "truth": "About 20 chambers came off his own three trucks after running for months. They went into a used-parts lot sent to Paraguay in April 2026."
+  },
+  {
+   "about": "Cancelled booking",
+   "truth": "A 40-kit order for Asunción was booked for August 2026 and cancelled before the container left. The forwarder portal still shows it."
+  },
+  {
+   "about": "Duty-free item",
+   "truth": "Rubber boot seal kits arrive duty-free, so there is nothing to claim."
+  },
+  {
+   "about": "Earlier claim",
+   "truth": "A customs broker filed one claim in 2025 for a December 2024 export. It used 90 of the 2024 chambers."
+  },
+  {
+   "about": "Where records live",
+   "truth": "Larissa keeps invoices and the importer paperwork in a Google Drive folder named 'Mendes Parts'. He assembles kits in his shop, and QuickBooks only has item counts."
+  }
+ ],
+ "unknowns": [
+  "The exact date by which each import line must be filed or the refund is lost",
+  "Whether the Chicago distributor's chambers can ever qualify without his paperwork",
+  "What the tariff codes on the entries mean",
+  "Whether his own used chambers count as used or as unused goods",
+  "How many chamber units from the 2024 entry are still free"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:47:46Z"
+ }
+}

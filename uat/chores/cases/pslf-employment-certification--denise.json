@@ -1,0 +1,97 @@
+{
+ "pair": "pslf-employment-certification--denise",
+ "playbook_id": "pslf-employment-certification",
+ "character": "denise",
+ "person": "Denise Holloway is a 55-year-old secretary in a public middle school office. She has worked there full-time since August 2015 and took out a consolidated loan of about $31,400 to finish her associate degree. She also looks after her widowed mother's paperwork and drives forty minutes to her twice a week, so her own loan is one more letter she is afraid to get wrong. She has never been sure her months are counted right, and she does not trust screens that ask for numbers she does not understand. She wants each step explained in plain words before anything is sent anywhere.",
+ "stated_up_front": "Hi, I think I'm close to having my 120 payments for the loan forgiveness for people who work at schools, but I'm not sure the count is right. Can you check it for me, and please tell me first what you'll need from me? I don't want to type in anything of my mother's.",
+ "portals": [
+  {
+   "playbook_app": "Loanbridge servicer",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Payroll Harbor",
+   "mine": "Skyward Employee Access (the school district's staff pay portal)"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "AidPath",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_certification",
+   "mine": "ask"
+  },
+  {
+   "action": "request_reconsideration",
+   "mine": "ask"
+  },
+  {
+   "action": "request_buyback",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Main employer",
+   "truth": "Ridgemont Unified School District, a public school district. She has been the front-office secretary at Carver Middle School, full-time at 40 hours a week, since August 17, 2015."
+  },
+  {
+   "about": "Loan",
+   "truth": "One Direct consolidation loan, about $31,400 left, on an income-driven repayment plan. It was consolidated in March 2016 and her first payment was May 2016."
+  },
+  {
+   "about": "What the tracker shows",
+   "truth": "The federal tracker shows 109 qualifying months. She thinks it should be higher."
+  },
+  {
+   "about": "Months she thinks were miscounted",
+   "truth": "January to March 2019. The servicer changed and one payment was flagged late, but she has the bank record showing she paid on time."
+  },
+  {
+   "about": "Forbearance",
+   "truth": "She asked for two months of forbearance, June and July 2020, when her mother was in the hospital. She knows they probably don't count."
+  },
+  {
+   "about": "Union stipend",
+   "truth": "Since 2018 she has had a paid post as building representative for the classified staff union, $150 a month. She assumes it counts because it is school-related."
+  },
+  {
+   "about": "Weekend work",
+   "truth": "For about 14 months in 2017 and 2018 she worked Saturdays at a for-profit tutoring chain, Brightpath Learning Centers. She doesn't think she needs a form for that."
+  },
+  {
+   "about": "Evening bookkeeping",
+   "truth": "In 2021 and 2022 she kept books in the evenings for a church food pantry and got a 1099 at the end of the year, not a W-2."
+  },
+  {
+   "about": "Where her papers are",
+   "truth": "Old W-2s, her district offer letter and the union stipend letter are in a Gmail folder called 'Taxes and Work' and in a kitchen drawer."
+  },
+  {
+   "about": "Worry about her mother's information",
+   "truth": "She will not enter her mother's Social Security number or bank details anywhere. She only wants to use her own login and her own information."
+  },
+  {
+   "about": "Brother",
+   "truth": "Her brother, Gary, lives in Ohio and questions every decision, so she wants a written list of what was sent and why."
+  }
+ ],
+ "unknowns": [
+  "Whether the union stipend counts as a qualifying employer",
+  "Whether the months right after she left school, before her first payment, count at all",
+  "Whether the 1099 bookkeeping for the church food pantry counts",
+  "Exactly how the buyback works and whether she is allowed to use it",
+  "The district's employer ID number (EIN)"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:53:37Z"
+ }
+}

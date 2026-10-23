@@ -1,0 +1,93 @@
+{
+ "pair": "workers-comp-premium-audit--walt",
+ "playbook_id": "workers-comp-premium-audit",
+ "character": "walt",
+ "person": "Walt Brenner is 66, owns a roughly 24-person field-services firm doing surveying and renovation crews, and handles his own HR with a part-time bookkeeper. His workers' comp premium audit came in on paper and he thinks a few lines look wrong, but he does not know the class codes or rules. He wants to know what the letter wants and what it costs him to ignore it. He is wary of anyone selling him a 'fix' on a percentage after being burned by a payroll add-on, and he wants to be told where on his paperwork to find anything he is asked.",
+ "stated_up_front": "I got this comp audit letter and the premium went up a lot, and some of it looks wrong to me. I am not a computer person. Go through it, tell me which lines are wrong and what it costs me, and don't send anything to the insurance company without asking me.",
+ "portals": [
+  {
+   "playbook_app": "Auditwell",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Payroll Harbor",
+   "mine": "ADP"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "a filing cabinet scanned into Dropbox"
+  },
+  {
+   "playbook_app": "Coverwell",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "dispute_audit_line",
+   "mine": "ask"
+  },
+  {
+   "action": "request_payroll_division",
+   "mine": "ask"
+  },
+  {
+   "action": "accept_offer",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Deadline to dispute the audit with the carrier",
+   "truth": "14 October is printed on the audit letter, he believes, in the paragraph near the bottom of page 2"
+  },
+  {
+   "about": "Bookkeeper Donna",
+   "truth": "Donna, the part-time bookkeeper, works only in the office two days a week and never goes to job sites; the auditor put her under the carpentry code"
+  },
+  {
+   "about": "Salesman",
+   "truth": "Ray Kessler sells renovation jobs from customers' kitchen tables and living rooms and is not in the office more than a few hours a week; auditor coded him as ordinary office staff"
+  },
+  {
+   "about": "Office manager",
+   "truth": "Gail Whitcomb is the office manager and drives out to direct crews on site about 24 hours a week, though she is still coded as office"
+  },
+  {
+   "about": "Estimator",
+   "truth": "Phil Dabrowski estimates jobs and also frames with the crew roughly 26 hours a week"
+  },
+  {
+   "about": "Overtime crews",
+   "truth": "Crew A's overtime is shown separately on the payroll register with straight and half-time split; Crew B's register shows only a lump total of hours and pay"
+  },
+  {
+   "about": "Insured subs",
+   "truth": "Two subs, an electrician and a tile setter, say they carry their own comp; the electrician's certificate is with the agent, the tile setter's is only stapled in the contract copy in the filing cabinet"
+  },
+  {
+   "about": "Painter",
+   "truth": "A painter named Lou worked a few weeks as a sub and Walt has never seen any insurance paper from him"
+  },
+  {
+   "about": "Recovery firm offer",
+   "truth": "A firm mailed and emailed an offer to get audit money back for 40 percent of whatever is returned; Walt does not want it"
+  },
+  {
+   "about": "Where to find the policy ID",
+   "truth": "The policy number is at the top right of the audit letter and on his payroll stub he would read the EIN from the top left"
+  }
+ ],
+ "unknowns": [
+  "What the class code numbers on the auditor's worksheet mean",
+  "Whether the manual lets an employee's pay be split between two classes and what records are needed",
+  "Whether an overtime premium can come off the audit and which records the carrier will accept",
+  "Whether the tile setter's stapled certificate was in force on the dates the tile setter worked",
+  "Whether last year's audit can still be disputed"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:55:42Z"
+ }
+}

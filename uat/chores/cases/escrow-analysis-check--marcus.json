@@ -1,0 +1,100 @@
+{
+ "pair": "escrow-analysis-check--marcus",
+ "playbook_id": "escrow-analysis-check",
+ "character": "marcus",
+ "person": "Marcus Webb is a 45-year-old physical therapist in Tacoma who was laid off from a hospital system and now works per diem. His mortgage payment jumped about $200 a month after Northgate Servicing's annual escrow analysis, even though his county tax bill barely moved. He keeps spreadsheets of every bill and will recompute any figure Athena shows him, so he wants each line and the method behind it. His wife wants the money back, and he expects Athena to tell him plainly which lines are right and should be left alone.",
+ "stated_up_front": "My Northgate payment went up $200 a month after the escrow analysis and the tax bill barely changed. Check every line against the actual county and insurance bills and show me the math. Only dispute what's actually wrong.",
+ "portals": [
+  {
+   "playbook_app": "Northgate Servicing",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Countyline Tax",
+   "mine": "Pierce County Property Tax portal"
+  },
+  {
+   "playbook_app": "Hearthguard",
+   "mine": "State Farm"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  }
+ ],
+ "gates": [
+  {
+   "action": "dispute_escrow_line",
+   "mine": "ask"
+  },
+  {
+   "action": "request_surplus_refund",
+   "mine": "ask"
+  },
+  {
+   "action": "request_refund",
+   "mine": "ask"
+  },
+  {
+   "action": "reply",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Payment increase",
+   "truth": "Monthly payment rose from $2,486 to $2,688, an increase of $202, effective December 1."
+  },
+  {
+   "about": "Projected property tax on the analysis",
+   "truth": "Northgate projected $7,920 for the year, but the county's current bills total $6,840 across the April and October installments, which is $3,420 each."
+  },
+  {
+   "about": "Supplemental tax bill",
+   "truth": "A $412 supplemental bill for the finished basement bathroom remodel is a real bill, and he agrees it belongs in escrow."
+  },
+  {
+   "about": "Solid waste fee",
+   "truth": "A $186 solid waste fee is billed with the July tax statement every year. It is legitimate and he expects it to stay in the projection."
+  },
+  {
+   "about": "Homeowners premium",
+   "truth": "The State Farm homeowners premium dropped from $2,340 last term to $1,980 this term, but the analysis still projects $2,340."
+  },
+  {
+   "about": "Duplicate insurance payment",
+   "truth": "Northgate paid the $1,980 premium from escrow on August 14. Marcus's Visa also paid $1,980 to State Farm on August 19, so the card payment is the duplicate."
+  },
+  {
+   "about": "Umbrella policy",
+   "truth": "He pays a $312 umbrella premium by card each year. It was never escrowed and should not be touched."
+  },
+  {
+   "about": "Cushion",
+   "truth": "The analysis keeps a cushion of $2,100, which exceeds one-sixth of the corrected disbursements, roughly $1,540."
+  },
+  {
+   "about": "Last year's escrow payments",
+   "truth": "The four tax installments Northgate paid last year went out before their due dates, and he considers them right."
+  },
+  {
+   "about": "Late penalty",
+   "truth": "A $171 late penalty was charged to escrow for last April's tax installment, which the county's records show arrived on time."
+  },
+  {
+   "about": "Solicitations",
+   "truth": "An escrow audit firm that keeps 35% and a $149 'tax relief' company have both mailed him. He is ignoring both."
+  }
+ ],
+ "unknowns": [
+  "Whether the escrow surplus on the analysis is the full amount he is owed or whether the servicer is holding back part of it.",
+  "What the regulatory deadline is for the servicer to answer a notice of error.",
+  "Why the analysis shows a shortage figure even though he thinks the account is over-funded.",
+  "Whether State Farm refunds duplicate payments to the original card or by check."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:47:58Z"
+ }
+}

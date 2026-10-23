@@ -1,0 +1,96 @@
+{
+ "pair": "freight-claims--lorna",
+ "playbook_id": "freight-claims",
+ "character": "lorna",
+ "person": "Lorna Pike is the 58-year-old office and compliance manager at a small importer of housewares and hardware that runs its own trucks for local deliveries but sends longer and smaller orders by LTL. She has filed customs entries, permits and carrier claims for 22 years, and she files the freight claims herself between other filings. Two years ago a freight-audit vendor promised 8% savings, took a share of everything, and had two claims denied for missing paperwork that she had to redo. She expects every dollar figure to come with its basis and its rule, and she says so when a tool sounds surer than it should. The owner signs anything over a few thousand dollars, so she wants to see each claim before it goes to a carrier.",
+ "stated_up_front": "I have a handful of LTL freight exceptions and one pallet from January that I think runs out Monday. Go through them, tell me which ones the carriers actually owe us and for how much, and show me the basis for each figure before anything is filed.",
+ "portals": [
+  {
+   "playbook_app": "Tracklog TMS",
+   "mine": "Fulcrum ERP shipping module"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Outlook"
+  },
+  {
+   "playbook_app": "Docshelf",
+   "mine": "SharePoint"
+  },
+  {
+   "playbook_app": "Harrowgate Freight claims",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Larkfield LTL claims",
+   "mine": "Pinecrest Motor Freight claims"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_claim",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_claim",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Lost pallet",
+   "truth": "One pallet of 12 cast-iron cookware cartons, bill of lading dated 26 January 2026, never delivered. The trace and shortage search are closed without the freight. Invoice value is $4,380. Nine months from the bill of lading ends Monday 26 October 2026."
+  },
+  {
+   "about": "Which carrier moved the lost pallet",
+   "truth": "Pinecrest Motor Freight, PRO ending 4471, picked up at our Newark dock."
+  },
+  {
+   "about": "Concealed damage",
+   "truth": "A customer in Ohio signed clean for 6 cartons of enamel stockpots in March and reported broken lids 2 days later. Harrowgate's own inspector wrote that a forklift punctured the pallet at their terminal. Invoice value of the damaged units is $1,260."
+  },
+  {
+   "about": "Released-value shipment",
+   "truth": "A granite garden bench weighing 380 lb, invoiced at $3,100, shipped under a released-value declaration of $0.50 per lb. The carrier owes at most $190, so we claim $190, not $3,100."
+  },
+  {
+   "about": "Crushed cartons noted at delivery",
+   "truth": "Two cartons of door hardware were noted as crushed on the delivery receipt in August. The invoice value of the two cartons is $540, and the customer sent photos."
+  },
+  {
+   "about": "Short carton",
+   "truth": "One carton of drawer pulls was missing from a Harrowgate delivery in July, noted on the receipt. Invoice value is $212."
+  },
+  {
+   "about": "Time-barred shortage",
+   "truth": "A December 2025 delivery was short by one carton, only noted on the receipt, and no claim was filed. Nine months ended 12 September, so it is left alone."
+  },
+  {
+   "about": "Claims already open",
+   "truth": "A Harrowgate claim from June and a Pinecrest claim from September are already open. Nothing new gets filed on those shipments."
+  },
+  {
+   "about": "Damage that is not the carrier's",
+   "truth": "A customer's forklift crushed cartons after a clean delivery, and some mugs broke in undamaged cartons that our packer shipped below spec. We do not claim either one."
+  },
+  {
+   "about": "Other carrier",
+   "truth": "Wet cartons on one shipment were carried alone by Sablecroft Transport, so neither Harrowgate nor Pinecrest is claimed against."
+  },
+  {
+   "about": "Contingency offer",
+   "truth": "A claims service in her Outlook inbox wants to keep 30% of whatever it recovers. She will not use it."
+  }
+ ],
+ "unknowns": [
+  "What the carrier's trace closure code on the lost pallet means beyond the words in the email",
+  "How long Pinecrest takes to pay once a claim is acknowledged",
+  "Whether the owner will want to sue on any claim that is denied, and the two-year deadline for that",
+  "Whether Harrowgate's tariff sets a shorter reporting window for concealed damage than the federal nine months"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:49:12Z"
+ }
+}

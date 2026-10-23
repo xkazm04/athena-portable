@@ -1,0 +1,92 @@
+{
+ "pair": "food-recall-trace--reggie",
+ "playbook_id": "food-recall-trace",
+ "character": "reggie",
+ "person": "Reggie Banks is a 61-year-old part-time finance person, three days a week, at a small natural-foods snack brand in Madison, Wisconsin that sells through two national distributors. A retired grocery AP man, he is not the quality lead, but the founder is traveling and has asked him to work through the supplier's almond butter recall notice because he is the one who knows the order system and the shipments. He works at 175% zoom with a high-contrast theme and wants every lot, batch and customer listed line by line so he can add it up himself. He is careful and would rather be asked than have a hold or a recall notice go out wrong.",
+ "stated_up_front": "Our almond butter supplier sent a recall notice and I need to know which lots we hold and which customers get told. Please go through it line by line and keep the text big and plain, I read at 175%.",
+ "portals": [
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "Google Drive"
+  },
+  {
+   "playbook_app": "Ledgerwren ERP",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Shelfwick",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Drayfold",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "hold_lot",
+   "mine": "ask"
+  },
+  {
+   "action": "notify_customer",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Supplier's recalled almond butter lots",
+   "truth": "Lots AB-26-0412 through AB-26-0418, per the supplier's notice and its clarification email."
+  },
+  {
+   "about": "Lots just outside the range",
+   "truth": "AB-26-0411 and AB-26-0419 are not recalled; the clarification says so."
+  },
+  {
+   "about": "Lots still on hand",
+   "truth": "AB-26-0414 and AB-26-0417 are still in the warehouse; the others were used up."
+  },
+  {
+   "about": "Number of direct customers who received an affected batch",
+   "truth": "Five: the main distributor and four retail customers, one of which got a batch made with reworked trim."
+  },
+  {
+   "about": "Rework",
+   "truth": "Trim from an affected batch was folded into a later trail-mix bar batch, recorded in the rework log in the shared drive."
+  },
+  {
+   "about": "Distributor's own customers",
+   "truth": "The distributor has to notify its own customers itself; the brand does not contact them."
+  },
+  {
+   "about": "An order not shipped yet",
+   "truth": "One retail customer has an open order for an affected batch that has not shipped, so it gets no notice."
+  },
+  {
+   "about": "Customer given only other batches",
+   "truth": "One retail customer received only batches made from clear lots, so it gets no notice."
+  },
+  {
+   "about": "Batch with no almond butter",
+   "truth": "The oat-and-seed bar batch has no almond butter and is left alone."
+  },
+  {
+   "about": "How he wants results shown",
+   "truth": "Each lot, batch and customer on its own line, with counts he can add up, in large plain text."
+  }
+ ],
+ "unknowns": [
+  "What the recall rules require for the timing of customer notices",
+  "Whether the rework batch counts as affected under the rules",
+  "What the class or risk level of the recall is",
+  "Which customers the distributor has already told on its own"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:48:50Z"
+ }
+}

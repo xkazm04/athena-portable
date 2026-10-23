@@ -1,0 +1,88 @@
+{
+ "pair": "wotc-screening--carmen",
+ "playbook_id": "wotc-screening",
+ "character": "carmen",
+ "person": "Carmen Ruiz is the one-woman HR and benefits department at a 46-person metal-parts manufacturer, and she has been there fifteen years. This fall the plant hired nine people for a second shift, and she has always meant to screen them for the Work Opportunity Tax Credit but has let a deadline slip before. She keeps a paper calendar of deadlines and wants every submission shown with the rule behind it. She does not want anything that reaches the state, or an employee, to go out without her approval.",
+ "stated_up_front": "I've got nine second-shift hires since September and I want each one checked for WOTC before their 28 days run out. Show me which ones qualify and under what rule, and don't send anything to the state until I've looked at it.",
+ "portals": [
+  {
+   "playbook_app": "Talentry ATS",
+   "mine": "Workday Recruiting"
+  },
+  {
+   "playbook_app": "Payroll Harbor",
+   "mine": "Paycor"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Outlook"
+  },
+  {
+   "playbook_app": "WorkCredit Online",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_8850",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Number of hires to screen",
+   "truth": "Nine second-shift hires, offers made between 8 September and 2 October."
+  },
+  {
+   "about": "A hire who may miss the deadline",
+   "truth": "A press operator named Dale Whitcomb began work on 14 September, so his 28th day was 11 October; she suspects it has already passed."
+  },
+  {
+   "about": "A hire in a SNAP household",
+   "truth": "Marisol Tran, 31, is in a SNAP household and began work on 5 October; the SNAP letter arrived by email on 9 October."
+  },
+  {
+   "about": "A hire too old for SNAP group",
+   "truth": "Gerald Pruitt, 52, ticked the SNAP household box, but the SNAP group stops at 39."
+  },
+  {
+   "about": "A relative of an owner",
+   "truth": "Tyler Brandt is the plant owner's grandson, sent over by the owner's office, so he earns no credit."
+  },
+  {
+   "about": "A rehire",
+   "truth": "Hector Alvarez ran a CNC machine here until March 2025 and was hired back in September; he is a rehire."
+  },
+  {
+   "about": "A late-signed form",
+   "truth": "Priya Nair, long-term unemployed, signed her Form 8850 on 15 September, three days after her 12 September offer."
+  },
+  {
+   "about": "A hire who never started",
+   "truth": "Owen Jaffe accepted an offer on 22 September but took another job and never started."
+  },
+  {
+   "about": "A hire who answered no to everything",
+   "truth": "Lena Kowalski answered no to every screening question."
+  },
+  {
+   "about": "A hire already in the state's system",
+   "truth": "The state's receipt shows one hire's form was received on 6 October."
+  },
+  {
+   "about": "Who approves",
+   "truth": "Carmen approves every submission herself; her CFO is only told afterward, and the outside lawyer is called only if a hire is a close call."
+  }
+ ],
+ "unknowns": [
+  "Whether the state's 28 days counts the start date as day one or day zero",
+  "What the maximum credit is for each group code right now",
+  "Whether Dale's missed deadline can still be rescued by any state exception",
+  "Which group code the state would put Marisol under if she fits more than one"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:55:44Z"
+ }
+}

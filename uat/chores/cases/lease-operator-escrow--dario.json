@@ -1,0 +1,96 @@
+{
+ "pair": "lease-operator-escrow--dario",
+ "playbook_id": "lease-operator-escrow",
+ "character": "dario",
+ "person": "Dario Mendes, 47, runs three trucks outside Joliet and drives one himself. Born in Goiania, he reads English slowly and uses a phone translator for long letters. For eleven months he leased his own tractor to a carrier called Vessmoor, and he left in late August. The carrier is now past the 45 days to return his $2,500 escrow, and it kept money for things he does not agree with. His wife keeps the books and asks where the money went. He wants clear, short answers and no weak claims filed in his name.",
+ "stated_up_front": "Please, I left Vessmoor in August and my escrow, $2,500, is not back. They took fees I do not understand. Please, tell me simple what you find and what we ask them for.",
+ "portals": [
+  {
+   "playbook_app": "Sheafbox",
+   "mine": "Dropbox"
+  },
+  {
+   "playbook_app": "Settlewick settlements",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Ledgerwren bank",
+   "mine": "Chase Business"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  }
+ ],
+ "gates": [
+  {
+   "action": "dispute_deduction",
+   "mine": "ask"
+  },
+  {
+   "action": "claim_interest",
+   "mine": "ask"
+  },
+  {
+   "action": "send_escrow_demand",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Carrier he leased the truck to",
+   "truth": "Vessmoor Freight. He leased one tractor under their authority for eleven months."
+  },
+  {
+   "about": "Escrow amount deposited",
+   "truth": "$2,500, taken from his settlements in the first months of the lease."
+  },
+  {
+   "about": "Lease end date",
+   "truth": "He gave notice and the lease ended on 21 August 2026. He has the termination letter."
+  },
+  {
+   "about": "Truck and ELD return",
+   "truth": "He returned the truck and the ELD at the Vessmoor terminal in Joliet on 21 August 2026 and has a signed return receipt that lists the ELD."
+  },
+  {
+   "about": "Deductions he disagrees with",
+   "truth": "An ELD charge of $389 even though he returned it, a trailer washout fee of $175, and a $500 fee for leaving early. He does not remember the lease naming the last two."
+  },
+  {
+   "about": "Deductions he accepts",
+   "truth": "Fuel, tolls, insurance for the last week, the plate cost for the months left, and the tires. He remembers signing the schedule and has the receipts."
+  },
+  {
+   "about": "Interest",
+   "truth": "Vessmoor paid interest for the first two quarters. The third quarter has not been paid. He does not know what rate they used."
+  },
+  {
+   "about": "Old carrier",
+   "truth": "Brindlecote Transport returned his escrow with interest in 2024. He saw the deposit in his bank and wants nothing from them."
+  },
+  {
+   "about": "What the bank shows",
+   "truth": "No escrow deposit from Vessmoor in his Chase Business account since August."
+  },
+  {
+   "about": "Final statement",
+   "truth": "Vessmoor's statement arrived on 9 October 2026, after the 45 days. It shows a balance smaller than $2,500 and admits only part of what is owed."
+  },
+  {
+   "about": "Who does the paperwork",
+   "truth": "He does it at night at the kitchen table. His wife Luciana checks the money."
+  }
+ ],
+ "unknowns": [
+  "What interest rate the law requires and how it is worked out.",
+  "Whether the lease names the washout fee and the leaving fee, or which clause would cover them.",
+  "How many days the carrier had to return the escrow, and what happens when it is late.",
+  "What a demand letter does and what step comes after it."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:33Z"
+ }
+}

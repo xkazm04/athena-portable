@@ -1,0 +1,80 @@
+{
+ "pair": "denied-party-screening--dario",
+ "playbook_id": "denied-party-screening",
+ "character": "dario",
+ "person": "Dario Mendes runs three trucks outside Joliet and drives one himself. On the side, his wife's cousin helps him sell refurbished turbochargers, ELD tablets and GPS trackers to buyers in Latin America and the Gulf through a small online shop. Each Friday he must clear that week's export orders before the consolidator picks up at 3 pm. He reads English slowly, uses a phone translator and dislikes forms. He is afraid of shipping to a bad buyer, and equally afraid of holding a good customer and losing them. He wants every order explained in short, plain sentences with the order number and the buyer's name.",
+ "stated_up_front": "Please, I have export orders this week for my parts shop and the truck leaves at 3 pm Friday. Check each buyer on the government lists and tell me simple: which order is safe to ship and which I stop. Do not ship or stop anything before you ask me.",
+ "portals": [
+  {
+   "playbook_app": "Orderwick storefront",
+   "mine": "Shopify"
+  },
+  {
+   "playbook_app": "Screenlist",
+   "mine": "Trade.gov Consolidated Screening List search"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Ledgerline ERP",
+   "mine": "ShipStation"
+  }
+ ],
+ "gates": [
+  {
+   "action": "release_order",
+   "mine": "ask"
+  },
+  {
+   "action": "place_compliance_hold",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Cut-off for this week's orders",
+   "truth": "The consolidator truck picks up at his yard Friday 23 October 2026 at 3 pm; anything not released by then waits a week."
+  },
+  {
+   "about": "Order 1042, Transportes Almeida Ltda, Guadalajara",
+   "truth": "Buyer of 4 remanufactured turbochargers, USD 3,180, paid by wire. The name looks a little like a listed Brazilian trading firm, but the address, country (Mexico) and tax number are different, so he thinks it is fine."
+  },
+  {
+   "about": "Order 1043, Gulf Reach Trading, Dubai",
+   "truth": "12 GPS trackers, USD 1,440, paid by card. The screening search shows a Tehran company with a similar name, but Dubai has a different address and trade licence number."
+  },
+  {
+   "about": "Order 1044, Pacifico Fleet Parts, Panama City",
+   "truth": "20 ELD tablets, USD 5,900. The buyer is on a US list of unverified end users. He has an email from them with a signed statement naming the end user and where the tablets go."
+  },
+  {
+   "about": "Order 1045, Al Noor Logistics, Sharjah",
+   "truth": "A forwarder who pays more than the invoice, will not say who the final buyer is, and asks him to mark the boxes 'spare parts'. USD 8,750. He feels uneasy about it."
+  },
+  {
+   "about": "Order 1046, Distribuidora Santa Rita, Asuncion",
+   "truth": "6 turbochargers, USD 2,700. Nothing shows on the lists, but an email from the buyer says a holding company bought 60 percent of it in September. He does not know whether that holding company is sanctioned."
+  },
+  {
+   "about": "Who gets told when he holds an order",
+   "truth": "The customer gets an email saying the order is under review. He wants any such message short, polite and in plain English, because he fears a good buyer will leave."
+  },
+  {
+   "about": "Where his records are",
+   "truth": "Orders are in his Shopify shop, buyer emails are in Gmail under the label 'Exports', and the pickup list is in ShipStation. His wife Luciana checks the money at month end."
+  }
+ ],
+ "unknowns": [
+  "Whether the unverified-end-user statement from Pacifico Fleet Parts has everything the rule requires",
+  "Whether the holding company that bought 60 percent of Distribuidora Santa Rita is on a sanctions list",
+  "Whether a name that only looks like a listed company is enough reason to stop an order",
+  "What a new rule on companies owned by listed firms means for his buyers this month"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:47:32Z"
+ }
+}

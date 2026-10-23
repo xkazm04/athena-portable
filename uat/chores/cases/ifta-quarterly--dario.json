@@ -1,0 +1,97 @@
+{
+ "pair": "ifta-quarterly--dario",
+ "playbook_id": "ifta-quarterly",
+ "character": "dario",
+ "person": "Dario Mendes, 47, runs a three-tractor carrier outside Joliet, Illinois, and drives one of the trucks himself. He is from Goiania, Brazil, reads English slowly and uses a phone translator for long text. He is comfortable with the ELD and load boards but not with tax forms. His wife keeps the books and will ask about any money that leaves the account. This is his third-quarter fuel tax return. Receipts are mixed up in a Google Drive folder, and a driver once paid cash at a pump. He wants it done right and fears a wrong filing in his name. He will not guess at tax rules.",
+ "stated_up_front": "Please, I need my fuel tax return for the third quarter, July to September. I have three trucks and a pickup, and some receipts are not clear. Please tell me simple what you file and what I pay.",
+ "portals": [
+  {
+   "playbook_app": "Odowren ELD",
+   "mine": "Motive"
+  },
+  {
+   "playbook_app": "Pumpline fuel card",
+   "mine": "Comdata"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "Google Drive"
+  },
+  {
+   "playbook_app": "Tallyquart IFTA filing",
+   "mine": "MyTax Illinois"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_jurisdiction_line",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_return",
+   "mine": "ask"
+  },
+  {
+   "action": "pay_balance",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Vehicles",
+   "truth": "Three tractors, 3 axles each, over 26,000 lb: Unit 1 (Dario drives), Unit 2 (driver Edson), Unit 3 (driver Rafael). Also one white Ford pickup, 2 axles, light weight, for errands and short trips."
+  },
+  {
+   "about": "Base jurisdiction and filing",
+   "truth": "Base is Illinois. He files the quarterly return in MyTax Illinois. The third-quarter return is due at the end of October."
+  },
+  {
+   "about": "Jurisdictions with lines",
+   "truth": "The trucks ran in Illinois, Indiana, Iowa and Wyoming this quarter. These four are the lines he expects."
+  },
+  {
+   "about": "Wyoming oil-lease road",
+   "truth": "Unit 2 hauled pipe to an oil lease near Gillette, Wyoming. The Motive ELD marks about 86 miles on a private lease road, not a public road."
+  },
+  {
+   "about": "Cash fill",
+   "truth": "Edson paid cash for about 58 gallons in Nebraska, about $212. The slip is crumpled and shows no seller name, no truck number and no buyer name. It is in the Drive folder."
+  },
+  {
+   "about": "Duplicate receipt",
+   "truth": "Unit 3 bought 112 gallons at a truck stop in Walcott, Iowa on 14 August with the Comdata card. Rafael also photographed the paper receipt into the Drive folder, so it shows twice."
+  },
+  {
+   "about": "Mexico",
+   "truth": "In August Unit 1 crossed to Nuevo Laredo and back, about 140 miles in Mexico on the ELD, with some fuel bought there."
+  },
+  {
+   "about": "Pickup trip",
+   "truth": "The pickup went to Wisconsin one time with parts, about 190 miles. The ELD shows it, and the card was used for gasoline."
+  },
+  {
+   "about": "Brokered Kansas load",
+   "truth": "In September a load from the small email-only broker, going to Kansas, was given to another carrier's truck. The dispatch record is in Drive. His trucks were not in Kansas."
+  },
+  {
+   "about": "Last return",
+   "truth": "The second-quarter return was filed and paid in July. It is in MyTax Illinois, and he does not want it filed again."
+  },
+  {
+   "about": "Who he is with",
+   "truth": "His wife keeps the books. She will ask why money left the account, and a payment should be explained to her in simple words with the amount."
+  }
+ ],
+ "unknowns": [
+  "Whether a cash fill with no seller on the slip can get a tax credit",
+  "Whether Wyoming's private lease road miles are taxed",
+  "The tax rate per gallon in each state for this quarter",
+  "Whether Mexico needs its own line on the return",
+  "Whether the pickup's fuel and miles count for this return"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:09Z"
+ }
+}

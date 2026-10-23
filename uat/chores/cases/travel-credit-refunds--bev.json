@@ -1,0 +1,88 @@
+{
+ "pair": "travel-credit-refunds--bev",
+ "playbook_id": "travel-credit-refunds",
+ "character": "bev",
+ "person": "Beverly Shaw is a 72-year-old retired fourth-grade teacher in Roanoke, Virginia. Her grandson set up Athena for her, and she is using any AI tool for the first time and is nervous about scams. This year several airlines and a travel agency put credits in her accounts that she never asked for, after trips to see her sister in Seattle and her grandson in Chicago were rearranged. Her grandson told her some of them might be refunds owed to her card. She wants everything explained in plain words first, and she wants to be able to stop or go back at each step. She will not ask for money unless she is sure it is really owed to her.",
+ "stated_up_front": "Hello, I'm sorry, I'm not very good with these things. My grandson said you might be able to look at all these airline credits I keep getting and tell me if any money is owed back to my card. Could you please tell me what you're going to do before you do it?",
+ "portals": [
+  {
+   "playbook_app": "Postwren",
+   "mine": "AOL Mail"
+  },
+  {
+   "playbook_app": "Cardhollow",
+   "mine": "Capital One"
+  },
+  {
+   "playbook_app": "Aerolark",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Skylindle",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Tripcairn",
+   "mine": "Expedia"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_refund",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The Seattle flight to see her sister",
+   "truth": "The Roanoke to Seattle flight in March was moved 4 hours 20 minutes later by the airline. She did not accept the change and was given a $286 credit she never asked for."
+  },
+  {
+   "about": "The flight that gained a stop",
+   "truth": "Her non-stop Roanoke to Chicago flight in June became a one-stop flight through Charlotte. The airline put $178 in her account and she never chose it."
+  },
+  {
+   "about": "A change she made herself",
+   "truth": "In August she moved her Chicago return flight by one day to stay longer with her grandson. The $64 credit from that is her own doing and should be left alone."
+  },
+  {
+   "about": "A credit she chose in writing",
+   "truth": "In April she emailed Skylindle saying she would rather keep a $210 credit than get a refund, because she planned to fly again in the fall. She still has that email."
+  },
+  {
+   "about": "A short delay",
+   "truth": "Her October return from Orlando was moved 2 hours 10 minutes later, and she got a $45 credit for it."
+  },
+  {
+   "about": "A credit already spent",
+   "truth": "A $120 credit from a cancelled flight was used in July toward a new ticket to Richmond."
+  },
+  {
+   "about": "A credit already refunded",
+   "truth": "A $152 credit was refunded to her Capital One card in May, and she saw the refund on her statement."
+  },
+  {
+   "about": "A seat fee",
+   "truth": "She paid a $39 seat fee for a window seat on the Seattle flight, and the airline later told her that plane had no such seat. The fee has not been returned."
+  },
+  {
+   "about": "The travel agency",
+   "truth": "She booked two tickets for herself and her sister through Expedia on her Capital One card. One of them has a $131 credit that she did not choose."
+  },
+  {
+   "about": "Her card and how she wants to be contacted",
+   "truth": "Refunds should go back to her one Capital One credit card, ending in 4417. She wants an email summary each time, and her daughter calls on Sundays."
+  }
+ ],
+ "unknowns": [
+  "Whether a flight moved by 'a few hours' counts as a big enough change to be owed a refund, and where the cutoff is.",
+  "What the 'fare class' letters on her tickets mean, or whether a lower one is a real downgrade.",
+  "Whether her credits expire, and how long she has to ask for a refund.",
+  "Which of the credits came from the airline and which from the travel agency."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:55:19Z"
+ }
+}

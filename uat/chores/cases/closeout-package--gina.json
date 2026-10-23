@@ -1,0 +1,88 @@
+{
+ "pair": "closeout-package--gina",
+ "playbook_id": "closeout-package",
+ "character": "gina",
+ "person": "Gina Russo is the office manager of a thirty-person plumbing and mechanical subcontractor and is closing out a middle school boiler and restroom renovation for a general contractor. The GC is holding the retainage until the closeout checklist is clear, and she has six open items. She keeps the job on her whiteboard with the retainage amount and a red date. She checks every document herself before it goes out, because the owner signs waivers and hates surprises. She knows a conditional waiver from an unconditional one and a progress waiver from a final one, and she expects Athena to know too.",
+ "stated_up_front": "Westbrook Middle School closeout, Harlan Construction wants the checklist cleared before they release our retainage. Pull what answers each open item, final waivers only, and show me each document before it goes in.",
+ "portals": [
+  {
+   "playbook_app": "Primeline GC",
+   "mine": "Harlan Build Desk"
+  },
+  {
+   "playbook_app": "Sitegrid",
+   "mine": "Procore"
+  },
+  {
+   "playbook_app": "Partsmith",
+   "mine": "Ferguson Supplier Portal"
+  },
+  {
+   "playbook_app": "Fixturely",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Docshelf",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "attach_closeout_document",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Job and GC",
+   "truth": "Westbrook Middle School boiler and restroom renovation, general contractor Harlan Construction."
+  },
+  {
+   "about": "Retainage held",
+   "truth": "$48,600 held by Harlan, released after the closeout checklist is complete."
+  },
+  {
+   "about": "Open checklist items",
+   "truth": "Six open: final lien waivers from the company and its suppliers, current insurance certificate, boiler and pump warranties by serial, faucet O&M manual, signed record drawings, owner's signed receipt for attic stock."
+  },
+  {
+   "about": "Insurance certificate",
+   "truth": "The certificate in the files expired June 30. The renewed one runs July 1 this year to June 30 next year, and she believes it is in Docshelf."
+  },
+  {
+   "about": "Progress waivers",
+   "truth": "She knows the waivers from her pipe supplier and her insulation sub were progress waivers through the August billing, and the finals were requested but she is not sure they arrived."
+  },
+  {
+   "about": "Already accepted",
+   "truth": "Harlan accepted the surety's consent and the safety training record in August, so those are not to be resent."
+  },
+  {
+   "about": "Boiler serials",
+   "truth": "Two boilers installed; she has the startup reports but would check the serial numbers against them rather than trust memory."
+  },
+  {
+   "about": "Faucet substitution",
+   "truth": "The specified faucet was substituted by a different model during submittals; she wants the manual for what is actually on the wall."
+  },
+  {
+   "about": "Record drawings",
+   "truth": "There are two markup files for the record set, one marked draft and unsigned, and a final one the superintendent signed in September."
+  },
+  {
+   "about": "Attic stock",
+   "truth": "The owner's receipt for attic stock must be signed by the school district's facilities director; one delivery ticket in the files has no signature."
+  }
+ ],
+ "unknowns": [
+  "Whether the supplier's final waiver has been posted yet or only the progress ones",
+  "What the contract's closeout section says is the deadline for submitting the package",
+  "Which form of final waiver the contract requires, conditional or unconditional",
+  "Whether Harlan's reviewer will count a warranty registered after substantial completion"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:46:37Z"
+ }
+}

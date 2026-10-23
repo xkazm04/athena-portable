@@ -1,0 +1,93 @@
+{
+ "pair": "clinic-denials--tom",
+ "playbook_id": "clinic-denials",
+ "character": "tom",
+ "person": "Tom Whitcomb is the 39-year-old practice administrator of a three-clinician clinic (two physicians and a nurse practitioner), a former restaurant manager who took the job two years ago. He runs staff, schedule and money but learns billing by asking Denise, the biller, who works Monday to Wednesday. It is Thursday and a pile of denied claims has been sitting on the worklist; the owners ask him every month why collections are down and he has no clean answer. He wants Athena to work through the denials, explain each one in plain words, and give him numbers he can defend to the doctors.",
+ "stated_up_front": "Denise is out till Monday and our denials list is getting long. Can you go through it, tell me in plain English what's wrong with each one and fix what can be fixed? I have to explain to the doctors why collections are down, so I need real numbers, not guesses.",
+ "portals": [
+  {
+   "playbook_app": "Practice management",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Clearinghouse",
+   "mine": "Trizetto"
+  },
+  {
+   "playbook_app": "Availity",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_corrected_claim",
+   "mine": "ask"
+  },
+  {
+   "action": "file_reconsideration",
+   "mine": "ask"
+  },
+  {
+   "action": "write_off",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Practice management system and worklist",
+   "truth": "The clinic uses Kareo, and the denial worklist currently shows 23 denied claims totalling $9,840."
+  },
+  {
+   "about": "Payers billed",
+   "truth": "Four main payers: Aetna, Blue Cross Blue Shield, UnitedHealthcare and Medicare."
+  },
+  {
+   "about": "Providers",
+   "truth": "Dr. Priya Nair (owner), Dr. Alan Reyes (owner) and Karen Oduya, NP."
+  },
+  {
+   "about": "Biller",
+   "truth": "Denise works part-time, Monday to Wednesday, and is out until Monday 26 October."
+  },
+  {
+   "about": "Largest denied claim",
+   "truth": "A $412 UnitedHealthcare claim for Dr. Reyes, date of service 12 June 2026, denied for timely filing; Tom thinks it was sent in on time."
+  },
+  {
+   "about": "Duplicate-claim denials",
+   "truth": "Two Aetna claims of $138 and $96 were denied as duplicates. Denise told him last week she had already resubmitted them, but he does not know their status."
+  },
+  {
+   "about": "Missing-authorisation denial",
+   "truth": "One BCBS claim for $285, an MRI referral from Karen Oduya, was denied for no authorisation. Tom does not know if anyone got an authorisation."
+  },
+  {
+   "about": "Modifier denial",
+   "truth": "Three Aetna visit claims for Dr. Nair, about $75 each, were denied for a missing modifier 25 on dates of service in early September 2026."
+  },
+  {
+   "about": "Old denial",
+   "truth": "A BCBS denial of $190 dated 3 March 2026 has been sitting on the books for more than seven months."
+  },
+  {
+   "about": "What he'll report",
+   "truth": "Owners meet on the first Tuesday of the month, 3 November, and want a total of what was recovered versus written off."
+  },
+  {
+   "about": "Vendor",
+   "truth": "A revenue-recovery vendor calls him weekly claiming 20% more revenue; he has not signed anything."
+  }
+ ],
+ "unknowns": [
+  "The filing limit for each payer and how many days each claim has left",
+  "The reconsideration window for each payer, and whether any has already closed",
+  "What the reason codes on the denials actually mean",
+  "Whether the clearinghouse shows the UnitedHealthcare claim as accepted or only rejected at intake",
+  "Whether any of the claims that Denise said she resubmitted are still pending at the payer"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:46:36Z"
+ }
+}

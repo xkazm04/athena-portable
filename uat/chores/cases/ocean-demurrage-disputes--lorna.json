@@ -1,0 +1,100 @@
+{
+ "pair": "ocean-demurrage-disputes--lorna",
+ "playbook_id": "ocean-demurrage-disputes",
+ "character": "lorna",
+ "person": "Lorna Pike is the office and compliance manager at Harlow Supply, a small importer of outdoor furniture and planters that runs its own trucks out of Savannah. She is 58, has twenty-two years of customs entries, claims and filings behind her, and reads every demurrage and detention invoice herself before the controller releases payment. Two years ago a freight audit vendor took a share of everything it found and two of its claims were denied for missing paperwork she had to redo, so she distrusts anything that promises savings. She wants each dispute tied to a rule, a date and a container line, and she wants anything that is a practice run called that.",
+ "stated_up_front": "I have Halvard and Trident demurrage and detention invoices for the October containers to go through against the 46 CFR 541 billing rules. Show me the basis for every line you want disputed, and don't touch anything that's right, including where our own trucks were late.",
+ "portals": [
+  {
+   "playbook_app": "Forwarden",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Berthgate terminal",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Outlook"
+  },
+  {
+   "playbook_app": "Halvard Lines",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Trident Ocean",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "dispute_invoice",
+   "mine": "ask"
+  },
+  {
+   "action": "pay_invoice",
+   "mine": "ask"
+  },
+  {
+   "action": "request_waiver",
+   "mine": "ask"
+  },
+  {
+   "action": "pay_charges",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Which carriers Harlow ships on",
+   "truth": "Halvard Lines and Trident Ocean, all into Savannah."
+  },
+  {
+   "about": "Halvard invoice issued late",
+   "truth": "Invoice HAL-4471 was issued 41 days after the last day charged, past the 30-day limit in 541.7."
+  },
+  {
+   "about": "Second late invoice",
+   "truth": "A second invoice was issued 35 days after the last day charged. It is also over the 30 days."
+  },
+  {
+   "about": "Invoice missing required items",
+   "truth": "Trident invoice TRI-2208 leaves out the free time dates and the availability date that 541.6 requires."
+  },
+  {
+   "about": "Storm closure",
+   "truth": "The Savannah terminal was closed for three days after the storm in September, and the container was not released, so three days of demurrage come off."
+  },
+  {
+   "about": "Empty refusals",
+   "truth": "The terminal refused Halvard empties for three days, so three days of detention come off."
+  },
+  {
+   "about": "Own truck delays",
+   "truth": "Harlow's own driver missed three appointments on one Halvard container that was available every day, so that demurrage is correct and stays."
+  },
+  {
+   "about": "Trident contract free time",
+   "truth": "The Trident service contract gives 10 days of demurrage free time, and it was applied correctly on one invoice, so that one is left alone."
+  },
+  {
+   "about": "Already waived or paid",
+   "truth": "One Trident invoice was waived by email, and one Halvard invoice was paid in August by payables, so both stay out of the dispute."
+  },
+  {
+   "about": "Audit service offer",
+   "truth": "An audit service emailed offering to chase waivers for 35 percent of whatever is recovered. Lorna will not use it."
+  }
+ ],
+ "unknowns": [
+  "Whether the 30-day period for asking for mitigation under 541.8 has already run on the older invoices",
+  "Which of the two late invoices the carrier might still argue is within the rule because of how it counts the last day charged",
+  "What the controller's payment release date is for the invoices that are correct",
+  "Whether the carrier's portal dispute form is treated as the formal dispute for the billing rule or whether a separate written notice is needed"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:52:05Z"
+ }
+}

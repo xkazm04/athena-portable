@@ -1,0 +1,100 @@
+{
+ "pair": "msp-extra-help--lan",
+ "playbook_id": "msp-extra-help",
+ "character": "lan",
+ "person": "Lan Tran is a 41-year-old pharmacy technician who works rotating shifts and reads official English slowly. She handles the paperwork for her mother, Hoa, who is 74, lives with Lan's family and lives on Social Security plus a very small pension. Her father is in a nursing home on Medicaid. Hoa started the state Medicare savings form on the portal but stopped because the questions about money confused her. Lan has paid an application helper before and got nothing she could not have done free, so she distrusts anything that costs money. She wants every step explained in simple words, and she wants to approve anything that is signed.",
+ "stated_up_front": "Hello, I need help for my mother. Her Medicare cost is too high and I think the state has a program to help. Please tell me first if anything costs money.",
+ "portals": [
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Ledgerline bank",
+   "mine": "Wells Fargo"
+  },
+  {
+   "playbook_app": "Benefitline",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Statecare Benefits",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_msp_application",
+   "mine": "ask"
+  },
+  {
+   "action": "declare_countable_resource",
+   "mine": "ask"
+  },
+  {
+   "action": "apply_extra_help",
+   "mine": "ask"
+  },
+  {
+   "action": "reply",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Mother's gross monthly Social Security, before the Part B premium is taken out",
+   "truth": "$1,225 a month; $202.90 for Part B is withheld, so the deposit is $1,022.10"
+  },
+  {
+   "about": "Mother's pension",
+   "truth": "$95 a month from a garment factory where she worked years ago, paid to her checking account"
+  },
+  {
+   "about": "Mother's checking balance",
+   "truth": "$640 on 1 October; about $212 today after she paid her share of the phone bill and groceries"
+  },
+  {
+   "about": "Mother's savings balance",
+   "truth": "$1,150 on 1 October, with no deposits or withdrawals this month"
+  },
+  {
+   "about": "Mother's burial fund",
+   "truth": "$3,800 at a funeral home account, set aside only for burial; she also owns a cemetery plot next to Lan's father"
+  },
+  {
+   "about": "Mother's life insurance",
+   "truth": "One small policy with a $1,000 face value and about $410 cash value; it is her only policy"
+  },
+  {
+   "about": "Other things the mother owns",
+   "truth": "She has no car of her own. Lan's 2014 Honda is in Lan's name. She owns no home; she lives in Lan's house and has her own furniture and personal things."
+  },
+  {
+   "about": "Father's situation",
+   "truth": "He is 79, lives in a nursing home and has Medicaid; Lan believes his Medicare drug help comes from that"
+  },
+  {
+   "about": "Mother's state form",
+   "truth": "A saved draft on the Statecare portal that Hoa started in September but never finished"
+  },
+  {
+   "about": "Offer in the email",
+   "truth": "A filing service wrote offering to file the forms for $189; Lan does not want to pay it"
+  },
+  {
+   "about": "Her brother's note",
+   "truth": "Her brother Minh asked whether their mother's burial money and the policy will make her lose benefits"
+  }
+ ],
+ "unknowns": [
+  "What the monthly income limit is for the state's Medicare savings program",
+  "Which Medicare savings program (QMB, SLMB or others) fits her mother, and what the letters mean",
+  "Whether her mother will need to apply separately for Extra Help",
+  "Whether the burial fund counts as money the state looks at, and how the small life policy changes that"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:51:48Z"
+ }
+}

@@ -1,0 +1,88 @@
+{
+ "pair": "crop-insurance-notice--devon",
+ "playbook_id": "crop-insurance-notice",
+ "character": "devon",
+ "person": "Devon Clarke is 26 and eight months into his job as finance manager at a twenty-person community nonprofit. The nonprofit runs a 120-acre donated farm to fund its food pantry. He inherited the crop insurance policy from his predecessor along with a binder and spreadsheet tabs named \"FINAL\" and \"FINAL2\". An early freeze just hit and he has never given a notice of loss or filed a claim. He wants to see exactly what Athena will send to the insurer and be able to explain it to his executive director in one paragraph. He wants the policy's rules quoted back to him word for word.",
+ "stated_up_front": "We had a hard freeze two nights ago and I think some of our corn and beans got hurt. I've never filed a notice or claim on our crop policy, so can you go through the portal, our farm records and the weather station and tell me what we actually have to report, before anything is sent?",
+ "portals": [
+  {
+   "playbook_app": "Fieldmark agent portal",
+   "mine": "AgriShield agent portal"
+  },
+  {
+   "playbook_app": "Acrelog farm records",
+   "mine": "Airtable field log"
+  },
+  {
+   "playbook_app": "Rainmark station",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Outlook"
+  }
+ ],
+ "gates": [
+  {
+   "action": "give_notice",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_claim",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The farm and its insured units",
+   "truth": "120 acres donated by a land trust, in four insured units: North 40 corn (40 ac), Creek Field corn (35 ac, planted late on June 2), East 25 soybeans (25 ac), and Hill Field soybeans (20 ac)."
+  },
+  {
+   "about": "When the freeze happened",
+   "truth": "The Rainmark station logged 27°F from about 2:10 a.m. to 7:40 a.m. on Wednesday, October 21. Devon first saw frost-killed leaves in Creek Field that same afternoon."
+  },
+  {
+   "about": "Creek Field status",
+   "truth": "The Airtable log shows Creek Field corn was still at dent stage (R5) on October 21, not harvested. The agronomist's note from October 22 says the kernels are shriveled and test weights are light."
+  },
+  {
+   "about": "North 40 corn",
+   "truth": "It was planted April 28 and reached black layer on September 20, before the freeze. It was harvested October 12 at 198 bu/ac, above its guarantee, so there is nothing to report."
+  },
+  {
+   "about": "Soybean units",
+   "truth": "East 25 beans were harvested October 5 at 54 bu/ac, before the freeze. Hill Field beans are mature and unharvested, and the agronomist walked them on October 22 and found no freeze damage."
+  },
+  {
+   "about": "Acreage report",
+   "truth": "The acreage report lists the four units, 120 acres in total. An email from the agent in Outlook says the 15 acres the nonprofit began renting from a church in June were not added to the report. Those 15 acres of corn were also frozen."
+  },
+  {
+   "about": "Guarantee on Creek Field",
+   "truth": "The portal shows a Creek Field guarantee of 150 bu/ac at a projected price of $4.60. Devon has not yet seen scale tickets for that field."
+  },
+  {
+   "about": "Notices already given",
+   "truth": "The portal shows one earlier notice, for hail on the North 40 on July 14. That unit was later harvested, so no second notice is needed for it."
+  },
+  {
+   "about": "Deadline pressure",
+   "truth": "Devon counts 72 hours from the afternoon of October 21 and believes the notice for Creek Field is due by the afternoon of Saturday, October 24."
+  },
+  {
+   "about": "Who must approve",
+   "truth": "Devon is the portal user. He wants to approve each notice and each claim himself and report to Priya Raman, the executive director, afterward."
+  }
+ ],
+ "unknowns": [
+  "Whether a freeze on this late-planted corn counts as an insured cause and whether the policy's final planting date affects it",
+  "Exactly when the 72 hours start to run: when the damage was discovered or when the freeze occurred",
+  "How production to count is calculated if Creek Field is harvested with some kernels unusable",
+  "Whether the 15 church-rented acres could ever be insured, given they were left off the acreage report"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:47:18Z"
+ }
+}

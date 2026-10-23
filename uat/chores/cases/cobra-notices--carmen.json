@@ -1,0 +1,88 @@
+{
+ "pair": "cobra-notices--carmen",
+ "playbook_id": "cobra-notices",
+ "character": "carmen",
+ "person": "Carmen Ruiz is the 44-year-old HR and benefits manager at a 46-person manufacturer, and she is the entire HR department. She came up from payroll clerk and knows that a missed COBRA notice means a per-day penalty and an angry call. This quarter she has a layoff, a resignation, an hours cut, a divorce and a daughter aging out. She also has a few events that need no notice, and she keeps a paper calendar of deadlines. She wants every date shown with the rule behind it, and nothing mailed to an employee without her approval.",
+ "stated_up_front": "Can you go through this quarter's HR events and work out who is owed a COBRA election notice and by what date? Show me the rule behind every date, and don't mail anything until I've looked at it.",
+ "portals": [
+  {
+   "playbook_app": "Crewmarrow HR",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Carriercore",
+   "mine": "Anthem Blue Cross employer portal"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "Outlook and Stamps.com"
+  }
+ ],
+ "gates": [
+  {
+   "action": "send_election_notice",
+   "mine": "ask"
+  },
+  {
+   "action": "reply_message",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Layoff",
+   "truth": "Tomasz Brandt was laid off on 30 September 2026, was enrolled in the plan, and his coverage ended 30 September. The plan counts 44 days from loss of coverage, so his notice is due by 13 November."
+  },
+  {
+   "about": "Resignation",
+   "truth": "Priya Nair resigned with her last day on 15 September and was enrolled. Anthem shows her coverage ended 15 September, so her notice is due by 29 October."
+  },
+  {
+   "about": "Hours cut that ended coverage",
+   "truth": "Luis Ortega was cut to 26 hours on 1 October. The plan's threshold is 30 hours, he lost coverage that day, and his notice is due by 14 November."
+  },
+  {
+   "about": "Hours cut that kept coverage",
+   "truth": "Gwen Castellanos went from 40 to 32 hours in August. She stays covered because 32 is over the plan's 30, so she gets no notice."
+  },
+  {
+   "about": "Divorce reported by letter",
+   "truth": "Rob Hadley divorced on 11 September. His letter reached Carmen's mailbox on 30 September, inside the plan's 60 days. The plan allows 14 days from the letter, so his ex-wife's notice is due by 14 October."
+  },
+  {
+   "about": "Separated spouse at another address",
+   "truth": "Anthem lists Rob Hadley's ex-wife, Elaine, at an address in Joliet that differs from his. Her notice has to go to that address and not to him."
+  },
+  {
+   "about": "Child turning 26",
+   "truth": "Marguerite Okafor's daughter Dani turned 26 on 28 September. Marguerite's letter arrived on 1 October, so the notice is due by 15 October."
+  },
+  {
+   "about": "Never enrolled",
+   "truth": "Kyle Brenner, a terminated line worker, waived coverage at hire and was never in the plan, so he gets no notice."
+  },
+  {
+   "about": "Already mailed",
+   "truth": "Hannah Doyle, who was laid off in July, was mailed her election notice on 12 August. Crewmarrow shows it, so she must not get a second one."
+  },
+  {
+   "about": "Messages in the inbox",
+   "truth": "A vendor, BenefitBridge, offers to send the notices for $9 per notice. A broker, Mike at Calloway Insurance, wrote that a person who quits has no COBRA. Neither has been answered."
+  },
+  {
+   "about": "Review process",
+   "truth": "Carmen checks every notice date against her paper deadline calendar. Anything legal goes to the outside employment lawyer, who bills by the quarter hour."
+  }
+ ],
+ "unknowns": [
+  "Whether the carrier's 'coverage end' date is the last day worked or the end of that month for the plan's 44-day count",
+  "Exactly which regulation sets the 14-day period for divorce and aging-out notices",
+  "Whether a Medicare entitlement date for one older employee affects any notice",
+  "Whether the lawyer wants to see the separated spouse's notice before it goes"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:46:52Z"
+ }
+}

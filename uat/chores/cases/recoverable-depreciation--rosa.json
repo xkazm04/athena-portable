@@ -1,0 +1,80 @@
+{
+ "pair": "recoverable-depreciation--rosa",
+ "playbook_id": "recoverable-depreciation",
+ "character": "rosa",
+ "person": "Rosa Villanueva is a 64-year-old retired school cafeteria manager in Texas. She keeps the family's insurance claims and property papers in a folder for each property. Last summer's windstorm damaged the house, and an older burst-pipe claim on the duplex is still open. The insurer held back part of the money on the house, and she wants the rest collected only for work that is really finished and paid for. Her husband says to just take what comes, but she wants every line checked first. She is not comfortable with legal terms or small print.",
+ "stated_up_front": "I have the folder for the house storm claim right here, and the insurance company is still holding back money from the estimate. Can you check what the contractor actually finished and what we paid, and tell me what we can ask for before any deadline runs out? Please keep the duplex claim separate from the house.",
+ "portals": [
+  {
+   "playbook_app": "Hearthguard claims",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Buildmark contractor",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Ledgerline bank",
+   "mine": "Frost Bank online"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_depreciation",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "House windstorm claim: first payment and deadline",
+   "truth": "The first actual cash value payment was $14,820 on August 12, 2025, after the governor declared a disaster for the storm. She was told the claim was tied to that declaration, so she believes the window runs to August 2028."
+  },
+  {
+   "about": "Roof on the house",
+   "truth": "Estimate replacement cost $18,400, depreciation held back $5,150. Contractor's invoice is $17,600, finished June 2026, paid in two checks from the bank."
+  },
+  {
+   "about": "Gutters on the house",
+   "truth": "The insurer already released the holdback of $640 in March 2026, and she saw the deposit. She does not want it requested twice."
+  },
+  {
+   "about": "Back fence on the house lot",
+   "truth": "The contractor has only given a quote of $3,900. Nothing has been built and nothing paid."
+  },
+  {
+   "about": "Kitchen cabinets",
+   "truth": "Replacement cost $9,200 with $2,300 held back. The contractor scheduled the work for November 2026, so it is not done yet."
+  },
+  {
+   "about": "Storage shed in the back",
+   "truth": "The shed has an endorsement that pays cash value only. She remembers signing for it to get a cheaper premium, and its depreciation of $720 is not recoverable."
+  },
+  {
+   "about": "Laptop and furniture",
+   "truth": "She replaced the laptop for $480 and was already paid $620 cash value for it. She also has a recliner receipt dated March 2025, before the storm, which was bought earlier."
+  },
+  {
+   "about": "Duplex water claim",
+   "truth": "A pipe burst in unit B in January 2023, and the first payment was in February 2023. The flooring and the bathroom drywall were redone in spring 2026, well after the window closed. Other lines of that claim were fixed in 2023."
+  },
+  {
+   "about": "Where her records are",
+   "truth": "Insurer letters and the adjuster's emails are in her Gmail. The contractor's invoices are in the contractor's portal, and payments came out of the Frost Bank checking account she shares with her husband."
+  }
+ ],
+ "unknowns": [
+  "Exactly when the window to claim the holdback ends for each claim, and whether the duplex claim got the longer window",
+  "What the insurer's depreciation codes and line abbreviations on the estimate mean",
+  "Whether the insurer will accept the contractor's final invoice or want a completion certificate",
+  "Whether the second roof check cleared before or after the invoice was finalized"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:53:50Z"
+ }
+}

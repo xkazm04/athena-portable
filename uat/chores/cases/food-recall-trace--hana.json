@@ -1,0 +1,92 @@
+{
+ "pair": "food-recall-trace--hana",
+ "playbook_id": "food-recall-trace",
+ "character": "hana",
+ "person": "Hana Kowalczyk is 34 and runs a one-person online shop from her studio in Oregon. She sells ceramics and linen, and last fall she added a small gift-jar line, repacking a supplier's almond butter into 4 oz jars under her own label. A recall notice from that supplier landed in her inbox, and she has never traced a lot before. She does everything herself, wants to know right away whether this is built for a shop her size, and will answer questions from memory but not from a report she has to download. She is nervous about anything that looks official and does not want to send a false alarm to a customer.",
+ "stated_up_front": "Okay, my almond butter supplier sent a recall email and I honestly don't know what to do with it. I only have a handful of wholesale accounts and a distributor, so is this even something you can sort out for a shop my size? I have orders to pack, so tell me what you need from me.",
+ "portals": [
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "Google Docs"
+  },
+  {
+   "playbook_app": "Ledgerwren ERP",
+   "mine": "Airtable"
+  },
+  {
+   "playbook_app": "Shelfwick",
+   "mine": "Shopify"
+  },
+  {
+   "playbook_app": "Drayfold",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "hold_lot",
+   "mine": "ask"
+  },
+  {
+   "action": "notify_customer",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "What the supplier recalled",
+   "truth": "Their almond butter lots ALM-2608-14, -15 and -16, per the first email; a follow-up email clarified that -13 and -17 are clear."
+  },
+  {
+   "about": "Lots she has on hand",
+   "truth": "Lots -13 through -17 are all in her studio pantry, about 2 tubs of each, so three need holding and two do not."
+  },
+  {
+   "about": "Her jar batches",
+   "truth": "Batch J-0914 used lot -14, J-0921 used -15, J-0930 used -16, J-0907 used -13, and J-0938 used -17. Her cinnamon honey jar batch has no almond butter in it."
+  },
+  {
+   "about": "The rework",
+   "truth": "Leftover almond butter from lot -15 was stirred into a cocoa spread batch, C-1002, so that batch is affected even though it is a different product."
+  },
+  {
+   "about": "Her direct customers who got an affected batch",
+   "truth": "Five: Northwoods Gift Supply (the distributor), Fern & Fig boutique, Clatsop Corner Cafe, Bluebird Home, and Tilly's Pantry (which got the cocoa spread)."
+  },
+  {
+   "about": "A customer who should be left alone",
+   "truth": "Harbor Street Goods only received the J-0907 and cinnamon honey batches, which are unaffected."
+  },
+  {
+   "about": "An order not yet shipped",
+   "truth": "A Fern & Fig reorder of J-0930 is packed but still sitting on her shelf, due to ship October 26."
+  },
+  {
+   "about": "The distributor's own customers",
+   "truth": "Northwoods Gift Supply resells to about a dozen shops on its own. Their contract says Northwoods tells them, and she has no list of them."
+  },
+  {
+   "about": "When the notice arrived",
+   "truth": "The supplier email came October 20, and today is October 23."
+  },
+  {
+   "about": "How she works",
+   "truth": "She tracks lots in an Airtable base she set up herself, and her written recall procedure is a one-page Google Doc."
+  }
+ ],
+ "unknowns": [
+  "Whether a shop as small as hers is legally required to notify customers or hold lots under the FDA rules, or how fast.",
+  "What the recall's class or reason means in the FDA's terms.",
+  "Whether she has to tell the distributor's own customers herself or only the distributor.",
+  "Whether the recall rules cover the cocoa spread, which only got a small amount of the rework."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:48:48Z"
+ }
+}

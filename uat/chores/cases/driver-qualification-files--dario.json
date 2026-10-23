@@ -1,0 +1,92 @@
+{
+ "pair": "driver-qualification-files--dario",
+ "playbook_id": "driver-qualification-files",
+ "character": "dario",
+ "person": "Dario Mendes owns a three-truck carrier near Joliet and drives one truck himself, so he has two other drivers plus himself in the files. He does the paperwork at night at the kitchen table and reads English slowly, using a phone translator for long letters. He knows the driver files matter but is not sure which dates are due. He wants Athena to tell him in simple words which driver needs what, how much it costs, and by when. He does not want to pay twice for anything already done this year.",
+ "stated_up_front": "Please, I have three trucks, me and two drivers. Check who needs the Clearinghouse and the driving record this week, and tell me simple what you will pay before you do it.",
+ "portals": [
+  {
+   "playbook_app": "Logmarrow ELD",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Crewmarrow HR",
+   "mine": "a folder of driver files in Google Drive and a spreadsheet his wife keeps"
+  },
+  {
+   "playbook_app": "Screenmoor MVR",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Specimoor Clearinghouse desk",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "run_query",
+   "mine": "ask"
+  },
+  {
+   "action": "order_mvr",
+   "mine": "ask"
+  },
+  {
+   "action": "sign_annual_review",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Drivers in the company",
+   "truth": "Dario Mendes himself (Unit 1), Wesley Hartigan (Unit 2) and Tomás Rueda (Unit 3). Dario also had a fourth driver, Oren Pell, who left in August."
+  },
+  {
+   "about": "Dario's own annual Clearinghouse query",
+   "truth": "Done 14 March 2026 for $1.25, so it is still inside twelve months."
+  },
+  {
+   "about": "Wesley Hartigan's annual Clearinghouse query",
+   "truth": "Last done 2 September 2025, so it is now about 13 months old and overdue."
+  },
+  {
+   "about": "Tomás Rueda's licence",
+   "truth": "He has a CDL, hired in June 2026. A limited query on his consent on 21 October 2026 showed something, so the full query is due within 24 hours, before his Thursday afternoon load."
+  },
+  {
+   "about": "Wesley's driving record",
+   "truth": "He was licensed in Illinois and Indiana in the past year, so the annual record must come from both states. The last one was ordered 30 September 2025."
+  },
+  {
+   "about": "Dario's own driving record and review",
+   "truth": "His annual driving record arrived 16 October 2026 from Illinois. He needs only the annual review signed, not a new record."
+  },
+  {
+   "about": "Medical certificate status",
+   "truth": "Tomás was re-examined on 15 October 2026. He gave Dario a paper copy of his medical card. Dario believes it is enough."
+  },
+  {
+   "about": "Oren Pell",
+   "truth": "He left in August 2026 and Dario wants no more spending on him."
+  },
+  {
+   "about": "Cost of a driving record",
+   "truth": "He pays about $12 per state through Screenmoor and pays the Clearinghouse fees with a card."
+  },
+  {
+   "about": "Where he keeps papers",
+   "truth": "Paper medical cards and past records are scanned to a Google Drive folder named 'Drivers' that his wife also uses."
+  }
+ ],
+ "unknowns": [
+  "Whether a paper medical card is still accepted after the exemption ends on Sunday.",
+  "Which of the two states must supply the annual driving record, or whether both must.",
+  "What the limited query result for Tomás means and whether it is serious.",
+  "How many days a Clearinghouse query stays valid before the next one is due."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:47:31Z"
+ }
+}

@@ -1,0 +1,100 @@
+{
+ "pair": "out-of-network-claims--joel",
+ "playbook_id": "out-of-network-claims",
+ "character": "joel",
+ "person": "Joel Martinez is a 38-year-old warehouse shift supervisor and father of two who handles the family's medical paperwork on Sunday nights. This year his teenage son has been seeing an out-of-network child therapist weekly; Joel pays up front and files for reimbursement under the family PPO. He is not sure which sessions he ever submitted, one reimbursement looked too small, and one claim has gone quiet for over a month. He wants a plain list of what to claim, chase, appeal and leave alone, with no billing jargon.",
+ "stated_up_front": "I take my son to a therapist who's out of network, I pay her every week and I'm supposed to get money back from the plan but I've lost track of what I filed. Can you go through everything and tell me what's owed, what I still need to submit, and what's been paid wrong?",
+ "portals": [
+  {
+   "playbook_app": "Paylance member portal",
+   "mine": "Cigna Health member portal"
+  },
+  {
+   "playbook_app": "Sessionly",
+   "mine": "SimplePractice client portal"
+  },
+  {
+   "playbook_app": "Ledgerline bank",
+   "mine": "Navy Federal online banking"
+  },
+  {
+   "playbook_app": "Mailnest",
+   "mine": "Gmail"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_claim",
+   "mine": "ask"
+  },
+  {
+   "action": "send_inquiry",
+   "mine": "go"
+  },
+  {
+   "action": "file_appeal",
+   "mine": "ask"
+  },
+  {
+   "action": "open_surprise_bill_dispute",
+   "mine": "ask"
+  },
+  {
+   "action": "reply",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Therapist and session fee",
+   "truth": "Dr. Renata Okafor, child psychologist, $165 per 50-minute weekly session on Tuesdays after his shift"
+  },
+  {
+   "about": "Session never claimed and still inside filing window",
+   "truth": "Several sessions from March through June of this year were paid out of pocket and never submitted"
+  },
+  {
+   "about": "Session too old to claim",
+   "truth": "One session on October 14 of last year, paid by debit card, now more than 12 months old"
+  },
+  {
+   "about": "Sessions already claimed",
+   "truth": "Four sessions in August and September already show as paid or pending in the plan portal"
+  },
+  {
+   "about": "Shorter session with corrected code",
+   "truth": "A 45-minute session on May 12 where her office emailed that the superbill code was changed to the shorter-session code"
+  },
+  {
+   "about": "Overdue claim",
+   "truth": "A claim for two July sessions the plan received on August 11, now past 30 days with no decision and no extension notice"
+  },
+  {
+   "about": "Claim processed with deductible already met",
+   "truth": "A June claim where $250 was taken as deductible even though the $500 family out-of-network deductible was met in April"
+  },
+  {
+   "about": "Claim allowed at old rates",
+   "truth": "A claim reimbursed at an allowed amount of $120 per session, but this year's allowed amount is $140"
+  },
+  {
+   "about": "Late-cancellation fee",
+   "truth": "A $75 late-cancellation fee on a missed Tuesday in July that the plan does not cover"
+  },
+  {
+   "about": "Surprise-billing offer",
+   "truth": "An email from a company offering to dispute his therapist's bills for 15% of whatever it recovers"
+  }
+ ],
+ "unknowns": [
+  "Whether the plan's filing limit counts from the date of the session or the date he paid",
+  "How many days he has to appeal each claim",
+  "What the codes on the superbills mean",
+  "Whether the plan treats the quiet claim as under an extension"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:52:37Z"
+ }
+}

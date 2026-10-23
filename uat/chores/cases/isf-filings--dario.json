@@ -1,0 +1,88 @@
+{
+ "pair": "isf-filings--dario",
+ "playbook_id": "isf-filings",
+ "character": "dario",
+ "person": "Dario Mendes owns three trucks outside Joliet and drives one himself. On the side he imports trailer parts and truck-cab goods from Asia, a few containers a month, and files his own Importer Security Filings because the bond is in his name. He reads English slowly and uses a phone translator. He is afraid of the $5,000 penalty and of a wrong filing, because his wife keeps the books and will ask. He wants each filing named by order number, supplier and money, in simple words.",
+ "stated_up_front": "Please, I have containers loading this week and I must file the ISF for each one before the 24 hours. Look at my orders and tell me simple which ones I must file, which ones I must only update, and which ones I do nothing.",
+ "portals": [
+  {
+   "playbook_app": "Sourcewick supplier portal",
+   "mine": "Alibaba.com"
+  },
+  {
+   "playbook_app": "Forwarden",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Quayloft ISF desk",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_isf",
+   "mine": "ask"
+  },
+  {
+   "action": "update_isf",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The company name on the bond and the ISF",
+   "truth": "Mendes Fleet Supply LLC, Joliet, Illinois"
+  },
+  {
+   "about": "First ISF due today",
+   "truth": "Order MFS-2291, 4,000 LED trailer light sets; sold by a Hong Kong trading company, Harbor Bright Trading; made at a factory in Dongguan, China; loads at Yantian"
+  },
+  {
+   "about": "Second ISF due today, sailing moved earlier",
+   "truth": "Order MFS-2297, truck seat cushions; the carrier moved the sailing five days earlier; the factory is in Guangzhou, China, but the cargo loads at Haiphong, Vietnam, so the country of origin is China, not Vietnam"
+  },
+  {
+   "about": "ISF due on Sunday",
+   "truth": "Order MFS-2304, rubber mud flaps, 1 x 40-foot container, made in a plant in Ningbo, China"
+  },
+  {
+   "about": "Filing that needs an update with the factory and stuffing location",
+   "truth": "Order MFS-2283 was filed with the Hong Kong seller as the maker; on 8 October the supplier named the real factory in Foshan, China, which stuffed the container in Foshan"
+  },
+  {
+   "about": "Filing that needs an update with the new warehouse",
+   "truth": "The ship-to changed from his Joliet yard to a rented warehouse in Memphis, Tennessee, before the container arrives"
+  },
+  {
+   "about": "Cargo to leave alone, by air",
+   "truth": "Sample LED bars, 12 kilograms, came by air express, so no ISF"
+  },
+  {
+   "about": "Cargo to leave alone, bulk",
+   "truth": "Loose decorative gravel for his yard, loaded loose in the holds of a bulk carrier, so no ISF"
+  },
+  {
+   "about": "Cargo to leave alone, Canadian container",
+   "truth": "A friend's company in Windsor, Ontario has a container that stays on board at Seattle; the carrier files it, so he does nothing"
+  },
+  {
+   "about": "Roll and a complete filing",
+   "truth": "Order MFS-2288 rolled to a later vessel with the same bill and nothing changed, and the filing for MFS-2279 is complete, so nothing to do on either"
+  }
+ ],
+ "unknowns": [
+  "What a flexible manufacturer means and why it can be updated later",
+  "What the tariff number (HTS) on the invoice means and whether his are right",
+  "Exactly how many hours before loading the ISF is due and how the time zones count",
+  "Whether the carrier or he must file for cargo that stays on board"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:21Z"
+ }
+}

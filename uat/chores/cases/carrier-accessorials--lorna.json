@@ -1,0 +1,108 @@
+{
+ "pair": "carrier-accessorials--lorna",
+ "playbook_id": "carrier-accessorials",
+ "character": "lorna",
+ "person": "Lorna Pike, 58, is office and compliance manager at a mid-sized importer of restaurant equipment that runs four of its own tractors plus a few contract drivers. She has twenty-two years of customs entries, permits and claims behind her, and she handles the carrier side of detention and lumper claims herself when she remembers to. Most of what she files today is detention on inbound drops at distribution centers, and she has never had a clean way to check it against the ELD. After a freight audit vendor overpromised and cost her two denied claims, she wants every figure traced to a document and any trial run on made-up data labeled as such. The owner signs anything over a few thousand dollars.",
+ "stated_up_front": "I need the last two weeks of stops checked for detention and lumper against the rate cons, the signed BOLs and Motive. Show me the line for each one and where the number comes from, and don't file anything until I've seen it.",
+ "portals": [
+  {
+   "playbook_app": "Motive",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Dispatch inbox",
+   "mine": "Outlook (the shared dispatch@ mailbox)"
+  },
+  {
+   "playbook_app": "C.H. Robinson Navisphere Carrier",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "TQL Carrier Dashboard",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Uber Freight",
+   "mine": "Echo Global Logistics carrier portal"
+  },
+  {
+   "playbook_app": "RTS Pro (factor)",
+   "mine": "Triumph Pay"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_detention",
+   "mine": "ask"
+  },
+  {
+   "action": "request_lumper",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_lumper",
+   "mine": "ask"
+  },
+  {
+   "action": "short_pay_inquiry",
+   "mine": "ask"
+  },
+  {
+   "action": "send_email",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Stops in the review window",
+   "truth": "Fourteen stops between October 6 and October 19, 2026, across four trucks."
+  },
+  {
+   "about": "Brokers/portals in use",
+   "truth": "C.H. Robinson Navisphere for six loads, TQL for five, Echo Global for two, and one load booked by email with a small broker, Harbor Line Freight."
+  },
+  {
+   "about": "Typical free time",
+   "truth": "Two hours on the CHR and TQL rate cons; Echo's rate con says two hours, with the request due within 24 hours of departure."
+  },
+  {
+   "about": "Detention rate and cap",
+   "truth": "$60 per hour on the CHR loads, capped at $300 per stop; $55 per hour on TQL, capped at $330."
+  },
+  {
+   "about": "Suspect stop",
+   "truth": "Load on October 13 at a distribution center in Joliet: driver Dale Okafor shows geofence arrival 7:10 and departure 12:40 in Motive, but the signed BOL shows out at 12:15."
+  },
+  {
+   "about": "Lumper",
+   "truth": "One lumper receipt for $185.00 at a Memphis cold-storage facility on October 9, paid in cash by the driver, on a CHR load."
+  },
+  {
+   "about": "Factor",
+   "truth": "Triumph Pay advances on invoices; she believes one TQL payment from late September came in $120 short, but has only the remittance PDF."
+  },
+  {
+   "about": "Who approves",
+   "truth": "Lorna files claims herself; the owner, Walt Brennan, signs off on any single claim or email over $2,500."
+  },
+  {
+   "about": "Prior bad experience",
+   "truth": "In 2024 a freight audit vendor took 20% of recoveries and two claims were denied for missing signed BOLs."
+  },
+  {
+   "about": "Driver tracking habits",
+   "truth": "Dale Okafor sometimes closes the tracking app on the TQL loads; the other drivers leave it on."
+  }
+ ],
+ "unknowns": [
+  "Whether the Harbor Line Freight rate con has any detention terms or a filing window at all.",
+  "How long CHR gives to request a lumper refund in the portal and what happens after.",
+  "Whether TQL already approved and paid detention on the September short-paid load.",
+  "Which document category in the TQL dashboard actually gets lumper receipts paid."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:46:13Z"
+ }
+}

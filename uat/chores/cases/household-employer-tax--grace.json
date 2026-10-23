@@ -1,0 +1,113 @@
+{
+ "pair": "household-employer-tax--grace",
+ "playbook_id": "household-employer-tax",
+ "character": "grace",
+ "person": "Grace Lindqvist is a 59-year-old retired librarian. She is the court-appointed representative of her mother Ruth's estate, three states away. Ruth died earlier this month and had paid two home caregivers herself, running their payroll through Hearthpay. Grace has inherited that payroll along with the mail, which reaches her in batches. She is slow on a laptop, grieving and tired, and answers to the probate court and to two siblings who want things done correctly. She wants to be told one step at a time what is needed from her and what Athena can find on her own.",
+ "stated_up_front": "I'm sorry, I'm not very good at this. My mother passed this month and she paid two helpers at her house herself, and I've been told there's a state report due soon and something about one of the men being set up wrong. Could you look and tell me what comes first?",
+ "portals": [
+  {
+   "playbook_app": "Hourquill",
+   "mine": "Google Sheets"
+  },
+  {
+   "playbook_app": "Hearthpay",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Ledgerline bank",
+   "mine": "Fifth Third Bank"
+  },
+  {
+   "playbook_app": "Taxline State",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "set_up_as_household_employee",
+   "mine": "ask"
+  },
+  {
+   "action": "sign_i9_section2",
+   "mine": "ask"
+  },
+  {
+   "action": "correct_w2_identity",
+   "mine": "ask"
+  },
+  {
+   "action": "file_wage_report",
+   "mine": "ask"
+  },
+  {
+   "action": "pay_ui_tax",
+   "mine": "ask"
+  },
+  {
+   "action": "file_new_hire_report",
+   "mine": "ask"
+  },
+  {
+   "action": "pay_federal_estimate",
+   "mine": "ask"
+  },
+  {
+   "action": "pay_bill",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Who the estate is and when her mother died",
+   "truth": "Ruth Lindqvist died on October 6, 2026. Grace holds the court letters as personal representative."
+  },
+  {
+   "about": "The weekday caregiver",
+   "truth": "Marisol Vega works weekdays and has been Ruth's W-2 employee for years. Her W-2 profile in Hearthpay ends in 4471, but Grace saw her card in the papers and it ends in 4417."
+  },
+  {
+   "about": "The evening caregiver",
+   "truth": "Dennis Okafor came in the evenings starting September 2, 2026. He asked to be paid as a contractor and Ruth agreed. Ruth told him when to come and what to do each evening."
+  },
+  {
+   "about": "Dennis's pay so far",
+   "truth": "About $2,340 paid in the third quarter, in weekly payments after he began."
+  },
+  {
+   "about": "Marisol's third-quarter wages",
+   "truth": "$7,800 paid in July through September, in Hearthpay."
+  },
+  {
+   "about": "The agency aide",
+   "truth": "An overnight aide comes through Harbor Light Home Care, which bills Ruth monthly. Grace has never dealt with the aide directly."
+  },
+  {
+   "about": "Anders",
+   "truth": "Anders, Grace's son, is 19 and helped his grandmother some afternoons. Ruth gave him $150 a week in cash or by check."
+  },
+  {
+   "about": "State filings and payments",
+   "truth": "The first and second quarter state reports were filed and paid by Ruth's bookkeeper earlier in the year. The third quarter report is due at the end of October."
+  },
+  {
+   "about": "Bank items",
+   "truth": "The September 15 federal estimate of $1,200 was paid from Ruth's checking account. A $195 bill from a filing service called FileEasy is waiting there."
+  },
+  {
+   "about": "Where the records are",
+   "truth": "Ruth kept the caregivers' hours in a shared Google Sheet, with her own notes at the top about who tells each person what to do."
+  }
+ ],
+ "unknowns": [
+  "Whether Dennis's Form I-9 was ever filled out, and when it was due.",
+  "Whether the state wage report is free to file herself or needs the filing service.",
+  "Whether Anders's pay counts for payroll tax purposes now that Ruth has died.",
+  "Whether the estate may keep paying the caregivers' wages, or for how long, after Ruth's death.",
+  "What the state's wage base or rate is for this quarter."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:03Z"
+ }
+}

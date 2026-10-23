@@ -1,0 +1,96 @@
+{
+ "pair": "lease-operator-escrow--lorna",
+ "playbook_id": "lease-operator-escrow",
+ "character": "lorna",
+ "person": "Lorna Pike is 58 and the office and compliance manager at a small importer that runs its own trucks. Her company leased one of its tractors, with a driver, to Vessmoor for eleven months, and the lease ended on 16 August 2026. Vessmoor was holding a $3,000 escrow. It has paid nothing back, and its final statement takes out an ELD charge, a washout fee and a $500 fee for leaving. She has the lease, return receipt and statements in the company's files and expects Athena to read them rather than ask her for what is already there. A freight-audit vendor burned her two years ago, so she wants every figure shown with its line and its rule. Her owner signs anything large.",
+ "stated_up_front": "Vessmoor never returned the escrow on our leased tractor, and the lease ended 16 August. Go through the lease, their settlement portal and our bank, and tell me what they can lawfully keep and what they owe, with the line behind each number. Don't send anything yet.",
+ "portals": [
+  {
+   "playbook_app": "Sheafbox",
+   "mine": "SharePoint"
+  },
+  {
+   "playbook_app": "Settlewick settlements",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Ledgerwren bank",
+   "mine": "Fifth Third Business Online"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "Outlook"
+  }
+ ],
+ "gates": [
+  {
+   "action": "dispute_deduction",
+   "mine": "ask"
+  },
+  {
+   "action": "claim_interest",
+   "mine": "ask"
+  },
+  {
+   "action": "send_escrow_demand",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Carrier and escrow",
+   "truth": "Vessmoor Freight held a $3,000 escrow, deposited at lease start in September 2025."
+  },
+  {
+   "about": "Lease termination",
+   "truth": "Termination notice effective 16 August 2026, so the 45 days ended 30 September 2026. The final statement arrived 4 October."
+  },
+  {
+   "about": "Equipment return",
+   "truth": "The return receipt is dated 17 August 2026 and signed by Vessmoor's Memphis terminal clerk. It lists the ELD unit, the plate and the tractor keys."
+  },
+  {
+   "about": "ELD charge",
+   "truth": "$385 for an ELD unit the receipt shows as returned; she disputes it."
+  },
+  {
+   "about": "Washout fee",
+   "truth": "$95 trailer washout fee. No lease schedule names it, so she disputes it."
+  },
+  {
+   "about": "Fee for leaving",
+   "truth": "$500 early-exit fee. The lease has no such clause, so she disputes it."
+  },
+  {
+   "about": "Deductions the lease allows",
+   "truth": "Final-week fuel, tolls, insurance, the plate cost for the remaining months, and tires, all named in the schedules and documented in the portal. She leaves these alone."
+  },
+  {
+   "about": "Interest paid so far",
+   "truth": "Vessmoor paid the first three quarters' interest, and her bank shows those deposits. The third quarter of 2026 is unpaid."
+  },
+  {
+   "about": "Old carrier",
+   "truth": "Brindlecote Transport returned its escrow with interest in 2024, and the bank deposit confirms it. It owes nothing."
+  },
+  {
+   "about": "Bank",
+   "truth": "No escrow deposit from Vessmoor has reached the Fifth Third business checking account."
+  },
+  {
+   "about": "Signing",
+   "truth": "The owner signs anything over a few thousand dollars. The escrow is $3,000, so she checks with him before any letter goes out."
+  }
+ ],
+ "unknowns": [
+  "The 13-week Treasury bill rate that sets the unpaid quarter's interest. She doesn't know it and expects it to come from the auction results in the files.",
+  "Whether the 45-day deadline and the lease-named-deductions rule come from 49 CFR 376.12(k) or from another section.",
+  "Why Vessmoor billed the ELD when its own terminal signed for the return.",
+  "Whether Vessmoor will pay on a letter or whether this ends up in a suit."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:41Z"
+ }
+}

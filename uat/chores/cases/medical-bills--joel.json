@@ -1,0 +1,88 @@
+{
+ "pair": "medical-bills--joel",
+ "playbook_id": "medical-bills",
+ "character": "joel",
+ "person": "Joel Martinez is a 38-year-old warehouse shift supervisor and father of two on a family PPO. This year he has had a son's ER visit, his wife's surgery and his mother-in-law's rehab stay, which produced eleven bills from four providers and only three EOBs that don't line up. He did Sunday-night bill sorting on his laptop, paid one bill twice and is still waiting on the refund. He is fair and wants to pay only what he truly owes, but he is tired of codes and of his wife's stack of envelopes, and he wants someone to tell him plainly what to pay, dispute or wait on.",
+ "stated_up_front": "I've got eleven medical bills and only three EOBs and none of it matches. Can you line them up for me and tell me what I actually owe, what to dispute and what to wait on? I also paid one bill twice and still haven't gotten that money back.",
+ "portals": [
+  {
+   "playbook_app": "Insurer member portal",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "MyChart (Valley Medical)",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Cedar",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "dispute_bill",
+   "mine": "ask"
+  },
+  {
+   "action": "request_refund",
+   "mine": "go"
+  },
+  {
+   "action": "file_appeal",
+   "mine": "ask"
+  },
+  {
+   "action": "pay_bill",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Bills received this year",
+   "truth": "Eleven bills from four providers: Valley Medical hospital, VMC Physicians Group, an anesthesia group, and the rehab facility."
+  },
+  {
+   "about": "EOBs on hand",
+   "truth": "Three EOBs: the son's ER visit in March, his wife's surgery in June, and one partial one for his mother-in-law's rehab."
+  },
+  {
+   "about": "Duplicate payment",
+   "truth": "He paid the $214.60 ER physician bill twice, on April 12 and again on May 3, and has not been refunded."
+  },
+  {
+   "about": "Wife's surgery balance",
+   "truth": "The hospital billed a balance of $1,860 after insurance for the June surgery. He believes the hospital's financial assistance policy should cover it, but has never applied."
+  },
+  {
+   "about": "Mother-in-law's rehab",
+   "truth": "A 9-day rehab stay in August was billed by the facility as 'observation' rather than inpatient, and the insurer's EOB shows it as a partial claim."
+  },
+  {
+   "about": "Deductible",
+   "truth": "The family deductible is $3,000. He thinks it was met after the surgery in June but has not checked the EOB."
+  },
+  {
+   "about": "Insurer and plan",
+   "truth": "A family PPO through his employer, with coverage for him, his wife and two kids; his mother-in-law is covered under a separate plan."
+  },
+  {
+   "about": "How he pays",
+   "truth": "He pays bills from the joint checking account and does not use an HSA."
+  },
+  {
+   "about": "Wife's role",
+   "truth": "His wife Elena handles nothing medical and wants the stack of envelopes gone."
+  }
+ ],
+ "unknowns": [
+  "Whether the 'observation' billing of his mother-in-law's stay can be changed, or what it means for coverage.",
+  "Whether any denial's appeal window is still open, and what that deadline is.",
+  "Whether the hospital's financial assistance policy applies to his income.",
+  "What the billing codes on the statements mean."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:50:51Z"
+ }
+}

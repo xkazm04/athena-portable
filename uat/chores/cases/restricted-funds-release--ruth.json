@@ -1,0 +1,100 @@
+{
+ "pair": "restricted-funds-release--ruth",
+ "playbook_id": "restricted-funds-release",
+ "character": "ruth",
+ "person": "Ruth Albers, 63, farms about a thousand acres of corn and soybeans in central Iowa with her husband and has kept the farm's books for forty years. She is also the volunteer treasurer of the Pleasant Ridge Fair Association, a small nonprofit that runs the township fair and the 4-H show barn. A week or so after the September 30 quarter close she has to work out which of the Association's restricted funds can be released and report to the funders who asked for it. She does this at night on her phone, and she is wary of anything that files or connects to an office on its own. She wants dates first and wants to know whether something is filed or only prepared for her. She does not want a long scrolling page.",
+ "stated_up_front": "I need to go through the fair association's restricted money for the quarter that ended September 30 and see what can be let go and what can't. Tell me what you'd book and which dates it hinges on, and don't send anything to anybody till I say.",
+ "portals": [
+  {
+   "playbook_app": "Grantpoint",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "Dropbox"
+  },
+  {
+   "playbook_app": "Ledgerwren",
+   "mine": "QuickBooks Online"
+  },
+  {
+   "playbook_app": "Donorsheaf",
+   "mine": "Google Sheets"
+  },
+  {
+   "playbook_app": "Fundergate",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  }
+ ],
+ "gates": [
+  {
+   "action": "book_release",
+   "mine": "ask"
+  },
+  {
+   "action": "submit_release_report",
+   "mine": "ask"
+  },
+  {
+   "action": "reply_message",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Show barn cooler grant",
+   "truth": "18,500 dollars from the Iowa Rural Youth Foundation for a walk-in cooler, installed and in service since 28 September 2026."
+  },
+  {
+   "about": "Halvorsen gift and its amendment",
+   "truth": "12,000 dollars, time-restricted to 1 January 2027 in the agreement, but a signed amendment that came in the mail moved it up to 1 October 2026."
+  },
+  {
+   "about": "Youth premium gift",
+   "truth": "8,000 dollars given for livestock show premiums and ribbons. 4,800 dollars went to premium payouts and show supplies, which counts. The judges' fees and the gala dinner table do not."
+  },
+  {
+   "about": "County cost-reimbursement grant",
+   "truth": "14,000 dollars total, paid as the Association spends on allowed costs. 7,200 dollars of those costs are recognised so far."
+  },
+  {
+   "about": "Matching gift",
+   "truth": "A 5,000 dollar match is tied to new donors. Two new donors gave 3,100 dollars in cash since July."
+  },
+  {
+   "about": "Grandstand lights",
+   "truth": "Ordered with a 3,500 dollar deposit paid. Delivery is expected around the first week of December, so that restriction is not met."
+  },
+  {
+   "about": "Participation grant",
+   "truth": "30,000 dollars, earned only at 100 youth exhibitors and in no part below that. 71 have signed up so far."
+  },
+  {
+   "about": "Board reserve and scholarship endowment",
+   "truth": "The board set aside a 25,000 dollar operating reserve, which is not a donor restriction. The Lindqvist scholarship endowment corpus is 30,000 dollars and is held permanently."
+  },
+  {
+   "about": "Reports already sent",
+   "truth": "The cooler release was reported to the Rural Youth Foundation on 8 September. The Halvorsen gift and the memorial gift asked for no report."
+  },
+  {
+   "about": "Consultant offer",
+   "truth": "A grant-writing firm offered its services at 1,800 dollars a quarter. Ruth has not answered, and the board has not voted."
+  }
+ ],
+ "unknowns": [
+  "Whether the accounting rule treats the cooler as released from the day it was installed or from the day it passed inspection",
+  "Whether the Halvorsen amendment also changes anything else in that gift's terms",
+  "What the county grant's final reporting deadline is",
+  "Whether the Foundation wants a second report for the amended cooler date"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:54:21Z"
+ }
+}

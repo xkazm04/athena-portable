@@ -1,0 +1,92 @@
+{
+ "pair": "cpg-deductions--reggie",
+ "playbook_id": "cpg-deductions",
+ "character": "reggie",
+ "person": "Reggie Banks is 61, a retired grocery-chain accounts payable clerk who now works three days a week as the finance person for a small snack brand selling through UNFI and KeHE. He has macular degeneration, so he works at 175% zoom with a high-contrast theme and loses his place in wide tables. Each month the deductions outrun him, and the brand writes off what it can't prove. The founder, Dana, wants one number: how much of the short-pay is real. He wants every total shown with the lines under it so he can add them himself.",
+ "stated_up_front": "Athena, I have September's UNFI and KeHE short-pays to sort through and I can't keep up with them. Go through each deduction, tell me which ones are real and which we should fight, and show me the lines so I can add them up myself.",
+ "portals": [
+  {
+   "playbook_app": "myUNFI Dispute Center",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "KeHE K-Solve",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Brand Drive",
+   "mine": "Dropbox"
+  },
+  {
+   "playbook_app": "Warehouse portal",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "dispute_deduction",
+   "mine": "ask"
+  },
+  {
+   "action": "request_backup",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Total short-pay for September across both distributors",
+   "truth": "$14,860 total: $9,420 from UNFI and $5,440 from KeHE"
+  },
+  {
+   "about": "Number of deductions to review this month",
+   "truth": "31 lines: 19 UNFI and 12 KeHE"
+  },
+  {
+   "about": "Approved promo rate on the fall endcap with the Pacific Natural chain",
+   "truth": "$1.20 off per case, shown on the broker's September deal sheet"
+  },
+  {
+   "about": "KeHE's standard fee",
+   "truth": "8% of invoice, which Reggie accepts as valid per the agreement"
+  },
+  {
+   "about": "Where the broker's deal sheets and agreement live",
+   "truth": "A Dropbox folder called 'Brand Docs', with a subfolder per retailer; the broker is Marcus at Tallgrass Brokerage"
+  },
+  {
+   "about": "A recent price increase",
+   "truth": "Effective Sept 15 on the 12-count bars, but the brand billed the new price on invoices dated Sept 10"
+  },
+  {
+   "about": "Free fill promised in the agreement",
+   "truth": "One free case per 20 on new-item launches, which the Oat Crunch launch should have covered"
+  },
+  {
+   "about": "Oldest deduction he knows of that is open",
+   "truth": "A $212 UNFI shortage from a September 2025 invoice that he suspects is past the twelve-month window"
+  },
+  {
+   "about": "Which warehouse carries receiver notes on its proofs of delivery",
+   "truth": "The Stockton warehouse portal shows receiver notes; he has not checked the others"
+  },
+  {
+   "about": "How he wants results presented",
+   "truth": "A plain list, one deduction per line, large dark text on white, with a running total he can add up; no wide tables"
+  },
+  {
+   "about": "Write-off rule from the founder",
+   "truth": "Dana says don't chase anything under $40 unless the same code keeps repeating"
+  }
+ ],
+ "unknowns": [
+  "What the exact dispute deadline is for each distributor, and whether it counts from the invoice date or the deduction date",
+  "What several of the numeric deduction codes on the KeHE side mean",
+  "Whether KeHE's advanced search shows items older than the standard view",
+  "Whether any warehouses other than Stockton record receiver notes on their proofs of delivery"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:47:04Z"
+ }
+}

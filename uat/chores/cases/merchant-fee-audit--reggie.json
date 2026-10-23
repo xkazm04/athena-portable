@@ -1,0 +1,84 @@
+{
+ "pair": "merchant-fee-audit--reggie",
+ "playbook_id": "merchant-fee-audit",
+ "character": "reggie",
+ "person": "Reggie Banks is 61 and does finance three days a week for Hollow Oak Snacks, a small natural-foods brand that sells mostly through two national distributors. It also runs a modest web shop that takes Visa through a processor on an interchange-plus agreement. He spent years in accounts payable at a regional grocery chain, so he is comfortable in spreadsheets, but he has never compared the processor's statements with the contract. He has macular degeneration and reads at 175% zoom with a high-contrast theme, so wide statement tables make him lose his place. The founder wants one number for how much of the processing cost is a real overcharge, and Reggie wants every line shown so he can add it up himself.",
+ "stated_up_front": "Hollow Oak's web shop processor statements for July, August and September need checking against our agreement. Please go line by line and tell me which fees are really overcharges and which are fine. Don't ask for any credit until I've seen the lines and added them up.",
+ "portals": [
+  {
+   "playbook_app": "Paycurrent",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "Google Drive"
+  },
+  {
+   "playbook_app": "Ledgerwren bank",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "request_fee_credit",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "The business and the processor account",
+   "truth": "Hollow Oak Snacks web shop, Visa processed through Paycurrent on an interchange-plus agreement signed in January 2024"
+  },
+  {
+   "about": "Monthly Visa volume",
+   "truth": "About $19,800 in July, $20,400 in August and $21,600 in September 2026"
+  },
+  {
+   "about": "Markup in the agreement",
+   "truth": "0.25% plus 8 cents per transaction over interchange"
+  },
+  {
+   "about": "The markup notice",
+   "truth": "A Paycurrent notice dated 9 September 2026 raised the markup to 0.35%. The agreement requires 30 days' notice, but the September statement bills 0.35% from 1 September on all $21,600. Reggie thinks the excess is 0.10%, about $21.60."
+  },
+  {
+   "about": "Gateway fee on a closed merchant ID",
+   "truth": "$9.95 a month on a second merchant ID for a wholesale-portal store that was closed in March 2025, billed on all three statements"
+  },
+  {
+   "about": "Monthly PCI fee",
+   "truth": "A $19.95 'PCI compliance' line appears monthly. Reggie cannot find it anywhere in the agreement's fee schedule."
+  },
+  {
+   "about": "Chargeback fee",
+   "truth": "A $15 chargeback fee on the August statement was credited back in the September deposits. Reggie can see the credit in the bank."
+  },
+  {
+   "about": "Statement dates and the sixty-day window",
+   "truth": "The July statement is dated 6 August 2026 and it is now 23 October, so he assumes July is too old. August is dated 5 September and September is dated 6 October."
+  },
+  {
+   "about": "A debit card line he finds odd",
+   "truth": "One September debit sale of $64.00 shows a low flat rate, and Reggie is not sure whether the card was a regulated or exempt issuer's"
+  },
+  {
+   "about": "A rewards card line he finds odd",
+   "truth": "One August sale of $212.50 was billed at a higher rate than the others, and its description says 'Visa Signature Preferred'"
+  },
+  {
+   "about": "How he wants the answer shown",
+   "truth": "Each claim as its own short line with statement month, amount billed, amount that should have been billed, and difference, plus a running total he can add up himself"
+  }
+ ],
+ "unknowns": [
+  "Whether the $64.00 debit card came from a regulated issuer or an exempt one",
+  "What Visa's published rate is for the Signature Preferred card product, and whether the August charge matches it",
+  "Whether the sixty days run from the statement date or from when the statement was posted",
+  "What the downgrade and assessment lines on the statements mean, and whether they are billed correctly"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:51:26Z"
+ }
+}

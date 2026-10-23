@@ -1,0 +1,80 @@
+{
+ "pair": "trademark-maintenance--hana",
+ "playbook_id": "trademark-maintenance",
+ "character": "hana",
+ "person": "Hana Kowalczyk, 34, runs a one-person online shop out of a studio behind her house in Oregon. She sells handmade ceramics and linen goods on her own site and two marketplaces, and she registered her trademarks one at a time over about ten years. She keeps no docket software and only knows that a couple of them are 'due soon'. She is unsure with anything official and does not want to swear to the USPTO that something is true when she might be wrong. She wants to know fast whether this chore fits a shop her size and what she has to answer from memory.",
+ "stated_up_front": "Hi! I got a scary-looking email about my trademarks needing some kind of renewal and I have orders to pack. Can you check which of my marks actually need something filed right now, and tell me what you need from me? It's just me and a few registrations, nothing huge.",
+ "portals": [
+  {
+   "playbook_app": "Markwick filing desk",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Storeline",
+   "mine": "Shopify"
+  },
+  {
+   "playbook_app": "Binderwell",
+   "mine": "Google Docs"
+  },
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_declaration",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "How many registrations she has",
+   "truth": "Seven: four word marks and three logos, all under Moss & Kiln or related names."
+  },
+  {
+   "about": "Moss & Kiln word mark for mugs and bowls (class 21)",
+   "truth": "Registered 14 April 2016. It is the ten-year renewal and she is in the grace period, with about five days left as of 9 October 2026. She still sells both mugs and bowls and has product photos for each."
+  },
+  {
+   "about": "Moss & Kiln for linen towels and napkins (class 24)",
+   "truth": "Registered 21 April 2020. The 6-year declaration was missed and she is in the grace period. Towels sell every week, but she stopped making the napkins in 2024."
+  },
+  {
+   "about": "Two logo registrations, one for ceramics and one for linen",
+   "truth": "Both were registered in December 2020, so their 5-to-6-year declaration window is open now. Both goods are still sold, and her photos show the logo stamped on the base of a mug and sewn on a towel tag."
+  },
+  {
+   "about": "Slow Glaze mark",
+   "truth": "Registered March 2023. She thinks it is too new for anything yet, and she is right."
+  },
+  {
+   "about": "Declaration she already filed",
+   "truth": "The 'Kiln Dust' mark had its declaration accepted in August 2026. She has the acceptance email in Gmail."
+  },
+  {
+   "about": "Little Kiln mark",
+   "truth": "Registered 2015. She let it go when she stopped using the name, and the grace period ended in late 2025."
+  },
+  {
+   "about": "Product photos",
+   "truth": "The real photos were taken by her friend Dana in 2025. A few older shots are staged mock-ups made with a rendering app, and she is not sure which ones."
+  },
+  {
+   "about": "Who does the shop work",
+   "truth": "She does everything herself. Her accountant only sees the books once a year and has never handled the trademarks."
+  }
+ ],
+ "unknowns": [
+  "The exact government fee for each filing, and how much the grace-period surcharge adds.",
+  "Which of her photos count as acceptable proof that the mark is in use.",
+  "Why one registration is already accepted while she thought they were all pending.",
+  "Whether the napkins and the Little Kiln mark can still be saved, or whether the napkins can simply be removed from the filing."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:55:14Z"
+ }
+}

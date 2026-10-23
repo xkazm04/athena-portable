@@ -1,0 +1,80 @@
+{
+ "pair": "fba-reimbursements--reggie",
+ "playbook_id": "fba-reimbursements",
+ "character": "reggie",
+ "person": "Reggie Banks is 61, a retired grocery-chain AP clerk who now works three days a week doing finance for a small snack brand. The brand sells mostly through two distributors but also has a small Amazon FBA side channel of about 6 SKUs that nobody has time to audit. He has macular degeneration, works at 175% zoom with a high-contrast theme, and loses his place in wide tables, so he wants every claim shown as lines that add up. The founder wants one number: how much of the Amazon shortfall is real and recoverable. Reggie wants Athena to ask before anything is filed under the brand's account.",
+ "stated_up_front": "I do the books for a snack brand and we have a few products on Amazon FBA that I've never checked for lost or short-received units. Could you go through last month's reports against our supplier's invoices and packing lists, and show me each claim line by line so I can add it up myself before anything gets filed?",
+ "portals": [
+  {
+   "playbook_app": "Seller Central",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Supplier inbox",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "file_case",
+   "mine": "ask"
+  },
+  {
+   "action": "request_remeasure",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Number of active FBA SKUs",
+   "truth": "6 SKUs, all snack bars and trail-mix pouches; the biggest seller is the 12-count Peanut Crunch bar box."
+  },
+  {
+   "about": "Annual Amazon sales",
+   "truth": "About $140,000 a year, a small side channel next to the distributor business."
+  },
+  {
+   "about": "Main supplier / co-packer",
+   "truth": "Harlan Valley Foods, a co-packer who emails invoices as PDFs to the shared brand inbox."
+  },
+  {
+   "about": "3PL that ships to Amazon",
+   "truth": "Brightline Fulfillment, which sends a packing list for every inbound shipment."
+  },
+  {
+   "about": "Example short shipment",
+   "truth": "Inbound shipment sent 1,200 units of Peanut Crunch on invoice HV-4471, and Amazon's received count shows 1,140, so 60 units are short."
+  },
+  {
+   "about": "Unit cost on file",
+   "truth": "Peanut Crunch box costs $6.85 to make; the other five SKUs range from $4.10 to $7.90."
+  },
+  {
+   "about": "Where he keeps his own tracking",
+   "truth": "An Excel workbook with one tab per month, one row per shipment, columns kept narrow enough to read at 175% zoom."
+  },
+  {
+   "about": "Last time anyone looked at reimbursements",
+   "truth": "Nobody has audited since the spring; he thinks one small reimbursement of around $212 came through in August."
+  },
+  {
+   "about": "Who approves cases",
+   "truth": "Reggie reviews, but the founder, Dana Whitcomb, has the Seller Central login and must be told before cases go in."
+  },
+  {
+   "about": "What the founder wants",
+   "truth": "One number: the dollar total of Amazon's real shortfall, with the lines that add up to it."
+  }
+ ],
+ "unknowns": [
+  "How long Amazon allows for opening a case on a lost or short-received inbound shipment.",
+  "Whether any of the shortages are the co-packer's fault rather than Amazon's, since he has not compared the 3PL packing lists to the invoices.",
+  "Whether a remeasure has already been used on any of his SKUs in the last 60 days.",
+  "What the codes in the inventory ledger's reason column mean."
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:48:26Z"
+ }
+}

@@ -1,0 +1,84 @@
+{
+ "pair": "baggage-delay-claims--aisha",
+ "playbook_id": "baggage-delay-claims",
+ "character": "aisha",
+ "person": "Aisha Grant is a 31-year-old night-shift ER nurse in Tucson, expecting her first child next spring. She flew Phoenix to Mexico City on Thursday 1 October for a friend's wedding. Her checked bag came four days late, on Monday 5 October at 11:20, and she has until Monday 26 October to file the written complaint. She does money admin in bursts on days off, mostly on her phone, and wants a straight number for what she gets back and when. She doesn't want an inflated total, and she's wary of anything signed that could come back on her. Her partner is saving for the baby, so every dollar counts.",
+ "stated_up_front": "my bag showed up 4 days late on my Mexico City trip and I have a pile of receipts. figure out what the airline actually owes me and file it, and tell me a real number, not an 'up to'.",
+ "portals": [
+  {
+   "playbook_app": "Postwren",
+   "mine": "Gmail"
+  },
+  {
+   "playbook_app": "Cardhollow",
+   "mine": "Chase"
+  },
+  {
+   "playbook_app": "Tripcairn",
+   "mine": "TripIt"
+  },
+  {
+   "playbook_app": "Aerolark baggage claims",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "claim_expense",
+   "mine": "ask"
+  },
+  {
+   "action": "request_bag_fee_refund",
+   "mine": "go"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Trip and flight",
+   "truth": "Phoenix to Mexico City on Thursday 1 October 2026, evening flight, for a friend's wedding; she was alone, no companion's bag involved."
+  },
+  {
+   "about": "Bag delivery",
+   "truth": "The checked bag was delivered to her hotel on Monday 5 October at 11:20, about four days after landing."
+  },
+  {
+   "about": "Complaint deadline",
+   "truth": "21 days from delivery, so Monday 26 October 2026; she wants it filed this week."
+  },
+  {
+   "about": "Bag fee",
+   "truth": "She paid a $35 checked bag fee on 1 October for this one bag, and it has not been refunded."
+  },
+  {
+   "about": "Receipts that were interim needs",
+   "truth": "A pharmacy receipt of $27.40 (deodorant, contact lens solution, toothbrush); toiletries on a supermarket receipt of $18.60; basic clothes at a department store for $96.15 (underwear, two tops, leggings); a phone charger and adapter for $29.99; a $44.00 blouse for the wedding rehearsal dinner."
+  },
+  {
+   "about": "Receipts not to claim",
+   "truth": "Dinner and breakfast receipts ($61.20 total), a $38 roaming data pack, and a $52 handbag she bought on 5 October at 16:40, after the bag came."
+  },
+  {
+   "about": "Card benefit",
+   "truth": "Her Chase card's baggage delay benefit already paid $120 toward a light jacket and sandals, so those must not be claimed again."
+  },
+  {
+   "about": "Report number",
+   "truth": "She filed the delayed baggage report at the airport on 2 October; the report number is in the confirmation email in Gmail."
+  },
+  {
+   "about": "Her sum",
+   "truth": "Claimable lines come to $216.14 plus the $35 bag fee, $251.14 in all; she expects a straight answer on that, with no padding."
+  }
+ ],
+ "unknowns": [
+  "Whether maternity or stretchy clothes bought in a hurry count as basic clothes",
+  "How many days the airline normally takes to pay once the complaint is filed",
+  "Whether the airline's own rules cap the amount it will repay for interim purchases",
+  "What the code on the baggage report means"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:45:55Z"
+ }
+}

@@ -1,0 +1,92 @@
+{
+ "pair": "overpayment-refunds--tom",
+ "playbook_id": "overpayment-refunds",
+ "character": "tom",
+ "person": "Tom Whitcomb is the 39-year-old administrator of a three-clinician family practice, a former restaurant manager who still leans on the part-time biller, Dana, for anything about billing. Dana is out until Monday, and the owners have asked him to explain a pile of credit balances showing on the books before the month-end meeting. He does not know which credits are Medicare's money, which belong to patients, and which are only posting mistakes. He wants nothing sent or refunded that would have to be clawed back, and he wants plain-language numbers he can defend to the doctors.",
+ "stated_up_front": "Dana's out till Monday and the doctors want to know why we're sitting on a bunch of credit balances. Can you go through them and tell me whose money each one is, and handle what's clearly safe? Explain it like I'm the guy who has to tell the doctors.",
+ "portals": [
+  {
+   "playbook_app": "Chartmend PM",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Ledgerline",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Novabridge MAC",
+   "mine": "same"
+  },
+  {
+   "playbook_app": "Carenook",
+   "mine": "same"
+  }
+ ],
+ "gates": [
+  {
+   "action": "submit_overpayment_refund",
+   "mine": "ask"
+  },
+  {
+   "action": "refund_patient",
+   "mine": "ask"
+  },
+  {
+   "action": "correct_posting",
+   "mine": "ask"
+  }
+ ],
+ "facts": [
+  {
+   "about": "Total number of credit balances on the books",
+   "truth": "Nine credit balances totalling $4,236.50 in Chartmend PM"
+  },
+  {
+   "about": "Duplicate Medicare payment on one account",
+   "truth": "A second Medicare Part B payment of $214.80 for a visit on 9 September 2026, identified by Dana on 14 October 2026 per her compliance log note"
+  },
+  {
+   "about": "Medicare payment the contractor already took back",
+   "truth": "A $162.30 second payment on the account of a patient named Harold Pruitt; Novabridge shows it was offset against a later remittance in September"
+  },
+  {
+   "about": "Remittance posted twice",
+   "truth": "A $97.60 Medicare payment posted twice from the same 2 October remittance, with only one $97.60 deposit in Ledgerline"
+  },
+  {
+   "about": "Transposed account number",
+   "truth": "A $131.00 Medicare payment sitting on account 40817 that belongs on account 40187; the bank deposit matches the right patient's claim"
+  },
+  {
+   "about": "Deposit for an upcoming procedure",
+   "truth": "A $150.00 deposit from a patient named Linda Ostrow for an excision scheduled 30 October 2026 in Carenook"
+  },
+  {
+   "about": "Preventive visit coinsurance",
+   "truth": "A patient was charged $28.40 coinsurance on a Medicare annual wellness visit and paid it at the desk; it is owed back to the patient"
+  },
+  {
+   "about": "Coinsurance paid by patient and Medigap",
+   "truth": "A patient and her supplement plan both paid the $46.20 coinsurance on a 25 September visit; the patient's share is owed back"
+  },
+  {
+   "about": "Coding audit",
+   "truth": "Dana's log says an internal coding audit on office visits opened 1 July 2026 and the investigation closed 9 October 2026"
+  },
+  {
+   "about": "Who he answers to and his deadline",
+   "truth": "He reports to the two physician owners and presents at the month-end meeting on 30 October 2026"
+  }
+ ],
+ "unknowns": [
+  "Whether the 60-day clock for the coding audit started when the audit opened or when the investigation closed",
+  "How many days he has left to return the duplicate Medicare payment under the current rule",
+  "Whether the 180-day suspension applies to any of his findings",
+  "Which of the nine credits Dana already told Medicare about on the phone, if any"
+ ],
+ "generated_by": {
+  "model": "claude-sonnet-5-5",
+  "effort": "medium",
+  "at": "2026-10-23T08:52:34Z"
+ }
+}
