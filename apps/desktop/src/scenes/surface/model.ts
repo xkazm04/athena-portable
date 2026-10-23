@@ -33,6 +33,7 @@ export interface SurfaceSources {
   /**
    * `loaded` is false while the shipped playbooks are still being fetched (they load lazily);
    * `failed` is true when that fetch failed, which is not the same fact as one still on its way.
+   * `foundUsd` is money back only (ADR 0133): an exposure protected or a scoring weight is never in it.
    */
   chores: { total: number; benched: number; foundUsd: number; loaded: boolean; failed: boolean };
   voiceAvailable: boolean;
@@ -127,7 +128,7 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
           : "counting…"
         : s.chores.total === 0
           ? "none in this build"
-          : `${s.chores.benched} of ${s.chores.total} benched · ${usd(s.chores.foundUsd)} found`,
+          : `${s.chores.benched} of ${s.chores.total} tested · ${usd(s.chores.foundUsd)} back found`,
       hint: "Chores worth starting, with what they save and the proof.",
       attention: false,
     },

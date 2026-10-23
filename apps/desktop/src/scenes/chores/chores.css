@@ -502,6 +502,101 @@
   font-size: 14px;
   color: var(--accent-text);
 }
+.pa-kpi__line--words {
+  color: var(--foreground);
+  line-height: 1.4;
+}
+
+/* -- Honest numbers (ADR 0133): the example's tag, the verdict, the estimate and its basis ----- */
+.pa-tag {
+  display: inline-block;
+  margin: 0 0 10px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--border-emphasis);
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--muted-foreground);
+}
+.pa-verdict {
+  display: flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 4px 8px;
+  margin: 0;
+  font-size: 15px;
+  line-height: 1.45;
+}
+.pa-verdict__label {
+  font-weight: 700;
+}
+.pa-verdict__text {
+  color: var(--muted-foreground);
+}
+.pa-estimate {
+  font-size: 15px;
+  line-height: 1.5;
+}
+.pa-estimate__sum {
+  cursor: pointer;
+  color: var(--foreground);
+  border-radius: var(--radius-interactive);
+  transition: background var(--duration-fast) var(--ease-fast);
+}
+.pa-estimate__sum:hover {
+  background: var(--hover-wash);
+}
+.pa-estimate__body {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  padding: 8px 0 0 18px;
+}
+.pa-estimate__body p {
+  margin: 0;
+}
+.pa-estimate__sources {
+  margin: 0;
+  padding-left: 18px;
+}
+.pa-link {
+  padding: 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  text-align: left;
+  color: var(--accent-text);
+  text-decoration: underline;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-fast);
+}
+.pa-link:hover {
+  color: var(--foreground);
+}
+.pa-fit__rows {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  gap: 12px;
+  margin: 16px 0 0;
+}
+.pa-fit__row {
+  padding: var(--density-pad-sm) var(--density-pad);
+  border-radius: 10px;
+  background: var(--card-bg);
+  border: 1px solid var(--border-default);
+}
+.pa-fit__row dt {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.pa-fit__row dd {
+  margin: 4px 0 0;
+  font-size: 15px;
+  line-height: 1.45;
+}
 
 /* -- Section heads --------------------------------------------------------------------------- */
 .pa-sechead {

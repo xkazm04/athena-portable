@@ -4,12 +4,13 @@
  * The playbook drawn as a blueprint, from its own data only. The
  * portals it reads are the sources down the left, the steps a numbered spine that wraps to a
  * second row past four, every gate an amber "asks you first" diamond on the spine before the step
- * it guards, and the result node on the right: what was filed on the bench, or the bar it will be
- * held to.
+ * it guards, and the result node on the right: what her test run found, money back only as dollars
+ * (ADR 0133), or the bar it will be held to.
  */
 import type { PlaybookView } from "@/modules/playbooks/model";
 
-import { blueprintOf, shortLine } from "./model";
+import { shortLine } from "./model";
+import { blueprintOf } from "./worth";
 import { gateSlots } from "./facts";
 
 type Mark = { kind: "step"; n: number; text: string; portals: string[] } | { kind: "gate"; label: string; why: string };
@@ -115,10 +116,10 @@ export default function Flow({ view }: { view: PlaybookView }) {
             </ol>
           ))}
           {plan.guard ? (
-            <p className="pa-spine__note">{`On the bench she walked past ${plan.guard.avoided} of ${plan.guard.of} traps the world held.`}</p>
+            <p className="pa-spine__note">{`In the test run she avoided ${plan.guard.avoided} of ${plan.guard.of} mistakes the example case set up.`}</p>
           ) : null}
           <div className="pa-result" data-measured={plan.result.measured ? "" : undefined}>
-            <span className="pa-result__eyebrow">{plan.result.measured ? "Filed on the bench" : "Not benched yet"}</span>
+            <span className="pa-result__eyebrow">{plan.result.measured ? "Found in the test run" : "Not tested yet"}</span>
             <span className="pa-result__n">{plan.result.figure}</span>
             <span className="pa-result__line">{plan.result.line}</span>
           </div>

@@ -4,24 +4,22 @@
  */
 import { expect, test } from "vitest";
 
-import { edgeRank, parsePlaybook, type TraceTurn } from "@/lib/playbooks";
+import { edgeRank, kindOf, parsePlaybook, type TraceTurn } from "@/lib/playbooks";
 import { CATEGORIES } from "@/lib/playbook-taxonomy";
 
 import { fixtures } from "./fixtures";
 import {
   categoryCounts,
   filterLedger,
-  foundBy,
-  readsOf,
   selectPlaybooks,
   sortLedger,
-  turnState,
+  tallyOf,
   verdictOf,
-  visitsOf,
   type PlaybookActions,
   type PlaybookView,
 } from "./model";
 import { fixtureIds, initialOpenFor } from "./fixtures";
+import { foundBy, readsOf, turnState, visitsOf } from "./replay";
 import { PLAYBOOKS } from "@/lib/playbooks.shipped";
 
 const turn = (portal: string, over: Partial<TraceTurn> = {}): TraceTurn => ({
@@ -67,6 +65,79 @@ test("the tally counts right cards only, up to the turn shown", () => {
   expect(foundBy(trace, 0)).toBe(75);
   expect(foundBy(trace, 1)).toBe(75);
   expect(foundBy(trace, 2)).toBe(75.1);
+});
+
+test("the tally counts money back only: a card of another kind or a weight is never found money", () => {
+  const trace = [
+    turn("A", { cards: [{ action: "refund", key: "1", outcome: "correct", valueUsd: 75 }] }),
+    turn("A", { cards: [{ action: "screen", key: "2", outcome: "correct", valueUsd: 1000 }] }),
+    turn("B", { cards: [{ action: "lien", key: "3", outcome: "correct", valueUsd: 36000 }] }),
+  ];
+  const kinds: Record<string, "count" | "money_protected"> = { screen: "count", lien: "money_protected" };
+  const kind = (tool: string) => kinds[tool] ?? "money_back";
+  expect(foundBy(trace, 2, kind)).toBe(75);
+});
+
+/** A playbook with a money-back tool, an exposure tool and a weighted tool, benched once. */
+const MIXED = parsePlaybook(
+  {
+    id: "mixed",
+    economics: {
+      value_usd: 380000,
+      per: "year",
+      value_kind: "money_protected",
+      kinds: { refund: "money_back", lien: "money_protected", screen: "count", bogus: "dollars" },
+      example_usd: 120,
+    },
+  },
+  {
+    run_at: "2026-10-22T00:00:00Z",
+    verdict: { word: "exceeds", reasons: [] },
+    score: { found: 3, eligible: 4, value_total_usd: 37320, value_found_usd: 37120, false_claims: 0 },
+    cards: [
+      { action: "refund", key: "R1", outcome: "correct", value_usd: 120 },
+      { action: "lien", key: "L1", outcome: "correct", value_usd: 36000 },
+      { action: "screen", key: "S1", outcome: "correct", value_usd: 1000 },
+      { action: "refund", key: "R2", outcome: "trap", value_usd: 50 },
+    ],
+    missed: [{ action: "refund", key: "R3", value_usd: 200 }],
+  },
+)!;
+
+test("a playbook's kinds are read per answer-key tool, money back where it says nothing", () => {
+  expect(MIXED.economics.valueKind).toBe("money_protected");
+  expect(MIXED.economics.exampleUsd).toBe(120);
+  expect(kindOf(MIXED, "lien")).toBe("money_protected");
+  expect(kindOf(MIXED, "screen")).toBe("count");
+  // A kind the contract does not name is dropped, and an unlisted tool is money back.
+  expect(kindOf(MIXED, "bogus")).toBe("money_back");
+  expect(kindOf(MIXED, "never-heard-of")).toBe("money_back");
+  // Absent is null, never zero.
+  expect(parsePlaybook({ id: "bare" })!.economics.exampleUsd).toBeNull();
+  expect(parsePlaybook({ id: "bare" })!.economics.valueKind).toBe("money_back");
+});
+
+test("a run is tallied by kind, and the totals and the verdict sum money back only", () => {
+  const tally = tallyOf(MIXED)!;
+  expect(tally.money_back).toEqual({ found: 120, total: 320, n: 1, of: 2 });
+  expect(tally.money_protected).toEqual({ found: 36000, total: 36000, n: 1, of: 1 });
+  expect(tally.count).toEqual({ found: 1000, total: 1000, n: 1, of: 1 });
+  const model = selectPlaybooks([MIXED], NOOP);
+  expect(model.totals.foundUsd).toBe(120);
+  const v = model.items[0]!.verdict;
+  expect(v.sentence).toContain("$120 back of $320");
+  expect(v.sentence).toContain("$36,000 of $36,000 protected");
+  // The weight is a count of items, never a dollar figure.
+  expect(v.sentence).not.toContain("1,000");
+});
+
+test("the time saved counts the person's review beside her run", () => {
+  const p = parsePlaybook(
+    { id: "t", economics: { value_usd: 1, per: "year", manual_minutes: 360 } },
+    { run_at: "x", wall_s: 240, your_time_s: 300, verdict: { word: "meets" }, score: {} },
+  )!;
+  // 360 min by hand against 4 min of her run plus 5 of your review: 40×, not the bare 90×.
+  expect(selectPlaybooks([p], NOOP).items[0]!.speed).toBe("40× faster");
 });
 
 test("reads are named in words, each once with its count", () => {
@@ -160,10 +231,21 @@ test("the edge order is the shipped order, best first ascending and its exact re
   expect(ids(shuffled)).toEqual(["d", "a", "e", "c", "b"]);
 });
 
-test("value is the money a year, a month counting twelve; a tie keeps the edge's order either way", () => {
-  // a: 1,200 a year from 100 a month, tied with b and d at 1,200.
+test("value is the money back a year, a month counting twelve; a tie keeps the edge's order either way", () => {
+  // a: 1,200 a year from 100 a month, tied with b and d at 1,200. e is worth 1 a run, not a year:
+  // it comes after the yearly money back whichever way the column runs.
   expect(ids(sortLedger(ITEMS, { key: "value", dir: "desc" }))).toEqual(["c", "a", "b", "d", "e"]);
-  expect(ids(sortLedger(ITEMS, { key: "value", dir: "asc" }))).toEqual(["e", "a", "b", "d", "c"]);
+  expect(ids(sortLedger(ITEMS, { key: "value", dir: "asc" }))).toEqual(["a", "b", "d", "c", "e"]);
+});
+
+test("most value puts an estimate that is not money back a year after the money back, by its own figure", () => {
+  const rows = ledger(
+    { id: "back", edge: { difficulty: 1, usefulness: 1 }, economics: { value_usd: 500, per: "year" } },
+    { id: "lien", edge: { difficulty: 5, usefulness: 5 }, economics: { value_usd: 380000, per: "year", value_kind: "money_protected" } },
+    { id: "fine", edge: { difficulty: 4, usefulness: 4 }, economics: { value_usd: 5000, per: "year", value_kind: "penalty_avoided" } },
+    { id: "episode", edge: { difficulty: 3, usefulness: 3 }, economics: { value_usd: 40000, per: "episode" } },
+  );
+  expect(ids(sortLedger(rows, { key: "value", dir: "desc" }))).toEqual(["back", "lien", "episode", "fine"]);
 });
 
 test("time is the hours by hand; a tie keeps the edge's order either way", () => {
@@ -215,19 +297,22 @@ test("the verdict says how many comparable runs it stands on, and n=1 where ther
   ]);
   expect(three.runs).toEqual({ n: 3, exceeds: 2 });
   const v = verdictOf(three);
-  expect(v.runs).toBe("exceeds in 2 of 3");
+  expect(v.runs).toBe("beat its bar in 2 of 3 test runs");
   expect(v.sample).toBe("");
-  expect(v.sentence).toContain("It exceeds in 2 of 3 comparable runs.");
+  expect(v.sentence).toMatch(/^Beat its bar in 2 of 3 test runs: 3 of 3 found, no false claims\.$/);
 
   // A run benched before keys were kept stands alone, whatever its history says.
   const legacy = benched("exceeds", [{ run_at: "2026-10-20T00:00:00Z", verdict: "exceeds" }], { comparable: undefined });
   expect(legacy.runs).toEqual({ n: 1, exceeds: 1 });
   const one = verdictOf(legacy);
-  expect(one.runs).toBe("exceeds in 1 of 1");
+  expect(one.runs).toBe("one test run");
   expect(one.sample).toBe("n=1");
-  expect(one.sentence).toMatch(/One run so far\.$/);
+  expect(one.sentence).toMatch(/^Beat its bar in its one test run:/);
 
-  expect(verdictOf(benched("short", [])).runs).toBe("exceeds in 0 of 1");
+  const short = verdictOf(benched("short", [], { score: { found: 3, eligible: 10, false_claims: 0 } }));
+  expect(short.label).toBe("Falls short");
+  expect(short.sentence).toMatch(/^Fell short: 3 of 10 found, no false claims, one test run\./);
+  expect(short.runs).toBe("one test run");
 });
 
 test("unbenched claims nothing: no runs, no sample", () => {

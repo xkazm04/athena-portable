@@ -49,7 +49,7 @@ describe("the surface", () => {
     for (const word of ["Apps", "Chores", "Accounts", "Voice", "Mind"]) {
       expect(h).toContain(`surface__light-name">${word}<`);
     }
-    expect(h).toContain("12 of 16 benched · $551 found");
+    expect(h).toContain("12 of 16 tested · $551 back found");
     expect(h.match(/class="surface__light focus-ring"/g)).toHaveLength(5);
   });
 

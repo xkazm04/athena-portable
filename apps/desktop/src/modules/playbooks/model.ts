@@ -13,18 +13,24 @@
  * playbook with no bench run says so and claims nothing measured: "not benched" is a fact, and a
  * zero would be a lie. Likewise the film (ADR 0055): a playbook whose `evidence.json` films an
  * earlier run than its `bench.json` says it is stale rather than passing it off as the latest.
+ *
+ * Every figure says what kind it is (fix wave chores-uat, ADR 0133): a run's cards are tallied by
+ * their tool's kind (`tallyOf`), and only money back is ever "found" or summed into the totals; an
+ * exposure protected or a penalty avoided is said in its own words, and a scoring weight (`count`) is
+ * never a dollar figure. The time saved counts the person's review beside her run.
  */
 import type { Tone } from "@/components/StatusDot";
 import {
   clock,
   edgeRank,
   evidenceCurrent,
+  kindOf,
   speedup,
   usd,
   type Bench,
   type CardOutcome,
   type Playbook,
-  type TraceTurn,
+  type ValueKind,
   type VerdictWord,
 } from "@/lib/playbooks";
 import { CATEGORIES, type CategoryId, type JobId } from "@/lib/playbook-taxonomy";
@@ -47,7 +53,8 @@ export interface Verdict {
   tone: Tone;
   /** One sentence a person reads under the badge. */
   sentence: string;
-  /** "exceeds in 2 of 3": the comparable runs the verdict stands on (ADR 0128); "" unbenched. */
+  /** "beat its bar in 2 of 3 test runs", "one test run": the comparable runs the verdict stands on
+   *  (ADR 0128); "" when untested. */
   runs: string;
   /** "n=1" where one comparable run is all there is, a single draw; "" otherwise. */
   sample: string;
@@ -70,15 +77,30 @@ export interface EvidenceView {
   videoUrl: string | null;
 }
 
+/** One kind's share of a run: what her right cards were worth, of what the example held. */
+export interface KindTally {
+  found: number;
+  total: number;
+  /** How many right cards, of how many the example held, of this kind. */
+  n: number;
+  of: number;
+}
+
+/** A run's cards by kind; a kind the run never touched is absent. */
+export type Tally = Partial<Record<ValueKind, KindTally>>;
+
 export interface PlaybookView {
   playbook: Playbook;
   id: string;
   title: string;
-  /** "$4,940" and "a year". */
+  /** "$4,940" and "a year": the author's estimate, of the kind `playbook.economics.valueKind`. */
   value: string;
   per: string;
-  /** "30× faster", measured against the hand minutes; "" when not benched or either is unknown. */
+  /** "30× faster", her run plus the person's review against the hand minutes; "" when untested or
+   *  either is unknown. */
   speed: string;
+  /** The latest run's cards by kind; `null` untested. */
+  tally: Tally | null;
   verdict: Verdict;
   evidence: EvidenceView | null;
 }
@@ -90,7 +112,7 @@ export interface PlaybooksModel {
     count: number;
     benched: number;
     exceeds: number;
-    /** Money the bench found across every benched playbook. */
+    /** Money back the test runs found across every tested playbook: `money_back` cards only. */
     foundUsd: number;
   };
   /** The shipped set has not arrived yet (it loads lazily): an empty list is then not "none ship". */
@@ -107,48 +129,103 @@ const PER: Record<string, string> = {
   week: "a week",
   run: "a run",
   claim: "a claim",
+  episode: "an episode",
+  quarter: "a quarter",
+  estate: "an estate",
 };
 
-export function verdictOf(bench: Bench | null): Verdict {
+/** How a kind's dollars read in a sentence: "$96.40 back", "$380,000 protected". `count` has none. */
+export function kindAmount(kind: Exclude<ValueKind, "count">, amount: number): string {
+  switch (kind) {
+    case "money_back":
+      return `${usd(amount)} back`;
+    case "money_protected":
+      return `${usd(amount)} protected`;
+    case "penalty_avoided":
+      return `${usd(amount)} in penalties avoided`;
+  }
+}
+
+/** The money kinds, in the order a line says them: money back first, then what is not money back. */
+export const MONEY_KINDS: readonly Exclude<ValueKind, "count">[] = ["money_back", "money_protected", "penalty_avoided"];
+
+/**
+ * A run's cards by their tool's kind (`economics.kinds`): right cards found, and what the example held
+ * (right cards plus the missed ones). Pure. A run recorded with no cards and no misses falls back on
+ * the score's totals, as money back only when the playbook names no other kind; otherwise it claims
+ * nothing.
+ */
+export function tallyOf(p: Playbook, bench: Bench | null = p.bench): Tally | null {
+  if (bench === null) return null;
+  const tally: Tally = {};
+  const add = (tool: string, value: number | null, found: boolean) => {
+    const t = (tally[kindOf(p, tool)] ??= { found: 0, total: 0, n: 0, of: 0 });
+    t.of++;
+    t.total = Math.round((t.total + (value ?? 0)) * 100) / 100;
+    if (found) {
+      t.n++;
+      t.found = Math.round((t.found + (value ?? 0)) * 100) / 100;
+    }
+  };
+  bench.cards.forEach((c) => c.outcome === "correct" && add(c.action, c.valueUsd, true));
+  bench.missed.forEach((m) => add(m.action, m.valueUsd, false));
+  if (!bench.cards.length && !bench.missed.length && bench.eligible && !Object.values(p.economics.kinds).some((k) => k !== "money_back")) {
+    tally.money_back = { found: bench.valueFoundUsd, total: bench.valueTotalUsd, n: bench.found, of: bench.eligible };
+  }
+  return tally;
+}
+
+/** "$96.40 back of $96.40, $36,000 of $416,700 protected": each money kind the run held, in its words. */
+export const tallyWords = (tally: Tally | null): string =>
+  MONEY_KINDS.flatMap((k) => {
+    const t = tally?.[k];
+    return t?.total ? [k === "money_back" ? `${usd(t.found)} back of ${usd(t.total)}` : `${usd(t.found)} of ${kindAmount(k, t.total)}`] : [];
+  }).join(", ");
+
+const LOOK = {
+  exceeds: ["Beats its bar", "success"],
+  meets: ["Meets its bar", "info"],
+  short: ["Falls short", "warning"],
+} as const;
+
+export function verdictOf(bench: Bench | null, tally: Tally | null = null): Verdict {
   if (bench === null) {
     return {
       word: "unbenched",
-      label: "Not benched",
+      label: "Not tested",
       tone: "neutral",
-      sentence: "No run on the bench yet, so nothing here is measured.",
+      sentence: "No test run yet, so nothing here is measured.",
       runs: "",
       sample: "",
     };
   }
-  const found = `${bench.found} of ${bench.eligible} found`;
-  const money = bench.valueTotalUsd
-    ? `${usd(bench.valueFoundUsd)} of ${usd(bench.valueTotalUsd)}`
-    : "";
-  const falses =
-    bench.falseClaims === 0
-      ? "no false claims"
-      : `${bench.falseClaims} false claim${bench.falseClaims === 1 ? "" : "s"}`;
-  const body = [found, money, falses].filter(Boolean).join(", ");
+  const f = bench.falseClaims;
+  const body = [
+    `${bench.found} of ${bench.eligible} found`,
+    tallyWords(tally),
+    f ? `${f} false claim${f === 1 ? "" : "s"}` : "no false claims",
+  ]
+    .filter(Boolean)
+    .join(", ");
   // ADR 0128: the latest run is one draw; say how many comparable runs stand behind it.
   const { n, exceeds } = bench.runs;
-  const runs = `exceeds in ${exceeds} of ${n}`;
-  const sample = n === 1 ? "n=1" : "";
-  const behind = n === 1 ? " One run so far." : ` It exceeds in ${exceeds} of ${n} comparable runs.`;
-  switch (bench.verdict.word) {
-    case "exceeds":
-      return { word: "exceeds", label: "Exceeds", tone: "success", sentence: `Beat the bar: ${body}.${behind}`, runs, sample };
-    case "meets":
-      return { word: "meets", label: "Meets", tone: "info", sentence: `Met the bar: ${body}.${behind}`, runs, sample };
-    default:
-      return {
-        word: "short",
-        label: "Falls short",
-        tone: "warning",
-        sentence: `${body}. ${bench.verdict.reasons[0] ?? ""}`.trim() + behind,
-        runs,
-        sample,
-      };
-  }
+  const one = n === 1;
+  const beat = `${exceeds} of ${n} test runs`;
+  const word = bench.verdict.word;
+  const sentence =
+    word === "exceeds"
+      ? `Beat its bar in ${one ? "its one test run" : beat}: ${body}.`
+      : word === "meets"
+        ? `Met its bar in the latest test run: ${body}. ${one ? "One test run so far." : `It beat the bar in ${beat}.`}`
+        : `Fell short: ${body}, ${one ? "one test run" : `latest of ${n} test runs`}. ${bench.verdict.reasons[0] ?? ""}`.trim();
+  return {
+    word,
+    label: LOOK[word][0],
+    tone: LOOK[word][1],
+    sentence,
+    runs: one ? "one test run" : `beat its bar in ${beat}`,
+    sample: one ? "n=1" : "",
+  };
 }
 
 export const OUTCOME_WORDS: Record<CardOutcome, { word: string; tone: Tone }> = {
@@ -159,6 +236,7 @@ export const OUTCOME_WORDS: Record<CardOutcome, { word: string; tone: Tone }> = 
   unfounded: { word: "Unfounded", tone: "error" },
   forbidden: { word: "Forbidden action", tone: "error" },
   other: { word: "Other card", tone: "neutral" },
+  proposed: { word: "She would propose", tone: "neutral" },
 };
 
 /** A playbook's film, read against its bench: current or stale, and how long. Pure. */
@@ -170,13 +248,13 @@ export function evidenceOf(p: Playbook): EvidenceView | null {
   return {
     current,
     standing: current
-      ? { label: "Current", tone: "success", sentence: `Films the latest bench run, of ${filmed}.` }
+      ? { label: "Current", tone: "success", sentence: `Films the latest test run, of ${filmed}.` }
       : {
           label: "Stale",
           tone: "warning",
           sentence: p.bench
-            ? `Films the bench run of ${filmed}; the latest is of ${p.bench.runAt.slice(0, 10)}, so the figures may differ.`
-            : `Films a bench run of ${filmed} that this build no longer carries.`,
+            ? `Films the test run of ${filmed}; the latest is of ${p.bench.runAt.slice(0, 10)}, so the figures may differ.`
+            : `Films a test run of ${filmed} that this build no longer carries.`,
         },
     length: clock(e.video.durationS || e.narration.durationS),
     capturedAt: e.capturedAt.slice(0, 10),
@@ -185,6 +263,19 @@ export function evidenceOf(p: Playbook): EvidenceView | null {
     thumbnailUrl: e.thumbnailUrl,
     videoUrl: e.videoUrl,
   };
+}
+
+/** The `per` values that are spans of time, so a value in them can be put on the year's scale. */
+const YEARLY = ["year", "month", "week"];
+
+/** True when the estimate is per a span of time (a year, a month, a week), not per an episode. */
+export function isYearly(p: Playbook): boolean {
+  return YEARLY.includes(p.economics.per);
+}
+
+/** Her run plus the person's review, in minutes: what the chore costs with her. */
+export function withReviewMinutes(b: Bench): number {
+  return (b.wallS + b.yourTimeS) / 60;
 }
 
 /** A playbook's value on one scale, so rows compare: a month is twelve of a year. */
@@ -206,18 +297,20 @@ export function selectPlaybooks(
   loading = false,
   problem: string | null = null,
 ): PlaybooksModel {
-  const items = playbooks.map(
-    (p): PlaybookView => ({
+  const items = playbooks.map((p): PlaybookView => {
+    const tally = tallyOf(p);
+    return {
       playbook: p,
       id: p.id,
       title: p.title,
       value: usd(p.economics.valueUsd),
       per: PER[p.economics.per] ?? `per ${p.economics.per}`,
-      speed: p.bench ? speedup(p.economics.manualMinutes, p.bench.wallS / 60) : "",
-      verdict: verdictOf(p.bench),
+      speed: p.bench ? speedup(p.economics.manualMinutes, withReviewMinutes(p.bench)) : "",
+      tally,
+      verdict: verdictOf(p.bench, tally),
       evidence: evidenceOf(p),
-    }),
-  );
+    };
+  });
   const benched = items.filter((v) => v.playbook.bench !== null);
   return {
     items,
@@ -225,68 +318,12 @@ export function selectPlaybooks(
       count: items.length,
       benched: benched.length,
       exceeds: items.filter((v) => v.verdict.word === "exceeds").length,
-      foundUsd: benched.reduce((s, v) => s + (v.playbook.bench?.valueFoundUsd ?? 0), 0),
+      foundUsd: Math.round(benched.reduce((s, v) => s + (v.tally?.money_back?.found ?? 0), 0) * 100) / 100,
     },
     loading,
     problem,
     actions,
   };
-}
-
-// --- the replay ----------------------------------------------------------------------------------
-
-/** A run of consecutive turns in one portal: one visit, as the rail draws it. */
-export interface Visit {
-  portal: string;
-  /** Indices into the trace, first and last inclusive. */
-  from: number;
-  to: number;
-}
-
-/** The trace as visits, in order: the portal changes only where the person switched tabs. Pure. */
-export function visitsOf(trace: readonly TraceTurn[]): Visit[] {
-  const visits: Visit[] = [];
-  trace.forEach((turn, i) => {
-    const last = visits[visits.length - 1];
-    if (last && last.portal === turn.portal) last.to = i;
-    else visits.push({ portal: turn.portal, from: i, to: i });
-  });
-  return visits;
-}
-
-/** What a turn did, as the rail colours it: filed a wrong card, filed right, read, or only spoke. */
-export type TurnState = "wrong" | "filed" | "read" | "spoke";
-
-const WRONG: readonly CardOutcome[] = ["trap", "unfounded", "forbidden", "duplicate"];
-
-export function turnState(turn: TraceTurn): TurnState {
-  if (turn.cards.some((c) => WRONG.includes(c.outcome))) return "wrong";
-  if (turn.cards.length) return "filed";
-  if (turn.reads.length) return "read";
-  return "spoke";
-}
-
-/** The money her right cards were worth up to and including turn `at`. Pure. */
-export function foundBy(trace: readonly TraceTurn[], at: number): number {
-  let total = 0;
-  trace.slice(0, at + 1).forEach((t) =>
-    t.cards.forEach((c) => {
-      if (c.outcome === "correct" && c.valueUsd) total += c.valueUsd;
-    }),
-  );
-  return Math.round(total * 100) / 100;
-}
-
-/** A turn's reads, each tool once with how often it was called, in first-call order. Pure. */
-export function readsOf(turn: TraceTurn): { name: string; times: number }[] {
-  const out: { name: string; times: number }[] = [];
-  for (const raw of turn.reads) {
-    const name = raw.replace(/_/g, " ");
-    const seen = out.find((r) => r.name === name);
-    if (seen) seen.times += 1;
-    else out.push({ name, times: 1 });
-  }
-  return out;
 }
 
 // -- the ledger (ADR 0096) -------------------------------------------------------------------------
@@ -339,16 +376,24 @@ const byEdge = (a: PlaybookView, b: PlaybookView): number =>
 
 /**
  * The ledger's rows in one of its three orders. Pure, and total: `edge` is the shipped order (`asc`
- * best first, `desc` its exact reverse); `value` is the money a year (`annualValue`, so a month
- * counts twelve times); `time` is the hours the chore takes by hand. On value and time, a tie keeps
- * the edge's order best first whichever way the column runs,
- * so two playbooks worth the same never swap places when the person flips the arrow.
+ * best first, `desc` its exact reverse); `value` is the author's estimate of money back a year
+ * (`annualValue`, so a month counts twelve times), with every estimate that is not money back a year
+ * (an exposure protected, a penalty avoided, a value per episode) after them, by its own value, in
+ * either direction; `time` is the hours the chore takes by hand. On value and time, a tie keeps the
+ * edge's order best first whichever way the column runs, so two playbooks worth the same never swap
+ * places when the person flips the arrow.
  */
 export function sortLedger(items: readonly PlaybookView[], s: LedgerSort): PlaybookView[] {
   const sign = s.dir === "asc" ? 1 : -1;
   if (s.key === "edge") return [...items].sort((a, b) => sign * byEdge(a, b));
-  const measure = (v: PlaybookView) =>
-    s.key === "value" ? annualValue(v.playbook) : v.playbook.economics.manualMinutes;
+  if (s.key === "value") {
+    const group = (v: PlaybookView) =>
+      v.playbook.economics.valueKind === "money_back" && isYearly(v.playbook) ? 0 : 1;
+    return [...items].sort(
+      (a, b) => group(a) - group(b) || sign * (annualValue(a.playbook) - annualValue(b.playbook)) || byEdge(a, b),
+    );
+  }
+  const measure = (v: PlaybookView) => v.playbook.economics.manualMinutes;
   return [...items].sort((a, b) => sign * (measure(a) - measure(b)) || byEdge(a, b));
 }
 

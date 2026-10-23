@@ -421,7 +421,7 @@ describe("the session", () => {
       detail: "",
     });
     expect(text(".ad-show")).toContain(
-      "Rehearsing on a world shaped like yours… turn 4 of 11",
+      "Practice run on invented data… turn 4 of 11",
     );
   });
 
@@ -650,7 +650,7 @@ describe("the brief and the showcase", () => {
       detail: "",
     });
     expect(text(".ad-show")).toContain(
-      "Rehearsing on a world shaped like yours…",
+      "Practice run on invented data…",
     );
     await feed({
       kind: "adopt.showcase",
@@ -684,7 +684,7 @@ describe("the brief and the showcase", () => {
       detail: "",
     });
     expect(text(".ad-show__label")).toContain(
-      "Rehearsal on invented data shaped like your case — nothing was sent",
+      "Practice run on the example's data, with your app names — nothing was sent",
     );
     expect(text(".ad-show__n")).toBe("$212");
     expect(qa(".ad-route__dot")).toHaveLength(2);

@@ -45,7 +45,7 @@ describe("the five lights", () => {
   it("count what is live", () => {
     const by = Object.fromEntries(typical.lights.map((l) => [l.root, l]));
     expect(by.apps!.stat).toBe("3 of 5 on · 3 open");
-    expect(by.chores!.stat).toBe("12 of 16 benched · $551 found");
+    expect(by.chores!.stat).toBe("12 of 16 tested · $551 back found");
     expect(by.accounts!.stat).toBe("1 of 3 connected");
     expect(by.voice!.stat).toBe("ready to talk");
     expect(by.mind!.stat).toBe("Claude Code is ready");

@@ -5,7 +5,8 @@
  * it and the breadcrumb names it; stepping is a move to the next place. A route of tab visits, a
  * dot for every turn (its shape says what she did there: filed wrong, filed, read, only spoke —
  * never colour alone), the turn itself (what the person said, her words, what she read, the cards
- * the gate filed with the scorer's word on each) and the money her right cards were worth so far.
+ * the gate filed with the scorer's word on each) and the money back her right cards were worth so far
+ * (money back only; a card of another kind says its own words, a weight none, ADR 0133).
  * Play steps on its own; Back and Next, the dots and ArrowLeft and ArrowRight step by hand and
  * stop it. The ledger lists every card of the run, folded, with a way to show all.
  *
@@ -18,17 +19,12 @@ import { useEffect, useRef, useState, useSyncExternalStore } from "react";
 import Button from "@/components/Button";
 import StatusDot from "@/components/StatusDot";
 import type { Path } from "@/depth/model";
-import { usd } from "@/lib/playbooks";
-import {
-  OUTCOME_WORDS,
-  foundBy,
-  turnState,
-  visitsOf,
-  type PlaybookView,
-  type TurnState,
-} from "@/modules/playbooks/model";
+import { kindOf, usd } from "@/lib/playbooks";
+import { OUTCOME_WORDS, type PlaybookView } from "@/modules/playbooks/model";
+import { foundBy, turnState, visitsOf, type TurnState } from "@/modules/playbooks/replay";
 
 import { runPath } from "./model";
+import { cardValue } from "./worth";
 import TurnView from "./turn";
 
 /** How long the replay holds a turn before the next, when it plays on its own. */
@@ -141,7 +137,11 @@ export default function Replay({
   const t = trace[at];
   if (t === undefined) return null;
   const visits = visitsOf(trace);
-  const found = foundBy(trace, at);
+  const kind = (tool: string) => kindOf(view.playbook, tool);
+  const found = foundBy(trace, at, kind);
+  // A run with no money-back card says how many right cards so far, never "$0 back".
+  const money = trace.some((tt) => tt.cards.some((c) => c.valueUsd && kind(c.action) === "money_back"));
+  const right = trace.slice(0, at + 1).reduce((n, tt) => n + tt.cards.filter((c) => c.outcome === "correct").length, 0);
   const play = () => {
     if (at >= last) {
       setPlaying(view.id);
@@ -164,10 +164,17 @@ export default function Replay({
         <p className="ch-line">
           <span className="ch-chip">{t.portal}</span>
         </p>
-        <p className="ch-found" title="What her right cards were worth so far">
-          <span className="ch-found__n">{usd(found)}</span>
-          <span className="ch-note">found so far, on the bench</span>
-        </p>
+        {money ? (
+          <p className="ch-found" title="The money back her right cards were worth so far, in the invented example">
+            <span className="ch-found__n">{usd(found)}</span>
+            <span className="ch-note">back so far, in the test run</span>
+          </p>
+        ) : (
+          <p className="ch-found" title="Her right cards so far, in the invented example">
+            <span className="ch-found__n">{right}</span>
+            <span className="ch-note">{`${right === 1 ? "item" : "items"} found so far, in the test run`}</span>
+          </p>
+        )}
       </header>
 
       <ol className="ch-rail" aria-label="Turns, by tab">
@@ -231,7 +238,7 @@ export default function Replay({
       </div>
 
       <div className="ch-run__stage">
-        <TurnView key={at} turn={t} at={at} total={trace.length} />
+        <TurnView key={at} kind={kind} turn={t} at={at} total={trace.length} />
 
         <section className="ch-ledger" aria-label="Every card of this run">
           <h2 className="ch-title">The cards, turn by turn</h2>
@@ -247,7 +254,7 @@ export default function Replay({
                       <span className="ch-data">{`Turn ${i + 1}`}</span>
                       <span className="ch-code">{c.key || c.action}</span>
                       <span className="ch-note">{OUTCOME_WORDS[c.outcome].word}</span>
-                      <span className="ch-data ch-card__v">{c.valueUsd ? usd(c.valueUsd) : ""}</span>
+                      <span className="ch-data ch-card__v">{cardValue(kind(c.action), c.valueUsd)}</span>
                     </button>
                   </li>
                 ))}

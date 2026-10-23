@@ -1,7 +1,7 @@
 /** The topic page's facts — README section 3.5, ADR 0096: the few figures the catalogue and the topic page both read, from the playbook alone. */
 import type { StoryStill } from "@/lib/playbooks";
 import type { JobId } from "@/lib/playbook-taxonomy";
-import type { PlaybookView } from "@/modules/playbooks/model";
+import { withReviewMinutes, type PlaybookView } from "@/modules/playbooks/model";
 
 /** The bundled stills of the run, in order; a still this build does not carry is left out. */
 export function stillsOf(view: PlaybookView): StoryStill[] {
@@ -17,12 +17,12 @@ export function compact(min: number): string {
   return `${h >= 10 || h % 1 === 0 ? Math.round(h) : h.toFixed(1)}h`;
 }
 
-/** By hand against with Athena, in a cell: "6h → 4m", or "6h by hand" when nothing is measured. */
+/** By hand against with Athena (her run plus your review), in a cell: "6h → 9m", or no Athena figure when nothing is measured. */
 export function timeCell(view: PlaybookView): { hand: string; athena: string | null } {
   const p = view.playbook;
   return {
     hand: compact(p.economics.manualMinutes),
-    athena: p.bench ? compact(p.bench.wallS / 60) : null,
+    athena: p.bench ? compact(withReviewMinutes(p.bench)) : null,
   };
 }
 

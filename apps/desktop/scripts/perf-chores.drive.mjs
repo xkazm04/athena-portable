@@ -15,7 +15,7 @@
  * so a renamed or removed control fails `pnpm test` instead of a perf run half an hour later.
  */
 export const CONTROLS = {
-  catalogue: ["Recover money", "All jobs", "Most value", "Most time saved", "Best edge"],
+  catalogue: ["Recover money", "All jobs", "Most value", "Most time saved", "Best fit"],
   topic: ["Talk it through with her", "Watch the run turn by turn"],
   adopt: ["Close"],
 };

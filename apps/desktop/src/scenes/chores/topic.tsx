@@ -13,10 +13,16 @@
  *
  * "When it comes due" (ADR 0131): under each case, the cadence she set and the review a due
  * occurrence opened, with "Open and prepare" (`./due.tsx`).
+ *
+ * Honest numbers (fix wave chores-uat, ADR 0133): one money headline, the example case's money back,
+ * labelled as the invented example's; the author's estimate on one secondary line that opens on its
+ * basis, sources and caveat; the time saved with the person's review in it; the verdict and the runs
+ * it stands on; and "Where it fits" from the playbook's `fit`, absent when it has none.
  */
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import Button from "@/components/Button";
+import StatusDot from "@/components/StatusDot";
 import type { Path } from "@/depth/model";
 import type { CaseSummary } from "@/lib/adopt";
 import { categoryLabel, jobLabel } from "@/lib/playbook-taxonomy";
@@ -25,7 +31,8 @@ import type { PlaybookView, PlaybooksModel } from "@/modules/playbooks/model";
 import type { AdoptDeps } from "./adopt/deps";
 import { why } from "./adopt/session";
 import { dayOf } from "./adopt/state";
-import { adoptPath, beforeAfterOf, blueprintOf, casePath, lowerFirst, runPath, valueCell } from "./model";
+import { adoptPath, casePath, lowerFirst, runPath } from "./model";
+import { beforeAfterOf, blueprintOf, fitRows, worthOf } from "./worth";
 import Lightbox from "./lightbox";
 import { scrolls } from "./memory";
 import Rich from "./rich";
@@ -110,7 +117,8 @@ export default function Topic({
   const press = useRef(0);
   const band = beforeAfterOf(view);
   const guard = blueprintOf(view).guard;
-  const worth = valueCell(view);
+  const worth = worthOf(view);
+  const fit = fitRows(p.fit);
   const trace = p.bench?.trace ?? [];
 
   // Escape goes back, unless the lightbox holds it (it stops the key itself), a field is typed in,
@@ -158,7 +166,10 @@ export default function Topic({
               {p.shortTitle}
             </h1>
             {p.brief.trim() ? (
-              <Rich md={p.brief} className="pa-brief" />
+              <>
+                <p className="pa-tag">Invented example case: its names and figures are not yours</p>
+                <Rich md={p.brief} className="pa-brief" />
+              </>
             ) : (
               <p className="pa-brief pa-brief--promise">{p.promise}</p>
             )}
@@ -186,9 +197,15 @@ export default function Topic({
 
             <div className="pa-kpis">
               <div className="pa-kpi">
-                <span className="pa-kpi__label">Value</span>
-                <span className="pa-kpi__n">{worth.figure}</span>
-                <span className="pa-kpi__line">{`${worth.per}, for the persona`}</span>
+                <span className="pa-kpi__label">In the example case</span>
+                {worth.example ? (
+                  <>
+                    <span className="pa-kpi__n">{worth.example}</span>
+                    <span className="pa-kpi__line">back, in the invented example</span>
+                  </>
+                ) : (
+                  <span className="pa-kpi__line pa-kpi__line--words">{worth.instead}</span>
+                )}
               </div>
               <div className="pa-kpi">
                 <span className="pa-kpi__label">Time saved</span>
@@ -199,16 +216,61 @@ export default function Topic({
                   </span>
                   {band.athena?.figure ?? "–"}
                 </span>
-                <span className="pa-kpi__line">{band.ratio || (band.athena ? "measured" : "not benched yet")}</span>
+                <span className="pa-kpi__line">
+                  {band.athena
+                    ? [band.athena.review, band.ratio].filter(Boolean).join(" · ") || "measured in the test run"
+                    : "not tested yet"}
+                </span>
               </div>
               <div className="pa-kpi">
-                <span className="pa-kpi__label">Traps avoided</span>
+                <span className="pa-kpi__label">Mistakes avoided</span>
                 <span className="pa-kpi__n">{guard ? `${guard.avoided}/${guard.of}` : p.traps.length || "–"}</span>
-                <span className="pa-kpi__line">{guard ? "on the bench" : "known traps, not run"}</span>
+                <span className="pa-kpi__line">{guard ? "in the test run" : "known mistakes, not tested"}</span>
               </div>
             </div>
+
+            <p className="pa-verdict">
+              <StatusDot tone={view.verdict.tone} />
+              <span className="pa-verdict__label">{view.verdict.label}</span>
+              <span className="pa-verdict__text">{view.verdict.sentence}</span>
+            </p>
+
+            <details className="pa-estimate">
+              <summary className="pa-estimate__sum focus-ring">{worth.estimate}</summary>
+              <div className="pa-estimate__body">
+                {worth.basis ? <p>{worth.basis}</p> : <p className="pa-muted">The author gave no basis for this estimate.</p>}
+                {worth.sources.length ? (
+                  <ul className="pa-estimate__sources" aria-label="Sources">
+                    {worth.sources.map((s) => (
+                      <li key={s.url}>
+                        <button type="button" className="pa-link focus-ring" onClick={() => model.actions.open(s.url)}>
+                          {s.label}
+                        </button>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+                {worth.caveat ? <p className="pa-muted">{worth.caveat}</p> : null}
+              </div>
+            </details>
           </div>
         </section>
+
+        {fit.length ? (
+          <section className="pa-fit" aria-labelledby="pa-fit-h">
+            <h2 id="pa-fit-h" className="pa-h2">
+              Where it fits
+            </h2>
+            <dl className="pa-fit__rows">
+              {fit.map((r) => (
+                <div key={r.label} className="pa-fit__row">
+                  <dt>{r.label}</dt>
+                  <dd>{r.text}</dd>
+                </div>
+              ))}
+            </dl>
+          </section>
+        ) : null}
 
         <Flow view={view} />
 
@@ -217,7 +279,7 @@ export default function Topic({
             <h2 id="pa-gallery-h" className="pa-h2">
               See it run
             </h2>
-            <p className="pa-muted">Real screens of the bench run, on an invented portal world.</p>
+            <p className="pa-muted">Real screens of the test run, on invented portals.</p>
           </div>
           {stills.length ? (
             <ul className="pa-grid">
@@ -243,7 +305,7 @@ export default function Topic({
             <h2 id="pa-adopt-h" className="pa-h2">
               Make it yours
             </h2>
-            <p className="pa-muted">{`Worth ${view.value} ${view.per} for ${p.persona ? lowerFirst(p.persona.replace(/^(A|An|The) /, (w) => w.toLowerCase())) : "the playbook's own case"}. Tell her what differs in yours; she looks up the rest and shows you the run before anything is real.`}</p>
+            <p className="pa-muted">{`This page shows an invented example case${p.persona ? `: ${lowerFirst(p.persona.replace(/^(A|An|The) /, (w) => w.toLowerCase()))}` : ""}. Tell her what differs in yours; she looks up the rest and shows you the run before anything is real.`}</p>
           </div>
           <div className="pa-adopt__case" aria-labelledby="pa-case-h">
             <h3 id="pa-case-h" className="pa-kpi__label">

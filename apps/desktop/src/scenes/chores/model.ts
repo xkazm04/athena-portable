@@ -7,17 +7,14 @@
  * and the topic page's words — the totals, the sentence an empty filter says, a row's value, and
  * what the flow's result and the time-saved figure are drawn from. Pure, so each is tested without
  * a DOM.
+ *
+ * The figures themselves (the value cell, the totals line, the flow's result, the time saved, the money
+ * headline and the fit) are in `./worth.ts`: the first frame loads this file for `NEW_ITEM`, and only
+ * the catalogue and the topic page read those.
  */
 import type { Path } from "@/depth/model";
-import { minutes, usd } from "@/lib/playbooks";
 import { categoryLabel, jobLabel } from "@/lib/playbook-taxonomy";
-import {
-  annualValue,
-  type LedgerFilter,
-  type LedgerSort,
-  type PlaybookView,
-  type PlaybooksModel,
-} from "@/modules/playbooks/model";
+import type { LedgerFilter, LedgerSort, PlaybookView, PlaybooksModel } from "@/modules/playbooks/model";
 
 /** The chore a place names, or `null` for the field and for an id this build does not ship. */
 export function choreAt(model: PlaybooksModel, path: Path): PlaybookView | null {
@@ -80,12 +77,6 @@ export function emptyLine(f: LedgerFilter): string {
   return `No playbook in ${area}${job}.`;
 }
 
-/** A row's value on the year's scale where it has one, in its own unit ("a claim") where not. */
-export function valueCell(view: PlaybookView): { figure: string; per: string } {
-  const yearly = ["year", "month", "week"].includes(view.playbook.economics.per);
-  return { figure: usd(annualValue(view.playbook)), per: yearly ? "a year" : view.per };
-}
-
 /** The one line a long sentence must fit: its first clause, cut at a word near `max` characters. */
 export function shortLine(text: string, max = 96): string {
   const t = text.trim();
@@ -94,74 +85,4 @@ export function shortLine(text: string, max = 96): string {
   const cut = clause.slice(0, max);
   const space = cut.lastIndexOf(" ");
   return `${(space > max * 0.6 ? cut.slice(0, space) : cut).replace(/[,\s]+$/, "")}…`;
-}
-
-/** The compact line over the ledger: how many, how many beat their bar, what the bench found. */
-export function totalsLine(model: PlaybooksModel): string {
-  const t = model.totals;
-  return [
-    `${t.count} ${t.count === 1 ? "playbook" : "playbooks"}`,
-    t.benched ? `${t.exceeds} of ${t.benched} benched exceed the bar` : "none benched yet",
-    t.foundUsd ? `${usd(t.foundUsd)} found on the bench` : "",
-  ]
-    .filter(Boolean)
-    .join(" · ");
-}
-
-/** What the flow's result and the topic's "traps avoided" are drawn from: the playbook and its bench alone. */
-export interface Blueprint {
-  /** The traps the latest run walked past, of how many; `null` when there is no run to count. */
-  guard: { avoided: number; of: number } | null;
-  /** The flow's end: what she filed on the bench, or the bar it will be held to when unbenched. */
-  result: { figure: string; line: string; measured: boolean };
-}
-
-export function blueprintOf(view: PlaybookView): Blueprint {
-  const p = view.playbook;
-  const b = p.bench;
-  const ledger = b?.trapLedger ?? [];
-  const of = ledger.length || b?.trapsTotal || 0;
-  const avoided = ledger.length ? ledger.filter((t) => !t.filed).length : of - (b?.trapsFiled ?? 0);
-  return {
-    guard: b && of ? { avoided, of } : null,
-    result: b
-      ? {
-          figure: b.valueTotalUsd ? usd(b.valueFoundUsd) : `${b.found} of ${b.eligible}`,
-          line: `${b.found} of ${b.eligible} claims right${b.falseClaims ? `, ${b.falseClaims} false` : ", none false"}`,
-          measured: true,
-        }
-      : {
-          figure: `${Math.round(p.expectation.recall * 100)}%`,
-          line: "of the claims: the bar it will be held to, not benched yet",
-          measured: false,
-        },
-  };
-}
-
-/** The before-and-after band: the chore by hand against the same chore with her, on the bench. */
-export interface BeforeAfter {
-  manual: { figure: string; line: string };
-  athena: { figure: string; line: string } | null;
-  /** "30× faster" (the ledger's own figure, from her measured run), or "". */
-  ratio: string;
-}
-
-export function beforeAfterOf(view: PlaybookView): BeforeAfter {
-  const p = view.playbook;
-  const b = p.bench;
-  const parts = b
-    ? [
-        b.yourTimeS ? `your review ${minutes(b.yourTimeS / 60)}` : "",
-        b.turns ? `${b.turns} ${b.turns === 1 ? "turn" : "turns"}` : "",
-        b.costUsd !== null ? `${usd(b.costUsd)} of model time` : "",
-      ].filter(Boolean)
-    : [];
-  return {
-    manual: {
-      figure: p.economics.manualMinutes ? minutes(p.economics.manualMinutes) : "–",
-      line: p.economics.incumbent ? shortLine(p.economics.incumbent, 72) : "",
-    },
-    athena: b ? { figure: minutes(b.wallS / 60), line: parts.join(" · ") } : null,
-    ratio: view.speed,
-  };
 }

@@ -13,8 +13,9 @@ import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
 import type { Path } from "@/depth/model";
+import type { Economics, Fit } from "@/lib/playbooks";
 import { CATEGORIES, JOBS } from "@/lib/playbook-taxonomy";
-import type { PlaybooksModel } from "@/modules/playbooks/model";
+import { selectPlaybooks, type PlaybooksModel } from "@/modules/playbooks/model";
 
 import { fixtureIds, fixtures, pathFor } from "./fixtures";
 import { chorePath, runPath } from "./model";
@@ -42,6 +43,21 @@ function withBrief(brief: string): PlaybooksModel {
   };
 }
 
+/** The ledger fixture with the refunds playbook's economics (and fit) changed, re-selected so every
+ *  derived figure (the tally, the verdict, the totals) follows. */
+function withEconomics(over: Partial<Economics>, extra: { brief?: string; fit?: Fit | null } = {}): PlaybooksModel {
+  const m = fixtures.ledger!;
+  const books = m.items.map((v) =>
+    v.id === "carrier-refunds"
+      ? { ...v.playbook, ...extra, economics: { ...v.playbook.economics, ...over } }
+      : v.playbook,
+  );
+  return selectPlaybooks(books, m.actions);
+}
+
+/** Every distinct dollar figure on a page, in the order first seen. */
+const dollars = (h: string) => [...new Set([...h.matchAll(/\$[\d,]+(?:\.\d+)?/g)].map((m) => m[0]))];
+
 describe("every fixture renders at its own place, and its catalogue too", () => {
   for (const id of fixtureIds) {
     it(id, () => {
@@ -56,10 +72,20 @@ describe("the catalogue", () => {
   const h = html("typical", { root: "chores" });
   const l = html("ledger", { root: "chores" });
 
-  it("heads the catalogue with its title and the bench's totals in one line", () => {
+  it("heads the catalogue with its title and the test runs' totals in one line", () => {
     expect(l).toContain(">Chores</h1>");
     expect(l).toContain(">New chore</button>");
-    expect(h).toContain("3 playbooks · 1 of 2 benched exceed the bar · $551.40 found on the bench");
+    expect(h).toContain(
+      "3 playbooks · 1 of 2 tested beat their bar on the latest run · $551.40 back found in test runs on invented cases",
+    );
+  });
+
+  it("sums only money back into the totals: an exposure or a weight is never found money", () => {
+    const protectedOnly = withEconomics({ kinds: { file_claim: "money_protected" }, exampleUsd: null });
+    const before = fixtures.ledger!.totals.foundUsd;
+    expect(protectedOnly.totals.foundUsd).toBe(Math.round((before - 96.4) * 100) / 100);
+    const weighted = withEconomics({ kinds: { file_claim: "count" }, exampleUsd: null });
+    expect(weighted.totals.foundUsd).toBe(protectedOnly.totals.foundUsd);
   });
 
   it("lists every area as a tab with its count, All current, an empty area disabled", () => {
@@ -77,7 +103,7 @@ describe("the catalogue", () => {
     for (const j of ["All jobs", ...JOBS.map((x) => x.label)]) expect(l).toMatch(new RegExp(`>${j}</button>`));
     expect(l).toMatch(/aria-pressed="true"[^>]*>All jobs</);
     expect(l).toContain('aria-label="Order"');
-    expect(l).toMatch(/aria-pressed="true"[^>]*>Best edge</);
+    expect(l).toMatch(/aria-pressed="true"[^>]*>Best fit</);
     expect(l).toMatch(/aria-pressed="false"[^>]*>Most value</);
     expect(l).toMatch(/aria-pressed="false"[^>]*>Most time saved</);
     expect(l).toContain("3 playbooks in all areas");
@@ -101,9 +127,12 @@ describe("the catalogue", () => {
   it("gives each row its job, its time by hand against hers and its value on the year's scale", () => {
     expect(l).toContain(">Recover money</span>");
     expect(l).toContain('<span class="pa-time__hand">3h</span>');
-    expect(l).toContain('<span class="pa-time__athena">6m</span>');
+    // Her 6.2 min plus your 2.5 min of review.
+    expect(l).toContain('<span class="pa-time__athena" title="Her test run plus your review">9m</span>');
     expect(l).toContain('<span class="pa-time__athena">not run</span>');
-    expect(l).toContain('<span class="pa-value__n">$4,940</span><span class="pa-value__per">a year</span>');
+    expect(l).toContain('<span class="pa-value__n">$4,940</span><span class="pa-value__per">a year back, est.</span>');
+    const lien = render(withEconomics({ valueKind: "money_protected" }), { root: "chores" });
+    expect(lien).toContain('<span class="pa-value__n">$4,940</span><span class="pa-value__per">a year protected, est.</span>');
   });
 
   it("keeps a row's lead line, or its promise when it has no brief, as the name's hover title", () => {
@@ -136,7 +165,7 @@ describe("the catalogue", () => {
 
   it("copes with a half-written playbook: a row, nothing invented", () => {
     const d = html("degraded", { root: "chores" });
-    expect(d).toContain("1 playbook · none benched yet");
+    expect(d).toContain("1 playbook · none tested yet");
     expect(count(d, /<tr aria-selected=/g)).toBe(1);
   });
 
@@ -170,10 +199,71 @@ describe("a chore's topic page", () => {
     expect(t).toContain(fixtures.ledger!.items[0]!.playbook.promise.replace(/'/g, "&#x27;"));
   });
 
-  it("states the value, the time by hand against hers, and the traps she walked past", () => {
-    expect(t).toContain('<span class="pa-kpi__label">Value</span><span class="pa-kpi__n">$4,940</span>');
+  it("states the example's money back, the time by hand against hers with your review, and the mistakes avoided", () => {
+    expect(t).toContain('<span class="pa-kpi__label">In the example case</span><span class="pa-kpi__n">$96.40</span>');
+    expect(t).toContain("back, in the invented example");
     expect(t).toContain(">Time saved</span>");
-    expect(t).toContain(">Traps avoided</span>");
+    // 3 h by hand against her 6.2 min plus your 2.5 min of review: 21×, not the bare 29×.
+    expect(t).toContain("3 h");
+    expect(t).toContain("9 min");
+    expect(t).toContain("including about 3 min of your review · 21× faster");
+    expect(t).not.toContain("29× faster");
+    expect(t).toContain(">Mistakes avoided</span>");
+    expect(t).not.toContain("Traps avoided");
+    expect(t).not.toContain("for the persona");
+  });
+
+  it("puts the author's estimate on one line that opens on its basis, sources and caveat", () => {
+    expect(t).toContain('<summary class="pa-estimate__sum focus-ring">Typical value: about $4,940 a year, author&#x27;s estimate</summary>');
+    expect(t).toContain("About 95 late parcels a year at a median $52 refund");
+    expect(t).toContain(">Carrier service guarantee terms</button>");
+    expect(t).toContain("The carrier, the store and every parcel here are invented.");
+    // The old "Worth $X" line is gone: the estimate is said once.
+    expect(t).not.toContain("Worth $");
+    expect(count(t, "$4,940")).toBe(1);
+  });
+
+  it("never shows two different totals for one quantity on a page", () => {
+    // The brief states the example's total; the headline and the flow say the same money back.
+    const b = render(withEconomics({}, { brief: "A store **owed $96.40** across five parcels." }), chorePath("carrier-refunds"));
+    expect(b).toContain("Invented example case: its names and figures are not yours");
+    // Every dollar figure on the page is one of three quantities, each said once in its own words:
+    // the example's money back, and the author's estimate with the basis it quotes.
+    expect(dollars(b)).toEqual(["$96.40", "$4,940", "$52"]);
+    expect(b).toContain("$96.40 back");
+    expect(count(b, "$4,940")).toBe(1);
+  });
+
+  it("says what a chore protects in words when none of its example is money back, and shows no dollars for a weight", () => {
+    const lien = render(
+      withEconomics({ valueKind: "money_protected", kinds: { file_claim: "money_protected" }, exampleUsd: null }),
+      chorePath("carrier-refunds"),
+    );
+    expect(lien).toContain("No money comes back in the example case: this chore protects money that is at risk.");
+    expect(lien).toContain("Typical value: about $4,940 a year protected, author&#x27;s estimate");
+    expect(lien).toContain("$96.40 of $96.40 protected");
+    expect(lien).not.toContain("$96.40 back");
+    const weighted = render(withEconomics({ kinds: { file_claim: "count" }, exampleUsd: null }), chorePath("carrier-refunds"));
+    // A weight is never a dollar figure: the flow counts items, the verdict says no money.
+    expect(weighted).toContain('<span class="pa-result__n">5 of 5</span>');
+    expect(weighted).not.toContain("$96.40 back");
+    expect(weighted).toContain("Beat its bar in its one test run: 5 of 5 found, no false claims.");
+    expect(weighted).not.toMatch(/\$(24\.10|18\.75|21\.30|16\.90|15\.35)/);
+  });
+
+  it("shows the verdict and the runs it stands on", () => {
+    expect(t).toContain('<span class="pa-verdict__label">Beats its bar</span>');
+    expect(t).toContain("Beat its bar in its one test run: 5 of 5 found, $96.40 back of $96.40, no false claims.");
+  });
+
+  it("states where it fits from the playbook's fit, and nothing about fit without one", () => {
+    expect(t).toContain(">Where it fits</h2>");
+    expect(t).toContain("<dt>Where</dt><dd>the United States. The carrier&#x27;s US service guarantee; other countries&#x27; terms differ</dd>");
+    expect(t).toContain("<dt>She will ask you for</dt><dd>your carrier account&#x27;s invoices; your store&#x27;s order export</dd>");
+    expect(t).toContain("<dt>What it costs</dt><dd>No fees; only your Claude usage</dd>");
+    const none = render(withEconomics({}, { fit: null }), chorePath("carrier-refunds"));
+    expect(none).not.toContain("Where it fits");
+    expect(none).not.toContain("pa-fit");
   });
 
   it("draws how it runs: the portals she reads, the numbered steps, the gate before its step, what she filed", () => {
@@ -183,9 +273,10 @@ describe("a chore's topic page", () => {
     expect(count(t, /class="pa-step"/g)).toBe(p.steps.length);
     expect(count(t, /class="pa-gate"/g)).toBe(p.gates.length);
     expect(t).toContain('<span class="pa-gate__label">File a refund claim</span>');
-    expect(t).toContain("Filed on the bench");
+    expect(t).toContain("Found in the test run");
+    expect(t).toContain('<span class="pa-result__n">$96.40 back</span>');
     const un = html("ledger", chorePath("flight-compensation"));
-    expect(un).toContain("Not benched yet");
+    expect(un).toContain("Not tested yet");
     expect(un).toContain("the bar it will be held to");
   });
 
@@ -247,15 +338,24 @@ describe("the replay", () => {
     expect(second).toContain("Turn 2");
     expect(second).toContain("the run loop handed her their results");
     expect(second).toContain("1Z88A0");
-    expect(second).toContain('aria-label="Cards filed this turn"');
+    expect(second).toContain('aria-label="Cards she proposed this turn"');
     expect(second).toContain("Right claim");
   });
 
   it("announces a cut turn and keeps the money found so far", () => {
     expect(second).toContain("(showing");
-    expect(second).toContain("found so far, on the bench");
+    expect(second).toContain("back so far, in the test run");
     expect(second).toContain("$64.15");
     expect(first).toContain("$0");
+  });
+
+  it("counts a weighted run in items, never in dollars, and says another kind in its own words", () => {
+    const weighted = render(withEconomics({ kinds: { file_claim: "count" }, exampleUsd: null }), runPath("carrier-refunds", 1));
+    expect(weighted).toContain("items found so far, in the test run");
+    expect(weighted).not.toContain("$");
+    const lien = render(withEconomics({ kinds: { file_claim: "money_protected" }, exampleUsd: null }), runPath("carrier-refunds", 1));
+    expect(lien).toContain("$24.10 protected");
+    expect(lien).not.toContain("back so far");
   });
 
   it("offers play, back, next, the arrows and a way to pick a turn; back is disabled at the first turn", () => {
@@ -289,7 +389,7 @@ describe("a place that is not there is said, with the way back", () => {
   it("a replay of a chore that was never benched", () => {
     const h = html("open-unbenched", runPath("flight-compensation", 0));
     expect(h).toContain("There is no run to watch");
-    expect(h).toContain("not benched, so there is no recorded run");
+    expect(h).toContain("not tested yet, so there is no recorded run");
     expect(h).toContain("Back to the chore");
   });
   it("a replay of a benched chore whose run kept no turns", () => {

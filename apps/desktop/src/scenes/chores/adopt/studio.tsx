@@ -243,6 +243,7 @@ export default function Studio({
               approved && s.brief ? (
                 <Showcase
                   recorded={trace}
+                  kinds={p.economics.kinds}
                   portals={s.brief.portals}
                   showcase={s.showcase}
                   handed={handed}

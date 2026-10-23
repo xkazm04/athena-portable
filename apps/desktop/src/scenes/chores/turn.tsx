@@ -1,27 +1,33 @@
 /**
  * One turn of a run, drawn — README section 3.5, ADR 0040, 0089 and 0097.
  *
- * What the person said, her words, what she read, and the cards the gate filed with the scorer's
- * word on each. Shared by the replay (`replay.tsx`) and the Adopt studio's showcase
+ * What the person said, her words, what she read, and the cards she proposed with the scorer's
+ * word on each; a practice run's `proposed` card has no scorer's word and no value, and says so. Shared by the replay (`replay.tsx`) and the Adopt studio's showcase
  * (`adopt/showcase.tsx`), which plays the same turns with the person's portal names in them.
  */
 import type { ReactNode } from "react";
 
 import StatusDot from "@/components/StatusDot";
-import { usd, type TraceTurn } from "@/lib/playbooks";
-import { OUTCOME_WORDS, readsOf } from "@/modules/playbooks/model";
+import type { TraceTurn, ValueKind } from "@/lib/playbooks";
+import { OUTCOME_WORDS } from "@/modules/playbooks/model";
+import { readsOf } from "@/modules/playbooks/replay";
+
+import { cardValue } from "./worth";
 
 export default function TurnView({
   turn: t,
   at,
   total,
   className = "",
+  kind = () => "money_back",
 }: {
   turn: TraceTurn;
   /** 0-based. */
   at: number;
   total: number;
   className?: string;
+  /** Each card's kind by its tool (ADR 0133): a weight shows no dollars. Money back when not given. */
+  kind?: (tool: string) => ValueKind;
 }) {
   const reads = readsOf(t);
   return (
@@ -63,7 +69,7 @@ export default function TurnView({
         </p>
       ) : null}
       {t.cards.length ? (
-        <ul className="ch-cards ch-cards--turn" aria-label="Cards filed this turn">
+        <ul className="ch-cards ch-cards--turn" aria-label="Cards she proposed this turn">
           {t.cards.map((c, i) => {
             const o = OUTCOME_WORDS[c.outcome];
             return (
@@ -71,13 +77,13 @@ export default function TurnView({
                 <StatusDot tone={o.tone} />
                 <span className="ch-code">{c.key || c.action}</span>
                 <span className="ch-note">{`${c.action.replace(/_/g, " ")} · ${o.word}`}</span>
-                <span className="ch-card__v ch-data">{c.valueUsd ? usd(c.valueUsd) : ""}</span>
+                <span className="ch-card__v ch-data">{cardValue(kind(c.action), c.valueUsd)}</span>
               </li>
             );
           })}
         </ul>
       ) : (
-        <p className="ch-note">No card was filed on this turn.</p>
+        <p className="ch-note">No card on this turn.</p>
       )}
     </article>
   );

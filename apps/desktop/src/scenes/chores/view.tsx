@@ -84,7 +84,7 @@ export default function ChoresView({ model, path, go, adopt, offer }: ChoresView
       <Centre>
         <EmptyState
           title="No playbooks in this build"
-          line="A playbook is a directory under playbooks/; the bench writes its proof beside it."
+          line="A playbook is a directory under playbooks/; its test run writes its proof beside it."
         />
       </Centre>
     );
@@ -162,8 +162,8 @@ export default function ChoresView({ model, path, go, adopt, offer }: ChoresView
           title="There is no run to watch"
           line={
             view.playbook.bench === null
-              ? "This chore is not benched, so there is no recorded run and nothing here is measured."
-              : "The bench kept no turn-by-turn record of this chore's run."
+              ? "This chore is not tested yet, so there is no recorded run and nothing here is measured."
+              : "Its test run kept no turn-by-turn record."
           }
           action={
             <Button variant="primary" onClick={() => go(chorePath(view.id))}>

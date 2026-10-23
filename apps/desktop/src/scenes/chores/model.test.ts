@@ -2,15 +2,15 @@
 import { describe, expect, it } from "vitest";
 
 import { isValid, parseHash, formatHash, crumbs, type Path } from "@/depth/model";
+import { parsePlaybook } from "@/lib/playbooks";
 import { PLAYBOOKS } from "@/lib/playbooks.shipped";
+import { selectPlaybooks } from "@/modules/playbooks/model";
 
 import { compact, gateSlots, stillsOf, timeCell } from "./facts";
 import { fixtureIds, fixtures, pathFor } from "./fixtures";
 import { labeller } from "./index";
 import {
   adoptPath,
-  beforeAfterOf,
-  blueprintOf,
   choreAt,
   chorePath,
   emptyLine,
@@ -19,10 +19,9 @@ import {
   newChorePath,
   runPath,
   shortLine,
-  totalsLine,
   turnAt,
-  valueCell,
 } from "./model";
+import { beforeAfterOf, blueprintOf, cardValue, fitRows, totalsLine, valueCell, whereWords, worthOf } from "./worth";
 import { REPLAY_STEP_MS, isPlaying, setPlaying, stopPlaying } from "./replay";
 import { blocks, lead } from "./rich";
 
@@ -59,9 +58,11 @@ describe("places", () => {
 describe("the catalogue's and the topic's words", () => {
   const unbenched = typical.items.find((v) => v.verdict.word === "unbenched")!;
 
-  it("says the bench's totals in one line, and claims nothing when nothing is benched", () => {
-    expect(totalsLine(typical)).toBe("3 playbooks · 1 of 2 benched exceed the bar · $551.40 found on the bench");
-    expect(totalsLine(fixtures.degraded!)).toBe("1 playbook · none benched yet");
+  it("says the test runs' totals in one line, and claims nothing when nothing is tested", () => {
+    expect(totalsLine(typical)).toBe(
+      "3 playbooks · 1 of 2 tested beat their bar on the latest run · $551.40 back found in test runs on invented cases",
+    );
+    expect(totalsLine(fixtures.degraded!)).toBe("1 playbook · none tested yet");
   });
 
   it("names the area and the job a filter that leaves nothing was set to", () => {
@@ -74,8 +75,8 @@ describe("the catalogue's and the topic's words", () => {
 
   it("puts a month's value on the year's scale and leaves a claim's in its own unit", () => {
     const chargebacks = typical.items.find((v) => v.id === "chargeback-evidence")!;
-    expect(valueCell(chargebacks)).toEqual({ figure: "$21,600", per: "a year" });
-    expect(valueCell(refunds)).toEqual({ figure: "$4,940", per: "a year" });
+    expect(valueCell(chargebacks)).toEqual({ figure: "$21,600", per: "a year", kind: "back" });
+    expect(valueCell(refunds)).toEqual({ figure: "$4,940", per: "a year", kind: "back" });
   });
 
   it("keeps a long sentence to its first clause, cut at a word", () => {
@@ -91,17 +92,74 @@ describe("the catalogue's and the topic's words", () => {
     expect(plan.guard).toEqual({ avoided: 2, of: 2 });
     const bar = blueprintOf(unbenched);
     expect(bar.result.measured).toBe(false);
-    expect(bar.result.line).toContain("not benched");
+    expect(bar.result.line).toContain("not tested");
     expect(bar.guard).toBeNull();
   });
 
-  it("sets the chore by hand against her measured run, and says nothing measured when unbenched", () => {
+  it("sets the chore by hand against her run plus your review, and says nothing measured when untested", () => {
     const band = beforeAfterOf(refunds);
     expect(band.manual.figure).toBe("3 h");
-    expect(band.athena?.figure).toMatch(/min$/);
-    expect(band.athena?.line).toContain("turns");
+    // 372 s of her run and 150 s of your review: 8.7 min, and the ratio is 180 / 8.7, not 180 / 6.2.
+    expect(band.athena?.figure).toBe("9 min");
+    expect(band.athena?.review).toBe("including about 3 min of your review");
+    expect(band.ratio).toBe("21× faster");
     expect(band.ratio).toBe(refunds.speed);
     expect(beforeAfterOf(unbenched).athena).toBeNull();
+  });
+
+  /** A view of one playbook through the same reader and selector the shipped set goes through. */
+  const one = (raw: Record<string, unknown>, bench: Record<string, unknown> | null = null) =>
+    selectPlaybooks([parsePlaybook({ id: "x", ...raw }, bench)!], {
+      copy: () => Promise.resolve(),
+      open: () => {},
+      hand: () => {},
+    }).items[0]!;
+
+  it("one money headline: the example's money back, the estimate beneath it in its own kind and unit", () => {
+    const back = worthOf(one({ economics: { value_usd: 20000, per: "year", example_usd: 26410, basis: "Home care costs." } }));
+    expect(back.example).toBe("$26,410");
+    expect(back.estimate).toBe("Typical value: about $20,000 a year, author's estimate");
+    expect(back.basis).toBe("Home care costs.");
+    const lien = worthOf(one({ economics: { value_usd: 380000, per: "year", value_kind: "money_protected", example_usd: null } }));
+    expect(lien.example).toBeNull();
+    expect(lien.instead).toContain("protects money that is at risk");
+    expect(lien.estimate).toBe("Typical value: about $380,000 a year protected, author's estimate");
+    const episode = worthOf(one({ economics: { value_usd: 40000, per: "episode", example_usd: 20000 } }));
+    expect(episode.estimate).toBe("Typical value: about $40,000 an episode, author's estimate");
+    // The catalogue cell and the topic's secondary line read one function, so they cannot disagree.
+    const monthly = one({ economics: { value_usd: 1800, per: "month" } });
+    expect(worthOf(monthly).estimate).toContain(valueCell(monthly).figure);
+    expect(worthOf(monthly).example).toBeNull();
+  });
+
+  it("says a card's value by its kind: a weight never as dollars", () => {
+    expect(cardValue("count", 1000)).toBe("");
+    expect(cardValue("money_protected", 36000)).toBe("$36,000 protected");
+    expect(cardValue("penalty_avoided", 5000)).toBe("$5,000 in penalties avoided");
+    expect(cardValue("money_back", 24.1)).toBe("$24.10");
+    expect(cardValue("money_back", null)).toBe("");
+  });
+
+  it("states where it fits from the playbook's fit, and nothing at all without one", () => {
+    expect(fitRows(null)).toEqual([]);
+    const rows = fitRows(
+      one({
+        fit: {
+          where: ["TX"],
+          where_note: "Texas law; elsewhere the deadlines differ",
+          who: "A homeowner who lives in the house",
+          not_for: "A landlord",
+          asks_for: ["your appraisal notice", "your deed"],
+          costs: "No fees; only your Claude usage",
+        },
+      }).playbook.fit,
+    );
+    expect(rows.map((r) => r.label)).toEqual(["Where", "Who it is for", "Not for", "She will ask you for", "What it costs"]);
+    expect(rows[0]!.text).toBe("Texas. Texas law; elsewhere the deadlines differ");
+    expect(rows[3]!.text).toBe("your appraisal notice; your deed");
+    expect(whereWords(["CA", "OR"])).toBe("California or Oregon");
+    expect(whereWords(["US"])).toBe("the United States");
+    expect(one({ fit: {} }).playbook.fit).toBeNull();
   });
 });
 
@@ -128,7 +186,8 @@ describe("the topic page's facts", () => {
   });
 
   it("sets the time by hand against her measured run, and says nothing measured when unbenched", () => {
-    expect(timeCell(refunds)).toEqual({ hand: "3h", athena: "6m" });
+    // Her 6.2 min plus your 2.5 min of review.
+    expect(timeCell(refunds)).toEqual({ hand: "3h", athena: "9m" });
     expect(timeCell(typical.items.find((v) => v.playbook.bench === null)!).athena).toBeNull();
   });
 

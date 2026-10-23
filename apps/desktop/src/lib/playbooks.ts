@@ -15,6 +15,11 @@
  * app ships, like the constitution. `parsePlaybook` reads one leniently and says what it dropped,
  * because a showcase that blanks on one missing field is worse than one that shows the rest and
  * names the gap.
+ *
+ * Every figure carries its kind (fix wave chores-uat, ADR 0133): `economics.value_kind` says what the
+ * author's estimate is, `economics.kinds` what each answer-key tool's cards are worth, and
+ * `economics.example_usd` the example case's money back, derived by the bench's `derive`. Only money
+ * back is ever summed as "found"; an absent kind is money back and an absent example is `null`.
  */
 
 import { isCategoryId, isJobId, type CategoryId, type JobId } from "./playbook-taxonomy";
@@ -40,10 +45,41 @@ export interface Source {
   url: string;
 }
 
+/**
+ * What a figure is (fix contract, chores-uat theme 2). Only `money_back` is money that comes back to
+ * the person and sums into "found", the totals and the home light; `money_protected` is exposure or
+ * a payment released earlier, `penalty_avoided` a penalty not paid, and `count` a scoring weight that
+ * is never shown as dollars.
+ */
+export type ValueKind = "money_back" | "money_protected" | "penalty_avoided" | "count";
+
+const VALUE_KINDS: readonly ValueKind[] = ["money_back", "money_protected", "penalty_avoided", "count"];
+
+/** Who and where a chore fits, as its author wrote it (`playbook.json` `fit`). */
+export interface Fit {
+  /** "US", a list of USPS state codes, "EU" or another region word; `[]` when the file names none. */
+  where: readonly string[];
+  whereNote: string;
+  who: string;
+  notFor: string;
+  /** What she will ask the person for, in plain words. */
+  asksFor: readonly string[];
+  costs: string;
+}
+
 export interface Economics {
-  /** Money recovered or saved per `per`, in US dollars. */
+  /** The author's estimate per `per`, in US dollars, of the kind `valueKind` names. */
   valueUsd: number;
+  /** What `valueUsd` is; `money_back` when the file does not say. Never `count`. */
+  valueKind: Exclude<ValueKind, "count">;
   per: string;
+  /** How the author reached `valueUsd`, in their words; "" when the file has none. */
+  basis: string;
+  /** Each answer-key tool's kind; a tool missing here is `money_back` (see `kindOf`). */
+  kinds: Readonly<Record<string, ValueKind>>;
+  /** What the example case holds as money back, derived from its answer key; `null` when none of
+   *  it is money back or the file does not carry it. Unmeasured is not zero. */
+  exampleUsd: number | null;
   /** What a person spends on it by hand, per run, in minutes. */
   manualMinutes: number;
   /** Who does it today and what they keep. */
@@ -76,7 +112,9 @@ export type CardOutcome =
   | "trap"
   | "unfounded"
   | "forbidden"
-  | "other";
+  | "other"
+  /** A practice run's card on a world its answer key no longer fits: proposed, never scored. */
+  | "proposed";
 
 export interface BenchCard {
   action: string;
@@ -223,6 +261,8 @@ export interface Playbook {
   lessons: readonly Lesson[];
   /** A limit a reader must know before using it for real (e.g. a BAA for patient data). */
   caveat: string;
+  /** Who and where it fits; `null` when the file says nothing, and then no surface says anything. */
+  fit: Fit | null;
   bench: Bench | null;
   /** The run filmed and narrated (ADR 0055); `null` until `evidence <id>` ran. */
   evidence: Evidence | null;
@@ -276,6 +316,7 @@ const OUTCOMES: readonly CardOutcome[] = [
   "unfounded",
   "forbidden",
   "other",
+  "proposed",
 ];
 const VERDICTS: readonly VerdictWord[] = ["exceeds", "meets", "short"];
 
@@ -458,6 +499,31 @@ export function parseEvidence(
   };
 }
 
+const isKind = (v: unknown): v is ValueKind => (VALUE_KINDS as readonly unknown[]).includes(v);
+
+/** `economics.kinds`, keeping only entries whose kind is one the contract names. */
+const parseKinds = (raw: unknown): Record<string, ValueKind> =>
+  Object.fromEntries(Object.entries(isRaw(raw) ? raw : {}).filter((e): e is [string, ValueKind] => isKind(e[1])));
+
+/** `fit`, or `null` when it is absent or says nothing at all: no invented default. */
+function parseFit(raw: unknown): Fit | null {
+  if (!isRaw(raw)) return null;
+  const fit: Fit = {
+    where: typeof raw.where === "string" ? [raw.where] : strings(raw.where),
+    whereNote: str(raw.where_note),
+    who: str(raw.who),
+    notFor: str(raw.not_for),
+    asksFor: strings(raw.asks_for),
+    costs: str(raw.costs),
+  };
+  return Object.values(fit).some((v) => v.length) ? fit : null;
+}
+
+/** The kind of what an answer-key tool's cards are worth; `money_back` when the playbook does not say. */
+export function kindOf(p: Pick<Playbook, "economics">, tool: string): ValueKind {
+  return p.economics.kinds[tool] ?? "money_back";
+}
+
 /** One `playbook.json` (and its `bench.json`, if any) into a `Playbook`, or `null` without an id. */
 export function parsePlaybook(
   raw: unknown,
@@ -494,7 +560,12 @@ export function parsePlaybook(
     memory: strings(raw.memory),
     economics: {
       valueUsd: num(econ.value_usd),
+      // `count` is a card's kind, never the estimate's: an estimate in dollars is money of some kind.
+      valueKind: isKind(econ.value_kind) && econ.value_kind !== "count" ? econ.value_kind : "money_back",
       per: str(econ.per, "run"),
+      basis: str(econ.basis).trim(),
+      kinds: parseKinds(econ.kinds),
+      exampleUsd: numOrNull(econ.example_usd),
       manualMinutes: num(econ.manual_minutes),
       incumbent: str(econ.incumbent),
       incumbentFeePct: numOrNull(econ.incumbent_fee_pct),
@@ -520,6 +591,7 @@ export function parsePlaybook(
       .map((l) => ({ adr: str(l.adr), title: str(l.title), found: str(l.found) }))
       .filter((l) => l.title),
     caveat: str(raw.caveat),
+    fit: parseFit(raw.fit),
     bench: parseBench(bench),
     evidence,
   };

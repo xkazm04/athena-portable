@@ -86,10 +86,22 @@ const REFUNDS = book(
     memory: ["The 15-day filing window.", "Which exception codes void a refund."],
     economics: {
       value_usd: 4940,
+      value_kind: "money_back",
       per: "year",
+      basis: "About 95 late parcels a year at a median $52 refund; the example case holds $96.40 across five.",
+      kinds: { file_claim: "money_back" },
+      example_usd: 96.4,
       manual_minutes: 180,
       incumbent: "Refund-audit services keep half of what they recover.",
       sources: [{ label: "Carrier service guarantee terms", url: "https://example.com/terms" }],
+    },
+    fit: {
+      where: "US",
+      where_note: "The carrier's US service guarantee; other countries' terms differ",
+      who: "A store that ships its own parcels on a guaranteed service",
+      not_for: "A store whose carrier suspended the guarantee",
+      asks_for: ["your carrier account's invoices", "your store's order export"],
+      costs: "No fees; only your Claude usage",
     },
     edge: {
       difficulty: 4,

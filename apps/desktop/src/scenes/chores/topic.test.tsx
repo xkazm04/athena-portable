@@ -233,7 +233,10 @@ describe("Your runs, under the case", () => {
     expect(t).toContain("2 approved (2 let through by the gate), 1 declined: of the 3 cards filed in this run, from the approval table.");
     expect(t).toContain("$712.40 asked, from 2 cards you approved (each card's own amount).");
     expect(t).toContain("Spent: $0.41 and 6.3 min, over 9 ledger rows, 1 of them failed or refused.");
-    expect(t).not.toContain("recovered");
+    // The receipts never call money "recovered" (the author's basis, one click away, may).
+    const receipts = [...host.querySelectorAll(".pa-run")].map((r) => r.textContent ?? "").join(" ");
+    expect(receipts).toContain("$712.40 asked");
+    expect(receipts).not.toContain("recovered");
     expect(t).toContain("(showing 1 of 4)");
     // The page's parameters are text in a fence, never markup.
     expect(host.querySelector(".pa-run__params b")).toBeNull();

@@ -21,7 +21,8 @@ import {
   type PlaybooksModel,
 } from "@/modules/playbooks/model";
 
-import { EDGE_ORDER, emptyLine, totalsLine, valueCell } from "./model";
+import { EDGE_ORDER, emptyLine } from "./model";
+import { totalsLine, valueCell } from "./worth";
 import { lead } from "./rich";
 import { JOB_TONE, timeCell } from "./facts";
 import Glyph from "./glyphs";
@@ -34,10 +35,25 @@ export interface CatalogueState {
   last: string | null;
 }
 
-const SORTS: { id: string; label: string; sort: LedgerSort }[] = [
-  { id: "edge", label: "Best edge", sort: EDGE_ORDER },
-  { id: "value", label: "Most value", sort: { key: "value", dir: "desc" } },
-  { id: "time", label: "Most time saved", sort: { key: "time", dir: "desc" } },
+const SORTS: { id: string; label: string; sort: LedgerSort; why: string }[] = [
+  {
+    id: "edge",
+    label: "Best fit",
+    sort: EDGE_ORDER,
+    why: "Hardest for anyone else to do and most useful to you, first: the author's two scores multiplied.",
+  },
+  {
+    id: "value",
+    label: "Most value",
+    sort: { key: "value", dir: "desc" },
+    why: "The author's estimate of money back a year, highest first; estimates of money protected, penalties avoided or a value per episode come after, by their own figure.",
+  },
+  {
+    id: "time",
+    label: "Most time saved",
+    sort: { key: "time", dir: "desc" },
+    why: "The hours the chore takes by hand, the author's estimate, longest first.",
+  },
 ];
 
 const sameSort = (a: LedgerSort, b: LedgerSort) => a.key === b.key && a.dir === b.dir;
@@ -113,7 +129,9 @@ export default function Catalogue({
             <span className="pa-time__arrow" aria-label=" by hand, with Athena ">
               →
             </span>
-            <span className="pa-time__athena">{t.athena ?? "not run"}</span>
+            <span className="pa-time__athena" title={t.athena ? "Her test run plus your review" : undefined}>
+              {t.athena ?? "not run"}
+            </span>
           </span>
         );
       },
@@ -125,9 +143,9 @@ export default function Catalogue({
       render: (v) => {
         const c = valueCell(v);
         return (
-          <span className="pa-value">
+          <span className="pa-value" title="The author's estimate, not measured">
             <span className="pa-value__n">{c.figure}</span>
-            <span className="pa-value__per">{c.per}</span>
+            <span className="pa-value__per">{`${c.per} ${c.kind}, est.`}</span>
           </span>
         );
       },
@@ -191,6 +209,7 @@ export default function Catalogue({
                 type="button"
                 className="pa-sort__btn focus-ring"
                 aria-pressed={sameSort(state.sort, s.sort)}
+                title={s.why}
                 onClick={() => set({ sort: s.sort })}
               >
                 {s.label}

@@ -127,7 +127,7 @@ describe("the catalogue", () => {
     expect(titles()).toEqual(["Chargeback evidence packs", "Late-parcel refunds", "Delayed-flight compensation"]);
     click(button("Most time saved"));
     expect(titles()).toEqual(["Late-parcel refunds", "Delayed-flight compensation", "Chargeback evidence packs"]);
-    click(button("Best edge"));
+    click(button("Best fit"));
     expect(titles()).toEqual(edge);
   });
 
