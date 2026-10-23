@@ -7,7 +7,7 @@ import shutil
 from pathlib import Path
 from typing import Any
 
-from athena.adopt.cases import CaseBook, parse_case, perishable, render_case
+from athena.adopt.cases import CaseBook, parse_case, perishable, render_case, reopen_slots
 from athena.adopt.routes import AdoptStudio, cases
 from athena.contracts.adopt import Case, CaseSlot, Slot
 from athena.contracts.ids import is_id
@@ -81,7 +81,7 @@ def test_an_approval_writes_the_case_file_an_episode_and_cited_facts(live: Live)
     assert extra == {}
     assert (case.id, case.playbook_id, case.approved_rev) == (case_id, PLAYBOOK_ID, 1)
     assert "I'll find the late deposits" in case.brief_md and case.brief_md in body
-    assert case.command.startswith("Find the late deposits") and "My case:" in case.command
+    assert case.command.startswith("Run this chore for my own case") and "My setup:" in case.command
     assert case.portals == {"Payroll Harbor": "Gusto", "Retireline": ""}
     by_id = {s.id: s for s in case.slots}
     p1 = by_id["p1"]
@@ -272,3 +272,27 @@ def test_research_never_overrides_what_an_earlier_approval_confirmed() -> None:
     assert apply_updates(carried, update, source="research") == (carried, False)
     changed, moved = apply_updates(carried, update, source="user")
     assert moved and changed[0].value == "Outlook"
+
+
+def test_a_reopened_playbook_rule_stays_the_playbooks() -> None:
+    """A rule the playbook states (source ``default``) stays the playbook's when a case reopens;
+    her own facts carry as ``memory`` (spark chores-uat, WP-B)."""
+    case = Case(
+        id="proj_0123456789ab",
+        playbook_id="p",
+        title="T",
+        approved_rev=1,
+        approved_at="2026-10-22T00:00:00+00:00",
+        episode_id="ep_01234567",
+        created="2026-10-22T00:00:00+00:00",
+        slots=(
+            CaseSlot(
+                "f1", "fact", "Appeal window", "confirmed", "180 days (45 CFR 147.136)", "default"
+            ),
+            CaseSlot("f2", "fact", "Her insurer", "confirmed", "Northstar", "user"),
+        ),
+    )
+    slots, _ = reopen_slots([], case)
+    by_id = {s.id: s for s in slots}
+    assert by_id["f1"].source == "default"
+    assert by_id["f2"].source == "memory"

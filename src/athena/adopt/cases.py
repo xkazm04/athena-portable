@@ -254,7 +254,9 @@ def reopen_slots(mechanical: Sequence[Slot], case: Case) -> tuple[list[Slot], li
         if status == "confirmed" and perishable(slot):
             status = "guessed"
             reopened.append(slot.id)
-        source: SlotSource = "memory" if slot.value.strip() else slot.source
+        # A rule the playbook states stays the playbook's: reopening never turns it into hers.
+        keep = slot.source == "default" or not slot.value.strip()
+        source: SlotSource = slot.source if keep else "memory"
         return Slot(slot.id, slot.kind, slot.label, status, slot.value, source)
 
     for slot in mechanical:

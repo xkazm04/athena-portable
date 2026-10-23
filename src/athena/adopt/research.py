@@ -578,8 +578,10 @@ def _slot_lines(heading: str, slots: Sequence[Slot]) -> str:
 
 
 def _confirmed_block(slots: Sequence[Slot]) -> str:
-    """What the person confirmed, fenced: a value came from their words."""
-    rows = [f"- {s.id}: {s.value}" for s in slots if s.status == "confirmed" and s.value.strip()]
+    """What the person confirmed, fenced: a value came from their words. A gate or a rule the
+    playbook states is confirmed too, but by the library (source ``default``), so it is not
+    listed here as hers."""
+    rows = [f"- {s.id}: {s.value}" for s in slots if _hers(s) and s.value.strip()]
     if not rows:
         return "CONFIRMED BY THE PERSON\n(nothing yet)"
     return "CONFIRMED BY THE PERSON\n" + wrap_untrusted(
@@ -602,9 +604,12 @@ def _searches(value: Mapping[str, Any], live: Sequence[str]) -> list[tuple[str, 
 
 
 def _confirmed_facts(slots: Sequence[Slot]) -> frozenset[tuple[str, str]]:
-    return frozenset(
-        (s.id, s.value.strip()) for s in slots if s.kind == "fact" and s.status == "confirmed"
-    )
+    return frozenset((s.id, s.value.strip()) for s in slots if s.kind == "fact" and _hers(s))
+
+
+def _hers(slot: Slot) -> bool:
+    """Confirmed by something other than the library itself (a gate, a playbook rule)."""
+    return slot.status == "confirmed" and slot.source != "default"
 
 
 def _thread(fn: Callable[[], None], name: str) -> None:

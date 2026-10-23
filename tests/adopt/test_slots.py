@@ -27,7 +27,8 @@ def test_the_library_is_found_in_the_checkout_and_a_real_playbook_loads() -> Non
     playbook = load_playbook_json("401k-late-deposits", root)
     slots = mechanical_slots(playbook)
     assert [s.id for s in slots] == ["p1", "p2", "p3", "p4", "g1", "g2"]
-    assert slots[0].label == "Do you use Payroll Harbor for the payroll firm, or something else?"
+    assert slots[0].label == "Which app or site do you use for the payroll firm?"
+    assert slots[0].value == ""  # the example's app name is never her default
     assert slots[4].label == "Asks you before: Pay lost earnings into the plan"
     assert all(s.status == "open" for s in slots if s.kind == "portal")
     assert all(s.status == "confirmed" and s.value for s in slots if s.kind == "gate")

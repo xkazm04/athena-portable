@@ -55,10 +55,7 @@ def test_start_opens_with_slots_a_line_and_a_card(rig: Rig) -> None:
     assert kinds(session)[:3] == ["adopt.slots", "adopt.say", "adopt.progress"]
     first_slots = session.events_after(0)[0].to_dict()["slots"]
     assert [s["id"] for s in first_slots] == ["p1", "p2", "g1"]
-    assert (
-        first_slots[0]["label"]
-        == "Do you use Payroll Harbor for the payroll firm, or something else?"
-    )
+    assert first_slots[0]["label"] == "Which app or site do you use for the payroll firm?"
     assert wire(session.events_after(0)[1])["text"].startswith("**Late 401(k) deposits repaid.**")
     card = last(session, "adopt.questions")
     assert card["round"] == 1
@@ -91,12 +88,15 @@ def test_an_answered_card_that_the_audit_clears_ends_in_a_brief_and_clear(rig: R
     assert brief["portals"] == {"Payroll Harbor": "Gusto", "Retireline": ""}
     assert brief["open_slot_ids"] == []
     assert brief["md"].startswith("I'll find the late deposits")
-    assert "**Your setup:**\n- Gusto in place of Payroll Harbor" in brief["md"]
+    assert "**Your setup:**\n- Gusto for the payroll firm" in brief["md"]
     assert "**What I'll claim:**\n- Lost earnings on each late deferral" in brief["md"]
     assert "**Left alone:**" in brief["md"]
-    assert brief["command"].startswith("Find the late deposits")
-    assert "My case:\n- I use Gusto instead of Payroll Harbor." in brief["command"]
+    # "Start for real" runs the approved brief, never the playbook's example command.
+    assert brief["command"].startswith("Run this chore for my own case, as I approved it")
+    assert "Find the late deposits" not in brief["command"]
+    assert "- Gusto for the payroll firm" in brief["command"]
     assert "- People in the plan: 38" in brief["command"]
+    assert "What to claim:\n- Lost earnings on each late deferral" in brief["command"]
     # The card the interviewer wrote in parallel was dropped: the audit found nothing open.
     assert sum(1 for k in kinds(session) if k == "adopt.questions") == 1
     assert ("answer", session.id) in rig.seen
@@ -218,7 +218,7 @@ def test_never_more_than_eight_cards(rig: Rig) -> None:
     assert "adopt.clear" not in kinds(session)
 
 
-def test_a_failed_brief_leg_falls_back_to_the_playbook_brief(rig: Rig) -> None:
+def test_a_failed_brief_leg_falls_back_to_the_gates_never_the_example(rig: Rig) -> None:
     script = clear_script()
     script["brief"] = ["nope"]
     rig.model.script = script
@@ -226,8 +226,10 @@ def test_a_failed_brief_leg_falls_back_to_the_playbook_brief(rig: Rig) -> None:
     answer_all(session)
 
     brief = last(session, "adopt.brief")
-    assert brief["md"].startswith("Every late deposit is made good with its lost earnings.")
-    assert "- Two late deferrals" in brief["md"]
+    assert brief["md"].startswith("I'll do this chore for your case: Late 401(k) deposits repaid.")
+    # What to claim is the general act (the gate), not the example's own lines.
+    assert "- Pay lost earnings into the plan, where your case allows it" in brief["md"]
+    assert "Two late deferrals" not in brief["md"]
     assert "- A recovery firm's offer" in brief["md"]
     assert last(session, "adopt.clear")["rev"] == 1
 
@@ -257,9 +259,10 @@ def test_what_she_cannot_answer_is_read_during_the_run_not_asked_as_a_label(rig:
     cards = [wire(e) for e in session.events_after(0) if e.kind == "adopt.questions"]
     assert len(cards) == 1  # no bare-label card after the interviewer found nothing to ask
     p1 = next(s for s in session.slots if s.id == "p1")
-    # A held value (here the playbook's own app) stays, as a guess: the run-lookup line would
-    # read as a rename to "I'll read this during the run".
-    assert (p1.status, p1.value) == ("guessed", "Payroll Harbor")
+    # A portal stays empty, as a guess: the run-lookup line would read as a rename to
+    # "I'll read this during the run". The brief says it is not known yet.
+    assert (p1.status, p1.value) == ("guessed", "")
+    assert "- The payroll firm: not known yet" in last(session, "adopt.brief")["md"]
     assert "adopt.clear" in kinds(session)
     assert session.counters.get("deferred_to_run") == 1
 

@@ -13,8 +13,16 @@ the audit settled what a question asked, that question is dropped.
 
 **Never stalls.** A malformed interview (after the leg's one retry) becomes one plain free-text
 question about the first open slot; a malformed audit keeps the slots and is counted; a failed
-brief leg falls back to the playbook's own brief. Eight cards at most — then the brief is drafted
-as ``enough`` drafts it, with the open slots listed and guesses marked "(my guess)".
+brief leg falls back to the playbook's gates and its "Left alone" rows. Eight cards at most —
+then the brief is drafted as ``enough`` drafts it, with the open slots listed.
+
+**Honest marks, her case only** (UAT 2026-10-23, themes 3 and 4). A brief line says where its
+value came from: her words bare, a rule the playbook states "(from the playbook)", a lane's reading
+"(from research)", and "(my guess)" only for Athena's own guess about her. The brief carries a
+"Dates that matter" section (a date when her words or a document give one, else the rule and
+what it runs from). A line that states the invented example's names or amounts as hers is
+dropped and counted (``example_leak_dropped``), and the command "Start for real" hands Athena is
+built from the approved brief, never from the playbook's example command.
 
 **Draft, preview, apply.** Every brief has a ``rev``; an answer after a brief makes it stale and
 the next brief is ``rev + 1``; approval names the rev it approves, and only the current one is
@@ -45,7 +53,18 @@ from athena.adopt.prompts import (
     opening,
 )
 from athena.adopt.session import UNASKED, AdoptSession, AskedQuestion, GivenAnswer
-from athena.adopt.slots import add_slots, apply_updates, portal_swaps
+from athena.adopt.slots import (
+    add_slots,
+    apply_updates,
+    example_terms,
+    from_playbook,
+    mentions,
+    portal_names,
+    portal_roles,
+    portal_swaps,
+    portal_value,
+    provenance,
+)
 from athena.contracts.adopt import (
     Answer,
     Brief,
@@ -310,10 +329,16 @@ def _apply_audit(session: AdoptSession, result: LegResult) -> list[str] | None:
             session.emit(Error(reason=result.error_reason or "unknown", detail=result.detail))
         return None
     value = result.value
+    updates = _dicts(value.get("updates"))
     with session.lock:
         grown = add_slots(session.slots, _dicts(value.get("new_slots")))
+        # A rule the playbook states is the library's, not her word (source default, like a
+        # gate), and as a non-user source it never overwrites what she confirmed herself.
+        ruled, _ = apply_updates(grown, [u for u in updates if from_playbook(u)], source="default")
         source: SlotSource = "user" if session.answers else "default"
-        updated, _ = apply_updates(grown, _dicts(value.get("updates")), source=source)
+        updated, _ = apply_updates(
+            ruled, [u for u in updates if not from_playbook(u)], source=source
+        )
         session.set_slots(updated)
         by_id = {s.id: s for s in session.slots}
         named = [str(i) for i in value.get("open_slot_ids", []) if isinstance(i, str)]
@@ -327,9 +352,28 @@ def _offer_card(
 ) -> None:
     """Emit the card ``result`` wrote, trimmed to what is still unknown — or never stall."""
     slots = session.slots
+    with session.lock:
+        answers = [asdict(a) for a in session.answers]
+    guard = _ExampleGuard(session.playbook, slots, answers)
+    try:
+        _offer(session, result, slots, guard, round_no=round_no, open_ids=open_ids)
+    finally:
+        for _ in range(guard.dropped):
+            session.count("example_option_dropped")
+
+
+def _offer(
+    session: AdoptSession,
+    result: LegResult,
+    slots: Sequence[Slot],
+    guard: _ExampleGuard,
+    *,
+    round_no: int,
+    open_ids: list[str] | None,
+) -> None:
     if result.ok and result.value is not None:
         say = str(result.value.get("say") or "").strip()
-        questions = _questions(result.value, slots, round_no)
+        questions = _questions(result.value, slots, round_no, guard=guard)
         if questions:
             if say:
                 session.emit(Say(text=say))
@@ -339,7 +383,7 @@ def _offer_card(
         if open_ids is None or open_ids:
             retry = _interview_leg(session, slots, round_no=round_no)
             if retry.ok and retry.value is not None:
-                questions = _questions(retry.value, session.slots, round_no)
+                questions = _questions(retry.value, session.slots, round_no, guard=guard)
                 if questions:
                     _emit_card(session, round_no, questions)
                     return
@@ -367,8 +411,14 @@ def _defer_to_run(session: AdoptSession, open_ids: list[str] | None) -> None:
         wanted = set(open_ids) if open_ids else {s.id for s in session.slots if s.status == "open"}
         # A value already held (their own half-answer) stays, marked a guess; only an empty
         # slot gets the run-lookup line.
+        # A portal stays empty: its value is read as an app name (portal_value), and the
+        # run-lookup line would read as a rename. Its setup line says it is not known yet.
         updates = [
-            {"slot_id": s.id, "value": s.value.strip() or RUN_LOOKUP, "status": "guessed"}
+            {
+                "slot_id": s.id,
+                "value": s.value.strip() or ("" if s.kind == "portal" else RUN_LOOKUP),
+                "status": "guessed",
+            }
             for s in session.slots
             if s.id in wanted and s.status == "open"
         ]
@@ -419,27 +469,46 @@ def _write_brief(session: AdoptSession, *, cleared: bool) -> None:
         brief_prompt(session.playbook, slots, answers),
         json_schema=BRIEF_SCHEMA,
     )
-    claim_default, left_default = _brief_sections(str(session.playbook.get("brief") or ""))
+    playbook = session.playbook
+    claim_default, left_default = _default_sections(playbook)
     if result.ok and result.value is not None:
         lead = str(result.value.get("lead") or "").strip()
         setup = _strs(result.value.get("setup"))
-        claim = _strs(result.value.get("claim")) or claim_default
-        left = _strs(result.value.get("left_alone")) or left_default
+        dates = _dates(result.value.get("dates"))
+        claim = _strs(result.value.get("claim"))
+        left = _strs(result.value.get("left_alone"))
     else:
         session.count("malformed_brief" if result.malformed else "failed_brief")
-        lead, setup, claim, left = "", [], claim_default, left_default
+        lead, setup, dates, claim, left = "", [], [], [], []
+    # The example's names and amounts never reach her brief as hers (UAT 2026-10-23, theme 4):
+    # a line that carries one she did not say herself is dropped and counted.
+    guard = _ExampleGuard(playbook, slots, answers)
+    lead, setup, dates, claim, left = (
+        guard.line(lead),
+        guard.lines(setup),
+        guard.lines(dates),
+        guard.lines(claim),
+        guard.lines(left),
+    )
+    claim = claim or guard.lines(claim_default)
+    left = left or guard.lines(left_default)
+    for _ in range(guard.dropped):
+        session.count("example_leak_dropped")
     if not lead:
-        lead = _first_sentence(str(session.playbook.get("promise") or ""))
+        lead = _default_lead(playbook)
     open_ids = tuple(s.id for s in slots if s.status != "confirmed")
     # The model's setup lines read as one voice; the mechanical ones are the floor.
-    md = _brief_md(lead, setup or _setup_lines(session.playbook, slots), claim, left)
+    setup = setup or _setup_lines(playbook, slots)
+    md = _brief_md(lead, setup, claim, left, dates)
     with session.lock:
         session.rev += 1
         rev = session.rev
         brief = Brief(
             rev=rev,
             md=md,
-            command=fitted_command(session.playbook, slots),
+            command=fitted_command(
+                playbook, slots, setup=setup, claim=claim, left=left, dates=dates
+            ),
             portals=portal_swaps(session.playbook, slots),
             open_slot_ids=open_ids,
         )
@@ -451,48 +520,88 @@ def _write_brief(session: AdoptSession, *, cleared: bool) -> None:
         session.emit(Clear(rev=rev))
 
 
-def fitted_command(playbook: Mapping[str, Any], slots: Sequence[Slot]) -> str:
-    """The playbook's command plus a "My case:" block of what the slots hold.
+def fitted_command(
+    playbook: Mapping[str, Any],
+    slots: Sequence[Slot],
+    *,
+    setup: Sequence[str] = (),
+    claim: Sequence[str] = (),
+    left: Sequence[str] = (),
+    dates: Sequence[str] = (),
+) -> str:
+    """The command "Start for real" hands Athena: the approved brief, in the person's terms.
 
-    Mechanical on purpose: the command is what runs, so it is built from the slots the person
-    saw on the brief and not rewritten by a model (draft-preview-apply).
+    Built from what she saw and approved (her setup, the dates, what to claim, what to leave
+    alone) and never from the playbook's own ``command``, which tells the invented example's
+    story in its invented names and stays as it is for the bench (UAT 2026-10-23,
+    construction-12). Mechanical on purpose: no model rewrites what runs (draft-preview-apply).
+
+    With no ``setup`` (a caller with slots and no drafted brief: the adopt-tiers bench, which
+    rehearses on the example world itself) the slots' own lines stand in, after one "I use X
+    instead of Y" line per swapped app, since there the example's app names are the world's.
     """
-    lines: list[str] = []
-    for name, theirs in portal_swaps(playbook, slots).items():
-        if theirs:
-            lines.append(f"- I use {theirs} instead of {name}.")
-    for slot in slots:
-        if slot.kind == "portal" or not slot.value.strip():
-            continue
-        guess = " (my guess)" if slot.status != "confirmed" else ""
-        lines.append(f"- {_bare(slot.label)}: {slot.value.strip()}{guess}")
-    command = str(playbook.get("command") or "").strip()
-    return command if not lines else f"{command}\n\nMy case:\n" + "\n".join(lines)
+    title = str(playbook.get("short_title") or playbook.get("title") or "this chore").strip()
+    swaps = (
+        []
+        if setup
+        else [
+            f"I use {theirs} instead of {name}."
+            for name, theirs in portal_swaps(playbook, slots).items()
+            if theirs
+        ]
+    )
+    sections = [
+        f"Run this chore for my own case, as I approved it: {title}.",
+        _section("My apps", swaps),
+        _section("My setup", setup or _setup_lines(playbook, slots)),
+        _section("Dates that matter", dates),
+        _section("What to claim", claim),
+        _section("Leave alone", left),
+    ]
+    return "\n\n".join(s for s in sections if s)
+
+
+def _section(heading: str, rows: Sequence[str]) -> str:
+    return f"{heading}:\n" + "\n".join(f"- {r}" for r in rows) if rows else ""
 
 
 def _setup_lines(playbook: Mapping[str, Any], slots: Sequence[Slot]) -> list[str]:
-    swaps = portal_swaps(playbook, slots)
+    """One line per app by its role, then one per fact, trap and gate, each marked by where its
+    value came from (:func:`~athena.adopt.slots.provenance`): her words bare, a playbook rule
+    "(from the playbook)", a lane's reading "(from research)", a guess "(my guess)"."""
+    names = portal_names(playbook)
+    roles = portal_roles(playbook)
     by_id = {s.id: s for s in slots}
     lines: list[str] = []
-    for index, (name, theirs) in enumerate(swaps.items(), start=1):
+    for index, (name, role) in enumerate(zip(names, roles, strict=True), start=1):
         slot = by_id.get(f"p{index}")
-        guess = "" if slot is not None and slot.status == "confirmed" else " (my guess)"
-        lines.append(f"{theirs} in place of {name}{guess}" if theirs else f"{name}{guess}")
+        held = slot.value.strip() if slot is not None else ""
+        if slot is None or not held:
+            lines.append(f"{_upper_first(role)}: not known yet")
+            continue
+        theirs = portal_value(name, held) or name
+        lines.append(f"{theirs} for {role}{provenance(slot)}")
     for slot in slots:
         if slot.kind == "portal":
             continue
         if slot.value.strip():
-            guess = "" if slot.status == "confirmed" else " (my guess)"
-            lines.append(f"{_bare(slot.label)}: {slot.value.strip()}{guess}")
+            lines.append(f"{_bare(slot.label)}: {slot.value.strip()}{provenance(slot)}")
         else:
             lines.append(f"{_bare(slot.label)}: not known yet")
     return lines
 
 
-def _brief_md(lead: str, setup: Sequence[str], claim: Sequence[str], left: Sequence[str]) -> str:
+def _brief_md(
+    lead: str,
+    setup: Sequence[str],
+    claim: Sequence[str],
+    left: Sequence[str],
+    dates: Sequence[str] = (),
+) -> str:
     parts = [lead.strip()]
     for heading, rows in (
         ("Your setup", setup),
+        ("Dates that matter", dates),
         ("What I'll claim", claim),
         ("Left alone", left),
     ):
@@ -501,22 +610,99 @@ def _brief_md(lead: str, setup: Sequence[str], claim: Sequence[str], left: Seque
     return "\n\n".join(p for p in parts if p)
 
 
+def _dates(value: Any) -> list[str]:
+    """The brief leg's ``dates`` rows as one line each: "what: when (rule). If missed: ...".
+
+    A row with no ``what`` or no ``when`` is dropped: a deadline with neither a date nor the
+    rule that sets it is not one the person can act on.
+    """
+    out: list[str] = []
+    for row in _dicts(value):
+        what, when = _one_line(row.get("what")), _one_line(row.get("when"))
+        if not what or not when:
+            continue
+        line = f"{what.rstrip('.:')}: {when.rstrip('.')}"
+        rule = _one_line(row.get("rule"))
+        if rule and rule.lower() not in line.lower():
+            line += f" ({rule.rstrip('.')})"
+        missed = _one_line(row.get("if_missed"))
+        if missed:
+            line += f". If missed: {missed.rstrip('.')}"
+        out.append(line + ".")
+    return out
+
+
 _HEADING = re.compile(r"^\*\*(.+?)\*\*\s*$")
 
 
-def _brief_sections(brief: str) -> tuple[list[str], list[str]]:
-    """The playbook brief's first bulleted section and its "Left alone" section."""
+def _default_sections(playbook: Mapping[str, Any]) -> tuple[list[str], list[str]]:
+    """The brief's floor when the brief leg fails or wrote nothing that survived the guard.
+
+    What to claim: each gate, which is an act of the general job and never the example's
+    specifics. Left alone: the playbook brief's "Left alone" rows (the guard then drops any
+    that carry the example's names or amounts)."""
+    claim = [
+        f"{label}, where your case allows it"
+        for label in (str(g.get("label") or "").strip() for g in _dicts(playbook.get("gates")))
+        if label
+    ]
     sections: list[tuple[str, list[str]]] = []
-    for line in brief.splitlines():
+    for line in str(playbook.get("brief") or "").splitlines():
         stripped = line.strip()
         heading = _HEADING.match(stripped)
         if heading:
             sections.append((heading.group(1), []))
         elif stripped.startswith("- ") and sections:
             sections[-1][1].append(stripped[2:].strip())
-    claim = next((rows for title, rows in sections if "left alone" not in title.lower()), [])
     left = next((rows for title, rows in sections if "left alone" in title.lower()), [])
     return claim, left
+
+
+def _default_lead(playbook: Mapping[str, Any]) -> str:
+    title = str(playbook.get("short_title") or playbook.get("title") or "this chore").strip()
+    return f"I'll do this chore for your case: {title}. I ask you before each act that matters."
+
+
+class _ExampleGuard:
+    """Drops a brief line that states the invented example's names or amounts as hers.
+
+    The example's terms (:func:`~athena.adopt.slots.example_terms`) minus whatever she said
+    herself or a lane read for her: a term in her answers or in a slot value she or a lane gave
+    is hers to mention.
+    """
+
+    def __init__(
+        self,
+        playbook: Mapping[str, Any],
+        slots: Sequence[Slot],
+        answers: Sequence[Mapping[str, Any]],
+    ) -> None:
+        own = " ".join(
+            [
+                *(str(a.get("text") or "") for a in answers),
+                *(" ".join(a.get("choices", ()) or ()) for a in answers),
+                *(
+                    s.value
+                    for s in slots
+                    if s.source in ("research", "document", "account")
+                    or (s.status == "confirmed" and s.source in ("user", "memory"))
+                ),
+            ]
+        )
+        self.terms = [t for t in example_terms(playbook) if not mentions(own, t)]
+        self.dropped = 0
+
+    def leaks(self, text: str) -> bool:
+        return any(mentions(text, t) for t in self.terms)
+
+    def line(self, text: str) -> str:
+        if text and self.leaks(text):
+            self.dropped += 1
+            return ""
+        return text
+
+    def lines(self, rows: Sequence[str]) -> list[str]:
+        return [r for r in rows if self.line(r)]
 
 
 # --- the card, sanitised ------------------------------------------------------------------------
@@ -540,13 +726,19 @@ def _interview_problem(value: dict[str, Any], known: set[str]) -> str:
 
 
 def _questions(
-    value: Mapping[str, Any], slots: Sequence[Slot], round_no: int, *, slotless: bool = False
+    value: Mapping[str, Any],
+    slots: Sequence[Slot],
+    round_no: int,
+    *,
+    slotless: bool = False,
+    guard: _ExampleGuard | None = None,
 ) -> list[Question]:
     """The card as the person will see it: at most four questions, each about a slot that is not
     confirmed, 2 to 5 options or none, free text always allowed, ids minted here.
 
     ``slotless`` (the intake conversation, ADR 0098, which has no slots) keeps every question
-    that has text and gives it no slot ids."""
+    that has text and gives it no slot ids. With a ``guard``, an option that offers the
+    example's invented names or amounts as her answer is dropped (UAT 2026-10-23, benefits-05)."""
     unconfirmed = {s.id for s in slots if s.status != "confirmed"}
     out: list[Question] = []
     for raw in _dicts(value.get("questions")):
@@ -562,6 +754,8 @@ def _questions(
         for option in _dicts(raw.get("options")):
             label = " ".join(str(option.get("label") or "").split())[:OPTION_CAP]
             if not label or label.lower() in seen:
+                continue
+            if guard is not None and guard.line(label) == "":
                 continue
             seen.add(label.lower())
             options.append(Option(id="abcde"[len(options)], label=label))
@@ -612,6 +806,9 @@ def _bare(label: str) -> str:
     return label.rstrip(" ?.:")
 
 
-def _first_sentence(text: str) -> str:
-    match = re.match(r"(.+?[.!?])(\s|$)", " ".join(text.split()))
-    return match.group(1) if match else " ".join(text.split())
+def _one_line(value: Any) -> str:
+    return " ".join(value.split()) if isinstance(value, str) else ""
+
+
+def _upper_first(text: str) -> str:
+    return text[:1].upper() + text[1:]

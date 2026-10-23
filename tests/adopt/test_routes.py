@@ -34,9 +34,9 @@ def test_start_answers_the_session_and_its_slots(live: Live) -> None:
     assert body["slots"][0] == {
         "id": "p1",
         "kind": "portal",
-        "label": "Do you use Payroll Harbor for the payroll firm, or something else?",
+        "label": "Which app or site do you use for the payroll firm?",
         "status": "open",
-        "value": "Payroll Harbor",
+        "value": "",
         "source": "default",
     }
 
