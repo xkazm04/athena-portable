@@ -314,7 +314,7 @@
       },
       {
         "topic": "baggage",
-        "text": "Baggage delay benefit. When a checked bag is delayed more than 6 hours, the card pays up to 100 dollars a trip for essential purchases made before the bag arrives, on the receipts you send. Items it pays are not to be claimed again from the airline or anyone else: the card takes over your claim for them. Claim BD-7731 paid 59.00 dollars on 5 October 2026 for the Atlantico Outdoor receipt of 27 September. It paid nothing else for the trip."
+        "text": "- Baggage delay benefit.\n- When a checked bag is delayed more than 6 hours, the card pays up to 100 dollars a trip for essential purchases made before the bag arrives, on the receipts you send.\n- Items it pays are not to be claimed again from the airline or anyone else: the card takes over your claim for them.\n- Claim BD-7731 paid 59.00 dollars on 5 October 2026 for the Atlantico Outdoor receipt of 27 September.\n- It paid nothing else for the trip."
       }
     ],
     "stmt": [
@@ -478,7 +478,7 @@
       },
       {
         "topic": "expenses",
-        "text": "What Aerolark pays. Reasonable cost of the essentials a passenger had to buy while the bag was missing, from arrival to delivery: toiletries, medicines, basic clothing, a charger, and what a work engagement needs. Not paid: things the passenger would have bought anyway, such as food; luxury goods or a new wardrobe; anything bought after the bag was delivered; an item another source has paid, such as a card's baggage benefit; purchases for another traveller whose own bag arrived; costs not caused by the bag; and a trip whose 21 days have ended."
+        "text": "- What Aerolark pays: the reasonable cost of the essentials a passenger had to buy while the bag was missing, from arrival to delivery.\n- Essentials: toiletries, medicines, basic clothing, a charger, and what a work engagement needs.\n- Not paid: things the passenger would have bought anyway, such as food.\n- Not paid: luxury goods or a new wardrobe.\n- Not paid: anything bought after the bag was delivered.\n- Not paid: an item another source has paid, such as a card's baggage benefit.\n- Not paid: purchases for another traveller whose own bag arrived.\n- Not paid: costs not caused by the bag.\n- Not paid: a trip whose 21 days have ended."
       },
       {
         "topic": "limit",
@@ -486,7 +486,7 @@
       },
       {
         "topic": "bagfee",
-        "text": "The checked bag fee. Under the Department of Transportation's refund rule, 14 CFR 260.5, a bag not delivered within 15 hours on an international flight of 12 hours or less (12 hours on a domestic flight, 30 on a longer international one) earns a refund of the fee, if the passenger filed a baggage report. It is paid in 7 business days to a card. Request it with request_bag_fee_refund, one bag at a time. A fee already refunded, and a bag that arrived on time, are not refunded again."
+        "text": "- The checked bag fee, under the Department of Transportation's refund rule, 14 CFR 260.5.\n- A bag not delivered within 15 hours on an international flight of 12 hours or less (12 hours on a domestic flight, 30 on a longer international one) earns a refund of the fee, if the passenger filed a baggage report.\n- It is paid in 7 business days to a card.\n- Request it with request_bag_fee_refund, one bag at a time.\n- A fee already refunded, and a bag that arrived on time, are not refunded again."
       }
     ],
     "report": [

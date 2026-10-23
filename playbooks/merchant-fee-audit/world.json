@@ -514,12 +514,12 @@
       {
         "rule_id": "G-1",
         "title": "Visa interchange, credit, Card Not Present (18 April 2026)",
-        "text": "Paycurrent's summary of the Visa USA Interchange Reimbursement Fees, Visa Supplemental Requirements, rates effective 18 April 2026. Friday 9 October 2026. Consumer credit, Card Not Present, Product 1: Traditional Rewards 2.04% + $0.10; Signature Preferred 2.50% + $0.10; All Other Products 1.89% + $0.10. A sale that does not qualify is Non-Qualified Consumer Credit: 3.15% + $0.10 for every card product. Interchange is paid to the card issuer and is the same whichever processor bills it."
+        "text": "- Paycurrent's summary of the Visa USA Interchange Reimbursement Fees, Visa Supplemental Requirements, rates effective 18 April 2026.\n- Friday 9 October 2026.\n- Consumer credit, Card Not Present, Product 1:\n- Traditional Rewards 2.04% + $0.10;\n- Signature Preferred 2.50% + $0.10;\n- All Other Products 1.89% + $0.10.\n- A sale that does not qualify is Non-Qualified Consumer Credit: 3.15% + $0.10 for every card product.\n- Interchange is paid to the card issuer and is the same whichever processor bills it."
       },
       {
         "rule_id": "G-2",
         "title": "Visa interchange, debit, Card Not Present (18 April 2026)",
-        "text": "Visa USA Interchange Reimbursement Fees, 18 April 2026. Friday 9 October 2026. Exempt issuers (assets under 10 billion dollars), CPS/e-Commerce Basic debit: 1.65% + $0.15. Regulated issuers: 0.05% + $0.21, plus $0.01 for an issuer that certifies it meets the fraud-prevention standard; every issuer on this account's sales has certified, so 0.05% + $0.22. That is the Federal Reserve's Regulation II ceiling: 21 cents plus 0.05% of the sale, and a 1 cent fraud-prevention adjustment (12 CFR 235.3(b) and 235.4(a)). Visa's 18 April 2026 schedule is the one in force; the Board's 2023 proposal to lower the ceiling was never adopted."
+        "text": "- Visa USA Interchange Reimbursement Fees, 18 April 2026.\n- Friday 9 October 2026.\n- Exempt issuers (assets under 10 billion dollars), CPS/e-Commerce Basic debit: 1.65% + $0.15.\n- Regulated issuers: 0.05% + $0.21, plus $0.01 for an issuer that certifies it meets the fraud-prevention standard; every issuer on this account's sales has certified, so 0.05% + $0.22.\n- That is the Federal Reserve's Regulation II ceiling: 21 cents plus 0.05% of the sale, and a 1 cent fraud-prevention adjustment (12 CFR 235.3(b) and 235.4(a)).\n- Visa's 18 April 2026 schedule is the one in force; the Board's 2023 proposal to lower the ceiling was never adopted."
       },
       {
         "rule_id": "G-3",
@@ -529,7 +529,7 @@
       {
         "rule_id": "G-4",
         "title": "Downgrades",
-        "text": "Friday 9 October 2026. A sale that misses what its best category needs is downgraded, and the network bills the category it lands in at that category's published rate. For a card-not-present sale Paycurrent's best category needs the sale settled within 1 day of the ship date and an address verification result sent. Paycurrent's statement names the reason for each downgrade. A downgrade billed at the network's own rate is not a billing error."
+        "text": "- Friday 9 October 2026.\n- A sale that misses what its best category needs is downgraded, and the network bills the category it lands in at that category's published rate.\n- For a card-not-present sale Paycurrent's best category needs the sale settled within 1 day of the ship date and an address verification result sent.\n- Paycurrent's statement names the reason for each downgrade.\n- A downgrade billed at the network's own rate is not a billing error."
       },
       {
         "rule_id": "G-5",

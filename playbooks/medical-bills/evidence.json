@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "medical-bills",
-  "captured_at": "2026-10-10T04:14:31Z",
+  "captured_at": "2026-10-23T15:06:26Z",
   "bench_run_at": "2026-10-07T23:06:25Z",
-  "narration": {
-    "text": "Medical bills against the EOBs. This is a chore for a family on a PPO with an ER visit, a surgery and some follow-up care this year. Athena works it across 3 portals: Insurer member portal, MyChart and Cedar. On the bench, she found 7 of 8 eligible items, worth 3,423 dollars and 50 cents of the 3,423 dollars and 50 cents there was to find. All 7 were filed at the exact amount the rules allow. She made no false claim. The world held 12 traps, and she walked past 12. Among them: A January bill much higher than last year's identical visit — because the deductible reset. It is right; pay it. A bill sent while the EOB is still pending: neither pay nor dispute it yet. She took 2 minutes. By hand, the same chore takes 8 hours, so she was about 209 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 30 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 63.508,
-    "sha256": "6607dc5ad2ba63f89390c7e00c7c9869128b788413eaf5d7523f7874d1b6c2a1"
-  },
-  "video": {
-    "path": "evidence/medical-bills/evidence.mp4",
-    "duration_s": 63.52,
-    "bytes": 2743544,
-    "sha256": "f47aea6f541ee6ddc9365762874c37befae7e7cd0a5cb7c61c9624a37688467a"
-  },
-  "thumbnail": {
-    "path": "playbooks/medical-bills/thumb.jpg",
-    "bytes": 82451,
-    "sha256": "8b2686278a442525ffdecd5b9da56315db17b4f9c8afe494243c2c3211b5fac3"
-  },
   "story": [
     {
+      "n": 1,
       "path": "playbooks/medical-bills/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 22964,
-      "sha256": "e4eec126266d8dccb992e75340418d8f42663ba556690f8b59e28c5c58ce1ecc"
+      "bytes": 43122,
+      "sha256": "4540bdfce11f94ea0ccfd73de661f4fea9f9224a5b37895dab3cf080dbde11ca",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/medical-bills/story/02.webp",
+      "bytes": 42334,
+      "sha256": "934b79213558cf8dbcd0e814cd7c5806d9cbf117cbed7a53f28725d11100dbdc",
       "caption": "Turn 1 - Bluepoint Health member portal: My medical bills are a mess",
-      "turn": 1,
-      "bytes": 22708,
-      "sha256": "857d1ab30c7c9a8cb57af4a06a9dbd9c46288cb2ecf0ac262a2dff46b89c96ea"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/medical-bills/story/03.webp",
+      "bytes": 42426,
+      "sha256": "f00300e19c0a774f0573ad83a9ebb4d738a994d9eefd000f1e3432bc3a0ada85",
       "caption": "Turn 4 - Bluepoint Health member portal, Athena: Here's what I can establish from the insurance portal",
-      "turn": 4,
-      "bytes": 23544,
-      "sha256": "ef1a8cec833d2665cfcfba5ed8fb7f7a8aac55a9b02a9a3a229bc0a5e15fd704"
+      "kind": "turn",
+      "turn": 4
     },
     {
+      "n": 4,
       "path": "playbooks/medical-bills/story/04.webp",
+      "bytes": 42224,
+      "sha256": "67f3e8ed84a2ca46c42a3294c80b5c398d6c9152fe2b059a931a43d5d68f4e2f",
       "caption": "Turn 7 - MyChart (Valley Medical), Athena: Three of the five bills I opened match their EOBs, and two don't",
-      "turn": 7,
-      "bytes": 23222,
-      "sha256": "a11e1c923e90a024a91ceebf164c35abcce2451786bb765bda90b0aa3d5e6a2d"
+      "kind": "turn",
+      "turn": 7
     },
     {
+      "n": 5,
       "path": "playbooks/medical-bills/story/05.webp",
+      "bytes": 42870,
+      "sha256": "cb56a67613163a6a64afbd3d0a599653ebb304a7dddd1c193333354bdf45f305",
       "caption": "Turn 10 - Bluepoint Health member portal: Back in the insurance portal",
-      "turn": 10,
-      "bytes": 22578,
-      "sha256": "3eb80152533fafb9ec3c869dbe680b8b8418f818874d16df30ea7f6436464c84"
-    },
-    {
-      "path": "playbooks/medical-bills/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22792,
-      "sha256": "f44ac19f67089fcc2851d9ebdb847289ad97e230612815c1ec9b027e58936529"
+      "kind": "turn",
+      "turn": 10
     }
   ]
 }

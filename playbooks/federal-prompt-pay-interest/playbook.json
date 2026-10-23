@@ -2,7 +2,7 @@
   "id": "federal-prompt-pay-interest",
   "title": "The interest federal agencies owe on late payments, claimed with the penalty",
   "short_title": "Interest on late federal payments claimed",
-  "brief": "A Kansas City contractor bills **3 federal contracts**, and some agencies paid late without interest.\n\n**Requested — $440 on 4 invoices:**\n- Due dates from receipt, acceptance and terms\n- Checked against the day the money landed\n- Interest to the cent on each late payment\n- The extra penalty where still inside 40 days\n\n**Left alone:**\n- An invoice in a quantity dispute\n- On time after a weekend, acceptance or reissue\n- A late payment that came with its interest\n- Eight cents of interest, under a dollar\n- August's invoice and a lapsed June penalty",
+  "brief": "A Kansas City contractor bills **3 federal contracts**, and some agencies paid late without interest.\n\n**Requested — $440.16 on 4 invoices:**\n- Due dates from receipt, acceptance and terms\n- Checked against the day the money landed\n- Interest to the cent on each late payment\n- The extra penalty where still inside 40 days\n\n**Left alone:**\n- An invoice in a quantity dispute\n- On time after a weekend, acceptance or reissue\n- A late payment that came with its interest\n- Eight cents of interest, under a dollar\n- August's invoice and a lapsed June penalty",
   "domain": "Government contracting",
   "audience": "work",
   "category": "public",
@@ -84,7 +84,7 @@
       "request_interest": "money_back",
       "request_penalty": "money_back"
     },
-    "basis": "An estimate. A contractor billing about $3.3 million a year to federal agencies, a fifth of it paid around 20 days late without interest (a State Department audit found 34% of sampled payments owed interest and 24% paid it), is owed about $1,740 of interest at 4.75% ($660,000 x 4.75% x 20/360 = $1,742). The additional penalty is owed only where the interest was not paid and is asked for within 40 days, so it does not double every payment: at the bench world's own ratio of penalty to interest ($177.16 / $263.00 = 0.67) it adds about $1,170, about $2,900 a year in all. The earlier $3,500 assumed a penalty on every late payment. The bench world holds $440.16 across four invoices, $263.00 of interest and $177.16 of penalties. Times a year: four, a quarterly sweep, as the world holds about four months of invoices.",
+    "basis": "- An estimate: a contractor billing about $3.3 million a year to federal agencies, a fifth of it paid around 20 days late without interest.\n- Source for the late share: a State Department audit found 34% of sampled payments owed interest and 24% paid it.\n- Interest at 4.75%: $660,000 x 4.75% x 20/360 = $1,742, about $1,740.\n- The additional penalty is owed only where interest was not paid and is asked for within 40 days, so it does not double every payment.\n- Penalty at the bench world's ratio ($177.16 / $263.00 = 0.67): about $1,170; about $2,900 a year in all.\n- The earlier $3,500 assumed a penalty on every late payment.\n- The bench world holds $440.16 across four invoices: $263.00 of interest and $177.16 of penalties.\n- Times a year: four, a quarterly sweep, as the world holds about four months of invoices.",
     "manual_minutes": 180,
     "times_per_year": 4,
     "incumbent": "None takes a share: the agency must pay the interest unasked, and in practice the contractor's own bookkeeper checks it, when anyone does.",
@@ -123,7 +123,7 @@
     "minutes": 60,
     "why": "A careful bookkeeper finds most of it; the bar is most of the interest and penalties, nothing asked on an invoice that was not late or not owed, inside an hour."
   },
-  "caveat": "Tallis Facility Services, its contracts and their agencies, Invoicepoint, Contractdesk, Ledgerline, Mailnest and every person here are invented. The rules are the Prompt Payment Act and 5 CFR Part 1315 with Treasury's published rate, fixed in the bench world as of October 2026; a contract's own payment clauses can change the dates, and a disputed amount goes under the Contract Disputes Act. This is not legal advice.",
+  "caveat": "- Tallis Facility Services, its contracts and their agencies, Invoicepoint, Contractdesk, Ledgerline, Mailnest and every person here are invented.\n- Rules: the Prompt Payment Act and 5 CFR Part 1315 with Treasury's published rate, fixed in the bench world as of October 2026.\n- A contract's own payment clauses can change the dates; a disputed amount goes under the Contract Disputes Act.\n- This is not legal advice.",
   "fit": {
     "where": "US",
     "where_note": "The federal Prompt Payment Act, for invoices under federal procurement contracts.",

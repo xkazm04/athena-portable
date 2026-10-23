@@ -364,15 +364,15 @@
       },
       {
         "topic": "set-asides",
-        "text": "Today is Friday 9 October 2026. A set-aside is open only to firms of the category the notice names. A small business set-aside is for firms small under the size standard of the NAICS code the notice assigns. HUBZone, service-disabled veteran-owned (SDVOSB), women-owned (WOSB) and 8(a) set-asides need the firm's SBA certification or designation, shown in SAM; a firm's own statement is not enough. A notice is Active, Closed (offers were due and are in) or Cancelled (the agency withdrew it)."
+        "text": "- Today is Friday 9 October 2026.\n- A set-aside is open only to firms of the category the notice names.\n- A small business set-aside is for firms small under the size standard of the NAICS code the notice assigns.\n- HUBZone, service-disabled veteran-owned (SDVOSB), women-owned (WOSB) and 8(a) set-asides need the firm's SBA certification or designation, shown in SAM;\n- a firm's own statement is not enough.\n- A notice is Active, Closed (offers were due and are in) or Cancelled (the agency withdrew it)."
       },
       {
         "topic": "size",
-        "text": "Today is Friday 9 October 2026. A firm is small if it does not exceed the size standard of the NAICS code the solicitation assigns, the standard in effect when it was issued; the notice states it. A receipts standard is measured on average annual receipts: the total over the most recently completed five fiscal years, divided by 5 (13 CFR 121.104). An employee standard is measured on the average over the preceding 24 months (121.106). One year above the standard does not matter if the average does not exceed it."
+        "text": "- Today is Friday 9 October 2026.\n- A firm is small if it does not exceed the size standard of the NAICS code the solicitation assigns, the standard in effect when it was issued; the notice states it.\n- A receipts standard is measured on average annual receipts: the total over the most recently completed five fiscal years, divided by 5 (13 CFR 121.104).\n- An employee standard is measured on the average over the preceding 24 months (121.106).\n- One year above the standard does not matter if the average does not exceed it."
       },
       {
         "topic": "subcontracting",
-        "text": "Today is Friday 9 October 2026. Under 13 CFR 125.6(a)(1) and clause 52.219-14, a small business awarded a services set-aside (other than construction) agrees that it will not pay more than 50 percent of the amount the government pays it to firms that are not similarly situated. For a small business set-aside, a similarly situated firm is a small business; a large business never is. A plan that gives a large business more than 50 percent of the price breaks the limit."
+        "text": "- Today is Friday 9 October 2026.\n- Under 13 CFR 125.6(a)(1) and clause 52.219-14, a small business awarded a services set-aside (other than construction) agrees that it will not pay more than 50 percent of the amount the government pays it to firms that are not similarly situated.\n- For a small business set-aside, a similarly situated firm is a small business; a large business never is.\n- A plan that gives a large business more than 50 percent of the price breaks the limit."
       },
       {
         "topic": "questions",
@@ -476,31 +476,31 @@
     "solicitation_detail": [
       {
         "solicitation_id": "BL-101",
-        "detail": "Help desk and desktop support for the Midlands Service Center, Department of Agriculture. Issued 28 Sep 2026. Set-aside: total small business. NAICS 541512, size standard $34.0 million in average annual receipts. Status: active. Questions due Fri 16 Oct 2026, 2:00 p.m. Central; none answered after. Offers due Fri 6 Nov 2026. Section L: price, and two references for help desk work for 150 users or more within five years. Section M: best value, technical approach and past performance over price. Amendments posted: none."
+        "detail": "- Help desk and desktop support for the Midlands Service Center, Department of Agriculture.\n- Issued 28 Sep 2026.\n- Set-aside: total small business.\n- NAICS 541512, size standard $34.0 million in average annual receipts.\n- Status: active.\n- Questions due Fri 16 Oct 2026, 2:00 p.m. Central; none answered after.\n- Offers due Fri 6 Nov 2026.\n- Section L: price, and two references for help desk work for 150 users or more within five years.\n- Section M: best value, technical approach and past performance over price.\n- Amendments posted: none."
       },
       {
         "solicitation_id": "BL-102",
-        "detail": "Facilities support (custodial, grounds and minor repair) for the Plains Field Office, Public Buildings Service, General Services Administration. Issued 21 Sep 2026. Set-aside: service-disabled veteran-owned small business (SDVOSB). NAICS 561210, size standard $47.0 million. Status: active. Questions due Thu 8 Oct 2026, 12:00 noon Central; none answered after. Offers due Fri 6 Nov 2026. Section L: price, and one reference for facilities support of 200,000 square feet or more. Section M: lowest price, technically acceptable. Amendments posted: 0001 (29 Sep 2026) corrects the hours of service. Amendments sent to interested vendors by post may not appear here yet."
+        "detail": "- Facilities support (custodial, grounds and minor repair) for the Plains Field Office, Public Buildings Service, General Services Administration.\n- Issued 21 Sep 2026.\n- Set-aside: service-disabled veteran-owned small business (SDVOSB).\n- NAICS 561210, size standard $47.0 million.\n- Status: active.\n- Questions due Thu 8 Oct 2026, 12:00 noon Central; none answered after.\n- Offers due Fri 6 Nov 2026.\n- Section L: price, and one reference for facilities support of 200,000 square feet or more.\n- Section M: lowest price, technically acceptable.\n- Amendments posted: 0001 (29 Sep 2026) corrects the hours of service.\n- Amendments sent to interested vendors by post may not appear here yet."
       },
       {
         "solicitation_id": "BL-103",
-        "detail": "Engineering services: condition surveys of buildings for the Lakeshore Land Office, Department of the Interior. Issued 30 Sep 2026. Set-aside: total small business. NAICS 541330, size standard $25.5 million in average annual receipts; no exception applies. Status: active. Questions due Wed 21 Oct 2026, 12:00 noon Eastern; none answered after. Offers due Mon 2 Nov 2026. Section L: price, and one reference for condition surveys of 20 buildings or more. Section M: best value. Amendments posted: none."
+        "detail": "- Engineering services: condition surveys of buildings for the Lakeshore Land Office, Department of the Interior.\n- Issued 30 Sep 2026.\n- Set-aside: total small business.\n- NAICS 541330, size standard $25.5 million in average annual receipts; no exception applies.\n- Status: active.\n- Questions due Wed 21 Oct 2026, 12:00 noon Eastern; none answered after.\n- Offers due Mon 2 Nov 2026.\n- Section L: price, and one reference for condition surveys of 20 buildings or more.\n- Section M: best value.\n- Amendments posted: none."
       },
       {
         "solicitation_id": "BL-104",
-        "detail": "Janitorial services for the Northern Region Service Center, Department of Labor. Issued 25 Sep 2026. Set-aside: total small business. NAICS 561720, size standard $22.0 million. Status: active. Questions due Wed 14 Oct 2026, 2:00 p.m. Central; none answered after. Offers due Fri 30 Oct 2026. Section L: price, one reference for janitorial work of 100,000 square feet or more, and a staffing plan showing how the offeror meets clause 52.219-14. Section M: lowest price, technically acceptable. Amendments posted: none."
+        "detail": "- Janitorial services for the Northern Region Service Center, Department of Labor.\n- Issued 25 Sep 2026.\n- Set-aside: total small business.\n- NAICS 561720, size standard $22.0 million.\n- Status: active.\n- Questions due Wed 14 Oct 2026, 2:00 p.m. Central; none answered after.\n- Offers due Fri 30 Oct 2026.\n- Section L: price, one reference for janitorial work of 100,000 square feet or more, and a staffing plan showing how the offeror meets clause 52.219-14.\n- Section M: lowest price, technically acceptable.\n- Amendments posted: none."
       },
       {
         "solicitation_id": "BL-105",
-        "detail": "Software maintenance and security monitoring for the Capital Region IT Office, Department of Housing. Issued 23 Sep 2026. Set-aside: service-disabled veteran-owned small business (SDVOSB). NAICS 541512, size standard $34.0 million. Status: active. Questions due Thu 15 Oct 2026, 12:00 noon Eastern. Offers due Fri 6 Nov 2026. Section L: price and one reference. Section M: best value. Amendments posted: none."
+        "detail": "- Software maintenance and security monitoring for the Capital Region IT Office, Department of Housing.\n- Issued 23 Sep 2026.\n- Set-aside: service-disabled veteran-owned small business (SDVOSB).\n- NAICS 541512, size standard $34.0 million.\n- Status: active.\n- Questions due Thu 15 Oct 2026, 12:00 noon Eastern.\n- Offers due Fri 6 Nov 2026.\n- Section L: price and one reference.\n- Section M: best value.\n- Amendments posted: none."
       },
       {
         "solicitation_id": "BL-106",
-        "detail": "Grounds maintenance and snow removal for the Northern Field Office, General Services Administration. Issued 24 Sep 2026. Set-aside: HUBZone small business. NAICS 561210, size standard $47.0 million. Status: active. Questions due Fri 16 Oct 2026, 12:00 noon Central. Offers due Fri 6 Nov 2026. Section L: price and one reference. Section M: lowest price, technically acceptable. Amendments posted: none."
+        "detail": "- Grounds maintenance and snow removal for the Northern Field Office, General Services Administration.\n- Issued 24 Sep 2026.\n- Set-aside: HUBZone small business.\n- NAICS 561210, size standard $47.0 million.\n- Status: active.\n- Questions due Fri 16 Oct 2026, 12:00 noon Central.\n- Offers due Fri 6 Nov 2026.\n- Section L: price and one reference.\n- Section M: lowest price, technically acceptable.\n- Amendments posted: none."
       },
       {
         "solicitation_id": "BL-107",
-        "detail": "Heating, ventilation and air-conditioning maintenance for the Eastern Field Office, General Services Administration. Issued 22 Sep 2026. Set-aside: total small business. NAICS 238220, size standard $19.0 million in average annual receipts. Status: active. Questions due Wed 14 Oct 2026, 12:00 noon Eastern. Offers due Mon 2 Nov 2026. Section L: price and one reference. Section M: best value. Amendments posted: none."
+        "detail": "- Heating, ventilation and air-conditioning maintenance for the Eastern Field Office, General Services Administration.\n- Issued 22 Sep 2026.\n- Set-aside: total small business.\n- NAICS 238220, size standard $19.0 million in average annual receipts.\n- Status: active.\n- Questions due Wed 14 Oct 2026, 12:00 noon Eastern.\n- Offers due Mon 2 Nov 2026.\n- Section L: price and one reference.\n- Section M: best value.\n- Amendments posted: none."
       },
       {
         "solicitation_id": "BL-108",
@@ -512,11 +512,11 @@
       },
       {
         "solicitation_id": "BL-111",
-        "detail": "IT asset inventory and disposal support for the Southwest Operations Office, Department of Energy. Issued 17 Sep 2026. Set-aside: total small business. NAICS 541512, size standard $34.0 million. Status: active. Questions due Wed 7 Oct 2026, 3:00 p.m. Eastern; none answered after. Offers due Fri 30 Oct 2026. Section L: price and one reference for asset inventory of 5,000 items or more. Section M: best value. Amendments posted: none."
+        "detail": "- IT asset inventory and disposal support for the Southwest Operations Office, Department of Energy.\n- Issued 17 Sep 2026.\n- Set-aside: total small business.\n- NAICS 541512, size standard $34.0 million.\n- Status: active.\n- Questions due Wed 7 Oct 2026, 3:00 p.m. Eastern; none answered after.\n- Offers due Fri 30 Oct 2026.\n- Section L: price and one reference for asset inventory of 5,000 items or more.\n- Section M: best value.\n- Amendments posted: none."
       },
       {
         "solicitation_id": "BL-112",
-        "detail": "Engineering survey support for the Prairie Land Office, Department of the Interior. Issued 29 Sep 2026. Set-aside: total small business. NAICS 541330, size standard $25.5 million; no exception applies. Status: active. Questions due Fri 16 Oct 2026, 12:00 noon Central. Offers due Mon 2 Nov 2026. Section L: price and one reference. Section M: best value. Amendments posted: none. Amendments sent to interested vendors by post may not appear here yet."
+        "detail": "- Engineering survey support for the Prairie Land Office, Department of the Interior.\n- Issued 29 Sep 2026.\n- Set-aside: total small business.\n- NAICS 541330, size standard $25.5 million; no exception applies.\n- Status: active.\n- Questions due Fri 16 Oct 2026, 12:00 noon Central.\n- Offers due Mon 2 Nov 2026.\n- Section L: price and one reference.\n- Section M: best value.\n- Amendments posted: none.\n- Amendments sent to interested vendors by post may not appear here yet."
       }
     ],
     "county_rules": [
@@ -578,7 +578,7 @@
       },
       {
         "topic": "keep",
-        "text": "Today is Friday 9 October 2026. Larkfield keeps a solicitation for a bid when, on its latest amendment wherever read: (1) it is active, not cancelled or closed; (2) the firm holds the category of its set-aside, or it is open to all; (3) the firm does not exceed the size standard of the NAICS code it assigns, on the size record; (4) for a services set-aside, the teaming plan on the worksheet keeps the share to firms that are not similarly situated at 50 percent or less; (5) a county notice reserved for a group is one the firm belongs to. Keeping notifies the bid team. No offer goes out without the owner's review."
+        "text": "- Today is Friday 9 October 2026.\n- Larkfield keeps a solicitation for a bid when, on its latest amendment wherever read:\n- (1) it is active, not cancelled or closed;\n- (2) the firm holds the category of its set-aside, or it is open to all;\n- (3) the firm does not exceed the size standard of the NAICS code it assigns, on the size record;\n- (4) for a services set-aside, the teaming plan on the worksheet keeps the share to firms that are not similarly situated at 50 percent or less;\n- (5) a county notice reserved for a group is one the firm belongs to.\n- Keeping notifies the bid team.\n- No offer goes out without the owner's review."
       },
       {
         "topic": "questions",
@@ -608,7 +608,7 @@
       },
       {
         "topic": "past-performance",
-        "text": "Today is Friday 9 October 2026. (1) Help desk and desktop support, a state revenue department, 2021 to 2025, 420 users. (2) Help desk, a county hospital district, 2022 to 2026, 260 users. (3) Facilities support, custodial and grounds, a federal courthouse annex, 240,000 square feet, 2022 to 2026. (4) Condition surveys, a state university system, 2023 to 2025, 31 buildings. (5) Records scanning, a city clerk, 2024, 1.8 million pages. (6) IT asset inventory and disposal, a school district, 2023 to 2025, 7,200 items. (7) Janitorial services, a private office park, 2024 to 2026, 60,000 square feet."
+        "text": "- Today is Friday 9 October 2026.\n- (1) Help desk and desktop support, a state revenue department, 2021 to 2025, 420 users.\n- (2) Help desk, a county hospital district, 2022 to 2026, 260 users.\n- (3) Facilities support, custodial and grounds, a federal courthouse annex, 240,000 square feet, 2022 to 2026.\n- (4) Condition surveys, a state university system, 2023 to 2025, 31 buildings.\n- (5) Records scanning, a city clerk, 2024, 1.8 million pages.\n- (6) IT asset inventory and disposal, a school district, 2023 to 2025, 7,200 items.\n- (7) Janitorial services, a private office park, 2024 to 2026, 60,000 square feet."
       }
     ],
     "worksheet": [
@@ -720,7 +720,7 @@
         "message_id": "M-1",
         "date": "Thu 8 Oct 2026",
         "from": "Plains Field Office, General Services Administration",
-        "text": "Letter received by post on 8 Oct 2026 and scanned. AMENDMENT OF SOLICITATION BL-102, Amendment 0002, issued 5 Oct 2026, to interested vendors. 1. The set-aside is changed from service-disabled veteran-owned small business to total small business. NAICS 561210 and its size standard of $47.0 million are unchanged. 2. The deadline for questions is changed to Wed 14 Oct 2026, 12:00 noon Central. 3. Offers are due Fri 13 Nov 2026. All other terms are unchanged. Contracting Officer, Plains Field Office."
+        "text": "- Letter received by post on 8 Oct 2026 and scanned.\n- AMENDMENT OF SOLICITATION BL-102, Amendment 0002, issued 5 Oct 2026, to interested vendors.\n- 1. The set-aside is changed from service-disabled veteran-owned small business to total small business.\n- NAICS 561210 and its size standard of $47.0 million are unchanged.\n- 2. The deadline for questions is changed to Wed 14 Oct 2026, 12:00 noon Central.\n- 3. Offers are due Fri 13 Nov 2026.\n- All other terms are unchanged.\n- Contracting Officer, Plains Field Office."
       },
       {
         "message_id": "M-2",
@@ -732,7 +732,7 @@
         "message_id": "M-3",
         "date": "Wed 7 Oct 2026",
         "from": "Prairie Land Office, Department of the Interior",
-        "text": "Letter received by post on 7 Oct 2026 and scanned. AMENDMENT OF SOLICITATION BL-112, Amendment 0003, issued 5 Oct 2026, to interested vendors. 1. The set-aside is changed from total small business to the 8(a) Business Development program; only SBA-certified 8(a) participants may submit offers. 2. NAICS 541330, its size standard of $25.5 million and all dates are unchanged. Contracting Officer, Prairie Land Office."
+        "text": "- Letter received by post on 7 Oct 2026 and scanned.\n- AMENDMENT OF SOLICITATION BL-112, Amendment 0003, issued 5 Oct 2026, to interested vendors.\n- 1. The set-aside is changed from total small business to the 8(a) Business Development program; only SBA-certified 8(a) participants may submit offers.\n- 2. NAICS 541330, its size standard of $25.5 million and all dates are unchanged.\n- Contracting Officer, Prairie Land Office."
       },
       {
         "message_id": "M-4",

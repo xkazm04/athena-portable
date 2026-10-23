@@ -450,15 +450,15 @@
       },
       {
         "order_id": "O-4103",
-        "review": "As ordered: Corvane Instruments Ltd., 88 Dufferin Street, Unit 4, Toronto, Canada; Ontario business number 1002893417. Entity List entry (Supplement No. 4 to Part 744, under China): 'Corvane Instrument Technology Co., Ltd., a.k.a. Shenzhen Corvane Instrument Co. Room 1203, Tower B, 18 Keyuan Road, Nanshan District, Shenzhen, China'; unified social credit code 91440300MA5F7X2K1Q. License requirement: for all items subject to the EAR. License review policy: presumption of denial. Added 13 May 2024. Name: similar ('Instruments Ltd.' against 'Instrument Technology Co., Ltd.'); no a.k.a. matches. Address: different. Country: different (Canada against China). Identifier: different. The entry gives no address outside Shenzhen."
+        "review": "- As ordered: Corvane Instruments Ltd., 88 Dufferin Street, Unit 4, Toronto, Canada; Ontario business number 1002893417.\n- Entity List entry (Supplement No. 4 to Part 744, under China): 'Corvane Instrument Technology Co., Ltd., a.k.a. Shenzhen Corvane Instrument Co. Room 1203, Tower B, 18 Keyuan Road, Nanshan District, Shenzhen, China'; unified social credit code 91440300MA5F7X2K1Q.\n- License requirement: for all items subject to the EAR.\n- License review policy: presumption of denial.\n- Added 13 May 2024.\n- Name: similar ('Instruments Ltd.' against 'Instrument Technology Co., Ltd.'); no a.k.a. matches.\n- Address: different.\n- Country: different (Canada against China).\n- Identifier: different.\n- The entry gives no address outside Shenzhen."
       },
       {
         "order_id": "O-4104",
-        "review": "As ordered: Sorvan Trading FZE, Warehouse B-17, Jebel Ali Free Zone, Dubai, UAE; free zone licence JAFZA-118204, issued 2016. SDN List entry: 'SORVAN TRADING COMPANY, No. 41 Shahid Beheshti Street, Tehran, Iran; Registration ID 10102847 (Iran); [IRAN-EO13902]'. Name: similar ('Trading FZE' against 'Trading Company'). Address: different. Country: different (UAE against Iran). Identifier: different. The entry lists no alias, address, owner or linked entity in the UAE."
+        "review": "- As ordered: Sorvan Trading FZE, Warehouse B-17, Jebel Ali Free Zone, Dubai, UAE; free zone licence JAFZA-118204, issued 2016.\n- SDN List entry: 'SORVAN TRADING COMPANY, No. 41 Shahid Beheshti Street, Tehran, Iran; Registration ID 10102847 (Iran); [IRAN-EO13902]'.\n- Name: similar ('Trading FZE' against 'Trading Company').\n- Address: different.\n- Country: different (UAE against Iran).\n- Identifier: different.\n- The entry lists no alias, address, owner or linked entity in the UAE."
       },
       {
         "order_id": "O-4105",
-        "review": "As ordered: Chengdu Qiaolin Microsystems Technology Co., No. 9 Kexin Road, Gaoxin District, Chengdu, Sichuan, China. Entity List entry (Supplement No. 4 to Part 744, under China): 'Qiaolin Microsystems Co., Ltd., a.k.a. the following two aliases: -Chengdu Qiaolin Microsystems Technology Co.; and -Qiaolin Thermal Test Systems. No. 9 Kexin Road, Gaoxin District, Chengdu, Sichuan, China'. License requirement: for all items subject to the EAR (see 744.11 of the EAR). License review policy: presumption of denial. Added 2 September 2025. Name: the order's name is the entry's first a.k.a. Address: same. Country: same."
+        "review": "- As ordered: Chengdu Qiaolin Microsystems Technology Co., No. 9 Kexin Road, Gaoxin District, Chengdu, Sichuan, China.\n- Entity List entry (Supplement No. 4 to Part 744, under China): 'Qiaolin Microsystems Co., Ltd., a.k.a. the following two aliases: -Chengdu Qiaolin Microsystems Technology Co.; and -Qiaolin Thermal Test Systems. No. 9 Kexin Road, Gaoxin District, Chengdu, Sichuan, China'.\n- License requirement: for all items subject to the EAR (see 744.11 of the EAR).\n- License review policy: presumption of denial.\n- Added 2 September 2025.\n- Name: the order's name is the entry's first a.k.a.\n- Address: same.\n- Country: same."
       },
       {
         "order_id": "O-4106",
@@ -515,15 +515,15 @@
       },
       {
         "topic": "screening",
-        "text": "Screening is the exporter's own control. The law bars the export, not a missed search: the EAR bar exports to a listed party without the license its entry requires, or in breach of a denial order, and OFAC's sanctions bar dealings with a blocked person. The Consolidated Screening List is an aid to a search. When a party appears to match, more diligence is due before going on, and the official lists in the Federal Register and on the agencies' own sites govern. A search does not decide; the review of each potential match does."
+        "text": "- Screening is the exporter's own control.\n- The law bars the export, not a missed search: the EAR bar exports to a listed party without the license its entry requires, or in breach of a denial order, and OFAC's sanctions bar dealings with a blocked person.\n- The Consolidated Screening List is an aid to a search.\n- When a party appears to match, more diligence is due before going on, and the official lists in the Federal Register and on the agencies' own sites govern.\n- A search does not decide; the review of each potential match does."
       },
       {
         "topic": "matches",
-        "text": "A potential match is a name that scores close to a list entry. It is not yet a match. Compare the party with the whole entry: its name and every a.k.a., its address, its country, and its identifiers, such as a registration number. A party whose name matches the entry's name or one of its a.k.a. names, at the entry's address, is the listed party, whatever the score. A party that is close on name only, and differs on address, country and identifier, with no a.k.a. or address on the entry that fits it, is not the listed party: clear it and record why. A score is not a finding either way."
+        "text": "- A potential match is a name that scores close to a list entry.\n- It is not yet a match.\n- Compare the party with the whole entry: its name and every a.k.a., its address, its country, and its identifiers, such as a registration number.\n- A party whose name matches the entry's name or one of its a.k.a. names, at the entry's address, is the listed party, whatever the score.\n- A party that is close on name only, and differs on address, country and identifier, with no a.k.a. or address on the entry that fits it, is not the listed party: clear it and record why.\n- A score is not a finding either way."
       },
       {
         "topic": "entity-list",
-        "text": "15 CFR 744.11 and Supplement No. 4 to Part 744. When a listed entity is a party to the transaction, a license is required to the extent its entry states. Most entries say 'for all items subject to the EAR', which includes EAR99 items, and set a license review policy, often a presumption of denial. No license exception is available unless the entry says so. Without a license, the order cannot ship to that entity."
+        "text": "- 15 CFR 744.11 and Supplement No. 4 to Part 744.\n- When a listed entity is a party to the transaction, a license is required to the extent its entry states.\n- Most entries say 'for all items subject to the EAR', which includes EAR99 items, and set a license review policy, often a presumption of denial.\n- No license exception is available unless the entry says so.\n- Without a license, the order cannot ship to that entity."
       },
       {
         "topic": "denied-persons",
@@ -531,7 +531,7 @@
       },
       {
         "topic": "unverified",
-        "text": "15 CFR 744.15 and Supplement No. 6 to Part 744. A party on the Unverified List bars every license exception. Before an export that needs no license, the exporter must obtain the party's UVL statement: in writing, signed and dated by someone with authority to bind it, giving its name and complete physical address (a post office box is not enough), phone, fax, email, website and the signer's name and title; agreeing not to use or pass on the items against the EAR; declaring the end use, end user and country of ultimate destination; agreeing to cooperate with end-use checks; agreeing to provide records; and certifying the signer's authority. One statement may cover more exports of the same items between the same parties, with a log. Electronic Export Information is filed for every such export, whatever its value (758.1(b)(8)). Without a statement that meets all of this, the export may not proceed."
+        "text": "- 15 CFR 744.15 and Supplement No. 6 to Part 744.\n- A party on the Unverified List bars every license exception.\n- Before an export that needs no license, the exporter must obtain the party's UVL statement, which must:\n- be in writing, signed and dated by someone with authority to bind it;\n- give its name and complete physical address (a post office box is not enough), phone, fax, email, website and the signer's name and title;\n- agree not to use or pass on the items against the EAR;\n- declare the end use, end user and country of ultimate destination;\n- agree to cooperate with end-use checks;\n- agree to provide records;\n- certify the signer's authority.\n- One statement may cover more exports of the same items between the same parties, with a log.\n- Electronic Export Information is filed for every such export, whatever its value (758.1(b)(8)).\n- Without a statement that meets all of this, the export may not proceed."
       },
       {
         "topic": "sdn",
@@ -539,11 +539,11 @@
       },
       {
         "topic": "ownership",
-        "text": "OFAC's 50 Percent Rule (revised guidance of 13 August 2014): an entity owned 50 percent or more, directly or indirectly, individually or in the aggregate, by one or more blocked persons is itself blocked, listed or not. BIS's affiliates rule (90 FR 47201, 30 September 2025) extends Entity List license requirements to entities owned 50 percent or more by listed entities, but 90 FR 50857 stays it, and its Red Flag 29, from 10 November 2025 until 9 November 2026. It returns on 10 November 2026. Today, an order that ships to an unlisted affiliate of an Entity List entity needs no license on the ground of its owner alone."
+        "text": "- OFAC's 50 Percent Rule (revised guidance of 13 August 2014): an entity owned 50 percent or more, directly or indirectly, individually or in the aggregate, by one or more blocked persons is itself blocked, listed or not.\n- BIS's affiliates rule (90 FR 47201, 30 September 2025) extends Entity List license requirements to entities owned 50 percent or more by listed entities.\n- But 90 FR 50857 stays it, and its Red Flag 29, from 10 November 2025 until 9 November 2026.\n- It returns on 10 November 2026.\n- Today, an order that ships to an unlisted affiliate of an Entity List entity needs no license on the ground of its owner alone."
       },
       {
         "topic": "red-flags",
-        "text": "BIS's Know Your Customer guidance (Supplement No. 3 to Part 732). With no red flag, an exporter may rely on the customer's statements. When a red flag appears, it must check out the circumstances and ask about the end use, end user and destination; if the flag cannot be explained, refrain from the transaction or put the facts to BIS. Do not self-blind. Red flags include a customer reluctant to give the end use (1), a freight forwarder named as the final destination (9), and a buyer evasive about where the product goes (12). A request to describe the goods as something they are not asks for a false export record, which 15 CFR 764.2(g) forbids."
+        "text": "- BIS's Know Your Customer guidance (Supplement No. 3 to Part 732).\n- With no red flag, an exporter may rely on the customer's statements.\n- When a red flag appears, it must check out the circumstances and ask about the end use, end user and destination.\n- If the flag cannot be explained, refrain from the transaction or put the facts to BIS.\n- Do not self-blind.\n- Red flags include a customer reluctant to give the end use (1), a freight forwarder named as the final destination (9), and a buyer evasive about where the product goes (12).\n- A request to describe the goods as something they are not asks for a false export record, which 15 CFR 764.2(g) forbids."
       }
     ],
     "messages": [
@@ -587,7 +587,7 @@
         "date": "Fri 2 Oct 2026",
         "from": "Rohan Mehta, Ashvant Electronics <director@ashvant-electronics.example>",
         "subject": "Signed UVL statement for your orders",
-        "body": "Attached on letterhead, signed and dated 2 October 2026 by Rohan Mehta, Managing Director, who certifies he is authorised to bind the company: Ashvant Electronics Pvt. Ltd., Plot 22, MIDC Bhosari, Pune 411026, Maharashtra, India (shipping, corporate and end-user address); phone +91 20 4000 2210; fax +91 20 4000 2211; director@ashvant-electronics.example; www.ashvant-electronics.example. Items: TS-200 temperature sensors, EAR99. We agree not to use the items for any use the EAR prohibit, nor to reexport or transfer them against the EAR. End use: temperature loggers for pharmaceutical cold-chain clients; end user: Ashvant Electronics; country: India. We agree to cooperate with end-use checks, including a post-shipment verification, and to provide copies of our records. Quillmont's file: received and filed 2 October 2026."
+        "body": "- Attached on letterhead, signed and dated 2 October 2026 by Rohan Mehta, Managing Director, who certifies he is authorised to bind the company.\n- Company: Ashvant Electronics Pvt. Ltd., Plot 22, MIDC Bhosari, Pune 411026, Maharashtra, India (shipping, corporate and end-user address).\n- Phone +91 20 4000 2210; fax +91 20 4000 2211.\n- Email director@ashvant-electronics.example; web www.ashvant-electronics.example.\n- Items: TS-200 temperature sensors, EAR99.\n- We agree not to use the items for any use the EAR prohibit, nor to reexport or transfer them against the EAR.\n- End use: temperature loggers for pharmaceutical cold-chain clients; end user: Ashvant Electronics; country: India.\n- We agree to cooperate with end-use checks, including a post-shipment verification, and to provide copies of our records.\n- Quillmont's file: received and filed 2 October 2026."
       },
       {
         "message_id": "M-1",
@@ -604,11 +604,11 @@
       },
       {
         "topic": "release",
-        "text": "An order is released when every party to it is cleared: no potential match, or each potential match reviewed field by field and recorded as not the listed party; no owner that makes it a blocked person; no red flag left unresolved; and, for an Unverified List party, a UVL statement on file that meets 15 CFR 744.15(b). An order that can ship is released today, with a note of why it cleared. Holding a cleared customer's order is a lost sale and tells an innocent customer it is suspected."
+        "text": "- An order is released when every party to it is cleared:\n- no potential match, or each potential match reviewed field by field and recorded as not the listed party;\n- no owner that makes it a blocked person;\n- no red flag left unresolved;\n- and, for an Unverified List party, a UVL statement on file that meets 15 CFR 744.15(b).\n- An order that can ship is released today, with a note of why it cleared.\n- Holding a cleared customer's order is a lost sale and tells an innocent customer it is suspected."
       },
       {
         "topic": "hold",
-        "text": "An order is held, with its reason, when a party is the listed party on the Entity List and no license is held, or on the Denied Persons List; when a party is blocked under OFAC's rules, by listing or by ownership; when an Unverified List party's statement is missing or does not meet 744.15(b); or when a red flag has not been resolved. A held order does not ship. Where the rules in force allow either, as for an unlisted affiliate of an Entity List entity while BIS's affiliates rule is stayed, the compliance coordinator decides and records why."
+        "text": "- An order is held, with its reason, when:\n- a party is the listed party on the Entity List and no license is held, or on the Denied Persons List;\n- a party is blocked under OFAC's rules, by listing or by ownership;\n- an Unverified List party's statement is missing or does not meet 744.15(b);\n- or a red flag has not been resolved.\n- A held order does not ship.\n- Where the rules in force allow either, as for an unlisted affiliate of an Entity List entity while BIS's affiliates rule is stayed, the compliance coordinator decides and records why."
       },
       {
         "topic": "items",

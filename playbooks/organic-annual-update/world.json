@@ -310,11 +310,11 @@
       },
       {
         "topic": "suppliers",
-        "text": "Friday 9 October 2026. A supplier's organic status is read in the Organic Integrity Database, here the registry Organicheck, and not from its paper certificate, which can be older or newer than the status. Certified means current. Suspended, revoked, surrendered or expired means not certified. A supplier of organic ingredients that is no longer certified is reported in the update and taken off the approved list. A supplier of only a non-organic product is outside the plan."
+        "text": "- Friday 9 October 2026.\n- A supplier's organic status is read in the Organic Integrity Database, here the registry Organicheck, and not from its paper certificate, which can be older or newer than the status.\n- Certified means current.\n- Suspended, revoked, surrendered or expired means not certified.\n- A supplier of organic ingredients that is no longer certified is reported in the update and taken off the approved list.\n- A supplier of only a non-organic product is outside the plan."
       },
       {
         "topic": "imports",
-        "text": "Friday 9 October 2026. Each organic import needs an NOP Import Certificate issued in the Organic Integrity Database (205.273), and the importer verifies that its data match the shipment: the product and the quantity. Log the certificate number of each import that matches. A shipment that does not match is not logged as compliant. A domestic purchase, or an import of a non-organic product, needs no certificate."
+        "text": "- Friday 9 October 2026.\n- Each organic import needs an NOP Import Certificate issued in the Organic Integrity Database (205.273), and the importer verifies that its data match the shipment: the product and the quantity.\n- Log the certificate number of each import that matches.\n- A shipment that does not match is not logged as compliant.\n- A domestic purchase, or an import of a non-organic product, needs no certificate."
       },
       {
         "topic": "exempt",
@@ -333,7 +333,7 @@
       {
         "doc_id": "D-1",
         "title": "Organic system plan, accepted 14 November 2025",
-        "text": "Plan accepted 14 November 2025 for Marrowby Mills LLC, product Organic Granola. Approved organic suppliers: Verdane Oats Cooperative, Honeyfield Apiary, Sunmere Almond Growers, Pellwick Pantry Supply, Lowmoor Coconut Oil, Ceylonwell Spice, Cacaoreef Traders, Vallambra Vanilla. Premises: one warehouse, Dock A. Equipment: one oat roaster, one drying line. Suppliers are verified on receipt of their paper certificates."
+        "text": "- Plan accepted 14 November 2025 for Marrowby Mills LLC, product Organic Granola.\n- Approved organic suppliers: Verdane Oats Cooperative, Honeyfield Apiary, Sunmere Almond Growers, Pellwick Pantry Supply, Lowmoor Coconut Oil, Ceylonwell Spice, Cacaoreef Traders, Vallambra Vanilla.\n- Premises: one warehouse, Dock A.\n- Equipment: one oat roaster, one drying line.\n- Suppliers are verified on receipt of their paper certificates."
       },
       {
         "doc_id": "D-2",

@@ -88,7 +88,7 @@
       "file_drawback_claim": "money_back"
     },
     "per": "year",
-    "basis": "Drawback returns 99% of the duties paid on imports that are exported or go into exported goods (19 U.S.C. 1313). The roster's $30,000 a year is an estimate for a mid-size manufacturer exporting a fifth of its output made from duty-paid parts, not a statistic. The bench world holds $13,747.14 owed across four exports in five months. Times a year: two, since the world holds five months of exports swept at once and the five years to file leave room to batch.",
+    "basis": "- Drawback returns 99% of the duties paid on imports that are exported or go into exported goods (19 U.S.C. 1313).\n- The roster's $30,000 a year is an estimate, not a statistic: a mid-size manufacturer exporting a fifth of its output made from duty-paid parts.\n- The bench world holds $13,747.14 owed across four exports in five months.\n- Times a year: two; the world holds five months of exports swept at once, and the five years to file leave room to batch.",
     "manual_minutes": 300,
     "times_per_year": 2,
     "incumbent": "Drawback specialists and customs brokers mostly work on contingency, typically 20 to 35% of the refund (one comparison found 2% to half). The figure used is 25%, an estimate.",
@@ -124,5 +124,5 @@
     "minutes": 60,
     "why": "A careful controller recovers most of it; the bar is most of the refund, no claim the rule excludes, inside an hour."
   },
-  "caveat": "Quillon Pumps, Portline, Forwarden, Ledgerline, Docshelf, Ohio Motor Supply and every person here are invented. The rules are 19 U.S.C. 1313 and 19 CFR Part 190 as in force in October 2026, applied to ordinary duties only: duties imposed under emergency or national-security tariff actions, which their own orders may exclude from drawback, are not in this world. CBP decides each claim, and a licensed customs broker or a lawyer should be asked before a real one; this is not legal advice."
+  "caveat": "- Quillon Pumps, Portline, Forwarden, Ledgerline, Docshelf, Ohio Motor Supply and every person here are invented.\n- Rules: 19 U.S.C. 1313 and 19 CFR Part 190 as in force in October 2026, applied to ordinary duties only.\n- Duties imposed under emergency or national-security tariff actions, which their own orders may exclude from drawback, are not in this world.\n- CBP decides each claim; ask a licensed customs broker or a lawyer before a real one.\n- This is not legal advice."
 }

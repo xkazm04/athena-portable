@@ -2,7 +2,7 @@
   "id": "inspection-scheduling",
   "title": "City inspections booked in sequence on two cities' portals, on the first day each can happen",
   "short_title": "Inspections booked for the first possible day",
-  "brief": "A contractor's coordinator books inspections for jobs in **two cities**, on two portals.\n\n**Booked for the first day each can happen:**\n- After a city holiday\n- On a day someone is on site\n- Before a pour that would cover it\n- Only once corrections are done\n\n**Left alone:**\n- Anything out of sequence or not ready\n- A gas inspection already booked\n- A foundation that already passed\n- A re-inspection while a guardrail is being made",
+  "brief": "A contractor's coordinator books inspections for jobs in **two cities**, on two portals.\n\n**Booked — 6 inspections, each for the first day it can happen:**\n- After a city holiday\n- On a day someone is on site\n- Before a pour that would cover it\n- Only once corrections are done\n\n**Left alone:**\n- Anything out of sequence or not ready\n- A gas inspection already booked\n- A foundation that already passed\n- A re-inspection while a guardrail is being made",
   "domain": "Construction",
   "audience": "work",
   "category": "construction",
@@ -83,7 +83,7 @@
       "request_inspection": "count",
       "schedule_inspection": "count"
     },
-    "basis": "An estimate. A coordinator checking two cities' portals, the field status and the crew calendar every week spends about an hour and a half on it, about 75 hours a year, already shown as time saved and not counted again here. A booking that fails for sequence, readiness or nobody on site costs a re-inspection fee and a day of a held crew; the roster's earlier $8,000 a year less the 75 hours at $50 ($3,750) leaves $4,250 a year of those avoided, an estimate with no published source. Each booking in the bench world is weighted at $400, a scoring weight for a day of site overhead, not money recovered. Times a year: fifty, a weekly sweep.",
+    "basis": "- An estimate.\n- A coordinator checking two cities' portals, the field status and the crew calendar every week spends about an hour and a half on it, about 75 hours a year.\n- Those hours are already shown as time saved and not counted again here.\n- A booking that fails for sequence, readiness or nobody on site costs a re-inspection fee and a day of a held crew.\n- The roster's earlier $8,000 a year less the 75 hours at $50 ($3,750) leaves $4,250 a year of those avoided.\n- That is an estimate with no published source.\n- Each booking in the bench world is weighted at $400, a scoring weight for a day of site overhead, not money recovered.\n- Times a year: fifty, a weekly sweep.",
     "manual_minutes": 90,
     "times_per_year": 50,
     "incumbent": "None takes a share: the coordinator or the superintendents do it, and expediters bill by the hour or by the permit.",
@@ -110,7 +110,7 @@
     "minutes": 60,
     "why": "A careful coordinator gets most of it; the bar is most of the ready inspections booked on a day that works, nothing out of sequence, early or twice, inside an hour."
   },
-  "caveat": "Halberd Builders, Linden Court, Merrow Feed & Supply, the Cities of Ashford and Merrow, Permitway, Civicdesk, Sitegrid and every person here are invented. The rule is section 110 of the International Building Code, which each city adopts with its own amendments, fees and scheduling rules; the bench world fixes them as of October 2026. Real inspection sequences differ by jurisdiction. This is not legal or code advice.",
+  "caveat": "- Halberd Builders, Linden Court, Merrow Feed & Supply, the Cities of Ashford and Merrow, Permitway, Civicdesk, Sitegrid and every person here are invented.\n- The rule is section 110 of the International Building Code, which each city adopts with its own amendments, fees and scheduling rules.\n- The bench world fixes them as of October 2026.\n- Real inspection sequences differ by jurisdiction.\n- This is not legal or code advice.",
   "fit": {
     "where": "US",
     "where_note": "City permit portals and the model building codes; each city sets its own cutoffs and holidays.",

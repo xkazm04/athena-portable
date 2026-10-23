@@ -555,7 +555,7 @@
         "bol": "all",
         "kind": "checklist",
         "title": "Thistlewood's freight claims checklist",
-        "text": "Today is Friday 9 October 2026. Our checklist, from 49 CFR Part 370 and our carriers' terms. 1. A claim is a written claim to the carrier that moved the freight (the one that picked it up or delivered it), identifying the shipment, asserting the carrier's liability and asking for a specified amount. A notation on a delivery receipt, an inspection report or a trace request is not a claim. 2. Amount: our actual loss, the invoice price to our customer of each unit lost or broken (invoices in Docshelf). Freight is prepaid and not claimed; broken units have no salvage value. 3. On a released-value shipment, claim the released value (the article's weight times the rate per pound) when it is less than the loss. 4. Attach the bill of lading, the delivery receipt, the invoice and, for damage, the photos and any inspection report. 5. File within the carrier's time limit (never less than 9 months, by federal law). 6. We do not claim damage that happened after delivery, or damage our own packing caused."
+        "text": "- Today is Friday 9 October 2026.\n- Our checklist, from 49 CFR Part 370 and our carriers' terms.\n- 1. A claim is a written claim to the carrier that moved the freight (the one that picked it up or delivered it).\n- It identifies the shipment, asserts the carrier's liability and asks for a specified amount.\n- A notation on a delivery receipt, an inspection report or a trace request is not a claim.\n- 2. Amount: our actual loss, the invoice price to our customer of each unit lost or broken (invoices in Docshelf).\n- Freight is prepaid and not claimed.\n- Broken units have no salvage value.\n- 3. On a released-value shipment, claim the released value (the article's weight times the rate per pound) when it is less than the loss.\n- 4. Attach the bill of lading, the delivery receipt, the invoice and, for damage, the photos and any inspection report.\n- 5. File within the carrier's time limit (never less than 9 months, by federal law).\n- 6. We do not claim damage that happened after delivery, or damage our own packing caused."
       },
       {
         "doc_id": "D-2",
@@ -660,7 +660,7 @@
       },
       {
         "topic": "filing",
-        "text": "49 CFR 370.3(b): a claim is a written communication that identifies the shipment, asserts Harrowgate's liability for the loss or damage, and claims a specified or determinable amount. 370.3(c): a notation of shortage or damage on a delivery receipt, a bad order report or an inspection report does not, standing alone, make a claim. 370.7(b): attach the bill of lading, the invoice, and proof of the loss. One claim per bill of lading."
+        "text": "- 49 CFR 370.3(b): a claim is a written communication that identifies the shipment, asserts Harrowgate's liability for the loss or damage, and claims a specified or determinable amount.\n- 370.3(c): a notation of shortage or damage on a delivery receipt, a bad order report or an inspection report does not, standing alone, make a claim.\n- 370.7(b): attach the bill of lading, the invoice, and proof of the loss.\n- One claim per bill of lading."
       },
       {
         "topic": "time-limits",
@@ -668,15 +668,15 @@
       },
       {
         "topic": "concealed",
-        "text": "Rules Tariff HGF-100, item 410: concealed loss or damage (found after a delivery receipt was signed without exception) should be reported to Harrowgate within 5 business days of delivery, with the cartons and packing kept for inspection. A clean delivery receipt is evidence of good-order delivery, not a bar to a claim; the claimant shows the goods were tendered in good order and the damage happened before delivery. Item 410 does not shorten the 9 months to file a claim."
+        "text": "- Rules Tariff HGF-100, item 410: concealed loss or damage (found after a delivery receipt was signed without exception) should be reported to Harrowgate within 5 business days of delivery.\n- The cartons and packing should be kept for inspection.\n- A clean delivery receipt is evidence of good-order delivery, not a bar to a claim.\n- The claimant shows the goods were tendered in good order and the damage happened before delivery.\n- Item 410 does not shorten the 9 months to file a claim."
       },
       {
         "topic": "released-value",
-        "text": "Rules Tariff HGF-100, item 780, under 49 U.S.C. 14706(c)(1)(A): when the shipper chooses Harrowgate's released rate and signs the released-value declaration on the bill of lading, Harrowgate's liability for loss or damage is limited to $2.00 per pound of each lost or damaged article. On a released-value shipment, the claim is for the released value (the article's weight times $2.00) when that is less than the actual loss. Without a signed declaration, liability is the full actual loss."
+        "text": "- Rules Tariff HGF-100, item 780, under 49 U.S.C. 14706(c)(1)(A), applies when the shipper chooses Harrowgate's released rate and signs the released-value declaration on the bill of lading.\n- Then Harrowgate's liability for loss or damage is limited to $2.00 per pound of each lost or damaged article.\n- On a released-value shipment, the claim is for the released value (the article's weight times $2.00) when that is less than the actual loss.\n- Without a signed declaration, liability is the full actual loss."
       },
       {
         "topic": "defences",
-        "text": "As the Supreme Court held in Missouri Pacific R. Co. v. Elmore & Stahl, 377 U.S. 134 (1964), once the shipper shows good-order tender, damaged arrival and the amount, the carrier is liable unless it shows it was free from negligence and the damage came from an act of God, the public enemy, the act of the shipper itself (such as inadequate packing), public authority, or the inherent vice or nature of the goods. Harrowgate is not liable for damage after delivery."
+        "text": "- As the Supreme Court held in Missouri Pacific R. Co. v. Elmore & Stahl, 377 U.S. 134 (1964): once the shipper shows good-order tender, damaged arrival and the amount, the carrier is liable.\n- The only way out: the carrier shows it was free from negligence and the damage came from an act of God, the public enemy, the act of the shipper itself (such as inadequate packing), public authority, or the inherent vice or nature of the goods.\n- Harrowgate is not liable for damage after delivery."
       },
       {
         "topic": "handling",

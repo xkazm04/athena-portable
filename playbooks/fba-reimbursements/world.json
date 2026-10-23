@@ -299,7 +299,7 @@
       },
       {
         "topic": "inbound",
-        "text": "Inbound shipment discrepancies: the shipment must be in Closed status. Open a case between 15 and 60 days after the Closed date. Claim only units you sent and Amazon did not receive, minus any reconciliation credit already applied to the shipment. Evidence: the supplier invoice showing the units and the proof of delivery for the cartons. Units that were never packed into the shipment are not reimbursable."
+        "text": "- Inbound shipment discrepancies: the shipment must be in Closed status.\n- Open a case between 15 and 60 days after the Closed date.\n- Claim only units you sent and Amazon did not receive, minus any reconciliation credit already applied to the shipment.\n- Evidence: the supplier invoice showing the units and the proof of delivery for the cartons.\n- Units that were never packed into the shipment are not reimbursable."
       },
       {
         "topic": "awd",
@@ -323,7 +323,7 @@
       },
       {
         "topic": "fees",
-        "text": "Remeasure and reimburse fulfillment fees: if Amazon's measured dimensions put an item in a higher size tier than its true dimensions, request a remeasure with the true dimensions. The refund is the fee difference per unit times the units shipped in the last 90 days. Not available for an FNSKU remeasured twice in the last 60 days. Size tiers: Small standard (longest side up to 15 in, height up to 0.75 in, weight up to 1 lb) $3.22 per unit; Large standard A (longest side up to 11 in, weight up to 1.5 lb) $4.56; Large standard B (longest side up to 18 in, weight up to 3 lb) $5.68."
+        "text": "- Remeasure and reimburse fulfillment fees: if Amazon's measured dimensions put an item in a higher size tier than its true dimensions, request a remeasure with the true dimensions.\n- The refund is the fee difference per unit times the units shipped in the last 90 days.\n- Not available for an FNSKU remeasured twice in the last 60 days.\n- Size tiers:\n- Small standard (longest side up to 15 in, height up to 0.75 in, weight up to 1 lb) $3.22 per unit;\n- Large standard A (longest side up to 11 in, weight up to 1.5 lb) $4.56;\n- Large standard B (longest side up to 18 in, weight up to 3 lb) $5.68."
       }
     ],
     "inbound": [

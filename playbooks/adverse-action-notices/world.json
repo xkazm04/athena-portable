@@ -250,15 +250,15 @@
       },
       {
         "topic": "pre-adverse",
-        "text": "FCRA 604(b)(3)(A): before the rejection, the candidate is sent a copy of the report (by its Veritarn report id) and A Summary of Your Rights Under the Fair Credit Reporting Act (CFPB, 12 CFR 1022 Appendix K), together. Brackenmere sends it within 2 business days of the report arriving, not counting the day it arrives. A notice that went without the copy or the summary is sent again complete, and the wait starts from the new date."
+        "text": "- FCRA 604(b)(3)(A): before the rejection, the candidate is sent a copy of the report (by its Veritarn report id) and A Summary of Your Rights Under the Fair Credit Reporting Act (CFPB, 12 CFR 1022 Appendix K), together.\n- Brackenmere sends it within 2 business days of the report arriving, not counting the day it arrives.\n- A notice that went without the copy or the summary is sent again complete, and the wait starts from the new date."
       },
       {
         "topic": "wait",
-        "text": "The statute names no number of days; Brackenmere's own policy is 5 full business days after the pre-adverse notice, for the candidate to read the report and answer. Business days are Monday to Friday except company holidays; the day the notice is sent is not counted. The final notice goes on the sixth business day or later. Company holidays this autumn: Monday 12 October (Columbus Day), Wednesday 11 November (Veterans Day), 26 and 27 November, 25 December."
+        "text": "- The statute names no number of days.\n- Brackenmere's own policy is 5 full business days after the pre-adverse notice, for the candidate to read the report and answer.\n- Business days are Monday to Friday except company holidays.\n- The day the notice is sent is not counted.\n- The final notice goes on the sixth business day or later.\n- Company holidays this autumn: Monday 12 October (Columbus Day), Wednesday 11 November (Veterans Day), 26 and 27 November, 25 December."
       },
       {
         "topic": "final",
-        "text": "FCRA 615(a) (15 U.S.C. 1681m): after the wait, the final notice names the agency with its address and phone number, says the agency did not make the decision and cannot say why, and tells the candidate of the right to a free copy of the report within 60 days and to dispute it. It goes only where the notice log shows a complete pre-adverse notice with its date, the wait is over, no dispute is open, and the report still shows the record."
+        "text": "- FCRA 615(a) (15 U.S.C. 1681m): after the wait, the final notice:\n- names the agency with its address and phone number;\n- says the agency did not make the decision and cannot say why;\n- tells the candidate of the right to a free copy of the report within 60 days and to dispute it.\n- It goes only where all of these hold:\n- the notice log shows a complete pre-adverse notice with its date;\n- the wait is over;\n- no dispute is open;\n- the report still shows the record."
       },
       {
         "topic": "dispute",

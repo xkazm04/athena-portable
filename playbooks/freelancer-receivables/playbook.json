@@ -119,7 +119,7 @@
       "send_email": "count"
     },
     "per": "year",
-    "basis": "An estimate. Freelancers Union found 71% had trouble collecting and lost $5,968 a year on average, 13% of income, with 36 hours spent chasing each missing payment (2014–2015). The bench world holds $21,550 stuck across five invoices. Times a year: twelve, a monthly pass over open invoices.",
+    "basis": "- 71% of freelancers had trouble collecting (Freelancers Union, 2014–2015)\n- They lost $5,968 a year on average, 13% of income (Freelancers Union)\n- They spent 36 hours chasing each missing payment (Freelancers Union)\n- The bench world holds $21,550 stuck across five invoices\n- Times a year: twelve, a monthly pass over open invoices",
     "manual_minutes": 240,
     "incumbent": "Invoicing apps send reminders but cannot see inside Coupa, Ariba or Tipalti. Collection agencies take 25–50% and are slow. Mostly the freelancer chases, or writes it off.",
     "sources": [
@@ -169,5 +169,5 @@
       "found": "The recall meant to bring three tabs' reads into Gmail came back cut at 1,600 of 3,074 characters, through the second episode, and the terms she needed were past the cut."
     }
   ],
-  "caveat": "The clients are invented and the Freelance Isn't Free Act is summarised as practitioners describe it; this is not legal advice, and a demand letter is worth a lawyer's look."
+  "caveat": "- The clients are invented\n- The Freelance Isn't Free Act is summarised as practitioners describe it\n- This is not legal advice; a demand letter is worth a lawyer's look"
 }

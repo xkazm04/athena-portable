@@ -547,7 +547,7 @@
       },
       {
         "topic": "general",
-        "text": "A state's withholding account is opened only where the state taxes wages. The state of the work taxes a nonresident's wages for work done in it; a state may also tax its residents wherever they work, as Colorado and Minnesota do. Some pairs of states have a reciprocal agreement that moves withholding to the home state; none applies to anyone on Kestrelwick's roster. A contractor paid on an invoice is not paid wages, and no tax is withheld. A state in which Kestrelwick already holds an account needs no second one."
+        "text": "- A state's withholding account is opened only where the state taxes wages.\n- The state of the work taxes a nonresident's wages for work done in it.\n- A state may also tax its residents wherever they work, as Colorado and Minnesota do.\n- Some pairs of states have a reciprocal agreement that moves withholding to the home state; none applies to anyone on Kestrelwick's roster.\n- A contractor paid on an invoice is not paid wages, and no tax is withheld.\n- A state in which Kestrelwick already holds an account needs no second one."
       },
       {
         "topic": "colorado",
@@ -555,7 +555,7 @@
       },
       {
         "topic": "minnesota",
-        "text": "Minnesota (Minn. Stat. 290.92, 2025 statutes): an employee is a resident performing services anywhere, or a nonresident performing services in Minnesota (subd. 1); every employer paying wages withholds (subd. 2a). An employer 'shall file with the commissioner an application for a withholding account number on or before the date the employer is required to withhold Minnesota taxes' (subd. 24). There is no fee."
+        "text": "- Minnesota (Minn. Stat. 290.92, 2025 statutes): an employee is a resident performing services anywhere, or a nonresident performing services in Minnesota (subd. 1).\n- Every employer paying wages withholds (subd. 2a).\n- An employer 'shall file with the commissioner an application for a withholding account number on or before the date the employer is required to withhold Minnesota taxes' (subd. 24).\n- There is no fee."
       },
       {
         "topic": "texas",
@@ -573,7 +573,7 @@
       },
       {
         "topic": "where",
-        "text": "Which state covers a worker (U.S. Department of Labor, UIPL 20-04 of 10 May 2004, and Comparison of State UI Laws 2023, ch. 1), in this order: 1 the state where the service is localized: all of it is done there, or what is done elsewhere is incidental (temporary, transitory or isolated); 2 if not localized, the state of the base of operations, where some service is done; 3 the state the work is directed from; 4 only then the state of residence. A worker who lives in one state and works entirely in another is covered by the state of work. A worker who begins to telecommute from a new state is covered there from that date. Minnesota words its own test: see minnesota."
+        "text": "- Which state covers a worker (U.S. Department of Labor, UIPL 20-04 of 10 May 2004, and Comparison of State UI Laws 2023, ch. 1), in this order:\n- 1 the state where the service is localized: all of it is done there, or what is done elsewhere is incidental (temporary, transitory or isolated);\n- 2 if not localized, the state of the base of operations, where some service is done;\n- 3 the state the work is directed from;\n- 4 only then the state of residence.\n- A worker who lives in one state and works entirely in another is covered by the state of work.\n- A worker who begins to telecommute from a new state is covered there from that date.\n- Minnesota words its own test: see minnesota."
       },
       {
         "topic": "colorado",
@@ -581,7 +581,7 @@
       },
       {
         "topic": "minnesota",
-        "text": "Minnesota (Minn. Stat. 268.035, 268.044 and 268.045, 2025 statutes): an employer is anyone who has had one or more employees in the current or prior year (268.035 subd. 14). An employee's whole employment in a quarter is covered if 50 percent or more of it is performed in Minnesota (subd. 12). An employer 'must, upon or before the submission of its first wage detail report', register for a tax account (268.045 subd. 1); the report is due on the last day of the month after the quarter (268.044)."
+        "text": "- Minnesota (Minn. Stat. 268.035, 268.044 and 268.045, 2025 statutes): an employer is anyone who has had one or more employees in the current or prior year (268.035 subd. 14).\n- An employee's whole employment in a quarter is covered if 50 percent or more of it is performed in Minnesota (subd. 12).\n- An employer 'must, upon or before the submission of its first wage detail report', register for a tax account (268.045 subd. 1).\n- The report is due on the last day of the month after the quarter (268.044)."
       },
       {
         "topic": "texas",

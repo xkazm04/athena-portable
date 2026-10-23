@@ -76,7 +76,7 @@
     "kinds": {
       "request_depreciation": "money_back"
     },
-    "basis": "The average homeowners claim was $20,062 in 2023 (Triple-I, from ISO). Insurers hold back the depreciation on a replacement cost claim until the work is done, and it is lost when the window closes unclaimed. The roster puts the holdback at about a third of an average claim, about $6,500 an episode: an assumption, not a sourced share, since no published average holdback was found. For your own claim, the figure is the depreciation line on the adjuster's estimate for each finished repair. The bench world holds $15,190 of holdback on four finished lines of one windstorm claim. Times a year: once, one claim's holdback swept when its repairs finish.",
+    "basis": "- The average homeowners claim was $20,062 in 2023 (Triple-I, from ISO).\n- Insurers hold back the depreciation on a replacement cost claim until the work is done, and it is lost when the window closes unclaimed.\n- The roster puts the holdback at about a third of an average claim, about $6,500 an episode.\n- That share is an assumption, not a sourced one: no published average holdback was found.\n- For your own claim, the figure is the depreciation line on the adjuster's estimate for each finished repair.\n- The bench world holds $15,190 of holdback on four finished lines of one windstorm claim.\n- Times a year: once, one claim's holdback swept when its repairs finish.",
     "manual_minutes": 240,
     "times_per_year": 1,
     "incumbent": "Public adjusters work on contingency, commonly 10 to 20% of what they recover; the California Department of Insurance reported complaints of fees of 30% and more after disasters. The figure used is 15%, an estimate.",
@@ -112,7 +112,7 @@
     "minutes": 60,
     "why": "A methodical homeowner finds most of it; the bar is most of the holdback, no request for work not done or money already paid, inside an hour."
   },
-  "caveat": "Hearthguard, Buildmark, Ledgerline, Mailnest and the Okafor household are invented, and so is the state of emergency on the claim; the rules are California Insurance Code §2051.5 and a common replacement cost policy, fixed in the bench world as of October 2026. A real policy's terms and endorsements decide; this is not legal advice.",
+  "caveat": "- Hearthguard, Buildmark, Ledgerline, Mailnest and the Okafor household are invented, and so is the state of emergency on the claim.\n- The rules are California Insurance Code §2051.5 and a common replacement cost policy, fixed in the bench world as of October 2026.\n- A real policy's terms and endorsements decide; this is not legal advice.",
   "fit": {
     "where": [
       "CA"

@@ -85,7 +85,7 @@
       "claim_cost": "money_protected",
       "file_sf425": "count"
     },
-    "basis": "Mostly minutes. A quarter's draw and SF-425 take a small nonprofit's finance lead about two working days; bought in, that is about sixteen hours of a nonprofit finance consultant at the $159 an hour average of Nonprofit.ist's 2025 survey, about $2,500 a quarter, an estimate. The bench world's items are the reimbursement itself, $31,492.60 of allowable costs paid, which the award would pay in time anyway; an unallowable draw would have to be repaid. Times a year: four, one per quarter, as the world holds one. The draw itself is payment released sooner, not money recovered: the award would pay the allowable costs in time anyway.",
+    "basis": "- Mostly minutes: a quarter's draw and SF-425 take a small nonprofit's finance lead about two working days.\n- Bought in: about sixteen hours x $159 an hour (nonprofit finance consultant average, Nonprofit.ist's 2025 survey) = about $2,500 a quarter, an estimate.\n- The bench world's items are the reimbursement itself: $31,492.60 of allowable costs paid.\n- The draw is payment released sooner, not money recovered: the award would pay the allowable costs in time anyway.\n- An unallowable draw would have to be repaid.\n- Times a year: four, one per quarter, as the world holds one.",
     "manual_minutes": 480,
     "times_per_year": 4,
     "incumbent": "An outsourced nonprofit accountant or consultant, billed monthly or by the hour; nobody takes a share of the grant.",
@@ -124,7 +124,7 @@
     "minutes": 60,
     "why": "A careful finance manager draws most of it and files on time; the bar is most of the allowable costs, no unallowable draw, inside an hour."
   },
-  "caveat": "Riverbend Literacy Alliance, award FA-2025-0417 and its terms, Grantflow, Docshelf, Ledgerline, Payroll Harbor and every person here are invented. The rules are the Uniform Guidance (2 CFR 200) as revised in 2024, fixed in the bench world as of October 2026; a real award's terms and the agency's grants officer decide. This is not legal or accounting advice.",
+  "caveat": "- Riverbend Literacy Alliance, award FA-2025-0417 and its terms, Grantflow, Docshelf, Ledgerline, Payroll Harbor and every person here are invented.\n- Rules: the Uniform Guidance (2 CFR 200) as revised in 2024, fixed in the bench world as of October 2026.\n- A real award's terms and the agency's grants officer decide.\n- This is not legal or accounting advice.",
   "fit": {
     "where": "US",
     "where_note": "Federal Uniform Guidance (2 CFR 200); state and foundation grants set their own rules.",

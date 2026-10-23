@@ -225,7 +225,7 @@
       },
       {
         "topic": "eitc",
-        "text": "IRC 32: the earned income credit for 2025 needs earned income, investment income of 11,950 dollars or less, and, to get the credit for children, a qualifying child for each child claimed. Each child needs a Social Security number valid for work, issued by the return's due date, extensions included. Schedule EIC lists each child claimed, one by one. Taxfold adds a child to the credit only when you claim that child."
+        "text": "- IRC 32: the earned income credit for 2025 needs earned income and investment income of 11,950 dollars or less.\n- To get the credit for children, it also needs a qualifying child for each child claimed.\n- Each child needs a Social Security number valid for work, issued by the return's due date, extensions included.\n- Schedule EIC lists each child claimed, one by one.\n- Taxfold adds a child to the credit only when you claim that child."
       },
       {
         "topic": "child",
@@ -237,7 +237,7 @@
       },
       {
         "topic": "residency",
-        "text": "Residency: the child lived with the taxpayer in the same main home in the United States for more than half of 2025, which is more than 182 days. Temporary absences for school, illness or visits count as time at home. The IRS asks for proof that shows the address, the taxpayer's name, the child's name and dates covering more than half the year; school records come first (Form 886-H-EIC, Rev. 10-2022)."
+        "text": "- Residency: the child lived with the taxpayer in the same main home in the United States for more than half of 2025, which is more than 182 days.\n- Temporary absences for school, illness or visits count as time at home.\n- The IRS asks for proof that shows the address, the taxpayer's name, the child's name and dates covering more than half the year.\n- School records come first (Form 886-H-EIC, Rev. 10-2022)."
       },
       {
         "topic": "tiebreak",
@@ -249,7 +249,7 @@
       },
       {
         "topic": "form8862",
-        "text": "Form 8862: a taxpayer whose earned income credit for an earlier year was reduced or disallowed for a reason other than a math or clerical error attaches Form 8862 to the return that claims it again; a claim without it is denied. A ban bars the claim for 2 years (reckless or intentional disregard) or 10 years (fraud) after a final determination (IRC 32(k)); a ban exists only if the IRS letter says so."
+        "text": "- Form 8862: a taxpayer whose earned income credit for an earlier year was reduced or disallowed for a reason other than a math or clerical error attaches Form 8862 to the return that claims it again.\n- A claim without the form is denied.\n- A ban bars the claim for 2 years (reckless or intentional disregard) or 10 years (fraud) after a final determination (IRC 32(k)).\n- A ban exists only if the IRS letter says so."
       },
       {
         "topic": "limits",

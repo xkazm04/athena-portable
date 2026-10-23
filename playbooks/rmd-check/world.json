@@ -418,7 +418,7 @@
         "date": "2026-10-05",
         "subject": "Irene's 2025 return: due Thursday 15 October",
         "search": "Priya Wexley Marr tax preparer 2025 return extension Form 5329 inherited IRA Docshelf",
-        "body": "Joanna, Irene's 2025 return is on extension and must be e-filed by Thursday 15 October 2026. Preparing it, we found no 2025 distribution at all from the IRA she inherited from her brother at Harborline. Our draft adds Form 5329 with the 25% additional tax and a direct debit for it. If you would rather take the missed amount out and ask for the waiver, approve the 5329 in Docshelf with the figures and a statement of explanation and we will attach it; the waiver statement is part of our flat fee, already paid. Our assistant also drafted a 2024 Form 5329 for the same IRA, for an amended return. All in Docshelf."
+        "body": "- Joanna, Irene's 2025 return is on extension and must be e-filed by Thursday 15 October 2026.\n- Preparing it, we found no 2025 distribution at all from the IRA she inherited from her brother at Harborline.\n- Our draft adds Form 5329 with the 25% additional tax and a direct debit for it.\n- If you would rather take the missed amount out and ask for the waiver, approve the 5329 in Docshelf with the figures and a statement of explanation and we will attach it.\n- The waiver statement is part of our flat fee, already paid.\n- Our assistant also drafted a 2024 Form 5329 for the same IRA, for an amended return.\n- All in Docshelf."
       },
       {
         "message_id": "M-2",
@@ -512,11 +512,11 @@
     "pb_rules": [
       {
         "topic": "index",
-        "text": "Today is Friday 9 October 2026. An owner's required minimum distributions (RMDs), under IRC 401(a)(9), Treas. Reg. 1.401(a)(9)-5 and -9 and 1.408-8 as amended by the final regulations of July 2024 (applying from 2025), as IRS Publication 590-B and the IRS's RMD pages explain them. For IRAs inherited from someone else, see the inheriting custodian's rules. Topics: start, amount, table, aggregate, plans, roth, joint, extra."
+        "text": "- Today is Friday 9 October 2026.\n- An owner's required minimum distributions (RMDs), under IRC 401(a)(9), Treas. Reg. 1.401(a)(9)-5 and -9 and 1.408-8 as amended by the final regulations of July 2024 (applying from 2025), as IRS Publication 590-B and the IRS's RMD pages explain them.\n- For IRAs inherited from someone else, see the inheriting custodian's rules.\n- Topics: start, amount, table, aggregate, plans, roth, joint, extra."
       },
       {
         "topic": "start",
-        "text": "An owner born from 1951 to 1959 takes RMDs from the year she reaches 73; born 1960 or later, from 75 (IRC 401(a)(9)(C)(v), as SECURE 2.0 set it). The first RMD, for the year she reaches 73, may wait until 1 April of the next year, her required beginning date; that next year's own RMD is still due by 31 December, so that one year holds two. Every later RMD is due by 31 December of its own year, with no April option. A 401(k) from an employer she has retired from, and never owned 5% of, starts the same way."
+        "text": "- An owner born from 1951 to 1959 takes RMDs from the year she reaches 73; born 1960 or later, from 75 (IRC 401(a)(9)(C)(v), as SECURE 2.0 set it).\n- The first RMD, for the year she reaches 73, may wait until 1 April of the next year, her required beginning date.\n- That next year's own RMD is still due by 31 December, so that one year holds two.\n- Every later RMD is due by 31 December of its own year, with no April option.\n- A 401(k) from an employer she has retired from, and never owned 5% of, starts the same way."
       },
       {
         "topic": "amount",
@@ -599,11 +599,11 @@
       },
       {
         "topic": "relief",
-        "text": "IRS Notices 2022-53 (for 2021 and 2022), 2023-54 (for 2023) and 2024-35 (for 2024): for those years, the IRS does not assert the excise tax on an RMD not taken under the 10-year rule after an owner died on or after his required beginning date. Those years' RMDs are not made up, and the 10-year deadline does not move. The final regulations apply from 2025: the 2025 RMD and every one after it are required, with no relief."
+        "text": "- IRS Notices 2022-53 (for 2021 and 2022), 2023-54 (for 2023) and 2024-35 (for 2024): for those years, the IRS does not assert the excise tax on an RMD not taken under the 10-year rule after an owner died on or after his required beginning date.\n- Those years' RMDs are not made up, and the 10-year deadline does not move.\n- The final regulations apply from 2025: the 2025 RMD and every one after it are required, with no relief."
       },
       {
         "topic": "divisor",
-        "text": "Each year's RMD is the account's value on 31 December of the year before, divided by the longer of two remaining life expectancies, both from the Single Life Table (Treas. Reg. 1.401(a)(9)-5(d)(1) and (3)): the beneficiary's, at her age on her birthday in the year after the death, less 1 for each year since; or the owner's, at his age on his birthday in the year he died, less 1 for each year since. The Uniform Lifetime Table and the joint table are never used for an inherited IRA. Harborline rounds to the cent."
+        "text": "- Each year's RMD is the account's value on 31 December of the year before, divided by the longer of two remaining life expectancies, both from the Single Life Table (Treas. Reg. 1.401(a)(9)-5(d)(1) and (3)):\n- the beneficiary's, at her age on her birthday in the year after the death, less 1 for each year since;\n- or the owner's, at his age on his birthday in the year he died, less 1 for each year since.\n- The Uniform Lifetime Table and the joint table are never used for an inherited IRA.\n- Harborline rounds to the cent."
       },
       {
         "topic": "table",
@@ -611,7 +611,7 @@
       },
       {
         "topic": "correction",
-        "text": "A missed RMD is corrected by distributing the shortfall from the account that owed it: for an inherited IRA, from that inherited IRA (or another inherited from the same person), never from an IRA she owns (Treas. Reg. 54.4974-1(a)(2); 1.408-8(e)). The tax is 25% of the shortfall, or 10% if the shortfall is distributed within the correction window and a return reflecting the tax is filed; the window ends at the earliest of a notice of deficiency, an assessment, or the last day of the second taxable year after the year of the tax, so 31 December 2027 for a 2025 RMD (IRC 4974(a) and (e)). The IRS may waive the tax for reasonable error with reasonable steps to remedy it (IRC 4974(d); Form 5329). A corrective distribution does not count toward the year it is taken in: that year's own RMD is taken as well (the IRS's proposed rule, 89 FR 58644, which Harborline applies as a good-faith reading)."
+        "text": "- A missed RMD is corrected by distributing the shortfall from the account that owed it.\n- For an inherited IRA: from that inherited IRA (or another inherited from the same person), never from an IRA she owns (Treas. Reg. 54.4974-1(a)(2); 1.408-8(e)).\n- The tax is 25% of the shortfall, or 10% if the shortfall is distributed within the correction window and a return reflecting the tax is filed.\n- The window ends at the earliest of a notice of deficiency, an assessment, or the last day of the second taxable year after the year of the tax, so 31 December 2027 for a 2025 RMD (IRC 4974(a) and (e)).\n- The IRS may waive the tax for reasonable error with reasonable steps to remedy it (IRC 4974(d); Form 5329).\n- A corrective distribution does not count toward the year it is taken in: that year's own RMD is taken as well (the IRS's proposed rule, 89 FR 58644, which Harborline applies as a good-faith reading)."
       },
       {
         "topic": "spouse",
@@ -635,7 +635,7 @@
         "doc_id": "D-3",
         "title": "Draft Form 5329 (2025), Part IX, as drafted",
         "saved": "2026-10-05",
-        "text": "Inherited IRA HL-7702: 2025 RMD $6,000.00 ($90,000.00 / 15.0); distributed in 2025: $0.00; shortfall: $6,000.00. As drafted: no corrective distribution, no waiver; line 54b (25%): $1,500.00; line 55: $1,500.00, direct debit DD-2. Her own IRAs and the 401(k) paid their 2025 RMDs in full. To change it, approve it with the figures to be filed: the shortfall, the amount waived (RC), the tax on line 55, and a statement of explanation."
+        "text": "- Inherited IRA HL-7702: 2025 RMD $6,000.00 ($90,000.00 / 15.0); distributed in 2025: $0.00; shortfall: $6,000.00.\n- As drafted: no corrective distribution, no waiver; line 54b (25%): $1,500.00; line 55: $1,500.00, direct debit DD-2.\n- Her own IRAs and the 401(k) paid their 2025 RMDs in full.\n- To change it, approve it with the figures to be filed: the shortfall, the amount waived (RC), the tax on line 55, and a statement of explanation."
       },
       {
         "doc_id": "D-4",
@@ -647,7 +647,7 @@
         "doc_id": "D-5",
         "title": "IRS Instructions for Form 5329 (2025), Part IX, saved by Wexley & Marr",
         "saved": "2026-10-05",
-        "text": "Today is Friday 9 October 2026. The tax is due for the tax year that includes the last day by which the RMD must be taken. Lines 52a and 53a: plans whose shortfall was distributed in full during the correction window; 52b and 53b: all other plans. Line 53 does not include a distribution received after the deadline or during the correction window. Line 54a is 10% of its shortfall, 54b 25%. The 10% rate needs the shortfall distributed from the plan for which the tax was imposed, during the correction window, and a return reflecting the tax. Waiver of tax for reasonable cause: the IRS can waive part or all of the tax if the shortfall was due to reasonable error and you are taking reasonable steps to remedy it. Attach a statement of explanation, enter \"RC\" and the amount you want waived in parentheses next to line 54a and/or 54b, subtract it from the shortfall, enter the result there, and complete line 55. Pay any tax reported on line 55. If the IRS does not grant the waiver, it notifies you of any tax owed."
+        "text": "- Today is Friday 9 October 2026.\n- The tax is due for the tax year that includes the last day by which the RMD must be taken.\n- Lines 52a and 53a: plans whose shortfall was distributed in full during the correction window; 52b and 53b: all other plans.\n- Line 53 does not include a distribution received after the deadline or during the correction window.\n- Line 54a is 10% of its shortfall, 54b 25%.\n- The 10% rate needs the shortfall distributed from the plan for which the tax was imposed, during the correction window, and a return reflecting the tax.\n- Waiver of tax for reasonable cause: the IRS can waive part or all of the tax if the shortfall was due to reasonable error and you are taking reasonable steps to remedy it.\n- Attach a statement of explanation, enter \"RC\" and the amount you want waived in parentheses next to line 54a and/or 54b, subtract it from the shortfall, enter the result there, and complete line 55.\n- Pay any tax reported on line 55.\n- If the IRS does not grant the waiver, it notifies you of any tax owed."
       }
     ],
     "payments": [

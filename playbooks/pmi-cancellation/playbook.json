@@ -96,7 +96,7 @@
       "send_payment": "count",
       "reply": "count"
     },
-    "basis": "An estimate. Borrower-paid mortgage insurance on a conventional loan with 5% down costs roughly 0.3% to 1.5% of the loan a year; on a $389,500 loan the household's $125 a month is $1,500 a year, which is the roster's figure. The Act ends it on request at 80% of the original value, reached by the schedule or by payments, and automatically at 78% on the schedule. Extra payments bring the 80% date years forward, but only a written request ends it before the schedule. The bench world holds $2,732: a year of the household's premium ($1,500) and the parent's $176 refund with a year of her $88 premium ($1,232); the notice that credits the unapplied payment carries no money of its own. Times a year: once, a yearly check of each loan's balance against its 80% and 78%.",
+    "basis": "- An estimate.\n- Borrower-paid mortgage insurance on a conventional loan with 5% down costs roughly 0.3% to 1.5% of the loan a year.\n- On a $389,500 loan the household's $125 a month is $1,500 a year, which is the roster's figure.\n- The Act ends it on request at 80% of the original value, reached by the schedule or by payments, and automatically at 78% on the schedule.\n- Extra payments bring the 80% date years forward, but only a written request ends it before the schedule.\n- The bench world holds $2,732 in two parts:\n- a year of the household's premium: $1,500;\n- the parent's $176 refund with a year of her $88 premium: $1,232.\n- The notice that credits the unapplied payment carries no money of its own.\n- Times a year: once, a yearly check of each loan's balance against its 80% and 78%.",
     "manual_minutes": 90,
     "times_per_year": 1,
     "incumbent": "None takes a share: the request is the borrower's own letter, and the services that offer to file it charge a flat fee.",
@@ -131,7 +131,7 @@
     "minutes": 60,
     "why": "A careful borrower gets most of it; the bar is most of the premiums ended and refunded, nothing sent on a loan the Act does not support and nothing paid or answered to a third party, inside an hour."
   },
-  "caveat": "The Whitlocks, Ruth Adair, Northgate Servicing, Clearstone Mortgage Insurance, Ledgerline, Deedvault, Mailnest and every person and business here are invented. The rules are the Homeowners Protection Act (12 U.S.C. 4901-4910) and Regulation X's error resolution (12 CFR 1024.35), fixed in the bench world as of October 2026; a real servicer's disclosures, an investor's own guidelines (which can allow cancellation on a new appraisal), FHA and VA rules and lender-paid insurance decide real loans differently. This is not legal or financial advice.",
+  "caveat": "- The Whitlocks, Ruth Adair, Northgate Servicing, Clearstone Mortgage Insurance, Ledgerline, Deedvault, Mailnest and every person and business here are invented.\n- The rules are the Homeowners Protection Act (12 U.S.C. 4901-4910) and Regulation X's error resolution (12 CFR 1024.35), fixed in the bench world as of October 2026.\n- Real loans are decided differently by a real servicer's disclosures, an investor's own guidelines (which can allow cancellation on a new appraisal), FHA and VA rules and lender-paid insurance.\n- This is not legal or financial advice.",
   "fit": {
     "where": "US",
     "where_note": "The federal Homeowners Protection Act, for conventional loans in every state.",

@@ -266,7 +266,7 @@
       },
       {
         "topic": "sequence",
-        "text": "Work is not covered or carried past an inspection point until that inspection is approved (IBC 110.6). The footing inspection comes before concrete is placed and before the foundation inspection. The framing inspection is requested only after the rough plumbing, rough electrical, rough mechanical and gas piping inspections are all approved (IBC 110.3.4). Insulation follows an approved framing inspection and the insulation in place; the final follows every other inspection on the permit."
+        "text": "- Work is not covered or carried past an inspection point until that inspection is approved (IBC 110.6).\n- The footing inspection comes before concrete is placed and before the foundation inspection.\n- The framing inspection is requested only after the rough plumbing, rough electrical, rough mechanical and gas piping inspections are all approved (IBC 110.3.4).\n- Insulation follows an approved framing inspection and the insulation in place.\n- the final follows every other inspection on the permit."
       },
       {
         "topic": "reinspection",
@@ -384,7 +384,7 @@
       },
       {
         "topic": "scheduling",
-        "text": "Schedule an inspection when the work is complete and ready (IBC 110.5). Requests in by 3:00 pm are inspected the next business day; Merrow inspects Monday to Friday and is open on Monday 12 October. Give a date on or after the earliest one when the work is ready and your on-site contact is there. Each permit's inspections are scheduled on that permit; a trade permit's final does not wait on the building permit's final. Do not schedule an inspection already passed or already scheduled."
+        "text": "- Schedule an inspection when the work is complete and ready (IBC 110.5).\n- Requests in by 3:00 pm are inspected the next business day.\n- Merrow inspects Monday to Friday and is open on Monday 12 October.\n- Give a date on or after the earliest one when the work is ready and your on-site contact is there.\n- Each permit's inspections are scheduled on that permit; a trade permit's final does not wait on the building permit's final.\n- Do not schedule an inspection already passed or already scheduled."
       },
       {
         "topic": "order",

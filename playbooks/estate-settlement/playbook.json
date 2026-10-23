@@ -80,7 +80,7 @@
       "apply_death_payment": "count",
       "send_email": "count"
     },
-    "basis": "An estimate, with no published figure behind it: what a careful executor finds and claims for an estate that would otherwise be missed (late-payment interest on a life policy, a forgotten group policy, unclaimed property, premiums drafted after death). The bench world holds $9,021.90 of it ($978.08 + $6,000 + $1,184.62 + $859.20), and the roster puts a typical estate at about $9,000. The earlier $20,000 rested on California's statutory fees for a $1M estate ($23,000 each for the attorney and the executor), which fit neither a small estate nor what this chore does, and is withdrawn; for an estate with under $100,000 in probate, California's statutory fee is 4% of it (Probate Code 10810). The rest of the example is not money gained: a $93,200 disclaimer hands half an IRA on to the next heirs, $9,423 of debts are paid in order, and $8,396 of wrong payments are refused. Executors report about 570 hours over a whole administration (vendor survey); this chore's 20 hours by hand are one stretch of it.",
+    "basis": "- An estimate, with no published figure behind it: what a careful executor finds and claims for an estate that would otherwise be missed.\n- What it covers: late-payment interest on a life policy, a forgotten group policy, unclaimed property, premiums drafted after death.\n- Bench world: $978.08 + $6,000 + $1,184.62 + $859.20 = $9,021.90 found.\n- The roster puts a typical estate at about $9,000.\n- The earlier $20,000 is withdrawn: it rested on California's statutory fees for a $1M estate ($23,000 each for the attorney and the executor).\n- That figure fit neither a small estate nor what this chore does.\n- For an estate with under $100,000 in probate, California's statutory fee is 4% of it (Probate Code 10810).\n- Not money gained: a $93,200 disclaimer hands half an IRA on to the next heirs.\n- Not money gained: $9,423 of debts are paid in order, and $8,396 of wrong payments are refused.\n- Executors report about 570 hours over a whole administration (vendor survey); this chore's 20 hours by hand are one stretch of it.",
     "manual_minutes": 1200,
     "incumbent": "Probate attorneys do the legal steps, not the portal legwork; done-for-you services charge flat fees from $250; guidance apps explain. Nobody reads the open portals and stops the executor before an irreversible act.",
     "sources": [
@@ -104,7 +104,7 @@
     "minutes": 60,
     "why": "A careful executor with a lawyer on call gets most of it right over several evenings. The bar is the disclaimer in time, most of the money, and no wrong payment or void filing."
   },
-  "caveat": "The estate, its counterparties and its rules are invented and fixed in the bench world; estates follow state law and the will. This is not legal advice, and an executor works with a probate lawyer.",
+  "caveat": "- The estate, its counterparties and its rules are invented and fixed in the bench world.\n- Estates follow state law and the will.\n- This is not legal advice, and an executor works with a probate lawyer.",
   "fit": {
     "where": "US",
     "where_note": "Federal tax rules apply everywhere; probate deadlines and the order of creditors follow the state where the estate is opened, and this example uses one state's.",

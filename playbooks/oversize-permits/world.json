@@ -402,7 +402,7 @@
         "date": "Thu 8 Oct 2026",
         "from": "Ray Dutton, dispatch <ray@kettleridge.example>",
         "subject": "Next week's heavy loads, permits drafted",
-        "body": "Joel, I've drafted applications in all three state portals for next week. L-1 is the excavator for the Nashville quarry, Oklahoma City to Nashville on I-40, Tuesday to Thursday. I drafted two Oklahoma starts for it, 7:00 and 9:15 Tuesday morning; pick whichever works. L-2 is Brakefield's two tanks, L-3 the transformer from Little Rock to Jackson, L-4 the culvert from Memphis to Nashville. Buy what we need today so we roll Tuesday."
+        "body": "- Joel, I've drafted applications in all three state portals for next week.\n- L-1 is the excavator for the Nashville quarry, Oklahoma City to Nashville on I-40, Tuesday to Thursday.\n- I drafted two Oklahoma starts for it, 7:00 and 9:15 Tuesday morning; pick whichever works.\n- L-2 is Brakefield's two tanks, L-3 the transformer from Little Rock to Jackson, L-4 the culvert from Memphis to Nashville.\n- Buy what we need today so we roll Tuesday."
       },
       {
         "message_id": "M-2",
@@ -455,7 +455,7 @@
     "routes": [
       {
         "load_id": "L-1",
-        "route": "Oklahoma: I-40 east from Oklahoma City (Oklahoma County) to the Arkansas line, Tuesday 13 October; I-40 is four lanes, divided, all the way. Arkansas: I-40 east from the Oklahoma line through Fort Smith and Little Rock (mile markers 151 to 155 at about 12:30 p.m.) to West Memphis, Wednesday 14 October, 8:00 a.m. to 3:00 p.m. Tennessee: from Memphis (Shelby County) to Nashville (Davidson County), Thursday 15 October from 7:00 a.m., on the route Fernaby's bridge analysis gives (see Fernaby)."
+        "route": "- Oklahoma: I-40 east from Oklahoma City (Oklahoma County) to the Arkansas line, Tuesday 13 October; I-40 is four lanes, divided, all the way.\n- Arkansas: I-40 east from the Oklahoma line through Fort Smith and Little Rock (mile markers 151 to 155 at about 12:30 p.m.) to West Memphis, Wednesday 14 October, 8:00 a.m. to 3:00 p.m.\n- Tennessee: from Memphis (Shelby County) to Nashville (Davidson County), Thursday 15 October from 7:00 a.m., on the route Fernaby's bridge analysis gives (see Fernaby)."
       },
       {
         "load_id": "L-2",
@@ -481,7 +481,7 @@
       },
       {
         "topic": "divisible",
-        "text": "OAC 730:50-5-3(2): single trip permits for overweight vehicles or loads only when the load is non-divisible: one that, if separated into smaller loads, would compromise its intended use, destroy its value, or take more than 8 work hours to dismantle (the federal definition, 23 CFR 658.5). The applicant bears the burden of proof on the work hours. Two items loaded together that could each travel alone within the limits are divisible."
+        "text": "- OAC 730:50-5-3(2): single trip permits for overweight vehicles or loads only when the load is non-divisible.\n- Non-divisible: one that, if separated into smaller loads, would compromise its intended use, destroy its value, or take more than 8 work hours to dismantle (the federal definition, 23 CFR 658.5).\n- The applicant bears the burden of proof on the work hours.\n- Two items loaded together that could each travel alone within the limits are divisible."
       },
       {
         "topic": "escorts",
@@ -549,7 +549,7 @@
       },
       {
         "topic": "hours",
-        "text": "Rule 2.E.2: permits are issued for movement during daylight hours only, as the National Weather Service establishes them. Rule 2.E.1: no oversized movement through the Greater Little Rock area from 7:00 a.m. to 9:00 a.m. or 4:00 p.m. to 6:00 p.m. on I-30 (mile markers 138 to 143), I-40 (mile markers 151 to 155) and all of I-630. Saturday and Sunday travel is allowed unless a restricted holiday falls on them."
+        "text": "- Rule 2.E.2: permits are issued for movement during daylight hours only, as the National Weather Service establishes them.\n- Rule 2.E.1: no oversized movement through the Greater Little Rock area from 7:00 a.m. to 9:00 a.m. or 4:00 p.m. to 6:00 p.m.\n- That curfew covers I-30 (mile markers 138 to 143), I-40 (mile markers 151 to 155) and all of I-630.\n- Saturday and Sunday travel is allowed unless a restricted holiday falls on them."
       },
       {
         "topic": "holidays",
@@ -610,7 +610,7 @@
       },
       {
         "topic": "bridges",
-        "text": "TDOT: bridge analysis by its Structures Division is required on total weight, axle weight and axle spacing, and an application that fails it comes back with the bridges it failed. Fernaby's analysis for L-1 (104,000 lb on 7 axles): the straight I-40 route crosses structure B-4417, which fails for this axle group; the route that passes avoids B-4417 by a 14-mile detour on a four-lane divided state route and returns to I-40. Fernaby issues a permit for the route its application states, and it is valid only on that route."
+        "text": "- TDOT: bridge analysis by its Structures Division is required on total weight, axle weight and axle spacing.\n- An application that fails it comes back with the bridges it failed.\n- Fernaby's analysis for L-1 (104,000 lb on 7 axles): the straight I-40 route crosses structure B-4417, which fails for this axle group.\n- The route that passes avoids B-4417 by a 14-mile detour on a four-lane divided state route and returns to I-40.\n- Fernaby issues a permit for the route its application states, and it is valid only on that route."
       }
     ],
     "fernaby_apps": [

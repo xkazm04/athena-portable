@@ -126,7 +126,7 @@
       "stop_autopay": "count"
     },
     "per": "year",
-    "basis": "An estimate. Home-aide care runs about $77,800 a year (Genworth/CareScout 2024), and the average long-term-care claim is $185,572 (AHIP). The bench world's eight months hold $22,558 of care benefits owed and unclaimed (about $2,820 a month) and a $3,852 premium refund, $26,410 in all. The roster's $20,000 a year assumes a family that loses about seven months of a year's benefits to late, rejected or unfiled invoices: 7 x $2,820 = $19,740, rounded to $20,000. It is not an average of anything published.",
+    "basis": "- An estimate, not an average of anything published\n- Home-aide care runs about $77,800 a year (Genworth/CareScout 2024)\n- The average long-term-care claim is $185,572 (AHIP)\n- The bench world's eight months hold $22,558 of care benefits owed and unclaimed, about $2,820 a month\n- Plus a $3,852 premium refund: $22,558 + $3,852 = $26,410 in all\n- The roster's $20,000 a year assumes a family loses about seven months of a year's benefits to late, rejected or unfiled invoices\n- 7 x $2,820 = $19,740, rounded to $20,000",
     "manual_minutes": 360,
     "incumbent": "Agencies file their own invoices and nothing else; facilities file for residents only; consultants who handle claims for families charge by the hour. Mostly it is the family, at night.",
     "sources": [
@@ -168,5 +168,5 @@
     "minutes": 40,
     "why": "A practised claims consultant catches most of it in a long evening. The bar is most of the money with no claim the policy excludes."
   },
-  "caveat": "Harbor Mutual and its policy are invented; the rules are the common provisions of tax-qualified policies, fixed in the bench world. A real policy's schedule always wins. Every claim also rests on the benefit trigger: a licensed practitioner's certification, renewed at least every 12 months, that the insured needs help with 2 of 6 activities of daily living or has a severe cognitive impairment, and a plan of care (IRC 7702B(c)); the world assumes both are on file."
+  "caveat": "- Harbor Mutual and its policy are invented\n- The rules are the common provisions of tax-qualified policies, fixed in the bench world; a real policy's schedule always wins\n- Every claim also rests on the benefit trigger (IRC 7702B(c)):\n- a licensed practitioner's certification, renewed at least every 12 months, that the insured needs help with 2 of 6 activities of daily living or has a severe cognitive impairment\n- and a plan of care\n- The world assumes both are on file"
 }

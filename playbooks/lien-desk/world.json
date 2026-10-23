@@ -496,7 +496,7 @@
       },
       {
         "topic": "ca_waivers",
-        "text": "Four statutory forms: 8132 conditional progress, 8134 unconditional progress, 8136 conditional final, 8138 unconditional final. An unconditional waiver binds on signature even if payment never arrives: sign one only for money already received. A progress waiver releases everything through its date except what is listed under Exceptions: list retention held and disputed or unpaid extras there. Never sign an unconditional final waiver while retention or any balance is unpaid; offer the 8136 conditional final instead."
+        "text": "- Four statutory forms: 8132 conditional progress, 8134 unconditional progress, 8136 conditional final, 8138 unconditional final.\n- An unconditional waiver binds on signature even if payment never arrives: sign one only for money already received.\n- A progress waiver releases everything through its date except what is listed under Exceptions: list retention held and disputed or unpaid extras there.\n- Never sign an unconditional final waiver while retention or any balance is unpaid; offer the 8136 conditional final instead."
       },
       {
         "topic": "tx_monthly",

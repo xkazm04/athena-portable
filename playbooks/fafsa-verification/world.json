@@ -260,7 +260,7 @@
     "aid_rules": [
       {
         "topic": "index",
-        "text": "Today is Friday 9 October 2026. Tolliver Heath College's Office of Financial Aid (its Verification Unit) applies 34 CFR Part 668 Subpart E and the Department of Education's notice of the FAFSA information to be verified for 2026-27 (90 FR 54316, 26 November 2025). Tamsin Okoro is a first-year dependent student; her mother Delia Okoro has the college's proxy access. Topics: request, deadline, hold, documents, identity, family, tax."
+        "text": "- Today is Friday 9 October 2026.\n- Tolliver Heath College's Office of Financial Aid (its Verification Unit) applies 34 CFR Part 668 Subpart E.\n- It also applies the Department of Education's notice of the FAFSA information to be verified for 2026-27 (90 FR 54316, 26 November 2025).\n- Tamsin Okoro is a first-year dependent student.\n- Her mother Delia Okoro has the college's proxy access.\n- Topics: request, deadline, hold, documents, identity, family, tax."
       },
       {
         "topic": "request",
@@ -280,15 +280,15 @@
       },
       {
         "topic": "identity",
-        "text": "The college has decided that Tamsin, who studies online and lives far from the campus, cannot appear in person. It then accepts: a video call with the Verification Unit; a copy of her valid photo ID shown to a notary in person, with the notary's signed statement; or a NIST IAL2 entity's confirmation. The Department does not authorize online notaries, and a copy of an ID alone is not enough. The Statement of Educational Purpose is no longer requested: the Department removed it from the required items."
+        "text": "- The college has decided that Tamsin, who studies online and lives far from the campus, cannot appear in person.\n- It then accepts a video call with the Verification Unit;\n- or a copy of her valid photo ID shown to a notary in person, with the notary's signed statement;\n- or a NIST IAL2 entity's confirmation.\n- The Department does not authorize online notaries.\n- A copy of an ID alone is not enough.\n- The Statement of Educational Purpose is no longer requested: the Department removed it from the required items."
       },
       {
         "topic": "family",
-        "text": "668.57(b) and 668.55(b): family size is documented with a statement signed by the student and, for a dependent student, one parent, listing the name, age and relationship of every family member for 2026-27. An applicant selected to verify family size must update it to be correct as of the date of verification. A baby born since the FAFSA was filed counts if the parents can claim her on their return."
+        "text": "- 668.57(b) and 668.55(b): family size is documented with a statement signed by the student and, for a dependent student, one parent.\n- The statement lists the name, age and relationship of every family member for 2026-27.\n- An applicant selected to verify family size must update it to be correct as of the date of verification.\n- A baby born since the FAFSA was filed counts if the parents can claim her on their return."
       },
       {
         "topic": "tax",
-        "text": "668.57(a): items sent directly from the IRS (marked 'from the IRS' in AidPath) cannot be edited and count as verified. The foreign income exempt from federal taxation is documented with the parents' 2024 IRS tax return transcript or a signed copy of the 2024 return. A dependent student who filed no 2024 return sends a signed, dated statement that she was not required to file, with her sources and amounts of 2024 earnings, and a 2024 W-2 for each employer."
+        "text": "- 668.57(a): items sent directly from the IRS (marked 'from the IRS' in AidPath) cannot be edited and count as verified.\n- The foreign income exempt from federal taxation is documented with the parents' 2024 IRS tax return transcript or a signed copy of the 2024 return.\n- A dependent student who filed no 2024 return sends a signed, dated statement that she was not required to file, with her sources and amounts of 2024 earnings.\n- She also sends a 2024 W-2 for each employer."
       }
     ],
     "request_items": [

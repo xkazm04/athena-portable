@@ -273,7 +273,7 @@
       },
       {
         "topic": "due",
-        "text": "The workweek runs Sunday to Saturday. A certified payroll is due for every week in which any work is done on the project, within 7 days after that week's payday; Ridgeback's payday is the Wednesday after the week ends. A week in which nobody worked on the project gets a no-work statement instead, never a payroll. A week is submitted once: a week accepted or under review is not submitted again; a rejected week is submitted again once corrected. A week still in progress cannot be certified."
+        "text": "- The workweek runs Sunday to Saturday.\n- A certified payroll is due for every week in which any work is done on the project, within 7 days after that week's payday.\n- Ridgeback's payday is the Wednesday after the week ends.\n- A week in which nobody worked on the project gets a no-work statement instead, never a payroll.\n- A week is submitted once: a week accepted or under review is not submitted again; a rejected week is submitted again once corrected.\n- A week still in progress cannot be certified."
       },
       {
         "topic": "coverage",
@@ -281,7 +281,7 @@
       },
       {
         "topic": "classes",
-        "text": "Each hour on the project is paid at least the wage determination's rate for the class of work actually performed, whatever the worker's usual title. A worker who does the work of two classes in a week is paid each class's rate for the hours the timesheet records in it; if the hours are not recorded, the higher rate for all of them. What the determination includes in a class (for example, the tools a laborer runs) decides the class."
+        "text": "- Each hour on the project is paid at least the wage determination's rate for the class of work actually performed, whatever the worker's usual title.\n- A worker who does the work of two classes in a week is paid each class's rate for the hours the timesheet records in it.\n- if the hours are not recorded, the higher rate for all of them.\n- What the determination includes in a class (for example, the tools a laborer runs) decides the class."
       },
       {
         "topic": "fringes",
@@ -297,7 +297,7 @@
       },
       {
         "topic": "corrections",
-        "text": "An underpayment is restored with an adjustment check in Crewpay for the difference, and the week's payroll is submitted at the same time, with the adjustment listed on it: Wagecheck matches the two and accepts the week once the check clears. Do not hold a week's payroll back until the check clears; a week not submitted keeps its estimate held. A worker's shortfall across several weeks is restored in one adjustment for the total, to the cent."
+        "text": "- An underpayment is restored with an adjustment check in Crewpay for the difference, and the week's payroll is submitted at the same time, with the adjustment listed on it.\n- Wagecheck matches the two and accepts the week once the check clears.\n- Do not hold a week's payroll back until the check clears; a week not submitted keeps its estimate held.\n- A worker's shortfall across several weeks is restored in one adjustment for the total, to the cent."
       },
       {
         "topic": "holds",
@@ -390,7 +390,7 @@
       {
         "doc_id": "D-02",
         "title": "Wage determination HV20260031, Mod. 2, Halvern County, highway",
-        "text": "Base rate + fringe, per hour. Laborer, common or general, including hand-held compactors, jackhammers and power hand tools: $24.10 + $11.25. Cement mason / concrete finisher: $31.40 + $13.80. Carpenter, including formwork: $33.20 + $15.10. Power equipment operator, Group 2 (excavators, loaders, backhoes): $38.65 + $17.20. Truck driver, dump: $26.00 + $9.75. Classes not listed are added by conformance request."
+        "text": "- Base rate + fringe, per hour.\n- Laborer, common or general, including hand-held compactors, jackhammers and power hand tools: $24.10 + $11.25.\n- Cement mason / concrete finisher: $31.40 + $13.80.\n- Carpenter, including formwork: $33.20 + $15.10.\n- Power equipment operator, Group 2 (excavators, loaders, backhoes): $38.65 + $17.20.\n- Truck driver, dump: $26.00 + $9.75.\n- Classes not listed are added by conformance request."
       },
       {
         "doc_id": "D-03",

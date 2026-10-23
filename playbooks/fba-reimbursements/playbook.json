@@ -2,7 +2,7 @@
   "id": "fba-reimbursements",
   "title": "Amazon FBA reimbursements",
   "short_title": "Amazon's lost and short units reimbursed",
-  "brief": "An Amazon seller doing **$500k a year** has units lost, short-received or overcharged in FBA.\n\n**Filed as cases for the seller to sign:**\n- Units Amazon received short or lost\n- Refunded returns never sent back\n- A removal with no scan since\n- A fee overcharge from a wrong size tier\n- Each valued at cost, net of credits applied\n\n**Left alone:**\n- The supplier's own short shipment\n- AWD transfers, shipments still receiving\n- Windows not yet open or already closed\n- Units Amazon already reimbursed itself\n- An item remeasured twice in 60 days",
+  "brief": "An Amazon seller doing **$500k a year** has units lost, short-received or overcharged in FBA.\n\n**Filed as cases for the seller to sign — $359.78:**\n- Units Amazon received short or lost\n- Refunded returns never sent back\n- A removal with no scan since\n- A fee overcharge from a wrong size tier\n- Each valued at cost, net of credits applied\n\n**Left alone:**\n- The supplier's own short shipment\n- AWD transfers, shipments still receiving\n- Windows not yet open or already closed\n- Units Amazon already reimbursed itself\n- An item remeasured twice in 60 days",
   "domain": "E-commerce",
   "audience": "work",
   "category": "commerce",
@@ -70,7 +70,7 @@
       "file_case": "money_back",
       "request_remeasure": "money_back"
     },
-    "basis": "An estimate. A vendor estimate puts unreimbursed FBA losses at 1–3% of FBA revenue (eComEngine); for this example's $500,000-a-year seller, 1% is $5,000 a year. This chore takes the low end because Amazon now reimburses more on its own (Sellerboard, July 2026). For another seller: FBA revenue x 1% to 3% ($40,000 a year gives $400 to $1,200). Claims are valued at manufacturing cost since 2025 (Riverbend), not at the sale price. The bench world holds $359.78: four cases ($72.00, $66.00, $34.99 and $29.99) and one fee remeasure ($156.80). manual_minutes 300: a month's ledgers matched to invoices and packing lists by hand, about five hours (Webgility puts it at 4–6 hours an account a month).",
+    "basis": "- An estimate. A vendor estimate puts unreimbursed FBA losses at 1–3% of FBA revenue (eComEngine).\n- For this example's $500,000-a-year seller, 1% is $5,000 a year.\n- This chore takes the low end because Amazon now reimburses more on its own (Sellerboard, July 2026).\n- For another seller: FBA revenue x 1% to 3% ($40,000 a year gives $400 to $1,200).\n- Claims are valued at manufacturing cost since 2025 (Riverbend), not at the sale price.\n- The bench world holds $359.78: four cases ($72.00, $66.00, $34.99 and $29.99) and one fee remeasure ($156.80).\n- manual_minutes 300: a month's ledgers matched to invoices and packing lists by hand, about five hours (Webgility puts it at 4–6 hours an account a month).",
     "manual_minutes": 300,
     "incumbent": "Reimbursement services such as Getida and Seller Investigators keep about 25% of what they recover, Eva about 10%, and all of them need a user login to your Seller Central, because cases can only be filed in its UI.",
     "sources": [
@@ -120,7 +120,7 @@
       "found": "Her closing summary added the cards up to $392.98; they total $359.78. The bench scores cards, and the module shows the mismatch."
     }
   ],
-  "caveat": "Northfold Goods, Pacific Freight Lines, the supplier, the 3PL and every person and business here, and both portals (modelled on the shape of Seller Central and a supplier's email inbox) are invented; no shipment, SKU or case is any real seller's. The public rules applied are Amazon's FBA reimbursement policies as the cited sources describe them (claim windows for inbound shipments, removals and returns, valuation at manufacturing cost since 2025, and what Amazon now reimburses automatically), fixed in the bench world as of 7 October 2026. Amazon's current help pages, a seller's own agreement and a case reviewer's judgement decide real claims differently. This applies stated rules to stated facts; it is not legal or financial advice.",
+  "caveat": "- Northfold Goods, Pacific Freight Lines, the supplier, the 3PL, every person and business, and both portals (modelled on Seller Central and a supplier's inbox) are invented.\n- No shipment, SKU or case is a real seller's.\n- Rules: Amazon's FBA reimbursement policies per the cited sources, fixed as of 7 October 2026.\n- They cover claim windows (inbound, removals, returns), manufacturing-cost valuation since 2025, what Amazon now reimburses automatically.\n- Amazon's current help pages, a seller's agreement and a case reviewer decide real claims differently.\n- Not legal or financial advice.",
   "fit": {
     "where": "US",
     "where_note": "Amazon's US marketplace reimbursement rules; other Amazon marketplaces set their own windows.",

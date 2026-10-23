@@ -490,7 +490,7 @@
       {
         "note_id": "N-2",
         "title": "How the cert desk works",
-        "text": "Alderkeep sells candles wholesale. A buyer who claims resale owes a certificate for that order. Certificates are kept in Clientwren, the CRM, and requested there: one request to the buyer, per order, naming what is missing. Mail from buyers arrives in Postwren and is not filed into Clientwren until someone does it. A state's request for substantiation is answered in Taxline State, one order at a time, with the certificate that supports it. Today is Friday 9 October 2026."
+        "text": "- Alderkeep sells candles wholesale.\n- A buyer who claims resale owes a certificate for that order.\n- Certificates are kept in Clientwren, the CRM, and requested there: one request to the buyer, per order, naming what is missing.\n- Mail from buyers arrives in Postwren and is not filed into Clientwren until someone does it.\n- A state's request for substantiation is answered in Taxline State, one order at a time, with the certificate that supports it.\n- Today is Friday 9 October 2026."
       },
       {
         "note_id": "N-3",
@@ -711,23 +711,23 @@
       {
         "rule_id": "R-1",
         "title": "A fully completed certificate",
-        "text": "Taxline State's guide for sellers, Friday 9 October 2026, paraphrasing the Streamlined Sales and Use Tax Agreement. A seller is relieved of the tax if it obtains a fully completed certificate. Fully completed means every field is filled: the purchaser's name and address, type of business, reason for exemption, identification number and the state that issued it, and the state under whose law the exemption is claimed. A signature is needed only on a paper certificate (a fax is paper). An electronic form needs none. The certificate must claim the exemption in the state the sale is sourced to."
+        "text": "- Taxline State's guide for sellers, Friday 9 October 2026, paraphrasing the Streamlined Sales and Use Tax Agreement.\n- A seller is relieved of the tax if it obtains a fully completed certificate.\n- Fully completed means every field is filled:\n- the purchaser's name and address,\n- type of business,\n- reason for exemption,\n- identification number and the state that issued it,\n- and the state under whose law the exemption is claimed.\n- A signature is needed only on a paper certificate (a fax is paper).\n- An electronic form needs none.\n- The certificate must claim the exemption in the state the sale is sourced to."
       },
       {
         "rule_id": "R-2",
         "title": "The time to get one",
-        "text": "Friday 9 October 2026. A seller obtains the certificate at the sale or within 90 days after the date of sale. Past 90 days, if a member state asks the seller to substantiate the exemption, the seller has 120 days from the state's request to obtain a fully completed certificate in good faith (an exemption that was available on the sale date, could apply to the item and fits the buyer's business), or to show by other means that the sale was not taxable. A fully completed certificate received after 90 days but before any request is accepted subject to the same good faith test."
+        "text": "- Friday 9 October 2026.\n- A seller obtains the certificate at the sale or within 90 days after the date of sale.\n- Past 90 days, if a member state asks the seller to substantiate the exemption, the seller has 120 days from the state's request to obtain a fully completed certificate in good faith (an exemption that was available on the sale date, could apply to the item and fits the buyer's business), or to show by other means that the sale was not taxable.\n- A fully completed certificate received after 90 days but before any request is accepted subject to the same good faith test."
       },
       {
         "rule_id": "R-3",
         "title": "Relief that is lost; blanket certificates",
-        "text": "Friday 9 October 2026. The relief does not reach a seller that fraudulently fails to collect tax, that solicits a buyer to claim an exemption unlawfully, or that accepts an entity-based exemption on goods the buyer picks up at the seller's own location in a state that does not allow it. A blanket certificate stays in force while the buyer buys again: a state may not ask the seller to renew it or update it while no more than twelve months pass between sales. No certificate expires on a date. If more than twelve months pass between sales, the state may ask for a new one."
+        "text": "- Friday 9 October 2026.\n- The relief does not reach a seller that fraudulently fails to collect tax,\n- that solicits a buyer to claim an exemption unlawfully,\n- or that accepts an entity-based exemption on goods the buyer picks up at the seller's own location in a state that does not allow it.\n- A blanket certificate stays in force while the buyer buys again: a state may not ask the seller to renew it or update it while no more than twelve months pass between sales.\n- No certificate expires on a date.\n- If more than twelve months pass between sales, the state may ask for a new one."
       }
     ],
     "notice": [
       {
         "notice_id": "SR-2026-0914",
-        "text": "Friday 9 October 2026. Ohio's request for substantiation, dated Monday 21 September 2026, to Alderkeep Candle Works: show the exemption for each Ohio sale in the notice list, which are the sales reported as exempt for January to March 2026. Under the Agreement the seller has 120 days from that date, to Tuesday 19 January 2027, to obtain a fully completed certificate in good faith or other proof. Answer each sale with the certificate that supports it."
+        "text": "- Friday 9 October 2026.\n- Ohio's request for substantiation, dated Monday 21 September 2026, to Alderkeep Candle Works: show the exemption for each Ohio sale in the notice list, which are the sales reported as exempt for January to March 2026.\n- Under the Agreement the seller has 120 days from that date, to Tuesday 19 January 2027, to obtain a fully completed certificate in good faith or other proof.\n- Answer each sale with the certificate that supports it."
       }
     ],
     "notice_orders": [

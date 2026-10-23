@@ -90,7 +90,7 @@
       "attach_comparable": "count",
       "attach_document": "count"
     },
-    "basis": "An estimate. A protest that wins takes value off at the combined tax rate: each $10,000 off at 2.10% saves $210 a year. Ownwell reports an average saving of $774 a year among the customers it won a reduction for in 2025, a figure among winners only and quoted second-hand (Money Crashers), so it overstates what an average protest saves. The roster's $1,100 a year for a household protesting a home and a rental sits near the bench world's $1,155 a property ($2,310 / 2). The bench world holds $2,310 a year: $70,000 off the home and $40,000 off the duplex at 2.10% ($1,470 + $840). Times a year: once, as notices come once a year.",
+    "basis": "- An estimate. A protest that wins takes value off at the combined tax rate: each $10,000 off at 2.10% saves $210 a year.\n- Ownwell reports an average saving of $774 a year among the customers it won a reduction for in 2025.\n- That figure is among winners only and quoted second-hand (Money Crashers), so it overstates what an average protest saves.\n- The roster's $1,100 a year for a household protesting a home and a rental sits near the bench world's $1,155 a property ($2,310 / 2).\n- The bench world holds $2,310 a year: $70,000 off the home and $40,000 off the duplex at 2.10% ($1,470 + $840).\n- Times a year: once, as notices come once a year.",
     "manual_minutes": 240,
     "times_per_year": 1,
     "incumbent": "Property tax consultants such as Ownwell keep 25% of the first year's savings in Texas (35% in some states), and re-enrol every year. Some local consultants charge more, up to a third of the savings.",
@@ -126,7 +126,7 @@
     "minutes": 60,
     "why": "A careful owner with an evening finds most of it; the bar is most of the protests and the evidence, no protest the facts do not support and no evidence that would not hold up, inside an hour."
   },
-  "caveat": "Countyline, Compsmith, Deedvault, Mailnest and the Ferreira household are invented; the rules are the Texas Tax Code's, fixed in the bench world as of May 2026 for a county under 150,000 people. This is not legal or tax advice, and an appraisal review board decides every value.",
+  "caveat": "- Countyline, Compsmith, Deedvault, Mailnest and the Ferreira household are invented.\n- The rules are the Texas Tax Code's, fixed in the bench world as of May 2026 for a county under 150,000 people.\n- This is not legal or tax advice, and an appraisal review board decides every value.",
   "fit": {
     "where": [
       "TX"

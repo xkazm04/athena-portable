@@ -1,4 +1,4 @@
-"""The authoring rules ``check`` enforces (README §14; ADR 0056 and ADR 0057 rule 1).
+"""The authoring rules ``check`` enforces (README §14; ADR 0056 and ADR 0057 rule 1; bullets).
 
 Fixture playbooks are built in a tmp dir, never in ``playbooks/``. The id ``late-parcels`` is not
 one of the nine that predate ADR 0057, so every rule applies to it here.
@@ -20,8 +20,10 @@ from athena.proving.playbooks.spec import (
     BEFORE_ADR_0057,
     KINDS,
     PER_TABLE,
+    PROSE_LINE_MAX,
     PlaybookError,
     load_playbook,
+    prose_problems,
 )
 
 from .test_playbooks import REPO, library, make_playbook
@@ -248,3 +250,75 @@ def test_check_exits_2_for_a_playbook_without_a_caveat(
     root.rename(base / "late-parcels")
     assert main(["--dir", str(base), "check"]) == 2
     assert "wants a caveat" in capsys.readouterr().err
+
+
+def check_err(tmp_path: Path, capsys: pytest.CaptureFixture[str]) -> tuple[int, str]:
+    """``check`` over a library of the compliant fixture alone, as edited, its example derived."""
+    base = library(tmp_path / "playbooks")
+    (tmp_path / "late-parcels").rename(base / "late-parcels")
+    assert main(["--dir", str(base), "derive"]) == 0
+    code = main(["--dir", str(base), "check"])
+    return code, capsys.readouterr().err
+
+
+def test_bulleted_basis_and_caveat_pass_check(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str]
+) -> None:
+    root = compliant(tmp_path)
+    put(
+        root,
+        "playbook.json",
+        lambda v: v["economics"].update(basis="- 4 a year x $30 = $120\n\n- An estimate"),
+    )
+    book = load_playbook(root)
+    assert prose_problems(book) == []
+    assert check_err(tmp_path, capsys)[0] == 0
+
+
+@pytest.mark.parametrize("field", ["basis", "caveat"])
+def test_a_paragraph_basis_or_caveat_is_refused_by_check(
+    tmp_path: Path, capsys: pytest.CaptureFixture[str], field: str
+) -> None:
+    root = compliant(tmp_path)
+    text = "An estimate. Shipdesk is invented."
+
+    def edit(v: dict[str, Any]) -> None:
+        if field == "basis":
+            v["economics"]["basis"] = text
+        else:
+            v["caveat"] = text
+
+    put(root, "playbook.json", edit)
+    label = "economics.basis" if field == "basis" else "caveat"
+    assert prose_problems(load_playbook(root)) == [
+        f'late-parcels: {label} must be markdown bullets, every line starting "- "; '
+        "1 of its 1 lines does not"
+    ]
+    code, err = check_err(tmp_path, capsys)
+    assert code == 2
+    assert f"{label} must be markdown bullets" in err
+
+
+def test_a_line_over_the_limit_is_refused_and_one_at_it_is_not(tmp_path: Path) -> None:
+    root = compliant(tmp_path)
+    at = "- " + "x" * (PROSE_LINE_MAX - 2)
+    put(root, "playbook.json", lambda v: v.update(caveat=at))
+    assert prose_problems(load_playbook(root)) == []
+    put(root, "playbook.json", lambda v: v.update(caveat=at + "x"))
+    assert prose_problems(load_playbook(root)) == [
+        f"late-parcels: caveat has a line of {PROSE_LINE_MAX + 1} characters, "
+        f"over {PROSE_LINE_MAX}: cut it into bullets of one claim each"
+    ]
+
+
+def test_the_loader_does_not_ask_for_bullets(tmp_path: Path) -> None:
+    """A playbook mid-edit still loads and benches; only ``check`` holds the library to bullets."""
+    root = compliant(tmp_path)
+    put(root, "playbook.json", lambda v: v.update(caveat="Invented. " * 60))
+    assert load_playbook(root).id == "late-parcels"
+
+
+def test_a_basis_absent_is_not_a_bullet_problem(tmp_path: Path) -> None:
+    root = compliant(tmp_path)
+    put(root, "playbook.json", lambda v: v["economics"].pop("basis", None))
+    assert prose_problems(load_playbook(root)) == []

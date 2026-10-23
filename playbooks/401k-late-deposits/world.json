@@ -249,7 +249,7 @@
     "practice": [
       {
         "topic": "practice",
-        "text": "Payroll Harbor's documented remittance practice (its service terms, section 4): on each payday it releases the ACH for the payroll's deferrals and loan repayments to the recordkeeper by the end of the next business day, unless the client asks it to hold them. Wexcombe has never asked. The firm's confirmations show the plan's money is segregated from the company's accounts on that next business day. The employer match is the company's own funding, set by the plan document, and is deposited separately by the company."
+        "text": "- Payroll Harbor's documented remittance practice (its service terms, section 4):\n- On each payday it releases the ACH for the payroll's deferrals and loan repayments to the recordkeeper by the end of the next business day, unless the client asks it to hold them.\n- Wexcombe has never asked.\n- The firm's confirmations show the plan's money is segregated from the company's accounts on that next business day.\n- The employer match is the company's own funding, set by the plan document, and is deposited separately by the company."
       }
     ],
     "payrolls": [
@@ -333,7 +333,7 @@
       },
       {
         "topic": "safe_harbor",
-        "text": "29 CFR 2510.3-102(a)(1): amounts withheld from pay for a participant's contribution or loan repayment become plan assets on the earliest date they can reasonably be segregated from the employer's assets, and (b)(1) no later than the 15th business day of the next month. (a)(2): for a plan with fewer than 100 participants at the start of the plan year, an amount deposited by the 7th business day after the day it would otherwise have been payable to the participant in cash (payday) is deemed timely. Loan repayments withheld from pay count. A later deposit is not deemed timely: it is late here, because Payroll Harbor's documented practice is to release the ACH the next business day, so the money could have been segregated then."
+        "text": "- 29 CFR 2510.3-102(a)(1): amounts withheld from pay for a participant's contribution or loan repayment become plan assets on the earliest date they can reasonably be segregated from the employer's assets.\n- (b)(1): no later than the 15th business day of the next month.\n- (a)(2): for a plan with fewer than 100 participants at the start of the plan year, an amount deposited by the 7th business day after the day it would otherwise have been payable to the participant in cash (payday) is deemed timely.\n- Loan repayments withheld from pay count.\n- A later deposit is not deemed timely.\n- It is late here, because Payroll Harbor's documented practice is to release the ACH the next business day, so the money could have been segregated then."
       },
       {
         "topic": "business_days",
@@ -349,7 +349,7 @@
       },
       {
         "topic": "self_correction",
-        "text": "VFCP self-correction component (section 7.1(b), effective 17 March 2025): a late participant contribution or loan repayment may be self-corrected when its lost earnings are $1,000 or less, it was remitted within 180 calendar days of withholding, and the sponsor and plan are not under investigation. The lost earnings are computed with the online calculator from the date of withholding to the date the principal reached the plan, and paid to the plan. PTE 2002-51 gives excise-tax relief for it. Wexcombe's accountant files the online notice and reports on Form 5500 after the payments. Every late deposit in this review was made within 180 days and the plan is not under investigation."
+        "text": "- VFCP self-correction component (section 7.1(b), effective 17 March 2025):\n- A late participant contribution or loan repayment may be self-corrected when all of these hold:\n- its lost earnings are $1,000 or less;\n- it was remitted within 180 calendar days of withholding;\n- the sponsor and plan are not under investigation.\n- The lost earnings are computed with the online calculator from the date of withholding to the date the principal reached the plan, and paid to the plan.\n- PTE 2002-51 gives excise-tax relief for it.\n- Wexcombe's accountant files the online notice and reports on Form 5500 after the payments.\n- Every late deposit in this review was made within 180 days and the plan is not under investigation."
       },
       {
         "topic": "rate",
@@ -475,7 +475,7 @@
       },
       {
         "topic": "method",
-        "text": "Correctcalc: simple interest at the quarter's IRC 6621(a)(2) underpayment rate (7 percent for the third and fourth quarters of 2026) on a 365-day year, on the principal, from the day it was withheld (payday, the self-correction's loss date) to the day the principal reached the plan. The DOL's own calculator compounds, so its figures differ by cents. It shows a figure for any deposit, timely or late; whether a deposit is late is decided by the rules, not by the figure."
+        "text": "- Correctcalc: simple interest at the quarter's IRC 6621(a)(2) underpayment rate (7 percent for the third and fourth quarters of 2026) on a 365-day year, on the principal.\n- Interest runs from the day the principal was withheld (payday, the self-correction's loss date) to the day the principal reached the plan.\n- The DOL's own calculator compounds, so its figures differ by cents.\n- It shows a figure for any deposit, timely or late.\n- Whether a deposit is late is decided by the rules, not by the figure."
       }
     ],
     "calc": [

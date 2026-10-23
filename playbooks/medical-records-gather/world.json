@@ -339,11 +339,11 @@
       },
       {
         "topic": "access",
-        "text": "You may get a copy of your records in the form you ask for, electronic if we hold them electronically. A provider must act on a written request within 30 calendar days of receiving it, and may extend once, by no more than 30 more days, only by telling you in writing within the first 30 days why and by what date (45 CFR 164.524(b)(2)). HHS proposed in 2021 to shorten this to 15 days; that proposal is not in effect, and 30 days applies. A provider that has neither answered nor sent an extension notice within 30 days is late."
+        "text": "- You may get a copy of your records in the form you ask for, electronic if we hold them electronically.\n- A provider must act on a written request within 30 calendar days of receiving it.\n- It may extend once, by no more than 30 more days, only by telling you in writing within the first 30 days why and by what date (45 CFR 164.524(b)(2)).\n- HHS proposed in 2021 to shorten this to 15 days; that proposal is not in effect, and 30 days applies.\n- A provider that has neither answered nor sent an extension notice within 30 days is late."
       },
       {
         "topic": "fees",
-        "text": "For a copy you ask for yourself, a provider may charge only a reasonable, cost-based fee: the labor of copying, supplies, and postage when mailed. It may not charge for searching for or retrieving the records (45 CFR 164.524(c)(4)). Harlow Valley's schedule: an electronic copy of records we hold electronically, sent to you: a flat $6.50. Paper copies mailed to you: actual cost, labor at $27 an hour, paper and postage, itemized."
+        "text": "- For a copy you ask for yourself, a provider may charge only a reasonable, cost-based fee: the labor of copying, supplies, and postage when mailed.\n- It may not charge for searching for or retrieving the records (45 CFR 164.524(c)(4)).\n- Harlow Valley's schedule:\n- An electronic copy of records we hold electronically, sent to you: a flat $6.50.\n- Paper copies mailed to you: actual cost, labor at $27 an hour, paper and postage, itemized."
       },
       {
         "topic": "third-party",
@@ -455,7 +455,7 @@
         "date": "2026-10-01",
         "subject": "Your second opinion on 30 October: records to bring",
         "search": "Westbrook Spine Center intake second opinion records appointment",
-        "body": "Your appointment with Dr. Imogen Hale is Friday 30 October 2026. Please bring or upload: your primary care visit notes and labs (Alder Creek); the Harlow Valley emergency visit and MRI report, and Harlow Valley's orthopedic clinic notes from 2019 to 2021; the MRI and X-ray images from Brightline Imaging; Dr. Osei's notes from Bayside Orthopedics; and your physical therapy notes from Stride. We do not need billing records."
+        "body": "- Your appointment with Dr. Imogen Hale is Friday 30 October 2026.\n- Please bring or upload:\n- your primary care visit notes and labs (Alder Creek);\n- the Harlow Valley emergency visit and MRI report, and Harlow Valley's orthopedic clinic notes from 2019 to 2021;\n- the MRI and X-ray images from Brightline Imaging;\n- Dr. Osei's notes from Bayside Orthopedics;\n- and your physical therapy notes from Stride.\n- We do not need billing records."
       },
       {
         "message_id": "M-2",

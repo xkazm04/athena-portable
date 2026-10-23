@@ -375,7 +375,7 @@
       },
       {
         "carrier": "Trident Ocean",
-        "terms": "Service contract TOS-2026-118, Trident Ocean and Brennick Home & Garden, 1 May 2026 to 30 April 2027, section 7.2: at Savannah, import demurrage free time is 10 calendar days from the day the container is available (in place of the tariff's 4), then the tariff rate of $225 a day. Section 7.3: detention is as in Trident's tariff TOT-9 (5 calendar days free from out-gate, then $175 a day); the contract does not extend it. Section 12: the contract's terms prevail over the tariff."
+        "terms": "- Service contract TOS-2026-118, Trident Ocean and Brennick Home & Garden, 1 May 2026 to 30 April 2027.\n- Section 7.2: at Savannah, import demurrage free time is 10 calendar days from the day the container is available (in place of the tariff's 4), then the tariff rate of $225 a day.\n- Section 7.3: detention is as in Trident's tariff TOT-9 (5 calendar days free from out-gate, then $175 a day); the contract does not extend it.\n- Section 12: the contract's terms prevail over the tariff."
       }
     ],
     "fmc_rules": [
@@ -389,7 +389,7 @@
       },
       {
         "topic": "contents",
-        "text": "46 CFR 541.6: every invoice must state the bill of lading, the container, the port of discharge, and why the billed party is the proper party; the invoice date and due date; the allowed free time in days, its start date and its end date; for imports, the container availability date; the dates charged; the total, the tariff rule or contract section, and the rate; a contact and a web address for disputes, with the timeframes; and the billing party's certifications that the charges comply with the FMC's rules and that its own performance did not cause them. 541.5: failure to include any required information eliminates any obligation of the billed party to pay the charge."
+        "text": "- 46 CFR 541.6: every invoice must state the items below.\n- The bill of lading, the container, the port of discharge, and why the billed party is the proper party.\n- The invoice date and due date.\n- The allowed free time in days, its start date and its end date.\n- For imports, the container availability date.\n- The dates charged.\n- The total, the tariff rule or contract section, and the rate.\n- A contact and a web address for disputes, with the timeframes.\n- The billing party's certifications that the charges comply with the FMC's rules and that its own performance did not cause them.\n- 541.5: failure to include any required information eliminates any obligation of the billed party to pay the charge."
       },
       {
         "topic": "disputes",
@@ -397,7 +397,7 @@
       },
       {
         "topic": "reasonable",
-        "text": "46 CFR 545.5, the FMC's interpretive rule under 46 U.S.C. 41102(c): the FMC looks at whether demurrage and detention serve their purpose, an incentive to move cargo. It may consider whether demurrage and free time are tied to the cargo being available to retrieve. Absent extenuating circumstances, detention charged when an empty container cannot be returned is likely to be found unreasonable. A charge for a day the container was available and simply not moved serves its purpose."
+        "text": "- 46 CFR 545.5, the FMC's interpretive rule under 46 U.S.C. 41102(c): the FMC looks at whether demurrage and detention serve their purpose, an incentive to move cargo.\n- It may consider whether demurrage and free time are tied to the cargo being available to retrieve.\n- Absent extenuating circumstances, detention charged when an empty container cannot be returned is likely to be found unreasonable.\n- A charge for a day the container was available and simply not moved serves its purpose."
       }
     ],
     "container_history": [
@@ -470,7 +470,7 @@
       },
       {
         "topic": "charges",
-        "text": "Tariff HLVT-1, rule 21(a), Savannah imports: demurrage free time is 4 calendar days from the day the container is available for pickup, then $200 a calendar day until out-gate. Rule 21(b): detention free time is 5 calendar days from out-gate, then $150 a calendar day until the empty is returned to the location Halvard names. Halvard issues each invoice within 30 days of the last day charged, with every item 46 CFR 541.6 requires."
+        "text": "- Tariff HLVT-1, rule 21(a), Savannah imports: demurrage free time is 4 calendar days from the day the container is available for pickup, then $200 a calendar day until out-gate.\n- Rule 21(b): detention free time is 5 calendar days from out-gate, then $150 a calendar day until the empty is returned to the location Halvard names.\n- Halvard issues each invoice within 30 days of the last day charged, with every item 46 CFR 541.6 requires."
       },
       {
         "topic": "closures",

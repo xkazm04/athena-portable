@@ -323,7 +323,7 @@
         "from": "Crewmarrow HR",
         "subject": "COBRA election notice",
         "date": "2026-10-05",
-        "text": "Monday 5 October 2026. COBRA election notice. Pellcombe Logistics is the plan administrator. Your group coverage ended on 30 September 2026. You may elect COBRA continuation coverage at 1,020.00 dollars a month. Your election period is at least 60 days from the later of the day your coverage ended and the date of this notice. The first premium is due 45 days after you elect. Your options are on Crewmarrow HR, as CB-1 to CB-3. HR."
+        "text": "- Monday 5 October 2026.\n- COBRA election notice.\n- Pellcombe Logistics is the plan administrator.\n- Your group coverage ended on 30 September 2026.\n- You may elect COBRA continuation coverage at 1,020.00 dollars a month.\n- Your election period is at least 60 days from the later of the day your coverage ended and the date of this notice.\n- The first premium is due 45 days after you elect.\n- Your options are on Crewmarrow HR, as CB-1 to CB-3.\n- HR."
       },
       {
         "msg_id": "M-3",
@@ -354,11 +354,11 @@
       },
       {
         "topic": "agreement",
-        "text": "The severance agreement offers 6 weeks' pay, 7,500.00 dollars, for a release of claims. It was delivered on Monday 28 September 2026. Lena is 52, so she has 21 days to consider it, until Monday 19 October 2026. She may sign before then, but not before Monday 5 October. After she signs she has 7 days to revoke in writing; the agreement takes effect and the pay is released only when they end. A release that is revoked forfeits the severance. The first draft (SA-1, 21 September) was withdrawn. The current agreement has two payment options, SA-2 and SA-3. Today is Friday 9 October 2026."
+        "text": "- The severance agreement offers 6 weeks' pay, 7,500.00 dollars, for a release of claims.\n- It was delivered on Monday 28 September 2026.\n- Lena is 52, so she has 21 days to consider it, until Monday 19 October 2026.\n- She may sign before then, but not before Monday 5 October.\n- After she signs she has 7 days to revoke in writing; the agreement takes effect and the pay is released only when they end.\n- A release that is revoked forfeits the severance.\n- The first draft (SA-1, 21 September) was withdrawn.\n- The current agreement has two payment options, SA-2 and SA-3.\n- Today is Friday 9 October 2026."
       },
       {
         "topic": "cobra",
-        "text": "Pellcombe Logistics is the plan administrator. COBRA keeps the same plan for up to 18 months after the end of employment at 102 percent of the premium: 1,020.00 dollars a month. An election covers Lena from the day her group coverage ended, 1 October 2026, with no gap. The election period is at least 60 days from the later of the day her coverage ended and the date of the election notice. The first premium is due 45 days after she elects; later months are due on the first, with a 30-day grace. She may end COBRA at any time by writing to HR. Her 2026 deductible was met in April, so a covered claim is paid in full. Today is Friday 9 October 2026."
+        "text": "- Pellcombe Logistics is the plan administrator.\n- COBRA keeps the same plan for up to 18 months after the end of employment at 102 percent of the premium: 1,020.00 dollars a month.\n- An election covers Lena from the day her group coverage ended, 1 October 2026, with no gap.\n- The election period is at least 60 days from the later of the day her coverage ended and the date of the election notice.\n- The first premium is due 45 days after she elects; later months are due on the first, with a 30-day grace.\n- She may end COBRA at any time by writing to HR.\n- Her 2026 deductible was met in April, so a covered claim is paid in full.\n- Today is Friday 9 October 2026."
       },
       {
         "topic": "plan",
@@ -422,7 +422,7 @@
       },
       {
         "topic": "severance",
-        "text": "Dismissal pay is any payment an employer makes because of a separation, such as severance or pay in lieu of notice; accrued leave, a pension and health insurance are not. A lump sum is allocated by the week from the day after the last day worked, at her usual weekly pay. For a week in which the allocated pay is more than the weekly benefit rate plus the partial credit, no benefit is payable. The rule does not apply to dismissal pay whose first payment is made more than 30 days after the last day of work. Today is Friday 9 October 2026."
+        "text": "- Dismissal pay is any payment an employer makes because of a separation, such as severance or pay in lieu of notice.\n- Accrued leave, a pension and health insurance are not dismissal pay.\n- A lump sum is allocated by the week from the day after the last day worked, at her usual weekly pay.\n- For a week in which the allocated pay is more than the weekly benefit rate plus the partial credit, no benefit is payable.\n- The rule does not apply to dismissal pay whose first payment is made more than 30 days after the last day of work.\n- Today is Friday 9 October 2026."
       },
       {
         "topic": "waiver",

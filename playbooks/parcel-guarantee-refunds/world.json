@@ -292,7 +292,7 @@
         "service": "Next Morning",
         "shipped": "Tue 29 Sep 2026",
         "flag": "late; address corrected",
-        "detail": "To Quinlan Optometry, Suite 210 (commercial). Labelyard's address check at label time: 'unverified: suite number missing', printed anyway. No signature option. Picked up 4:00 pm. Scheduled: Wed 30 Sep, 10:30 am. Wrenpost tracking: 'Wed 30 Sep 9:40 am: incorrect address, suite missing; held for correction'; 'address corrected 1:15 pm'. Delivered Wed 30 Sep, 4:40 pm. Charges: transportation $48.60, fuel surcharge $7.29, address correction $24.00."
+        "detail": "- To Quinlan Optometry, Suite 210 (commercial).\n- Labelyard's address check at label time: 'unverified: suite number missing', printed anyway.\n- No signature option.\n- Picked up 4:00 pm.\n- Scheduled: Wed 30 Sep, 10:30 am.\n- Wrenpost tracking: 'Wed 30 Sep 9:40 am: incorrect address, suite missing; held for correction'; 'address corrected 1:15 pm'.\n- Delivered Wed 30 Sep, 4:40 pm.\n- Charges: transportation $48.60, fuel surcharge $7.29, address correction $24.00."
       },
       {
         "tracking": "1WP4471050",
@@ -316,7 +316,7 @@
         "service": "Priority Overnight",
         "shipped": "Tue 29 Sep 2026",
         "flag": "commitment moved",
-        "detail": "To Brookhaven Optical (commercial; address verified). No signature option. Dropped off by Corbel at the Lanecourier Center on Pike Street at 7:40 pm; that location's last Priority Overnight cut-off is 6:00 pm. Lanecourier tracking: 'tendered after cut-off: departs next business day; commitment Thu 1 Oct, 10:30 am'. Delivered Thu 1 Oct, 9:48 am. On invoice LCI-1005. Charges: transportation $52.80, fuel surcharge $7.92."
+        "detail": "- To Brookhaven Optical (commercial; address verified).\n- No signature option.\n- Dropped off by Corbel at the Lanecourier Center on Pike Street at 7:40 pm.\n- That location's last Priority Overnight cut-off is 6:00 pm.\n- Lanecourier tracking: 'tendered after cut-off: departs next business day; commitment Thu 1 Oct, 10:30 am'.\n- Delivered Thu 1 Oct, 9:48 am.\n- On invoice LCI-1005.\n- Charges: transportation $52.80, fuel surcharge $7.92."
       },
       {
         "tracking": "LC-77310447",
@@ -431,7 +431,7 @@
       },
       {
         "topic": "exceptions",
-        "text": "No refund when the delay comes from causes beyond Wrenpost's control, including weather, natural disasters, acts of public authority and disruptions announced in a service alert; an incorrect or incomplete address, including a missing suite or apartment number; a package tendered after the pickup cut-off or outside business hours; a recipient unavailable or refusing to sign where a signature is required; or a delivery change the recipient asked for."
+        "text": "- No refund when the delay comes from:\n- causes beyond Wrenpost's control, including weather, natural disasters, acts of public authority and disruptions announced in a service alert;\n- an incorrect or incomplete address, including a missing suite or apartment number;\n- a package tendered after the pickup cut-off or outside business hours;\n- a recipient unavailable or refusing to sign where a signature is required;\n- or a delivery change the recipient asked for."
       },
       {
         "topic": "refund",
@@ -482,7 +482,7 @@
       },
       {
         "topic": "exceptions",
-        "text": "No refund for: weather, acts of God or other causes beyond Lanecourier's control; an incorrect address or ZIP code; the unavailability or refusal of a person to accept delivery or sign for the package where a signature is required; a package tendered after the location's cut-off time, whose commitment moves to the next business day; a package rerouted or held at the recipient's request; or a package delivered on time."
+        "text": "- No refund for:\n- weather, acts of God or other causes beyond Lanecourier's control;\n- an incorrect address or ZIP code;\n- the unavailability or refusal of a person to accept delivery or sign for the package where a signature is required;\n- a package tendered after the location's cut-off time, whose commitment moves to the next business day;\n- a package rerouted or held at the recipient's request;\n- or a package delivered on time."
       },
       {
         "topic": "refund",

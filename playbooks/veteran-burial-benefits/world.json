@@ -262,7 +262,7 @@
         "doc_id": "D-2",
         "title": "Dad's death certificate",
         "saved": "Daniel Marsh, 15 Oct 2024",
-        "text": "Leonard James Marsh, died Friday 4 October 2024 at his home, 18 Birch Lane, under the care of Linden Hospice (a private Medicare hospice). Immediate cause of death: metastatic pancreatic adenocarcinoma, diagnosed March 2024. Other significant conditions contributing to death: none. Manner: natural. Disposition: burial, Cedar Hollow Cemetery, 11 October 2024. Marital status: widowed (spouse Ellen Marsh died 2019)."
+        "text": "- Leonard James Marsh, died Friday 4 October 2024 at his home, 18 Birch Lane, under the care of Linden Hospice (a private Medicare hospice).\n- Immediate cause of death: metastatic pancreatic adenocarcinoma, diagnosed March 2024.\n- Other significant conditions contributing to death: none.\n- Manner: natural.\n- Disposition: burial, Cedar Hollow Cemetery, 11 October 2024.\n- Marital status: widowed (spouse Ellen Marsh died 2019)."
       },
       {
         "doc_id": "D-3",
@@ -274,7 +274,7 @@
         "doc_id": "D-4",
         "title": "Cedar Hollow Cemetery: rules for Section D",
         "saved": "Daniel Marsh, 12 Oct 2024",
-        "text": "Cedar Hollow Cemetery is a privately owned cemetery. Section D is a lawn section: only flat bronze markers set flush with the grass, on a concrete base the cemetery pours, are allowed. No upright headstones, and no granite or marble markers, in Section D. The cemetery sets every marker; the setting fee is $225, paid when the marker arrives. Lot D-112: Leonard J. Marsh, interred 11 October 2024. The grave has a temporary funeral home marker only."
+        "text": "- Cedar Hollow Cemetery is a privately owned cemetery.\n- Section D is a lawn section: only flat bronze markers set flush with the grass, on a concrete base the cemetery pours, are allowed.\n- No upright headstones, and no granite or marble markers, in Section D.\n- The cemetery sets every marker; the setting fee is $225, paid when the marker arrives.\n- Lot D-112: Leonard J. Marsh, interred 11 October 2024.\n- The grave has a temporary funeral home marker only."
       },
       {
         "doc_id": "D-5",
@@ -387,7 +387,7 @@
       },
       {
         "topic": "allowances",
-        "text": "Benefit codes for claim_burial_benefit. B-SC: service-connected burial allowance (38 CFR 3.1704), when the veteran died of a service-connected disability; it is paid in place of B-NSC, B-HOSP and B-PLOT. A veteran rated totally disabled is presumed to have died of a service-connected disability, but not when the total rating rests on individual unemployability (TDIU), and not against evidence of another cause. B-NSC: non-service-connected burial allowance (3.1705), when on the date of death the veteran was receiving VA disability compensation or pension. B-HOSP: non-service-connected burial allowance for a veteran who died while hospitalized by VA (3.1706): admitted to a VA facility, in VA-paid nursing home or hospital care, or in a State home at VA expense. Only one of B-NSC and B-HOSP is paid. B-PLOT: plot or interment allowance (3.1707). B-TRANS: transportation of the remains (3.1709)."
+        "text": "- Benefit codes for claim_burial_benefit.\n- B-SC: service-connected burial allowance (38 CFR 3.1704), when the veteran died of a service-connected disability; it is paid in place of B-NSC, B-HOSP and B-PLOT.\n- A veteran rated totally disabled is presumed to have died of a service-connected disability, but not when the total rating rests on individual unemployability (TDIU), and not against evidence of another cause.\n- B-NSC: non-service-connected burial allowance (3.1705), when on the date of death the veteran was receiving VA disability compensation or pension.\n- B-HOSP: non-service-connected burial allowance for a veteran who died while hospitalized by VA (3.1706): admitted to a VA facility, in VA-paid nursing home or hospital care, or in a State home at VA expense.\n- Only one of B-NSC and B-HOSP is paid.\n- B-PLOT: plot or interment allowance (3.1707).\n- B-TRANS: transportation of the remains (3.1709)."
       },
       {
         "topic": "amounts",
@@ -395,7 +395,7 @@
       },
       {
         "topic": "plot",
-        "text": "B-PLOT (38 CFR 3.1707(c)) is paid to the person who paid for a plot or interment in a cemetery that is not a national cemetery or other cemetery under U.S. jurisdiction, when the veteran is eligible for B-NSC or B-HOSP, or was discharged for a disability incurred in the line of duty. Plot means the final resting place: the grave, a mausoleum vault or a columbarium niche. If the United States, a State, a tribal organization or the veteran's employer paid part of the plot or interment costs, VA pays the lesser of the maximum and the costs less what they paid (3.1711(a))."
+        "text": "- B-PLOT (38 CFR 3.1707(c)) is paid to the person who paid for a plot or interment in a cemetery that is not a national cemetery or other cemetery under U.S. jurisdiction, when the veteran is eligible for B-NSC or B-HOSP, or was discharged for a disability incurred in the line of duty.\n- Plot means the final resting place: the grave, a mausoleum vault or a columbarium niche.\n- If the United States, a State, a tribal organization or the veteran's employer paid part of the plot or interment costs, VA pays the lesser of the maximum and the costs less what they paid (3.1711(a))."
       },
       {
         "topic": "transportation",
@@ -411,7 +411,7 @@
       },
       {
         "topic": "markers",
-        "text": "38 CFR 38.630. VA furnishes, at no cost, a headstone or marker for the unmarked grave of an eligible veteran in any cemetery, including a private one (VA Form 40-1330). For a grave already marked with a privately purchased headstone, VA may instead furnish a medallion to fix to it (VA Form 40-1330M). VA does not pay to set it. Item codes: M-1 upright marble headstone; M-2 upright granite headstone; M-3 flat bronze marker; M-4 flat granite marker; M-5 flat marble marker; M-6 bronze medallion (40-1330M). The cemetery must accept the item and certify it will place it. VA states no deadline to apply."
+        "text": "- 38 CFR 38.630.\n- VA furnishes, at no cost, a headstone or marker for the unmarked grave of an eligible veteran in any cemetery, including a private one (VA Form 40-1330).\n- For a grave already marked with a privately purchased headstone, VA may instead furnish a medallion to fix to it (VA Form 40-1330M).\n- VA does not pay to set it.\n- Item codes: M-1 upright marble headstone;\n- M-2 upright granite headstone;\n- M-3 flat bronze marker;\n- M-4 flat granite marker;\n- M-5 flat marble marker;\n- M-6 bronze medallion (40-1330M).\n- The cemetery must accept the item and certify it will place it.\n- VA states no deadline to apply."
       },
       {
         "topic": "fees",

@@ -671,7 +671,7 @@
         "doc_id": "DOC-11",
         "title": "Tallowbrook Health Plan physician agreement: payment terms",
         "dated": "2025-12-01",
-        "text": "Tallowbrook pays each covered service at the lesser of the practice's billed charge and the rate in Exhibit A in force on the date of service, less the member's cost-sharing. A physician assistant's services are paid at the same rates as a physician's. Multiple surgical procedures in one session: the highest-valued surgical procedure (CPT 10021 to 69990) at 100% and each other surgical procedure at 50%. Radiology, laboratory and evaluation and management codes are never reduced as multiple procedures. Tallowbrook applies the CMS National Correct Coding Initiative (NCCI) edits; a service bundled under an NCCI edit is paid in the allowance of the service it pairs with. Payment disputes: the practice may dispute a line paid below this agreement within 90 calendar days of the remittance date, through the Paylance payer hub, one line a dispute."
+        "text": "- Tallowbrook pays each covered service at the lesser of the practice's billed charge and the rate in Exhibit A in force on the date of service, less the member's cost-sharing.\n- A physician assistant's services are paid at the same rates as a physician's.\n- Multiple surgical procedures in one session: the highest-valued surgical procedure (CPT 10021 to 69990) at 100% and each other surgical procedure at 50%.\n- Radiology, laboratory and evaluation and management codes are never reduced as multiple procedures.\n- Tallowbrook applies the CMS National Correct Coding Initiative (NCCI) edits.\n- A service bundled under an NCCI edit is paid in the allowance of the service it pairs with.\n- Payment disputes: the practice may dispute a line paid below this agreement within 90 calendar days of the remittance date.\n- Disputes go through the Paylance payer hub, one line a dispute."
       },
       {
         "doc_id": "DOC-12",
@@ -689,7 +689,7 @@
         "doc_id": "DOC-21",
         "title": "Cindermoor Health participating practice agreement: payment terms",
         "dated": "2024-01-01",
-        "text": "Cindermoor pays covered services at Schedule 1 (commercial products) or Schedule 2 (Medicare Advantage), less the member's cost-sharing (deductible, coinsurance, copay), which the practice collects from the member. Cindermoor applies the CMS NCCI edits. Participating practitioners: Dr. Imani Royce from 1 January 2024; Leah Moreno PA-C from 1 January 2024 (85% of the physician rate); Dr. Tobias Wren from 1 April 2026, by the credentialing approval of 28 March 2026. Payment disputes: within 180 calendar days of the remittance date, through the Paylance payer hub, one line a dispute."
+        "text": "- Cindermoor pays covered services at Schedule 1 (commercial products) or Schedule 2 (Medicare Advantage), less the member's cost-sharing (deductible, coinsurance, copay).\n- The practice collects the cost-sharing from the member.\n- Cindermoor applies the CMS NCCI edits.\n- Participating practitioner: Dr. Imani Royce from 1 January 2024.\n- Participating practitioner: Leah Moreno PA-C from 1 January 2024 (85% of the physician rate).\n- Participating practitioner: Dr. Tobias Wren from 1 April 2026, by the credentialing approval of 28 March 2026.\n- Payment disputes: within 180 calendar days of the remittance date, through the Paylance payer hub, one line a dispute."
       },
       {
         "doc_id": "DOC-22",

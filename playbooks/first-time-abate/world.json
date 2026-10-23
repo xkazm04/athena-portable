@@ -338,7 +338,7 @@
         "acct": "A-4",
         "entity": "Bram Halvering",
         "form": "1040",
-        "history": "2021: no penalty. 2022: estimated tax penalty 96 dollars (D-15), paid. 2023: no penalty. 2024: filed on extension 14 October 2025; 2,740 dollars of tax unpaid on 15 April 2025, so failure-to-pay penalty 215.60 dollars to date (N-5); accuracy-related penalty 612 dollars (N-6); estimated tax penalty 148 dollars (N-7). 2025: filed 14 April 2026, tax paid with the return; return changed for a math error (N-12)."
+        "history": "- 2021: no penalty.\n- 2022: estimated tax penalty 96 dollars (D-15), paid.\n- 2023: no penalty.\n- 2024: filed on extension 14 October 2025; 2,740 dollars of tax unpaid on 15 April 2025, so failure-to-pay penalty 215.60 dollars to date (N-5); accuracy-related penalty 612 dollars (N-6); estimated tax penalty 148 dollars (N-7).\n- 2025: filed 14 April 2026, tax paid with the return; return changed for a math error (N-12)."
       },
       {
         "acct": "A-5",

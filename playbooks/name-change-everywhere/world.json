@@ -426,11 +426,11 @@
       },
       {
         "topic": "online",
-        "text": "A last-name change after marriage can be finished online with no visit (Social Security's Internet replacement card service) only with a marriage certificate and a driver's licence from a state on Social Security's list of participating states. Avonmere is not on that list. Otherwise the application is started online, and the original or certified documents are shown at a Social Security office within 45 calendar days; after 45 days the application lapses and is started again. The office checks the documents, changes the name on the record and mails the new card, which usually arrives in about 10 business days. There is no fee."
+        "text": "- A last-name change after marriage can be finished online with no visit (Social Security's Internet replacement card service) only with a marriage certificate and a driver's licence from a state on Social Security's list of participating states.\n- Avonmere is not on that list.\n- Otherwise the application is started online, and the original or certified documents are shown at a Social Security office within 45 calendar days;\n- after 45 days the application lapses and is started again.\n- The office checks the documents, changes the name on the record and mails the new card, which usually arrives in about 10 business days.\n- There is no fee."
       },
       {
         "topic": "documents",
-        "text": "A name change needs proof of the event and the new name, and proof of identity. The original or certified marriage certificate shows both. A compound name joining both spouses' surnames, with or without a hyphen, may be taken by either spouse or by both. A marriage certificate from the last two years that shows the prior name and the age or date of birth also serves as the identity document; otherwise bring one more, such as a driver's licence or passport in the prior or new name. Photocopies and notarized copies are not accepted."
+        "text": "- A name change needs proof of the event and the new name, and proof of identity.\n- The original or certified marriage certificate shows both.\n- A compound name joining both spouses' surnames, with or without a hyphen, may be taken by either spouse or by both.\n- A marriage certificate from the last two years that shows the prior name and the age or date of birth also serves as the identity document;\n- otherwise bring one more, such as a driver's licence or passport in the prior or new name.\n- Photocopies and notarized copies are not accepted."
       },
       {
         "topic": "visits",
@@ -438,7 +438,7 @@
       },
       {
         "topic": "after",
-        "text": "Other offices check a name against Social Security's record. A licence office verifies the name and number with Social Security before it issues a licence. An employer reports wages under the name on the Social Security card. The IRS matches the names on a tax return, and a bank's interest forms, to Social Security's record. So the name changes with Social Security first, and the others follow once the record shows it."
+        "text": "- Other offices check a name against Social Security's record.\n- A licence office verifies the name and number with Social Security before it issues a licence.\n- An employer reports wages under the name on the Social Security card.\n- The IRS matches the names on a tax return, and a bank's interest forms, to Social Security's record.\n- So the name changes with Social Security first, and the others follow once the record shows it."
       }
     ],
     "ssa_records": [
@@ -483,7 +483,7 @@
       },
       {
         "topic": "ssa-check",
-        "text": "At the counter IDway checks the name, date of birth and Social Security number against Social Security's record, as the REAL ID rule requires (6 CFR 37.13(b)(2)). If the name does not match, no licence is issued in it. So the name changes with Social Security first: book a name change visit only once Social Security's record shows the new name, and for a visit at least 2 business days after the record changed. A visit that fails the check is turned away, and its fee is not refunded."
+        "text": "- At the counter IDway checks the name, date of birth and Social Security number against Social Security's record, as the REAL ID rule requires (6 CFR 37.13(b)(2)).\n- If the name does not match, no licence is issued in it.\n- So the name changes with Social Security first: book a name change visit only once Social Security's record shows the new name, and for a visit at least 2 business days after the record changed.\n- A visit that fails the check is turned away, and its fee is not refunded."
       },
       {
         "topic": "name-change",
@@ -491,7 +491,7 @@
       },
       {
         "topic": "real-id",
-        "text": "Since 7 May 2025 a licence must be REAL ID to be accepted for federal purposes such as airport security. A standard licence, marked Federal Limits Apply, is not accepted there; a passport is. Without either, TSA offers ConfirmID for a $45 fee, with no promise it can verify you. A REAL ID needs, in person: one identity document (a valid U.S. passport or a certified birth certificate); proof of the Social Security number (the Social Security card, a W-2, an SSA-1099 or a pay stub showing it); two documents with the name and Avonmere address; and, where the names differ, the document linking them, such as the marriage certificate."
+        "text": "- Since 7 May 2025 a licence must be REAL ID to be accepted for federal purposes such as airport security.\n- A standard licence, marked Federal Limits Apply, is not accepted there; a passport is.\n- Without either, TSA offers ConfirmID for a $45 fee, with no promise it can verify you.\n- A REAL ID needs, in person: one identity document (a valid U.S. passport or a certified birth certificate);\n- proof of the Social Security number (the Social Security card, a W-2, an SSA-1099 or a pay stub showing it);\n- two documents with the name and Avonmere address;\n- and, where the names differ, the document linking them, such as the marriage certificate."
       }
     ],
     "licences": [
@@ -650,7 +650,7 @@
       },
       {
         "topic": "travel-names",
-        "text": "An international ticket must carry the name exactly as printed in the passport you will fly on; the airline will not board a name that differs from the passport shown. If your passport is being reissued in a new name, upload the new passport when it is in your hand, and the travel desk changes the ticket's name free of charge, up to 48 hours before departure. The desk does not change a ticket's name to one that no passport you hold carries."
+        "text": "- An international ticket must carry the name exactly as printed in the passport you will fly on; the airline will not board a name that differs from the passport shown.\n- If your passport is being reissued in a new name, upload the new passport when it is in your hand, and the travel desk changes the ticket's name free of charge, up to 48 hours before departure.\n- The desk does not change a ticket's name to one that no passport you hold carries."
       },
       {
         "topic": "perks",

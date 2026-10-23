@@ -398,7 +398,7 @@
         "person_id": "P-4",
         "name": "Tomasz Bielski",
         "role": "Dad's weekday evening caregiver",
-        "notes": "First evening Tuesday 6 October 2026. Monday to Thursday, 5 to 9 pm, $24 an hour, paid through Hearthpay on Fridays. I set his hours and his tasks (Dad's dinner, the evening medicines from the organiser I fill, his wash and bed, per the care plan); he uses our supplies, works only here in those hours, and I can end it any time. He asked to be paid as a contractor because he has Bielski Care LLC, so I set him up that way on 5 October."
+        "notes": "- First evening Tuesday 6 October 2026.\n- Monday to Thursday, 5 to 9 pm, $24 an hour, paid through Hearthpay on Fridays.\n- I set his hours and his tasks (Dad's dinner, the evening medicines from the organiser I fill, his wash and bed, per the care plan);\n- he uses our supplies, works only here in those hours, and I can end it any time.\n- He asked to be paid as a contractor because he has Bielski Care LLC, so I set him up that way on 5 October."
       }
     ],
     "weeks": [
@@ -640,35 +640,35 @@
       },
       {
         "topic": "employee",
-        "text": "Pub 926: the worker is your employee if you can control not only what work is done, but how it is done. It doesn't matter whether the work is full time or part time, or whether you pay by the hour, day or week. If an agency provides the worker and controls what work is done and how it is done, the worker isn't your employee. If only the worker can control how the work is done (for example a lawn business with its own tools and helpers, offered to the public), the worker is self-employed. Caretakers, private nurses, babysitters and yard workers do household work. Hearthpay: a worker's request to be paid as a contractor, or an LLC, does not change who controls the work; a household employee's wages go on a W-2, not a 1099-NEC."
+        "text": "- Pub 926: the worker is your employee if you can control not only what work is done, but how it is done.\n- It doesn't matter whether the work is full time or part time, or whether you pay by the hour, day or week.\n- If an agency provides the worker and controls what work is done and how it is done, the worker isn't your employee.\n- If only the worker can control how the work is done (for example a lawn business with its own tools and helpers, offered to the public), the worker is self-employed.\n- Caretakers, private nurses, babysitters and yard workers do household work.\n- Hearthpay: a worker's request to be paid as a contractor, or an LLC, does not change who controls the work; a household employee's wages go on a W-2, not a 1099-NEC."
       },
       {
         "topic": "family",
-        "text": "Pub 926: not Social Security and Medicare wages: wages you pay your spouse; your child under 21; your parent, unless your parent cares for your child under 18 (or one needing an adult's care for 4 weeks in a quarter) and you are divorced, widowed or living with a spouse who can't care for the child; and an employee under 18 at any time in the year, unless household work is their principal occupation (a student's isn't). Not FUTA wages: wages you pay your spouse, your child under 21 and your parent. These exemptions apply however much is paid."
+        "text": "- Pub 926: not Social Security and Medicare wages: wages you pay your spouse;\n- your child under 21;\n- your parent, unless your parent cares for your child under 18 (or one needing an adult's care for 4 weeks in a quarter) and you are divorced, widowed or living with a spouse who can't care for the child;\n- and an employee under 18 at any time in the year, unless household work is their principal occupation (a student's isn't).\n- Not FUTA wages: wages you pay your spouse, your child under 21 and your parent.\n- These exemptions apply however much is paid."
       },
       {
         "topic": "thresholds",
-        "text": "Pub 926, 2026: if you pay one household employee cash wages of $3,000 or more in 2026, all of that employee's cash wages are Social Security and Medicare wages: 6.2% Social Security (on wages up to $184,500) and 1.45% Medicare from the employee, and the same from you. Withhold the employee's share from each payment if you expect to pay $3,000 or more; if you withheld and end up paying less, repay the employee. If you don't withhold, you're responsible for the employee's share as well as your own. Federal income tax is withheld only if the employee asks and you agree."
+        "text": "- Pub 926, 2026: if you pay one household employee cash wages of $3,000 or more in 2026, all of that employee's cash wages are Social Security and Medicare wages: 6.2% Social Security (on wages up to $184,500) and 1.45% Medicare from the employee, and the same from you.\n- Withhold the employee's share from each payment if you expect to pay $3,000 or more; if you withheld and end up paying less, repay the employee.\n- If you don't withhold, you're responsible for the employee's share as well as your own.\n- Federal income tax is withheld only if the employee asks and you agree."
       },
       {
         "topic": "futa",
-        "text": "Pub 926: FUTA applies if you pay total cash wages of $1,000 or more in any calendar quarter of 2025 or 2026 to household employees. It is 6.0% of the first $7,000 of each employee's FUTA wages in 2026, with a credit of up to 5.4% for state unemployment contributions; the 2026 credit is limited unless all of 2026's state contributions are paid by 15 April 2027. FUTA is yours alone: never withheld from pay. It is figured on Schedule H."
+        "text": "- Pub 926: FUTA applies if you pay total cash wages of $1,000 or more in any calendar quarter of 2025 or 2026 to household employees.\n- It is 6.0% of the first $7,000 of each employee's FUTA wages in 2026, with a credit of up to 5.4% for state unemployment contributions;\n- the 2026 credit is limited unless all of 2026's state contributions are paid by 15 April 2027.\n- FUTA is yours alone: never withheld from pay.\n- It is figured on Schedule H."
       },
       {
         "topic": "forms",
-        "text": "Pub 926: you need an employer identification number (EIN), applied for with Form SS-4 or online, on the forms you file. File a 2026 Form W-2 for each household employee paid Social Security and Medicare wages of $3,000 or more, or from whom you withheld income tax: Copies B, C and 2 to the employee, and Copy A with Form W-3 to the Social Security Administration, by Monday 1 February 2027 (31 January falls on a Sunday). Report the household taxes on Schedule H, attached to your 2026 Form 1040, and pay by 15 April 2027."
+        "text": "- Pub 926: you need an employer identification number (EIN), applied for with Form SS-4 or online, on the forms you file.\n- File a 2026 Form W-2 for each household employee paid Social Security and Medicare wages of $3,000 or more, or from whom you withheld income tax: Copies B, C and 2 to the employee, and Copy A with Form W-3 to the Social Security Administration, by Monday 1 February 2027 (31 January falls on a Sunday).\n- Report the household taxes on Schedule H, attached to your 2026 Form 1040, and pay by 15 April 2027."
       },
       {
         "topic": "paying",
-        "text": "Pub 926: to avoid owing with your return, and the estimated tax underpayment penalty, pay the household taxes during the year: ask your employer to withhold more income tax from your own wages, or make estimated tax payments with Form 1040-ES, whose instructions say to include household employment taxes. 2026's estimates are due 15 April, 15 June and 15 September 2026, and 15 January 2027. Hearthpay does not pay the IRS for you."
+        "text": "- Pub 926: to avoid owing with your return, and the estimated tax underpayment penalty, pay the household taxes during the year: ask your employer to withhold more income tax from your own wages, or make estimated tax payments with Form 1040-ES, whose instructions say to include household employment taxes.\n- 2026's estimates are due 15 April, 15 June and 15 September 2026, and 15 January 2027.\n- Hearthpay does not pay the IRS for you."
       },
       {
         "topic": "i9",
-        "text": "Pub 926 and USCIS: for a regular household employee, you and the employee each complete Form I-9. The employee completes Section 1 no later than the first day of work for pay; you examine the original documents and sign Section 2 within 3 business days of that day (began Monday: by Thursday). Keep the form; don't send it to the IRS or USCIS. An agency completes the I-9s of its own employees. Casual, sporadic domestic work in a private home needs none."
+        "text": "- Pub 926 and USCIS: for a regular household employee, you and the employee each complete Form I-9.\n- The employee completes Section 1 no later than the first day of work for pay;\n- you examine the original documents and sign Section 2 within 3 business days of that day (began Monday: by Thursday).\n- Keep the form; don't send it to the IRS or USCIS.\n- An agency completes the I-9s of its own employees.\n- Casual, sporadic domestic work in a private home needs none."
       },
       {
         "topic": "ssn",
-        "text": "Pub 926: keep each employee's name and Social Security number exactly as they appear on their Social Security card; they go on the W-2. A W-2 filed with a wrong number is an incorrect information return: the IRS's penalty, at the amounts it publishes for returns due in 2026, is $60 a return corrected within 30 days, $130 by 1 August and $340 after; and Social Security cannot credit the employee's earnings."
+        "text": "- Pub 926: keep each employee's name and Social Security number exactly as they appear on their Social Security card; they go on the W-2.\n- A W-2 filed with a wrong number is an incorrect information return: the IRS's penalty, at the amounts it publishes for returns due in 2026, is $60 a return corrected within 30 days, $130 by 1 August and $340 after;\n- and Social Security cannot credit the employee's earnings."
       },
       {
         "topic": "state",
@@ -802,7 +802,7 @@
       },
       {
         "topic": "covered",
-        "text": "Covered wages are cash wages paid to household employees: workers whose work the household controls, what is done and how. Not covered and not reported: wages paid to the employer's spouse, the employer's child under 21 or the employer's parent; workers supplied by an agency that controls their work (the agency is their employer and reports them); and self-employed contractors who control their own work."
+        "text": "- Covered wages are cash wages paid to household employees: workers whose work the household controls, what is done and how.\n- Not covered and not reported: wages paid to the employer's spouse, the employer's child under 21 or the employer's parent;\n- workers supplied by an agency that controls their work (the agency is their employer and reports them);\n- and self-employed contractors who control their own work."
       },
       {
         "topic": "rate",
@@ -810,7 +810,7 @@
       },
       {
         "topic": "reports",
-        "text": "Each quarter, report each covered employee's wages paid in the quarter, the total covered wages, the taxable wages (the part of each employee's wages that, with that employee's earlier covered wages this year, does not pass $16,000) and the tax (taxable wages times your rate, to the cent). Wages count in the quarter they are paid, not the quarter the work was done. The report and the tax are due by the 30th day of the month after the quarter ends, or the next business day when that is a weekend: third quarter 2026 by Friday 30 October 2026; fourth quarter by Monday 1 February 2027. A quarter's report opens the day after the quarter ends."
+        "text": "- Each quarter, report each covered employee's wages paid in the quarter, the total covered wages, the taxable wages (the part of each employee's wages that, with that employee's earlier covered wages this year, does not pass $16,000) and the tax (taxable wages times your rate, to the cent).\n- Wages count in the quarter they are paid, not the quarter the work was done.\n- The report and the tax are due by the 30th day of the month after the quarter ends, or the next business day when that is a weekend: third quarter 2026 by Friday 30 October 2026;\n- fourth quarter by Monday 1 February 2027.\n- A quarter's report opens the day after the quarter ends."
       },
       {
         "topic": "new-hire",

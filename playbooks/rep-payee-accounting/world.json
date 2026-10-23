@@ -336,7 +336,7 @@
         "doc_id": "D-1",
         "title": "Representative payee appointment letter",
         "saved": "Oct 2024",
-        "text": "Notice, 18 October 2024. Carla Holloway, the daughter of Agnes Holloway, is selected as her representative payee for Social Security retirement benefits from November 2024. Agnes lives at Oakview Care, 900 Oak Ridge Road, in assisted living. The payee must use the benefits for Agnes's needs, keep them in an account titled to show Agnes owns them, keep records, and account for them every year when asked. Agnes receives no Supplemental Security Income."
+        "text": "- Notice, 18 October 2024.\n- Carla Holloway, the daughter of Agnes Holloway, is selected as her representative payee for Social Security retirement benefits from November 2024.\n- Agnes lives at Oakview Care, 900 Oak Ridge Road, in assisted living.\n- The payee must use the benefits for Agnes's needs, keep them in an account titled to show Agnes owns them, keep records, and account for them every year when asked.\n- Agnes receives no Supplemental Security Income."
       },
       {
         "doc_id": "D-2",
@@ -614,7 +614,7 @@
       },
       {
         "topic": "duties",
-        "text": "A payee must use the benefits only for the beneficiary's use and benefit; keep them separate from the payee's own money, in an account that shows the beneficiary owns them; treat interest as the beneficiary's; tell SSA of changes that affect the benefits or the payee's duties; and account for the benefits in writing when SSA asks, keeping records to support it (20 CFR 404.2035). Using any of the benefits for anyone else is misuse; money that left the beneficiary's account for someone else must be paid back to it."
+        "text": "- A payee's duties (20 CFR 404.2035):\n- use the benefits only for the beneficiary's use and benefit;\n- keep them separate from the payee's own money, in an account that shows the beneficiary owns them;\n- treat interest as the beneficiary's;\n- tell SSA of changes that affect the benefits or the payee's duties;\n- account for the benefits in writing when SSA asks, keeping records to support it.\n- Using any of the benefits for anyone else is misuse.\n- Money that left the beneficiary's account for someone else must be paid back to it."
       },
       {
         "topic": "use",
@@ -626,11 +626,11 @@
       },
       {
         "topic": "exemptions",
-        "text": "Since the Strengthening Protections for Social Security Beneficiaries Act of 2018, four kinds of payee do not file the annual report (20 CFR 404.2065(b)): a natural or adoptive parent of a minor child, or a legal guardian of one, who primarily lives in the same household; a natural or adoptive parent of a disabled adult who primarily lives in the same household; and the beneficiary's spouse. Every other payee files every year when asked."
+        "text": "- Since the Strengthening Protections for Social Security Beneficiaries Act of 2018, four kinds of payee do not file the annual report (20 CFR 404.2065(b)):\n- a natural or adoptive parent of a minor child, or a legal guardian of one, who primarily lives in the same household;\n- a natural or adoptive parent of a disabled adult who primarily lives in the same household;\n- the beneficiary's spouse.\n- Every other payee files every year when asked."
       },
       {
         "topic": "report",
-        "text": "Form SSA-623 covers the 12 months ending with the month the report was asked for. Line 1: benefits received for her in the period. Line 2: spent on food and housing. Line 3: spent on everything else (clothing, medical, personal items, recreation). Line 4: saved: the amount in savings for her at the end of the period, including savings from earlier periods and interest. Lines 2 to 4 should account for the total: benefits received plus the savings on the last report. Spending after the period belongs to next year's report."
+        "text": "- Form SSA-623 covers the 12 months ending with the month the report was asked for.\n- Line 1: benefits received for her in the period.\n- Line 2: spent on food and housing.\n- Line 3: spent on everything else (clothing, medical, personal items, recreation).\n- Line 4: saved: the amount in savings for her at the end of the period, including savings from earlier periods and interest.\n- Lines 2 to 4 should account for the total: benefits received plus the savings on the last report.\n- Spending after the period belongs to next year's report."
       }
     ],
     "payments": [

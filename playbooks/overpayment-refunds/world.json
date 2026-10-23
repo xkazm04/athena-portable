@@ -485,7 +485,7 @@
       },
       {
         "topic": "identified",
-        "text": "A provider must report and return a Medicare overpayment within 60 days after the day it is identified. It is identified when the provider has actual knowledge of it, or acts in reckless disregard or deliberate ignorance of it; it need not yet be quantified. While a provider conducts a timely, good-faith investigation into related overpayments, the 60 days are suspended until the investigation concludes and the aggregate is calculated, or until 180 days after the day the first was identified, whichever is earlier; then the 60 days run. An overpayment identified more than six years after it was received need not be reported."
+        "text": "- A provider must report and return a Medicare overpayment within 60 days after the day it is identified.\n- It is identified when the provider has actual knowledge of it, or acts in reckless disregard or deliberate ignorance of it.\n- It need not yet be quantified.\n- While a provider conducts a timely, good-faith investigation into related overpayments, the 60 days are suspended until the investigation concludes and the aggregate is calculated, or until 180 days after the day the first was identified, whichever is earlier.\n- Then the 60 days run.\n- An overpayment identified more than six years after it was received need not be reported."
       },
       {
         "topic": "refunds",

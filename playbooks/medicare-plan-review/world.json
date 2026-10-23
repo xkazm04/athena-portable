@@ -434,7 +434,7 @@
     "plan_terms": [
       {
         "plan_id": "index",
-        "text": "Today is Monday 2 November 2026. PlanCompass compares 2027 Medicare drug plans (Part D) for Rosa and Henrik Lindqvist. Plans: RX Rxmeadow Basic Rx (their plan now), BP Brightpath Rx Saver, NS Northstar Value Rx, KP Keystone Plus Rx. Ask for a plan id for its terms. Every figure on the formulary pages is the plan's own 2027 cost for 12 fills at Corner Pharmacy, the deductible included; a drug's cost counts toward the year's out-of-pocket limit only when the plan covers it."
+        "text": "- Today is Monday 2 November 2026.\n- PlanCompass compares 2027 Medicare drug plans (Part D) for Rosa and Henrik Lindqvist.\n- Plans: RX Rxmeadow Basic Rx (their plan now); BP Brightpath Rx Saver; NS Northstar Value Rx; KP Keystone Plus Rx.\n- Ask for a plan id for its terms.\n- Every figure on the formulary pages is the plan's own 2027 cost for 12 fills at Corner Pharmacy, the deductible included.\n- A drug's cost counts toward the year's out-of-pocket limit only when the plan covers it."
       },
       {
         "plan_id": "RX",
@@ -454,7 +454,7 @@
       },
       {
         "plan_id": "rules",
-        "text": "Medicare's annual election period runs from 15 October to 7 December (42 CFR 423.38(b)); a plan chosen in it starts on 1 January 2027 (423.40). Enrolling in a new drug plan ends the old one on the day the new one starts; there is nothing to cancel (423.32(e)). Each plan sets its own formulary, tiers, prior authorization and step rules, network and preferred pharmacies, premium and deductible. For 2027, a plan's deductible is at most $700, and once a member's out-of-pocket spending on covered drugs reaches $2,400, the plan pays the rest for the year."
+        "text": "- Medicare's annual election period runs from 15 October to 7 December (42 CFR 423.38(b)).\n- A plan chosen in it starts on 1 January 2027 (423.40).\n- Enrolling in a new drug plan ends the old one on the day the new one starts; there is nothing to cancel (423.32(e)).\n- Each plan sets its own formulary, tiers, prior authorization and step rules, network and preferred pharmacies, premium and deductible.\n- For 2027, a plan's deductible is at most $700.\n- Once a member's out-of-pocket spending on covered drugs reaches $2,400, the plan pays the rest for the year."
       }
     ],
     "plans": [

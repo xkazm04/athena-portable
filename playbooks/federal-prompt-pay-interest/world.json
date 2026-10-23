@@ -289,7 +289,7 @@
       },
       {
         "topic": "due",
-        "text": "Payment is due 30 days after the later of: the billing office's receipt of a proper invoice; and acceptance, which is the day the agency accepted, or, where the contract sets no other period and no acceptance is recorded, the 7th day after delivery or completion. A contract may give the agency a longer acceptance period. A due date on a Saturday, Sunday or federal holiday may be paid on the next business day without interest. The payment date is the day the payment settles in the vendor's account."
+        "text": "- Payment is due 30 days after the later of: the billing office's receipt of a proper invoice;\n- and acceptance, which is the day the agency accepted, or, where the contract sets no other period and no acceptance is recorded, the 7th day after delivery or completion.\n- A contract may give the agency a longer acceptance period.\n- A due date on a Saturday, Sunday or federal holiday may be paid on the next business day without interest.\n- The payment date is the day the payment settles in the vendor's account."
       },
       {
         "topic": "interest",

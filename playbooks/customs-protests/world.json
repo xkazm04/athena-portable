@@ -270,19 +270,19 @@
         "doc_id": "D-4",
         "kind": "CBP ruling",
         "title": "New York ruling NY N998214 to Ashby Kitchenworks, 12 March 2024",
-        "text": "U.S. Customs and Border Protection, New York ruling NY N998214, issued to Ashby Kitchenworks Inc. on 12 March 2024 under 19 CFR Part 177. Merchandise: MP-30, two oval melamine platters for serving food. The applicable subheading is 3924.10.2000, HTSUS, which provides for tableware and kitchenware of plastics: plates, cups, saucers, soup bowls, cereal bowls, sugar bowls, creamers, gravy boats, serving dishes and platters. The rate of duty is 6.5% ad valorem. This ruling is issued under 19 CFR Part 177 and should be attached to the entry documents."
+        "text": "- U.S. Customs and Border Protection, New York ruling NY N998214, issued to Ashby Kitchenworks Inc. on 12 March 2024 under 19 CFR Part 177.\n- Merchandise: MP-30, two oval melamine platters for serving food.\n- The applicable subheading is 3924.10.2000, HTSUS, which provides for tableware and kitchenware of plastics: plates, cups, saucers, soup bowls, cereal bowls, sugar bowls, creamers, gravy boats, serving dishes and platters.\n- The rate of duty is 6.5% ad valorem.\n- This ruling is issued under 19 CFR Part 177 and should be attached to the entry documents."
       },
       {
         "doc_id": "D-5",
         "kind": "tariff extract",
         "title": "HTSUS 2026, headings 3924 and 3926, and the General Rules of Interpretation",
-        "text": "From the Harmonized Tariff Schedule of the United States (2026), column 1 general rates. 3924: Tableware, kitchenware, other household articles and hygienic or toilet articles, of plastics: 3924.10 Tableware and kitchenware: 3924.10.10 salt, pepper, mustard and ketchup dispensers, 3.4%; 3924.10.20 plates, cups, saucers, soup bowls, cereal bowls, sugar bowls, creamers, gravy boats, serving dishes and platters, 6.5%; 3924.10.30 trays, 5.3%; 3924.10.40 other, 3.4%. 3926: Other articles of plastics: 3926.90.99 other, 5.3%. GRI 1: classification is determined by the terms of the headings and any relative section or chapter notes. GRI 3(a): the heading with the most specific description is preferred. Chapter 39, note 1: 'plastics' means the materials of headings 3901 to 3914, which include the silicones of heading 3910, so articles of silicone are articles of plastics."
+        "text": "- From the Harmonized Tariff Schedule of the United States (2026), column 1 general rates.\n- 3924: Tableware, kitchenware, other household articles and hygienic or toilet articles, of plastics.\n- 3924.10 Tableware and kitchenware:\n- 3924.10.10 salt, pepper, mustard and ketchup dispensers, 3.4%.\n- 3924.10.20 plates, cups, saucers, soup bowls, cereal bowls, sugar bowls, creamers, gravy boats, serving dishes and platters, 6.5%.\n- 3924.10.30 trays, 5.3%.\n- 3924.10.40 other, 3.4%.\n- 3926: Other articles of plastics:\n- 3926.90.99 other, 5.3%.\n- GRI 1: classification is determined by the terms of the headings and any relative section or chapter notes.\n- GRI 3(a): the heading with the most specific description is preferred.\n- Chapter 39, note 1: 'plastics' means the materials of headings 3901 to 3914, which include the silicones of heading 3910, so articles of silicone are articles of plastics."
       },
       {
         "doc_id": "D-6",
         "kind": "duty note",
         "title": "Ashby's note on what the duty figures cover",
-        "text": "Today is Friday 9 October 2026. Every figure in our duty ledger, Forwarden's entries and Portline is the column 1 general duty only. Any additional duty under chapter 99 was declared and deposited separately, is the same under the declared and the correct heading for these goods, and is not part of a correction or a protest here. The merchandise processing fee does not change with the heading. A refund is the duty deposited less the duty at the correct rate, on the same entered value."
+        "text": "- Today is Friday 9 October 2026.\n- Every figure in our duty ledger, Forwarden's entries and Portline is the column 1 general duty only.\n- Any additional duty under chapter 99 was declared and deposited separately.\n- That additional duty is the same under the declared and the correct heading for these goods, and is not part of a correction or a protest here.\n- The merchandise processing fee does not change with the heading.\n- A refund is the duty deposited less the duty at the correct rate, on the same entered value."
       }
     ],
     "entries": [
@@ -303,11 +303,11 @@
       },
       {
         "topic": "classification",
-        "text": "Our classification database held SP-12 under 3926.90.99 and BM-40 under 3924.10.20 from its set-up in April 2025 until Friday 14 August 2026, when we corrected both to 3924.10.40 to match Ashby's product master. Entries we filed before 14 August used the old numbers; entries filed after it use 3924.10.40. MP-30 has always been entered under 3924.10.20, as Ashby's ruling NY N998214 says, with the ruling attached."
+        "text": "- Our classification database held SP-12 under 3926.90.99 and BM-40 under 3924.10.20 from its set-up in April 2025 until Friday 14 August 2026.\n- On that day we corrected both to 3924.10.40 to match Ashby's product master.\n- Entries we filed before 14 August used the old numbers; entries filed after it use 3924.10.40.\n- MP-30 has always been entered under 3924.10.20, as Ashby's ruling NY N998214 says, with the ruling attached."
       },
       {
         "topic": "psc",
-        "text": "A post-summary correction (PSC) corrects an entry summary CBP has accepted and that is not yet liquidated. Under CBP's test in force (19 CFR 101.9(b); 91 FR 41053, 6 July 2026), it must be transmitted within 300 days of the date of entry or up to 15 days before the scheduled liquidation date, whichever is earlier. Once an entry is liquidated, it can be corrected only by a protest (or a prior disclosure). An entry past its PSC window but not yet liquidated waits for liquidation, and is then protested. We transmit a PSC the day you instruct it."
+        "text": "- A post-summary correction (PSC) corrects an entry summary CBP has accepted and that is not yet liquidated.\n- Under CBP's test in force (19 CFR 101.9(b); 91 FR 41053, 6 July 2026), it must be transmitted within 300 days of the date of entry or up to 15 days before the scheduled liquidation date, whichever is earlier.\n- Once an entry is liquidated, it can be corrected only by a protest (or a prior disclosure).\n- An entry past its PSC window but not yet liquidated waits for liquidation, and is then protested.\n- We transmit a PSC the day you instruct it."
       }
     ],
     "cbp_rules": [
@@ -321,7 +321,7 @@
       },
       {
         "topic": "protest",
-        "text": "19 U.S.C. 1514 and 19 CFR Part 174: the classification and rate and amount of duties, and the liquidation of an entry, are final unless protested. The importer of record (or its surety, or its authorized agent) may protest. A protest must be filed within 180 days after, but not before, the date of liquidation (1514(c)(3); 174.12(e)): a protest of an unliquidated entry is not accepted. It states the entry number and date, the liquidation date, the merchandise, and the nature of and reasons for the objection (174.13). CBP decides it within 2 years (174.21)."
+        "text": "- 19 U.S.C. 1514 and 19 CFR Part 174: the classification and rate and amount of duties, and the liquidation of an entry, are final unless protested.\n- The importer of record (or its surety, or its authorized agent) may protest.\n- A protest must be filed within 180 days after, but not before, the date of liquidation (1514(c)(3); 174.12(e)).\n- A protest of an unliquidated entry is not accepted.\n- A protest states the entry number and date, the liquidation date, the merchandise, and the nature of and reasons for the objection (174.13).\n- CBP decides it within 2 years (174.21)."
       },
       {
         "topic": "psc",

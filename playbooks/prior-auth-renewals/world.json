@@ -277,11 +277,11 @@
       },
       {
         "topic": "timing",
-        "text": "A new authorisation must be decided before the first scheduled visit it has to cover: the first visit after the current authorisation's last date, or after its last approved visit, whichever comes first. The payer's own standard decision clock, counted from the day we submit, must end before that visit. Submit on the last Friday that still allows it: if waiting until Friday 16 October would let the clock run to that visit or past it, submit today. A request the payer would not yet accept is not sent."
+        "text": "- A new authorisation must be decided before the first scheduled visit it has to cover: the first visit after the current authorisation's last date, or after its last approved visit, whichever comes first.\n- The payer's own standard decision clock, counted from the day we submit, must end before that visit.\n- Submit on the last Friday that still allows it.\n- If waiting until Friday 16 October would let the clock run to that visit or past it, submit today.\n- A request the payer would not yet accept is not sent."
       },
       {
         "topic": "requests",
-        "text": "Request the visits the plan of care still needs after the current authorisation, on the current authorisation's id. Requests are standard: none of the current plans of care documents that waiting the standard time could seriously jeopardize the patient's health or ability to regain maximum function. Never send a second request while one is open, and never request visits for a patient being discharged."
+        "text": "- Request the visits the plan of care still needs after the current authorisation, on the current authorisation's id.\n- Requests are standard: none of the current plans of care documents that waiting the standard time could seriously jeopardize the patient's health or ability to regain maximum function.\n- Never send a second request while one is open.\n- Never request visits for a patient being discharged."
       },
       {
         "topic": "payers",
@@ -429,7 +429,7 @@
       },
       {
         "topic": "clock",
-        "text": "Neither plan is on CMS-0057-F's decision clock: that rule's 72-hour and 7-day timeframes do not reach employer plans, and they exclude qualified health plan issuers on the federally facilitated exchanges. Each plan decides a standard pre-service request within 15 calendar days of receipt, and an urgent one within 72 hours, as its plan documents and the federal claims rules provide (29 CFR 2560.503-1; 45 CFR 147.136)."
+        "text": "- Neither plan is on CMS-0057-F's decision clock.\n- That rule's 72-hour and 7-day timeframes do not reach employer plans, and they exclude qualified health plan issuers on the federally facilitated exchanges.\n- Each plan decides a standard pre-service request within 15 calendar days of receipt, and an urgent one within 72 hours, as its plan documents and the federal claims rules provide (29 CFR 2560.503-1; 45 CFR 147.136)."
       },
       {
         "topic": "renewals",
@@ -491,7 +491,7 @@
     "payer_sheets": [
       {
         "payer": "Corbel Mutual",
-        "text": "Corbel Mutual takes prior authorisation requests for therapy by fax only, to +1 555 014 2200: the request, the current authorisation id and the plan of care. It decides a standard request within 10 business days of receipt. Business days exclude weekends and federal holidays; Monday 12 October 2026, Columbus Day, is a federal holiday. Requests are accepted any time before the first date of service they cover. Today is Friday 9 October 2026."
+        "text": "- Corbel Mutual takes prior authorisation requests for therapy by fax only, to +1 555 014 2200: the request, the current authorisation id and the plan of care.\n- It decides a standard request within 10 business days of receipt.\n- Business days exclude weekends and federal holidays; Monday 12 October 2026, Columbus Day, is a federal holiday.\n- Requests are accepted any time before the first date of service they cover.\n- Today is Friday 9 October 2026."
       }
     ]
   }

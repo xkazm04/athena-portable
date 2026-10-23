@@ -2,7 +2,7 @@
   "id": "eu261-flight-compensation",
   "title": "A family's delayed flights, claimed under EU 261",
   "short_title": "Delayed family flights claimed under EU 261",
-  "brief": "A Lisbon family of four flew **14 times** this year on two airlines, with a baby on a lap.\n\n**Claimed — €4,950 across 4 bookings:**\n- EU flights 3h or more late at the gate\n- Cancellations announced inside 14 days\n- €250, €400 or €600 by distance, per paid fare\n- A child on an award ticket counted\n- One claim per booking, on each airline's form\n\n**Left alone:**\n- Storms, a bird strike, an air-traffic strike\n- A 2h 48m late arrival, a 17-day notice\n- A US airline into Lisbon, a US domestic flight\n- A claim already paid, a €300 voucher offer\n- The lap baby who flew free",
+  "brief": "A Lisbon family of four flew **14 times** this year on two airlines, with a baby on a lap.\n\n**Claimed — $5,445 (€4,950) across 4 bookings:**\n- EU flights 3h or more late at the gate\n- Cancellations announced inside 14 days\n- €250, €400 or €600 by distance, per paid fare\n- A child on an award ticket counted\n- One claim per booking, on each airline's form\n\n**Left alone:**\n- Storms, a bird strike, an air-traffic strike\n- A 2h 48m late arrival\n- A 17-day notice\n- A US airline into Lisbon, a US domestic flight\n- A claim already paid\n- A €300 voucher offer\n- The lap baby who flew free",
   "domain": "Air travel",
   "audience": "home",
   "category": "consumer",
@@ -94,7 +94,7 @@
       "accept_voucher": "count"
     },
     "per": "episode",
-    "basis": "One episode is a year of a family's flights with at least one claimable disruption: three paying passengers on one intra-EU flight over 1,500 km that reached the gate three hours late are owed 1,200 euros, about $1,300. The amount is 250, 400 or 600 euros per passenger who paid a fare, by distance (Article 7(1)), halved under Article 7(2) when a rerouted arrival lands within 2, 3 or 4 hours of the original; a lap infant adds nothing. The bench world holds 4,950 euros owed across four bookings, $5,445 at the bench's fixed rate of $1.10 to the euro. Times a year: one sweep a year, after the summer's travel, as the bench world holds it; a family that flies more would sweep more often, which is not claimed here.",
+    "basis": "- One episode is a year of a family's flights with at least one claimable disruption.\n- Three paying passengers on one intra-EU flight over 1,500 km that reached the gate three hours late: 3 x 400 euros = 1,200 euros owed.\n- 1,200 euros x $1.10 = $1,320, about the roster's $1,300.\n- The amount is 250, 400 or 600 euros per passenger who paid a fare, by distance (Article 7(1)).\n- It is halved under Article 7(2) when a rerouted arrival lands within 2, 3 or 4 hours of the original.\n- A lap infant adds nothing.\n- The bench world holds 4,950 euros owed across four bookings: $5,445 at the bench's fixed rate of $1.10 to the euro.\n- Times a year: one sweep, after the summer's travel, as the bench world holds it.\n- A family that flies more would sweep more often; that is not claimed here.",
     "manual_minutes": 240,
     "times_per_year": 1,
     "incumbent": "Claim agencies such as AirHelp keep about 35% of what the airline pays, including VAT, and more when a claim goes to court; airlines' own forms are free but one per airline and per booking.",
@@ -134,5 +134,5 @@
     "minutes": 60,
     "why": "A careful traveller finds most of it; the bar is most of the money, no claim the rule excludes, and no settlement accepted, inside an hour."
   },
-  "caveat": "Aerolark, Skyrail, Tripfold, Mailnest and the Vidal family are invented; the rule is Regulation 261/2004 as the Court of Justice reads it, fixed in the bench world as of October 2026, and a revision of the Regulation under negotiation is not applied. This is not legal advice: the airline, a national enforcement body or a court decides a real claim."
+  "caveat": "- Aerolark, Skyrail, Tripfold, Mailnest and the Vidal family are invented.\n- The rule is Regulation 261/2004 as the Court of Justice reads it, fixed in the bench world as of October 2026.\n- A revision of the Regulation under negotiation is not applied.\n- This is not legal advice: the airline, a national enforcement body or a court decides a real claim."
 }

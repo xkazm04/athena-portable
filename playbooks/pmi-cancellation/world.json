@@ -308,15 +308,15 @@
     "rules": [
       {
         "topic": "index",
-        "text": "Today is Friday 9 October 2026. Northgate Servicing: private mortgage insurance (PMI) under the Homeowners Protection Act (12 U.S.C. 4901-4910) and error resolution under Regulation X. Topics: request, automatic, original-value, payment-history, errors. The Act covers a first mortgage on a one-unit home that is the borrower's principal residence, closed after July 1999; it does not cover FHA or VA loans or lender-paid insurance."
+        "text": "- Today is Friday 9 October 2026.\n- Northgate Servicing: private mortgage insurance (PMI) under the Homeowners Protection Act (12 U.S.C. 4901-4910) and error resolution under Regulation X.\n- Topics: request, automatic, original-value, payment-history, errors.\n- The Act covers a first mortgage on a one-unit home that is the borrower's principal residence, closed after July 1999;\n- it does not cover FHA or VA loans or lender-paid insurance."
       },
       {
         "topic": "request",
-        "text": "Borrower-requested cancellation: the borrower may ask in writing to cancel PMI once the principal balance reaches 80% of the original value, on the date the initial amortization schedule first reaches it or the earlier date actual payments, extra principal included, bring it there. The borrower must have a good payment history, be current, and certify that no subordinate lien encumbers the equity. Northgate cancels within 30 days of a request that meets these. It does not ask for a new valuation when the balance reached 80% through payments."
+        "text": "- Borrower-requested cancellation: the borrower may ask in writing to cancel PMI once the principal balance reaches 80% of the original value,\n- on the date the initial amortization schedule first reaches it or the earlier date actual payments, extra principal included, bring it there.\n- The borrower must have a good payment history, be current, and certify that no subordinate lien encumbers the equity.\n- Northgate cancels within 30 days of a request that meets these.\n- It does not ask for a new valuation when the balance reached 80% through payments."
       },
       {
         "topic": "automatic",
-        "text": "Automatic termination: PMI ends on the date the initial amortization schedule first reaches 78% of the original value, if the borrower is current on that date (otherwise on the first day of the month after they become current). No premium may be charged more than 30 days after that date, and unearned premiums are refunded within 45 days. Payment history does not matter for automatic termination; only being current on the date does."
+        "text": "- Automatic termination: PMI ends on the date the initial amortization schedule first reaches 78% of the original value, if the borrower is current on that date (otherwise on the first day of the month after they become current).\n- No premium may be charged more than 30 days after that date, and unearned premiums are refunded within 45 days.\n- Payment history does not matter for automatic termination; only being current on the date does."
       },
       {
         "topic": "original-value",
@@ -328,7 +328,7 @@
       },
       {
         "topic": "errors",
-        "text": "Notice of error (12 CFR 1024.35): a borrower or their authorized representative may send one written notice per loan describing each error, for example a payment not credited as the borrower directed, or a premium charged after mortgage insurance should have ended. Northgate corrects it, or explains in writing, within 30 business days. A request to cancel and a notice of error on the same loan can be sent the same day: Northgate decides the request on the balance as it stands once a misapplied payment is corrected. Do not hold one for the other."
+        "text": "- Notice of error (12 CFR 1024.35): a borrower or their authorized representative may send one written notice per loan describing each error, for example a payment not credited as the borrower directed, or a premium charged after mortgage insurance should have ended.\n- Northgate corrects it, or explains in writing, within 30 business days.\n- A request to cancel and a notice of error on the same loan can be sent the same day: Northgate decides the request on the balance as it stands once a misapplied payment is corrected.\n- Do not hold one for the other."
       }
     ],
     "loans": [
@@ -380,7 +380,7 @@
     "history": [
       {
         "loan_id": "L-2207",
-        "text": "Nov 2024 to Jan 2026: each payment of $2,416.40 ($1,668.52 P&I, $125.00 PMI, $222.88 escrow, $400.00 extra principal) received on the 1st and applied, the extra to principal. Feb 2026: due 1 Feb, received 17 Feb, $45.00 late fee (after the 15-day grace period; not reported late). Mar to Oct 2026: received on the 1st and applied as above. 15 Sep 2026: $5,000.00 received with the instruction 'principal only, L-2207'; placed in unapplied funds, not applied to principal. No payment 30 or more days past due in the last 24 months."
+        "text": "- Nov 2024 to Jan 2026: each payment of $2,416.40 ($1,668.52 P&I, $125.00 PMI, $222.88 escrow, $400.00 extra principal) received on the 1st and applied, the extra to principal.\n- Feb 2026: due 1 Feb, received 17 Feb, $45.00 late fee (after the 15-day grace period; not reported late).\n- Mar to Oct 2026: received on the 1st and applied as above.\n- 15 Sep 2026: $5,000.00 received with the instruction 'principal only, L-2207'; placed in unapplied funds, not applied to principal.\n- No payment 30 or more days past due in the last 24 months."
       },
       {
         "loan_id": "L-3150",

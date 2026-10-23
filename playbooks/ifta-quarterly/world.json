@@ -350,7 +350,7 @@
     ],
     "card_note": [
       {
-        "note": "Today is Friday 9 October 2026. Each Pumpline transaction record gives the date, the station's name and address, the gallons, the fuel type, the price per gallon and the total, the unit number keyed at the pump, and the purchaser, Brackmoor Line Haul LLC. Pumpline's transaction listing is a third-party listing with every element a tax-paid credit needs. Purchases made without the card are not here."
+        "note": "- Today is Friday 9 October 2026.\n- Each Pumpline transaction record gives the date, the station's name and address, the gallons, the fuel type, the price per gallon and the total, the unit number keyed at the pump, and the purchaser, Brackmoor Line Haul LLC.\n- Pumpline's transaction listing is a third-party listing with every element a tax-paid credit needs.\n- Purchases made without the card are not here."
       }
     ],
     "fuel": [
@@ -420,35 +420,35 @@
       },
       {
         "topic": "due",
-        "text": "Articles R960.100: the return and full payment are due on the last day of the month following the close of the quarter; if that day falls on a Saturday, Sunday or legal holiday, the next business day is the due date. For the third quarter of 2026, 31 October 2026 is a Saturday, so the return and payment are due Monday 2 November 2026. Articles R930.100: a return is required even if no operations were conducted."
+        "text": "- Articles R960.100: the return and full payment are due on the last day of the month following the close of the quarter.\n- If that day falls on a Saturday, Sunday or legal holiday, the next business day is the due date.\n- For the third quarter of 2026, 31 October 2026 is a Saturday, so the return and payment are due Monday 2 November 2026.\n- Articles R930.100: a return is required even if no operations were conducted."
       },
       {
         "topic": "qmv",
-        "text": "Articles R245: a qualified motor vehicle has two axles and a gross vehicle weight or registered gross vehicle weight over 26,000 pounds; or three or more axles regardless of weight; or is used in combination when the combination's weight is over 26,000 pounds. R810: tax reporting under the Agreement is for qualified motor vehicles only. Procedures Manual P550.210: no tax-paid credit for fuel placed into a vehicle other than a qualified motor vehicle. A vehicle that is not qualified is left off the return: its miles, its fuel and the jurisdictions only it entered."
+        "text": "- Articles R245: a qualified motor vehicle has two axles and a gross vehicle weight or registered gross vehicle weight over 26,000 pounds.\n- Also qualified: three or more axles regardless of weight.\n- Also qualified: used in combination when the combination's weight is over 26,000 pounds.\n- R810: tax reporting under the Agreement is for qualified motor vehicles only.\n- Procedures Manual P550.210: no tax-paid credit for fuel placed into a vehicle other than a qualified motor vehicle.\n- A vehicle that is not qualified is left off the return: its miles, its fuel and the jurisdictions only it entered."
       },
       {
         "topic": "distance",
-        "text": "Articles R266: total distance is all miles traveled in the quarter by every qualified vehicle in the fleet, whether the miles are taxable or not in a jurisdiction, and including miles in non-member jurisdictions. R224: a jurisdiction's taxable distance leaves out miles it exempts. Procedures Manual P540: GPS records with a fix every 10 minutes while the engine is on are distance records. Columns are rounded to the nearest whole unit (P720.500)."
+        "text": "- Articles R266: total distance is all miles traveled in the quarter by every qualified vehicle in the fleet.\n- Total distance counts miles whether taxable or not in a jurisdiction, and includes miles in non-member jurisdictions.\n- R224: a jurisdiction's taxable distance leaves out miles it exempts.\n- Procedures Manual P540: GPS records with a fix every 10 minutes while the engine is on are distance records.\n- Columns are rounded to the nearest whole unit (P720.500)."
       },
       {
         "topic": "fuel",
-        "text": "Articles R820 and its Consensus Board Interpretation (2020): all fuel placed in the fuel tanks of qualified vehicles, whether receipted or not and whether taxed or not, must be reported to calculate the miles per gallon. Total gallons are every gallon placed in the fleet's qualified vehicles in the quarter, wherever it was bought. Fleet miles per gallon is total miles divided by total gallons, to two decimal places (P720.350). A line's taxable gallons are its taxable miles divided by the fleet's miles per gallon, to the nearest whole gallon; its net taxable gallons are taxable gallons less tax-paid gallons; its tax is net taxable gallons times the rate, to the cent."
+        "text": "- Articles R820 and its Consensus Board Interpretation (2020): all fuel placed in the fuel tanks of qualified vehicles, whether receipted or not and whether taxed or not, must be reported to calculate the miles per gallon.\n- Total gallons are every gallon placed in the fleet's qualified vehicles in the quarter, wherever it was bought.\n- Fleet miles per gallon is total miles divided by total gallons, to two decimal places (P720.350).\n- A line's taxable gallons are its taxable miles divided by the fleet's miles per gallon, to the nearest whole gallon.\n- Its net taxable gallons are taxable gallons less tax-paid gallons.\n- Its tax is net taxable gallons times the rate, to the cent."
       },
       {
         "topic": "receipts",
-        "text": "Procedures Manual P550.220 and P550.300: tax-paid credit only for a retail purchase with a receipt, invoice or transaction listing from the seller or a third party that shows the date, the seller's name and address, the quantity, the fuel type, the price per gallon or total, the qualified vehicle it went into, and the purchaser. P550.200: an altered, erased or illegible record is not accepted unless shown to be valid. A purchase is credited once, however many records of it there are. Fuel without a valid receipt still counts in total gallons; it earns no credit."
+        "text": "- Procedures Manual P550.220 and P550.300: tax-paid credit only for a retail purchase with a receipt, invoice or transaction listing from the seller or a third party.\n- That record shows the date, the seller's name and address, the quantity, the fuel type, the price per gallon or total, the qualified vehicle it went into, and the purchaser.\n- P550.200: an altered, erased or illegible record is not accepted unless shown to be valid.\n- A purchase is credited once, however many records of it there are.\n- Fuel without a valid receipt still counts in total gallons; it earns no credit."
       },
       {
         "topic": "exemptions",
-        "text": "Articles R830: a jurisdiction may exempt any use of fuel within it, and the licensee follows each jurisdiction's own definition. IFTA, Inc.'s distance exemption database for 2026: Wyoming exempts miles on off-highway and private roads not built or maintained by state or public funds; Texas exempts only miles on a fuel trip permit, and not off-highway or private road miles; New Mexico and Colorado exempt no distance. Exempt miles are in total miles and out of taxable miles."
+        "text": "- Articles R830: a jurisdiction may exempt any use of fuel within it, and the licensee follows each jurisdiction's own definition.\n- IFTA, Inc.'s distance exemption database for 2026: Wyoming exempts miles on off-highway and private roads not built or maintained by state or public funds.\n- Texas exempts only miles on a fuel trip permit, and not off-highway or private road miles.\n- New Mexico and Colorado exempt no distance.\n- Exempt miles are in total miles and out of taxable miles."
       },
       {
         "topic": "nonmember",
-        "text": "IFTA's members are the 48 contiguous United States and the 10 Canadian provinces. Alaska, Hawaii, the District of Columbia, the Yukon, Northwest Territories and Nunavut, and Mexico's states are not members. Miles in a non-member jurisdiction count in total miles and on no jurisdiction line; fuel bought there counts in total gallons and earns no credit. There is no line for a non-member jurisdiction."
+        "text": "- IFTA's members are the 48 contiguous United States and the 10 Canadian provinces.\n- Alaska, Hawaii, the District of Columbia, the Yukon, Northwest Territories and Nunavut, and Mexico's states are not members.\n- Miles in a non-member jurisdiction count in total miles and on no jurisdiction line.\n- Fuel bought there counts in total gallons and earns no credit.\n- There is no line for a non-member jurisdiction."
       },
       {
         "topic": "filing",
-        "text": "Tallyquart transmits each jurisdiction line and the return totals separately, in any order, and assembles the return from what is transmitted: there is no need to wait for one card to be signed before filing the next. A line is needed for each member jurisdiction a qualified vehicle traveled in. A payment for the quarter can be made at any time from 1 October and is applied to that quarter's return."
+        "text": "- Tallyquart transmits each jurisdiction line and the return totals separately, in any order, and assembles the return from what is transmitted.\n- There is no need to wait for one card to be signed before filing the next.\n- A line is needed for each member jurisdiction a qualified vehicle traveled in.\n- A payment for the quarter can be made at any time from 1 October and is applied to that quarter's return."
       },
       {
         "topic": "penalty",

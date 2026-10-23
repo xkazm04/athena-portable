@@ -209,7 +209,7 @@
       },
       {
         "section": "schedule",
-        "text": "Inspection schedule chosen under CGP Part 4.2: once every 14 calendar days, and within 24 hours of a storm event that produces 0.25 inches of rain or more within a 24-hour period, as measured by the site's own rain gauge (Rainlog). Several smaller storms count together only if 0.25 inches or more falls within one 24-hour period; the 24 hours run from the moment the 0.25 inches is reached. One inspection per qualifying storm."
+        "text": "- Inspection schedule chosen under CGP Part 4.2: once every 14 calendar days, and within 24 hours of a storm event that produces 0.25 inches of rain or more within a 24-hour period, as measured by the site's own rain gauge (Rainlog).\n- Several smaller storms count together only if 0.25 inches or more falls within one 24-hour period.\n- the 24 hours run from the moment the 0.25 inches is reached.\n- One inspection per qualifying storm."
       },
       {
         "section": "hours",
@@ -221,11 +221,11 @@
       },
       {
         "section": "maintenance",
-        "text": "Routine maintenance (CGP Part 2.1.4, summarized): remove sediment from a perimeter control or an inlet filter before it reaches half the control's above-ground height, and make minor repairs; start at once and finish by the close of the next business day. It is recorded in the inspection report and is not a corrective action. But when the same maintenance is needed on the same control at the same location three or more times, the condition is handled as a corrective action."
+        "text": "- Routine maintenance (CGP Part 2.1.4, summarized): remove sediment from a perimeter control or an inlet filter before it reaches half the control's above-ground height, and make minor repairs.\n- start at once and finish by the close of the next business day.\n- It is recorded in the inspection report and is not a corrective action.\n- But when the same maintenance is needed on the same control at the same location three or more times, the condition is handled as a corrective action."
       },
       {
         "section": "corrective",
-        "text": "Corrective action (CGP Part 5, summarized): needed when a control needs a new or replacement control or a significant repair, when a control the plan requires was never installed, when sediment is discharged off the site, or for a repeated maintenance condition. Start at once. Where a new or replacement control or a significant repair is needed, complete it within 7 calendar days from discovery; otherwise by the close of the next business day. A corrective action is opened in Permitflow with its due date even when its report is late, and closed with the day the fix was completed."
+        "text": "- Corrective action (CGP Part 5, summarized): needed when a control needs a new or replacement control or a significant repair, when a control the plan requires was never installed, when sediment is discharged off the site, or for a repeated maintenance condition.\n- Start at once.\n- Where a new or replacement control or a significant repair is needed, complete it within 7 calendar days from discovery; otherwise by the close of the next business day.\n- A corrective action is opened in Permitflow with its due date even when its report is late, and closed with the day the fix was completed."
       },
       {
         "section": "records",
@@ -293,7 +293,7 @@
         "date": "2026-10-05",
         "trigger": "Storm R-1003 (window entirely on the weekend)",
         "inspector": "M. Ibarra",
-        "findings": "F-1005-1: SF-2 undermined and knocked down for 40 ft at the low point; sediment carried past the fence onto the neighboring lot. F-1005-2: CI-1 sediment at about half the bag's height; cleaned out that afternoon. F-1005-3: ST-1, the new topsoil stockpile, has no cover and no perimeter control. F-1005-4: SF-3 at station 4+50, sediment at half the fence height a third time; removed, and the upslope swale sends the flow straight at it. F-1005-5: ST-2 cover partly blown back; re-secured during the inspection."
+        "findings": "- F-1005-1: SF-2 undermined and knocked down for 40 ft at the low point; sediment carried past the fence onto the neighboring lot.\n- F-1005-2: CI-1 sediment at about half the bag's height; cleaned out that afternoon.\n- F-1005-3: ST-1, the new topsoil stockpile, has no cover and no perimeter control.\n- F-1005-4: SF-3 at station 4+50, sediment at half the fence height a third time; removed, and the upslope swale sends the flow straight at it.\n- F-1005-5: ST-2 cover partly blown back; re-secured during the inspection."
       }
     ],
     "cas": [

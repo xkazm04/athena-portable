@@ -286,7 +286,7 @@
     "lease": [
       {
         "topic": "index",
-        "text": "Latchwick lease for Unit 3B, 212 Larkin Row, Oakland, signed by Noor Haddad and Thistledown Flats LLC, managed by Corbel Property Management. Today is Friday 9 October 2026. Term: 15 September 2025 to 14 September 2026. Rent 3,000 dollars a month, due on the 15th for the month to the 14th; part months are charged on 30 days. Deposit 3,000 dollars, paid 14 September 2025. Topics: index, utilities, cleaning, deposit, keys."
+        "text": "- Latchwick lease for Unit 3B, 212 Larkin Row, Oakland, signed by Noor Haddad and Thistledown Flats LLC, managed by Corbel Property Management.\n- Today is Friday 9 October 2026.\n- Term: 15 September 2025 to 14 September 2026.\n- Rent 3,000 dollars a month, due on the 15th for the month to the 14th; part months are charged on 30 days.\n- Deposit 3,000 dollars, paid 14 September 2025.\n- Topics: index, utilities, cleaning, deposit, keys."
       },
       {
         "topic": "utilities",
@@ -604,11 +604,11 @@
       },
       {
         "topic": "deductions",
-        "text": "A landlord may keep part of a security deposit only for: rent the tenant owes; repair of damage beyond ordinary wear and tear caused by the tenant or the tenant's guests; cleaning, but only to make the unit as clean as it was when the tenant moved in; and restoring furniture or personal items that the rental agreement included. A landlord may not claim for damage or a defect that was there before the tenancy, for ordinary wear and tear, or for the effects of wear that built up over time."
+        "text": "- A landlord may keep part of a security deposit only for:\n- rent the tenant owes;\n- repair of damage beyond ordinary wear and tear caused by the tenant or the tenant's guests;\n- cleaning, but only to make the unit as clean as it was when the tenant moved in;\n- and restoring furniture or personal items that the rental agreement included.\n- A landlord may not claim for damage or a defect that was there before the tenancy, for ordinary wear and tear, or for the effects of wear that built up over time."
       },
       {
         "topic": "statement",
-        "text": "Within 21 calendar days after the tenant moves out, the landlord returns the deposit, or what is left, with an itemised statement of each deduction. For repairs and cleaning together over 125 dollars, the statement comes with the bills or receipts, a description of the hours and the rate for the landlord's own work, and the photographs. If work cannot be finished or the bills are not in hand in 21 days, the landlord may deduct a good-faith estimate, with the vendor's name and address, and send the bills within 14 days of finishing. A vendor's price list may document an item the landlord buys regularly."
+        "text": "- Within 21 calendar days after the tenant moves out, the landlord returns the deposit, or what is left, with an itemised statement of each deduction.\n- For repairs and cleaning together over 125 dollars, the statement comes with the bills or receipts, a description of the hours and the rate for the landlord's own work, and the photographs.\n- If work cannot be finished or the bills are not in hand in 21 days, the landlord may deduct a good-faith estimate, with the vendor's name and address, and send the bills within 14 days of finishing.\n- A vendor's price list may document an item the landlord buys regularly."
       },
       {
         "topic": "deposit",

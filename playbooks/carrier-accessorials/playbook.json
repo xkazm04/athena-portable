@@ -73,7 +73,7 @@
       "request_lumper": "money_back"
     },
     "per": "year",
-    "basis": "An estimate. ATRI found drivers detained at 39% of stops, with lost revenue of $11-19k per driver a year, and only 29% of carriers collect all the detention they bill. For three trucks that is 3 x $11,000-19,000 = $33,000-57,000 of detention revenue lost a year; recovering roughly a quarter to a third of it is about $8,000-20,000, and the roster's $14,000 a year is the middle of that range. The bench world holds $1,580 across two weeks.",
+    "basis": "- An estimate\n- ATRI: drivers are detained at 39% of stops, with lost revenue of $11-19k per driver a year\n- ATRI: only 29% of carriers collect all the detention they bill\n- Three trucks: 3 x $11,000-19,000 = $33,000-57,000 of detention revenue lost a year\n- Recovering roughly a quarter to a third of it = about $8,000-20,000 a year\n- The roster's $14,000 a year is the middle of that range\n- The bench world holds $1,580 across two weeks",
     "manual_minutes": 150,
     "incumbent": "Dispatch services charge 5–10% of gross revenue and file accessorials when they get to it. Factors advance the linehaul and chase accessorials last. Mostly, nobody files.",
     "sources": [
@@ -97,5 +97,5 @@
     "minutes": 30,
     "why": "A careful dispatcher catches most of it in an afternoon. The bar is most of the money with no request that fails the broker's checks."
   },
-  "caveat": "Brokers' rules here are fixed in the bench world from their public guides and sample rate confirmations; a real rate con's terms always win."
+  "caveat": "- Brokers' rules here are fixed in the bench world from their public guides and sample rate confirmations\n- A real rate con's terms always win"
 }

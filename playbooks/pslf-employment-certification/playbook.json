@@ -2,7 +2,7 @@
   "id": "pslf-employment-certification",
   "title": "Public Service Loan Forgiveness, every month certified",
   "short_title": "Public service loan months certified and counted",
-  "brief": "A speech-language pathologist ten years into public service owes **$48,200** on her loan.\n\n**Certified or contested — 50 of 120 months:**\n- School district job certified to its real end date\n- Two part-time jobs adding up to full time\n- A hardship deferment the tracker missed\n- A late payment that still counts\n\n**Left alone:**\n- For-profit tutoring, a union post, 1099 work\n- Forbearance she asked for, and no wasted buyback\n- The grace period after school\n- Pause months already counted",
+  "brief": "A speech-language pathologist ten years into public service owes **$48,200** on her loan.\n\n**Certified or contested — 50 of 120 months, worth $20,000:**\n- School district job certified to its real end date\n- Two part-time jobs adding up to full time\n- A hardship deferment the tracker missed\n- A late payment that still counts\n\n**Left alone:**\n- For-profit tutoring, a union post, 1099 work\n- Forbearance she asked for\n- No wasted buyback\n- The grace period after school\n- Pause months already counted",
   "domain": "Student loans",
   "audience": "home",
   "category": "benefits",
@@ -97,7 +97,7 @@
       "request_buyback": "count"
     },
     "per": "episode",
-    "basis": "An estimate tied to the example's own balance. Each month put right is valued at a 120th of the remaining balance, the share of the forgiveness it brings closer. For the example's $48,200 balance and the 50 months that wait on a certification or a reconsideration, that is 50 x $48,200 / 120 = $20,083, rounded to $20,000; your own figure is your balance divided by 120, times the months that wait. The average Public Service Loan Forgiveness discharge is about $75,000 (Brookings, January 2026), so a larger balance or more months waiting gains more. Times a year: once, as the Department asks borrowers to certify employment every year.",
+    "basis": "- An estimate tied to the example's own balance.\n- Each month put right is valued at a 120th of the remaining balance, the share of the forgiveness it brings closer.\n- The example: a $48,200 balance and 50 months that wait on a certification or a reconsideration.\n- 50 x $48,200 / 120 = $20,083, rounded to $20,000.\n- Your own figure: your balance divided by 120, times the months that wait.\n- The average Public Service Loan Forgiveness discharge is about $75,000 (Brookings, January 2026), so a larger balance or more months waiting gains more.\n- Times a year: once, as the Department asks borrowers to certify employment every year.",
     "manual_minutes": 360,
     "times_per_year": 1,
     "incumbent": "Paid PSLF helpers sell flat-fee plans; the federal Help Tool is free but certifies one employer at a time and checks nothing against the payment history.",
@@ -132,5 +132,5 @@
     "minutes": 60,
     "why": "A careful borrower with a free afternoon finds most of it; the bar is most of the months, no form for an employer that does not qualify, and no request the rule does not support, inside an hour."
   },
-  "caveat": "Loanbridge, Payroll Harbor, AidPath, the employers and Priya Castellanos are invented; the rule is 34 CFR 685.219 as in force in October 2026, fixed in the bench world, and real counts are being re-examined by the Department. This is not legal or financial advice: the Department of Education decides every count."
+  "caveat": "- Loanbridge, Payroll Harbor, AidPath, the employers and Priya Castellanos are invented.\n- The rule is 34 CFR 685.219 as in force in October 2026, fixed in the bench world.\n- Real counts are being re-examined by the Department.\n- This is not legal or financial advice: the Department of Education decides every count."
 }

@@ -213,7 +213,7 @@
     "rules": [
       {
         "topic": "index",
-        "text": "Today is Friday 13 February 2026. Rateline is the Larchmoor Unified School District's E-Rate filing page for funding year 2026 (service from 1 July 2026 to 30 June 2027). The FCC Form 471 window is open from Wednesday 21 January 2026 to Wednesday 1 April 2026. The district has 1,100 students and an E-Rate discount of 80 percent. The rules below are 47 CFR 54.503 and 54.511 and the FCC's funding year 2026 Eligible Services List (DA 25-1069). Topics: window, waiting, price, vendors, eligible."
+        "text": "- Today is Friday 13 February 2026.\n- Rateline is the Larchmoor Unified School District's E-Rate filing page for funding year 2026 (service from 1 July 2026 to 30 June 2027).\n- The FCC Form 471 window is open from Wednesday 21 January 2026 to Wednesday 1 April 2026.\n- The district has 1,100 students and an E-Rate discount of 80 percent.\n- The rules below are 47 CFR 54.503 and 54.511 and the FCC's funding year 2026 Eligible Services List (DA 25-1069).\n- Topics: window, waiting, price, vendors, eligible."
       },
       {
         "topic": "window",
@@ -229,11 +229,11 @@
       },
       {
         "topic": "vendors",
-        "text": "47 CFR 54.503, Note to (a), and USAC's open and fair competition page: a service provider that prepares the applicant's Form 470, is its named contact, or takes part in evaluating the bids makes the process not fair and open. The district's policy (BD-1) bars such a vendor from bidding. Gifts from a provider to the district's staff may not exceed 50 dollars per provider per funding year (54.503(d))."
+        "text": "- 47 CFR 54.503, Note to (a), and USAC's open and fair competition page: a service provider that prepares the applicant's Form 470, is its named contact, or takes part in evaluating the bids makes the process not fair and open.\n- The district's policy (BD-1) bars such a vendor from bidding.\n- Gifts from a provider to the district's staff may not exceed 50 dollars per provider per funding year (54.503(d))."
       },
       {
         "topic": "eligible",
-        "text": "Funding year 2026 Eligible Services List (DA 25-1069, 17 December 2025). Category 1: data transmission and Internet access. Category 2: internal connections, managed internal broadband services and basic maintenance of internal connections; only basic firewalls. Not eligible: end-user devices such as computers, laptops and tablets; use off campus, which leaves out school-bus Wi-Fi and off-premises hotspots (FCC 25-63 and FCC 25-62, 30 September 2025)."
+        "text": "- Funding year 2026 Eligible Services List (DA 25-1069, 17 December 2025).\n- Category 1: data transmission and Internet access.\n- Category 2: internal connections, managed internal broadband services and basic maintenance of internal connections; only basic firewalls.\n- Not eligible: end-user devices such as computers, laptops and tablets;\n- use off campus, which leaves out school-bus Wi-Fi and off-premises hotspots (FCC 25-63 and FCC 25-62, 30 September 2025)."
       }
     ],
     "services": [

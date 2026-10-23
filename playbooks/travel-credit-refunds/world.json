@@ -509,15 +509,15 @@
       },
       {
         "topic": "change",
-        "text": "A significant change. A flight is significantly delayed or changed when it leaves or lands 3 hours or more later or earlier than scheduled on a domestic itinerary, or 6 hours or more on an international one; or it leaves from or lands at a different airport; or it has more connection points; or the passenger is downgraded to a lower class of service. A different connecting airport counts only for a passenger with a disability. A smaller time change is not a significant change."
+        "text": "- A significant change.\n- A flight is significantly delayed or changed when:\n- it leaves or lands 3 hours or more later or earlier than scheduled on a domestic itinerary, or 6 hours or more on an international one;\n- or it leaves from or lands at a different airport;\n- or it has more connection points;\n- or the passenger is downgraded to a lower class of service.\n- A different connecting airport counts only for a passenger with a disability.\n- A smaller time change is not a significant change."
       },
       {
         "topic": "refund",
-        "text": "When a refund is owed. A passenger holding a nonrefundable ticket for a flight the airline cancelled, or significantly delayed or changed, who declines the new flight, the rebooking and any compensation, is owed a full refund of the fare, taxes and fees. The airline should pay it without being asked; where it has left a credit or nothing instead, the passenger asks and the refund is then due within the time below. A refund is not owed for a flight the passenger cancelled or changed herself."
+        "text": "- When a refund is owed.\n- A passenger holding a nonrefundable ticket for a flight the airline cancelled, or significantly delayed or changed, who declines the new flight, the rebooking and any compensation, is owed a full refund of the fare, taxes and fees.\n- The airline should pay it without being asked.\n- Where it has left a credit or nothing instead, the passenger asks, and the refund is then due within the time below.\n- A refund is not owed for a flight the passenger cancelled or changed herself."
       },
       {
         "topic": "credit",
-        "text": "Credits. An airline may offer a voucher or credit instead of a refund only if it states the passenger's right to a refund, and the passenger affirmatively accepts it. A credit the airline issues on its own, which the passenger has not accepted, leaves the refund owed. A credit the passenger chose, in writing, is a choice, and the refund is not owed. A credit already refunded, or already spent, cannot be refunded again."
+        "text": "- Credits.\n- An airline may offer a voucher or credit instead of a refund only if it states the passenger's right to a refund, and the passenger affirmatively accepts it.\n- A credit the airline issues on its own, which the passenger has not accepted, leaves the refund owed.\n- A credit the passenger chose, in writing, is a choice, and the refund is not owed.\n- A credit already refunded, or already spent, cannot be refunded again."
       },
       {
         "topic": "fees",
@@ -535,15 +535,15 @@
       },
       {
         "topic": "change",
-        "text": "A significant change. A flight is significantly delayed or changed when it leaves or lands 3 hours or more later or earlier than scheduled on a domestic itinerary, or 6 hours or more on an international one; or it leaves from or lands at a different airport; or it has more connection points; or the passenger is downgraded to a lower class of service. A different connecting airport counts only for a passenger with a disability. A smaller time change is not a significant change."
+        "text": "- A significant change.\n- A flight is significantly delayed or changed when:\n- it leaves or lands 3 hours or more later or earlier than scheduled on a domestic itinerary, or 6 hours or more on an international one;\n- or it leaves from or lands at a different airport;\n- or it has more connection points;\n- or the passenger is downgraded to a lower class of service.\n- A different connecting airport counts only for a passenger with a disability.\n- A smaller time change is not a significant change."
       },
       {
         "topic": "refund",
-        "text": "When a refund is owed. A passenger holding a nonrefundable ticket for a flight the airline cancelled, or significantly delayed or changed, who declines the new flight, the rebooking and any compensation, is owed a full refund of the fare, taxes and fees. The airline should pay it without being asked; where it has left a credit or nothing instead, the passenger asks and the refund is then due within the time below. A refund is not owed for a flight the passenger cancelled or changed herself."
+        "text": "- When a refund is owed.\n- A passenger holding a nonrefundable ticket for a flight the airline cancelled, or significantly delayed or changed, who declines the new flight, the rebooking and any compensation, is owed a full refund of the fare, taxes and fees.\n- The airline should pay it without being asked.\n- Where it has left a credit or nothing instead, the passenger asks, and the refund is then due within the time below.\n- A refund is not owed for a flight the passenger cancelled or changed herself."
       },
       {
         "topic": "credit",
-        "text": "Credits. An airline may offer a voucher or credit instead of a refund only if it states the passenger's right to a refund, and the passenger affirmatively accepts it. A credit the airline issues on its own, which the passenger has not accepted, leaves the refund owed. A credit the passenger chose, in writing, is a choice, and the refund is not owed. A credit already refunded, or already spent, cannot be refunded again."
+        "text": "- Credits.\n- An airline may offer a voucher or credit instead of a refund only if it states the passenger's right to a refund, and the passenger affirmatively accepts it.\n- A credit the airline issues on its own, which the passenger has not accepted, leaves the refund owed.\n- A credit the passenger chose, in writing, is a choice, and the refund is not owed.\n- A credit already refunded, or already spent, cannot be refunded again."
       },
       {
         "topic": "fees",
@@ -565,7 +565,7 @@
       },
       {
         "topic": "refunds",
-        "text": "Refunds through Tripcairn. For a flight an airline cancelled or significantly changed (3 hours or more on a domestic itinerary, 6 hours or more on an international one, a different airport, more connections or a lower class of service), a passenger who declined it is owed a refund to the card within 7 business days of her request; a credit Tripcairn issued without her choice leaves the refund owed. A credit already spent is not refunded. Ask with request_refund."
+        "text": "- Refunds through Tripcairn.\n- For a flight an airline cancelled or significantly changed (3 hours or more on a domestic itinerary, 6 hours or more on an international one, a different airport, more connections or a lower class of service):\n- a passenger who declined it is owed a refund to the card within 7 business days of her request.\n- A credit Tripcairn issued without her choice leaves the refund owed.\n- A credit already spent is not refunded.\n- Ask with request_refund."
       }
     ],
     "aer": [

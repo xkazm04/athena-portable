@@ -247,19 +247,19 @@
     "terms": [
       {
         "topic": "index",
-        "text": "Today is Friday 9 October 2026. Primeline GC, subcontractor portal for the Harbor Point Library. Subcontract PL-2307 with Brookhollow Mechanical LLC (plumbing and HVAC). Topics: contract, final-payment, waivers, insurance, warranties. Substantial completion was certified on 25 September 2026. Attach one document at a time to a closeout checklist item; Primeline forwards the package to the architect."
+        "text": "- Today is Friday 9 October 2026.\n- Primeline GC, subcontractor portal for the Harbor Point Library.\n- Subcontract PL-2307 with Brookhollow Mechanical LLC (plumbing and HVAC).\n- Topics: contract, final-payment, waivers, insurance, warranties.\n- Substantial completion was certified on 25 September 2026.\n- Attach one document at a time to a closeout checklist item; Primeline forwards the package to the architect."
       },
       {
         "topic": "contract",
-        "text": "Subcontract PL-2307 incorporates by reference AIA Document A201-2017, General Conditions of the Contract for Construction, as it forms part of the prime contract between the Harbor Point Library District and Primeline Builders, and binds Brookhollow to Primeline as Primeline is bound to the owner. A201-2017 is a published standard form; the clauses relied on are summarized here in Primeline's words, not quoted. Section 01 77 00 of the specifications lists the closeout submittals."
+        "text": "- Subcontract PL-2307 incorporates by reference AIA Document A201-2017, General Conditions of the Contract for Construction, as it forms part of the prime contract between the Harbor Point Library District and Primeline Builders, and binds Brookhollow to Primeline as Primeline is bound to the owner.\n- A201-2017 is a published standard form; the clauses relied on are summarized here in Primeline's words, not quoted.\n- Section 01 77 00 of the specifications lists the closeout submittals."
       },
       {
         "topic": "final-payment",
-        "text": "Final payment (A201-2017 section 9.10, summarized, applied by Subcontract section 9.4): Brookhollow's final payment, which is its retainage of $48,600.00, is not due until every item on its closeout checklist is accepted. Section 9.10.2 asks, in substance, for an affidavit that the bills for the work are paid, a certificate that the insurance required after final payment is in force, the surety's consent, the special warranties, and releases or waivers of liens; the specifications add the record drawings, the operation and maintenance manuals and the owner's receipts. An item already accepted is not attached again."
+        "text": "- Final payment (A201-2017 section 9.10, summarized, applied by Subcontract section 9.4): Brookhollow's final payment, which is its retainage of $48,600.00, is not due until every item on its closeout checklist is accepted.\n- Section 9.10.2 asks, in substance, for an affidavit that the bills for the work are paid, a certificate that the insurance required after final payment is in force, the surety's consent, the special warranties, and releases or waivers of liens.\n- the specifications add the record drawings, the operation and maintenance manuals and the owner's receipts.\n- An item already accepted is not attached again."
       },
       {
         "topic": "waivers",
-        "text": "With the closeout package Primeline takes a conditional waiver and release on final payment from Brookhollow and from each lower-tier subcontractor and supplier, for the final amount: it releases everything once the final payment is received. A progress waiver releases only the payments up to its date and does not answer a final-waiver item. An unconditional final waiver is given after payment, not before."
+        "text": "- With the closeout package Primeline takes a conditional waiver and release on final payment from Brookhollow and from each lower-tier subcontractor and supplier, for the final amount: it releases everything once the final payment is received.\n- A progress waiver releases only the payments up to its date and does not answer a final-waiver item.\n- An unconditional final waiver is given after payment, not before."
       },
       {
         "topic": "insurance",
@@ -331,7 +331,7 @@
       {
         "section": "01 77 00",
         "title": "Closeout procedures",
-        "text": "Before the final application for payment, each subcontractor submits through the general contractor the items on its closeout checklist: final conditional lien waivers from itself and from every lower-tier subcontractor and supplier, an affidavit of payment of debts and claims, a current certificate of insurance, the surety's consent, warranties, operation and maintenance manuals, record drawings, the training record and the attic stock receipt."
+        "text": "- Before the final application for payment, each subcontractor submits through the general contractor the items on its closeout checklist:\n- final conditional lien waivers from itself and from every lower-tier subcontractor and supplier,\n- an affidavit of payment of debts and claims,\n- a current certificate of insurance,\n- the surety's consent,\n- warranties,\n- operation and maintenance manuals,\n- record drawings,\n- the training record and the attic stock receipt."
       },
       {
         "section": "01 78 39",

@@ -225,7 +225,7 @@
         "from": "Torvane Motors",
         "subject": "SAFETY RECALL NOTICE R-2614",
         "date": "2026-08-28",
-        "text": "Friday 28 August 2026. Safety recall R-2614. Your 2022 Torvane Kestrel, VIN 9TVKE22A4NB204417, is in the recall. The fuel pump module can fail and the engine can stall. Your Torvane dealer will replace the module free. If you paid for a repair of this problem between 20 July 2025 and 15 September 2026, you may claim your costs back under our reimbursement plan, which is in Torvane Owners. You can check any VIN in Recallmoor. This is the last of our owner letters."
+        "text": "- Friday 28 August 2026. Safety recall R-2614.\n- Your 2022 Torvane Kestrel, VIN 9TVKE22A4NB204417, is in the recall.\n- The fuel pump module can fail and the engine can stall.\n- Your Torvane dealer will replace the module free.\n- If you paid for a repair of this problem between 20 July 2025 and 15 September 2026, you may claim your costs back under our reimbursement plan, which is in Torvane Owners.\n- You can check any VIN in Recallmoor.\n- This is the last of our owner letters."
       },
       {
         "msg_id": "M-2",
@@ -271,7 +271,7 @@
     "rec": [
       {
         "topic": "summary",
-        "text": "Recall R-2614 (invented), Torvane Motors. Today is Friday 9 October 2026. Fuel pump module in some Torvane Kestrel vehicles can fail, and the engine can stall without warning. Remedy: the dealer replaces the module free. Torvane reported the defect to NHTSA on Monday 20 July 2026; no engineering analysis had been opened. It mailed its last owner letter on Friday 28 August 2026. Topics: summary, population."
+        "text": "- Recall R-2614 (invented), Torvane Motors. Today is Friday 9 October 2026.\n- Fuel pump module in some Torvane Kestrel vehicles can fail, and the engine can stall without warning.\n- Remedy: the dealer replaces the module free.\n- Torvane reported the defect to NHTSA on Monday 20 July 2026; no engineering analysis had been opened.\n- It mailed its last owner letter on Friday 28 August 2026.\n- Topics: summary, population."
       },
       {
         "topic": "population",
@@ -372,15 +372,15 @@
       },
       {
         "topic": "conditions",
-        "text": "We may refuse: a repair made while a Torvane warranty would have repaired the problem free, unless a dealer refused to or the warranty repair did not fix it; a repair of a different type from our remedy (repair, replacement, refund); a repair that did not address the defect or a sign of it, or that was not reasonably necessary; and a claim without the documents in the next topic. We do not ask that the repair be identical to ours. We do not reimburse a vehicle first bought more than 10 calendar years before our notice. We set no other conditions."
+        "text": "- We may refuse:\n- a repair made while a Torvane warranty would have repaired the problem free, unless a dealer refused to or the warranty repair did not fix it;\n- a repair of a different type from our remedy (repair, replacement, refund);\n- a repair that did not address the defect or a sign of it, or that was not reasonably necessary;\n- and a claim without the documents in the next topic.\n- We do not ask that the repair be identical to ours.\n- We do not reimburse a vehicle first bought more than 10 calendar years before our notice.\n- We set no other conditions."
       },
       {
         "topic": "amount",
-        "text": "We pay the lesser of what you paid for the remedy, or the cost of parts plus labour at local rates, small fees such as waste disposal, and taxes. For parts we use our list retail price; our list price for the fuel pump module is 420.00 dollars. Taxes and disposal fees are not limited. We pay by check, within 60 days of a complete claim. What was refunded to you, paid by an insurer or covered by a warranty, was not a cost to you."
+        "text": "- We pay the lesser of what you paid for the remedy, or the cost of parts plus labour at local rates, small fees such as waste disposal, and taxes.\n- For parts we use our list retail price; our list price for the fuel pump module is 420.00 dollars.\n- Taxes and disposal fees are not limited.\n- We pay by check, within 60 days of a complete claim.\n- What was refunded to you, paid by an insurer or covered by a warranty, was not a cost to you."
       },
       {
         "topic": "documents",
-        "text": "With each claim: your name and address; the VIN, make, model and year; recall number R-2614; that you owned the vehicle when the repair was done; and a receipt, original or copy, that shows the repair addressed the problem and the total you paid. A receipt need not be itemised unless it is unclear whether it covers only that repair. A part bought separately and installed at a shop: the part receipt and the shop's labour invoice, each as a line. If the repair was within a warranty: proof that the dealer refused or that the warranty repair did not fix it."
+        "text": "- With each claim:\n- your name and address;\n- the VIN, make, model and year;\n- recall number R-2614;\n- that you owned the vehicle when the repair was done;\n- and a receipt, original or copy, that shows the repair addressed the problem and the total you paid.\n- A receipt need not be itemised unless it is unclear whether it covers only that repair.\n- A part bought separately and installed at a shop: the part receipt and the shop's labour invoice, each as a line.\n- If the repair was within a warranty: proof that the dealer refused or that the warranty repair did not fix it."
       },
       {
         "topic": "claims",

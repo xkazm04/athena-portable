@@ -186,7 +186,7 @@
       },
       {
         "topic": "events",
-        "text": "26 CFR 54.4980B-4 and ERISA 603: a qualifying event is a covered employee's death, termination of employment (other than for gross misconduct), reduction of hours, or entitlement to Medicare, or a divorce, a legal separation or a child ceasing to be a dependent. An event qualifies only if it causes a loss of coverage: ceasing to be covered under the same terms as before. The reason for a termination does not matter, a quit included. A reduction of hours that leaves coverage as it was is not a qualifying event."
+        "text": "- 26 CFR 54.4980B-4 and ERISA 603: a qualifying event is a covered employee's death, termination of employment (other than for gross misconduct), reduction of hours, or entitlement to Medicare, or a divorce, a legal separation or a child ceasing to be a dependent.\n- An event qualifies only if it causes a loss of coverage: ceasing to be covered under the same terms as before.\n- The reason for a termination does not matter, a quit included.\n- A reduction of hours that leaves coverage as it was is not a qualifying event."
       },
       {
         "topic": "employer",
@@ -194,15 +194,15 @@
       },
       {
         "topic": "beneficiary",
-        "text": "ERISA 606(a)(3) and 29 CFR 2590.606-3: for a divorce, a legal separation or a child ceasing to be a dependent, the employee or the beneficiary tells the administrator under the plan's procedure. The plan's period is 60 days from the latest of the event, the date coverage is lost, and the date the person was told the procedure (Brindlemoor's summary plan description, given at hire). Brindlemoor's plan does not accept a later notice, and the administrator acts only on a notice it received."
+        "text": "- ERISA 606(a)(3) and 29 CFR 2590.606-3: for a divorce, a legal separation or a child ceasing to be a dependent, the employee or the beneficiary tells the administrator under the plan's procedure.\n- The plan's period is 60 days from the latest of: the event; the date coverage is lost; the date the person was told the procedure (Brindlemoor's summary plan description, given at hire).\n- Brindlemoor's plan does not accept a later notice.\n- The administrator acts only on a notice it received."
       },
       {
         "topic": "notice",
-        "text": "29 CFR 2590.606-4(b): after a death, a termination, a reduction of hours or a Medicare entitlement, an employer that is also the administrator sends the election notice within 44 days of the loss of coverage, or of the event if the plan counts from that; Brindlemoor's plan counts from the loss of coverage. After a divorce or a child's loss of dependent status the administrator has 14 days from receiving the employee's notice. Days are calendar days. (e): one notice may serve an employee and a spouse, and a dependent child, only if the plan's latest information has them at the same address; each other qualified beneficiary is sent her own."
+        "text": "- 29 CFR 2590.606-4(b): after a death, a termination, a reduction of hours or a Medicare entitlement, an employer that is also the administrator sends the election notice within 44 days of the loss of coverage, or of the event if the plan counts from that.\n- Brindlemoor's plan counts from the loss of coverage.\n- After a divorce or a child's loss of dependent status the administrator has 14 days from receiving the employee's notice.\n- Days are calendar days.\n- (e): one notice may serve an employee and a spouse, and a dependent child, only if the plan's latest information has them at the same address.\n- Each other qualified beneficiary is sent her own."
       },
       {
         "topic": "plan",
-        "text": "Brindlemoor's plan: coverage ends on the last day of the month in which employment ends, hours fall below 30 a week, a marriage ends, or a child turns 26. An employee at 30 or more hours stays covered. Moving to Brindlemoor Logistics, which shares the plan, or unpaid leave with the employee paying his share, leaves coverage unchanged. An election notice names the plan, the qualifying event, the election period, the maximum coverage period, the premium and the address to answer: 18 months after a termination or an hours cut, 36 months for a death, a divorce or a child's loss of status."
+        "text": "- Brindlemoor's plan: coverage ends on the last day of the month in which employment ends, hours fall below 30 a week, a marriage ends, or a child turns 26.\n- An employee at 30 or more hours stays covered.\n- Moving to Brindlemoor Logistics, which shares the plan, or unpaid leave with the employee paying his share, leaves coverage unchanged.\n- An election notice names the plan, the qualifying event, the election period, the maximum coverage period, the premium and the address to answer.\n- Maximum coverage period: 18 months after a termination or an hours cut, 36 months for a death, a divorce or a child's loss of status."
       }
     ],
     "hr_events": [

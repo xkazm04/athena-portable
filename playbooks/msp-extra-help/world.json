@@ -298,7 +298,7 @@
         "date": "2026-09-21",
         "subject": "Fwd: Social Security: help with your Medicare costs",
         "search": "Irene Castell Social Security Benefitline letter help Medicare costs Savings Program Extra Help forwarded",
-        "body": "Mara, this came from Social Security. -- Mom. [Forwarded letter, 18 September 2026, to Irene Castell:] You may be able to get help paying your Medicare costs. Your state's Medicaid agency runs the Medicare Savings Programs, which can pay your Part B premium; apply with the state. Extra Help lowers Part D drug costs. If you get a Medicare Savings Program, Medicaid or SSI, you get Extra Help automatically and do not need to apply for it. Otherwise you can apply for Extra Help with Social Security. Applying is free."
+        "body": "- Mara, this came from Social Security. -- Mom.\n- [Forwarded letter, 18 September 2026, to Irene Castell:]\n- You may be able to get help paying your Medicare costs.\n- Your state's Medicaid agency runs the Medicare Savings Programs, which can pay your Part B premium; apply with the state.\n- Extra Help lowers Part D drug costs.\n- If you get a Medicare Savings Program, Medicaid or SSI, you get Extra Help automatically and do not need to apply for it.\n- Otherwise you can apply for Extra Help with Social Security.\n- Applying is free."
       },
       {
         "message_id": "M-2",
@@ -417,11 +417,11 @@
       },
       {
         "topic": "deemed",
-        "text": "A person with Medicare who has full Medicaid, Supplemental Security Income, or a Medicare Savings Program (QMB, SLMB or QI) from the state is deemed eligible for Extra Help (42 CFR 423.773(c)): it comes automatically, with the full subsidy, and CMS sends a notice. Deemed people should not apply here. Deeming made from January to June lasts to the end of that year; from July to December, to the end of the next year."
+        "text": "- A person with Medicare who has full Medicaid, Supplemental Security Income, or a Medicare Savings Program (QMB, SLMB or QI) from the state is deemed eligible for Extra Help (42 CFR 423.773(c)).\n- It comes automatically, with the full subsidy, and CMS sends a notice.\n- Deemed people should not apply here.\n- Deeming made from January to June lasts to the end of that year; from July to December, to the end of the next year."
       },
       {
         "topic": "apply",
-        "text": "Anyone not deemed may apply here, free. Extra Help applied for here starts the first day of the month of the application (42 CFR 423.774(b)). A person whose state Medicare Savings Program application is not yet decided is not yet deemed and may apply here; once the state's program is on file, CMS deems her and the application here is no longer needed. Unless she declines, Social Security sends the application's data to the state to start a Medicare Savings Program application."
+        "text": "- Anyone not deemed may apply here, free.\n- Extra Help applied for here starts the first day of the month of the application (42 CFR 423.774(b)).\n- A person whose state Medicare Savings Program application is not yet decided is not yet deemed and may apply here.\n- Once the state's program is on file, CMS deems her and the application here is no longer needed.\n- Unless she declines, Social Security sends the application's data to the state to start a Medicare Savings Program application."
       },
       {
         "topic": "msp",
@@ -483,7 +483,7 @@
       },
       {
         "topic": "programs",
-        "text": "Limits for one person, monthly countable income, from the 2026 poverty guideline ($15,960 a year), in force here since 1 April 2026. QMB: at or below $1,330 (100%); pays the Part B premium and Medicare deductibles, coinsurance and copays. SLMB: above $1,330 and below $1,596 (120%); Part B premium only. QI: at least $1,596 and below $1,795.50 (135%); Part B premium only, reapplied for each year. QDWI: working disabled people under 65 who lost premium-free Part A. QMB, SLMB and QI each bring Extra Help automatically. Federal tables print these limits with the $20 disregard added: $1,350, $1,616, $1,816."
+        "text": "- Limits for one person, monthly countable income, from the 2026 poverty guideline ($15,960 a year), in force here since 1 April 2026.\n- QMB: at or below $1,330 (100%); pays the Part B premium and Medicare deductibles, coinsurance and copays.\n- SLMB: above $1,330 and below $1,596 (120%); Part B premium only.\n- QI: at least $1,596 and below $1,795.50 (135%); Part B premium only, reapplied for each year.\n- QDWI: working disabled people under 65 who lost premium-free Part A.\n- QMB, SLMB and QI each bring Extra Help automatically.\n- Federal tables print these limits with the $20 disregard added: $1,350, $1,616, $1,816."
       },
       {
         "topic": "income",
@@ -495,7 +495,7 @@
       },
       {
         "topic": "exclusions",
-        "text": "Not counted: the home she lives in, whatever its value (20 CFR 416.1212); one car used for transportation, whatever its value (416.1218); household goods and personal effects (416.1216); burial spaces for her or her immediate family, such as a cemetery plot (416.1231(a)); life insurance when the total face value of all policies on her life is $1,500 or less: its cash value is then not counted (416.1230). Above $1,500 of face value, the cash surrender value counts."
+        "text": "- Not counted:\n- the home she lives in, whatever its value (20 CFR 416.1212);\n- one car used for transportation, whatever its value (416.1218);\n- household goods and personal effects (416.1216);\n- burial spaces for her or her immediate family, such as a cemetery plot (416.1231(a));\n- life insurance when the total face value of all policies on her life is $1,500 or less: its cash value is then not counted (416.1230).\n- Above $1,500 of face value, the cash surrender value counts."
       },
       {
         "topic": "burial",
@@ -503,7 +503,7 @@
       },
       {
         "topic": "apply",
-        "text": "File the application for the one program her countable income fits, with her countable monthly income and her total countable resources. On the resource statement, enter each schedule line that counts against the limit, at its countable value; lines that are not counted are left off it. Both are signed under penalty of perjury. There is no fee; Brennick's State Health Insurance Assistance Program helps free. We decide within 45 days."
+        "text": "- File the application for the one program her countable income fits, with her countable monthly income and her total countable resources.\n- On the resource statement, enter each schedule line that counts against the limit, at its countable value; lines that are not counted are left off it.\n- Both are signed under penalty of perjury.\n- There is no fee; Brennick's State Health Insurance Assistance Program helps free.\n- We decide within 45 days."
       }
     ],
     "draft": [

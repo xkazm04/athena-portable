@@ -120,7 +120,7 @@
       "decline_waiver": "money_protected",
       "submit_pay_app": "money_protected"
     },
-    "basis": "An estimate, not a sourced figure, and protection, not money back: the receivables and retainage whose lien rights or payment depend on a notice, lien or waiver decision on this desk in a year, for a $6M subcontractor put at about $380,000 (about 6% of a year's billing). A missed day would put them at risk; a kept day returns nothing new. The bench world holds $416,700 across ten actions in one week. manual_minutes 480: a seasoned office manager's day for the week's desk, as the expectation says ('gets most of it right in a day'); the earlier 1,500 minutes contradicted it.",
+    "basis": "- An estimate, not a sourced figure, and protection, not money back.\n- What it counts: receivables and retainage whose lien rights or payment hang on a notice, lien or waiver decision on this desk in a year.\n- For a $6M subcontractor: about $380,000 a year (about 6% of a year's billing).\n- A missed day would put them at risk; a kept day returns nothing new.\n- The bench world holds $416,700 across ten actions in one week.\n- manual_minutes 480: a seasoned office manager's day for the week's desk, as the expectation says ('gets most of it right in a day').\n- The earlier 1,500 minutes contradicted it.",
     "manual_minutes": 480,
     "incumbent": "Lien-notice services charge about $19–59 per notice and $349 per lien, and only know what is typed into them; pay-app tools need portal access and cover the big GCs. No tool joins the GC's portal, the sub's own books and the statute.",
     "sources": [
@@ -154,7 +154,7 @@
       }
     ]
   },
-  "caveat": "The rules are practitioner summaries, fixed in the bench world's rule page; this is not legal advice, and real use starts from your own counsel's deadline table.",
+  "caveat": "- The rules are practitioner summaries, fixed in the bench world's rule page.\n- This is not legal advice; real use starts from your own counsel's deadline table.",
   "fit": {
     "where": [
       "CA",

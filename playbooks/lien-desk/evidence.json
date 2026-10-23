@@ -1,68 +1,52 @@
 {
-  "schema": 2,
+  "schema": 3,
   "playbook": "lien-desk",
-  "captured_at": "2026-10-09T16:08:43Z",
-  "bench_run_at": "2026-10-07T23:43:59Z",
-  "narration": {
-    "text": "The subcontractor's lien desk. This is a chore for a 6-million-dollar mechanical subcontractor with a dozen jobs in California and Texas and one office manager. Each general contractor picks its own portal: Procore, Oracle Textura, GCPay, or email. Athena works it across 4 portals: Office, Procore, Oracle Textura and GCPay. On the bench, she found 10 of 10 eligible items, worth 416,700 dollars of the 416,700 dollars there was to find. All 10 were filed at the exact amount the rules allow. She made no false claim. The world held 12 traps, and she walked past 12. Among them: A job contracted directly with the owner needs no California preliminary notice. A preliminary notice already served on the 2nd of last month: serving it again is a duplicate. She took 4 minutes. By hand, the same chore takes 25 hours, so she was about 395 times faster. The verdict: exceeds. She beat the bar this playbook set itself. The bar was 75 percent of the money, no false claim and inside 35 minutes. Every card she filed waited for a person's signature, and nothing was sent.",
-    "engine": "kokoro",
-    "voice": "af_heart",
-    "duration_s": 70.063,
-    "sha256": "1a46f770c4724920687593fd5e37a931c4609693ed5ae6a2286af62bbf78d8eb"
-  },
-  "video": {
-    "path": "evidence/lien-desk/evidence.mp4",
-    "duration_s": 70.08,
-    "bytes": 3398153,
-    "sha256": "546efe239b78c0d189443868169d1b0ab64cfc878bdca4b697ee9b751a234bb8"
-  },
-  "thumbnail": {
-    "path": "playbooks/lien-desk/thumb.jpg",
-    "bytes": 74473,
-    "sha256": "8930cea76ff5c08752f3e68de0674bbd9c0fa896e157fe5cad587eb81ddd27ba"
-  },
+  "captured_at": "2026-10-23T15:06:38Z",
+  "bench_run_at": "2026-10-22T08:36:28Z",
   "story": [
     {
+      "n": 1,
       "path": "playbooks/lien-desk/story/01.webp",
-      "caption": "The abstract",
-      "turn": null,
-      "bytes": 23306,
-      "sha256": "182ef1e7c9ef85eefefc1825fffdcb7c2efa2ffb9dc92bf8b31e9bae99bd6637"
+      "bytes": 43222,
+      "sha256": "2c489fee7ed8fa6b7fd71df3916fc3972a36765dcc54d1e3b875932d5bf5cf07",
+      "caption": "How it runs",
+      "kind": "drawing"
     },
     {
+      "n": 2,
       "path": "playbooks/lien-desk/story/02.webp",
+      "bytes": 34774,
+      "sha256": "8d8dd047f8bf84d92d3772398d0d84e69306679ce09e4a12042837b27e6456be",
       "caption": "Turn 1 - Office: Lien desk for the week",
-      "turn": 1,
-      "bytes": 23060,
-      "sha256": "cdb1431921de59eca78a9f976143b375d380f549f6724dc85962e9ce0c96da92"
+      "kind": "turn",
+      "turn": 1
     },
     {
+      "n": 3,
       "path": "playbooks/lien-desk/story/03.webp",
+      "bytes": 42680,
+      "sha256": "4a8672b8294444ddf29517b509dc04040cf003520f1177f8396ba51a0ab464dc",
       "caption": "Turn 5 - Procore: I'm in Procore Pay",
-      "turn": 5,
-      "bytes": 23510,
-      "sha256": "a84852624163bab3332f0f038230aa31ae53c860c97f95b5c4197acbb24aa2c0"
+      "kind": "turn",
+      "turn": 5
     },
     {
+      "n": 4,
       "path": "playbooks/lien-desk/story/04.webp",
-      "caption": "Turn 9 - GCPay: Now GCPay for the Texas jobs",
-      "turn": 9,
-      "bytes": 23130,
-      "sha256": "1866e8dbea18e892bb925ca5dee9feb636f4be8c6ae136d44d0e3f019738f7bc"
+      "bytes": 43592,
+      "sha256": "b1efa89994d62865191b603ca6ab38875b354ce929cc8ed38aa79f00b0acb90a",
+      "caption": "Turn 8 - Oracle Textura, Athena: The Mission Bay non-payment notice is the urgent one",
+      "kind": "turn",
+      "turn": 8
     },
     {
+      "n": 5,
       "path": "playbooks/lien-desk/story/05.webp",
-      "caption": "Turn 13 - Office, Athena: I'm filing the Mission Bay preliminary notice with an estimated price of…",
-      "turn": 13,
-      "bytes": 23214,
-      "sha256": "ba81cb3dd508c587243f1215afe603e839553abd62c8b40025150bc2ed54c5b8"
-    },
-    {
-      "path": "playbooks/lien-desk/story/06.webp",
-      "caption": "What she filed",
-      "turn": null,
-      "bytes": 22976,
-      "sha256": "45320c3d36bf4ca6caa8cde8fd406d8bf47c1f415edfd5e14203267c0ce80263"
+      "bytes": 43376,
+      "sha256": "93bb727153cae12cc652e101990ef2d2e3866a63a5607e5953271b9b31abad66",
+      "caption": "Turn 12 - Office: Back in the office",
+      "kind": "turn",
+      "turn": 12
     }
   ]
 }

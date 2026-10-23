@@ -78,7 +78,7 @@
     "kinds": {
       "submit_change_notice": "money_back"
     },
-    "basis": "An estimate. Change orders average about 10% of contract value (a Dodge figure the AIA and others repeat), and specialty contractors report writing off change work as bad debt (77% in a 2026 Clearstory and Dodge survey, a vendor figure) and taking about 22 days from a field tag to a priced request, longer than the 21-day window. An electrical subcontractor billing about $6 million a year sees about $600,000 of changes; losing one in ten to a missed or late notice is about $60,000 a year. The bench world holds $33,254.50 across six changes in about a month of work. Times a year: twelve, a monthly sweep, because the window is 21 days.",
+    "basis": "- An estimate.\n- Change orders average about 10% of contract value (a Dodge figure the AIA and others repeat).\n- Specialty contractors report writing off change work as bad debt (77% in a 2026 Clearstory and Dodge survey, a vendor figure).\n- They take about 22 days from a field tag to a priced request, longer than the 21-day window (same survey).\n- An electrical subcontractor billing about $6 million a year sees about $600,000 of changes.\n- Losing one in ten of those to a missed or late notice is about $60,000 a year.\n- The bench world holds $33,254.50 across six changes in about a month of work.\n- Times a year: twelve, a monthly sweep, because the window is 21 days.",
     "manual_minutes": 240,
     "times_per_year": 12,
     "incumbent": "None takes a share: the project manager does it, and claims consultants bill by the hour after a dispute has started.",
@@ -117,7 +117,7 @@
     "minutes": 60,
     "why": "A careful project manager catches most of it; the bar is most of the changed work noticed in time and priced right, nothing noticed that is not a change or is already too late, inside an hour."
   },
-  "caveat": "Corvane Electric, Primeline Builders, Westfold Health Partners, their subcontract, Sitegrid, Dailylog, Estimato and every person here are invented. The subcontract incorporates AIA Document A201-2017, a published standard form, and its clauses are stated in the world's own words, not quoted; the markup and the waiver are the invented subcontract's. Real contracts often change the notice period and the markup, and whether a late notice waives a claim varies by state and by contract. This is not legal advice.",
+  "caveat": "- Corvane Electric, Primeline Builders, Westfold Health Partners, their subcontract, Sitegrid, Dailylog, Estimato and every person here are invented.\n- The subcontract incorporates AIA Document A201-2017, a published standard form; its clauses are stated in the world's own words, not quoted.\n- The markup and the waiver are the invented subcontract's.\n- Real contracts often change the notice period and the markup.\n- Whether a late notice waives a claim varies by state and by contract.\n- This is not legal advice.",
   "fit": {
     "where": "US",
     "where_note": "AIA A201-style subcontract terms; whether a late notice waives a claim varies by state and by contract.",

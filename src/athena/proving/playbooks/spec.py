@@ -47,6 +47,7 @@ __all__ = [
     "KINDS",
     "PER_TABLE",
     "PLAYBOOKS_DIRNAME",
+    "PROSE_LINE_MAX",
     "TARGET_KINDS",
     "TAXONOMY_FILENAME",
     "USPS_CODES",
@@ -64,6 +65,7 @@ __all__ = [
     "load_all",
     "load_playbook",
     "load_taxonomy",
+    "prose_problems",
 ]
 
 PLAYBOOKS_DIRNAME = "playbooks"
@@ -108,6 +110,10 @@ TARGET_KINDS: tuple[str, ...] = (*VALUE_KINDS, "count")
 
 #: The kind a reader assumes when a playbook names none (ADR 0133).
 DEFAULT_KIND = "money_back"
+
+#: The longest line ``check`` lets ``economics.basis`` or ``caveat`` carry. The topic page's
+#: estimate disclosure renders both as markdown bullets; a longer line is a paragraph never cut.
+PROSE_LINE_MAX = 400
 
 #: ADR 0133: the region words ``fit.where`` may be besides a list of USPS state codes.
 FIT_REGIONS: tuple[str, ...] = ("US", "EU")
@@ -621,6 +627,37 @@ def example_problems(book: Playbook) -> list[str]:
             "(ADR 0133): run `derive`, never type it"
         ]
     return []
+
+
+def prose_problems(book: Playbook) -> list[str]:
+    """What ``check`` asks of ``economics.basis`` and ``caveat``: short markdown bullets.
+
+    The topic page's estimate disclosure renders both through its markdown component, so each must
+    be a list: every line empty or starting ``"- "``, none over :data:`PROSE_LINE_MAX` characters.
+    The loader does not ask this, so a playbook mid-edit still loads and benches; the committed
+    library is held to it by ``check``.
+    """
+    economics = book.showcase.get("economics")
+    economics = economics if isinstance(economics, Mapping) else {}
+    found: list[str] = []
+    texts = (("economics.basis", economics.get("basis")), ("caveat", book.showcase.get("caveat")))
+    for label, text in texts:
+        if not isinstance(text, str):
+            continue
+        lines = text.split("\n")
+        loose = sum(1 for line in lines if line.strip() and not line.startswith("- "))
+        if loose:
+            found.append(
+                f'{book.id}: {label} must be markdown bullets, every line starting "- "; '
+                f"{loose} of its {len(lines)} lines {'does' if loose == 1 else 'do'} not"
+            )
+        long = max((len(line) for line in lines), default=0)
+        if long > PROSE_LINE_MAX:
+            found.append(
+                f"{book.id}: {label} has a line of {long} characters, over {PROSE_LINE_MAX}: "
+                "cut it into bullets of one claim each"
+            )
+    return found
 
 
 def _kind_problems(pid: str, showcase: Mapping[str, Any], targets: Sequence[Target]) -> list[str]:

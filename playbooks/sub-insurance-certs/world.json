@@ -291,11 +291,11 @@
       },
       {
         "topic": "additional-insured",
-        "text": "The subcontractor's general liability policy must make both Kestrel Ridge Builders Inc. and Alder Street Partners LLC additional insureds for this project by two ISO endorsements, named here by number: CG 20 10 (owners, lessees or contractors, scheduled: it covers them for injury or damage caused by the subcontractor's work while that work is going on) and CG 20 37 (the same parties, completed operations: it covers them for injury or damage that the subcontractor's finished work causes after it is done). Each endorsement's schedule must name both organizations, and if it names a location, the location must be 1180 Alder Street. One without the other is not compliant: ongoing work and finished work are different exposures."
+        "text": "- The subcontractor's general liability policy must make both Kestrel Ridge Builders Inc. and Alder Street Partners LLC additional insureds for this project by two ISO endorsements, named here by number:\n- CG 20 10 (owners, lessees or contractors, scheduled: it covers them for injury or damage caused by the subcontractor's work while that work is going on)\n- and CG 20 37 (the same parties, completed operations: it covers them for injury or damage that the subcontractor's finished work causes after it is done).\n- Each endorsement's schedule must name both organizations, and if it names a location, the location must be 1180 Alder Street.\n- One without the other is not compliant: ongoing work and finished work are different exposures."
       },
       {
         "topic": "certificates",
-        "text": "Before mobilizing, the subcontractor uploads to Subhub a current ACORD 25 certificate of liability insurance. A certificate is information only: it gives the holder no rights and does not change the policy, and ticking its additional insured box or writing 'per written contract' in its description does not make anyone an additional insured, and a box left blank does not take away an endorsement the policy carries. What counts is the endorsement actually attached to the policy, which the agent posts to Coverwell; Kestrel checks the policy there, and an endorsement confirmed on Coverwell counts even before its copy is uploaded to Subhub."
+        "text": "- Before mobilizing, the subcontractor uploads to Subhub a current ACORD 25 certificate of liability insurance.\n- A certificate is information only: it gives the holder no rights and does not change the policy,\n- and ticking its additional insured box or writing 'per written contract' in its description does not make anyone an additional insured,\n- and a box left blank does not take away an endorsement the policy carries.\n- What counts is the endorsement actually attached to the policy, which the agent posts to Coverwell.\n- Kestrel checks the policy there, and an endorsement confirmed on Coverwell counts even before its copy is uploaded to Subhub."
       },
       {
         "topic": "workers-comp",
@@ -303,7 +303,7 @@
       },
       {
         "topic": "review",
-        "text": "No subcontractor sets foot on site until Kestrel approves its insurance in Subhub, which issues its badges. For every subcontractor on the look-ahead that is not yet approved: approve it when its certificate is current and its policy meets the liability limits and carries both endorsements as above; otherwise send it one deficiency notice naming everything that is wrong, so it can cure it before its mobilization day. Do not wait for the mobilization day to decide. A subcontractor already approved is not approved again, and one already sent a notice for a gap it has since cured is approved, not noticed again."
+        "text": "- No subcontractor sets foot on site until Kestrel approves its insurance in Subhub, which issues its badges.\n- For every subcontractor on the look-ahead that is not yet approved:\n- approve it when its certificate is current and its policy meets the liability limits and carries both endorsements as above;\n- otherwise send it one deficiency notice naming everything that is wrong, so it can cure it before its mobilization day.\n- Do not wait for the mobilization day to decide.\n- A subcontractor already approved is not approved again, and one already sent a notice for a gap it has since cured is approved, not noticed again."
       }
     ],
     "lookahead": [

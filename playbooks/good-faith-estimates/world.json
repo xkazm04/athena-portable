@@ -261,7 +261,7 @@
       },
       {
         "topic": "estimates",
-        "text": "A good faith estimate goes to every uninsured patient, and every insured patient who will not have a claim filed with their plan, when a service is scheduled or when one asks: within 1 business day of scheduling a service 3 to 9 business days away, within 3 business days of scheduling one 10 or more away, and within 3 business days of a request. A service scheduled under 3 business days away needs none at scheduling. If the planned services change, a new estimate goes out as soon as the change is known, and no later than 1 business day before the service. An estimate is given before the service, never after it. The desk issues today every estimate due by the next business day, Monday 12 October."
+        "text": "- A good faith estimate goes to every uninsured patient, and every insured patient who will not have a claim filed with their plan.\n- It goes when a service is scheduled or when one asks:\n- within 1 business day of scheduling a service 3 to 9 business days away;\n- within 3 business days of scheduling one 10 or more away;\n- within 3 business days of a request.\n- A service scheduled under 3 business days away needs none at scheduling.\n- If the planned services change, a new estimate goes out as soon as the change is known, and no later than 1 business day before the service.\n- An estimate is given before the service, never after it.\n- The desk issues today every estimate due by the next business day, Monday 12 October."
       },
       {
         "topic": "co-providers",
@@ -567,7 +567,7 @@
         "date": "2026-10-07",
         "subject": "Patient-provider dispute PPDR-26-0412: account 6115",
         "search": "Northwind Dispute Resolution patient provider dispute PPDR-26-0412 6115 ST-9 GFE-1150",
-        "body": "The patient on account 6115 has opened a patient-provider dispute of statement ST-9 ($780.00) against good faith estimate GFE-1150 ($305.00). Reply to this notice within 10 business days with a copy of the estimate and the bill, and any documentation that the difference reflects medically necessary items or services from unforeseen circumstances. While the dispute is pending, the bill may not be moved to collection and late fees are suspended."
+        "body": "- The patient on account 6115 has opened a patient-provider dispute of statement ST-9 ($780.00) against good faith estimate GFE-1150 ($305.00).\n- Reply to this notice within 10 business days with a copy of the estimate and the bill.\n- Send with them any documentation that the difference reflects medically necessary items or services from unforeseen circumstances.\n- While the dispute is pending, the bill may not be moved to collection and late fees are suspended."
       },
       {
         "message_id": "M-4",
