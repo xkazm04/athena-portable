@@ -1,0 +1,8 @@
+{
+ "schema": 1,
+ "pairs": [
+  {"id": "lease-end-wear-charges--rosa", "playbook_id": "lease-end-wear-charges", "character": "rosa", "audience": "home", "category": "housing", "reuse_note": null},
+  {"id": "lease-end-wear-charges--tom", "playbook_id": "lease-end-wear-charges", "character": "tom", "audience": "home", "category": "housing", "reuse_note": null},
+  {"id": "clinic-denials--tom", "playbook_id": "clinic-denials", "character": "tom", "audience": "work", "category": "health", "reuse_note": "a home Character stands in for the fixture"}
+ ]
+}

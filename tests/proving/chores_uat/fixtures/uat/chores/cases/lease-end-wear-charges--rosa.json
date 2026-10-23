@@ -1,0 +1,24 @@
+{
+ "pair": "lease-end-wear-charges--rosa",
+ "playbook_id": "lease-end-wear-charges",
+ "character": "rosa",
+ "person": "Rosa Delgado returned a leased 2022 hatchback to the dealer on 3 September. The lessor's end-of-lease bill came a month later. She keeps every letter in a blue folder and reads them twice.",
+ "stated_up_front": "Hello. I got a bill after I gave the car back and I think it is too much. My letters come to my email.",
+ "portals": [
+  {"playbook_app": "Postwren", "mine": "Gmail"},
+  {"playbook_app": "Linestone Inspect", "mine": "same"},
+  {"playbook_app": "Lenswick photos", "mine": "Google Photos"},
+  {"playbook_app": "Torvane Finance", "mine": "same"}
+ ],
+ "gates": [{"action": "contest_charge", "mine": "ask"}],
+ "facts": [
+  {"about": "when the car went back", "truth": "3 September 2026"},
+  {"about": "the bill total", "truth": "$1,240"},
+  {"about": "the scratch charge", "truth": "$450 for a scratch on the rear bumper"},
+  {"about": "photos at return", "truth": "yes, twelve photos on my phone"},
+  {"about": "miles over", "truth": "about 900 over the limit"},
+  {"about": "the dealer", "truth": "Harbor Auto in Tacoma"}
+ ],
+ "unknowns": ["what the wear standard in the lease says", "whether the bill can be disputed"],
+ "generated_by": {"model": "claude-sonnet-5-5", "at": "2026-10-23T00:00:00Z"}
+}
