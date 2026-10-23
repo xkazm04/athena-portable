@@ -31,6 +31,10 @@ ATHENA_LIVE=1 pnpm -C apps/desktop test:e2e:shadowrunr
 `ATHENA_LIVE=1` skips the scripted file and runs only the pilot, so nothing else shares the
 run. In PowerShell, set it first: `$env:ATHENA_LIVE = "1"; pnpm -C apps/desktop test:e2e:shadowrunr`.
 
+While Athena's desktop app runs from the same checkout, it holds `.venv\Scripts\athena.exe`
+and `uv run` fails to re-sync ("Access is denied"). Set `UV_NO_SYNC=1` to run on the
+environment as it is.
+
 When a piece is missing (the binary, the console build, `characters/malakor` or
 `runs/sandbox`), both files skip and say why. Build them first:
 
