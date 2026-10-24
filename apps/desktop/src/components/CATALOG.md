@@ -18,6 +18,7 @@ and each file's header carries the argument for its own shape.
 | `Badge` | A small labelled pill. Its label is `--foreground` in every tone; the hue rides the `StatusDot` inside it. |
 | `StatusDot` | The hue of a state, beside the word that says the same thing. A graphic needs 3:1, not 4.5:1. |
 | `EmptyState` | "Nothing here yet": glyph, title, one line saying what would put something here, optional action. Not the same fact as "could not be read". |
+| `TaskRow` | One delegated task as an `<li>` (ADR 0141): status `Badge` ("#2 in line" while queued), title, app, time running or since it ended, the result's first line, and Kill (two presses, armed 3 s) and an optional Ask. Her strip and Main draw the same row; `now` is the caller's clock. Its rules are `task-row.css` beside it. |
 
 ## Adding one
 

@@ -1,0 +1,50 @@
+/* TaskRow (fleet-surfaces, ADR 0141) - one delegated task on a line. Tokens only, no text under
+ * 12px. The row sits in her window and on Main alike, so it reads the shared tokens only; each
+ * caller's own sheet places the list. The title gives way first: it ellipsises, the status, the
+ * time and the buttons keep their size, and on a narrow window the line wraps under the title. */
+
+.task-row {
+  display: grid;
+  gap: 2px;
+  min-width: 0;
+  padding: 6px 0;
+  list-style: none;
+}
+
+.task-row__line {
+  display: flex;
+  min-width: 0;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 4px 8px;
+}
+
+.task-row__title {
+  flex: 1 1 8rem;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-weight: 500;
+  color: var(--foreground);
+}
+
+.task-row__meta {
+  flex: none;
+  white-space: nowrap;
+  color: var(--muted-foreground);
+}
+
+.task-row__acts {
+  display: inline-flex;
+  flex: none;
+  align-items: center;
+  gap: 2px;
+}
+
+.task-row__head {
+  margin: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
