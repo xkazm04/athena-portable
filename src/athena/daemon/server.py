@@ -8,8 +8,15 @@ connects to it over HTTP and speaks JSON. Three decisions are made here and reco
 SQLite connection had thread affinity, so a forty-second turn stalled ``/health`` and every other
 read behind it. Here the brain has one writer connection and hands out a read-only connection per
 read (ADR 0003), so the server can be a ``ThreadingHTTPServer``: reads answer concurrently, and
-the routes that write queue on :meth:`AthenaDaemon.writing` — one turn at a time, which was always
-the contract — without taking the reads down with them.
+the routes that write queue on :meth:`AthenaDaemon.writing` without taking the reads down with
+them.
+
+**One turn per conversation, not per daemon (ADR 0141).** A turn holds its conversation's lock
+(:class:`ThreadLocks`) for its length, and nothing else: two conversations run side by side, and a
+second ``POST /run`` into a conversation whose turn is running is refused ``thread_busy`` before
+a single SSE header is written. :meth:`AthenaDaemon.writing` is now the *short* write lock, taken
+around a merge, an answer to a card or a connector act, and never for a turn's length, so a card
+is answered while another thread's turn runs.
 
 **One request per connection.** HTTP/1.1 keep-alive on a single-threaded server let one browser
 tab starve every other client: after answering, the handler blocked reading the *same* socket, so
@@ -62,13 +69,14 @@ from contextlib import contextmanager, suppress
 from dataclasses import dataclass, field, replace
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
-from typing import Any, TextIO
+from typing import TYPE_CHECKING, Any, TextIO
 from urllib.parse import parse_qs, urlsplit
 
 from athena.channels.voice.backends import BACKENDS as VOICE_BACKENDS
 from athena.channels.voice.backends import backend_from_name
 from athena.channels.voice.ws import WebSocket, accept_key, protocol_token
 from athena.connectors.vault import Vault
+from athena.contracts import ids
 from athena.contracts.channel import ChannelEvent
 from athena.core.approvals import Approvals
 from athena.core.brain import Brain
@@ -99,6 +107,9 @@ from athena.harness.tokenfactory import ENGINE as NEBIUS_ENGINE
 from athena.harness.tokenfactory import TokenFactoryModel
 from athena.lane.browser_lane import BrowserLane
 
+if TYPE_CHECKING:
+    from athena.daemon.tasks import Tasks
+
 __all__ = [
     "ALLOWED_METHODS",
     "DEFAULT_HOST",
@@ -115,6 +126,8 @@ __all__ = [
     "DaemonServer",
     "SocketFn",
     "SocketTable",
+    "ThreadLease",
+    "ThreadLocks",
     "bound_url",
     "build_handler",
     "build_parser",
@@ -185,6 +198,99 @@ class SocketTable:
         return list(self._by_path)
 
 
+class ThreadLease:
+    """One conversation's turn lock, held (ADR 0141). :meth:`release` gives it back, once.
+
+    A lease outlives the route that took it: ``POST /run`` takes the lock before it answers, so a
+    busy thread is refused while the answer can still be JSON, and the stream that follows gives
+    it back. Two parties may therefore try to release one lease - the stream's generator as it
+    ends, and the handler when a stream never started - and the second does nothing.
+    """
+
+    def __init__(self, locks: ThreadLocks, conversation: str) -> None:
+        self.conversation = conversation
+        self._locks = locks
+        self._mutex = threading.Lock()
+        self._released = False
+
+    def release(self) -> None:
+        with self._mutex:
+            if self._released:
+                return
+            self._released = True
+        self._locks._release(self.conversation)
+
+
+class ThreadLocks:
+    """One lock per conversation, held by the turn running in it (ADR 0141).
+
+    The map holds a conversation only while a turn holds its lock or waits for it: an entry counts
+    its users and goes when the last one leaves, so a daemon that has talked in a thousand
+    conversations holds no lock for any that is quiet. The guard is only ever held around the map,
+    never while a lock is waited for.
+    """
+
+    def __init__(self) -> None:
+        self._guard = threading.Lock()
+        #: conversation -> (its lock, how many holders and waiters it has)
+        self._by_conversation: dict[str, tuple[threading.Lock, int]] = {}
+
+    def __len__(self) -> int:
+        with self._guard:
+            return len(self._by_conversation)
+
+    def busy(self, conversation: str) -> bool:
+        """Whether a turn holds ``conversation`` now. A snapshot; :meth:`try_take` is the test."""
+        with self._guard:
+            entry = self._by_conversation.get(conversation)
+            return entry is not None and entry[0].locked()
+
+    def try_take(self, conversation: str) -> ThreadLease | None:
+        """The conversation's lock if it is free now, or ``None`` when a turn holds it."""
+        with self._guard:
+            lock, users = self._by_conversation.get(conversation, (threading.Lock(), 0))
+            if not lock.acquire(blocking=False):
+                return None
+            self._by_conversation[conversation] = (lock, users + 1)
+        return ThreadLease(self, conversation)
+
+    @contextmanager
+    def take(self, conversation: str) -> Iterator[ThreadLease]:
+        """The conversation's lock, waited for: a spoken turn queues behind a typed one in the same
+        conversation, as every turn once queued behind every other (ADR 0011)."""
+        with self._guard:
+            lock, users = self._by_conversation.get(conversation, (threading.Lock(), 0))
+            self._by_conversation[conversation] = (lock, users + 1)
+        try:
+            lock.acquire()
+        except BaseException:
+            self._leave(conversation)
+            raise
+        lease = ThreadLease(self, conversation)
+        try:
+            yield lease
+        finally:
+            lease.release()
+
+    def _release(self, conversation: str) -> None:
+        with self._guard:
+            entry = self._by_conversation.get(conversation)
+        if entry is not None:
+            entry[0].release()
+        self._leave(conversation)
+
+    def _leave(self, conversation: str) -> None:
+        with self._guard:
+            entry = self._by_conversation.get(conversation)
+            if entry is None:
+                return
+            lock, users = entry
+            if users <= 1:
+                del self._by_conversation[conversation]
+            else:
+                self._by_conversation[conversation] = (lock, users - 1)
+
+
 def new_token() -> str:
     """A fresh daemon token. URL-safe, 192 bits."""
     return secrets.token_urlsafe(24)
@@ -233,9 +339,11 @@ class BodyCap:
 class AthenaDaemon:
     """One Athena, behind a socket: the brain, the catalog, the gate, the lane and the ledger.
 
-    Every route runs against this object, and the writer lock is the only thing serialising them.
-    It is deliberately *not* the brain's own lock: what a turn holds for its duration is the right
-    to be the one turn, which is coarser than the right to write one memory.
+    Every route runs against this object. Two locks serialise them (ADR 0141): a turn holds its
+    conversation's lock in :attr:`threads` for its length, the right to be the one turn *in that
+    conversation*; a route that changes shared state takes :attr:`lock` through :meth:`writing`
+    for the few milliseconds the change takes. Neither is the brain's own lock, which guards one
+    write at a time and is taken inside both.
 
     The gate is held by name as well as through the lane because one route changes it: a merged
     manifest pins its app to the origin it was published from (policy rule 3), and a pin is a fact
@@ -255,8 +363,14 @@ class AthenaDaemon:
     engine: str = "claude_code"
     model: str = ""
     sessions: Sessions = field(default_factory=Sessions)
-    #: One turn at a time. Taken by :meth:`writing`, by nothing else, and never by a read route.
+    #: The short write lock. Taken by :meth:`writing`, by nothing else, never by a read route and
+    #: never for a turn's length (ADR 0141): a turn holds its conversation's lock instead.
     lock: threading.Lock = field(default_factory=threading.Lock)
+    #: One lock per conversation, held by the turn running in it (ADR 0141).
+    threads: ThreadLocks = field(default_factory=ThreadLocks)
+    #: The delegated tasks (ADR 0141), or ``None`` for a daemon built without them. Wiring builds
+    #: the table on this brain and adds its routes; ``POST /run`` reads it for ``task_id``.
+    tasks: Tasks | None = None
     started: float = field(default_factory=time.monotonic)
     routes: RouteTable = field(init=False)
     #: The WebSocket paths. Empty until wiring registers a channel — ``/voice`` when a voice
@@ -272,10 +386,10 @@ class AthenaDaemon:
     #: subprocess cannot hold a turn and a turn cannot hold the probe.
     probe_lock: threading.Lock = field(default_factory=threading.Lock)
     _engines: tuple[float, list[dict[str, str]]] | None = field(default=None, repr=False)
-    #: The running turn's door (ADR 0115), and the small lock around it: never the writer lock,
-    #: which the turn being stopped holds.
+    #: The running turns' doors (ADR 0115), one per conversation since a turn holds its
+    #: conversation's lock (ADR 0141), and the small lock around the map: never a turn's lock.
     door_lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
-    _door: TurnDoor | None = field(default=None, repr=False)
+    _doors: dict[str, TurnDoor] = field(default_factory=dict, repr=False)
     #: Where the last run of a case's chore began (an ISO stamp), by its ``proj_`` id, from the
     #: case file's last receipt, or ``None`` (ADR 0126). Bound by wiring to the adopt package's case
     #: book, so neither the daemon nor the core reads a case file; ``None`` here, every card's "you
@@ -334,37 +448,72 @@ class AthenaDaemon:
             return [dict(row) for row in rows]
 
     @contextmanager
-    def turn_door(self, origin: str) -> Iterator[TurnDoor]:
-        """The door of the turn about to run for ``origin``, open for as long as it runs.
+    def turn_door(self, origin: str, conversation: str = "") -> Iterator[TurnDoor]:
+        """The door of the turn about to run for ``origin`` in ``conversation``, open while it runs.
 
-        Taken inside :meth:`writing`, so the one open door is always the turn holding the lock.
+        Taken with the conversation's lock held, so the one door per conversation is always the
+        turn holding that lock.
         """
-        door = TurnDoor(origin)
+        door = TurnDoor(origin, conversation)
         with self.door_lock:
-            self._door = door
+            self._doors[conversation] = door
         try:
             yield door
         finally:
             with self.door_lock:
-                if self._door is door:
-                    self._door = None
+                if self._doors.get(conversation) is door:
+                    del self._doors[conversation]
 
-    def stop_turn(self, origin: str) -> bool:
-        """Stop the running turn if it is ``origin``'s. ``False`` when none of theirs runs."""
+    def stop_turn(self, origin: str, conversation: str | None = None) -> bool:
+        """Stop ``origin``'s running turn. ``False`` when none of theirs runs (ADR 0115, 0141).
+
+        With ``conversation`` it is that conversation's turn, and only if ``origin`` runs it.
+        Without, it is every turn ``origin`` runs *but a delegated task's*: the panel's Stop is
+        about the thread the person is looking at, and a task on the same app is stopped by its
+        own id (``POST /tasks/<id>/stop``) or by naming its conversation here.
+        """
+        if not origin:
+            return False
         with self.door_lock:
-            door = self._door
-            if door is None or not origin or door.origin != origin:
-                return False
+            doors = [
+                door
+                for door in self._doors.values()
+                if door.origin == origin
+                and (
+                    door.conversation == conversation
+                    if conversation
+                    else not ids.is_task_conversation(door.conversation)
+                )
+            ]
+        for door in doors:
             door.stop()
-            return True
+        return bool(doors)
+
+    def stop_conversation(self, conversation: str) -> bool:
+        """Stop the turn running in ``conversation``, whoever sent it: the daemon's own stop, for
+        a task it kills (ADR 0141). Not reachable from a route without the task's id."""
+        with self.door_lock:
+            door = self._doors.get(conversation)
+        if door is None:
+            return False
+        door.stop()
+        return True
+
+    @contextmanager
+    def thread(self, conversation: str) -> Iterator[ThreadLease]:
+        """``conversation``'s turn lock, waited for (ADR 0141). ``POST /run`` does not wait: it
+        takes :meth:`ThreadLocks.try_take` and refuses a busy thread instead."""
+        with self.threads.take(conversation) as lease:
+            yield lease
 
     @contextmanager
     def writing(self) -> Iterator[Brain]:
-        """The writer lock, around one route that changes something.
+        """The short write lock, around one route that changes something (ADR 0141).
 
-        Reads do not come through here. A route that takes this may hold it for the length of a
-        turn; ``GET /health`` still answers in the meantime, off its own read-only connection,
-        and that is the property ``tests/daemon/test_server.py`` asserts against a real socket.
+        Reads do not come through here, and neither does a turn: a turn holds its conversation's
+        lock, so a merge or an answer to a card waits for another write and never for a turn.
+        ``GET /health`` answers while this is held, off its own read-only connection, which is the
+        property ``tests/daemon/test_server.py`` asserts against a real socket.
         """
         with self.lock:
             yield self.brain
@@ -475,25 +624,34 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
 
             A client that hangs up mid-turn is ordinary, not an error: the write raises, the loop
             stops, and the generator is *closed* rather than abandoned — which is what runs the
-            ``with daemon.writing()`` inside it and gives the writer lock back.
+            ``finally`` inside it and gives the conversation's lock back.
+
+            A generator closed before its first frame never runs its body, so a lock the route
+            took before answering would be kept forever by a client that hung up during the
+            headers. ``answer.release`` is that lock's other way home, called whatever happened
+            (ADR 0141); giving a lease back twice does nothing.
             """
-            self.send_response(answer.status)
-            self._cors()
-            self.send_header("Content-Type", SSE_CONTENT_TYPE)
-            self.send_header("Cache-Control", "no-cache")
-            self.send_header("Connection", "close")
-            self.end_headers()
-            self.close_connection = True
             frames = answer.frames
             try:
+                self.send_response(answer.status)
+                self._cors()
+                self.send_header("Content-Type", SSE_CONTENT_TYPE)
+                self.send_header("Cache-Control", "no-cache")
+                self.send_header("Connection", "close")
+                self.end_headers()
+                self.close_connection = True
                 for frame in frames:
                     self.wfile.write(frame.encode("utf-8"))
                     self.wfile.flush()
             except (BrokenPipeError, ConnectionError):
                 pass
             finally:
-                if isinstance(frames, Generator):
-                    frames.close()
+                try:
+                    if isinstance(frames, Generator):
+                        frames.close()
+                finally:
+                    if answer.release is not None:
+                        answer.release()
 
         # -- reading -----------------------------------------------------------------------
 
@@ -697,7 +855,8 @@ def build_handler(daemon: AthenaDaemon, config: DaemonConfig) -> type[BaseHTTPRe
                 return
             if isinstance(answer, EventStream):
                 # Nothing has been produced yet: a streaming route returns before its first
-                # frame, so everything that could be refused was refused above, as a JSON body.
+                # frame, so everything that could be refused was refused above, as a JSON body -
+                # a busy thread among them (ADR 0141).
                 self._stream(answer)
                 return
             self._send(*answer)
@@ -889,6 +1048,16 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
         # ``athena brain reconcile``) or one another process holds locked past the busy timeout.
         announce(failure_line("unknown", f"{type(exc).__name__}: {exc}"), stream)
         return 1
+    # A task that was running when the last daemon died has no window running it any more: its
+    # row says ``interrupted`` and its parent thread is told, before anyone can read the list
+    # (ADR 0141). Here and not in ``build_local``, which a second Athena in this process also runs.
+    if local.daemon.tasks is not None:
+        try:
+            local.daemon.tasks.sweep()
+        except sqlite3.Error as exc:
+            local.close()
+            announce(failure_line("unknown", f"{type(exc).__name__}: {exc}"), stream)
+            return 1
     try:
         config = DaemonConfig(
             port=args.port,

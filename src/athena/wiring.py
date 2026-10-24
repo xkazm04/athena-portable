@@ -20,8 +20,9 @@ picks a dialect; the factory says how that dialect is actually run. In productio
 login. The gate, the ledger and the round budget are identical either way — ADR 0007 — so what
 the factory changes is who produces the tokens and nothing else.
 
-**All three of Athena's core tools get their executor here**, bound to this brain. There is no
-fourth: nothing a model can call answers a decision card (ADR 0004, amended). The user's answer
+**Every one of Athena's core tools gets its executor here**: memory's three bound to this brain,
+and the delegated tasks' three bound to the task table on it (ADR 0141). None of them answers a
+decision card, and none can: nothing a model can call does (ADR 0004, amended). The user's answer
 arrives on ``POST /decisions/<id>`` — the panel's button today, voice through the same route
 later — and the replay that follows it is ``BrowserLane.answer_decision``, a lane method that is
 not a catalog name and so is not a name the model was ever told about.
@@ -47,6 +48,13 @@ from athena.core.constitution import Constitution, load
 from athena.core.ledger import Ledger
 from athena.core.recall import recall, recall_whole
 from athena.daemon.server import AthenaDaemon
+from athena.daemon.tasks import (
+    Tasks,
+    delegate_executor,
+    task_routes,
+    task_stop_executor,
+    tasks_executor,
+)
 from athena.harness.cli_harness import CLAUDE_EXTRA_ARGS, DIALECTS, CliDialect, CliHarness
 from athena.harness.engines import API_ENGINES, ENGINES, build_api_harness
 from athena.harness.hooks import LedgerHook, TruncationHook
@@ -294,6 +302,8 @@ def build_local(
     try:
         approvals = Approvals(brain)
         ledger = Ledger(brain)
+        # The delegated tasks' table (ADR 0141), on this brain's index like the approvals.
+        tasks = Tasks(brain)
         # ``load``, never ``load_or_empty``: a turn with no law should not have started, so a
         # missing law stops the build here and ``athena serve`` says so on its failure line.
         constitution = load(constitution_dir)
@@ -305,6 +315,9 @@ def build_local(
             recall=recall_executor(brain),
             write_fact=write_fact_executor(brain),
             checkpoint=checkpoint_executor(brain),
+            delegate=delegate_executor(tasks),
+            tasks=tasks_executor(tasks),
+            task_stop=task_stop_executor(tasks),
         )
         catalog = build_catalog(services)
         if vault is not None and policy is None:
@@ -361,7 +374,9 @@ def build_local(
             lane=lane,
             engine=engine,
             model=harness.model,
+            tasks=tasks,
         )
+        _wire_tasks(daemon, tasks)
         studio = voice_studio or VoiceStudio(brain.root.parent / VOICE_DIRNAME)
         _wire_voice(daemon, studio, voice, voice_off)
         if vault is not None:
@@ -392,6 +407,17 @@ def build_local(
     except BaseException:
         brain.close()
         raise
+
+
+def _wire_tasks(daemon: AthenaDaemon, tasks: Tasks) -> None:
+    """The ``/tasks`` routes, and what the table needs of the daemon (ADR 0141): its turn door, to
+    stop a killed task's turn, and its sessions, to find the page of a task's app."""
+    tasks.stop_turn = daemon.stop_conversation
+    tasks.origin_of = lambda app_id: next(
+        (s.origin for s in reversed(daemon.sessions.all()) if s.app_id == app_id), None
+    )
+    for route in task_routes(daemon, tasks):
+        daemon.routes.add(route)
 
 
 def _wire_voice(
@@ -501,6 +527,8 @@ def _wire_peer(daemon: AthenaDaemon, host: PeerHost) -> None:
 
     host.add_routes(phone.peer_routes(host))  # WP4: GET /m/*, the phone page (open)
     setup.wire_setup(daemon, host)  # WP4: connector.setup.*, POST /devices/setup, setup_phase
+    if daemon.tasks is not None:  # fleet-surfaces (ADR 0141): task.changed on the same bus
+        daemon.tasks.publish = host.publish
 
 
 def _device_stamp(host: PeerHost | None) -> Callable[[], str | None] | None:

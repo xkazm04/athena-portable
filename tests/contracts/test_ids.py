@@ -37,6 +37,7 @@ EXPECTED_PREFIXES = {
     "ritual": "rit_",
     "device": "dev_",
     "pairing": "pair_",
+    "task": "task_",
 }
 
 

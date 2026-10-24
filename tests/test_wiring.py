@@ -228,10 +228,13 @@ def test_a_pin_carries_every_other_rule_across(tmp_path: Path) -> None:
 # -- the three core tools --------------------------------------------------------------------
 
 
-def test_the_lane_is_handed_athenas_own_three_names(local: AthenaLocal) -> None:
+def test_the_lane_is_handed_athenas_own_names(local: AthenaLocal) -> None:
     assert [entry.name for entry in local.lane.tools()] == [
         "core.checkpoint",
+        "core.delegate",
         "core.recall",
+        "core.task_stop",
+        "core.tasks",
         "core.write_fact",
     ]
     assert local.catalog.classify("core.write_fact") is ToolClass.GATED
@@ -419,7 +422,10 @@ def test_no_core_name_can_answer_a_card_and_none_is_offered_to_the_model(
     assert "core.answer_decision" not in local.catalog
     assert [entry.name for entry in local.lane.tools()] == [
         "core.checkpoint",
+        "core.delegate",
         "core.recall",
+        "core.task_stop",
+        "core.tasks",
         "core.write_fact",
     ]
     assert "answer_decision" not in local.catalog.render_capabilities(Lane.BROWSER).text

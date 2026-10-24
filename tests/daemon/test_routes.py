@@ -100,6 +100,10 @@ def test_the_table_ships_every_route_the_daemon_answers(daemon: AthenaDaemon) ->
         "GET /ledger/rollup",
         "GET /playbooks",
         "POST /decisions/<id>",
+        # The delegated tasks', exact before the prefix (ADR 0141).
+        "GET /tasks",
+        "POST /tasks/claim",
+        "POST /tasks/<id>",
         # The voice studio's, added by wiring after the base table (ADR 0028).
         "GET /voice/config",
         "PUT /voice/config",

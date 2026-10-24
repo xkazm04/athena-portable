@@ -212,7 +212,7 @@ def test_two_hundred_origins_of_hands_render_within_the_bound_and_announce_the_c
     assert footer is not None
     shown, total = int(footer[1]), int(footer[2])
     assert (shown, total) == (block.shown, block.total)
-    assert shown < total == 3 + 200 * 9
+    assert shown < total == len(catalog.core) + 200 * 9
     assert all(f"`{name}`" in block.text for name in catalog.core)
     assert block.text == catalog.render_capabilities(Lane.BROWSER).text
     # The cut is the prompt's and never the gate's: a hand left out is still GATED.

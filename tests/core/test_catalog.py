@@ -73,16 +73,24 @@ def manifest(app_id: str = "invoices", **overrides: Any) -> HostManifest:
 # --- the core names ------------------------------------------------------------------------------
 
 
-def test_the_three_core_names_are_registered_with_the_classes_the_design_fixes() -> None:
+def test_the_core_names_are_registered_with_the_classes_the_design_fixes() -> None:
     catalog = build_catalog(services())
     assert catalog.names() == [
         "core.checkpoint",
+        "core.delegate",
         "core.recall",
+        "core.task_stop",
+        "core.tasks",
         "core.write_fact",
     ]
     assert catalog.classify("core.write_fact") is ToolClass.GATED
     assert catalog.classify("core.recall") is ToolClass.READ
     assert catalog.classify("core.checkpoint") is ToolClass.AUTO
+    # The delegated tasks' three (ADR 0141): admitting and killing fire, listing reads.
+    assert catalog.classify("core.delegate") is ToolClass.AUTO
+    assert catalog.classify("core.tasks") is ToolClass.READ
+    assert catalog.classify("core.task_stop") is ToolClass.AUTO
+    assert catalog.get("core.tasks").cap_chars == READ_CAP
     assert catalog.get("core.recall").cap_chars == RECALL_CAP == 3 * READ_CAP
 
 
@@ -131,7 +139,10 @@ def test_a_manifest_merges_under_its_origin_namespaced_by_app_id() -> None:
     catalog = build_catalog(services(), manifest())
     assert catalog.names(Lane.BROWSER) == [
         "core.checkpoint",
+        "core.delegate",
         "core.recall",
+        "core.task_stop",
+        "core.tasks",
         "core.write_fact",
         "host.invoices.list_invoices",
         "host.invoices.send_reminder",

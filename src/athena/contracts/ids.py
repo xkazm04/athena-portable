@@ -40,6 +40,9 @@ import secrets
 #: peer's id *is* the remote device id, so there is no separate ``peer`` kind. A phone has no
 #: install of its own and is given a ``dev_`` id by the device that approved it. ``pairing`` is one
 #: open pairing window and the one request filed against it, which lives in memory for minutes.
+#:
+#: ``task`` is one job Athena delegated to a background run (ADR 0141). Its conversation is derived
+#: from it - ``conv_task_<hex>``, the same hex - by :func:`conversation_for_task`, never assembled.
 ID_PREFIXES: dict[str, str] = {
     "episode": "ep_",
     "fact": "fact_",
@@ -54,6 +57,7 @@ ID_PREFIXES: dict[str, str] = {
     "ritual": "rit_",
     "device": "dev_",
     "pairing": "pair_",
+    "task": "task_",
 }
 
 #: kind → how many hex digits ``mint`` puts after the prefix.
@@ -128,3 +132,20 @@ def conversation_for_project(project_id: str) -> str:
     if not is_id("project", project_id):
         raise ValueError(f"not a project id: {project_id!r}")
     return f"{ID_PREFIXES['conversation']}{project_id}"
+
+
+def conversation_for_task(task_id: str) -> str:
+    """``conv_<task_id>`` - ``conv_task_<hex>``: where a delegated task talks (ADR 0141).
+
+    Takes the minted task id for the same reason :func:`conversation_for_project` takes a project
+    id: no caller is ever in a position to add ``task_`` a second time.
+    """
+    if not is_id("task", task_id):
+        raise ValueError(f"not a task id: {task_id!r}")
+    return f"{ID_PREFIXES['conversation']}{task_id}"
+
+
+def is_task_conversation(conversation_id: str) -> bool:
+    """``True`` when ``conversation_id`` is a delegated task's own (``conv_task_<hex>``)."""
+    prefix = ID_PREFIXES["conversation"]
+    return conversation_id.startswith(prefix) and is_id("task", conversation_id[len(prefix) :])
