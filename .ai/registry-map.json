@@ -1441,7 +1441,11 @@
           "revision": 9,
           "changedAt": "2026-10-02",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/cli.py:186 `athena doctor` shows the engine stage as `ok` whenever the probe could not tell whether the user is signed in (`logged_in is None`), so an unknown sign-in state looks the same as a confirmed one.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:5791230ffb7d9fad",
+          "evaluatedRevision": 9
         },
         {
           "subject": "prompt-assembly",
@@ -8643,7 +8647,11 @@
           "revision": 9,
           "changedAt": "2026-10-02",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/proving/server/runner.py:408 The runner works out \"is the claude CLI usable here\" on its own instead of importing `roles.claude_available`, and it checks only that the binary is on PATH, so a signed-out CLI still puts the server in full mode.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:5791230ffb7d9fad",
+          "evaluatedRevision": 9
         },
         {
           "subject": "table",

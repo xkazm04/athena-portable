@@ -1,0 +1,117 @@
+{
+ "schema": "conform-run/1",
+ "worker": "4cf43e51-9c52-4c14-8087-18f738529a3f",
+ "subject": "agent-cli-transport",
+ "evaluatedAt": "2026-10-24T04:50:49.294707+00:00",
+ "provider": "claude",
+ "model": "claude-opus-5-5",
+ "pairs": [
+  {
+   "context": "cli-and-wiring",
+   "subject": "agent-cli-transport",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "src/athena/cli.py:186 `athena doctor` shows the engine stage as `ok` whenever the probe could not tell whether the user is signed in (`logged_in is None`), so an unknown sign-in state looks the same as a confirmed one.",
+   "techniques": [
+    {
+     "technique": "availability-probe",
+     "verdict": "deviation",
+     "evidence": "src/athena/cli.py:186 The probe returns three values (True, False, None), but `_engine_stage` only splits out `False`; `None` falls through to `ok`, and the standard says unknown must show as unknown."
+    },
+    {
+     "technique": "fallback-ladder",
+     "verdict": "conformant",
+     "evidence": "src/athena/cli.py:183 A missing engine is a labeled `warn` with the probe's reason, not a failure. The brain, the gate and the read routes keep working, and the nebius API engine is a second option behind the same harness port (wiring.py:319)."
+    },
+    {
+     "technique": "subscription-auth-selection",
+     "verdict": "conformant",
+     "evidence": "src/athena/wiring.py:328 Every production CLI engine goes through the shared `SubprocessTransport`, the one spawn path that strips API keys with `child_env`. Wiring builds no environment of its own."
+    },
+    {
+     "technique": "permission-stance-enforcement",
+     "verdict": "conformant",
+     "evidence": "src/athena/wiring.py:338 The default stance (`--restricted --permission-mode dontAsk`) is applied in one place, in a neutral working directory beside the brain (line 316). Caveat: the `extra_args` parameter replaces the stance instead of adding to it, though no production caller passes it."
+    },
+    {
+     "technique": "host-routed-approval-round-trip",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/wiring.py:524 The CLI's own tools are turned off and every action goes through Athena's gate. The child has no approval requests to pass back, which is the exception the golden path names."
+    }
+   ]
+  },
+  {
+   "context": "proving-hosted-server",
+   "subject": "agent-cli-transport",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "src/athena/proving/server/runner.py:408 The runner works out \"is the claude CLI usable here\" on its own instead of importing `roles.claude_available`, and it checks only that the binary is on PATH, so a signed-out CLI still puts the server in full mode.",
+   "techniques": [
+    {
+     "technique": "fallback-ladder",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/server/runner.py:408 `roles.py:611` has a copy of the same check (`claude_available`). The standard says this check is written once and imported everywhere, because copies drift. The hosted rung is otherwise labeled honestly (`proof2` n/a at line 449, and the reason Characters is refused at line 95)."
+    },
+    {
+     "technique": "availability-probe",
+     "verdict": "deviation",
+     "evidence": "src/athena/proving/server/runner.py:421 Full vs hosted mode depends on the binary being present (plus a config flag that can force hosted mode). Whether the CLI is signed in is never checked, so the two questions the standard keeps apart are collapsed into one."
+    },
+    {
+     "technique": "subscription-auth-selection",
+     "verdict": "conformant",
+     "evidence": "src/athena/proving/server/runner.py:552 The child gets the shared `child_env` environment with keys stripped. Only `NEBIUS_API_KEY` is added back, by name, on the next lines, which is a deliberate per-tool choice."
+    },
+    {
+     "technique": "output-normalization",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/proving/server/runner.py:523 The runner starts a Python proving process, not an agent CLI. It reads that process's echo lines and its ledger file, not an agent's output."
+    }
+   ]
+  }
+ ],
+ "declined": [
+  {
+   "subject": "agent-cli-transport",
+   "context": "proving-characters-gauntlet",
+   "reason": "the seat returned unknown"
+  }
+ ],
+ "consults": [
+  {
+   "ts": "2026-10-24T04:50:49.294707+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "agent-cli-transport"
+   ],
+   "techniques": [
+    "availability-probe",
+    "fallback-ladder",
+    "host-routed-approval-round-trip",
+    "permission-stance-enforcement",
+    "subscription-auth-selection"
+   ],
+   "deviations": 1,
+   "context": "cli-and-wiring",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  },
+  {
+   "ts": "2026-10-24T04:50:49.294707+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "agent-cli-transport"
+   ],
+   "techniques": [
+    "availability-probe",
+    "fallback-ladder",
+    "output-normalization",
+    "subscription-auth-selection"
+   ],
+   "deviations": 1,
+   "context": "proving-hosted-server",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  }
+ ]
+}

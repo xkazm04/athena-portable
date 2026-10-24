@@ -3331,62 +3331,61 @@
       "context": "cli-and-wiring",
       "subject": "agent-cli-transport",
       "bundle": "software-engineering",
-      "state": "unknown",
-      "evaluatedAt": "2026-10-16",
-      "evaluatedTs": "2026-10-16T23:05:42.657Z",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T04:50:49.294Z",
+      "worker": "4cf43e51-9c52-4c14-8087-18f738529a3f",
       "techniques": [
         {
           "technique": "availability-probe",
           "verdict": "deviation",
-          "evidence": "src/athena/cli.py:175 The engine health check stage relies on credential file existence rather than a zero-token auth status command executed through the constructed spawn environment."
-        },
-        {
-          "technique": "child-observed-posture",
-          "verdict": "deviation",
-          "evidence": "tests/test_wiring.py:94 Wiring tests check host instantiation intent without verifying child-observed argv preservation, runtime sandbox readiness, or prompt injection arrival tokens."
-        },
-        {
-          "technique": "dated-capability-matrix",
-          "verdict": "deviation",
-          "evidence": "src/athena/wiring.py:433 CLI capability flags and options are baked into source code as timeless constants rather than maintained in a dated capability matrix with verification dates and methods."
+          "evidence": "src/athena/cli.py:186 The probe returns three values (True, False, None), but `_engine_stage` only splits out `False`; `None` falls through to `ok`, and the standard says unknown must show as unknown."
         },
         {
           "technique": "fallback-ladder",
-          "verdict": "deviation",
-          "evidence": "src/athena/wiring.py:262 Engine selection fails immediately on unknown or missing engines without a tiered degradation ladder to an alternate provider or a labeled deterministic floor."
+          "verdict": "conformant",
+          "evidence": "src/athena/cli.py:183 A missing engine is a labeled `warn` with the probe's reason, not a failure. The brain, the gate and the read routes keep working, and the nebius API engine is a second option behind the same harness port (wiring.py:319)."
+        },
+        {
+          "technique": "subscription-auth-selection",
+          "verdict": "conformant",
+          "evidence": "src/athena/wiring.py:328 Every production CLI engine goes through the shared `SubprocessTransport`, the one spawn path that strips API keys with `child_env`. Wiring builds no environment of its own."
+        },
+        {
+          "technique": "permission-stance-enforcement",
+          "verdict": "conformant",
+          "evidence": "src/athena/wiring.py:338 The default stance (`--restricted --permission-mode dontAsk`) is applied in one place, in a neutral working directory beside the brain (line 316). Caveat: the `extra_args` parameter replaces the stance instead of adding to it, though no production caller passes it."
         },
         {
           "technique": "host-routed-approval-round-trip",
           "verdict": "not-applicable",
-          "evidence": "tests/test_wiring.py:96 The child agent CLI runs with native tools suppressed via dontAsk; because Athena exposes only its own gated tools, there are no child native approvals to route."
+          "evidence": "src/athena/wiring.py:524 The CLI's own tools are turned off and every action goes through Athena's gate. The child has no approval requests to pass back, which is the exception the golden path names."
+        },
+        {
+          "technique": "child-observed-posture",
+          "verdict": "deviation",
+          "evidence": "tests/test_wiring.py:94 Wiring tests check host instantiation intent without verifying child-observed argv preservation, runtime sandbox readiness, or prompt injection arrival tokens.",
+          "carriedFrom": "2026-10-16"
+        },
+        {
+          "technique": "dated-capability-matrix",
+          "verdict": "deviation",
+          "evidence": "src/athena/wiring.py:433 CLI capability flags and options are baked into source code as timeless constants rather than maintained in a dated capability matrix with verification dates and methods.",
+          "carriedFrom": "2026-10-16"
         },
         {
           "technique": "output-normalization",
           "verdict": "deviation",
-          "evidence": "src/athena/wiring.py:298 The wiring layer delegates process output handling to CliHarness without configuring envelope dialect parsing, error stream separation, or a multi-rung extraction ladder."
-        },
-        {
-          "technique": "permission-stance-enforcement",
-          "verdict": "deviation",
-          "evidence": "src/athena/wiring.py:307 Applies static CLI arguments rather than implementing the contract's closed mode vocabulary (generate, readonly-scan, edit) or verifying backing OS sandbox classes."
-        },
-        {
-          "technique": "subscription-auth-selection",
-          "verdict": "deviation",
-          "evidence": "src/athena/wiring.py:285 Environment construction at the composition root sets working directory without defining or enforcing the stripping of metered billing keys or cloud routing switches."
+          "evidence": "src/athena/wiring.py:298 The wiring layer delegates process output handling to CliHarness without configuring envelope dialect parsing, error stream separation, or a multi-rung extraction ladder.",
+          "carriedFrom": "2026-10-16"
         },
         {
           "technique": "thread-custody-across-resume",
           "verdict": "deviation",
-          "evidence": "tests/test_wiring.py:86 Wiring binds dialects without defining thread custody unbinding rules, plan folding, or state reseeding upon thread failure across resumes."
+          "evidence": "tests/test_wiring.py:86 Wiring binds dialects without defining thread custody unbinding rules, plan folding, or state reseeding upon thread failure across resumes.",
+          "carriedFrom": "2026-10-16"
         }
-      ],
-      "withdrawn": {
-        "worker": "34b0761e-cc6e-409c-850c-a0bc521f5872",
-        "state": "deviation",
-        "at": "2026-10-16T23:05:56.314471+00:00",
-        "reason": "reviewer (sonnet): The main claim says wiring has no permission stance enforcement, but wiring.py:307 passes `_default_args(dialect)`, which returns CLAUDE_EXTRA_ARGS for the Claude CLI, and tests/test_wiring.py:96 asserts that is `('--restricted','--permission-mode','dontAsk')`. The constants at wiring.py:433 are als"
-      }
+      ]
     },
     "b96add2f-57d0-4373-8741-748e5560658e/authoring-block-vocabulary": {
       "context": "tidycrm-spatial-model-tools",
@@ -6620,6 +6619,37 @@
           "technique": "visual-text-cadence",
           "verdict": "not-applicable",
           "evidence": "examples/atlas/components/atlas/style/index.css:2 This is app CSS; the subject's cadence rule covers front-page prose, not app styling."
+        }
+      ]
+    },
+    "b5d94170-12ef-41ee-af0a-902add774f7d/agent-cli-transport": {
+      "context": "proving-hosted-server",
+      "subject": "agent-cli-transport",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T04:50:49.294Z",
+      "worker": "4cf43e51-9c52-4c14-8087-18f738529a3f",
+      "techniques": [
+        {
+          "technique": "fallback-ladder",
+          "verdict": "deviation",
+          "evidence": "src/athena/proving/server/runner.py:408 `roles.py:611` has a copy of the same check (`claude_available`). The standard says this check is written once and imported everywhere, because copies drift. The hosted rung is otherwise labeled honestly (`proof2` n/a at line 449, and the reason Characters is refused at line 95)."
+        },
+        {
+          "technique": "availability-probe",
+          "verdict": "deviation",
+          "evidence": "src/athena/proving/server/runner.py:421 Full vs hosted mode depends on the binary being present (plus a config flag that can force hosted mode). Whether the CLI is signed in is never checked, so the two questions the standard keeps apart are collapsed into one."
+        },
+        {
+          "technique": "subscription-auth-selection",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/server/runner.py:552 The child gets the shared `child_env` environment with keys stripped. Only `NEBIUS_API_KEY` is added back, by name, on the next lines, which is a deliberate per-tool choice."
+        },
+        {
+          "technique": "output-normalization",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/server/runner.py:523 The runner starts a Python proving process, not an agent CLI. It reads that process's echo lines and its ledger file, not an agent's output."
         }
       ]
     }
