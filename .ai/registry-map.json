@@ -3697,7 +3697,11 @@
           "revision": 9,
           "changedAt": "2026-09-09",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/lib/engines.ts:7 These files are client libraries for one first-party daemon over loopback, and they only render engine probes and choices the daemon makes. A search of apps/desktop/src/lib found no failover, routing strategy, fallback list or finish_reason, so no multi-provider gateway plane lives in this context.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:f268193750c0a517",
+          "evaluatedRevision": 9
         },
         {
           "subject": "talking-avatar",
@@ -9964,7 +9968,11 @@
           "revision": 9,
           "changedAt": "2026-09-09",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/channels/voice/gateway.py:173 The voice gateway holds exactly one person-chosen backend (one Speaker plus one Listener composed by the studio), with no candidate list, fallback tree or caller-selectable schema; a search of src/athena/channels and tests/channels found no failover, fallback list, routing strategy or finish_reason, so the plane this subject governs does not exist here.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:f268193750c0a517",
+          "evaluatedRevision": 9
         },
         {
           "subject": "structured-output",

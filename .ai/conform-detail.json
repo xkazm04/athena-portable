@@ -7420,6 +7420,73 @@
       "evaluatedTs": "2026-10-24T21:36:58.316Z",
       "worker": "7639b074-5d05-4ae5-a229-acf882c7ebe4",
       "techniques": []
+    },
+    "a4c21bac-6dbe-41a3-b6ad-e7bec7001865/multi-provider-gateway-plane": {
+      "context": "voice-channel",
+      "subject": "multi-provider-gateway-plane",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T22:15:34.042Z",
+      "worker": "9cf38c49-aec4-460b-8572-fb10f1dadf60",
+      "techniques": [
+        {
+          "technique": "router-versus-candidate-failure",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/gateway.py:173 Exactly one candidate per direction. A failed backend surfaces as VoiceBackendError and is never swept across alternatives."
+        },
+        {
+          "technique": "strategy-tree-with-inherited-policy",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/config.py:344 compose() builds one speaker and one listener from the saved choice. There is one candidate set with one policy, and no tree."
+        },
+        {
+          "technique": "exclusive-authorship-of-a-measured-decision",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/config.py:5 A person pins the engine, so there is no selector to protect. This is the technique's 'decision is not the plane's to own' exclusion."
+        },
+        {
+          "technique": "caller-scoped-normalization-strictness",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/gateway.py:10 The wire contract is the project's own, used by a first-party surface. That is one consumer population, not a mimicked foreign shape."
+        },
+        {
+          "technique": "adapter-direction-asymmetry",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/channels/voice/backends.py:86 There are only three engines (Kokoro, whisper.cpp, OpenAI), each hand-coded. That falls under the technique's 'two or three upstreams' exclusion."
+        }
+      ]
+    },
+    "c2e060d5-a15b-46fc-8a10-55188c2d50d2/multi-provider-gateway-plane": {
+      "context": "desktop-client-lib",
+      "subject": "multi-provider-gateway-plane",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T22:15:34.042Z",
+      "worker": "9cf38c49-aec4-460b-8572-fb10f1dadf60",
+      "techniques": [
+        {
+          "technique": "router-versus-candidate-failure",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/api.ts:5 There is a single upstream (the local daemon) with nothing to fall back to."
+        },
+        {
+          "technique": "per-provider-stream-framing",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/api.ts:13 There is one stream from one upstream, the daemon's own SSE. This is the technique's 'one upstream' exclusion."
+        },
+        {
+          "technique": "exclusive-authorship-of-a-measured-decision",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/engines.ts:53 The person picks the engine (claude_code or codex) and the client does no selection or substitution."
+        },
+        {
+          "technique": "upstream-identity-before-inventory",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/lib/engines.ts:21 Engine identity comes from fixed CLI ids the daemon probes. No shared-protocol endpoints are discovered here."
+        }
+      ]
     }
   }
 }
