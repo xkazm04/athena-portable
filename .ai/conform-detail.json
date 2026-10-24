@@ -3499,27 +3499,37 @@
       "context": "desktop-build-config",
       "subject": "build-economics",
       "bundle": "software-engineering",
-      "state": "unknown",
-      "evaluatedAt": "2026-10-16",
-      "evaluatedTs": "2026-10-16T23:53:49.560Z",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T06:14:16.333Z",
+      "worker": "b782aeb6-442e-463f-962a-02b97b5946a2",
       "techniques": [
         {
           "technique": "cache-budgeting",
           "verdict": "deviation",
-          "evidence": "apps/desktop/src-tauri/Cargo.toml:69 Incremental state is enabled; searches found no byte-budget enforcement, routine pruner or cache hit-rate instrument for this build directory."
+          "evidence": "apps/desktop/src-tauri/Cargo.toml:69 The incremental cache is on but has no byte ceiling and no pruner. `git ls-files | xargs grep` for cargo clean/sweep/prune target found nothing. target/ is 5.3 GB. On the plus side, build.rs:22 adds a `rerun-if-changed` key for the `include_str!` input, which matches the 'key on everything that changes the answer' rule."
+        },
+        {
+          "technique": "debug-artifact-economics",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src-tauri/Cargo.toml:68 There is no `[profile.dev.package.\"*\"] debug` override, so third-party crates (tauri, the bundled SQLite in rusqlite, windows-sys) are built with full debug info that nobody steps through. The technique says dependencies should default to minimal debug info. Release side: vite.config.ts:112 sets sourcemap false."
+        },
+        {
+          "technique": "capability-feature-gating",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/scripts/dev-source-loc.mjs:52 The source-stamp inspector is an additive opt-in gate. It is off by default, `@babel/core` is imported lazily only when the gate is on (line 54), and `apply: \"serve\"` keeps it out of builds."
+        },
+        {
+          "technique": "dev-variant-design",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/lib/dev/inspector.tsx:11 The default dev variant is the cheap one. The opt-in variant has a named script (package.json `dev:inspect` and `tauri:inspect`), and the blind spot at the gap is stated in the HUD rather than found by surprise."
         },
         {
           "technique": "declinable-capability-split",
           "verdict": "not-applicable",
-          "evidence": "apps/desktop/src-tauri/Cargo.toml:9 This shell crate is unpublished; no declining downstream library consumer was identified."
+          "evidence": "apps/desktop/src-tauri/Cargo.toml:9 The crate is not published, so no consumer can inherit obligations from it."
         }
-      ],
-      "withdrawn": {
-        "worker": "4d12a39d-61ec-4e42-877c-b49a16375f09",
-        "state": "deviation",
-        "at": "2026-10-16T23:54:22.348896+00:00",
-        "reason": "reviewer (sonnet): Cargo.toml:69 is `[profile.dev] incremental = true`, which only restates Cargo's default dev setting. It doesn't show that the disk cost is unbounded or that a policy is missing, and the 'no pruner' claim rests only on a negative search I couldn't tie to this build directory."
-      }
+      ]
     },
     "2c7d08b8-f9aa-4b85-908f-99e34042a011/build-economics": {
       "context": "hirelane-design-law",
@@ -6820,6 +6830,37 @@
       "evaluatedTs": "2026-10-24T06:03:19.158Z",
       "worker": "12f8c347-6b02-47f1-b703-ffb9d57da2bc",
       "techniques": []
+    },
+    "ba5a181a-6d9e-4738-9ee3-81470d93525b/build-economics": {
+      "context": "workspace-build-config",
+      "subject": "build-economics",
+      "bundle": "software-engineering",
+      "state": "conformant",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T06:14:16.333Z",
+      "worker": "b782aeb6-442e-463f-962a-02b97b5946a2",
+      "techniques": [
+        {
+          "technique": "dev-variant-design",
+          "verdict": "conformant",
+          "evidence": "scripts/build-sidecar.py:21 The cheap path is the default (an unfrozen daemon) and the frozen sidecar is an opt-in variant. The cost of skipping the freeze is stated: a slower start, not a broken app."
+        },
+        {
+          "technique": "capability-feature-gating",
+          "verdict": "conformant",
+          "evidence": "scripts/build-sidecar.py:194 Where the full variant is chosen, the script checks that the gated capability's source is actually installed and refuses to build without it (lines 195-200), instead of shipping a sidecar silently missing the capability."
+        },
+        {
+          "technique": "declinable-capability-split",
+          "verdict": "conformant",
+          "evidence": "pyproject.toml:46 numpy, keyring and pyinstaller are declared as optional extras, so a consumer who declines one never resolves it. The default has the fewest obligations."
+        },
+        {
+          "technique": "build-measurement",
+          "verdict": "not-applicable",
+          "evidence": "scripts/build-sidecar.py:268 This is a packaging build, which belongs to the sibling release subject, and no build win is claimed. The printed wall-clock carries no cold or warm label (it omits whether `--clean` was passed), so it would not count as an instrument if a claim ever relied on it."
+        }
+      ]
     }
   }
 }

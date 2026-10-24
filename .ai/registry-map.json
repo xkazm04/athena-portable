@@ -3433,7 +3433,11 @@
           "revision": 7,
           "changedAt": "2026-09-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src-tauri/Cargo.toml:68 The dev profile only sets `incremental = true`. It has no debug-info dial for dependencies, and nothing in the repo prunes `target/`, which measured 5.3 GB on 2026-10-24 (deps 3.5 GB, incremental 1.6 GB, debug profile only), so the build's disk use grows with no budget and no reaper.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:2dc0e92ddb23f674",
+          "evaluatedRevision": 7
         },
         {
           "subject": "agent-addressable-ui",
@@ -10111,7 +10115,11 @@
           "revision": 7,
           "changedAt": "2026-09-06",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "conformant",
+          "evidence": "scripts/build-sidecar.py:21 The expensive PyInstaller freeze is kept out of the daily loop: the shell falls back to `uv run athena serve`, and the 20 MB toolchain sits in an opt-in extra, so iteration never pays for packaging.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:2dc0e92ddb23f674",
+          "evaluatedRevision": 7
         }
       ],
       "governance": "governed"
