@@ -17,6 +17,7 @@ the model in the next turn's frame. One turn is one row whatever happened inside
 from __future__ import annotations
 
 import asyncio
+import threading
 import time
 from collections.abc import AsyncIterator, Mapping, Sequence
 from dataclasses import dataclass
@@ -77,8 +78,32 @@ class RoundHarness:
 
     def __post_init__(self) -> None:
         self._last: TurnResult | None = None
-        #: When the turn in progress meets its wall, on the monotonic clock; ``None`` between turns.
-        self._deadline: float | None = None
+        #: What belongs to the turn in progress: its wall (``deadline``, on the monotonic clock) and
+        #: what it has already fed back (``told``). Per thread, because a turn locks its thread and
+        #: not the companion (ADR 0141): two conversations run on two threads, each draining its own
+        #: loop, through this one harness, and one turn's start must not move the other's wall.
+        self._turn = threading.local()
+
+    @property
+    def _deadline(self) -> float | None:
+        deadline: float | None = getattr(self._turn, "deadline", None)
+        return deadline
+
+    @_deadline.setter
+    def _deadline(self, value: float | None) -> None:
+        self._turn.deadline = value
+
+    @property
+    def _told(self) -> set[tuple[str, str]]:
+        told: set[tuple[str, str]] | None = getattr(self._turn, "told", None)
+        if told is None:
+            told = set()
+            self._turn.told = told
+        return told
+
+    @_told.setter
+    def _told(self, value: set[tuple[str, str]]) -> None:
+        self._turn.told = value
 
     async def last_result(self) -> TurnResult | None:
         return self._last
@@ -144,7 +169,7 @@ class RoundHarness:
             self.truncation.before_prompt([*static_blocks, *frame], turn_id)
 
             entries = {entry.name: entry for entry in tools}
-            self._told: set[tuple[str, str]] = set()
+            self._told = set()
             static_text = _joined(static_blocks)
             self._turn_started(conversation_id, static_text)
             history = [_opening_message(frame, user_message)]
