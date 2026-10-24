@@ -1,0 +1,89 @@
+{
+ "schema": "conform-run/1",
+ "worker": "8bfd3cb3-3bc3-41d5-af5b-4ae38062b3e1",
+ "subject": "knowledge-registry",
+ "evaluatedAt": "2026-10-24T05:51:51.629437+00:00",
+ "provider": "claude",
+ "model": "claude-opus-5-5",
+ "pairs": [
+  {
+   "context": "contracts-seam",
+   "subject": "knowledge-registry",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "src/athena/contracts/registry.py:38 The context's 'registry' is the in-process tool registry (ToolEntry rows, GATED/READ/AUTO classes, a browser execution lane), not a shared repository of reusable knowledge with a catalog, overlays, contributors or a seed; I grepped src/athena/contracts and tests/contracts for knowledge, golden, index.json, contributor and registry-map and found nothing.",
+   "techniques": [
+    {
+     "technique": "lane-contracts",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/contracts/registry.py:38 Lane here is an execution lane for tool calls, not a registry content division with its own spec and gate."
+    },
+    {
+     "technique": "catalog-as-sync-key",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/contracts/registry.py:30 'Catalog' is the runtime tool catalog that sets the call class. Nothing here publishes a digest-keyed index for consumers to sync against."
+    }
+   ],
+   "absenceTerms": [
+    "knowledge",
+    "golden",
+    "index.json",
+    "contributor",
+    "registry-map"
+   ]
+  },
+  {
+   "context": "ledgerbox-lanes-ui",
+   "subject": "knowledge-registry",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "examples/ledgerbox/components/lanes/model.ts:2 'Lanes' and 'Gate' here are a React view of invoice swim-lanes in a demo app, with no shared knowledge registry, catalog, overlay, seed or contributor files; I grepped examples/ledgerbox/components/lanes for knowledge, golden, index.json, contributor and registry-map and found nothing.",
+   "techniques": [
+    {
+     "technique": "lane-contracts",
+     "verdict": "not-applicable",
+     "evidence": "examples/ledgerbox/components/lanes/model.ts:18 A lane is a row of invoice marks in the UI, not a registry content division."
+    }
+   ],
+   "absenceTerms": [
+    "knowledge",
+    "golden",
+    "index.json",
+    "contributor",
+    "registry-map"
+   ]
+  }
+ ],
+ "declined": [],
+ "consults": [
+  {
+   "ts": "2026-10-24T05:51:51.629437+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "knowledge-registry"
+   ],
+   "techniques": [
+    "catalog-as-sync-key",
+    "lane-contracts"
+   ],
+   "deviations": 0,
+   "context": "contracts-seam",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  },
+  {
+   "ts": "2026-10-24T05:51:51.629437+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "knowledge-registry"
+   ],
+   "techniques": [
+    "lane-contracts"
+   ],
+   "deviations": 0,
+   "context": "ledgerbox-lanes-ui",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  }
+ ]
+}

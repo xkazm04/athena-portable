@@ -1813,7 +1813,11 @@
           "revision": 11,
           "changedAt": "2026-10-14",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/contracts/registry.py:38 The context's 'registry' is the in-process tool registry (ToolEntry rows, GATED/READ/AUTO classes, a browser execution lane), not a shared repository of reusable knowledge with a catalog, overlays, contributors or a seed; I grepped src/athena/contracts and tests/contracts for knowledge, golden, index.json, contributor and registry-map and found nothing.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:3dc9f1dec5aa4282",
+          "evaluatedRevision": 12
         },
         {
           "subject": "eval-harness",
@@ -7744,7 +7748,11 @@
           "revision": 11,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/model.ts:2 'Lanes' and 'Gate' here are a React view of invoice swim-lanes in a demo app, with no shared knowledge registry, catalog, overlay, seed or contributor files; I grepped examples/ledgerbox/components/lanes for knowledge, golden, index.json, contributor and registry-map and found nothing.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:3dc9f1dec5aa4282",
+          "evaluatedRevision": 12
         },
         {
           "subject": "talking-avatar",

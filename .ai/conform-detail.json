@@ -3675,113 +3675,116 @@
       "context": "contracts-seam",
       "subject": "knowledge-registry",
       "bundle": "software-engineering",
-      "state": "unknown",
-      "evaluatedAt": "2026-10-17",
-      "evaluatedTs": "2026-10-17T01:15:19.899Z",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T05:51:51.629Z",
+      "worker": "8bfd3cb3-3bc3-41d5-af5b-4ae38062b3e1",
       "techniques": [
+        {
+          "technique": "lane-contracts",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/registry.py:38 Lane here is an execution lane for tool calls, not a registry content division with its own spec and gate."
+        },
         {
           "technique": "catalog-as-sync-key",
           "verdict": "not-applicable",
-          "evidence": "src/athena/contracts/harness.py:54 This hashes prompt-block text; it does not compare copies of shared knowledge items."
+          "evidence": "src/athena/contracts/registry.py:30 'Catalog' is the runtime tool catalog that sets the call class. Nothing here publishes a digest-keyed index for consumers to sync against."
         },
         {
           "technique": "consumer-overlays",
           "verdict": "not-applicable",
-          "evidence": "src/athena/contracts/registry.py:221 The configuration describes runtime turn policy, not a consumer's relationship to a shared knowledge repository."
+          "evidence": "src/athena/contracts/registry.py:221 The configuration describes runtime turn policy, not a consumer's relationship to a shared knowledge repository.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "deterministic-seeding",
           "verdict": "not-applicable",
-          "evidence": "src/athena/contracts/ids.py:58 These are runtime entity identifiers; no registry-seeding proposal is implemented here."
-        },
-        {
-          "technique": "lane-contracts",
-          "verdict": "not-applicable",
-          "evidence": "src/athena/contracts/registry.py:40 Lanes select where executable tools are available, rather than partitioning shared knowledge into content shapes."
+          "evidence": "src/athena/contracts/ids.py:58 These are runtime entity identifiers; no registry-seeding proposal is implemented here.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "per-contributor-aggregation",
           "verdict": "not-applicable",
-          "evidence": "src/athena/contracts/harness.py:159 The reporting unit is a model turn, not a contributor-owned registry telemetry file."
+          "evidence": "src/athena/contracts/harness.py:159 The reporting unit is a model turn, not a contributor-owned registry telemetry file.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "propose-then-adopt",
           "verdict": "not-applicable",
-          "evidence": "src/athena/contracts/channel.py:172 Decision tokens resolve runtime action approvals; they do not govern adoption of knowledge through repository merges."
+          "evidence": "src/athena/contracts/channel.py:172 Decision tokens resolve runtime action approvals; they do not govern adoption of knowledge through repository merges.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "standard-versus-consumer-split",
           "verdict": "not-applicable",
-          "evidence": "src/athena/contracts/__init__.py:3 This package defines API contracts, with no publication boundary between shared guidance and consumer-local proof."
+          "evidence": "src/athena/contracts/__init__.py:3 This package defines API contracts, with no publication boundary between shared guidance and consumer-local proof.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "verification-is-contributed",
           "verdict": "not-applicable",
-          "evidence": "tests/contracts/test_channel.py:97 The checked coverage concerns channel event kinds, not contributed verification of published knowledge claims."
+          "evidence": "tests/contracts/test_channel.py:97 The checked coverage concerns channel event kinds, not contributed verification of published knowledge claims.",
+          "carriedFrom": "2026-10-17"
         }
-      ],
-      "withdrawn": {
-        "worker": "d248d074-5cbb-46fc-a0ee-671b2f5b6e1f",
-        "state": "not-applicable",
-        "at": "2026-10-17T01:15:33.370067+00:00",
-        "reason": "reviewer (sonnet): The anchor manifest.py:155 is only the HostManifest class docstring header, so it doesn't show that no shared knowledge repository exists; the 'no repository' claim rests on a search whose terms (contributor, digest) were not chosen for this subject."
-      }
+      ]
     },
     "f4f6bafa-bef4-426d-9731-16357fffa1ee/knowledge-registry": {
       "context": "ledgerbox-lanes-ui",
       "subject": "knowledge-registry",
       "bundle": "software-engineering",
-      "state": "unknown",
-      "evaluatedAt": "2026-10-17",
-      "evaluatedTs": "2026-10-17T01:15:19.899Z",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T05:51:51.629Z",
+      "worker": "8bfd3cb3-3bc3-41d5-af5b-4ae38062b3e1",
       "techniques": [
+        {
+          "technique": "lane-contracts",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/model.ts:18 A lane is a row of invoice marks in the UI, not a registry content division."
+        },
         {
           "technique": "catalog-as-sync-key",
           "verdict": "not-applicable",
-          "evidence": "examples/ledgerbox/components/lanes/model.ts:5 The UI receives a request-built invoice view model, not a catalog for comparing knowledge copies."
+          "evidence": "examples/ledgerbox/components/lanes/model.ts:5 The UI receives a request-built invoice view model, not a catalog for comparing knowledge copies.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "consumer-overlays",
           "verdict": "not-applicable",
-          "evidence": "examples/ledgerbox/components/lanes/Lanes.tsx:76 Consumer-specific state here means selected invoices; no shared registry declaration or consumer overlay is involved."
+          "evidence": "examples/ledgerbox/components/lanes/Lanes.tsx:76 Consumer-specific state here means selected invoices; no shared registry declaration or consumer overlay is involved.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "deterministic-seeding",
           "verdict": "not-applicable",
-          "evidence": "examples/ledgerbox/components/lanes/useRun.ts:25 This hook executes UI server actions; no organization-registry creation or repeatable seeding proposal is exposed."
-        },
-        {
-          "technique": "lane-contracts",
-          "verdict": "not-applicable",
-          "evidence": "examples/ledgerbox/components/lanes/Swarm.tsx:6 These lanes group invoices by practice area, not heterogeneous knowledge artifacts by specification and gate."
+          "evidence": "examples/ledgerbox/components/lanes/useRun.ts:25 This hook executes UI server actions; no organization-registry creation or repeatable seeding proposal is exposed.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "per-contributor-aggregation",
           "verdict": "not-applicable",
-          "evidence": "examples/ledgerbox/components/lanes/shell/Foot.tsx:67 Counts derive from the displayed invoice sheet, not independently owned contributor files."
+          "evidence": "examples/ledgerbox/components/lanes/shell/Foot.tsx:67 Counts derive from the displayed invoice sheet, not independently owned contributor files.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "propose-then-adopt",
           "verdict": "not-applicable",
-          "evidence": "examples/ledgerbox/components/lanes/Gate.tsx:54 Confirmation executes a bookkeeping action; it does not adopt a knowledge contribution through a merge."
+          "evidence": "examples/ledgerbox/components/lanes/Gate.tsx:54 Confirmation executes a bookkeeping action; it does not adopt a knowledge contribution through a merge.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "standard-versus-consumer-split",
           "verdict": "not-applicable",
-          "evidence": "examples/ledgerbox/components/lanes/card/Aside.tsx:48 The component renders local invoice contact data, with no mechanism publishing it as reusable organizational guidance."
+          "evidence": "examples/ledgerbox/components/lanes/card/Aside.tsx:48 The component renders local invoice contact data, with no mechanism publishing it as reusable organizational guidance.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "verification-is-contributed",
           "verdict": "not-applicable",
-          "evidence": "examples/ledgerbox/components/lanes/presence.ts:52 The observation measures bridge presence in this page, not the truth of a shared knowledge claim."
+          "evidence": "examples/ledgerbox/components/lanes/presence.ts:52 The observation measures bridge presence in this page, not the truth of a shared knowledge claim.",
+          "carriedFrom": "2026-10-17"
         }
-      ],
-      "withdrawn": {
-        "worker": "d248d074-5cbb-46fc-a0ee-671b2f5b6e1f",
-        "state": "not-applicable",
-        "at": "2026-10-17T01:15:33.397888+00:00",
-        "reason": "reviewer (sonnet): The anchor Lane.tsx:123 is an invoice-lane aria-label line, which is incidental and doesn't show that a knowledge publication or catalog path is absent; the absence search used the wrong terms (contributor, digest)."
-      }
+      ]
     },
     "97743df6-7a6a-4c80-94c5-75d8872b6e12/model-routing": {
       "context": "proving-playbooks-bench",
