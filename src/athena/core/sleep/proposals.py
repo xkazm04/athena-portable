@@ -21,8 +21,8 @@ from datetime import UTC, datetime
 
 from athena.contracts.channel import iso
 from athena.core.brain.store import Brain, ProvenanceError
+from athena.core.sleep import FORGOTTEN_PREFIX
 from athena.core.sleep.book import ProposalRow, SleepBook
-from athena.core.sleep.legs import FORGOTTEN_PREFIX
 
 ACTIONS: tuple[str, ...] = ("keep", "forget")
 

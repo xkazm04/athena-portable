@@ -3,17 +3,18 @@
 from __future__ import annotations
 
 import re
+from datetime import UTC, datetime, timedelta
 from typing import Any
 
 from athena.contracts import ids
 from athena.contracts.channel import iso
 from athena.core.brain import Brain, frontmatter
 from athena.core.recall import recall
-from athena.core.sleep import COMPRESS_EPISODES, FACTS_CAP, SUPERSEDES_CAP
+from athena.core.sleep import COMPRESS_EPISODES, FACTS_CAP, FORGOTTEN_PREFIX, SUPERSEDES_CAP
 from athena.core.sleep.admission import boundary_after
 from athena.core.sleep.book import SleepBook
 from athena.core.sleep.cycle import SleepCycle
-from athena.core.sleep.legs import FORGOTTEN_PREFIX
+from athena.core.sleep.proposals import decide
 from athena.core.sleep.window import Boundary, EpisodeReader, Window
 
 from .conftest import (
@@ -350,3 +351,80 @@ def _created(brain: Brain, node_id: str) -> str:
     node = brain.node(node_id)
     assert node is not None
     return node.created_at
+
+
+def test_a_persons_forget_bars_the_key_until_the_person_writes_it_again(
+    brain: Brain, stamp: Stamp, clock: Clock
+) -> None:
+    """decay-and-forgetting: a deliberate forget bars its key (kind, scope, key - never the
+    wording) from the next cycles; a barred candidate is skipped and counted, and only a person's
+    own write under that key lifts the bar."""
+    book = SleepBook(brain)
+    first = write_episodes(brain, 3, tag="fax", start=datetime.now(UTC) - timedelta(hours=3))
+    fax = brain.write_fact("fax machines", "The user likes fax machines.", sources=[first[0]])
+    proposal = book.open_proposal(ids.mint("cycle"), "forget", [fax.id], "?", now=iso(clock()))
+    assert proposal is not None
+    decide(brain, book, proposal.id, "forget", None, clock=clock)
+    bars = book.bars()
+    assert ("fact", "user", "fax machines") in bars
+    assert ("fact", "world", "fax machines") not in bars, "the bar is the forgotten one's scope"
+
+    # The episodes that grounded it are still there, and the model offers it back - the same key
+    # in other casing and spacing - beside a new fact.
+    door = FakeDoor(
+        compress=answer(
+            {
+                "facts": [
+                    _fact("Fax  Machines", "The user loves fax machines.", [first[1]]),
+                    _fact("printer brand", "The user's printer is a Brother.", [first[1]]),
+                ],
+                "procedurals": [],
+            }
+        ),
+        merge=no_verdicts(),
+    )
+    row, _ = _run(brain, book, door, clock, _window(brain, stamp, clock, book))
+    assert row.status == "completed", row
+    assert row.stats["barred"] == 1
+    assert row.stats["facts_written"] == 1, "the new fact is learned"
+    merged = [prompt for kind, prompt in door.calls if kind == "sleep.merge"]
+    assert all("loves fax machines" not in prompt for prompt in merged), "never even judged"
+    excerpts = [memory.excerpt for memory in recall(brain, "fax machines").items]
+    assert not any("loves fax machines" in excerpt for excerpt in excerpts)
+    (journal,) = (brain.root / "cycles").glob(f"*-{row.id}.md")
+    body = journal.read_text(encoding="utf-8")
+    assert "## Not learned again" in body and "`Fax Machines`" in body
+
+    # The person says it again through the approved door: the bar lifts, and the next cycle may
+    # learn under that key like any other.
+    brain.write_fact("fax machines", "The user likes fax machines after all.", sources=[first[2]])
+    assert ("fact", "user", "fax machines") not in book.bars()
+    again = write_episodes(brain, 2, tag="again")
+    door = FakeDoor(
+        compress=answer(
+            {
+                "facts": [_fact("fax machines", "The user collects fax machines.", [again[0]])],
+                "procedurals": [],
+            }
+        ),
+        merge=no_verdicts(),
+    )
+    row, _ = _run(brain, book, door, clock, _window(brain, stamp, clock, book))
+    assert row.stats["barred"] == 0 and row.stats["facts_written"] == 1
+
+
+def test_only_a_persons_forget_bars_and_only_its_own_key(brain: Brain, clock: Clock) -> None:
+    """No marker, no bar: a supersede bars nothing, and a forget bars its key alone."""
+    book = SleepBook(brain)
+    (episode,) = write_episodes(brain, 1)
+    assert book.bars() == {}
+    old = brain.write_fact("user city", "The user lives in Brno.", sources=[episode])
+    brain.write_fact(
+        "user city", "The user lives in Prague.", sources=[episode], supersedes=[old.id]
+    )
+    assert book.bars() == {}, "a supersede is not a forget"
+    tea = brain.write_fact("user drink", "The user drinks tea.", sources=[episode])
+    proposal = book.open_proposal(ids.mint("cycle"), "forget", [tea.id], "?", now=iso(clock()))
+    assert proposal is not None
+    decide(brain, book, proposal.id, "forget", None, clock=clock)
+    assert set(book.bars()) == {("fact", "user", "user drink")}

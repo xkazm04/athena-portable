@@ -34,6 +34,8 @@ export interface CycleStats {
   contradictions: number;
   faded: number;
   forget_proposed: number;
+  /** Candidates skipped because a person forgot that key: she wanted them back and did not take them. */
+  barred: number;
 }
 
 export interface CycleView {

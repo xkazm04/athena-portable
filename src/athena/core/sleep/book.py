@@ -34,6 +34,7 @@ from athena.core.sleep import (
     FADE_AFTER_D,
     FADE_BATCH,
     FADE_MAX,
+    FORGOTTEN_PREFIX,
     OPEN_PROPOSALS_CAP,
     PROPOSAL_EXPIRE_D,
 )
@@ -66,6 +67,7 @@ STATS_KEYS: tuple[str, ...] = (
     "contradictions",
     "faded",
     "forget_proposed",
+    "barred",
 )
 
 
@@ -437,10 +439,60 @@ class SleepBook:
         )
         return [Existing(str(r[0]), str(r[1]), str(r[2]), _excerpt(str(r[3] or ""))) for r in rows]
 
+    def bars(self) -> dict[tuple[str, str, str], str]:
+        """Every key a person's forget bars from being learned again, as
+        ``(kind, scope, normalized key) -> the marker's id`` (ADR 0143).
+
+        A forget writes a ``forgotten:`` marker that supersedes the memory; the episodes that
+        grounded it stay, so the next cycle would derive it again and the person would see the
+        correction reversed. The bar is keyed on the forgotten memory's own kind, scope and key -
+        never on its wording, which would also bar a restatement's negation. Only the person lifts
+        it: a live memory under the same kind, scope and key written after the marker (an
+        approved ``core.write_fact``; a cycle cannot write one, it is barred) ends the bar. A
+        fade, an expiry or a cap never writes a marker, so none of them bars anything.
+        """
+        rows = self._all(
+            """SELECT m.id, m.created_at, o.kind,
+                      COALESCE(ofc.scope, opr.scope, ''),
+                      COALESCE(ofc.fact_key, opr.trigger_pattern, '')
+               FROM companion_fact mf
+               JOIN companion_node m ON m.id = mf.id
+               JOIN companion_supersede s ON s.node_id = m.id
+               JOIN companion_node o ON o.id = s.superseded_id
+               LEFT JOIN companion_fact ofc ON ofc.id = o.id
+               LEFT JOIN companion_procedural opr ON opr.id = o.id
+               WHERE mf.fact_key LIKE ? AND o.kind IN ('fact', 'procedural')""",
+            (FORGOTTEN_PREFIX + "%",),
+        )
+        if not rows:
+            return {}
+        newest: dict[tuple[str, str, str], tuple[str, str]] = {}
+        for marker, created, kind, scope, key in rows:
+            mark = (str(kind), str(scope), norm_key(str(key)))
+            if mark not in newest or str(created) > newest[mark][1]:
+                newest[mark] = (str(marker), str(created))
+        written: dict[tuple[str, str, str], str] = {}
+        for kind, scope, key, created in self._all(
+            f"""SELECT n.kind, COALESCE(fc.scope, pr.scope, ''),
+                       COALESCE(fc.fact_key, pr.trigger_pattern, ''), n.created_at
+                FROM companion_node n
+                LEFT JOIN companion_fact fc ON fc.id = n.id
+                LEFT JOIN companion_procedural pr ON pr.id = n.id
+                WHERE {_LIVE}"""
+        ):
+            mark = (str(kind), str(scope), norm_key(str(key)))
+            if mark in newest and str(created) > written.get(mark, ""):
+                written[mark] = str(created)
+        return {
+            mark: marker
+            for mark, (marker, created) in newest.items()
+            if written.get(mark, "") <= created
+        }
+
     def same_key(self, kind: str, key: str) -> Existing | None:
         """A live memory of ``kind`` whose key (or trigger) is ``key``, ignoring case and spacing:
         the deterministic prefilter the merge degrades to when its leg fails."""
-        wanted = _norm(key)
+        wanted = norm_key(key)
         column, table = (
             ("fact_key", "companion_fact")
             if kind == "fact"
@@ -450,7 +502,7 @@ class SleepBook:
             f"""SELECT n.id, t.{column}, n.body_excerpt
                 FROM {table} t JOIN companion_node n ON n.id = t.id WHERE {_LIVE}"""
         ):
-            if _norm(str(found)) == wanted:
+            if norm_key(str(found)) == wanted:
                 return Existing(str(node_id), kind, str(found), _excerpt(str(body or "")))
         return None
 
@@ -515,5 +567,7 @@ def _excerpt(body: str) -> str:
     return flat if len(flat) <= EXCERPT_CHARS else flat[: EXCERPT_CHARS - 1] + "…"
 
 
-def _norm(key: str) -> str:
+def norm_key(key: str) -> str:
+    """A key or trigger as the merge prefilter and the forget bar compare it: case and spacing
+    do not make two keys different."""
     return " ".join(key.casefold().split())

@@ -30,6 +30,7 @@ from athena.core import fence
 from athena.core.brain.store import FACT_SCOPES, PROCEDURAL_SCOPES
 from athena.core.sleep import (
     FACTS_CAP,
+    FORGOTTEN_PREFIX,
     LEG_TIMEOUT_S,
     PROCEDURALS_CAP,
     SHORTLIST,
@@ -40,8 +41,6 @@ from athena.core.sleep.window import Read
 SleepLegKind = Literal["sleep.compress", "sleep.merge"]
 #: The ledger conversation every sleep leg is recorded under.
 CONVERSATION = "sleep"
-#: The key prefix of the marker a person's "forget" writes; a model may not mint one.
-FORGOTTEN_PREFIX = "forgotten:"
 #: Characters of a key or a trigger, and of a value or a rule.
 KEY_CHARS = 120
 VALUE_CHARS = 1000

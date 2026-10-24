@@ -220,6 +220,14 @@ thresholds. It adapts the cycle to markdown-is-truth and to write-once replicati
    gone. A person's `forget` writes a fact `forgotten:<key>` with `supersedes: [id]` and
    `retired: true`, which cites the forgotten memory's own live episodes. It is a normal write, so
    it replicates and hides the same memory on every PC. The forgotten file stays.
+   **The marker also bars the key** (amended 2026-10-24 after `/conform` found forgetting had no
+   bar on re-derivation). The episodes that grounded the memory stay, so without a bar the next
+   cycle would learn it again and the person would see the correction reversed. Before the merge,
+   a cycle drops every candidate whose kind, scope and key (case and spacing ignored) a marker
+   bars, counts it as `barred` and lists it in the journal under "Not learned again". The bar is
+   keyed on the key, never the wording, which would also bar a restatement's negation. Only the
+   person lifts it, by writing under that key again through an approved `core.write_fact`; a cycle
+   never can, and a fade, a cap or a supersede writes no marker, so none of them bars anything.
 9. **The record.** Runtime tables, outside `INDEX_TABLES`: `companion_cycle`,
    `companion_proposal`, `companion_recall_seen`, `companion_fade`. The journal is
    `cycles/<date>-<cyc id>.md`, a readable markdown record of what was read, written, confirmed,

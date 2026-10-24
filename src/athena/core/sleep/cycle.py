@@ -44,7 +44,14 @@ from athena.core.sleep import (
     SHORTLIST,
     SUPERSEDES_CAP,
 )
-from athena.core.sleep.book import CycleRow, CycleStatus, Existing, SleepBook, empty_stats
+from athena.core.sleep.book import (
+    CycleRow,
+    CycleStatus,
+    Existing,
+    SleepBook,
+    empty_stats,
+    norm_key,
+)
 from athena.core.sleep.legs import Candidate, Judged, LegDoor, compress, merge
 from athena.core.sleep.window import Take, Window
 
@@ -60,6 +67,7 @@ class _Journal:
     confirmed: list[str] = field(default_factory=list)
     refused: list[str] = field(default_factory=list)
     proposals: list[str] = field(default_factory=list)
+    barred: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
 
 
@@ -125,7 +133,7 @@ class SleepCycle:
                 row = self.book.get(cycle_id)
                 assert row is not None
                 return row
-            candidates = compressed.candidates
+            candidates = self._unbarred(compressed.candidates, stats, journal)
             stats.update(
                 facts_dropped=compressed.facts_dropped,
                 procedurals_dropped=compressed.procedurals_dropped,
@@ -280,6 +288,28 @@ class SleepCycle:
             return None
         return ref
 
+    def _unbarred(
+        self, candidates: list[Candidate], stats: dict[str, Any], journal: _Journal
+    ) -> list[Candidate]:
+        """The candidates a person's forget does not bar (``SleepBook.bars``), before the merge
+        sees any: a barred one is skipped, counted and journalled, never written or judged, so
+        the person can see how often she wanted it back."""
+        bars = self.book.bars()
+        if not bars:
+            return candidates
+        kept: list[Candidate] = []
+        for candidate in candidates:
+            marker = bars.get((candidate.kind, candidate.scope, norm_key(candidate.key)))
+            if marker is None:
+                kept.append(candidate)
+                continue
+            stats["barred"] = int(stats.get("barred", 0)) + 1
+            journal.barred.append(
+                f"{candidate.kind} `{_tick(candidate.key)}`: forgotten at a person's decision "
+                f"({marker}), so not learned again"
+            )
+        return kept
+
     def _by_key(self, candidates: list[Candidate]) -> dict[int, Judged]:
         """The deterministic prefilter a failed merge degrades to: an exact key is a duplicate."""
         verdicts: dict[int, Judged] = {}
@@ -378,6 +408,9 @@ def _render(
     if journal.confirmed:
         lines += ["", "## Already known", ""]
         lines += [f"- {line}" for line in journal.confirmed]
+    if journal.barred:
+        lines += ["", "## Not learned again", ""]
+        lines += [f"- {line}" for line in journal.barred]
     lines += [
         "",
         "## Fading",

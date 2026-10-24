@@ -50,6 +50,7 @@ __all__ = [
     "FAILED_BACKOFF_H",
     "FIRST_WINDOW_D",
     "FLOOR_H",
+    "FORGOTTEN_PREFIX",
     "LEG_TIMEOUT_S",
     "MIN_CHARS",
     "OPEN_PROPOSALS_CAP",
@@ -123,3 +124,6 @@ FADE_BATCH = 500
 #: Open proposals at most, and how long one stays open before it expires.
 OPEN_PROPOSALS_CAP = 20
 PROPOSAL_EXPIRE_D = 14
+#: The key prefix of the marker a person's "forget" writes. A model may not mint one, and the
+#: marker is also the bar a cycle consults before it learns that key again (``SleepBook.bars``).
+FORGOTTEN_PREFIX = "forgotten:"

@@ -122,6 +122,12 @@ describe("the last sleep", () => {
     expect(statsWords({ episodes_in: 1, facts_written: 1 }, "running")).toBe("read 1 episode · wrote 1 fact");
   });
 
+  it("says what a person's forget kept forgotten", () => {
+    expect(statsWords({ episodes_in: 3, facts_written: 1, barred: 2 }, "completed")).toBe(
+      "read 3 episodes · wrote 1 fact · 2 you had her forget left forgotten",
+    );
+  });
+
   it("reads a reason it does not know as sent", () => {
     const cycle = sleepFixtures.typical!.state.cycles[0]!;
     expect(lastWords({ ...cycle, reason: "moon_phase", stats: null }, DEVICES_NOW)).toBe("Last sleep, 5 h ago: finished, because moon_phase.");
