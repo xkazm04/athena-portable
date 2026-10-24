@@ -2169,12 +2169,11 @@
           "changedAt": "2026-10-15",
           "confidence": "strong",
           "state": "deviation",
-          "evidence": "src/athena/core/catalog.py:370 re-merge silently adopts a page's changed descriptions and reversible/side_effects flags (class re-derived at :349), so a tool can move GATED->AUTO with no pin, diff or human review",
-          "evaluatedAt": "2026-10-14",
-          "evaluatedAgainst": "sha256-b2:afba7a2b8c938ae1",
-          "evaluatedRevision": 31,
-          "revisionsBehind": 3,
-          "stale": true
+          "evidence": "src/athena/core/catalog.py:370 A page that registers again has its whole entry set replaced in one assignment, with the class worked out afresh from the new flags (catalog.py:349). No old description or class is pinned, compared or shown to the user, so a changed description or a reversible/side_effects flip (GATED->AUTO) is adopted without anyone seeing it. That is the 'pin and diff descriptions across refreshes, surface changes to the human' rule in untrusted-result-handling.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:ed8e615f51454325",
+          "evaluatedRevision": 34,
+          "revisionsBehind": 3
         },
         {
           "subject": "quality-gates",
@@ -2807,12 +2806,11 @@
           "changedAt": "2026-10-15",
           "confidence": "probable",
           "state": "deviation",
-          "evidence": "examples/demo-kit/src/webmcp/door.ts:27 ignores the maxItems that types.ts:104 publishes, so an over-cap ids list passes the door and is silently sliced while reporting success (tool-schema-design); door.ts:92 awaits the handler with no time limit and hooks.ts:89 drops the execute signal, so a hung handler never answers (server-composition)",
-          "evaluatedAt": "2026-10-14",
-          "evaluatedAgainst": "sha256-b2:bf4c5f0af065bc12",
-          "evaluatedRevision": 32,
-          "revisionsBehind": 2,
-          "stale": true
+          "evidence": "examples/demo-kit/src/webmcp/door.ts:136 The door now forwards the caller's abort signal (hooks.ts:113) but has no clock of its own. When an agent calls execute without a signal, the abort promise never resolves and the door waits on a hung handler with no limit. server-composition makes timeouts door policy, enforced uniformly, not a courtesy left to each caller.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:ed8e615f51454325",
+          "evaluatedRevision": 34,
+          "revisionsBehind": 2
         },
         {
           "subject": "prompt-assembly",
@@ -4965,12 +4963,11 @@
           "changedAt": "2026-10-15",
           "confidence": "strong",
           "state": "not-applicable",
-          "evidence": "apps/desktop/src/scenes/surface/model.ts:5 the Surface is a mirror that holds no run, and the Mind depth is settings; no tool is published, discovered, invoked or read back anywhere in this context (apps and accounts are counted as lit/connected booleans only), so the subject precondition of a tool-protocol boundary does not hold here",
-          "evaluatedAt": "2026-10-14",
-          "evaluatedAgainst": "sha256-b2:afba7a2b8c938ae1",
-          "evaluatedRevision": 31,
-          "revisionsBehind": 3,
-          "stale": true
+          "evidence": "apps/desktop/src/scenes/surface/model.ts:30 The Surface model counts apps and accounts only as enabled/connected booleans, and the Mind scene is settings (the mic grant). Searching the mind, surface and shared scene directories found no tool registration, schema, listing or invocation, so these views do not touch a tool-protocol boundary.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:ed8e615f51454325",
+          "evaluatedRevision": 34,
+          "revisionsBehind": 3
         },
         {
           "subject": "companion-identity",
@@ -6634,13 +6631,12 @@
           "revision": 34,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "conformant",
-          "evidence": "examples/hirelane/lib/manifest.ts:205 publishes set_filter role as optional and manifest.ts:271 carries required:false into the schema (examples/demo-kit/src/webmcp/types.ts:119), so no-argument calls are valid; the stage enum (manifest.ts:215) is enforced at the demo-kit door (examples/demo-kit/src/webmcp/door.ts:30) and unknown roles are refused with the valid ids (examples/hirelane/components/board/tools/roster.ts:91)",
-          "evaluatedAt": "2026-10-14",
-          "evaluatedAgainst": "sha256-b2:bf4c5f0af065bc12",
-          "evaluatedRevision": 32,
-          "revisionsBehind": 2,
-          "stale": true
+          "state": "deviation",
+          "evidence": "examples/hirelane/lib/manifest.ts:63 role_id is required by read_applicants and read_shortlist, and its legal values form a closed set the manifest itself lists, yet it is published as a free string with the set written only in prose. The door cannot reject a wrong role and the model is not taught the vocabulary when it picks the tool, against 'enums over free strings wherever a closed set exists'.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:ed8e615f51454325",
+          "evaluatedRevision": 34,
+          "revisionsBehind": 2
         },
         {
           "subject": "generated-workflow-candidates",
@@ -8509,11 +8505,7 @@
           "confidence": "strong",
           "state": "not-applicable",
           "evidence": "src/athena/proving/server/app.py:32 the trigger page is a stdlib ThreadingHTTPServer, a human-facing JSON/HTML API with one bearer-gated POST (app.py:278); no MCP host/client/server or model-read tool surface, and src/athena/proving/gauntlet/__init__.py:12 records \"no MCP channel exists\"; mcp-tools excludes generic RPC no model reads",
-          "evaluatedAt": "2026-10-14",
-          "evaluatedAgainst": "sha256-b2:afba7a2b8c938ae1",
-          "evaluatedRevision": 31,
-          "revisionsBehind": 3,
-          "stale": true
+          "evaluatedAt": "2026-10-14"
         },
         {
           "subject": "test-harness",

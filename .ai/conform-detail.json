@@ -5700,6 +5700,169 @@
       "evaluatedTs": "2026-10-24T01:03:12.559Z",
       "worker": "13e71008-9d2e-417d-ae88-ab9687c44f7a",
       "techniques": []
+    },
+    "b22cae8a-16ec-45ac-b2a6-3a502a91c895/mcp-tools": {
+      "context": "core-gate-and-ledger",
+      "subject": "mcp-tools",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T01:24:54.429Z",
+      "worker": "af054293-efcc-4bd7-a473-7d876d50931d",
+      "techniques": [
+        {
+          "technique": "untrusted-result-handling",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/catalog.py:370 A re-merge silently replaces descriptions and the derived class. routes.py:547 pins only the page origin, not the catalog content, and nothing diffs the old and new manifests."
+        },
+        {
+          "technique": "server-composition",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/catalog.py:14 One registry: the listing is generated from it, and validate/classify both look tools up through Catalog.entries, so listed and callable cannot drift apart. The listing order is fixed (by class, then by name, :467)."
+        },
+        {
+          "technique": "tool-schema-design",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/catalog.py:357 The enforced validator is built from the same params_schema the capability block publishes. Rejections are in-band, with a reason and a detail sentence."
+        },
+        {
+          "technique": "client-integration",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/approvals.py:19 The consent seat: a GATED call runs only after the user resolves a single-use, expiring approval row that the model cannot address (catalog.py:171)."
+        },
+        {
+          "technique": "suspendable-request-classes",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/catalog.py:489 Only the invocation path waits on a person: the call ends by filing a card and is replayed later. Building the listing (render_capabilities) is pure and never blocks."
+        }
+      ],
+      "superseded": [
+        {
+          "state": "deviation",
+          "evidence": "src/athena/core/catalog.py:370 re-merge silently adopts a page's changed descriptions and reversible/side_effects flags (class re-derived at :349), so a tool can move GATED->AUTO with no pin, diff or human review",
+          "evaluatedAt": "2026-10-14",
+          "worker": null,
+          "reason": "replaced by af054293-efcc-4bd7-a473-7d876d50931d"
+        }
+      ]
+    },
+    "9e179811-457d-4d43-865e-87faad968f56/mcp-tools": {
+      "context": "demo-kit-ui-webmcp",
+      "subject": "mcp-tools",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T01:24:54.429Z",
+      "worker": "af054293-efcc-4bd7-a473-7d876d50931d",
+      "techniques": [
+        {
+          "technique": "server-composition",
+          "verdict": "deviation",
+          "evidence": "examples/demo-kit/src/webmcp/door.ts:136 Handler faults are caught in-band (door.ts:147) and results are capped (door.ts:84), but the timeout lives only on the requester (packages/athena-bridge/inject.js:122). A native browser agent that sends no signal has no bound."
+        },
+        {
+          "technique": "tool-schema-design",
+          "verdict": "conformant",
+          "evidence": "examples/demo-kit/src/webmcp/door.ts:35 The published maxItems is now enforced at the door (the earlier deviation is fixed). Objects are closed (types.ts:143) and extra keys are refused in-band."
+        },
+        {
+          "technique": "ambient-selection-is-not-an-argument",
+          "verdict": "conformant",
+          "evidence": "examples/demo-kit/src/webmcp/zoomTools.ts:93 read_view turns the on-screen focus into explicit ids. Later calls name an id, and an unknown id is a typed refusal that lists the available ids, never a fallback."
+        }
+      ],
+      "superseded": [
+        {
+          "state": "deviation",
+          "evidence": "examples/demo-kit/src/webmcp/door.ts:27 ignores the maxItems that types.ts:104 publishes, so an over-cap ids list passes the door and is silently sliced while reporting success (tool-schema-design); door.ts:92 awaits the handler with no time limit and hooks.ts:89 drops the execute signal, so a hung handler never answers (server-composition)",
+          "evaluatedAt": "2026-10-14",
+          "worker": null,
+          "reason": "replaced by af054293-efcc-4bd7-a473-7d876d50931d"
+        }
+      ]
+    },
+    "b5d94170-12ef-41ee-af0a-902add774f7d/mcp-tools": {
+      "context": "proving-hosted-server",
+      "subject": "mcp-tools",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T01:24:54.429Z",
+      "techniques": [],
+      "superseded": [
+        {
+          "state": "not-applicable",
+          "evidence": "src/athena/proving/server/app.py:32 the trigger page is a stdlib ThreadingHTTPServer, a human-facing JSON/HTML API with one bearer-gated POST (app.py:278); no MCP host/client/server or model-read tool surface, and src/athena/proving/gauntlet/__init__.py:12 records \"no MCP channel exists\"; mcp-tools excludes generic RPC no model reads",
+          "evaluatedAt": "2026-10-14",
+          "worker": null,
+          "reason": "replaced by af054293-efcc-4bd7-a473-7d876d50931d"
+        }
+      ],
+      "withdrawn": {
+        "worker": "af054293-efcc-4bd7-a473-7d876d50931d",
+        "state": "not-applicable",
+        "at": "2026-10-24T01:25:32.907071+00:00",
+        "reason": "reviewer (sonnet): The anchor app.py:34 is only an import line (`from athena.harness.tokenfactory import key_present`) and does not show that no tool boundary exists. The server's own text mentions capabilities, forged tool results and gated tools, so the claim rests on a grep with narrow protocol terms, not on the ci"
+      }
+    },
+    "ec3c6a55-2ad9-47a0-8616-02544fcd0f1e/mcp-tools": {
+      "context": "desktop-scenes-mind-surface",
+      "subject": "mcp-tools",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T01:24:54.429Z",
+      "worker": "af054293-efcc-4bd7-a473-7d876d50931d",
+      "techniques": [],
+      "superseded": [
+        {
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/surface/model.ts:5 the Surface is a mirror that holds no run, and the Mind depth is settings; no tool is published, discovered, invoked or read back anywhere in this context (apps and accounts are counted as lit/connected booleans only), so the subject precondition of a tool-protocol boundary does not hold here",
+          "evaluatedAt": "2026-10-14",
+          "worker": null,
+          "reason": "replaced by af054293-efcc-4bd7-a473-7d876d50931d"
+        }
+      ]
+    },
+    "6c17278c-ed66-4d70-8a4f-4202662f1613/mcp-tools": {
+      "context": "hirelane-model-and-lib",
+      "subject": "mcp-tools",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T01:24:54.429Z",
+      "worker": "af054293-efcc-4bd7-a473-7d876d50931d",
+      "techniques": [
+        {
+          "technique": "tool-schema-design",
+          "verdict": "deviation",
+          "evidence": "examples/hirelane/lib/manifest.ts:63 The closed role set lives in prose, not as an enum. The handler does refuse unknown roles in-band (roster.ts:91), but search.ts:79 returns that refusal as an empty bounded envelope with an error key and no ok:false flag."
+        },
+        {
+          "technique": "server-composition",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/lib/manifest.ts:243 One manifest is the authority: every registration spreads registration(name), which is typed to the manifest and throws on an unlisted name (:265)."
+        },
+        {
+          "technique": "ambient-selection-is-not-an-argument",
+          "verdict": "conformant",
+          "evidence": "examples/hirelane/components/board/tools/BoardTools.tsx:15 Group and candidate ids come from read_view and search_candidates, and later calls take those explicit ids."
+        },
+        {
+          "technique": "budgeted-partial-response",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/tools/search.ts:21 The reads are bounded, cheap, in-memory lookups over seeded data, sized by page with a showing/of count. The technique's own rule says such calls need no budget."
+        }
+      ],
+      "superseded": [
+        {
+          "state": "conformant",
+          "evidence": "examples/hirelane/lib/manifest.ts:205 publishes set_filter role as optional and manifest.ts:271 carries required:false into the schema (examples/demo-kit/src/webmcp/types.ts:119), so no-argument calls are valid; the stage enum (manifest.ts:215) is enforced at the demo-kit door (examples/demo-kit/src/webmcp/door.ts:30) and unknown roles are refused with the valid ids (examples/hirelane/components/board/tools/roster.ts:91)",
+          "evaluatedAt": "2026-10-14",
+          "worker": null,
+          "reason": "replaced by af054293-efcc-4bd7-a473-7d876d50931d"
+        }
+      ]
     }
   }
 }
