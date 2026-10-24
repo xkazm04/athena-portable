@@ -6216,6 +6216,50 @@
       "evaluatedTs": "2026-10-24T02:16:30.984Z",
       "worker": "61f68711-bae0-4446-a7e4-aceb4c7b8dc1",
       "techniques": []
+    },
+    "ec3c6a55-2ad9-47a0-8616-02544fcd0f1e/agent-memory": {
+      "context": "desktop-scenes-mind-surface",
+      "subject": "agent-memory",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T02:34:01.437Z",
+      "techniques": [],
+      "superseded": [
+        {
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:4 the Mind depth is the Setup surface (engine, brain folder, look, data, mic); its only memory touch is a folder-path setting (view.tsx:309); no capture, consolidation, recall or governance of memory items exists in this context",
+          "evaluatedAt": "2026-10-14",
+          "worker": null,
+          "reason": "replaced by dd94e913-590a-4dbf-bc03-2dd806457c0c"
+        }
+      ],
+      "withdrawn": {
+        "worker": "dd94e913-590a-4dbf-bc03-2dd806457c0c",
+        "state": "not-applicable",
+        "at": "2026-10-24T02:34:24.540093+00:00",
+        "reason": "reviewer (sonnet): The anchor (view.tsx:104) shows the opposite of absence: the scene configures the brain folder where episodes, facts and playbooks are stored. view.tsx:335 says 'Memory is markdown on disk', and the Devices table shows memory sync state (grants, pulled count, last pull). The claim rests partly on de"
+      }
+    },
+    "b96add2f-57d0-4373-8741-748e5560658e/agent-memory": {
+      "context": "tidycrm-spatial-model-tools",
+      "subject": "agent-memory",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T02:34:01.437Z",
+      "worker": "dd94e913-590a-4dbf-bc03-2dd806457c0c",
+      "techniques": []
+    },
+    "9e179811-457d-4d43-865e-87faad968f56/agent-memory": {
+      "context": "demo-kit-ui-webmcp",
+      "subject": "agent-memory",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T02:34:01.437Z",
+      "worker": "dd94e913-590a-4dbf-bc03-2dd806457c0c",
+      "techniques": []
     }
   }
 }

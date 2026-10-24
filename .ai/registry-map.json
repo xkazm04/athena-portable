@@ -2841,7 +2841,11 @@
           "revision": 51,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/demo-kit/src/db/index.ts:2 The demo kit's store holds app domain data and a human-facing activity log, not agent memory. Grepping examples/demo-kit/src for memory, recall, episode and brain found nothing; the 'provenance', 'consolidation' and 'superseded' hits are about the activity strip, a refactor round and zoom flight state.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:4f054116d66a9495",
+          "evaluatedRevision": 51
         },
         {
           "subject": "voice-io",
@@ -4945,11 +4949,7 @@
           "confidence": "strong",
           "state": "not-applicable",
           "evidence": "apps/desktop/src/scenes/mind/view.tsx:4 the Mind depth is the Setup surface (engine, brain folder, look, data, mic); its only memory touch is a folder-path setting (view.tsx:309); no capture, consolidation, recall or governance of memory items exists in this context",
-          "evaluatedAt": "2026-10-14",
-          "evaluatedAgainst": "sha256-b2:7770d30ff5df3c25",
-          "evaluatedRevision": 48,
-          "revisionsBehind": 3,
-          "stale": true
+          "evaluatedAt": "2026-10-14"
         },
         {
           "subject": "mcp-tools",
@@ -9332,7 +9332,11 @@
           "revision": 51,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/tools/read.ts:2 The WebMCP tools here expose app data (tables, deviations) for an agent to read. Grepping components/blocks for memory, recall, remember, consolidat, supersed, provenance, episode and brain found nothing, so no agent-memory store or pipeline exists in this context.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:4f054116d66a9495",
+          "evaluatedRevision": 51
         },
         {
           "subject": "test-input-generation",
