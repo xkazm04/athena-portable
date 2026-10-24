@@ -32,6 +32,7 @@ import {
   type PeerView,
   type TurnFrame,
 } from "@/lib/fleet";
+import type { TasksView, TaskView } from "@/lib/tasks";
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -362,8 +363,30 @@ export class DaemonApi {
    * Stop the turn running for `origin` (ADR 0115). `stopped` is false when none of its turns was
    * running. A card the turn already filed is untouched and stays answerable.
    */
-  stop(origin: string): Promise<{ ok: boolean; stopped: boolean }> {
-    return this.json("POST", "/run/stop", { origin });
+  stop(origin: string, conversationId: string | null = null): Promise<{ ok: boolean; stopped: boolean }> {
+    return this.json("POST", "/run/stop", { origin, conversation_id: conversationId });
+  }
+
+  // -- delegated tasks (fleet-surfaces, ADR 0141): `/tasks*` -----------------------------------
+
+  /** Active tasks and those finished in the last day, newest first, with the admission numbers. */
+  tasks(): Promise<TasksView> {
+    return this.json("GET", "/tasks");
+  }
+
+  /** Take the oldest queued task to run here, or `null` when none is queued or the cap is full. */
+  claimTask(): Promise<{ task: TaskView | null }> {
+    return this.json("POST", "/tasks/claim", {});
+  }
+
+  /** Report how a running task ended. The daemon tells its parent thread. */
+  finishTask(taskId: string, status: "done" | "failed", result: string | null, error: string | null): Promise<{ task: TaskView }> {
+    return this.json("POST", `/tasks/${encodeURIComponent(taskId)}/finish`, { status, result, error });
+  }
+
+  /** Kill a queued or running task. `stopped` is false when it had already ended. */
+  stopTask(taskId: string): Promise<{ stopped: boolean }> {
+    return this.json("POST", `/tasks/${encodeURIComponent(taskId)}/stop`, {});
   }
 
   // -- the fleet (ADR 0140): `/devices*`, `/events`, `/remote/*` --------------------------------

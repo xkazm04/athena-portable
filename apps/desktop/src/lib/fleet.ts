@@ -15,6 +15,7 @@
  */
 import { eventFromJson, type ChannelEvent } from "@/lib/events";
 import type { ExecuteRow } from "@/lib/api";
+import type { TaskView } from "@/lib/tasks";
 
 export type Grant = "chat" | "approve" | "memory";
 export const GRANTS: readonly Grant[] = ["chat", "approve", "memory"];
@@ -40,7 +41,16 @@ export interface PeerView {
   last_seen: string | null;
   /** Optional: a daemon from before replication sends none, which reads as `null`. */
   memory?: MemoryStatus | null;
+  /** The presence probe's last verdict (fleet-surfaces WP2), `null` before the first probe. Optional
+   * only because a daemon from before the probe sends none, which reads as `null`. */
+  presence?: Presence | null;
+  /** When `presence` was last decided (ISO), `null` before the first probe. */
+  presence_at?: string | null;
 }
+
+/** Online: an authorized hello answered. Asleep: the overlay sees the device, Athena there does not
+ * answer. Unreachable: neither. */
+export type Presence = "online" | "asleep" | "unreachable";
 
 /** `PairingRecord.pending_view()`. `pair_back` is a PC this one joined, asking to be let in here. */
 export interface PendingView {
@@ -139,9 +149,10 @@ export type BusEvent =
   | RemoteDecided
   | PairOpened
   | { kind: "peer.changed"; peer_id: string | null }
-  | { kind: "pair.requested"; pending: PendingView };
+  | { kind: "pair.requested"; pending: PendingView }
+  | { kind: "task.changed"; task: TaskView };
 
-const BUS_KINDS = new Set(["remote.message", "remote.decided", "peer.changed", "pair.requested", "pair.opened"]);
+const BUS_KINDS = new Set(["remote.message", "remote.decided", "peer.changed", "pair.requested", "pair.opened", "task.changed"]);
 
 /** One `/events` frame, or `null` for a kind this window does not act on. Never throws on a kind. */
 export function busEventFromJson(raw: string): BusEvent | null {
