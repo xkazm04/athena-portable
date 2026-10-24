@@ -1,0 +1,155 @@
+{
+ "schema": "conform-run/1",
+ "worker": "13e71008-9d2e-417d-ae88-ab9687c44f7a",
+ "subject": "prompt-assembly",
+ "evaluatedAt": "2026-10-24T01:03:12.559593+00:00",
+ "provider": "claude",
+ "model": "claude-opus-5-5",
+ "pairs": [
+  {
+   "context": "browser-lane",
+   "subject": "prompt-assembly",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "src/athena/lane/turn_frame.py:147 FrameBuilder clears its 'what the model was shown' baseline only when the disabled-origins switch changes. The CLI harness opens a new session on any change to the static half, for example a connector connect or disconnect that re-merges the catalog, so a fresh session can be sent a delta that says 'Nothing moved since the last turn; the state you were last shown still holds' about state it was never shown.",
+   "techniques": [
+    {
+     "technique": "layered-composition",
+     "verdict": "conformant",
+     "evidence": "src/athena/lane/turn_frame.py:149 The lane passes typed inputs (host_state, tool_results, recall, pending_decisions) to the single composer and never concatenates prompt text itself."
+    },
+    {
+     "technique": "capability-documentation",
+     "verdict": "conformant",
+     "evidence": "src/athena/lane/ports.py:64 The capability block is rendered by the catalog, the same registry the gate dispatches against. The lane never writes capability prose."
+    },
+    {
+     "technique": "context-budgeting",
+     "verdict": "conformant",
+     "evidence": "src/athena/lane/turn_frame.py:47 Each host tool result gets its own named cap and is announced as '(showing N of M)'. The cap is in characters, not tokens, and is stated as such."
+    },
+    {
+     "technique": "variable-interpolation",
+     "verdict": "conformant",
+     "evidence": "src/athena/lane/turn_frame.py:20 Tool results are classed as untrusted where they are declared, not at the call site. The test at line 211 asserts block.untrusted."
+    },
+    {
+     "technique": "cache-breakpoint-allocation",
+     "verdict": "conformant",
+     "evidence": "tests/lane/test_turn_frame.py:214 Anything that can change between turns is kept out of the static half, and a test enforces that split."
+    },
+    {
+     "technique": "live-attachment-delta-resharing",
+     "verdict": "conformant",
+     "evidence": "src/athena/lane/browser_lane.py:264 After a failed turn the delta base stays at what the model actually saw; it is not moved to what was merely sent."
+    },
+    {
+     "technique": "consumer-coupled-decoration",
+     "verdict": "conformant",
+     "evidence": "src/athena/lane/browser_lane.py:13 The per-episode [host:] [project:] tier markers name the consumer that reads them: grouping the record by app, project and tier."
+    },
+    {
+     "technique": "fingerprinting-and-cache-keys",
+     "verdict": "deviation",
+     "evidence": "src/athena/lane/turn_frame.py:147 The harness decides staleness from the full static text (cli_harness.py:342). The lane's session state (the delta baseline) uses a narrower key, disabled_origins, so a catalog or law change makes the session stale without resetting the baseline."
+    },
+    {
+     "technique": "continuation-prompts",
+     "verdict": "deviation",
+     "evidence": "src/athena/lane/turn_frame.py:175 forget() is the lost-session rebuild path, but nothing in src/ calls it (rg found callers only in tests). A dropped or reseeded session therefore gets a delta prompt instead of a whole picture."
+    }
+   ],
+   "registryProposal": "Techniques about deltas against what the model was shown (live-attachment-delta-resharing, continuation-prompts) could say outright that the delta base has to be invalidated by the same fingerprint that decides whether the session is reused. When the two are keyed separately, the code is correct per technique but the system is still inconsistent."
+  },
+  {
+   "context": "atlas-lanes-drawing",
+   "subject": "prompt-assembly",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Tools.tsx:24 The drawing's only surface facing a model is two WebMCP tool registrations (read_turn and set_turn). A search of archify-lanes and examples/atlas/test found no system prompt, token budget, compaction or context window. Its 'prompt' hits are diagram labels in workflow.ts, script.ts and kinds.ts that describe Athena's composer, not code that builds a prompt.",
+   "techniques": [],
+   "absenceTerms": [
+    "systemPrompt",
+    "system_prompt",
+    "max_tokens",
+    "compaction",
+    "contextWindow"
+   ]
+  },
+  {
+   "context": "desktop-app-shell-ui",
+   "subject": "prompt-assembly",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "apps/desktop/src/components/Button.tsx:2 This context is window entry points and design-system primitives (buttons, badges, tables, form fields, CSS tokens). A search of apps/desktop/src found no system prompt, token budget, compaction or context window; prompts are built in the Python composer, not here.",
+   "techniques": [],
+   "absenceTerms": [
+    "systemPrompt",
+    "system_prompt",
+    "max_tokens",
+    "compaction",
+    "contextWindow"
+   ]
+  }
+ ],
+ "declined": [
+  {
+   "subject": "prompt-assembly",
+   "context": "demo-kit-ui-webmcp",
+   "reason": "the seat returned unknown"
+  },
+  {
+   "subject": "prompt-assembly",
+   "context": "hirelane-model-and-lib",
+   "reason": "the seat returned unknown"
+  }
+ ],
+ "consults": [
+  {
+   "ts": "2026-10-24T01:03:12.559593+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "prompt-assembly"
+   ],
+   "techniques": [
+    "cache-breakpoint-allocation",
+    "capability-documentation",
+    "consumer-coupled-decoration",
+    "context-budgeting",
+    "continuation-prompts",
+    "fingerprinting-and-cache-keys",
+    "layered-composition",
+    "live-attachment-delta-resharing",
+    "variable-interpolation"
+   ],
+   "deviations": 1,
+   "context": "browser-lane",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  },
+  {
+   "ts": "2026-10-24T01:03:12.559593+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "prompt-assembly"
+   ],
+   "techniques": [],
+   "deviations": 0,
+   "context": "atlas-lanes-drawing",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  },
+  {
+   "ts": "2026-10-24T01:03:12.559593+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "prompt-assembly"
+   ],
+   "techniques": [],
+   "deviations": 0,
+   "context": "desktop-app-shell-ui",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  }
+ ]
+}

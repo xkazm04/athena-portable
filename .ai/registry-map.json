@@ -877,7 +877,11 @@
           "revision": 44,
           "changedAt": "2026-10-14",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/Tools.tsx:24 The drawing's only surface facing a model is two WebMCP tool registrations (read_turn and set_turn). A search of archify-lanes and examples/atlas/test found no system prompt, token budget, compaction or context window. Its 'prompt' hits are diagram labels in workflow.ts, script.ts and kinds.ts that describe Athena's composer, not code that builds a prompt.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:ad13b2ee69c25e8d",
+          "evaluatedRevision": 44
         },
         {
           "subject": "model-routing",
@@ -1287,7 +1291,11 @@
           "revision": 44,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/lane/turn_frame.py:147 FrameBuilder clears its 'what the model was shown' baseline only when the disabled-origins switch changes. The CLI harness opens a new session on any change to the static half, for example a connector connect or disconnect that re-merges the catalog, so a fresh session can be sent a delta that says 'Nothing moved since the last turn; the state you were last shown still holds' about state it was never shown.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:ad13b2ee69c25e8d",
+          "evaluatedRevision": 44
         },
         {
           "subject": "agent-instruction-files",
@@ -3163,7 +3171,11 @@
           "revision": 44,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/components/Button.tsx:2 This context is window entry points and design-system primitives (buttons, badges, tables, form fields, CSS tokens). A search of apps/desktop/src found no system prompt, token budget, compaction or context window; prompts are built in the Python composer, not here.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:ad13b2ee69c25e8d",
+          "evaluatedRevision": 44
         },
         {
           "subject": "ui-controls",

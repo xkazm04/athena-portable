@@ -5623,6 +5623,83 @@
       "worker": "65fe73dc-a9e4-451a-a5fb-02ace4661e53",
       "techniques": [],
       "registryProposal": "Matched on the tokens 'gate' and 'evidence', which are product words for the invoice approval flow."
+    },
+    "f152c182-5811-458c-a43b-56fbce7a81e5/prompt-assembly": {
+      "context": "browser-lane",
+      "subject": "prompt-assembly",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T01:03:12.559Z",
+      "worker": "13e71008-9d2e-417d-ae88-ab9687c44f7a",
+      "techniques": [
+        {
+          "technique": "layered-composition",
+          "verdict": "conformant",
+          "evidence": "src/athena/lane/turn_frame.py:149 The lane passes typed inputs (host_state, tool_results, recall, pending_decisions) to the single composer and never concatenates prompt text itself."
+        },
+        {
+          "technique": "capability-documentation",
+          "verdict": "conformant",
+          "evidence": "src/athena/lane/ports.py:64 The capability block is rendered by the catalog, the same registry the gate dispatches against. The lane never writes capability prose."
+        },
+        {
+          "technique": "context-budgeting",
+          "verdict": "conformant",
+          "evidence": "src/athena/lane/turn_frame.py:47 Each host tool result gets its own named cap and is announced as '(showing N of M)'. The cap is in characters, not tokens, and is stated as such."
+        },
+        {
+          "technique": "variable-interpolation",
+          "verdict": "conformant",
+          "evidence": "src/athena/lane/turn_frame.py:20 Tool results are classed as untrusted where they are declared, not at the call site. The test at line 211 asserts block.untrusted."
+        },
+        {
+          "technique": "cache-breakpoint-allocation",
+          "verdict": "conformant",
+          "evidence": "tests/lane/test_turn_frame.py:214 Anything that can change between turns is kept out of the static half, and a test enforces that split."
+        },
+        {
+          "technique": "live-attachment-delta-resharing",
+          "verdict": "conformant",
+          "evidence": "src/athena/lane/browser_lane.py:264 After a failed turn the delta base stays at what the model actually saw; it is not moved to what was merely sent."
+        },
+        {
+          "technique": "consumer-coupled-decoration",
+          "verdict": "conformant",
+          "evidence": "src/athena/lane/browser_lane.py:13 The per-episode [host:] [project:] tier markers name the consumer that reads them: grouping the record by app, project and tier."
+        },
+        {
+          "technique": "fingerprinting-and-cache-keys",
+          "verdict": "deviation",
+          "evidence": "src/athena/lane/turn_frame.py:147 The harness decides staleness from the full static text (cli_harness.py:342). The lane's session state (the delta baseline) uses a narrower key, disabled_origins, so a catalog or law change makes the session stale without resetting the baseline."
+        },
+        {
+          "technique": "continuation-prompts",
+          "verdict": "deviation",
+          "evidence": "src/athena/lane/turn_frame.py:175 forget() is the lost-session rebuild path, but nothing in src/ calls it (rg found callers only in tests). A dropped or reseeded session therefore gets a delta prompt instead of a whole picture."
+        }
+      ],
+      "registryProposal": "Techniques about deltas against what the model was shown (live-attachment-delta-resharing, continuation-prompts) could say outright that the delta base has to be invalidated by the same fingerprint that decides whether the session is reused. When the two are keyed separately, the code is correct per technique but the system is still inconsistent."
+    },
+    "736379fb-8f9b-4617-be12-64b20b25e73c/prompt-assembly": {
+      "context": "atlas-lanes-drawing",
+      "subject": "prompt-assembly",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T01:03:12.559Z",
+      "worker": "13e71008-9d2e-417d-ae88-ab9687c44f7a",
+      "techniques": []
+    },
+    "97da7e8d-8b3a-41fd-bcfe-326d41a66565/prompt-assembly": {
+      "context": "desktop-app-shell-ui",
+      "subject": "prompt-assembly",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T01:03:12.559Z",
+      "worker": "13e71008-9d2e-417d-ae88-ab9687c44f7a",
+      "techniques": []
     }
   }
 }
