@@ -94,7 +94,7 @@ describe("now", () => {
   });
 
   it("refused: the daemon's own sentence beside the button", () => {
-    expect(html("refused")).toContain("Not on battery: she sleeps on mains power.");
+    expect(html("refused")).toContain("Waiting for room: RAM is at 93% (resumes below 85%).");
   });
 });
 

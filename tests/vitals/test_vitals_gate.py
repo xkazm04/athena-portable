@@ -91,6 +91,7 @@ def test_ram_holds_at_92_and_resumes_only_below_85(gate: Gate) -> None:
     assert gate.held() is None
     gate.observe(reading(ram_pct=93.0))
     assert gate.held() == "Waiting for room: RAM is at 93% (resumes below 85%)."
+    assert gate.held(sleep=True) == gate.held(), "RAM is the one hold a sleep cycle obeys"
     gate.observe(reading(ram_pct=88.0))
     assert gate.held() == "Waiting for room: RAM is at 88% (resumes below 85%).", "hysteresis"
     gate.observe(reading(ram_pct=84.0))
@@ -110,6 +111,7 @@ def test_cpu_holds_after_three_high_samples_in_a_row_and_resumes_below_70(gate: 
     assert gate.held() is None, "the run was broken"
     gate.observe(reading(cpu=96.0))
     assert gate.held() == "Waiting for room: CPU is at 96% (resumes below 70%)."
+    assert gate.held(sleep=True) is None, "a busy CPU never holds a sleep cycle"
     gate.observe(reading(cpu=80.0))
     assert gate.held() is not None, "hysteresis: still above the resume line"
     gate.observe(reading(cpu=69.0))
@@ -119,16 +121,14 @@ def test_cpu_holds_after_three_high_samples_in_a_row_and_resumes_below_70(gate: 
 # -- battery and disk ---------------------------------------------------------------------------
 
 
-def test_battery_holds_tasks_below_30_and_sleep_on_any_battery(gate: Gate) -> None:
+def test_battery_holds_tasks_below_30_and_never_sleep(gate: Gate) -> None:
     gate.observe(reading(power="battery", battery=55))
-    assert gate.held() is None
-    assert gate.held(sleep=True) == (
-        "Waiting for room: this PC is on battery at 55%, and sleep waits for mains."
-    )
+    assert gate.held() is None and gate.held(sleep=True) is None
     gate.observe(reading(power="battery", battery=29))
     assert (
         gate.held() == "Waiting for room: the battery is at 29% (tasks resume at 30% or on mains)."
     )
+    assert gate.held(sleep=True) is None
     gate.observe(reading(power="mains", battery=29))
     assert gate.held() is None and gate.held(sleep=True) is None
 
@@ -136,6 +136,7 @@ def test_battery_holds_tasks_below_30_and_sleep_on_any_battery(gate: Gate) -> No
 def test_disk_under_a_gigabyte_holds(gate: Gate) -> None:
     gate.observe(reading(disk=900))
     assert gate.held() == "Waiting for room: the disk has 900 MB free (needs 1024 MB)."
+    assert gate.held(sleep=True) is None, "a low disk never holds a sleep cycle"
     gate.observe(reading(disk=1024))
     assert gate.held() is None
 

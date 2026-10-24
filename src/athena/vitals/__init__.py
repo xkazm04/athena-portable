@@ -141,7 +141,7 @@ class RoomPort(Protocol):
 
     def held(self, *, sleep: bool = False) -> str | None:
         """``None`` when it may; otherwise the sentence that says why not. ``sleep=True`` applies
-        the sleep cycle's stricter rules (never on battery)."""
+        the sleep cycle's rule: RAM alone holds it, never CPU, battery or disk (ADR 0143)."""
         ...
 
     def vitals(self) -> VitalsView | None:

@@ -504,7 +504,7 @@ export const sleepFixtures: Record<string, SleepModel> = {
   }),
   /** "Sleep now" refused, in the daemon's words; and a later read that failed over what is shown. */
   refused: sleepModel({
-    answer: { admitted: false, reason: "on_battery", text: "Not on battery: she sleeps on mains power.", cycle_id: null },
+    answer: { admitted: false, reason: "no_room", text: "Waiting for room: RAM is at 93% (resumes below 85%).", cycle_id: null },
     problem: "Could not read her sleep: the daemon did not answer",
   }),
 };

@@ -7,30 +7,29 @@ answers wins:
 1. ``sleeping`` - a cycle already runs in this process (the claim);
 2. ``turn_live`` - a turn or a delegated task runs on this PC;
 3. ``recent_turn`` - the last turn ended less than :data:`QUIET_AFTER_TURN_S` ago;
-4. ``on_battery`` - a cycle never runs on battery;
-5. ``no_room`` - the room gate holds background work (its own sentence);
-6. ``disk_low`` - too little disk under the brain;
-7. ``floor`` - the last completed or partial cycle finished under :data:`FLOOR_H` hours ago;
-8. ``failed_recently`` - a cycle failed under :data:`FAILED_BACKOFF_H` hours ago;
-9. ``too_little`` - under :data:`MIN_CHARS` characters wait;
-10. admit ``pressure`` - :data:`PRESSURE_CHARS` or more wait;
-11. admit ``first`` - no cycle has ever completed;
-12. admit ``stale`` - the last completed one is :data:`STALE_H` hours old or more;
-13. ``not_yet``.
+4. ``no_room`` - RAM is past the gate's hold line (its own sentence). RAM alone: a busy CPU, a
+   battery or a fullish disk never holds a cycle, whose heavy work is a model leg elsewhere;
+5. ``floor`` - the last completed or partial cycle finished under :data:`FLOOR_H` hours ago;
+6. ``failed_recently`` - a cycle failed under :data:`FAILED_BACKOFF_H` hours ago;
+7. ``too_little`` - under :data:`MIN_CHARS` characters wait;
+8. admit ``pressure`` - :data:`PRESSURE_CHARS` or more wait;
+9. admit ``first`` - no cycle has ever completed;
+10. admit ``stale`` - the last completed one is :data:`STALE_H` hours old or more;
+11. ``not_yet``.
 
-A person's ``force`` skips 7 to 13 and admits ``forced``; it never skips 1 to 6, which are about
-this PC's live work and its room rather than about whether a cycle is worth it.
+A person's ``force`` skips 5 to 11 and admits ``forced``; it never skips 1 to 4, which are about
+this PC's live work and its memory rather than about whether a cycle is worth it.
 
 **The claim is taken, not checked.** :meth:`SleepAdmission.admit` takes the in-process claim as
 its first act and runs the rest of the ladder holding it, so two triggers arriving together give
 one admission and one ``sleeping``; a refusal further down gives the claim back before it answers.
 :meth:`SleepAdmission.decide` runs the same ladder without taking anything, for a view.
 
-**The floor keys on completion.** Steps 7, 11 and 12 read the newest *settled* cycle. A row a
+**The floor keys on completion.** Steps 5, 9 and 10 read the newest *settled* cycle. A row a
 crashed process left ``running`` is never read here, so one dead process cannot suppress every
 cycle after it.
 
-**The window is measured only when it is needed** - after steps 1 to 6 for :meth:`admit`, so a
+**The window is measured only when it is needed** - after steps 1 to 4 for :meth:`admit`, so a
 live turn never pays for the walk - and the measured :class:`~athena.core.sleep.window.Window` is
 returned with the verdict: the cycle reads the very read that admitted it.
 """
@@ -54,22 +53,14 @@ from athena.core.sleep import (
 )
 from athena.core.sleep.book import CycleRow, SleepBook
 from athena.core.sleep.window import Boundary, Window
-from athena.vitals import (
-    CPU_RESUME_PCT,
-    DISK_HOLD_MB,
-    RAM_RESUME_PCT,
-    RoomPort,
-    VitalsView,
-)
+from athena.vitals import RoomPort
 
 #: The refusals, in ladder order, and the admissions.
 REFUSALS: tuple[str, ...] = (
     "sleeping",
     "turn_live",
     "recent_turn",
-    "on_battery",
     "no_room",
-    "disk_low",
     "floor",
     "failed_recently",
     "too_little",
@@ -292,28 +283,11 @@ class SleepAdmission:
         return None
 
     def _room(self) -> Verdict | None:
-        """Steps 4 to 6, from the gate. No gate, or an unknown figure, holds nothing."""
+        """Step 4, from the gate: RAM alone. No gate, or an unknown figure, holds nothing."""
         if self.room is None:
             return None
-        vitals = self.room.vitals()
         held = self.room.held(sleep=True)
-        if vitals is not None and vitals.get("power") == "battery":
-            return Verdict(
-                False, "on_battery", "Waiting for mains power: a cycle never runs on battery."
-            )
-        free = vitals.get("disk_free_mb") if vitals is not None else None
-        disk_low = isinstance(free, int) and free < DISK_HOLD_MB
-        # The gate says one sentence for every cause. It is ``no_room`` (step 5) unless the disk
-        # is the only thing short - RAM and CPU both under their resume lines - which is step 6.
-        if held is not None and not (disk_low and _only_disk(vitals)):
-            return Verdict(False, "no_room", held)
-        if disk_low:
-            return Verdict(
-                False,
-                "disk_low",
-                held or f"Waiting for room: under {DISK_HOLD_MB} MB free on the brain's disk.",
-            )
-        return None
+        return Verdict(False, "no_room", held) if held is not None else None
 
 
 def boundary_after(settled: CycleRow | None, now: datetime) -> Boundary:
@@ -323,15 +297,6 @@ def boundary_after(settled: CycleRow | None, now: datetime) -> Boundary:
             return Boundary.decode(settled.consumed_through)
         return Boundary(settled.started_at)
     return Boundary.first(now)
-
-
-def _only_disk(vitals: VitalsView | None) -> bool:
-    """Whether nothing but the disk can be what the gate holds on: RAM and CPU are known to be
-    under their resume lines (an unknown figure holds nothing, ADR 0143)."""
-    if vitals is None:
-        return True
-    ram, cpu = vitals.get("ram_pct"), vitals.get("cpu_pct")
-    return (ram is None or ram < RAM_RESUME_PCT) and (cpu is None or cpu < CPU_RESUME_PCT)
 
 
 def _sleeping() -> Verdict:

@@ -246,11 +246,11 @@ describe("the journal", () => {
 
 describe("the acts", () => {
   it("Sleep now asks with force, keeps the answer, and reads again", async () => {
-    const daemon = wire({ run: () => json({ admitted: false, reason: "on_battery", text: "Not on battery.", cycle_id: null }) });
+    const daemon = wire({ run: () => json({ admitted: false, reason: "no_room", text: "Waiting for room: RAM is at 93% (resumes below 85%).", cycle_id: null }) });
     await sleepNow();
     const run = daemon.seen.find((s) => s.path === "/sleep/run");
     expect(run).toMatchObject({ method: "POST", body: { force: true } });
-    expect(useSleep.getState().answer).toMatchObject({ admitted: false, text: "Not on battery." });
+    expect(useSleep.getState().answer).toMatchObject({ admitted: false, text: "Waiting for room: RAM is at 93% (resumes below 85%)." });
     expect(useSleep.getState().busy.run).toBeUndefined();
     expect(daemon.reads()).toBe(1);
   });

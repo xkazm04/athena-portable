@@ -42,12 +42,8 @@ def test_every_refusal_answers_in_ladder_order(brain: Brain, clock: Clock, stamp
     r.turns.released = r.mono[0] - 10
     seen.append(_reason(r))
     r.turns.released = r.mono[0] - 500
-    seen.append(_reason(r))
-    r.room.view = vitals(disk_free_mb=10, ram_pct=95.0)
-    seen.append(_reason(r))
+    seen.append(_reason(r))  # the gate's RAM hold; the battery and the disk in view hold nothing
     r.room.hold = None
-    seen.append(_reason(r))
-    r.room.view = vitals()
     seen.append(_reason(r))
     clock.advance(hours=7)  # floor passed; the failure is now 7 h old too
     newer = settle(r.book, clock, hours_ago=0.2, status="failed")
@@ -102,25 +98,22 @@ def test_force_skips_only_floor_failure_and_too_little(
     r.turns.released = r.mono[0] - 1
     assert _reason(r, force=True) == "recent_turn"
     r.turns.released = None
-    r.room.view = vitals(power="battery")
-    assert _reason(r, force=True) == "on_battery"
-    r.room.view = vitals()
-    r.room.hold = "Waiting for room: CPU is busy."
+    r.room.hold = "Waiting for room: RAM is at 93% (resumes below 85%)."
     assert _reason(r, force=True) == "no_room"
-    r.room.hold = None
-    r.room.view = vitals(disk_free_mb=5)
-    assert _reason(r, force=True) == "disk_low"
 
 
-def test_a_held_disk_alone_is_disk_low(brain: Brain, clock: Clock, stamp: Stamp) -> None:
+def test_only_the_gates_sleep_answer_holds_a_cycle(
+    brain: Brain, clock: Clock, stamp: Stamp
+) -> None:
+    """Admission reads ``held(sleep=True)`` and nothing else: a snapshot on battery, low on disk
+    and with a pegged CPU admits when the gate's sleep answer (RAM alone) holds nothing."""
     r = rig(brain, clock, stamp)
-    r.room.hold = "Waiting for room: the disk is nearly full."
-    r.room.view = vitals(disk_free_mb=10)
+    r.room.view = vitals(power="battery", disk_free_mb=5, cpu_pct=100.0)
+    assert _reason(r, force=True) == "forced"
+    r.room.hold = "Waiting for room: RAM is at 93% (resumes below 85%)."
     admission = r.admission.admit(force=True)
-    assert admission.verdict.reason == "disk_low"
+    assert admission.verdict.reason == "no_room"
     assert admission.verdict.text == r.room.hold
-    r.room.view = vitals(disk_free_mb=10, cpu_pct=99.0)
-    assert _reason(r, force=True) == "no_room"
 
 
 def test_no_gate_and_unknown_vitals_hold_nothing(brain: Brain, clock: Clock, stamp: Stamp) -> None:

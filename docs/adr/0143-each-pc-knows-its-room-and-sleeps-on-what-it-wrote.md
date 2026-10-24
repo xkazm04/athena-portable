@@ -39,8 +39,12 @@ gate needs; ADR 0002 keeps it that way (no psutil).
 
 ### The gate: slots, room and a named reason
 - One `Gate` per PC holds background work, with hysteresis, on RAM >= 92% (resumes below 85%), CPU
-  >= 90% for 3 readings in a row (resumes below 70%), battery below 30% for a task and any battery
-  for a sleep cycle (`held(sleep=True)`), and less than 1024 MB of free disk.
+  >= 90% for 3 readings in a row (resumes below 70%), battery below 30%, and less than 1024 MB of
+  free disk. A sleep cycle (`held(sleep=True)`) is held by RAM alone (amended 2026-10-24, owner
+  decision): its heavy work is a model leg elsewhere and its local part one CLI child of about
+  330 MB, and in the smoke a workstation saturated by unrelated work held it on CPU two runs in
+  three. A busy CPU, a battery or a fullish disk would have starved the maintenance that keeps
+  memory healthy on exactly the PCs that work hardest.
 - `held` is a sentence for a person that starts "Waiting for room" and names the figure, e.g.
   "Waiting for room: RAM is at 93% (resumes below 85%)." The windows show it verbatim.
 - `slots = min(3, running + floor(max(0, ram_total * 85% - used) / charge))`, where `running` is the
@@ -166,7 +170,7 @@ thresholds. It adapts the cycle to markdown-is-truth and to write-once replicati
    Each measurement walks at most 480 of this PC's episodes and 20,000 rows. A walk that hits a
    ceiling never claims `too_little`, so a backlog of a peer's episodes cannot starve the cycle.
 2. **One owner admits** (`core/sleep/admission.py`). The ladder runs in this order:
-   `sleeping`, `turn_live`, `recent_turn` (120 s), `on_battery`, `no_room`, `disk_low`, `floor`
+   `sleeping`, `turn_live`, `recent_turn` (120 s), `no_room` (RAM alone), `floor`
    (6 h), `failed_recently` (1 h), `too_little` (2,000 characters). It admits on `pressure`
    (40,000), then `first`, then `stale` (72 h); otherwise the answer is `not_yet`. A person's force
    skips the floor, the failure backoff and the minimum, and nothing else. The claim lives in

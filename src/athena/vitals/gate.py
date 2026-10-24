@@ -11,9 +11,14 @@ still costs a turn. So one gate per PC reads the sampler's latest reading and an
     - **RAM** at or above :data:`RAM_HOLD_PCT`, until it falls below :data:`RAM_RESUME_PCT`;
     - **CPU** at or above :data:`CPU_HOLD_PCT` for :data:`CPU_HOLD_SAMPLES` readings in a row (a
       compile spike is not a reason), until it falls below :data:`CPU_RESUME_PCT`;
-    - **battery**: a task waits on battery below :data:`BATTERY_TASK_FLOOR_PCT`; a sleep cycle
-      waits on any battery (``held(sleep=True)``), because it is pure background;
+    - **battery**: a task waits on battery below :data:`BATTERY_TASK_FLOOR_PCT`;
     - **disk**: less than :data:`DISK_HOLD_MB` free on the brain's volume.
+
+    A sleep cycle (``held(sleep=True)``) waits on **RAM alone**. Its heavy work is a model leg in
+    the cloud and what runs here is one CLI child of a few hundred MB, so a busy CPU, a battery or a
+    fullish disk is no reason to put off the maintenance that keeps her memory healthy; a
+    workstation that sits at 90-100% CPU for hours would otherwise never let her sleep (owner
+    decision 2026-10-24, after the device-vitals smoke was held on CPU two runs in three).
 
     The two lines of each hold are hysteresis: a PC hovering at the line does not flap.
 
@@ -209,7 +214,7 @@ class Gate:
     def held(self, *, sleep: bool = False) -> str | None:
         """``None`` when background work may start now; otherwise why not.
 
-        ``sleep=True`` applies the sleep cycle's stricter rule: it never runs on battery.
+        ``sleep=True`` is the sleep cycle's rule: RAM alone holds it (see the module docstring).
         """
         with self._lock:
             return self._held(sleep=sleep)
@@ -223,22 +228,22 @@ class Gate:
                 f"Waiting for room: RAM is at {_pct(reading.ram_pct)} "
                 f"(resumes below {_pct(RAM_RESUME_PCT)})."
             )
+        if sleep:
+            return None
         if self._cpu_held and reading.cpu_pct is not None:
             return (
                 f"Waiting for room: CPU is at {_pct(reading.cpu_pct)} "
                 f"(resumes below {_pct(CPU_RESUME_PCT)})."
             )
-        if reading.power == "battery":
-            if sleep:
-                charge = "" if reading.battery_pct is None else f" at {reading.battery_pct}%"
-                return (
-                    f"Waiting for room: this PC is on battery{charge}, and sleep waits for mains."
-                )
-            if reading.battery_pct is not None and reading.battery_pct < BATTERY_TASK_FLOOR_PCT:
-                return (
-                    f"Waiting for room: the battery is at {reading.battery_pct}% "
-                    f"(tasks resume at {BATTERY_TASK_FLOOR_PCT}% or on mains)."
-                )
+        if (
+            reading.power == "battery"
+            and reading.battery_pct is not None
+            and reading.battery_pct < BATTERY_TASK_FLOOR_PCT
+        ):
+            return (
+                f"Waiting for room: the battery is at {reading.battery_pct}% "
+                f"(tasks resume at {BATTERY_TASK_FLOOR_PCT}% or on mains)."
+            )
         if reading.disk_free_mb is not None and reading.disk_free_mb < DISK_HOLD_MB:
             return (
                 f"Waiting for room: the disk has {reading.disk_free_mb} MB free "
