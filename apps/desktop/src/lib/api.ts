@@ -32,7 +32,9 @@ import {
   type PeerView,
   type TurnFrame,
 } from "@/lib/fleet";
+import type { CycleView, ProposalView, SleepRunAnswer, SleepView } from "@/lib/sleep";
 import type { TasksView, TaskView } from "@/lib/tasks";
+import type { VitalsResponse } from "@/lib/vitals";
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -394,6 +396,43 @@ export class DaemonApi {
   /** Kill a queued or running task. `stopped` is false when it had already ended. */
   stopTask(taskId: string): Promise<{ stopped: boolean }> {
     return this.json("POST", `/tasks/${encodeURIComponent(taskId)}/stop`, {});
+  }
+
+  // -- this PC's room and her sleep (device-vitals, ADR 0142): `/vitals`, `/sleep*` -------------
+
+  /** This PC's latest vitals: what it measured, its task slots and why work waits, if it does. */
+  vitals(): Promise<VitalsResponse> {
+    return this.json("GET", "/vitals");
+  }
+
+  /** The sleep cycle now: pressure, the admission verdict in words, the last cycle, open proposals. */
+  sleep(): Promise<{ sleep: SleepView }> {
+    return this.json("GET", "/sleep");
+  }
+
+  /** The newest cycles first, at most `limit`. */
+  sleepCycles(limit = 20): Promise<{ cycles: CycleView[] }> {
+    return this.json("GET", `/sleep/cycles?limit=${limit}`);
+  }
+
+  /** One cycle and its journal (markdown), `null` when the journal was never written. */
+  sleepCycle(cycleId: string): Promise<{ cycle: CycleView; journal: string | null }> {
+    return this.json("GET", `/sleep/cycles/${encodeURIComponent(cycleId)}`);
+  }
+
+  /** The proposals a cycle left for a person: forget an unused memory, or settle a contradiction. */
+  sleepProposals(): Promise<{ proposals: ProposalView[] }> {
+    return this.json("GET", "/sleep/proposals");
+  }
+
+  /** Ask for a cycle now. `force` skips pressure and the floor, never a live turn or a lack of room. */
+  sleepRun(force = false): Promise<SleepRunAnswer> {
+    return this.json("POST", "/sleep/run", { force });
+  }
+
+  /** Keep or forget. A contradiction's `forget` names which of its two memories goes (`nodeId`). */
+  sleepDecide(proposalId: string, action: "keep" | "forget", nodeId: string | null = null): Promise<{ proposal: ProposalView }> {
+    return this.json("POST", `/sleep/proposals/${encodeURIComponent(proposalId)}`, { action, node_id: nodeId });
   }
 
   // -- the fleet (ADR 0140): `/devices*`, `/events`, `/remote/*` --------------------------------
