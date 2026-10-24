@@ -1392,7 +1392,11 @@
           "revision": 3,
           "changedAt": "2026-09-03",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/lane/ports.py:3 The lane is daemon-side Python. It holds no credential, reads no env or config value, reaches no data store and fetches nothing outbound: a search of src/athena/lane and tests/lane for secret, credential, api_key, redact, upstream and fetch found nothing, and 'token' only turned up approval-choice tokens and LLM usage counts. So the question of whether the browser holds a credential is never decided here, and none of the subject's enforcement points exist in this context.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:d3eef10e9ed8459f",
+          "evaluatedRevision": 3
         },
         {
           "subject": "fleet-orchestration",
