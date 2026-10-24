@@ -537,37 +537,38 @@
       "context": "harness-engines",
       "subject": "agent-instruction-files",
       "bundle": "software-engineering",
-      "state": "unknown",
-      "evaluatedAt": "2026-10-15",
-      "evaluatedTs": "2026-10-15T02:25:41.884Z",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T02:55:24.261Z",
+      "worker": "2dd74474-a66d-4636-ae73-9a1bcb17a5c3",
       "techniques": [
         {
           "technique": "workspace-ancestry-isolation",
           "verdict": "deviation",
-          "evidence": "src/athena/harness/cli_harness.py:212 CliHarness defaults cwd to '.' which executes the CLI engine inside the repository checkout, exposing it to repo instruction files."
-        },
-        {
-          "technique": "inherited-default-ownership",
-          "verdict": "conformant",
-          "evidence": "src/athena/harness/cli_harness.py:50 CliHarness pins permissive CLI defaults below the model by passing --restricted and --permission-mode dontAsk for Claude and read-only for Codex."
-        },
-        {
-          "technique": "enforcement-demotion",
-          "verdict": "conformant",
-          "evidence": "src/athena/harness/hooks.py:129 GateHook evaluates tool permissions and parameter validity programmatically via catalog without delegating decisions to a language model."
+          "evidence": "src/athena/harness/cli_harness.py:323 Precondition holds: a program creates a directory and launches an agent CLI in it. Within this context the claim that the engine never runs in a checkout is only a comment (line 322), and the default contradicts it. No --setting-sources/--strict-mcp-config-style bound and no check of the loaded set exist; grep of src for setting-sources, CLAUDE_CONFIG_DIR and CLAUDE.md found none."
         },
         {
           "technique": "context-reset-redelivery",
           "verdict": "conformant",
-          "evidence": "src/athena/harness/cli_harness.py:232 CliHarness invalidates the stored session when static prompt text changes across turns to force re-delivery of the fresh system prompt."
+          "evidence": "src/athena/harness/cli_harness.py:343 The injector compares the freshly composed static half against the one the CLI session was opened with, and drops the session to reopen rather than resume when it changed. A session that has been gone or poisoned is reseeded unresumed with the static half (lines 360-367)."
+        },
+        {
+          "technique": "enforcement-demotion",
+          "verdict": "conformant",
+          "evidence": "src/athena/harness/hooks.py:9 AGENTS.md's 'The gate is the policy' rule lives as deterministic GateHook/LedgerHook/TruncationHook classes that every dialect calls. rounds.py:237 likewise realizes 'Ledger everything' in code."
+        },
+        {
+          "technique": "inherited-default-ownership",
+          "verdict": "conformant",
+          "evidence": "src/athena/harness/cli_harness.py:58 The CLI's permission and tool defaults are pinned below the model in argv rather than inherited, and tests/harness/test_cli_harness.py:257 asserts the pin."
+        },
+        {
+          "technique": "instruction-freshness",
+          "verdict": "conformant",
+          "evidence": "src/athena/harness/cli_harness.py:163 Facts about the external CLI that can drift (failure signatures) carry the version and date they were measured against; line 122 says a CLI release can reword them."
         }
       ],
-      "withdrawn": {
-        "worker": "6f9bedeb-e721-4dc0-ae5f-623aba1fec12",
-        "state": "deviation",
-        "at": "2026-10-15T02:26:01.564566+00:00",
-        "reason": "reviewer (sonnet): The claim that CliHarness launches sub-agents in the repository root is unconfirmed: cwd='.' is only a dataclass default, engines.py:187 takes cwd as a required parameter and wiring.py:305 passes run_dir. Also, cli_harness.py:50 pins restrictive args (--restricted, dontAsk), not 'permissive' as the "
-      }
+      "registryProposal": "workspace-ancestry-isolation frames 'assert the loaded set' around evaluations and scratch workspaces. A product runtime that spawns the user's own coding CLI as its engine has the same exposure: user-level instruction files plus the user's installed MCP/skill floor enter a session whose prompt the product composed. The technique could name that case explicitly, together with the harness flags that bound it."
     },
     "c2e060d5-a15b-46fc-8a10-55188c2d50d2/voice-io": {
       "context": "desktop-client-lib",
@@ -6259,6 +6260,16 @@
       "evaluatedAt": "2026-10-24",
       "evaluatedTs": "2026-10-24T02:34:01.437Z",
       "worker": "dd94e913-590a-4dbf-bc03-2dd806457c0c",
+      "techniques": []
+    },
+    "6099214d-afb1-49fe-b67b-346df665a89f/agent-instruction-files": {
+      "context": "desktop-build-config",
+      "subject": "agent-instruction-files",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T02:55:24.261Z",
+      "worker": "2dd74474-a66d-4636-ae73-9a1bcb17a5c3",
       "techniques": []
     }
   }

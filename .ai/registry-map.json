@@ -3434,7 +3434,11 @@
           "revision": 31,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/lib/dev/locate.ts:11 This context's build configs, smoke script and dev inspector neither author, load nor spawn anything an agent instruction file governs. Its only agent-adjacent output is a source location a person pastes into a terminal. Grepping apps/desktop (excluding node_modules) for CLAUDE.md, instruction file, system prompt and cursorrules found no hits, and the context's own files hold no agent/claude/codex/prompt term.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:25b61236a62604b0",
+          "evaluatedRevision": 31
         },
         {
           "subject": "packaging",
@@ -5988,7 +5992,11 @@
           "revision": 31,
           "changedAt": "2026-09-25",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/harness/cli_harness.py:323 The harness launches the user's own `claude`/`codex` binary in a directory a program chose, but its default cwd is the launch directory, despite the comment above saying \"Never the repository\". Nothing in the context passes a flag that limits which instruction files the child loads, or captures and checks that list, so ancestor and user-level CLAUDE.md files can brief the engine without anyone seeing it.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:25b61236a62604b0",
+          "evaluatedRevision": 31
         },
         {
           "subject": "eval-harness",
