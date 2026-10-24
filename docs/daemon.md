@@ -491,6 +491,45 @@ A read (`connector.notion.search`, `connector.gmail.read_mail`) comes back fence
 runs only while the connector's writes switch is on and every recipient or page it names is on
 the allow-list. Nothing that lists, shows or rotates a credential is a tool.
 
+## Peer listener
+
+Other devices - another PC, a phone - never reach the loopback daemon. They reach a second socket
+in the same process, the **peer listener** (`athena.peer`, ADR 0140), which binds this device's
+private-overlay address (Tailscale's `100.64.0.0/10`, found with `tailscale ip -4`) on port
+**17491** and nothing else. It is bound only while a paired peer exists, a pairing window is open
+or the beacon is on; `--peer-port` moves it and `--no-peer` turns the whole peer surface off. A
+connection from any other address class - the home LAN included - gets one fixed `403` before a
+byte of it is read. Every peer route but the two pairing steps needs `Authorization: Bearer
+<token>`, a per-peer token whose SHA-256 is all `$ATHENA_HOME/peer/peers.json` keeps, and each
+route names the grant (`chat`, `approve`, `memory`) it needs.
+
+The window drives it through loopback routes, behind `X-Athena-Token` like everything else:
+
+| Route | What it does |
+|---|---|
+| `GET /devices` | this device, its peers (never a fingerprint), pending requests, beacon, `overlay.state` (`absent`, `logged_out`, `up`), the listener, outgoing joins |
+| `PUT /devices/self` | rename this device |
+| `POST /devices/pairing` `{kind}` | open a 5-minute window: `{pairing_id, code, url, expires_at}`; `url` is the phone's QR |
+| `POST /devices/pending/<pairing_id>` | `{choice, grants, expires_days}`: the only place a peer token is minted; grants only narrow |
+| `DELETE /devices/<peer_id>` | revoke now; that token's next request is a 401 |
+| `PUT /devices/beacon` `{on}` | keep the listener up for the phone page at `http://<overlay-ip>:17491/m/` |
+| `POST /devices/join` `{address, port, code, requested_grants}` | this PC asks another to let it in, with the code read off that PC |
+| `GET /events` | Server-Sent Events: `pair.requested`, `peer.changed`; a stream quiet for 15 s ends with `retry: 1000` and the reader reconnects |
+
+And another device calls these on the peer listener:
+
+| Route | Token | What it does |
+|---|---|---|
+| `GET /peer/hello` | yes | `{device_id, name, beacon, window_open, setup_phase}` |
+| `POST /peer/pair/request` | no | file the window's one request: `{pairing_id, nonce}` or `{code}`; returns a `claim_secret` |
+| `POST /peer/pair/claim` | no | `202` while pending; the token exactly once; then `410 claim_spent` |
+| `POST /peer/pair/back` | yes | a PC delivers the token its person minted for this one in return |
+
+Pairing two PCs takes two approvals, one in each window: A opens a window and reads out the code; B
+joins with it; A's person approves B; B claims and is asked to let A in; B's person approves A, and B
+delivers A's token. A phone pairs once, through the QR. The tokens this device calls out with are
+sealed by the OS (DPAPI), never written in plain.
+
 ## The real thing
 
 ```bash

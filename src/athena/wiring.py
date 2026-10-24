@@ -59,6 +59,7 @@ from athena.lane.turn_frame import FrameBuilder
 
 if TYPE_CHECKING:
     from athena.adopt.routes import AdoptStudio
+    from athena.peer.listener import PeerHost
 
 __all__ = [
     "ADOPT_DIRNAME",
@@ -194,6 +195,8 @@ class AthenaLocal:
     voice: VoiceStudio | None = None
     #: The adopt studio behind the ``/adopt`` routes (ADR 0097).
     adopt: AdoptStudio | None = None
+    #: The peer host behind ``/devices`` and the overlay listener (ADR 0140), or ``None``.
+    peer: PeerHost | None = None
 
     def close(self) -> None:
         """Close the brain, cancel any consent flow, end every adopt session.
@@ -202,6 +205,8 @@ class AthenaLocal:
         reaches the caller.
         """
         try:
+            if self.peer is not None:
+                self.peer.close()
             if self.adopt is not None:
                 self.adopt.close()
         finally:
@@ -235,6 +240,7 @@ def build_local(
     voice_off: bool = False,
     model_fn: ModelFn | None = None,
     adopt: AdoptStudio | None = None,
+    peer: PeerHost | None = None,
 ) -> AthenaLocal:
     """Assemble one local Athena: brain, tables, law, catalog, gate, engine, lane, daemon.
 
@@ -265,6 +271,11 @@ def build_local(
 
     ``adopt`` is the adopt studio behind ``/adopt`` (ADR 0097); ``None`` builds the real one, its
     legs on the ``claude`` CLI whatever ``engine`` is, its sessions under ``$ATHENA_HOME/adopt``.
+
+    ``peer`` is the peer host (ADR 0140): when one is given its loopback ``/devices`` routes and
+    ``GET /events`` are served, and it is closed with everything else. ``athena serve`` builds it
+    under ``$ATHENA_HOME/peer`` and starts its lifecycle once the loopback socket is bound; ``None``
+    - a test's default, and ``--no-peer`` - is a daemon with no peer surface at all.
 
     ``constitution_dir`` names the law's directory; ``None`` resolves it as the loader does. No
     ``law.md`` anywhere raises :class:`~athena.core.constitution.ConstitutionMissing` naming every
@@ -356,6 +367,8 @@ def build_local(
         adopt_studio = _wire_adopt(
             daemon, adopt, brain.root.parent / ADOPT_DIRNAME, ledger, brain=brain, vault=vault
         )
+        if peer is not None:
+            _wire_peer(daemon, peer)
         return AthenaLocal(
             brain=brain,
             catalog=catalog,
@@ -372,6 +385,7 @@ def build_local(
             vault=vault,
             voice=studio,
             adopt=adopt_studio,
+            peer=peer,
         )
     except BaseException:
         brain.close()
@@ -465,6 +479,19 @@ def _wire_adopt(
         daemon.routes.add(route)
     daemon.body_caps.append(BodyCap(ADOPT_PREFIX, DOCUMENT_SUFFIX, DOCUMENT_BODY_BYTES))
     return chosen
+
+
+def _wire_peer(daemon: AthenaDaemon, host: PeerHost) -> None:
+    """The loopback ``/devices`` routes and ``GET /events`` (ADR 0140).
+
+    This is the registration seam for the later work packages: each adds its peer routes with one
+    ``host.add_routes(<module>.peer_routes(host))`` line here, and a loopback route with one
+    ``daemon.routes.add`` line, so none of them edits the peer package's own files.
+    """
+    from athena.peer.devices import device_routes
+
+    for route in device_routes(daemon, host):
+        daemon.routes.add(route)
 
 
 def _default_args(dialect: CliDialect) -> tuple[str, ...]:

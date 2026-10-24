@@ -34,6 +34,8 @@ EXPECTED_PREFIXES = {
     "session": "sess_",
     "job": "job_",
     "ritual": "rit_",
+    "device": "dev_",
+    "pairing": "pair_",
 }
 
 
@@ -77,6 +79,16 @@ def test_an_episode_id_keeps_the_rust_writers_shape() -> None:
     # Brain format parity: the Personas writer mints ep_ plus eight hex digits.
     assert ID_SUFFIX_HEX["episode"] == 8
     assert len(mint("episode")) == len("ep_") + 8
+
+
+def test_a_device_id_is_twelve_hex_and_a_peer_is_one(  # ADR 0140
+) -> None:
+    # A peer's id is the remote device's own id, so there is one kind and not two.
+    device = mint("device")
+    assert device.startswith("dev_") and len(device) == len("dev_") + 12
+    assert kind_of(device) == "device"
+    assert "peer" not in ID_PREFIXES
+    assert not is_id("device", "dev_0123abcd")  # eight hex is an episode's width, not a device's
 
 
 def test_a_turn_is_a_kind_because_three_tables_join_on_it() -> None:

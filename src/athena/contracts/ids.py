@@ -28,6 +28,12 @@ import secrets
 #:
 #: ``ritual`` names a file under ``rituals/`` (ADR 0131): a chore's cadence is filed by its case's
 #: ``proj_`` id, which is the goal's id already, so the ritual carries one of its own.
+#:
+#: ``device`` is one Athena install (ADR 0140): minted once into ``$ATHENA_HOME/peer/device.json``
+#: and, on another device, the id that device files this one under in its ``peers.json`` - a
+#: peer's id *is* the remote device id, so there is no separate ``peer`` kind. A phone has no
+#: install of its own and is given a ``dev_`` id by the device that approved it. ``pairing`` is one
+#: open pairing window and the one request filed against it, which lives in memory for minutes.
 ID_PREFIXES: dict[str, str] = {
     "episode": "ep_",
     "fact": "fact_",
@@ -40,6 +46,8 @@ ID_PREFIXES: dict[str, str] = {
     "session": "sess_",
     "job": "job_",
     "ritual": "rit_",
+    "device": "dev_",
+    "pairing": "pair_",
 }
 
 #: kind → how many hex digits ``mint`` puts after the prefix.

@@ -105,6 +105,7 @@ __all__ = [
     "EXTENSION_SCHEME",
     "MAX_BODY_BYTES",
     "MAX_RAW_BODY_BYTES",
+    "PEER_PORT",
     "TOKEN_FILENAME",
     "TOKEN_HEADER",
     "AthenaDaemon",
@@ -122,11 +123,15 @@ __all__ = [
     "serve",
 ]
 
-#: The daemon binds the loopback interface and nothing else, ever. ``--host`` is not a flag.
+#: The daemon binds the loopback interface and nothing else, ever. ``--host`` is not a flag. The
+#: overlay peer listener is a separate socket owned by :mod:`athena.peer.listener` (ADR 0140).
 DEFAULT_HOST = "127.0.0.1"
 #: The port a daemon takes when nobody asked for one. A sidecar passes ``--port 0`` instead.
 DEFAULT_PORT = 17490
 TOKEN_HEADER = "X-Athena-Token"
+#: The peer listener's default port (``athena.peer.listener.DEFAULT_PEER_PORT`` is this), defined
+#: here so the parser does not import the peer package, which imports this module.
+PEER_PORT = 17491
 #: Where a minted token is kept when ``--token-file`` did not name somewhere else.
 TOKEN_FILENAME = "daemon.json"
 EXTENSION_SCHEME = "chrome-extension://"
@@ -804,6 +809,18 @@ def build_parser() -> argparse.ArgumentParser:
         help="who hears and speaks on /voice: config (or auto) is the voice studio's choice, "
         "switchable live; openai pins the provider; none leaves the socket without a backend",
     )
+    parser.add_argument(
+        "--peer-port",
+        type=int,
+        default=PEER_PORT,
+        help="the overlay peer listener's port (ADR 0140); bound only on the overlay address, "
+        "and only while a peer, a pairing window or the beacon needs it",
+    )
+    parser.add_argument(
+        "--no-peer",
+        action="store_true",
+        help="start without the peer surface: no /devices routes and no peer listener",
+    )
     return parser
 
 
@@ -837,6 +854,13 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
         studied = args.voice_backend in ("config", "auto", "none")
         voice = None if studied else backend_from_name(args.voice_backend)
         vault = None if args.no_connectors else Vault()
+        peer = None
+        if not args.no_peer:
+            from athena.peer.listener import PeerHost
+
+            # ``$ATHENA_HOME/peer``, not beside ``--brain``: one identity per install, however the
+            # daemon was started (ADR 0140, "Identity").
+            peer = PeerHost(brain_paths.athena_home() / "peer", port=args.peer_port)
         # Reasoning is the one engine setting a flag reaches past ``--model``: the default
         # ``TokenFactoryModel`` reasons, so only the opt-out builds one here (ADR 0035).
         model_fn = (
@@ -852,6 +876,7 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
             voice=voice,
             vault=vault,
             voice_off=args.voice_backend == "none",
+            peer=peer,
         )
     except (OSError, ValueError, sqlite3.Error) as exc:
         # ``sqlite3.Error`` is the brain's: a damaged index (``IndexDamagedError``, which names
@@ -886,6 +911,9 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
     # The chores loop (ADR 0131) runs in the served daemon only: it notices, it never sends.
     if local.adopt is not None and local.adopt.chores is not None:
         local.adopt.chores.start()
+    # The peer lifecycle (ADR 0140): binds the overlay listener only while trust needs it.
+    if local.peer is not None:
+        local.peer.start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:
