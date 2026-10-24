@@ -3937,62 +3937,66 @@
       "context": "demo-kit-template",
       "subject": "native-shell-integration",
       "bundle": "software-engineering",
-      "state": "unknown",
-      "evaluatedAt": "2026-10-17",
-      "evaluatedTs": "2026-10-17T22:04:39.698Z",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T21:58:39.043Z",
+      "worker": "59f30bc4-ba60-42fa-bdf0-dc8ff8ea9ba8",
       "techniques": [
         {
           "technique": "capability-presence-contract",
           "verdict": "not-applicable",
-          "evidence": "examples/demo-kit/template/package.json:18 The searched template is a Next.js application without a native host capability matrix."
+          "evidence": "examples/demo-kit/template/package.json:18 The searched template is a Next.js application without a native host capability matrix.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "layout-resolved-input-synthesis",
           "verdict": "not-applicable",
-          "evidence": "examples/demo-kit/template/components/RecordsTable.tsx:37 Interaction navigates the application's own routes without synthesizing foreign-application input."
+          "evidence": "examples/demo-kit/template/components/RecordsTable.tsx:37 Interaction navigates the application's own routes without synthesizing foreign-application input.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "native-owned-stream",
           "verdict": "not-applicable",
-          "evidence": "examples/demo-kit/template/app/page.tsx:9 The page reads a request-time snapshot; searches found no persistent network stream in the template."
+          "evidence": "examples/demo-kit/template/app/page.tsx:9 The page reads a request-time snapshot; searches found no persistent network stream in the template.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "native-side-owns-the-target-set",
           "verdict": "not-applicable",
-          "evidence": "examples/demo-kit/template/app/actions.ts:15 The mutation is an application server database operation, without a presentation-to-native privileged command boundary."
+          "evidence": "examples/demo-kit/template/app/actions.ts:15 The mutation is an application server database operation, without a presentation-to-native privileged command boundary.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "non-stealing-overlay",
           "verdict": "not-applicable",
-          "evidence": "examples/demo-kit/template/components/Levels.tsx:298 This interactive DOM dialog deliberately receives focus inside the application."
+          "evidence": "examples/demo-kit/template/components/Levels.tsx:298 This interactive DOM dialog deliberately receives focus inside the application.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "observer-perturbation",
           "verdict": "not-applicable",
-          "evidence": "examples/demo-kit/template/components/Levels.tsx:163 Measurements select the application's own DOM groups rather than observing a foreign application's structural provider."
+          "evidence": "examples/demo-kit/template/components/Levels.tsx:163 Measurements select the application's own DOM groups rather than observing a foreign application's structural provider.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "permission-gate-vector",
           "verdict": "not-applicable",
-          "evidence": "examples/demo-kit/template/components/HostCapabilities.tsx:42 Published navigation capabilities operate within the page; searches found no separately granted native permission dependencies."
+          "evidence": "examples/demo-kit/template/components/HostCapabilities.tsx:42 Published navigation capabilities operate within the page; searches found no separately granted native permission dependencies.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "query-transparent-overlay",
           "verdict": "not-applicable",
-          "evidence": "examples/demo-kit/template/components/Levels.tsx:291 Focus restoration queries the same document rather than a global OS element-under-cursor interface."
+          "evidence": "examples/demo-kit/template/components/Levels.tsx:291 Focus restoration queries the same document rather than a global OS element-under-cursor interface.",
+          "carriedFrom": "2026-10-17"
         },
         {
           "technique": "unexported-capability-ladder",
           "verdict": "not-applicable",
-          "evidence": "examples/demo-kit/template/next.config.ts:6 The template consumes framework packages through Next; searches found no unexported native entry-point access."
+          "evidence": "examples/demo-kit/template/next.config.ts:6 The template consumes framework packages through Next; searches found no unexported native entry-point access.",
+          "carriedFrom": "2026-10-17"
         }
-      ],
-      "withdrawn": {
-        "worker": "08fda95d-93e3-4e00-be2f-a8af8ea4ffce",
-        "state": "not-applicable",
-        "at": "2026-10-17T22:05:04.780813+00:00",
-        "reason": "reviewer (sonnet): The anchors are incidental: package.json:8 is just the \"start\" script and package.json:18 is a dependency line, so neither shows a capability matrix is absent. The context also contains components/HostCapabilities.tsx, which registers agent-callable capabilities (navigate, read_current_view) through"
-      }
+      ]
     },
     "caa9de8e-e922-457c-9839-14cf7fa6b2e2/native-shell-integration": {
       "context": "demo-kit-zoom-engine",

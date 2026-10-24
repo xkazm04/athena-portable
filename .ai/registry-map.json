@@ -2731,7 +2731,11 @@
           "revision": 4,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/demo-kit/template/package.json:18 The template is a plain Next.js web app with no native process; a search of examples/demo-kit/template for tauri, __TAURI, @tauri-apps, electron, invoke(, getCurrentWindow, alwaysOnTop and permission found nothing, and its only 'host capabilities' are WebMCP tools registered on document.modelContext inside the document runtime, so the subject's precondition (a native side holding capabilities the presentation layer cannot reach) does not hold.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:9034ad02704d9c88",
+          "evaluatedRevision": 5
         }
       ],
       "governance": "governed"
