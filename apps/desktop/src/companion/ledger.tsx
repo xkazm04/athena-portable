@@ -255,6 +255,15 @@ function Compose({ model }: { model: CompanionModel }) {
           </button>
         </p>
       ) : null}
+      {talk.setup ? (
+        <p className="lg-project" role="status">
+          <span className="eyebrow">Setting up</span>
+          <span className="lg-project__title">One Athena on this computer</span>
+          <button type="button" className="aw-textbtn" aria-label="Leave the setup conversation" onClick={actions.leaveSetup}>
+            leave
+          </button>
+        </p>
+      ) : null}
       <form className="lg-compose" onSubmit={submit}>
         {/* Keyed by the offer, so a command Main hands over (ADR 0040) lands as the draft and the
             person's own typing is never overwritten by a re-render. */}

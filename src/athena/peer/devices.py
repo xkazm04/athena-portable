@@ -6,7 +6,8 @@ device's own chrome is the only one who reaches them, which is what makes
 ``POST /devices/pending/<pairing_id>`` the one door a peer token is minted through.
 
 ``GET /devices``
-    ``{self: {device_id, name}, peers: [row without its fingerprint], pending: [{pairing_id, name,
+    ``{self: {device_id, name}, peers: [row without its fingerprint, plus ``memory``: WP2's
+    replication status or ``null``], pending: [{pairing_id, name,
     kind, requested_grants, expires_at, pair_back}], beacon: {on, url}, overlay: {state},
     listener: {up, address, port, error}, joining: [{join_id, address, name, state,
     expires_at}]}``. Absent values are ``null``, never omitted.
@@ -38,6 +39,7 @@ from athena.daemon.routes import EventStream, Reply, Request, Route, error
 from athena.peer.listener import DEFAULT_PEER_PORT, PeerHost, peer_error
 from athena.peer.pairing import PairingRefused
 from athena.peer.registry import GRANTS, KINDS
+from athena.peer.replicate import memory_view
 
 if TYPE_CHECKING:
     from athena.daemon.server import AthenaDaemon
@@ -57,7 +59,10 @@ def devices(host: PeerHost) -> Reply:
     return 200, {
         "ok": True,
         "self": {"device_id": me.device_id, "name": me.name},
-        "peers": [row.view() for row in host.registry.rows()],
+        # ``memory``: WP2's replication status for the peer, ``null`` until it has been pulled.
+        "peers": [
+            {**row.view(), "memory": memory_view(host, row.peer_id)} for row in host.registry.rows()
+        ],
         "pending": [record.pending_view() for record in host.pairings.pending()],
         "beacon": {"on": host.beacon, "url": f"{base}/m/" if host.beacon and base else None},
         "overlay": {"state": host.overlay().state},

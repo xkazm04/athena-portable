@@ -49,6 +49,7 @@ from athena.contracts.channel import (
 )
 from athena.contracts.registry import ExecResult, Lane, ToolEntry, TurnContext
 from athena.core.approvals import APPROVE_TOKEN
+from athena.core.setup import SETUP_TURN_KEY
 from athena.harness.hooks import Cancel
 from athena.lane.ports import (
     ApprovalsPort,
@@ -238,6 +239,7 @@ class BrowserLane:
             active_project=active_project,
             pending_decisions=tuple(pending_decisions),
             disabled_origins=ctx.disabled_origins,
+            setup=ctx.extra.get(SETUP_TURN_KEY) is True,
         )
         self._record_results(turn.tool_results, ctx)
         composed = self.frames.build(ctx.conversation_id, turn)

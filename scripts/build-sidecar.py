@@ -97,6 +97,10 @@ PACKAGE_EXCLUDED = ("proving",)
 #: They ship as data beside their package, or a frozen daemon reports the helper broken.
 HELPER_SCRIPTS = ("channels/voice/face_helper/*.py",)
 
+#: The phone page the beacon serves at ``/m/`` (ADR 0140, WP4): read by ``athena.peer.phone`` as
+#: ``Path(__file__).parent / "mobile"``, so it ships beside its module like the JSON above.
+PHONE_PAGE = ("peer/mobile/*",)
+
 
 def package_files(root: Path = ROOT) -> list[tuple[Path, str]]:
     """Every package data file, ``(source, its package's directory in the bundle)``."""
@@ -107,8 +111,8 @@ def package_files(root: Path = ROOT) -> list[tuple[Path, str]]:
         if rel.parts[0] in PACKAGE_EXCLUDED or "__pycache__" in rel.parts:
             continue
         files.append((source, (Path("athena") / rel.parent).as_posix()))
-    for pattern in HELPER_SCRIPTS:
-        for source in sorted(package.glob(pattern)):
+    for pattern in (*HELPER_SCRIPTS, *PHONE_PAGE):
+        for source in sorted(p for p in package.glob(pattern) if p.is_file()):
             rel = source.relative_to(package)
             files.append((source, (Path("athena") / rel.parent).as_posix()))
     return files

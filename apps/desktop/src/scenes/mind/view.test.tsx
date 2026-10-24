@@ -25,12 +25,12 @@ describe("every fixture renders at every level", () => {
 describe("the field", () => {
   const h = html("typical");
 
-  it("offers the five instruments as buttons, each drawn and each with how it stands", () => {
-    for (const name of ["Engine", "Brain", "Look", "Data", "Microphone"]) {
+  it("offers the six instruments as buttons, each drawn and each with how it stands", () => {
+    for (const name of ["Engine", "Brain", "Look", "Data", "Microphone", "Devices"]) {
       expect(h).toContain(`mind__instrument-name">${name}<`);
     }
-    expect(h.match(/class="mind__instrument focus-ring"/g)).toHaveLength(5);
-    expect(h.match(/class="glyph"/g)).toHaveLength(5);
+    expect(h.match(/class="mind__instrument focus-ring"/g)).toHaveLength(6);
+    expect(h.match(/class="glyph"/g)).toHaveLength(6);
   });
 
   it("sends Page and Voice to the depths that own them, and can show the welcome again", () => {

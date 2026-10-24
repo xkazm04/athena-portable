@@ -285,7 +285,9 @@ def build_local(
     if dialect is None and engine not in API_ENGINES:
         raise ValueError(f"unknown engine {engine!r}; expected one of {', '.join(ENGINES)}")
 
-    brain = Brain(brain_root, session_id=session_id)
+    # The device stamp (ADR 0140): this install's ``dev_`` id once it has one, asked at each write,
+    # so a daemon nobody has paired with mints no identity just by remembering something.
+    brain = Brain(brain_root, session_id=session_id, device_id=_device_stamp(peer))
     # Everything below runs with the brain open. A step that raises closes it before the error
     # leaves: ``athena serve`` exits anyway, but the proving world builds an Athena in a process
     # that lives on, and an index held open there is a file nothing can move until it ends.
@@ -488,10 +490,33 @@ def _wire_peer(daemon: AthenaDaemon, host: PeerHost) -> None:
     ``host.add_routes(<module>.peer_routes(host))`` line here, and a loopback route with one
     ``daemon.routes.add`` line, so none of them edits the peer package's own files.
     """
+    from athena.peer import remote, replicate
     from athena.peer.devices import device_routes
 
     for route in device_routes(daemon, host):
         daemon.routes.add(route)
+    remote.wire(daemon, host)  # WP3: /peer/message, /peer/turns/, /peer/decisions, the /run tee
+    host.add_routes(replicate.peer_routes(host, daemon.brain))  # WP2: /peer/brain/*, the puller
+    from athena.peer import phone, setup
+
+    host.add_routes(phone.peer_routes(host))  # WP4: GET /m/*, the phone page (open)
+    setup.wire_setup(daemon, host)  # WP4: connector.setup.*, POST /devices/setup, setup_phase
+
+
+def _device_stamp(host: PeerHost | None) -> Callable[[], str | None] | None:
+    """What a new memory is stamped with (ADR 0140): the install's id, once ``device.json`` exists.
+
+    Asked at each write rather than read once, and never the thing that mints the identity: a
+    daemon nobody pairs with leaves no peer directory behind (``athena.peer.identity``).
+    """
+    if host is None:
+        return None
+    identity = host.identity
+
+    def stamp() -> str | None:
+        return identity.identity.device_id if identity.path.exists() else None
+
+    return stamp
 
 
 def _default_args(dialect: CliDialect) -> tuple[str, ...]:

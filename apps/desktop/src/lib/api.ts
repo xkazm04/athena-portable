@@ -19,6 +19,19 @@
  */
 import type { ChannelEvent } from "@/lib/events";
 import { eventFromJson } from "@/lib/events";
+import {
+  busEventFromJson,
+  turnFrameFromJson,
+  type BusEvent,
+  type DeviceKind,
+  type DevicesView,
+  type Grant,
+  type JoinView,
+  type OverlayPeers,
+  type PairingWindow,
+  type PeerView,
+  type TurnFrame,
+} from "@/lib/fleet";
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -230,6 +243,8 @@ export interface TurnBody {
    * daemon records it only when its chores clock agrees; otherwise the turn is an ordinary one.
    */
   trigger?: "schedule";
+  /** A message another device sent (ADR 0140): the daemon tees this run back to it. Routes nothing. */
+  via?: { peer_id: string; request_id: string };
 }
 
 /** A refusal the daemon named. `reason` is a member of the one closed vocabulary. */
@@ -238,6 +253,12 @@ export class ApiError extends Error {
     readonly status: number,
     readonly reason: string,
     detail: string,
+    /**
+     * The peer's own finer word beside `reason` (`window_closed`, `grant_missing`, ADR 0140), and
+     * the device a peer refusal names. Empty for every other refusal.
+     */
+    readonly word: string = "",
+    readonly device: string = "",
   ) {
     super(detail || reason);
     this.name = "ApiError";
@@ -345,6 +366,103 @@ export class DaemonApi {
     return this.json("POST", "/run/stop", { origin });
   }
 
+  // -- the fleet (ADR 0140): `/devices*`, `/events`, `/remote/*` --------------------------------
+
+  /** This device, its peers, the pending requests, the beacon and the overlay. */
+  devices(): Promise<DevicesView> {
+    return this.json("GET", "/devices");
+  }
+
+  /** The other devices on the private network, to pick the join form's address from (WP5). */
+  overlayPeers(): Promise<OverlayPeers> {
+    return this.json("GET", "/devices/overlay");
+  }
+
+  renameSelf(name: string): Promise<{ ok: boolean; self: DevicesView["self"] }> {
+    return this.json("PUT", "/devices/self", { name });
+  }
+
+  setBeacon(on: boolean): Promise<{ ok: boolean; beacon: DevicesView["beacon"] }> {
+    return this.json("PUT", "/devices/beacon", { on });
+  }
+
+  /** Open a pairing window: a phone's QR url, or a code another PC types in. */
+  openPairing(kind: DeviceKind): Promise<PairingWindow> {
+    return this.json("POST", "/devices/pairing", { kind });
+  }
+
+  /** Approve (grants may only narrow what was asked) or decline one pending request. */
+  answerPending(
+    pairingId: string,
+    choice: "approve" | "decline",
+    grants: readonly Grant[] | null,
+    expiresDays: number | null = null,
+  ): Promise<{ ok: boolean; state: string; peer: PeerView | null }> {
+    return this.json("POST", `/devices/pending/${encodeURIComponent(pairingId)}`, {
+      choice,
+      grants: grants === null ? null : [...grants],
+      expires_days: expiresDays,
+    });
+  }
+
+  /** Revoke a peer, at once: its next request is refused. */
+  revoke(peerId: string): Promise<{ ok: boolean; revoked: string }> {
+    return this.json("DELETE", `/devices/${encodeURIComponent(peerId)}`);
+  }
+
+  /** Ask the PC at `address` (an overlay address) to let this one in, with the code its person read out. */
+  join(address: string, code: string, grants: readonly Grant[], port?: number): Promise<{ ok: boolean; join: JoinView }> {
+    return this.json("POST", "/devices/join", {
+      address,
+      code,
+      requested_grants: [...grants],
+      ...(port !== undefined ? { port } : {}),
+    });
+  }
+
+  /** Send a message into another device's panel. 409 `window_closed` when Athena there is asleep. */
+  sendMessage(peerId: string, text: string, targetApp: string | null = null): Promise<{ ok: boolean; request_id: string }> {
+    return this.json("POST", `/devices/${encodeURIComponent(peerId)}/message`, { text, target_app: targetApp });
+  }
+
+  /**
+   * Another device's turn, relayed from `from` on: its channel events, then `remote.closed`. The
+   * stream also ends quietly after a while with nothing new; the caller comes back with `from` set
+   * to how many events it has.
+   */
+  async *turn(peerId: string, requestId: string, from: number, signal?: AbortSignal): AsyncGenerator<TurnFrame> {
+    const path = `/devices/${encodeURIComponent(peerId)}/turns/${encodeURIComponent(requestId)}?from=${from}`;
+    const response = await this.fetchImpl(`${this.endpoint.url}${path}`, { method: "GET", headers: this.headers(), signal });
+    if (!response.ok) throw await this.refusal(response);
+    if (!response.body) return;
+    for await (const frame of sseFrames(response.body)) yield turnFrameFromJson(frame);
+  }
+
+  /**
+   * The loopback event bus, until it ends (after a quiet stretch) or `signal` aborts. A frame of a
+   * kind this window does not act on is skipped. `fetch` and not `EventSource`, because an
+   * `EventSource` cannot send the token header.
+   */
+  async *events(signal?: AbortSignal): AsyncGenerator<BusEvent> {
+    const response = await this.fetchImpl(`${this.endpoint.url}/events`, { method: "GET", headers: this.headers(), signal });
+    if (!response.ok) throw await this.refusal(response);
+    if (!response.body) return;
+    for await (const frame of sseFrames(response.body)) {
+      const event = busEventFromJson(frame);
+      if (event) yield event;
+    }
+  }
+
+  /** Take a message another device sent: its turn will run here. 404 when it is no longer offered. */
+  acceptRemote(requestId: string): Promise<Record<string, unknown>> {
+    return this.json("POST", `/remote/${encodeURIComponent(requestId)}/accept`, {});
+  }
+
+  /** Tell the daemon a remote exchange is over: `finished`, or the reason it could not go on. */
+  endRemote(requestId: string, reason: string, detail = ""): Promise<Record<string, unknown>> {
+    return this.json("POST", `/remote/${encodeURIComponent(requestId)}/end`, { reason, detail });
+  }
+
   private headers(): Record<string, string> {
     return { "X-Athena-Token": this.endpoint.token, "Content-Type": "application/json" };
   }
@@ -362,14 +480,18 @@ export class DaemonApi {
   private async refusal(response: Response): Promise<ApiError> {
     let reason = "unknown";
     let detail = "";
+    let word = "";
+    let device = "";
     try {
-      const payload = (await response.json()) as { reason?: string; detail?: string };
+      const payload = (await response.json()) as { reason?: string; detail?: string; error?: unknown; name?: unknown };
       reason = payload.reason ?? reason;
       detail = payload.detail ?? "";
+      word = typeof payload.error === "string" ? payload.error : "";
+      device = typeof payload.name === "string" ? payload.name : "";
     } catch {
       // A refusal that is not JSON is still a refusal; the status is what the panel shows.
     }
-    return new ApiError(response.status, reason, detail);
+    return new ApiError(response.status, reason, detail, word, device);
   }
 }
 

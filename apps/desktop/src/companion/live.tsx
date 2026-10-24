@@ -32,6 +32,7 @@ import {
   onOffer,
   onOrient,
   onPtt,
+  onSetup,
   onSnap,
   onSummon,
   pttHandler,
@@ -385,6 +386,28 @@ export default function Live() {
     };
   }, [rt]);
 
+  // "Set up with Athena" on Main's Devices page (ADR 0140, WP4): the setup session is handed here,
+  // the person's turns go to it until they leave it, and her Talk tab opens. Nothing is sent.
+  useEffect(() => {
+    if (!hasShell()) return;
+    let off: (() => void) | null = null;
+    let alive = true;
+    onSetup((session) => {
+      useRun.getState().enterSetup(session);
+      rt.dispatch({ t: "open" });
+      rt.dispatch({ t: "tab", tab: "talk" });
+    })
+      .then((unlisten) => {
+        if (alive) off = unlisten;
+        else unlisten();
+      })
+      .catch(report("listen setup"));
+    return () => {
+      alive = false;
+      off?.();
+    };
+  }, [rt]);
+
   const actions: CompanionActions = {
     seal: () => rt.dispatch({ t: "seal" }),
     approve: (by) => rt.dispatch({ t: "decide", kind: "approve", by }),
@@ -393,6 +416,7 @@ export default function Live() {
     send: (message) => void run.send(message).catch(report("send")),
     stop: () => void run.stop().catch(report("stop")),
     clear: () => run.clear(),
+    leaveSetup: () => run.leaveSetup(),
     clearProject: () =>
       void run.doneProject().then((problem) => {
         if (problem) console.error(`[athena] done: ${problem}`);

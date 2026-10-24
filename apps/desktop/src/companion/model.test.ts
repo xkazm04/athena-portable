@@ -97,6 +97,11 @@ test("the host is the origin's host, and the block reason is one sentence at a t
   expect(selectCompanion(inputs({ origin: null })).talk.blocked).toMatch(/Open a page first/);
   expect(selectCompanion(inputs({ daemonReady: false })).talk.blocked).toMatch(/not running yet/);
   expect(blockedBecause(true, "https://a.test", true)).toMatch(/already running/);
+  // The setup conversation (ADR 0140) is a session of its own: no page has to be open for it.
+  const setup = selectCompanion(inputs({ origin: null, run: { phase: "idle", transcript: [], cards: [], summary: null, error: null, setup: { origin: "athena://setup" } } }));
+  expect(setup.talk.blocked).toBe("");
+  expect(setup.talk.ready).toBe(true);
+  expect(setup.talk.setup).toBe(true);
   expect(hostOf(null)).toBeNull();
 });
 

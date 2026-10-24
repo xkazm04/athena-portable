@@ -14,6 +14,7 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import { PTT_EVENT, type PttPayload } from "@/lib/halo-signal";
 import { call, hasShell, on } from "@/lib/ipc";
+import type { SetupSession } from "@/lib/setup";
 import { emitTo, type UnlistenFn } from "@tauri-apps/api/event";
 
 /** The eight named states, in the ADR's order; `face` is her face while she talks (the ADR on Athena's face). */
@@ -145,6 +146,24 @@ export async function athenaOffer(text: string, playbook?: Offer["playbook"]): P
 
 export const onOffer = (f: (offer: Offer) => void): Promise<UnlistenFn> =>
   on<Offer>(OFFER_EVENT, f);
+
+// -- the setup conversation ----------------------------------------------------------------------
+
+/** Main hands her the setup session "Set up with Athena" opened (ADR 0140, WP4). */
+export const SETUP_EVENT = "athena:setup";
+
+/**
+ * Put her in the setup conversation and bring her up on her Talk tab. Like an offer, nothing is
+ * sent: the person types the first message. Without a shell this rejects (`lib/ipc.ts`).
+ */
+export async function athenaSetup(session: SetupSession): Promise<void> {
+  if (!hasShell()) throw new Error("Athena's window is only there in the app.");
+  await emitTo("athena", SETUP_EVENT, session);
+  await athenaShow();
+}
+
+export const onSetup = (f: (session: SetupSession) => void): Promise<UnlistenFn> =>
+  on<SetupSession>(SETUP_EVENT, f);
 
 // -- the global push-to-talk ---------------------------------------------------------------------
 

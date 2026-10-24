@@ -1,0 +1,29 @@
+<!doctype html>
+<!-- The phone page (ADR 0140, WP4): served by the beacon at /m/, no build step, no framework. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="referrer" content="no-referrer" />
+    <meta name="theme-color" content="#0d1b1e" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-title" content="Athena" />
+    <title>Athena</title>
+    <link rel="manifest" href="manifest.webmanifest" />
+    <link rel="icon" href="icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="icon.svg" />
+    <link rel="stylesheet" href="app.css" />
+    <script type="module" src="app.js"></script>
+  </head>
+  <body>
+    <header class="top">
+      <img class="mark" src="icon.svg" alt="" width="28" height="28" />
+      <h1 id="title">Athena</h1>
+      <span id="status" class="status" role="status" aria-live="polite"></span>
+    </header>
+    <main id="app" aria-live="polite">
+      <p class="note">Opening...</p>
+    </main>
+    <noscript><p class="note">This page needs JavaScript to talk to Athena.</p></noscript>
+  </body>
+</html>

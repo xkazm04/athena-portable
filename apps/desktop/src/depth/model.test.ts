@@ -38,7 +38,7 @@ function everyPath(): Path[] {
     out.push({ root: "accounts", item: id, sub: { kind: "allowlist" } });
   }
   for (const item of ["studio", "settings"]) out.push({ root: "voice", item });
-  for (const item of ["engine", "brain", "look", "data", "mic"]) out.push({ root: "mind", item });
+  for (const item of ["engine", "brain", "look", "data", "mic", "devices"]) out.push({ root: "mind", item });
   return out;
 }
 

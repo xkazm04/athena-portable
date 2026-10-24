@@ -2,7 +2,8 @@
 
 ``GET /peer/hello`` (token)
     ``{device_id, name, beacon, window_open, setup_phase}`` - who this is and what it is doing.
-    ``setup_phase`` is ``null`` until WP4's setup leg has a phase to report.
+    ``setup_phase`` is ``null`` until this device's person opens a setup conversation, then one
+    word from :meth:`athena.peer.setup.SetupState.phase` (WP4).
 
 ``POST /peer/pair/request`` (open, address-gated)
     ``{pairing_id, nonce}`` from a phone's QR, or ``{code}`` typed on a PC, plus ``name``,
@@ -49,7 +50,7 @@ def hello(host: PeerHost, request: Request) -> Reply:
         "name": me.name,
         "beacon": host.beacon,
         "window_open": host.pairings.window_open(),
-        "setup_phase": None,
+        "setup_phase": host.setup_phase(),
     }
 
 

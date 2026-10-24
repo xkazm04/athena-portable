@@ -121,6 +121,13 @@ PEER_REASONS: dict[str, str] = {
     "parse_error": "parse_error",
     "not_found": "unknown",
     "peer_unreachable": "outcome_unknown",
+    # The remote composer's (ADR 0140, WP3). A message no window took within the offer: nothing
+    # ran, so not ``outcome_unknown``; the offer ran out, which is ``timeout``.
+    "window_closed": "timeout",
+    # A valid token asking for a turn another device sent: the token is not this turn's.
+    "not_sender": "foreign_token",
+    # Too many messages already waiting here: a bound was hit, as the continuation budget is.
+    "busy": "budget_exhausted",
 }
 
 
@@ -393,6 +400,8 @@ class PeerHost:
         self.beacon = False
         self.joins: dict[str, Join] = {}
         self.bind_error: str | None = None
+        #: ``hello``'s ``setup_phase``: ``None`` until WP4's setup state replaces it (ADR 0140).
+        self.setup_phase: Callable[[], str | None] = lambda: None
         self._lock = threading.RLock()
         self._server: PeerServer | None = None
         self._serve_thread: threading.Thread | None = None

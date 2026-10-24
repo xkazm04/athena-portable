@@ -27,6 +27,7 @@ import { brainFact, engineFact, micFact, type Standing } from "@/modules/setup/r
 import EngineSection, { RestartNoticeBar } from "@/scenes/shared/EngineSection";
 import { THEME_CHOICES, TYPE_SCALES } from "@/stores/settings";
 
+import DevicesLevel, { type DevicesModel } from "./devices";
 import "./mind.css";
 import {
   THEME_HINTS,
@@ -44,6 +45,7 @@ const NAME: Record<Instrument, string> = {
   look: "Look",
   data: "Data",
   mic: "Microphone",
+  devices: "Devices",
 };
 
 const STANDING_WORD: Record<Standing, string> = {
@@ -67,21 +69,23 @@ const MOTION_HINTS: Record<(typeof MOTION_CHOICES)[number], string> = {
   full: "Keep the motion, whatever the system asks.",
 };
 
-const INSTRUMENTS: readonly Instrument[] = ["engine", "brain", "look", "data", "mic"];
+const INSTRUMENTS: readonly Instrument[] = ["engine", "brain", "look", "data", "mic", "devices"];
 
 export interface MindProps {
   model: SetupModel;
   path: Path;
   go: (to: Path) => void;
+  /** The Devices level's model (ADR 0140); `null` where nothing mirrors the devices yet. */
+  devices?: DevicesModel | null;
 }
 
 const item = (i: Instrument): Path => ({ root: "mind", item: i });
 
-export default function MindView({ model, path, go }: MindProps) {
+export default function MindView({ model, path, go, devices = null }: MindProps) {
   const level = path.item as Instrument | undefined;
   if (level === undefined) return <Field model={model} go={go} />;
   if (!INSTRUMENTS.includes(level)) return <Missing name={level} go={go} />;
-  return <Level model={model} which={level} go={go} />;
+  return <Level model={model} which={level} go={go} devices={devices} />;
 }
 
 /** One line of how an instrument stands, in the module's own words. */
@@ -109,6 +113,8 @@ function lineOf(model: SetupModel, which: Instrument): { word: string | null; to
         tone: STANDING_TONE[micFact(model).standing],
         line: micSentence(model),
       };
+    case "devices":
+      return { word: null, tone: "neutral", line: "Your other computers and your phone, as one Athena." };
   }
 }
 
@@ -197,7 +203,17 @@ function Field({ model, go }: { model: SetupModel; go: (to: Path) => void }) {
   );
 }
 
-function Level({ model, which, go }: { model: SetupModel; which: Instrument; go: (to: Path) => void }) {
+function Level({
+  model,
+  which,
+  go,
+  devices,
+}: {
+  model: SetupModel;
+  which: Instrument;
+  go: (to: Path) => void;
+  devices: DevicesModel | null;
+}) {
   const { word, line } = lineOf(model, which);
   return (
     <div className="mind mind--level">
@@ -214,6 +230,12 @@ function Level({ model, which, go }: { model: SetupModel; which: Instrument; go:
         {which === "look" && <Look model={model} />}
         {which === "data" && <Data model={model} />}
         {which === "mic" && <Mic model={model} />}
+        {which === "devices" &&
+          (devices ? (
+            <DevicesLevel model={devices} />
+          ) : (
+            <p className="typo-caption">The devices are read once Athena is running.</p>
+          ))}
         <Button variant="ghost" size="sm" onClick={() => go({ root: "mind" })}>
           Back to all settings
         </Button>

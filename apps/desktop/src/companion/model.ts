@@ -59,6 +59,8 @@ export interface CompanionActions {
   stop: () => void;
   /** Stop working on the active playbook (ADR 0044). */
   clearProject: () => void;
+  /** Leave the setup conversation (ADR 0140): the next message goes to the focused page again. */
+  leaveSetup: () => void;
   clear: () => void;
   pin: () => void;
   tab: (tab: LedgerTab) => void;
@@ -96,6 +98,7 @@ export const NO_ACTIONS: CompanionActions = {
   send: () => {},
   stop: () => {},
   clearProject: () => {},
+  leaveSetup: () => {},
   clear: () => {},
   pin: () => {},
   tab: () => {},
@@ -458,6 +461,8 @@ export interface CompanionModel {
     /** The playbook she is working on, sent with every turn; `null` when none (ADR 0044). Its
      *  plan comes from the bundled playbook when the id is one this build ships, else is empty. */
     project: ProjectView | null;
+    /** The person is in the setup conversation (ADR 0140): turns go to it, not to the page. */
+    setup: boolean;
   };
   record: RecordView;
   origins: {
@@ -502,6 +507,8 @@ export interface CompanionInputs {
     unticked?: Readonly<Record<string, true>>;
     ran?: Readonly<Record<string, string>>;
     earlier?: EarlierRecord | null;
+    /** The setup conversation, while the person is in it (ADR 0140); absent reads as not. */
+    setup?: { origin: string } | null;
   };
   voice: PanelVoice;
   daemonReady: boolean;
@@ -705,11 +712,13 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
       mainHidden: i.onboarded === false,
       working: busy,
       phrase: phraseFor(i.run.phase),
-      ready: i.daemonReady && i.origin !== null,
-      blocked: blockedBecause(i.daemonReady, i.origin, busy),
+      // The setup conversation needs no page: its session is the turn's origin (ADR 0140).
+      ready: i.daemonReady && (i.origin !== null || !!i.run.setup),
+      blocked: blockedBecause(i.daemonReady, i.run.setup ? i.run.setup.origin : i.origin, busy),
       host: hostOf(i.origin),
       draft: i.offer ?? { n: 0, text: "" },
       project: i.project ? projectView(i.project, i.shipped ?? []) : null,
+      setup: !!i.run.setup,
     },
     record: recordView({
       calls: i.run.calls ?? i.run.transcript,

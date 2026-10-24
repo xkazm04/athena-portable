@@ -21,7 +21,7 @@ from __future__ import annotations
 import json
 import re
 import unicodedata
-from collections.abc import Callable, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
@@ -44,6 +44,7 @@ from athena.contracts.registry import (
     parse_origin,
 )
 from athena.core.prompt import BUDGETS
+from athena.core.setup import SETUP_ID, SETUP_TOOLS, SETUP_TOOLS_ORIGIN, overlay_address, setup_name
 from athena.core.validators import all_of, fact_text, live_sources, schema_validator
 
 __all__ = [
@@ -55,6 +56,7 @@ __all__ = [
     "CoreServices",
     "build_catalog",
     "core_entries",
+    "setup_entries",
 ]
 
 #: A ``READ`` answer is capped before it becomes a system episode, and announces what it cut
@@ -229,6 +231,36 @@ def core_entries(services: CoreServices) -> list[ToolEntry]:
     ]
 
 
+def setup_entries(executors: Mapping[str, ExecutorFn]) -> list[ToolEntry]:
+    """The setup leg's names (ADR 0140, WP4), filed under ``connector:setup``.
+
+    The table is :data:`~athena.core.setup.SETUP_TOOLS`: the class, schema and description of each
+    are stated there and nowhere else, and ``executors`` - keyed by bare name, supplied by the
+    composition root from ``athena.peer.setup`` - only says how each one runs. A name with no
+    executor refuses honestly rather than vanishing, as an unattached core tool does.
+    """
+    entries: list[ToolEntry] = []
+    for tool in SETUP_TOOLS:
+        schema = dict(tool.params_schema)
+        validator = schema_validator(schema)
+        if tool.overlay_param is not None:
+            validator = all_of(validator, overlay_address(tool.overlay_param))
+        name = setup_name(tool.name)
+        entries.append(
+            ToolEntry(
+                name=name,
+                origin=SETUP_TOOLS_ORIGIN,
+                cls=tool.cls,
+                params_schema=schema,
+                description=tool.description,
+                validator=validator,
+                executor=executors.get(tool.name) or _unattached(name),
+                cap_chars=READ_CAP if tool.cls is ToolClass.READ else None,
+            )
+        )
+    return entries
+
+
 def _connector_executor(port: ConnectorPort, tool_name: str) -> ExecutorFn:
     """Bind one of a connector's tools to its port.
 
@@ -302,6 +334,9 @@ class Catalog:
         itself out of ``GATED`` any more than a page can. The one difference is the executor: a
         page is executed by the page, a connector by its port in the daemon's process.
         """
+        if connector_id == SETUP_ID:
+            # Reserved for the setup leg (ADR 0140): a vault connector by that id would replace it.
+            raise CatalogError(f"connector id {SETUP_ID!r} is reserved for the setup leg")
         manifest = HostManifest(
             app_id=connector_id,
             origin_kind="connector",
@@ -311,6 +346,18 @@ class Catalog:
             manifest,
             executor_for=lambda tool: _connector_executor(port, tool.name),
         )
+
+    def register_setup(self, executors: Mapping[str, ExecutorFn]) -> list[str]:
+        """File the setup leg's names under ``connector:setup``, in one assignment (ADR 0140).
+
+        Not a manifest merge: a manifest can derive only ``AUTO`` or ``GATED``, and the setup
+        reads are ``READ``. The classes come from :func:`setup_entries`, which reads the core's own
+        table, so nothing outside the core decides them. Which turns may address the names is
+        structural and the daemon's: every session but the setup one has the origin switched off.
+        """
+        staged = {entry.name: entry for entry in setup_entries(executors)}
+        self.connector[SETUP_TOOLS_ORIGIN] = staged
+        return sorted(staged)
 
     def _merge(
         self,

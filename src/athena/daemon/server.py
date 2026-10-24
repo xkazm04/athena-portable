@@ -69,6 +69,7 @@ from athena.channels.voice.backends import BACKENDS as VOICE_BACKENDS
 from athena.channels.voice.backends import backend_from_name
 from athena.channels.voice.ws import WebSocket, accept_key, protocol_token
 from athena.connectors.vault import Vault
+from athena.contracts.channel import ChannelEvent
 from athena.core.approvals import Approvals
 from athena.core.brain import Brain
 from athena.core.brain import paths as brain_paths
@@ -285,6 +286,11 @@ class AthenaDaemon:
     #: and turn id (ADR 0131)? Bound by wiring to the chores clock; ``True`` once per review, and
     #: the turn's ledger rows then say ``trigger_kind='schedule'``. ``None``: never.
     schedule_claim: Callable[[str, str], bool] | None = None
+    #: The remote composer's tee (ADR 0140): given a ``POST /run`` body's ``via``, what to call with
+    #: each event of that run so the device that sent the message reads it back, or ``None`` to tee
+    #: nothing. Bound by wiring to :meth:`athena.peer.remote.RemoteTurns.observer`; ``None`` here,
+    #: a ``via`` is ignored. It observes the run and changes nothing about it.
+    via_tee: Callable[[Any], Callable[[ChannelEvent], None] | None] | None = None
     #: The turns sent under a case, stamped as each begins (ADR 0127): what a case's receipt is
     #: joined by, whatever conversation each turn talked in. Opened on the daemon's brain.
     case_turns: CaseTurns = field(init=False, repr=False)

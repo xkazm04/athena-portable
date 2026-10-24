@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Athena">
+  <rect width="64" height="64" rx="16" fill="#0d1b1e"/>
+  <path d="M14 34a18 18 0 0 1 36 0z" fill="#3fb8a8"/>
+  <path d="M24 34v12M32 34v16M40 34v12" stroke="#3fb8a8" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <path d="M27 29l5-12 5 12M29 25h6" stroke="#0d1b1e" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+</svg>

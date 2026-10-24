@@ -60,7 +60,8 @@ const GRAMMAR: Readonly<
   chores: { items: "open", subs: { run: true, adopt: false, case: true } },
   accounts: { items: "open", subs: { allowlist: false } },
   voice: { items: ["studio", "settings"], subs: {} },
-  mind: { items: ["engine", "brain", "look", "data", "mic"], subs: {} },
+  // `devices`: this computer, the phone, pairing and the other computers (ADR 0140).
+  mind: { items: ["engine", "brain", "look", "data", "mic", "devices"], subs: {} },
 };
 
 export function isRoot(value: unknown): value is Root {

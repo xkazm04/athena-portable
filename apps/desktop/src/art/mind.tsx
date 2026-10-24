@@ -9,7 +9,7 @@ import type { ReactElement } from "react";
 
 import "./glyphs.css";
 
-export type Instrument = "engine" | "brain" | "look" | "data" | "mic";
+export type Instrument = "engine" | "brain" | "look" | "data" | "mic" | "devices";
 
 const ART: Record<Instrument, ReactElement> = {
   engine: (
@@ -48,6 +48,21 @@ const ART: Record<Instrument, ReactElement> = {
       <rect x="48" y="8" width="24" height="42" rx="12" fill="color-mix(in srgb, var(--accent) 16%, transparent)" stroke="var(--focus)" strokeWidth="2" />
       <path d="M36 38c0 14 10 22 24 22s24-8 24-22M60 60v14M46 76h28" stroke="var(--accent)" strokeWidth="2.4" />
       <path d="M94 28c4 4 4 12 0 16M100 22c8 8 8 22 0 30" stroke="var(--accent)" strokeOpacity=".5" strokeWidth="2" />
+    </g>
+  ),
+  // Two computers and a phone, one Athena: the screens joined by the private network's arc (ADR 0140).
+  devices: (
+    <g className="glyph__float" fill="none" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M30 26 Q60 2 90 26" stroke="var(--accent)" strokeOpacity=".5" strokeWidth="1.6" strokeDasharray="3 4" />
+      <rect x="8" y="30" width="40" height="28" rx="4" fill="color-mix(in srgb, var(--accent) 10%, transparent)" stroke="var(--focus)" strokeWidth="2" />
+      <path d="M20 66h16M28 58v8" stroke="var(--accent)" strokeWidth="2" />
+      <rect x="72" y="30" width="40" height="28" rx="4" fill="var(--card-bg)" stroke="var(--accent)" strokeWidth="2" />
+      <path d="M84 66h16M92 58v8" stroke="var(--accent)" strokeWidth="2" />
+      <rect x="51" y="44" width="18" height="32" rx="4" fill="color-mix(in srgb, var(--accent) 16%, transparent)" stroke="var(--focus)" strokeWidth="2" />
+      <circle cx="60" cy="70" r="1.6" fill="var(--foreground)" />
+      <circle cx="28" cy="44" r="3" fill="var(--foreground)" />
+      <circle cx="92" cy="44" r="3" fill="var(--foreground)" />
+      <circle cx="60" cy="56" r="2.4" fill="var(--status-success)" />
     </g>
   ),
 };

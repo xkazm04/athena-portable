@@ -63,6 +63,9 @@ class SurfaceTurn:
     pending_decisions: tuple[str, ...] = ()
     #: Origins the user switched off for this turn; their tools leave the capability block.
     disabled_origins: frozenset[str] = frozenset()
+    #: A turn of the setup conversation (ADR 0140, WP4): the frame carries the setup steps. Set
+    #: from the daemon's turn context, never from a request body.
+    setup: bool = False
 
 
 def tool_results_from(payloads: Sequence[Mapping[str, Any]]) -> tuple[ToolResult, ...]:
@@ -157,6 +160,7 @@ class FrameBuilder:
             active_project=turn.active_project,
             pending_decisions=turn.pending_decisions,
             disabled_origins=turn.disabled_origins,
+            setup=turn.setup,
         )
 
     def remember(self, conversation_id: str, frame: TurnFrame) -> None:

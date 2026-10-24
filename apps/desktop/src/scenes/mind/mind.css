@@ -274,3 +274,64 @@
   border-color: transparent;
   background: var(--primary);
 }
+
+/* The Devices level (ADR 0140): a pending request is a card; a conversation is a recessed log. */
+.devices__cards {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 10px;
+}
+.devices__card {
+  display: grid;
+  gap: 8px;
+  padding: 12px 14px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--line-strong);
+  background: color-mix(in srgb, var(--card-bg) 80%, transparent);
+}
+.devices__card p {
+  margin: 0;
+}
+.devices__pairing,
+.devices__join,
+.devices__message {
+  display: grid;
+  gap: 8px;
+}
+.devices__pairing p {
+  margin: 0;
+}
+.devices__code {
+  font-family: var(--font-mono);
+  letter-spacing: 0.08em;
+}
+.devices__joining {
+  margin: 0;
+  padding-left: 1.2em;
+}
+.devices__reply {
+  display: grid;
+  gap: 4px;
+  max-height: 18rem;
+  overflow: auto;
+  padding: 8px 12px;
+  border-radius: var(--radius-input);
+  border: 1px solid var(--line);
+  background: var(--recessed);
+}
+.devices__line {
+  margin: 0;
+  overflow-wrap: anywhere;
+}
+.devices__line--you {
+  font-weight: 600;
+}
+.devices__line--tool,
+.devices__line--card {
+  color: var(--muted-foreground);
+}
+.devices__line--problem {
+  color: var(--status-error);
+}

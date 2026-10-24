@@ -45,6 +45,7 @@ from athena.contracts.registry import Lane
 from athena.core.constitution import SECTIONS as CONSTITUTION_SECTIONS
 from athena.core.constitution import Constitution
 from athena.core.fence import fresh_nonce, wrap_untrusted
+from athena.core.setup import SETUP_GUIDE
 
 __all__ = [
     "BUDGETS",
@@ -140,6 +141,7 @@ BUDGETS: Mapping[str, int] = {
     "frame.memory": 12_000,
     "frame.episodes": 40_000,
     "frame.decisions": 4_000,
+    "frame.setup": 4_000,
 }
 
 #: How much of a host-state payload reaches the prompt before it is cut and announced.
@@ -403,6 +405,11 @@ def _decisions_block(
     return PromptBlock(name="frame.decisions", text=text, shown=shown, total=total, untrusted=True)
 
 
+def _setup_block() -> PromptBlock:
+    """The setup conversation's steps (ADR 0140, WP4). Ours, not a page's, so it is not fenced."""
+    return PromptBlock(name="frame.setup", text=SETUP_GUIDE)
+
+
 # --- composition ------------------------------------------------------------------------------
 
 
@@ -460,6 +467,7 @@ def compose(
     tool_result_limit: int = TOOL_RESULT_LIMIT,
     decision_limit: int = DECISION_LIMIT,
     host_state_chars: int = HOST_STATE_CHARS,
+    setup: bool = False,
 ) -> Composed:
     """Compose one turn into a system prompt and a user-message frame.
 
@@ -467,6 +475,9 @@ def compose(
     ``None`` on the first turn of a conversation. The composer keeps no state of its own: the
     delta is a function of its two arguments, so two callers cannot disagree about what the model
     was last shown.
+
+    ``setup`` is the daemon saying this turn is in the setup conversation (ADR 0140, WP4): the
+    frame then opens with ``frame.setup``, the steps of the setup leg. A surface cannot set it.
     """
     tag = nonce or fresh_nonce()
     recalled = _recall_blocks(recall, tag)
@@ -481,7 +492,8 @@ def compose(
 
     current = _snapshot(host_state)
     delta = _delta(current, previous_host_state)
-    frame_blocks: list[PromptBlock] = [
+    frame_blocks: list[PromptBlock] = [_setup_block()] if setup else []
+    frame_blocks += [
         _project_block(active_project),
         _host_state_block(current, delta, tag, host_state_chars),
         _tool_results_block(tool_results, tag, tool_result_limit),

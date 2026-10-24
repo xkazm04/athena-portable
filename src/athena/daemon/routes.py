@@ -76,6 +76,7 @@ from athena.contracts.registry import Lane, OpenApp, TurnContext, parse_origin
 from athena.core.catalog import CatalogError
 from athena.core.ledger import LedgerError
 from athena.core.recall import recall as recall_bundle
+from athena.core.setup import SETUP_SESSION_ORIGIN, SETUP_TOOLS_ORIGIN, SETUP_TURN_KEY
 from athena.daemon.sessions import Session, conversation_for
 from athena.harness.engines import EngineStatus
 from athena.lane.turn_frame import tool_results_from
@@ -617,6 +618,10 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
         else []
     )
     host_state = body.get("host_state")
+    # A message another device sent runs here as an ordinary turn; ``via`` only has its events
+    # copied back to that device (ADR 0140). It decides nothing and is ignored when unknown.
+    via = body.get("via")
+    observe = daemon.via_tee(via) if via is not None and daemon.via_tee is not None else None
     return EventStream(
         _turn_frames(
             daemon,
@@ -626,6 +631,7 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
             results=results,
             project=_active_project(body, project_id),
             scheduled=body.get("trigger") == SCHEDULE_TRIGGER,
+            observe=observe,
         )
     )
 
@@ -788,6 +794,7 @@ def turn_context(
     about which conversation, app or page origin the gate judges them against.
     """
     conversation = conversation_for(session, project_id)
+    disabled_origins, setup = setup_scope(daemon, session, disabled_origins)
     ctx = TurnContext(
         conversation_id=conversation,
         turn_id=ids.mint("turn"),
@@ -807,9 +814,29 @@ def turn_context(
         tab_nav=tab[1],
         tainted_by=tainted_by,
         open_apps=open_apps,
+        extra={SETUP_TURN_KEY: True} if setup else {},
     )
     daemon.sessions.touch(session.origin, session.app_id, tools=session.tools)
     return ctx
+
+
+def setup_scope(
+    daemon: AthenaDaemon, session: Session, disabled: frozenset[str]
+) -> tuple[frozenset[str], bool]:
+    """Which origins this turn has switched off, and whether it is a setup turn (ADR 0140, WP4).
+
+    The setup leg's names (``connector:setup``) are addressable in the setup session alone: every
+    other session gets that origin among its ``disabled_origins``, which takes the names out of its
+    prompt and has the gate refuse them there (policy rule 2). The setup session, in turn, has
+    every other page and connector switched off, so its prompt is Athena's own names and the
+    setup ones. A daemon with no setup names registered changes nothing.
+    """
+    if daemon.catalog.held(SETUP_TOOLS_ORIGIN) is None:
+        return disabled, False
+    if session.origin != SETUP_SESSION_ORIGIN:
+        return disabled | {SETUP_TOOLS_ORIGIN}, False
+    others = {o for o in daemon.catalog.origins if o not in ("core", SETUP_TOOLS_ORIGIN)}
+    return disabled | others, True
 
 
 def _active_project(body: Mapping[str, Any], project_id: str) -> dict[str, Any] | None:
@@ -834,8 +861,12 @@ def _turn_frames(
     results: tuple[Any, ...],
     project: Mapping[str, Any] | None,
     scheduled: bool = False,
+    observe: Callable[[ChannelEvent], None] | None = None,
 ) -> Generator[str, None, None]:
-    """The turn's frames: :func:`turn_events`, one SSE frame per event (ADR 0012)."""
+    """The turn's frames: :func:`turn_events`, one SSE frame per event (ADR 0012).
+
+    ``observe`` sees each event before its frame is written: the remote composer's tee (ADR 0140).
+    """
     for event in turn_events(
         daemon,
         ctx,
@@ -845,6 +876,8 @@ def _turn_frames(
         project=project,
         scheduled=scheduled,
     ):
+        if observe is not None:
+            observe(event)
         yield sse_frame(event)
 
 

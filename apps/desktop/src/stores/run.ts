@@ -23,7 +23,7 @@
  */
 import { create } from "zustand";
 
-import { ApiError, DaemonApi, type ExecuteRow, type ToolRow } from "@/lib/api";
+import { ApiError, DaemonApi, type ExecuteRow, type ToolRow, type TurnBody } from "@/lib/api";
 import { onLate, type BridgeTool, type LateAnswer } from "@/lib/bridge";
 import { driftOf, type ContractDrift, type ContractTable } from "@/lib/contract";
 import {
@@ -50,6 +50,8 @@ import type { Wire } from "@/lib/ipc";
 import { catalogIdOf, derivedIdOf, manifestBodyOf } from "@/lib/manifest";
 import { boundTabSentence, reasonOf, refusalSentence, switchedOffSentence } from "@/companion/plain";
 import { isTerminal, type ChannelEvent, type DecisionRequested, type TurnSummary } from "@/lib/events";
+import { followBus, type RemoteDecided, type RemoteMessage } from "@/lib/fleet";
+import { SETUP_ORIGIN, SETUP_TOOLS_ORIGIN, type SetupSession } from "@/lib/setup";
 import { hasShell, type StorePage, type Tab } from "@/lib/ipc";
 import { storeList, storeSet, type ActivityRow, type OriginRow } from "@/lib/store";
 import { endpoint, useDaemon } from "@/stores/daemon";
@@ -92,6 +94,19 @@ export interface TranscriptEntry {
   ok?: boolean;
   /** When it was written, as a UTC stamp (`lib/time.ts` reads it). Set on tool entries. */
   at?: string;
+  /** Set on a user entry another device sent (ADR 0140): that device's name. */
+  from?: string;
+}
+
+/**
+ * The remote exchange a request belongs to (ADR 0140): the device that sent the message and the
+ * daemon's id for it. Sent as `via` on every request of that exchange, so the daemon tees the
+ * runs back to the device that asked. It changes nothing about the turn.
+ */
+export interface Via {
+  peer_id: string;
+  request_id: string;
+  peer_name: string;
 }
 
 /** How the user's answer to one card ended. `refused` means the daemon did not take it. */
@@ -401,6 +416,33 @@ export interface RunState {
   loadEarlier: () => Promise<void>;
   /** Clears the transcript. A card the daemon is still holding is not part of it. */
   clear: () => void;
+  /** The remote exchange running now, or `null` (ADR 0140). */
+  via: Via | null;
+  /**
+   * Another device sent a message (`remote.message`): take it, and run it here exactly as if it
+   * had been typed - this page, these hands, this gate - with `via` on every request. A message
+   * that arrives while she is working waits for the exchange in progress. Each id is taken once.
+   */
+  remote: (message: RemoteMessage) => Promise<void>;
+  /**
+   * A peer answered one of this window's cards (`remote.decided`): the daemon already spent the
+   * grant, so the card goes and what it released runs on the page here, as a local approval's
+   * would, and the exchange continues.
+   */
+  remoteDecided: (event: RemoteDecided) => Promise<void>;
+  /**
+   * The setup conversation, while the person is in it (ADR 0140, WP4): "Set up with Athena" on the
+   * Devices page opened the daemon's setup session and handed it here. While it is set, every turn
+   * the person starts - and every continuation of one - runs on that session (`origin:
+   * athena://setup`) instead of the focused tab's, with no page, capture or tab sent: the daemon
+   * gives that session the setup steps and the `connector.setup.*` names and switches every page
+   * off for it. A remote exchange never runs on it. `null` outside it.
+   */
+  setup: SetupSession | null;
+  /** Enter the setup conversation. Nothing is sent: the person types the first message. */
+  enterSetup: (session: SetupSession) => void;
+  /** Leave it: the next message the person types goes to the focused page again. */
+  leaveSetup: () => void;
 }
 
 export const EMPTY = {
@@ -423,6 +465,8 @@ export const EMPTY = {
   slots: {} as Record<string, SheetSlot>,
   unticked: {} as Record<string, true>,
   ran: {} as Record<string, string>,
+  via: null as Via | null,
+  setup: null as SetupSession | null,
 };
 
 /** The production wiring: the daemon store for the endpoint, the tabs store for the page. */
@@ -822,6 +866,31 @@ export function withCaptureWhy(
   return { ...known, [card.id]: why };
 }
 
+/** Why a setup turn has no picture: it is about this computer, and no page is in it (ADR 0140). */
+export const NO_PAGE_CAPTURE = { id: null, why: "no picture: the setup conversation is about this computer, not a page" } as const;
+
+/**
+ * The body of one setup turn's `POST /run` (ADR 0140, WP4): the setup session's origin, the
+ * message, the page results it carries back and the switched-off list - nothing about a tab. The
+ * daemon's `setup_scope` switches every page and connector but setup off for this session anyway;
+ * leaving the tab out is what keeps a card it files unbound, so its approval needs no page.
+ */
+export function setupBody(
+  origin: string,
+  message: string,
+  carried: Array<Record<string, unknown>>,
+  taking: Pick<Snapshot, "disabledOrigins">,
+): TurnBody {
+  return {
+    origin,
+    message,
+    surface: "panel",
+    host_state: {},
+    tool_results: carried,
+    disabled_origins: taking.disabledOrigins,
+  };
+}
+
 export const NOTHING_GATED: GatedLists = { gated_origins: [], gated_tools: [] };
 
 /** Why a card proposed on another tab carries no screenshot (ADR 0106). */
@@ -1016,7 +1085,21 @@ export function setRunDeps(next: RunDeps): void {
   deps = next;
 }
 
+/**
+ * Remote messages already taken, by request id: the daemon offers each more than once (ADR 0140).
+ * Bounded; the oldest is forgotten first, long after the daemon stopped offering it.
+ */
+const taken = new Set<string>();
+const TAKEN_CAP = 256;
+
+/**
+ * One message waiting for the exchange in progress: another device's, or the person's own typed
+ * while a remote exchange ran. One exchange runs at a time either way (see `send`).
+ */
+type Waiting = { remote: RemoteMessage } | { local: string };
+
 export function resetRunForTests(): void {
+  taken.clear();
   deps = LIVE;
   clearUnsureForTests();
   useRun.setState({ ...EMPTY });
@@ -1025,6 +1108,16 @@ export function resetRunForTests(): void {
 export const useRun = create<RunState>((set, get) => {
   /** Host answers produced since the last request, waiting to ride the next frame. */
   let outstanding: Array<Record<string, unknown>> = [];
+
+  /** The remote exchange the next request belongs to, sent as `via` (ADR 0140). */
+  let via: Via | null = null;
+  /** The remote exchange each card was filed under, so its answer continues that exchange. */
+  const viaOf = new Map<string, Via>();
+  /**
+   * What waits for the exchange in progress, in arrival order: remote messages that arrived while
+   * she was working, and what the person typed while a remote exchange ran (ADR 0140).
+   */
+  const waiting: Waiting[] = [];
 
   /** Calls that timed out, by `<tab>|<page tool name>`, so a `late` answer can find its row. */
   const timedOut = new Map<string, { row: ExecuteRow; tier: number }>();
@@ -1221,6 +1314,7 @@ export const useRun = create<RunState>((set, get) => {
         });
         break;
       case "decision.requested":
+        if (via) viaOf.set(event.id, via);
         set((s) => ({
           cards: s.cards.some((c) => c.id === event.id)
             ? s.cards.map((c) => (c.id === event.id ? event : c))
@@ -1260,11 +1354,20 @@ export const useRun = create<RunState>((set, get) => {
     }
   }
 
-  /** Stream one turn. Returns `false` when the request itself was refused. */
-  async function consume(message: string, taking: Snapshot): Promise<boolean> {
+  /**
+   * Stream one turn. Returns `false` when the request itself was refused.
+   *
+   * `setup` is the setup conversation (ADR 0140, WP4): the request goes to that session, and
+   * carries no page - no capture, no tab, no other apps, no host state - because the daemon has
+   * switched every page off for it and a picture of whatever tab happens to be focused would be
+   * about something the turn cannot touch. The page results it carries, the stop and the cards
+   * are the same as any turn's.
+   */
+  async function consume(message: string, taking: Snapshot, setup: SetupSession | null = null): Promise<boolean> {
     const api = deps.api();
-    const focused = taking.focused;
-    if (!api || !focused) {
+    const focused = setup ? null : taking.focused;
+    const origin = setup?.origin ?? focused?.origin;
+    if (!api || origin === undefined) {
       fail(
         !api
           ? new ApiError(0, "not_ready", "the daemon is not ready")
@@ -1276,10 +1379,10 @@ export const useRun = create<RunState>((set, get) => {
     outstanding = [];
     request += 1;
     const mine = generation;
-    const flight = { origin: focused.origin, controller: new AbortController(), carried, sent: false };
+    const flight = { origin, controller: new AbortController(), carried, sent: false };
     inFlight = flight;
     // One capture of the focused tab per request. It never blocks the request and never fails it.
-    const taken = await captureOf(deps.capture, focused.tabId, focused.origin);
+    const taken = focused ? await captureOf(deps.capture, focused.tabId, focused.origin) : NO_PAGE_CAPTURE;
     set({ captureNow: taken.why });
     // Stopped while the screenshot was taken: the request never left, so the page results it was
     // to carry are still unheard and go with the person's next message (ADR 0115).
@@ -1291,13 +1394,13 @@ export const useRun = create<RunState>((set, get) => {
     flight.sent = true;
     // Spent on the first request after "Open and prepare" (ADR 0131), whatever it comes to: the
     // daemon decides whether it is the scheduled run's first turn; no later request asks again.
-    const scheduled = scheduleMark(get().project);
+    // A setup turn is no playbook's: the mark waits for the first turn on a page.
+    const scheduled = focused ? scheduleMark(get().project) : {};
     if (scheduled.trigger) set((s) => ({ project: s.project && { ...s.project, scheduled: false } }));
-    let opened = false;
-    let errored = false;
-    try {
-      for await (const event of api.run({
-        origin: focused.origin,
+    const body: TurnBody = !focused
+      ? setupBody(origin, message, carried, taking)
+      : {
+        origin,
         message,
         surface: "panel",
         ...(taken.id ? { capture_id: taken.id } : {}),
@@ -1320,7 +1423,13 @@ export const useRun = create<RunState>((set, get) => {
         ...(published.length ? { open_apps: openAppsOf(published) } : {}),
         ...activeProject(get().project),
         ...scheduled,
-      }, flight.controller.signal)) {
+        // Another device's message: the daemon copies this run's events back to it (ADR 0140).
+        ...(via ? { via: { peer_id: via.peer_id, request_id: via.request_id } } : {}),
+      };
+    let opened = false;
+    let errored = false;
+    try {
+      for await (const event of api.run(body, flight.controller.signal)) {
         // The daemon's turn ends at its last frame; what follows is the page's, with nothing to abort.
         opened = true;
         if (event.kind === "turn.error") errored = true;
@@ -1430,11 +1539,16 @@ export const useRun = create<RunState>((set, get) => {
     const taking = snapshotFrom(deps);
     snap = taking;
     const mine = generation;
-    if (!(await publish(taking))) return;
+    // The setup conversation is the person's own (ADR 0140, WP4): a remote exchange, which runs on
+    // this page as if typed here, never runs on it. Read once per exchange, like the tab: leaving
+    // the conversation mid-exchange takes effect at the next one. It registers no page.
+    const setup = via === null ? get().setup : null;
+    if (setup) published = [];
+    else if (!(await publish(taking))) return;
     let message = first;
     for (let step = 0; step <= MAX_CONTINUATIONS; step += 1) {
       if (mine !== generation) return;
-      if (!(await consume(message, taking))) return;
+      if (!(await consume(message, taking, setup))) return;
       // Stopped while the page ran her calls: what it answered waits for the person's next
       // message, and no continuation starts on its own (ADR 0115).
       if (mine !== generation) return;
@@ -1563,7 +1677,14 @@ export const useRun = create<RunState>((set, get) => {
     // The page that answers is the tab the card is bound to (ADR 0103, 0106): a card proposed on
     // another app's tab is answered in that app's name. A bound tab that is gone states nothing,
     // and the row's own origin decides - a decline still goes through.
-    const stated = card?.tab_id != null ? boundTab(card.tab_id, taking.focused)?.origin : taking.focused?.origin;
+    // A setup card (ADR 0140, WP4) is answered in the setup session's name, which is the session
+    // the daemon filed it under; whatever tab is focused has nothing to do with it.
+    const stated =
+      card?.origin === SETUP_TOOLS_ORIGIN
+        ? SETUP_ORIGIN
+        : card?.tab_id != null
+          ? boundTab(card.tab_id, taking.focused)?.origin
+          : taking.focused?.origin;
     let resolution;
     try {
       resolution = await api.resolve(id, choice, stated, undefined, taking.disabledOrigins);
@@ -1594,15 +1715,174 @@ export const useRun = create<RunState>((set, get) => {
     return { taken: true, result, reason: null, sentence: "", ran };
   }
 
+  /**
+   * Continue an exchange under `under` (ADR 0140): a card of a remote exchange, answered here or
+   * by a peer, continues that exchange, with `via` on its requests.
+   */
+  async function carryOnUnder(under: Via | null): Promise<void> {
+    const before = via;
+    via = under ?? via;
+    try {
+      await carryOn();
+    } finally {
+      via = before;
+    }
+  }
+
+  /**
+   * A remote exchange came to rest: unless a card of it still waits (its answer continues it), tell
+   * the daemon it is over and why, so the device that asked stops waiting (ADR 0140). The daemon
+   * closes on its own after a run with nothing left to carry; this covers the endings only the
+   * window sees - the continuation budget, a Stop, no page, a decline - and is harmless after one.
+   */
+  async function settle(under: Via | null, stopped: boolean, declined = false): Promise<void> {
+    if (!under) return;
+    const open = get().cards.some((card) => viaOf.get(card.id)?.request_id === under.request_id);
+    if (open) return;
+    const { phase, error } = get();
+    let reason = "finished";
+    let detail = "";
+    if (stopped) {
+      reason = "cancelled";
+      detail = "the person here stopped her";
+    } else if (declined) {
+      reason = "user_denied";
+      detail = "the card was declined";
+    } else if (phase === "error" && error) {
+      reason = error.reason;
+      detail = error.detail;
+    }
+    await deps
+      .api()
+      ?.endRemote(under.request_id, reason, detail)
+      .catch(() => undefined); // already closed, or expired: nothing is waiting on it
+  }
+
+  /** Run one remote message as an exchange of its own. */
+  async function runRemote(message: RemoteMessage): Promise<void> {
+    const under: Via = { peer_id: message.peer_id, request_id: message.request_id, peer_name: message.peer_name };
+    tainted = new Set();
+    push({ id: `r${message.request_id}`, kind: "user", text: `From ${message.peer_name}: ${message.text}`, from: message.peer_name });
+    const focused = deps.focused();
+    if (message.target_app && focused?.appId !== message.target_app) {
+      // The sender named an app this window is not on: nothing runs, and the sender is told why.
+      const line = `open ${message.target_app} on this computer first`;
+      push({ id: `rt${message.request_id}`, kind: "tool", text: `not run: ${line}`, ok: false }, false);
+      await deps.api()?.endRemote(under.request_id, "foreign_origin", line).catch(() => undefined);
+      return;
+    }
+    const mine = generation;
+    via = under;
+    set({ phase: "running", error: null, summary: null, continuations: 0, via: under });
+    try {
+      await exchange(message.text);
+    } finally {
+      via = null;
+      set({ via: null });
+    }
+    await settle(under, mine !== generation);
+  }
+
+  /** Run what waited - remote messages and the person's own - one exchange at a time, while she is free. */
+  async function drainRemote(): Promise<void> {
+    for (;;) {
+      const { phase } = get();
+      if (phase === "running" || phase === "acting" || exchanging > 0 || via !== null) return;
+      const next = waiting.shift();
+      if (!next) return;
+      if ("remote" in next) await runRemote(next.remote);
+      else await runLocal(next.local);
+    }
+  }
+
+  /** Run one message the person typed; its line is already in the transcript. */
+  async function runLocal(message: string): Promise<void> {
+    // The user spoke: what she reads from here on is a new exchange's (ADR 0105).
+    tainted = new Set();
+    set({ phase: "running", error: null, summary: null, continuations: 0 });
+    await exchange(message);
+  }
+
   return {
     ...EMPTY,
 
+    async remote(message) {
+      if (taken.has(message.request_id)) return;
+      taken.add(message.request_id);
+      if (taken.size > TAKEN_CAP) taken.delete(taken.values().next().value as string);
+      const api = deps.api();
+      if (!api) return;
+      try {
+        await api.acceptRemote(message.request_id);
+      } catch {
+        return; // no longer offered: the sender was already told this window is asleep
+      }
+      waiting.push({ remote: message });
+      await drainRemote();
+    },
+
+    async remoteDecided(event) {
+      const card = get().cards.find((c) => c.id === event.approval_id);
+      const under = viaOf.get(event.approval_id) ?? null;
+      if (!card) {
+        await get().reconcile();
+        return;
+      }
+      const mine = generation;
+      const approved = event.status === "approved";
+      set((s) => ({
+        cards: s.cards.filter((c) => c.id !== event.approval_id),
+        answered: [
+          {
+            id: event.approval_id,
+            action: card.action,
+            origin: card.origin,
+            result: approved ? "approved" : "user_denied",
+            reason: approved ? null : "user_denied",
+            at: now(),
+          },
+          ...s.answered,
+        ],
+      }));
+      const verb = approved ? "approved" : "declined";
+      push({ id: `${event.approval_id}_by`, kind: "tool", text: `${verb} on ${event.peer_name}: ${card.action}`, ok: approved }, false);
+      if (!approved) {
+        await settle(under, false, true);
+        return;
+      }
+      forgetUnsure(card.action);
+      const taking = snapshotFrom(deps);
+      for (const row of event.execute) await onPage(row, true, taking);
+      if (mine === generation) await carryOnUnder(under);
+      await settle(under, mine !== generation);
+      await drainRemote();
+    },
+
     async send(message: string) {
-      // The user spoke: what she reads from here on is a new exchange's (ADR 0105).
-      tainted = new Set();
       push({ id: `u${Date.now()}`, kind: "user", text: message });
-      set({ phase: "running", error: null, summary: null, continuations: 0 });
-      await exchange(message);
+      // Typed here while another device's message is running (ADR 0140): it waits for that exchange
+      // to end, and then runs as the person's own, without `via`. It is not run beside it without
+      // `via` because `via` is the exchange's, not the request's: while the remote exchange runs,
+      // every request this store sends belongs to it, and the daemon's writer lock takes one turn
+      // at a time anyway - two exchanges interleaved here would only trade page results
+      // (`outstanding`) between them, and the remote device would read the person's turn.
+      if (via !== null) {
+        push({ id: `uq${Date.now()}`, kind: "tool", text: `waiting: the message from ${via.peer_name} runs first`, ok: true }, false);
+        waiting.push({ local: message });
+        return;
+      }
+      await runLocal(message);
+      await drainRemote();
+    },
+
+    enterSetup(session) {
+      // Another window handed this over: only the setup session itself is taken (no page's origin).
+      if (session?.origin !== SETUP_ORIGIN || typeof session.conversation_id !== "string") return;
+      set({ setup: { origin: session.origin, conversation_id: session.conversation_id, phase: session.phase ?? null } });
+    },
+
+    leaveSetup() {
+      set({ setup: null });
     },
 
     async stop() {
@@ -1636,14 +1916,19 @@ export const useRun = create<RunState>((set, get) => {
 
     async answer(id, choice, settled) {
       const mine = generation;
+      const under = viaOf.get(id) ?? null;
       const out = await answerOne(id, choice, settled, false);
+      if (out?.taken && out.result !== "approved") await settle(under, false, true);
       if (!out?.taken || out.result !== "approved") return;
       if (mine !== generation) {
         // Stopped while the approved call ran: its result rides the next message (ADR 0115).
         set({ phase: "idle" });
+        await settle(under, true);
         return;
       }
-      await carryOn();
+      await carryOnUnder(under);
+      await settle(under, mine !== generation);
+      await drainRemote();
     },
 
     tick(id) {
@@ -1712,13 +1997,17 @@ export const useRun = create<RunState>((set, get) => {
       }
       settled?.(answered > 0 ? { ok: true, sentence: "" } : { ok: false, sentence: firstRefusal || refusalSentence("unknown") });
       await get().reconcile();
+      const under = viaOf.get(id) ?? null;
       if (mine !== generation) {
         // Stopped during the walk: what ran rides the next message, and nothing continues.
         set({ phase: "idle" });
+        await settle(under, true);
         return;
       }
       // One continuation for every row that ran, instead of one per row (ADR 0104).
-      await carryOn();
+      await carryOnUnder(under);
+      await settle(under, mine !== generation, !approving);
+      await drainRemote();
     },
 
     async reconcile() {
@@ -1839,6 +2128,7 @@ export const useRun = create<RunState>((set, get) => {
         slots: keep.slots,
         unticked: keep.unticked,
         ran: keep.ran,
+        via: keep.via,
       });
     },
   };
@@ -1874,11 +2164,23 @@ export function startRun(): () => void {
   const offRun = useRun.subscribe((s, prev) => {
     if (s.cards.length !== prev.cards.length) watch(s.cards.length);
   });
+  // Another device's message, or a peer's answer to a card here (ADR 0140). Her window is the one
+  // that runs turns, so it is the one that listens; only a shell has a daemon to listen to.
+  const offBus = hasShell()
+    ? followBus(
+        () => deps.api(),
+        (event) => {
+          if (event.kind === "remote.message") void useRun.getState().remote(event);
+          else if (event.kind === "remote.decided") void useRun.getState().remoteDecided(event);
+        },
+      )
+    : () => {};
   // A call that timed out and then finished (ADR 0101). Only a shell's relay emits it.
   const offLate = hasShell()
     ? onLate((answer) => useRun.getState().late(answer)).catch(() => null)
     : Promise.resolve(null);
   stopRun = () => {
+    offBus();
     offDaemon();
     offRun();
     void offLate.then((off) => off?.());

@@ -183,3 +183,21 @@ def test_serve_takes_the_peer_port_and_can_go_without_the_peer_surface() -> None
     args = build_parser().parse_args([])
     assert args.peer_port == 17491 and args.no_peer is False
     assert build_parser().parse_args(["--no-peer", "--peer-port", "18000"]).no_peer is True
+
+
+def test_every_peer_word_collapses_onto_a_member_of_the_shared_vocabulary() -> None:
+    # ``reason`` is the daemon's closed ERROR_REASONS (the list gate.js mirrors, held equal by
+    # tests/test_refusal_parity.py), so no peer word adds a member: each maps onto one, and none
+    # of the remote composer's words falls through to ``unknown``.
+    from athena.contracts.harness import ERROR_REASONS
+    from athena.peer.listener import PEER_REASONS, peer_error
+
+    assert set(PEER_REASONS.values()) <= set(ERROR_REASONS)
+    for word, reason in {
+        "window_closed": "timeout",
+        "not_sender": "foreign_token",
+        "busy": "budget_exhausted",
+    }.items():
+        _, body = peer_error(409, word, "detail")
+        assert body["reason"] == reason and body["error"] == word, word
+    assert peer_error(400, "a_word_nobody_declared")[1]["reason"] == "unknown"

@@ -1,0 +1,308 @@
+/* The phone page (ADR 0140, WP4). One column: what waits on you, then the conversation, then the
+ * composer. Machine = teal; the one human colour is spent on "waiting on you" and nothing else,
+ * as in her window (ADR 0139). */
+:root {
+  --bg: #0d1b1e;
+  --panel: #132a2e;
+  --panel-2: #183438;
+  --fg: #e8f1f0;
+  --muted: #9db3b1;
+  --line: #24464b;
+  --machine: #3fb8a8;
+  --on-machine: #06201c;
+  --human: #f0a35e;
+  --on-human: #2a1606;
+  --danger: #f08a7e;
+  --radius: 14px;
+  --font: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+  color-scheme: dark;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--fg);
+  font: 16px/1.45 var(--font);
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  min-height: 100dvh;
+  display: flex;
+  flex-direction: column;
+  padding: env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom)
+    env(safe-area-inset-left);
+}
+
+.top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--line);
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 1;
+}
+
+.top h1 {
+  font-size: 17px;
+  font-weight: 600;
+  margin: 0;
+  flex: 1;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.status {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.status.off {
+  color: var(--danger);
+}
+
+main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px;
+  max-width: 640px;
+  width: 100%;
+  margin: 0 auto;
+}
+
+.note {
+  color: var(--muted);
+  margin: 0;
+}
+
+.panel {
+  background: var(--panel);
+  border: 1px solid var(--line);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.panel h2 {
+  font-size: 18px;
+  margin: 0;
+}
+
+.panel p {
+  margin: 0;
+}
+
+label {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+input,
+textarea {
+  font: inherit;
+  color: var(--fg);
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  border-radius: 10px;
+  padding: 10px 12px;
+  width: 100%;
+}
+
+textarea {
+  resize: none;
+  min-height: 44px;
+  max-height: 160px;
+}
+
+input:focus-visible,
+textarea:focus-visible,
+button:focus-visible {
+  outline: 2px solid var(--machine);
+  outline-offset: 2px;
+}
+
+button {
+  font: inherit;
+  font-weight: 600;
+  border: 0;
+  border-radius: 10px;
+  padding: 10px 16px;
+  min-height: 44px;
+  background: var(--machine);
+  color: var(--on-machine);
+  cursor: pointer;
+}
+
+button.quiet {
+  background: transparent;
+  color: var(--fg);
+  border: 1px solid var(--line);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: default;
+}
+
+.row {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+/* what waits on you */
+.cards {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.card {
+  border: 1px solid var(--human);
+  border-radius: var(--radius);
+  padding: 14px;
+  background: var(--panel);
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.card .eyebrow {
+  color: var(--human);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+.card .what {
+  font-weight: 600;
+}
+
+.card .why {
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.card details {
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.card pre {
+  white-space: pre-wrap;
+  word-break: break-word;
+  margin: 6px 0 0;
+  font-size: 12px;
+}
+
+.card .sign {
+  background: var(--human);
+  color: var(--on-human);
+}
+
+.card .fine {
+  font-size: 12px;
+  color: var(--muted);
+}
+
+/* the conversation */
+.log {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.msg {
+  max-width: 88%;
+  padding: 10px 12px;
+  border-radius: 14px;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+.msg.you {
+  align-self: flex-end;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+}
+
+.msg.her {
+  align-self: flex-start;
+  background: var(--panel);
+  border: 1px solid var(--line);
+}
+
+.msg.step {
+  align-self: flex-start;
+  font-size: 13px;
+  color: var(--muted);
+  padding: 2px 4px;
+}
+
+.msg.trouble {
+  align-self: flex-start;
+  color: var(--danger);
+  font-size: 14px;
+}
+
+.composer {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  padding: 8px 0 4px;
+  display: flex;
+  gap: 8px;
+  align-items: flex-end;
+}
+
+.composer textarea {
+  flex: 1;
+}
+
+.banner {
+  border-radius: 10px;
+  padding: 10px 12px;
+  background: var(--panel-2);
+  border: 1px solid var(--line);
+  font-size: 14px;
+}
+
+.banner.off {
+  border-color: var(--danger);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .msg,
+  .card {
+    animation: rise 0.3s cubic-bezier(0.22, 0.8, 0.2, 1);
+  }
+}
+
+@keyframes rise {
+  from {
+    opacity: 0;
+    transform: translateY(4px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
