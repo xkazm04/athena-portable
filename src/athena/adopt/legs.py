@@ -20,6 +20,10 @@ extract_json`), its top level checked against the leg's schema (:func:`~athena.c
 check_schema`) and then by the caller's own ``check``; a problem is sent back once with the
 answer it found wrong, and a second problem is a ``malformed`` leg the loop degrades around.
 
+**Not only the studio's.** The sleep cycle's two legs (ADR 0143), ``sleep.compress`` and
+``sleep.merge``, are run through this door too: a ``sleep.*`` kind is its own ledger ``trigger``
+(``sleep.compress``, where an adopt leg's is ``adopt.<kind>``) on the surface ``sleep``.
+
 **A warm session for the interviewer.** Personas measured 2.2 s against 4.4 s to first text with
 one long-lived ``--input-format stream-json`` process per conversation, so the ``interview`` kind
 keeps one (:class:`WarmSession`) for the life of an adopt session. It is killed on close and
@@ -84,6 +88,8 @@ DEFAULT_TIMEOUT_S: dict[str, float] = {
     "shape": 300.0,
     "persona": 120.0,
     "judge": 180.0,
+    "sleep.compress": 300.0,
+    "sleep.merge": 300.0,
 }
 
 #: What a malformed answer is sent back with, once.
@@ -95,6 +101,9 @@ RETRY_NOTE = (
 #: Ledger columns for a leg (README §2 invariant 6): an adopt leg belongs to no page.
 ORIGIN = "core"
 SURFACE = "adopt"
+#: A leg kind under this prefix is the sleep cycle's (ADR 0143): its own trigger and surface.
+SLEEP_PREFIX = "sleep."
+SLEEP_SURFACE = "sleep"
 
 
 # --- tiers --------------------------------------------------------------------------------------
@@ -673,15 +682,16 @@ class LegRunner:
         engine: str = ENGINE,
     ) -> None:
         """One ledger row and one usage call for one invocation, whatever it produced."""
+        sleep = result.kind.startswith(SLEEP_PREFIX)
         if self.ledger is not None:
             try:
                 self.ledger.record(
                     engine=engine,
                     model=result.model,
-                    conversation=conversation or "adopt",
+                    conversation=conversation or (SLEEP_SURFACE if sleep else "adopt"),
                     origin=ORIGIN,
-                    surface=SURFACE,
-                    trigger=f"adopt.{result.kind}",
+                    surface=SLEEP_SURFACE if sleep else SURFACE,
+                    trigger=result.kind if sleep else f"adopt.{result.kind}",
                     rounds=1,
                     input_tokens=result.input_tokens,
                     output_tokens=result.output_tokens,

@@ -43,6 +43,10 @@ import secrets
 #:
 #: ``task`` is one job Athena delegated to a background run (ADR 0141). Its conversation is derived
 #: from it - ``conv_task_<hex>``, the same hex - by :func:`conversation_for_task`, never assembled.
+#:
+#: ``cycle`` is one pass of the sleep cycle (ADR 0143): its row in ``companion_cycle`` and the
+#: journal it leaves under ``cycles/``. ``proposal`` is one thing that pass offers a person to keep
+#: or forget, rather than deciding it (``companion_proposal``).
 ID_PREFIXES: dict[str, str] = {
     "episode": "ep_",
     "fact": "fact_",
@@ -58,6 +62,8 @@ ID_PREFIXES: dict[str, str] = {
     "device": "dev_",
     "pairing": "pair_",
     "task": "task_",
+    "cycle": "cyc_",
+    "proposal": "prp_",
 }
 
 #: kind → how many hex digits ``mint`` puts after the prefix.

@@ -32,7 +32,18 @@ FoundReason = Literal["", "shaped"]
 AnswerVia = Literal["text", "voice"]
 
 #: Every model call names its kind; the tier bench picks the model and effort per kind (tiers.json).
-LegKind = Literal["interview", "audit", "research", "shape", "persona", "judge", "intake"]
+#: The two ``sleep.*`` kinds are the sleep cycle's legs (ADR 0143), which go through the same door.
+LegKind = Literal[
+    "interview",
+    "audit",
+    "research",
+    "shape",
+    "persona",
+    "judge",
+    "intake",
+    "sleep.compress",
+    "sleep.merge",
+]
 LEG_KINDS: tuple[LegKind, ...] = (
     "interview",
     "audit",
@@ -41,6 +52,8 @@ LEG_KINDS: tuple[LegKind, ...] = (
     "persona",
     "judge",
     "intake",
+    "sleep.compress",
+    "sleep.merge",
 )
 VerdictFit = Literal["template", "custom"]
 Effort = Literal["low", "medium"]

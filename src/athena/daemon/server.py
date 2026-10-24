@@ -228,12 +228,18 @@ class ThreadLocks:
     its users and goes when the last one leaves, so a daemon that has talked in a thousand
     conversations holds no lock for any that is quiet. The guard is only ever held around the map,
     never while a lock is waited for.
+
+    The sleep cycle asks two more things of it (ADR 0143), because a cycle never starts beside a
+    live turn: whether any conversation's turn runs now (:meth:`busy_any`), and when the last one
+    ended (:meth:`last_released`), so it can wait out a quiet spell after it.
     """
 
     def __init__(self) -> None:
         self._guard = threading.Lock()
         #: conversation -> (its lock, how many holders and waiters it has)
         self._by_conversation: dict[str, tuple[threading.Lock, int]] = {}
+        #: ``time.monotonic()`` when a turn last gave its lock back; ``None`` before the first.
+        self._last_released: float | None = None
 
     def __len__(self) -> int:
         with self._guard:
@@ -244,6 +250,16 @@ class ThreadLocks:
         with self._guard:
             entry = self._by_conversation.get(conversation)
             return entry is not None and entry[0].locked()
+
+    def busy_any(self) -> bool:
+        """Whether a turn holds any conversation now. A snapshot, like :meth:`busy`."""
+        with self._guard:
+            return any(lock.locked() for lock, _ in self._by_conversation.values())
+
+    def last_released(self) -> float | None:
+        """``time.monotonic()`` when a turn last ended here, or ``None`` when none has."""
+        with self._guard:
+            return self._last_released
 
     def try_take(self, conversation: str) -> ThreadLease | None:
         """The conversation's lock if it is free now, or ``None`` when a turn holds it."""
@@ -275,6 +291,7 @@ class ThreadLocks:
     def _release(self, conversation: str) -> None:
         with self._guard:
             entry = self._by_conversation.get(conversation)
+            self._last_released = time.monotonic()
         if entry is not None:
             entry[0].release()
         self._leave(conversation)

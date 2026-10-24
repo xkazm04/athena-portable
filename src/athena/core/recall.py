@@ -24,8 +24,15 @@ who trusts it is being misled about all three. The blocks do not overlap — the
 excludes what the always tier already showed, and excludes it from its own M too — so nothing is
 counted twice and nothing is printed twice.
 
-Nothing here writes. The whole function runs on one :meth:`Brain.read_connection` handle, so it is
-safe to call from a daemon read route while a turn is writing (README §3.5, ADR 0003).
+The read runs on one :meth:`Brain.read_connection` handle, so it is safe to call from a daemon
+read route while a turn is writing (README §3.5, ADR 0003). The one write comes after the handle is
+closed: the distilled memories a recall showed are marked as used (:meth:`Brain.note_recalled`),
+which is what keeps them from fading. It never waits long and never fails a recall.
+
+**What the sleep cycle closed or faded** (ADR 0143). A memory another one supersedes is never
+served - its successor is - and a retired one is at importance 0, so both lanes already pass it
+by. A faded memory is still served: both distilled lanes rank by importance minus its fade steps,
+so it sinks below the memories in use, and a fade never hides anything.
 
 **A store that cannot be read says so** (ADR 0076). The first ``sqlite3.Error`` ends the recall:
 no further statement runs, every block is empty and renders ``memory could not be read: ...``
@@ -78,6 +85,11 @@ MACHINE_EPISODE_SLOTS = 2
 #: The kinds the keyword lane and the always tier draw from — everything except episodes, which
 #: have a window of their own.
 DISTILLED_KINDS: tuple[str, ...] = ("fact", "procedural")
+
+#: The SQL that keeps a superseded memory out of a lane (ADR 0143), for ``n`` a ``companion_node``.
+NOT_SUPERSEDED = "n.id NOT IN (SELECT superseded_id FROM companion_supersede)"
+#: A distilled memory's rank: its importance less its fade steps (``fd``, ``companion_fade``).
+FADED_RANK = "(n.importance - COALESCE(fd.steps, 0))"
 
 #: What every block of a recall that could not read the store says, before SQLite's own message.
 UNAVAILABLE_PREFIX = "memory could not be read: "
@@ -309,6 +321,7 @@ def recall(
     trace = RecallTrace(query=query, blocks=(always, keyword, episodes))
     if not keyword.total:
         trace.notes.append(NO_DISTILLED_MATCH)
+    _note_seen(brain, trace)
     return trace
 
 
@@ -349,7 +362,21 @@ def recall_whole(
     trace = RecallTrace(query=query, blocks=(keyword, episodes))
     if not keyword.total:
         trace.notes.append(NO_DISTILLED_MATCH)
+    _note_seen(brain, trace)
     return trace
+
+
+def _note_seen(brain: Brain, trace: RecallTrace) -> None:
+    """Mark the distilled memories this recall showed as used (ADR 0143), after the read.
+
+    Episodes do not fade, so only facts and procedurals are marked. A mark that cannot be written
+    is let go: it is a ranking hint, and the recall it rode on has already been answered. A reader
+    that can only read (an index opened for inspection) has nothing to mark with, and marks nothing.
+    """
+    seen = [memory.id for memory in trace.items if memory.kind in DISTILLED_KINDS]
+    note = getattr(brain, "note_recalled", None)
+    if seen and callable(note):
+        note(seen)
 
 
 def unavailable_trace(query: str, exc: sqlite3.Error, names: tuple[str, ...]) -> RecallTrace:
@@ -516,8 +543,8 @@ def _always_block(con: sqlite3.Connection) -> RecallBlock:
     marks = ",".join("?" for _ in DISTILLED_KINDS)
     total = _count(
         con,
-        f"""SELECT COUNT(*) FROM companion_node
-            WHERE importance >= ? AND kind IN ({marks})""",
+        f"""SELECT COUNT(*) FROM companion_node n
+            WHERE n.importance >= ? AND n.kind IN ({marks}) AND {NOT_SUPERSEDED}""",
         (ALWAYS_IMPORTANCE_FLOOR, *DISTILLED_KINDS),
     )
     items: list[Memory] = []
@@ -528,8 +555,9 @@ def _always_block(con: sqlite3.Connection) -> RecallBlock:
                 con,
                 f"""{_BODY_SELECT}, n.importance
                     FROM companion_node n LEFT JOIN companion_fts f ON f.rowid = n.rowid
-                    WHERE n.importance >= ? AND n.kind = ?
-                    ORDER BY n.importance DESC, n.created_at DESC LIMIT ?""",
+                    LEFT JOIN companion_fade fd ON fd.node_id = n.id
+                    WHERE n.importance >= ? AND n.kind = ? AND {NOT_SUPERSEDED}
+                    ORDER BY {FADED_RANK} DESC, n.created_at DESC LIMIT ?""",
                 (ALWAYS_IMPORTANCE_FLOOR, kind, cap),
             )
         )
@@ -556,16 +584,17 @@ def _keyword_block(
         con,
         f"""SELECT COUNT(*) FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
             WHERE companion_fts MATCH ? AND n.importance > 0 AND n.kind IN ({kind_marks})
-              AND n.id NOT IN ({skip_marks})""",
+              AND n.id NOT IN ({skip_marks}) AND {NOT_SUPERSEDED}""",
         params,
     )
     rows = _rows(
         con,
         f"""{_BODY_SELECT}, bm25(companion_fts)
             FROM companion_fts f JOIN companion_node n ON n.id = f.node_id
+            LEFT JOIN companion_fade fd ON fd.node_id = n.id
             WHERE companion_fts MATCH ? AND n.importance > 0 AND n.kind IN ({kind_marks})
-              AND n.id NOT IN ({skip_marks})
-            ORDER BY bm25(companion_fts) ASC LIMIT ?""",
+              AND n.id NOT IN ({skip_marks}) AND {NOT_SUPERSEDED}
+            ORDER BY {FADED_RANK} DESC, bm25(companion_fts) ASC LIMIT ?""",
         (*params, slots),
     )
     return RecallBlock(
