@@ -12,6 +12,13 @@ Per role kind (``interview``, ``audit``; ``shape`` apart), over every run of a c
    one that used least wins. (An exact tie in milliseconds never happens; a 5 % band is the
    bench's reading of "tiebreak".)
 
+**Comparable cells** (ADR 0145, :mod:`~athena.proving.adopt_tiers.cells`): only records of the
+current bench digest are loaded (the rest are counted, stale); :func:`pick_bench` puts out a config
+that did not complete every cell another config did (``covered k of N cells``), reads quality over
+the cells every remaining config completed (``paired n of N``), and ranks speed over the paired
+cells where every survivor ended clear or with a brief; the unconditioned p50 is kept beside it.
+:func:`pick_role` is the rule over stats already made comparable.
+
 If every config is disqualified, the best-accuracy one is kept and the pick says so. One config
 sets both ``interview`` and ``audit`` for a run, so their quality numbers are the same runs': the
 two roles differ only in which latency ranks them.
@@ -33,6 +40,16 @@ from pathlib import Path
 from typing import Any
 
 from athena.adopt.legs import TIERS_PATH, load_tiers
+from athena.proving.adopt_tiers.cells import (
+    bench_digest,
+    cell_digest,
+    cell_of,
+    conditioned,
+    coverage,
+    is_current,
+    paired,
+    restrict,
+)
 from athena.proving.adopt_tiers.scenarios import Scenario
 from athena.proving.adopt_tiers.score import percentile, score_interview
 from athena.proving.adopt_tiers.simulate import CONFIGS, read_record
@@ -43,11 +60,13 @@ __all__ = [
     "TIE_BAND",
     "ConfigStats",
     "Pick",
+    "Results",
     "ShapeStats",
     "aggregate",
     "aggregate_shape",
     "load_results",
     "pick_all",
+    "pick_bench",
     "pick_role",
     "pick_shape",
     "write_tiers",
@@ -101,26 +120,54 @@ class Pick:
     why: str
     fallback: bool = False
     disqualified: dict[str, list[str]] = field(default_factory=dict)
+    #: The n behind the pick (ADR 0145), 0 when it was not read over cells: the cells the plan
+    #: holds, the ones every surviving config completed, and of those the ones speed ranks over.
+    cells: int = 0
+    paired: int = 0
+    conditioned: int = 0
+    #: Per survivor, the p50 that ranked it (over the conditioned cells) and the p50 over every
+    #: paired cell, published beside it.
+    speed: dict[str, float | None] = field(default_factory=dict)
+    pooled: dict[str, float | None] = field(default_factory=dict)
+
+
+@dataclass
+class Results:
+    """The current-digest records on disk, and how many complete ones were left out as stale."""
+
+    interviews: list[dict[str, Any]]
+    shapes: list[dict[str, Any]]
+    stale: int = 0
+    digest: str = ""
 
 
 # --- loading --------------------------------------------------------------------------------
 
 
-def load_results(
-    run_dir: Path, scenarios: Sequence[Scenario]
-) -> tuple[list[dict[str, Any]], list[dict[str, Any]]]:
-    """The complete interview and shape records on disk for these scenarios."""
-    wanted = {s.id for s in scenarios}
+def load_results(run_dir: Path, scenarios: Sequence[Scenario]) -> Results:
+    """The complete interview and shape records on disk for these scenarios, of the current
+    bench digest; a complete record of another digest (or none) is counted in ``stale``."""
+    digests = {s.id: cell_digest(s) for s in scenarios}
+    stale = 0
 
     def read(folder: str) -> list[dict[str, Any]]:
+        nonlocal stale
         out: list[dict[str, Any]] = []
         for path in sorted((run_dir / folder).glob("*.json")):
             record = read_record(path)
-            if record and record.get("complete") and record.get("scenario") in wanted:
-                out.append(record)
+            if not record or not record.get("complete"):
+                continue
+            digest = digests.get(str(record.get("scenario")))
+            if digest is None:
+                continue
+            if not is_current(record, digest):
+                stale += 1
+                continue
+            out.append(record)
         return out
 
-    return read("interviews"), read("shape")
+    interviews, shapes = read("interviews"), read("shape")
+    return Results(interviews, shapes, stale, bench_digest(scenarios))
 
 
 # --- aggregation ----------------------------------------------------------------------------
@@ -240,11 +287,11 @@ def _fastest(
     ], f"within {TIE_BAND:.0%} of the fastest p50 ({best:.0f} ms) with {tied}; least usage"
 
 
-def pick_role(role: str, stats: Mapping[str, ConfigStats]) -> Pick:
-    """The pick for ``interview`` or ``audit``."""
+def _floor(
+    stats: Mapping[str, ConfigStats],
+) -> tuple[dict[str, ConfigStats], dict[str, list[str]]]:
+    """The configs that ran, and why each one out is out (the quality floor, or no runs)."""
     ran = {n: s for n, s in stats.items() if s.runs}
-    if not ran:
-        return Pick(role, None, "no complete runs")
     best = (
         max(s.accuracy for s in ran.values() if s.accuracy is not None)
         if any(s.accuracy is not None for s in ran.values())
@@ -268,22 +315,100 @@ def pick_role(role: str, stats: Mapping[str, ConfigStats]) -> Pick:
     for name in stats:
         if name not in ran:
             out[name] = ["no complete runs"]
-    survivors = [n for n in ran if n not in out]
-    speed = {n: _speed(role, s) for n, s in stats.items()}
-    usage = {n: _usage(role, s) for n, s in stats.items()}
-    if survivors:
-        name, why = _fastest(survivors, speed, usage)
-        return Pick(role, name, why, disqualified=out)
-    # Every config is out: keep the most accurate (speed breaks a tie) and say so.
+    return ran, out
+
+
+def _fallback(
+    role: str,
+    ran: Mapping[str, ConfigStats],
+    speed: Mapping[str, float | None],
+    out: dict[str, list[str]],
+) -> Pick:
+    """Every config is out: keep the most accurate (speed breaks a tie) and say so."""
     name = sorted(
         ran,
-        key=lambda n: (-(ran[n].accuracy or 0.0), speed[n] is None, speed[n] or 0.0),
+        key=lambda n: (-(ran[n].accuracy or 0.0), speed.get(n) is None, speed.get(n) or 0.0),
     )[0]
     why = (
         f"every config was disqualified; kept the best accuracy ({ran[name].accuracy}) "
         "— the floor is not met, read the report before trusting this pick"
     )
     return Pick(role, name, why, fallback=True, disqualified=out)
+
+
+def pick_role(role: str, stats: Mapping[str, ConfigStats]) -> Pick:
+    """The pick for ``interview`` or ``audit``, over stats already comparable."""
+    ran, out = _floor(stats)
+    if not ran:
+        return Pick(role, None, "no complete runs")
+    survivors = [n for n in ran if n not in out]
+    speed = {n: _speed(role, s) for n, s in stats.items()}
+    usage = {n: _usage(role, s) for n, s in stats.items()}
+    if survivors:
+        name, why = _fastest(survivors, speed, usage)
+        return Pick(role, name, why, disqualified=out)
+    return _fallback(role, ran, speed, out)
+
+
+def _pick_cells(
+    role: str, records: Sequence[Mapping[str, Any]], scenarios: Sequence[Scenario]
+) -> Pick:
+    """The pick for ``interview`` or ``audit`` over comparable cells (ADR 0145)."""
+    known = [r for r in records if str(r.get("config")) in CONFIGS]
+    cov = coverage(known)
+    if not cov:
+        return Pick(role, None, "no complete runs")
+    reps = max(cell_of(r)[1] for r in known)
+    expected = len(scenarios) * reps
+    union: set[tuple[str, int]] = set().union(*cov.values())
+    short = {
+        name: [f"covered {len(cells)} of {len(union)} cells"]
+        for name, cells in cov.items()
+        if cells < union
+    }
+    candidates = [n for n in cov if n not in short]
+    if not candidates:
+        # No config completed every cell another did: today's rule over each config's own
+        # runs, the coverage reasons first, and never a pick that claims the floor is met.
+        own = aggregate(known, scenarios)
+        ran, out = _floor(own)
+        for name, reasons in short.items():
+            out[name] = reasons + [r for r in out.get(name, []) if r not in reasons]
+        speed = {n: _speed(role, s) for n, s in own.items()}
+        return _fallback(role, ran, speed, out)
+    cells = paired(known, candidates)
+    stats = aggregate(restrict(known, candidates, cells), scenarios)
+    ran, out = _floor(stats)
+    out.update(short)
+    survivors = [n for n in ran if n not in out]
+    pooled = {n: _speed(role, s) for n, s in stats.items()}
+    usage = {n: _usage(role, s) for n, s in stats.items()}
+    n_of = f"paired {len(cells)} of {expected}"
+    if not survivors:
+        pick = _fallback(role, ran, pooled, out)
+        pick.why += f"; {n_of}"
+        pick.cells, pick.paired = expected, len(cells)
+        return pick
+    clear = conditioned(known, survivors, cells)
+    if clear:
+        timed = aggregate(restrict(known, survivors, clear), scenarios)
+        speed = {n: _speed(role, timed[n]) for n in survivors}
+        cond = f"speed over the {len(clear)} where every survivor ended clear or brief"
+    else:
+        speed = {n: pooled[n] for n in survivors}
+        cond = "no paired cell where every survivor ended clear or brief, speed over all of them"
+    name, why = _fastest(survivors, speed, usage)
+    return Pick(
+        role,
+        name,
+        f"{why}; {n_of}, {cond}",
+        disqualified=out,
+        cells=expected,
+        paired=len(cells),
+        conditioned=len(clear),
+        speed=speed,
+        pooled={n: pooled[n] for n in survivors},
+    )
 
 
 def pick_shape(stats: Mapping[str, ShapeStats], *, measured: bool, note: str = "") -> Pick:
@@ -328,6 +453,22 @@ def pick_all(
     return [
         pick_role("interview", stats),
         pick_role("audit", stats),
+        pick_shape(shape, measured=shape_measured, note=shape_note),
+    ]
+
+
+def pick_bench(
+    interviews: Sequence[Mapping[str, Any]],
+    scenarios: Sequence[Scenario],
+    shape: Mapping[str, ShapeStats],
+    *,
+    shape_measured: bool,
+    shape_note: str = "",
+) -> list[Pick]:
+    """The picks from the records themselves, over comparable cells (ADR 0145)."""
+    return [
+        _pick_cells("interview", interviews, scenarios),
+        _pick_cells("audit", interviews, scenarios),
         pick_shape(shape, measured=shape_measured, note=shape_note),
     ]
 

@@ -26,7 +26,7 @@ from athena.proving.adopt_tiers.pick import (
     aggregate,
     aggregate_shape,
     load_results,
-    pick_all,
+    pick_bench,
     write_tiers,
 )
 from athena.proving.adopt_tiers.report import dry_text, report_md, write_report
@@ -111,20 +111,30 @@ def main(argv: Sequence[str] | None = None, *, echo: Callable[[str], None] = pri
         failed = run_jobs(Rig(run_dir), plan, parallel=getattr(args, "parallel", 3), echo=say)
         return 1 if failed else 0
 
-    interviews, shapes = load_results(run_dir, scenarios)
+    results = load_results(run_dir, scenarios)
+    interviews = results.interviews
     stats = aggregate(interviews, scenarios)
-    shape_stats = aggregate_shape(shapes)
+    shape_stats = aggregate_shape(results.shapes)
     _, note = shape_function()
-    measured = bool(shapes)
-    picks = pick_all(stats, shape_stats, shape_measured=measured, shape_note=note)
+    measured = bool(results.shapes)
+    picks = pick_bench(interviews, scenarios, shape_stats, shape_measured=measured, shape_note=note)
     if verb == "report":
         text = report_md(
-            stats, shape_stats, picks, run_dir=run_dir, scenarios=len(scenarios), shape_note=note
+            stats,
+            shape_stats,
+            picks,
+            run_dir=run_dir,
+            scenarios=len(scenarios),
+            shape_note=note,
+            stale=results.stale,
+            digest=results.digest,
         )
         say(f"wrote {write_report(run_dir, text).as_posix()}")
         return 0 if interviews else 2
 
     # pick
+    if results.stale:
+        say(f"excluded {results.stale} stale record(s) from another bench digest")
     for p in picks:
         mark = " (fallback)" if p.fallback else ""
         say(f"{p.role}: {p.config or 'none'}{mark} — {p.why}")

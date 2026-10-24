@@ -12,6 +12,7 @@ import pytest
 from athena.adopt.slots import playbooks_root
 from athena.contracts.adopt import Brief
 from athena.proving.adopt_tiers.__main__ import main
+from athena.proving.adopt_tiers.cells import cell_digest
 from athena.proving.adopt_tiers.scenarios import SCENARIOS_DIR, load_scenario, load_scenarios
 from athena.proving.adopt_tiers.score import score_interview
 from athena.proving.adopt_tiers.simulate import (
@@ -66,11 +67,12 @@ def test_resume_skips_what_is_on_disk(tmp_path: Path) -> None:
     done = Job("interview", LEASE.id, "haiku-low", 1)
     unjudged = Job("interview", LEASE.id, "haiku-low", 2)
     broken = Job("interview", LEASE.id, "opus-medium", 1)
-    write_record(job_path(tmp_path, done), {"complete": True, "judge": {"ok": True}})
-    write_record(job_path(tmp_path, unjudged), {"complete": True, "judge": None})
+    stamp = {"bench_digest": cell_digest(LEASE)}
+    write_record(job_path(tmp_path, done), {"complete": True, "judge": {"ok": True}, **stamp})
+    write_record(job_path(tmp_path, unjudged), {"complete": True, "judge": None, **stamp})
     write_record(job_path(tmp_path, broken), {"complete": False, "failure": "persona"})
     shaped = Job("shape", LEASE.id, "haiku-low", 1)
-    write_record(job_path(tmp_path, shaped), {"complete": True})
+    write_record(job_path(tmp_path, shaped), {"complete": True, **stamp})
     plan = make_plan(scenarios, configs, 2, tmp_path, shape=True)
     kinds = {(j.kind, j.config, j.rep) for j in plan.jobs}
     assert ("interview", "haiku-low", 1) not in kinds
@@ -80,6 +82,7 @@ def test_resume_skips_what_is_on_disk(tmp_path: Path) -> None:
     assert ("interview", "opus-medium", 1) in kinds
     assert ("shape", "haiku-low", 1) not in kinds
     assert plan.interviews_done == 2 and plan.judged == 1 and plan.shapes_done == 1
+    assert plan.stale == 0
 
 
 # --- one conversation ----------------------------------------------------------------------------
@@ -91,6 +94,7 @@ def test_an_interview_runs_to_clear_on_the_configs_tier(tmp_path: Path) -> None:
     record = run_interview(rig, LEASE, "haiku-medium", 1)
     assert record["complete"], record["failure"]
     assert record["ended"] == "clear"
+    assert record["bench_digest"] == cell_digest(LEASE)
     assert record["rounds"] == 1
     kinds = [e["kind"] for e in record["events"]]
     assert "adopt.questions" in kinds and "adopt.clear" in kinds
@@ -199,6 +203,7 @@ def test_shape_adapter_validates_and_checks_portals(tmp_path: Path) -> None:
     rig = make_rig(tmp_path, FakeModel({}), library=playbooks_root())
     good = run_shape(rig, LEASE, "haiku-low", 1, _fake_shape(rename=True))
     assert good["complete"] and good["valid"] and good["portals_ok"], good["detail"]
+    assert good["bench_digest"] == cell_digest(LEASE)
     lazy = run_shape(rig, LEASE, "haiku-low", 2, _fake_shape(rename=False))
     assert lazy["valid"] and not lazy["portals_ok"]
     assert "Gmail" in lazy["portals_missing"]

@@ -3,7 +3,10 @@
 ``--dry`` prints what a run would do and how many model legs it would cost, and spends nothing.
 ``report`` writes ``report.md`` beside the results: one table per role (config, accuracy, false
 clears, repeats, judge, p50/p95, first text, usage), the pick and why, and the disqualified with
-their reasons. A number that was not measured is "-", never 0.
+their reasons. A number that was not measured is "-", never 0. A Comparability block (ADR 0145)
+names the bench digest, the stale records left out, and per role the paired and conditioned cells
+the pick was read over; each pick shows the conditioned p50 that ranked it beside the p50 over
+every paired cell.
 """
 
 from __future__ import annotations
@@ -83,6 +86,8 @@ def dry_text(plan: Plan) -> str:
         )
         + ")",
     ]
+    if plan.stale:
+        lines.append(f"{plan.stale} stale (another bench digest) will run again")
     return "\n".join(lines)
 
 
@@ -129,6 +134,20 @@ def _pick_lines(pick: Pick) -> list[str]:
     if pick.fallback:
         lines.append("")
         lines.append("> Every config was disqualified; this is the best-accuracy fallback.")
+    if pick.speed:
+        lines += [
+            "",
+            f"Speed ranked over the conditioned ({pick.conditioned} of {pick.paired} paired "
+            "cells) subset, where every survivor ended clear or brief; the p50 over every "
+            f"paired cell ({pick.paired}) beside it, published, not ranked.",
+            "",
+            f"| config | p50 conditioned ({pick.conditioned}) | p50 all paired ({pick.paired}) |",
+            "|---|---|---|",
+        ]
+        for name, value in pick.speed.items():
+            lines.append(
+                f"| {name} | {_f(value, 0, ' ms')} | {_f(pick.pooled.get(name), 0, ' ms')} |"
+            )
     if pick.disqualified:
         lines.append("")
         lines.append("Disqualified:")
@@ -145,6 +164,8 @@ def report_md(
     run_dir: Path,
     scenarios: int,
     shape_note: str,
+    stale: int = 0,
+    digest: str = "",
 ) -> str:
     by_role = {p.role: p for p in picks}
     lines = [
@@ -162,7 +183,20 @@ def report_md(
         "Caveat: gate and fact/trap verdicts are matched by patterns (the fact sheet's keys, "
         "accept and reject); a derived slot whose label matches no key is counted missed for "
         "every config alike.",
+        "",
+        "## Comparability",
+        "",
+        f"- Bench digest: `{digest[:12] or '-'}` (studio and bench prompts, the card cap, the "
+        "scenario sheets); each record carries its scenario's digest.",
+        f"- Stale: excluded {stale} record{'' if stale == 1 else 's'} from another bench digest.",
     ]
+    for role in ("interview", "audit"):
+        p = by_role.get(role)
+        if p is not None and p.cells:
+            lines.append(
+                f"- {role}: quality over paired {p.paired} of {p.cells} cells (every config "
+                f"still in the running completed them); speed over {p.conditioned} of them."
+            )
     for role in ("interview", "audit"):
         lines += ["", f"## {role}", "", *_role_table(role, stats), ""]
         if role in by_role:

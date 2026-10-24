@@ -26,7 +26,8 @@ measured" — the bench never reimplements it.
 **Resumable.** One JSON file per interview and per shape run under
 ``proving-runs/adopt-tiers/<YYYY-MM-DD>/``; a complete file is skipped, an interview whose judge
 failed is judged again on its own, an incomplete one (the persona or the CLI failed, nothing was
-measured) runs again.
+measured) runs again. Every record is stamped with its scenario's bench digest (ADR 0145): a
+complete record stamped with another digest, or none, is stale and runs again, counted.
 """
 
 from __future__ import annotations
@@ -61,6 +62,7 @@ from athena.adopt.slots import playbooks_root, portal_names
 from athena.contracts.adopt import Answer, Brief, Clear, LegKind, Questions, Tier
 from athena.core.fence import fresh_nonce, wrap_untrusted
 from athena.harness.transports import SubprocessTransport, Transport
+from athena.proving.adopt_tiers.cells import DIGEST_KEY, cell_digest, is_current
 from athena.proving.adopt_tiers.scenarios import Scenario, sheet_brief, sheet_slots
 from athena.proving.adopt_tiers.score import JUDGE_SCHEMA, JUDGE_SYSTEM, check_judge, judge_prompt
 from athena.proving.report import RUNS_DIRNAME
@@ -196,6 +198,8 @@ class Plan:
     interviews_done: int
     judged: int
     shapes_done: int
+    #: Complete records on disk from another bench digest (or none): planned again.
+    stale: int = 0
 
     @property
     def interviews(self) -> int:
@@ -239,12 +243,16 @@ def make_plan(
     else:
         note = "measured" if shape else "not measured: turned off"
     jobs: list[Job] = []
-    done = judged = shaped = 0
+    done = judged = shaped = stale = 0
     for scenario in scenarios:
+        digest = cell_digest(scenario)
         for config in configs:
             for rep in range(1, reps + 1):
                 job = Job("interview", scenario.id, config, rep)
                 record = read_record(job_path(run_dir, job))
+                if record is not None and record.get("complete") and not is_current(record, digest):
+                    stale += 1
+                    record = None
                 if record is not None and record.get("complete"):
                     done += 1
                     judge = record.get("judge")
@@ -257,6 +265,9 @@ def make_plan(
                 if shape:
                     sjob = Job("shape", scenario.id, config, rep)
                     srec = read_record(job_path(run_dir, sjob))
+                    if srec is not None and srec.get("complete") and not is_current(srec, digest):
+                        stale += 1
+                        srec = None
                     if srec is not None and srec.get("complete"):
                         shaped += 1
                     else:
@@ -272,6 +283,7 @@ def make_plan(
         interviews_done=done,
         judged=judged,
         shapes_done=shaped,
+        stale=stale,
     )
 
 
@@ -536,6 +548,7 @@ def run_interview(rig: Rig, scenario: Scenario, config: str, rep: int) -> dict[s
         "scenario": scenario.id,
         "band": scenario.band,
         "playbook_id": scenario.playbook_id,
+        DIGEST_KEY: cell_digest(scenario),
         "config": config,
         "model": tier.model,
         "effort": tier.effort,
@@ -730,6 +743,7 @@ def run_shape(
         "complete": False,
         "scenario": scenario.id,
         "band": scenario.band,
+        DIGEST_KEY: cell_digest(scenario),
         "config": config,
         "model": tier.model,
         "effort": tier.effort,
