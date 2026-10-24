@@ -1400,7 +1400,11 @@
           "revision": 28,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/lane/__init__.py:9 The lane runs one turn between the model and the user's tab and spawns no process, so it has no sessions to register, dispatch or harvest; searches of src/athena/lane and tests/lane for hibernat, roster, broadcast, staleness and sweeper found nothing.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:93bd71853ab468b1",
+          "evaluatedRevision": 28
         }
       ],
       "governance": "governed"
@@ -2476,7 +2480,11 @@
           "revision": 28,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/daemon/server.py:258 The daemon hosts one Athena and runs one turn at a time behind a writer lock, and its Sessions table is per-origin page routing state rather than a set of autonomous agent sessions; searches of src/athena/daemon and tests/daemon for hibernat, roster, broadcast, staleness and sweeper found nothing, so there is no fleet to orchestrate.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:93bd71853ab468b1",
+          "evaluatedRevision": 28
         },
         {
           "subject": "agent-memory",
@@ -5381,7 +5389,11 @@
           "revision": 28,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/model.ts:16 The setup model concerns one daemon sidecar's engine choice and readiness, which is single-process lifecycle (subprocess-lifecycle territory), not a fleet; searches of the setup module and the stores directory for hibernat, roster, broadcast, staleness and sweeper found nothing.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:93bd71853ab468b1",
+          "evaluatedRevision": 28
         },
         {
           "subject": "prompt-assembly",

@@ -1800,30 +1800,25 @@
       "context": "desktop-setup-module",
       "subject": "fleet-orchestration",
       "bundle": "software-engineering",
-      "state": "unknown",
-      "evaluatedAt": "2026-10-15",
-      "evaluatedTs": "2026-10-15T23:10:51.254Z",
-      "techniques": [],
-      "withdrawn": {
-        "worker": "189c57f6-dc0d-4c82-84d8-64c1f7b2b06a",
-        "state": "not-applicable",
-        "at": "2026-10-15T23:11:10.868774+00:00",
-        "reason": "reviewer (sonnet): The anchor index.ts:71 is one daemon-restart line that does not show worker dispatch is absent, and the searched terms (fleet, hibernat, sweeper) are too narrow to prove absence for this subject."
-      }
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T04:00:21.115Z",
+      "worker": "f78d4bc0-361d-4ce3-80b9-207544d423d0",
+      "techniques": []
     },
     "fe808407-91f4-4b85-8688-1125db0aec71/fleet-orchestration": {
       "context": "desktop-scenes-accounts-apps",
       "subject": "fleet-orchestration",
       "bundle": "software-engineering",
       "state": "unknown",
-      "evaluatedAt": "2026-10-15",
-      "evaluatedTs": "2026-10-15T23:10:51.254Z",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T04:00:21.115Z",
       "techniques": [],
       "withdrawn": {
-        "worker": "189c57f6-dc0d-4c82-84d8-64c1f7b2b06a",
+        "worker": "f78d4bc0-361d-4ce3-80b9-207544d423d0",
         "state": "not-applicable",
-        "at": "2026-10-15T23:11:10.889549+00:00",
-        "reason": "reviewer (sonnet): The anchor view.tsx:12 is a doc-comment line that only describes the scene, so it is incidental. The same narrow search terms cannot prove absence of worker or session management."
+        "at": "2026-10-24T04:00:41.653144+00:00",
+        "reason": "reviewer (sonnet): The anchor registry.ts:18 is the DEPTH_SCENES map line, which does not show that these scenes dispatch or track no agent sessions; that claim rests only on a keyword search, so the anchor is incidental."
       }
     },
     "83c99463-f300-42a8-b1a4-7b8e1c5c06f0/motion": {
@@ -6516,6 +6511,37 @@
       "evaluatedAt": "2026-10-24",
       "evaluatedTs": "2026-10-24T03:45:31.753Z",
       "worker": "e05338b9-ac13-4426-9504-53eb02e68d0c",
+      "techniques": []
+    },
+    "10c863df-b13e-4802-85a8-60731a8c6c99/fleet-orchestration": {
+      "context": "daemon-service",
+      "subject": "fleet-orchestration",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T04:00:21.115Z",
+      "worker": "f78d4bc0-361d-4ce3-80b9-207544d423d0",
+      "techniques": [
+        {
+          "technique": "session-registry",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/daemon/sessions.py:7 Session is per-origin routing memory for a page socket, not a fleet entry with a lifecycle; it is in memory on purpose."
+        },
+        {
+          "technique": "parallel-dispatch",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/daemon/server.py:258 Writes are serialised to a single turn, so nothing is fanned out and there are no collision domains."
+        }
+      ]
+    },
+    "f152c182-5811-458c-a43b-56fbce7a81e5/fleet-orchestration": {
+      "context": "browser-lane",
+      "subject": "fleet-orchestration",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T04:00:21.115Z",
+      "worker": "f78d4bc0-361d-4ce3-80b9-207544d423d0",
       "techniques": []
     }
   }

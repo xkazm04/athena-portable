@@ -1,0 +1,131 @@
+{
+  "schema": "conform-run/1",
+  "worker": "f78d4bc0-361d-4ce3-80b9-207544d423d0",
+  "subject": "fleet-orchestration",
+  "evaluatedAt": "2026-10-24T04:00:21.115679+00:00",
+  "provider": "claude",
+  "model": "claude-opus-5-5",
+  "pairs": [
+    {
+      "context": "daemon-service",
+      "subject": "fleet-orchestration",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evidence": "src/athena/daemon/server.py:258 The daemon hosts one Athena and runs one turn at a time behind a writer lock, and its Sessions table is per-origin page routing state rather than a set of autonomous agent sessions; searches of src/athena/daemon and tests/daemon for hibernat, roster, broadcast, staleness and sweeper found nothing, so there is no fleet to orchestrate.",
+      "techniques": [
+        {
+          "technique": "session-registry",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/daemon/sessions.py:7 Session is per-origin routing memory for a page socket, not a fleet entry with a lifecycle; it is in memory on purpose."
+        },
+        {
+          "technique": "parallel-dispatch",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/daemon/server.py:258 Writes are serialised to a single turn, so nothing is fanned out and there are no collision domains."
+        }
+      ],
+      "absenceTerms": [
+        "hibernat",
+        "roster",
+        "broadcast",
+        "staleness",
+        "sweeper"
+      ]
+    },
+    {
+      "context": "browser-lane",
+      "subject": "fleet-orchestration",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evidence": "src/athena/lane/__init__.py:9 The lane runs one turn between the model and the user's tab and spawns no process, so it has no sessions to register, dispatch or harvest; searches of src/athena/lane and tests/lane for hibernat, roster, broadcast, staleness and sweeper found nothing.",
+      "techniques": [],
+      "absenceTerms": [
+        "hibernat",
+        "roster",
+        "broadcast",
+        "staleness",
+        "sweeper"
+      ]
+    },
+    {
+      "context": "desktop-setup-module",
+      "subject": "fleet-orchestration",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evidence": "apps/desktop/src/modules/setup/model.ts:16 The setup model concerns one daemon sidecar's engine choice and readiness, which is single-process lifecycle (subprocess-lifecycle territory), not a fleet; searches of the setup module and the stores directory for hibernat, roster, broadcast, staleness and sweeper found nothing.",
+      "techniques": [],
+      "absenceTerms": [
+        "hibernat",
+        "roster",
+        "broadcast",
+        "staleness",
+        "sweeper"
+      ]
+    }
+  ],
+  "declined": [
+    {
+      "subject": "fleet-orchestration",
+      "context": "proving-core",
+      "reason": "the seat returned unknown"
+    },
+    {
+      "subject": "fleet-orchestration",
+      "context": "desktop-scenes-accounts-apps",
+      "reason": "withdrawn after review: reviewer (sonnet): The anchor registry.ts:18 is the DEPTH_SCENES map line, which does not show that these scenes dispatch or track no agent sessions; that claim rests only on a keyword search, so the anchor is incidental."
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-24T04:00:21.115679+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "fleet-orchestration"
+      ],
+      "techniques": [
+        "parallel-dispatch",
+        "session-registry"
+      ],
+      "deviations": 0,
+      "context": "daemon-service",
+      "via": "curator-multi:claude",
+      "model": "claude-opus-5-5"
+    },
+    {
+      "ts": "2026-10-24T04:00:21.115679+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "fleet-orchestration"
+      ],
+      "techniques": [],
+      "deviations": 0,
+      "context": "browser-lane",
+      "via": "curator-multi:claude",
+      "model": "claude-opus-5-5"
+    },
+    {
+      "ts": "2026-10-24T04:00:21.115679+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "fleet-orchestration"
+      ],
+      "techniques": [],
+      "deviations": 0,
+      "context": "desktop-setup-module",
+      "via": "curator-multi:claude",
+      "model": "claude-opus-5-5"
+    },
+    {
+      "ts": "2026-10-24T04:00:21.115679+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "fleet-orchestration"
+      ],
+      "techniques": [],
+      "deviations": 0,
+      "context": "desktop-scenes-accounts-apps",
+      "via": "curator-multi:claude",
+      "model": "claude-opus-5-5"
+    }
+  ]
+}
