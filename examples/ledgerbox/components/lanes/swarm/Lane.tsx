@@ -28,6 +28,7 @@ import {
   type LnMark,
 } from "../model";
 import { instant, move } from "../motion";
+import { isTickGesture } from "../shell/tray-plan";
 import { flagOf, labelledIn, markVars, tabStop } from "./marks";
 
 /**
@@ -61,6 +62,7 @@ export function Lane({
   deck,
   onOpenLane,
   onOpenMark,
+  onTick,
 }: {
   lane: LnLane;
   index: number;
@@ -85,6 +87,8 @@ export function Lane({
   deck: Deck;
   onOpenLane: (id: string) => void;
   onOpenMark: (laneId: string, markId: string) => void;
+  /** The person's own tick (Ctrl/Cmd-click, or `x`). Absent, a mark only opens. */
+  onTick?: (markId: string) => void;
 }) {
   const reduced = useReducedMotion();
   /* Reduced motion lands on the final presence rather than fading to it: the
@@ -235,7 +239,14 @@ export function Lane({
           onBlur: leave,
           onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
             event.stopPropagation();
-            onOpenMark(lane.id, mark.id);
+            if (onTick && isTickGesture(event)) onTick(mark.id);
+            else onOpenMark(lane.id, mark.id);
+          },
+          onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => {
+            if (!onTick || !isTickGesture(event)) return;
+            event.preventDefault();
+            event.stopPropagation();
+            onTick(mark.id);
           },
           "aria-label": `${mark.number}, ${mark.clientName}, ${formatMoney(
             mark.balanceCents > 0 ? mark.balanceCents : mark.amountCents,

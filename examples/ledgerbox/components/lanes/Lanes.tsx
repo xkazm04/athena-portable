@@ -39,9 +39,10 @@
  * L2 is a different gesture on purpose: it is not a zoom but a lift, and it is
  * handled by matched `layoutId`s between the L1 node and the card.
  */
-import { useLayoutEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useLayoutEffect, useMemo, useRef, useState } from "react";
 import { AnimatePresence, LayoutGroup, MotionConfig, motion, useReducedMotion } from "motion/react";
 import { useLevelFlight, useZoomNav } from "@athena/demo-kit/zoom";
+import { useToast } from "@athena/demo-kit/ui";
 
 import { Card } from "./Card";
 import type { Period } from "@/lib/constants";
@@ -58,6 +59,8 @@ import { Spread, type SpreadMode } from "./Spread";
 import { Swarm } from "./Swarm";
 import { Foot } from "./shell/Foot";
 import { Mast } from "./shell/Mast";
+import { Tray } from "./shell/Tray";
+import { toggleTick } from "./shell/tray-plan";
 import { BooksTools, LanesTools } from "./tools";
 import "./style/index.css";
 
@@ -190,6 +193,21 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
 
   const pickedSet = useMemo(() => new Set(picked), [picked]);
 
+  /*
+   * The person's own tick moves the SAME `picked` that `select` moves, so an agent's ring and a
+   * person's Ctrl/Cmd-click (or `x`) end in one setState, and the tray counts both alike. Past
+   * `select`'s cap the press is refused out loud and the tick stands.
+   */
+  const { toast } = useToast();
+  const onTick = useCallback(
+    (id: string) => {
+      const next = toggleTick(picked, id);
+      if (next.ok) setPicked(next.list);
+      else toast(next.reason, "error");
+    },
+    [picked, toast],
+  );
+
   return (
     <MotionConfig reducedMotion="user">
       <div
@@ -266,6 +284,7 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
                   picked={pickedSet}
                   onOpenLane={nav.openGroup}
                   onOpenMark={(laneId, markId) => nav.openItem(laneId, markId)}
+                  onTick={onTick}
                 />
               </motion.div>
             ) : null}
@@ -286,10 +305,21 @@ export function Lanes({ sheet, books }: { sheet: LnSheet; books: LnBooks }) {
                   picked={pickedSet}
                   mode={mode}
                   onOpenItem={(id) => nav.openItem(spreadLane.id, id)}
+                  onTick={onTick}
                 />
               </motion.div>
             ) : null}
 
+            {/* The tick as a working set: a tray that counts it and offers the AUTO acts over
+                it. Kept off L2, where the card is the one surface in front of the person. */}
+            {level < 2 && picked.length > 0 ? (
+              <Tray
+                sheet={sheet}
+                picked={picked}
+                setPicked={setPicked}
+                onOpen={(laneId, id) => nav.openItem(laneId, id)}
+              />
+            ) : null}
         </div>
 
         {/* The legend is also the filter panel, so the footer takes the filter

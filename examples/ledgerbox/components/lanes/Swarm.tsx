@@ -37,6 +37,7 @@ export function Swarm({
   picked,
   onOpenLane,
   onOpenMark,
+  onTick,
 }: {
   sheet: LnSheet;
   /** The focus the whole surface is on, which is what decides how present each
@@ -52,6 +53,8 @@ export function Swarm({
   picked: ReadonlySet<string>;
   onOpenLane: (laneId: string) => void;
   onOpenMark: (laneId: string, markId: string) => void;
+  /** The person's own tick, lent to every lane. */
+  onTick?: (markId: string) => void;
 }) {
   const { todayX, months } = sheet.axis;
   const [hover, setHover] = useState<Hover | null>(null);
@@ -219,6 +222,7 @@ export function Swarm({
             deck={{ byDate, enter, leave, rove, roving, setRoving, hoveredId: hover?.mark.id ?? null }}
             onOpenLane={onOpenLane}
             onOpenMark={onOpenMark}
+            onTick={onTick}
           />
         ))}
       </div>

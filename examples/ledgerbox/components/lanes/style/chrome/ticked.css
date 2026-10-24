@@ -25,3 +25,108 @@
   border-color: var(--ln-accent);
   box-shadow: 0 0 0 2px var(--ln-accent);
 }
+
+/* ------------------------------------------------------------------ tray */
+
+/*
+ * The tray: the tick, counted and made actionable (`shell/Tray.tsx`).
+ *
+ * It sits in the stage's one grid cell beside the levels, pinned to the
+ * bottom of what is visible, so it reads as furniture over the sheet rather
+ * than a row that shoves the footer. Ringed in the same accent the ticked
+ * marks wear, because it is about exactly those marks and nothing else.
+ */
+.ln-tray {
+  grid-area: 1 / 1;
+  align-self: end;
+  justify-self: end;
+  position: sticky;
+  inset-block-end: var(--ln-s3);
+  z-index: 20;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ln-s2) var(--ln-s4);
+  max-inline-size: min(100%, 64rem);
+  margin: var(--ln-s3);
+  padding: var(--ln-s2) var(--ln-s4);
+  background: var(--ln-raise);
+  border: 1px solid var(--ln-accent);
+  border-radius: var(--ln-radius-card);
+  font-size: var(--ln-text-xs);
+  color: var(--ln-ink);
+}
+
+.ln-tray[aria-busy="true"] {
+  opacity: 0.85;
+}
+
+.ln-tray-say {
+  margin: 0;
+  font-weight: 500;
+}
+
+.ln-tray-act {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--ln-s2);
+}
+
+.ln-tray-field {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--ln-s2);
+  color: var(--ln-mute);
+}
+
+.ln-tray-field select {
+  min-block-size: 44px;
+  padding-inline: var(--ln-s2);
+  background: var(--ln-surface);
+  color: var(--ln-ink);
+  border: 1px solid var(--ln-rule);
+  border-radius: var(--ln-radius);
+  font: inherit;
+}
+
+.ln-tray-btn {
+  min-block-size: 44px;
+  padding: var(--ln-s2) var(--ln-s3);
+  background: var(--ln-surface);
+  color: var(--ln-ink);
+  border: 1px solid var(--ln-accent);
+  border-radius: var(--ln-radius);
+  font: inherit;
+  cursor: pointer;
+}
+
+.ln-tray-btn[data-kind="quiet"] {
+  border-color: var(--ln-rule);
+  color: var(--ln-mute);
+}
+
+.ln-tray-btn:disabled {
+  cursor: default;
+  opacity: 0.55;
+}
+
+.ln-tray-btn:focus-visible,
+.ln-tray-field select:focus-visible {
+  outline: 2px solid var(--ln-accent);
+  outline-offset: 2px;
+}
+
+/* What drafting would hold back, and why: the row's own refusal line per group. */
+.ln-tray-held {
+  flex-basis: 100%;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  color: var(--ln-mute);
+}
+
+.ln-tray-held b {
+  color: var(--ln-ink);
+  font-weight: 600;
+}

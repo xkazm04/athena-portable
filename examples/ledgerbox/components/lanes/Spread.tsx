@@ -39,6 +39,7 @@ import {
   type LnSheet,
 } from "./model";
 import { fade, instant, lift, move, revealDelay, zoom } from "./motion";
+import { isTickGesture } from "./shell/tray-plan";
 import { StatusGlyph } from "./spread/Glyph";
 import { tabStop } from "./swarm/marks";
 import { SpreadHead } from "./spread/Head";
@@ -53,6 +54,7 @@ export function Spread({
   picked,
   mode,
   onOpenItem,
+  onTick,
 }: {
   sheet: LnSheet;
   lane: LnLane;
@@ -69,6 +71,8 @@ export function Spread({
   picked: ReadonlySet<string>;
   mode: SpreadMode;
   onOpenItem: (id: string) => void;
+  /** The person's own tick (Ctrl/Cmd-click, or `x`). Absent, a node only opens. */
+  onTick?: (id: string) => void;
 }) {
   const reduced = useReducedMotion();
   const ordered = useMemo(() => chronological(lane), [lane]);
@@ -235,7 +239,16 @@ export function Spread({
               /* One stop for the field; the arrows walk the rest. See `rove`. */
               tabIndex: index === stop ? 0 : -1,
               onFocus: () => setRoving((r) => (r === index ? r : index)),
-              onClick: () => onOpenItem(mark.id),
+              onClick: (event: React.MouseEvent<HTMLButtonElement>) => {
+                if (onTick && isTickGesture(event)) onTick(mark.id);
+                else onOpenItem(mark.id);
+              },
+              onKeyDown: (event: React.KeyboardEvent<HTMLButtonElement>) => {
+                if (!onTick || !isTickGesture(event)) return;
+                event.preventDefault();
+                event.stopPropagation();
+                onTick(mark.id);
+              },
               "aria-label": `Open ${mark.number}, ${mark.clientName}. ${mark.status}${
                 picked.has(mark.id) ? " Ticked." : ""
               }`,
