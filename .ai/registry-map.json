@@ -5572,7 +5572,11 @@
           "revision": 10,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "apps/desktop/src/stage/layers.test.ts:56 A 'never' property of the layer reducer, which layers.ts:5 itself calls a small state machine with three action kinds, is checked on one hand-picked four-move sequence. The bounded space of move/ended/flush sequences is never enumerated, so the claim is example-tested rather than covered.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:d5ab12a92aba67c4",
+          "evaluatedRevision": 10
         },
         {
           "subject": "prompt-assembly",
@@ -7652,7 +7656,11 @@
           "revision": 10,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/card/read.ts:103 This context is UI source whose tests live in examples/ledgerbox/test, outside it. A search of examples/ledgerbox/components/lanes for fast-check, fuzz, vitest and node:test found nothing, so the context has no test-input generation to judge.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:d5ab12a92aba67c4",
+          "evaluatedRevision": 10
         },
         {
           "subject": "agent-memory",
@@ -9360,7 +9368,11 @@
           "revision": 10,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/model/databases.ts:17 This context is product source only (model, camera/geometry, tools). Its tests live in examples/tidycrm/test, outside the context. A search of examples/tidycrm/components/blocks for fast-check, fuzz, vitest and node:test found nothing, so the context has no test inputs or generators of its own.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:d5ab12a92aba67c4",
+          "evaluatedRevision": 10
         },
         {
           "subject": "table",
@@ -9638,7 +9650,11 @@
           "revision": 10,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "conformant",
+          "evidence": "examples/tidycrm/test/l0-fill.test.ts:2 The suite's inputs are a fixed seeded database plus hand-built cases. It writes down which states the seed cannot produce, builds those cases by hand, and checks the boundary inputs and the refusal reasons, so no technique that applies here is missed.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:d5ab12a92aba67c4",
+          "evaluatedRevision": 10
         },
         {
           "subject": "test-harness",

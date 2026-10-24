@@ -1,0 +1,194 @@
+{
+ "schema": "conform-run/1",
+ "worker": "8a841163-20c6-484e-9c90-8ab899dd9042",
+ "subject": "test-input-generation",
+ "evaluatedAt": "2026-10-24T03:08:29.780548+00:00",
+ "provider": "claude",
+ "model": "claude-opus-5-5",
+ "pairs": [
+  {
+   "context": "tidycrm-tests",
+   "subject": "test-input-generation",
+   "bundle": "software-engineering",
+   "state": "conformant",
+   "evidence": "examples/tidycrm/test/l0-fill.test.ts:2 The suite's inputs are a fixed seeded database plus hand-built cases. It writes down which states the seed cannot produce, builds those cases by hand, and checks the boundary inputs and the refusal reasons, so no technique that applies here is missed.",
+   "techniques": [
+    {
+     "technique": "generator-bounds-the-space",
+     "verdict": "conformant",
+     "evidence": "examples/tidycrm/test/l0-fill.test.ts:2 The file states what the input source cannot reach and builds that half by hand (line 76). It also counts clean tables, so the test fails on the day the state becomes reachable. pairs.test.ts:29 does the same for multi-pair records."
+    },
+    {
+     "technique": "negative-space-generation",
+     "verdict": "conformant",
+     "evidence": "examples/tidycrm/test/mutations.test.ts:52 The invalid input sits one edit outside the valid one (a real pair with its orientation swapped), not junk, and the test asserts the refusal and that no state changed."
+    },
+    {
+     "technique": "model-based-oracle",
+     "verdict": "conformant",
+     "evidence": "examples/tidycrm/test/liveness.test.ts:42 For an accept-or-reject answer the test checks the reason, not just ok=false, and pins the declared order of checks (line 40: liveness before the pair). This is a hand-written case; there is no generated input and no reference model."
+    },
+    {
+     "technique": "inside-out-invariants",
+     "verdict": "conformant",
+     "evidence": "examples/tidycrm/test/pairs.test.ts:36 An invariant between two components (the database's open-pair queue and the pairs the sheet's blocks can show) is asserted before the setup insert, after it, and after the merge."
+    },
+    {
+     "technique": "exhaustive-when-bounded",
+     "verdict": "conformant",
+     "evidence": "examples/tidycrm/test/space.test.ts:124 The test covers the whole real band of four to seven, plus edge values, for all nine databases. databases.test.ts:135 likewise runs the mapping over all 46 real idents rather than a sample."
+    },
+    {
+     "technique": "liveness-needs-a-quiet-period",
+     "verdict": "not-applicable",
+     "evidence": "examples/tidycrm/test/liveness.test.ts:2 Here 'liveness' means a record has not been deleted, not progress under faults. No faults are injected anywhere in the suite, so there is no chaos phase to quiet."
+    },
+    {
+     "technique": "seed-is-not-a-reproduction",
+     "verdict": "not-applicable",
+     "evidence": "examples/tidycrm/test/campaign.test.ts:36 'Seed' here is a deterministic demo dataset whose counts are pinned, not a random-generator seed. No randomized case is recorded anywhere."
+    }
+   ]
+  },
+  {
+   "context": "desktop-stage-depth",
+   "subject": "test-input-generation",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "apps/desktop/src/stage/layers.test.ts:56 A 'never' property of the layer reducer, which layers.ts:5 itself calls a small state machine with three action kinds, is checked on one hand-picked four-move sequence. The bounded space of move/ended/flush sequences is never enumerated, so the claim is example-tested rather than covered.",
+   "techniques": [
+    {
+     "technique": "exhaustive-when-bounded",
+     "verdict": "deviation",
+     "evidence": "apps/desktop/src/stage/layers.test.ts:56 model.test.ts:23-45 does enumerate every grammar path and runs its properties over all of them. The layer reducer gets one example sequence, and no bound is written down."
+    },
+    {
+     "technique": "negative-space-generation",
+     "verdict": "conformant",
+     "evidence": "apps/desktop/src/depth/model.test.ts:53 Each invalid path breaks exactly one grammar rule (wrong sub kind for the root, a missing or extra argument, an empty item, __proto__/constructor). Junk hashes, including a broken percent escape, are checked at line 90."
+    },
+    {
+     "technique": "model-based-oracle",
+     "verdict": "conformant",
+     "evidence": "apps/desktop/src/depth/model.test.ts:80 A round-trip invariant runs over every enumerated path and fully determines the hash codec's answer, so a reference model isn't worth its cost here."
+    },
+    {
+     "technique": "generator-bounds-the-space",
+     "verdict": "conformant",
+     "evidence": "apps/desktop/src/depth/model.test.ts:27 The ids are chosen to break the encoding (slash, non-ASCII, percent, a reserved id), not to look realistic, and line 23 states that ids are only a sample. Caveat: everyPath is a hand copy of GRAMMAR, so a new sub kind would go unproduced and nothing would fail."
+    },
+    {
+     "technique": "liveness-needs-a-quiet-period",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/stage/layers.test.ts:72 Recovery is a deterministic flush action in a pure reducer. No faults are injected."
+    },
+    {
+     "technique": "seed-is-not-a-reproduction",
+     "verdict": "not-applicable",
+     "evidence": "apps/desktop/src/stage/Backdrop.tsx:31 Randomness is deliberately absent, so no seed is ever recorded."
+    }
+   ],
+   "registryProposal": "exhaustive-when-bounded is written against randomized sampling. The commoner failure in example-based suites is a universal ('never', 'at most') property checked on one hand-picked sequence over a small state machine. The technique could name that as a third option alongside enumerate and sample."
+  },
+  {
+   "context": "tidycrm-spatial-model-tools",
+   "subject": "test-input-generation",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "examples/tidycrm/components/blocks/model/databases.ts:17 This context is product source only (model, camera/geometry, tools). Its tests live in examples/tidycrm/test, outside the context. A search of examples/tidycrm/components/blocks for fast-check, fuzz, vitest and node:test found nothing, so the context has no test inputs or generators of its own.",
+   "techniques": [],
+   "absenceTerms": [
+    "fast-check",
+    "fuzz",
+    "vitest",
+    "node:test"
+   ]
+  },
+  {
+   "context": "ledgerbox-lanes-ui",
+   "subject": "test-input-generation",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "examples/ledgerbox/components/lanes/card/read.ts:103 This context is UI source whose tests live in examples/ledgerbox/test, outside it. A search of examples/ledgerbox/components/lanes for fast-check, fuzz, vitest and node:test found nothing, so the context has no test-input generation to judge.",
+   "techniques": [],
+   "absenceTerms": [
+    "fast-check",
+    "fuzz",
+    "vitest",
+    "node:test"
+   ]
+  }
+ ],
+ "declined": [
+  {
+   "subject": "test-input-generation",
+   "context": "hirelane-board-ui",
+   "reason": "evidence leans on marks/recipe.ts, which is not a tracked file"
+  }
+ ],
+ "consults": [
+  {
+   "ts": "2026-10-24T03:08:29.780548+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "test-input-generation"
+   ],
+   "techniques": [
+    "exhaustive-when-bounded",
+    "generator-bounds-the-space",
+    "inside-out-invariants",
+    "liveness-needs-a-quiet-period",
+    "model-based-oracle",
+    "negative-space-generation",
+    "seed-is-not-a-reproduction"
+   ],
+   "deviations": 0,
+   "context": "tidycrm-tests",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  },
+  {
+   "ts": "2026-10-24T03:08:29.780548+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "test-input-generation"
+   ],
+   "techniques": [
+    "exhaustive-when-bounded",
+    "generator-bounds-the-space",
+    "liveness-needs-a-quiet-period",
+    "model-based-oracle",
+    "negative-space-generation",
+    "seed-is-not-a-reproduction"
+   ],
+   "deviations": 1,
+   "context": "desktop-stage-depth",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  },
+  {
+   "ts": "2026-10-24T03:08:29.780548+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "test-input-generation"
+   ],
+   "techniques": [],
+   "deviations": 0,
+   "context": "tidycrm-spatial-model-tools",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  },
+  {
+   "ts": "2026-10-24T03:08:29.780548+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "test-input-generation"
+   ],
+   "techniques": [],
+   "deviations": 0,
+   "context": "ledgerbox-lanes-ui",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  }
+ ]
+}
