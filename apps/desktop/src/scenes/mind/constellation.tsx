@@ -549,7 +549,7 @@ function PeerDetails({ model, peer }: { model: DevicesModel; peer: PeerView }) {
         <Fact label="Kind">{KIND_WORD[peer.kind]}</Fact>
         <Fact label="Now">
           <Badge tone={presence.tone}>{peer.kind === "phone" && !peer.presence ? "Not probed (a phone)" : presence.word}</Badge>
-          {peer.presence_at ? <span className="typo-caption">{` checked ${whenAgo(peer.presence_at, model.now)}`}</span> : null}
+          {peer.presence_at ? <span className="typo-caption">{` changed ${whenAgo(peer.presence_at, model.now)}`}</span> : null}
         </Fact>
         <Fact label="Last seen">{peer.last_seen ? whenAgo(peer.last_seen, model.now) : "never"}</Fact>
         <Fact label="May">{peer.grants.length ? peer.grants.map((g) => GRANT_WORDS[g]).join(", ") : "-"}</Fact>

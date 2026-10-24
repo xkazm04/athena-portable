@@ -160,7 +160,7 @@ describe("a node's drawer", () => {
     expect(h).toContain('aria-expanded="true"');
     expect(h).toContain(">Computer<");
     expect(h).toContain(">Online<");
-    expect(h).toMatch(/checked (just now|1 min ago)/);
+    expect(h).toMatch(/changed (just now|1 min ago)/);
     expect(h).toContain("2 min ago");
     expect(h).toContain("talk to Athena here, answer approvals, share memory");
     expect(h).toContain("ok, 42 pulled");
