@@ -472,8 +472,15 @@ export interface RunState {
    * off for it. A remote exchange never runs on it. `null` outside it.
    */
   setup: SetupSession | null;
-  /** Enter the setup conversation. Nothing is sent: the person types the first message. */
+  /** Enter the setup conversation and send nothing (a hand-over that the person continues). */
   enterSetup: (session: SetupSession) => void;
+  /**
+   * "Set up with Athena": enter the setup conversation and let her open it. She checks where this
+   * computer stands and says the first step, so a person who has never heard of Tailscale is not
+   * left facing an empty box. While her own work runs, she is put in the conversation and the
+   * opening waits for the person's message instead.
+   */
+  startSetup: (session: SetupSession) => Promise<void>;
   /** Leave it: the next message the person types goes to the focused page again. */
   leaveSetup: () => void;
   /**
@@ -937,17 +944,27 @@ export function setupBody(
   carried: Array<Record<string, unknown>>,
   taking: Pick<Snapshot, "disabledOrigins">,
 ): TurnBody {
+  // Her opening (startSetup): no words of this window's; the daemon writes what she is told.
+  const start = message === SETUP_START;
   return {
     origin,
-    message,
+    message: start ? "" : message,
     surface: "panel",
     host_state: {},
     tool_results: carried,
     disabled_origins: taking.disabledOrigins,
     // The main thread's turn, not a delegated task's (fleet-surfaces, ADR 0141).
     task_id: null,
+    ...(start ? { start: true } : {}),
   };
 }
+
+/**
+ * The first request of the setup conversation, as the exchange carries it (`startSetup`): never
+ * shown and never sent as words - {@link setupBody} turns it into `start: true` and an empty
+ * message, and the daemon writes her opening.
+ */
+export const SETUP_START = "\u0000setup:start";
 
 export const NOTHING_GATED: GatedLists = { gated_origins: [], gated_tools: [] };
 
@@ -2082,6 +2099,14 @@ export const useRun = create<RunState>((set, get) => {
 
     leaveSetup() {
       set({ setup: null });
+    },
+
+    async startSetup(session) {
+      get().enterSetup(session);
+      // The setup banner says where the person is; her first words say what she found. While her
+      // own work runs, the person is in the conversation and their next message starts it.
+      if (!get().setup || via !== null || mainBusy()) return;
+      await runLocal(SETUP_START);
     },
 
     async stop() {

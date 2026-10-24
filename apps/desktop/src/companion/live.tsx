@@ -378,7 +378,9 @@ export default function Live() {
           ...(playbook.caseId ? { caseId: playbook.caseId } : {}),
           ...(playbook.caseId && playbook.scheduled ? { scheduled: true } : {}),
         });
-      rt.dispatch({ t: "open" });
+      // `expand`, not `open`: `open` only leaves the first-launch welcome, so after onboarding the
+      // hand-over left her collapsed to her seal and the press on Main looked like nothing.
+      rt.dispatch({ t: "expand" });
       rt.dispatch({ t: "tab", tab: "talk" });
     })
       .then((unlisten) => {
@@ -393,15 +395,16 @@ export default function Live() {
   }, [rt]);
 
   // "Set up with Athena" on Main's Devices page (ADR 0140, WP4): the setup session is handed here,
-  // the person's turns go to it until they leave it, and her Talk tab opens. Nothing is sent.
+  // the person's turns go to it until they leave it, her conversation opens on its Talk tab, and
+  // she speaks first: the daemon tells her to check this computer and say the first step.
   useEffect(() => {
     if (!hasShell()) return;
     let off: (() => void) | null = null;
     let alive = true;
     onSetup((session) => {
-      useRun.getState().enterSetup(session);
-      rt.dispatch({ t: "open" });
+      rt.dispatch({ t: "expand" });
       rt.dispatch({ t: "tab", tab: "talk" });
+      void useRun.getState().startSetup(session).catch(report("start setup"));
     })
       .then((unlisten) => {
         if (alive) off = unlisten;

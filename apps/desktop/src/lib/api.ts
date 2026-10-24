@@ -255,6 +255,12 @@ export interface TurnBody {
    * before tasks still type-checks; every turn this window sends says it.
    */
   task_id?: string | null;
+  /**
+   * The setup conversation's first turn (ADR 0140, WP4): "Set up with Athena" sends `true` with an
+   * empty `message`, and the daemon writes what she is told, so she speaks first. Refused anywhere
+   * but the setup session, and with any words of the window's own.
+   */
+  start?: boolean;
 }
 
 /** A refusal the daemon named. `reason` is a member of the one closed vocabulary. */

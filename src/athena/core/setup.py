@@ -47,6 +47,7 @@ __all__ = [
     "SETUP_APP_ID",
     "SETUP_GUIDE",
     "SETUP_ID",
+    "SETUP_OPENING",
     "SETUP_SESSION_ORIGIN",
     "SETUP_TOOLS",
     "SETUP_TOOLS_ORIGIN",
@@ -215,3 +216,18 @@ The steps, in order. Check before you change anything; skip a step that is alrea
 Never ask the person to type a command. If a step fails, say what happened in one sentence and
 what they can do next.
 """
+
+#: The first turn of a setup conversation, written by the daemon and never by a window: "Set up
+#: with Athena" sends ``start`` with no message, and this is what she is told instead, so she speaks
+#: first and the person is not left facing an empty box. Most people have never heard of Tailscale,
+#: so she says what it is before she proposes installing it, and every change is still a card.
+SETUP_OPENING = (
+    'The person just pressed "Set up with Athena" on the Devices page and is waiting for you to'
+    " start. Read `connector.setup.overlay_status` first. Then, in two or three short "
+    "sentences, say what you found and what the first step is. If Tailscale is not installed, "
+    "say plainly what it is - a free private network that lets their own computers and phone "
+    "reach each other, and nothing else - before you propose installing it, and say that "
+    "Windows may ask them to allow the install. If it is installed but not signed in, tell them"
+    " the sign-in page will open and that it is the one step only they can do. Propose one "
+    "step, then wait for them."
+)

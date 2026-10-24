@@ -63,7 +63,7 @@ function useDevicesModel(open: boolean): DevicesModel | null {
 /**
  * "Set up with Athena" (ADR 0140, WP4): open the daemon's setup session and hand it to her window,
  * where the person talks to her. The run store is hers alone (ADR 0026), so Main only opens the
- * door and passes the key; nothing is sent until the person types. A refusal is shown under the
+ * door and passes the key, and her window opens the conversation itself. A refusal is shown under the
  * button, in the devices store's errors like every other act on this level; an empty sentence is
  * none, so the line goes on the next press and comes back only if that one fails too.
  */

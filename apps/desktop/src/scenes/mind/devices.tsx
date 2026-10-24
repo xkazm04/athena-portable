@@ -165,7 +165,10 @@ function Devices({ model, opening }: { model: DevicesModel; opening: DevicesOpen
         >
           Set up with Athena
         </Button>
-        <p className="typo-caption">The conversation opens in Athena&apos;s own window. Every change she proposes waits for your approval there.</p>
+        <p className="typo-caption">
+          She opens the conversation in her own window, checks this computer and tells you the first step. Every change she proposes
+          waits for your approval there.
+        </p>
         <Refusal text={model.state.errors.setup} />
       </section>
     </>

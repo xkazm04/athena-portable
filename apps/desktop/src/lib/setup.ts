@@ -65,7 +65,8 @@ export interface BeginSetupDeps {
  * "Set up with Athena", end to end (ADR 0140, WP4): open the setup session on this device's
  * daemon, then hand it to her window, where the person talks to her. The conversation is hers -
  * the run store lives in her window alone (ADR 0026) - so Main only opens the door and passes the
- * key; nothing is sent until the person types. Rejects with a sentence a person can read.
+ * key; her window opens the conversation itself (ADR 0140, "She speaks first"). Rejects with a
+ * sentence a person can read.
  */
 export async function beginSetup(deps: BeginSetupDeps): Promise<SetupSession> {
   const found = deps.endpoint();

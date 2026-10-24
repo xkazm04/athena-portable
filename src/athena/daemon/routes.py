@@ -84,7 +84,12 @@ from athena.contracts.registry import Lane, OpenApp, TurnContext, parse_origin
 from athena.core.catalog import CatalogError
 from athena.core.ledger import LedgerError
 from athena.core.recall import recall as recall_bundle
-from athena.core.setup import SETUP_SESSION_ORIGIN, SETUP_TOOLS_ORIGIN, SETUP_TURN_KEY
+from athena.core.setup import (
+    SETUP_OPENING,
+    SETUP_SESSION_ORIGIN,
+    SETUP_TOOLS_ORIGIN,
+    SETUP_TURN_KEY,
+)
 from athena.daemon.sessions import Session, conversation_for
 from athena.harness.engines import EngineStatus
 from athena.lane.turn_frame import tool_results_from
@@ -680,6 +685,20 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
         return error(400, "validator_failed", str(exc))
     if task is not None:
         ctx = replace(ctx, conversation_id=task.conversation_id)
+    # "Set up with Athena" (ADR 0140, WP4): the setup conversation's first turn is hers to open. A
+    # window sends ``start`` and no message; the daemon writes what she is told (SETUP_OPENING), so
+    # no window can put words in that turn, and no other session can start one on its own.
+    start = body.get("start") is True
+    if start and (
+        session is None
+        or session.origin != SETUP_SESSION_ORIGIN
+        or str(body.get("message", "") or "").strip()
+    ):
+        return error(
+            400,
+            "validator_failed",
+            "only the setup conversation starts on its own, and its start carries no message",
+        )
     lease = daemon.threads.try_take(ctx.conversation_id)
     if lease is None:
         return refusal(
@@ -687,7 +706,7 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
             "thread_busy",
             "a turn is already running in this conversation; send this when it ends",
         )
-    message = str(body.get("message", ""))
+    message = SETUP_OPENING if start else str(body.get("message", ""))
     if task is not None and daemon.tasks is not None:
         # Here and not at the top: the tasks module takes this one's helpers, as decisions does.
         from athena.daemon.tasks import TaskRefused

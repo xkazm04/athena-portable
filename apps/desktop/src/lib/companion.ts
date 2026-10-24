@@ -161,8 +161,9 @@ export const onOffer = (f: (offer: Offer) => void): Promise<UnlistenFn> =>
 export const SETUP_EVENT = "athena:setup";
 
 /**
- * Put her in the setup conversation and bring her up on her Talk tab. Like an offer, nothing is
- * sent: the person types the first message. Without a shell this rejects (`lib/ipc.ts`).
+ * Put her in the setup conversation and bring her up on her Talk tab, where she opens it herself
+ * (`startSetup`: she checks this computer and says the first step). Without a shell this rejects
+ * (`lib/ipc.ts`).
  */
 export async function athenaSetup(session: SetupSession): Promise<void> {
   if (!hasShell()) throw new Error("Athena's window is only there in the app.");

@@ -19,6 +19,7 @@ from athena.contracts.registry import ToolClass, TurnContext
 from athena.core.catalog import Catalog, CatalogError
 from athena.core.setup import (
     OVERLAY_RANGES,
+    SETUP_OPENING,
     SETUP_SESSION_ORIGIN,
     SETUP_TOOLS,
     SETUP_TOOLS_ORIGIN,
@@ -26,7 +27,9 @@ from athena.core.setup import (
     setup_name,
 )
 from athena.daemon.routes import turn_context
+from athena.harness.cli_harness import CliHarness
 from athena.harness.hooks import Cancel, Proceed
+from athena.harness.transports import ScriptedTransport
 from athena.peer import classify
 from athena.peer.overlay import Overlay
 from athena.peer.routes import hello
@@ -521,6 +524,57 @@ def test_the_setup_route_answers_with_the_session(device: Device) -> None:
     assert opened.status == 200
     assert opened.body["origin"] == SETUP_SESSION_ORIGIN
     assert opened.body["conversation_id"] == "conv_setup"
+
+
+def _round(text: str) -> list[str]:
+    return [
+        json.dumps({"type": "system", "session_id": "s-setup"}),
+        json.dumps({"type": "assistant", "message": {"content": [{"type": "text", "text": text}]}}),
+        json.dumps({"type": "result", "is_error": False, "total_cost_usd": 0.01, "usage": {}}),
+    ]
+
+
+def test_set_up_with_athena_starts_the_conversation_with_the_daemons_own_words(
+    device: Device,
+) -> None:
+    """The window sends ``start`` and no message; she is told SETUP_OPENING, and speaks first."""
+    transport = ScriptedTransport([_round("Tailscale is not here yet. Shall I install it?")])
+    harness = device.local.harness
+    assert isinstance(harness, CliHarness)
+    harness.transport = transport
+    assert device.ui("/devices/setup", method="POST", body={}).status == 200
+    ran = device.ui(
+        "/run",
+        method="POST",
+        body={"origin": SETUP_SESSION_ORIGIN, "message": "", "start": True},
+    )
+    assert ran.status == 200
+    assert b"turn.finished" in ran.raw and b"Shall I install it" in ran.raw
+    (request,) = transport.requests
+    assert SETUP_OPENING in request.stdin
+
+
+@pytest.mark.parametrize(
+    "body",
+    [
+        {"origin": SETUP_SESSION_ORIGIN, "message": "install it for me", "start": True},
+        {"origin": "https://notes.example", "message": "", "start": True},
+    ],
+    ids=["words-of-its-own", "a-page-session"],
+)
+def test_only_the_setup_session_starts_on_its_own_and_with_no_words(
+    device: Device, body: dict[str, Any]
+) -> None:
+    assert device.ui("/devices/setup", method="POST", body={}).status == 200
+    registered = device.ui(
+        "/manifest",
+        method="POST",
+        body={"app_id": "notes", "page_origin": "https://notes.example", "tools": []},
+    )
+    assert registered.status == 200
+    refused = device.ui("/run", method="POST", body=body)
+    assert refused.status == 400
+    assert refused.body["reason"] == "validator_failed"
 
 
 # --- the seams to the window (WP5) ---------------------------------------------------------------
