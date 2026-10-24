@@ -35,6 +35,14 @@
   const UNKNOWN_REF = "unknown_ref";
   /** A request this bridge does not speak. */
   const VALIDATOR_FAILED = "validator_failed";
+  /**
+   * The reasons a TOOL's rejection may carry through to the reply (ADR 0146): the ones a page's
+   * own execute door can honestly mint about a call it refused or stopped. Any other reason, a
+   * gate's `user_denied` above all, is dropped: a page cannot claim a decision it does not make.
+   */
+  const PAGE_MINTABLE = Object.freeze(["validator_failed", "timeout", "cancelled"]);
+  /** At most this many path-addressed `errors` travel with one refusal. */
+  const MAX_ERRORS = 32;
 
   try {
     install();
@@ -136,7 +144,7 @@
           if (running && requestId !== null) lateFrom(running, requestId);
           return { ok: false, reason: TIMEOUT, error: `${name} did not answer within ${budgetMs} ms` };
         }
-        return { ok: false, error: messageOf(error) };
+        return failureOf(error);
       } finally {
         clearTimeout(timer);
       }
@@ -153,7 +161,7 @@
     function lateFrom(running, requestId) {
       running.then(
         (output) => post(null, { type: "late", call: requestId, ok: true, output: render(output) }),
-        (error) => post(null, { type: "late", call: requestId, ok: false, output: "", error: messageOf(error) }),
+        (error) => post(null, { type: "late", call: requestId, output: "", ...failureOf(error) }),
       );
     }
 
@@ -466,6 +474,28 @@
     } catch {
       return String(output);
     }
+  }
+
+  /**
+   * A tool's rejection as a reply body: `{ ok: false, error }`, plus `reason` when the rejection
+   * carries a page-mintable one and `errors` when it carries path-addressed mismatches (the demo
+   * kit's `ToolRefusal`). A plain throw carries neither: that is the tool's own outcome.
+   * @param {unknown} error
+   * @returns {Record<string, unknown>}
+   */
+  function failureOf(error) {
+    /** @type {Record<string, unknown>} */
+    const body = { ok: false };
+    const coded = error && typeof error === "object" ? /** @type {{ reason?: unknown, errors?: unknown }} */ (error) : {};
+    if (typeof coded.reason === "string" && PAGE_MINTABLE.includes(coded.reason)) body.reason = coded.reason;
+    body.error = messageOf(error);
+    if (Array.isArray(coded.errors) && coded.errors.length) {
+      body.errors = coded.errors.slice(0, MAX_ERRORS).map((/** @type {unknown} */ e) => {
+        const item = e && typeof e === "object" ? /** @type {{ path?: unknown, code?: unknown, message?: unknown }} */ (e) : {};
+        return { path: String(item.path ?? ""), code: String(item.code ?? ""), message: String(item.message ?? "") };
+      });
+    }
+    return body;
   }
 
   /**

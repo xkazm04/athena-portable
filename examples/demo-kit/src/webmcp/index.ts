@@ -21,8 +21,16 @@ export {
   type Bounded,
   type BoundedPage,
 } from "./bounded";
-export { MAX_RESULT_CHARS, fitted } from "./door";
-export { annotationsFor, useWebMCPTool, type WebMCPToolSpec } from "./hooks";
+export {
+  DOOR_CEILING_MS,
+  MAX_RESULT_CHARS,
+  ToolRefusal,
+  fitted,
+  type ArgumentError,
+  type RefusalReason,
+  type ToolOutcome,
+} from "./door";
+export { annotationsFor, toolDescriptorFor, useWebMCPTool, type WebMCPToolSpec } from "./hooks";
 export {
   useZoomTools,
   type ZoomGroup,

@@ -37,8 +37,13 @@ import {
   type SideEffects,
   type WireSideEffects,
 } from "./types";
-import { runTool, type ToolContext } from "./door";
-import { ensureModelContext, type JsonSchemaObject, type WebMCPAnnotations } from "./modelContext";
+import { runToolOutcome, settleOutcome, type DoorOptions, type ToolContext } from "./door";
+import {
+  ensureModelContext,
+  type JsonSchemaObject,
+  type ToolDescriptor,
+  type WebMCPAnnotations,
+} from "./modelContext";
 
 export interface WebMCPToolSpec {
   name: string;
@@ -83,6 +88,40 @@ export function athenaFor(spec: Pick<WebMCPToolSpec, "reversible" | "sideEffects
   return { reversible: spec.reversible, side_effects: wireSideEffects(spec.sideEffects) };
 }
 
+/** The input schema `useWebMCPTool` publishes for a spec: closed, and enforced by the door. */
+export function inputSchemaFor(spec: Pick<WebMCPToolSpec, "parameters">): JsonSchemaObject {
+  return { ...parametersToJsonSchema(spec.parameters ?? []), type: "object" } as JsonSchemaObject;
+}
+
+/**
+ * The descriptor `useWebMCPTool` registers, pure so it can be executed without React.
+ *
+ * `execute` resolves what the handler returned (a domain answer that says `{ ok: false }`
+ * included) and REJECTS a refusal (`ToolRefusal`: `validator_failed` with every mismatch,
+ * `timeout` at the door's ceiling, `cancelled` on the caller's abort) or a handler fault (an
+ * `Error` with no reason), so the bridge replies `ok: false` for them (ADR 0146). The caller's
+ * signal reaches the handler (ADR 0101).
+ */
+export function toolDescriptorFor(
+  spec: Omit<WebMCPToolSpec, "handler" | "deps">,
+  handler: { current: WebMCPToolSpec["handler"] },
+  inputSchema: JsonSchemaObject = inputSchemaFor(spec),
+  options?: DoorOptions,
+): ToolDescriptor {
+  return {
+    name: spec.name,
+    description: spec.description,
+    inputSchema,
+    annotations: annotationsFor(spec),
+    // Non-standard, ignored by a native implementation, read by the polyfill and the panel.
+    ...({ athena: athenaFor(spec) } as object),
+    execute: async (params, opts) =>
+      settleOutcome(
+        await runToolOutcome(inputSchema, params, (args, context) => handler.current(args, context), opts?.signal, options),
+      ),
+  };
+}
+
 export function useWebMCPTool(spec: WebMCPToolSpec): void {
   // The handler closes over live state (the 3D nav, the router). Read it through a ref so the
   // registration is stable and the latest closure still runs; re-register only when the schema
@@ -91,7 +130,7 @@ export function useWebMCPTool(spec: WebMCPToolSpec): void {
   handler.current = spec.handler;
   const paramsKey = JSON.stringify(spec.parameters ?? []);
   const inputSchema = useMemo(
-    () => ({ ...parametersToJsonSchema(spec.parameters ?? []), type: "object" }) as JsonSchemaObject,
+    () => inputSchemaFor(spec),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [paramsKey],
   );
@@ -100,20 +139,7 @@ export function useWebMCPTool(spec: WebMCPToolSpec): void {
     const mc = ensureModelContext();
     if (!mc) return;
     const controller = new AbortController();
-    void mc.registerTool(
-      {
-        name: spec.name,
-        description: spec.description,
-        inputSchema,
-        annotations: annotationsFor(spec),
-        // Non-standard, ignored by a native implementation, read by the polyfill and the panel.
-        ...({ athena: athenaFor(spec) } as object),
-        // The caller's signal reaches the handler (ADR 0101); dropping it left a call with no limit.
-        execute: (params, options) =>
-          runTool(inputSchema, params, (args, context) => handler.current(args, context), options?.signal),
-      },
-      { signal: controller.signal },
-    );
+    void mc.registerTool(toolDescriptorFor(spec, handler, inputSchema), { signal: controller.signal });
     return () => {
       controller.abort();
       // Older drafts have no AbortSignal on registerTool; unregister explicitly where offered.

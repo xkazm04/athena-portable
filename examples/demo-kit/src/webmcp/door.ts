@@ -1,10 +1,12 @@
 /**
- * The one WebMCP execute door's pure parts: validate against the published schema, turn a
- * handler fault into an in-band error, and cap the result text.
+ * The one WebMCP execute door's pure parts: validate against the published schema, run the
+ * handler under the caller's abort and the door's own ceiling, and cap the result text.
  *
  * mcp-tools/tool-schema-design: the schema `useWebMCPTool` publishes is the schema enforced
- * here (one artifact), validation runs at dispatch, a rejected call and a handler fault come
- * back as readable tool results rather than throws, and a result is bounded.
+ * here (one artifact), validation runs at dispatch and reports every mismatch by path, and a
+ * result is bounded. `runToolOutcome` says what a call came to; a registered tool REJECTS a
+ * refusal or a fault so the bridge replies `ok: false` (ADR 0146), while `runTool` keeps the
+ * in-band text for direct callers.
  */
 
 /** Longest result text a tool hands back, in characters. */
@@ -26,50 +28,85 @@ function typeOf(v: unknown): string {
   return typeof v;
 }
 
-function check(value: unknown, schema: Schema, path: string): string | null {
+/** One mismatch between an argument and the published schema, addressed by its path. */
+export interface ArgumentError {
+  /** `stage`, `row.x`, `rows[0].z`; empty for the arguments object itself. */
+  path: string;
+  /** `type`, `enum`, `maxItems`, `required` or `unknown`. */
+  code: "type" | "enum" | "maxItems" | "required" | "unknown";
+  /** The sentence an agent reads, naming the argument and what is allowed. */
+  message: string;
+}
+
+function check(value: unknown, schema: Schema, path: string, out: ArgumentError[]): void {
   const t = typeOf(value);
-  if (schema.type && schema.type !== t) return `argument "${path}" must be ${schema.type}, got ${t}`;
+  if (schema.type && schema.type !== t) {
+    out.push({ path, code: "type", message: `argument "${path}" must be ${schema.type}, got ${t}` });
+    return;
+  }
   if (schema.enum && !schema.enum.includes(value)) {
-    return `argument "${path}" must be one of ${schema.enum.map((e) => JSON.stringify(e)).join(", ")}, got ${JSON.stringify(value)}`;
+    out.push({
+      path,
+      code: "enum",
+      message: `argument "${path}" must be one of ${schema.enum.map((e) => JSON.stringify(e)).join(", ")}, got ${JSON.stringify(value)}`,
+    });
+    return;
   }
   if (t === "array" && Number.isInteger(schema.maxItems) && (value as unknown[]).length > schema.maxItems!) {
-    return `argument "${path}" has ${(value as unknown[]).length} items; at most ${schema.maxItems} allowed`;
+    out.push({
+      path,
+      code: "maxItems",
+      message: `argument "${path}" has ${(value as unknown[]).length} items; at most ${schema.maxItems} allowed`,
+    });
+    return;
   }
   if (t === "array" && schema.items) {
     for (let i = 0; i < (value as unknown[]).length; i++) {
-      const err = check((value as unknown[])[i], schema.items, `${path}[${i}]`);
-      if (err) return err;
+      check((value as unknown[])[i], schema.items, `${path}[${i}]`, out);
     }
   }
   if (t === "object" && schema.properties) {
-    return checkObject(value as Record<string, unknown>, schema, path);
+    checkObject(value as Record<string, unknown>, schema, path, out);
   }
-  return null;
 }
 
-function checkObject(obj: Record<string, unknown>, schema: Schema, prefix: string): string | null {
+function checkObject(obj: Record<string, unknown>, schema: Schema, prefix: string, out: ArgumentError[]): void {
   const props = schema.properties ?? {};
   const at = (k: string) => (prefix ? `${prefix}.${k}` : k);
   for (const k of schema.required ?? []) {
-    if (obj[k] === undefined) return `missing required argument "${at(k)}"`;
+    if (obj[k] === undefined) out.push({ path: at(k), code: "required", message: `missing required argument "${at(k)}"` });
   }
   for (const k of Object.keys(obj)) {
     if (!(k in props)) {
-      return `unknown argument "${at(k)}"; allowed: ${Object.keys(props).join(", ") || "(none)"}`;
+      out.push({
+        path: at(k),
+        code: "unknown",
+        message: `unknown argument "${at(k)}"; allowed: ${Object.keys(props).join(", ") || "(none)"}`,
+      });
     }
   }
   for (const [k, v] of Object.entries(obj)) {
-    if (v === undefined) continue;
-    const err = check(v, props[k] ?? {}, at(k));
-    if (err) return err;
+    if (v === undefined || !(k in props)) continue;
+    check(v, props[k] ?? {}, at(k), out);
   }
-  return null;
 }
 
-/** `null` when `params` satisfies `schema`, else a message naming the argument and what is allowed. */
+/**
+ * Every mismatch between `params` and `schema`, in the order the door reads them (required,
+ * unknown, then each value, depth first); empty when the call is well formed.
+ */
+export function argumentErrors(params: unknown, schema: unknown): ArgumentError[] {
+  if (typeOf(params) !== "object") {
+    return [{ path: "", code: "type", message: `arguments must be an object, got ${typeOf(params)}` }];
+  }
+  const out: ArgumentError[] = [];
+  checkObject(params as Record<string, unknown>, schema as Schema, "", out);
+  return out;
+}
+
+/** `null` when `params` satisfies `schema`, else a message naming the first argument and what is allowed. */
 export function validateArgs(params: unknown, schema: unknown): string | null {
-  if (typeOf(params) !== "object") return `arguments must be an object, got ${typeOf(params)}`;
-  return checkObject(params as Record<string, unknown>, schema as Schema, "");
+  return argumentErrors(params, schema)[0]?.message ?? null;
 }
 
 export function toolError(message: string): string {
@@ -114,42 +151,116 @@ export interface ToolContext {
 }
 
 /**
- * The execute door: validate, run, catch, cap. Never throws.
+ * The door's own ceiling on one call, in milliseconds. Timeouts are door policy: a caller that
+ * sent no signal (a native browser agent, a test) still gets an answer. It is longer than the
+ * bridge's 30 s deadline, so under the bridge the bridge's abort is what stops a call.
+ */
+export const DOOR_CEILING_MS = 60_000;
+
+/** The reasons the door mints, each a member of the bridge's page-mintable set (protocol.md). */
+export type RefusalReason = "validator_failed" | "timeout" | "cancelled";
+
+/**
+ * What one call through the door came to. A refusal is the door's (the call never ran, or the
+ * door stopped waiting); a failure is the handler's own fault; anything the handler RETURNED is
+ * `ok`, including a domain answer that says `{ ok: false }`: a domain answer is an answer.
+ */
+export type ToolOutcome =
+  | { kind: "ok"; text: string }
+  | { kind: "refused"; reason: RefusalReason; message: string; errors: ArgumentError[] }
+  | { kind: "failed"; message: string };
+
+/**
+ * The rejection a registered `execute` raises for a refusal. inject.js forwards `reason` (it is
+ * page-mintable) and `errors`, so the surface reads `{ ok: false, reason, error, errors }`.
+ */
+export class ToolRefusal extends Error {
+  readonly reason: RefusalReason;
+  readonly errors: ArgumentError[];
+  constructor(reason: RefusalReason, message: string, errors: ArgumentError[] = []) {
+    super(message);
+    this.name = "ToolRefusal";
+    this.reason = reason;
+    this.errors = errors;
+  }
+}
+
+export interface DoorOptions {
+  /** Override the door's ceiling; tests inject a short one. */
+  ceilingMs?: number;
+}
+
+/**
+ * The execute door: validate, run, catch, cap, bound in time. Never throws; says what happened.
  *
  * The caller's `signal` is forwarded to the handler, so a handler that can stop does, and the
- * door stops waiting when it aborts: a call the caller gave up on answers `aborted` instead of
- * holding the page's promise open with no time limit (ADR 0101). A handler that ignores the
- * signal may still finish; the bridge reports that as a `late` answer, not as a fresh call.
+ * door stops waiting when it aborts (`cancelled`, ADR 0101). With or without a signal the door
+ * stops at its own ceiling (`timeout`). A handler that ignores both may still finish; the bridge
+ * reports that as a `late` answer, not as a fresh call.
+ */
+export async function runToolOutcome(
+  schema: unknown,
+  params: Record<string, unknown> | undefined,
+  handler: (args: Record<string, unknown>, context: ToolContext) => unknown | Promise<unknown>,
+  signal?: AbortSignal,
+  options: DoorOptions = {},
+): Promise<ToolOutcome> {
+  const args = params ?? {};
+  const errors = argumentErrors(args, schema);
+  if (errors.length > 0) {
+    return { kind: "refused", reason: "validator_failed", message: errors.map((e) => e.message).join("; "), errors };
+  }
+  if (signal?.aborted) return { kind: "refused", reason: "cancelled", message: "aborted before it ran", errors: [] };
+  const ceilingMs = options.ceilingMs ?? DOOR_CEILING_MS;
+  let stop: (() => void) | undefined;
+  let timer: ReturnType<typeof setTimeout> | undefined;
+  const stopped = new Promise<ToolOutcome>((resolve) => {
+    timer = setTimeout(
+      () => resolve({ kind: "refused", reason: "timeout", message: `did not answer within ${ceilingMs} ms`, errors: [] }),
+      ceilingMs,
+    );
+    if (!signal) return;
+    stop = () =>
+      resolve({ kind: "refused", reason: "cancelled", message: "aborted: the caller stopped waiting", errors: [] });
+    signal.addEventListener("abort", stop, { once: true });
+  });
+  const ran = (async (): Promise<ToolOutcome> => {
+    try {
+      return { kind: "ok", text: asText(await handler(args, { signal })) };
+    } catch (e) {
+      // The agent gets the sentence; the page's developer gets the stack, or nothing in devtools
+      // says which handler broke (a refused argument is the caller's, and is not logged).
+      console.error("WebMCP tool handler threw:", e);
+      return { kind: "failed", message: `tool failed: ${e instanceof Error ? e.message : String(e)}` };
+    }
+  })();
+  try {
+    return await Promise.race([ran, stopped]);
+  } finally {
+    clearTimeout(timer);
+    if (stop) signal?.removeEventListener("abort", stop);
+  }
+}
+
+/**
+ * The door as text, for a caller that reads one string (ledgerbox's and tidycrm's handler
+ * tests): a refusal or a fault is the in-band `{"ok":false,"error":...}`. A registered tool
+ * goes through `toolDescriptorFor` (hooks.ts) instead, which rejects them (ADR 0146).
  */
 export async function runTool(
   schema: unknown,
   params: Record<string, unknown> | undefined,
   handler: (args: Record<string, unknown>, context: ToolContext) => unknown | Promise<unknown>,
   signal?: AbortSignal,
+  options?: DoorOptions,
 ): Promise<string> {
-  const args = params ?? {};
-  const bad = validateArgs(args, schema);
-  if (bad) return toolError(bad);
-  if (signal?.aborted) return toolError("aborted before it ran");
-  let stop: (() => void) | undefined;
-  const aborted = new Promise<string>((resolve) => {
-    if (!signal) return;
-    stop = () => resolve(toolError("aborted: the caller stopped waiting"));
-    signal.addEventListener("abort", stop, { once: true });
-  });
-  const ran = (async () => {
-    try {
-      return asText(await handler(args, { signal }));
-    } catch (e) {
-      // The agent gets the sentence; the page's developer gets the stack, or nothing in devtools
-      // says which handler broke (a refused argument is the caller's, and is not logged).
-      console.error("WebMCP tool handler threw:", e);
-      return toolError(`tool failed: ${e instanceof Error ? e.message : String(e)}`);
-    }
-  })();
-  try {
-    return await Promise.race([ran, aborted]);
-  } finally {
-    if (stop) signal?.removeEventListener("abort", stop);
-  }
+  const outcome = await runToolOutcome(schema, params, handler, signal, options);
+  return outcome.kind === "ok" ? outcome.text : toolError(outcome.message);
+}
+
+/** A refusal rejects a `ToolRefusal`; a fault rejects a plain `Error` with no reason; an answer resolves. */
+export function settleOutcome(outcome: ToolOutcome): string {
+  if (outcome.kind === "ok") return outcome.text;
+  if (outcome.kind === "refused") throw new ToolRefusal(outcome.reason, outcome.message, outcome.errors);
+  throw new Error(outcome.message);
 }

@@ -45,7 +45,7 @@ so an advertisement in an iframe cannot register tools that reach the surface.
 | `type` | Fields | Answer |
 |---|---|---|
 | `list` | — | `{ ok: true, page, tools }` |
-| `call` | `name`, `input` (object, may be omitted), `timeout_ms` (optional) | `{ ok: true, output }` or `{ ok: false, reason?, error }` |
+| `call` | `name`, `input` (object, may be omitted), `timeout_ms` (optional) | `{ ok: true, output }` or `{ ok: false, reason?, error, errors? }` |
 
 An unknown `type` is answered `{ ok: false, reason: "validator_failed", error: "Unknown request
 <type>" }`. A `call` for a name the page has not registered is answered `{ ok: false, reason:
@@ -55,7 +55,22 @@ the moment of the call, is answered `{ ok: false, reason: "validator_failed", er
 <problem>" }` and the tool never runs. The check is the gate's subset (`check_schema`,
 `src/athena/core/validators.py`) and is never stricter than it: a keyword outside the subset is
 ignored and a malformed schema is not a refusal here. An omitted `input` is `{}`. A throw inside the tool becomes `{ ok: false, error }` with no `reason`: that is the
-tool's own outcome, not a refusal by the bridge. Every `reason` this half sends is a member of
+tool's own outcome, not a refusal by the bridge.
+
+A tool's rejection may carry two coded fields of its own (ADR 0146), which is how the demo kit's
+execute door reports a call it refused or stopped rather than one it ran:
+
+- `reason`, forwarded only when it is one the page can honestly mint about its own door:
+  `"validator_failed"`, `"timeout"` or `"cancelled"`. Any other value, a gate's `"user_denied"`
+  above all, is dropped and the reply carries no `reason`: a page cannot claim a decision it
+  does not make.
+- `errors`, an array of `{ path, code, message }` (at most 32), every mismatch the page's door
+  found, addressed by argument path (`stage`, `rows[0].z`). Additive: a relay that does not read
+  it loses nothing, because `error` already says it in a sentence.
+
+What a tool RESOLVES is always `{ ok: true, output }`, including a domain answer whose text says
+`{"ok":false,...}` (an area that does not exist, with the ones that do): a domain answer is an
+answer, and only a rejection is a failed call. Every `reason` this half sends is a member of
 `REFUSAL_REASONS` (gate.js), and `error` is always the human sentence. A refusal is a result,
 never a dropped promise, because a relay with a pending entry that never clears is a surface that
 hangs.
@@ -129,11 +144,13 @@ unchanged, and a relay that does not know it ignores it as an event no request m
 ```js
 { __ns: "athena-webmcp", dir: "to-ext", id: null, type: "late", call: "3:41-9f…", ok: true, output: "sent" }
 { __ns: "athena-webmcp", dir: "to-ext", id: null, type: "late", call: "3:41-9f…", ok: false, output: "", error: "smtp down" }
+{ __ns: "athena-webmcp", dir: "to-ext", id: null, type: "late", call: "3:41-9f…", ok: false, output: "", reason: "cancelled", error: "aborted: the caller stopped waiting" }
 ```
 
 `inject.js` keeps the promise it raced against the deadline. When a call it already answered
 `timeout` settles after all, it posts `late` once, naming the request in `call` and carrying the
-answer rendered exactly as a reply's `output`. A call that had no `id` gets none. A timeout means
+answer rendered exactly as a reply's `output`, or a rejection's `reason` and `errors` under the
+same rules as a reply's. A call that had no `id` gets none. A timeout means
 "no answer yet", not "did not happen": a write that finishes late has still happened (ADR 0101).
 
 A relay places `late` only for an id it issued to that tab and saw time out recently, either the
@@ -154,7 +171,7 @@ Two, layered, so a page that never answers cannot wedge the surface:
 extend it. The abort is passed to the tool as `options.signal`, but the *race* is what guarantees
 the reply — a tool that ignores its signal and never settles must not be able to hold the surface
 open. `"timeout"`, `"unknown_ref"` and `"validator_failed"` are the refusal reasons this half
-mints, and each is a member of the one vocabulary the ledger stores (`ERROR_REASONS`,
+mints, `"cancelled"` is one more it forwards from a tool's own door, and each is a member of the one vocabulary the ledger stores (`ERROR_REASONS`,
 `src/athena/contracts/harness.py`). The surface records a `timeout` on any call that is not a
 read (reversible with no side effects) as `outcome_unknown`, because the call may have run, and
 posts the tool's `late` answer if it comes.

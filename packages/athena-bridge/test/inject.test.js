@@ -472,3 +472,70 @@ test("injecting twice leaves one bridge and one answer per request", async () =>
   await p.settle(20);
   assert.equal(p.replies.filter((r) => r.id === "one").length, 1);
 });
+
+/**
+ * An error as the demo kit's door rejects it: a message, and for a refusal a reason and
+ * path-addressed errors (ADR 0146).
+ * @param {any} window
+ * @param {string} message
+ * @param {Record<string, unknown>} fields
+ */
+function coded(window, message, fields) {
+  return Object.assign(new window.Error(message), fields);
+}
+
+test("a tool that rejects with a page-mintable reason and errors is replied with both; any other reason is dropped", async () => {
+  const p = page();
+  const errors = [
+    { path: "stage", code: "enum", message: 'argument "stage" must be one of "new", "hired", got "gone"' },
+    { path: "extra", code: "unknown", message: 'unknown argument "extra"; allowed: stage' },
+  ];
+  register(p.window, "refuses", () => Promise.reject(coded(p.window, "2 arguments refused", { reason: "validator_failed", errors })));
+  register(p.window, "invents", () => Promise.reject(coded(p.window, "made up", { reason: "not_a_reason" })));
+  register(p.window, "stops", () => Promise.reject(coded(p.window, "aborted before it ran", { reason: "cancelled" })));
+  register(p.window, "slow", () => Promise.reject(coded(p.window, "did not answer within 50 ms", { reason: "timeout" })));
+  for (const id of ["c1", "c2", "c3", "c4"]) {
+    p.send({ id, type: "call", name: { c1: "refuses", c2: "invents", c3: "stops", c4: "slow" }[id] });
+  }
+  await p.until(() => ["c1", "c2", "c3", "c4"].every((id) => p.replyTo(id) !== undefined));
+
+  assert.deepEqual(p.replyTo("c1"), {
+    __ns: NS, dir: "to-ext", id: "c1", ok: false, reason: "validator_failed", error: "2 arguments refused", errors,
+  });
+  assert.deepEqual(p.replyTo("c2"), { __ns: NS, dir: "to-ext", id: "c2", ok: false, error: "made up" });
+  assert.equal(p.replyTo("c3").reason, "cancelled");
+  assert.equal(p.replyTo("c4").reason, "timeout");
+  for (const id of ["c1", "c3", "c4"]) assert.ok(REFUSAL_REASONS.includes(p.replyTo(id).reason), `${id}: a vocabulary member`);
+});
+
+test("a page cannot mint a gate's reason: a rejection carrying user_denied is replied with no reason", async () => {
+  const p = page();
+  register(p.window, "claims", () => Promise.reject(coded(p.window, "the user said no", { reason: "user_denied" })));
+  p.send({ id: "g1", type: "call", name: "claims" });
+  assert.deepEqual(await p.answer("g1"), { __ns: NS, dir: "to-ext", id: "g1", ok: false, error: "the user said no" });
+});
+
+test("a timed-out call whose tool later rejects 'cancelled' (the door answering its abort) is late ok:false with that reason", async () => {
+  const p = page();
+  register(p.window, "door", (/** @type {any} */ _input, /** @type {any} */ options) => new Promise((_resolve, reject) => {
+    options.signal.addEventListener("abort", () => {
+      p.window.setTimeout(() => reject(coded(p.window, "aborted: the caller stopped waiting", { reason: "cancelled" })), 10);
+    });
+  }));
+  p.send({ id: "k1", type: "call", name: "door", timeout_ms: 20 });
+  await p.until(() => p.replies.some((r) => r.type === "late"));
+  assert.equal(p.replyTo("k1").reason, "timeout");
+  const late = JSON.parse(JSON.stringify(p.replies.find((r) => r.type === "late")));
+  assert.deepEqual(late, {
+    __ns: NS, dir: "to-ext", id: null, type: "late", call: "k1", ok: false, output: "",
+    reason: "cancelled", error: "aborted: the caller stopped waiting",
+  });
+});
+
+test("a tool that resolves a domain answer {ok:false} is replied ok:true with that output: a domain answer stays an answer", async () => {
+  const p = page();
+  const answer = { ok: false, error: "No area with id x", available: ["a", "b"] };
+  register(p.window, "open_group", () => JSON.stringify(answer));
+  p.send({ id: "d1", type: "call", name: "open_group" });
+  assert.deepEqual(await p.answer("d1"), { __ns: NS, dir: "to-ext", id: "d1", ok: true, output: JSON.stringify(answer) });
+});

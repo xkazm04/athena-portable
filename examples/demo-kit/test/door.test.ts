@@ -62,3 +62,14 @@ test("a handler that answers in time is unaffected by the signal", async () => {
   const controller = new AbortController();
   assert.equal(await runTool(schema, { stage: "new" }, () => "ran", controller.signal), "ran");
 });
+
+test("runTool called directly keeps its string API: a refusal and a throw still resolve '{\"ok\":false,...}' text", async (t) => {
+  // The direct callers (ledgerbox tool-handlers, tidycrm spatial tools) read this text; the coded
+  // failure channel is the registered descriptor's (ADR 0146), not runTool's.
+  t.mock.method(console, "error", () => {});
+  assert.deepEqual(JSON.parse(await runTool(schema, { stage: "gone" }, () => "ran")).ok, false);
+  const thrown = await runTool(schema, { stage: "new" }, () => {
+    throw new Error("database is locked");
+  });
+  assert.deepEqual(JSON.parse(thrown), { ok: false, error: "tool failed: database is locked" });
+});
