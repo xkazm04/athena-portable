@@ -1079,13 +1079,6 @@ body.athena {
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.aw .lg-title {
-  font: 300 21px/1.15 var(--font-display);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  letter-spacing: -0.01em;
-}
 .aw .lg-tools {
   position: absolute;
   right: 12px;
@@ -1830,4 +1823,21 @@ body.athena {
 .aw .msg-her .txt code {
   font: 0.92em/1.4 var(--font-mono);
   overflow-wrap: anywhere;
+}
+
+/* Her words' blocks (`companion/rich.tsx`): paragraphs, a heading as one bold line, lists. */
+.aw .msg-her .txt p,
+.aw .msg-her .txt ul,
+.aw .msg-her .txt ol {
+  margin: 0 0 6px;
+}
+.aw .msg-her .txt > :last-child {
+  margin-bottom: 0;
+}
+.aw .msg-her .txt ul,
+.aw .msg-her .txt ol {
+  padding-left: 18px;
+}
+.aw .msg-her .txt .md-h {
+  font-weight: 600;
 }

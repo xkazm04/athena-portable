@@ -18,6 +18,7 @@ import { localFaceSource } from "@/lib/face";
 import { Icon } from "./icons";
 import { Ledger } from "./ledger";
 import type { CompanionModel } from "./model";
+import { plainOf } from "./rich";
 import { Seal } from "./seal";
 import { Slip } from "./slip";
 import { Welcome } from "./welcome";
@@ -99,7 +100,7 @@ const LABELS: Record<CompanionModel["form"], string> = {
 
 function Tape({ model }: { model: CompanionModel }) {
   const { tape, talk } = model;
-  const said = [...talk.messages].reverse().find((m) => m.role === "her")?.title ?? "";
+  const said = plainOf([...talk.messages].reverse().find((m) => m.role === "her")?.title ?? "");
   const stopped = tape.done?.text === "stopped";
   // A step that has come back is its own beat (Bell's "result"): done in green, failed in red,
   // until the next one starts.
@@ -171,7 +172,7 @@ const FACE_SIZE = 224;
 function Face({ model }: { model: CompanionModel }) {
   const [source] = useState(localFaceSource);
   if (model.avatar === "halo") return null;
-  const said = [...model.talk.messages].reverse().find((m) => m.role === "her")?.title ?? "";
+  const said = plainOf([...model.talk.messages].reverse().find((m) => m.role === "her")?.title ?? "");
   const line = model.listening ? model.heard || "…" : model.mood === "speak" ? said : model.talk.working ? model.tape.cur.what : said;
   return (
     <>

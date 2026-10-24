@@ -13,21 +13,21 @@ import { fadeOnScroll } from "./detail";
 import { Icon } from "./icons";
 import type { CompanionModel, ProjectView } from "./model";
 import { Depth, Pages } from "./pages";
-import { richText } from "./rich";
+import { RichMessage } from "./rich";
 import { SheetRows, Sign } from "./slip";
 import { TaskStrip } from "./tasks";
 import type { PlainMessage } from "./translate";
 
 export function Ledger({ model }: { model: CompanionModel }) {
   const { actions, talk } = model;
-  const title = [...talk.messages].reverse().find((m) => m.role === "user")?.title;
+  // Where she is and the tools, nothing else: a title drawn from the last message ran into the
+  // toolbar, and the conversation below already says what was asked.
   return (
     <div className="lg">
       <header className="lg-head">
         <div className="crumbs">
           <span className="eyebrow">{`Athena${talk.host ? ` / ${talk.host}` : ""}`}</span>
         </div>
-        <h2 className="lg-title">{title ?? "Athena"}</h2>
         <span className="lg-tools">
           <button type="button" className="iconbtn" data-act="record" aria-label="The record of what ran" title="The record of what ran" onClick={() => actions.tab("record")}>
             <Icon name="record" />
@@ -127,7 +127,7 @@ function Message({ m, onOpen }: { m: PlainMessage; onOpen: (id: string) => void 
       <div className={`msg msg-${m.role}`} data-tone={m.tone}>
         <span className="node" />
         <div className="eyebrow msg-who">{m.role === "user" ? "You" : "Athena"}</div>
-        <div className="txt">{m.role === "her" ? richText(m.title) : m.title}</div>
+        <div className="txt">{m.role === "her" ? <RichMessage text={m.title} /> : m.title}</div>
       </div>
     );
   }
