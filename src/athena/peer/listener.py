@@ -382,6 +382,7 @@ class PeerHost:
         now: Callable[[], datetime] | None = None,
         tick_s: float = TICK_S,
     ) -> None:
+        from athena.peer.presence import PresenceProbe
         from athena.peer.routes import peer_routes
 
         self.root = root
@@ -408,6 +409,9 @@ class PeerHost:
         self._tick_thread: threading.Thread | None = None
         self._stop = threading.Event()
         self._overlay: tuple[float, Overlay] | None = None
+        #: Is each paired PC there right now (``presence`` on ``GET /devices``); runs from
+        #: :meth:`start` to :meth:`close`. A test swaps in one with a fake hello and overlay.
+        self.presence = PresenceProbe(self)
         self.add_routes(peer_routes(self))
 
     # -- the seam ------------------------------------------------------------------------------
@@ -505,12 +509,14 @@ class PeerHost:
     # -- the lifecycle -------------------------------------------------------------------------
 
     def start(self) -> None:
-        """Reconcile now, then tick every :attr:`tick_s` until :meth:`close`."""
+        """Reconcile now, then tick every :attr:`tick_s` until :meth:`close`; start the presence
+        probe beside the tick."""
         self.tick()
         if self._tick_thread is not None:
             return
         self._tick_thread = threading.Thread(target=self._ticking, name="peer-tick", daemon=True)
         self._tick_thread.start()
+        self.presence.start()
 
     def _ticking(self) -> None:
         while not self._stop.wait(self.tick_s):
@@ -540,6 +546,7 @@ class PeerHost:
         thread = self._tick_thread
         if thread is not None:
             thread.join(timeout=5)
+        self.presence.close()
         with self._lock:
             self._close_server()
         self.bus.close()

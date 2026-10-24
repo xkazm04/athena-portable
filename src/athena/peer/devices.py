@@ -7,8 +7,9 @@ device's own chrome is the only one who reaches them, which is what makes
 
 ``GET /devices``
     ``{self: {device_id, name}, peers: [row without its fingerprint, plus ``memory``: WP2's
-    replication status or ``null``], pending: [{pairing_id, name,
-    kind, requested_grants, expires_at, pair_back}], beacon: {on, url}, overlay: {state},
+    replication status or ``null``, and ``presence`` (``online`` / ``asleep`` / ``unreachable``)
+    with ``presence_at``, both ``null`` before the probe's first verdict], pending: [{pairing_id,
+    name, kind, requested_grants, expires_at, pair_back}], beacon: {on, url}, overlay: {state},
     listener: {up, address, port, error}, joining: [{join_id, address, name, state,
     expires_at}]}``. Absent values are ``null``, never omitted.
 ``PUT /devices/self`` ``{name}``
@@ -60,8 +61,14 @@ def devices(host: PeerHost) -> Reply:
         "ok": True,
         "self": {"device_id": me.device_id, "name": me.name},
         # ``memory``: WP2's replication status for the peer, ``null`` until it has been pulled.
+        # ``presence`` / ``presence_at``: the presence probe's verdict, ``null`` until its first.
         "peers": [
-            {**row.view(), "memory": memory_view(host, row.peer_id)} for row in host.registry.rows()
+            {
+                **row.view(),
+                "memory": memory_view(host, row.peer_id),
+                **host.presence.view(row.peer_id),
+            }
+            for row in host.registry.rows()
         ],
         "pending": [record.pending_view() for record in host.pairings.pending()],
         "beacon": {"on": host.beacon, "url": f"{base}/m/" if host.beacon and base else None},
