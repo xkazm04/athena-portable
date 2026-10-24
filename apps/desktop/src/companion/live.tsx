@@ -14,7 +14,9 @@
  * form is left where it was until the turn ends.
  *
  * A store this file reads it does not start: `src/athena.tsx` starts the ones ADR 0026 assigns to
- * her window (tabs, tools, daemon, settings, origins, run, voice) and nothing else does.
+ * her window (tabs, tools, daemon, settings, origins, run, voice) and nothing else does. The one
+ * thing started here is the task runner (`stores/task-runner.ts`, fleet-surfaces WP5): it runs
+ * delegated tasks for exactly as long as her window lives, which is what this component's life is.
  */
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import { createElement, useEffect, useState, useSyncExternalStore } from "react";
@@ -51,6 +53,7 @@ import { usePlaybooks } from "@/stores/playbooks";
 import { contractDriftsOf, gatedListsOf, useRun } from "@/stores/run";
 import { chooseFirstRunEngine, useSettings } from "@/stores/settings";
 import { useTabs } from "@/stores/tabs";
+import { startTaskRunner } from "@/stores/task-runner";
 import { useTools } from "@/stores/tools";
 import { useVoice } from "@/stores/voice";
 
@@ -294,6 +297,9 @@ function connect(rt: Runtime): () => void {
 export default function Live() {
   const [rt] = useState(() => createRuntime(liveDeps()));
   useEffect(() => connect(rt), [rt]);
+  // Delegated tasks run here while her window lives, and stop with it (ADR 0141). Only a shell has
+  // pages to run them on.
+  useEffect(() => (hasShell() ? startTaskRunner() : undefined), []);
   const snap = useSyncExternalStore(rt.subscribe, rt.getSnapshot);
 
   const run = useRun();
@@ -372,7 +378,9 @@ export default function Live() {
           ...(playbook.caseId ? { caseId: playbook.caseId } : {}),
           ...(playbook.caseId && playbook.scheduled ? { scheduled: true } : {}),
         });
-      rt.dispatch({ t: "open" });
+      // `expand`, not `open`: `open` only leaves the first-launch welcome, so after onboarding the
+      // hand-over left her collapsed to her seal and the press on Main looked like nothing.
+      rt.dispatch({ t: "expand" });
       rt.dispatch({ t: "tab", tab: "talk" });
     })
       .then((unlisten) => {
@@ -387,15 +395,16 @@ export default function Live() {
   }, [rt]);
 
   // "Set up with Athena" on Main's Devices page (ADR 0140, WP4): the setup session is handed here,
-  // the person's turns go to it until they leave it, and her Talk tab opens. Nothing is sent.
+  // the person's turns go to it until they leave it, her conversation opens on its Talk tab, and
+  // she speaks first: the daemon tells her to check this computer and say the first step.
   useEffect(() => {
     if (!hasShell()) return;
     let off: (() => void) | null = null;
     let alive = true;
     onSetup((session) => {
-      useRun.getState().enterSetup(session);
-      rt.dispatch({ t: "open" });
+      rt.dispatch({ t: "expand" });
       rt.dispatch({ t: "tab", tab: "talk" });
+      void useRun.getState().startSetup(session).catch(report("start setup"));
     })
       .then((unlisten) => {
         if (alive) off = unlisten;
@@ -413,7 +422,10 @@ export default function Live() {
     approve: (by) => rt.dispatch({ t: "decide", kind: "approve", by }),
     decline: (by) => rt.dispatch({ t: "decide", kind: "decline", by }),
     esc: () => rt.dispatch({ t: "esc" }),
+    // While she works, `send` reads the message as a correction (it stops her) or the next thing
+    // to do (it waits in line): the composer never closes (fleet-surfaces, ADR 0141).
     send: (message) => void run.send(message).catch(report("send")),
+    unqueue: (id) => run.unqueue(id),
     stop: () => void run.stop().catch(report("stop")),
     clear: () => run.clear(),
     leaveSetup: () => run.leaveSetup(),

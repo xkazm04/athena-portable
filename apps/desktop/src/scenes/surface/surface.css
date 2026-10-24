@@ -12,11 +12,39 @@
   overflow: auto;
 }
 
-.surface__bell {
+/* Her column: the illustration, and under it the tasks she has delegated. */
+.surface__her {
   grid-row: 1;
   align-self: center;
-  justify-self: center;
+  display: grid;
+  justify-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+/* Her illustration is the switch for her window (fleet-surfaces D2): a button with no chrome of its
+ * own, which lifts a little and brightens under the pointer. Under `data-motion="calm"` (the
+ * person's choice or the OS's reduced motion, `lib/motion.ts`) it brightens and does not lift. */
+.surface__bell {
+  display: block;
   width: min(100%, 44vh);
+  padding: 0;
+  font: inherit;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition: transform var(--duration-fast) var(--ease-fast), filter var(--duration-fast) var(--ease-fast);
+}
+.surface__bell:hover {
+  transform: translateY(-3px);
+  filter: brightness(1.08);
+}
+.surface__bell:active {
+  transform: translateY(0);
+}
+:root[data-motion="calm"] .surface__bell:hover {
+  transform: none;
 }
 .surface__bell .bell {
   width: 100%;
@@ -180,7 +208,8 @@
     grid-template-rows: auto auto auto;
     padding-bottom: 22vh;
   }
-  .surface__bell { grid-row: 1; width: min(70%, 32vh); }
+  .surface__her { grid-row: 1; }
+  .surface__bell { width: min(70%, 32vh); }
   .surface__words { grid-row: 2; }
   .surface__lights { grid-row: 3; grid-template-columns: repeat(auto-fit, minmax(110px, 1fr)); }
 }

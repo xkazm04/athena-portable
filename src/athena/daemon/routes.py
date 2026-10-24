@@ -7,7 +7,8 @@ knows nothing about Athena; a route is added by appending to the table rather th
 handler; and a test can append a route of its own to prove a property of the *server* — that a
 slow route does not stall a fast one — without the daemon shipping a debug route to production.
 
-Three routes write, one stops and six read.
+Three routes write, one stops and six read; the delegated tasks' routes are
+:mod:`athena.daemon.tasks`'s (ADR 0141).
 
 ``POST /manifest``
     A page describes itself. Refused whole on any problem (``manifest_invalid``, 400), merged
@@ -18,13 +19,16 @@ Three routes write, one stops and six read.
 ``POST /run``
     One turn, streamed as Server-Sent Events (:class:`EventStream`, ADR 0012). One turn per
     request, on the session for the request's origin, in the conversation the session or the
-    active project names.
+    active project names - or, with ``task_id``, in that running task's own (ADR 0141). One turn
+    per conversation: a second into a conversation whose turn is running is refused 409
+    ``thread_busy`` before any SSE header; another conversation runs beside it.
 
 ``POST /run/stop``
-    End the turn running for one origin (ADR 0115). It takes no lock, because the turn it stops
-    holds the writer lock: it cancels the step the turn is on, the harness writes the one
-    ``cancelled`` row, and the stream ends in ``turn.error``. ``{"stopped": false}`` when no turn
-    is running on that origin. A card already filed is untouched and stays answerable.
+    End the turn running for one origin (ADR 0115), or with ``conversation_id`` the one running in
+    that conversation for that origin (ADR 0141). It takes no lock: it cancels the step the turn is
+    on, the harness writes the one ``cancelled`` row, and the stream ends in ``turn.error``.
+    ``{"stopped": false}`` when no such turn is running. A card already filed is untouched and
+    stays answerable.
 
 ``POST /decisions/<id>``
     The user's answer. An approval replays the gate with the approval id and the surface receives
@@ -40,13 +44,17 @@ Three routes write, one stops and six read.
     :data:`ENGINES_TTL_S` (``?fresh=1`` skips the cache). It reads no brain and takes no lock.
 
 **Read routes take no lock.** A read reads through a fresh read-only handle per call (ADR 0003)
-and what it reports is consistent as of the last completed write. Only a route that *writes*
-takes :meth:`~athena.daemon.server.AthenaDaemon.writing`, and for ``/run`` the lock is taken
-inside the stream — the turn holds it for its whole length, and ``/health`` still answers.
+and what it reports is consistent as of the last completed write. A route that *writes* takes
+:meth:`~athena.daemon.server.AthenaDaemon.writing` for as long as the write takes. ``/run`` takes
+its conversation's lock instead (ADR 0141), before it answers, and the stream gives it back: the
+turn holds it for its whole length, and every other conversation, card and read goes on.
 
 **Errors are one shape.** ``{"ok": false, "reason": ..., "detail": ...}``, where ``reason`` is a
 member of ``contracts.harness.ERROR_REASONS`` — the same closed vocabulary the ledger records and
 ``gate.js`` speaks, so a surface never has to learn a second set of words for the same refusal.
+A refusal a surface acts on by name (``thread_busy``, ``task_not_running``, ADR 0141) carries that
+finer word beside it as ``error``, the shape the peer listener's refusals already have
+(:func:`refusal`).
 """
 
 from __future__ import annotations
@@ -63,7 +71,7 @@ from collections.abc import (
     Iterator,
     Mapping,
 )
-from contextlib import suppress
+from contextlib import contextmanager, suppress
 from dataclasses import dataclass, field, replace
 from typing import TYPE_CHECKING, Any
 from urllib.parse import unquote
@@ -76,13 +84,19 @@ from athena.contracts.registry import Lane, OpenApp, TurnContext, parse_origin
 from athena.core.catalog import CatalogError
 from athena.core.ledger import LedgerError
 from athena.core.recall import recall as recall_bundle
-from athena.core.setup import SETUP_SESSION_ORIGIN, SETUP_TOOLS_ORIGIN, SETUP_TURN_KEY
+from athena.core.setup import (
+    SETUP_OPENING,
+    SETUP_SESSION_ORIGIN,
+    SETUP_TOOLS_ORIGIN,
+    SETUP_TURN_KEY,
+)
 from athena.daemon.sessions import Session, conversation_for
 from athena.harness.engines import EngineStatus
 from athena.lane.turn_frame import tool_results_from
 
 if TYPE_CHECKING:
-    from athena.daemon.server import AthenaDaemon
+    from athena.daemon.server import AthenaDaemon, ThreadLease
+    from athena.daemon.tasks import Task
 
 __all__ = [
     "ANSWER_CAP",
@@ -94,6 +108,7 @@ __all__ = [
     "PENDING_CEILING",
     "PENDING_LINES",
     "PLAYBOOK_KINDS",
+    "REFUSAL_REASONS",
     "SSE_CONTENT_TYPE",
     "BinaryReply",
     "EventStream",
@@ -120,10 +135,12 @@ __all__ = [
     "ledger_rollup",
     "manifest",
     "playbooks",
+    "refusal",
     "run",
     "sse_frame",
     "stamp_case_turn",
     "stop",
+    "task_of",
     "turn_context",
     "turn_events",
 ]
@@ -215,6 +232,10 @@ class EventStream:
 
     frames: Iterator[str]
     status: int = 200
+    #: Called by the handler once the stream is over, however it ended - even when no frame was
+    #: ever produced. ``POST /run`` passes its conversation lease here (ADR 0141), because a
+    #: generator closed before its first frame never runs the ``finally`` that would release it.
+    release: Callable[[], None] | None = None
 
 
 @dataclass(frozen=True)
@@ -271,6 +292,30 @@ class Route:
 def error(status: int, reason: str, detail: str = "") -> Reply:
     """A refusal in the one shape, with ``reason`` collapsed onto ``ERROR_REASONS``."""
     return status, {"ok": False, "reason": normalize_reason(reason) or "unknown", "detail": detail}
+
+
+#: The finer refusal words of the per-conversation lock and the delegated tasks (ADR 0141), and the
+#: member of ``ERROR_REASONS`` each one reads as. A thread or a task already taken is a request the
+#: state refuses (``validator_failed``, as the peer's ``window_taken``); a full queue is a bound hit
+#: (``budget_exhausted``, as the peer's ``busy``).
+REFUSAL_REASONS: dict[str, str] = {
+    "thread_busy": "validator_failed",
+    "task_not_running": "validator_failed",
+    "task_unknown": "unknown_ref",
+    "queue_full": "budget_exhausted",
+    "nested_delegate": "validator_failed",
+    "bad_request": "validator_failed",
+}
+
+
+def refusal(status: int, word: str, detail: str = "") -> Reply:
+    """A refusal in the one shape, plus the finer ``error`` word a surface acts on (ADR 0141).
+
+    ``reason`` stays a member of ``ERROR_REASONS``; ``error`` is the word itself, read by the
+    window as ``ApiError.word`` exactly as it reads the peer listener's.
+    """
+    status, body = error(status, REFUSAL_REASONS.get(word, "unknown"), detail)
+    return status, {**body, "error": word}
 
 
 def announced(items: list[dict[str, Any]], total: int, key: str) -> dict[str, Any]:
@@ -372,11 +417,13 @@ class TurnDoor:
     :meth:`stop`, called on the stop route's thread, cancels that task through the loop's own
     thread-safe door. A stop that lands between two steps cancels the next one once it is inside
     the turn, never before it starts, so the harness always sees the cancellation and writes the
-    one ``cancelled`` row. Nothing here takes the writer lock.
+    one ``cancelled`` row. Nothing here takes a lock the turn holds.
     """
 
-    def __init__(self, origin: str) -> None:
+    def __init__(self, origin: str, conversation: str = "") -> None:
         self.origin = origin
+        #: The conversation the turn runs in: one door per conversation (ADR 0141).
+        self.conversation = conversation
         self.stopped = False
         self._lock = threading.Lock()
         self._loop: asyncio.AbstractEventLoop | None = None
@@ -578,15 +625,36 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
     """One turn, on the session for this origin, streamed as SSE (README §3.2).
 
     Everything that can be refused is refused *before* the stream opens — an origin with no
-    session, a project id that is not one — so a caller never has to read a 200 to find out the
-    turn never started. Once the headers are out the answer is the lane's own event stream, ending
-    in ``turn.finished`` or ``turn.error``, always, because the harness guarantees it.
+    session, a project id that is not one, a task that is not running, a conversation whose turn
+    is still running — so a caller never has to read a 200 to find out the turn never started.
+    Once the headers are out the answer is the lane's own event stream, ending in
+    ``turn.finished`` or ``turn.error``, always, because the harness guarantees it.
+
+    The conversation's lock is taken here, not inside the stream (ADR 0141): taken inside, a busy
+    thread would be found after the 200 and its headers had gone, and the second turn would wait
+    behind the first with the client none the wiser. Taken here, it is a 409 ``thread_busy`` in the
+    one JSON shape, and the stream that follows gives the lock back however it ends.
+
+    ``task_id`` runs the turn in a delegated task's own conversation, ``conv_task_<hex>``, and only
+    while the task is running - the window claimed it and has not finished it (ADR 0141). The
+    task's first turn opens with its title and brief, so the window need not carry them. A task of
+    an app runs on the page session of the tab the window bound, like any turn; a task with no app
+    needs no page at all (:func:`task_context`): its turn has Athena's own and the connector tools,
+    and no page's.
     """
     body = request.body
-    origin = str(body.get("origin", "")).strip()
-    session = daemon.sessions.get(origin)
-    if session is None:
-        return error(403, "foreign_origin", NO_PAGE_SENTENCE)
+    origin = str(body.get("origin", "") or "").strip()
+    task: Task | None = None
+    if body.get("task_id") is not None:
+        found = task_of(daemon, body.get("task_id"))
+        if isinstance(found, tuple):
+            return found
+        task = found
+    session = None
+    if task is None or task.app_id is not None:
+        session = daemon.sessions.get(origin)
+        if session is None:
+            return error(403, "foreign_origin", NO_PAGE_SENTENCE)
     project_id = str(body.get("project_id", "") or "")
     if project_id and not ids.is_id("project", project_id):
         return error(400, "unknown_ref", f"not a project id: {project_id!r}")
@@ -595,22 +663,68 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
         return error(400, "unknown_ref", f"not a case id: {case_id!r}")
 
     try:
-        ctx = turn_context(
-            daemon,
-            session,
-            project_id,
-            case_id=case_id,
-            surface=str(body.get("surface") or "panel"),
-            disabled_origins=disabled_origins_from(body),
-            gated_origins=gated_origins_from(body),
-            gated_tools=gated_tools_from(body),
-            capture_id=capture_id_from(body),
-            tab=tab_from(body),
-            tainted_by=tainted_by_from(body),
-            open_apps=open_apps_from(body),
-        )
+        if session is None:
+            assert task is not None  # only an app-less task runs without a page session
+            ctx = task_context(daemon, task, origin, body)
+        else:
+            ctx = turn_context(
+                daemon,
+                session,
+                project_id,
+                case_id=case_id,
+                surface=str(body.get("surface") or "panel"),
+                disabled_origins=disabled_origins_from(body),
+                gated_origins=gated_origins_from(body),
+                gated_tools=gated_tools_from(body),
+                capture_id=capture_id_from(body),
+                tab=tab_from(body),
+                tainted_by=tainted_by_from(body),
+                open_apps=open_apps_from(body),
+            )
     except ListTooLong as exc:
         return error(400, "validator_failed", str(exc))
+    if task is not None:
+        ctx = replace(ctx, conversation_id=task.conversation_id)
+    # "Set up with Athena" (ADR 0140, WP4): the setup conversation's first turn is hers to open. A
+    # window sends ``start`` and no message; the daemon writes what she is told (SETUP_OPENING), so
+    # no window can put words in that turn, and no other session can start one on its own.
+    start = body.get("start") is True
+    if start and (
+        session is None
+        or session.origin != SETUP_SESSION_ORIGIN
+        or str(body.get("message", "") or "").strip()
+    ):
+        return error(
+            400,
+            "validator_failed",
+            "only the setup conversation starts on its own, and its start carries no message",
+        )
+    lease = daemon.threads.try_take(ctx.conversation_id)
+    if lease is None:
+        return refusal(
+            409,
+            "thread_busy",
+            "a turn is already running in this conversation; send this when it ends",
+        )
+    message = SETUP_OPENING if start else str(body.get("message", ""))
+    if task is not None and daemon.tasks is not None:
+        # Here and not at the top: the tasks module takes this one's helpers, as decisions does.
+        from athena.daemon.tasks import TaskRefused
+
+        try:
+            message = daemon.tasks.begin_turn(
+                task.id,
+                message,
+                tab_id=ctx.tab_id,
+                origin=session.origin if session is not None else None,
+                app_id=session.app_id if session is not None else None,
+            )
+        except TaskRefused as exc:
+            lease.release()
+            return refusal(409, exc.word, str(exc))
+        except BaseException:
+            lease.release()
+            raise
     raw_results = body.get("tool_results")
     results = tool_results_from(
         [row for row in raw_results if isinstance(row, Mapping)]
@@ -626,13 +740,57 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
         _turn_frames(
             daemon,
             ctx,
-            message=str(body.get("message", "")),
+            message=message,
             host_state=dict(host_state) if isinstance(host_state, Mapping) else {},
             results=results,
             project=_active_project(body, project_id),
             scheduled=body.get("trigger") == SCHEDULE_TRIGGER,
             observe=observe,
-        )
+            lease=lease,
+        ),
+        release=lease.release,
+    )
+
+
+def task_of(daemon: AthenaDaemon, raw: Any) -> Task | Reply:
+    """``POST /run``'s ``task_id``, checked: the task, which is running, or the refusal.
+
+    Not an id is ``unknown_ref``; an id with no row is ``task_unknown``; a row that is queued or
+    has ended is ``task_not_running`` - a task's turn runs only between the window's claim and its
+    finish, and a task killed mid-turn is not resumed by the window's next continuation.
+    """
+    if not isinstance(raw, str) or not ids.is_id("task", raw.strip()):
+        return error(400, "unknown_ref", f"not a task id: {raw!r}")
+    if daemon.tasks is None:
+        return refusal(404, "task_unknown", "this daemon runs no delegated tasks")
+    task = daemon.tasks.get(raw.strip())
+    if task is None:
+        return refusal(404, "task_unknown", f"no task {raw.strip()}")
+    if task.status != "running":
+        return refusal(409, "task_not_running", f"task {task.id} is {task.status}, not running")
+    return task
+
+
+def task_context(
+    daemon: AthenaDaemon, task: Task, origin: str, body: Mapping[str, Any]
+) -> TurnContext:
+    """The context of a turn of a task with no app: no page session, no page's tools (ADR 0141).
+
+    Every host origin the catalog holds is switched off for it, which takes their names out of
+    its prompt and has the gate refuse them (policy rule 2), and so is the setup leg, as for every
+    session but the setup one. What is left is Athena's own names and the connectors'. No tab, no
+    capture and no open apps: a page's fields on the body bind nothing here. ``origin`` is only
+    what the window said it is, kept as the session id so the window's stop finds the turn's door.
+    """
+    hosts = {o for o in daemon.catalog.origins if o.startswith("host:")}
+    setup = {SETUP_TOOLS_ORIGIN} if daemon.catalog.held(SETUP_TOOLS_ORIGIN) is not None else set()
+    return TurnContext(
+        conversation_id=task.conversation_id,
+        turn_id=ids.mint("turn"),
+        lane=Lane.BROWSER,
+        surface=str(body.get("surface") or "panel"),
+        session_id=origin or None,
+        disabled_origins=disabled_origins_from(body) | hosts | setup,
     )
 
 
@@ -862,10 +1020,12 @@ def _turn_frames(
     project: Mapping[str, Any] | None,
     scheduled: bool = False,
     observe: Callable[[ChannelEvent], None] | None = None,
+    lease: ThreadLease | None = None,
 ) -> Generator[str, None, None]:
     """The turn's frames: :func:`turn_events`, one SSE frame per event (ADR 0012).
 
     ``observe`` sees each event before its frame is written: the remote composer's tee (ADR 0140).
+    ``lease`` is the conversation's lock, already taken by the route (ADR 0141).
     """
     for event in turn_events(
         daemon,
@@ -875,6 +1035,7 @@ def _turn_frames(
         results=results,
         project=project,
         scheduled=scheduled,
+        lease=lease,
     ):
         if observe is not None:
             observe(event)
@@ -890,19 +1051,25 @@ def turn_events(
     results: tuple[Any, ...],
     project: Mapping[str, Any] | None,
     scheduled: bool = False,
+    lease: ThreadLease | None = None,
 ) -> Generator[ChannelEvent, None, None]:
-    """One turn's events, with the writer lock held for exactly as long as the turn runs.
+    """One turn's events, with its conversation's lock held for exactly as long as the turn runs.
 
-    The lock lives here rather than around the route because the route returns before a single
-    event is produced. A turn that dies mid-stream still releases it: the ``with`` block is inside
-    the generator, and the handler closes the generator when a client hangs up. The voice gateway
-    drives the same generator, so a spoken turn holds the lock exactly the way a typed one does.
+    ``lease`` is that lock when the caller already took it - ``POST /run`` takes it before it
+    answers, so a busy thread is a 409 and not a stream that waits (ADR 0141). Without one the lock
+    is waited for here: the voice gateway drives this same generator, and a spoken turn queues
+    behind a typed one in the same conversation as every turn once queued behind every other. A
+    turn that dies mid-stream still releases it: the ``with`` block is inside the generator, and
+    the handler closes the generator when a client hangs up.
 
     ``scheduled`` is the surface saying this is the first send after "Open and prepare" on a due
     chore's review (ADR 0131); the trigger becomes ``schedule`` only if the chores clock agrees,
     once, with the lock held, so a refused or queued request never spends the claim.
     """
-    with daemon.writing(), daemon.turn_door(ctx.page_origin or "") as door:
+    with (
+        _holding(daemon, ctx.conversation_id, lease),
+        daemon.turn_door(ctx.page_origin or ctx.session_id or "", ctx.conversation_id) as door,
+    ):
         if scheduled:
             ctx = schedule_trigger(daemon, ctx)
         stamped = stamp_case_turn(daemon, ctx)
@@ -929,11 +1096,24 @@ def turn_events(
                 daemon.case_turns.finish(ctx.turn_id)
 
 
+@contextmanager
+def _holding(daemon: AthenaDaemon, conversation: str, lease: ThreadLease | None) -> Iterator[None]:
+    """Hold ``conversation``'s lock for the block: the lease handed in, or one waited for here."""
+    if lease is not None:
+        try:
+            yield
+        finally:
+            lease.release()
+        return
+    with daemon.thread(conversation):
+        yield
+
+
 def stamp_case_turn(daemon: AthenaDaemon, ctx: TurnContext) -> bool:
     """Stamp ``ctx``'s turn under the case it names, as it begins (ADR 0127); ``False`` for a
     turn under no case. The turn keeps its own conversation: the stamp is what a receipt joins
-    the turn's cards and ledger rows by. Called with the writer lock held, so a turn's window
-    holds only what that turn wrote."""
+    the turn's cards and ledger rows by. Called with the conversation's lock held, so a turn's
+    window holds only what that turn wrote in its conversation."""
     if not ctx.case_id:
         return False
     daemon.case_turns.record(ctx.case_id, ctx.turn_id, ctx.conversation_id)
@@ -995,13 +1175,17 @@ def pending_lines(daemon: AthenaDaemon, limit: int = PENDING_LINES) -> list[str]
 
 
 def stop(daemon: AthenaDaemon, request: Request) -> Reply:
-    """Stop the turn running for ``origin``, if one is (ADR 0115).
+    """Stop the turn running for ``origin``, if one is (ADR 0115, ADR 0141).
 
-    No writer lock: the turn being stopped holds it. A turn on another origin is not this caller's
-    to stop, so it runs on and the answer is ``stopped: false``, as when nothing runs at all.
+    No lock: the turn being stopped holds its conversation's. A turn on another origin is not this
+    caller's to stop, so it runs on and the answer is ``stopped: false``, as when nothing runs at
+    all. ``conversation_id`` narrows the stop to the turn in that conversation; ``null`` (the main
+    thread's) stops every turn of the origin but a delegated task's, which has its own stop.
     """
     origin = str(request.body.get("origin", "")).strip()
-    return 200, {"ok": True, "stopped": daemon.stop_turn(origin)}
+    raw = request.body.get("conversation_id")
+    conversation = raw.strip() if isinstance(raw, str) and raw.strip() else None
+    return 200, {"ok": True, "stopped": daemon.stop_turn(origin, conversation)}
 
 
 # --- the read routes -----------------------------------------------------------------------------
@@ -1034,6 +1218,8 @@ def ledger_recent(daemon: AthenaDaemon, request: Request) -> Reply:
             "ms": row.ms,
             "is_error": row.is_error,
             "error_reason": row.error_reason,
+            # The engine child's peak working set, MiB, or null where unmeasured (ADR 0143).
+            "peak_mb": row.peak_mb,
         }
         for row in page.rows
     ]

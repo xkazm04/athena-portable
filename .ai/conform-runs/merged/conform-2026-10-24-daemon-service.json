@@ -1,0 +1,151 @@
+{
+  "worker": "conform-daemon-service",
+  "evaluatedAt": "2026-10-24T15:00:00.000Z",
+  "pairs": [
+    {
+      "context": "10c863df-b13e-4802-85a8-60731a8c6c99",
+      "subject": "fleet-orchestration",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "src/athena/daemon/tasks.py:422 a running task whose window died keeps its slot (and nothing ever marks it lost) until the window returns or the daemon restarts (ADR 0141 consequences, lines 112-113); companion_task has no last-heard-from column (tasks.py:120-135) and no sweeper, so each leaked slot permanently shrinks the cap of 3 and nothing bounds how long a dead task impersonates a working one.",
+      "techniques": [
+        {
+          "technique": "session-registry",
+          "verdict": "realized",
+          "evidence": "src/athena/daemon/tasks.py:99 closed TASK_STATUSES vocabulary, id minted once at tasks.py:378, and every transition is a method on Tasks that rejects an illegal edge (finish only from running, tasks.py:497); the kill is final. Lineage and liveness fields are missing (see lifecycle-signals)."
+        },
+        {
+          "technique": "lifecycle-signals",
+          "verdict": "deviation",
+          "evidence": "src/athena/daemon/tasks.py:422 the running count is the slot count and only finish, stop or the start-up sweep (tasks.py:524) lowers it; tier two (a staleness sweep with a per-state budget) does not exist, so a window that died mid-task leaves a ghost 'running' row and a held slot."
+        },
+        {
+          "technique": "durable-fleet-state",
+          "verdict": "realized",
+          "evidence": "src/athena/daemon/server.py:1073 the start-up sweep marks every running row 'interrupted' (its own word, not 'failed') and tells the parent before the ready line, and every transition is committed in the row's write transaction before task.changed is published (tasks.py:439)."
+        },
+        {
+          "technique": "parallel-dispatch",
+          "verdict": "deviation",
+          "evidence": "src/athena/daemon/tasks.py:385 the door holds two stock caps (3 running at tasks.py:422, 10 queued) and the queue is durable with identity kept at promotion (tasks.py:439) - but Athena authors her own next batch from each harvest line and no per-parent-conversation total is reserved at admission; ADR 0141 line 111 states 'the cap of 3 is the only cost control in v1'."
+        },
+        {
+          "technique": "result-harvest",
+          "verdict": "realized",
+          "evidence": "src/athena/daemon/tasks.py:560 every end (done, failed, killed, interrupted) is told to the parent thread as one episode, and failure is a first-class result with its own sentence (harvest_line)."
+        },
+        {
+          "technique": "hibernation-and-resume",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/daemon/tasks.py:99 the status vocabulary has no hibernated state; a task is either queued, running or ended."
+        }
+      ],
+      "registryProposal": "The map held not-applicable on a premise ADR 0141 removed (one turn at a time behind a writer lock). A daemon that admits a durable queue of delegated tasks with a running cap and a restart sweep is a small fleet; the golden path's precondition ('a set of autonomous sessions') holds from 2026-10-24. Upward lesson: lifecycle-signals could say what the minimum honest tier two is when the session's executor is another process the registry cannot probe (here the desktop window): a per-row last-turn timestamp and a staleness budget is cheaper than a process check."
+    },
+    {
+      "context": "10c863df-b13e-4802-85a8-60731a8c6c99",
+      "subject": "agent-memory",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "src/athena/daemon/routes.py:1254 GET /playbooks recalls the origin's procedurals and keeps only recall items (line 1255), never reading the trace's unavailable flag, so an unreadable store is answered as an empty playbook list (durable-store-failure-posture: the degraded read says unavailable, never empty).",
+      "techniques": [
+        {
+          "technique": "durable-store-failure-posture",
+          "verdict": "deviation",
+          "evidence": "src/athena/daemon/routes.py:1254 RecallTrace.unavailable (src/athena/core/recall.py:247) is set when the store cannot be read, and this route drops it on the floor."
+        }
+      ],
+      "registryProposal": "Re-anchored: the 2026-10-15 verdict cited routes.py:970, which today's growth of routes.py (ThreadLease, task routes) moved to a docstring line; the finding is unchanged and now sits at routes.py:1254."
+    },
+    {
+      "context": "10c863df-b13e-4802-85a8-60731a8c6c99",
+      "subject": "agent-runtime-assembly",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "src/athena/daemon/routes.py:906 _names_from reads the per-turn policy inputs (disabled_origins, gated_origins, gated_tools) from the request body and turns a missing or non-list value into an empty frozenset (line 907), so a malformed field re-enables switched-off apps and drops first-sight gating instead of failing the turn (guard-input-custody question 4: an absent policy input must fail loudly, not degrade to a permissive default).",
+      "techniques": [
+        {
+          "technique": "guard-input-custody",
+          "verdict": "deviation",
+          "evidence": "src/athena/daemon/routes.py:906 absent or malformed policy input degrades to the permissive empty set; the oversize case does raise ListTooLong (line 909), so the loud path exists but the malformed path does not use it."
+        }
+      ],
+      "registryProposal": "Re-anchored: the 2026-10-24 morning verdict cited routes.py:678 and 767-768, which the same day's fleet-surfaces commits moved (678 is now a closing paren); the finding is unchanged and now sits at routes.py:906-907. Note the docstring at routes.py:813-822 argues the opposite direction ('a malformed field must not switch an app on') but an empty disabled set is exactly the app-on state."
+    },
+    {
+      "context": "10c863df-b13e-4802-85a8-60731a8c6c99",
+      "subject": "mcp-tools",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evidence": "src/athena/daemon/routes.py:1310 the daemon's route table is plain HTTP/WebSocket routes (/health, /engines, /manifest, /run, ...); it neither exposes nor consumes an MCP server, and a search of src/athena/daemon for 'mcp' finds nothing - the precondition (a host/client/server MCP wire) does not hold in this context, and 'mcp' appears only as a future surface name at src/athena/contracts/registry.py:205."
+    }
+  ],
+  "declined": [
+    {
+      "subject": "test-harness",
+      "context": "10c863df-b13e-4802-85a8-60731a8c6c99",
+      "reason": "25 techniques; this context is a slice of the repo's test lane (tests/daemon, real-socket tests with a scripted transport). Only assert-the-schedule-not-the-stopwatch was read against code (test_threads.py counts engines in flight, which realizes it; the elapsed<2 bounds beside it are hang guards). Under the evidence floor that is unknown, not conformant."
+    },
+    {
+      "subject": "quality-gates",
+      "context": "10c863df-b13e-4802-85a8-60731a8c6c99",
+      "reason": "The golden path is about delivery-pipeline refusal; 'gated' in this context is the approval gate of the policy layer (daemon/__init__.py says the gate lives in core/catalog.py). A technique-shaped resonance by vocabulary, and a repo-level subject; not judged here."
+    },
+    {
+      "subject": "agent-instruction-files",
+      "context": "10c863df-b13e-4802-85a8-60731a8c6c99",
+      "reason": "Matched on 'decisions', 'service', 'test'; the daemon carries no agent instruction files. Not read."
+    },
+    {
+      "subject": "agent-browser-control",
+      "context": "10c863df-b13e-4802-85a8-60731a8c6c99",
+      "reason": "priorNotApplicable 2; the daemon does not drive a browser (host calls are executed by the page, ADR 0010). Ranked last and left unjudged."
+    },
+    {
+      "subject": "talking-avatar",
+      "context": "10c863df-b13e-4802-85a8-60731a8c6c99",
+      "reason": "voice.py serves TTS/STT routes, not an avatar; not read this wave."
+    },
+    {
+      "subject": "voice-io",
+      "context": "10c863df-b13e-4802-85a8-60731a8c6c99",
+      "reason": "Already judged today against the current digest (sha256-b2:29f8b158c4d44054); anchor voice.py:100 still resolves. The pair carries revisionsBehind 3 while its revision equals its evaluatedRevision (23): a stale artifact of the builder, not a lag."
+    }
+  ],
+  "proposedPairs": [
+    {
+      "subject": "concurrency-guards",
+      "reason": "ThreadLocks / ThreadLease (src/athena/daemon/server.py:201-290) is a per-key lock map with try-take, counted holders and release-once; plus the short writing() lock. Governs the context directly (ADR 0141)."
+    },
+    {
+      "subject": "admission-queue",
+      "reason": "Tasks.claim_or_held (tasks.py:411) and the vitals Gate (src/athena/vitals/gate.py) are an admission door with a cap, a durable queue and a named held reason. Mapped only to another context."
+    },
+    {
+      "subject": "background-jobs",
+      "reason": "The vitals sampler thread and the sleep check thread (server.py:1111-1114, daemon/sleep.py) are supervised recurring loops; subject absent from the map entirely."
+    },
+    {
+      "subject": "scheduling",
+      "reason": "The sleep service asks admission every 600 s and the chores loop runs in the served daemon; subject absent from the map entirely."
+    },
+    {
+      "subject": "health-checks",
+      "reason": "GET /health answers off a read connection while the write lock is held (asserted in tests/daemon/test_server.py) and GET /vitals reports room; mapped only to another context."
+    },
+    {
+      "subject": "hitl-approval",
+      "reason": "src/athena/daemon/decisions.py (POST /decisions/<id>, GET /decisions) is the approval-card surface; the context's own tests (test_decisions.py) cover it, yet the map has no hitl-approval pair for it."
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-24T15:00:00.000Z",
+      "bundle": "software-engineering",
+      "subjects": ["fleet-orchestration", "agent-memory", "agent-runtime-assembly", "mcp-tools", "test-harness"],
+      "techniques": ["session-registry", "lifecycle-signals", "durable-fleet-state", "parallel-dispatch", "result-harvest", "durable-store-failure-posture", "guard-input-custody", "assert-the-schedule-not-the-stopwatch"],
+      "deviations": 4
+    }
+  ],
+  "contextMapFinding": "context-map.json lists none of src/athena/daemon/tasks.py, src/athena/daemon/sleep.py, src/athena/daemon/decisions.py, tests/daemon/test_tasks.py, test_threads.py, test_sleep.py, test_stop.py, test_cross_tab.py, test_case_runs.py, test_chores_due.py, test_tabs_read_taint.py, test_token_file.py under daemon-service (or any context for the first three), although src/athena/daemon/__init__.py documents them as the package."
+}

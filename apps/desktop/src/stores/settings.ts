@@ -31,7 +31,7 @@ import { AVATAR_IDS, type AvatarId } from "@/avatar/types";
 import { DEFAULT_ENGINE, isEngineId, type EngineId } from "@/lib/engines";
 import { SETTING_KEYS, settingRead, settingWrite, storePath, type SettingKey } from "@/lib/store";
 import { useDaemon } from "@/stores/daemon";
-import { applyTheme, useShell, type Theme } from "@/stores/shell";
+import { DEFAULT_SKIN, applySkin, applyTheme, isSkin, useShell, type Skin, type Theme } from "@/stores/shell";
 
 /** The three a person may choose between. `system` is the default, because it is nobody's. */
 export const THEME_CHOICES = ["system", "light", "dark"] as const;
@@ -88,6 +88,8 @@ export interface SettingsState {
   onboarded: boolean;
   /** How she appears: `halo` (the Bell and the seal, no face) or a rigged face. */
   avatar: AvatarId;
+  /** The skin she wears (ADR 0142); `athena` is her own teal. */
+  skin: Skin;
   /** Where the store file is, for the read-only line in Settings. `null` until it has answered. */
   storePath: string | null;
   /**
@@ -106,6 +108,7 @@ export interface SettingsState {
   setBrainPath: (path: string) => Promise<void>;
   setOnboarded: (onboarded: boolean) => Promise<void>;
   setAvatar: (avatar: AvatarId) => Promise<void>;
+  setSkin: (skin: Skin) => Promise<void>;
 }
 
 export const useSettings = create<SettingsState>((set, get) => ({
@@ -118,6 +121,7 @@ export const useSettings = create<SettingsState>((set, get) => ({
   brainPath: "",
   onboarded: false,
   avatar: "halo",
+  skin: DEFAULT_SKIN,
   storePath: null,
   problem: null,
 
@@ -172,6 +176,14 @@ export const useSettings = create<SettingsState>((set, get) => ({
   setAvatar: async (avatar) => {
     set({ avatar });
     await settingWrite(SETTING_KEYS.avatar, avatar);
+  },
+
+  // Painted before the write, for the theme's reason: the person is looking at the result.
+  setSkin: async (skin) => {
+    applySkin(skin);
+    set({ skin });
+    useShell.setState({ skin });
+    await settingWrite(SETTING_KEYS.skin, skin);
   },
 }));
 
@@ -246,7 +258,7 @@ export async function readRows(): Promise<void> {
       return held;
     }
   };
-  const [engine, theme, typeScale, motionRow, activeProjectId, brainPath, onboarded, avatar, path] = await Promise.all([
+  const [engine, theme, typeScale, motionRow, activeProjectId, brainPath, onboarded, avatar, skinRow, path] = await Promise.all([
     row<string>(SETTING_KEYS.engine, current.engine),
     row<string>(SETTING_KEYS.theme, current.theme),
     row<string>(SETTING_KEYS.typeScale, current.typeScale),
@@ -255,6 +267,7 @@ export async function readRows(): Promise<void> {
     row<string>(SETTING_KEYS.brainPath, current.brainPath),
     row<boolean>(SETTING_KEYS.onboarded, current.onboarded),
     row<string>(SETTING_KEYS.avatar, current.avatar),
+    row<string>(SETTING_KEYS.skin, current.skin),
     storePath().catch(() => null),
   ]);
   if (failed.length && !current.hydrated) {
@@ -270,6 +283,9 @@ export async function readRows(): Promise<void> {
   applyTypeScale(scale);
   const motion: MotionChoice = isMotionChoice(motionRow) ? motionRow : "system";
   applyMotion(resolveMotion(motion, systemPrefersReduced()));
+  const skin: Skin = isSkin(skinRow) ? skinRow : DEFAULT_SKIN;
+  applySkin(skin);
+  useShell.setState({ skin });
   useSettings.setState({
     hydrated: true,
     engine: isEngineId(engine) ? engine : DEFAULT_ENGINE,
@@ -280,6 +296,7 @@ export async function readRows(): Promise<void> {
     brainPath: brainPath ?? "",
     onboarded: onboarded ?? false,
     avatar: isAvatarId(avatar) ? avatar : "halo",
+    skin,
     storePath: path,
     problem: failed.length ? `could not read ${failed.map((x) => `${x.key}: ${x.reason}`).join("; ")}` : null,
   });

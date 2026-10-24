@@ -2,6 +2,10 @@
  * The ledger as a descent (Bell, athena-mini-window): one conversation on a rail under the seal,
  * every step a plain sentence that opens one level down, the waiting decision riding at its foot,
  * and the Record and the apps she may act on as pages beside it (`pages.tsx`).
+ *
+ * The composer never closes while she works (fleet-surfaces, ADR 0141): what the person types then
+ * either stops her or waits in line on the rail, under what she is doing, until her turn ends. The
+ * tasks she delegated sit in a strip just above the composer (`tasks.tsx`).
  */
 import { useEffect, useRef, type FormEvent } from "react";
 
@@ -10,6 +14,7 @@ import { Icon } from "./icons";
 import type { CompanionModel, ProjectView } from "./model";
 import { Depth, Pages } from "./pages";
 import { SheetRows, Sign } from "./slip";
+import { TaskStrip } from "./tasks";
 import type { PlainMessage } from "./translate";
 
 export function Ledger({ model }: { model: CompanionModel }) {
@@ -160,7 +165,7 @@ function Gate({ model }: { model: CompanionModel }) {
         data-sheet={sheet ? sheet.key : undefined}
         data-sending={card.sending ? "1" : undefined}
       >
-        <div className="eyebrow human">{`Waiting on you${n > 1 ? ` · ${n} decisions` : ""}`}</div>
+        <div className="eyebrow human">{`Waiting on you${card.task ? ` · for the task "${card.task}"` : ""}${n > 1 ? ` · ${n} decisions` : ""}`}</div>
         <h3 className="sl-title display">{sheet ? `${sheet.rows.length} requests in ${sheet.app}` : card.words.title}</h3>
         {sheet ? <SheetRows model={model} sheet={sheet} off={card.sending} /> : <p className="sl-effect">{card.words.effect}</p>}
         {card.refusal ? (
@@ -222,6 +227,7 @@ function Talk({ model }: { model: CompanionModel }) {
             </div>
           </div>
         ) : null}
+        <Queued model={model} />
         <Gate model={model} />
       </div>
       {talk.messages.length ? (
@@ -231,6 +237,32 @@ function Talk({ model }: { model: CompanionModel }) {
       ) : null}
       <div ref={end} />
     </div>
+  );
+}
+
+/**
+ * What the person typed while she worked, waiting in line (fleet-surfaces, ADR 0141): each in the
+ * order typed, dimmed until it is sent, each with a way to take it back. One goes each time her
+ * turn ends; a message that reads as a correction never lands here, it stops her instead.
+ */
+function Queued({ model }: { model: CompanionModel }) {
+  const { talk, actions } = model;
+  if (!talk.queued.length) return null;
+  return (
+    <>
+      {talk.queued.map((q, i) => (
+        <div key={q.id} className="msg msg-user" data-queued={q.id}>
+          <span className="node" />
+          <div className="eyebrow msg-who">{i === 0 ? "You, in line · sent when she finishes" : "You, in line"}</div>
+          <div className="txt working">
+            {q.text}
+            <button type="button" className="iconbtn" data-act="unqueue" aria-label={`Take back: ${q.text}`} title="Take it back" onClick={() => actions.unqueue(q.id)}>
+              ×
+            </button>
+          </div>
+        </div>
+      ))}
+    </>
   );
 }
 
@@ -246,6 +278,7 @@ function Compose({ model }: { model: CompanionModel }) {
   };
   return (
     <div className="lg-foot">
+      <TaskStrip />
       {talk.project ? (
         <p className="lg-project" role="status">
           <span className="eyebrow">Working on</span>

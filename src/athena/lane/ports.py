@@ -33,6 +33,7 @@ __all__ = [
     "BrainPort",
     "CatalogPort",
     "EpisodeRef",
+    "FleetPort",
     "GatePort",
     "GrantPort",
     "HarnessPort",
@@ -174,6 +175,19 @@ class RecallPort(Protocol):
     """One turn's recall, already run. ``athena.core.recall.RecallTrace`` satisfies it."""
 
     def as_prompt_blocks(self) -> list[PromptBlock]: ...
+
+
+@runtime_checkable
+class FleetPort(Protocol):
+    """The room each of the user's PCs has now, as the turn frame tells it (ADR 0143).
+
+    ``athena.lane.fleet.FleetPrompt`` satisfies it. The text is the daemon's own - measured
+    figures and the names of the user's paired devices, each flattened to one line - so it rides
+    in ``frame.fleet`` unfenced; ``None`` (no vitals, or none worth telling) omits the block.
+    It never raises: a turn does not fail because a peer's vitals could not be read.
+    """
+
+    def prompt_text(self) -> str | None: ...
 
 
 RecallFn = Callable[[str], RecallPort]

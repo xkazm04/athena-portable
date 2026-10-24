@@ -1,0 +1,85 @@
+/* Her tasks under the bell (fleet-surfaces, ADR 0141; `tasks.tsx`). Tokens only, no text under
+ * 12px. A quiet card in the bell's column: the label in the primary, as the surface's eyebrow is,
+ * the rows in the shared row's own rules. Nothing moves but a colour on hover. */
+
+.surface-tasks {
+  display: grid;
+  gap: 4px;
+  width: 100%;
+  max-width: 28rem;
+  margin-top: 12px;
+  padding: 10px 14px;
+  border: 1px solid var(--border-subtle);
+  border-radius: var(--radius-card);
+  background: color-mix(in srgb, var(--card-bg) 72%, transparent);
+}
+
+.surface-tasks__head {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 10px;
+  margin: 0;
+}
+
+.surface-tasks__label {
+  font-size: 0.8125rem;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--primary);
+}
+
+.surface-tasks__count {
+  font-size: 0.875rem;
+  font-variant-numeric: tabular-nums;
+  color: var(--muted-foreground);
+}
+
+.surface-tasks__list {
+  display: grid;
+  margin: 0;
+  padding: 0;
+}
+
+.surface-tasks__more {
+  justify-self: start;
+  padding: 2px 0;
+  border: 0;
+  background: none;
+  font: inherit;
+  font-size: 0.875rem;
+  color: var(--accent-text);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  transition: color var(--duration-fast) var(--ease-fast);
+}
+
+.surface-tasks__more:hover {
+  color: var(--foreground);
+}
+
+.surface-tasks__problem {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+/* The gate's reason queued tasks wait (device-vitals, ADR 0143): one line, a warning hue on its
+ * mark only, so the words keep the foreground's contrast. */
+.surface-tasks__held {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--foreground);
+}
+
+.surface-tasks__held::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 8px;
+  border-radius: 999px;
+  background: var(--status-warning);
+  vertical-align: 0.1em;
+}

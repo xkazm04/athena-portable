@@ -49,6 +49,7 @@ from athena.core.validators import all_of, fact_text, live_sources, schema_valid
 
 __all__ = [
     "CAPABILITIES_CHARS",
+    "DEVICES_CAP",
     "READ_CAP",
     "RECALL_CAP",
     "Catalog",
@@ -114,6 +115,12 @@ class CoreServices:
     recall: ExecutorFn | None = None
     write_fact: ExecutorFn | None = None
     checkpoint: ExecutorFn | None = None
+    #: The delegated tasks' three (ADR 0141), bound by wiring to the daemon's task table.
+    delegate: ExecutorFn | None = None
+    tasks: ExecutorFn | None = None
+    task_stop: ExecutorFn | None = None
+    #: Every device's room (ADR 0143), bound by wiring to the vitals service's fleet.
+    devices: ExecutorFn | None = None
 
 
 RECALL_SCHEMA: dict[str, Any] = {
@@ -153,6 +160,35 @@ CHECKPOINT_SCHEMA: dict[str, Any] = {
     "required": ["text"],
 }
 
+#: ``core.delegate`` (ADR 0141). Closed, like ``write_fact``'s: every param takes effect.
+DELEGATE_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {
+        "title": {"type": "string", "maxLength": 80},
+        "brief": {"type": "string", "maxLength": 4000},
+        "app_id": {"type": ["string", "null"], "maxLength": 64},
+    },
+    "required": ["title", "brief"],
+    "additionalProperties": False,
+}
+
+TASKS_SCHEMA: dict[str, Any] = {"type": "object", "properties": {}, "additionalProperties": False}
+
+#: ``core.devices`` (ADR 0143) takes nothing: it answers for every device at once.
+DEVICES_SCHEMA: dict[str, Any] = {"type": "object", "properties": {}, "additionalProperties": False}
+
+#: ``core.devices``' cap, the same three reads' worth as recall's: one device's vitals are a
+#: few hundred characters of JSON, and a 1,600 cap would cut the third PC mid-object. The
+#: executor packs whole devices under it and announces the rest (``lane.fleet``).
+DEVICES_CAP = RECALL_CAP
+
+TASK_STOP_SCHEMA: dict[str, Any] = {
+    "type": "object",
+    "properties": {"task_id": {"type": "string", "maxLength": 32}},
+    "required": ["task_id"],
+    "additionalProperties": False,
+}
+
 
 def _unattached(name: str) -> ExecutorFn:
     """The executor of a core tool whose service was never wired in."""
@@ -164,7 +200,14 @@ def _unattached(name: str) -> ExecutorFn:
 
 
 def core_entries(services: CoreServices) -> list[ToolEntry]:
-    """Athena's own three names (README §3.2, §3.3; ADR 0004, amended).
+    """Athena's own names (README §3.2, §3.3; ADR 0004, amended; ADR 0141).
+
+    Memory's three - ``recall``, ``write_fact``, ``checkpoint`` - and the delegated tasks' three:
+    ``delegate`` admits a background task (``AUTO``: it only queues, and the person can see and
+    kill every task from either window), ``tasks`` lists them (``READ``) and ``task_stop`` kills
+    one (``AUTO``). A task's own conversation cannot delegate - no task starts a task in v1 - and
+    the executor says so with ``nested_delegate``. ``devices`` (``READ``, ADR 0143) lists every
+    device's room, so she can say where work would fit; it reads and dispatches nothing.
 
     **Answering a decision card is not one of them, and cannot become one.** README §2 invariant 3
     says a ``GATED`` tool never executes without a decision the *user* resolved, and a tool that
@@ -227,6 +270,57 @@ def core_entries(services: CoreServices) -> list[ToolEntry]:
             validator=schema_validator(CHECKPOINT_SCHEMA),
             executor=services.checkpoint or _unattached("core.checkpoint"),
             description="Write a progress or blocker note as a system episode.",
+        ),
+        ToolEntry(
+            name="core.delegate",
+            origin="core",
+            cls=ToolClass.AUTO,
+            params_schema=DELEGATE_SCHEMA,
+            validator=schema_validator(DELEGATE_SCHEMA),
+            executor=services.delegate or _unattached("core.delegate"),
+            description=(
+                "Hand a job to a background task that runs in its own thread, on its own tab of "
+                "app_id (null for no app). Use it when you are asked for work on two or more apps "
+                "or projects at once, or for a long job while the user keeps talking: one task "
+                'per app or job, a brief that stands alone, then a short reply such as "started '
+                '3 tasks". At most 3 run and 10 wait. The result comes back to this thread.'
+            ),
+        ),
+        ToolEntry(
+            name="core.tasks",
+            origin="core",
+            cls=ToolClass.READ,
+            params_schema=TASKS_SCHEMA,
+            validator=schema_validator(TASKS_SCHEMA),
+            executor=services.tasks or _unattached("core.tasks"),
+            description=(
+                "List the delegated tasks, one line each: id, state, title, app, and the "
+                "result's first line. Read it before you answer how a task is going."
+            ),
+            cap_chars=READ_CAP,
+        ),
+        ToolEntry(
+            name="core.task_stop",
+            origin="core",
+            cls=ToolClass.AUTO,
+            params_schema=TASK_STOP_SCHEMA,
+            validator=schema_validator(TASK_STOP_SCHEMA),
+            executor=services.task_stop or _unattached("core.task_stop"),
+            description="Stop a delegated task that is waiting or running, by its task_ id.",
+        ),
+        ToolEntry(
+            name="core.devices",
+            origin="core",
+            cls=ToolClass.READ,
+            params_schema=DEVICES_SCHEMA,
+            validator=schema_validator(DEVICES_SCHEMA),
+            executor=services.devices or _unattached("core.devices"),
+            description=(
+                "Every paired device's room now: RAM, CPU, GPU, power, task slots, why work "
+                "waits. Read it before deciding how many tasks to run at once or which PC work "
+                "would fit on. You advise; you cannot send work to another PC."
+            ),
+            cap_chars=DEVICES_CAP,
         ),
     ]
 
@@ -685,6 +779,8 @@ def _params_line(schema: dict[str, Any], foreign: bool = False) -> str:
             mark = "" if name in required else "?"
             parts.append(f"{label}{mark}: {value}")
             continue
+        if isinstance(kind, list):  # ``["string", "null"]`` reads ``string|null``
+            kind = "|".join(str(k) for k in kind)
         rendered = f"{name}: {json.dumps(enum)}" if enum else f"{name}: {kind}"
         parts.append(rendered if name in required else rendered.replace(":", "?:", 1))
     return ", ".join(parts)

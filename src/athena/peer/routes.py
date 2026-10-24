@@ -1,9 +1,12 @@
 """The routes another device calls on the peer listener (ADR 0140, "Data & API").
 
 ``GET /peer/hello`` (token)
-    ``{device_id, name, beacon, window_open, setup_phase}`` - who this is and what it is doing.
+    ``{device_id, name, beacon, window_open, setup_phase, vitals}`` - who this is and what it is
+    doing.
     ``setup_phase`` is ``null`` until this device's person opens a setup conversation, then one
-    word from :meth:`athena.peer.setup.SetupState.phase` (WP4).
+    word from :meth:`athena.peer.setup.SetupState.phase` (WP4). ``vitals`` is this PC's own
+    snapshot (``VitalsView``, ADR 0143), or ``null`` before its first reading or with no vitals
+    service: the presence probe of the PC that asked keeps it as this PC's room.
 
 ``POST /peer/pair/request`` (open, address-gated)
     ``{pairing_id, nonce}`` from a phone's QR, or ``{code}`` typed on a PC, plus ``name``,
@@ -51,7 +54,16 @@ def hello(host: PeerHost, request: Request) -> Reply:
         "beacon": host.beacon,
         "window_open": host.pairings.window_open(),
         "setup_phase": host.setup_phase(),
+        "vitals": _own_vitals(host),
     }
+
+
+def _own_vitals(host: PeerHost) -> Any:
+    """This PC's snapshot for the hello; a vitals service that raised says ``null``, never 500."""
+    try:
+        return host.presence.own_vitals()
+    except Exception:
+        return None
 
 
 def _text(body: Any, key: str) -> str:

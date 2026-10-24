@@ -15,6 +15,8 @@
  */
 import { eventFromJson, type ChannelEvent } from "@/lib/events";
 import type { ExecuteRow } from "@/lib/api";
+import type { TaskView } from "@/lib/tasks";
+import type { Room, Vitals } from "@/lib/vitals";
 
 export type Grant = "chat" | "approve" | "memory";
 export const GRANTS: readonly Grant[] = ["chat", "approve", "memory"];
@@ -40,7 +42,19 @@ export interface PeerView {
   last_seen: string | null;
   /** Optional: a daemon from before replication sends none, which reads as `null`. */
   memory?: MemoryStatus | null;
+  /** The presence probe's last verdict (fleet-surfaces WP2), `null` before the first probe. Optional
+   * only because a daemon from before the probe sends none, which reads as `null`. */
+  presence?: Presence | null;
+  /** When `presence` was last decided (ISO), `null` before the first probe. */
+  presence_at?: string | null;
+  /** The peer's last vitals off its hello (device-vitals, ADR 0143): `null` for a phone, before the
+   * first hello, or when older than 90 s. Optional only because an older daemon sends none. */
+  vitals?: Vitals | null;
 }
+
+/** Online: an authorized hello answered. Asleep: the overlay sees the device, Athena there does not
+ * answer. Unreachable: neither. */
+export type Presence = "online" | "asleep" | "unreachable";
 
 /** `PairingRecord.pending_view()`. `pair_back` is a PC this one joined, asking to be let in here. */
 export interface PendingView {
@@ -66,7 +80,8 @@ export type OverlayState = "absent" | "logged_out" | "up";
 /** `GET /devices`. */
 export interface DevicesView {
   ok: boolean;
-  self: { device_id: string; name: string };
+  /** `vitals` is this PC's own snapshot (ADR 0143), optional only for an older daemon. */
+  self: { device_id: string; name: string; vitals?: Vitals | null };
   peers: PeerView[];
   pending: PendingView[];
   beacon: { on: boolean; url: string | null };
@@ -139,9 +154,12 @@ export type BusEvent =
   | RemoteDecided
   | PairOpened
   | { kind: "peer.changed"; peer_id: string | null }
-  | { kind: "pair.requested"; pending: PendingView };
+  | { kind: "pair.requested"; pending: PendingView }
+  | { kind: "task.changed"; task: TaskView }
+  | { kind: "vitals.changed"; room: Room | null; held: string | null; slots: number }
+  | { kind: "sleep.changed" };
 
-const BUS_KINDS = new Set(["remote.message", "remote.decided", "peer.changed", "pair.requested", "pair.opened"]);
+const BUS_KINDS = new Set(["remote.message", "remote.decided", "peer.changed", "pair.requested", "pair.opened", "task.changed", "vitals.changed", "sleep.changed"]);
 
 /** One `/events` frame, or `null` for a kind this window does not act on. Never throws on a kind. */
 export function busEventFromJson(raw: string): BusEvent | null {

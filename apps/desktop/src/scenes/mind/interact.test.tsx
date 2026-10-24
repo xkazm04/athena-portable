@@ -39,6 +39,7 @@ function spies(): { [K in keyof SetupActions]: ReturnType<typeof vi.fn> } & Setu
     checkEngines: vi.fn(),
     restart: vi.fn(),
     setTheme: vi.fn(),
+    setSkin: vi.fn(),
     setTypeScale: vi.fn(),
     setMotion: vi.fn(),
     setBrainPath: vi.fn(),
@@ -166,6 +167,13 @@ describe("the look", () => {
     expect(a.setTypeScale).toHaveBeenCalledExactlyOnceWith("compact");
     click(radio("calm"));
     expect(a.setMotion).toHaveBeenCalledExactlyOnceWith("calm");
+  });
+
+  it("switches the style by the skin chosen, and shows the one she wears", () => {
+    const a = mount("typical", PATHS.look!);
+    expect(radio("athena")?.getAttribute("aria-checked")).toBe("true");
+    click(radio("loop tide"));
+    expect(a.setSkin).toHaveBeenCalledExactlyOnceWith("loop-tide");
   });
 });
 

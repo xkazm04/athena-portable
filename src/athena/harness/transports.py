@@ -14,14 +14,23 @@ handed so a test can assert what was sent as well as what came back.
 always did. A transport that knows its exit reports it to the request's :class:`ExitHandle` after
 the last line; one that does not leaves the handle at a clean exit, which is what it claimed
 before the handle existed.
+
+**What the run weighed crosses the same way (ADR 0143).** The real spawn measures the peak
+working set of the engine child (:class:`PeakMemory`) and puts it on the handle as ``peak_mb``
+however the run ended, a wall or a kill included; the turn keeps the largest of its rounds' and
+the ledger stores it, so the vitals gate can charge the next task what a turn really costs here.
+It is ``None`` where it could not be read. Only the child is measured, not its children: a CLI
+that is a native binary (``claude.exe``) is all of it, a shim that starts an interpreter is not.
 """
 
 from __future__ import annotations
 
 import asyncio
+import ctypes
 import os
 import shutil
-from collections.abc import AsyncIterator, Iterable, Mapping, Sequence
+import sys
+from collections.abc import AsyncIterator, Callable, Iterable, Mapping, Sequence
 from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol, runtime_checkable
@@ -43,6 +52,10 @@ NO_WINDOW = 0x08000000 if os.name == "nt" else 0
 #: the pipe can hold it open; the exit is reported without the tail rather than not at all.
 STDERR_GRACE_S = 5.0
 
+#: How often the child's high-water mark is read where the OS keeps it only while the process lives
+#: (Linux ``VmHWM``). Windows reads it once, from a handle held open across the exit.
+PEAK_EVERY_S = 1.0
+
 __all__ = [
     "ENGINE_KEYS",
     "NO_WINDOW",
@@ -50,12 +63,14 @@ __all__ = [
     "CliRequest",
     "ExitHandle",
     "ExitStatus",
+    "PeakMemory",
     "ScriptedTransport",
     "SubprocessTransport",
     "Transport",
     "TransportError",
     "child_env",
     "rounds_from_transcript",
+    "vm_hwm_kb",
 ]
 
 #: A recorded transcript separates rounds with a blank line, and any line whose first non-space
@@ -149,10 +164,12 @@ class ExitHandle:
     transport's lines always meant.
     """
 
-    __slots__ = ("status",)
+    __slots__ = ("peak_mb", "status")
 
     def __init__(self) -> None:
         self.status = ExitStatus()
+        #: The child's peak working set in MiB, set by a transport that measured it (ADR 0143).
+        self.peak_mb: int | None = None
 
     def report(self, status: ExitStatus) -> None:
         self.status = status
@@ -225,6 +242,8 @@ class SubprocessTransport:
         if proc.stdin is None or proc.stdout is None:
             raise TransportError(f"{self.executable}: no pipes on the spawned process")
         said = asyncio.create_task(_tail(proc.stderr)) if proc.stderr is not None else None
+        peak = PeakMemory(proc.pid)
+        watch = asyncio.create_task(_watch(peak)) if peak.sampled else None
         try:
             try:
                 proc.stdin.write(request.stdin.encode("utf-8"))
@@ -241,6 +260,7 @@ class SubprocessTransport:
                 if not raw:
                     break
                 yield raw.decode("utf-8", errors="replace").rstrip("\n")
+            peak.sample()  # stdout is closed and the child is likely still there to be read
             # Read to the end: report how the run ended (ADR 0109). The tail is waited for only
             # briefly, since a grandchild holding the pipe must not withhold the exit itself.
             returncode = await proc.wait()
@@ -255,6 +275,9 @@ class SubprocessTransport:
             if proc.returncode is None:
                 proc.kill()
             await proc.wait()
+            if watch is not None:
+                watch.cancel()
+            request.exit.peak_mb = peak.finish()
             if said is not None and not said.done():
                 said.cancel()
 
@@ -273,12 +296,15 @@ class ScriptedTransport:
         *,
         fail_with: Exception | None = None,
         exits: Mapping[int, ExitStatus] | None = None,
+        peaks: Mapping[int, int] | None = None,
     ):
         self.rounds: list[list[str]] = [list(lines) for lines in rounds]
         self.requests: list[CliRequest] = []
         self.fail_with = fail_with
         #: How invocation ``i`` (from 0) ends. One that is not named exits 0.
         self.exits: dict[int, ExitStatus] = dict(exits or {})
+        #: What invocation ``i`` weighed at its peak, MiB. One that is not named was not measured.
+        self.peaks: dict[int, int] = dict(peaks or {})
 
     @classmethod
     def from_transcript(cls, path: str | Path) -> ScriptedTransport:
@@ -299,9 +325,158 @@ class ScriptedTransport:
             raise TransportError(
                 f"the script has {len(self.rounds)} round(s); round {index + 1} was asked for"
             )
+        request.exit.peak_mb = self.peaks.get(index)
         for line in self.rounds[index]:
             yield line
         request.exit.report(self.exits.get(index, ExitStatus()))
+
+
+# --- the child's peak working set (ADR 0143) ------------------------------------------------------
+
+
+def _proc_status(pid: int) -> str | None:
+    """``/proc/<pid>/status``, or ``None`` once the process is gone (or on a system without it)."""
+    try:
+        with open(f"/proc/{pid}/status", encoding="ascii", errors="replace") as handle:
+            return handle.read()
+    except OSError:
+        return None
+
+
+def vm_hwm_kb(status: str | None) -> int | None:
+    """The ``VmHWM:`` line of a Linux process status - its peak resident set, kB - or ``None``."""
+    for line in (status or "").splitlines():
+        if line.startswith("VmHWM:"):
+            parts = line.split()
+            if len(parts) >= 2 and parts[1].isdigit():
+                return int(parts[1])
+    return None
+
+
+class PeakMemory:
+    """The peak working set of one child process, MiB, or ``None`` where it cannot be read.
+
+    - **Windows** opens its own handle on the child as soon as it is spawned and keeps it across
+      the exit: a process object lives while a handle is held, so ``GetProcessMemoryInfo`` reads
+      ``PeakWorkingSetSize`` after the child has ended, a killed child included.
+    - **Linux** has no such counter after the exit, so ``VmHWM`` - the kernel's own high-water
+      mark - is read every :data:`PEAK_EVERY_S` while the child runs (:meth:`sample`), and the
+      largest is kept.
+    - **Anything else** measures nothing.
+
+    Nothing here raises: a figure that could not be read is ``None``.
+    """
+
+    def __init__(
+        self,
+        pid: int,
+        *,
+        platform: str = sys.platform,
+        read_status: Callable[[int], str | None] = _proc_status,
+    ) -> None:
+        self.pid = pid
+        self._linux = platform.startswith("linux")
+        self._read_status = read_status
+        self._peak_kb: int | None = None
+        self._handle: int | None = _win_open(pid) if platform == "win32" else None
+        self._done = False
+        self._result: int | None = None
+
+    @property
+    def sampled(self) -> bool:
+        """Whether this platform needs :meth:`sample` called while the child runs."""
+        return self._linux
+
+    def sample(self) -> None:
+        if not self._linux or self._done:
+            return
+        kb = vm_hwm_kb(self._read_status(self.pid))
+        if kb is not None and (self._peak_kb is None or kb > self._peak_kb):
+            self._peak_kb = kb
+
+    def finish(self) -> int | None:
+        """The peak, once the child has exited. Idempotent; releases the Windows handle."""
+        if self._done:
+            return self._result
+        if self._handle is not None:
+            peak_bytes = _win_peak(self._handle)
+            _win_close(self._handle)
+            self._handle = None
+            self._result = None if peak_bytes is None else round(peak_bytes / 1_048_576)
+        else:
+            self.sample()
+            self._result = None if self._peak_kb is None else round(self._peak_kb / 1024)
+        self._done = True
+        return self._result
+
+
+async def _watch(peak: PeakMemory) -> None:  # pragma: no cover - real I/O
+    while True:
+        peak.sample()
+        await asyncio.sleep(PEAK_EVERY_S)
+
+
+#: ``PROCESS_QUERY_LIMITED_INFORMATION | PROCESS_VM_READ``: what ``GetProcessMemoryInfo`` needs.
+_PEAK_ACCESS = 0x1000 | 0x0010
+
+
+class _ProcessMemoryCounters(ctypes.Structure):
+    """``PROCESS_MEMORY_COUNTERS`` (psapi.h)."""
+
+    _fields_ = (
+        ("cb", ctypes.c_uint32),
+        ("PageFaultCount", ctypes.c_uint32),
+        ("PeakWorkingSetSize", ctypes.c_size_t),
+        ("WorkingSetSize", ctypes.c_size_t),
+        ("QuotaPeakPagedPoolUsage", ctypes.c_size_t),
+        ("QuotaPagedPoolUsage", ctypes.c_size_t),
+        ("QuotaPeakNonPagedPoolUsage", ctypes.c_size_t),
+        ("QuotaNonPagedPoolUsage", ctypes.c_size_t),
+        ("PagefileUsage", ctypes.c_size_t),
+        ("PeakPagefileUsage", ctypes.c_size_t),
+    )
+
+
+def _win_open(pid: int) -> int | None:
+    if sys.platform != "win32":
+        return None
+    try:
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.OpenProcess.restype = ctypes.c_void_p
+        kernel32.OpenProcess.argtypes = [ctypes.c_uint32, ctypes.c_int, ctypes.c_uint32]
+        handle = kernel32.OpenProcess(_PEAK_ACCESS, 0, pid)
+    except (OSError, AttributeError):
+        return None
+    return int(handle) if handle else None
+
+
+def _win_peak(handle: int) -> int | None:
+    """``PeakWorkingSetSize`` in bytes for an open process handle, or ``None``."""
+    if sys.platform != "win32":
+        return None
+    try:
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        query = kernel32.K32GetProcessMemoryInfo
+        query.restype = ctypes.c_int
+        query.argtypes = [ctypes.c_void_p, ctypes.c_void_p, ctypes.c_uint32]
+        counters = _ProcessMemoryCounters()
+        counters.cb = ctypes.sizeof(counters)
+        if not query(ctypes.c_void_p(handle), ctypes.byref(counters), counters.cb):
+            return None
+    except (OSError, AttributeError):
+        return None
+    return int(counters.PeakWorkingSetSize)
+
+
+def _win_close(handle: int) -> None:
+    if sys.platform != "win32":
+        return
+    try:
+        kernel32 = ctypes.WinDLL("kernel32", use_last_error=True)
+        kernel32.CloseHandle.argtypes = [ctypes.c_void_p]
+        kernel32.CloseHandle(ctypes.c_void_p(handle))
+    except (OSError, AttributeError):
+        return
 
 
 async def _tail(stream: asyncio.StreamReader) -> str:  # pragma: no cover - real I/O

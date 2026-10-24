@@ -20,8 +20,9 @@ picks a dialect; the factory says how that dialect is actually run. In productio
 login. The gate, the ledger and the round budget are identical either way — ADR 0007 — so what
 the factory changes is who produces the tokens and nothing else.
 
-**All three of Athena's core tools get their executor here**, bound to this brain. There is no
-fourth: nothing a model can call answers a decision card (ADR 0004, amended). The user's answer
+**Every one of Athena's core tools gets its executor here**: memory's three bound to this brain,
+and the delegated tasks' three bound to the task table on it (ADR 0141). None of them answers a
+decision card, and none can: nothing a model can call does (ADR 0004, amended). The user's answer
 arrives on ``POST /decisions/<id>`` — the panel's button today, voice through the same route
 later — and the replay that follows it is ``BrowserLane.answer_decision``, a lane method that is
 not a catalog name and so is not a name the model was ever told about.
@@ -49,6 +50,14 @@ from athena.core.constitution import Constitution, load
 from athena.core.ledger import Ledger
 from athena.core.recall import recall, recall_whole
 from athena.daemon.server import AthenaDaemon
+from athena.daemon.sleep import SleepService, sleep_runner
+from athena.daemon.tasks import (
+    Tasks,
+    delegate_executor,
+    task_routes,
+    task_stop_executor,
+    tasks_executor,
+)
 from athena.harness.cli_harness import CLAUDE_EXTRA_ARGS, DIALECTS, CliDialect, CliHarness
 from athena.harness.engines import API_ENGINES, ENGINES, build_api_harness
 from athena.harness.hooks import LedgerHook, TruncationHook
@@ -57,7 +66,9 @@ from athena.harness.ports import ModelFn
 from athena.harness.rounds import RoundHarness
 from athena.harness.transports import SubprocessTransport, Transport
 from athena.lane.browser_lane import BrowserLane
+from athena.lane.fleet import FleetPrompt, devices_executor
 from athena.lane.turn_frame import FrameBuilder
+from athena.vitals.wire import VitalsService
 
 if TYPE_CHECKING:
     from athena.adopt.routes import AdoptStudio
@@ -87,6 +98,10 @@ VOICE_DIRNAME = "voice"
 #: Where adopt sessions keep their temp dirs and the legs their prompt files — a sibling of the
 #: brain under ``$ATHENA_HOME``; a dead process's sessions are cleared on the next one (ADR 0097).
 ADOPT_DIRNAME = "adopt"
+
+#: Where the sleep cycle's legs write their prompt files - a sibling of the brain under
+#: ``$ATHENA_HOME``, like adopt's; the journal itself lives in the brain's ``cycles/`` (ADR 0143).
+SLEEP_DIRNAME = "sleep"
 
 TransportFactory = Callable[[CliDialect], Transport]
 """How a dialect is actually run. ``SubprocessTransport`` in production, a scripted one in a test.
@@ -201,6 +216,10 @@ class AthenaLocal:
     peer: PeerHost | None = None
     #: One port per configured MCP server, by id (ADR 0123). Empty for none.
     mcp: dict[str, McpService] | None = None
+    #: This PC's room - probe, gate, sampler - behind ``/vitals`` and the hello (ADR 0143).
+    vitals: VitalsService | None = None
+    #: This PC's sleep cycle behind ``/sleep*`` (ADR 0143).
+    sleep: SleepService | None = None
 
     def close(self) -> None:
         """Close the brain, cancel any consent flow, end every adopt session.
@@ -209,6 +228,10 @@ class AthenaLocal:
         reaches the caller.
         """
         try:
+            if self.sleep is not None:
+                self.sleep.stop()
+            if self.vitals is not None:
+                self.vitals.stop()
             if self.peer is not None:
                 self.peer.close()
             if self.adopt is not None:
@@ -304,6 +327,21 @@ def build_local(
     try:
         approvals = Approvals(brain)
         ledger = Ledger(brain)
+        # The delegated tasks' table (ADR 0141), on this brain's index like the approvals.
+        tasks = Tasks(brain)
+        # This PC's room (ADR 0143), built before the catalog that tells her the fleet and before
+        # the sleep cycle it gates. The gate counts a running cycle as a task and shares its
+        # summary, and the cycle asks the gate for room, so the two bind each other late.
+        sleep: SleepService | None = None
+        vitals = VitalsService(
+            brain_root=brain.root,
+            ledger=ledger,
+            tasks=tasks,
+            host=peer,
+            extra_running=lambda: 1 if sleep is not None and sleep.running() else 0,
+            sleep_summary=lambda: sleep.summary() if sleep is not None else None,
+            publish=peer.publish if peer is not None else None,
+        )
         # ``load``, never ``load_or_empty``: a turn with no law should not have started, so a
         # missing law stops the build here and ``athena serve`` says so on its failure line.
         constitution = load(constitution_dir)
@@ -315,6 +353,10 @@ def build_local(
             recall=recall_executor(brain),
             write_fact=write_fact_executor(brain),
             checkpoint=checkpoint_executor(brain),
+            delegate=delegate_executor(tasks),
+            tasks=tasks_executor(tasks),
+            task_stop=task_stop_executor(tasks),
+            devices=devices_executor(vitals),
         )
         catalog = build_catalog(services)
         mcp_services = services_for_config(mcp) if mcp is not None else {}
@@ -359,6 +401,7 @@ def build_local(
             constitution=constitution,
             catalog=catalog,
             recall=lambda query: recall(brain, query),
+            fleet=FleetPrompt(vitals),
         )
         lane = BrowserLane(
             harness=harness,
@@ -378,7 +421,23 @@ def build_local(
             lane=lane,
             engine=engine,
             model=harness.model,
+            tasks=tasks,
         )
+        _wire_tasks(daemon, tasks)
+        tasks.room = vitals.gate
+        for route in vitals.routes():
+            daemon.routes.add(route)
+        sleep = SleepService(
+            brain=brain,
+            room=vitals.gate,
+            runner=sleep_runner(brain.root.parent / SLEEP_DIRNAME, ledger),
+            threads=daemon.threads,
+            tasks=tasks,
+            device_id=lambda: brain.device_id,
+            publish=peer.publish if peer is not None else None,
+        )
+        for route in sleep.routes():
+            daemon.routes.add(route)
         studio = voice_studio or VoiceStudio(brain.root.parent / VOICE_DIRNAME)
         _wire_voice(daemon, studio, voice, voice_off)
         if vault is not None:
@@ -407,10 +466,23 @@ def build_local(
             adopt=adopt_studio,
             peer=peer,
             mcp=mcp_services,
+            vitals=vitals,
+            sleep=sleep,
         )
     except BaseException:
         brain.close()
         raise
+
+
+def _wire_tasks(daemon: AthenaDaemon, tasks: Tasks) -> None:
+    """The ``/tasks`` routes, and what the table needs of the daemon (ADR 0141): its turn door, to
+    stop a killed task's turn, and its sessions, to find the page of a task's app."""
+    tasks.stop_turn = daemon.stop_conversation
+    tasks.origin_of = lambda app_id: next(
+        (s.origin for s in reversed(daemon.sessions.all()) if s.app_id == app_id), None
+    )
+    for route in task_routes(daemon, tasks):
+        daemon.routes.add(route)
 
 
 def _wire_voice(
@@ -562,6 +634,8 @@ def _wire_peer(daemon: AthenaDaemon, host: PeerHost) -> None:
 
     host.add_routes(phone.peer_routes(host))  # WP4: GET /m/*, the phone page (open)
     setup.wire_setup(daemon, host)  # WP4: connector.setup.*, POST /devices/setup, setup_phase
+    if daemon.tasks is not None:  # fleet-surfaces (ADR 0141): task.changed on the same bus
+        daemon.tasks.publish = host.publish
 
 
 def _device_stamp(host: PeerHost | None) -> Callable[[], str | None] | None:

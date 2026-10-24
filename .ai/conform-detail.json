@@ -358,19 +358,29 @@
       "subject": "prompt-assembly",
       "bundle": "software-engineering",
       "state": "deviation",
-      "evaluatedAt": "2026-10-15",
-      "evaluatedTs": "2026-10-15T01:20:10.850Z",
-      "worker": "282f6d5d-a30f-489d-a12b-9be45a9d6649",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T13:30:00.000Z",
+      "worker": "conform-harness-engines",
       "techniques": [
         {
           "technique": "fingerprinting-and-cache-keys",
-          "verdict": "deviation",
-          "evidence": "src/athena/harness/rounds.py:130 Hashes cover input blocks once per turn, excluding the appended task and subsequent round feedback; the API/CLI send paths and ledger hook do not persist the required digest and size of each complete prompt sent."
+          "verdict": "partly realized",
+          "evidence": "src/athena/harness/cli_harness.py:343 a resumed CLI session is compared against the static half it was opened with and a changed half opens a new session (the session gate, stamp kept beside the session); the per-prompt ledger digest covers blocks only (rounds.py:168)"
         },
         {
           "technique": "layered-composition",
           "verdict": "deviation",
-          "evidence": "src/athena/harness/rounds.py:399 The task is concatenated onto pre-rendered frame blocks after before_prompt and block hashing; later result messages are also assembled outside that checked artifact."
+          "evidence": "src/athena/harness/rounds.py:399 The task is concatenated onto pre-rendered frame blocks after before_prompt and block hashing; later result messages are also assembled outside that checked artifact.",
+          "carriedFrom": "2026-10-15"
+        }
+      ],
+      "superseded": [
+        {
+          "state": "deviation",
+          "evidence": "src/athena/harness/rounds.py:399 The harness appends the task after checking and hashing the supplied prompt blocks, leaving the completed model input outside those assembly checks.",
+          "evaluatedAt": "2026-10-15T01:20:10.850Z",
+          "worker": "282f6d5d-a30f-489d-a12b-9be45a9d6649",
+          "reason": "replaced by conform-harness-engines"
         }
       ]
     },
@@ -466,44 +476,60 @@
       "subject": "agent-memory",
       "bundle": "software-engineering",
       "state": "deviation",
-      "evaluatedAt": "2026-10-15",
-      "evaluatedTs": "2026-10-15T01:57:04.781Z",
-      "worker": "fac091c5-0863-463b-bb07-a37b91c7094d",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T15:00:00.000Z",
+      "worker": "conform-daemon-service",
       "techniques": [
         {
           "technique": "durable-store-failure-posture",
           "verdict": "deviation",
-          "evidence": "src/athena/daemon/routes.py:970 The handler uses trace.items only; a recall that could not read the store has no items and an unread unavailable note."
+          "evidence": "src/athena/daemon/routes.py:1254 RecallTrace.unavailable (src/athena/core/recall.py:247) is set when the store cannot be read, and this route drops it on the floor."
         },
         {
           "technique": "recall-injection",
           "verdict": "deviation",
-          "evidence": "src/athena/daemon/routes.py:981 That empty item list is wrapped as a normal announced read, so failed recall and no procedurals look the same."
+          "evidence": "src/athena/daemon/routes.py:981 That empty item list is wrapped as a normal announced read, so failed recall and no procedurals look the same.",
+          "carriedFrom": "2026-10-15"
         },
         {
           "technique": "loss-site-inventory",
           "verdict": "deviation",
-          "evidence": "src/athena/daemon/routes.py:961 The route documents that its total is not the store, and that sentence stays in the docstring rather than the response."
+          "evidence": "src/athena/daemon/routes.py:961 The route documents that its total is not the store, and that sentence stays in the docstring rather than the response.",
+          "carriedFrom": "2026-10-15"
         },
         {
           "technique": "procedure-promotion",
           "verdict": "not-applicable",
-          "evidence": "src/athena/daemon/routes.py:958 This route only reads procedurals; it does not mint or invoke a capability."
+          "evidence": "src/athena/daemon/routes.py:958 This route only reads procedurals; it does not mint or invoke a capability.",
+          "carriedFrom": "2026-10-15"
         },
         {
           "technique": "memory-governance",
           "verdict": "conformant",
-          "evidence": "src/athena/daemon/routes.py:766 Text typed beside a decision is stored as an episode and does not alter the approved grant."
+          "evidence": "src/athena/daemon/routes.py:766 Text typed beside a decision is stored as an episode and does not alter the approved grant.",
+          "carriedFrom": "2026-10-15"
         },
         {
           "technique": "episodic-capture",
           "verdict": "conformant",
-          "evidence": "src/athena/daemon/routes.py:769 The user's decision aside is captured as its own episode, capped, at the decision boundary."
+          "evidence": "src/athena/daemon/routes.py:769 The user's decision aside is captured as its own episode, capped, at the decision boundary.",
+          "carriedFrom": "2026-10-15"
         },
         {
           "technique": "working-memory",
           "verdict": "not-applicable",
-          "evidence": "src/athena/daemon/sessions.py:7 The session table is socket routing that dies with the process; the module says the brain holds what was said."
+          "evidence": "src/athena/daemon/sessions.py:7 The session table is socket routing that dies with the process; the module says the brain holds what was said.",
+          "carriedFrom": "2026-10-15"
+        }
+      ],
+      "registryProposal": "Re-anchored: the 2026-10-15 verdict cited routes.py:970, which today's growth of routes.py (ThreadLease, task routes) moved to a docstring line; the finding is unchanged and now sits at routes.py:1254.",
+      "superseded": [
+        {
+          "state": "deviation",
+          "evidence": "src/athena/daemon/routes.py:970 GET /playbooks keeps only recall items and never reads the trace's unavailable flag, so an unreadable store is answered as an empty playbook list.",
+          "evaluatedAt": "2026-10-15T01:57:04.781Z",
+          "worker": "fac091c5-0863-463b-bb07-a37b91c7094d",
+          "reason": "replaced by conform-daemon-service"
         }
       ]
     },
@@ -1034,29 +1060,45 @@
       "subject": "agent-runtime-assembly",
       "bundle": "software-engineering",
       "state": "deviation",
-      "evaluatedAt": "2026-10-15",
-      "evaluatedTs": "2026-10-15T03:59:35.775Z",
-      "worker": "6899c4bf-be87-45dc-a1ba-68e65ef41c14",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T13:30:00.000Z",
+      "worker": "conform-harness-engines",
       "techniques": [
         {
           "technique": "indeterminate-closure-on-interruption",
           "verdict": "deviation",
-          "evidence": "src/athena/harness/rounds.py:187 The cancellation path records is_error with a cancelled reason and re-raises; it does not settle the outstanding generation with a typed indeterminate outcome or reconcile its spend."
+          "evidence": "src/athena/harness/rounds.py:240 cancel writes reason 'cancelled' for a call whose outcome is unknown; 'outcome_unknown' exists in the vocabulary (src/athena/contracts/harness.py:143, ADR 0101) but only tool calls use it, not an interrupted generation"
+        },
+        {
+          "technique": "semantic-hook-placement",
+          "verdict": "realized",
+          "evidence": "src/athena/harness/rounds.py:359 the ledger record of a call (result.tool_calls) is appended before gate.run_tool answers, so a refused call is still in the row; the three hooks are fixed constructor arguments (src/athena/harness/engines.py:248), not an indexed list"
         },
         {
           "technique": "operator-tier-code-loading",
           "verdict": "not-applicable",
-          "evidence": "src/athena/harness/engines.py:203 Engine selection uses the host's fixed dialect table; searches found no contributed in-process extension loader in this context."
+          "evidence": "src/athena/harness/engines.py:248 the hook set is the caller's gate, ledger and truncation objects; the harness loads no contributed hooks or code, so there is no extension surface to tier"
         },
         {
           "technique": "rewrite-before-the-gate",
           "verdict": "not-applicable",
-          "evidence": "src/athena/harness/rounds.py:305 Dispatch passes parsed parameters directly to the gate; searches found no contributed argument-rewriting frame."
+          "evidence": "src/athena/harness/rounds.py:305 Dispatch passes parsed parameters directly to the gate; searches found no contributed argument-rewriting frame.",
+          "carriedFrom": "2026-10-15"
         },
         {
           "technique": "substituted-result-attribution",
           "verdict": "not-applicable",
-          "evidence": "src/athena/harness/hooks.py:227 The allowed execution path invokes the entry's executor and caps its result; no cache or alternate-producer wrapper was found."
+          "evidence": "src/athena/harness/hooks.py:227 The allowed execution path invokes the entry's executor and caps its result; no cache or alternate-producer wrapper was found.",
+          "carriedFrom": "2026-10-15"
+        }
+      ],
+      "superseded": [
+        {
+          "state": "deviation",
+          "evidence": "src/athena/harness/rounds.py:187 Cancellation closes the turn as an error without a first-class indeterminate result for an outstanding metered generation whose provider outcome may remain unknown.",
+          "evaluatedAt": "2026-10-15T03:59:35.775Z",
+          "worker": "6899c4bf-be87-45dc-a1ba-68e65ef41c14",
+          "reason": "replaced by conform-harness-engines"
         }
       ]
     },
@@ -1883,44 +1925,62 @@
       "subject": "motion",
       "bundle": "software-engineering",
       "state": "deviation",
-      "evaluatedAt": "2026-10-16",
-      "evaluatedTs": "2026-10-16T00:00:02.982Z",
-      "worker": "ae78fcab-d55d-41d8-8e21-b0dd85be6297",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T12:00:00.000Z",
+      "worker": "conform-mind-surface",
       "techniques": [
+        {
+          "technique": "taste-budgets",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/mind/constellation.tsx:207 the flow line is drawn for every online link, an ambient loop implying transfer while nothing transfers; instances scale with fleet size instead of a per-view budget"
+        },
         {
           "technique": "performance-discipline",
           "verdict": "deviation",
-          "evidence": "apps/desktop/src/scenes/mind/mind.css:84 Surface controls likewise transition background, border-color, and color; the engine glow is the only opacity-only piece."
+          "evidence": "apps/desktop/src/scenes/mind/mind.css:345 animates stroke-dashoffset continuously (keyframes at :365 animate stroke-dashoffset), a repaint every frame per link, rather than a compositor-friendly property"
+        },
+        {
+          "technique": "preset-vocabulary",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/mind/mind.css:358 loop periods 2.8s/2.4s/2.2s/1.2s (:345,:358,:511,:1074) are inlined in seven local keyframes instead of drawn from a named preset or the duration ladder; the depth clock (styles/app.css:918) is tokenised but the ambient loops are not"
         },
         {
           "technique": "reduced-motion-mechanics",
-          "verdict": "deviation",
-          "evidence": "apps/desktop/src/scenes/surface/surface.css:66 Mind's own calm copy says moves land at once, but surface.css and mind.css have no data-motion rule; the notice fade is specified as 0ms, not an epsilon."
+          "verdict": "realized",
+          "evidence": "apps/desktop/src/scenes/mind/mind.css:1110 every new loop is stopped under Calm (animation: none at :1115) and the depth moves land at once via the 0ms token (apps/desktop/src/styles/app.css:918); the wizard's fold cannot wedge because wizard.tsx:312 unmounts on a safety timer when animationend never fires"
+        },
+        {
+          "technique": "unprompted-motion-lifecycle",
+          "verdict": "realized",
+          "evidence": "apps/desktop/src/scenes/mind/mind.css:275 the loops are unprompted and run past five seconds; the person's Calm choice (apps/desktop/src/lib/motion.ts) is the visible stop and it persists, nothing re-arms it"
         },
         {
           "technique": "content-bearing-degradation",
           "verdict": "conformant",
-          "evidence": "apps/desktop/src/scenes/shared/EngineSection.tsx:49 The notice text is in the element; opacity 0 lives only in the keyframe from-state, so a fade that never runs still shows the warning."
+          "evidence": "apps/desktop/src/scenes/shared/EngineSection.tsx:49 The notice text is in the element; opacity 0 lives only in the keyframe from-state, so a fade that never runs still shows the warning.",
+          "carriedFrom": "2026-10-16"
         },
         {
           "technique": "continuity-across-change",
           "verdict": "conformant",
-          "evidence": "apps/desktop/src/scenes/shared/engine.css:26 Choosing an engine fades a layer on the same card instead of swapping cards."
+          "evidence": "apps/desktop/src/scenes/shared/engine.css:26 Choosing an engine fades a layer on the same card instead of swapping cards.",
+          "carriedFrom": "2026-10-16"
         },
         {
           "technique": "engine-selection",
           "verdict": "conformant",
-          "evidence": "apps/desktop/src/scenes/shared/engine.css:23 Hover, selection, and the notice fade are declarative stylesheet motion with no library switch."
-        },
+          "evidence": "apps/desktop/src/scenes/shared/engine.css:23 Hover, selection, and the notice fade are declarative stylesheet motion with no library switch.",
+          "carriedFrom": "2026-10-16"
+        }
+      ],
+      "registryProposal": "The 2026-10-16 deviation (hover eases background/border-color and Mind/Surface sheets do not settle them under Calm) was re-read against reduced-motion-mechanics ('reduced is not none', one-shot fades survive, feedback is the class that must never be cut) and taste-budgets (feedback entitled to immediacy): a 150ms colour ease on a pressed control is feedback, not a violation. That verdict is superseded by this one. Separately, apps/desktop/src/styles/app.css:872-885 is the universal 1ms reset that reduced-motion-mechanics names the global-kill trap (outside this context; flagged for the app-shell context).",
+      "superseded": [
         {
-          "technique": "preset-vocabulary",
-          "verdict": "conformant",
-          "evidence": "apps/desktop/src/scenes/mind/mind.css:170 These sheets reference duration and easing tokens and do not inline milliseconds."
-        },
-        {
-          "technique": "taste-budgets",
-          "verdict": "conformant",
-          "evidence": "apps/desktop/src/scenes/surface/surface.css:124 Hover and error color use the fast feedback step; the notice uses the depth token, under a second."
+          "state": "deviation",
+          "evidence": "apps/desktop/src/scenes/mind/mind.css:84 Instrument hover eases background and border-color, which repaint, and the Mind and Surface sheets never settle those transitions under Calm.",
+          "evaluatedAt": "2026-10-16T00:00:02.982Z",
+          "worker": "ae78fcab-d55d-41d8-8e21-b0dd85be6297",
+          "reason": "replaced by conform-mind-surface"
         }
       ]
     },
@@ -4103,24 +4163,45 @@
       "subject": "session-continuation",
       "bundle": "software-engineering",
       "state": "deviation",
-      "evaluatedAt": "2026-10-17",
-      "evaluatedTs": "2026-10-17T23:15:15.035Z",
-      "worker": "fa9f5696-922e-4bfa-bc57-3957a5dd1022",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T13:30:00.000Z",
+      "worker": "conform-harness-engines",
       "techniques": [
-        {
-          "technique": "advisory-guard-fail-mode",
-          "verdict": "deviation",
-          "evidence": "src/athena/harness/hooks.py:525 The advisory truncation check invokes its diagnostic sink without fault isolation; a sink exception reaches run_turn's exception handler and terminates the turn instead of passing with a diagnostic."
-        },
         {
           "technique": "boundary-applied-stop",
           "verdict": "deviation",
-          "evidence": "tests/harness/test_cli_harness.py:298 This test explicitly requires execution on all eight rounds while line 299 permits only eight model requests, leaving the eighth execution's result unread rather than refusing that execution."
+          "evidence": "src/athena/harness/rounds.py:212 a stop known before dispatch (round budget spent) does not refuse the batch with not-executed results; the wall stop is applied at the round boundary (rounds.py:184) and is conformant"
+        },
+        {
+          "technique": "gate-state-lifetimes",
+          "verdict": "realized, keyed by thread",
+          "evidence": "src/athena/harness/rounds.py:85 the turn's wall and told-set are per-turn state reset at turn start (rounds.py:172) and held thread-locally since d7c00718, and every terminal path writes the row with its usage (rounds.py:240, :244, :258); the key is the thread, a proxy for the session that holds only while a turn locks its thread (ADR 0141), and _last (rounds.py:419) is still shared across threads"
+        },
+        {
+          "technique": "continuation-as-state",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/harness/rounds.py:56 the harness has a fixed eight-round budget and no keep-working mode, record or lease to enforce at a yield"
         },
         {
           "technique": "stuck-loop-detection",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/harness/rounds.py:177 a bounded for-loop over MAX_ROUNDS with a once-per-name told-set (rounds.py:337); there is no unbounded loop to detect stuckness in"
+        },
+        {
+          "technique": "advisory-guard-fail-mode",
           "verdict": "deviation",
-          "evidence": "src/athena/harness/rounds.py:360 Executed-tool failures are fed back unconditionally, allowing identical failed operations to continue until the round cap without normalized failure signatures, a repetition halt or a root-cause handoff."
+          "evidence": "src/athena/harness/hooks.py:525 The advisory truncation check invokes its diagnostic sink without fault isolation; a sink exception reaches run_turn's exception handler and terminates the turn instead of passing with a diagnostic.",
+          "carriedFrom": "2026-10-17"
+        }
+      ],
+      "registryProposal": "Technique-shaped resonance: the golden path's precondition is a keep-working continuation mode, which this bounded round loop lacks; only boundary-applied-stop (its use_when names the last-round batch exactly) and gate-state-lifetimes reach it. Eight of ten techniques are not-applicable here; the matcher is right on the two, and a note in the golden path that a fixed round budget is in scope for those two would stop the pair reading as weak.",
+      "superseded": [
+        {
+          "state": "deviation",
+          "evidence": "src/athena/harness/rounds.py:187 The final permitted round dispatches tools without a subsequent reasoning call to consume their results, violating the requirement to refuse a batch whose results nobody will read.",
+          "evaluatedAt": "2026-10-17T23:15:15.035Z",
+          "worker": "fa9f5696-922e-4bfa-bc57-3957a5dd1022",
+          "reason": "replaced by conform-harness-engines"
         }
       ]
     },
@@ -6517,28 +6598,41 @@
       "bundle": "software-engineering",
       "state": "deviation",
       "evaluatedAt": "2026-10-24",
-      "evaluatedTs": "2026-10-24T03:45:31.753Z",
-      "worker": "e05338b9-ac13-4426-9504-53eb02e68d0c",
+      "evaluatedTs": "2026-10-24T15:00:00.000Z",
+      "worker": "conform-daemon-service",
       "techniques": [
         {
           "technique": "guard-input-custody",
           "verdict": "deviation",
-          "evidence": "src/athena/daemon/routes.py:678 Custody itself holds: only the token-holding shell writes these lists. But a malformed guard input degrades to the permissive default, which is the technique's question 4 (absent-guard-is-loud). Only an over-long list is refused."
+          "evidence": "src/athena/daemon/routes.py:906 absent or malformed policy input degrades to the permissive empty set; the oversize case does raise ListTooLong (line 909), so the loud path exists but the malformed path does not use it."
         },
         {
           "technique": "operator-tier-code-loading",
           "verdict": "conformant",
-          "evidence": "src/athena/daemon/routes.py:514 The service door refuses any manifest with origin_kind other than host. Connectors, the only contributions with in-process executors, register in process, so the authenticated service tier cannot name code."
+          "evidence": "src/athena/daemon/routes.py:514 The service door refuses any manifest with origin_kind other than host. Connectors, the only contributions with in-process executors, register in process, so the authenticated service tier cannot name code.",
+          "carriedFrom": "2026-10-24"
         },
         {
           "technique": "session-scoped-capability",
           "verdict": "conformant",
-          "evidence": "src/athena/daemon/routes.py:836 The setup tools resolve from the session's own key, not from an environment slot. One disabled-origins set then drives both the prompt filter and the gate's refusal for that turn."
+          "evidence": "src/athena/daemon/routes.py:836 The setup tools resolve from the session's own key, not from an environment slot. One disabled-origins set then drives both the prompt filter and the gate's refusal for that turn.",
+          "carriedFrom": "2026-10-24"
         },
         {
           "technique": "host-routes-win",
           "verdict": "not-applicable",
-          "evidence": "src/athena/daemon/routes.py:307 Every route is host code (base routes, connector routes). No contribution mounts handlers, so there is no mount order to defend. The table also refuses duplicates."
+          "evidence": "src/athena/daemon/routes.py:307 Every route is host code (base routes, connector routes). No contribution mounts handlers, so there is no mount order to defend. The table also refuses duplicates.",
+          "carriedFrom": "2026-10-24"
+        }
+      ],
+      "registryProposal": "Re-anchored: the 2026-10-24 morning verdict cited routes.py:678 and 767-768, which the same day's fleet-surfaces commits moved (678 is now a closing paren); the finding is unchanged and now sits at routes.py:906-907. Note the docstring at routes.py:813-822 argues the opposite direction ('a malformed field must not switch an app on') but an empty disabled set is exactly the app-on state.",
+      "superseded": [
+        {
+          "state": "deviation",
+          "evidence": "src/athena/daemon/routes.py:678 The gate's per-turn policy inputs (disabled_origins, gated_origins, gated_tools) are read from the request body. A malformed or missing list silently becomes an empty set (routes.py:767-768), so switched-off apps become addressable again and first-sight apps lose their forced gating, instead of the turn failing loudly.",
+          "evaluatedAt": "2026-10-24T03:45:31.753Z",
+          "worker": "e05338b9-ac13-4426-9504-53eb02e68d0c",
+          "reason": "replaced by conform-daemon-service"
         }
       ]
     },
@@ -6556,20 +6650,50 @@
       "context": "daemon-service",
       "subject": "fleet-orchestration",
       "bundle": "software-engineering",
-      "state": "not-applicable",
+      "state": "deviation",
       "evaluatedAt": "2026-10-24",
-      "evaluatedTs": "2026-10-24T04:00:21.115Z",
-      "worker": "f78d4bc0-361d-4ce3-80b9-207544d423d0",
+      "evaluatedTs": "2026-10-24T15:00:00.000Z",
+      "worker": "conform-daemon-service",
       "techniques": [
         {
           "technique": "session-registry",
-          "verdict": "not-applicable",
-          "evidence": "src/athena/daemon/sessions.py:7 Session is per-origin routing memory for a page socket, not a fleet entry with a lifecycle; it is in memory on purpose."
+          "verdict": "realized",
+          "evidence": "src/athena/daemon/tasks.py:99 closed TASK_STATUSES vocabulary, id minted once at tasks.py:378, and every transition is a method on Tasks that rejects an illegal edge (finish only from running, tasks.py:497); the kill is final. Lineage and liveness fields are missing (see lifecycle-signals)."
+        },
+        {
+          "technique": "lifecycle-signals",
+          "verdict": "deviation",
+          "evidence": "src/athena/daemon/tasks.py:422 the running count is the slot count and only finish, stop or the start-up sweep (tasks.py:524) lowers it; tier two (a staleness sweep with a per-state budget) does not exist, so a window that died mid-task leaves a ghost 'running' row and a held slot."
+        },
+        {
+          "technique": "durable-fleet-state",
+          "verdict": "realized",
+          "evidence": "src/athena/daemon/server.py:1073 the start-up sweep marks every running row 'interrupted' (its own word, not 'failed') and tells the parent before the ready line, and every transition is committed in the row's write transaction before task.changed is published (tasks.py:439)."
         },
         {
           "technique": "parallel-dispatch",
+          "verdict": "deviation",
+          "evidence": "src/athena/daemon/tasks.py:385 the door holds two stock caps (3 running at tasks.py:422, 10 queued) and the queue is durable with identity kept at promotion (tasks.py:439) - but Athena authors her own next batch from each harvest line and no per-parent-conversation total is reserved at admission; ADR 0141 line 111 states 'the cap of 3 is the only cost control in v1'."
+        },
+        {
+          "technique": "result-harvest",
+          "verdict": "realized",
+          "evidence": "src/athena/daemon/tasks.py:560 every end (done, failed, killed, interrupted) is told to the parent thread as one episode, and failure is a first-class result with its own sentence (harvest_line)."
+        },
+        {
+          "technique": "hibernation-and-resume",
           "verdict": "not-applicable",
-          "evidence": "src/athena/daemon/server.py:258 Writes are serialised to a single turn, so nothing is fanned out and there are no collision domains."
+          "evidence": "src/athena/daemon/tasks.py:99 the status vocabulary has no hibernated state; a task is either queued, running or ended."
+        }
+      ],
+      "registryProposal": "The map held not-applicable on a premise ADR 0141 removed (one turn at a time behind a writer lock). A daemon that admits a durable queue of delegated tasks with a running cap and a restart sweep is a small fleet; the golden path's precondition ('a set of autonomous sessions') holds from 2026-10-24. Upward lesson: lifecycle-signals could say what the minimum honest tier two is when the session's executor is another process the registry cannot probe (here the desktop window): a per-row last-turn timestamp and a staleness budget is cheaper than a process check.",
+      "superseded": [
+        {
+          "state": "not-applicable",
+          "evidence": "src/athena/daemon/server.py:258 The daemon hosts one Athena and runs one turn at a time behind a writer lock, and its Sessions table is per-origin page routing state rather than a set of autonomous agent sessions; searches of src/athena/daemon and tests/daemon for hibernat, roster, broadcast, staleness and sweeper found nothing, so there is no fleet to orchestrate.",
+          "evaluatedAt": "2026-10-24T04:00:21.115Z",
+          "worker": "f78d4bc0-361d-4ce3-80b9-207544d423d0",
+          "reason": "replaced by conform-daemon-service"
         }
       ]
     },
@@ -6921,6 +7045,305 @@
           "technique": "constitution-self-model-split",
           "verdict": "not-applicable",
           "evidence": "examples/journey/src/onboard.ts:184 Only displays the doctor's constitution stage; authors and writes no law or self-model."
+        }
+      ]
+    },
+    "ec3c6a55-2ad9-47a0-8616-02544fcd0f1e/voice-io": {
+      "context": "desktop-scenes-mind-surface",
+      "subject": "voice-io",
+      "bundle": "software-engineering",
+      "state": "conformant",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T12:00:00.000Z",
+      "worker": "conform-mind-surface",
+      "techniques": [
+        {
+          "technique": "voice-ux-integration",
+          "verdict": "realized",
+          "evidence": "apps/desktop/src/scenes/mind/shared.tsx:108 degraded affordance tells one honest sentence naming which rung failed; shared.tsx:97 a machine with no microphone says every turn can still be typed (voice stays an overlay); apps/desktop/src/scenes/surface/model.ts:155 unavailable is a settled displayable fact, no vanishing, lying or eternal-spinner affordance"
+        },
+        {
+          "technique": "voice-setup-experience",
+          "verdict": "realized",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:203 the Mind field re-enters the one Voice flow (go to the voice root) instead of carrying a second setup implementation"
+        },
+        {
+          "technique": "stt-pipeline",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:15 the voice is the Voice depth; this context only asks the microphone once on a press (view.tsx:394) and runs no capture, endpointing or transcription"
+        },
+        {
+          "technique": "tts-pipeline",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:15 no synthesis queue or playback lives in the Mind or Surface scenes; the Voice depth owns it"
+        },
+        {
+          "technique": "engine-abstraction",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:15 no speech engine is bound in this context"
+        },
+        {
+          "technique": "on-device-vs-cloud",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:15 no residency choice is offered here; the Voice depth carries it"
+        },
+        {
+          "technique": "spoken-intent-parsing",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:15 no spoken command is parsed in these scenes"
+        },
+        {
+          "technique": "duplex-agent-sessions",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:15 no duplex session is opened here"
+        },
+        {
+          "technique": "speech-ready-text",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:15 nothing in these scenes prepares text for synthesis"
+        },
+        {
+          "technique": "transcript-normalization",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:15 no transcript reaches these scenes"
+        },
+        {
+          "technique": "authored-voice-identity",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:15 no voice is picked or named in these scenes"
+        },
+        {
+          "technique": "transcript-handoff-receipts",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:15 no transcript is handed off from here"
+        },
+        {
+          "technique": "bounded-playback-wait",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:15 no playback is awaited in these scenes"
+        },
+        {
+          "technique": "portable-provider-package",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/mind/view.tsx:15 no engine package is resolved or installed from this context"
+        }
+      ],
+      "registryProposal": "Only 2 of voice-io's 21 techniques govern a context that merely reports voice availability and links to the voice flow; the evidence floor (half of 21) was met only by anchoring ten not-applicable techniques to one delegation comment. Consider letting conform count the floor over techniques whose precondition holds, or splitting a thin 'voice-availability-surface' slice so such contexts are not matched to the whole pipeline subject.",
+      "superseded": [
+        {
+          "state": "deviation",
+          "evidence": "apps/desktop/src/scenes/mind/shared.tsx:92 the Mind field says \"Voice is not installed with this copy of Athena\" for every unavailable voice once the daemon is up, discarding the voiceReason the readiness module carries (apps/desktop/src/modules/setup/readiness.ts:170); voice-ux-integration requires the one honest sentence to name which rung failed, so voice switched off, a missing model or a failed config fetch all read as an impossibility one link away from the studio that fixes them",
+          "evaluatedAt": "2026-10-14",
+          "worker": null,
+          "reason": "replaced by conform-mind-surface"
+        }
+      ]
+    },
+    "ec3c6a55-2ad9-47a0-8616-02544fcd0f1e/test-harness": {
+      "context": "desktop-scenes-mind-surface",
+      "subject": "test-harness",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T12:00:00.000Z",
+      "worker": "conform-mind-surface",
+      "techniques": [
+        {
+          "technique": "live-app-harness",
+          "verdict": "deviation",
+          "evidence": "apps/desktop/src/scenes/mind/devices.test.tsx:7 pairing is never driven against a real daemon; apps/desktop/e2e/desktop/athena-desktop.e2e.test.ts:114 pairs the console page, not a device; no e2e names the peer routes"
+        },
+        {
+          "technique": "pin-the-call-not-the-name",
+          "verdict": "realized",
+          "evidence": "apps/desktop/src/scenes/mind/mind.css.test.ts:6 the sheet is comment-stripped before matching, :12 the rule helper throws on an absent selector, :32 the hover pin asserts a declaration; the 2026-10-14 deviation (css.includes on unstripped CSS) is closed, and surface.css.test.ts:25 does the same"
+        },
+        {
+          "technique": "assert-the-schedule-not-the-stopwatch",
+          "verdict": "realized",
+          "evidence": "apps/desktop/src/scenes/mind/devices.test.tsx:544 the re-read beat is proved with fake timers and call counts, not wall-clock waits"
+        },
+        {
+          "technique": "unreached-decisions-pin-nothing",
+          "verdict": "realized",
+          "evidence": "apps/desktop/src/scenes/mind/devices.test.tsx:544 the drawer's re-read decision is reached by pressing the node, with the phone case asserted not to call load; qr is faked there on purpose and pinned separately in qr.test.ts"
+        },
+        {
+          "technique": "derived-selection-must-be-measured",
+          "verdict": "realized",
+          "evidence": "apps/desktop/vite.config.ts:128 the unit include is a literal glob list, not a computed tag selection, and apps/desktop/package.json:29 keeps the e2e run on its own config so neither lane can swallow the other"
+        },
+        {
+          "technique": "fixture-economics",
+          "verdict": "realized",
+          "evidence": "apps/desktop/src/scenes/mind/fixtures.ts:2 the scene fixtures reuse the Setup module's view-models with nothing re-derived"
+        },
+        {
+          "technique": "assert-through-the-reader",
+          "verdict": "realized",
+          "evidence": "apps/desktop/src/scenes/mind/qr.test.ts:2 the QR encoder runs no decoder; it is held by BCH-checked format/version words and three whole matrices pinned from two independent encoders, which covers the shipped 78-byte pairing URL (version 5) but not versions 6-10 beyond structure (registry note below)"
+        }
+      ],
+      "registryProposal": "assert-through-the-reader says the reader is the oracle and a string pin is the weak form; here the emitted artifact is a QR bitmap and the pinned oracle is two independent encoders that agreed module for module, not a decoder. That is a third far-side shape (independent producers as oracle) the technique and its 'when not to use' do not name. Worth an application note with qr.test.ts as evidence.",
+      "superseded": [
+        {
+          "state": "deviation",
+          "evidence": "apps/desktop/src/scenes/mind/mind.css.test.ts:26 pins hover by css.includes(\".mind__input:hover\") on comment-unstripped CSS (also apps/desktop/src/scenes/surface/surface.css.test.ts:25) (pin-the-call-not-the-name); a CSS comment naming the selector or an empty hover rule keeps the pin green with no hover behaviour",
+          "evaluatedAt": "2026-10-14",
+          "worker": null,
+          "reason": "replaced by conform-mind-surface"
+        }
+      ]
+    },
+    "1cd39491-5acf-4229-b227-ae8068800d9b/agent-cli-transport": {
+      "context": "harness-engines",
+      "subject": "agent-cli-transport",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T13:30:00.000Z",
+      "worker": "conform-harness-engines",
+      "techniques": [
+        {
+          "technique": "availability-probe",
+          "verdict": "realized with a residual",
+          "evidence": "src/athena/harness/engines.py:207 the zero-token sign-in check runs through child_env, the spawn's environment, at a dated version floor (engines.py:92) and answers None when it cannot read the verdict (engines.py:222); residual: below the floor or on an unparsed version the fallback at engines.py:243 still reads a credential file's existence as logged_in"
+        },
+        {
+          "technique": "subscription-auth-selection",
+          "verdict": "realized",
+          "evidence": "src/athena/harness/transports.py:233 the single spawn door builds the child environment through child_env, which strips every engine key (dated table at transports.py:95, 2026-10-16) after merging base and extra, with no per-call opt-out; pinned by tests/harness/test_cli_harness.py:545"
+        },
+        {
+          "technique": "output-normalization",
+          "verdict": "partly realized",
+          "evidence": "src/athena/harness/transports.py:244 stderr is read on its own pipe and kept as a bounded tail, stdin is closed and its write guarded (transports.py:251); but src/athena/harness/cli_harness.py:404 accumulates the answer with no total byte cap and no kill on breach (only a per-line 8 MiB limit, transports.py:40)"
+        },
+        {
+          "technique": "permission-stance-enforcement",
+          "verdict": "not realized beyond the flags",
+          "evidence": "src/athena/harness/cli_harness.py:58 the stance is one pre-set flag set (claude --restricted + dontAsk) and codex -s read-only (cli_harness.py:262): no enforcement class recorded, no allow/deny layers, no detection of a silent downgrade"
+        },
+        {
+          "technique": "child-observed-posture",
+          "verdict": "not realized",
+          "evidence": "src/athena/harness/cli_harness.py:58 nothing reads the in-force stance, the billing direction or the injected context back from the child; the host's intent (argv and env) is trusted"
+        },
+        {
+          "technique": "dated-capability-matrix",
+          "verdict": "partly realized",
+          "evidence": "src/athena/harness/cli_harness.py:209 the invocation shapes (claude argv, codex argv at :262, CLAUDE_EXTRA_ARGS at :58) carry no verified-on date, tool version or method, no run-ceiling or idle-budget row; only the status checks (engines.py:92), the key table (transports.py:95) and the failure signatures (cli_harness.py:163) are dated"
+        },
+        {
+          "technique": "thread-custody-across-resume",
+          "verdict": "realized",
+          "evidence": "src/athena/harness/cli_harness.py:360 a stored thread is released and the round asked again once only for the closed RESEED set {gone, poisoned} (cli_harness.py:67), rebuilt from the turn's own history; timeouts and other failures keep the binding"
+        },
+        {
+          "technique": "host-routed-approval-round-trip",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/harness/cli_harness.py:55 the CLI's own tools are kept off and a page is operated only through the host's gate, so the child has no mid-turn approval request to route"
+        },
+        {
+          "technique": "fallback-ladder",
+          "verdict": "realized for this context's share",
+          "evidence": "src/athena/harness/engines.py:139 the probe never raises and answers a status with a reason, the spawn resolves the binary as the probe does (transports.py:225) and an OSError becomes a typed TransportError (transports.py:240); rung selection and labels live outside this context"
+        },
+        {
+          "technique": "termination-and-reaping",
+          "verdict": "deviation",
+          "evidence": "src/athena/harness/transports.py:276 direct-child kill() only, no ladder, no tree, no rung recorded; the child is reaped (transports.py:277 await proc.wait())"
+        }
+      ],
+      "registryProposal": "output-normalization asks to preserve a bounded prefix of raw output in the error; this repo refuses on purpose (ADR 0109, a CLI's error text can quote the request) and keeps the tool's own classification as a closed class plus fixed sentence (cli_harness.py:62-78,139). The technique could name classify-then-discard as the conformant shape when the raw text may carry user content.",
+      "superseded": [
+        {
+          "state": "deviation",
+          "evidence": "src/athena/harness/engines.py:175 treats a credential file existing as logged_in (availability-probe); src/athena/harness/transports.py:56 strips only ANTHROPIC_API_KEY so OPENAI_API_KEY reaches codex (subscription-auth-selection); src/athena/harness/cli_harness.py:192 undated capability constants; src/athena/harness/transports.py:131 per-line timeout, :137 hard kill with no graceful stop",
+          "evaluatedAt": "2026-10-14",
+          "worker": null,
+          "reason": "replaced by conform-harness-engines"
+        }
+      ]
+    },
+    "1cd39491-5acf-4229-b227-ae8068800d9b/voice-io": {
+      "context": "harness-engines",
+      "subject": "voice-io",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T13:30:00.000Z",
+      "worker": "conform-harness-engines",
+      "techniques": []
+    },
+    "10c863df-b13e-4802-85a8-60731a8c6c99/mcp-tools": {
+      "context": "daemon-service",
+      "subject": "mcp-tools",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T15:00:00.000Z",
+      "worker": "conform-daemon-service",
+      "techniques": []
+    },
+    "045f6ffb-7c64-4cbd-8925-89d25221d459/agent-memory": {
+      "context": "core-brain-memory",
+      "subject": "agent-memory",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T16:40:00.000Z",
+      "worker": "conform-core-brain-memory",
+      "techniques": [
+        {
+          "technique": "consolidation",
+          "verdict": "realized",
+          "evidence": "src/athena/core/sleep/legs.py:399 contradiction tested before duplicate; legs.py:394 every id the model returns is checked against that candidate's shortlist; src/athena/core/sleep/cycle.py:141 per-candidate FTS shortlist (cap 4, 200-char excerpts); cycle.py:148 merge failure degrades to a marked deterministic prefilter; src/athena/core/sleep/window.py:196 one snapshot read of this PC's non-machine episodes, drained forward (window.py:137); cycle.py:258 writes go through write_fact and the provenance gate (store.py:482). Not done: no read-back of a belief's value against the cited episode (no grade recorded)."
+        },
+        {
+          "technique": "supersedence-and-lineage (consolidation)",
+          "verdict": "realized",
+          "evidence": "src/athena/core/brain/store.py:546 supersedes/retired on both distilled writers, on disk first (store.py:597 file before index at :599); src/athena/core/brain/schema.py:70 companion_supersede rebuilt by reconcile; src/athena/core/recall.py:90 NOT_SUPERSEDED keeps a closed memory out of both distilled lanes; legs.py:281 events never supersede, states do."
+        },
+        {
+          "technique": "decay-and-forgetting",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/sleep/legs.py:241 only rejects a model-minted forgotten: key; nothing consults the marker a person's forget wrote, so the forgetting has no bar on re-derivation. Realized parts: cycle.py:291 forgetting is report-only through the same selection (book.py forget_candidates), book.py:470 grace period (older than 30 days) before a fade, fade is demotion that never hides, recall.py:369 the use stamp is written by the serving path for what it showed, book.py:309 proposal queue capped and swept. Soft gap: fade only runs inside an admitted cycle, which admission.py:239 refuses under 2,000 characters, so a quiet PC never fades."
+        },
+        {
+          "technique": "recall-injection",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/recall.py:454 'if cost > room: ... break' stops packing at the first episode that does not fit, so everything ranked behind one fat episode is dropped (technique: skip, do not stop; this is the old recall.py:418 finding, still open after fd42e844 reverted its fix). Also recall.py:597 orders the relevance lane by fade rank before bm25 (a lexicographic order) and never reads confidence. Realized: recall.py:301 each block announces N of M, UNAVAILABLE_PREFIX separates failed from empty recall, whole items only."
+        },
+        {
+          "technique": "memory-value-model",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/recall.py:92 FADED_RANK = importance less fade steps is the only value axis shared by recall and the forget candidates; no trust axis (companion_fact.confidence at schema.py:56 is never read by recall), no per-kind half-life and no bounded usage term. The one-model rule itself holds: recall and forgetting read the same fade row."
+        },
+        {
+          "technique": "observation-clock",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/sleep/legs.py:201 prints 'Episode <id> (<role>, <created_at>)' but COMPRESS_SYSTEM (legs.py:84) states no 'now' and never says to resolve relative references against the episode's instant, the exact 'timestamp shown, grounding not asked for' form the technique names; consolidation is deferred by design (window.py), so 'next Tuesday' is grounded on whatever the model assumes."
+        },
+        {
+          "technique": "memory-governance",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/sleep/legs.py:105 the compress leg is told to write facts with scope 'user' (about the person) and procedurals 'chat' (how to talk), and src/athena/core/sleep/cycle.py:258 commits them through write_fact with no review lane and no machine-authored mark, so a claim about the person's preferences lands in the auto-commit lane. Prompt-level exclusion of identity and standing rules (legs.py:98) and the fenced episodes (legs.py:202) are real but are not a lane."
+        },
+        {
+          "technique": "probe-without-write-back",
+          "verdict": "realized",
+          "evidence": "src/athena/wiring.py:386 and src/athena/wiring.py:131 are the only recall callers that feed a turn, and src/athena/adopt/research.py:206 feeds a model too; no scheduled or diagnostic caller reads through recall(), so recall.py:369 marking what it showed does not entrench a probe's fixtures."
+        }
+      ],
+      "registryProposal": "Two lessons. (1) The evidence floor counts every technique of a subject, so a context that is one seat of a 31-technique subject can only ever be deviation or unknown; propose counting only the techniques whose precondition holds here. (2) Application candidate for agent-memory / decay-and-forgetting: this repo (ADR 0143) shows fade as rank-only demotion with report-only forget proposals, and a person's forget as a retired marker fact with supersedes on write-once replicated files - a replication-safe form of the tombstone that the technique does not yet describe; it also shows the gap the technique warns of (the marker is written, nothing consults it before minting).",
+      "superseded": [
+        {
+          "state": "deviation",
+          "evidence": "src/athena/core/brain/store.py:422 mints a new fact per write and src/athena/core/brain/schema.py:52 has no supersede link, so a corrected fact and its predecessor both stay live; src/athena/core/recall.py:418 stops packing at the first oversized episode",
+          "evaluatedAt": "2026-10-14",
+          "worker": null,
+          "reason": "replaced by conform-core-brain-memory"
         }
       ]
     }

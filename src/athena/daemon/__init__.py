@@ -1,6 +1,6 @@
 """The daemon: one Athena on 127.0.0.1, beside whatever page is open (README §3.1, §3.5).
 
-The environment layer's front door. Seven files rather than one long module, because a reviewer
+The environment layer's front door. Nine files rather than one long module, because a reviewer
 should be able to read them one at a time:
 
 - :mod:`athena.daemon.server` — the socket, the token, CORS, one request per connection, and the
@@ -12,10 +12,14 @@ should be able to read them one at a time:
 - :mod:`athena.daemon.decisions` — the decision routes, ``POST /decisions/<id>`` and
   ``GET /decisions``, split out of the route module and re-exported from it.
 - :mod:`athena.daemon.sessions` — who is talking, keyed by origin, in memory.
+- :mod:`athena.daemon.tasks` — the delegated tasks (ADR 0141): their table, the admission rule,
+  the ``/tasks`` routes and the ``core.delegate`` / ``core.tasks`` / ``core.task_stop`` executors.
 - :mod:`athena.daemon.ready` — the one JSON line a spawned daemon prints once it is listening.
 - :mod:`athena.daemon.voice` — the voice studio's routes (ADR 0028), added by wiring.
 - :mod:`athena.daemon.connectors` — the connector routes (README §4, ADR 0021), added by wiring
   when there is a vault.
+- :mod:`athena.daemon.sleep` — the sleep cycle's ``/sleep`` routes and its check thread
+  (ADR 0143), added by wiring and started by ``athena serve``.
 
 Nothing here decides policy. The gate lives in ``core/catalog.py`` and ``harness/hooks.py``; this
 package carries a request to it and carries the answer back.

@@ -207,7 +207,8 @@ async function main() {
           async (name) => {
             const drive = (await import(pathToFileURL(path.resolve(`scripts/perf-${name}.drive.mjs`)).href)).default;
             titles.set(name, drive.title ?? "scenario");
-            return runPage(browser, (page) => page.goto(`${base}/preview.html?scene=${name}${drive.query ?? ""}`), drive);
+            // A drive may open another scene than its name (a skin is measured on the stage's scene).
+            return runPage(browser, (page) => page.goto(`${base}/preview.html?scene=${drive.scene ?? name}${drive.query ?? ""}`), drive);
           },
           (name, r) => show(`${name} (${titles.get(name) ?? "scenario"})`, r),
         );

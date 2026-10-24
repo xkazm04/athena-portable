@@ -262,7 +262,7 @@ def test_an_oauth_admission_waits_for_the_writer_lock_like_every_other_act(
     )
     flow = routed.flows.for_connector("gmail")
     assert flow is not None
-    with live.daemon.writing():  # a turn holds the writer lock
+    with live.daemon.writing():  # a write in progress holds the short write lock (ADR 0141)
         threading.Thread(target=lambda: urllib.request.urlopen(callback, timeout=10).read()).start()
         assert not flow.wait(1.0), "the admission committed while a turn held the writer lock"
         assert "connector.gmail.search_mail" not in live.daemon.catalog

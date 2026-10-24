@@ -109,3 +109,13 @@ def test_a_block_hash_is_stable_for_identical_content() -> None:
 def test_untrusted_is_carried_through_a_repair() -> None:
     block = PromptBlock(name="host_state", text="x", shown=1, total=2, untrusted=True)
     assert block.announced().untrusted
+
+
+def test_a_blank_run_has_reasons_of_its_own() -> None:
+    """ADR 0143: a turn that answered with nothing and a turn the plan's usage limit stopped are
+    not ``engine_error`` (an engine that could not run): the vitals count them as blank runs."""
+    for reason in ("no_answer", "usage_limit"):
+        assert normalize_reason(reason) == reason
+        assert ERROR_REASONS.index(reason) < ERROR_REASONS.index("unknown")
+    assert ERROR_REASONS.index("cancelled") < ERROR_REASONS.index("no_answer")
+    assert ERROR_REASONS.index("usage_limit") < ERROR_REASONS.index("outcome_unknown")

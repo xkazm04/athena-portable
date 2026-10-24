@@ -32,7 +32,7 @@ from athena.contracts.channel import ToolResult, cut_text
 from athena.contracts.registry import Lane
 from athena.core.constitution import Constitution
 from athena.core.prompt import Composed, TurnFrame, compose
-from athena.lane.ports import CatalogPort, HostState, RecallFn
+from athena.lane.ports import CatalogPort, FleetPort, HostState, RecallFn
 
 __all__ = [
     "RESULT_CAP",
@@ -129,6 +129,10 @@ class FrameBuilder:
     lane: Lane = Lane.BROWSER
     #: Recall for this message, or ``None`` for a deployment (or a test) with no memory attached.
     recall: RecallFn | None = None
+    #: The room each PC has now (ADR 0143), asked afresh for every frame and never remembered:
+    #: it is short and rendered whole, so it has no delta to keep. ``None`` composes no
+    #: ``frame.fleet``, which is a daemon with no vitals.
+    fleet: FleetPort | None = None
 
     def __post_init__(self) -> None:
         #: conversation id → the ``host_state`` of the last frame that was actually run.
@@ -161,6 +165,7 @@ class FrameBuilder:
             pending_decisions=turn.pending_decisions,
             disabled_origins=turn.disabled_origins,
             setup=turn.setup,
+            fleet=self.fleet.prompt_text() if self.fleet is not None else None,
         )
 
     def remember(self, conversation_id: str, frame: TurnFrame) -> None:

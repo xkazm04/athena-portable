@@ -151,6 +151,20 @@ ALWAYS_IMPORTANCE = 4
 EVERY_TURN_KEY = "every_turn"
 DEFAULT_CONFIDENCE = 0.7
 
+#: The frontmatter keys of supersedence (ADR 0143), on a fact or a procedural. ``supersedes`` lists
+#: the ids this memory closes: recall serves this one and never those, which stay on disk with their
+#: lineage. ``retired: true`` is a memory written to be hidden - the marker a person's "forget"
+#: leaves - and is indexed at importance 0. Both are written after ``sources`` and before
+#: ``every_turn``, and only when present, so every file written before them keeps its bytes. Unlike
+#: importance they are on disk, so a rebuild restores them and replication carries them.
+SUPERSEDES_KEY = "supersedes"
+RETIRED_KEY = "retired"
+#: The kinds a memory may supersede: the distilled ones.
+SUPERSEDABLE_KINDS: tuple[str, ...] = ("fact", "procedural")
+#: How long :meth:`Brain.note_recalled` waits for the write lock before it lets a hit go. A hit is
+#: a ranking hint, and a recall must never queue behind a long write for one.
+SEEN_LOCK_S = 0.25
+
 #: Five seconds is the whole budget a read route has; waiting longer for a lock is a timeout the
 #: caller can do nothing with, so it surfaces as an error instead of a hang.
 BUSY_TIMEOUT_MS = 5000
@@ -529,6 +543,8 @@ class Brain:
         importance: int = DEFAULT_IMPORTANCE,
         tags: Sequence[str] | None = None,
         every_turn: bool = False,
+        supersedes: Sequence[str] = (),
+        retired: bool = False,
     ) -> MemoryRef:
         """Write one distilled claim, citing the episodes it was drawn from.
 
@@ -539,7 +555,15 @@ class Brain:
         gains ``every_turn: true`` as its last key and the row is written at
         :data:`ALWAYS_IMPORTANCE`, whatever ``importance`` says, which is the value a rebuild
         restores. The product reaches it only through an approved ``core.write_fact`` card.
+
+        ``supersedes`` names the facts or procedurals of this brain this one closes (ADR 0143); an
+        id that is not one is refused before the file is written. ``retired`` writes a memory that
+        is hidden from the start (importance 0): the marker a person's "forget" leaves, which must
+        travel to every paired device like any other fact. The two keys are on disk, so a rebuild
+        restores both; a retired fact cannot also ride every turn.
         """
+        if retired and every_turn:
+            raise ValueError("a retired fact cannot ride every turn")
         if scope not in FACT_SCOPES:
             raise ValueError(f"fact scope must be one of {FACT_SCOPES}: {scope!r}")
         _require_finite(confidence)
@@ -549,6 +573,7 @@ class Brain:
         if not body:
             raise ValueError("refusing to write an empty fact")
         cited = self._require_provenance(sources)
+        closes = self._require_supersedable(supersedes)
 
         node_id = ids.mint("fact")
         created_at = now_iso()
@@ -561,10 +586,13 @@ class Brain:
             ("confidence", confidence),
             ("created", created_at),
             ("sources", cited),
+            *_lineage(closes, retired),
         ]
         if every_turn:
             header.append((EVERY_TURN_KEY, True))
             importance = ALWAYS_IMPORTANCE
+        if retired:
+            importance = 0
         file_text = frontmatter.render(self._stamped(header), body)
         self._write_file(rel, file_text)
 
@@ -586,6 +614,7 @@ class Brain:
                 (node_id, scope, key, confidence),
             )
             self.index_provenance(con, node_id, cited, created_at)
+            self.index_supersedes(con, node_id, closes)
         return MemoryRef(node_id, rel, "fact")
 
     def write_procedural(
@@ -598,8 +627,13 @@ class Brain:
         confidence: float = DEFAULT_CONFIDENCE,
         importance: int = DEFAULT_IMPORTANCE,
         tags: Sequence[str] | None = None,
+        supersedes: Sequence[str] = (),
+        retired: bool = False,
     ) -> MemoryRef:
-        """Write one "when X, do Y" rule, citing the episodes that taught it."""
+        """Write one "when X, do Y" rule, citing the episodes that taught it.
+
+        ``supersedes`` and ``retired`` mean what they mean on :meth:`write_fact` (ADR 0143).
+        """
         if scope not in PROCEDURAL_SCOPES:
             raise ValueError(f"procedural scope must be one of {PROCEDURAL_SCOPES}: {scope!r}")
         _require_finite(confidence)
@@ -609,6 +643,7 @@ class Brain:
         if not body:
             raise ValueError("refusing to write an empty procedural")
         cited = self._require_provenance(sources)
+        closes = self._require_supersedable(supersedes)
 
         node_id = ids.mint("procedural")
         created_at = now_iso()
@@ -623,10 +658,13 @@ class Brain:
                     ("confidence", confidence),
                     ("created", created_at),
                     ("sources", cited),
+                    *_lineage(closes, retired),
                 ]
             ),
             body,
         )
+        if retired:
+            importance = 0
         self._write_file(rel, file_text)
 
         with self.write_txn() as con:
@@ -647,7 +685,36 @@ class Brain:
                 (node_id, scope, trigger, confidence),
             )
             self.index_provenance(con, node_id, cited, created_at)
+            self.index_supersedes(con, node_id, closes)
         return MemoryRef(node_id, rel, "procedural")
+
+    def _require_supersedable(self, supersedes: Sequence[str]) -> list[str]:
+        """The ids a new memory may close: facts or procedurals this brain holds. Deduplicated.
+
+        A sleep cycle's merge leg names them, and a model's reference is untrusted until it is
+        checked (ADR 0143): an id that is not a distilled memory here is refused, before the file
+        is written, rather than recorded as closing something that was never there.
+        """
+        wanted = list(dict.fromkeys(supersedes))
+        if not wanted:
+            return []
+        malformed = [
+            s for s in wanted if not any(ids.is_id(kind, s) for kind in SUPERSEDABLE_KINDS)
+        ]
+        if malformed:
+            raise ValueError(f"supersedes names ids that are not facts or procedurals: {malformed}")
+        marks = ",".join("?" for _ in wanted)
+        with closing(self.read_connection()) as con:
+            rows = con.execute(
+                f"""SELECT id FROM companion_node
+                    WHERE kind IN ('fact', 'procedural') AND id IN ({marks})""",
+                tuple(wanted),
+            ).fetchall()
+        known = {str(row[0]) for row in rows}
+        missing = [s for s in wanted if s not in known]
+        if missing:
+            raise ValueError(f"supersedes names memories this brain does not hold: {missing}")
+        return wanted
 
     # -- goals ---------------------------------------------------------------------------------
 
@@ -921,6 +988,79 @@ class Brain:
             [(node_id, source, created_at) for source in sources],
         )
 
+    @staticmethod
+    def index_supersedes(con: sqlite3.Connection, node_id: str, superseded: Sequence[str]) -> None:
+        """One ``companion_supersede`` row per id ``node_id`` closes (ADR 0143)."""
+        con.executemany(
+            """INSERT OR IGNORE INTO companion_supersede (node_id, superseded_id)
+               VALUES (?, ?)""",
+            [(node_id, old) for old in superseded if old != node_id],
+        )
+
+    # -- the sleep cycle's journal and recall's use marks (ADR 0143) ----------------------------
+
+    def write_cycle_report(self, cycle_id: str, body: str, *, created: str) -> MemoryRef:
+        """Write ``cycles/<YYYY-MM-DD>-<cycle_id>.md``: one sleep cycle's journal, whole.
+
+        The header is three keys, ``id, type, created``, and the rest is markdown for a person.
+        The rebuild walks ``cycles/`` as ``cycle_report``, so the row written here is the row a
+        rebuild makes from the file (no session, no tags, the default importance). It is never
+        replicated: what one PC's cycle did is that PC's record.
+        """
+        if not ids.is_id("cycle", cycle_id):
+            raise ValueError(f"not a cycle id: {cycle_id!r}")
+        text_body = _lf(body).strip()
+        if not text_body:
+            raise ValueError("refusing to write an empty cycle report")
+        rel = f"cycles/{created[:10]}-{cycle_id}.md"
+        file_text = frontmatter.render(
+            [("id", cycle_id), ("type", "cycle_report"), ("created", created)], text_body
+        )
+        self._write_file(rel, file_text)
+        with self.write_txn() as con:
+            self.index_node(
+                con,
+                node_id=cycle_id,
+                kind="cycle_report",
+                rel=rel,
+                file_text=file_text,
+                body=text_body,
+                importance=DEFAULT_IMPORTANCE,
+                created_at=created,
+            )
+        return MemoryRef(cycle_id, rel, "cycle_report")
+
+    def note_recalled(self, node_ids: Sequence[str], *, at: str | None = None) -> bool:
+        """Mark distilled memories as just recalled: their use row moves, their fade row goes.
+
+        Runtime state, not memory (``companion_recall_seen`` and ``companion_fade`` are outside
+        ``INDEX_TABLES``), so it is written to the index alone. A hit is a ranking hint, so this
+        never waits long: when the write lock is not free within :data:`SEEN_LOCK_S`, or the index
+        refuses the write, the hit is let go and the answer is ``False``.
+        """
+        wanted = list(dict.fromkeys(node_ids))
+        if not wanted:
+            return True
+        when = at or now_iso()
+        if not self._write_lock.acquire(timeout=SEEN_LOCK_S):
+            return False
+        try:
+            with self.write_txn() as con:
+                con.executemany(
+                    """INSERT INTO companion_recall_seen (node_id, last_at, hits) VALUES (?, ?, 1)
+                       ON CONFLICT (node_id) DO UPDATE SET
+                         last_at = excluded.last_at, hits = hits + 1""",
+                    [(node_id, when) for node_id in wanted],
+                )
+                con.executemany(
+                    "DELETE FROM companion_fade WHERE node_id = ?", [(n,) for n in wanted]
+                )
+        except sqlite3.Error:
+            return False
+        finally:
+            self._write_lock.release()
+        return True
+
     # -- reads ---------------------------------------------------------------------------------
 
     def node(self, node_id: str) -> NodeRow | None:
@@ -960,6 +1100,16 @@ def _lf(text: str) -> str:
     The readers open files with universal newlines, so a CR the writer kept never came back.
     """
     return text.replace("\r\n", "\n").replace("\r", "\n")
+
+
+def _lineage(closes: Sequence[str], retired: bool) -> list[tuple[str, Any]]:
+    """The supersedence keys of a header, in their order, and only those that are present."""
+    pairs: list[tuple[str, Any]] = []
+    if closes:
+        pairs.append((SUPERSEDES_KEY, list(closes)))
+    if retired:
+        pairs.append((RETIRED_KEY, True))
+    return pairs
 
 
 def _require_finite(confidence: float) -> None:

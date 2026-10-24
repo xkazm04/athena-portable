@@ -1,0 +1,88 @@
+/* The task strip above her composer (fleet-surfaces, ADR 0141; `tasks.tsx`). Her window's tokens
+ * (`tokens.css`) and the shared ones only; no text under 12px, no literal colour or beat. The strip
+ * is one line until it is opened, so the conversation above it keeps its room. Nothing here moves
+ * but a colour on hover, so reduced motion and Calm have nothing to still. */
+
+.aw .aw-tasks {
+  display: grid;
+  gap: 2px;
+  margin-bottom: 8px;
+  padding: 4px 12px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-card);
+  background: var(--recess);
+}
+
+.aw .aw-tasks__summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  width: 100%;
+  min-height: 32px;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: var(--fg);
+  text-align: left;
+  transition: color var(--duration-fast) var(--ease-fast);
+}
+
+.aw .aw-tasks__summary:hover {
+  color: var(--ink-accent);
+}
+
+.aw .aw-tasks__count {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-variant-numeric: tabular-nums;
+}
+
+.aw .aw-tasks__hint {
+  flex: none;
+  color: var(--muted-fg);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.aw .aw-tasks__list {
+  display: grid;
+  max-height: 168px;
+  overflow-y: auto;
+  padding: 0;
+  border-top: 1px solid var(--line);
+}
+
+/* `.aw button` hands every button its parent's colour; the row's quiet buttons stay quiet. */
+.aw .aw-tasks .btn--ghost {
+  color: var(--muted-fg);
+}
+
+.aw .aw-tasks .btn--ghost:hover:not(:disabled) {
+  color: var(--fg);
+}
+
+.aw .aw-tasks__problem {
+  color: var(--muted-fg);
+}
+
+/* The gate's reason queued tasks wait (device-vitals, ADR 0143): one line, a warning hue on its
+ * mark only, so the words keep the ink's contrast. */
+.aw .aw-tasks__held {
+  margin: 0;
+  padding: 2px 0 4px;
+  color: var(--fg);
+}
+
+.aw .aw-tasks__held::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 8px;
+  border-radius: 999px;
+  background: var(--warn);
+  vertical-align: 0.1em;
+}

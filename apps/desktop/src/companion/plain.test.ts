@@ -26,6 +26,8 @@ const REASONS = [
   "outcome_unknown",
   "parse_error",
   "cancelled",
+  "no_answer",
+  "usage_limit",
   "not_ready",
   "unreachable",
   "no_page",

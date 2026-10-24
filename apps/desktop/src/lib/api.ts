@@ -32,6 +32,9 @@ import {
   type PeerView,
   type TurnFrame,
 } from "@/lib/fleet";
+import type { CycleView, ProposalView, SleepRunAnswer, SleepView } from "@/lib/sleep";
+import type { TasksView, TaskView } from "@/lib/tasks";
+import type { VitalsResponse } from "@/lib/vitals";
 
 export type FetchLike = (input: string, init?: RequestInit) => Promise<Response>;
 
@@ -245,6 +248,19 @@ export interface TurnBody {
   trigger?: "schedule";
   /** A message another device sent (ADR 0140): the daemon tees this run back to it. Routes nothing. */
   via?: { peer_id: string; request_id: string };
+  /**
+   * The delegated task this turn belongs to (fleet-surfaces, ADR 0141), or `null` for the main
+   * thread. When set, the daemon runs the turn in the task's own conversation (`conv_task_<hex>`)
+   * and refuses it `task_not_running` unless that task is running. Optional only so a caller from
+   * before tasks still type-checks; every turn this window sends says it.
+   */
+  task_id?: string | null;
+  /**
+   * The setup conversation's first turn (ADR 0140, WP4): "Set up with Athena" sends `true` with an
+   * empty `message`, and the daemon writes what she is told, so she speaks first. Refused anywhere
+   * but the setup session, and with any words of the window's own.
+   */
+  start?: boolean;
 }
 
 /** A refusal the daemon named. `reason` is a member of the one closed vocabulary. */
@@ -362,8 +378,67 @@ export class DaemonApi {
    * Stop the turn running for `origin` (ADR 0115). `stopped` is false when none of its turns was
    * running. A card the turn already filed is untouched and stays answerable.
    */
-  stop(origin: string): Promise<{ ok: boolean; stopped: boolean }> {
-    return this.json("POST", "/run/stop", { origin });
+  stop(origin: string, conversationId: string | null = null): Promise<{ ok: boolean; stopped: boolean }> {
+    return this.json("POST", "/run/stop", { origin, conversation_id: conversationId });
+  }
+
+  // -- delegated tasks (fleet-surfaces, ADR 0141): `/tasks*` -----------------------------------
+
+  /** Active tasks and those finished in the last day, newest first, with the admission numbers. */
+  tasks(): Promise<TasksView> {
+    return this.json("GET", "/tasks");
+  }
+
+  /** Take the oldest queued task to run here, or `null` when none is queued or the cap is full. */
+  claimTask(): Promise<{ task: TaskView | null }> {
+    return this.json("POST", "/tasks/claim", {});
+  }
+
+  /** Report how a running task ended. The daemon tells its parent thread. */
+  finishTask(taskId: string, status: "done" | "failed", result: string | null, error: string | null): Promise<{ task: TaskView }> {
+    return this.json("POST", `/tasks/${encodeURIComponent(taskId)}/finish`, { status, result, error });
+  }
+
+  /** Kill a queued or running task. `stopped` is false when it had already ended. */
+  stopTask(taskId: string): Promise<{ stopped: boolean }> {
+    return this.json("POST", `/tasks/${encodeURIComponent(taskId)}/stop`, {});
+  }
+
+  // -- this PC's room and her sleep (device-vitals, ADR 0143): `/vitals`, `/sleep*` -------------
+
+  /** This PC's latest vitals: what it measured, its task slots and why work waits, if it does. */
+  vitals(): Promise<VitalsResponse> {
+    return this.json("GET", "/vitals");
+  }
+
+  /** The sleep cycle now: pressure, the admission verdict in words, the last cycle, open proposals. */
+  sleep(): Promise<{ sleep: SleepView }> {
+    return this.json("GET", "/sleep");
+  }
+
+  /** The newest cycles first, at most `limit`. */
+  sleepCycles(limit = 20): Promise<{ cycles: CycleView[] }> {
+    return this.json("GET", `/sleep/cycles?limit=${limit}`);
+  }
+
+  /** One cycle and its journal (markdown), `null` when the journal was never written. */
+  sleepCycle(cycleId: string): Promise<{ cycle: CycleView; journal: string | null }> {
+    return this.json("GET", `/sleep/cycles/${encodeURIComponent(cycleId)}`);
+  }
+
+  /** The proposals a cycle left for a person: forget an unused memory, or settle a contradiction. */
+  sleepProposals(): Promise<{ proposals: ProposalView[] }> {
+    return this.json("GET", "/sleep/proposals");
+  }
+
+  /** Ask for a cycle now. `force` skips pressure and the floor, never a live turn or a lack of room. */
+  sleepRun(force = false): Promise<SleepRunAnswer> {
+    return this.json("POST", "/sleep/run", { force });
+  }
+
+  /** Keep or forget. A contradiction's `forget` names which of its two memories goes (`nodeId`). */
+  sleepDecide(proposalId: string, action: "keep" | "forget", nodeId: string | null = null): Promise<{ proposal: ProposalView }> {
+    return this.json("POST", `/sleep/proposals/${encodeURIComponent(proposalId)}`, { action, node_id: nodeId });
   }
 
   // -- the fleet (ADR 0140): `/devices*`, `/events`, `/remote/*` --------------------------------

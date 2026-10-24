@@ -115,6 +115,7 @@ def test_the_ledger_and_its_rollup_answer_in_the_documented_shape_and_page_their
         "ms",
         "is_error",
         "error_reason",
+        "peak_mb",
     }
     assert [row["row_id"] for row in whole["rows"]] == sorted(
         (row["row_id"] for row in whole["rows"]), reverse=True

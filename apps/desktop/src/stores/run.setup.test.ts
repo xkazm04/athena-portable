@@ -117,6 +117,34 @@ describe("the setup conversation", () => {
     expect(useRun.getState().phase).toBe("idle");
   });
 
+  it("Set up with Athena: she opens the conversation herself, with no words of the window's", async () => {
+    const daemon = fakeDaemon([[said("Tailscale is not on this computer yet."), setupCard("apr_00000000000b"), finished()]]);
+    const captures: number[] = [];
+    wire(daemon, captures);
+    await useRun.getState().startSetup(SESSION);
+
+    const [run] = daemon.runs();
+    expect(run!.body).toMatchObject({ origin: SETUP_ORIGIN, message: "", start: true, host_state: {} });
+    expect(captures).toEqual([]);
+    const state = useRun.getState();
+    expect(state.setup?.origin).toBe(SETUP_ORIGIN);
+    // No user bubble and no words of the window's: her own words and the card she filed.
+    expect(state.transcript.some((l) => l.kind === "user")).toBe(false);
+    expect(state.transcript.map((l) => l.kind)).toContain("assistant");
+    expect(state.cards.map((c) => c.id)).toEqual(["apr_00000000000b"]);
+  });
+
+  it("a start never rides a typed message", async () => {
+    const daemon = fakeDaemon([[finished()], [finished()]]);
+    wire(daemon);
+    await useRun.getState().startSetup(SESSION);
+    await useRun.getState().send("yes, go ahead");
+    const runs = daemon.runs();
+    expect(runs[0]!.body).toMatchObject({ start: true, message: "" });
+    expect(runs[1]!.body).toMatchObject({ message: "yes, go ahead" });
+    expect(runs[1]!.body).not.toHaveProperty("start");
+  });
+
   it("needs no open page", async () => {
     const daemon = fakeDaemon([[finished()]]);
     wire(daemon, [], false);

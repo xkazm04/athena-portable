@@ -336,6 +336,15 @@ so a card a setup tool files is bound to no tab and is answered in that session'
 `connector:setup` tools and the core tools are in scope there, and the setup tools are switched off
 in every other session.
 
+**She speaks first** (amended 2026-10-24). Most people have never heard of Tailscale, and an empty
+box after "Set up with Athena" read as a button that did nothing. Her window now opens the
+conversation (the hand-over dispatched the welcome's `open`, which does nothing after onboarding, so
+her window stayed collapsed; it dispatches `expand`) and sends the first turn itself: `start: true`
+and no message. The daemon accepts `start` only in the setup session and only with no words, and
+writes what she is told (`SETUP_OPENING`): read the overlay's status, say what she found and the
+first step, explain what Tailscale is before proposing to install it, and propose one step. Every
+change is still a card the person signs.
+
 **Local typing waits behind a remote exchange.** `via` belongs to a whole exchange, not to one
 request, and the daemon runs one turn at a time anyway. A message the person types while a remote
 exchange is running is queued and runs as their own, without `via`, once that exchange ends; running

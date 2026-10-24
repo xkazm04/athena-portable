@@ -51,6 +51,7 @@ import { catalogIdOf, derivedIdOf, manifestBodyOf } from "@/lib/manifest";
 import { boundTabSentence, reasonOf, refusalSentence, switchedOffSentence } from "@/companion/plain";
 import { isTerminal, type ChannelEvent, type DecisionRequested, type TurnSummary } from "@/lib/events";
 import { followBus, type RemoteDecided, type RemoteMessage } from "@/lib/fleet";
+import { classifyMidTurn } from "@/lib/midturn";
 import { SETUP_ORIGIN, SETUP_TOOLS_ORIGIN, type SetupSession } from "@/lib/setup";
 import { hasShell, type StorePage, type Tab } from "@/lib/ipc";
 import { storeList, storeSet, type ActivityRow, type OriginRow } from "@/lib/store";
@@ -83,6 +84,15 @@ const CONTINUE = "(the tools you called have answered; continue)";
 /** What a host call the person stopped her before is told as, with the next message (ADR 0115). */
 const NOT_RUN_STOPPED = "cancelled: the person stopped her before this ran";
 
+/**
+ * How often, and how long apart, a request refused `thread_busy` is sent again (fleet-surfaces,
+ * ADR 0141). A turn stopped a moment ago still holds its thread until its engine has let go, and
+ * the message that interrupted it is sent right behind the stop: about two seconds of patience,
+ * then the refusal is the answer.
+ */
+export const THREAD_BUSY_RETRIES = 8;
+export const THREAD_BUSY_WAIT_MS = 250;
+
 export type RunPhase = "idle" | "running" | "acting" | "error";
 
 export interface TranscriptEntry {
@@ -107,6 +117,29 @@ export interface Via {
   peer_id: string;
   request_id: string;
   peer_name: string;
+}
+
+/**
+ * A message the person typed while a turn of the main thread ran (fleet-surfaces, ADR 0141): it
+ * waits in line, in the order typed, and runs as the person's own when the turn in progress ends.
+ * The person can take it back until then. Its words enter the transcript when it runs.
+ */
+export interface QueuedMessage {
+  id: string;
+  text: string;
+}
+
+/**
+ * Who runs what a card filed by a delegated task releases (fleet-surfaces WP5, ADR 0141). The card
+ * sits in the one stack and is answered through the same route as any other - the same binding
+ * check, the same refusal sentences, the same record - but what the daemon releases runs on the
+ * task's tab and continues the task's conversation, never this window's exchange.
+ */
+export interface TaskCardOwner {
+  /** The origin the task's turns run on: the one an answer states for an unbound card. */
+  origin: string;
+  /** The daemon took the answer. `execute` is what it released; empty for a decline. */
+  release: (outcome: { approved: boolean; execute: ExecuteRow[] }) => void;
 }
 
 /** How the user's answer to one card ended. `refused` means the daemon did not take it. */
@@ -439,10 +472,38 @@ export interface RunState {
    * off for it. A remote exchange never runs on it. `null` outside it.
    */
   setup: SetupSession | null;
-  /** Enter the setup conversation. Nothing is sent: the person types the first message. */
+  /** Enter the setup conversation and send nothing (a hand-over that the person continues). */
   enterSetup: (session: SetupSession) => void;
+  /**
+   * "Set up with Athena": enter the setup conversation and let her open it. She checks where this
+   * computer stands and says the first step, so a person who has never heard of Tailscale is not
+   * left facing an empty box. While her own work runs, she is put in the conversation and the
+   * opening waits for the person's message instead.
+   */
+  startSetup: (session: SetupSession) => Promise<void>;
   /** Leave it: the next message the person types goes to the focused page again. */
   leaveSetup: () => void;
+  /**
+   * What the person typed while a turn of the main thread ran and the classifier read as the next
+   * thing to do (`lib/midturn.ts`), in the order typed (fleet-surfaces, ADR 0141). One runs each
+   * time the turn in progress ends. Clear does not touch it: it is what the person asked for.
+   */
+  queued: QueuedMessage[];
+  /** Take a queued message back before it runs. An id no longer in line is ignored. */
+  unqueue: (id: string) => void;
+  /** Cards a delegated task filed, by card id: the task's title, which the card is labelled with. */
+  taskCards: Record<string, string>;
+  /**
+   * A delegated task's turn filed a card (fleet-surfaces WP5): it joins the one stack, labelled
+   * with the task's title, and its answer is handed to `owner` instead of continuing this window's
+   * exchange. A card already on screen under the same id (a reconcile got there first) is replaced.
+   */
+  fileTaskCard: (card: DecisionRequested, title: string, owner: TaskCardOwner) => void;
+  /**
+   * The task that filed a card ended without it being answered (killed, failed): the card leaves
+   * the stack and a reconcile does not bring it back. The task runner declines it at the daemon.
+   */
+  withdrawTaskCard: (id: string) => void;
 }
 
 export const EMPTY = {
@@ -467,6 +528,8 @@ export const EMPTY = {
   ran: {} as Record<string, string>,
   via: null as Via | null,
   setup: null as SetupSession | null,
+  queued: [] as QueuedMessage[],
+  taskCards: {} as Record<string, string>,
 };
 
 /** The production wiring: the daemon store for the endpoint, the tabs store for the page. */
@@ -881,15 +944,27 @@ export function setupBody(
   carried: Array<Record<string, unknown>>,
   taking: Pick<Snapshot, "disabledOrigins">,
 ): TurnBody {
+  // Her opening (startSetup): no words of this window's; the daemon writes what she is told.
+  const start = message === SETUP_START;
   return {
     origin,
-    message,
+    message: start ? "" : message,
     surface: "panel",
     host_state: {},
     tool_results: carried,
     disabled_origins: taking.disabledOrigins,
+    // The main thread's turn, not a delegated task's (fleet-surfaces, ADR 0141).
+    task_id: null,
+    ...(start ? { start: true } : {}),
   };
 }
+
+/**
+ * The first request of the setup conversation, as the exchange carries it (`startSetup`): never
+ * shown and never sent as words - {@link setupBody} turns it into `start: true` and an empty
+ * message, and the daemon writes her opening.
+ */
+export const SETUP_START = "\u0000setup:start";
 
 export const NOTHING_GATED: GatedLists = { gated_origins: [], gated_tools: [] };
 
@@ -1093,13 +1168,27 @@ const taken = new Set<string>();
 const TAKEN_CAP = 256;
 
 /**
- * One message waiting for the exchange in progress: another device's, or the person's own typed
- * while a remote exchange ran. One exchange runs at a time either way (see `send`).
+ * One message waiting for the exchange in progress: another device's, or the person's own. The
+ * person's carries the id of its line in `queued` when it was typed during a turn of the main
+ * thread (fleet-surfaces, ADR 0141), and runs only while that line is still there; typed while a
+ * remote exchange ran, it has no id - its words are already in the transcript - and always runs.
+ * One exchange runs at a time either way (see `send`).
  */
-type Waiting = { remote: RemoteMessage } | { local: string };
+type Waiting = { remote: RemoteMessage } | { local: string; id: string | null };
+
+/** The owner of each card a delegated task filed, by card id (fleet-surfaces WP5). */
+const owners = new Map<string, TaskCardOwner>();
+/** Task cards withdrawn unanswered: a reconcile must not bring them back. Bounded, oldest first out. */
+const withdrawn = new Set<string>();
+const WITHDRAWN_CAP = 256;
+
+/** What a card a delegated task filed shows where a capture would be. */
+export const TASK_NO_PICTURE = "no picture: filed by a task working in the background";
 
 export function resetRunForTests(): void {
   taken.clear();
+  owners.clear();
+  withdrawn.clear();
   deps = LIVE;
   clearUnsureForTests();
   useRun.setState({ ...EMPTY });
@@ -1425,17 +1514,32 @@ export const useRun = create<RunState>((set, get) => {
         ...scheduled,
         // Another device's message: the daemon copies this run's events back to it (ADR 0140).
         ...(via ? { via: { peer_id: via.peer_id, request_id: via.request_id } } : {}),
+        // The main thread's turn, not a delegated task's (fleet-surfaces, ADR 0141).
+        task_id: null,
       };
     let opened = false;
     let errored = false;
     try {
-      for await (const event of api.run(body, flight.controller.signal)) {
-        // The daemon's turn ends at its last frame; what follows is the page's, with nothing to abort.
-        opened = true;
-        if (event.kind === "turn.error") errored = true;
-        if (isTerminal(event) && inFlight === flight) inFlight = null;
-        await apply(event);
-        if (isTerminal(event)) break;
+      for (let attempt = 0; ; attempt += 1) {
+        try {
+          for await (const event of api.run(body, flight.controller.signal)) {
+            // The daemon's turn ends at its last frame; what follows is the page's, with nothing to abort.
+            opened = true;
+            if (event.kind === "turn.error") errored = true;
+            if (isTerminal(event) && inFlight === flight) inFlight = null;
+            await apply(event);
+            if (isTerminal(event)) break;
+          }
+          break;
+        } catch (error) {
+          // The thread is still held by a turn that was stopped a moment ago (ADR 0141): the
+          // refusal came before any stream, so the same request is sent again, a little later.
+          // The daemon names it in `error` beside the closed-vocabulary `reason` (`ApiError.word`).
+          const busy = !opened && error instanceof ApiError && error.word === "thread_busy";
+          if (!busy || attempt >= THREAD_BUSY_RETRIES || mine !== generation) throw error;
+          await new Promise((resolve) => setTimeout(resolve, THREAD_BUSY_WAIT_MS));
+          if (mine !== generation) throw error;
+        }
       }
     } catch (error) {
       // A refusal is answered before any stream opens (`POST /run` refuses everything it can
@@ -1679,12 +1783,15 @@ export const useRun = create<RunState>((set, get) => {
     // and the row's own origin decides - a decline still goes through.
     // A setup card (ADR 0140, WP4) is answered in the setup session's name, which is the session
     // the daemon filed it under; whatever tab is focused has nothing to do with it.
+    // A card a delegated task filed is answered in the name its task's turns ran under: its tab's
+    // origin, or the task's own session when it has no tab (fleet-surfaces WP5).
+    const owner = owners.get(id);
     const stated =
       card?.origin === SETUP_TOOLS_ORIGIN
         ? SETUP_ORIGIN
         : card?.tab_id != null
-          ? boundTab(card.tab_id, taking.focused)?.origin
-          : taking.focused?.origin;
+          ? (boundTab(card.tab_id, taking.focused)?.origin ?? owner?.origin)
+          : (owner?.origin ?? taking.focused?.origin);
     let resolution;
     try {
       resolution = await api.resolve(id, choice, stated, undefined, taking.disabledOrigins);
@@ -1700,7 +1807,9 @@ export const useRun = create<RunState>((set, get) => {
       answering: without(s.answering, id),
       refusals: without(s.refusals, id),
       unticked: without(s.unticked, id),
+      taskCards: without(s.taskCards, id),
     }));
+    owners.delete(id);
     note(result, result === "user_denied" ? "user_denied" : null);
     if (!quiet) {
       settled?.({ ok: true, sentence: "" });
@@ -1708,7 +1817,13 @@ export const useRun = create<RunState>((set, get) => {
     }
     if (resolution.status === "declined") {
       push({ id, kind: "tool", text: `declined: ${card?.action ?? id}`, ok: false }, false);
+      owner?.release({ approved: false, execute: [] });
       return { taken: true, result, reason: "user_denied", sentence: "", ran: [] };
+    }
+    // A task's card: what it released runs on the task's tab, in the task's conversation.
+    if (owner) {
+      owner.release({ approved: true, execute: resolution.execute });
+      return { taken: true, result, reason: null, sentence: "", ran: [] };
     }
     const ran: Ran[] = [];
     for (const row of resolution.execute) ran.push(await onPage(row, true, taking));
@@ -1783,7 +1898,11 @@ export const useRun = create<RunState>((set, get) => {
     await settle(under, mine !== generation);
   }
 
-  /** Run what waited - remote messages and the person's own - one exchange at a time, while she is free. */
+  /**
+   * Run what waited - remote messages and the person's own - one exchange at a time, while she is
+   * free. A message the person queued runs only while its line is still in `queued` (they may have
+   * taken it back), and its words enter the transcript as it runs.
+   */
   async function drainRemote(): Promise<void> {
     for (;;) {
       const { phase } = get();
@@ -1791,7 +1910,53 @@ export const useRun = create<RunState>((set, get) => {
       const next = waiting.shift();
       if (!next) return;
       if ("remote" in next) await runRemote(next.remote);
-      else await runLocal(next.local);
+      else if (next.id === null) await runLocal(next.local);
+      else {
+        const line = next.id;
+        if (!get().queued.some((q) => q.id === line)) continue;
+        set((s) => ({ queued: s.queued.filter((q) => q.id !== line) }));
+        push({ id: `u${line}`, kind: "user", text: next.local });
+        await runLocal(next.local);
+      }
+    }
+  }
+
+  /** Counts queued lines, so two typed in the same millisecond keep apart. */
+  let lines = 0;
+
+  /** A turn of the main thread is in progress: a message typed now is a mid-turn message. */
+  function mainBusy(): boolean {
+    const { phase } = get();
+    return phase === "running" || phase === "acting" || exchanging > 0;
+  }
+
+  /**
+   * Stop her (ADR 0115). `interrupting` is the person's own new message doing it (fleet-surfaces,
+   * ADR 0141): the line says so, and the message is sent right behind.
+   */
+  async function halt(interrupting: boolean): Promise<void> {
+    const { phase } = get();
+    if (phase !== "running" && phase !== "acting") return;
+    generation += 1;
+    const flight = inFlight;
+    inFlight = null;
+    flight?.controller.abort();
+    // A call the turn proposed and never released was not run: the turn it belonged to ended.
+    proposed = new Map();
+    // A request still taking its screenshot has not left: what it carries is kept, too.
+    const kept = outstanding.length > 0 || (flight !== null && !flight.sent && flight.carried.length > 0);
+    set({ phase: "idle", error: null });
+    const text = interrupting
+      ? kept
+        ? "interrupted: you said something new, so she stopped. What the page already did goes with it."
+        : "interrupted: you said something new, so she stopped."
+      : kept
+        ? "stopped: you stopped her. What the page already did goes with your next message."
+        : "stopped: you stopped her. Nothing more runs until your next message.";
+    push({ id: `stop${Date.now()}`, kind: "tool", text, ok: false }, false);
+    const api = deps.api();
+    if (api && flight) {
+      await api.stop(flight.origin).catch((error: unknown) => console.error(`[athena] stop: ${String(error)}`));
     }
   }
 
@@ -1830,8 +1995,11 @@ export const useRun = create<RunState>((set, get) => {
       }
       const mine = generation;
       const approved = event.status === "approved";
+      const owner = owners.get(event.approval_id);
+      owners.delete(event.approval_id);
       set((s) => ({
         cards: s.cards.filter((c) => c.id !== event.approval_id),
+        taskCards: without(s.taskCards, event.approval_id),
         answered: [
           {
             id: event.approval_id,
@@ -1846,6 +2014,11 @@ export const useRun = create<RunState>((set, get) => {
       }));
       const verb = approved ? "approved" : "declined";
       push({ id: `${event.approval_id}_by`, kind: "tool", text: `${verb} on ${event.peer_name}: ${card.action}`, ok: approved }, false);
+      // A delegated task's card: what the peer released runs in the task, not here (fleet-surfaces WP5).
+      if (owner) {
+        owner.release({ approved, execute: approved ? event.execute : [] });
+        return;
+      }
       if (!approved) {
         await settle(under, false, true);
         return;
@@ -1859,7 +2032,6 @@ export const useRun = create<RunState>((set, get) => {
     },
 
     async send(message: string) {
-      push({ id: `u${Date.now()}`, kind: "user", text: message });
       // Typed here while another device's message is running (ADR 0140): it waits for that exchange
       // to end, and then runs as the person's own, without `via`. It is not run beside it without
       // `via` because `via` is the exchange's, not the request's: while the remote exchange runs,
@@ -1867,12 +2039,56 @@ export const useRun = create<RunState>((set, get) => {
       // at a time anyway - two exchanges interleaved here would only trade page results
       // (`outstanding`) between them, and the remote device would read the person's turn.
       if (via !== null) {
+        push({ id: `u${Date.now()}`, kind: "user", text: message });
         push({ id: `uq${Date.now()}`, kind: "tool", text: `waiting: the message from ${via.peer_name} runs first`, ok: true }, false);
-        waiting.push({ local: message });
+        waiting.push({ local: message, id: null });
         return;
       }
+      // Typed while her own turn runs (fleet-surfaces, ADR 0141): the composer never closes. A
+      // correction ("stop", "no, the other one") stops the turn - what it already did is kept and
+      // marked interrupted - and is sent at once; anything else waits in line, visible, and runs
+      // when the turn ends. Two exchanges never run side by side in this thread.
+      if (mainBusy()) {
+        if (classifyMidTurn(message) === "interrupt") {
+          await halt(true);
+        } else {
+          lines += 1;
+          const id = `q${Date.now()}_${lines}`;
+          waiting.push({ local: message, id });
+          set((s) => ({ queued: [...s.queued, { id, text: message }] }));
+          return;
+        }
+      }
+      push({ id: `u${Date.now()}`, kind: "user", text: message });
       await runLocal(message);
       await drainRemote();
+    },
+
+    unqueue(id) {
+      set((s) => (s.queued.some((q) => q.id === id) ? { queued: s.queued.filter((q) => q.id !== id) } : {}));
+    },
+
+    fileTaskCard(card, title, owner) {
+      owners.set(card.id, owner);
+      set((s) => ({
+        cards: s.cards.some((c) => c.id === card.id) ? s.cards.map((c) => (c.id === card.id ? card : c)) : [...s.cards, card],
+        taskCards: { ...s.taskCards, [card.id]: title },
+        // Taken on a tab in the background, if at all: the window's capture is of the focused tab.
+        captureWhy: withCaptureWhy(s.captureWhy, card, TASK_NO_PICTURE),
+      }));
+      void get().describe(card);
+    },
+
+    withdrawTaskCard(id) {
+      owners.delete(id);
+      withdrawn.add(id);
+      if (withdrawn.size > WITHDRAWN_CAP) withdrawn.delete(withdrawn.values().next().value as string);
+      set((s) => ({
+        cards: s.cards.filter((c) => c.id !== id),
+        taskCards: without(s.taskCards, id),
+        answering: without(s.answering, id),
+        refusals: without(s.refusals, id),
+      }));
     },
 
     enterSetup(session) {
@@ -1885,36 +2101,24 @@ export const useRun = create<RunState>((set, get) => {
       set({ setup: null });
     },
 
+    async startSetup(session) {
+      get().enterSetup(session);
+      // The setup banner says where the person is; her first words say what she found. While her
+      // own work runs, the person is in the conversation and their next message starts it.
+      if (!get().setup || via !== null || mainBusy()) return;
+      await runLocal(SETUP_START);
+    },
+
     async stop() {
-      const { phase } = get();
-      if (phase !== "running" && phase !== "acting") return;
-      generation += 1;
-      const flight = inFlight;
-      inFlight = null;
-      flight?.controller.abort();
-      // A call the turn proposed and never released was not run: the turn it belonged to ended.
-      proposed = new Map();
-      // A request still taking its screenshot has not left: what it carries is kept, too.
-      const kept = outstanding.length > 0 || (flight !== null && !flight.sent && flight.carried.length > 0);
-      set({ phase: "idle", error: null });
-      push(
-        {
-          id: `stop${Date.now()}`,
-          kind: "tool",
-          text: kept
-            ? "stopped: you stopped her. What the page already did goes with your next message."
-            : "stopped: you stopped her. Nothing more runs until your next message.",
-          ok: false,
-        },
-        false,
-      );
-      const api = deps.api();
-      if (api && flight) {
-        await api.stop(flight.origin).catch((error: unknown) => console.error(`[athena] stop: ${String(error)}`));
-      }
+      await halt(false);
     },
 
     async answer(id, choice, settled) {
+      // A delegated task's card: the task carries on, not this window's exchange (fleet-surfaces WP5).
+      if (owners.has(id)) {
+        await answerOne(id, choice, settled, false);
+        return;
+      }
       const mine = generation;
       const under = viaOf.get(id) ?? null;
       const out = await answerOne(id, choice, settled, false);
@@ -2025,7 +2229,9 @@ export const useRun = create<RunState>((set, get) => {
           s.cards,
           page.pending ?? [],
           (id) =>
-            s.answering[id] !== undefined || s.answered.some((a) => a.id === id && a.result !== "refused"),
+            s.answering[id] !== undefined ||
+            s.answered.some((a) => a.id === id && a.result !== "refused") ||
+            withdrawn.has(id),
         ),
       }));
     },
@@ -2129,6 +2335,8 @@ export const useRun = create<RunState>((set, get) => {
         unticked: keep.unticked,
         ran: keep.ran,
         via: keep.via,
+        queued: keep.queued,
+        taskCards: keep.taskCards,
       });
     },
   };
@@ -2196,7 +2404,8 @@ function without<T>(map: Record<string, T>, id: string): Record<string, T> {
   return next;
 }
 
-function resultRow(
+/** One page answer as the next request's `tool_results` carries it. The task runner writes the same rows. */
+export function resultRow(
   row: ExecuteRow,
   ok: boolean,
   output: string,
@@ -2223,7 +2432,7 @@ function optionOf(card: DecisionRequested, kind: "approve" | "decline"): string 
 }
 
 /** `host.<app_id>.<tool>` is the catalog's name; the page registered the last segment. */
-function bareName(name: string): string {
+export function bareName(name: string): string {
   const parts = name.split(".");
   return parts.length > 2 ? parts.slice(2).join(".") : name;
 }

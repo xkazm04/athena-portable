@@ -65,6 +65,8 @@ export interface Tab {
 }
 
 export const tabsCreate = (url: string) => call<number>("tabs_create", { url });
+/** Her window opens a delegated task's tab behind the person's page (ADR 0141). */
+export const tabsOpenBackground = (url: string) => call<number>("tabs_open_background", { url });
 export const tabsClose = (id: number) => call<void>("tabs_close", { id });
 export const tabsFocus = (id: number) => call<void>("tabs_focus", { id });
 export const tabsNavigate = (id: number, url: string) => call<void>("tabs_navigate", { id, url });

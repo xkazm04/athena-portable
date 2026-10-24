@@ -360,3 +360,36 @@ def test_a_later_round_is_asked_with_what_is_left_of_the_turn_not_the_whole_wall
 
 async def _collect(stream: AsyncIterator[ChannelEvent]) -> list[ChannelEvent]:
     return [event async for event in stream]
+
+
+def test_two_threads_keep_their_own_walls_and_their_own_told_sets(tmp_path: Path) -> None:
+    """A turn locks its thread, not the companion (ADR 0141): two conversations run on two threads
+    through one harness, and the later start must not move the earlier turn's wall."""
+    import threading
+
+    harness = _harness(FakeCatalog(), FakeLedger(), ScriptedTransport([]), tmp_path)
+    seen: dict[str, tuple[float | None, set[tuple[str, str]]]] = {}
+    first_set = threading.Event()
+    second_set = threading.Event()
+
+    def first() -> None:
+        harness._deadline = 100.0
+        harness._told.add(("core.recall", "a"))
+        first_set.set()
+        second_set.wait(5)
+        seen["first"] = (harness._deadline, set(harness._told))
+
+    def second() -> None:
+        first_set.wait(5)
+        harness._deadline = 900.0
+        harness._told = set()
+        second_set.set()
+        seen["second"] = (harness._deadline, set(harness._told))
+
+    threads = [threading.Thread(target=first), threading.Thread(target=second)]
+    for thread in threads:
+        thread.start()
+    for thread in threads:
+        thread.join(10)
+    assert seen["first"] == (100.0, {("core.recall", "a")})
+    assert seen["second"] == (900.0, set())

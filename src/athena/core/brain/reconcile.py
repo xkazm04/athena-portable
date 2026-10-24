@@ -11,7 +11,9 @@ What disk cannot carry back is deliberate and documented in ADR 0003: importance
 and use timestamps are index columns, not frontmatter (ref §8), so a rebuild restores every
 memory at its writer default. A demotion that was never expressed on disk does not survive.
 The one exception is a fact whose file says ``every_turn: true``, the user's approval that it
-rides every turn: it comes back at ``ALWAYS_IMPORTANCE`` (ADR 0071).
+rides every turn: it comes back at ``ALWAYS_IMPORTANCE`` (ADR 0071). Supersedence is on disk too
+(ADR 0143): a fact or procedural whose file says ``supersedes: [ids]`` writes its
+``companion_supersede`` rows back, and one that says ``retired: true`` comes back at importance 0.
 """
 
 from __future__ import annotations
@@ -31,6 +33,9 @@ from athena.core.brain.store import (
     DEFAULT_IMPORTANCE,
     EVERY_TURN_KEY,
     MACHINE_IMPORTANCE,
+    RETIRED_KEY,
+    SUPERSEDABLE_KINDS,
+    SUPERSEDES_KEY,
     Brain,
 )
 
@@ -203,6 +208,9 @@ def index_file(
     if kind == "fact" and meta.get(EVERY_TURN_KEY) is True:
         # Only the literal ``true`` a writer emits; any other value is the default, as it was.
         importance = ALWAYS_IMPORTANCE
+    if kind in SUPERSEDABLE_KINDS and meta.get(RETIRED_KEY) is True:
+        # The marker a "forget" leaves is hidden from the start, here as at its write (ADR 0143).
+        importance = 0
     tags = [f"role:{role}"] if role else []
     fts_tags = f"session:{session_id} role:{role}" if kind == "episode" else None
     brain.index_node(
@@ -247,6 +255,10 @@ def index_file(
         # re-run the write gate: refusing a fact here because an episode was demoted would
         # delete evidence that is still on disk, which is the opposite of a rebuild.
         brain.index_provenance(con, node_id, [str(s) for s in sources], created_at)
+    closes = meta.get(SUPERSEDES_KEY)
+    if kind in SUPERSEDABLE_KINDS and isinstance(closes, list):
+        # What the file says it closes, as written: like provenance, a rebuild trusts the disk.
+        brain.index_supersedes(con, node_id, [str(old) for old in closes])
 
 
 def index_fingerprint(brain: Brain) -> list[tuple[Any, ...]]:
@@ -283,6 +295,13 @@ def index_fingerprint(brain: Brain) -> list[tuple[Any, ...]]:
             for row in con.execute(
                 """SELECT id, scope, trigger_pattern, confidence
                    FROM companion_procedural ORDER BY id"""
+            )
+        )
+        rows.extend(
+            ("supersede", *row)
+            for row in con.execute(
+                """SELECT node_id, superseded_id FROM companion_supersede
+                   ORDER BY node_id, superseded_id"""
             )
         )
         rows.extend(

@@ -95,6 +95,14 @@ export const athenaOpenMain = () => call<void>("athena_open_main");
 /** Put her away. Hide stops drawing, not listening (ADR 0026). */
 export const athenaHide = () => call<void>("athena_hide");
 
+/**
+ * Show her if she is put away, put her away if she is shown; resolves to whether she is visible
+ * afterwards. Main imports this: her illustration on the surface is the switch (fleet-surfaces
+ * D2). Rust's own `visible` decides, not the page's mirror of it, so a stale mirror cannot invert
+ * the press.
+ */
+export const athenaToggle = () => call<boolean>("athena_toggle");
+
 /** Always on top, or not. */
 export const athenaPin = (on: boolean) => call<void>("athena_pin", { on });
 
@@ -153,8 +161,9 @@ export const onOffer = (f: (offer: Offer) => void): Promise<UnlistenFn> =>
 export const SETUP_EVENT = "athena:setup";
 
 /**
- * Put her in the setup conversation and bring her up on her Talk tab. Like an offer, nothing is
- * sent: the person types the first message. Without a shell this rejects (`lib/ipc.ts`).
+ * Put her in the setup conversation and bring her up on her Talk tab, where she opens it herself
+ * (`startSetup`: she checks this computer and says the first step). Without a shell this rejects
+ * (`lib/ipc.ts`).
  */
 export async function athenaSetup(session: SetupSession): Promise<void> {
   if (!hasShell()) throw new Error("Athena's window is only there in the app.");

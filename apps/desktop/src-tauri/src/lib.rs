@@ -132,6 +132,13 @@ async fn tabs_create(app: AppHandle, url: String) -> Result<u32, String> {
     tabs::create(&app, &url)
 }
 
+/// Her window's one way to open a page (fleet-surfaces, ADR 0141): a tab for a delegated task's app,
+/// behind the person's page and never focused. She still cannot close, focus or navigate a tab.
+#[tauri::command(rename_all = "snake_case")]
+async fn tabs_open_background(app: AppHandle, url: String) -> Result<u32, String> {
+    tabs::create_background(&app, &url)
+}
+
 #[tauri::command(rename_all = "snake_case")]
 async fn tabs_close(app: AppHandle, id: u32) -> Result<(), String> {
     tabs::close(&app, id)
@@ -192,6 +199,7 @@ pub fn run() {
         // ──────────────────────────────────────────────────────────────────────────────────────
         .invoke_handler(tauri::generate_handler![
             tabs_create,
+            tabs_open_background,
             tabs_close,
             tabs_focus,
             tabs_navigate,
@@ -215,6 +223,7 @@ pub fn run() {
             companion::athena_set_size,
             companion::athena_show,
             companion::athena_hide,
+            companion::athena_toggle,
             companion::athena_pin,
             companion::athena_report,
             companion::athena_snap_to,
@@ -238,7 +247,12 @@ pub fn run() {
                 eprintln!("[tray] not built: {e}");
             }
             hotkeys::init(&handle);
-            companion::show(&handle);
+            // Her window rests put away (ADR 0027, fleet-surfaces D2): the tray, the summon tap,
+            // a waiting card and Main's illustration of her bring her out. Except on first launch,
+            // where her `welcome` is the only window there is (Main is built hidden).
+            if first_launch {
+                companion::show(&handle);
+            }
 
             // A start page, for launching the shell straight at something: the first non-flag
             // argument, else `ATHENA_START_URL`. Without either, the shell opens with no tab and

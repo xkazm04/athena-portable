@@ -8,6 +8,10 @@
  *
  * The ask box is the mirror's hand-over (decision D1): it gives the sentence to her own window, and
  * says so. It never claims an answer.
+ *
+ * Her illustration is the switch for her own window (fleet-surfaces D2): a press shows it when it
+ * is put away and puts it away when it is out, and the button's name says which it will do. The
+ * tasks she has delegated sit under her, in the same column.
  */
 import { lazy, Suspense, useState, type FormEvent } from "react";
 
@@ -17,6 +21,7 @@ import { ROOTS, type Root } from "@/depth/model";
 import type { View } from "@/modules/types";
 
 import type { SurfaceModel } from "./model";
+import { SurfaceTasks } from "./tasks";
 import "./surface.css";
 
 type Sent = "idle" | "sending" | "sent" | { problem: string };
@@ -59,14 +64,22 @@ const SurfaceView: View<SurfaceModel> = ({ model }) => {
 
   return (
     <div className="surface" data-pose={model.pose}>
-      <div className="surface__bell">
-        {model.avatar === "halo" ? (
-          bell
-        ) : (
-          <Suspense fallback={bell}>
-            <SurfaceFace avatar={model.avatar} size={420} label={`Athena, ${model.poseWord}`} />
-          </Suspense>
-        )}
+      <div className="surface__her">
+        <button
+          type="button"
+          className="surface__bell focus-ring"
+          aria-label={model.windowVisible ? "Put Athena's window away" : "Show Athena's window"}
+          onClick={() => model.actions.toggle()}
+        >
+          {model.avatar === "halo" ? (
+            bell
+          ) : (
+            <Suspense fallback={bell}>
+              <SurfaceFace avatar={model.avatar} size={420} label={`Athena, ${model.poseWord}`} />
+            </Suspense>
+          )}
+        </button>
+        <SurfaceTasks />
       </div>
 
       <div className="surface__words">

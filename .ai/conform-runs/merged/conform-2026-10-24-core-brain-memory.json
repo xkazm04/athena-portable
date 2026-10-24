@@ -1,0 +1,171 @@
+{
+  "worker": "conform-core-brain-memory",
+  "evaluatedAt": "2026-10-24T16:40:00Z",
+  "pairs": [
+    {
+      "context": "core-brain-memory",
+      "subject": "agent-memory",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evidence": "src/athena/core/sleep/legs.py:241 a person's forget (a retired forgotten:<key> marker) is never consulted when the compress leg mints, so a later restatement re-derives the fact the person forgot; also src/athena/core/recall.py:454 recall_whole stops at the first oversized episode instead of skipping it, src/athena/core/recall.py:597 the keyword lane ranks by fade step before match strength and never reads confidence, src/athena/core/sleep/legs.py:201 prints each episode's instant but the prompt never tells the distiller to ground relative time on it, src/athena/core/sleep/cycle.py:258 user-scope facts auto-commit with no review lane. The 2026-10-14 deviation (no supersede link) is closed by ADR 0143: src/athena/core/brain/store.py:546.",
+      "techniques": [
+        {
+          "technique": "consolidation",
+          "verdict": "realized",
+          "evidence": "src/athena/core/sleep/legs.py:399 contradiction tested before duplicate; legs.py:394 every id the model returns is checked against that candidate's shortlist; src/athena/core/sleep/cycle.py:141 per-candidate FTS shortlist (cap 4, 200-char excerpts); cycle.py:148 merge failure degrades to a marked deterministic prefilter; src/athena/core/sleep/window.py:196 one snapshot read of this PC's non-machine episodes, drained forward (window.py:137); cycle.py:258 writes go through write_fact and the provenance gate (store.py:482). Not done: no read-back of a belief's value against the cited episode (no grade recorded)."
+        },
+        {
+          "technique": "supersedence-and-lineage (consolidation)",
+          "verdict": "realized",
+          "evidence": "src/athena/core/brain/store.py:546 supersedes/retired on both distilled writers, on disk first (store.py:597 file before index at :599); src/athena/core/brain/schema.py:70 companion_supersede rebuilt by reconcile; src/athena/core/recall.py:90 NOT_SUPERSEDED keeps a closed memory out of both distilled lanes; legs.py:281 events never supersede, states do."
+        },
+        {
+          "technique": "decay-and-forgetting",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/sleep/legs.py:241 only rejects a model-minted forgotten: key; nothing consults the marker a person's forget wrote, so the forgetting has no bar on re-derivation. Realized parts: cycle.py:291 forgetting is report-only through the same selection (book.py forget_candidates), book.py:470 grace period (older than 30 days) before a fade, fade is demotion that never hides, recall.py:369 the use stamp is written by the serving path for what it showed, book.py:309 proposal queue capped and swept. Soft gap: fade only runs inside an admitted cycle, which admission.py:239 refuses under 2,000 characters, so a quiet PC never fades."
+        },
+        {
+          "technique": "recall-injection",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/recall.py:454 'if cost > room: ... break' stops packing at the first episode that does not fit, so everything ranked behind one fat episode is dropped (technique: skip, do not stop; this is the old recall.py:418 finding, still open after fd42e844 reverted its fix). Also recall.py:597 orders the relevance lane by fade rank before bm25 (a lexicographic order) and never reads confidence. Realized: recall.py:301 each block announces N of M, UNAVAILABLE_PREFIX separates failed from empty recall, whole items only."
+        },
+        {
+          "technique": "memory-value-model",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/recall.py:92 FADED_RANK = importance less fade steps is the only value axis shared by recall and the forget candidates; no trust axis (companion_fact.confidence at schema.py:56 is never read by recall), no per-kind half-life and no bounded usage term. The one-model rule itself holds: recall and forgetting read the same fade row."
+        },
+        {
+          "technique": "observation-clock",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/sleep/legs.py:201 prints 'Episode <id> (<role>, <created_at>)' but COMPRESS_SYSTEM (legs.py:84) states no 'now' and never says to resolve relative references against the episode's instant, the exact 'timestamp shown, grounding not asked for' form the technique names; consolidation is deferred by design (window.py), so 'next Tuesday' is grounded on whatever the model assumes."
+        },
+        {
+          "technique": "memory-governance",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/sleep/legs.py:105 the compress leg is told to write facts with scope 'user' (about the person) and procedurals 'chat' (how to talk), and src/athena/core/sleep/cycle.py:258 commits them through write_fact with no review lane and no machine-authored mark, so a claim about the person's preferences lands in the auto-commit lane. Prompt-level exclusion of identity and standing rules (legs.py:98) and the fenced episodes (legs.py:202) are real but are not a lane."
+        },
+        {
+          "technique": "probe-without-write-back",
+          "verdict": "realized",
+          "evidence": "src/athena/wiring.py:386 and src/athena/wiring.py:131 are the only recall callers that feed a turn, and src/athena/adopt/research.py:206 feeds a model too; no scheduled or diagnostic caller reads through recall(), so recall.py:369 marking what it showed does not entrench a probe's fixtures."
+        }
+      ],
+      "registryProposal": "Two lessons. (1) The evidence floor counts every technique of a subject, so a context that is one seat of a 31-technique subject can only ever be deviation or unknown; propose counting only the techniques whose precondition holds here. (2) Application candidate for agent-memory / decay-and-forgetting: this repo (ADR 0143) shows fade as rank-only demotion with report-only forget proposals, and a person's forget as a retired marker fact with supersedes on write-once replicated files - a replication-safe form of the tombstone that the technique does not yet describe; it also shows the gap the technique warns of (the marker is written, nothing consults it before minting)."
+    },
+    {
+      "context": "core-brain-memory",
+      "subject": "companion-identity",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evidence": "src/athena/core/brain/reconcile.py:213 the 2026-10-16 deviation (a rebuild resets index-only demotions) no longer finds a live path: the one demotion ADR 0143 added, 'retired: true', is on disk and rebuilt to importance 0 (reconcile.py:211), written file-first (store.py:597 before :599), and the other index-only state (companion_fade, companion_recall_seen, companion_proposal, schema.py:76) is rank scratch that survives a rebuild and whose loss only re-offers a proposal; but this context's code carries only 2 of the subject's 7 techniques, below the evidence floor for conformant, so the recorded deviation is withdrawn to unknown rather than upgraded.",
+      "techniques": [
+        {
+          "technique": "disk-truth-db-index",
+          "verdict": "realized",
+          "evidence": "src/athena/core/brain/reconcile.py:111 total rebuild: every INDEX_TABLES table emptied and refilled through the one insert path (index_file), with supersedes/retired derived from frontmatter (reconcile.py:211); store.py:597 document written before the index in the distilled writers; schema.py:76 names the runtime tables a rebuild does not touch. Residual: importance stays an index column (reconcile.py:12 documents that an unexpressed demotion does not survive) but no writer demotes in the index only."
+        },
+        {
+          "technique": "one-mind-many-mouths",
+          "verdict": "realized",
+          "evidence": "src/athena/core/brain/store.py:404 append_episode takes a session and role as provenance on one unscoped substrate; the sleep window (src/athena/core/sleep/window.py:196) reads episodes of every channel."
+        }
+      ]
+    },
+    {
+      "context": "core-brain-memory",
+      "subject": "companion-runtime",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evidence": "src/athena/core/sleep/admission.py:117 realizes most of autonomous-cycle-hosting for the new src/athena/core/sleep package (one-owner ladder, acquire-or-refuse claim, floor keyed on the last settled cycle at admission.py:215, declared ceilings, counts against the whole window, report-only forgetting, capped and expiring proposal queue), but only 1 of the subject's 7 techniques applies to this context, below the evidence floor, and restart idempotency rests on a model judgment (see technique).",
+      "techniques": [
+        {
+          "technique": "autonomous-cycle-hosting",
+          "verdict": "mostly realized, one soft gap",
+          "evidence": "Realized: src/athena/core/sleep/admission.py:117 try_take is acquire-or-refuse and the lease is released on every refusal (admission.py:189); admission.py:215 the interval floor reads last_settled, never a running row (book.py:264); src/athena/core/sleep/__init__.py:100 ceilings are constants, not configuration; window.py:134 episodes_available counts the whole window not the capped fetch; cycle.py:245 progress committed after each write; book.py:309 proposal queue capped, expiring. Soft gap: src/athena/core/sleep/cycle.py:141 a re-run of a killed cycle avoids re-minting only if the merge leg judges its own earlier writes a duplicate (ADR 0143 'does not resume the dead cycle'); the deterministic key match at cycle.py:283 runs only when the merge leg fails, so a reworded key on re-run can mint a near-duplicate. No spend ceiling or budget check beyond two fixed legs."
+        },
+        {
+          "technique": "host-seam-contracts",
+          "verdict": "realized",
+          "evidence": "src/athena/core/sleep/legs.py:66 LegDoor is a Protocol so athena.core imports nothing of the studio and tests hand it a fake; src/athena/core/sleep/admission.py:106 the claim and the turn watch are injected."
+        }
+      ]
+    }
+  ],
+  "declined": [
+    {
+      "subject": "prompt-assembly",
+      "context": "core-brain-memory",
+      "reason": "technique-shaped resonance: recall.py builds three bounded blocks, but the 32-technique prompt-assembly subject governs the frame/compose layer (src/athena/core/prompt.py, src/athena/lane/), which belongs to another context; judging it here would manufacture deviations on code this context does not own."
+    },
+    {
+      "subject": "agent-instruction-files",
+      "context": "core-brain-memory",
+      "reason": "matched on 'frontmatter'/'files'; the memory tree's frontmatter files are memories, not agent instruction files (CLAUDE.md-style), so the subject's precondition does not hold."
+    },
+    {
+      "subject": "test-harness",
+      "context": "core-brain-memory",
+      "reason": "matched on 'tests'; 25 techniques about a harness, and this context only contains test files for its own code. Probable, not strong; left for a run that reads tests/core wholesale."
+    },
+    {
+      "subject": "mcp-tools",
+      "context": "core-brain-memory",
+      "reason": "no MCP surface in this context's files (core.recall / core.write_fact tool wiring lives in src/athena/wiring.py and the harness context)."
+    },
+    {
+      "subject": "engine-host-contract",
+      "context": "core-brain-memory",
+      "reason": "language-runtime subject (embedding a script engine); the brain is stdlib Python with SQLite, no engine host. Lexical match only."
+    },
+    {
+      "subject": "quality-gates",
+      "context": "core-brain-memory",
+      "reason": "27 techniques about CI/merge gates; nothing in this context's paths is a gate. Lexical match only."
+    },
+    {
+      "subject": "module-design",
+      "context": "core-brain-memory",
+      "reason": "already judged today (2026-10-24, deviation at store.py:304); not re-read this run."
+    }
+  ],
+  "proposedPairs": [
+    {
+      "subject": "embedded-db",
+      "reason": "src/athena/core/brain/store.py is an embedded SQLite index with a single writer lock, write_txn, WAL read connections and a thread-affinity override; the module-design deviation already circles it."
+    },
+    {
+      "subject": "sync-replication",
+      "reason": "store.py replicated_path/receive_file/device_of (ADR 0140): write-once memory files replicate between paired computers, and the sleep cycle partitions by device stamp (window.py)."
+    },
+    {
+      "subject": "markdown-vault",
+      "reason": "the brain is a markdown-with-frontmatter tree that is truth over a derived index (frontmatter.py, reconcile.py, paths.py)."
+    },
+    {
+      "subject": "migrations",
+      "reason": "schema.py SCHEMA_VERSION plus store.py _stored_version/_rekey_fts re-key an old index on open; companion_fade and companion_cycle were added by ALTER-free CREATE IF NOT EXISTS."
+    }
+  ],
+  "contextMapGap": "context-map.json lists no src/athena/core/sleep/*.py (7 files, new 2026-10-24) and no tests/core/sleep/*; the sleep package was judged here as part of core-brain-memory (brain/memory maintenance). tests/core/test_recall.py is in the context-map file_paths but not in the registry-map row's 12-path sample.",
+  "consults": [
+    {
+      "ts": "2026-10-24T16:40:00Z",
+      "bundle": "software-engineering",
+      "subjects": ["agent-memory", "companion-identity", "companion-runtime"],
+      "techniques": [
+        "consolidation",
+        "decay-and-forgetting",
+        "recall-injection",
+        "memory-value-model",
+        "observation-clock",
+        "memory-governance",
+        "probe-without-write-back",
+        "disk-truth-db-index",
+        "one-mind-many-mouths",
+        "autonomous-cycle-hosting",
+        "host-seam-contracts"
+      ],
+      "deviations": 1
+    }
+  ]
+}

@@ -537,6 +537,7 @@ class LedgerHook:
             is_error=result.is_error,
             error_reason=result.error_reason,
             turn_id=result.turn_id,
+            peak_mb=result.peak_mb,
         )
         # Marked only once the write returned, so a failed write can be retried.
         self._recorded.add(result.turn_id)

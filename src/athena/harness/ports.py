@@ -197,6 +197,7 @@ class LedgerPort(Protocol):
         is_error: bool = False,
         error_reason: str | None = None,
         turn_id: str | None = None,
+        peak_mb: int | None = None,
     ) -> Row: ...
 
 

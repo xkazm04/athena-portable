@@ -1971,12 +1971,11 @@
           "changedAt": "2026-10-15",
           "confidence": "strong",
           "state": "deviation",
-          "evidence": "src/athena/core/brain/store.py:422 mints a new fact per write and src/athena/core/brain/schema.py:52 has no supersede link, so a corrected fact and its predecessor both stay live; src/athena/core/recall.py:418 stops packing at the first oversized episode",
-          "evaluatedAt": "2026-10-14",
-          "evaluatedAgainst": "sha256-b2:7770d30ff5df3c25",
-          "evaluatedRevision": 48,
-          "revisionsBehind": 3,
-          "stale": true
+          "evidence": "src/athena/core/sleep/legs.py:241 a person's forget (a retired forgotten:<key> marker) is never consulted when the compress leg mints, so a later restatement re-derives the fact the person forgot; also src/athena/core/recall.py:454 recall_whole stops at the first oversized episode instead of skipping it, src/athena/core/recall.py:597 the keyword lane ranks by fade step before match strength and never reads confidence, src/athena/core/sleep/legs.py:201 prints each episode's instant but the prompt never tells the distiller to ground relative time on it, src/athena/core/sleep/cycle.py:258 user-scope facts auto-commit with no review lane. The 2026-10-14 deviation (no supersede link) is closed by ADR 0143: src/athena/core/brain/store.py:546.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:4f054116d66a9495",
+          "evaluatedRevision": 51,
+          "revisionsBehind": 3
         },
         {
           "subject": "companion-identity",
@@ -2496,8 +2495,8 @@
           "revision": 28,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "not-applicable",
-          "evidence": "src/athena/daemon/server.py:258 The daemon hosts one Athena and runs one turn at a time behind a writer lock, and its Sessions table is per-origin page routing state rather than a set of autonomous agent sessions; searches of src/athena/daemon and tests/daemon for hibernat, roster, broadcast, staleness and sweeper found nothing, so there is no fleet to orchestrate.",
+          "state": "deviation",
+          "evidence": "src/athena/daemon/tasks.py:422 a running task whose window died keeps its slot (and nothing ever marks it lost) until the window returns or the daemon restarts (ADR 0141 consequences, lines 112-113); companion_task has no last-heard-from column (tasks.py:120-135) and no sweeper, so each leaked slot permanently shrinks the cap of 3 and nothing bounds how long a dead task impersonates a working one.",
           "evaluatedAt": "2026-10-24",
           "evaluatedAgainst": "sha256-b2:93bd71853ab468b1",
           "evaluatedRevision": 28
@@ -2517,8 +2516,8 @@
           "changedAt": "2026-10-15",
           "confidence": "probable",
           "state": "deviation",
-          "evidence": "src/athena/daemon/routes.py:970 GET /playbooks keeps only recall items and never reads the trace's unavailable flag, so an unreadable store is answered as an empty playbook list.",
-          "evaluatedAt": "2026-10-15",
+          "evidence": "src/athena/daemon/routes.py:1254 GET /playbooks recalls the origin's procedurals and keeps only recall items (line 1255), never reading the trace's unavailable flag, so an unreadable store is answered as an empty playbook list (durable-store-failure-posture: the degraded read says unavailable, never empty).",
+          "evaluatedAt": "2026-10-24",
           "evaluatedAgainst": "sha256-b2:4f054116d66a9495",
           "evaluatedRevision": 51,
           "revisionsBehind": 0
@@ -2554,7 +2553,11 @@
           "revision": 34,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/daemon/routes.py:1310 the daemon's route table is plain HTTP/WebSocket routes (/health, /engines, /manifest, /run, ...); it neither exposes nor consumes an MCP server, and a search of src/athena/daemon for 'mcp' finds nothing - the precondition (a host/client/server MCP wire) does not hold in this context, and 'mcp' appears only as a future surface name at src/athena/contracts/registry.py:205.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:ed8e615f51454325",
+          "evaluatedRevision": 34
         },
         {
           "subject": "quality-gates",
@@ -2603,7 +2606,7 @@
           "changedAt": "2026-10-14",
           "confidence": "probable",
           "state": "deviation",
-          "evidence": "src/athena/daemon/routes.py:678 The gate's per-turn policy inputs (disabled_origins, gated_origins, gated_tools) are read from the request body. A malformed or missing list silently becomes an empty set (routes.py:767-768), so switched-off apps become addressable again and first-sight apps lose their forced gating, instead of the turn failing loudly.",
+          "evidence": "src/athena/daemon/routes.py:906 _names_from reads the per-turn policy inputs (disabled_origins, gated_origins, gated_tools) from the request body and turns a missing or non-list value into an empty frozenset (line 907), so a malformed field re-enables switched-off apps and drops first-sight gating instead of failing the turn (guard-input-custody question 4: an absent policy input must fail loudly, not degrade to a permissive default).",
           "evaluatedAt": "2026-10-24",
           "evaluatedAgainst": "sha256-b2:45b3f952560a4cbc",
           "evaluatedRevision": 28
@@ -4977,13 +4980,12 @@
           "revision": 23,
           "changedAt": "2026-10-18",
           "confidence": "strong",
-          "state": "deviation",
-          "evidence": "apps/desktop/src/scenes/mind/shared.tsx:92 the Mind field says \"Voice is not installed with this copy of Athena\" for every unavailable voice once the daemon is up, discarding the voiceReason the readiness module carries (apps/desktop/src/modules/setup/readiness.ts:170); voice-ux-integration requires the one honest sentence to name which rung failed, so voice switched off, a missing model or a failed config fetch all read as an impossibility one link away from the studio that fixes them",
-          "evaluatedAt": "2026-10-14",
-          "evaluatedAgainst": "sha256-b2:fa1c8ca716f872dc",
-          "evaluatedRevision": 20,
-          "revisionsBehind": 3,
-          "stale": true
+          "state": "conformant",
+          "evidence": "apps/desktop/src/scenes/mind/shared.tsx:111 the Mind field's Voice card now names the failed rung from the voice store's own reason (view.test.tsx:79 pins that \"Voice is not installed\" is gone), and the Surface stat keeps \"not set up\" apart from \"not known yet\" (apps/desktop/src/scenes/surface/model.ts:155), so the 2026-10-14 deviation is fixed",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:29f8b158c4d44054",
+          "evaluatedRevision": 23,
+          "revisionsBehind": 3
         },
         {
           "subject": "agent-memory",
@@ -5060,10 +5062,10 @@
           "changedAt": "2026-10-06",
           "confidence": "strong",
           "state": "deviation",
-          "evidence": "apps/desktop/src/scenes/mind/mind.css.test.ts:26 pins hover by css.includes(\".mind__input:hover\") on comment-unstripped CSS (also apps/desktop/src/scenes/surface/surface.css.test.ts:25) (pin-the-call-not-the-name); a CSS comment naming the selector or an empty hover rule keeps the pin green with no hover behaviour",
-          "evaluatedAt": "2026-10-14",
-          "evaluatedAgainst": "sha256-b2:5521806124d93882",
-          "evaluatedRevision": 26,
+          "evidence": "apps/desktop/src/scenes/mind/devices.test.tsx:7 the Devices/pairing/vitals/sleep journeys added 2026-10-24 are exercised only as static renders of fixtures and a driven tree with faked actions and a hand-built fetch (apps/desktop/src/stores/devices.test.ts:74); the live lane (apps/desktop/e2e/client.e2e.test.ts:69,121) covers /manifest, /decisions and /ledger only, so a daemon-side rename of a /peer, /sleep or vitals field leaves the whole fleet suite green while the Mind level breaks (live-app-harness: the assembled product is never driven through pairing)",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:c96e1ee699a88119",
+          "evaluatedRevision": 27,
           "revisionsBehind": 0
         },
         {
@@ -5081,8 +5083,8 @@
           "changedAt": "2026-09-24",
           "confidence": "probable",
           "state": "deviation",
-          "evidence": "apps/desktop/src/scenes/mind/mind.css:84 Instrument hover eases background and border-color, which repaint, and the Mind and Surface sheets never settle those transitions under Calm.",
-          "evaluatedAt": "2026-10-16",
+          "evidence": "apps/desktop/src/scenes/mind/mind.css:345 every online link in the Devices constellation runs sky-flow, marching dashes on stroke-dashoffset (a paint property) forever at an inline 2.8s, one instance per paired device with no count bound, so an idle fleet reads as data in transit; ambient motion may imply presence, never progress (taste-budgets) and the vocabulary's presets are transform/opacity only (performance-discipline)",
+          "evaluatedAt": "2026-10-24",
           "evaluatedAgainst": "sha256-b2:8d9b3eabe2f3b534",
           "evaluatedRevision": 10,
           "revisionsBehind": 0
@@ -6113,8 +6115,8 @@
           "changedAt": "2026-10-09",
           "confidence": "probable",
           "state": "deviation",
-          "evidence": "src/athena/harness/rounds.py:187 The final permitted round dispatches tools without a subsequent reasoning call to consume their results, violating the requirement to refuse a batch whose results nobody will read.",
-          "evaluatedAt": "2026-10-17",
+          "evidence": "src/athena/harness/rounds.py:212 on the last permitted round (MAX_ROUNDS = 8, rounds.py:56) the batch is still dispatched through the gate and executors although the loop ends at rounds.py:177 and no reasoning call will read the results (history.append at rounds.py:235 is never consumed), then the turn is summarised as success: side effects and approval cards for a batch nobody reads (boundary-applied-stop). Re-anchored from the 2026-10-17 :187.",
+          "evaluatedAt": "2026-10-24",
           "evaluatedAgainst": "sha256-b2:b0eabf78abd856a4",
           "evaluatedRevision": 8,
           "revisionsBehind": 0
@@ -6134,8 +6136,8 @@
           "changedAt": "2026-10-02",
           "confidence": "probable",
           "state": "deviation",
-          "evidence": "src/athena/harness/engines.py:175 treats a credential file existing as logged_in (availability-probe); src/athena/harness/transports.py:56 strips only ANTHROPIC_API_KEY so OPENAI_API_KEY reaches codex (subscription-auth-selection); src/athena/harness/cli_harness.py:192 undated capability constants; src/athena/harness/transports.py:131 per-line timeout, :137 hard kill with no graceful stop",
-          "evaluatedAt": "2026-10-14",
+          "evidence": "src/athena/harness/transports.py:276 a stopped run is ended by an unconditional proc.kill() of the direct child only: no polite rung, no deadline, no process-tree kill and no record of which rung ended it, so a shim's grandchildren outlive a wall or cancel (termination-and-reaping). Re-judged 2026-10-24: the 2026-10-14 findings on the probe (engines.py:92,207) and the key strip (transports.py:95,233) are now realized; they no longer count.",
+          "evaluatedAt": "2026-10-24",
           "evaluatedAgainst": "sha256-b2:5791230ffb7d9fad",
           "evaluatedRevision": 9,
           "revisionsBehind": 0
@@ -6171,8 +6173,8 @@
           "changedAt": "2026-10-14",
           "confidence": "probable",
           "state": "deviation",
-          "evidence": "src/athena/harness/rounds.py:399 The harness appends the task after checking and hashing the supplied prompt blocks, leaving the completed model input outside those assembly checks.",
-          "evaluatedAt": "2026-10-15",
+          "evidence": "src/athena/harness/rounds.py:175 the turn's opening message (frame plus the user's words) and each later results message are composed after the blocks are hashed (rounds.py:168) and checked (rounds.py:169), so the text actually sent on stdin (cli_harness.py:447-451) has no recorded digest: the ledger holds block hashes only, not what was sent (fingerprinting-and-cache-keys, record what was sent at the send site). Re-anchored from the 2026-10-15 :399, which now falls on a docstring.",
+          "evaluatedAt": "2026-10-24",
           "evaluatedAgainst": "sha256-b2:ad13b2ee69c25e8d",
           "evaluatedRevision": 44,
           "revisionsBehind": 0
@@ -6192,8 +6194,8 @@
           "changedAt": "2026-10-14",
           "confidence": "probable",
           "state": "deviation",
-          "evidence": "src/athena/harness/rounds.py:187 Cancellation closes the turn as an error without a first-class indeterminate result for an outstanding metered generation whose provider outcome may remain unknown.",
-          "evaluatedAt": "2026-10-15",
+          "evidence": "src/athena/harness/rounds.py:240 a closed stream or cancel ends the turn as the cause 'cancelled' (and the wall as 'timeout', rounds.py:195) with cost_estimated=True (rounds.py:404) while the metered generation's outcome at the provider is unknown: there is no first-class indeterminate outcome for a killed model call, and the spend is flagged as a floor, never reconciled (indeterminate-closure-on-interruption). Re-anchored from the 2026-10-15 :187.",
+          "evaluatedAt": "2026-10-24",
           "evaluatedAgainst": "sha256-b2:45b3f952560a4cbc",
           "evaluatedRevision": 28,
           "revisionsBehind": 0
@@ -6212,7 +6214,11 @@
           "revision": 23,
           "changedAt": "2026-10-18",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/channels/voice/tts.py:1 the speech door, the spoken budget and every pipeline voice-io governs live in channels/voice; this context only lets a model write one capped TTS: line (src/athena/harness/op_grammar.py:142) and passes it through. The match was lexical (engine/engines): an engine here is an LLM engine (src/athena/harness/engines.py:3), not a speech engine.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:29f8b158c4d44054",
+          "evaluatedRevision": 23
         },
         {
           "subject": "agent-memory",

@@ -372,6 +372,18 @@ class CliHarness(RoundHarness):
     async def _invoke(
         self, request: CliRequest, conversation_id: str, result: TurnResult
     ) -> tuple[str, Failure | None, FailureClass | None]:
+        """Run the CLI once, and keep the child's peak working set on the turn's row however the
+        run ended (ADR 0143): the turn's figure is the largest of its rounds'."""
+        try:
+            return await self._read(request, conversation_id, result)
+        finally:
+            peak = request.exit.peak_mb
+            if peak is not None and (result.peak_mb is None or peak > result.peak_mb):
+                result.peak_mb = peak
+
+    async def _read(
+        self, request: CliRequest, conversation_id: str, result: TurnResult
+    ) -> tuple[str, Failure | None, FailureClass | None]:
         """Run the CLI once. Returns ``(assistant text, failure, its class)``.
 
         The text is meaningful only when there is no failure; the class only when the exit was
@@ -418,7 +430,9 @@ class CliHarness(RoundHarness):
         verdict = self.dialect.classify(request.exit.status, outcome)
         if verdict is not None:
             kind, sentence = verdict
-            return "", ("engine_error", sentence), kind
+            # The plan's usage limit is its own reason, so the vitals can count it as a blank run
+            # rather than a broken engine (ADR 0143); every other class stays engine_error.
+            return "", ("usage_limit" if kind == "limit" else "engine_error", sentence), kind
         return "".join(segments), None, None
 
     def _request(

@@ -283,6 +283,14 @@ describe("a pairing window Athena opened (pair.opened)", () => {
     const on = devicesHandler(() => (reads += 1));
     on({ kind: "peer.changed", peer_id: null });
     on({ kind: "remote.message", request_id: "job_0000000000d1", peer_id: "dev_0000000000a2", peer_name: "Laptop", text: "x", target_app: null });
+    on({ kind: "sleep.changed" });
+    expect(reads).toBe(1);
+  });
+
+  it("re-reads when this computer's room moves, so the centre node's word follows it (ADR 0143)", () => {
+    let reads = 0;
+    const on = devicesHandler(() => (reads += 1));
+    on({ kind: "vitals.changed", room: "full", held: "Waiting for room: on battery.", slots: 0 });
     expect(reads).toBe(1);
   });
 });

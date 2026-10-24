@@ -1,0 +1,287 @@
+/*
+ * Loop Tide, a skin - README section 3.1, ADR 0142. The winner of the athena-meta-theme contest
+ * (B/1), ported from its one theme layer.
+ *
+ * The loop of the parent brand becomes a current: Athena's tide never stops, it circulates. The
+ * loop is never drawn as a closed outline or a mark; it exists only as motion (the motes of the
+ * current in the water, `stage/LoopCurrent.tsx`, and one arc of light round her window's rim).
+ *
+ * Every selector starts at `:root[data-skin="loop-tide"]`, written by `applySkin` alone, so the
+ * skin cannot leak into the product's own teal. Nothing here changes a size, a position, a font
+ * size or a word: real elements get tokens, and the three decorative layers are pseudo-elements and
+ * the current's canvas. Untouched on purpose: --role-human (the pink is the person's) and
+ * --status-success/-warning/-error.
+ */
+
+/* ---- 1. the palette: cobalt night ------------------------------------------------------------
+ * The second selector of each pair repaints anything that re-scopes a theme on its own root (the
+ * light and dark miniatures in Mind > Look), so a miniature shows the skin it sits in. */
+:root[data-skin="loop-tide"],
+:root[data-skin="loop-tide"] [data-theme="dark"] {
+  --background: #060a17;
+  --foreground: #e8f1ff;
+  --muted-foreground: #a3bbe0;
+  --muted: #6b86b4; /* 5.35:1 on the canvas */
+  --card-bg: #0b1430;
+  --card-raised: #111d42;
+  --recessed: #03060f;
+  --primary: #2b8cff;
+  --primary-fg: #020f2b; /* 5.7:1 on --primary */
+  --accent: #4aa3ff;
+  --accent-text: var(--accent);
+  --btn-primary: #0064e0; /* the interface blue; white on it 5.39:1 */
+  --on-primary: #ffffff;
+  --border-subtle: rgba(130, 170, 230, 0.1);
+  --border-default: rgba(130, 170, 230, 0.18);
+  --border-emphasis: rgba(130, 170, 230, 0.38);
+  --hover-wash: rgba(74, 163, 255, 0.08);
+
+  --status-info: #5cb4ff;
+  --status-pending: #a78bfa;
+  --role-agent: #a78bfa;
+  --role-external: #9ccfff;
+  --role-highlight: #3d8bfd;
+
+  --focus: #8cc4ff;
+  --glow: rgba(0, 128, 251, 0.26);
+  --scrim: rgba(2, 5, 14, 0.58);
+  --shadow-elevation-1: 0 1px 2px rgba(0, 4, 20, 0.45);
+
+  /* the skin's own: the arc of light, and the current's ink (read by the canvas) */
+  --lt-arc: #6fb6ff;
+  --lt-arc-hot: #e6f2ff;
+  --lt-arc-dim: rgba(0, 100, 224, 0.55);
+  --lt-rim: rgba(255, 255, 255, 0.07);
+  --lt-current: #4aa3ff;
+}
+
+:root[data-skin="loop-tide"][data-theme="light"],
+:root[data-skin="loop-tide"] [data-theme="light"] {
+  --background: #edf1f8;
+  --foreground: #0a1430;
+  --muted-foreground: #36486c;
+  --muted: #52668d;
+  --card-bg: #f8faff;
+  --card-raised: #ffffff;
+  --recessed: #e1e7f2;
+  --primary: #0057c8; /* 5.29:1 on the recessed rung */
+  --primary-fg: #ffffff;
+  --accent: #1a73e8;
+  --accent-text: #0055c4; /* 5.46:1 on the recessed rung, the weakest */
+  --btn-primary: #0064e0;
+  --on-primary: #ffffff;
+  --border-subtle: rgba(10, 30, 80, 0.08);
+  --border-default: rgba(10, 30, 80, 0.14);
+  --border-emphasis: rgba(10, 30, 80, 0.34);
+  --hover-wash: rgba(0, 100, 224, 0.07);
+
+  --status-info: #1d4ed8;
+  --status-pending: #6d28d9;
+  --role-agent: #6d28d9;
+  --role-external: #0b4f9c;
+  --role-highlight: #0b5cad;
+
+  --focus: #0064e0;
+  --glow: rgba(0, 100, 224, 0.18);
+  --scrim: rgba(237, 241, 248, 0.62);
+  --shadow-elevation-1: 0 1px 2px rgba(10, 30, 80, 0.12);
+
+  --lt-arc: #0a7cff;
+  --lt-arc-hot: #7fc0ff;
+  --lt-arc-dim: rgba(0, 100, 224, 0.35);
+  --lt-rim: rgba(255, 255, 255, 0.9);
+  --lt-current: #0064e0;
+}
+
+/* ---- 2. her window's tokens: cobalt glass ------------------------------------------------------ */
+:root[data-skin="loop-tide"] .aw {
+  --faint: #93acd8;
+  --ink-accent: #85c2ff;
+  --glass: radial-gradient(130% 90% at 15% 0%, #15377a 0%, #0c1d48 40%, #060e26 100%);
+  --glass-solid: #0c1d48;
+  --edge: rgba(90, 160, 255, 0.24);
+  --recess: rgba(2, 6, 20, 0.52);
+  --raised: rgba(20, 42, 96, 0.74);
+  --wash: rgba(74, 163, 255, 0.09);
+  --shadow: 0 22px 48px rgba(0, 6, 28, 0.62), 0 2px 6px rgba(0, 4, 18, 0.45), 0 0 0 1px rgba(0, 0, 0, 0.25);
+  --ray: rgba(110, 180, 255, 0.13);
+
+  --seal-dome-a: #1a5fd0;
+  --seal-dome-b: #071a48;
+  --seal-glow: rgba(0, 128, 251, 0.42);
+  --seal-gleam: rgba(255, 255, 255, 0.42);
+  --seal-mark: #f0f6ff;
+  --seal-orb-core: #66b6ff;
+  --seal-orb-edge: #0064e0;
+}
+
+:root[data-skin="loop-tide"][data-theme="light"] .aw {
+  --faint: #4a5d82;
+  --ink-accent: var(--accent-text);
+  --glass: radial-gradient(130% 90% at 15% 0%, #ffffff 0%, #eef4fd 44%, #dde8f9 100%);
+  --glass-solid: #eaf1fc;
+  --edge: rgba(0, 100, 224, 0.3);
+  --recess: rgba(10, 30, 80, 0.05);
+  --raised: rgba(255, 255, 255, 0.86);
+  --wash: rgba(0, 100, 224, 0.07);
+  --shadow: 0 16px 34px rgba(10, 40, 110, 0.22), 0 2px 5px rgba(10, 40, 110, 0.16);
+  --ray: rgba(255, 255, 255, 0.9);
+  --face-well: #0c1d48;
+
+  --seal-dome-a: #2a7cf0;
+  --seal-dome-b: #0a3f9e;
+  --seal-glow: rgba(0, 100, 224, 0.26);
+}
+
+/* ---- 3. the water: a loop current --------------------------------------------------------------
+ * `LoopCurrent` draws one canvas under the vignette; it flows while she works, hears or asks and
+ * while the water moves, and at rest it is one long-exposure frame, so a settled scene asks for no
+ * frames (ADR 0089). The shafts keep their sway and take the cobalt. */
+:root[data-skin="loop-tide"] .backdrop__current {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  animation: lt-in 1.6s var(--ease-settle, ease) 0.2s forwards;
+}
+:root[data-skin="loop-tide"][data-theme="light"] .backdrop__current {
+  mix-blend-mode: multiply;
+}
+@keyframes lt-in {
+  to {
+    opacity: 1;
+  }
+}
+:root[data-skin="loop-tide"] .backdrop__shafts {
+  opacity: 0.42;
+}
+/* The bloom: the two blues as one soft field behind the bell, breathing on the bell's resting
+ * pulse (transform and opacity only). On a depth it is a far glow at the top left of the water. */
+:root[data-skin="loop-tide"] .backdrop::before {
+  content: "";
+  position: absolute;
+  z-index: 1;
+  mix-blend-mode: screen;
+  left: -12%;
+  top: -18%;
+  width: 72%;
+  height: 100%;
+  background:
+    radial-gradient(closest-side at 46% 50%, color-mix(in srgb, var(--btn-primary) 34%, transparent), transparent 70%),
+    radial-gradient(closest-side at 64% 40%, color-mix(in srgb, var(--accent) 16%, transparent), transparent 80%);
+  opacity: 0.75;
+  animation: lt-bloom 11s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+:root[data-skin="loop-tide"][data-theme="light"] .backdrop::before {
+  mix-blend-mode: multiply;
+  opacity: 0.5;
+}
+@keyframes lt-bloom {
+  from {
+    opacity: 0.55;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 0.9;
+    transform: scale(1.04);
+  }
+}
+
+/* ---- 4. the coat: a cobalt lens with one arc of light running its rim ------------------------
+ * The panel isolates; its rim light is a conic layer turning beneath an inset glass, so only a 2px
+ * band of it shows: the loop, never closed into a shape. Transform only. */
+:root[data-skin="loop-tide"] .aw .aw-water {
+  isolation: isolate;
+}
+:root[data-skin="loop-tide"] .aw .aw-water::before {
+  content: "";
+  position: absolute;
+  z-index: -2;
+  inset: -100%;
+  background: conic-gradient(
+    from 0deg,
+    transparent 0deg 120deg,
+    var(--lt-arc-dim) 160deg,
+    transparent 182deg 290deg,
+    var(--lt-arc-dim) 312deg,
+    var(--lt-arc) 346deg,
+    var(--lt-arc-hot) 354deg,
+    transparent 360deg
+  );
+  animation: lt-orbit 9s linear infinite;
+  will-change: transform;
+  pointer-events: none;
+}
+:root[data-skin="loop-tide"] .aw .aw-water::after {
+  content: "";
+  position: absolute;
+  z-index: -1;
+  inset: 2px;
+  border-radius: inherit;
+  background: var(--glass);
+  box-shadow: inset 0 1px 0 var(--lt-rim);
+  pointer-events: none;
+}
+:root[data-skin="loop-tide"] .aw[data-form="tab"] .aw-water::before {
+  display: none;
+}
+@keyframes lt-orbit {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+/* The seal: the same arc, orbiting the dome. When something waits on the person the pink ink ring
+ * takes this place and the blue steps aside: the human colour never shares the ring. */
+:root[data-skin="loop-tide"] .seal::before {
+  content: "";
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  background: conic-gradient(from 0deg, transparent 0deg 200deg, var(--lt-arc-dim) 290deg, var(--lt-arc) 352deg, transparent 360deg);
+  -webkit-mask: radial-gradient(circle closest-side, transparent calc(100% - 2.5px), black calc(100% - 2px), black 100%, transparent calc(100% + 0.5px));
+  mask: radial-gradient(circle closest-side, transparent calc(100% - 2.5px), black calc(100% - 2px), black 100%, transparent calc(100% + 0.5px));
+  animation: lt-orbit 6s linear infinite;
+  transition: opacity var(--seal-ring-in, 0.4s);
+  pointer-events: none;
+}
+:root[data-skin="loop-tide"] .seal[data-seal="waiting"]::before,
+:root[data-skin="loop-tide"] .seal[data-seal="signing"]::before,
+:root[data-skin="loop-tide"] .seal[data-seal="quiet"]::before {
+  opacity: 0;
+}
+:root[data-skin="loop-tide"] .seal[data-seal="working"]::before {
+  animation-duration: 2.4s;
+}
+
+/* ---- 5. still: as finished as the moving one ---------------------------------------------------
+ * The arc parks at the top left of the rim like a highlight; the current is its long exposure.
+ * Every reduced-motion rule has its Calm twin (lib/motion.ts). */
+@media (prefers-reduced-motion: reduce) {
+  :root[data-skin="loop-tide"] .aw .aw-water::before,
+  :root[data-skin="loop-tide"] .seal::before {
+    animation: none !important;
+    transform: rotate(225deg);
+  }
+  :root[data-skin="loop-tide"] .backdrop::before {
+    animation: none !important;
+  }
+  :root[data-skin="loop-tide"] .backdrop__current {
+    animation: none !important;
+    opacity: 1;
+  }
+}
+:root[data-motion="calm"][data-skin="loop-tide"] .aw .aw-water::before,
+:root[data-motion="calm"][data-skin="loop-tide"] .seal::before {
+  animation: none !important;
+  transform: rotate(225deg);
+}
+:root[data-motion="calm"][data-skin="loop-tide"] .backdrop::before {
+  animation: none !important;
+}
+:root[data-motion="calm"][data-skin="loop-tide"] .backdrop__current {
+  animation: none !important;
+  opacity: 1;
+}

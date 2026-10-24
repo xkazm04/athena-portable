@@ -23,12 +23,18 @@ test("every control the pointer can press eases its hover on the fast duration, 
   expect(blocks.length).toBeGreaterThan(0);
   for (const b of blocks) expect(b, b.trim().split("{")[0]).toMatch(/transition:[^;]*var\(--duration-fast\)/);
   // A hover rule with a declaration in it, not the selector's name somewhere in the file.
-  for (const sel of [".surface__summon:hover", ".surface__send:hover:not(:disabled)", ".surface__input:hover:not(:disabled)"]) {
-    expect(rule(sel), sel).toMatch(/(background|border-color):\s*[^;]+;/);
+  for (const sel of [".surface__bell:hover", ".surface__summon:hover", ".surface__send:hover:not(:disabled)", ".surface__input:hover:not(:disabled)"]) {
+    expect(rule(sel), sel).toMatch(/(background|border-color|filter):\s*[^;]+;/);
   }
 });
 
 test("a refusal to hand the words over is told in the error colour, eased in", () => {
   expect(rule('.surface__ask-note[data-tone="error"]')).toMatch(/color:\s*var\(--status-error\)/);
   expect(rule(".surface__ask-note")).toMatch(/transition:[^;]*color var\(--duration-fast\)/);
+});
+
+test("her illustration lifts under the pointer, and under calm it brightens without moving", () => {
+  expect(rule(".surface__bell:hover")).toMatch(/transform:\s*translateY\(-?\d+px\)/);
+  expect(rule(".surface__bell")).toMatch(/transition:[^;]*transform var\(--duration-fast\) var\(--ease-fast\)/);
+  expect(rule(':root[data-motion="calm"] .surface__bell:hover')).toMatch(/transform:\s*none/);
 });

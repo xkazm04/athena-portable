@@ -19,6 +19,8 @@
  * view-model with inert actions, so there is nothing here to stub. If a view ever needs a stub, the
  * view is wrong.
  *
+ * `&skin=loop-tide` paints any of them in a skin (ADR 0142); the default is her own teal.
+ *
  * `?picker=1` draws a bar to change the scene, the fixture and the theme; the default is no bar,
  * which is the shape a screenshot of a design and the performance gate are taken in.
  */
@@ -30,13 +32,19 @@ import AthenaPreview from "@/companion/preview";
 import { ScenePreview, isSceneName } from "@/console/preview";
 import ConsoleRoot from "@/console/root";
 import StagePreview from "@/stage/preview";
+import { DEFAULT_SKIN, applySkin, isSkin, useShell } from "@/stores/shell";
 
 import "@/styles/app.css";
 import "@/companion/companion.css";
+import "@/styles/skins/loop-tide.css";
 
 const params = new URLSearchParams(window.location.search);
 const surface = params.get("surface");
 const scene = params.get("scene") ?? "surface";
+const skinParam = params.get("skin");
+const skin = isSkin(skinParam) ? skinParam : DEFAULT_SKIN;
+applySkin(skin);
+useShell.setState({ skin });
 
 function Preview() {
   if (surface === "athena") return <AthenaPreview />;

@@ -3,7 +3,7 @@
  * and 0087.
  *
  * The one-line sentences about the engine, the page, the microphone and the voice, the hints for the
- * theme and the text size, and the miniature of the app in a theme. They were the old Setup view's
+ * theme, the skin and the text size, and the miniature of the app in a theme. They were the old Setup view's
  * own; the words are the copy the app settled on, except where they said more than the facts (an
  * engine "runs the turns" before the daemon is on it, a voice "not installed" whatever the reason
  * was), and there they are the readiness module's and the voice store's own; the miniature
@@ -13,11 +13,20 @@ import { engineLabel, probeOf } from "@/lib/engines";
 import type { SetupModel } from "@/modules/setup/model";
 import { engineFact } from "@/modules/setup/readiness";
 import type { ThemeChoice, TypeScale } from "@/stores/settings";
+import type { Skin } from "@/stores/shell";
 
 export const THEME_HINTS: Record<ThemeChoice, string> = {
   system: "Follow the operating system, and switch when it does.",
   light: "Always light.",
   dark: "Always dark.",
+};
+
+/** The skin's name as a person reads it, and what it changes (ADR 0142). */
+export const SKIN_LABELS: Record<Skin, string> = { athena: "athena", "loop-tide": "loop tide" };
+
+export const SKIN_HINTS: Record<Skin, string> = {
+  athena: "Her own teal water and the bell's tidelines.",
+  "loop-tide": "Cobalt: a loop current runs through her water and an arc of light round her window.",
 };
 
 export const TYPE_SCALE_HINTS: Record<TypeScale, string> = {

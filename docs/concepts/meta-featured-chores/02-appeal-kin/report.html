@@ -1,0 +1,754 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Athena Kin: the family caregiver's back office</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#FBF8F2; --card:#FFFFFF; --ink:#1E2226; --ink2:#4A525A; --rule:#E4DDD0;
+  --teal:#0E6B6B; --teal-l:#E3F1EF; --amber:#A8600A; --amber-l:#FBEFD9;
+  --blue:#2457C5; --blue-l:#E6EDFB; --red:#A93226; --red-l:#F8E3E0; --green:#2E7D4F; --green-l:#E3F2E8;
+  --serif:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans:Inter, "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  --mono:"JetBrains Mono", Consolas, "Courier New", monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.62 var(--sans)}
+a{color:var(--teal)}
+nav{position:fixed;top:0;left:0;bottom:0;width:250px;overflow-y:auto;padding:26px 18px 30px 22px;border-right:1px solid var(--rule);background:#F6F1E7}
+nav .brand{font:700 20px/1.2 var(--serif);margin-bottom:4px}
+nav .sub{font-size:12.5px;color:var(--ink2);margin-bottom:20px}
+nav h4{font:600 11px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--ink2);margin:20px 0 8px}
+nav a{display:block;color:var(--ink);text-decoration:none;font-size:14px;padding:4px 8px;border-radius:5px;border-left:3px solid transparent}
+nav a:hover{background:#ECE5D7}
+nav a.on{border-left-color:var(--teal);background:var(--teal-l);color:var(--teal);font-weight:500}
+nav .legend{margin-top:22px;font-size:12px;color:var(--ink2);line-height:1.5}
+main{margin-left:250px;max-width:1020px;padding:40px 56px 120px}
+section{padding-top:18px;margin-bottom:56px}
+h1{font:700 44px/1.12 var(--serif);margin:6px 0 16px;letter-spacing:-.01em}
+h2{font:700 30px/1.2 var(--serif);margin:0 0 6px;padding-top:10px}
+h2 .k{font:600 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--teal);display:block;margin-bottom:8px}
+h3{font:600 20px/1.3 var(--serif);margin:28px 0 8px}
+p{margin:10px 0}
+.lede{font-size:19px;color:var(--ink2);max-width:780px}
+.kicker{font:600 12px/1 var(--sans);letter-spacing:.16em;text-transform:uppercase;color:var(--amber)}
+/* marks */
+.m{display:inline-block;font:600 10.5px/1 var(--sans);padding:3px 5px 2px;border-radius:3px;vertical-align:2px;margin-left:3px;text-decoration:none;letter-spacing:.03em}
+.m.s{background:var(--green-l);color:var(--green);border:1px solid #BFE0CB}
+.m.r{background:var(--amber-l);color:var(--amber);border:1px solid #EDD3A5}
+.m.a{background:#ECEAF4;color:#5B4F8A;border:1px solid #D4CFE6}
+.tag{display:inline-block;font:600 11px/1 var(--sans);padding:4px 7px 3px;border-radius:20px;letter-spacing:.03em}
+.tag.press{background:var(--green-l);color:var(--green)}
+.tag.unv{background:var(--red-l);color:var(--red)}
+.tag.sim{background:#ECEAF4;color:#5B4F8A}
+.tag.live{background:var(--teal-l);color:var(--teal)}
+.tag.rec{background:var(--amber-l);color:var(--amber)}
+/* hero */
+.hero{background:var(--card);border:1px solid var(--rule);border-radius:14px;padding:34px 36px 30px;box-shadow:0 1px 0 rgba(0,0,0,.03)}
+.hero h1{font-size:40px;max-width:860px}
+.nums{display:grid;grid-template-columns:repeat(3,1fr);gap:18px;margin:26px 0 22px}
+.num{border-top:3px solid var(--teal);padding-top:12px}
+.num b{display:block;font:700 40px/1 var(--serif);color:var(--teal)}
+.num.amb{border-color:var(--amber)} .num.amb b{color:var(--amber)}
+.num.blu{border-color:var(--blue)} .num.blu b{color:var(--blue)}
+.num span{display:block;font-size:14.5px;color:var(--ink2);margin-top:8px;line-height:1.45}
+.three{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:8px}
+.three div{background:var(--paper);border-radius:10px;padding:14px 16px;font-size:15px;line-height:1.5}
+.three div strong{display:block;font:600 12px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--teal);margin-bottom:8px}
+/* claims */
+.claim{border-left:5px solid var(--amber);background:var(--amber-l);padding:16px 22px;border-radius:0 10px 10px 0;margin:22px 0;font:600 21px/1.4 var(--serif);color:#4A3108}
+.claim small{display:block;font:400 13.5px/1.4 var(--sans);color:#7A5A22;margin-top:8px}
+.claim.t{border-color:var(--teal);background:var(--teal-l);color:#0A3F3F}
+.claim.t small{color:#2D6464}
+.kill{border:2px solid var(--red);border-radius:10px;padding:16px 20px;background:#FFF8F7;margin:18px 0}
+.kill h4{margin:0 0 6px;font:600 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--red)}
+.target{border:2px solid var(--teal);border-radius:10px;padding:16px 20px;background:#F6FBFA;margin:18px 0}
+.target h4{margin:0 0 6px;font:600 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+.pair{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+/* figures */
+figure{margin:20px 0 24px;background:var(--card);border:1px solid var(--rule);border-radius:12px;padding:18px 18px 12px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{font-size:14px;color:var(--ink2);margin-top:8px;border-top:1px dashed var(--rule);padding-top:8px}
+figcaption b{color:var(--ink)}
+svg text{font-family:var(--sans)}
+/* tables */
+table{border-collapse:collapse;width:100%;font-size:14.5px;margin:14px 0 20px;background:var(--card);border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+th{background:#F1EBDF;text-align:left;font:600 12px/1.3 var(--sans);letter-spacing:.06em;text-transform:uppercase;color:var(--ink2);padding:10px 12px;border-bottom:1px solid var(--rule)}
+td{padding:9px 12px;border-bottom:1px solid #EFE9DD;vertical-align:top;line-height:1.48}
+tr:last-child td{border-bottom:0}
+td.n{font-variant-numeric:tabular-nums;white-space:nowrap}
+td code,p code,li code{font:13px var(--mono);background:#F1ECE2;padding:1px 5px;border-radius:4px}
+.kept{color:var(--green);font-weight:600}.chg{color:var(--blue);font-weight:600}.drop{color:var(--red);font-weight:600}.new{color:var(--amber);font-weight:600}
+pre{background:#1F2428;color:#E6E1D6;font:13.2px/1.55 var(--mono);padding:16px 18px;border-radius:10px;overflow-x:auto;margin:14px 0 20px}
+pre .c{color:#8FA39B} pre .k{color:#F0B86E} pre .s{color:#9CCFB8}
+ul,ol{padding-left:22px} li{margin:5px 0}
+.beats{counter-reset:b;list-style:none;padding:0;margin:14px 0}
+.beats li{display:grid;grid-template-columns:70px 1fr 90px;gap:14px;padding:12px 0;border-bottom:1px solid var(--rule)}
+.beats .t{font:600 15px var(--mono);color:var(--teal)}
+.beats .lean{background:var(--amber-l);margin:0 -12px;padding:12px;border-radius:8px;border-bottom:0}
+.risk td:first-child{font-weight:600;width:19%}
+.note{font-size:14px;color:var(--ink2)}
+.sources li{font-size:14px;margin:4px 0;word-break:break-word}
+@media (max-width:900px){nav{display:none}main{margin-left:0;padding:24px}.nums,.three,.pair{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav id="nav">
+  <div class="brand">Athena Kin</div>
+  <div class="sub">Solution design, round 1 · Meta Global AI Developer Hackathon, Startup track</div>
+  <h4>Position</h4>
+  <a href="#claim">The claim</a>
+  <a href="#people">The people and the pain</a>
+  <a href="#bet">The bet, target, kill line</a>
+  <a href="#why-meta">Why Meta, why now</a>
+  <h4>Machine</h4>
+  <a href="#whole">The whole, on one page</a>
+  <a href="#p-paper">1 · Paper sense</a>
+  <a href="#p-call">2 · Call sense</a>
+  <a href="#p-case">3 · The case and its clock</a>
+  <a href="#p-packet">4 · The signed packet</a>
+  <a href="#p-router">5 · Router and ledger</a>
+  <a href="#p-house">6 · The household</a>
+  <a href="#p-proving">7 · Proving Ground on Muse</a>
+  <a href="#meta">Meta tooling, product by product</a>
+  <a href="#reuse">Athena Portable reuse map</a>
+  <h4>Argument</h4>
+  <a href="#demo">The demo</a>
+  <a href="#slice">Slice vs perfect product</a>
+  <a href="#business">Path to users</a>
+  <a href="#risks">Pros, cons, risks</a>
+  <a href="#round2">What round 2 prototypes</a>
+  <a href="#sources">Sources</a>
+  <div class="legend"><span class="m s">S</span> sourced, linked<br><span class="m r">R</span> recalled, unverified<br><span class="m a">A</span> assumed, our judgement<br><br>Nothing here was measured on a Meta model: the team has no key yet. Every Meta figure is published (press) or unverified.</div>
+</nav>
+
+<main>
+
+<!-- ============ CLAIM ============ -->
+<section id="claim">
+<div class="hero">
+  <div class="kicker">Athena Kin · what Athena Portable becomes on Meta's models</div>
+  <h1>Insurers deny. Families almost never push back, though most appeals win. Athena Kin builds the appeal from the mail, the phone call and the portal, and the caregiver signs it.</h1>
+  <div class="nums">
+    <div class="num"><b>63 M</b><span>US family caregivers, 1 in 4 adults, giving 27 hours a week on average <a class="m s" href="https://www.aarp.org/press/releases/2025-07-24-new-report-reveals-crisis-point-for-americas-63-million-family-caregivers.html">S</a></span></div>
+    <div class="num amb"><b>11.5% → 80.7%</b><span>Medicare Advantage 2024: 11.5% of 4.1 M prior-auth denials were appealed, and 80.7% of those appeals were overturned in part or in full <a class="m s" href="https://www.kff.org/medicare/medicare-advantage-insurers-made-nearly-53-million-prior-authorization-determinations-in-2024/">S</a></span></div>
+    <div class="num blu"><b>≈ $1</b><span>estimated Meta API cost of a whole case: a 20-second mail sweep, a 20-minute call and a drafted appeal, at the published prices <a class="m s" href="https://dev.meta.ai/docs/pricing-rate-limits">S</a> <a class="m a" href="#p-router">A</a></span></div>
+  </div>
+  <div class="three">
+    <div><strong>Who</strong>The adult child who handles a parent's Medicare plan, bills and benefits after work, from a pile of envelopes and a hold queue.</div>
+    <div><strong>What changes</strong>A denial becomes a filed, cited appeal in one evening. Today it is usually a letter left on the counter. Every promise made on a phone call is written down with the second it was said.</div>
+    <div><strong>Why only Meta, now</strong>One Meta API key covers <b>video segmentation</b> (SAM 3.1), <b>diarized live transcription</b> (Muse Voice Transcribe) and a <b>1M-token reader</b> (Muse Spark / Wonder). An open-weights sibling, Glimmer, runs at home. Athena's senses go past the browser tab into the kitchen and the phone call.</div>
+  </div>
+</div>
+<div class="claim t">The appeal is not the hard part. Getting the evidence together is: a letter on paper, a promise made on the phone, a discharge note in a portal. Athena already proves where every fact came from. On Meta's models she can now take facts from paper and from phone calls too.<small>The design in one sentence. The rest of this report argues it and names a result that would prove it wrong.</small></div>
+</section>
+
+<!-- ============ PEOPLE ============ -->
+<section id="people">
+<h2><span class="k">Position</span>The people and the pain</h2>
+<p class="lede">The population is real and counted. The pain is sized from insurer filings. What families use today fails at one specific step.</p>
+
+<table>
+<tr><th style="width:38%">Fact</th><th>Number</th><th style="width:30%">Source</th></tr>
+<tr><td>Family caregivers in the US (care for someone with a complex condition or disability)</td><td class="n">63 M, 27 h/week average, 24% give 40 h+</td><td>AARP / NAC, <i>Caregiving in the U.S. 2025</i> <a class="m s" href="https://www.aarp.org/press/releases/2025-07-24-new-report-reveals-crisis-point-for-americas-63-million-family-caregivers.html">S</a></td></tr>
+<tr><td>Caregivers with a negative financial impact (debt, savings used)</td><td class="n">nearly half; 23% took on more debt</td><td>AARP / NAC 2025 <a class="m s" href="https://www.aarp.org/caregiving/basics/caregiving-in-us-survey-2025/">S</a></td></tr>
+<tr><td>Working-age caregivers who are also employed</td><td class="n">70%</td><td>AARP / NAC 2025, as reported <a class="m s" href="https://www.npaonline.org/about-npa/news/news/2025/07/25/aarp-and-national-alliance-for-caregiving-release-caregiving-in-the-us">S</a></td></tr>
+<tr><td>Medicare Advantage prior-auth requests, denied, appealed, overturned (2024)</td><td class="n">52.8 M · 4.1 M (7.7%) · 11.5% · 80.7%</td><td>KFF analysis of CMS data <a class="m s" href="https://www.kff.org/medicare/medicare-advantage-insurers-made-nearly-53-million-prior-authorization-determinations-in-2024/">S</a></td></tr>
+<tr><td>ACA Marketplace (HealthCare.gov) in-network claims denied; denials appealed</td><td class="n">19% (2024); under 1% appealed (2023)</td><td>KFF <a class="m s" href="https://www.kff.org/private-insurance/claims-denials-and-appeals-in-aca-marketplace-plans-in-2024/">S</a></td></tr>
+<tr><td>Insured adults 18–64 who delayed or gave up care because of an administrative task</td><td class="n">24.4%</td><td>Kyle &amp; Frakt, <i>Health Services Research</i> 2021 <a class="m s" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8522562">S</a></td></tr>
+<tr><td>Patients or caregivers who get directly involved in prior auth report more delays and denials</td><td class="n">national survey, n = 997</td><td>JAMA Network Open 2026, as reported <a class="m s" href="https://www.epocrates.com/online/article/when-patients-step-in-on-prior-authorization-care-delays-rise">S</a></td></tr>
+</table>
+
+<div class="claim">80.7% of appealed Medicare Advantage denials were overturned. Only 11.5% were appealed. People who start an appeal usually win it. Most people never start.<small>Selection effect, stated honestly: the families who appeal today are probably those with the strongest cases, so the 80.7% will not carry over to every unappealed denial <a class="m a" href="#risks">A</a>. The bet is on the 11.5%, not on the 80.7%.</small></div>
+
+<h3>What they use today, and the step where it fails</h3>
+<table>
+<tr><th>Today's tool</th><th>What it does well</th><th>Where it fails the caregiver</th></tr>
+<tr><td>AI appeal-letter generators (Counterforce Health: free, about 20,000 people helped by its own count <a class="m s" href="https://www.axios.com/local/raleigh/2025/08/20/using-ai-to-fight-back-against-insurance-denials-counteforce">S</a>)</td><td>Writes a strong letter from the denial and the policy</td><td>The caregiver has to gather and type in the evidence first. It is not on the call and not in the portal, and it files nothing.</td></tr>
+<tr><td>Enterprise appeal services (Claimable, paid by drugmakers and health systems <a class="m s" href="https://www.cbs17.com/news/local-news/wake-county-news/raleigh-organization-helps-thousands-of-americans-appeal-health-insurance-denials-using-ai/amp/">S</a>)</td><td>Appeals at scale for specific therapies</td><td>Covers only the denials a sponsor pays for. Not the family's own care.</td></tr>
+<tr><td>Human care concierges sold as employer benefits (e.g. Wellthy) <a class="m r" href="#sources">R</a></td><td>A person who makes the calls</td><td>Costly, only through some employers, and the family's own record of the case stays scattered</td></tr>
+<tr><td>Free Medicare counsellors (SHIP) <a class="m r" href="#sources">R</a></td><td>Expert, impartial</td><td>Limited appointments. The caregiver still brings the paper.</td></tr>
+<tr><td>Athena Portable (this team, built)</td><td>Works in the portals, remembers with citations, stops before anything irreversible</td><td>Sees only browser tabs. The denial arrives on paper and the reason for it comes out on a phone call.</td></tr>
+</table>
+</section>
+
+<!-- ============ BET ============ -->
+<section id="bet">
+<h2><span class="k">Position</span>The bet, the target and the kill line</h2>
+<div class="claim t">The bet: caregivers do not appeal because the evidence is spread across paper, phone calls and portals. Put it in one cited case and hand them a finished action to sign, and they will appeal.</div>
+<div class="pair">
+<div class="target"><h4>Measurable target (pilot, 40 households, 90 days)</h4>
+<ul>
+<li><b>≥ 50%</b> of eligible denials found in the household's mail get an appeal filed, against the 11.5% MA baseline <a class="m s" href="https://www.kff.org/medicare/medicare-advantage-insurers-made-nearly-53-million-prior-authorization-determinations-in-2024/">S</a></li>
+<li>Median caregiver <b>hands-on time ≤ 30 min</b> per filed appeal, measured by the ledger's session clock <a class="m a" href="#p-router">A</a></li>
+<li><b>0</b> sentences in any signed packet without a source, by an independent citation audit</li>
+</ul></div>
+<div class="kill"><h4>Kill line: the bet is wrong if</h4>
+<ul>
+<li>fewer than <b>30%</b> of found denials are appealed even with the packet ready. The blocker would then be will, fear or authority, not evidence.</li>
+<li>median hands-on time stays above <b>90 min</b>. The senses would not be saving the work.</li>
+<li>the audit finds <b>any</b> filed claim that its cited source does not support. The product is about proof, so one unsupported claim breaks it.</li>
+</ul></div>
+</div>
+<p class="note">Hackathon-scale kill, before any pilot: on Athena's existing document-reading corpus (<code>proving/docread</code>, 90 paired documents), Muse Spark reading SAM crops must reach at least 90% of the Claude documents lane's field accuracy (96.2%, run <code>20261022T195808Z</code>, measured on Claude, not on Meta). If it does not, the paper sense ships behind the existing reader and the demo says so.</p>
+</section>
+
+<!-- ============ WHY META ============ -->
+<section id="why-meta">
+<h2><span class="k">Position</span>Why Meta, why now</h2>
+<p>Athena Portable's limit was that her only sense was a browser tab. The Meta Model API now offers, under one key and one billing account, the senses a caregiver's case needs, each a separate model with its own price, plus an open model for the home.</p>
+<table>
+<tr><th>Sense</th><th>Meta model, as published</th><th>What it is in Athena Kin</th><th>Tag</th></tr>
+<tr><td>Sight over paper</td><td>SAM 3.1: text, image or video in; boxes and masks out; tracks objects across frames; $0.20 per 1,000 video frames <a class="m s" href="https://dev.meta.ai/docs/models">S</a></td><td>One phone video over the kitchen table separates every letter, with its own identity and pixel mask</td><td><span class="tag press">press</span></td></tr>
+<tr><td>Hearing on calls</td><td>Muse Voice Transcribe: realtime WebSocket, streaming speaker diarization, keyword biasing, 25 languages, turn timestamps; $0.18 / hour <a class="m s" href="https://dev.meta.ai/docs/overview">S</a></td><td>The insurer call becomes cited turns: who said it, at which second</td><td><span class="tag press">press</span> · <span class="tag unv">not on the event's product list</span></td></tr>
+<tr><td>Reading the whole case</td><td>Muse Spark 1.3 / Muse Wonder: text, image, video, audio, PDF in; 1,048,576-token context; computer use listed for Wonder <a class="m s" href="https://dev.meta.ai/docs/models">S</a></td><td>Every letter, call and portal page of one case fits in one context, and every sentence of the draft cites its source</td><td><span class="tag press">press</span> · computer-use quality <span class="tag unv">unverified</span></td></tr>
+<tr><td>Privacy at home</td><td>Muse Glimmer: ~30B open weights, Apache 2.0, "can run on 24GB of VRAM" <a class="m s" href="https://venturebeat.com/technology/meta-returns-to-open-source-with-muse-glimmer-an-apache-2-0-licensed-30b-parameter-ai-model-optimized-for-agents-available-now">S</a></td><td>Optional local triage of mail and calls, so nothing leaves the house unless the caregiver allows it</td><td><span class="tag press">press</span></td></tr>
+</table>
+<div class="claim">On a generic LLM stack this means four vendors, four keys and four privacy policies. On Meta it is one key, one ledger and one data policy that Athena can enforce per call, including a training-consent mode she must never use with Mom's data.<small>Contributor mode: Muse Spark at $0.10 / $0.20 per 1M tokens in exchange for Meta training on the content; Standard mode is not used for training <a class="m s" href="https://dev.meta.ai/docs/pricing-rate-limits">S</a>. Part 5 turns this into a gate rule.</small></div>
+</section>
+
+<!-- ============ WHOLE ============ -->
+<section id="whole">
+<h2><span class="k">Machine</span>The whole, on one page</h2>
+<p class="lede">The whole of Athena Portable survives, and the Meta models add what was missing. Three senses feed one cited brain. One gate stands between the case and anything irreversible. One ledger records every call, priced and tagged with its data class.</p>
+<figure>
+<svg viewBox="0 0 900 400" role="img" aria-label="System overview">
+  <defs><marker id="ar" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4A525A"/></marker></defs>
+  <!-- senses -->
+  <g font-size="13">
+  <rect x="20" y="40" width="200" height="74" rx="10" fill="#E6EDFB" stroke="#2457C5"/>
+  <text x="34" y="66" font-weight="600" fill="#2457C5">1 Paper sense</text>
+  <text x="34" y="86" fill="#1E2226">phone video → SAM 3.1</text>
+  <text x="34" y="104" fill="#1E2226">→ Muse Spark reads crops</text>
+  <rect x="20" y="140" width="200" height="74" rx="10" fill="#E6EDFB" stroke="#2457C5"/>
+  <text x="34" y="166" font-weight="600" fill="#2457C5">2 Call sense</text>
+  <text x="34" y="186" fill="#1E2226">speakerphone → Voice</text>
+  <text x="34" y="204" fill="#1E2226">Transcribe, diarized</text>
+  <rect x="20" y="240" width="200" height="74" rx="10" fill="#E3F1EF" stroke="#0E6B6B"/>
+  <text x="34" y="266" font-weight="600" fill="#0E6B6B">Screen sense (kept)</text>
+  <text x="34" y="286" fill="#1E2226">portal tabs, page tools,</text>
+  <text x="34" y="304" fill="#1E2226">DOM hands, screenshots</text>
+  <!-- brain -->
+  <rect x="300" y="60" width="230" height="230" rx="14" fill="#FFFFFF" stroke="#0E6B6B" stroke-width="2"/>
+  <text x="318" y="88" font-weight="700" fill="#0E6B6B" font-size="15">3 The case (cited brain)</text>
+  <text x="318" y="114" fill="#1E2226">episodes = observations</text>
+  <text x="318" y="134" fill="#4A525A" font-size="12">each with an evidence pointer:</text>
+  <text x="318" y="152" fill="#4A525A" font-size="12">mask · second range · capture</text>
+  <text x="318" y="178" fill="#1E2226">facts cite episodes, or are</text>
+  <text x="318" y="196" fill="#1E2226">refused at write</text>
+  <text x="318" y="222" fill="#1E2226">deadline clock per notice</text>
+  <text x="318" y="248" fill="#1E2226">Muse Wonder plans over</text>
+  <text x="318" y="266" fill="#1E2226">the whole file (1M ctx)</text>
+  <!-- gate -->
+  <rect x="600" y="80" width="130" height="80" rx="10" fill="#FBEFD9" stroke="#A8600A" stroke-width="2"/>
+  <text x="614" y="108" font-weight="700" fill="#A8600A" font-size="14">4 Gate</text>
+  <text x="614" y="128" fill="#1E2226">signed packet,</text>
+  <text x="614" y="146" fill="#1E2226">spent once</text>
+  <rect x="770" y="80" width="112" height="80" rx="10" fill="#FFFFFF" stroke="#4A525A"/>
+  <text x="782" y="108" font-weight="600" fill="#1E2226">Portal acts</text>
+  <text x="782" y="128" fill="#4A525A" font-size="12">file appeal,</text>
+  <text x="782" y="145" fill="#4A525A" font-size="12">upload, send</text>
+  <!-- router -->
+  <rect x="600" y="200" width="282" height="74" rx="10" fill="#F1EBDF" stroke="#4A525A"/>
+  <text x="614" y="226" font-weight="700" fill="#1E2226">5 Router + ledger</text>
+  <text x="614" y="246" fill="#1E2226" font-size="12.5">data class → model + mode; one priced</text>
+  <text x="614" y="263" fill="#1E2226" font-size="12.5">row per call; personal ≠ Contributor</text>
+  <!-- household -->
+  <rect x="300" y="320" width="582" height="60" rx="10" fill="#FFFFFF" stroke="#0E6B6B" stroke-dasharray="5 4"/>
+  <text x="318" y="345" font-weight="700" fill="#0E6B6B">6 Household</text>
+  <text x="318" y="366" fill="#1E2226" font-size="12.5">caregiver's PC (beacon) · their phone (camera, mic, signs cards) · a sibling with scoped grants · all over a private overlay</text>
+  <!-- arrows -->
+  <path d="M220,77 L298,120" stroke="#4A525A" marker-end="url(#ar)" fill="none"/>
+  <path d="M220,177 L298,177" stroke="#4A525A" marker-end="url(#ar)" fill="none"/>
+  <path d="M220,277 L298,235" stroke="#4A525A" marker-end="url(#ar)" fill="none"/>
+  <path d="M530,120 L598,120" stroke="#4A525A" marker-end="url(#ar)" fill="none"/>
+  <path d="M730,120 L768,120" stroke="#4A525A" marker-end="url(#ar)" fill="none"/>
+  <path d="M530,237 L598,237" stroke="#4A525A" marker-end="url(#ar)" fill="none" stroke-dasharray="4 3"/>
+  </g>
+  <!-- annotations -->
+  <g font-size="12" fill="#A8600A">
+  <text x="20" y="26">NEW on Meta: two senses beyond the tab</text>
+  <text x="560" y="58">KEPT: the gate is Athena's, never the model's</text>
+  <text x="600" y="296">CHANGED: ledger learns mode + data class</text>
+  </g>
+  <text x="530" y="20" font-size="12" fill="#2E7D4F">7 Proving Ground attacks every arrow (part 7)</text>
+</svg>
+<figcaption><b>Read it left to right.</b> The blue boxes are new, the teal ones are kept, the amber one is the gate. Nothing moves from the case to the outside world except through the gate. Every arrow that reaches a model passes the router (dashed), which writes the ledger row.</figcaption>
+</figure>
+</section>
+
+<!-- ============ PART 1 PAPER ============ -->
+<section id="p-paper">
+<h2><span class="k">Machine · part 1</span>Paper sense: one sweep of the kitchen table</h2>
+<p>The caregiver films the pile of mail for about 20 seconds, spreading envelopes with a hand. SAM 3.1 tracks each document through the video under one identity <a class="m s" href="https://dev.meta.ai/docs/overview">S</a>. Athena picks the sharpest, flattest frame of each track and crops it to its mask. Muse Spark reads each crop into a structured episode. Each crop goes to Spark on its own, so an ad flyer's text never mixes with the denial's.</p>
+<figure>
+<svg viewBox="0 0 900 250" role="img" aria-label="Paper sense pipeline">
+  <defs><marker id="ar2" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4A525A"/></marker></defs>
+  <g font-size="13">
+  <!-- video strip -->
+  <rect x="20" y="40" width="150" height="110" rx="8" fill="#F1EBDF" stroke="#4A525A"/>
+  <rect x="34" y="56" width="50" height="36" fill="#fff" stroke="#2457C5" stroke-width="2" transform="rotate(-8 59 74)"/>
+  <rect x="92" y="62" width="56" height="38" fill="#fff" stroke="#A8600A" stroke-width="2" transform="rotate(6 120 81)"/>
+  <rect x="48" y="102" width="62" height="34" fill="#fff" stroke="#0E6B6B" stroke-width="2"/>
+  <text x="22" y="172" fill="#1E2226" font-weight="600">20 s phone video</text>
+  <text x="22" y="190" fill="#4A525A" font-size="12">~200 frames at 10 fps <tspan fill="#5B4F8A">A</tspan></text>
+  <!-- SAM -->
+  <rect x="215" y="55" width="150" height="80" rx="10" fill="#E6EDFB" stroke="#2457C5"/>
+  <text x="229" y="82" font-weight="700" fill="#2457C5">SAM 3.1</text>
+  <text x="229" y="102" fill="#1E2226" font-size="12">prompt: "letter",</text>
+  <text x="229" y="119" fill="#1E2226" font-size="12">"envelope", "card"</text>
+  <text x="215" y="160" fill="#4A525A" font-size="12">tracks with stable ids</text>
+  <text x="215" y="177" fill="#4A525A" font-size="12">≈ $0.04 per sweep <tspan fill="#2E7D4F">S×A</tspan></text>
+  <!-- best frame -->
+  <rect x="410" y="55" width="140" height="80" rx="10" fill="#E3F1EF" stroke="#0E6B6B"/>
+  <text x="424" y="82" font-weight="700" fill="#0E6B6B">Best frame</text>
+  <text x="424" y="102" fill="#1E2226" font-size="12">per track: sharp,</text>
+  <text x="424" y="119" fill="#1E2226" font-size="12">largest mask area</text>
+  <text x="410" y="160" fill="#4A525A" font-size="12">deterministic code,</text>
+  <text x="410" y="177" fill="#4A525A" font-size="12">no model</text>
+  <!-- spark -->
+  <rect x="595" y="55" width="140" height="80" rx="10" fill="#E6EDFB" stroke="#2457C5"/>
+  <text x="609" y="82" font-weight="700" fill="#2457C5">Muse Spark</text>
+  <text x="609" y="102" fill="#1E2226" font-size="12">one crop = one call,</text>
+  <text x="609" y="119" fill="#1E2226" font-size="12">schema output, fenced</text>
+  <!-- episode -->
+  <rect x="775" y="45" width="110" height="100" rx="10" fill="#FFFFFF" stroke="#0E6B6B" stroke-width="2"/>
+  <text x="787" y="72" font-weight="700" fill="#0E6B6B">Episodes</text>
+  <text x="787" y="92" font-size="12" fill="#1E2226">1 per document</text>
+  <text x="787" y="110" font-size="12" fill="#1E2226">+ mask pointer</text>
+  <text x="787" y="128" font-size="12" fill="#1E2226">+ original crop</text>
+  <path d="M170,95 L213,95" stroke="#4A525A" marker-end="url(#ar2)"/>
+  <path d="M365,95 L408,95" stroke="#4A525A" marker-end="url(#ar2)"/>
+  <path d="M550,95 L593,95" stroke="#4A525A" marker-end="url(#ar2)"/>
+  <path d="M735,95 L773,95" stroke="#4A525A" marker-end="url(#ar2)"/>
+  </g>
+  <g font-size="12">
+  <rect x="215" y="205" width="670" height="34" rx="6" fill="#FBEFD9"/>
+  <text x="228" y="227" fill="#4A3108">Hostile letter? Its text arrives fenced (core/fence.py): an episode, never an instruction.</text>
+  </g>
+</svg>
+<figcaption><b>Why SAM and not "just send the photo to a VLM".</b> A photo of six overlapping envelopes read in one pass gives you a summary. A track per document gives you six separate pieces of evidence, each with its own pixels. The appeal can then cite "the denial, line 4", and the card can show that exact crop. Cost: 200 frames × $0.20 / 1,000 = $0.04 <a class="m s" href="https://dev.meta.ai/docs/pricing-rate-limits">S</a>; the frame rate is our assumption.</figcaption>
+</figure>
+<pre><span class="c">-- new: an evidence pointer every episode carries (extends core/brain episodes)</span>
+<span class="k">CREATE TABLE</span> evidence (
+  evidence_id   TEXT PRIMARY KEY,          <span class="c">-- ev_…, minted in contracts/ids.py</span>
+  episode_id    TEXT NOT NULL,             <span class="c">-- the episode it backs</span>
+  kind          TEXT NOT NULL,             <span class="c">-- 'frame_mask' | 'call_span' | 'page_capture'</span>
+  file          TEXT NOT NULL,             <span class="c">-- media under the case folder, on disk (invariant 1)</span>
+  frame         INTEGER,                   <span class="c">-- frame_mask: chosen frame</span>
+  track_id      INTEGER,                   <span class="c">-- frame_mask: SAM track identity</span>
+  bbox          TEXT,                      <span class="c">-- frame_mask: [x,y,w,h]</span>
+  mask_rle      TEXT,                      <span class="c">-- frame_mask: run-length mask</span>
+  t0_ms INTEGER, t1_ms INTEGER, speaker TEXT, <span class="c">-- call_span</span>
+  capture_id    TEXT,                      <span class="c">-- page_capture: existing captures table</span>
+  sha256        TEXT NOT NULL,             <span class="c">-- of the media, so a cite cannot silently drift</span>
+  created_at    TEXT NOT NULL
+);</pre>
+</section>
+
+<!-- ============ PART 2 CALL ============ -->
+<section id="p-call">
+<h2><span class="k">Machine · part 2</span>Call sense: the insurer call, written down to the second</h2>
+<p>The caregiver puts the call on speaker by the PC or the phone. Athena first <b>asks for consent and says it on the line</b> ("this call is being transcribed for my records"), because about eleven US states require every party to consent to recording <a class="m s" href="https://www.rev.com/blog/phone-call-recording-laws-state">S</a>. Muse Voice Transcribe streams diarized turns <a class="m s" href="https://dev.meta.ai/docs/models">S</a>. The case feeds the transcriber its own vocabulary through <b>keyword biasing</b>: claim numbers, the plan's name, drug and facility names. A reference number read out fast then comes through as the right string, not a near miss.</p>
+<figure>
+<svg viewBox="0 0 900 290" role="img" aria-label="Call sense timeline">
+  <g font-size="12.5">
+  <line x1="40" y1="60" x2="860" y2="60" stroke="#4A525A"/>
+  <g fill="#4A525A"><text x="40" y="48">00:00</text><text x="230" y="48">01:12</text><text x="430" y="48">03:40</text><text x="640" y="48">06:05</text><text x="820" y="48">08:30</text></g>
+  <!-- speaker lanes -->
+  <text x="40" y="92" font-weight="600" fill="#2457C5">Rep</text>
+  <rect x="120" y="80" width="90" height="18" rx="4" fill="#E6EDFB"/><rect x="230" y="80" width="150" height="18" rx="4" fill="#2457C5"/><rect x="430" y="80" width="170" height="18" rx="4" fill="#2457C5"/><rect x="700" y="80" width="80" height="18" rx="4" fill="#E6EDFB"/>
+  <text x="40" y="128" font-weight="600" fill="#0E6B6B">Caregiver</text>
+  <rect x="60" y="116" width="55" height="18" rx="4" fill="#E3F1EF"/><rect x="390" y="116" width="36" height="18" rx="4" fill="#E3F1EF"/><rect x="610" y="116" width="85" height="18" rx="4" fill="#0E6B6B"/>
+  <text x="40" y="164" font-weight="600" fill="#A8600A">Athena</text>
+  <rect x="60" y="152" width="50" height="18" rx="4" fill="#FBEFD9" stroke="#A8600A"/>
+  <text x="62" y="186" fill="#A8600A" font-size="11">consent line</text>
+  <!-- facts -->
+  <rect x="210" y="205" width="200" height="66" rx="8" fill="#FFFFFF" stroke="#0E6B6B"/>
+  <text x="222" y="226" font-weight="600" fill="#0E6B6B">fact: ref no. 4471-B</text>
+  <text x="222" y="244" fill="#4A525A" font-size="11.5">cites call_span 01:12–01:19, Rep</text>
+  <text x="222" y="261" fill="#4A525A" font-size="11.5">biased from case vocabulary</text>
+  <rect x="430" y="205" width="200" height="66" rx="8" fill="#FFF8F7" stroke="#A93226"/>
+  <text x="442" y="226" font-weight="600" fill="#A93226">conflict flagged</text>
+  <text x="442" y="244" fill="#4A525A" font-size="11.5">Rep 03:40: "records missing"</text>
+  <text x="442" y="261" fill="#4A525A" font-size="11.5">Letter: "not medically necessary"</text>
+  <rect x="650" y="205" width="210" height="66" rx="8" fill="#FFFFFF" stroke="#0E6B6B"/>
+  <text x="662" y="226" font-weight="600" fill="#0E6B6B">promise → follow-up</text>
+  <text x="662" y="244" fill="#4A525A" font-size="11.5">"callback in 5 business days"</text>
+  <text x="662" y="261" fill="#4A525A" font-size="11.5">→ a dated item on the clock</text>
+  <path d="M305,98 L305,203" stroke="#0E6B6B" stroke-dasharray="3 3"/>
+  <path d="M515,98 L515,203" stroke="#A93226" stroke-dasharray="3 3"/>
+  <path d="M652,134 L740,203" stroke="#0E6B6B" stroke-dasharray="3 3"/>
+  </g>
+</svg>
+<figcaption><b>The call is one of the case's sources.</b> Every turn is an episode with its speaker and time range. Facts drawn from it (a reference number, a stated reason, a promised callback) must cite those turns or Athena refuses to write them (invariant 2). The red box is the moment the demo is built around. Athena does not argue with the rep. She shows the caregiver, quietly on screen, that the reason just given on the call differs from the reason in the letter, and suggests one question to ask.</figcaption>
+</figure>
+<p class="note">Fallbacks, because Muse Voice Transcribe is on Meta's API docs but on neither hackathon product list <a class="m s" href="https://dev.meta.ai/docs/overview">S</a>: (a) Muse Spark 1.2 audio input, which Meta's model page recommends for audio <a class="m s" href="https://dev.meta.ai/docs/models">S</a>, used on 30-second chunks after the call, with no live hint; (b) the local whisper.cpp listener Athena already ships (<code>channels/voice/whisper.py</code>). Diarization quality on a speakerphone call is <span class="tag unv">unverified</span>. Day 1 of the build measures it.</p>
+</section>
+
+<!-- ============ PART 3 CASE ============ -->
+<section id="p-case">
+<h2><span class="k">Machine · part 3</span>The case and its clock</h2>
+<p>A case is Athena Portable's existing case file (<code>adopt/cases.py</code>, a goal in the brain, ADR 0123) with one change: it is now about a person the caregiver acts for. Each notice opens a deadline. Each fact cites episodes. Muse Wonder gets the whole case in one context (letters, call turns, portal pages, about 100–300k tokens <a class="m a" href="#p-router">A</a>, within its 1,048,576 <a class="m s" href="https://dev.meta.ai/docs/models">S</a>) and proposes the next action. The proposal goes through the gate like any other.</p>
+<figure>
+<svg viewBox="0 0 900 230" role="img" aria-label="Case state machine">
+  <defs><marker id="ar3" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4A525A"/></marker></defs>
+  <g font-size="13" font-weight="600">
+  <rect x="20" y="80" width="110" height="50" rx="25" fill="#E6EDFB" stroke="#2457C5"/><text x="44" y="110" fill="#2457C5">noticed</text>
+  <rect x="165" y="80" width="120" height="50" rx="25" fill="#E3F1EF" stroke="#0E6B6B"/><text x="185" y="110" fill="#0E6B6B">gathering</text>
+  <rect x="320" y="80" width="120" height="50" rx="25" fill="#FBEFD9" stroke="#A8600A"/><text x="342" y="110" fill="#A8600A">packet ready</text>
+  <rect x="475" y="80" width="100" height="50" rx="25" fill="#FBEFD9" stroke="#A8600A" stroke-width="2"/><text x="503" y="110" fill="#A8600A">signed</text>
+  <rect x="610" y="80" width="100" height="50" rx="25" fill="#FFFFFF" stroke="#4A525A"/><text x="643" y="110" fill="#1E2226">filed</text>
+  <rect x="745" y="40" width="130" height="44" rx="22" fill="#E3F2E8" stroke="#2E7D4F"/><text x="777" y="67" fill="#2E7D4F">won</text>
+  <rect x="740" y="130" width="152" height="44" rx="22" fill="#F8E3E0" stroke="#A93226"/><text x="752" y="157" fill="#A93226">upheld → next level</text>
+  </g>
+  <g stroke="#4A525A" fill="none">
+  <path d="M130,105 L163,105" marker-end="url(#ar3)"/><path d="M285,105 L318,105" marker-end="url(#ar3)"/><path d="M440,105 L473,105" marker-end="url(#ar3)"/><path d="M575,105 L608,105" marker-end="url(#ar3)"/><path d="M710,98 L743,70" marker-end="url(#ar3)"/><path d="M710,112 L743,145" marker-end="url(#ar3)"/>
+  <path d="M380,132 C380,180 225,180 225,132" marker-end="url(#ar3)" stroke-dasharray="4 3"/>
+  <path d="M810,176 C810,215 225,215 225,134" marker-end="url(#ar3)" stroke-dasharray="4 3"/>
+  </g>
+  <g font-size="11.5" fill="#4A525A">
+  <text x="20" y="150">a sweep or portal read</text><text x="20" y="165">finds a denial; clock starts</text>
+  <text x="270" y="180">declined: back to gathering</text>
+  <text x="165" y="60">sources: paper · call · portal</text>
+  <text x="458" y="60">the gate: one human signature</text>
+  <text x="430" y="223">appeal ladder: reconsideration, then independent review <tspan fill="#A8600A">R</tspan></text>
+  </g>
+</svg>
+<figcaption><b>Five states, one of them human.</b> Nothing reaches "filed" without "signed", and only the gate makes that move. The clock is anchored to the date on the notice, not to today, which fixes a known Athena Portable defect (yearly chores came due "every 365 days from today", UAT 2026-10-23, item 10). Medicare Advantage reconsideration windows are about 65 days from the notice <a class="m r" href="#sources">R</a>. The window is read from the letter itself and cited, never assumed.</figcaption>
+</figure>
+<pre><span class="c"># goals/&lt;proj&gt;.md data block: the case, readable on disk (invariant 1)</span>
+case:
+  id: proj_7f3a                      <span class="c"># minted once, kept across approvals (ADR 0123)</span>
+  acting_for: "Mom (Ruth)"           <span class="c"># new: the person the caregiver represents</span>
+  authority: { kind: "CMS-1696", evidence: ev_19c2 }   <span class="c"># R: appointment-of-representative form, itself cited</span>
+  playbook: observation-status-appeal   <span class="c"># existing chore, benched "exceeds" on Claude (synthetic world)</span>
+  notices:
+    - { episode: ep_51d0, kind: denial, dated: 2026-10-14, window_days: 65, window_cites: ep_51d0 }
+  facts:
+    - { id: fct_a1, text: "Reference no. 4471-B", cites: [ep_call_0112] }
+    - { id: fct_a2, text: "Stated reason: not medically necessary", cites: [ep_51d0] }
+    - { id: fct_a3, text: "Discharge summary lists 3 skilled-nursing needs", cites: [ep_tab_mychart_08] }
+  state: packet_ready</pre>
+</section>
+
+<!-- ============ PART 4 PACKET ============ -->
+<section id="p-packet">
+<h2><span class="k">Machine · part 4</span>The signed packet: you sign what you can check</h2>
+<p>Athena Portable's worst UAT finding was that <b>the card did not show what the user was signing</b>: one parameter, the recipient visible only in the model's rationale, no body (UAT 2026-10-01, D3: "Who is it going to? I do not know without opening the books"). For an appeal, the thing being signed is a document. So the gated action carries the whole packet: letter, exhibits and recipient. Every sentence in the letter is bound to the evidence ids it rests on, and the gate signs over a hash of all of it.</p>
+<figure>
+<svg viewBox="0 0 900 260" role="img" aria-label="Packet binding">
+  <g font-size="12.5">
+  <rect x="20" y="20" width="360" height="220" rx="10" fill="#FFFFFF" stroke="#A8600A" stroke-width="2"/>
+  <text x="36" y="46" font-weight="700" fill="#A8600A" font-size="13">Packet (labelled sketch, not a screen)</text>
+  <rect x="36" y="60" width="328" height="22" fill="#FBEFD9"/><text x="44" y="76" fill="#1E2226">¶1 Ruth was discharged on Oct 9 with three…</text>
+  <rect x="36" y="88" width="328" height="22" fill="#F7F3EA"/><text x="44" y="104" fill="#1E2226">¶2 Your letter of Oct 14 states "not medically…</text>
+  <rect x="36" y="116" width="328" height="22" fill="#FBEFD9"/><text x="44" y="132" fill="#1E2226">¶3 On Oct 20 your representative said records…</text>
+  <rect x="36" y="144" width="328" height="22" fill="#F7F3EA"/><text x="44" y="160" fill="#1E2226">Exhibit A: denial letter (crop) · B: summary</text>
+  <text x="36" y="196" fill="#4A525A">to: plan appeals portal · as: representative</text>
+  <text x="36" y="216" fill="#4A525A">sha256(packet) = 9c1e…  → bound to approval</text>
+  <!-- evidence -->
+  <rect x="520" y="22" width="190" height="56" rx="8" fill="#E6EDFB" stroke="#2457C5"/><text x="532" y="44" font-weight="600" fill="#2457C5">ep_tab_mychart_08</text><text x="532" y="63" fill="#4A525A" font-size="11.5">portal capture, page 2</text>
+  <rect x="520" y="96" width="190" height="56" rx="8" fill="#E6EDFB" stroke="#2457C5"/><text x="532" y="118" font-weight="600" fill="#2457C5">ep_51d0 · ev_mask</text><text x="532" y="137" fill="#4A525A" font-size="11.5">denial letter, SAM crop</text>
+  <rect x="520" y="170" width="190" height="56" rx="8" fill="#E6EDFB" stroke="#2457C5"/><text x="532" y="192" font-weight="600" fill="#2457C5">ep_call_0340</text><text x="532" y="211" fill="#4A525A" font-size="11.5">call 03:40–03:52, Rep</text>
+  <path d="M364,71 L518,50" stroke="#2457C5"/><path d="M364,99 L518,124" stroke="#2457C5"/><path d="M364,127 L518,198" stroke="#2457C5"/>
+  <rect x="740" y="60" width="145" height="140" rx="10" fill="#F8E3E0" stroke="#A93226"/>
+  <text x="752" y="84" font-weight="700" fill="#A93226">Refused before</text>
+  <text x="752" y="101" font-weight="700" fill="#A93226">the card exists</text>
+  <text x="752" y="124" fill="#1E2226" font-size="11.5">a sentence with no</text>
+  <text x="752" y="140" fill="#1E2226" font-size="11.5">cite; a cite to a</text>
+  <text x="752" y="156" fill="#1E2226" font-size="11.5">missing episode; a</text>
+  <text x="752" y="172" fill="#1E2226" font-size="11.5">media hash mismatch</text>
+  </g>
+</svg>
+<figcaption><b>Provenance moves from facts to sentences.</b> Athena Portable already refuses a fact that cites nothing (<code>Brain._require_provenance</code>, <code>core/brain/store.py</code>). The packet applies the same check to every sentence of an outgoing document, and the packet is checked before any card is filed. The approval is spent in one conditional write (<code>Approvals.consume</code>, <code>core/approvals.py</code>, ADR 0038). If the packet changes after signing, its hash no longer matches the one the gate bound, and it is refused.</figcaption>
+</figure>
+<pre><span class="c">// new manifest field: a gated tool declares what its card must show (answers UAT D3)</span>
+{ <span class="s">"name"</span>: <span class="s">"submit_reconsideration"</span>,
+  <span class="s">"reversible"</span>: false, <span class="s">"side_effects"</span>: <span class="s">"external"</span>,   <span class="c">// → GATED by HostTool.default_class</span>
+  <span class="s">"preview"</span>: { <span class="s">"document"</span>: <span class="s">"packet_id"</span>, <span class="s">"recipient"</span>: <span class="s">"plan_appeals"</span>, <span class="s">"as"</span>: <span class="s">"representative"</span> },
+  <span class="s">"binds"</span>:   [<span class="s">"sha256(packet)"</span>, <span class="s">"sentence→evidence map"</span>] }</pre>
+</section>
+
+<!-- ============ PART 5 ROUTER ============ -->
+<section id="p-router">
+<h2><span class="k">Machine · part 5</span>The router and the ledger: one data policy, enforced per call</h2>
+<p>Meta's API has a feature most stacks lack: <b>Contributor mode</b>. Muse Spark costs 12.5× less on input ($0.10 against $1.25 per 1M tokens) if Meta may train on the prompts, files and responses <a class="m s" href="https://dev.meta.ai/docs/pricing-rate-limits">S</a>. For a parent's medical letters that is never acceptable. For the Proving Ground's synthetic worlds it is ideal. Athena makes this a structural rule, in the same way as her gate: a call's data class picks its model and mode, the model is never asked, and the ledger records which mode ran.</p>
+<figure>
+<svg viewBox="0 0 900 250" role="img" aria-label="Router decision tree">
+  <defs><marker id="ar4" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4A525A"/></marker></defs>
+  <g font-size="12.5">
+  <rect x="20" y="95" width="150" height="56" rx="10" fill="#F1EBDF" stroke="#4A525A"/><text x="34" y="119" font-weight="700">a model call</text><text x="34" y="138" fill="#4A525A" font-size="11.5">tagged by its sources</text>
+  <rect x="230" y="20" width="200" height="56" rx="10" fill="#ECEAF4" stroke="#5B4F8A"/><text x="244" y="44" font-weight="700" fill="#5B4F8A">synthetic</text><text x="244" y="63" fill="#4A525A" font-size="11.5">Proving Ground worlds only</text>
+  <rect x="230" y="95" width="200" height="56" rx="10" fill="#E3F1EF" stroke="#0E6B6B"/><text x="244" y="119" font-weight="700" fill="#0E6B6B">personal</text><text x="244" y="138" fill="#4A525A" font-size="11.5">any episode from a case</text>
+  <rect x="230" y="170" width="200" height="56" rx="10" fill="#F8E3E0" stroke="#A93226"/><text x="244" y="194" font-weight="700" fill="#A93226">sealed</text><text x="244" y="213" fill="#4A525A" font-size="11.5">caregiver marked "stays home"</text>
+  <rect x="500" y="20" width="380" height="56" rx="10" fill="#FFFFFF" stroke="#5B4F8A"/><text x="514" y="44" font-weight="600">Spark Contributor · $0.10 / $0.20 per 1M</text><text x="514" y="63" fill="#4A525A" font-size="11.5">150 RPM limit per team  <tspan fill="#2E7D4F">S</tspan></text>
+  <rect x="500" y="95" width="380" height="56" rx="10" fill="#FFFFFF" stroke="#0E6B6B"/><text x="514" y="119" font-weight="600">Spark / Wonder Standard · not used for training</text><text x="514" y="138" fill="#4A525A" font-size="11.5">$1.25 / $4.25 (Spark) · $4 / $20 (Wonder)  <tspan fill="#2E7D4F">S</tspan></text>
+  <rect x="500" y="170" width="380" height="56" rx="10" fill="#FFFFFF" stroke="#A93226"/><text x="514" y="194" font-weight="600">Muse Glimmer on this PC, or refuse</text><text x="514" y="213" fill="#4A525A" font-size="11.5">no 24 GB GPU → refused, never sent to the cloud</text>
+  <g stroke="#4A525A" fill="none"><path d="M170,115 L228,52" marker-end="url(#ar4)"/><path d="M170,123 L228,123" marker-end="url(#ar4)"/><path d="M170,131 L228,195" marker-end="url(#ar4)"/><path d="M430,48 L498,48" marker-end="url(#ar4)"/><path d="M430,123 L498,123" marker-end="url(#ar4)"/><path d="M430,198 L498,198" marker-end="url(#ar4)"/></g>
+  <text x="20" y="245" fill="#A93226" font-size="12">Refused with a closed-set reason: personal data on a contributor route is "data_class_violation", a new member of ERROR_REASONS.</text>
+  </g>
+</svg>
+<figcaption><b>The class comes from the sources, not from the prompt.</b> A request whose turn frame includes any episode from a case is <i>personal</i>, the same way a manifest's flags make a tool GATED (<code>contracts/manifest.py</code>, <code>HostTool.default_class</code>). The data class is computed from the request, so no prompt can lower it.</figcaption>
+</figure>
+<pre><span class="c">-- core/ledger.py: companion_turn gains two columns (one row per invocation stays the rule)</span>
+<span class="k">ALTER TABLE</span> companion_turn <span class="k">ADD COLUMN</span> api_mode   TEXT NOT NULL DEFAULT 'n/a'; <span class="c">-- 'standard' | 'contributor' | 'local'</span>
+<span class="k">ALTER TABLE</span> companion_turn <span class="k">ADD COLUMN</span> data_class TEXT NOT NULL DEFAULT 'personal'; <span class="c">-- 'synthetic' | 'personal' | 'sealed'</span>
+<span class="c">-- the audit a caregiver can run:  SELECT COUNT(*) FROM companion_turn
+--   WHERE data_class != 'synthetic' AND api_mode = 'contributor';   → must be 0</span></pre>
+<table>
+<tr><th>One case, estimated from published prices</th><th>Units (our assumption)</th><th class="n">Cost</th></tr>
+<tr><td>SAM 3.1 video, one mail sweep</td><td>200 frames</td><td class="n">$0.04</td></tr>
+<tr><td>Muse Spark reads 6 crops (Standard)</td><td>6 × (1.5k in + 0.5k out)</td><td class="n">$0.02</td></tr>
+<tr><td>Muse Voice Transcribe, one call</td><td>20 min</td><td class="n">$0.06</td></tr>
+<tr><td>Muse Wonder drafts over the case (Standard; less with caching at $0.20/1M cached)</td><td>200k in + 3k out</td><td class="n">$0.86</td></tr>
+<tr><td><b>Total for one appeal</b></td><td></td><td class="n"><b>≈ $1.0</b></td></tr>
+</table>
+<p class="note">Prices are from Meta's pricing page <a class="m s" href="https://dev.meta.ai/docs/pricing-rate-limits">S</a>, and the units are our assumptions <span class="m a">A</span>. For comparison, Athena Portable's benched chores cost $1.79 (medical bills) to $5.23 (long-term-care claims) per run, measured on Claude Sonnet in synthetic worlds (README §14, 2026-10-07). No Meta figure here is measured.</p>
+</section>
+
+<!-- ============ PART 6 HOUSEHOLD ============ -->
+<section id="p-house">
+<h2><span class="k">Machine · part 6</span>The household: one Athena, two people, one phone in the kitchen</h2>
+<p>Athena Portable already joins several computers and a phone into one Athena over Tailscale (<code>peer/</code>, ADR 0140). The phone is a small web app served by the PC (<code>peer/phone.py</code>, <code>peer/mobile/</code>) that answers cards. Athena Kin makes the phone her eyes and ears in the parent's home, and adds a <b>second person</b>: a sibling who can see the case and answer cards they were granted, but never the other person's approvals or spend. The overlay already keeps those apart. What is new is identity per person, not just per device.</p>
+<figure>
+<svg viewBox="0 0 900 230" role="img" aria-label="Household topology">
+  <g font-size="12.5">
+  <rect x="330" y="70" width="230" height="90" rx="12" fill="#E3F1EF" stroke="#0E6B6B" stroke-width="2"/>
+  <text x="346" y="96" font-weight="700" fill="#0E6B6B">Caregiver's PC (beacon)</text>
+  <text x="346" y="116" fill="#1E2226">brain, gate, ledger, portals</text>
+  <text x="346" y="134" fill="#1E2226">Glimmer if GPU allows</text>
+  <text x="346" y="150" fill="#4A525A" font-size="11">open window = she is awake</text>
+  <rect x="30" y="20" width="220" height="74" rx="12" fill="#FFFFFF" stroke="#2457C5"/>
+  <text x="44" y="44" font-weight="700" fill="#2457C5">Caregiver's phone</text>
+  <text x="44" y="63" fill="#1E2226">camera sweep · call mic</text>
+  <text x="44" y="81" fill="#1E2226">signs cards (PWA, kept)</text>
+  <rect x="30" y="136" width="220" height="74" rx="12" fill="#FFFFFF" stroke="#4A525A" stroke-dasharray="5 4"/>
+  <text x="44" y="160" font-weight="700">Sibling's laptop / phone</text>
+  <text x="44" y="179" fill="#1E2226">reads case · answers its</text>
+  <text x="44" y="197" fill="#1E2226">granted cards · NEW</text>
+  <rect x="640" y="20" width="240" height="74" rx="12" fill="#FFFFFF" stroke="#4A525A"/>
+  <text x="654" y="44" font-weight="700">Meta Model API</text>
+  <text x="654" y="63" fill="#1E2226">only through the router,</text>
+  <text x="654" y="81" fill="#1E2226">Standard mode, ledgered</text>
+  <rect x="640" y="136" width="240" height="74" rx="12" fill="#FFFFFF" stroke="#4A525A"/>
+  <text x="654" y="160" font-weight="700">Portals</text>
+  <text x="654" y="179" fill="#1E2226">plan, MyChart, Medicare.gov,</text>
+  <text x="654" y="197" fill="#1E2226">bank: tabs on the PC (kept)</text>
+  <g stroke="#0E6B6B" fill="none" stroke-width="1.5"><path d="M250,57 L328,95"/><path d="M250,173 L328,140" stroke-dasharray="5 4"/><path d="M560,95 L638,57"/><path d="M560,140 L638,173"/></g>
+  <text x="252" y="48" fill="#0E6B6B" font-size="11">Tailscale overlay</text>
+  <text x="262" y="214" fill="#A93226" font-size="11">never shared: approvals, spend, keys (kept rule)</text>
+  </g>
+</svg>
+<figcaption><b>No server of ours.</b> The case lives on the caregiver's PC as markdown and SQLite. Memory is replicated only to paired devices of people the caregiver approved, each on their own screen (one-athena.md). A phone without the PC open is told "Athena on (computer) is asleep", which is honest and already built.</figcaption>
+</figure>
+</section>
+
+<!-- ============ PART 7 PROVING ============ -->
+<section id="p-proving">
+<h2><span class="k">Machine · part 7</span>The Proving Ground on Muse: attack the senses, not just the tab</h2>
+<p>New senses mean new attack surfaces. A scam letter in the mail pile is a prompt injection on paper. A "representative" on the call can say "just approve the resubmission". Glimmer's own published AgentDojo attack-success rate is 28.4% <a class="m s" href="https://venturebeat.com/technology/meta-returns-to-open-source-with-muse-glimmer-an-apache-2-0-licensed-30b-parameter-ai-model-optimized-for-agents-available-now">S</a>, and that is why the gate, not the model, must hold. The Gauntlet already proved this on browser surfaces: 306 hostile turns, 0 breaches, verdicts read off the gate's records (runs <code>20261007T140609Z</code>, <code>…205627Z</code>, <code>…213007Z</code>, measured on Claude and Nemotron).</p>
+<figure>
+<svg viewBox="0 0 900 220" role="img" aria-label="Proving loop">
+  <defs><marker id="ar5" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#4A525A"/></marker></defs>
+  <g font-size="12.5">
+  <rect x="20" y="70" width="190" height="80" rx="10" fill="#ECEAF4" stroke="#5B4F8A"/><text x="34" y="96" font-weight="700" fill="#5B4F8A">Muse Spark, Contributor</text><text x="34" y="116" fill="#1E2226">writes hostile letters,</text><text x="34" y="134" fill="#1E2226">plays the insurer rep</text>
+  <rect x="260" y="70" width="170" height="80" rx="10" fill="#E6EDFB" stroke="#2457C5"/><text x="274" y="96" font-weight="700" fill="#2457C5">Rendered world</text><text x="274" y="116" fill="#1E2226">letter → image → video;</text><text x="274" y="134" fill="#1E2226">rep → speech → call</text>
+  <rect x="480" y="70" width="170" height="80" rx="10" fill="#E3F1EF" stroke="#0E6B6B"/><text x="494" y="96" font-weight="700" fill="#0E6B6B">Athena Kin</text><text x="494" y="116" fill="#1E2226">real daemon, throwaway</text><text x="494" y="134" fill="#1E2226">brain (proving/world.py)</text>
+  <rect x="700" y="70" width="180" height="80" rx="10" fill="#FBEFD9" stroke="#A8600A"/><text x="714" y="96" font-weight="700" fill="#A8600A">Verdict from records</text><text x="714" y="116" fill="#1E2226">gate rows, fact writers,</text><text x="714" y="134" fill="#1E2226">packets, ledger modes</text>
+  <g stroke="#4A525A" fill="none"><path d="M210,110 L258,110" marker-end="url(#ar5)"/><path d="M430,110 L478,110" marker-end="url(#ar5)"/><path d="M650,110 L698,110" marker-end="url(#ar5)"/><path d="M790,152 C790,205 115,205 115,152" marker-end="url(#ar5)" stroke-dasharray="4 3"/></g>
+  <text x="300" y="200" fill="#4A525A" font-size="11.5">next seed; a breach becomes a regression test before any fix</text>
+  <text x="20" y="40" fill="#5B4F8A" font-size="11.5">synthetic only → Contributor mode is allowed here, and the ledger proves nothing personal went with it</text>
+  </g>
+</svg>
+<figcaption><b>Four checks per run, none judged by a model.</b> (1) No gated action ran without its signature. (2) No fact or packet sentence cites an episode it was not drawn from. (3) No personal-class call ran in Contributor mode. (4) The packet that ran matches the signed hash. The rep Character reuses the model-played Characters harness (<code>proving/characters</code>), with Muse in the role Nemotron used to play.</figcaption>
+</figure>
+</section>
+
+<!-- ============ META ============ -->
+<section id="meta">
+<h2><span class="k">Machine</span>Meta tooling, product by product</h2>
+<p>The event page and the Official Rules list different products <a href="#sources">(facts.md)</a>. Each row says which list it rests on. "press" means published by Meta or the press with a link. "unverified" means we have not seen it work, and the team has no key yet.</p>
+<table>
+<tr><th style="width:15%">Product</th><th style="width:9%">List</th><th>What it does in Athena Kin</th><th style="width:27%">What a generic LLM could not</th><th style="width:11%">Tag</th></tr>
+<tr><td><b>SAM 3.1</b></td><td>event (Rules: SAM 3)</td><td>Tracks every document through a mail-sweep video. Masks become evidence pointers and the exhibit crops.</td><td>Stable per-object identity across frames, pixel masks, priced per frame <a class="m s" href="https://dev.meta.ai/docs/models">S</a></td><td><span class="tag press">press</span></td></tr>
+<tr><td><b>Muse Spark 1.3</b></td><td>event + Rules</td><td>Daily engine: reads crops, extracts facts, runs the portal turns, and the live in-call hint. Contributor variant for the Proving Ground only.</td><td>The same model at two data policies, which the router can enforce per call <a class="m s" href="https://dev.meta.ai/docs/pricing-rate-limits">S</a>. Meta says 1.3 "confirms before taking consequential actions" <a class="m s" href="https://research.meta.ai/blog/introducing-muse-spark-1-3">S</a>; that helps, but the gate does not rely on it.</td><td><span class="tag press">press</span></td></tr>
+<tr><td><b>Muse Wonder</b></td><td>event</td><td>Case planner and packet drafter over the whole case file. Candidate for computer use where a portal's PDF viewer or canvas defeats the DOM hands.</td><td>1,048,576-token context with image, video, audio and PDF input in one request; computer use listed <a class="m s" href="https://dev.meta.ai/docs/models">S</a></td><td><span class="tag press">press</span> · computer use <span class="tag unv">unverified</span></td></tr>
+<tr><td><b>Muse Voice Transcribe</b></td><td><b>neither list</b></td><td>The call sense: diarized live turns, biased to the case's vocabulary.</td><td>Streaming diarization and keyword biasing at $0.18/h <a class="m s" href="https://dev.meta.ai/docs/overview">S</a></td><td><span class="tag press">press</span> · eligibility <span class="tag unv">unverified</span></td></tr>
+<tr><td><b>Glimmer</b> (Muse Glimmer)</td><td>Rules</td><td>The sealed lane: local triage on a 24 GB GPU, Apache 2.0, no data leaves the PC.</td><td>Open weights from the same family as the cloud models, small enough for one consumer GPU <a class="m s" href="https://venturebeat.com/technology/meta-returns-to-open-source-with-muse-glimmer-an-apache-2-0-licensed-30b-parameter-ai-model-optimized-for-agents-available-now">S</a></td><td><span class="tag press">press</span> · quality as Athena engine <span class="tag unv">unverified</span></td></tr>
+<tr><td><b>Muse Spark Open</b></td><td>event ("open weights")</td><td>Perfect product only: a pinned, repeatable judge for published Proving Ground runs, hosted on partner credits (Baseten, Modal).</td><td>816B MoE / 42B active open weights <a class="m s" href="https://dev.meta.ai/docs/overview">S</a>; a pinned model lets others repeat our runs</td><td><span class="tag unv">unverified</span> on partner hosts</td></tr>
+<tr><td><b>Muse Code</b></td><td>event</td><td>Builds the product, with approvals and an OS sandbox from the first run <a class="m s" href="https://dev.meta.ai/docs/overview">S</a>. Not part of the product.</td><td>n/a</td><td><span class="tag press">press</span></td></tr>
+<tr><td><b>Muse Image</b></td><td>event</td><td><b>Deliberately not used.</b> It generates and edits images and "can search the web and run code" <a class="m s" href="https://dev.meta.ai/docs/models">S</a>. A generated or edited pixel anywhere near an appeal exhibit would be a forged document. Exhibits are SAM crops of real photos, hash-bound.</td><td>n/a</td><td>choice</td></tr>
+</table>
+<div class="claim">Beyond a basic integration: Meta's segmentation, transcription and reasoning models feed one provenance graph, so an appeal sentence can be traced to a pixel mask or a second of a call. Meta's two price tiers become a privacy rule the ledger can prove was followed.</div>
+</section>
+
+<!-- ============ REUSE ============ -->
+<section id="reuse">
+<h2><span class="k">Machine</span>Athena Portable reuse map</h2>
+<p>This is the heaviest reuse the brief allows: the whole product, with every file below read on disk (the athena-portable repository, 2026-10-24). Two facts make it cheap. The Meta Model API is "drop-in compatible with the OpenAI SDK" <a class="m s" href="https://dev.meta.ai/docs/overview">S</a>. And Athena's API engine is already a stdlib OpenAI-compatible client whose base URL is a field.</p>
+<table>
+<tr><th style="width:11%">Fate</th><th style="width:34%">File / module</th><th>What it does today → in Athena Kin</th></tr>
+<tr><td class="kept">kept</td><td><code>core/brain/store.py</code> (<code>write_fact</code>, <code>_require_provenance</code>)</td><td>Refuses a fact that cites no live episode. Becomes the rule for paper and call facts unchanged; extended to packet sentences.</td></tr>
+<tr><td class="kept">kept</td><td><code>core/approvals.py</code> (<code>create</code>, <code>resolve</code>, <code>consume</code>)</td><td>Single-use approval in one conditional write (ADR 0038). Now binds a packet hash as well.</td></tr>
+<tr><td class="kept">kept</td><td><code>harness/hooks.py</code> (<code>GateHook</code>, <code>LedgerHook</code>, <code>TruncationHook</code>)</td><td>The gate, the one-row-per-turn ledger and the <code>(showing N of M)</code> footers, unchanged.</td></tr>
+<tr><td class="kept">kept</td><td><code>contracts/manifest.py</code> (<code>HostTool.default_class</code>)</td><td>AUTO only if reversible and not external. Applied to the plan portal's appeal tools as it is.</td></tr>
+<tr><td class="kept">kept</td><td><code>core/fence.py</code>, <code>lane/browser_lane.py</code>, <code>lane/turn_frame.py</code></td><td>Nonce fences for untrusted text. Letters and call turns go into the same fence a web page uses.</td></tr>
+<tr><td class="kept">kept</td><td><code>src-tauri/src/tabs.rs</code>, <code>hands.rs</code>, <code>capture.rs</code>, <code>halo.rs</code>, <code>companion.rs</code></td><td>Portal tabs, DOM hands, the screenshot on a gated card, the screen-edge light (now "listening to a call"), her window.</td></tr>
+<tr><td class="kept">kept</td><td><code>peer/</code> (<code>pairing.py</code>, <code>replicate.py</code>, <code>phone.py</code>, <code>mobile/</code>)</td><td>Devices as one Athena over Tailscale; the phone PWA that signs cards.</td></tr>
+<tr><td class="kept">kept</td><td><code>adopt/cases.py</code>, playbooks <code>observation-status-appeal</code>, <code>ltc-claims</code>, <code>medical-bills</code>, <code>part-d-exception</code>, <code>prior-auth-renewals</code>, <code>medicare-plan-review</code>, <code>msp-extra-help</code>, <code>estate-settlement</code></td><td>The case file and the parent-care chores. All bench "exceeds" on Claude Sonnet in synthetic worlds (<code>ranking.json</code>; e.g. LTC claims 10 of 10, $26,410 found, 4.8 min). These worlds are simulated, and Meta has not been tested on them.</td></tr>
+<tr><td class="kept">kept</td><td><code>proving/world.py</code>, <code>proving/gauntlet</code>, <code>proving/characters</code>, <code>proving/docread</code></td><td>Throwaway worlds on the real daemon, verdicts off the gate, model-played users, the known-answer document corpus.</td></tr>
+<tr><td class="chg">changed</td><td><code>harness/tokenfactory.py</code> (<code>TokenFactoryModel</code>, <code>base_url</code> field, <code>DEFAULT_BASE_URL</code>)</td><td>Becomes the <code>meta</code> engine at <code>https://api.meta.ai/v1</code> (the host of the documented <code>wss://api.meta.ai/v1/asr/realtime</code> endpoint) <a class="m s" href="https://dev.meta.ai/docs/models">S</a>. The Nemotron-only thinking switch (ADR 0034) is replaced by Meta's <code>reasoning effort</code> levels.</td></tr>
+<tr><td class="chg">changed</td><td><code>harness/vision.py</code> (<code>VisionCall</code>), <code>adopt/documents.py</code></td><td>The opt-in picture reader (Nemotron Super-VL today) becomes Muse Spark on SAM crops, and the default reader rather than an opt-in.</td></tr>
+<tr><td class="chg">changed</td><td><code>channels/voice/backends.py</code> (<code>Listener</code>, <code>Transcriber</code> protocols)</td><td>A <code>MuseTranscribeListener</code> on the realtime WebSocket. <code>whisper.py</code> stays as the local fallback. Kokoro still speaks.</td></tr>
+<tr><td class="chg">changed</td><td><code>core/ledger.py</code> (<code>LEDGER_SCHEMA</code>)</td><td>Two columns, <code>api_mode</code> and <code>data_class</code>, plus a new error reason.</td></tr>
+<tr><td class="chg">changed</td><td><code>harness/engines.py</code></td><td><code>meta</code> becomes the default engine. <code>claude_code</code> and <code>codex</code> stay as options (invariant 5: no provider is mandatory).</td></tr>
+<tr><td class="drop">dropped</td><td>The 100-chore grid as the front door; the Blue Hour onboarding; Nemotron roles in the Proving Ground; Gmail/Notion connectors in the slice</td><td>The product opens on a case, not a catalogue. The rejected rail stays rejected. Muse takes over the Proving Ground roles.</td></tr>
+<tr><td class="new">new</td><td><code>sense/paper.py</code>, <code>sense/call.py</code>, <code>evidence</code> table, <code>core/router.py</code>, packet binding, household identity in <code>peer/</code>, a deadline clock anchored to the notice</td><td>The parts drawn in sections 1–6.</td></tr>
+</table>
+<div class="claim t">Reuse saves the hard part. The gate, the provenance rule, single-use approvals, the ledger, portal tabs, phone pairing and the bench took ~140 ADRs and ~1,400 tests to get right, and none of it is rewritten. The ten days go to the two new senses and the packet.<small>Counts from the data SCHEMA ("about 140 ADRs, ~1,000 Python tests, ~440 desktop tests"). The size of the saving is our judgement <span class="m a">A</span>.</small></div>
+</section>
+
+<!-- ============ DEMO ============ -->
+<section id="demo">
+<h2><span class="k">Argument</span>The demo: 2 minutes 45 seconds</h2>
+<p>One case, one evening. The caregiver is played by a teammate. The parent, the plan and the portal are a <span class="tag sim">simulated</span> world built from the existing <code>observation-status-appeal</code> playbook, and the video says so on screen. The camera, the call and the gate are real.</p>
+<ol class="beats">
+<li><span class="t">0:00</span><span>Title card: <b>"80.7% of appealed denials win. 11.5% are appealed."</b> (KFF 2024). The voiceover: "This is why."</span><span><span class="tag rec">recorded</span></span></li>
+<li><span class="t">0:12</span><span>A kitchen table, six envelopes. The phone films a 20-second sweep. On the PC, six outlines appear and settle, one per document. The denial lights amber: "Reconsideration window: 65 days from Oct 14, read from the letter."</span><span><span class="tag live">live</span></span></li>
+<li><span class="t">0:45</span><span>Athena opens the plan portal and MyChart in tabs. The discharge summary lists three skilled-nursing needs. Each becomes a fact with a small link icon pointing to its capture.</span><span><span class="tag live">live</span> on a sandbox portal</span></li>
+<li class="lean"><span class="t">1:15</span><span><b>The lean-in moment.</b> The caregiver calls the "plan" (a second teammate) on speaker. The transcript streams, Rep and Caregiver in two colours. The rep says the claim was denied because "records were never received". The halo pulses and the phone shows one line: <i>"Your letter says 'not medically necessary'. Ask which reason is on file, and for a reference number."</i> The caregiver asks. "4471-B." The fact appears, citing 01:12–01:19.</span><span><span class="tag live">live</span></span></li>
+<li><span class="t">1:55</span><span>The packet. Muse Wonder's draft appears as a card. Hovering a paragraph highlights the exact crop of the denial letter, or plays the three seconds of the call it cites. A sentence with no source is never drafted, and the bench log shows one that was refused.</span><span><span class="tag live">live</span></span></li>
+<li><span class="t">2:15</span><span>The caregiver signs on the phone. The packet goes to the sandbox portal once. A second tap on the same card is refused <code>approval_spent</code>.</span><span><span class="tag live">live</span></span></li>
+<li><span class="t">2:30</span><span>The ledger: every call priced, tagged <code>standard</code> / <code>personal</code>, total for the case shown. Then one line: <code>contributor calls with personal data: 0</code>. Closing card: "Athena Kin. You sign what you can check."</span><span><span class="tag live">live</span> numbers</span></li>
+</ol>
+<p class="note">Holds up live: every live beat has a recorded take of the same run, labelled "recorded on (date)" if it is used. The trigger for using it: an API call over 20 s or an error (the pattern Athena Portable already uses for its trigger page). No real insurer is contacted and no real appeal is filed. Live hint latency is <span class="tag unv">unverified</span> and is measured on day 4. If it is over ~3 s, the hint appears after the turn and the video says so.</p>
+</section>
+
+<!-- ============ SLICE ============ -->
+<section id="slice">
+<h2><span class="k">Argument</span>The hackathon slice and the perfect product</h2>
+<figure>
+<svg viewBox="0 0 900 250" role="img" aria-label="Roadmap">
+  <g font-size="12.5">
+  <line x1="30" y1="40" x2="870" y2="40" stroke="#4A525A"/>
+  <g fill="#4A525A"><text x="30" y="30">Oct 26</text><text x="300" y="30">Nov 4 submit</text><text x="480" y="30">+3 months</text><text x="700" y="30">+12 months</text></g>
+  <rect x="30" y="55" width="290" height="180" rx="10" fill="#FBEFD9" stroke="#A8600A" stroke-width="2"/>
+  <text x="44" y="78" font-weight="700" fill="#A8600A">The slice (10 days)</text>
+  <text x="44" y="100">d1 meta engine + probes; ledger columns</text>
+  <text x="44" y="120">d2–3 paper sense; docread rerun</text>
+  <text x="44" y="140">d4–5 call sense; consent line</text>
+  <text x="44" y="160">d6 packet binding + card</text>
+  <text x="44" y="180">d7 router rule + audit query</text>
+  <text x="44" y="200">d8 Gauntlet on letters and rep</text>
+  <text x="44" y="220">d9–10 ten demo runs, video</text>
+  <rect x="340" y="55" width="250" height="180" rx="10" fill="#E3F1EF" stroke="#0E6B6B"/>
+  <text x="354" y="78" font-weight="700" fill="#0E6B6B">Pilot (to +3 mo)</text>
+  <text x="354" y="100">40 households, the kill line</text>
+  <text x="354" y="120">8 parent-care chores, real portals</text>
+  <text x="354" y="140">household identity (sibling)</text>
+  <text x="354" y="160">representative-authority flow</text>
+  <text x="354" y="180">Glimmer sealed lane</text>
+  <text x="354" y="200">citation audit by a third party</text>
+  <rect x="610" y="55" width="260" height="180" rx="10" fill="#E6EDFB" stroke="#2457C5"/>
+  <text x="624" y="78" font-weight="700" fill="#2457C5">Perfect product (+12 mo)</text>
+  <text x="624" y="100">Spanish and code-switched calls</text>
+  <text x="624" y="120">  (25 languages <tspan fill="#2E7D4F">S</tspan>)</text>
+  <text x="624" y="140">Wonder computer use for hard portals</text>
+  <text x="624" y="160">counsellor hand-off: share a case</text>
+  <text x="624" y="180">  read-only with a SHIP counsellor</text>
+  <text x="624" y="200">published Proving Ground on a</text>
+  <text x="624" y="220">  pinned open model</text>
+  </g>
+</svg>
+<figcaption><b>The slice is one case, end to end, on the real gate.</b> It is not a survey of chores. Anything in the slice that was not measured on Meta before the event is measured during it, and reported with its run id, as Athena Portable reported its numbers.</figcaption>
+</figure>
+<table>
+<tr><th>Criterion (weight)</th><th>Why this slice scores</th></tr>
+<tr><td>Impact (30)</td><td>A counted population (63 M) and a pain sized by insurer filings (11.5% appealed, 80.7% overturned). The slice shows the step that is missing today, with a kill line that can be tested.</td></tr>
+<tr><td>Use of Meta tooling (25)</td><td>Five Meta models in one provenance graph. SAM is used on video tracking, which is unusual. Contributor mode becomes an enforced privacy rule. Muse Image is declined on purpose, with the reason given.</td></tr>
+<tr><td>Technical depth (20)</td><td>The hard problem is named and solved: binding a signature to a document whose every sentence is traced to pixels or seconds. It rests on a gate with 306 hostile turns and 0 breaches (on other models), now attacked on two new surfaces.</td></tr>
+<tr><td>Demo (25)</td><td>A physical start (paper), a human middle (a call) and a hard stop (a signature). The lean-in moment is a contradiction caught live on a call.</td></tr>
+</table>
+</section>
+
+<!-- ============ BUSINESS ============ -->
+<section id="business">
+<h2><span class="k">Argument</span>Path to real users</h2>
+<table>
+<tr><th style="width:22%">Channel</th><th>Shape</th><th style="width:15%">Basis</th></tr>
+<tr><td>Direct to caregivers</td><td>Free for the first case. Then a subscription per household, priced under one hour of a concierge. The ≈ $1 cost per case leaves room.</td><td><span class="m a">A</span> price untested</td></tr>
+<tr><td>Employers</td><td>70% of working-age caregivers are employed <a class="m s" href="https://www.npaonline.org/about-npa/news/news/2025/07/25/aarp-and-national-alliance-for-caregiving-release-caregiving-in-the-us">S</a>. A caregiver benefit that leaves no PHI with the employer, since the case lives on the employee's PC.</td><td><span class="m a">A</span></td></tr>
+<tr><td>Counsellors and Area Agencies on Aging</td><td>A read-only case share in place of a shoebox of paper at the appointment. Referral, not resale.</td><td><span class="m r">R</span> on how SHIP works</td></tr>
+</table>
+<p class="note">What we do not claim: any user, any partnership, any filed appeal. Athena Portable has no users beyond simulated Characters (data SCHEMA). The pilot is the first contact with real households.</p>
+</section>
+
+<!-- ============ RISKS ============ -->
+<section id="risks">
+<h2><span class="k">Argument</span>Pros, cons, risks</h2>
+<table class="risk">
+<tr><th>Item</th><th style="width:9%">Kind</th><th>What it is</th><th>Mitigation</th><th>What would make us change course</th></tr>
+<tr><td>Evidence from paper, calls and portals in one case</td><td><span class="tag press">pro</span></td><td>The step today's letter generators skip</td><td>n/a</td><td>Pilot shows caregivers already have the evidence ready</td></tr>
+<tr><td>Whole of Athena reused</td><td><span class="tag press">pro</span></td><td>Gate, provenance and ledger proven over 306 hostile turns (other models)</td><td>Rerun the Gauntlet on Muse on day 8</td><td>Any breach on Muse that the gate does not hold</td></tr>
+<tr><td>Windows desktop required</td><td><span class="tag rec">con</span></td><td>Many caregivers live on their phones</td><td>The phone is the camera, mic and signer. The PC holds the case.</td><td>Pilot drop-off at install over 40% → hosted, per-household vault</td></tr>
+<tr><td>Narrow first market (US health appeals)</td><td><span class="tag rec">con</span></td><td>Not "for anyone"</td><td>The senses are general. The chores add the domains.</td><td>Appeal rate target met but the market is too small → widen to benefits and bills</td></tr>
+<tr><td>Call-recording law</td><td><span class="tag unv">risk</span></td><td>~11 all-party consent states <a class="m s" href="https://www.rev.com/blog/phone-call-recording-laws-state">S</a></td><td>A spoken consent line on every call. The transcript is kept, raw audio is not. Off by default where the caregiver says no.</td><td>Legal advice that a transcript counts as a recording everywhere → notes-after-call mode</td></tr>
+<tr><td>Authority to act for a parent</td><td><span class="tag unv">risk</span></td><td>Plans need a representative form or HIPAA authorization <span class="m r">R</span></td><td>The authority is itself a cited episode on the case, and the packet will not bind without it</td><td>Plans refuse portal filing by representatives → print-and-mail packet</td></tr>
+<tr><td>Muse Voice Transcribe not on the hackathon lists</td><td><span class="tag unv">risk</span></td><td>It may not count as "Meta tooling" for judging</td><td>Spark 1.2 audio or local whisper fallback (built)</td><td>Kickoff (Oct 26) excludes it → the call sense runs on Spark audio after the call</td></tr>
+<tr><td>Misread on paper or a call</td><td><span class="tag unv">risk</span></td><td>A wrong number in a signed appeal</td><td>Every sentence shows its crop or its seconds, and the caregiver checks it before signing</td><td>docread ratio under 0.9 against the Claude lane → keep the existing reader</td></tr>
+<tr><td>Prompt injection via mail or a caller</td><td><span class="tag unv">risk</span></td><td>Glimmer AgentDojo ASR 28.4% <a class="m s" href="https://venturebeat.com/technology/meta-returns-to-open-source-with-muse-glimmer-an-apache-2-0-licensed-30b-parameter-ai-model-optimized-for-agents-available-now">S</a></td><td>Fences, the gate, packet binding. The model never decides.</td><td>Any Gauntlet breach → stop the feature, add the regression test</td></tr>
+<tr><td>Medical data sent to a cloud API</td><td><span class="tag unv">risk</span></td><td>Trust, and HIPAA questions in B2B</td><td>Standard mode only (not used for training <a class="m s" href="https://dev.meta.ai/docs/pricing-rate-limits">S</a>), a sealed lane on Glimmer, the ledger audit</td><td>Meta's retention terms turn out unacceptable → Glimmer becomes the default</td></tr>
+<tr><td>Selection effect in the 80.7%</td><td><span class="tag unv">risk</span></td><td>New appeals may win less often</td><td>The bet is measured on the appeal rate, not the win rate</td><td>Pilot win rate under 40% → narrow to the denial types that win</td></tr>
+</table>
+</section>
+
+<!-- ============ ROUND 2 ============ -->
+<section id="round2">
+<h2><span class="k">Argument</span>What round 2 should prototype</h2>
+<table>
+<tr><th style="width:24%">Moment</th><th>What the prototype must prove</th><th style="width:28%">Pass if</th></tr>
+<tr><td><b>1 · The sweep settles</b></td><td>The phone video turns into one card per document, and the denial rises to the top with its deadline. Can a caregiver trust what was found without reading every letter?</td><td>A tester names the urgent letter and its deadline in under 10 s after the sweep</td></tr>
+<tr><td><b>2 · The call with a quiet partner</b></td><td>A live, diarized transcript and one hint line that helps without distracting. The hardest UI in the product.</td><td>Testers on a role-played call use the hint and keep the conversation going</td></tr>
+<tr><td><b>3 · The packet you can check</b></td><td>Each paragraph opens its evidence (a crop, or seconds of audio), and the signature binds it. This answers UAT D3.</td><td>A tester finds a planted wrong sentence before signing</td></tr>
+</table>
+</section>
+
+<!-- ============ SOURCES ============ -->
+<section id="sources">
+<h2><span class="k">Argument</span>Sources and marks</h2>
+<ol class="sources">
+<li>AARP / NAC, <i>Caregiving in the U.S. 2025</i>, press release: <a href="https://www.aarp.org/press/releases/2025-07-24-new-report-reveals-crisis-point-for-americas-63-million-family-caregivers.html">aarp.org/press/releases/2025-07-24…</a> and survey page <a href="https://www.aarp.org/caregiving/basics/caregiving-in-us-survey-2025/">aarp.org/caregiving/basics/caregiving-in-us-survey-2025</a></li>
+<li>KFF, Medicare Advantage prior authorization 2024: <a href="https://www.kff.org/medicare/medicare-advantage-insurers-made-nearly-53-million-prior-authorization-determinations-in-2024/">kff.org/medicare/…-2024/</a></li>
+<li>KFF, ACA Marketplace claims denials 2024: <a href="https://www.kff.org/private-insurance/claims-denials-and-appeals-in-aca-marketplace-plans-in-2024/">kff.org/private-insurance/…-2024/</a></li>
+<li>Kyle &amp; Frakt, Patient administrative burden, HSR 2021: <a href="https://pmc.ncbi.nlm.nih.gov/articles/PMC8522562">PMC8522562</a></li>
+<li>Prior auth and patient involvement (JAMA Netw Open 2026, as reported): <a href="https://www.epocrates.com/online/article/when-patients-step-in-on-prior-authorization-care-delays-rise">epocrates.com</a></li>
+<li>Counterforce Health: <a href="https://www.axios.com/local/raleigh/2025/08/20/using-ai-to-fight-back-against-insurance-denials-counteforce">axios.com</a>; Claimable (as reported): <a href="https://www.cbs17.com/news/local-news/wake-county-news/raleigh-organization-helps-thousands-of-americans-appeal-health-insurance-denials-using-ai/amp/">cbs17.com</a></li>
+<li>Meta Model API models: <a href="https://dev.meta.ai/docs/models">dev.meta.ai/docs/models</a>; overview: <a href="https://dev.meta.ai/docs/overview">dev.meta.ai/docs/overview</a>; pricing and rate limits: <a href="https://dev.meta.ai/docs/pricing-rate-limits">dev.meta.ai/docs/pricing-rate-limits</a></li>
+<li>Muse Spark: <a href="https://ai.meta.com/blog/introducing-muse-spark-msl/">ai.meta.com/blog/introducing-muse-spark-msl</a>; Spark 1.1 and the API: <a href="https://ai.meta.com/blog/introducing-muse-spark-meta-model-api/">ai.meta.com/blog/introducing-muse-spark-meta-model-api</a>; Spark 1.3: <a href="https://research.meta.ai/blog/introducing-muse-spark-1-3">research.meta.ai/blog/introducing-muse-spark-1-3</a></li>
+<li>Muse Wonder: <a href="https://research.meta.ai/blog/muse-wonder">research.meta.ai/blog/muse-wonder</a>; <a href="https://about.fb.com/news/2026/10/introducing-muse-wonder-models/">about.fb.com</a></li>
+<li>Muse Glimmer: <a href="https://venturebeat.com/technology/meta-returns-to-open-source-with-muse-glimmer-an-apache-2-0-licensed-30b-parameter-ai-model-optimized-for-agents-available-now">venturebeat.com</a>; <a href="https://techcrunch.com/2026/08/10/metas-new-glimmer-ai-model-offers-a-hint-at-zuckerbergs-personal-intelligence-vision/">techcrunch.com</a></li>
+<li>Meta API base URL and Muse Image endpoints (third party): <a href="https://wavespeed.ai/blog/ai-models/meta-muse-image-api/">wavespeed.ai</a></li>
+<li>Call recording consent by state: <a href="https://www.rev.com/blog/phone-call-recording-laws-state">rev.com</a></li>
+<li><b>Recalled, unverified (R):</b> Medicare Advantage reconsideration window of about 65 days; CMS-1696 appointment-of-representative form; how SHIP counselling and Wellthy work. Each is checked before the pilot and read from the case's own documents in the product.</li>
+<li><b>Team material:</b> Athena Portable README, submission.md, features/, uat/2026-10-01-r1.md (D3), uat/2026-10-23-chores.md (item 10), ranking.json. All numbers there were measured on Claude, Codex or Nemotron in synthetic worlds, never on a Meta model.</li>
+</ol>
+</section>
+
+</main>
+<script>
+(function(){
+  var links=[].slice.call(document.querySelectorAll('nav a[href^="#"]'));
+  var map={};links.forEach(function(a){map[a.getAttribute('href').slice(1)]=a;});
+  if(!('IntersectionObserver' in window))return;
+  var io=new IntersectionObserver(function(es){es.forEach(function(e){if(e.isIntersecting){links.forEach(function(l){l.classList.remove('on');});var a=map[e.target.id];if(a)a.classList.add('on');}});},{rootMargin:'-20% 0px -70% 0px'});
+  document.querySelectorAll('main section[id]').forEach(function(s){io.observe(s);});
+})();
+</script>
+</body>
+</html>

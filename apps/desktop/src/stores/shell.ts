@@ -22,20 +22,45 @@ export function applyTheme(theme: Theme): void {
   document.documentElement.setAttribute("data-theme", theme);
 }
 
+/**
+ * The skin the window wears (ADR 0142): a layer of tokens and decorative layers over the same
+ * markup, chosen in Mind > Look. `athena` is the product's own teal and has no rules of its own;
+ * every other skin is one sheet in `styles/skins/` whose every selector starts at
+ * `:root[data-skin="<id>"]`. A skin never changes a size, a position or a word.
+ */
+export const SKINS = ["athena", "loop-tide"] as const;
+
+export type Skin = (typeof SKINS)[number];
+
+export const DEFAULT_SKIN: Skin = "athena";
+
+export function isSkin(value: unknown): value is Skin {
+  return typeof value === "string" && (SKINS as readonly string[]).includes(value);
+}
+
+/** The one writer of `data-skin`. */
+export function applySkin(skin: Skin): void {
+  if (typeof document === "undefined") return;
+  document.documentElement.setAttribute("data-skin", skin);
+}
+
 export interface ShellState {
   theme: Theme;
+  skin: Skin;
   setTheme: (theme: Theme) => void;
 }
 
 export const useShell = create<ShellState>((set) => ({
   theme: "dark",
+  skin: DEFAULT_SKIN,
   setTheme: (theme) => {
     applyTheme(theme);
     set({ theme });
   },
 }));
 
-/** Paint the theme the store holds, so the first frame is right in every window. */
+/** Paint the theme and skin the store holds, so the first frame is right in every window. */
 export function startShell(): void {
   applyTheme(useShell.getState().theme);
+  applySkin(useShell.getState().skin);
 }

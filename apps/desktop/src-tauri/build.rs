@@ -25,6 +25,7 @@ fn main() {
         tauri_build::Attributes::new().app_manifest(tauri_build::AppManifest::new().commands(&[
             // tabs.rs (c18)
             "tabs_create",
+            "tabs_open_background",
             "tabs_close",
             "tabs_focus",
             "tabs_navigate",
@@ -61,9 +62,11 @@ fn main() {
             // companion.rs (ADR 0026) - her window: named sizes, show and hide, pin, and what she
             // reports. All seven are hers; `athena_show`, `athena_hide`, `athena_snap_to` and
             // `athena_open_main` are also the chrome's (the status pill summons her).
+            // `athena_toggle` is the chrome's alone: Main's illustration of her is the switch.
             "athena_set_size",
             "athena_show",
             "athena_hide",
+            "athena_toggle",
             "athena_pin",
             "athena_report",
             "athena_snap_to",
