@@ -76,6 +76,12 @@ stopped through `POST /tasks/<id>/stop` only.
   any turn. A task with no app needs no page session at all: its `/run` may carry an empty or
   absent `origin`, every host origin is switched off for its turn (out of the prompt, refused at
   the gate), and it has Athena's own and the connectors' tools only; the window still drives it.
+- **A task's tab (amends ADR 0026).** The window binds an open tab of the task's app that is neither
+  the focused tab (the person is looking at it, and the main thread works there) nor another task's.
+  When there is none it opens one with `tabs_open_background`, behind the person's page and never
+  focused, and waits for the page to register its tools before the task's first turn. This is the
+  one tab command her window holds: ADR 0026 gave her none, so that she never opens, closes or
+  selects anything in Main; she still cannot close, focus or navigate a tab.
 - **Kill.** `POST /tasks/<id>/stop` makes a queued row killed, and a running row killed with its
   turn stopped through its door. A killed task's next continuation is refused, and its finish is
   refused, so a kill is final.
