@@ -139,7 +139,8 @@ export interface TaskCardOwner {
   /** The origin the task's turns run on: the one an answer states for an unbound card. */
   origin: string;
   /** The daemon took the answer. `execute` is what it released; empty for a decline. */
-  release: (outcome: { approved: boolean; execute: ExecuteRow[] }) => void;
+  /** `results` are what the daemon ran itself at the approval (a core or connector tool), carried. */
+  release: (outcome: { approved: boolean; execute: ExecuteRow[]; results?: Array<Record<string, unknown>> }) => void;
 }
 
 /** How the user's answer to one card ended. `refused` means the daemon did not take it. */
@@ -955,7 +956,8 @@ export function setupBody(
     disabled_origins: taking.disabledOrigins,
     // The main thread's turn, not a delegated task's (fleet-surfaces, ADR 0141).
     task_id: null,
-    ...(start ? { start: true } : {}),
+    // Absent on every other turn (`undefined` is not sent).
+    start: start || undefined,
   };
 }
 
@@ -964,7 +966,7 @@ export function setupBody(
  * shown and never sent as words - {@link setupBody} turns it into `start: true` and an empty
  * message, and the daemon writes her opening.
  */
-export const SETUP_START = "\u0000setup:start";
+export const SETUP_START = "\u0000start";
 
 export const NOTHING_GATED: GatedLists = { gated_origins: [], gated_tools: [] };
 
@@ -1820,13 +1822,22 @@ export const useRun = create<RunState>((set, get) => {
       owner?.release({ approved: false, execute: [] });
       return { taken: true, result, reason: "user_denied", sentence: "", ran: [] };
     }
+    // A tool the daemon ran itself - a core, connector or setup tool - comes back with no row to
+    // run: its result is in the answer's events. It is carried on the next request like a page's,
+    // so she reads what happened and goes on; without it there was nothing outstanding, and an
+    // approved setup step left her silent until the person spoke again.
+    const done = resolution.execute.length ? [] : (await import("./ran")).ranRows(resolution.events);
     // A task's card: what it released runs on the task's tab, in the task's conversation.
     if (owner) {
-      owner.release({ approved: true, execute: resolution.execute });
+      owner.release({ approved: true, execute: resolution.execute, results: done.map((r) => r.row) });
       return { taken: true, result, reason: null, sentence: "", ran: [] };
     }
     const ran: Ran[] = [];
     for (const row of resolution.execute) ran.push(await onPage(row, true, taking));
+    for (const d of done) {
+      outstanding.push(d.row);
+      push(d.entry);
+    }
     return { taken: true, result, reason: null, sentence: "", ran };
   }
 

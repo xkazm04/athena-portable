@@ -21,9 +21,13 @@ stranger and a 404 only to a peer), and before any body is read. A route marked 
 pairing steps and WP4's static phone page - runs without a token; it was still address-gated.
 
 **Bound only while it is needed.** :meth:`PeerHost.reconcile` binds the listener while at least
-one live peer row exists, a pairing window or an unclaimed approval is open, or the beacon is on,
-and closes it when none holds. The lifecycle tick (every :data:`TICK_S`) reaps expired rows,
-expires windows, retries a pair-back delivery and polls an outgoing join, then reconciles. With no
+one live peer row exists, a pairing window or an unclaimed approval is open, the beacon is on, or
+the person opened a setup conversation here in the last :data:`~athena.peer.setup.SETUP_LISTEN_S`
+seconds, and closes it when none holds. The last is what lets two computers that are both being
+set up find each other's Athena before either has a pairing window open: a stranger still gets
+401 from everything but the two pairing steps, and those still need a window. The lifecycle
+tick (every :data:`TICK_S`) reaps expired rows, expires windows, retries a pair-back delivery and
+polls an outgoing join, then reconciles. With no
 overlay address (``overlay.state`` ``absent`` or ``logged_out``) the listener stays down, whatever
 is wanted.
 
@@ -403,6 +407,9 @@ class PeerHost:
         self.bind_error: str | None = None
         #: ``hello``'s ``setup_phase``: ``None`` until WP4's setup state replaces it (ADR 0140).
         self.setup_phase: Callable[[], str | None] = lambda: None
+        #: Whether this device's person is in a setup conversation (WP4's setup state answers it):
+        #: the listener is then up too, so the other computer's probe finds Athena here.
+        self.listen_for_setup: Callable[[], bool] = lambda: False
         self._lock = threading.RLock()
         self._server: PeerServer | None = None
         self._serve_thread: threading.Thread | None = None
@@ -462,7 +469,12 @@ class PeerHost:
         return {base} if base else set()
 
     def wanted(self) -> bool:
-        return self.registry.live_count() > 0 or self.pairings.active() or self.beacon
+        return (
+            self.registry.live_count() > 0
+            or self.pairings.active()
+            or self.beacon
+            or self.listen_for_setup()
+        )
 
     def reconcile(self) -> None:
         """Bind the listener if it is wanted and the overlay is up; close it if not wanted."""

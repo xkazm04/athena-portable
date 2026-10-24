@@ -186,7 +186,7 @@ interface Active {
   /** Its cards still on the person. */
   cards: Set<string>;
   /** Answers to its cards the daemon took, waiting for the loop: what to run, or a decline. */
-  released: Array<{ approved: boolean; execute: ExecuteRow[]; action: string }>;
+  released: Array<{ approved: boolean; execute: ExecuteRow[]; results?: Array<Record<string, unknown>>; action: string }>;
   /** Wakes the loop resting on a card. */
   wake: (() => void) | null;
   /** The finish is on its way: the `task.changed` it causes is no kill. */
@@ -540,7 +540,11 @@ async function settleCards(run: Active): Promise<string> {
   for (const outcome of run.released.splice(0)) {
     forgetUnsure(outcome.action);
     if (!outcome.approved) declined.push(outcome.action);
-    else for (const row of outcome.execute) await onTab(run, row, true);
+    else {
+      // What the daemon ran itself at the approval rides the next request, as a page's result does.
+      run.outstanding.push(...(outcome.results ?? []));
+      for (const row of outcome.execute) await onTab(run, row, true);
+    }
   }
   return declined.length ? `(the person declined ${declined.join(", ")}; continue without it)` : CONTINUE;
 }
@@ -655,7 +659,7 @@ async function request(run: Active, message: string): Promise<string> {
 function ownerOf(run: Active, id: string, action: string) {
   return {
     origin: run.origin,
-    release: (outcome: { approved: boolean; execute: ExecuteRow[] }) => {
+    release: (outcome: { approved: boolean; execute: ExecuteRow[]; results?: Array<Record<string, unknown>> }) => {
       run.cards.delete(id);
       run.released.push({ ...outcome, action });
       run.wake?.();

@@ -1825,3 +1825,9 @@ body.athena {
 :root[data-motion="calm"] .aw .meter i {
   height: 14px;
 }
+
+/* Her words' inline code (`companion/rich.tsx`): a name she quotes, in the mono face, never wider than the rail. */
+.aw .msg-her .txt code {
+  font: 0.92em/1.4 var(--font-mono);
+  overflow-wrap: anywhere;
+}

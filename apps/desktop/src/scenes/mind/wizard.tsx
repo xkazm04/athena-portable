@@ -479,6 +479,10 @@ function PhoneCode({ model, now, spent, onMint }: { model: DevicesModel; now: nu
         ) : (
           <>
             <p className="typo-body">Point your phone&apos;s camera at the code. Athena&apos;s page opens there and asks this computer to let it in.</p>
+            <p className="typo-caption" data-need="overlay">
+              The page opens only on your private network: the phone needs the Tailscale app, signed in to the same account as this
+              computer. On the phone&apos;s Wi-Fi alone it will not load.
+            </p>
             <p className="cwizard__codeline">
               <span className="typo-caption">Code</span> <strong className="devices__code">{code}</strong>
             </p>

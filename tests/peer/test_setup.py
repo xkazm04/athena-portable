@@ -37,6 +37,7 @@ from athena.peer.setup import (
     FIREWALL_RULE,
     NOT_HERE,
     PEER_LIMIT,
+    SETUP_LISTEN_S,
     WINGET_ARGV,
     Ran,
     SetupLive,
@@ -46,7 +47,7 @@ from athena.peer.setup import (
     firewall_show_argv,
 )
 
-from .conftest import Device
+from .conftest import Device, http
 
 BINARY = "tailscale"
 PEER_IP = "100.101.7.8"
@@ -524,6 +525,25 @@ def test_the_setup_route_answers_with_the_session(device: Device) -> None:
     assert opened.status == 200
     assert opened.body["origin"] == SETUP_SESSION_ORIGIN
     assert opened.body["conversation_id"] == "conv_setup"
+
+
+def test_set_up_with_athena_keeps_the_listener_up_for_the_other_computers_probe(
+    device: Device, clock: Any
+) -> None:
+    """Before pairing, nothing keeps the listener up, so the other computer's probe said
+    "athena_asleep" about an Athena that was running. A setup conversation keeps it up for
+    SETUP_LISTEN_S, and a stranger still gets 401."""
+    device.host.reconcile()
+    assert device.host.bound is None, "nothing paired, no window: down"
+    assert device.ui("/devices/setup", method="POST", body={}).status == 200
+    assert device.host.bound is not None, "up at once, not at the next tick"
+    assert http(device.peer_port, "/peer/hello").status == 401
+    clock.advance(SETUP_LISTEN_S - 1)
+    device.host.reconcile()
+    assert device.host.bound is not None
+    clock.advance(2)
+    device.host.reconcile()
+    assert device.host.bound is None, "the setup window passed: down again"
 
 
 def _round(text: str) -> list[str]:

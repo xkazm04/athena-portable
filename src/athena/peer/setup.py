@@ -507,6 +507,12 @@ class SetupTools:
 # --- the setup conversation and its phase -------------------------------------------------------
 
 
+#: How long "Set up with Athena" keeps this device's peer listener up with nothing paired and no
+#: window open: long enough to walk to the other computer and press it there too, so each probe
+#: finds Athena on the other one. A stranger gets 401 from everything but the pairing steps.
+SETUP_LISTEN_S = 30 * 60
+
+
 class SetupState:
     """Whether this device's person opened a setup conversation, and what it is waiting for."""
 
@@ -518,6 +524,14 @@ class SetupState:
     def opened(self) -> None:
         with self._lock:
             self.opened_at = self.host.now()
+        # Up now, not at the next tick: the other computer's probe may already be asking.
+        self.host.reconcile()
+
+    def listening(self) -> bool:
+        """Was a setup conversation opened here in the last :data:`SETUP_LISTEN_S` seconds?"""
+        with self._lock:
+            opened = self.opened_at
+        return opened is not None and (self.host.now() - opened).total_seconds() < SETUP_LISTEN_S
 
     def phase(self) -> str | None:
         """``null`` until a setup conversation was opened here, then one word.
@@ -621,6 +635,7 @@ def wire_setup(daemon: AthenaDaemon, host: PeerHost, tools: SetupTools | None = 
     daemon.gate.policy = replace(policy, connectors=SetupLive(policy.connectors))
     state = SetupState(host)
     host.setup_phase = state.phase
+    host.listen_for_setup = state.listening
     for route in setup_routes(daemon, state, len(names)):
         daemon.routes.add(route)
     daemon.routes.add(Route("GET", "/devices/overlay", lambda request: overlay_peers(chosen)))

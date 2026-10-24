@@ -30,7 +30,7 @@ interface Seen {
   body: Record<string, unknown> | null;
 }
 
-function fakeDaemon(runs: Event[][]) {
+function fakeDaemon(runs: Event[][], decided: Event[] = []) {
   const seen: Seen[] = [];
   let turn = 0;
   const fetchImpl = async (url: string, init: RequestInit = {}) => {
@@ -48,7 +48,7 @@ function fakeDaemon(runs: Event[][]) {
         conversation_id: "conv_setup",
         execute: [],
         output: "{}",
-        events: [],
+        events: decided,
       });
     }
     if (path === "/run") {
@@ -143,6 +143,34 @@ describe("the setup conversation", () => {
     expect(runs[0]!.body).toMatchObject({ start: true, message: "" });
     expect(runs[1]!.body).toMatchObject({ message: "yes, go ahead" });
     expect(runs[1]!.body).not.toHaveProperty("start");
+  });
+
+  it("an approved step the daemon ran itself is carried on, and she goes on", async () => {
+    // The firewall step runs in the daemon at approval: no row comes back for the page, only its
+    // result in the answer's events. Before, nothing was outstanding and she fell silent.
+    const ran: Event = {
+      kind: "tool.result",
+      call_id: "turn_000000000001_exec",
+      name: "connector.setup.firewall_allow",
+      ok: true,
+      output: '{"state": "added"}',
+      error: null,
+      tier: 3,
+    };
+    const daemon = fakeDaemon([[said("I filed the firewall step."), setupCard("apr_00000000000c"), finished()], [said("Done. Next, your other PC."), finished()]], [ran]);
+    wire(daemon);
+    await useRun.getState().startSetup(SESSION);
+    await useRun.getState().answer("apr_00000000000c", "approve");
+
+    const runs = daemon.runs();
+    expect(runs).toHaveLength(2);
+    expect(runs[1]!.body).toMatchObject({ origin: SETUP_ORIGIN });
+    expect(runs[1]!.body!.tool_results).toEqual([
+      expect.objectContaining({ call_id: "turn_000000000001_exec", name: "connector.setup.firewall_allow", ok: true, output: '{"state": "added"}' }),
+    ]);
+    expect(runs[1]!.body!.start).toBeUndefined();
+    const tools = useRun.getState().transcript.filter((t) => t.kind === "tool").map((t) => t.text);
+    expect(tools).toContain('connector.setup.firewall_allow → {"state": "added"}');
   });
 
   it("needs no open page", async () => {

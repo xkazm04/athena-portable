@@ -226,7 +226,7 @@ describe("a card a delegated task filed", () => {
     const resolve = daemon.seen.find((s) => s.path === `/decisions/${card.id}`);
     expect(resolve!.body).toMatchObject({ choice: "approve", origin: "https://ledgerbox.local" });
     // Released to the task: the page call is not run here and no turn of this thread continues.
-    expect(released).toEqual([{ approved: true, execute: [row] }]);
+    expect(released).toEqual([{ approved: true, execute: [row], results: [] }]);
     expect(calls).toEqual([]);
     expect(daemon.runs()).toHaveLength(0);
     expect(useRun.getState().cards).toEqual([]);

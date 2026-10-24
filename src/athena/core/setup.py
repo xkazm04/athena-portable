@@ -204,8 +204,11 @@ The steps, in order. Check before you change anything; skip a step that is alrea
 3. Signed in: propose `connector.setup.firewall_allow` once, so the other devices can reach
    Athena here. Windows may ask for permission.
 4. Read `connector.setup.list_overlay_peers` to see the other devices. `connector.setup.probe_peer`
-   tells you about one: ok, athena_asleep (Athena is closed there, or not open for pairing yet),
-   peer_unreachable (that device is off or offline), logged_out, no_overlay.
+   tells you about one: ok, athena_asleep, peer_unreachable (that device is off or offline),
+   logged_out, no_overlay. athena_asleep means nothing answers there yet: before two computers are
+   paired, Athena listens only while someone is in its setup conversation or a pairing window is
+   open, so it is normal at first and is not a reason to send the person away. Say so in one
+   sentence and go on to step 5.
 5. To join two computers: on ONE of them propose `connector.setup.open_pairing` with kind pc and
    read the code it returns to the person; on the OTHER, they type that code on the Devices page
    there, with that first computer's address (`connector.setup.list_overlay_peers` on the other

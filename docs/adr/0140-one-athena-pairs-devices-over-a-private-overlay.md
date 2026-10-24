@@ -336,6 +336,14 @@ so a card a setup tool files is bound to no tab and is answered in that session'
 `connector:setup` tools and the core tools are in scope there, and the setup tools are switched off
 in every other session.
 
+**Two computers being set up can find each other** (amended 2026-10-24). With nothing paired and no
+window open the listener was down, so the other computer's probe said `athena_asleep` about an
+Athena that was running, and the setup guide sent the person off to "open Athena there". Opening the
+setup conversation now keeps the listener up for 30 minutes (`SETUP_LISTEN_S`): a stranger still
+gets 401 from everything but the two pairing steps, and those still need a window. The guide says
+`athena_asleep` is normal before pairing and goes on to pairing. The phone step says the page opens
+only on the private network: the phone needs Tailscale signed in to the same account.
+
 **She speaks first** (amended 2026-10-24). Most people have never heard of Tailscale, and an empty
 box after "Set up with Athena" read as a button that did nothing. Her window now opens the
 conversation (the hand-over dispatched the welcome's `open`, which does nothing after onboarding, so

@@ -338,6 +338,9 @@ describe("the wizard: a phone", () => {
     expect(h).toContain('<svg class="qr"');
     expect(h).toContain('aria-label="The QR code that pairs your phone"');
     expect(h).toContain("7Q4-K2P");
+    // The link is an overlay address: a phone not on the private network cannot open it.
+    expect(h).toContain('data-need="overlay"');
+    expect(h).toContain("the phone needs the Tailscale app, signed in to the same account");
     expect(h).toContain('class="lens"');
     expect(h).toContain('stroke-dasharray="60.00 100"');
     expect(h).toContain("3:00 left");

@@ -13,6 +13,7 @@ import { fadeOnScroll } from "./detail";
 import { Icon } from "./icons";
 import type { CompanionModel, ProjectView } from "./model";
 import { Depth, Pages } from "./pages";
+import { richText } from "./rich";
 import { SheetRows, Sign } from "./slip";
 import { TaskStrip } from "./tasks";
 import type { PlainMessage } from "./translate";
@@ -126,7 +127,7 @@ function Message({ m, onOpen }: { m: PlainMessage; onOpen: (id: string) => void 
       <div className={`msg msg-${m.role}`} data-tone={m.tone}>
         <span className="node" />
         <div className="eyebrow msg-who">{m.role === "user" ? "You" : "Athena"}</div>
-        <div className="txt">{m.title}</div>
+        <div className="txt">{m.role === "her" ? richText(m.title) : m.title}</div>
       </div>
     );
   }
