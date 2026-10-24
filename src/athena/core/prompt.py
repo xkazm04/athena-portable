@@ -6,8 +6,9 @@ One composition produces two things that go to two different places:
   catalog, and the always-include memory tier. These become the **system prompt**, and a CLI
   engine keeps the system prompt it was opened with for the life of a resumed conversation.
 - :class:`TurnFrame` — the host-state delta since the last frame, last turn's tool results, the
-  active project, the memory recalled for *this* message and the pending-decisions digest. These
-  ride in the **user message**, every turn, each untrusted part inside a nonce-tagged fence.
+  active project, the room each of the user's PCs has now (``frame.fleet``, ADR 0142), the memory
+  recalled for *this* message and the pending-decisions digest. These ride in the **user
+  message**, every turn, each untrusted part inside a nonce-tagged fence.
 
 The split is the fix for the finding in README §3.5: the first build composed one prompt, put
 ``host_state`` in it, and a resumed session then saw the tabs the user had open on turn one
@@ -136,6 +137,7 @@ BUDGETS: Mapping[str, int] = {
     "capabilities": 12_000,
     "memory.always": 12_000,
     "frame.project": 2_000,
+    "frame.fleet": 1_200,
     "frame.host_state": 8_000,
     "frame.tools": 12_000,
     "frame.memory": 12_000,
@@ -405,6 +407,20 @@ def _decisions_block(
     return PromptBlock(name="frame.decisions", text=text, shown=shown, total=total, untrusted=True)
 
 
+def _fleet_block(text: str) -> PromptBlock:
+    """The room each of the user's PCs has now (ADR 0142), as ``lane.fleet.FleetPrompt`` wrote it.
+
+    Not fenced, like the project and the setup blocks: the figures are measured by this daemon and
+    by the user's own paired daemons, and the one piece of free text in it - a device's name, a
+    GPU's name, a held reason - is flattened to one capped line where it is rendered, so it cannot
+    open a heading or a list. It is a frame block and never a static one because it moves between
+    turns; the renderer rounds its figures (RAM and CPU to 5%, VRAM to half a gigabyte) so it
+    moves when the room did and not on every sample. The renderer also caps it and writes its own
+    ``(showing N of M)``, so the count is not repeated here.
+    """
+    return PromptBlock(name="frame.fleet", text=f"## Your devices\n\n{text.strip()}\n")
+
+
 def _setup_block() -> PromptBlock:
     """The setup conversation's steps (ADR 0140, WP4). Ours, not a page's, so it is not fenced."""
     return PromptBlock(name="frame.setup", text=SETUP_GUIDE)
@@ -468,6 +484,7 @@ def compose(
     decision_limit: int = DECISION_LIMIT,
     host_state_chars: int = HOST_STATE_CHARS,
     setup: bool = False,
+    fleet: str | None = None,
 ) -> Composed:
     """Compose one turn into a system prompt and a user-message frame.
 
@@ -478,6 +495,10 @@ def compose(
 
     ``setup`` is the daemon saying this turn is in the setup conversation (ADR 0140, WP4): the
     frame then opens with ``frame.setup``, the steps of the setup leg. A surface cannot set it.
+
+    ``fleet`` is the room each PC has now (ADR 0142), rendered by the daemon's
+    :class:`~athena.lane.ports.FleetPort`; ``None`` or blank omits ``frame.fleet``, which is what a
+    daemon with no vitals composes. Like ``setup``, it is the daemon's, never a request body's.
     """
     tag = nonce or fresh_nonce()
     recalled = _recall_blocks(recall, tag)
@@ -493,8 +514,10 @@ def compose(
     current = _snapshot(host_state)
     delta = _delta(current, previous_host_state)
     frame_blocks: list[PromptBlock] = [_setup_block()] if setup else []
+    frame_blocks.append(_project_block(active_project))
+    if fleet and fleet.strip():
+        frame_blocks.append(_fleet_block(fleet))
     frame_blocks += [
-        _project_block(active_project),
         _host_state_block(current, delta, tag, host_state_chars),
         _tool_results_block(tool_results, tag, tool_result_limit),
     ]

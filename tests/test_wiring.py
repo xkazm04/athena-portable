@@ -232,6 +232,7 @@ def test_the_lane_is_handed_athenas_own_names(local: AthenaLocal) -> None:
     assert [entry.name for entry in local.lane.tools()] == [
         "core.checkpoint",
         "core.delegate",
+        "core.devices",
         "core.recall",
         "core.task_stop",
         "core.tasks",
@@ -423,6 +424,7 @@ def test_no_core_name_can_answer_a_card_and_none_is_offered_to_the_model(
     assert [entry.name for entry in local.lane.tools()] == [
         "core.checkpoint",
         "core.delegate",
+        "core.devices",
         "core.recall",
         "core.task_stop",
         "core.tasks",

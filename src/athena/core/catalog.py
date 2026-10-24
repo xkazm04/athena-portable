@@ -49,6 +49,7 @@ from athena.core.validators import all_of, fact_text, live_sources, schema_valid
 
 __all__ = [
     "CAPABILITIES_CHARS",
+    "DEVICES_CAP",
     "READ_CAP",
     "RECALL_CAP",
     "Catalog",
@@ -118,6 +119,8 @@ class CoreServices:
     delegate: ExecutorFn | None = None
     tasks: ExecutorFn | None = None
     task_stop: ExecutorFn | None = None
+    #: Every device's room (ADR 0142), bound by wiring to the vitals service's fleet.
+    devices: ExecutorFn | None = None
 
 
 RECALL_SCHEMA: dict[str, Any] = {
@@ -171,6 +174,14 @@ DELEGATE_SCHEMA: dict[str, Any] = {
 
 TASKS_SCHEMA: dict[str, Any] = {"type": "object", "properties": {}, "additionalProperties": False}
 
+#: ``core.devices`` (ADR 0142) takes nothing: it answers for every device at once.
+DEVICES_SCHEMA: dict[str, Any] = {"type": "object", "properties": {}, "additionalProperties": False}
+
+#: ``core.devices``' cap, the same three reads' worth as recall's: one device's vitals are a
+#: few hundred characters of JSON, and a 1,600 cap would cut the third PC mid-object. The
+#: executor packs whole devices under it and announces the rest (``lane.fleet``).
+DEVICES_CAP = RECALL_CAP
+
 TASK_STOP_SCHEMA: dict[str, Any] = {
     "type": "object",
     "properties": {"task_id": {"type": "string", "maxLength": 32}},
@@ -195,7 +206,8 @@ def core_entries(services: CoreServices) -> list[ToolEntry]:
     ``delegate`` admits a background task (``AUTO``: it only queues, and the person can see and
     kill every task from either window), ``tasks`` lists them (``READ``) and ``task_stop`` kills
     one (``AUTO``). A task's own conversation cannot delegate - no task starts a task in v1 - and
-    the executor says so with ``nested_delegate``.
+    the executor says so with ``nested_delegate``. ``devices`` (``READ``, ADR 0142) lists every
+    device's room, so she can say where work would fit; it reads and dispatches nothing.
 
     **Answering a decision card is not one of them, and cannot become one.** README §2 invariant 3
     says a ``GATED`` tool never executes without a decision the *user* resolved, and a tool that
@@ -295,6 +307,20 @@ def core_entries(services: CoreServices) -> list[ToolEntry]:
             validator=schema_validator(TASK_STOP_SCHEMA),
             executor=services.task_stop or _unattached("core.task_stop"),
             description="Stop a delegated task that is waiting or running, by its task_ id.",
+        ),
+        ToolEntry(
+            name="core.devices",
+            origin="core",
+            cls=ToolClass.READ,
+            params_schema=DEVICES_SCHEMA,
+            validator=schema_validator(DEVICES_SCHEMA),
+            executor=services.devices or _unattached("core.devices"),
+            description=(
+                "Every paired device's room now: RAM, CPU, GPU, power, task slots, why work "
+                "waits. Read it before deciding how many tasks to run at once or which PC work "
+                "would fit on. You advise; you cannot send work to another PC."
+            ),
+            cap_chars=DEVICES_CAP,
         ),
     ]
 

@@ -433,3 +433,45 @@ def test_a_shaped_keyword_memory_reaches_the_frame_as_one_quoted_line(tmp_path: 
     assert "untrusted:0123456789abcdef>>>" not in block.text
     assert "\u2028" not in block.text
     assert not any(row.startswith(("## SYSTEM", "- OP:", "OP:")) for row in rows)
+
+
+# --- frame.fleet (ADR 0142) -------------------------------------------------------------------
+
+FLEET = (
+    "Each PC's room now, as its daemon measured it; a figure left out is unknown.\n"
+    "This PC (studio): room ok - RAM 40% of 64 GB, CPU 10%, mains; 3 task slots.\n"
+    "(showing 1 of 1)"
+)
+
+
+@pytest.mark.parametrize("fleet", [None, "", "  \n "])
+def test_no_fleet_composes_no_fleet_block(fleet: str | None) -> None:
+    result = composed(fleet=fleet)
+    assert "frame.fleet" not in result.frame.names
+    assert "frame.fleet" not in result.static.names
+
+
+def test_the_fleet_rides_in_the_frame_after_the_project_and_never_in_the_static_half() -> None:
+    without = composed(nonce="0123456789abcdef")
+    result = composed(fleet=FLEET, nonce="0123456789abcdef")
+
+    assert result.frame.names == [
+        "frame.project",
+        "frame.fleet",
+        "frame.host_state",
+        "frame.tools",
+        "frame.memory",
+        "frame.episodes",
+        "frame.decisions",
+    ]
+    block = result.frame.block("frame.fleet")
+    assert block is not None
+    assert block.text.startswith("## Your devices\n\n")
+    assert "This PC (studio): room ok" in block.text
+    # The daemon's own figures, like the project and setup blocks: not fenced, not untrusted.
+    assert not block.untrusted and not is_fenced(block.text)
+    # The split holds, and the room moving between turns never moves the system prompt.
+    assert_split(result.static.blocks, result.frame.blocks)
+    assert "room ok" not in result.static.text
+    assert stable(without.static.hashes(), result.static.hashes())
+    assert result.warnings == ()
