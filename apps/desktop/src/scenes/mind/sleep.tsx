@@ -365,7 +365,11 @@ function Proposal({
 
 function Journal({ model, opening }: { model: SleepModel; opening: SleepOpening }) {
   const [shown, setShown] = useState<ReadonlySet<string>>(() => new Set(opening.journal ? [opening.journal] : []));
-  const { cycles } = model.state;
+  const { cycles, view } = model.state;
+  // Only the newest running row is a sleep under way, and only while she sleeps. Any other
+  // `running` row is one the app closed on: the daemon keeps it as evidence (ADR 0143) and it
+  // reads here as stopped, never as "still going" for good.
+  const live = view?.state === "sleeping" ? (cycles.find((c) => c.status === "running")?.id ?? null) : null;
   const toggle = (id: string) => {
     const next = new Set(shown);
     if (next.has(id)) next.delete(id);
@@ -383,7 +387,14 @@ function Journal({ model, opening }: { model: SleepModel; opening: SleepOpening 
       ) : (
         <ul className="sleep__cycles">
           {cycles.map((cycle) => (
-            <CycleRow key={cycle.id} model={model} cycle={cycle} open={shown.has(cycle.id)} onToggle={() => toggle(cycle.id)} />
+            <CycleRow
+              key={cycle.id}
+              model={model}
+              cycle={cycle}
+              stopped={cycle.status === "running" && cycle.id !== live}
+              open={shown.has(cycle.id)}
+              onToggle={() => toggle(cycle.id)}
+            />
           ))}
         </ul>
       )}
@@ -391,7 +402,20 @@ function Journal({ model, opening }: { model: SleepModel; opening: SleepOpening 
   );
 }
 
-function CycleRow({ model, cycle, open, onToggle }: { model: SleepModel; cycle: CycleView; open: boolean; onToggle: () => void }) {
+function CycleRow({
+  model,
+  cycle,
+  stopped,
+  open,
+  onToggle,
+}: {
+  model: SleepModel;
+  cycle: CycleView;
+  /** A `running` row that is not the sleep under way: the app closed before it finished. */
+  stopped: boolean;
+  open: boolean;
+  onToggle: () => void;
+}) {
   const body = useId();
   const journal = model.state.journals[cycle.id];
   const did = statsWords(cycle.stats, cycle.status);
@@ -399,7 +423,7 @@ function CycleRow({ model, cycle, open, onToggle }: { model: SleepModel; cycle: 
     <li className="sleep__cycle" data-status={cycle.status}>
       <button type="button" className="sleep__row focus-ring" aria-expanded={open} aria-controls={open ? body : undefined} onClick={onToggle}>
         <span className="sleep__when typo-data">{startedWords(cycle)}</span>
-        <Badge tone={STATUS_TONE[cycle.status]}>{STATUS_WORD[cycle.status]}</Badge>
+        <Badge tone={stopped ? "warning" : STATUS_TONE[cycle.status]}>{stopped ? "stopped" : STATUS_WORD[cycle.status]}</Badge>
         <span className="sleep__did typo-caption">{did ?? (cycle.status === "failed" && cycle.reason ? cycle.reason : "")}</span>
         <span className="sleep__chev" aria-hidden="true" />
       </button>
@@ -417,7 +441,11 @@ function CycleRow({ model, cycle, open, onToggle }: { model: SleepModel; cycle: 
               retryLabel="Read again"
             />
           ) : journal.text === null || journal.text.trim() === "" ? (
-            <p className="typo-caption">{cycle.status === "running" ? "She is still writing this one." : "No journal was written for this sleep."}</p>
+            <p className="typo-caption">{stopped
+                ? "She stopped before finishing this one: the app closed while she slept."
+                : cycle.status === "running"
+                  ? "She is still writing this one."
+                  : "No journal was written for this sleep."}</p>
           ) : (
             <pre className="sleep__journal focus-ring" tabIndex={0} aria-label={`The journal of the sleep on ${startedWords(cycle)}`}>
               {journal.text}

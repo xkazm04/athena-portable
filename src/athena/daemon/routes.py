@@ -1198,6 +1198,8 @@ def ledger_recent(daemon: AthenaDaemon, request: Request) -> Reply:
             "ms": row.ms,
             "is_error": row.is_error,
             "error_reason": row.error_reason,
+            # The engine child's peak working set, MiB, or null where it was not measured (ADR 0143).
+            "peak_mb": row.peak_mb,
         }
         for row in page.rows
     ]

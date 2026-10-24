@@ -191,6 +191,22 @@ describe("the journal", () => {
     expect(failed).toContain("The journal could not be read.");
     expect(failed).toContain("Could not read the journal: not found");
   });
+
+  it("reads a running row the app closed on as stopped, never as still going", () => {
+    const base = sleepFixtures.sleeping!;
+    const live = base.state.cycles.find((c) => c.status === "running")!;
+    // The daemon keeps a crashed cycle `running` as evidence; when she is not sleeping, it stopped.
+    const idle: SleepModel = {
+      ...base,
+      state: { ...base.state, view: { ...base.state.view!, state: "idle", phase: null }, journals: { [live.id]: { status: "running", loading: false, problem: null, text: null } } },
+    };
+    const h = render(idle, { journal: live.id });
+    expect(h).toContain(">stopped<");
+    expect(h).not.toContain(">still going<");
+    expect(h).toContain("She stopped before finishing this one: the app closed while she slept.");
+    // While she sleeps, the newest running row is the sleep under way.
+    expect(html("sleeping")).toContain(">still going<");
+  });
 });
 
 describe("pressing", () => {
