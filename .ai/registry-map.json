@@ -3321,7 +3321,11 @@
           "revision": 4,
           "changedAt": "2026-10-21",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/bell/pose.ts:7 The Bell is a posed SVG presence driven only by state, cards and line, with CSS-only idle motion and no speaking pose, and the art is static drawings with a 'speaking' glow attribute; a grep of apps/desktop/src/art and apps/desktop/src/bell for viseme|mouth|avatar|blink|lipsync found nothing, so no face here moves with the voice.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:72517c45ca8e4198",
+          "evaluatedRevision": 4
         },
         {
           "subject": "voice-io",
@@ -5874,7 +5878,11 @@
           "revision": 4,
           "changedAt": "2026-10-21",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "conformant",
+          "evidence": "apps/desktop/src/lib/voice.ts:143 The face reads speaking and position from the player's clock through the tail after voice.stopped (stopLine on 'done' only marks the timeline finished), so the mouth does not shut on the pipeline's event.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:72517c45ca8e4198",
+          "evaluatedRevision": 4
         },
         {
           "subject": "agent-memory",
@@ -6257,7 +6265,11 @@
           "revision": 4,
           "changedAt": "2026-10-21",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/hirelane/components/board/marks/Face.tsx:15 Hirelane's 'Face' is a static generative mark or initials for a candidate tile, with no voice, audio or speaking element; a grep of examples/hirelane/components for audio|viseme|mouth|blink|lipsync found nothing ('avatar' only appears as a CSS size token), so no face here moves with a voice.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:72517c45ca8e4198",
+          "evaluatedRevision": 4
         },
         {
           "subject": "i18n",
@@ -9754,7 +9766,11 @@
           "revision": 4,
           "changedAt": "2026-10-21",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "conformant",
+          "evidence": "src/athena/channels/voice/kokoro.py:643 When the face helper is absent or not ready, synthesize_face falls back to the plain synthesize path (same args, same process, same bytes), and with the helper ready the audio is decided before the helper is asked anything, so the voice never depends on the face.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:72517c45ca8e4198",
+          "evaluatedRevision": 4
         },
         {
           "subject": "multi-provider-gateway-plane",

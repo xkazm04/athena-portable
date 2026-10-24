@@ -6070,6 +6070,98 @@
           "reason": "replaced by 09574cd8-00a8-4482-a07d-0ac9ed9de52d"
         }
       ]
+    },
+    "89c7e4c9-2ecd-4131-9ac7-7ff647d041c1/talking-avatar": {
+      "context": "hirelane-board-ui",
+      "subject": "talking-avatar",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T02:01:43.034Z",
+      "worker": "413a0b34-d33f-4395-b6be-6ee80606c0e4",
+      "techniques": []
+    },
+    "a4c21bac-6dbe-41a3-b6ad-e7bec7001865/talking-avatar": {
+      "context": "voice-channel",
+      "subject": "talking-avatar",
+      "bundle": "software-engineering",
+      "state": "conformant",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T02:01:43.034Z",
+      "worker": "413a0b34-d33f-4395-b6be-6ee80606c0e4",
+      "techniques": [
+        {
+          "technique": "per-sentence-face-sidecar",
+          "verdict": "conformant",
+          "evidence": "src/athena/channels/voice/kokoro.py:578 The silence cut is replayed in-process (scale_silence) so it yields both the audio and the time map; the viseme wait is bounded (wait_visemes with a timeout); motion is never waited on before audio; the tail wait is min(heard_by, MOTION_TAIL_S) at line 675."
+        },
+        {
+          "technique": "viseme-drive",
+          "verdict": "conformant",
+          "evidence": "src/athena/channels/voice/backends.py:120 No timeline is invented for a backend with no timings: it falls back to the playback level. Kokoro's timing comes from the engine's own tokens (kokoro.py:584), and a timeline is only kept if it ends on the sentence's last sample (kokoro.py:605)."
+        },
+        {
+          "technique": "motion-route-selection",
+          "verdict": "conformant",
+          "evidence": "src/athena/channels/voice/config.py:401 The learned-motion default is reported as a capability with its numbers (steps, window time, device, reason), as the self-probe rule asks."
+        },
+        {
+          "technique": "paced-realtime-measurement",
+          "verdict": "conformant",
+          "evidence": "src/athena/channels/voice/config.py:402 A measurement that was not taken is left out, not written as zero. The paced benches themselves live in spikes/, outside this context."
+        },
+        {
+          "technique": "face-signal-across-surfaces",
+          "verdict": "conformant",
+          "evidence": "src/athena/channels/voice/gateway.py:411 Face events for a barged-in or shut line are dropped at the gateway, so late events for an interrupted line are ignored."
+        }
+      ]
+    },
+    "0bc9110e-4cfa-484e-a71a-1adfa3f013be/talking-avatar": {
+      "context": "desktop-voice-ui",
+      "subject": "talking-avatar",
+      "bundle": "software-engineering",
+      "state": "conformant",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T02:01:43.034Z",
+      "worker": "413a0b34-d33f-4395-b6be-6ee80606c0e4",
+      "techniques": [
+        {
+          "technique": "face-signal-across-surfaces",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/stores/voice.ts:77 Only the drawing window installs the face sink, and a store with no sink drops face events, so the face stays out of Main's first paint."
+        },
+        {
+          "technique": "viseme-drive",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/lib/voice.test.ts:339 The playback position accounts for the device's output latency, so mouth shapes are looked up at the heard sample."
+        },
+        {
+          "technique": "motion-route-selection",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/lib/voice-setup.ts:62 Each machine probes itself at start and picks from a short ladder of step counts; the surface shows the result as a capability."
+        },
+        {
+          "technique": "paced-realtime-measurement",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/lib/voice-setup.ts:61 Unmeasured motion fields stay absent and are never defaulted."
+        },
+        {
+          "technique": "per-sentence-face-sidecar",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/lib/voice-setup.ts:58 The surface shows the sidecar's announced capabilities rather than guessing."
+        }
+      ]
+    },
+    "83c99463-f300-42a8-b1a4-7b8e1c5c06f0/talking-avatar": {
+      "context": "desktop-art-bell",
+      "subject": "talking-avatar",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T02:01:43.034Z",
+      "worker": "413a0b34-d33f-4395-b6be-6ee80606c0e4",
+      "techniques": []
     }
   }
 }
