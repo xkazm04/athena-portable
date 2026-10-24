@@ -41,6 +41,7 @@ from athena.contracts.harness import (
     normalize_reason,
 )
 from athena.contracts.ids import (
+    ID_ACCEPTED_HEX,
     ID_KINDS,
     ID_PREFIXES,
     ID_SUFFIX_HEX,
@@ -82,6 +83,7 @@ __all__ = [
     "ERROR_REASONS",
     "EVENT_KINDS",
     "FAMILIES",
+    "ID_ACCEPTED_HEX",
     "ID_KINDS",
     "ID_PREFIXES",
     "ID_SUFFIX_HEX",

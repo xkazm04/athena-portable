@@ -134,7 +134,7 @@ def reconcile_from_disk(brain: Brain) -> ReconcileStats:
                     continue
                 confidence = DEFAULT_CONFIDENCE
                 if kind in ("fact", "procedural"):
-                    checked = _confidence(meta)
+                    checked = confidence_of(meta)
                     if checked is None:
                         # Refused before any insert, so the file leaves no row behind.
                         stats.skipped.append(
@@ -145,13 +145,13 @@ def reconcile_from_disk(brain: Brain) -> ReconcileStats:
                     if not isinstance(meta.get("sources"), list):
                         stats.unsourced.append(rel)
                 seen.add(node_id)
-                _index_file(brain, con, node_id, kind, rel, file_text, body, meta, confidence)
+                index_file(brain, con, node_id, kind, rel, file_text, body, meta, confidence)
                 stats.files += 1
                 stats.by_kind[kind] = stats.by_kind.get(kind, 0) + 1
     return stats
 
 
-def _confidence(meta: dict[str, Any]) -> float | None:
+def confidence_of(meta: dict[str, Any]) -> float | None:
     """The file's confidence: the default when absent, ``None`` when present but not a number.
 
     Only finiteness is asked. The writers make no range check, so a rebuild must not make one.
@@ -176,7 +176,7 @@ def _show(value: Any) -> str:
     return str(value)
 
 
-def _index_file(
+def index_file(
     brain: Brain,
     con: sqlite3.Connection,
     node_id: str,
@@ -187,6 +187,13 @@ def _index_file(
     meta: dict[str, Any],
     confidence: float,
 ) -> None:
+    """Index one parsed file in ``con``: the rebuild's per-file step, and the only one.
+
+    Public because :meth:`Brain.receive_file <athena.core.brain.store.Brain.receive_file>` indexes a
+    memory another device wrote with it (ADR 0140): one insert path, so a rebuild over a merged
+    tree cannot disagree with the rows replication wrote. The ``device:`` stamp is not read here;
+    it is a disk-only key.
+    """
     body = body.strip()
     created_at = str(meta.get("created") or "")
     session_id = meta.get("session")

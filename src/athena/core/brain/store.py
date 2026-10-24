@@ -22,6 +22,13 @@ The daemon is threaded, so a long turn holds the writer while eight read routes 
 own handles — and, in WAL, without waiting for it. What a read handle sees is defined in
 :meth:`read_connection`: the state as of the last completed write.
 
+**A memory says which device wrote it** (ADR 0140). A brain built with a ``device_id`` stamps
+``device: "dev_<hex>"`` as the last key of every episode, fact and procedural it writes, and
+:meth:`Brain.receive_file` adopts one that another paired device wrote - its bytes untouched, its
+stamp with them - through the same disk-first write, the same provenance gate and the same
+per-file index function the rebuild uses. A brain with no device writes exactly the bytes it
+always did.
+
 **Every pure read takes a read handle, including this class's own.** :meth:`node`,
 :meth:`read_body`, :meth:`counts`, :meth:`sources_of` and :meth:`live_episode_ids` once read
 through the writer connection, which was correct on one thread and wrong on several: a daemon read
@@ -47,7 +54,7 @@ import re
 import secrets
 import sqlite3
 import threading
-from collections.abc import Iterator, Sequence
+from collections.abc import Callable, Iterator, Sequence
 from contextlib import closing, contextmanager
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
@@ -78,6 +85,59 @@ class IndexDamagedError(sqlite3.DatabaseError):
 
 
 EPISODE_ROLES: tuple[str, ...] = ("user", "assistant", "system")
+
+#: The frontmatter key naming the device a memory was written on (ADR 0140). Written last on an
+#: episode, fact or procedural - after ``every_turn`` - and only when the brain has a device, so a
+#: brain that never paired writes the bytes it always did and a legacy file reads as "unknown".
+#: It lives on disk only: ``companion_node`` has no column it fits (``machine`` is chatter, not a
+#: host), no query asks for it, and a column would be a schema migration with no reader. A rebuild
+#: therefore has nothing to restore and loses nothing; :func:`device_of` reads it from a header.
+DEVICE_KEY = "device"
+
+#: The kinds that replicate between paired devices (ADR 0140): the write-once ones, so a copy can
+#: never go stale. Goals, cases and rituals are rewritten in place and stay on the device.
+REPLICATED_KINDS: tuple[str, ...] = ("episode", "fact", "procedural")
+
+#: The one path each replicated kind may arrive at, which is the path this module's own writer
+#: would have chosen for it: a received file is filed where the sender filed it, and anything else
+#: - another directory, a ``..``, a scope the walk does not know - is refused before a byte lands.
+_REPLICATED_PATHS: dict[str, re.Pattern[str]] = {
+    "episode": re.compile(
+        r"episodes/[0-9]{4}/[0-9]{2}/[0-9]{2}/(?P<id>ep_[0-9a-f]+)_(?:"
+        + "|".join(EPISODE_ROLES)
+        + r")\.md\Z"
+    ),
+    "fact": re.compile(
+        r"semantic/(?:" + "|".join(FACT_SCOPES) + r")/(?P<id>fact_[0-9a-f]+)_[a-z0-9-]{1,64}\.md\Z"
+    ),
+    "procedural": re.compile(
+        r"procedurals/(?:"
+        + "|".join(PROCEDURAL_SCOPES)
+        + r")/(?P<id>proc_[0-9a-f]+)_[a-z0-9-]{1,64}\.md\Z"
+    ),
+}
+
+
+def replicated_path(kind: str, rel: str) -> str:
+    """The id a replicated file at brain-relative ``rel`` must carry; ``ValueError`` if refused.
+
+    The path must be exactly the shape this brain's writer gives ``kind``, and the id in its name
+    a valid id of that kind, so a path cannot leave its directory or claim another kind's.
+    """
+    pattern = _REPLICATED_PATHS.get(kind)
+    if pattern is None:
+        raise ValueError(f"{kind!r} does not replicate; one of {', '.join(REPLICATED_KINDS)}")
+    found = pattern.match(rel)
+    if found is None or not ids.is_id(kind, found.group("id")):
+        raise ValueError(f"not where this brain files a {kind}: {rel!r}")
+    return found.group("id")
+
+
+def device_of(meta: dict[str, Any]) -> str | None:
+    """The device a parsed header says wrote the memory, or ``None``: legacy, or not a device id."""
+    value = meta.get(DEVICE_KEY)
+    return value if isinstance(value, str) and ids.is_id("device", value) else None
+
 
 #: Importance a writer starts a memory at (ref §8): conversation at 3, machine chatter at 1.
 DEFAULT_IMPORTANCE = 3
@@ -157,10 +217,21 @@ class Brain:
     is a context manager.
     """
 
-    def __init__(self, root: str | Path | None = None, *, session_id: str = "cli") -> None:
+    def __init__(
+        self,
+        root: str | Path | None = None,
+        *,
+        session_id: str = "cli",
+        device_id: str | Callable[[], str | None] | None = None,
+    ) -> None:
         self.root: Path = paths.ensure_tree(root)
         self.db_path: Path = self.root / paths.INDEX_FILENAME
         self.session_id = session_id
+        # A ``dev_`` id, or a callable asked at each write (the daemon's: ``None`` until this
+        # install has an identity, so a brain that never paired mints none - ADR 0140).
+        if isinstance(device_id, str) and not ids.is_id("device", device_id):
+            raise ValueError(f"not a device id: {device_id!r}")
+        self._device = device_id
         self._write_lock = threading.RLock()
         # isolation_level=None puts this connection in autocommit, which is what makes
         # ``write_txn`` the only thing that opens a transaction — an implicit BEGIN that Python
@@ -285,6 +356,20 @@ class Brain:
         con.execute(f"PRAGMA busy_timeout = {BUSY_TIMEOUT_MS}")
         return con
 
+    # -- the device stamp ----------------------------------------------------------------------
+
+    @property
+    def device_id(self) -> str | None:
+        """The device this brain stamps its new memories with, or ``None`` for none (ADR 0140)."""
+        device = self._device
+        value = device() if callable(device) else device
+        return value if isinstance(value, str) and ids.is_id("device", value) else None
+
+    def _stamped(self, header: list[tuple[str, Any]]) -> list[tuple[str, Any]]:
+        """``header`` with :data:`DEVICE_KEY` last when this brain has a device, else unchanged."""
+        device = self.device_id
+        return header if device is None else [*header, (DEVICE_KEY, device)]
+
     # -- sessions ------------------------------------------------------------------------------
 
     def ensure_session(self, session_id: str, title: str = "Athena") -> None:
@@ -330,13 +415,15 @@ class Brain:
         rel = f"episodes/{when:%Y}/{when:%m}/{when:%d}/{node_id}_{role}.md"
         machine = text.is_machine(body)
         file_text = frontmatter.render(
-            [
-                ("id", node_id),
-                ("type", "episode"),
-                ("role", role),
-                ("session", sid),
-                ("created", created_at),
-            ],
+            self._stamped(
+                [
+                    ("id", node_id),
+                    ("type", "episode"),
+                    ("role", role),
+                    ("session", sid),
+                    ("created", created_at),
+                ]
+            ),
             body,
         )
         self._write_file(rel, file_text)
@@ -478,7 +565,7 @@ class Brain:
         if every_turn:
             header.append((EVERY_TURN_KEY, True))
             importance = ALWAYS_IMPORTANCE
-        file_text = frontmatter.render(header, body)
+        file_text = frontmatter.render(self._stamped(header), body)
         self._write_file(rel, file_text)
 
         with self.write_txn() as con:
@@ -527,15 +614,17 @@ class Brain:
         created_at = now_iso()
         rel = f"procedurals/{scope}/{node_id}_{text.slug(trigger)}.md"
         file_text = frontmatter.render(
-            [
-                ("id", node_id),
-                ("type", "procedural"),
-                ("scope", scope),
-                ("trigger", trigger),
-                ("confidence", confidence),
-                ("created", created_at),
-                ("sources", cited),
-            ],
+            self._stamped(
+                [
+                    ("id", node_id),
+                    ("type", "procedural"),
+                    ("scope", scope),
+                    ("trigger", trigger),
+                    ("confidence", confidence),
+                    ("created", created_at),
+                    ("sources", cited),
+                ]
+            ),
             body,
         )
         self._write_file(rel, file_text)
@@ -687,6 +776,57 @@ class Brain:
             ).fetchall()
         return [node_from_row(row) for row in rows]
 
+    # -- replication ---------------------------------------------------------------------------
+
+    def receive_file(self, kind: str, rel: str, data: bytes) -> MemoryRef:
+        """Adopt one write-once memory another device wrote, byte for byte (ADR 0140).
+
+        This is the third way a memory enters a brain, beside the writers and the rebuild, and it
+        is built from both rather than beside them. The file is refused unless ``rel`` is exactly
+        where this brain's writer files ``kind`` (:func:`replicated_path`) and its header says the
+        same id and type. A fact or procedural must cite only episodes that are live *here*,
+        through the same :meth:`_require_provenance` every writer passes: replication is not a
+        bypass, so the caller sends episodes first and defers a claim whose evidence has not
+        arrived. Then disk first, whole or not at all (ADR 0080) - the sender's bytes, its
+        ``device:`` stamp among them - and the index rows through
+        :func:`~athena.core.brain.reconcile.index_file`, the function the rebuild runs for each
+        file, so a rebuild over the merged tree builds the rows this did.
+
+        Raises :class:`FileExistsError` when the id or the path is already here (the caller
+        compares the two copies), :class:`ProvenanceError` for a source that is not a live
+        episode of this brain, and :class:`ValueError` for any other reason the file is refused.
+        """
+        from athena.core.brain import reconcile  # reconcile imports this module
+
+        node_id = replicated_path(kind, rel)
+        try:
+            # What a rebuild reads (``read_text``: universal newlines), so the rows are its rows.
+            file_text = _lf(data.decode("utf-8"))
+        except UnicodeDecodeError:
+            raise ValueError(f"{rel}: not UTF-8") from None
+        meta, body = frontmatter.parse(file_text)
+        if str(meta.get("id") or "") != node_id or meta.get("type") != kind:
+            raise ValueError(f"{rel}: the header does not name {node_id} as a {kind}")
+        confidence = DEFAULT_CONFIDENCE
+        if kind != "episode":
+            sources = meta.get("sources")
+            if not isinstance(sources, list):
+                raise ProvenanceError(f"{rel}: a fact or a procedural must cite its episodes")
+            self._require_provenance([str(source) for source in sources])
+            checked = reconcile.confidence_of(meta)
+            if checked is None:
+                raise ValueError(f"{rel}: confidence is not a number")
+            confidence = checked
+        with self._write_lock:
+            if self.node(node_id) is not None or (self.root / rel).exists():
+                raise FileExistsError(node_id)
+            self._write_bytes(rel, data)
+            with self.write_txn() as con:
+                reconcile.index_file(
+                    self, con, node_id, kind, rel, file_text, body, meta, confidence
+                )
+        return MemoryRef(node_id, rel, kind)
+
     # -- write plumbing ------------------------------------------------------------------------
 
     def _write_file(self, rel: str, payload: str) -> None:
@@ -698,7 +838,10 @@ class Brain:
         reconcile never indexes it), are fsynced, and replace the target in one step. The
         directory is not fsynced; Windows cannot.
         """
-        data = payload.encode("utf-8")
+        self._write_bytes(rel, payload.encode("utf-8"))
+
+    def _write_bytes(self, rel: str, data: bytes) -> None:
+        """:meth:`_write_file` for bytes already encoded: a received file keeps the sender's."""
         target = self.root / rel
         target.parent.mkdir(parents=True, exist_ok=True)
         temp = target.with_name(f".{target.name}.{secrets.token_hex(6)}.tmp")

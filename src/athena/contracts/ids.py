@@ -9,9 +9,15 @@ that another language can read it as text. None does yet: the desktop has no ``l
 seam - the shell's capture id, in ``apps/desktop/src-tauri/src/store.rs`` - is held to this table
 by ``tests/contracts/test_ids.py``, which reads that file's prefix and hex width.
 
-Episode ids are ``ep_`` plus **eight** hex digits rather than the twelve every other kind uses.
-That is not tidiness: the brain's markdown and frontmatter stay byte-compatible with the Personas
-Rust writer, and its ``short_id(8)`` is what an episode id looks like there.
+Episode ids are minted ``ep_`` plus **twelve** hex digits, like every other kind, since ADR 0140
+("Memory replication"). They were eight - the Personas Rust writer's ``short_id(8)`` - and that was
+safe while one brain minted them all. Once paired devices replicate episodes into each other's
+brains, every device mints into one shared id space: at 32 bits two devices writing a few thousand
+episodes each meet the birthday bound, and a collision there is not a crash but a memory filed as a
+conflict and never recalled. So the width grows for **new** mints only. Every eight-hex episode id
+already on disk - this brain's own, or one a Personas tree carries - stays valid on read
+(:data:`ID_ACCEPTED_HEX`), because provenance cites them and a rename would orphan every fact that
+does. A reader of the brain tree, in any language, accepts both widths.
 """
 
 from __future__ import annotations
@@ -51,7 +57,14 @@ ID_PREFIXES: dict[str, str] = {
 }
 
 #: kind → how many hex digits ``mint`` puts after the prefix.
-ID_SUFFIX_HEX: dict[str, int] = dict.fromkeys(ID_PREFIXES, 12) | {"episode": 8}
+ID_SUFFIX_HEX: dict[str, int] = dict.fromkeys(ID_PREFIXES, 12)
+
+#: kind → every hex width ``is_id`` accepts: the minted width first, then any older one ids of that
+#: kind were minted at and still exist on disk. Only episodes have one (ADR 0140): eight hex, the
+#: width before replication, which a fact's ``sources`` may cite for as long as the brain lives.
+ID_ACCEPTED_HEX: dict[str, tuple[int, ...]] = {
+    kind: (digits,) for kind, digits in ID_SUFFIX_HEX.items()
+} | {"episode": (12, 8)}
 
 #: A conversation id is usually *derived* — ``conv_<app_id>`` or ``conv_<project_id>`` — so its
 #: suffix is a slug or another id, not hex. Every other kind is minted and only ever hex.
@@ -87,7 +100,7 @@ def is_id(kind: str, value: str) -> bool:
     suffix = value[len(prefix) :]
     if kind == "conversation":
         return bool(_DERIVED_SUFFIX.fullmatch(suffix))
-    return bool(re.fullmatch(f"[0-9a-f]{{{ID_SUFFIX_HEX[kind]}}}", suffix))
+    return len(suffix) in ID_ACCEPTED_HEX[kind] and bool(re.fullmatch("[0-9a-f]+", suffix))
 
 
 def kind_of(value: str) -> str | None:

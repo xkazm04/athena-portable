@@ -11,6 +11,7 @@ from pathlib import Path
 import pytest
 
 from athena.contracts import (
+    ID_ACCEPTED_HEX,
     ID_KINDS,
     ID_PREFIXES,
     ID_SUFFIX_HEX,
@@ -75,10 +76,25 @@ def test_no_prefix_is_a_prefix_of_another() -> None:
         assert not any(b != a and a.startswith(b) for b in prefixes)
 
 
-def test_an_episode_id_keeps_the_rust_writers_shape() -> None:
-    # Brain format parity: the Personas writer mints ep_ plus eight hex digits.
-    assert ID_SUFFIX_HEX["episode"] == 8
-    assert len(mint("episode")) == len("ep_") + 8
+def test_a_new_episode_id_is_twelve_hex_and_an_eight_hex_one_still_reads() -> None:
+    # ADR 0140: replicated episodes share one id space across devices, so new mints widen to
+    # twelve hex; the eight-hex ids already on disk (and the Personas writer's) stay valid on read.
+    assert ID_SUFFIX_HEX["episode"] == 12
+    assert ID_ACCEPTED_HEX["episode"] == (12, 8)
+    assert len(mint("episode")) == len("ep_") + 12
+    assert is_id("episode", "ep_0123abcd")
+    assert kind_of("ep_0123abcd") == "episode"
+    assert is_id("episode", "ep_0123456789ab")
+    for width in (7, 9, 11, 13):
+        assert not is_id("episode", "ep_" + "a" * width), width
+    assert not is_id("episode", "ep_0123ABCD"), "hex is lowercase"
+    assert not is_id("episode", "ep_0123abcd\n"), "no trailing newline sneaks past the width"
+
+
+@pytest.mark.parametrize("kind", [k for k in ID_KINDS if k not in ("episode", "conversation")])
+def test_every_other_kind_accepts_only_its_minted_width(kind: str) -> None:
+    assert ID_ACCEPTED_HEX[kind] == (ID_SUFFIX_HEX[kind],)
+    assert not is_id(kind, prefix_of(kind) + "0123abcd")
 
 
 def test_a_device_id_is_twelve_hex_and_a_peer_is_one(  # ADR 0140

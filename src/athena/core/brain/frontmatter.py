@@ -5,8 +5,12 @@ session, created`` because that is the order the Personas Rust writer emits, and
 directory has to stay readable by both implementations (ref §8 "The disk tree"). Importance,
 decay timestamps and machine markers are deliberately *not* here: they are index columns, so a
 rebuild from disk restores every live memory at its writer default rather than inventing values.
-The one addition is a fact's ``every_turn: true``, written last and only when true (ADR 0071);
-this module renders and parses it like any other scalar and knows nothing of what it means.
+The additions are a fact's ``every_turn: true``, written last and only when true (ADR 0071), and
+the device stamp ``device: "dev_<hex>"`` on an episode, fact or procedural written on a device that
+has an identity (ADR 0140), written after everything else - after ``every_turn`` too - and omitted
+when there is none, so a legacy file and a file from a device that never paired are the bytes they
+always were. This module renders and parses both like any other scalar and knows nothing of what
+either means; :mod:`~athena.core.brain.store` owns the order and the meaning.
 
 The one refusal in this module is the interesting part. A scalar is interpolated into the header
 with no escaping, so a line break inside one is header injection: a model-authored ``key`` that
