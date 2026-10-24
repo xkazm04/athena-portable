@@ -1,0 +1,22 @@
+{
+ "schema": "conform-run/1",
+ "worker": "15666ad0-d866-4648-afc8-501249ef50ef",
+ "subject": "table",
+ "evaluatedAt": "2026-10-24T23:03:42.799513+00:00",
+ "provider": "claude",
+ "model": "claude-opus-5-5",
+ "pairs": [],
+ "declined": [
+  {
+   "subject": "table",
+   "context": "tidycrm-spatial-model-tools",
+   "reason": "evidence leans on components/shell/HostCapabilities.tsx, which is not a tracked file"
+  },
+  {
+   "subject": "table",
+   "context": "atlas-data-and-app",
+   "reason": "evidence leans on data/index.ts, which is not a tracked file"
+  }
+ ],
+ "consults": []
+}
