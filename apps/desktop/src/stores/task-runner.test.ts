@@ -257,6 +257,30 @@ describe("the task runner", () => {
     expect(daemon.finishes()[0]).toMatchObject({ status: "done", result: "Done." });
   });
 
+  it("waits for a tab it opened to register its tools before the first turn", async () => {
+    const daemon = fakeDaemon({ claims: [task(T1)], runs: { [T1]: [[said("Done."), finished()]] } });
+    const tabs = [tab(1, LEDGER, true)];
+    let registered = false;
+    wire(daemon, tabs, {
+      tools: () => {
+        const all = tools(tabs);
+        if (!registered) delete all[7];
+        return all;
+      },
+      open: async (url) => {
+        tabs.push(tab(7, `${url}/`));
+        setTimeout(() => (registered = true), 300);
+        return 7;
+      },
+    });
+
+    await tickRunner();
+    await new Promise((resolve) => setTimeout(resolve, 150));
+    expect(daemon.runs(T1)).toHaveLength(0);
+    await until(() => daemon.finishes().length === 1);
+    expect(daemon.runs(T1)[0]!.body).toMatchObject({ tab_id: 7 });
+  });
+
   it("never puts two tasks on one tab", async () => {
     const daemon = fakeDaemon({
       claims: [task(T1), task(T2, { title: "Tidy contacts" })],

@@ -105,7 +105,9 @@ impl Tabs {
             .collect()
     }
 
-    fn add(&self, url: &str) -> u32 {
+    /// Register a tab. `focus` false leaves the focused tab where it is: a delegated task's tab,
+    /// opened behind the person's page (fleet-surfaces, ADR 0141).
+    fn add(&self, url: &str, focus: bool) -> u32 {
         let mut state = self.inner.lock().expect("tabs poisoned");
         state.next_id += 1;
         let id = state.next_id;
@@ -115,7 +117,9 @@ impl Tabs {
             title: String::new(),
             nav: 0,
         });
-        state.focused = Some(id);
+        if focus || state.focused.is_none() {
+            state.focused = Some(id);
+        }
         id
     }
 
@@ -190,6 +194,17 @@ pub fn announce(app: &AppHandle) {
 
 /// Create a page webview for `url`, focus it, and re-lay the window.
 pub fn create(app: &AppHandle, url: &str) -> Result<u32, String> {
+    create_with(app, url, true)
+}
+
+/// Create a page webview for `url` behind the focused one: a delegated task's tab (fleet-surfaces,
+/// ADR 0141). The person's page stays in front; `layout::apply` keeps the new one hidden until
+/// someone focuses it. With no tab open at all it is the focused one, as any first tab is.
+pub fn create_background(app: &AppHandle, url: &str) -> Result<u32, String> {
+    create_with(app, url, false)
+}
+
+fn create_with(app: &AppHandle, url: &str, focus: bool) -> Result<u32, String> {
     let parsed = Url::parse(url).map_err(|e| format!("bad url {url}: {e}"))?;
     let window = app
         .get_window(crate::MAIN_WINDOW)
@@ -200,7 +215,7 @@ pub fn create(app: &AppHandle, url: &str) -> Result<u32, String> {
     // is not the focused one, which blanks the whole browsing area. Remember who had focus, so
     // the error path can put the window back exactly as it was.
     let previous = app.state::<Tabs>().focused();
-    let id = app.state::<Tabs>().add(parsed.as_str());
+    let id = app.state::<Tabs>().add(parsed.as_str(), focus);
     let label = label_for(id);
 
     let app_for_nav = app.clone();
@@ -319,8 +334,8 @@ mod tests {
     #[test]
     fn a_navigation_counts_a_new_document_and_a_title_or_url_update_does_not() {
         let tabs = Tabs::default();
-        let first = tabs.add("https://a.test/");
-        let second = tabs.add("https://a.test/");
+        let first = tabs.add("https://a.test/", true);
+        let second = tabs.add("https://a.test/", true);
         assert_eq!(tabs.list()[0].nav, 0);
 
         tabs.navigated(first, "https://a.test/");
@@ -337,8 +352,8 @@ mod tests {
     #[test]
     fn adding_focuses_the_new_tab_and_closing_falls_back_to_another() {
         let tabs = Tabs::default();
-        let first = tabs.add("https://a.test/");
-        let second = tabs.add("https://b.test/");
+        let first = tabs.add("https://a.test/", true);
+        let second = tabs.add("https://b.test/", true);
         assert_eq!(tabs.focused(), Some(second));
 
         tabs.remove(second);
@@ -349,17 +364,28 @@ mod tests {
         assert!(tabs.list().is_empty());
     }
 
+    #[test]
+    fn a_background_tab_leaves_the_persons_page_in_front_unless_there_is_none() {
+        let tabs = Tabs::default();
+        let only = tabs.add("https://a.test/", false);
+        assert_eq!(tabs.focused(), Some(only), "a first tab is the focused one, however it came");
+        let behind = tabs.add("https://b.test/", false);
+        assert_eq!(tabs.focused(), Some(only), "a task's tab opens behind the person's page");
+        assert_eq!(tabs.list().len(), 2);
+        assert!(tabs.list().iter().any(|t| t.id == behind && !t.focused));
+    }
+
     /// The rollback `create` performs when `add_child` fails. `remove` alone is not enough: it
     /// re-points focus at the last tab in the list, which is not the tab that had it.
     #[test]
     fn a_rolled_back_create_restores_the_previous_focus() {
         let tabs = Tabs::default();
-        let first = tabs.add("https://a.test/");
-        let _second = tabs.add("https://b.test/");
+        let first = tabs.add("https://a.test/", true);
+        let _second = tabs.add("https://b.test/", true);
         tabs.focus(first);
 
         let previous = tabs.focused();
-        let phantom = tabs.add("https://c.test/");
+        let phantom = tabs.add("https://c.test/", true);
         assert_eq!(tabs.focused(), Some(phantom));
 
         // What the error path does.
@@ -381,8 +407,8 @@ mod tests {
     #[test]
     fn one_tabs_url_can_be_asked_for_without_reading_the_whole_list() {
         let tabs = Tabs::default();
-        let id = tabs.add("https://a.test/one");
-        tabs.add("https://b.test/two");
+        let id = tabs.add("https://a.test/one", true);
+        tabs.add("https://b.test/two", true);
 
         assert_eq!(tabs.url_for(id).as_deref(), Some("https://a.test/one"));
         assert_eq!(tabs.url_for(9_999), None, "no such tab is not an empty url");
@@ -427,7 +453,7 @@ mod tests {
     #[test]
     fn a_tab_carries_its_own_label_and_whatever_the_page_last_called_itself() {
         let tabs = Tabs::default();
-        let id = tabs.add("https://a.test/");
+        let id = tabs.add("https://a.test/", true);
         tabs.set_title(id, "A page");
         tabs.set_url(id, "https://a.test/elsewhere");
 

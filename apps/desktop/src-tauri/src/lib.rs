@@ -132,6 +132,13 @@ async fn tabs_create(app: AppHandle, url: String) -> Result<u32, String> {
     tabs::create(&app, &url)
 }
 
+/// Her window's one way to open a page (fleet-surfaces, ADR 0141): a tab for a delegated task's app,
+/// behind the person's page and never focused. She still cannot close, focus or navigate a tab.
+#[tauri::command(rename_all = "snake_case")]
+async fn tabs_open_background(app: AppHandle, url: String) -> Result<u32, String> {
+    tabs::create_background(&app, &url)
+}
+
 #[tauri::command(rename_all = "snake_case")]
 async fn tabs_close(app: AppHandle, id: u32) -> Result<(), String> {
     tabs::close(&app, id)
@@ -192,6 +199,7 @@ pub fn run() {
         // ──────────────────────────────────────────────────────────────────────────────────────
         .invoke_handler(tauri::generate_handler![
             tabs_create,
+            tabs_open_background,
             tabs_close,
             tabs_focus,
             tabs_navigate,

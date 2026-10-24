@@ -25,6 +25,7 @@ fn main() {
         tauri_build::Attributes::new().app_manifest(tauri_build::AppManifest::new().commands(&[
             // tabs.rs (c18)
             "tabs_create",
+            "tabs_open_background",
             "tabs_close",
             "tabs_focus",
             "tabs_navigate",

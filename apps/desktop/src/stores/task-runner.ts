@@ -11,10 +11,10 @@
  * A claimed task gets a tab of its own:
  * - a task for an app reuses an open tab of that app that is neither the focused tab - the person
  *   is looking at that one, and the main thread works there - nor a tab another task holds;
- * - when there is none it opens one in the background, never taking focus. Her window cannot open
- *   tabs yet (`capabilities/athena.json` grants no `tabs_create`), so until the shell gives it a
- *   background open, such a task fails with a sentence saying what to do: open the app in a second
- *   tab and ask again;
+ * - when there is none it opens one in the background, never taking focus (`tabs_open_background`,
+ *   the one tab command her window holds), and waits for the page to register its tools before
+ *   the first turn, so the turn sees the app's tools. A plain browser has no shell to open with,
+ *   and such a task fails with a sentence saying what to do: open the app in a second tab;
  * - a task with no app gets no tab and runs on the daemon alone. The daemon still keys a turn by
  *   a session, so its requests name the focused page's (the one the main thread registers), with
  *   that page's app switched off for the task: no call on any page can run from it.
@@ -49,7 +49,7 @@ import { isTerminal } from "@/lib/events";
 import { forgetUnsure, heldBefore, rememberUnsure, settleHostCall, withUnsure, type PageAnswer } from "@/lib/execute";
 import { followBus, type BusEvent } from "@/lib/fleet";
 import { TABS_READ, callOnPage } from "@/lib/hands";
-import { hasShell, type Tab } from "@/lib/ipc";
+import { hasShell, tabsOpenBackground, type Tab } from "@/lib/ipc";
 import { catalogIdOf, hostOfDerivedId, manifestBodyOf } from "@/lib/manifest";
 import { TASKS_RUNNING_CAP, type TaskView } from "@/lib/tasks";
 import { originOf } from "@/modules/browser/model";
@@ -79,6 +79,9 @@ export const TASK_RESULT_CAP = 600;
 
 /** How long a tab opened for a task may take to appear in the tab list before the task fails. */
 export const TAB_OPEN_MS = 10_000;
+/** How long a tab opened for a task may take to register its page's tools before the turn starts
+ * without them (the page may have none, or be slow): the turn then reads what is there. */
+export const TOOLS_WAIT_MS = 15_000;
 
 /**
  * The first message of a task's conversation: nothing. The brief is the daemon's - `core.delegate`
@@ -130,8 +133,8 @@ const LIVE: RunnerDeps = {
     return { disabledOrigins: disabledOriginsOf(origins.records, tabs, byTab), gated: gatedListsOf(origins, tabs, byTab) };
   },
   call: (tabId, name, input, tools) => callOnPage(tabId, name, input, tools ?? useTools.getState().byTab[tabId]?.tools ?? []),
-  // Her window is granted no tab command (capabilities/athena.json). See the module comment.
-  open: null,
+  // Behind the person's page, never focused (ADR 0141); a plain browser has no shell to open with.
+  open: hasShell() ? (url) => tabsOpenBackground(url) : null,
   accept: (origin, tool) => useOrigins.getState().acceptContracts(origin, [tool]),
   follow: hasShell() ? (on, connected) => followBus(() => deps.api(), on, connected) : null,
   every: (ms, f) => {
@@ -478,6 +481,11 @@ async function bind(run: Active): Promise<void> {
     while (!deps.tabs().some((t) => t.id === tabId)) {
       if (run.controller.signal.aborted) throw new Killed();
       if (Date.now() > until) throw new TaskFailure("no_page", `the tab opened for ${appName(task)} never appeared`);
+      await deps.wait(100);
+    }
+    const ready = Date.now() + TOOLS_WAIT_MS;
+    while (!deps.tools()[tabId] && Date.now() < ready) {
+      if (run.controller.signal.aborted) throw new Killed();
       await deps.wait(100);
     }
   }
