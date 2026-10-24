@@ -2578,7 +2578,11 @@
           "revision": 28,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/daemon/routes.py:678 The gate's per-turn policy inputs (disabled_origins, gated_origins, gated_tools) are read from the request body. A malformed or missing list silently becomes an empty set (routes.py:767-768), so switched-off apps become addressable again and first-sight apps lose their forced gating, instead of the turn failing loudly.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:45b3f952560a4cbc",
+          "evaluatedRevision": 28
         },
         {
           "subject": "talking-avatar",
@@ -5726,7 +5730,11 @@
           "revision": 28,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/depth/model.ts:7 The context is a pure navigation reducer plus stage rendering for the desktop window. A search of apps/desktop/src/depth and apps/desktop/src/stage for hook, plugin, middleware, checkpoint and agent found nothing, so no model or tool call is wrapped and no runtime is assembled here.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:45b3f952560a4cbc",
+          "evaluatedRevision": 28
         }
       ],
       "governance": "governed"
@@ -8866,7 +8874,11 @@
           "revision": 28,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/proving/sandbox/__init__.py:9 This is a standalone CLI spike that polls a remote sandbox REST service. No module outside the package imports it, and a search of the context's directories for hook, plugin, middleware, run_turn and entry_point found nothing, so there is no agent loop, hook chain or contributed code to assemble.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:45b3f952560a4cbc",
+          "evaluatedRevision": 28
         }
       ],
       "governance": "governed"

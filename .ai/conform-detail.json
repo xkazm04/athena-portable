@@ -1064,27 +1064,23 @@
       "context": "proving-sandbox",
       "subject": "agent-runtime-assembly",
       "bundle": "software-engineering",
-      "state": "unknown",
-      "evaluatedAt": "2026-10-15",
-      "evaluatedTs": "2026-10-15T03:59:35.775Z",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T03:45:31.753Z",
+      "worker": "e05338b9-ac13-4426-9504-53eb02e68d0c",
       "techniques": [
         {
           "technique": "bounded-projection-of-external-work",
           "verdict": "not-applicable",
-          "evidence": "src/athena/proving/sandbox/client.py:258 Polling belongs to the standalone synchronous probe runner, not an agent loop exposing long-running work to a model."
+          "evidence": "src/athena/proving/sandbox/client.py:248 The long-running remote operation is polled synchronously by a CLI script, not by a model loop, so the precondition (model-visible remote work that outlives a turn) does not hold."
         },
         {
           "technique": "checkpoint-mode-custody",
           "verdict": "not-applicable",
-          "evidence": "src/athena/proving/sandbox/spike.py:15 These checkpoints are filesystem images, not full or delta conversation-graph checkpoints."
+          "evidence": "src/athena/proving/sandbox/spike.py:15 These checkpoints are filesystem images, not full or delta conversation-graph checkpoints.",
+          "carriedFrom": "2026-10-15"
         }
-      ],
-      "withdrawn": {
-        "worker": "6899c4bf-be87-45dc-a1ba-68e65ef41c14",
-        "state": "not-applicable",
-        "at": "2026-10-15T04:00:13.752906+00:00",
-        "reason": "reviewer (sonnet): The not-applicable anchor (__main__.py:83) is incidental: the line is a report write, not the absence; the sandbox spike does fork from checkpoints and poll long-running operations, which this subject's standards cover, and the absence terms run_turn, ModelRequest and register_hook are too narrow to"
-      }
+      ]
     },
     "9e179811-457d-4d43-865e-87faad968f56/agent-runtime-assembly": {
       "context": "demo-kit-ui-webmcp",
@@ -6480,6 +6476,47 @@
           "evidence": "apps/desktop/src/modules/browser/model.ts:149 No wrapper forwards the IPC Tab: BrowserTab picks named fields explicitly instead of spreading, so implicit delegation does not occur."
         }
       ]
+    },
+    "10c863df-b13e-4802-85a8-60731a8c6c99/agent-runtime-assembly": {
+      "context": "daemon-service",
+      "subject": "agent-runtime-assembly",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T03:45:31.753Z",
+      "worker": "e05338b9-ac13-4426-9504-53eb02e68d0c",
+      "techniques": [
+        {
+          "technique": "guard-input-custody",
+          "verdict": "deviation",
+          "evidence": "src/athena/daemon/routes.py:678 Custody itself holds: only the token-holding shell writes these lists. But a malformed guard input degrades to the permissive default, which is the technique's question 4 (absent-guard-is-loud). Only an over-long list is refused."
+        },
+        {
+          "technique": "operator-tier-code-loading",
+          "verdict": "conformant",
+          "evidence": "src/athena/daemon/routes.py:514 The service door refuses any manifest with origin_kind other than host. Connectors, the only contributions with in-process executors, register in process, so the authenticated service tier cannot name code."
+        },
+        {
+          "technique": "session-scoped-capability",
+          "verdict": "conformant",
+          "evidence": "src/athena/daemon/routes.py:836 The setup tools resolve from the session's own key, not from an environment slot. One disabled-origins set then drives both the prompt filter and the gate's refusal for that turn."
+        },
+        {
+          "technique": "host-routes-win",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/daemon/routes.py:307 Every route is host code (base routes, connector routes). No contribution mounts handlers, so there is no mount order to defend. The table also refuses duplicates."
+        }
+      ]
+    },
+    "c11bdae5-0012-4b41-a287-4ad262191093/agent-runtime-assembly": {
+      "context": "desktop-stage-depth",
+      "subject": "agent-runtime-assembly",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T03:45:31.753Z",
+      "worker": "e05338b9-ac13-4426-9504-53eb02e68d0c",
+      "techniques": []
     }
   }
 }
