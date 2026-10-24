@@ -471,6 +471,18 @@ the catalog derives from `reversible` and `side_effects` (ADR 0021). Credentials
 under `ATHENA_HOME/connectors/`, sealed by the keystore, DPAPI or an owner-only file, and never in
 a brain. `--no-connectors` starts the daemon without the vault.
 
+An MCP server's tools are connector tools too (ADR 0123): `--mcp-config <path>` names the servers
+file, by default `$ATHENA_HOME/mcp.json` (absent is none; a named file must exist, and a bad one is
+the failure line). Each server is `{"id", "url", "token_env"}`; the token is read from that
+environment variable at each request. Its tools are listed at start and, while it holds none, again
+as a turn starts (at most every 30 s); `GET /connectors` lists it under `mcp_servers` with its
+health, also under `--no-connectors`.
+
+```bash
+echo '{"servers": [{"id": "gravitone", "url": "http://localhost:3150/api/mcp", "token_env": "GRAVITONE_MCP_TOKEN"}]}' > "$ATHENA_HOME/mcp.json"
+GRAVITONE_MCP_TOKEN=gt_... uv run athena serve
+```
+
 ```bash
 curl -s "$ATHENA/connectors" -H "X-Athena-Token: $TOKEN"
 curl -s -X POST "$ATHENA/connectors/notion/connect" -H "X-Athena-Token: $TOKEN"   -H "Content-Type: application/json" -d '{"token": "ntn_..."}'

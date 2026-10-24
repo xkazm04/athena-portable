@@ -37,12 +37,14 @@ from typing import TYPE_CHECKING, Any
 from athena.channels.voice.backends import VoiceBackend
 from athena.channels.voice.config import VoiceStudio
 from athena.channels.voice.gateway import VOICE_PATH, VoiceGateway
+from athena.connectors.mcp.config import McpConfig
+from athena.connectors.mcp.service import McpService, services_for_config
 from athena.connectors.service import Service, services_for
 from athena.connectors.vault import Vault
 from athena.contracts.registry import ExecResult, ExecutorFn, TurnContext
 from athena.core.approvals import Approvals
 from athena.core.brain.store import DEFAULT_CONFIDENCE, Brain, ProvenanceError
-from athena.core.catalog import RECALL_CAP, Catalog, CoreServices, build_catalog
+from athena.core.catalog import RECALL_CAP, Catalog, CatalogError, CoreServices, build_catalog
 from athena.core.constitution import Constitution, load
 from athena.core.ledger import Ledger
 from athena.core.recall import recall, recall_whole
@@ -50,7 +52,7 @@ from athena.daemon.server import AthenaDaemon
 from athena.harness.cli_harness import CLAUDE_EXTRA_ARGS, DIALECTS, CliDialect, CliHarness
 from athena.harness.engines import API_ENGINES, ENGINES, build_api_harness
 from athena.harness.hooks import LedgerHook, TruncationHook
-from athena.harness.policy import Policy, PolicyHook
+from athena.harness.policy import ConnectorStatePort, ConnectorStates, Policy, PolicyHook
 from athena.harness.ports import ModelFn
 from athena.harness.rounds import RoundHarness
 from athena.harness.transports import SubprocessTransport, Transport
@@ -197,6 +199,8 @@ class AthenaLocal:
     adopt: AdoptStudio | None = None
     #: The peer host behind ``/devices`` and the overlay listener (ADR 0140), or ``None``.
     peer: PeerHost | None = None
+    #: One port per configured MCP server, by id (ADR 0123). Empty for none.
+    mcp: dict[str, McpService] | None = None
 
     def close(self) -> None:
         """Close the brain, cancel any consent flow, end every adopt session.
@@ -241,6 +245,7 @@ def build_local(
     model_fn: ModelFn | None = None,
     adopt: AdoptStudio | None = None,
     peer: PeerHost | None = None,
+    mcp: McpConfig | None = None,
 ) -> AthenaLocal:
     """Assemble one local Athena: brain, tables, law, catalog, gate, engine, lane, daemon.
 
@@ -268,6 +273,11 @@ def build_local(
     into the catalog under ``connector:<id>``, the ``/connectors`` routes are served, and a
     connect or disconnect re-merges at once. ``None`` — a test's default — is a deployment with
     no connector it may ever call, which is what rule 4 refuses closed.
+
+    ``mcp`` is the MCP servers configuration (``ATHENA_HOME/mcp.json``, ADR 0123): each server is
+    a connector port under ``connector:<id>``, its tools listed now and, while it holds none, again
+    as a turn starts; rule 4 asks the server's own port whether it is live, and the vault for every
+    other id. ``None`` — a test's default — is no MCP servers.
 
     ``adopt`` is the adopt studio behind ``/adopt`` (ADR 0097); ``None`` builds the real one, its
     legs on the ``claude`` CLI whatever ``engine`` is, its sessions under ``$ATHENA_HOME/adopt``.
@@ -307,7 +317,14 @@ def build_local(
             checkpoint=checkpoint_executor(brain),
         )
         catalog = build_catalog(services)
-        if vault is not None and policy is None:
+        mcp_services = services_for_config(mcp) if mcp is not None else {}
+        taken = sorted(set(mcp_services) & set(vault.specs if vault is not None else ()))
+        if taken:
+            raise ValueError(f"mcp.json: {', '.join(taken)} is a vault connector's id")
+        if policy is None and mcp_services:
+            owners: dict[str, ConnectorStatePort] = dict(mcp_services)
+            policy = Policy(connectors=ConnectorStates(owners=owners, fallback=vault))
+        elif vault is not None and policy is None:
             policy = Policy(connectors=vault)
         gate = PolicyHook(catalog, approvals, policy or Policy())
 
@@ -365,7 +382,8 @@ def build_local(
         studio = voice_studio or VoiceStudio(brain.root.parent / VOICE_DIRNAME)
         _wire_voice(daemon, studio, voice, voice_off)
         if vault is not None:
-            _wire_connectors(daemon, catalog, vault)
+            _wire_connectors(daemon, catalog, vault, mcp_services)
+        _wire_mcp(daemon, catalog, mcp_services, routes=vault is None)
         adopt_studio = _wire_adopt(
             daemon, adopt, brain.root.parent / ADOPT_DIRNAME, ledger, brain=brain, vault=vault
         )
@@ -388,6 +406,7 @@ def build_local(
             voice=studio,
             adopt=adopt_studio,
             peer=peer,
+            mcp=mcp_services,
         )
     except BaseException:
         brain.close()
@@ -408,7 +427,12 @@ def _wire_voice(
     daemon.raw_paths.update(RAW_PATHS)
 
 
-def _wire_connectors(daemon: AthenaDaemon, catalog: Catalog, vault: Vault) -> None:
+def _wire_connectors(
+    daemon: AthenaDaemon,
+    catalog: Catalog,
+    vault: Vault,
+    mcp: dict[str, McpService] | None = None,
+) -> None:
     """Merge every live connector now, re-merge on change, and serve the routes (ADR 0021).
 
     A merge with an empty tool list is how a disconnect leaves the catalog: ``list_tools`` on a
@@ -426,8 +450,45 @@ def _wire_connectors(daemon: AthenaDaemon, catalog: Catalog, vault: Vault) -> No
     for connector_id in services:
         merge(connector_id)
     vault.on_change(merge)
-    for route in connector_routes(daemon, vault):
+    for route in connector_routes(daemon, vault, list((mcp or {}).values())):
         daemon.routes.add(route)
+
+
+def _wire_mcp(
+    daemon: AthenaDaemon, catalog: Catalog, services: dict[str, McpService], *, routes: bool
+) -> None:
+    """List every MCP server now, list again as a turn starts while one holds none (ADR 0123).
+
+    A listing the catalog refuses — a tool name that is not a slug, an array with no
+    ``maxItems`` — is refused whole as a page's manifest is: the server holds no tools, its view
+    says why, and it is listed again on a later turn. ``routes`` serves ``GET /connectors`` for the
+    MCP servers alone, when there is no vault to serve it.
+    """
+    from athena.daemon.connectors import connector_routes
+
+    if not services:
+        return
+
+    def merge(service: McpService) -> None:
+        try:
+            catalog.merge_connector(service.id, service)
+        except CatalogError as exc:
+            service.refused(str(exc))
+            catalog.merge_connector(service.id, service)  # holds nothing now: clears the origin
+
+    def relist() -> None:
+        for service in services.values():
+            if service.due():
+                service.refresh()
+                merge(service)
+
+    for service in services.values():
+        service.refresh()
+        merge(service)
+    daemon.turn_hooks.append(relist)
+    if routes:
+        for route in connector_routes(daemon, None, list(services.values())):
+            daemon.routes.add(route)
 
 
 def _wire_adopt(

@@ -4,7 +4,11 @@
     Every spec with its connection record: status, identity, the switches, the last probe with
     its age, the setup guide, the tools it yields. ``records_notice`` is empty, or says in plain
     words that the connections file could not be read and where its bytes were kept. Nothing here
-    is or names a credential; the record has no such field to leak.
+    is or names a credential; the record has no such field to leak. ``mcp_servers`` lists each
+    configured MCP server (ADR 0123): its id, origin, URL, token variable's name and whether it is
+    set, health (``healthy``, ``broken`` or ``unknown``) and tools. With no vault
+    (``--no-connectors``) and an MCP server configured, this route still answers, with no
+    ``connectors`` and the servers alone.
 
 ``POST /connectors/<id>/connect``
     ``{"token": "..."}`` for a pasted-token service, or ``{"client_id": "...",
@@ -31,8 +35,10 @@ admission (``guard``), so its re-merge never lands beside a running turn either.
 
 from __future__ import annotations
 
+from collections.abc import Sequence
 from typing import TYPE_CHECKING, Any
 
+from athena.connectors.mcp.service import McpService
 from athena.connectors.vault import Vault, VaultError
 from athena.daemon.routes import Reply, Request, Route, error
 
@@ -45,13 +51,15 @@ CONNECTOR_PREFIX = "/connectors/"
 ACTS: tuple[str, ...] = ("connect", "flow", "disconnect", "probe", "settings")
 
 
-def connectors(daemon: AthenaDaemon, vault: Vault) -> Reply:
+def connectors(daemon: AthenaDaemon, vault: Vault | None, mcp: Sequence[McpService] = ()) -> Reply:
+    specs = len(vault.specs) if vault is not None else 0
     return 200, {
         "ok": True,
-        "connectors": vault.views(),
-        "records_notice": vault.records_notice,
-        "showing": len(vault.specs),
-        "total": len(vault.specs),
+        "connectors": vault.views() if vault is not None else [],
+        "records_notice": vault.records_notice if vault is not None else "",
+        "mcp_servers": [service.view() for service in mcp],
+        "showing": specs,
+        "total": specs,
         "footer": "",
     }
 
@@ -131,10 +139,16 @@ def _settings(vault: Vault, connector_id: str, body: Any) -> None:
         vault.set_allowlist(connector_id, values)
 
 
-def connector_routes(daemon: AthenaDaemon, vault: Vault) -> list[Route]:
-    """The two routes, exact before prefix, for :meth:`RouteTable.add`."""
+def connector_routes(
+    daemon: AthenaDaemon, vault: Vault | None, mcp: Sequence[McpService] = ()
+) -> list[Route]:
+    """The two routes, exact before prefix, for :meth:`RouteTable.add`; with no vault, the
+    listing alone (it then lists only the MCP servers)."""
+    listing = Route("GET", "/connectors", lambda request: connectors(daemon, vault, mcp))
+    if vault is None:
+        return [listing]
     return [
-        Route("GET", "/connectors", lambda request: connectors(daemon, vault)),
+        listing,
         Route(
             "POST",
             CONNECTOR_PREFIX,

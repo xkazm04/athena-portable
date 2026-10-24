@@ -906,6 +906,7 @@ def turn_events(
         if scheduled:
             ctx = schedule_trigger(daemon, ctx)
         stamped = stamp_case_turn(daemon, ctx)
+        daemon.before_turn()
         try:
             started = last_run_of(daemon, ctx.case_id)
             if started:

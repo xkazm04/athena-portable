@@ -20,7 +20,8 @@ Four rules, evaluated in order, first refusal wins (Cedar's forbid-overrides-per
    connection is live *now* (README §4). The state is read through :class:`ConnectorStatePort` on
    every call rather than captured at merge time, so switching a connector off is immediate. A
    deployment with no vault has no connector it may call, and the refusal names the connector
-   rather than saying "no".
+   rather than saying "no". An MCP server's id is answered by that server's own port — live while
+   its token variable is set — through :class:`ConnectorStates` (ADR 0123).
 
 Why these run before the validator rather than beside it: a validator answers "are these
 parameters acceptable for this tool", which presumes the tool is addressable here. Asking the
@@ -52,6 +53,7 @@ from athena.harness.ports import ApprovalsPort, CatalogPort
 __all__ = [
     "RULES",
     "ConnectorStatePort",
+    "ConnectorStates",
     "Policy",
     "PolicyDecision",
     "PolicyHook",
@@ -77,6 +79,26 @@ class ConnectorStatePort(Protocol):
     """
 
     def is_live(self, connector_id: str) -> bool: ...
+
+
+@dataclass(frozen=True)
+class ConnectorStates:
+    """Rule 4's one port over more than one owner of ``connector:`` ids (ADR 0123).
+
+    ``owners`` maps an id to the port that answers for it alone — an MCP server answers for its
+    own id — and every other id goes to ``fallback``, the vault, exactly as it would without
+    this wrapper. No fallback is no vault: an id nobody owns is not live. An owner never answers
+    for another id, so adding one cannot make a vault connector live that the vault says is not.
+    """
+
+    owners: Mapping[str, ConnectorStatePort] = field(default_factory=dict)
+    fallback: ConnectorStatePort | None = None
+
+    def is_live(self, connector_id: str) -> bool:
+        owner = self.owners.get(connector_id)
+        if owner is not None:
+            return owner.is_live(connector_id)
+        return self.fallback is not None and self.fallback.is_live(connector_id)
 
 
 @dataclass(frozen=True)

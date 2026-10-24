@@ -84,6 +84,44 @@ the browser, reached through one vault (ADR 0021).
   never on render. Structural policy checks liveness on every call.
 - **No secret surface.** No tool returns, lists, mints or rotates a credential.
 
+## MCP servers
+
+An external MCP server's tools are connector tools (ADR 0123). `ATHENA_HOME/mcp.json` (or `athena
+serve --mcp-config <path>`) lists the servers:
+
+```json
+{"servers": [{"id": "gravitone", "url": "http://localhost:3150/api/mcp", "token_env": "GRAVITONE_MCP_TOKEN"}]}
+```
+
+- **Configured, not connected through the vault.** `id` is a slug that is not a built-in
+  connector's; `url` is `https`, or `http` only on `localhost`, `127.0.0.1` or `[::1]`;
+  `token_env` names the environment variable holding the bearer token, read at each request and
+  never written anywhere. A server object with any other key is refused, so a pasted token is never
+  configuration. An absent file is no servers; a bad one stops `athena serve` naming the field.
+- **Catalogued as `connector.<id>.<tool>`**, origin `connector:<id>`, through the same
+  `ConnectorPort` and `merge_connector` as Gmail and Notion (`connectors/mcp/service.py`). No new
+  origin kind.
+- **Classed from the annotations** (`connectors/mcp/annotations.py`): `readOnlyHint: true` is
+  `AUTO`; `destructiveHint: false` and `openWorldHint: false` together are `AUTO`; anything else,
+  an omitted hint or no annotations included, is `GATED`. `idempotentHint` never loosens. On
+  Gravitone's default projection `gt_read` and `gt_spend` are `AUTO`, `gt_launch` and `gt_job`
+  `GATED` (each family carries its most severe op's hints).
+- **Listed at start; again as a turn starts while it holds none**, at most once every 30 s, so a
+  server booted after the daemon is picked up. A listing the catalog refuses is refused whole.
+- **Results** are the server's `structuredContent` as JSON (or its text), capped at 1,600 with
+  `(showing N of M)` and fenced with the server id; `isError: true` is a failed result with that
+  text; an unreachable server or a non-2xx answer is `engine_error` naming the server and status.
+- **Live while its token variable is set**: rule 4 asks the server for its own id and the vault for
+  every other, with or without `--no-connectors`. `GET /connectors` lists the servers under
+  `mcp_servers` with health `healthy`, `broken` or `unknown`, the variable's name and whether it is
+  set, and never its value.
+- **First sight does not apply**: ADR 0063 gates host origins only; writing a server into
+  `mcp.json` is the trust decision.
+
+`tests/connectors/test_mcp_*.py` run against a stdlib fake MCP server on loopback
+(`tests/connectors/mcp_fake.py`); `tests/e2e/test_mcp_connector.py` drives an `AUTO` call through a
+scripted daemon to the same fake.
+
 ## The journey test
 
 `tests/e2e/test_connectors_journey.py` (uat J6) runs the scripted daemon with `--fake-providers`
@@ -105,4 +143,7 @@ switch, the allow-list, disconnect (ADR 0029).
 
 ## Not done
 
-Only Gmail and Notion ship. Nothing in the demo depends on a connector.
+Only Gmail and Notion ship. Nothing in the demo depends on a connector. The MCP client is v0:
+Streamable HTTP only (no stdio servers), tools only (no resources, prompts or sampling), no
+`listChanged`, no OAuth for an MCP server, and a timed-out MCP write is `engine_error` rather than
+`outcome_unknown`. The desktop module does not show `mcp_servers` yet.

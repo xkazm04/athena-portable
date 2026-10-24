@@ -68,6 +68,9 @@ from urllib.parse import parse_qs, urlsplit
 from athena.channels.voice.backends import BACKENDS as VOICE_BACKENDS
 from athena.channels.voice.backends import backend_from_name
 from athena.channels.voice.ws import WebSocket, accept_key, protocol_token
+from athena.connectors.mcp.config import CONFIG_FILENAME as MCP_CONFIG_FILENAME
+from athena.connectors.mcp.config import load_config as load_mcp_config
+from athena.connectors.spec import load_builtin
 from athena.connectors.vault import Vault
 from athena.contracts.channel import ChannelEvent
 from athena.core.approvals import Approvals
@@ -294,6 +297,9 @@ class AthenaDaemon:
     #: The turns sent under a case, stamped as each begins (ADR 0127): what a case's receipt is
     #: joined by, whatever conversation each turn talked in. Opened on the daemon's brain.
     case_turns: CaseTurns = field(init=False, repr=False)
+    #: Run as each turn starts, inside the writer lock and before the turn is composed: an MCP
+    #: server that listed no tools is listed again here (ADR 0123).
+    turn_hooks: list[Callable[[], None]] = field(default_factory=list)
 
     def __post_init__(self) -> None:
         self.routes = RouteTable(base_routes(self))
@@ -332,6 +338,15 @@ class AthenaDaemon:
             rows = [engine_row(status) for status in probe_all(executables=self.engine_executables)]
             self._engines = (time.monotonic(), rows)
             return [dict(row) for row in rows]
+
+    def before_turn(self) -> None:
+        """Run :attr:`turn_hooks`. A hook that raises is logged by type and skipped: what it
+        failed to refresh stays as it was, and the turn runs on the catalog it has."""
+        for hook in self.turn_hooks:
+            try:
+                hook()
+            except Exception as exc:
+                _log_escape("TURN", "before_turn", exc)
 
     @contextmanager
     def turn_door(self, origin: str) -> Iterator[TurnDoor]:
@@ -806,7 +821,15 @@ def build_parser() -> argparse.ArgumentParser:
     parser.add_argument(
         "--no-connectors",
         action="store_true",
-        help="start without the connector vault: no /connectors routes, no connector tools",
+        help="start without the connector vault: no vault routes, no vault connector tools "
+        "(the MCP servers of --mcp-config still load)",
+    )
+    parser.add_argument(
+        "--mcp-config",
+        default=None,
+        metavar="PATH",
+        help="the MCP servers whose tools are connector tools (default: "
+        f"$ATHENA_HOME/{MCP_CONFIG_FILENAME}, absent is none; given, it must exist)",
     )
     parser.add_argument(
         "--voice-backend",
@@ -867,6 +890,13 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
             # ``$ATHENA_HOME/peer``, not beside ``--brain``: one identity per install, however the
             # daemon was started (ADR 0140, "Identity").
             peer = PeerHost(brain_paths.athena_home() / "peer", port=args.peer_port)
+        # The ids no MCP server may take are the built-in connectors', vault or no vault, so a
+        # configuration means the same thing with and without --no-connectors (ADR 0123).
+        mcp = load_mcp_config(
+            args.mcp_config or brain_paths.athena_home() / MCP_CONFIG_FILENAME,
+            required=args.mcp_config is not None,
+            reserved=set(vault.specs) if vault is not None else set(load_builtin()),
+        )
         # Reasoning is the one engine setting a flag reaches past ``--model``: the default
         # ``TokenFactoryModel`` reasons, so only the opt-out builds one here (ADR 0035).
         model_fn = (
@@ -883,6 +913,7 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
             vault=vault,
             voice_off=args.voice_backend == "none",
             peer=peer,
+            mcp=mcp,
         )
     except (OSError, ValueError, sqlite3.Error) as exc:
         # ``sqlite3.Error`` is the brain's: a damaged index (``IndexDamagedError``, which names

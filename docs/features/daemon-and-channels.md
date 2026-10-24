@@ -52,5 +52,8 @@ none of it.
 
 ## Not done
 
-The MCP channel (other agents queueing at the same gate) is designed in the README and not built;
-the Gauntlet's MCP attack surface is deferred for that reason.
+The MCP channel (other agents queueing at the same gate, Athena as an MCP server) is designed in
+the README and not built; the Gauntlet's MCP attack surface is deferred for that reason. The other
+direction is built: Athena as an MCP *client*, an external server's tools catalogued as connector
+tools `connector.<id>.<tool>` from `ATHENA_HOME/mcp.json` or `--mcp-config` (ADR 0123,
+[connectors](connectors.md#mcp-servers)).
