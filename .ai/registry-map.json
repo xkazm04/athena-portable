@@ -7573,7 +7573,11 @@
           "revision": 54,
           "changedAt": "2026-10-14",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/Gate.tsx:4 Here 'gate' means a two-step confirm for an irreversible invoice act. Searching these files and the ledgerbox, hirelane and tidycrm component dirs found no hits for pre-commit, husky, process.exit or lint-staged, and this context's files hold no check, hook, waiver or exit path that could refuse a code change. The repo-wide CI lint covers the files from outside the context.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:0d8378dd13155e59",
+          "evaluatedRevision": 54
         },
         {
           "subject": "retrieval",

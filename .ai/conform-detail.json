@@ -5612,6 +5612,17 @@
         }
       ],
       "registryProposal": "recorded-interaction-fixtures could name a distinct failure: a fixture honestly labelled synthetic in its own header, while the suite's docstring and ADR still claim that fixture turns upstream format drift into a red test. The honesty of the label does not reach the claim, and a hand-written fixture cannot detect drift at all."
+    },
+    "f4f6bafa-bef4-426d-9731-16357fffa1ee/quality-gates": {
+      "context": "ledgerbox-lanes-ui",
+      "subject": "quality-gates",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T00:40:27.533Z",
+      "worker": "65fe73dc-a9e4-451a-a5fb-02ace4661e53",
+      "techniques": [],
+      "registryProposal": "Matched on the tokens 'gate' and 'evidence', which are product words for the invoice approval flow."
     }
   }
 }
