@@ -4714,47 +4714,46 @@
       "context": "desktop-scenes-mind-surface",
       "subject": "streaming-output",
       "bundle": "software-engineering",
-      "state": "unknown",
-      "evaluatedAt": "2026-10-19",
-      "evaluatedTs": "2026-10-19T08:42:18.343Z",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T22:52:25.675Z",
+      "worker": "2b0055c2-3bd8-4af6-8653-a362d649ea13",
       "techniques": [
         {
-          "technique": "buffering-and-backpressure",
-          "verdict": "not-applicable",
-          "evidence": "apps/desktop/src/scenes/surface/live.tsx:104 This scene projects the current status snapshot rather than accumulating an output tail."
-        },
-        {
-          "technique": "cancellation-and-finalization",
-          "verdict": "not-applicable",
-          "evidence": "apps/desktop/src/scenes/surface/model.ts:5 Run ownership and finalization belong to Athena's window; these scenes provide settings and a status mirror."
-        },
-        {
-          "technique": "emit-behind-the-revision-window",
-          "verdict": "not-applicable",
-          "evidence": "apps/desktop/src/scenes/surface/view.tsx:74 The marquee replaces a whole activity label, with no revisable output transcript or emission cursor."
-        },
-        {
           "technique": "phase-derivation",
-          "verdict": "deviation",
-          "evidence": "apps/desktop/src/scenes/surface/model.ts:161 The headline consumes state, cards and line without event age; the inspected mirror and status derivation also provide no silence degradation."
-        },
-        {
-          "technique": "sink-reversibility-decides-the-commit",
           "verdict": "not-applicable",
-          "evidence": "apps/desktop/src/scenes/surface/view.tsx:117 This surface acknowledges input handover and does not commit partial answer records."
+          "evidence": "apps/desktop/src/scenes/surface/model.ts:171 The headline repeats the pill text her window reports over athena:status; any phase is worked out in her window, not here."
         },
         {
           "technique": "stream-parsing",
           "verdict": "not-applicable",
-          "evidence": "apps/desktop/src/scenes/mind/live.tsx:37 Mind consumes a setup view-model, while Surface consumes decoded status snapshots; neither scene parses transport frames."
+          "evidence": "apps/desktop/src/scenes/mind/live.tsx:83 Mind's live wiring is the Setup module's view-model plus a devices mirror; no transport chunks reach these files."
+        },
+        {
+          "technique": "buffering-and-backpressure",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/surface/live.tsx:104 This scene projects the current status snapshot rather than accumulating an output tail.",
+          "carriedFrom": "2026-10-19"
+        },
+        {
+          "technique": "cancellation-and-finalization",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/surface/model.ts:5 Run ownership and finalization belong to Athena's window; these scenes provide settings and a status mirror.",
+          "carriedFrom": "2026-10-19"
+        },
+        {
+          "technique": "emit-behind-the-revision-window",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/surface/view.tsx:74 The marquee replaces a whole activity label, with no revisable output transcript or emission cursor.",
+          "carriedFrom": "2026-10-19"
+        },
+        {
+          "technique": "sink-reversibility-decides-the-commit",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/surface/view.tsx:117 This surface acknowledges input handover and does not commit partial answer records.",
+          "carriedFrom": "2026-10-19"
         }
-      ],
-      "withdrawn": {
-        "worker": "1f7efe71-adc5-4ea1-93c1-f2c10ecbb77f",
-        "state": "deviation",
-        "at": "2026-10-19T08:42:42.807767+00:00",
-        "reason": "reviewer (sonnet): Every anchor is in scenes/surface/ (model.ts, live.tsx, view.tsx), which is not among this context's listed files (scenes/mind/* and scenes/shared/*). Line 161 only computes the headline from pillText(s.athena); I could not confirm from the context's own code that no age-based fallback exists."
-      }
+      ]
     },
     "82024321-4b38-4a9a-b360-154b5349e47b/transactions-over-a-replicated-log": {
       "context": "proving-core",

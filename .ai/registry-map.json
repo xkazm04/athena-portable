@@ -5152,7 +5152,11 @@
           "revision": 8,
           "changedAt": "2026-09-17",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/scenes/surface/model.ts:5 The Surface scene mirrors a status line from Athena's own window and hands text over to that window, and Mind/EngineSection draw the Setup view-model, so none of these files consume or show streaming output. A search of mind/, surface/ and shared/ for stream, delta, EventSource, getReader and TextDecoder found nothing.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:f390cca5c416535b",
+          "evaluatedRevision": 8
         },
         {
           "subject": "demo-data-plane",
