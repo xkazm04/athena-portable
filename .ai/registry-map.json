@@ -897,7 +897,11 @@
           "revision": 21,
           "changedAt": "2026-09-29",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/variants/archify-lanes/routing.ts:2 The 'routing' in this context means drawing orthogonal edges between nodes on a 2D diagram, not picking a model; I searched the variant and atlas/test directories for anthropic, openai, claude- and modelId and found nothing, so this code makes no language-model calls and the subject's precondition (a system that sends work to LLMs) does not hold here.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:5484901d8df95b15",
+          "evaluatedRevision": 21
         },
         {
           "subject": "design-tokens",
@@ -6846,7 +6850,11 @@
           "revision": 21,
           "changedAt": "2026-09-29",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/hirelane/lib/scoring.ts:2 Candidate scoring is a keyword heuristic and 'model' here means the board's data model; I searched components/board and lib for anthropic, openai, claude- and modelId and found nothing, so there is no LLM call to classify, tier or fail over.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:5484901d8df95b15",
+          "evaluatedRevision": 21
         },
         {
           "subject": "agent-memory",

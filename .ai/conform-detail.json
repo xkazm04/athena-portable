@@ -7396,6 +7396,26 @@
         "at": "2026-10-24T21:20:37.592313+00:00",
         "reason": "reviewer (sonnet): The anchor db.ts:22 is only a comment on the deterministic seed function and does not show that a measure/generate/train/select stage is absent; the claim rests on a grep for ML terms that were not shown to be the right ones for this subject."
       }
+    },
+    "736379fb-8f9b-4617-be12-64b20b25e73c/model-routing": {
+      "context": "atlas-lanes-drawing",
+      "subject": "model-routing",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T21:36:58.316Z",
+      "worker": "7639b074-5d05-4ae5-a229-acf882c7ebe4",
+      "techniques": []
+    },
+    "6c17278c-ed66-4d70-8a4f-4202662f1613/model-routing": {
+      "context": "hirelane-model-and-lib",
+      "subject": "model-routing",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T21:36:58.316Z",
+      "worker": "7639b074-5d05-4ae5-a229-acf882c7ebe4",
+      "techniques": []
     }
   }
 }
