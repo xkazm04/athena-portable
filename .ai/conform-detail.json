@@ -6810,6 +6810,16 @@
           "evidence": "examples/tidycrm/components/blocks/style/base/tokens.css:173 The easing is named by curve shape ('in'), and the curve is actually decelerating, i.e. an entrance curve. The reduced-motion handling is conformant: a blanket near-zero 0.01ms block under .bk-root, plus delays zeroed (reduced-motion.css:7)."
         }
       ]
+    },
+    "ba5a181a-6d9e-4738-9ee3-81470d93525b/settings": {
+      "context": "workspace-build-config",
+      "subject": "settings",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T06:03:19.158Z",
+      "worker": "12f8c347-6b02-47f1-b703-ffb9d57da2bc",
+      "techniques": []
     }
   }
 }

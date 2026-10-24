@@ -10057,7 +10057,11 @@
           "revision": 13,
           "changedAt": "2026-09-05",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "scripts/sidecar_entry.py:33 The two sidecar scripts only freeze the daemon and pass argv on to `athena serve`. A case-insensitive search of scripts/ for setting, preference, getenv and localStorage found no hits, so there is no settings store, key space or settings surface here for the subject to govern.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:85c48ec5bdb5581f",
+          "evaluatedRevision": 13
         },
         {
           "subject": "test-harness",
