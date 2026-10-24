@@ -141,8 +141,11 @@ def test_three_run_and_a_fourth_claim_waits(live: Live, tasks: Tasks) -> None:
     assert all(c.body["task"]["status"] == "running" for c in claims[:3])
     assert all(c.body["task"]["started_at"] for c in claims[:3])
     assert claims[3].body["task"] is None
+    # With no gate the cap alone decides, and a full cap is the queue working, not a held PC.
+    assert [c.body["held"] for c in claims] == [None] * 4
     listed = live.request("/tasks").body
     assert (listed["cap"], listed["running"], listed["queued"]) == (3, 3, 1)
+    assert (listed["slots"], listed["held"]) == (3, None)
     waiting = next(t for t in listed["tasks"] if t["id"] == made[3])
     assert waiting["position"] == 1 and waiting["status"] == "queued"
 
@@ -155,7 +158,7 @@ def test_get_tasks_carries_every_taskview_key_with_nulls_and_newest_first(
     body = live.request("/tasks").body
 
     assert [t["id"] for t in body["tasks"]] == [second, first]
-    assert set(body) >= {"tasks", "cap", "running", "queued"}
+    assert set(body) >= {"tasks", "cap", "running", "queued", "slots", "held"}
     row = body["tasks"][0]
     assert set(row) == {
         "id",
@@ -514,3 +517,68 @@ def test_a_task_of_an_app_still_needs_its_pages_session(live: Live, tasks: Tasks
     reply = live.request("/run", method="POST", json_body={"message": "", "task_id": task_id})
 
     assert reply.status == 403 and reply.body["reason"] == "foreign_origin"
+
+
+# -- the vitals gate (device-vitals WP1, ADR 0143) ----------------------------------------------
+
+
+class FakeRoom:
+    """A gate that answers what the test sets, and records what it was asked."""
+
+    def __init__(self, slots: int = 3, held: str | None = None) -> None:
+        self.slots, self.held = slots, held
+        self.asked: list[int] = []
+
+    def task_room(self, tasks_running: int) -> tuple[int, str | None, bool]:
+        self.asked.append(tasks_running)
+        return self.slots, self.held, tasks_running >= self.slots
+
+
+HELD = "Waiting for room: RAM is at 93% (resumes below 85%)."
+
+
+def test_a_claim_the_gate_holds_waits_with_its_reason(live: Live, tasks: Tasks) -> None:
+    made = _delegate(tasks)
+    tasks.room = FakeRoom(slots=0, held=HELD)
+
+    claimed = live.request("/tasks/claim", method="POST", json_body={})
+    assert claimed.status == 200
+    assert claimed.body["task"] is None and claimed.body["held"] == HELD
+    task = tasks.get(made)
+    assert task is not None and task.status == "queued", "a held claim promotes nothing"
+    listed = live.request("/tasks").body
+    assert (listed["slots"], listed["held"]) == (0, HELD)
+
+    tasks.room = FakeRoom()
+    claimed = live.request("/tasks/claim", method="POST", json_body={})
+    assert claimed.body["task"]["id"] == made and claimed.body["held"] is None
+
+
+def test_the_room_lowers_the_slots_but_never_raises_the_cap(tasks: Tasks) -> None:
+    room = FakeRoom(slots=1)
+    tasks.room = room
+    first, second = _delegate(tasks, "first"), _delegate(tasks, "second")
+    assert tasks.claim_or_held()[0] is not None
+    assert tasks.claim_or_held() == (None, None), "the room's one slot is taken"
+    assert room.asked == [0, 1]
+    assert {tasks.get(first).status, tasks.get(second).status} == {"running", "queued"}  # type: ignore[union-attr]
+
+    tasks.room = FakeRoom(slots=99)
+    for n in range(3):
+        _delegate(tasks, f"more {n}")
+    while tasks.claim() is not None:
+        pass
+    assert tasks.running_count() == TASKS_RUNNING_CAP
+    assert tasks.slots(tasks.running_count()) == (TASKS_RUNNING_CAP, None)
+
+
+def test_a_gate_that_breaks_fails_open(tasks: Tasks) -> None:
+    class Broken:
+        def task_room(self, tasks_running: int) -> tuple[int, str | None, bool]:
+            raise RuntimeError("probe died")
+
+    tasks.room = Broken()
+    _delegate(tasks)
+    assert tasks.slots(0) == (TASKS_RUNNING_CAP, None)
+    task, held = tasks.claim_or_held()
+    assert task is not None and held is None

@@ -19,20 +19,23 @@ from athena.peer.client import CallResult
 from athena.peer.listener import PeerHost
 from athena.peer.presence import HELLO_TIMEOUT_S, PresenceProbe, authorized_hello
 from athena.peer.registry import mint_token
+from athena.vitals import VITALS_STALE_S
 
 from .conftest import Clock, Device, MemorySeal, Probe, make_host
 
 
 class FakeHello:
-    """Answers every hello with :attr:`ok`, and counts the calls."""
+    """Answers every hello with a body when :attr:`ok` (carrying :attr:`vitals`), else ``None``,
+    and counts the calls."""
 
-    def __init__(self, ok: bool = True) -> None:
+    def __init__(self, ok: bool = True, vitals: dict[str, Any] | None = None) -> None:
         self.ok = ok
+        self.vitals = vitals
         self.calls: list[str] = []
 
-    def __call__(self, base_url: str, token: str) -> bool:
+    def __call__(self, base_url: str, token: str) -> dict[str, Any] | None:
         self.calls.append(base_url)
-        return self.ok
+        return {"ok": True, "vitals": self.vitals} if self.ok else None
 
 
 class FakeOverlay:
@@ -86,16 +89,21 @@ def test_a_peer_moves_from_unprobed_to_online_to_asleep_to_unreachable(
     hello, overlay = FakeHello(ok=True), FakeOverlay(frozenset({"100.64.0.7"}))
     probe = PresenceProbe(host, hello=hello, overlay=overlay, now=clock)
     peer_id = _pc(host)
-    assert probe.view(peer_id) == {"presence": None, "presence_at": None}
+    assert probe.view(peer_id) == {"presence": None, "presence_at": None, "vitals": None}
 
     assert probe.probe_all() == [peer_id]
-    assert probe.view(peer_id) == {"presence": "online", "presence_at": "2026-10-24T12:00:00+00:00"}
+    assert probe.view(peer_id) == {
+        "presence": "online",
+        "presence_at": "2026-10-24T12:00:00+00:00",
+        "vitals": None,
+    }
     assert overlay.reads == 0, "the overlay is asked only when a hello failed"
 
     clock.advance(30)
     hello.ok = False
     assert probe.probe_all() == [peer_id]
-    assert probe.view(peer_id) == {"presence": "asleep", "presence_at": "2026-10-24T12:00:30+00:00"}
+    assert probe.view(peer_id)["presence"] == "asleep"
+    assert probe.view(peer_id)["presence_at"] == "2026-10-24T12:00:30+00:00"
 
     clock.advance(30)
     overlay.online = frozenset()
@@ -129,7 +137,7 @@ def test_a_phone_and_an_unkeyed_pc_are_never_dialled_and_stay_null(
     assert probe.probe_all() == []
     assert hello.calls == [] and overlay.reads == 0
     for peer_id in (phone, waiting):
-        assert probe.view(peer_id) == {"presence": None, "presence_at": None}
+        assert probe.view(peer_id) == {"presence": None, "presence_at": None, "vitals": None}
 
 
 def test_a_change_publishes_peer_changed_and_a_steady_pass_publishes_nothing(
@@ -150,7 +158,7 @@ def test_a_change_publishes_peer_changed_and_a_steady_pass_publishes_nothing(
     assert _published(inbox) == [], "the same verdict again is not news"
     assert probe.view(steady)["presence_at"] == "2026-10-24T12:00:00+00:00"
 
-    probe.hello = lambda url, token: "100.64.0.7" in url
+    probe.hello = lambda url, token: {"ok": True} if "100.64.0.7" in url else None
     assert probe.probe_all() == [flapping]
     assert _published(inbox) == [{"kind": "peer.changed", "peer_id": flapping}]
 
@@ -174,7 +182,7 @@ def test_the_hello_carries_the_token_and_the_three_second_timeout(
         return CallResult(200, {"ok": True})
 
     monkeypatch.setattr(presence, "call", fake_call)
-    assert authorized_hello("http://100.64.0.7:17491", "a-token") is True
+    assert authorized_hello("http://100.64.0.7:17491", "a-token") == {"ok": True}
     assert seen == {
         "base_url": "http://100.64.0.7:17491",
         "method": "GET",
@@ -184,7 +192,7 @@ def test_the_hello_carries_the_token_and_the_three_second_timeout(
     }
     assert HELLO_TIMEOUT_S == 3.0
     monkeypatch.setattr(presence, "call", lambda *a, **k: CallResult(401, {}))
-    assert authorized_hello("http://100.64.0.7:17491", "a-revoked-token") is False
+    assert authorized_hello("http://100.64.0.7:17491", "a-revoked-token") is None
 
 
 def test_the_probe_runs_with_the_host_lifecycle(host: PeerHost, clock: Clock) -> None:
@@ -230,3 +238,134 @@ def test_devices_shows_presence_from_a_real_hello(device: Device) -> None:
     host.keys.keep(peer_id, f"http://127.0.0.1:{device.peer_port}", mint_token())  # now refused
     host.presence.probe_all()
     assert device.ui("/devices").body["peers"][0]["presence"] == "asleep"
+
+
+# -- vitals ride the hello (device-vitals WP1, ADR 0143) ----------------------------------------
+
+
+def _vitals(room: str = "ok", held: str | None = None, cpu: float = 12.0) -> dict[str, Any]:
+    return {
+        "at": "2026-10-24T12:00:00+00:00",
+        "cpu_pct": cpu,
+        "cores": 16,
+        "ram_total_mb": 64000,
+        "ram_free_mb": 38400,
+        "ram_pct": 40.0,
+        "gpus": [],
+        "power": "mains",
+        "battery_pct": None,
+        "disk_free_mb": 200000,
+        "room": room,
+        "slots": 3,
+        "held": held,
+        "runs": None,
+        "sleep": None,
+    }
+
+
+def test_the_probe_keeps_a_peers_vitals_and_drops_them_when_stale(
+    host: PeerHost, clock: Clock
+) -> None:
+    hello = FakeHello(ok=True, vitals=_vitals())
+    probe = PresenceProbe(host, hello=hello, overlay=FakeOverlay(), now=clock)
+    peer_id = _pc(host)
+    probe.probe_all()
+    assert probe.vitals(peer_id) == _vitals()
+    assert probe.view(peer_id)["vitals"] == _vitals()
+
+    clock.advance(VITALS_STALE_S)
+    assert probe.vitals(peer_id) == _vitals(), "exactly at the line is still fresh"
+    clock.advance(1)
+    assert probe.vitals(peer_id) is None and probe.view(peer_id)["vitals"] is None
+
+    hello.ok = False  # a failed hello keeps the last vitals; time makes them stale, not the miss
+    probe.probe_all()
+    assert probe.vitals(peer_id) is None
+
+
+def test_peer_changed_fires_on_room_or_held_and_not_on_every_number(
+    host: PeerHost, clock: Clock
+) -> None:
+    hello = FakeHello(ok=True, vitals=_vitals())
+    probe = PresenceProbe(host, hello=hello, overlay=FakeOverlay(), now=clock)
+    peer_id = _pc(host)
+    inbox = host.bus.subscribe()
+    assert probe.probe_all() == [peer_id]  # first verdict
+    _published(inbox)
+
+    hello.vitals = _vitals(cpu=55.0)
+    assert probe.probe_all() == [], "a CPU figure that moved is not news"
+    assert probe.vitals(peer_id) == _vitals(cpu=55.0), "but the figure is kept"
+
+    hello.vitals = _vitals(room="full", held="Waiting for room: RAM is at 93% (resumes below 85%).")
+    assert probe.probe_all() == [peer_id]
+    assert _published(inbox) == [{"kind": "peer.changed", "peer_id": peer_id}]
+
+
+def test_a_peer_whose_vitals_are_junk_is_still_online_with_a_clean_view(
+    host: PeerHost, clock: Clock
+) -> None:
+    probe = PresenceProbe(
+        host,
+        hello=lambda url, token: {"ok": True, "vitals": {"room": "roomy", "slots": "x"}},
+        overlay=FakeOverlay(),
+        now=clock,
+    )
+    peer_id = _pc(host)
+    probe.probe_all()
+    assert probe.view(peer_id)["presence"] == "online"
+    view = probe.vitals(peer_id)
+    assert view is not None and view["room"] is None and view["slots"] == 0
+
+
+def test_a_hello_that_raises_is_a_hello_that_did_not_answer(host: PeerHost, clock: Clock) -> None:
+    def broken(url: str, token: str) -> dict[str, Any] | None:
+        raise OSError("socket")
+
+    probe = PresenceProbe(host, hello=broken, overlay=FakeOverlay(None), now=clock)
+    peer_id = _pc(host)
+    probe.probe_all()
+    assert probe.view(peer_id)["presence"] == "unreachable"
+
+
+def test_the_hello_carries_this_pcs_vitals_over_a_real_socket(device: Device) -> None:
+    """``GET /peer/hello`` answers with ``vitals`` (``null`` with no vitals service), the probe
+    keeps it, and ``GET /devices`` shows it on the peer's row and on ``self``."""
+    host = device.host
+    peer_id = ids.mint("device")
+    token = mint_token()
+    host.registry.admit(
+        peer_id, name="Study PC", kind="pc", grants=["chat"], token=token, expires_days=None
+    )
+    host.reconcile()
+    host.keys.keep(peer_id, f"http://127.0.0.1:{device.peer_port}", token)
+    host.presence = PresenceProbe(host, overlay=FakeOverlay())
+
+    answer = device.peer("/peer/hello", token=token)
+    assert answer.status == 200 and answer.body["vitals"] is None, "no vitals service yet"
+    assert device.ui("/devices").body["self"]["vitals"] is None
+
+    host.presence.own_vitals = lambda: _vitals(room="tight")  # what VitalsService sets
+    assert device.peer("/peer/hello", token=token).body["vitals"] == _vitals(room="tight")
+    host.presence.probe_all()  # this device says hello to itself: the peer is its own listener
+    shown = device.ui("/devices").body
+    assert shown["self"]["vitals"] == _vitals(room="tight")
+    assert shown["peers"][0]["vitals"] == _vitals(room="tight")
+
+
+def test_a_vitals_service_that_raises_says_null_on_the_hello(device: Device) -> None:
+    host = device.host
+    token = mint_token()
+    peer_id = ids.mint("device")
+    host.registry.admit(
+        peer_id, name="Study PC", kind="pc", grants=["chat"], token=token, expires_days=None
+    )
+    host.reconcile()
+
+    def broken() -> None:
+        raise RuntimeError("probe died")
+
+    host.presence.own_vitals = broken  # type: ignore[assignment]
+    answer = device.peer("/peer/hello", token=token)
+    assert answer.status == 200 and answer.body["vitals"] is None
+    assert device.ui("/devices").body["self"]["vitals"] is None

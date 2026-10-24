@@ -19,6 +19,7 @@ from athena.contracts.harness import ERROR_REASONS
 from athena.core.brain import Brain
 from athena.core.brain.reconcile import reconcile_from_disk
 from athena.core.ledger import TRIGGERS, Ledger, LedgerError, LedgerRow
+from athena.vitals import TASK_CHARGE_DEFAULT_MB
 
 CONVERSATION = ids.conversation_for_app("invoices")
 
@@ -310,3 +311,109 @@ def test_the_total_of_some_turns_sums_exactly_their_rows(ledger: Ledger) -> None
     assert total.first_at == iso(t0) and total.last_at == iso(t0 + timedelta(hours=1))
     none = ledger.turns_total([])
     assert (none.key, none.calls, none.cost_usd, none.first_at) == ("", 0, 0.0, "")
+
+
+# -- what a turn weighed, and how this PC's runs ended (device-vitals, ADR 0143) ----------------
+
+
+def test_peak_mb_is_stored_and_read_back_and_unmeasured_is_null(ledger: Ledger) -> None:
+    measured = _record(ledger, peak_mb=512)
+    unmeasured = _record(ledger)
+    nonsense = _record(ledger, peak_mb=-1)
+    assert (measured.peak_mb, unmeasured.peak_mb, nonsense.peak_mb) == (512, None, None)
+    rows = {row.row_id: row.peak_mb for row in ledger.recent().rows}
+    assert rows == {measured.row_id: 512, unmeasured.row_id: None, nonsense.row_id: None}
+
+
+def test_an_existing_ledger_gains_the_peak_column_once(tmp_path: Path) -> None:
+    """A ledger made before the column: ``ALTER TABLE`` adds it, and opening again is idempotent."""
+    with Brain(tmp_path / "brain") as brain:
+        with brain.write_txn() as con:
+            con.execute(
+                """CREATE TABLE companion_turn (
+                    row_id INTEGER PRIMARY KEY AUTOINCREMENT, turn_id TEXT, engine TEXT NOT NULL,
+                    model TEXT NOT NULL, conversation_id TEXT NOT NULL, origin TEXT NOT NULL,
+                    surface TEXT NOT NULL, trigger_kind TEXT NOT NULL,
+                    rounds INTEGER NOT NULL DEFAULT 1, input_tokens INTEGER NOT NULL DEFAULT 0,
+                    output_tokens INTEGER NOT NULL DEFAULT 0, cost_usd REAL,
+                    cost_estimated INTEGER NOT NULL DEFAULT 0, ms INTEGER NOT NULL DEFAULT 0,
+                    is_error INTEGER NOT NULL DEFAULT 0, error_reason TEXT,
+                    created_at TEXT NOT NULL)"""
+            )
+            con.execute(
+                "INSERT INTO companion_turn (engine, model, conversation_id, origin, surface, "
+                "trigger_kind, created_at) VALUES ('claude', 'm', 'conv_a', 'core', 'panel', "
+                "'cli', '2026-10-24T00:00:00+00:00')"
+            )
+        Ledger(brain)
+        ledger = Ledger(brain)
+        assert [row.peak_mb for row in ledger.recent().rows] == [None]
+        assert _record(ledger, peak_mb=300).peak_mb == 300
+
+
+def test_the_task_charge_is_the_median_of_the_newest_twenty_measured_turns(
+    ledger: Ledger,
+) -> None:
+    assert ledger.task_charge_mb() == TASK_CHARGE_DEFAULT_MB, "nothing measured yet"
+    _record(ledger)  # unmeasured rows do not count
+    for peak in (400, 500, 2000):
+        _record(ledger, peak_mb=peak)
+    assert ledger.task_charge_mb() == 500, "a median: one runaway turn does not close every slot"
+    for _ in range(20):
+        _record(ledger, peak_mb=370)
+    assert ledger.task_charge_mb() == 370, "only the newest twenty"
+
+
+def _summary_rows(ledger: Ledger, now: datetime) -> None:
+    recent = now - timedelta(hours=2)
+    _record(ledger, now=recent)
+    _record(ledger, now=recent)
+    _record(ledger, is_error=True, error_reason="no_answer", now=recent)
+    _record(ledger, is_error=True, error_reason="timeout", now=recent)
+    _record(ledger, is_error=True, error_reason="usage_limit", now=recent)
+    _record(ledger, is_error=True, error_reason="usage_limit", now=recent)
+    _record(ledger, is_error=True, error_reason="engine_error", now=recent)
+    _record(ledger, is_error=True, error_reason="cancelled", now=recent)
+    # A declined card nobody asked a model about: a record, not a run.
+    _record(ledger, rounds=0, is_error=True, error_reason="user_denied", now=recent)
+    # Outside the window.
+    _record(ledger, is_error=True, error_reason="no_answer", now=now - timedelta(hours=25))
+
+
+def test_runs_summary_counts_blank_and_failed_runs_in_the_window(ledger: Ledger) -> None:
+    now = datetime(2026, 10, 24, 12, 0, tzinfo=UTC)
+    _summary_rows(ledger, now)
+    assert ledger.runs_summary(now=now) == {
+        "hours": 24,
+        "turns": 8,
+        "blank": 4,
+        "no_answer": 1,
+        "failed": 2,
+        "timeout": 1,
+        "usage_limit": 2,
+        "tasks_empty": 0,
+    }
+    assert ledger.runs_summary(1, now=now)["turns"] == 0
+
+
+def test_a_task_that_finished_with_nothing_is_a_blank_run(tmp_path: Path) -> None:
+    from athena.daemon.tasks import Tasks
+
+    now = datetime(2026, 10, 24, 12, 0, tzinfo=UTC)
+    with Brain(tmp_path / "brain") as brain:
+        tasks = Tasks(brain, clock=lambda: now - timedelta(hours=1))
+        ledger = Ledger(brain)
+        parent = "conv_invoices"
+        for title, result in (("empty", None), ("said something", "Done: 3 chased.")):
+            tasks.delegate(parent, title, "brief")
+            task = tasks.claim()
+            assert task is not None
+            tasks.finish(task.id, "done", result, None)
+        tasks.delegate(parent, "failed", "brief")
+        failed = tasks.claim()
+        assert failed is not None
+        tasks.finish(failed.id, "failed", None, "it broke")
+
+        summary = ledger.runs_summary(now=now)
+        assert (summary["tasks_empty"], summary["blank"]) == (1, 1)
+        assert ledger.runs_summary(now=now + timedelta(hours=24))["tasks_empty"] == 0

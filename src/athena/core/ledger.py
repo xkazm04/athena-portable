@@ -21,6 +21,14 @@ way in — never at the reader, which would have to trust what was stored.
 **Nothing secret, ever.** The columns are counts, ids and durations. No prompt text, no tool
 arguments, no token. What a row says about the prompt is how big it was and what it cost.
 
+**What a turn weighed (ADR 0143).** ``peak_mb`` is the peak working set of the engine child that
+ran the turn, in MiB, or ``NULL`` where the transport could not measure it (an API engine has no
+child; a platform with no reader). The column was added after rows existed, so it arrives by an
+``ALTER TABLE ... ADD COLUMN`` guarded by ``PRAGMA table_info`` (the approvals' idiom). Two reads
+serve the vitals gate: :meth:`Ledger.task_charge_mb`, what one more task is expected to cost in
+RAM, and :meth:`Ledger.runs_summary`, how this PC's own runs ended over the last day - the count
+of blank runs, the ones that cost a turn and said nothing, beside the ones that failed loudly.
+
 The ledger mints no ids: rule 10 of the build is one ``ids.py`` per language, and there is no turn
 prefix in it. Row identity is SQLite's ``AUTOINCREMENT`` — honest, since "one row per invocation"
 is exactly what a monotonic row id counts — and ``turn_id`` carries whatever id the harness already
@@ -38,16 +46,19 @@ Protocols with no I/O, while the brain is a sibling module of this one inside ``
 from __future__ import annotations
 
 import json
+import sqlite3
 from collections.abc import Sequence
 from contextlib import closing
 from dataclasses import dataclass
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
+from statistics import median
 from typing import Any
 
 from athena.contracts.channel import TurnSummary, iso
 from athena.contracts.harness import ERROR_REASONS, normalize_reason
 from athena.contracts.registry import is_origin
 from athena.core.brain.store import Brain
+from athena.vitals import TASK_CHARGE_DEFAULT_MB, RunsSummary
 
 __all__ = [
     "ERROR_REASONS",
@@ -111,6 +122,20 @@ LEDGER_SCHEMA: tuple[str, ...] = (
     "CREATE INDEX IF NOT EXISTS idx_turn_turn ON companion_turn(turn_id)",
 )
 
+#: Columns added after the table first shipped: ``(name, declaration)``, each added by an
+#: ``ALTER TABLE`` when ``PRAGMA table_info`` does not list it (``core/approvals.py``'s idiom).
+_ADDED_COLUMNS: tuple[tuple[str, str], ...] = (
+    # The engine child's peak working set for the turn, MiB; NULL when it was not measured.
+    ("peak_mb", "INTEGER"),
+)
+
+#: The error reasons :meth:`Ledger.runs_summary` counts as a *blank* run: the turn cost a run and
+#: left nothing behind - no answer, the wall, or the plan's usage limit (ADR 0143).
+BLANK_REASONS: tuple[str, ...] = ("no_answer", "timeout", "usage_limit")
+
+#: How many of the newest measured rows :meth:`Ledger.task_charge_mb` takes the median of.
+CHARGE_SAMPLE = 20
+
 
 @dataclass(frozen=True)
 class LedgerRow:
@@ -133,6 +158,8 @@ class LedgerRow:
     error_reason: str | None = None
     turn_id: str | None = None
     created_at: str = ""
+    #: The engine child's peak working set, MiB; ``None`` when it was not measured.
+    peak_mb: int | None = None
 
     def to_summary(self) -> TurnSummary:
         """The ``turn.summary`` event this row mirrors (README §2 invariant 6)."""
@@ -202,7 +229,7 @@ class LedgerPage:
 _COLUMNS = (
     "row_id, engine, model, conversation_id, origin, surface, trigger_kind, rounds, "
     "input_tokens, output_tokens, cost_usd, cost_estimated, ms, is_error, error_reason, "
-    "turn_id, created_at"
+    "turn_id, created_at, peak_mb"
 )
 
 
@@ -225,6 +252,7 @@ def _row(raw: Sequence[Any]) -> LedgerRow:
         error_reason=None if raw[14] is None else str(raw[14]),
         turn_id=None if raw[15] is None else str(raw[15]),
         created_at=str(raw[16]),
+        peak_mb=None if raw[17] is None else int(raw[17]),
     )
 
 
@@ -236,6 +264,10 @@ class Ledger:
         with brain.write_txn() as con:
             for statement in LEDGER_SCHEMA:
                 con.execute(statement)
+            present = {str(raw[1]) for raw in con.execute("PRAGMA table_info(companion_turn)")}
+            for name, declaration in _ADDED_COLUMNS:
+                if name not in present:
+                    con.execute(f"ALTER TABLE companion_turn ADD COLUMN {name} {declaration}")
 
     # -- writing -------------------------------------------------------------------------------
 
@@ -258,6 +290,7 @@ class Ledger:
         error_reason: str | None = None,
         turn_id: str | None = None,
         now: datetime | None = None,
+        peak_mb: int | None = None,
     ) -> LedgerRow:
         """Write the one row this invocation gets.
 
@@ -270,6 +303,9 @@ class Ledger:
         declines back, and the honest count of model rounds behind it is none. Writing ``1``
         instead would inflate every rollup by one invocation that never happened, so the guard
         below refuses a *negative* count and nothing else.
+
+        ``peak_mb`` is what the engine child weighed at its peak. A negative figure is not a
+        measurement and is stored as ``NULL`` - not refused, for the reason above.
         """
         if not engine:
             raise LedgerError("a ledger row must name the engine that ran it")
@@ -287,13 +323,14 @@ class Ledger:
         if not is_error:
             reason = None
         stamp = iso(now or datetime.now(UTC))
+        peak = peak_mb if peak_mb is not None and peak_mb >= 0 else None
         with self.brain.write_txn() as con:
             cursor = con.execute(
                 """INSERT INTO companion_turn
                    (turn_id, engine, model, conversation_id, origin, surface, trigger_kind,
                     rounds, input_tokens, output_tokens, cost_usd, cost_estimated, ms,
-                    is_error, error_reason, created_at)
-                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+                    is_error, error_reason, created_at, peak_mb)
+                   VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)""",
                 (
                     turn_id,
                     engine,
@@ -311,6 +348,7 @@ class Ledger:
                     1 if is_error else 0,
                     reason,
                     stamp,
+                    peak,
                 ),
             )
             row_id = int(cursor.lastrowid or 0)
@@ -332,6 +370,7 @@ class Ledger:
             error_reason=reason,
             turn_id=turn_id,
             created_at=stamp,
+            peak_mb=peak,
         )
 
     # -- reading -------------------------------------------------------------------------------
@@ -414,3 +453,75 @@ class Ledger:
             first_at=str(raw[8] or ""),
             last_at=str(raw[9] or ""),
         )
+
+    # -- what the vitals gate reads (ADR 0143) ---------------------------------------------------
+
+    def task_charge_mb(self) -> int:
+        """What one more task is expected to weigh in RAM, MiB.
+
+        The median ``peak_mb`` of the newest :data:`CHARGE_SAMPLE` rows that have one: a median,
+        because one runaway turn must not shut every slot for the next twenty. With no measured
+        row yet it is :data:`~athena.vitals.TASK_CHARGE_DEFAULT_MB`.
+        """
+        with closing(self.brain.read_connection()) as con:
+            raws = con.execute(
+                "SELECT peak_mb FROM companion_turn WHERE peak_mb IS NOT NULL "
+                "ORDER BY row_id DESC LIMIT ?",
+                (CHARGE_SAMPLE,),
+            ).fetchall()
+        peaks = [int(raw[0]) for raw in raws]
+        if not peaks:
+            return TASK_CHARGE_DEFAULT_MB
+        return max(1, round(median(peaks)))
+
+    def runs_summary(self, hours: int = 24, *, now: datetime | None = None) -> RunsSummary:
+        """How this PC's own runs ended in the last ``hours`` (``VitalsView.runs``).
+
+        ``turns`` counts the rows in the window that asked a model at least once (``rounds > 0``):
+        a declined card's zero-round row is a record, not a run. Of those, ``no_answer``,
+        ``timeout`` and ``usage_limit`` are counted by reason, and ``failed`` is every other error.
+        ``tasks_empty`` is the delegated tasks that finished ``done`` with no result in the window
+        (``companion_task``; ``0`` where that table does not exist, as in a bare ledger). ``blank``
+        is the sum of the four: runs that cost something and left nothing behind.
+
+        Each PC's ledger holds only its own turns (ledgers are not replicated), so this is this
+        device's count and nobody else's.
+        """
+        since = iso((now or datetime.now(UTC)) - timedelta(hours=hours))
+        with closing(self.brain.read_connection()) as con:
+            raws = con.execute(
+                "SELECT is_error, error_reason, COUNT(*) FROM companion_turn "
+                "WHERE created_at >= ? AND rounds > 0 GROUP BY is_error, error_reason",
+                (since,),
+            ).fetchall()
+            try:
+                empty = int(
+                    con.execute(
+                        "SELECT COUNT(*) FROM companion_task WHERE status = 'done' "
+                        "AND result IS NULL AND finished_at >= ?",
+                        (since,),
+                    ).fetchone()[0]
+                )
+            except sqlite3.OperationalError:  # no task table on this brain: nothing delegated
+                empty = 0
+        turns = 0
+        by_reason: dict[str, int] = dict.fromkeys(BLANK_REASONS, 0)
+        failed = 0
+        for is_error, reason, count in raws:
+            turns += int(count)
+            if not is_error:
+                continue
+            if reason in by_reason:
+                by_reason[str(reason)] += int(count)
+            else:
+                failed += int(count)
+        return {
+            "hours": hours,
+            "turns": turns,
+            "blank": sum(by_reason.values()) + empty,
+            "no_answer": by_reason["no_answer"],
+            "failed": failed,
+            "timeout": by_reason["timeout"],
+            "usage_limit": by_reason["usage_limit"],
+            "tasks_empty": empty,
+        }

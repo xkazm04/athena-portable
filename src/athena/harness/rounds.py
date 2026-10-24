@@ -247,7 +247,9 @@ class RoundHarness:
 
         result.text = "\n\n".join(texts).strip()
         if failure is None and not result.text and not result.tool_calls:
-            failure = ("engine_error", self.silent_detail)
+            # Not engine_error: the engine ran and answered with nothing, which is a blank run the
+            # vitals count apart from an engine that could not run at all (ADR 0143).
+            failure = ("no_answer", self.silent_detail)
 
         result.duration_ms = int((time.monotonic() - started) * 1000)
         if failure is not None:

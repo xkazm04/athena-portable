@@ -216,7 +216,8 @@ def test_a_busy_or_limited_cli_is_not_retried_and_keeps_its_thread(
     assert len(transport.requests) == 2  # one request in turn 2: no retry
     last = events[-1]
     assert isinstance(last, TurnError)
-    assert last.reason == "engine_error"
+    # The plan's limit is its own reason, a blank run the vitals count (ADR 0143).
+    assert last.reason == ("usage_limit" if kind == "limit" else "engine_error")
     assert last.detail == FAILURE_SENTENCES[kind]
     assert harness.session_id(CONVERSATION) == "s1"
 

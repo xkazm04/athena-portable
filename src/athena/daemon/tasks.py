@@ -10,13 +10,17 @@ with ``task_id`` on every ``POST /run``. A task's turn holds its conversation's 
 thread's, so it runs beside the person's own conversation and never inside it.
 
 ``GET /tasks``
-    ``{"tasks": [TaskView...], "cap": 3, "running": n, "queued": n}``: every active row and every
-    row that ended in the last :data:`RECENT_HOURS` hours, newest first, at most
-    :data:`LIST_CAP`. ``position`` is the 1-based place in the queue, ``null`` unless queued.
+    ``{"tasks": [TaskView...], "cap": 3, "running": n, "queued": n, "slots": n, "held": str |
+    null}``: every active row and every row that ended in the last :data:`RECENT_HOURS` hours,
+    newest first, at most :data:`LIST_CAP`. ``position`` is the 1-based place in the queue,
+    ``null`` unless queued. ``slots`` is how many may run at once right now and ``held`` why a
+    queued task waits for room (ADR 0143); with no gate they are the cap and ``null``.
 
 ``POST /tasks/claim``
-    ``{"task": TaskView | null}``: the oldest queued row, now running, when fewer than
-    :data:`TASKS_RUNNING_CAP` run; ``null`` when none is queued or the cap is full.
+    ``{"task": TaskView | null, "held": str | null}``: the oldest queued row, now running, when
+    fewer than the slots run and the gate holds nothing; ``null`` when none is queued, every slot
+    is taken, or the gate holds - then ``held`` is the gate's sentence ("Waiting for room: ...").
+    ``held`` is ``null`` on a claim that succeeded, and when the cap itself is the limit.
 
 ``POST /tasks/<id>/finish``
     ``{"status": "done" | "failed", "result": str | null, "error": str | null}`` from the window
@@ -43,6 +47,10 @@ queued and is claimed as usual.
 The rows live in ``index.sqlite`` beside the approvals and the case turns, with the same
 ``CREATE TABLE IF NOT EXISTS`` idiom and absent from ``INDEX_TABLES``, so a reconcile leaves them
 alone. Absent values are ``NULL`` in the table and ``null`` on the wire; no key is ever omitted.
+
+**The gate (ADR 0143).** :attr:`Tasks.room` is this PC's vitals gate, set by the wiring. A claim
+asks it whether one more task fits - RAM, CPU, battery and disk, and the slots the RAM allows - and
+waits with its reason when not. ``None`` is no gate: the cap alone decides, as before.
 """
 
 from __future__ import annotations
@@ -52,7 +60,7 @@ from collections.abc import Callable, Sequence
 from contextlib import closing, suppress
 from dataclasses import dataclass, replace
 from datetime import UTC, datetime, timedelta
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, Protocol
 
 from athena.contracts import ids
 from athena.contracts.channel import cut_text, iso
@@ -75,6 +83,7 @@ __all__ = [
     "TITLE_CAP",
     "Task",
     "TaskRefused",
+    "TaskRoomPort",
     "Tasks",
     "delegate_executor",
     "task_routes",
@@ -133,6 +142,17 @@ _COLUMNS = (
     "id, parent_conversation, conversation_id, title, brief, app_id, origin, status, tab_id, "
     "result, error, turns, created_at, started_at, finished_at"
 )
+
+
+class TaskRoomPort(Protocol):
+    """What the table asks this PC's vitals gate (:class:`athena.vitals.gate.Gate`).
+
+    ``task_room(running)`` answers ``(slots, held, full)`` for ``running`` tasks running now: the
+    slots the room allows (at most the cap), the sentence that says why a task waits or ``None``,
+    and whether every slot is taken (a running sleep cycle counts as one).
+    """
+
+    def task_room(self, tasks_running: int) -> tuple[int, str | None, bool]: ...
 
 
 class TaskRefused(ValueError):
@@ -255,6 +275,8 @@ class Tasks:
         #: The web origin a page of an app was last seen on (the daemon's sessions), for a task
         #: delegated with an app the current turn's open tabs do not name.
         self.origin_of: Callable[[str], str | None] | None = None
+        #: This PC's vitals gate (ADR 0143); ``None`` is no gate, and the cap alone decides.
+        self.room: TaskRoomPort | None = None
         with brain.write_txn() as con:
             for statement in TASK_SCHEMA:
                 con.execute(statement)
@@ -285,6 +307,26 @@ class Tasks:
             (task.created_at, task.created_at, task.id),
         ).fetchone()
         return replace(task, position=int(ahead[0]) + 1)
+
+    def running_count(self) -> int:
+        """How many tasks run now: what the vitals gate counts against the slots."""
+        with closing(self.brain.read_connection()) as con:
+            return int(
+                con.execute(
+                    "SELECT COUNT(*) FROM companion_task WHERE status = 'running'"
+                ).fetchone()[0]
+            )
+
+    def slots(self, running: int) -> tuple[int, str | None]:
+        """``(slots, held)`` for ``GET /tasks``: the gate's answer, or the cap and ``None``."""
+        room = self.room
+        if room is None:
+            return TASKS_RUNNING_CAP, None
+        try:
+            slots, held, _ = room.task_room(running)
+        except Exception:  # a gate that broke fails open, like an unknown figure
+            return TASKS_RUNNING_CAP, None
+        return max(0, min(TASKS_RUNNING_CAP, int(slots))), held
 
     def listing(self) -> tuple[list[Task], int, int]:
         """The rows ``GET /tasks`` shows, newest first, and how many run and wait in all."""
@@ -363,7 +405,14 @@ class Tasks:
         return self._changed(task_id)
 
     def claim(self) -> Task | None:
-        """Promote the oldest queued row to ``running`` while fewer than the cap run."""
+        """Promote the oldest queued row to ``running`` while the cap and the gate allow."""
+        return self.claim_or_held()[0]
+
+    def claim_or_held(self) -> tuple[Task | None, str | None]:
+        """:meth:`claim`, with the gate's reason when it held: ``(task, None)`` on a claim,
+        ``(None, held)`` when the gate holds or the room's slots are taken (asked before the queue
+        is read, so the reason is said even to a claim that would have found nothing), and
+        ``(None, None)`` when nothing is queued or the cap is the limit."""
         with self._lock, self.brain.write_txn() as con:
             running = int(
                 con.execute(
@@ -371,19 +420,26 @@ class Tasks:
                 ).fetchone()[0]
             )
             if running >= TASKS_RUNNING_CAP:
-                return None
+                return None, None
+            if self.room is not None:
+                try:
+                    _, held, full = self.room.task_room(running)
+                except Exception:  # a gate that broke fails open, like an unknown figure
+                    held, full = None, False
+                if held is not None or full:
+                    return None, held
             raw = con.execute(
                 "SELECT id FROM companion_task WHERE status = 'queued' "
                 "ORDER BY created_at, rowid LIMIT 1"
             ).fetchone()
             if raw is None:
-                return None
+                return None, None
             task_id = str(raw[0])
             con.execute(
                 "UPDATE companion_task SET status = 'running', started_at = ? WHERE id = ?",
                 (self._now(), task_id),
             )
-        return self._changed(task_id)
+        return self._changed(task_id), None
 
     def begin_turn(
         self,
@@ -632,18 +688,21 @@ def task_stop_executor(tasks: Tasks) -> ExecutorFn:
 
 def list_tasks(tasks: Tasks) -> Reply:
     rows, running, queued = tasks.listing()
+    slots, held = tasks.slots(running)
     return 200, {
         "ok": True,
         "tasks": [task.view() for task in rows],
         "cap": TASKS_RUNNING_CAP,
         "running": running,
         "queued": queued,
+        "slots": slots,
+        "held": held,
     }
 
 
 def claim_task(tasks: Tasks) -> Reply:
-    task = tasks.claim()
-    return 200, {"ok": True, "task": None if task is None else task.view()}
+    task, held = tasks.claim_or_held()
+    return 200, {"ok": True, "task": None if task is None else task.view(), "held": held}
 
 
 def task_act(tasks: Tasks, request: Request, tail: str) -> Reply:

@@ -6,9 +6,10 @@ device's own chrome is the only one who reaches them, which is what makes
 ``POST /devices/pending/<pairing_id>`` the one door a peer token is minted through.
 
 ``GET /devices``
-    ``{self: {device_id, name}, peers: [row without its fingerprint, plus ``memory``: WP2's
-    replication status or ``null``, and ``presence`` (``online`` / ``asleep`` / ``unreachable``)
-    with ``presence_at``, both ``null`` before the probe's first verdict], pending: [{pairing_id,
+    ``{self: {device_id, name, vitals}, peers: [row without its fingerprint, plus ``memory``:
+    WP2's replication status or ``null``, ``presence`` (``online`` / ``asleep`` /
+    ``unreachable``) with ``presence_at``, both ``null`` before the probe's first verdict, and
+    ``vitals``, the peer's room off its hello or ``null`` (ADR 0143)], pending: [{pairing_id,
     name, kind, requested_grants, expires_at, pair_back}], beacon: {on, url}, overlay: {state},
     listener: {up, address, port, error}, joining: [{join_id, address, name, state,
     expires_at}]}``. Absent values are ``null``, never omitted.
@@ -33,7 +34,7 @@ device's own chrome is the only one who reaches them, which is what makes
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 from urllib.parse import unquote
 
 from athena.daemon.routes import EventStream, Reply, Request, Route, error
@@ -59,9 +60,12 @@ def devices(host: PeerHost) -> Reply:
     base = host.base_url()
     return 200, {
         "ok": True,
-        "self": {"device_id": me.device_id, "name": me.name},
+        # ``vitals``: this PC's own snapshot (ADR 0143), ``null`` before its first reading.
+        "self": {"device_id": me.device_id, "name": me.name, "vitals": _own_vitals(host)},
         # ``memory``: WP2's replication status for the peer, ``null`` until it has been pulled.
         # ``presence`` / ``presence_at``: the presence probe's verdict, ``null`` until its first.
+        # ``vitals``: the peer's off its last hello; ``null`` for a phone, before the first hello,
+        # and once older than ``VITALS_STALE_S`` (ADR 0143).
         "peers": [
             {
                 **row.view(),
@@ -81,6 +85,13 @@ def devices(host: PeerHost) -> Reply:
         },
         "joining": host.join_views(),
     }
+
+
+def _own_vitals(host: PeerHost) -> Any:
+    try:
+        return host.presence.own_vitals()
+    except Exception:
+        return None
 
 
 def rename(host: PeerHost, request: Request) -> Reply:

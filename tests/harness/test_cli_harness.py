@@ -443,8 +443,35 @@ def test_a_clean_exit_with_no_text_is_an_error_row(
 
     events = _drain(harness, [])
     assert isinstance(events[-1], TurnError)
-    assert events[-1].reason == "engine_error"
+    # Not engine_error: the engine ran and answered with nothing - a blank run (ADR 0143).
+    assert events[-1].reason == "no_answer"
     assert "produced no text" in events[-1].detail
+    assert [row.error_reason for row in ledger.error_rows] == ["no_answer"]
+
+
+def test_the_turn_keeps_the_largest_peak_its_rounds_weighed(
+    catalog: FakeCatalog, approvals: FakeApprovals, ledger: FakeLedger, tmp_path: Path
+) -> None:
+    """Each run reports its child's peak working set; the turn's figure is the largest (ADR 0143),
+    and a turn whose transport measured nothing says ``None``, never 0."""
+    entry = catalog.add(_chase_tool())
+    transport = ScriptedTransport.from_transcript(FIXTURES / "claude_code_turn.ndjson")
+    transport.peaks = {0: 412}
+    harness = _harness(catalog, approvals, ledger, transport, tmp_path)
+    _drain(harness, [entry])
+    result = asyncio.run(harness.last_result())
+    assert result is not None and result.peak_mb == 412
+
+    unmeasured = _harness(
+        catalog,
+        approvals,
+        ledger,
+        ScriptedTransport.from_transcript(FIXTURES / "claude_code_turn.ndjson"),
+        tmp_path,
+    )
+    _drain(unmeasured, [entry], turn_id="turn_000000000002")
+    result = asyncio.run(unmeasured.last_result())
+    assert result is not None and result.peak_mb is None
 
 
 def test_a_stream_with_no_result_record_is_not_a_clean_exit(

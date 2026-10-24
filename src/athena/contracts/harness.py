@@ -134,6 +134,11 @@ ERROR_REASONS: tuple[str, ...] = (
     "timeout",
     "parse_error",
     "cancelled",
+    # the turn ran and came back blank (ADR 0143): the engine said nothing and called nothing, or
+    # the plan's usage limit stopped it - counted apart from engine_error, as runs that cost a turn
+    # and left nothing behind
+    "no_answer",
+    "usage_limit",
     # the call was sent and its answer never came: it may have run (ADR 0101)
     "outcome_unknown",
     # the catch-all; anything unrecognised collapses here rather than inventing a column value
@@ -175,6 +180,9 @@ class TurnResult:
     is_error: bool = False
     error_reason: str | None = None
     block_hashes: dict[str, str] = field(default_factory=dict)
+    #: The peak working set of the engine child that ran the turn, MiB, the largest across its
+    #: rounds; ``None`` when no transport measured one (ADR 0143).
+    peak_mb: int | None = None
 
     def __post_init__(self) -> None:
         self.error_reason = normalize_reason(self.error_reason)

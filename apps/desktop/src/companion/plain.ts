@@ -105,6 +105,10 @@ export function plainFailure(reason: string, engine: string): string {
       return "Athena could not read the answer she got back.";
     case "cancelled":
       return "That request was cancelled.";
+    case "no_answer":
+      return "Athena got an empty answer and stopped. Ask again.";
+    case "usage_limit":
+      return "Your plan's usage limit is reached. Try again when it resets.";
     case "unknown_ref":
       return "Athena could not find what that request pointed at.";
     case "approval_spent":

@@ -1,4 +1,4 @@
-"""A PC's room, measured with the standard library, and the gate that reads it (ADR 0142).
+"""A PC's room, measured with the standard library, and the gate that reads it (ADR 0143).
 
 Every PC's daemon samples its own CPU, RAM, GPU and its memory, power and disk; the
 :class:`~athena.vitals.gate.Gate` turns the samples into how many background tasks may run now

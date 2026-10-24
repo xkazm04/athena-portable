@@ -35,13 +35,21 @@ loopback socket is bound, and :meth:`PresenceProbe.close` from :meth:`PeerHost.c
 (each bounded by the timeout), and the overlay is read at most once per pass, only when a hello
 failed. Passes never overlap.
 
+**A hello carries the peer's vitals (ADR 0143).** The authorized hello answers with the other PC's
+``vitals`` snapshot - its room, slots and held reason, what it measured - and the probe keeps the
+latest per peer with the moment it arrived (:meth:`PresenceProbe.vitals`). A snapshot older than
+:data:`~athena.vitals.VITALS_STALE_S` is not shown or told: a stale "room ok" is worse than none.
+A peer's ``peer.changed`` fires when its verdict changes *or* its ``room`` or ``held`` does - not
+on every number, which moves on every hello. This PC's own snapshot reaches its hello and its
+``GET /devices`` through :attr:`PresenceProbe.own_vitals`, which the vitals service sets.
+
 Nothing here logs a URL or a token; a probe's failure is just a verdict.
 """
 
 from __future__ import annotations
 
 import threading
-from collections.abc import Callable
+from collections.abc import Callable, Mapping
 from concurrent.futures import ThreadPoolExecutor
 from datetime import datetime
 from typing import TYPE_CHECKING, Any, Literal
@@ -51,6 +59,8 @@ from athena.peer.client import call
 from athena.peer.identity import now_iso
 from athena.peer.listener import _log
 from athena.peer.overlay import _find_tailscale, _run
+from athena.vitals import VITALS_STALE_S, VitalsView
+from athena.vitals.gate import clean_view
 
 if TYPE_CHECKING:
     from athena.peer.listener import PeerHost
@@ -72,15 +82,18 @@ HELLO_TIMEOUT_S = 3.0
 MAX_PARALLEL = 8
 
 Presence = Literal["online", "asleep", "unreachable"]
-#: ``(base_url, token) -> answered``: did an authorized hello come back ``200``?
-Hello = Callable[[str, str], bool]
+#: ``(base_url, token) -> body``: the authorized hello's answer when it came back ``200``, else
+#: ``None``.
+Hello = Callable[[str, str], Mapping[str, Any] | None]
 #: The overlay addresses listed online right now, or ``None`` when there is no overlay to ask.
 OverlayOnline = Callable[[], frozenset[str] | None]
 
 
-def authorized_hello(base_url: str, token: str) -> bool:
-    """``GET /peer/hello`` with this device's key for that peer, within :data:`HELLO_TIMEOUT_S`."""
-    return call(base_url, "GET", "/peer/hello", token=token, timeout=HELLO_TIMEOUT_S).status == 200
+def authorized_hello(base_url: str, token: str) -> dict[str, Any] | None:
+    """``GET /peer/hello`` with this device's key for that peer, within :data:`HELLO_TIMEOUT_S`:
+    its parsed body when it answered ``200``, else ``None``."""
+    answer = call(base_url, "GET", "/peer/hello", token=token, timeout=HELLO_TIMEOUT_S)
+    return answer.body if answer.status == 200 else None
 
 
 def overlay_online() -> frozenset[str] | None:
@@ -125,18 +138,36 @@ class PresenceProbe:
         self._pass = threading.Lock()
         #: ``peer_id -> (verdict, when it began)``. A peer never probed has no entry.
         self._seen: dict[str, tuple[Presence, str]] = {}
+        #: ``peer_id -> (its vitals off the last hello that answered, when that was)``.
+        self._vitals: dict[str, tuple[VitalsView | None, datetime]] = {}
+        #: This PC's own snapshot, for its hello and its ``GET /devices`` (the vitals service
+        #: sets it; ``None`` until then, and on a daemon with no vitals).
+        self.own_vitals: Callable[[], VitalsView | None] = lambda: None
         self._stop = threading.Event()
         self._thread: threading.Thread | None = None
 
     # -- what GET /devices shows ---------------------------------------------------------------
 
     def view(self, peer_id: str) -> dict[str, Any]:
-        """``{presence, presence_at}`` for one peer; both ``None`` before its first verdict."""
+        """``{presence, presence_at, vitals}`` for one peer; ``None`` before its first verdict,
+        and ``vitals`` ``None`` too when it is stale (:meth:`vitals`)."""
         with self._lock:
             seen = self._seen.get(peer_id)
+        vitals = self.vitals(peer_id)
         if seen is None:
-            return {"presence": None, "presence_at": None}
-        return {"presence": seen[0], "presence_at": seen[1]}
+            return {"presence": None, "presence_at": None, "vitals": vitals}
+        return {"presence": seen[0], "presence_at": seen[1], "vitals": vitals}
+
+    def vitals(self, peer_id: str) -> VitalsView | None:
+        """The peer's last vitals, or ``None``: never heard, or heard more than
+        :data:`~athena.vitals.VITALS_STALE_S` ago. A phone says no hello, so it has none."""
+        with self._lock:
+            kept = self._vitals.get(peer_id)
+        if kept is None or kept[0] is None:
+            return None
+        if (self._now() - kept[1]).total_seconds() > VITALS_STALE_S:
+            return None
+        return kept[0]
 
     # -- the loop ------------------------------------------------------------------------------
 
@@ -171,6 +202,8 @@ class PresenceProbe:
             with self._lock:  # a revoked or expired peer's verdict goes with its row
                 for gone in set(self._seen) - {row.peer_id for row in rows}:
                     del self._seen[gone]
+                for gone in set(self._vitals) - {row.peer_id for row in rows}:
+                    del self._vitals[gone]
             targets: list[tuple[str, str, str]] = []
             for row in rows:
                 if row.kind != "pc":
@@ -182,22 +215,46 @@ class PresenceProbe:
             if not targets:
                 return []
             with ThreadPoolExecutor(max_workers=min(MAX_PARALLEL, len(targets))) as pool:
-                answered = list(pool.map(lambda t: self.hello(t[1], t[2]), targets))
+                answered = list(pool.map(lambda t: self._say_hello(t[1], t[2]), targets))
             online: frozenset[str] | None = None
-            if not all(answered):
+            if any(body is None for body in answered):
                 online = self.overlay()
             changed: list[str] = []
-            for (peer_id, url, _), ok in zip(targets, answered, strict=True):
+            for (peer_id, url, _), body in zip(targets, answered, strict=True):
                 verdict: Presence = "online"
-                if not ok:
+                if body is None:
                     address = urlsplit(url).hostname
                     seen = online is not None and address is not None and address in online
                     verdict = "asleep" if seen else "unreachable"
-                if self._record(peer_id, verdict):
+                moved = self._record(peer_id, verdict)
+                if body is not None:
+                    moved = self._keep_vitals(peer_id, clean_view(body.get("vitals"))) or moved
+                if moved:
                     changed.append(peer_id)
         for peer_id in changed:
             self.host.publish("peer.changed", peer_id=peer_id)
         return changed
+
+    def _say_hello(self, url: str, token: str) -> Mapping[str, Any] | None:
+        """One hello; a raise is a hello that did not answer."""
+        try:
+            body = self.hello(url, token)
+        except Exception:
+            return None
+        return body if isinstance(body, Mapping) else None
+
+    def _keep_vitals(self, peer_id: str, vitals: VitalsView | None) -> bool:
+        """Keep the vitals a hello carried; ``True`` when the peer's room or held reason moved
+        (or it started or stopped sending any), which is what a ``peer.changed`` is worth."""
+        with self._lock:
+            before = self._vitals.get(peer_id)
+            self._vitals[peer_id] = (vitals, self._now())
+        old = before[0] if before is not None else None
+
+        def said(view: VitalsView | None) -> tuple[Any, Any] | None:
+            return None if view is None else (view["room"], view["held"])
+
+        return said(old) != said(vitals)
 
     def _record(self, peer_id: str, verdict: Presence) -> bool:
         with self._lock:
