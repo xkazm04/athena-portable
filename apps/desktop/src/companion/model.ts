@@ -55,6 +55,8 @@ export interface CompanionActions {
   /** Esc: put the slip away, close the ledger, leave the welcome page. */
   esc: () => void;
   send: (message: string) => void;
+  /** Take back a message waiting in line for the turn in progress (fleet-surfaces, ADR 0141). */
+  unqueue: (id: string) => void;
   /** Stop her: end the turn she is working on, and continue nothing (ADR 0115). */
   stop: () => void;
   /** Stop working on the active playbook (ADR 0044). */
@@ -96,6 +98,7 @@ export const NO_ACTIONS: CompanionActions = {
   decline: () => {},
   esc: () => {},
   send: () => {},
+  unqueue: () => {},
   stop: () => {},
   clearProject: () => {},
   leaveSetup: () => {},
@@ -186,6 +189,11 @@ export interface CardView {
   words: DecisionWords;
   /** Local `HH:MM` the request stops waiting, or "" when the card carries no deadline. */
   expires: string;
+  /**
+   * The title of the delegated task that filed it (fleet-surfaces WP5), or `null` for a card of
+   * this conversation. A task's card sits in the same stack and is answered the same way.
+   */
+  task: string | null;
 }
 
 /**
@@ -452,8 +460,13 @@ export interface CompanionModel {
     working: boolean;
     phrase: string;
     ready: boolean;
-    /** Why the composer is disabled, in the app's own words. Empty when it is not. */
+    /**
+     * Why the composer is disabled, in the app's own words. Empty when it is not. A running turn is
+     * never a reason (fleet-surfaces, ADR 0141): what is typed then interrupts it or waits in line.
+     */
     blocked: string;
+    /** What the person typed while her turn ran, waiting in line, in the order typed. */
+    queued: readonly { id: string; text: string }[];
     host: string | null;
     /** A command Main offered for the composer (ADR 0040). `n` changes with every offer, so the
      *  composer takes a new one even when the text repeats. */
@@ -509,6 +522,10 @@ export interface CompanionInputs {
     earlier?: EarlierRecord | null;
     /** The setup conversation, while the person is in it (ADR 0140); absent reads as not. */
     setup?: { origin: string } | null;
+    /** Messages waiting for the turn in progress (fleet-surfaces, ADR 0141); absent reads as none. */
+    queued?: readonly { id: string; text: string }[];
+    /** Cards a delegated task filed: card id to the task's title. Absent reads as none. */
+    taskCards?: Readonly<Record<string, string>>;
   };
   voice: PanelVoice;
   daemonReady: boolean;
@@ -642,6 +659,7 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
     i.tabs ?? [],
     i.connectors,
     buildContext(i.run.transcript),
+    i.run.taskCards ?? {},
   );
   const n = shown(m);
   const busy = i.run.phase === "running" || i.run.phase === "acting";
@@ -714,7 +732,8 @@ export function selectCompanion(i: CompanionInputs): CompanionModel {
       phrase: phraseFor(i.run.phase),
       // The setup conversation needs no page: its session is the turn's origin (ADR 0140).
       ready: i.daemonReady && (i.origin !== null || !!i.run.setup),
-      blocked: blockedBecause(i.daemonReady, i.run.setup ? i.run.setup.origin : i.origin, busy),
+      blocked: blockedBecause(i.daemonReady, i.run.setup ? i.run.setup.origin : i.origin),
+      queued: i.run.queued ?? [],
       host: hostOf(i.origin),
       draft: i.offer ?? { n: 0, text: "" },
       project: i.project ? projectView(i.project, i.shipped ?? []) : null,
@@ -759,10 +778,19 @@ function cardsOf(
   tabs: readonly Tab[] = [],
   connectors?: ConnectorsMirror,
   turn?: TurnContext,
+  tasks: Readonly<Record<string, string>> = {},
 ): CardView[] {
   const list = m.decided && held && !cards.some((c) => c.id === held.id) ? [held, ...cards] : cards;
   return list.map((card, index) => ({
-    ...cardView(card, captureWhy[card.id] ?? null, { tools, targets: targets[card.id], drift: drifts[card.action], tabs, connectors, turn }),
+    ...cardView(card, captureWhy[card.id] ?? null, {
+      tools,
+      targets: targets[card.id],
+      drift: drifts[card.action],
+      tabs,
+      connectors,
+      turn,
+      task: tasks[card.id],
+    }),
     sending: answering[card.id] !== undefined || (index === 0 && m.decided?.sending === true),
     refusal: refusals[card.id] ?? null,
   }));
@@ -861,6 +889,8 @@ export function cardView(
     connectors?: ConnectorsMirror;
     /** What the turn has shown so far, so the card can name people and drafts. */
     turn?: TurnContext;
+    /** The title of the delegated task that filed it, when one did (fleet-surfaces WP5). */
+    task?: string;
   } = {},
 ): CardView {
   const mirror = context.connectors;
@@ -887,7 +917,8 @@ export function cardView(
     rationale: card.rationale || NO_RATIONALE,
     app,
     tier,
-    where: `In ${app} - ${WHOSE[tier]}`,
+    // A task's card says so on the line every form of the card shows, the slip's included.
+    where: `${context.task ? `For the task "${context.task}": in` : "In"} ${app} - ${WHOSE[tier]}`,
     bound: boundTabOf(card, context.tabs ?? []),
     params,
     claimed: refs.some((r) => named(r) !== null),
@@ -899,6 +930,7 @@ export function cardView(
     connector,
     words: describeDecision(card, context.turn ?? EMPTY_CONTEXT, actsAs(card.origin, mirror)),
     expires: card.expires_at ? clockOf(card.expires_at) : "",
+    task: context.task ?? null,
   };
 }
 
@@ -1303,10 +1335,14 @@ export function hostOf(origin: string | null): string | null {
   }
 }
 
-export function blockedBecause(ready: boolean, origin: string | null, busy: boolean): string {
+/**
+ * Why the composer is closed, or "". Only a daemon that is not there or no page to work on closes
+ * it: a turn in progress does not (fleet-surfaces, ADR 0141) - a message typed then interrupts the
+ * turn or waits in line for it (`lib/midturn.ts`).
+ */
+export function blockedBecause(ready: boolean, origin: string | null): string {
   if (!ready) return "Athena is not running yet.";
   if (origin === null) return "Open a page first — Athena works inside the app you are looking at.";
-  if (busy) return "A turn is already running.";
   return "";
 }
 

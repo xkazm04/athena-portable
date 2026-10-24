@@ -96,7 +96,8 @@ test("the host is the origin's host, and the block reason is one sentence at a t
 
   expect(selectCompanion(inputs({ origin: null })).talk.blocked).toMatch(/Open a page first/);
   expect(selectCompanion(inputs({ daemonReady: false })).talk.blocked).toMatch(/not running yet/);
-  expect(blockedBecause(true, "https://a.test", true)).toMatch(/already running/);
+  // A turn in progress never closes the composer (fleet-surfaces, ADR 0141).
+  expect(blockedBecause(true, "https://a.test")).toBe("");
   // The setup conversation (ADR 0140) is a session of its own: no page has to be open for it.
   const setup = selectCompanion(inputs({ origin: null, run: { phase: "idle", transcript: [], cards: [], summary: null, error: null, setup: { origin: "athena://setup" } } }));
   expect(setup.talk.blocked).toBe("");
@@ -676,4 +677,28 @@ test("a card says what it will do to whom, naming the client the turn already re
   expect(card.words.title).toBe("Send a reminder for INV-118 to Northwind Traders");
   expect(card.words.effect).toContain("Once it is sent it cannot be taken back.");
   expect(card.words.letter?.subject).toBe("INV-118 is 41 days past due");
+});
+
+test("while her turn runs the composer stays open, and what waits in line is carried through in order (ADR 0141)", () => {
+  const queued = [
+    { id: "q1", text: "and the paid ones?" },
+    { id: "q2", text: "then email Ana" },
+  ];
+  const model = selectCompanion(inputs({ run: { phase: "running", transcript: [], cards: [], summary: null, error: null, queued } }));
+  expect(model.talk.working).toBe(true);
+  expect(model.talk.blocked).toBe("");
+  expect(model.talk.queued).toEqual(queued);
+  expect(selectCompanion(inputs()).talk.queued).toEqual([]);
+});
+
+test("a card a delegated task filed is labelled with the task on every form of the card (fleet-surfaces WP5)", () => {
+  const card = CARDS[0]!;
+  const model = selectCompanion(
+    inputs({ run: { phase: "idle", transcript: [], cards: [card], summary: null, error: null, taskCards: { [card.id]: "Chase March invoices" } } }),
+  );
+  expect(model.cards[0]!.task).toBe("Chase March invoices");
+  expect(model.cards[0]!.where).toMatch(/^For the task "Chase March invoices": in /);
+  const mine = cardView(card);
+  expect(mine.task).toBeNull();
+  expect(mine.where).toMatch(/^In /);
 });

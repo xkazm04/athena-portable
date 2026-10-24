@@ -246,6 +246,13 @@ export interface TurnBody {
   trigger?: "schedule";
   /** A message another device sent (ADR 0140): the daemon tees this run back to it. Routes nothing. */
   via?: { peer_id: string; request_id: string };
+  /**
+   * The delegated task this turn belongs to (fleet-surfaces, ADR 0141), or `null` for the main
+   * thread. When set, the daemon runs the turn in the task's own conversation (`conv_task_<hex>`)
+   * and refuses it `task_not_running` unless that task is running. Optional only so a caller from
+   * before tasks still type-checks; every turn this window sends says it.
+   */
+  task_id?: string | null;
 }
 
 /** A refusal the daemon named. `reason` is a member of the one closed vocabulary. */
