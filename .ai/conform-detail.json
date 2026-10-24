@@ -3619,30 +3619,57 @@
       "subject": "conformance-checking",
       "bundle": "software-engineering",
       "state": "unknown",
-      "evaluatedAt": "2026-10-17",
-      "evaluatedTs": "2026-10-17T01:04:27.869Z",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T05:06:03.756Z",
       "techniques": [],
+      "registryProposal": "The registry-map matcher pairs this subject with any context that has 'fixtures' or a 'registry' file. In UI code those words mean preview data and a scene table, not conformance fixtures, so this pairing is noise.",
       "withdrawn": {
-        "worker": "8d719312-d5bc-4940-9f85-f40b35069576",
+        "worker": "a5ff6a6a-5f7a-4748-a3b4-311b562cd60c",
         "state": "not-applicable",
-        "at": "2026-10-17T01:04:42.801723+00:00",
-        "reason": "reviewer (sonnet): The anchor types.ts:6 is the shared depth-scene contract comment. It sits outside the context's files, never mentions Accounts or Apps, and says nothing about whether a conformance checker is absent, so the anchor is incidental."
+        "at": "2026-10-24T05:06:32.402852+00:00",
+        "reason": "reviewer (sonnet): The anchor, registry.ts:2, is a header comment in a file outside the listed context files (accounts/ and apps/). It describes the preview harness but does not show that the scenes judge nothing against a contract, so it is an incidental anchor. The absence rests only on a keyword grep."
       }
     },
     "63aafb7d-7b5c-4d41-a254-fe57017fdb35/conformance-checking": {
       "context": "proving-characters-gauntlet",
       "subject": "conformance-checking",
       "bundle": "software-engineering",
-      "state": "unknown",
-      "evaluatedAt": "2026-10-17",
-      "evaluatedTs": "2026-10-17T01:04:27.869Z",
-      "techniques": [],
-      "withdrawn": {
-        "worker": "8d719312-d5bc-4940-9f85-f40b35069576",
-        "state": "not-applicable",
-        "at": "2026-10-17T01:04:42.828969+00:00",
-        "reason": "reviewer (sonnet): The anchor gauntlet/__init__.py:4 is the docstring's claim statement about gate approval. It does not show that a conformance checker is absent, and a grep for the terms is not enough to establish that, so the anchor is incidental."
-      }
+      "state": "conformant",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T05:06:03.756Z",
+      "worker": "a5ff6a6a-5f7a-4748-a3b4-311b562cd60c",
+      "techniques": [
+        {
+          "technique": "finding-severity-ladder",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/gauntlet/verdict.py:116 Breached (an irreversible gated action ran unapproved), error (could not observe) and held are separate. The report counts errors on their own line."
+        },
+        {
+          "technique": "declared-then-proven",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/gauntlet/verdict.py:1 The verdict reads what the gate actually decided, the brain writes and the count deltas. Neither model text nor judge output feeds it."
+        },
+        {
+          "technique": "derived-expectation-needs-an-evidence-floor",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/gauntlet/run.py:537 The floor applies to the whole run: zero breaches over zero observed turns does not pass."
+        },
+        {
+          "technique": "pass-ratio-comparability",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/gauntlet/run.py:551 With no control, the valid-rate ratio is reported as n/a with a reason, not computed over a different denominator. The report also states the mode and which roles ran."
+        },
+        {
+          "technique": "fixture-repo-testing",
+          "verdict": "conformant",
+          "evidence": "tests/proving/test_gauntlet.py:233 The checker is shown failing first: a gate that waves everything through fails proof 1 end to end, and a world-less run also fails (line 214)."
+        },
+        {
+          "technique": "checker-false-positive-discipline",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/gauntlet/verdict.py:12 Guards against false passes: four independent breach instruments, and tests cover a breach whose evidence cannot be kept still counting as a breach."
+        }
+      ]
     },
     "645f955f-74d6-44ae-a966-70f6ed2ece17/knowledge-registry": {
       "context": "contracts-seam",
@@ -6650,6 +6677,57 @@
           "technique": "output-normalization",
           "verdict": "not-applicable",
           "evidence": "src/athena/proving/server/runner.py:523 The runner starts a Python proving process, not an agent CLI. It reads that process's echo lines and its ledger file, not an agent's output."
+        }
+      ]
+    },
+    "97743df6-7a6a-4c80-94c5-75d8872b6e12/conformance-checking": {
+      "context": "proving-playbooks-bench",
+      "subject": "conformance-checking",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T05:06:03.756Z",
+      "worker": "a5ff6a6a-5f7a-4748-a3b4-311b562cd60c",
+      "techniques": [
+        {
+          "technique": "finding-severity-ladder",
+          "verdict": "deviation",
+          "evidence": "src/athena/proving/playbooks/bench.py:890 The verdict has only exceeds/meets/short. A run that errored, including the harness's own world fault, becomes `short` and exits 1. There is no separate 'unable to check' outcome. The gauntlet in this same repo keeps an ERROR class, which shows the alternative."
+        },
+        {
+          "technique": "declared-then-proven",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/playbooks/bench.py:21 The score comes from the gate's recorded approval rows, not from Athena's own claims. That is execution-level proof, not declaration."
+        },
+        {
+          "technique": "pass-ratio-comparability",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/playbooks/bench.py:123 The key covers a content digest of world, truth, command, expectation and SCORER_VERSION, plus engine, model and approve mode. Runs are pooled only under the same key. rank.py marks a playbook unranked with 'no comparable run' instead of mixing keys."
+        },
+        {
+          "technique": "claim-write-back",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/playbooks/evidence.py:1266 write_bench stamps the run (run_at, comparable). evidence verify demotes an index to stale by comparing it against the recorded run, not against mtimes. A rescore is added as a superseded_by correction, not a silent overwrite."
+        },
+        {
+          "technique": "declared-deviation-register",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/playbooks/spec.py:82 A closed exemption set, listed per playbook. Its comment names the ADR and the three exempted rules, and tests/proving/test_playbooks_authoring.py pins the set. Gap: the reason is history ('authored before'), not a cost sentence."
+        },
+        {
+          "technique": "derived-expectation-needs-an-evidence-floor",
+          "verdict": "conformant",
+          "evidence": "tests/proving/test_playbooks_kinds.py:284 example_usd is derived from truth (spec.py:612) and diffed. A population floor of 56 committed playbooks, each required to carry the derived figure, stops an empty derivation from passing. This test file sits beside the context's listed files and tests spec.py."
+        },
+        {
+          "technique": "fixture-repo-testing",
+          "verdict": "conformant",
+          "evidence": "tests/proving/test_playbooks_authoring.py:220 `check` runs end to end on a non-conformant fixture library (exit 2, names the rule) and on the committed tree (exit 0, line 207). The assertions are on exit codes and rule ids."
+        },
+        {
+          "technique": "edition-stratified-conformance",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/playbooks/bench.py:94 There is no upstream suite with editions. The only revision is the local scorer, which is already in the comparability key."
         }
       ]
     }

@@ -8332,7 +8332,11 @@
           "revision": 10,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "conformant",
+          "evidence": "src/athena/proving/gauntlet/verdict.py:116 Each gauntlet turn ends held, breached or error, read only from gate records. Error is its own class, and proof 1 needs at least one turn that reached the gate. So a harness that observed nothing cannot report green, and its blindness is not counted as a breach either.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:58a3b7c0b9efb42c",
+          "evaluatedRevision": 10
         },
         {
           "subject": "voice-io",
@@ -8709,7 +8713,11 @@
           "revision": 10,
           "changedAt": "2026-09-23",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/proving/playbooks/bench.py:890 Any error in a run makes the verdict `short`. That includes a world bug the harness itself catches as `record.error = \"unknown\"` (src/athena/proving/world.py:276). So 'unable to check' is folded into fail: the run goes into bench.json history under the comparability key and rank.py counts it against the playbook.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:58a3b7c0b9efb42c",
+          "evaluatedRevision": 10
         },
         {
           "subject": "quality-gates",
