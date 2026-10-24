@@ -2246,7 +2246,11 @@
           "revision": 7,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/core/catalog.py:14 The capability inventory is correctly derived from the permitted-action registry, but nothing in the context (or the repo, searched for 'unexercised', 'exercised', 'capability ledger', 'last_exercised') records an exercise of each capability with a working/broken/unexercised state, so a listed capability whose executor stopped working (e.g. the `_unattached` refusal) is still offered with full confidence.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:ff529a6dc44bf233",
+          "evaluatedRevision": 7
         },
         {
           "subject": "test-harness",
@@ -7243,7 +7247,11 @@
           "revision": 7,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/journey/src/brain.ts:10 The journey context is a demo-recording harness: its brain is an in-memory fake that only enforces fact citations, and it only re-renders the doctor's constitution and brain stages. A git grep over examples/journey for 'identity.md', 'self-model', 'self_model', 'selfModel' and 'consent' found nothing, so no companion identity, self-model, profile or adoption design exists here to judge.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:ff529a6dc44bf233",
+          "evaluatedRevision": 7
         },
         {
           "subject": "mcp-tools",

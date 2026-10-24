@@ -1,0 +1,110 @@
+{
+ "schema": "conform-run/1",
+ "worker": "bef8b61c-ef83-4ccd-afb9-1be7da3d97dc",
+ "subject": "companion-identity",
+ "evaluatedAt": "2026-10-24T06:38:52.123186+00:00",
+ "provider": "claude",
+ "model": "claude-opus-5-5",
+ "pairs": [
+  {
+   "context": "core-gate-and-ledger",
+   "subject": "companion-identity",
+   "bundle": "software-engineering",
+   "state": "deviation",
+   "evidence": "src/athena/core/catalog.py:14 The capability inventory is correctly derived from the permitted-action registry, but nothing in the context (or the repo, searched for 'unexercised', 'exercised', 'capability ledger', 'last_exercised') records an exercise of each capability with a working/broken/unexercised state, so a listed capability whose executor stopped working (e.g. the `_unattached` refusal) is still offered with full confidence.",
+   "techniques": [
+    {
+     "technique": "capability-exercise-ledger",
+     "verdict": "deviation",
+     "evidence": "src/athena/core/catalog.py:14 Derivation half is realized (render_capabilities is generated, deterministic, with a shown/total footer); the exercise ritual and three-state ledger (working / broken / unexercised, dated, ageing out) are absent. A test suite is explicitly not the ritual."
+    },
+    {
+     "technique": "constitution-self-model-split",
+     "verdict": "conformant",
+     "evidence": "src/athena/core/constitution.py:5 Law and identity are two files; there is no write path to either (core_entries holds only recall, write_fact, checkpoint, and constitution/identity.md states nothing writes it back). That is the technique's own 'split with an empty second half' for a system with no self-edit path. Law is read from the shipped package, the layering shape."
+    },
+    {
+     "technique": "anchored-identity-diffs",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/core/catalog.py:167 The core catalog exposes recall, write_fact and checkpoint only. There is no operation by which the agent proposes a change to its own description, so the diff grammar has no door to govern."
+    },
+    {
+     "technique": "disk-truth-db-index",
+     "verdict": "conformant",
+     "evidence": "src/athena/core/constitution.py:209 Identity and law are loaded straight from the markdown documents, never from the index. Approvals and ledger rows live only in index.sqlite, but they are operational records (the technique's own exclusion), and approvals.py:41 states by name that they are kept out of the reconcile's INDEX_TABLES."
+    },
+    {
+     "technique": "one-mind-many-mouths",
+     "verdict": "conformant",
+     "evidence": "src/athena/core/approvals.py:399 Surface is stamped as provenance on each approval; the read queries filter only by id or status, never by surface, so the stamp does not partition anything."
+    },
+    {
+     "technique": "operator-profile-synthesis",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/core/catalog.py:215 Facts about the user are single cited claims, each GATED behind a card. No behavioural profiling pass exists ('profile' grep over src/athena found only unrelated hits), so the profile rules have nothing to apply to."
+    }
+   ]
+  },
+  {
+   "context": "journey-stage-src",
+   "subject": "companion-identity",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "examples/journey/src/brain.ts:10 The journey context is a demo-recording harness: its brain is an in-memory fake that only enforces fact citations, and it only re-renders the doctor's constitution and brain stages. A git grep over examples/journey for 'identity.md', 'self-model', 'self_model', 'selfModel' and 'consent' found nothing, so no companion identity, self-model, profile or adoption design exists here to judge.",
+   "techniques": [
+    {
+     "technique": "disk-truth-db-index",
+     "verdict": "not-applicable",
+     "evidence": "examples/journey/src/brain.ts:10 The file says disk truth and the index belong to the daemon, not to this fake."
+    },
+    {
+     "technique": "constitution-self-model-split",
+     "verdict": "not-applicable",
+     "evidence": "examples/journey/src/onboard.ts:184 Only displays the doctor's constitution stage; authors and writes no law or self-model."
+    }
+   ],
+   "absenceTerms": [
+    "identity.md",
+    "selfModel",
+    "consent"
+   ]
+  }
+ ],
+ "declined": [],
+ "consults": [
+  {
+   "ts": "2026-10-24T06:38:52.123186+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "companion-identity"
+   ],
+   "techniques": [
+    "anchored-identity-diffs",
+    "capability-exercise-ledger",
+    "constitution-self-model-split",
+    "disk-truth-db-index",
+    "one-mind-many-mouths",
+    "operator-profile-synthesis"
+   ],
+   "deviations": 1,
+   "context": "core-gate-and-ledger",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  },
+  {
+   "ts": "2026-10-24T06:38:52.123186+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "companion-identity"
+   ],
+   "techniques": [
+    "constitution-self-model-split",
+    "disk-truth-db-index"
+   ],
+   "deviations": 0,
+   "context": "journey-stage-src",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  }
+ ]
+}

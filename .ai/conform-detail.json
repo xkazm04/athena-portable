@@ -6861,6 +6861,68 @@
           "evidence": "scripts/build-sidecar.py:268 This is a packaging build, which belongs to the sibling release subject, and no build win is claimed. The printed wall-clock carries no cold or warm label (it omits whether `--clean` was passed), so it would not count as an instrument if a claim ever relied on it."
         }
       ]
+    },
+    "b22cae8a-16ec-45ac-b2a6-3a502a91c895/companion-identity": {
+      "context": "core-gate-and-ledger",
+      "subject": "companion-identity",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T06:38:52.123Z",
+      "worker": "bef8b61c-ef83-4ccd-afb9-1be7da3d97dc",
+      "techniques": [
+        {
+          "technique": "capability-exercise-ledger",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/catalog.py:14 Derivation half is realized (render_capabilities is generated, deterministic, with a shown/total footer); the exercise ritual and three-state ledger (working / broken / unexercised, dated, ageing out) are absent. A test suite is explicitly not the ritual."
+        },
+        {
+          "technique": "constitution-self-model-split",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/constitution.py:5 Law and identity are two files; there is no write path to either (core_entries holds only recall, write_fact, checkpoint, and constitution/identity.md states nothing writes it back). That is the technique's own 'split with an empty second half' for a system with no self-edit path. Law is read from the shipped package, the layering shape."
+        },
+        {
+          "technique": "anchored-identity-diffs",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/core/catalog.py:167 The core catalog exposes recall, write_fact and checkpoint only. There is no operation by which the agent proposes a change to its own description, so the diff grammar has no door to govern."
+        },
+        {
+          "technique": "disk-truth-db-index",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/constitution.py:209 Identity and law are loaded straight from the markdown documents, never from the index. Approvals and ledger rows live only in index.sqlite, but they are operational records (the technique's own exclusion), and approvals.py:41 states by name that they are kept out of the reconcile's INDEX_TABLES."
+        },
+        {
+          "technique": "one-mind-many-mouths",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/approvals.py:399 Surface is stamped as provenance on each approval; the read queries filter only by id or status, never by surface, so the stamp does not partition anything."
+        },
+        {
+          "technique": "operator-profile-synthesis",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/core/catalog.py:215 Facts about the user are single cited claims, each GATED behind a card. No behavioural profiling pass exists ('profile' grep over src/athena found only unrelated hits), so the profile rules have nothing to apply to."
+        }
+      ]
+    },
+    "c43e44e3-3408-409e-821f-ccdb2ebe8f50/companion-identity": {
+      "context": "journey-stage-src",
+      "subject": "companion-identity",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T06:38:52.123Z",
+      "worker": "bef8b61c-ef83-4ccd-afb9-1be7da3d97dc",
+      "techniques": [
+        {
+          "technique": "disk-truth-db-index",
+          "verdict": "not-applicable",
+          "evidence": "examples/journey/src/brain.ts:10 The file says disk truth and the index belong to the daemon, not to this fake."
+        },
+        {
+          "technique": "constitution-self-model-split",
+          "verdict": "not-applicable",
+          "evidence": "examples/journey/src/onboard.ts:184 Only displays the doctor's constitution stage; authors and writes no law or self-model."
+        }
+      ]
     }
   }
 }
