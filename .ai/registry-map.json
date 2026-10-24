@@ -6756,7 +6756,11 @@
           "revision": 2,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/hirelane/lib/scoring.ts:2 Hirelane's 'candidates' are job applicants, scored by a transparent keyword rubric over CV sentences, not trained models. Nothing measures a dataset, fills a template, trains or ensembles anything, so the measure-generate-train-select arc never applies. A search of examples/hirelane (node_modules excluded) for hyperparameter, ensemble, epoch, learning_rate and datastats found no hits.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:a8a570eae3950671",
+          "evaluatedRevision": 2
         },
         {
           "subject": "structured-output",

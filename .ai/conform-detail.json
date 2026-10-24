@@ -7371,6 +7371,31 @@
       "evaluatedTs": "2026-10-24T21:05:24.042Z",
       "worker": "bc4c5add-06c7-40fd-9444-362bf4833a30",
       "techniques": []
+    },
+    "6c17278c-ed66-4d70-8a4f-4202662f1613/generated-workflow-candidates": {
+      "context": "hirelane-model-and-lib",
+      "subject": "generated-workflow-candidates",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T21:20:14.403Z",
+      "worker": "1ca8588d-2842-41a7-b541-c48b50424273",
+      "techniques": []
+    },
+    "d3ab2f33-be6a-482d-ad36-b6dae11d2ea0/generated-workflow-candidates": {
+      "context": "demo-kit-template",
+      "subject": "generated-workflow-candidates",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T21:20:14.403Z",
+      "techniques": [],
+      "withdrawn": {
+        "worker": "1ca8588d-2842-41a7-b541-c48b50424273",
+        "state": "not-applicable",
+        "at": "2026-10-24T21:20:37.592313+00:00",
+        "reason": "reviewer (sonnet): The anchor db.ts:22 is only a comment on the deterministic seed function and does not show that a measure/generate/train/select stage is absent; the claim rests on a grep for ML terms that were not shown to be the right ones for this subject."
+      }
     }
   }
 }
