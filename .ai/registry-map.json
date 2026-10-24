@@ -6510,7 +6510,11 @@
           "revision": 7,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/hirelane/design/check-contrast.mjs:178 When the contrast gate finds no token block to read it logs this line and exits 0, and check-law.mjs:219-220 does the same, so a moved or renamed tokens.css turns both law gates green instead of failing.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:165125b7a54d0de3",
+          "evaluatedRevision": 7
         },
         {
           "subject": "fleet-orchestration",
@@ -9601,7 +9605,11 @@
           "revision": 7,
           "changedAt": "2026-09-24",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "examples/tidycrm/components/blocks/style/level2/foot.css:111 Component sheets use steps of the graphite ramp directly (here graphite-4 as text on the inverted title block) instead of a role. The step's meaning changes with the ground it sits on, which is exactly the skipped-layer failure.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:165125b7a54d0de3",
+          "evaluatedRevision": 7
         },
         {
           "subject": "trust-base",
