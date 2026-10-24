@@ -7,6 +7,7 @@
  * the catalogue's filters, order and last pick (coming back from a topic finds them as they
  * were), what the person said at the front door (it opens the studio the verdict leads to), and
  * where each topic page was scrolled (rising from its studio or its replay lands there again).
+ * The catalogue's `Yours` toggle rides with its filters.
  */
 import { useSyncExternalStore } from "react";
 
@@ -20,7 +21,7 @@ export interface ChoresMemory {
 }
 
 const fresh = (): ChoresMemory => ({
-  catalogue: { category: "all", job: "all", sort: EDGE_ORDER, last: null },
+  catalogue: { category: "all", job: "all", sort: EDGE_ORDER, last: null, yours: false },
   intro: null,
 });
 

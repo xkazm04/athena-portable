@@ -4,11 +4,18 @@
  * Full width, no side rail: the areas are a row of cards, each a large glyph over its name with its
  * count riding the top edge, the jobs are chips under it, the order a three-way switch, and the
  * ledger one line per playbook: name, job, time saved, value. A press opens the topic page.
+ *
+ * "Your chores": handed the daemon's deps, the catalogue asks once for every saved case and each
+ * case's open review, and draws them above the areas, what is due first (`yours.ts`), each one
+ * press from its case or its chore's page; `Yours` narrows the ledger to the chores with a case.
+ * Without deps (the preview, no daemon) there is no band and the page is as it always was.
  */
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import Button from "@/components/Button";
 import Table, { type Column } from "@/components/Table";
+import type { Path } from "@/depth/model";
+import type { DueReview } from "@/lib/adopt";
 import { CATEGORIES, JOBS, categoryLabel, jobLabel, type CategoryId } from "@/lib/playbook-taxonomy";
 import {
   categoryCounts,
@@ -21,11 +28,14 @@ import {
   type PlaybooksModel,
 } from "@/modules/playbooks/model";
 
-import { EDGE_ORDER, emptyLine } from "./model";
+import type { AdoptDeps } from "./adopt/deps";
+import { why } from "./adopt/session";
+import { EDGE_ORDER, casePath, emptyLine } from "./model";
 import { totalsLine, valueCell } from "./worth";
 import { lead } from "./rich";
 import { JOB_TONE, timeCell } from "./facts";
 import Glyph from "./glyphs";
+import { hasCase, yoursLine, yoursOf, type YoursState } from "./yours";
 
 export interface CatalogueState {
   category: CategoryFilter;
@@ -33,6 +43,43 @@ export interface CatalogueState {
   sort: LedgerSort;
   /** The row last opened, picked again on the way back. */
   last: string | null;
+  /** The ledger narrowed to the chores the person has a saved case for. */
+  yours: boolean;
+}
+
+/**
+ * Every saved case (`cases('')`, ADR 0123) and each one's review (ADR 0131), asked once per mount.
+ * A review that cannot be read is no review: the case is still listed, by its approval.
+ */
+export function useYours(deps: AdoptDeps | undefined): YoursState | null {
+  // The answer is kept with the client it came from, so another client never shows an old one.
+  const [answer, set] = useState<{ client: unknown; state: YoursState } | null>(null);
+  useEffect(() => {
+    if (!deps) return;
+    let live = true;
+    const done = (state: YoursState) => live && set({ client: deps.client, state });
+    deps.client.cases("").then(
+      async (reply) => {
+        const chores = deps.chores;
+        const reviews = new Map<string, DueReview | null>();
+        if (chores) {
+          const read = await Promise.allSettled(reply.cases.map((c) => chores.review(c.case_id)));
+          read.forEach((r, i) => reviews.set(reply.cases[i]!.case_id, r.status === "fulfilled" ? r.value : null));
+        }
+        done({ kind: "found", cases: reply.cases, footer: reply.footer, reviews });
+      },
+      (error: unknown) => {
+        const w = why(error);
+        done({ kind: "failed", offline: w.reason === "offline", detail: w.detail || w.reason });
+      },
+    );
+    return () => {
+      live = false;
+    };
+  }, [deps]);
+  if (!deps) return null;
+  if (answer === null || answer.client !== deps.client) return { kind: "looking" };
+  return answer.state;
 }
 
 const SORTS: { id: string; label: string; sort: LedgerSort; why: string }[] = [
@@ -64,6 +111,8 @@ export default function Catalogue({
   set,
   open,
   create,
+  deps,
+  go,
 }: {
   model: PlaybooksModel;
   state: CatalogueState;
@@ -71,9 +120,20 @@ export default function Catalogue({
   open: (view: PlaybookView) => void;
   /** The front door: "New chore". */
   create: () => void;
+  /** The daemon's clients; absent, there is no "Your chores" band and no `Yours`. */
+  deps?: AdoptDeps;
+  /** Where "Open your case" goes. */
+  go?: (to: Path) => void;
 }) {
+  const saved = useYours(deps);
+  const found = saved?.kind === "found" ? saved : null;
+  const yours = found ? yoursOf(model, found.cases, found.reviews) : null;
+  const mine = found ? hasCase(model, found.cases) : null;
+  // `Yours` narrows only once the cases are known; until then the remembered toggle waits.
+  const narrowed = state.yours && mine !== null && mine.size > 0;
   const counts = categoryCounts(model.items, state.job);
-  const rows = sortLedger(filterLedger(model.items, { category: state.category, job: state.job }), state.sort);
+  const filtered = filterLedger(model.items, { category: state.category, job: state.job });
+  const rows = sortLedger(narrowed ? filtered.filter((v) => mine.has(v.id)) : filtered, state.sort);
   // How the latest pick was made: a press opens the topic, a walk (arrow, Home, End) only picks.
   const how = useRef<"press" | "walk">("press");
   const box = useRef<HTMLDivElement>(null);
@@ -153,6 +213,11 @@ export default function Catalogue({
   ];
 
   const where = state.category === "all" ? "all areas" : categoryLabel(state.category as CategoryId);
+  const plural = rows.length === 1 ? "playbook" : "playbooks";
+  const shown = narrowed
+    ? `${rows.length} ${plural} you have a case for${state.category === "all" ? "" : ` in ${where}`}`
+    : `${rows.length} ${plural} in ${where}`;
+  const said = saved ? yoursLine(saved) : "";
 
   return (
     <div className="pa-page">
@@ -166,6 +231,49 @@ export default function Catalogue({
             </Button>
           </div>
         </header>
+
+        {saved ? (
+          <section className="pa-yours" aria-labelledby="pa-yours-h">
+            <h2 id="pa-yours-h" className="pa-kpi__label">
+              Your chores
+            </h2>
+            {yours && yours.rows.length ? (
+              <ul className="pa-cases">
+                {yours.rows.map((r) => (
+                  <li key={r.caseId} className={`pa-case pa-yours__row${r.due ? " pa-yours__row--due" : ""}`}>
+                    <button
+                      type="button"
+                      className="pa-link pa-yours__chore focus-ring"
+                      title={`Open the page of ${r.chore}`}
+                      onClick={() => open(r.view)}
+                    >
+                      {r.chore}
+                    </button>
+                    <span className="pa-case__title">{r.title}</span>
+                    {r.due ? <span className="pa-yours__due">{r.due}</span> : null}
+                    <span className="pa-case__when">{`${r.approved} · ${r.confirmed}`}</span>
+                    {go ? (
+                      <Button
+                        variant={r.due ? "primary" : "ghost"}
+                        size="sm"
+                        onClick={() => go(casePath(r.playbookId, r.caseId))}
+                      >
+                        Open your case
+                      </Button>
+                    ) : null}
+                  </li>
+                ))}
+              </ul>
+            ) : null}
+            {said ? (
+              <p className="pa-muted" role="status">
+                {said}
+              </p>
+            ) : null}
+            {yours?.elsewhereLine ? <p className="pa-muted">{yours.elsewhereLine}</p> : null}
+            {found?.footer ? <p className="pa-muted">{found.footer}</p> : null}
+          </section>
+        ) : null}
 
         <nav className="pa-tabs" aria-label="Areas">
           {tabs.map((t) => (
@@ -202,6 +310,17 @@ export default function Catalogue({
               </button>
             ))}
           </div>
+          {mine && mine.size > 0 ? (
+            <button
+              type="button"
+              className="pa-jobchip pa-yours-toggle focus-ring"
+              aria-pressed={state.yours}
+              title="Only the chores you have a saved case for"
+              onClick={() => set({ yours: !state.yours })}
+            >
+              Yours
+            </button>
+          ) : null}
           <div className="pa-sort" role="group" aria-label="Order">
             {SORTS.map((s) => (
               <button
@@ -218,12 +337,12 @@ export default function Catalogue({
           </div>
         </div>
 
-        <p className="pa-shown">{`${rows.length} ${rows.length === 1 ? "playbook" : "playbooks"} in ${where}`}</p>
+        <p className="pa-shown">{shown}</p>
 
         {rows.length === 0 ? (
           <div className="pa-empty">
             <p>{emptyLine({ category: state.category, job: state.job })}</p>
-            <Button variant="primary" onClick={() => set({ category: "all", job: "all" })}>
+            <Button variant="primary" onClick={() => set({ category: "all", job: "all", yours: false })}>
               Show all
             </Button>
           </div>

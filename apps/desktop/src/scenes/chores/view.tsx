@@ -5,7 +5,8 @@
  * catalogue (`catalogue.tsx`), a chore is its topic page (`topic.tsx`), a turn of its run is the
  * replay (`replay.tsx`), and its "Make it yours" is the Adopt studio (`adopt/studio.tsx`, ADR 0097),
  * the one level that talks to the daemon, through the deps it is handed (the topic page asks the same
- * deps only for the saved cases it names, ADR 0123). The stage mounts a fresh
+ * deps only for the saved cases it names, ADR 0123, and the catalogue for every saved case and its
+ * open review, for its "Your chores" band). The stage mounts a fresh
  * view at every move, so the catalogue's filters, order and last pick, the front door's words and
  * each topic's scroll are kept in `memory.ts`, and coming back finds them as they were. A load that
  * failed, a set on its way, an empty build, an id this build does not ship, a chore with no
@@ -102,6 +103,8 @@ export default function ChoresView({ model, path, go, adopt, offer }: ChoresView
         state={state}
         set={rememberCatalogue}
         create={() => go(newChorePath())}
+        deps={adopt}
+        go={go}
         open={(v) => {
           rememberCatalogue({ last: v.id });
           openChore(v.id);

@@ -222,6 +222,35 @@
   color: var(--muted-foreground);
 }
 
+/* Your chores: every saved case above the areas, what is due first, one press from its case. The
+ * rows are the topic page's case rows (`.pa-case`); a due one carries the warning edge, its words
+ * say it in ink, never the edge alone. */
+.pa-yours {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 28px;
+  padding: 20px 24px;
+  border-radius: 14px;
+  border: 1px solid var(--border-default);
+  background: var(--card-raised);
+}
+.pa-yours .pa-kpi__label {
+  margin: 0;
+}
+.pa-yours__chore {
+  font-weight: 600;
+}
+.pa-yours__row--due {
+  border-left: 3px solid var(--status-warning);
+}
+.pa-yours__due {
+  color: var(--foreground);
+  font-size: 14px;
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+}
+
 /* -- The ledger ----------------------------------------------------------------------------- */
 .pa-ledger .table caption {
   position: absolute;

@@ -8,6 +8,9 @@
  * it with `&at=%23/chores/<id>`. `typical` is first, because the perf gate renders the first.
  */
 import type { Path } from "@/depth/model";
+import type { CaseSummary, CasesReply, DueReview } from "@/lib/adopt";
+import { ApiError } from "@/lib/api";
+import type { ChoresClient } from "@/lib/chores-client";
 import type { Playbook } from "@/lib/playbooks";
 import type { CategoryId, JobId } from "@/lib/playbook-taxonomy";
 import { selectPlaybooks, type PlaybooksModel } from "@/modules/playbooks/model";
@@ -19,7 +22,15 @@ import {
 } from "@/modules/playbooks/fixtures";
 import type { FixtureId } from "@/modules/types";
 
-import { ADOPT_FIXTURES, ADOPT_PLAYBOOK, CASE_FIXTURES, PREVIEW_CASE } from "./adopt/fixtures";
+import type { AdoptDeps } from "./adopt/deps";
+import {
+  ADOPT_FIXTURES,
+  ADOPT_PLAYBOOK,
+  CASE_FIXTURES,
+  PREVIEW_CASE,
+  ScriptedClient,
+  scriptedDictation,
+} from "./adopt/fixtures";
 import { INTAKE_FIXTURES } from "./intake/fixtures";
 import { adoptPath, casePath, chorePath, newChorePath, runPath } from "./model";
 
@@ -84,9 +95,84 @@ function ledgerFixture(): PlaybooksModel {
   return selectPlaybooks(playbooks, typical.actions);
 }
 
+/** "Your chores" on the catalogue: the shipped set, with two saved cases, one of them due. */
+export const YOURS_FIXTURE = "ledger-yours";
+
+/** The second saved case the band lists: a lost suitcase, approved after the credits case. */
+const BAGS_CASE: CaseSummary = {
+  case_id: "proj_5e6f7a8b9c0d",
+  playbook_id: "baggage-delay-claims",
+  title: "The suitcase that stayed in Lisbon",
+  approved_rev: 1,
+  approved_at: "2026-10-12T08:00:00+00:00",
+  created: "2026-10-12T08:00:00+00:00",
+  confirmed: 4,
+  slots: 6,
+};
+
+/** The scripted session, answering every saved case when asked with no playbook (`cases('')`). */
+class YoursClient extends ScriptedClient {
+  cases(playbookId: string): Promise<CasesReply> {
+    if (playbookId !== "") return super.cases(playbookId);
+    const cases = [BAGS_CASE, PREVIEW_CASE];
+    return Promise.resolve({ ok: true, cases, showing: cases.length, total: cases.length, footer: "" });
+  }
+}
+
+/** The credits case came due on Monday and is still unanswered; the suitcase has no cadence. */
+const yoursChores: ChoresClient = {
+  cadence: () => Promise.reject(new ApiError(404, "unknown_ref", "not in the preview")),
+  setCadence: () => Promise.reject(new ApiError(404, "unknown_ref", "not in the preview")),
+  answer: () => Promise.resolve(null),
+  due: () => Promise.reject(new ApiError(404, "unknown_ref", "not in the preview")),
+  review: (caseId: string): Promise<DueReview | null> =>
+    Promise.resolve(
+      caseId !== PREVIEW_CASE.case_id
+        ? null
+        : {
+            case_id: caseId,
+            playbook_id: ADOPT_PLAYBOOK,
+            title: PREVIEW_CASE.title,
+            command: "",
+            enabled: true,
+            rule_text: "every Monday at 09:00",
+            timezone: "",
+            next_run_at: "2026-10-26T09:00:00+00:00",
+            review: {
+              due_at: "2026-10-19T09:00:00+00:00",
+              opened_at: "2026-10-19T09:00:00+00:00",
+              missed: 0,
+              missed_at: [],
+              delivered_at: "2026-10-19T09:00:00+00:00",
+              held_at: "",
+              answer: "",
+              answered_at: "",
+              first_turn_id: "",
+            },
+            unanswered: 1,
+            ask_slow: false,
+            last_run_at: "",
+            lines: [],
+            lines_total: 0,
+            lines_footer: "",
+            portals: [],
+          },
+    ),
+};
+
+let yoursDeps: AdoptDeps | undefined;
+
+/** The deps the `ledger-yours` fixture hands the catalogue; the same object every render. */
+export function yoursDepsFor(fixture: FixtureId): AdoptDeps | undefined {
+  if (fixture !== YOURS_FIXTURE) return undefined;
+  yoursDeps ??= { client: new YoursClient([], { cases: [PREVIEW_CASE] }), chores: yoursChores, dictation: scriptedDictation };
+  return yoursDeps;
+}
+
 export const fixtures: Readonly<Record<string, PlaybooksModel>> = {
   ...Object.fromEntries(IDS.map((id) => [id, moduleFixtures[id]!])),
   ledger: ledgerFixture(),
+  [YOURS_FIXTURE]: moduleFixtures.shipped!,
   // The Adopt studio plays a scripted session over a shipped playbook (ADR 0097).
   ...Object.fromEntries(ADOPT_FIXTURES.map((id) => [id, moduleFixtures.shipped!])),
   // A saved case of the same chore, on its topic page and reopened in the studio (ADR 0123).
@@ -98,6 +184,7 @@ export const fixtures: Readonly<Record<string, PlaybooksModel>> = {
 export const fixtureIds: readonly FixtureId[] = [
   ...IDS,
   "ledger",
+  YOURS_FIXTURE,
   ...ADOPT_FIXTURES,
   ...CASE_FIXTURES,
   ...INTAKE_FIXTURES,

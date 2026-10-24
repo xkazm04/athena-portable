@@ -3,7 +3,8 @@
  *
  * The running app's part (`live.tsx`) plus what only the preview harness and the tests need: the
  * fixtures (which read the shipped playbooks eagerly), the view drawn synchronously, the Adopt
- * studio's scripted session for its fixtures, and crumb names for a fixture.
+ * studio's scripted session for its fixtures, the catalogue's saved cases for `ledger-yours`, and
+ * crumb names for a fixture.
  */
 import { createElement } from "react";
 
@@ -12,7 +13,7 @@ import type { FixtureId } from "@/modules/types";
 import type { DepthScene, SceneProps } from "@/scenes/types";
 
 import { ADOPT_PLAYBOOK, adoptDepsFor } from "./adopt/fixtures";
-import { fixtureIds, fixtures } from "./fixtures";
+import { fixtureIds, fixtures, yoursDepsFor } from "./fixtures";
 import { intakeDepsFor } from "./intake/fixtures";
 import { labeller, live } from "./live";
 import ChoresView from "./view";
@@ -27,7 +28,8 @@ export const entry: DepthScene = {
   preview: (fixture: FixtureId, props: SceneProps) => {
     const model = fixtures[fixture] ?? fixtures.typical!;
     const recorded = model.items.find((v) => v.id === ADOPT_PLAYBOOK)?.playbook.bench?.trace ?? [];
-    return createElement(ChoresView, { model, ...props, adopt: adoptDepsFor(fixture, recorded) ?? intakeDepsFor(fixture, recorded) });
+    const adopt = adoptDepsFor(fixture, recorded) ?? intakeDepsFor(fixture, recorded) ?? yoursDepsFor(fixture);
+    return createElement(ChoresView, { model, ...props, adopt });
   },
   previewLabeller: (fixture: FixtureId) => labeller(titlesOf(fixtures[fixture] ?? fixtures.typical!)),
 };

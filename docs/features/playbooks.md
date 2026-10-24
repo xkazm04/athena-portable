@@ -223,6 +223,13 @@ amendment *The catalogue*).
 
 **The catalogue** (`#/chores`) heads itself "Playbooks" with the bench's totals in one line, then:
 
+- **Your chores** ([ADR 0148](../adr/0148-the-chores-catalogue-lists-your-saved-cases-due-first.md)), when a daemon is connected: every saved case
+  (`GET /adopt/cases` with no playbook) joined to its chore, a case whose review is open first with
+  `Due <day>` (and `and N missed`), then the latest approval; each row's chore name opens its page and
+  `Open your case` the studio on that case. A case for a chore this build does not ship is said, the
+  daemon's `(showing N of M)` is printed, and looking, none saved and the daemon not running are each
+  one line. A `Yours` chip beside the job chips narrows the ledger to the chores with a case and is
+  remembered with the filters. With no daemon the band is not drawn and nothing is asked.
 - **the area tabs**: "All" and the ten areas of `playbooks/taxonomy.json` in its order, each a line
   glyph, the area's first word (its full name is the tab's title and accessible name) and the count a
   press would show under the job in force; an area with nothing under that job is disabled. A
