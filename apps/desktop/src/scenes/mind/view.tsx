@@ -26,10 +26,13 @@ import type { SetupModel } from "@/modules/setup/model";
 import { brainFact, engineFact, micFact, type Standing } from "@/modules/setup/readiness";
 import EngineSection, { RestartNoticeBar } from "@/scenes/shared/EngineSection";
 import { THEME_CHOICES, TYPE_SCALES } from "@/stores/settings";
+import { SKINS } from "@/stores/shell";
 
 import DevicesLevel, { type DevicesModel } from "./devices";
 import "./mind.css";
 import {
+  SKIN_HINTS,
+  SKIN_LABELS,
   THEME_HINTS,
   TYPE_SCALE_HINTS,
   ThemePreview,
@@ -104,7 +107,7 @@ function lineOf(model: SetupModel, which: Instrument): { word: string | null; to
         line: model.brainPath ? "Episodes, facts and playbooks are written to a folder of your own." : "Episodes go to Athena's own folder.",
       };
     case "look":
-      return { word: `${model.theme} theme`, tone: "neutral", line: `${THEME_HINTS[model.theme]} Text: ${model.typeScale}. Motion: ${model.motion}.` };
+      return { word: `${model.theme} theme`, tone: "neutral", line: `${THEME_HINTS[model.theme]} Style: ${SKIN_LABELS[model.skin]}. Text: ${model.typeScale}. Motion: ${model.motion}.` };
     case "data":
       return { word: model.storePath ? "local" : null, tone: "neutral", line: "One SQLite file holds this machine's Athena." };
     case "mic":
@@ -246,6 +249,16 @@ function Level({
 function Look({ model }: { model: SetupModel }) {
   return (
     <>
+      <section className="mind__section" aria-labelledby="mind-skin">
+        <h2 id="mind-skin">Style</h2>
+        <PillGroup
+          ariaLabel="Style"
+          value={model.skin}
+          onChange={model.actions.setSkin}
+          options={SKINS.map((skin) => ({ value: skin, label: SKIN_LABELS[skin], hint: SKIN_HINTS[skin] }))}
+        />
+        <Refused what="The style" reason={model.refusals.skin} />
+      </section>
       <section className="mind__section" aria-labelledby="mind-theme">
         <h2 id="mind-theme">Theme</h2>
         <PillGroup

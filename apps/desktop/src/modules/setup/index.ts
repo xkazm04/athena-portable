@@ -18,6 +18,7 @@ import { checkMicrophone, type MicStanding } from "@/lib/voice";
 import { useDaemon } from "@/stores/daemon";
 import { useEngines } from "@/stores/engines";
 import { chooseSetupEngine, readRows, useSettings, type ThemeChoice, type TypeScale } from "@/stores/settings";
+import type { Skin } from "@/stores/shell";
 import { useTabs } from "@/stores/tabs";
 import { useVoice } from "@/stores/voice";
 
@@ -34,6 +35,7 @@ export function useSetupModel(
   const hydrated = useSettings((s) => s.hydrated);
   const engine = useSettings((s) => s.engine);
   const theme = useSettings((s) => s.theme);
+  const skin = useSettings((s) => s.skin);
   const typeScale = useSettings((s) => s.typeScale);
   const motion = useSettings((s) => s.motion);
   const brainPath = useSettings((s) => s.brainPath);
@@ -86,6 +88,7 @@ export function useSetupModel(
         void useDaemon.getState().restart(useSettings.getState().engine).catch(report("restart"));
       },
       setTheme: (next: ThemeChoice) => void attempt("theme", () => useSettings.getState().setTheme(next)),
+      setSkin: (next: Skin) => void attempt("skin", () => useSettings.getState().setSkin(next)),
       setTypeScale: (next: TypeScale) =>
         void attempt("typeScale", () => useSettings.getState().setTypeScale(next)),
       setMotion: (next: MotionChoice) => void attempt("motion", () => useSettings.getState().setMotion(next)),
@@ -125,6 +128,7 @@ export function useSetupModel(
         problem,
         checking,
         theme,
+        skin,
         typeScale,
         motion,
         brainPath,
@@ -148,6 +152,7 @@ export function useSetupModel(
       hydrated,
       engine,
       theme,
+      skin,
       typeScale,
       motion,
       brainPath,

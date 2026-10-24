@@ -59,6 +59,8 @@ export const SETTING_KEYS = {
   toolContracts: "tool_contracts",
   /** `halo` | `b04-owl` | `d08-origami`: how she appears (`AVATAR_IDS`). `halo` draws no face. */
   avatar: "avatar",
+  /** `athena` | `loop-tide`: the skin she wears (`SKINS`, ADR 0142). */
+  skin: "skin",
 } as const;
 
 export type SettingKey = (typeof SETTING_KEYS)[keyof typeof SETTING_KEYS];

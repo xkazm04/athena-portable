@@ -100,7 +100,7 @@ test("a value written is the value read back, under the key store.rs describes",
   // Every read named its table, and every key is one of the named set rather than a spelling
   // invented at the call site.
   const reads = harness.calls.filter((c) => c.command === "store_get");
-  expect(reads).toHaveLength(8);
+  expect(reads).toHaveLength(9);
   const named: string[] = Object.values(SETTING_KEYS);
   for (const read of reads) {
     expect(read.args.table).toBe("settings");
@@ -121,6 +121,27 @@ test("the avatar defaults to the halo, is written under its key, and an unknown 
   harness.rows.set("settings/avatar", "dragon");
   await readRows();
   expect(useSettings.getState().avatar).toBe("halo");
+});
+
+test("the skin is painted before it is stored, every window reads it, and an unknown row reads as her own", async () => {
+  const { useShell } = await import("@/stores/shell");
+  expect(useSettings.getState().skin).toBe("athena");
+
+  await useSettings.getState().setSkin("loop-tide");
+  expect(painted.get("data-skin")).toBe("loop-tide");
+  expect(useShell.getState().skin).toBe("loop-tide");
+  expect(harness.rows.get("settings/skin")).toBe("loop-tide");
+
+  // Her window reads the same row on its own start (ADR 0026): the row, not the store, is the truth.
+  useSettings.setState({ skin: "athena" });
+  await readRows();
+  expect(useSettings.getState().skin).toBe("loop-tide");
+  expect(painted.get("data-skin")).toBe("loop-tide");
+
+  harness.rows.set("settings/skin", "neon");
+  await readRows();
+  expect(useSettings.getState().skin).toBe("athena");
+  expect(painted.get("data-skin")).toBe("athena");
 });
 
 test("the text size is painted before it is stored, and an unknown row reads as comfortable", async () => {

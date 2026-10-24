@@ -134,7 +134,9 @@ export default function Stage(props: StageProps) {
       data-move={state.move}
       data-pose={presence.pose}
     >
-      {shape === "scene" && <Backdrop depth={depth} move={state.move} seq={state.seq} calm={calm} />}
+      {shape === "scene" && (
+        <Backdrop depth={depth} move={state.move} seq={state.seq} calm={calm} pose={presence.pose} />
+      )}
 
       {/* Where you are, said once per move. The scenes are not a live region: a whole scene read out
           on every change is noise, and a person who has just dived wants to hear the place. */}

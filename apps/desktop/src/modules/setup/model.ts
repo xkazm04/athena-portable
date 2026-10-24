@@ -22,11 +22,12 @@ import { engineLabel, probeOf, remedyFor, type EngineProbe } from "@/lib/engines
 import type { MicStanding } from "@/lib/voice";
 import type { MotionChoice } from "@/lib/motion";
 import type { ThemeChoice, TypeScale } from "@/stores/settings";
+import { DEFAULT_SKIN, type Skin } from "@/stores/shell";
 
 export type SetupMode = "onboarding" | "settings";
 
 /** The setting writes a person makes here whose refusal is shown where the choice was made. */
-export type SetupWrite = "engine" | "theme" | "typeScale" | "motion" | "brainPath" | "wake";
+export type SetupWrite = "engine" | "theme" | "skin" | "typeScale" | "motion" | "brainPath" | "wake";
 
 /** A refused write, by which one, in the store's own words. Absent means it was not refused. */
 export type SetupRefusals = Readonly<Partial<Record<SetupWrite, string>>>;
@@ -56,6 +57,8 @@ export interface SetupActions {
   /** Hand the chosen engine to the running daemon: a staged shutdown and a fresh spawn. */
   restart: () => void;
   setTheme: (theme: ThemeChoice) => void;
+  /** The skin she wears (ADR 0142). */
+  setSkin: (skin: Skin) => void;
   setTypeScale: (scale: TypeScale) => void;
   /** Calm motion: `system` follows the OS, the others override it (ADR 0089). */
   setMotion: (motion: MotionChoice) => void;
@@ -93,6 +96,7 @@ export interface SetupModel {
   /** A check is in flight: the button reads "Checking...". */
   checking: boolean;
   theme: ThemeChoice;
+  skin: Skin;
   typeScale: TypeScale;
   motion: MotionChoice;
   /** The brain directory. Empty means the daemon's own default, which is a real answer. */
@@ -132,6 +136,8 @@ export interface SetupSources {
   problem: string | null;
   checking?: boolean;
   theme: ThemeChoice;
+  /** Her own teal where a fixture does not say. */
+  skin?: Skin;
   /** Comfortable where a fixture does not say. */
   typeScale?: TypeScale;
   /** System where a fixture does not say. */
@@ -196,6 +202,7 @@ export function selectSetup(source: SetupSources): SetupModel {
     problem: startFailure ? null : source.problem,
     checking: source.checking ?? false,
     theme: source.theme,
+    skin: source.skin ?? DEFAULT_SKIN,
     typeScale: source.typeScale ?? "comfortable",
     motion: source.motion ?? "system",
     brainPath: source.brainPath,
@@ -254,6 +261,7 @@ export const INERT_ACTIONS: SetupActions = {
   checkEngines: () => {},
   restart: () => {},
   setTheme: () => {},
+  setSkin: () => {},
   setTypeScale: () => {},
   setMotion: () => {},
   setBrainPath: () => {},

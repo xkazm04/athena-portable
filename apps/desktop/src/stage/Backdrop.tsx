@@ -8,11 +8,19 @@
  * move is playing and for a moment after, then **stops asking for frames**, so a settled scene
  * costs nothing. It runs on the window's one shared clock (`lib/motion.ts`), and under Calm it is
  * drawn once and never moves.
+ *
+ * Under the Loop Tide skin (ADR 0142) a fifth layer joins them under the vignette: the loop current
+ * (`LoopCurrent.tsx`), which keeps the same rule - it asks for frames only while there is a reason.
  */
-import { useEffect, useRef } from "react";
+import { Suspense, lazy, useEffect, useRef } from "react";
 
+import type { Pose } from "@/bell/pose";
 import type { Move } from "@/depth/model";
 import { frames } from "@/lib/motion";
+import { useShell } from "@/stores/shell";
+
+// Only Loop Tide draws it, so it is fetched when that skin is worn, never in the first frame's bytes.
+const LoopCurrent = lazy(() => import("./LoopCurrent"));
 
 const FLAKES = 70;
 const MAX_DPR = 1.5;
@@ -43,12 +51,16 @@ export default function Backdrop({
   move,
   seq,
   calm,
+  pose = "resting",
 }: {
   depth: 0 | 1 | 2 | 3;
   move: Move;
   seq: number;
   calm: boolean;
+  /** How she is carrying herself; the loop current flows while she is busy. */
+  pose?: Pose;
 }) {
+  const skin = useShell((s) => s.skin);
   const canvas = useRef<HTMLCanvasElement>(null);
   const flakes = useRef<Flake[]>(seed());
   const drift = useRef({ dir: 0, left: 0 });
@@ -145,6 +157,11 @@ export default function Backdrop({
         <i />
       </div>
       <canvas ref={canvas} className="backdrop__snow" />
+      {skin === "loop-tide" && (
+        <Suspense fallback={null}>
+          <LoopCurrent pose={pose} move={move} seq={seq} calm={calm} />
+        </Suspense>
+      )}
       <i className="backdrop__vignette" />
     </div>
   );
