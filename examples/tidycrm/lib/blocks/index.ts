@@ -26,6 +26,7 @@ import {
   revisionCounts,
   segmentRows,
 } from "../db";
+import { actsFor } from "../acts";
 import type { Contact, MergePair } from "../types";
 import { clauseFor, isChecked, toRow } from "./rows";
 import { sheetTotals } from "./totals";
@@ -176,6 +177,8 @@ export function buildSheet(): BkSheet {
         .filter((c) => c.is_stale === 1 && c.stale_flagged === 0)
         .map((c) => c.id),
       phoneIds: sorted.filter((c) => c.phone_ok === 0).map((c) => c.id),
+      // Offered from the writes' own predicates over the rows already in hand: no query added.
+      acts: actsFor(sorted, previews),
       why:
         deviations.length === 0
           ? "Every record in this block carries no outstanding deviation."

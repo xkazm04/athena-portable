@@ -6,6 +6,7 @@
  * a defect count.
  */
 
+import type { Acts } from "@/lib/acts";
 import type { Deviation, RecordMark } from "./deviations";
 import type { BkPair, BkRow } from "./rows";
 
@@ -68,6 +69,14 @@ export interface BkTable {
   staleIds: string[];
   /** Ids whose phone is not stored as +1XXXXXXXXXX. */
   phoneIds: string[];
+  /**
+   * What the dossier may do to this table, on which records, and if not, why (`lib/acts.ts`).
+   *
+   * Built from the writes' own planner, so every control the gate draws offers exactly what its
+   * write would accept and prints the count the write reports. The gate reads this and decides
+   * nothing of its own (ADR 0149).
+   */
+  acts: Acts;
   /** One sentence saying why this block needs attention. */
   why: string;
 }

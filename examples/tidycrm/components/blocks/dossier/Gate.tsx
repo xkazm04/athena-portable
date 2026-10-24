@@ -9,6 +9,10 @@
  * is GATED and holds the two acts that destroy something. Greyscale the page
  * and it is still the only inverted region on it, so the class is a PLACE
  * rather than a badge on a button.
+ *
+ * Neither region decides what is on offer. `table.acts` (lib/acts.ts) is built by the sheet from
+ * the writes' own predicates, so a control is enabled exactly when its write would accept it, and
+ * the count it prints is the count the write reports.
  */
 import {
   deleteAction,
@@ -17,8 +21,7 @@ import {
   normalizeAction,
   resolvePairAction,
 } from "@/app/actions";
-import { STALE_MONTHS } from "@/lib/constants";
-import { RULE_LABELS } from "@/lib/normalize";
+import { PHONE_RULES, TIDY_RULES } from "@/lib/acts";
 import type { BkPair, BkTable } from "../model";
 import { Band } from "./parts";
 import type { useArm, useRun } from "../useRun";
@@ -49,6 +52,9 @@ export function DossierGate({
   arm: Arm["arm"];
   disarm: Arm["disarm"];
 }) {
+  // Every control below is drawn from the table's acts: whether it is on offer, what it runs on,
+  // and what it prints. The gate computes no availability of its own (lib/acts.ts, ADR 0149).
+  const acts = table.acts;
   return (
     <>
   {/* Everything here can be put back by undo, which is what buys the AUTO
@@ -62,36 +68,30 @@ export function DossierGate({
         type="button"
         className="bk-btn"
         data-auto="true"
-        disabled={pending || table.phoneIds.length === 0}
-        onClick={() => run(() => normalizeAction(table.phoneIds, ["phone_e164"]))}
+        disabled={pending || !acts.phone.enabled}
+        onClick={() => run(() => normalizeAction(acts.phone.ids, [...PHONE_RULES]))}
       >
-        {table.phoneIds.length === 0
-          ? "Every number is already +1XXXXXXXXXX"
-          : `${RULE_LABELS.phone_e164} · ${table.phoneIds.length} rows`}
+        {acts.phone.label}
       </button>
       <button
         type="button"
         className="bk-btn"
         data-auto="true"
-        disabled={pending || table.ids.length === 0}
-        onClick={() =>
-          run(() => normalizeAction(table.ids, ["trim_whitespace", "lowercase_email"]))
-        }
+        disabled={pending || !acts.tidy.enabled}
+        onClick={() => run(() => normalizeAction(acts.tidy.ids, [...TIDY_RULES]))}
       >
-        Tidy whitespace and email case · {table.ids.length} rows
+        {acts.tidy.label}
       </button>
       <button
         type="button"
         className="bk-btn"
         data-auto="true"
-        disabled={pending || table.staleIds.length === 0}
-        onClick={() => run(() => flagStaleAction(table.staleIds))}
+        disabled={pending || !acts.flag.enabled}
+        onClick={() => run(() => flagStaleAction(acts.flag.ids))}
       >
-        {table.staleIds.length === 0
-          ? `Nothing is stale past ${STALE_MONTHS} months`
-          : `Flag ${table.staleIds.length} stale rows`}
+        {acts.flag.label}
       </button>
-      {pair ? (
+      {acts.keep_both.enabled && pair ? (
         <button
           type="button"
           className="bk-btn"
@@ -99,7 +99,7 @@ export function DossierGate({
           disabled={pending}
           onClick={() => run(() => resolvePairAction(pair.id, "kept_both"))}
         >
-          Keep both records
+          {acts.keep_both.label}
         </button>
       ) : null}
     </div>
@@ -138,10 +138,10 @@ export function DossierGate({
           </button>
         </div>
       </div>
-    ) : armed === "delete" ? (
+    ) : armed === "delete" && acts.delete.enabled ? (
       <div className="bk-arm">
         <p className="bk-arm-q">
-          Delete {table.staleIds.length} stale rows from {table.name}. They leave the list
+          {acts.delete.label} from {table.name}, flagged or not. They leave the list
           entirely. Flagging them instead is reversible and sits in the bar above.
         </p>
         <div className="bk-actions">
@@ -150,7 +150,7 @@ export function DossierGate({
             className="bk-btn"
             data-fire="true"
             disabled={pending}
-            onClick={() => run(() => deleteAction(table.staleIds), disarm)}
+            onClick={() => run(() => deleteAction(acts.delete.ids), disarm)}
           >
             Delete them
           </button>
@@ -161,18 +161,21 @@ export function DossierGate({
       </div>
     ) : (
       <div className="bk-actions">
-        <button type="button" className="bk-btn" disabled={!pair} onClick={() => arm("merge")}>
-          {pair ? "Merge the identity pair" : "No pair to adjudicate"}
+        <button
+          type="button"
+          className="bk-btn"
+          disabled={!acts.merge.enabled}
+          onClick={() => arm("merge")}
+        >
+          {acts.merge.label}
         </button>
         <button
           type="button"
           className="bk-btn"
-          disabled={table.staleIds.length === 0}
+          disabled={!acts.delete.enabled}
           onClick={() => arm("delete")}
         >
-          {table.staleIds.length === 0
-            ? "Nothing stale to delete"
-            : `Delete ${table.staleIds.length} stale rows`}
+          {acts.delete.label}
         </button>
       </div>
     )}
