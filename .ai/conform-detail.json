@@ -6332,6 +6332,154 @@
       "evaluatedTs": "2026-10-24T03:08:29.780Z",
       "worker": "8a841163-20c6-484e-9c90-8ab899dd9042",
       "techniques": []
+    },
+    "82024321-4b38-4a9a-b360-154b5349e47b/module-design": {
+      "context": "proving-core",
+      "subject": "module-design",
+      "bundle": "software-engineering",
+      "state": "conformant",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T03:28:29.207Z",
+      "worker": "78cd2f14-27ec-4c59-8f62-6f9645dd341d",
+      "techniques": [
+        {
+          "technique": "module-depth",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/roles.py:480 Two methods hide the budget, the ledger row, validity counting and JSON shape checks; a bad answer is a counted result, not a caller concern."
+        },
+        {
+          "technique": "seams-and-adapters",
+          "verdict": "conformant",
+          "evidence": "tests/proving/conftest.py:3 Fakes plug in at HttpPost, Runner and build_local's model_fn, so the gate, catalog and brain under test are the production classes; an offline lane refuses any network call a test did not fake."
+        },
+        {
+          "technique": "io-free-core",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/budget.py:99 Budget is pure accounting with no I/O (cost in, state out), so its tests need no doubles."
+        },
+        {
+          "technique": "concurrency-at-the-edge",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/roles.py:166 The async engine stream is collected in one call at the edge; the rest of NebiusRole and RoleCaller is synchronous. The offloaded region is a single call."
+        },
+        {
+          "technique": "declarative-or-sequential",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/roles.py:182 One pass builds several outputs (text, token counts, cost, served model, finish reason) and returns early on an error. That is explicit sequential code, which the rule's condition 1 calls for."
+        },
+        {
+          "technique": "state-carrier-decides-the-lane",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/budget.py:11 The accumulators that cross worker lanes (Budget, Validity, RunLog) are shared by reference behind locks, not copied per lane, so no lane's totals are lost."
+        },
+        {
+          "technique": "marked-unverifiable-region",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/world.py:372 The method-assign hatch is marked with its error code, enclosed in World._observe, one line per wrapped method, and the docstring states the invariant ('Observation only')."
+        },
+        {
+          "technique": "locality-and-leverage",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/report.py:27 The text-encoding decision has one home, and roles.py and runlog.py import it instead of re-encoding the choice themselves."
+        }
+      ]
+    },
+    "045f6ffb-7c64-4cbd-8925-89d25221d459/module-design": {
+      "context": "core-brain-memory",
+      "subject": "module-design",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T03:28:29.207Z",
+      "worker": "78cd2f14-27ec-4c59-8f62-6f9645dd341d",
+      "techniques": [
+        {
+          "technique": "marked-unverifiable-region",
+          "verdict": "deviation",
+          "evidence": "src/athena/core/brain/store.py:304 The hatch is marked, and its invariant is written at store.py:243. But property 2 (enclosure) fails: the raw connection is reachable without passing the lock, which is the 'enclosed until the next call site' failure. tests/core/test_brain_reconcile.py already calls brain.writer.execute directly."
+        },
+        {
+          "technique": "module-depth",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/brain/frontmatter.py:12 Divided by knowledge, not by order: frontmatter owns the byte format and store owns the order and meaning of keys."
+        },
+        {
+          "technique": "locality-and-leverage",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/brain/reconcile.py:7 There is one insert path, so the rebuild cannot drift from incremental writes. WALK derives its scopes from paths.FACT_SCOPES and recall's floor reuses ALWAYS_IMPORTANCE."
+        },
+        {
+          "technique": "io-free-core",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/brain/frontmatter.py:84 The format parser and renderer are pure stdlib functions over strings; the header-injection refusal is testable with no doubles."
+        },
+        {
+          "technique": "declarative-or-sequential",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/brain/reconcile.py:109 One pass fills skipped, unsourced, files and by_kind and indexes as it goes (effects mixed in), so the explicit loop is the right form."
+        },
+        {
+          "technique": "state-carrier-decides-the-lane",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/brain/store.py:32 Threaded readers each get their own read-only handle rather than sharing the writer connection, so the carrier was chosen for the multi-threaded daemon."
+        },
+        {
+          "technique": "concurrency-at-the-edge",
+          "verdict": "conformant",
+          "evidence": "src/athena/core/brain/store.py:322 The lock is the module's own logic (one writer, re-entrant, one transaction per memory). A sequential version would have to hand-write this coordination, so per the removal test it stays in the module."
+        }
+      ]
+    },
+    "16e21bc2-d34a-4cae-95d3-2a7234889176/module-design": {
+      "context": "desktop-modules-registry",
+      "subject": "module-design",
+      "bundle": "software-engineering",
+      "state": "conformant",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T03:28:29.207Z",
+      "worker": "78cd2f14-27ec-4c59-8f62-6f9645dd341d",
+      "techniques": [
+        {
+          "technique": "io-free-core",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:134 selectBrowser is a pure function of snapshots; the hook in index.ts is the only driver."
+        },
+        {
+          "technique": "seams-and-adapters",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/modules/browser/fixtures.ts:166 Fixtures are built through the real selector, with the actions seam wired to INERT, so a preview double cannot drift from the real model shape."
+        },
+        {
+          "technique": "module-depth",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/modules/types.ts:4 The module contract hides store wiring behind one view-model; views take only the model and its actions."
+        },
+        {
+          "technique": "locality-and-leverage",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:43 Store lifecycle stays with the window roots; the module only reads."
+        },
+        {
+          "technique": "concurrency-at-the-edge",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/modules/browser/index.ts:72 Promise chains live only in the actions the hook wires; the selector and model are synchronous."
+        },
+        {
+          "technique": "declarative-or-sequential",
+          "verdict": "conformant",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:163 A single-output transformation from known origins to apps, written as a map/filter/map pipeline (the case where composition wins)."
+        },
+        {
+          "technique": "mirror-type-at-the-edge",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:120 OriginsSnapshot is a plain snapshot of what the selector reads, but the store data is constructible as plain objects, so the technique's precondition (an input a test cannot construct) does not hold."
+        },
+        {
+          "technique": "borrowed-surface",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:149 No wrapper forwards the IPC Tab: BrowserTab picks named fields explicitly instead of spreading, so implicit delegation does not occur."
+        }
+      ]
     }
   }
 }

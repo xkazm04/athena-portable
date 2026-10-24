@@ -2045,7 +2045,11 @@
           "revision": 18,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "src/athena/core/brain/store.py:304 The brain disables SQLite's thread-affinity check and replaces it with the write lock, but the public writer property hands out the raw connection with only a docstring asking callers to take write_txn, so the lock is enforced by convention; only tests reach it today.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:7c8008f2207b1946",
+          "evaluatedRevision": 18
         },
         {
           "subject": "companion-runtime",
@@ -4340,7 +4344,11 @@
           "revision": 18,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "conformant",
+          "evidence": "apps/desktop/src/modules/browser/model.ts:134 The browser module puts all its decisions in a pure selector over snapshots, with index.ts as the one file that knows a store exists, so model.test.ts and the preview fixtures exercise every branch with no shell.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:7c8008f2207b1946",
+          "evaluatedRevision": 18
         }
       ],
       "governance": "governed"
@@ -8395,7 +8403,11 @@
           "revision": 18,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "conformant",
+          "evidence": "src/athena/proving/roles.py:480 Every role call passes through RoleCaller, which hides the purse check, the run-log row and the schema validation behind call/call_json, and the clients behind it are swappable at the HttpPost and Runner fields, so the Proving Ground core is deep and has real seams.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:7c8008f2207b1946",
+          "evaluatedRevision": 18
         },
         {
           "subject": "fleet-orchestration",
