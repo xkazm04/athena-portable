@@ -1151,7 +1151,7 @@
   color: var(--status-error);
 }
 
-/* -- A computer's room (device-vitals, ADR 0142): the drawer's figures and the meter -------------
+/* -- A computer's room (device-vitals, ADR 0143): the drawer's figures and the meter -------------
  * A meter is a hairline track with the figure in words beside it, so the hue is never the only
  * carrier; past the gate's line it takes the warning hue. Its fill eases on the depth clock, which
  * Calm sets to zero. */
@@ -1213,7 +1213,7 @@
   overflow-wrap: anywhere;
 }
 
-/* -- Her sleep, on the Brain level (ADR 0142, `sleep.tsx`) ----------------------------------------
+/* -- Her sleep, on the Brain level (ADR 0143, `sleep.tsx`) ----------------------------------------
  * One card for now (state, gauge, why, Sleep now), then the proposals that wait on the person and
  * the journal, a list of rows that open in place. Nothing moves but the gauge's fill and a colour
  * on hover. */

@@ -1,4 +1,4 @@
-"""What Athena is told about her fleet: ``frame.fleet`` and ``core.devices`` (ADR 0142).
+"""What Athena is told about her fleet: ``frame.fleet`` and ``core.devices`` (ADR 0143).
 
 The vitals arrive from a fake :class:`~athena.vitals.FleetSource`, so these hold on any OS and
 before the real sampler exists. Three properties carry the tests: an unknown figure is left out

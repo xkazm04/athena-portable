@@ -86,7 +86,7 @@ describe("the strip", () => {
     expect(out).toContain("Could not kill the task: the door would not close");
   });
 
-  it("says why the queue waits, under the summary, closed or open, while a task is in line (ADR 0142)", () => {
+  it("says why the queue waits, under the summary, closed or open, while a task is in line (ADR 0143)", () => {
     const held = "Waiting for room: memory is 94% used; tasks start again under 85%.";
     for (const open of [false, true]) {
       const out = strip({ shown: SHOWN, held, open });

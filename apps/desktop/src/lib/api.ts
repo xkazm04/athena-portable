@@ -398,7 +398,7 @@ export class DaemonApi {
     return this.json("POST", `/tasks/${encodeURIComponent(taskId)}/stop`, {});
   }
 
-  // -- this PC's room and her sleep (device-vitals, ADR 0142): `/vitals`, `/sleep*` -------------
+  // -- this PC's room and her sleep (device-vitals, ADR 0143): `/vitals`, `/sleep*` -------------
 
   /** This PC's latest vitals: what it measured, its task slots and why work waits, if it does. */
   vitals(): Promise<VitalsResponse> {

@@ -251,6 +251,7 @@ class FakeLedger:
         is_error: bool = False,
         error_reason: str | None = None,
         turn_id: str | None = None,
+        peak_mb: int | None = None,
     ) -> FakeRow:
         row = FakeRow(
             row_id=len(self.rows) + 1,

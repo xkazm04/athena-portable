@@ -1,5 +1,5 @@
 /**
- * Her sleep, as Main's window holds it - device-vitals (ADR 0142, `src/athena/core/sleep/`).
+ * Her sleep, as Main's window holds it - device-vitals (ADR 0143, `src/athena/core/sleep/`).
  *
  * A mirror of `GET /sleep`, `GET /sleep/cycles` and `GET /sleep/proposals`, and nothing more: the
  * daemon admits a cycle, runs it, writes its journal and keeps the proposals it left; this store

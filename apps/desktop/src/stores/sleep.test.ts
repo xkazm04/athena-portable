@@ -1,4 +1,4 @@
-/** Her sleep's mirror against a fake daemon - device-vitals, ADR 0142 (`src/athena/core/sleep/`). */
+/** Her sleep's mirror against a fake daemon - device-vitals, ADR 0143 (`src/athena/core/sleep/`). */
 import { beforeEach, describe, expect, it } from "vitest";
 
 import { DaemonApi } from "@/lib/api";

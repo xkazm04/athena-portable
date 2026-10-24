@@ -94,7 +94,7 @@ def test_the_core_names_are_registered_with_the_classes_the_design_fixes() -> No
     assert catalog.classify("core.task_stop") is ToolClass.AUTO
     assert catalog.get("core.tasks").cap_chars == READ_CAP
     assert catalog.get("core.recall").cap_chars == RECALL_CAP == 3 * READ_CAP
-    # Every device's room (ADR 0142): a read with no params and no card, three reads' cap.
+    # Every device's room (ADR 0143): a read with no params and no card, three reads' cap.
     assert catalog.classify("core.devices") is ToolClass.READ
     assert catalog.get("core.devices").cap_chars == DEVICES_CAP == RECALL_CAP
     assert catalog.validate("core.devices", {}, CTX).ok

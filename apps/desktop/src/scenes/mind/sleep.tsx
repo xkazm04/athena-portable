@@ -1,5 +1,5 @@
 /**
- * Her sleep, on the Brain level under Mind - device-vitals (ADR 0142, `src/athena/core/sleep/`).
+ * Her sleep, on the Brain level under Mind - device-vitals (ADR 0143, `src/athena/core/sleep/`).
  *
  * Each PC sleeps on the episodes it wrote itself: when enough new conversation has piled up, a
  * cycle distils it into facts and procedures, checks each against what she already knows, and lets

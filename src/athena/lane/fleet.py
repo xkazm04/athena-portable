@@ -1,4 +1,4 @@
-"""What Athena is told about her fleet: each PC's room, in the frame and on request (ADR 0142).
+"""What Athena is told about her fleet: each PC's room, in the frame and on request (ADR 0143).
 
 Every PC's daemon measures its own room (``athena.vitals``) and its paired PCs send theirs on the
 hello they already exchange. This module turns that list into the two things she reads:
@@ -11,7 +11,7 @@ hello they already exchange. This module turns that list into the two things she
 
 **She advises; she does not dispatch.** Nothing here can start work anywhere. A PC with room is
 somewhere the person can open that PC's composer from Devices (the v2.2 dispatch is a non-goal of
-ADR 0142), and the constitution says so in the same words.
+ADR 0143), and the constitution says so in the same words.
 
 Three choices are worth stating because they look like omissions:
 

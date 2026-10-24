@@ -6,7 +6,7 @@ One composition produces two things that go to two different places:
   catalog, and the always-include memory tier. These become the **system prompt**, and a CLI
   engine keeps the system prompt it was opened with for the life of a resumed conversation.
 - :class:`TurnFrame` — the host-state delta since the last frame, last turn's tool results, the
-  active project, the room each of the user's PCs has now (``frame.fleet``, ADR 0142), the memory
+  active project, the room each of the user's PCs has now (``frame.fleet``, ADR 0143), the memory
   recalled for *this* message and the pending-decisions digest. These ride in the **user
   message**, every turn, each untrusted part inside a nonce-tagged fence.
 
@@ -408,7 +408,7 @@ def _decisions_block(
 
 
 def _fleet_block(text: str) -> PromptBlock:
-    """The room each of the user's PCs has now (ADR 0142), as ``lane.fleet.FleetPrompt`` wrote it.
+    """The room each of the user's PCs has now (ADR 0143), as ``lane.fleet.FleetPrompt`` wrote it.
 
     Not fenced, like the project and the setup blocks: the figures are measured by this daemon and
     by the user's own paired daemons, and the one piece of free text in it - a device's name, a
@@ -496,7 +496,7 @@ def compose(
     ``setup`` is the daemon saying this turn is in the setup conversation (ADR 0140, WP4): the
     frame then opens with ``frame.setup``, the steps of the setup leg. A surface cannot set it.
 
-    ``fleet`` is the room each PC has now (ADR 0142), rendered by the daemon's
+    ``fleet`` is the room each PC has now (ADR 0143), rendered by the daemon's
     :class:`~athena.lane.ports.FleetPort`; ``None`` or blank omits ``frame.fleet``, which is what a
     daemon with no vitals composes. Like ``setup``, it is the daemon's, never a request body's.
     """

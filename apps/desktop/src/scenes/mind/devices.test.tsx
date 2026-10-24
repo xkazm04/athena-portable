@@ -216,7 +216,7 @@ describe("a node's drawer", () => {
   });
 });
 
-describe("a computer's room (ADR 0142)", () => {
+describe("a computer's room (ADR 0143)", () => {
   /** The facts of one open drawer, from the drawer's start to its end. */
   const drawer = (fixture: string, selected: string) => {
     const h = html(fixture, { selected });
@@ -540,7 +540,7 @@ describe("driven", () => {
     expect(document.activeElement).toBe(byLabel("Add a phone"));
   });
 
-  it("reads a computer's figures again on the hello's beat while its drawer is open, and a phone's never (ADR 0142)", () => {
+  it("reads a computer's figures again on the hello's beat while its drawer is open, and a phone's never (ADR 0143)", () => {
     vi.useFakeTimers();
     try {
       const base = deviceFixtures.typical!;

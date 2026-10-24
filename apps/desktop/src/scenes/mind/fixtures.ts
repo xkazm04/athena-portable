@@ -57,7 +57,7 @@ const actions: DevicesModel["actions"] = {
   send: noop,
 };
 
-// -- a computer's room (device-vitals, ADR 0142) ----------------------------------------------
+// -- a computer's room (device-vitals, ADR 0143) ----------------------------------------------
 
 /** This computer, measured, with room: one GPU, on mains, three slots, slept five hours ago. */
 export const VITALS_OK: Vitals = {
@@ -340,7 +340,7 @@ export const deviceFixtures: Record<string, DevicesModel> = {
   ),
 };
 
-// -- her sleep, on the Brain level (ADR 0142) -------------------------------------------------
+// -- her sleep, on the Brain level (ADR 0143) -------------------------------------------------
 
 const sleepActions: SleepModel["actions"] = { load: noop, readJournal: noop, sleepNow: noop, decide: noop };
 

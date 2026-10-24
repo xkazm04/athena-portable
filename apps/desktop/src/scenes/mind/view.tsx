@@ -8,7 +8,7 @@
  * remedy, the failure to start, the restart notice and every sentence are the module's, verbatim;
  * nothing stores a verdict it could have read.
  *
- * The Brain level also says how she sleeps (`sleep.tsx`, ADR 0142): the one part of this view that
+ * The Brain level also says how she sleeps (`sleep.tsx`, ADR 0143): the one part of this view that
  * reads a store of its own, and only when no model is passed in, because that store is lazy too.
  *
  * "Page" and "Voice", which were tiles of the old list, are not instruments here: the page is the
@@ -85,7 +85,7 @@ export interface MindProps {
   /** The Devices level's model (ADR 0140); `null` where nothing mirrors the devices yet. */
   devices?: DevicesModel | null;
   /**
-   * The Brain level's sleep (ADR 0142). Absent, the section reads the live store itself: the store
+   * The Brain level's sleep (ADR 0143). Absent, the section reads the live store itself: the store
    * lives in this lazy chunk, so the first frame's `live.tsx` cannot build the model the way it
    * builds the devices'. A preview or a test passes a fixture; `null` leaves the section out.
    */

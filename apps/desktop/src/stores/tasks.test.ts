@@ -164,7 +164,7 @@ describe("the mirror", () => {
     expect(s.problem).toBeNull();
   });
 
-  it("keeps the gate's reason the queue waits, and an older daemon's silence as none (ADR 0142)", async () => {
+  it("keeps the gate's reason the queue waits, and an older daemon's silence as none (ADR 0143)", async () => {
     const held = "Waiting for room: memory is 94% used; tasks start again under 85%.";
     let answer: TasksView = { ...page([task(1, { position: 1 })]), slots: 0, held };
     wire(() => json(answer));

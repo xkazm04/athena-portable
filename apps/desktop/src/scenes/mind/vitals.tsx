@@ -1,5 +1,5 @@
 /**
- * A computer's room, as the Devices level says it - device-vitals (ADR 0142, `lib/vitals.ts`).
+ * A computer's room, as the Devices level says it - device-vitals (ADR 0143, `lib/vitals.ts`).
  *
  * Every PC's daemon measures its own CPU, RAM, GPU, power and disk, decides from them how many
  * background tasks may run, and names the reason when work has to wait. The constellation says the

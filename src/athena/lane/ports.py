@@ -179,7 +179,7 @@ class RecallPort(Protocol):
 
 @runtime_checkable
 class FleetPort(Protocol):
-    """The room each of the user's PCs has now, as the turn frame tells it (ADR 0142).
+    """The room each of the user's PCs has now, as the turn frame tells it (ADR 0143).
 
     ``athena.lane.fleet.FleetPrompt`` satisfies it. The text is the daemon's own - measured
     figures and the names of the user's paired devices, each flattened to one line - so it rides

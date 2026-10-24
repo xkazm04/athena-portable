@@ -1,5 +1,5 @@
 /**
- * Athena's sleep cycle, as the windows read it - device-vitals, ADR 0142, `src/athena/core/sleep/`.
+ * Athena's sleep cycle, as the windows read it - device-vitals, ADR 0143, `src/athena/core/sleep/`.
  *
  * Each PC sleeps on the episodes it wrote itself: when enough has piled up since the last cycle
  * (pressure), one pass distils them into facts and procedures (compress), a second judges each

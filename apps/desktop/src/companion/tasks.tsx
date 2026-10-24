@@ -30,7 +30,7 @@ export function askHer(task: Pick<TaskView, "title">): void {
 export interface TaskStripProps {
   shown: readonly TaskView[];
   problem: string | null;
-  /** The gate's sentence for why queued tasks wait for room (ADR 0142), said only while one waits. */
+  /** The gate's sentence for why queued tasks wait for room (ADR 0143), said only while one waits. */
   held?: string | null;
   now: number;
   open: boolean;

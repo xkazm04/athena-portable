@@ -18,7 +18,7 @@
  * others' places move with it (a claim moves everyone up one), so after a frame the places are
  * counted again here the way the daemon counts them: oldest queued first ({@link withPositions}).
  *
- * `held` is the gate's sentence for why queued tasks wait (device-vitals, ADR 0142), kept from the
+ * `held` is the gate's sentence for why queued tasks wait (device-vitals, ADR 0143), kept from the
  * list and from each `vitals.changed`, which carries it; an older daemon sends none, which is `null`.
  *
  * An older daemon has no `/tasks`: its 404 is "no tasks", not a problem, so neither surface shows

@@ -23,7 +23,7 @@
  * node, not a route: this computer's name and phone switch, a device's presence, grants, memory,
  * message box and Revoke, a request's approve card, a join's state.
  *
- * A computer's room (device-vitals, ADR 0142) rides on the same nodes: the gate's one word after
+ * A computer's room (device-vitals, ADR 0143) rides on the same nodes: the gate's one word after
  * the caption ("Online · room ok"), and in the drawer the figures behind it (`vitals.tsx`), for
  * this computer and for each paired one. A phone is not measured, so it says nothing of room.
  */
@@ -441,7 +441,7 @@ export function Drawer({
   const node = selected === SELF ? null : skyNodes(view).find((n) => n.key === selected);
   const computer = selected === SELF || (node?.role === "peer" && node.peer.kind === "pc");
   const { load } = model.actions;
-  // The bus says a room's word when it changes, not its figures (ADR 0142): while a computer's
+  // The bus says a room's word when it changes, not its figures (ADR 0143): while a computer's
   // figures are open, the list is read again on the beat of the hello that carries a peer's.
   useEffect(() => {
     if (!computer) return;

@@ -119,7 +119,7 @@ class CoreServices:
     delegate: ExecutorFn | None = None
     tasks: ExecutorFn | None = None
     task_stop: ExecutorFn | None = None
-    #: Every device's room (ADR 0142), bound by wiring to the vitals service's fleet.
+    #: Every device's room (ADR 0143), bound by wiring to the vitals service's fleet.
     devices: ExecutorFn | None = None
 
 
@@ -174,7 +174,7 @@ DELEGATE_SCHEMA: dict[str, Any] = {
 
 TASKS_SCHEMA: dict[str, Any] = {"type": "object", "properties": {}, "additionalProperties": False}
 
-#: ``core.devices`` (ADR 0142) takes nothing: it answers for every device at once.
+#: ``core.devices`` (ADR 0143) takes nothing: it answers for every device at once.
 DEVICES_SCHEMA: dict[str, Any] = {"type": "object", "properties": {}, "additionalProperties": False}
 
 #: ``core.devices``' cap, the same three reads' worth as recall's: one device's vitals are a
@@ -206,7 +206,7 @@ def core_entries(services: CoreServices) -> list[ToolEntry]:
     ``delegate`` admits a background task (``AUTO``: it only queues, and the person can see and
     kill every task from either window), ``tasks`` lists them (``READ``) and ``task_stop`` kills
     one (``AUTO``). A task's own conversation cannot delegate - no task starts a task in v1 - and
-    the executor says so with ``nested_delegate``. ``devices`` (``READ``, ADR 0142) lists every
+    the executor says so with ``nested_delegate``. ``devices`` (``READ``, ADR 0143) lists every
     device's room, so she can say where work would fit; it reads and dispatches nothing.
 
     **Answering a decision card is not one of them, and cannot become one.** README §2 invariant 3

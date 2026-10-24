@@ -89,7 +89,7 @@ describe("the tasks under the bell", () => {
     expect(out).toContain('aria-label="Ask how Task 1 is going"');
   });
 
-  it("says why the queue waits, in the gate's words, only while a task is in line (ADR 0142)", () => {
+  it("says why the queue waits, in the gate's words, only while a task is in line (ADR 0143)", () => {
     const held = "Waiting for room: memory is 94% used; tasks start again under 85%.";
     expect(view({ shown: SIX, held })).toContain(`<p class="surface-tasks__held">${held}</p>`);
     const running = [task(1, { status: "running", position: null, started_at: "2026-10-24T12:08:00Z" })];

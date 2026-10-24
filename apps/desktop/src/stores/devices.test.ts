@@ -287,7 +287,7 @@ describe("a pairing window Athena opened (pair.opened)", () => {
     expect(reads).toBe(1);
   });
 
-  it("re-reads when this computer's room moves, so the centre node's word follows it (ADR 0142)", () => {
+  it("re-reads when this computer's room moves, so the centre node's word follows it (ADR 0143)", () => {
     let reads = 0;
     const on = devicesHandler(() => (reads += 1));
     on({ kind: "vitals.changed", room: "full", held: "Waiting for room: on battery.", slots: 0 });

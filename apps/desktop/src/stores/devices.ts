@@ -65,7 +65,7 @@ const LIVE: DevicesDeps = {
 /**
  * What the Devices level does with one bus frame: a window Athena opened is kept as this device's
  * own (`pairOpened`), and every frame about pairing or peers re-reads the list. So does this PC's
- * own `vitals.changed` (ADR 0142): it is published only when the room, the reason work waits or
+ * own `vitals.changed` (ADR 0143): it is published only when the room, the reason work waits or
  * the slots move, not on every sample, so the centre node's room is read again at that beat.
  */
 export function devicesHandler(onChange: () => void): (event: BusEvent) => void {

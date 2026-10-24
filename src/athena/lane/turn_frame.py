@@ -129,7 +129,7 @@ class FrameBuilder:
     lane: Lane = Lane.BROWSER
     #: Recall for this message, or ``None`` for a deployment (or a test) with no memory attached.
     recall: RecallFn | None = None
-    #: The room each PC has now (ADR 0142), asked afresh for every frame and never remembered:
+    #: The room each PC has now (ADR 0143), asked afresh for every frame and never remembered:
     #: it is short and rendered whole, so it has no delta to keep. ``None`` composes no
     #: ``frame.fleet``, which is a daemon with no vitals.
     fleet: FleetPort | None = None

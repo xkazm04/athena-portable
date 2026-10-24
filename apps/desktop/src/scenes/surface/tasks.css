@@ -65,7 +65,7 @@
   color: var(--muted-foreground);
 }
 
-/* The gate's reason queued tasks wait (device-vitals, ADR 0142): one line, a warning hue on its
+/* The gate's reason queued tasks wait (device-vitals, ADR 0143): one line, a warning hue on its
  * mark only, so the words keep the foreground's contrast. */
 .surface-tasks__held {
   margin: 0;

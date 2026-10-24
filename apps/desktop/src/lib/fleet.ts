@@ -47,7 +47,7 @@ export interface PeerView {
   presence?: Presence | null;
   /** When `presence` was last decided (ISO), `null` before the first probe. */
   presence_at?: string | null;
-  /** The peer's last vitals off its hello (device-vitals, ADR 0142): `null` for a phone, before the
+  /** The peer's last vitals off its hello (device-vitals, ADR 0143): `null` for a phone, before the
    * first hello, or when older than 90 s. Optional only because an older daemon sends none. */
   vitals?: Vitals | null;
 }
@@ -80,7 +80,7 @@ export type OverlayState = "absent" | "logged_out" | "up";
 /** `GET /devices`. */
 export interface DevicesView {
   ok: boolean;
-  /** `vitals` is this PC's own snapshot (ADR 0142), optional only for an older daemon. */
+  /** `vitals` is this PC's own snapshot (ADR 0143), optional only for an older daemon. */
   self: { device_id: string; name: string; vitals?: Vitals | null };
   peers: PeerView[];
   pending: PendingView[];

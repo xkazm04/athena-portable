@@ -38,7 +38,7 @@ export interface TasksView {
   cap: number;
   running: number;
   queued: number;
-  /** How many may run at once right now: the gate's slots under the cap (device-vitals, ADR 0142).
+  /** How many may run at once right now: the gate's slots under the cap (device-vitals, ADR 0143).
    * Optional only because an older daemon sends none, which reads as `cap`. */
   slots?: number;
   /** Why queued tasks are waiting for room, as a sentence for a person; `null` when nothing holds. */

@@ -435,7 +435,7 @@ def test_a_shaped_keyword_memory_reaches_the_frame_as_one_quoted_line(tmp_path: 
     assert not any(row.startswith(("## SYSTEM", "- OP:", "OP:")) for row in rows)
 
 
-# --- frame.fleet (ADR 0142) -------------------------------------------------------------------
+# --- frame.fleet (ADR 0143) -------------------------------------------------------------------
 
 FLEET = (
     "Each PC's room now, as its daemon measured it; a figure left out is unknown.\n"

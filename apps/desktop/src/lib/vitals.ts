@@ -1,5 +1,5 @@
 /**
- * A PC's vitals, as the windows read them - device-vitals, ADR 0142, `src/athena/vitals/`.
+ * A PC's vitals, as the windows read them - device-vitals, ADR 0143, `src/athena/vitals/`.
  *
  * Every PC's daemon measures its own room (CPU, RAM, GPU and its memory, power, disk) with the
  * standard library, decides from it how many background tasks may run and whether they must wait,

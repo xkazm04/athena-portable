@@ -1,7 +1,7 @@
 /**
  * @vitest-environment jsdom
  *
- * Her sleep on the Brain level - device-vitals, ADR 0142. Every state renders from a fixture
+ * Her sleep on the Brain level - device-vitals, ADR 0143. Every state renders from a fixture
  * (reading, unreadable, an older daemon, never slept, idle with proposals, sleeping in a phase,
  * failed, partial, refused); the last block drives the real tree for the presses a static render
  * cannot show: a journal row opening, a contradiction asking which memory goes, Sleep now.
