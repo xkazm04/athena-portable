@@ -122,83 +122,97 @@
       "context": "proving-core",
       "subject": "eval-harness",
       "bundle": "software-engineering",
-      "state": "unknown",
-      "evaluatedAt": "2026-10-15",
-      "evaluatedTs": "2026-10-15T00:18:52.630Z",
+      "state": "conformant",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T02:16:30.984Z",
+      "worker": "61f68711-bae0-4446-a7e4-aceb4c7b8dc1",
       "techniques": [
+        {
+          "technique": "probe-the-decision-not-the-artifact",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/world.py:80 TurnRecord holds the gate's decisions, the writes and the counts before and after, not the prose Athena produced."
+        },
         {
           "technique": "assertion-vs-judgment",
           "verdict": "conformant",
-          "evidence": "src/athena/proving/world.py:103 Scoring relies strictly on deterministic gate and ledger records rather than LLM judgments over model prose."
-        },
-        {
-          "technique": "candidate-write-access",
-          "verdict": "conformant",
-          "evidence": "src/athena/proving/world.py:27 Each world runs in an isolated temporary directory ensuring candidates cannot write to host or neighbouring runs."
-        },
-        {
-          "technique": "eval-economics",
-          "verdict": "conformant",
-          "evidence": "src/athena/proving/budget.py:33 Enforces explicit per-engine dollar caps checked before each call to bound evaluation expenditure."
-        },
-        {
-          "technique": "failure-attribution",
-          "verdict": "conformant",
-          "evidence": "src/athena/proving/runlog.py:10 Captures bounded excerpts and error reasons for failed answers to attribute errors to schema or model failures."
-        },
-        {
-          "technique": "failure-signatures-beside-the-pass-rate",
-          "verdict": "conformant",
-          "evidence": "src/athena/proving/roles.py:402 Validity tracking categorizes failures into distinct structural signatures (not_json, bad_shape) beside pass rates."
+          "evidence": "src/athena/proving/world.py:103 The verdict comes from assertions on gate records; model text is only an excerpt. call_json schema-checks role answers, so the verdict channel is structured."
         },
         {
           "technique": "judge-stability",
           "verdict": "conformant",
-          "evidence": "src/athena/proving/roles.py:78 Pins the control judge to an explicit immutable model version to prevent silent drift between evaluation runs."
+          "evidence": "src/athena/proving/roles.py:80 The control/judge model is pinned by id, the report names it, and runs on haiku-4-5 vs 5.5 are never merged into one series. Measuring drift against frozen anchors is not visible in this context."
         },
         {
-          "technique": "metric-role-contract",
+          "technique": "eval-economics",
           "verdict": "conformant",
-          "evidence": "src/athena/proving/__main__.py:191 Zero breaches is enforced as an uncompromised satisficing constraint rather than averaged into a composite score."
+          "evidence": "src/athena/proving/budget.py:9 Per-engine dollar caps are checked before each call, unpriced calls are weighed against the cap, and a short run says so. Fake role/model seams and the offline lane give a zero-cost mock mode."
         },
         {
-          "technique": "monitor-inside-the-loop",
+          "technique": "failure-signatures-beside-the-pass-rate",
           "verdict": "conformant",
-          "evidence": "tests/proving/test_cards.py:288 Evaluator instructions require verifying actual card execution records instead of trusting candidate narrative text."
+          "evidence": "src/athena/proving/roles.py:461 Validity counts failures per role:model by the check that failed (not_json vs bad_shape). A token-ceiling cut is counted separately as a void that no model rate may count."
         },
         {
-          "technique": "outcome-conditioned-cost",
-          "verdict": "deviation",
-          "evidence": "src/athena/proving/world.py:98 Turn and run costs are summed across all invocations regardless of failure or breach without conditioning on successful outcomes."
-        },
-        {
-          "technique": "probe-the-decision-not-the-artifact",
+          "technique": "candidate-write-access",
           "verdict": "conformant",
-          "evidence": "src/athena/proving/world.py:18 Probes discrete gate decisions and writer invocations directly rather than evaluating free-form dialogue artifacts."
-        },
-        {
-          "technique": "scenario-design",
-          "verdict": "conformant",
-          "evidence": "src/athena/proving/manifests.py:38 Transcribes the exact operational tool manifest and class table to provide realistic attack fixtures."
-        },
-        {
-          "technique": "selection-over-noise",
-          "verdict": "conformant",
-          "evidence": "src/athena/proving/__main__.py:207 Any breach fails proof 1 immediately; the harness does not take best-of-N to mask underlying run noise."
+          "evidence": "src/athena/proving/world.py:27 Each attack gets a fresh throwaway brain and engine workspace (WorldFactory, one per row), so one condition cannot leave artifacts that the next one scores against."
         },
         {
           "technique": "unaided-baseline-screening",
           "verdict": "conformant",
-          "evidence": "tests/proving/test_world_and_verdict.py:3 The evaluation suite screens the verdict detector with planted breaches to verify failures are reachable."
+          "evidence": "tests/proving/test_world_and_verdict.py:6 The deprivation is written beside the claim: the 'held' cases run a fully injected Athena, so a pass is evidence about the gate, not the model's own refusal. Planted sabotaged gates must come out 'breached'."
+        },
+        {
+          "technique": "metric-role-contract",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/__main__.py:15 The error that cannot be taken back (a gated action running without approval) is a declared zero threshold that alone decides the gauntlet's exit code. Proof 2 is a separately declared threshold (valid ratio >= 0.5). Strictly this is a gate, and no metric is optimized."
+        },
+        {
+          "technique": "scenario-design",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/manifests.py:6 The world fixture is captured reality (Ledgerbox's real tool classes) and a drift test keeps it in sync. Generated attack scenarios and their seeds live in gauntlet/, outside this context."
+        },
+        {
+          "technique": "comparison-modes",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/__main__.py:111 Nemotron is compared with a pinned Claude control on the same corpus. When the control is unavailable, proof 2 is reported n/a rather than computed."
+        },
+        {
+          "technique": "certification-levels",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/world.py:10 The live level runs the production gate, catalog and ledger and names the one layer it skipped, so it is labelled as what it saw. A theoretical level ahead of it is not in this context."
+        },
+        {
+          "technique": "pairing-schedule",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/proving/__init__.py:1 This is a two-arm run against a fixed control. There is no pairwise arena or leaderboard whose schedule could decide a ranking."
+        },
+        {
+          "technique": "failure-attribution",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/runlog.py:10 Captures bounded excerpts and error reasons for failed answers to attribute errors to schema or model failures.",
+          "carriedFrom": "2026-10-15"
+        },
+        {
+          "technique": "monitor-inside-the-loop",
+          "verdict": "conformant",
+          "evidence": "tests/proving/test_cards.py:288 Evaluator instructions require verifying actual card execution records instead of trusting candidate narrative text.",
+          "carriedFrom": "2026-10-15"
+        },
+        {
+          "technique": "outcome-conditioned-cost",
+          "verdict": "deviation",
+          "evidence": "src/athena/proving/world.py:98 Turn and run costs are summed across all invocations regardless of failure or breach without conditioning on successful outcomes.",
+          "carriedFrom": "2026-10-15"
+        },
+        {
+          "technique": "selection-over-noise",
+          "verdict": "conformant",
+          "evidence": "src/athena/proving/__main__.py:207 Any breach fails proof 1 immediately; the harness does not take best-of-N to mask underlying run noise.",
+          "carriedFrom": "2026-10-15"
         }
       ],
-      "registryProposal": "The eval-harness standard assumes an evaluation benchmark where both arms are expected to reach an affirmative answer or solution, but for adversarial proving grounds where success is defined by repelling an attack and holding the gate (non-action), clarifying how outcome-conditioned cost applies when success involves no downstream tool execution would resolve ambiguity in security harnesses.",
-      "withdrawn": {
-        "worker": "20df0dad-b345-4690-975b-e1b0869847c5",
-        "state": "deviation",
-        "at": "2026-10-15T00:19:11.953910+00:00",
-        "reason": "reviewer (sonnet): world.py:98 is a per-turn sum of that turn's ledger rows. It does not aggregate across all turns, and nothing at that line (or in report.py, where I found only a header comment on cost) shows that outcome-conditioned cost deltas are absent, so the deviation anchor is incidental and the claim is unco"
-      }
+      "registryProposal": "metric-role-contract assumes every suite has exactly one optimized metric. A pure safety gate like this one (zero breaches as a hard threshold plus a validity-ratio threshold) has no optimized metric at all. The technique could say whether an all-threshold certification suite conforms or is out of its scope."
     },
     "1aff3b77-8fa5-45ac-93ae-941206f3ed16/mcp-tools": {
       "context": "connector-service",
@@ -6161,6 +6175,46 @@
       "evaluatedAt": "2026-10-24",
       "evaluatedTs": "2026-10-24T02:01:43.034Z",
       "worker": "413a0b34-d33f-4395-b6be-6ee80606c0e4",
+      "techniques": []
+    },
+    "1cd39491-5acf-4229-b227-ae8068800d9b/eval-harness": {
+      "context": "harness-engines",
+      "subject": "eval-harness",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T02:16:30.984Z",
+      "worker": "61f68711-bae0-4446-a7e4-aceb4c7b8dc1",
+      "techniques": []
+    },
+    "6c17278c-ed66-4d70-8a4f-4202662f1613/eval-harness": {
+      "context": "hirelane-model-and-lib",
+      "subject": "eval-harness",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T02:16:30.984Z",
+      "worker": "61f68711-bae0-4446-a7e4-aceb4c7b8dc1",
+      "techniques": []
+    },
+    "9773ec7e-b7ea-4dda-a063-fd912a72a012/eval-harness": {
+      "context": "desktop-setup-module",
+      "subject": "eval-harness",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T02:16:30.984Z",
+      "worker": "61f68711-bae0-4446-a7e4-aceb4c7b8dc1",
+      "techniques": []
+    },
+    "89c7e4c9-2ecd-4131-9ac7-7ff647d041c1/eval-harness": {
+      "context": "hirelane-board-ui",
+      "subject": "eval-harness",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T02:16:30.984Z",
+      "worker": "61f68711-bae0-4446-a7e4-aceb4c7b8dc1",
       "techniques": []
     }
   }

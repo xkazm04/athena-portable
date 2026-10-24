@@ -5324,7 +5324,11 @@
           "revision": 37,
           "changedAt": "2026-09-29",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/modules/setup/readiness.ts:2 The setup module derives machine readiness and the first-run engine choice and evaluates no model output. A search of apps/desktop/src/modules/setup and apps/desktop/src/stores found no benchmark, pass_rate, rubric or llm.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:7ccead00b7f92aba",
+          "evaluatedRevision": 37
         },
         {
           "subject": "codebase-scanning",
@@ -6000,7 +6004,11 @@
           "revision": 37,
           "changedAt": "2026-09-29",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/harness/__init__.py:1 This package is the production turn runtime (gate, ledger, op grammar, engines), not an evaluation harness. A search of src/athena/harness and tests/harness found no judge, rubric, scenario, benchmark or pass_rate; the only 'eval' hits are the opt-in pytest marker name in tests/harness/conftest.py and 'evaluated in order' in policy.py.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:7ccead00b7f92aba",
+          "evaluatedRevision": 37
         },
         {
           "subject": "test-harness",
@@ -6343,7 +6351,11 @@
           "revision": 37,
           "changedAt": "2026-09-29",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/hirelane/components/board/Board.tsx:4 This context is presentation (board, carousel, dossier, marks) for a hiring example app and has no harness that scores agents or models. A search of examples/hirelane/components found no eval, benchmark, scenario, pass_rate or llm.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:7ccead00b7f92aba",
+          "evaluatedRevision": 37
         },
         {
           "subject": "design-tokens",
@@ -6625,7 +6637,11 @@
           "revision": 37,
           "changedAt": "2026-09-29",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/hirelane/lib/scoring.ts:2 Hirelane's 'scoring' is a deterministic keyword rubric over applicant CVs (a hiring-domain feature), not a harness that runs models against scenarios. A search of examples/hirelane/components and examples/hirelane/lib found no eval, benchmark, scenario, pass_rate or llm.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:7ccead00b7f92aba",
+          "evaluatedRevision": 37
         },
         {
           "subject": "mcp-tools",
@@ -8479,7 +8495,11 @@
           "digest": "sha256-b2:7ccead00b7f92aba",
           "revision": 37,
           "changedAt": "2026-09-29",
-          "state": "unknown"
+          "state": "conformant",
+          "evidence": "src/athena/proving/world.py:80 The proving core scores each turn by what the gate, the brain's writers and the approval table recorded, not by what the model said. It also pins its control, budgets every call, counts bad answers by family and plants breaches so the detector can go red, so its numbers can be compared from run to run.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:7ccead00b7f92aba",
+          "evaluatedRevision": 37
         }
       ],
       "governance": "governed"
