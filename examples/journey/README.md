@@ -181,6 +181,42 @@ spec reads a field directly and each adapter accepts more than one spelling and 
 than defaulting — when it finds none. A silent `?? 0` is a beat that passes while asserting
 nothing.
 
+## Gravitone: a real daemon against a real outside app (opt-in)
+
+`tests/gravitone.spec.ts` is the one spec here that talks to Athena's daemon. It drives
+[Gravitone](../../../gravitone-gcloud), a sibling repository, which is not one of the studio's tabs.
+It is skipped unless asked for:
+
+```bash
+JOURNEY_GRAVITONE=1 pnpm --filter @athena/journey exec playwright test tests/gravitone.spec.ts
+JOURNEY_GRAVITONE=1 JOURNEY_GRAVITONE_LIVE=1 pnpm --filter @athena/journey exec playwright test tests/gravitone.spec.ts -g live
+```
+
+| Environment variable | Effect |
+|---|---|
+| `GRAVITONE_DIR` | the Gravitone checkout; default `../gravitone-gcloud` beside this repository |
+| `JOURNEY_GRAVITONE_LIVE=1` | also run the live test (spends the signed-in `claude` CLI's seat) |
+| `JOURNEY_GRAVITONE_MODEL` | the model the live daemon asks the CLI for |
+
+- **Boot (`src/gravitone.ts`).** A production build (`next build` + `next start` on 3150, dist dir
+  `.next-athena-e2e`, reused while it is newer than Gravitone's HEAD), every Gravitone store pointed
+  at this run's scratch and `GRAVITONE_DRY_ONLY=1`, so no vendor is billed and the operator's store
+  is never opened. The build's edits to `tsconfig.json` and `next-env.d.ts` are restored byte for
+  byte; teardown asserts the checkout is unchanged. An `act` token is minted on the scratch store and
+  reaches the daemon only as `GRAVITONE_MCP_TOKEN`. The page enters through Gravitone's local entry.
+- **Daemon (`src/daemon.ts`).** `serve_scripted.py` with a recorded transcript, or the real
+  `athena serve` for the live test, each with a temp `ATHENA_HOME` whose `mcp.json` names Gravitone
+  (ADR 0123). This file is the surface: it registers the page's manifest, runs a page tool call the
+  turn hands out through the bridge, and returns its answer as `tool_results` on the next `/run`.
+- **A, the MCP link.** `connector.gravitone.gt_read` lists projects in-daemon; `gt_launch` compose
+  files a card (a family tool is `GATED` when any of its ops is destructive or open-world), the
+  approved replay composes, and Gravitone's own ledger records it as `agent:athena`.
+- **B, the studio.** The page registers `host.gravitone.{where_am_i, go_to, open}`, all `AUTO`; the
+  turn moves the screen Floor → Runs → Library → Ledger, each step checked by URL and screenshot
+  (`shots/gravitone-*.png`), and `open` refuses an outside address without moving.
+- **C, live.** The CLI is asked to count projects over MCP and show Runs, then the Library; the test
+  asserts the final screen and that at least one MCP call and two `go_to` calls were made.
+
 ## Recording a take
 
 `docs/demo.md` section 1 is the plan: narration is made first, the video is paced to it, and

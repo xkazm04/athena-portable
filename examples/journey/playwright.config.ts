@@ -20,6 +20,10 @@ import { defineConfig, devices } from "@playwright/test";
  * The Proving Ground film's recorders (docs/demo.md section 5) are stricter: `cards.take.spec.ts`
  * and `proving.take.spec.ts` run only when their own file is named. The second starts a live
  * Gauntlet that spends Nemotron money, and `JOURNEY_TAKE=1` was never a promise to do that.
+ *
+ * `gravitone.spec.ts` drives a sibling repository's production build and is opt-in the same way:
+ * `JOURNEY_GRAVITONE=1` or naming the file brings it in (and it still skips itself without the
+ * variable), so a bare `pnpm test` neither lists nor builds it.
  */
 const named = (file: string): boolean => process.argv.some((argument) => argument.includes(file));
 const takeWanted = process.env.JOURNEY_TAKE === "1" || named("take.spec");
@@ -27,6 +31,7 @@ const ignored = [
   ...(takeWanted ? [] : ["**/take.spec.ts"]),
   ...(named("cards.take.spec") ? [] : ["**/cards.take.spec.ts"]),
   ...(named("proving.take.spec") ? [] : ["**/proving.take.spec.ts"]),
+  ...(process.env.JOURNEY_GRAVITONE === "1" || named("gravitone.spec") ? [] : ["**/gravitone.spec.ts"]),
 ];
 
 export default defineConfig({
