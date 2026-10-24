@@ -1148,7 +1148,11 @@
           "revision": 3,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/Atlas.tsx:4 This context is an in-app architecture-drawing shell that reads README sections as source data for its claims rail (Claims.tsx:27), but it does not write or lay out any repository front page; searching it for shields.io, img.shields, 'landing document' and 'front page' found nothing.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:6f6a6c4541bc949b",
+          "evaluatedRevision": 4
         },
         {
           "subject": "agent-instruction-files",
@@ -6915,7 +6919,11 @@
           "revision": 3,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/hirelane/components/board/style/index.css:2 This context is only the board's CSS cascade, not a repository front page; searching the style directory for README, shields.io, 'landing document' and 'front page' found nothing, and examples/hirelane/README.md lives outside this context.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:6f6a6c4541bc949b",
+          "evaluatedRevision": 4
         },
         {
           "subject": "design-tokens",
@@ -7934,7 +7942,11 @@
           "revision": 3,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/index.css:2 This context is the app's stylesheet cascade plus its design-token build, not a repository front page; searching lanes/style and design/ for README, shields.io, 'landing document' and 'front page' found nothing (a CSS 'figcaption' selector in l1-spread.css styles an in-app clock and isn't a README figure).",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:6f6a6c4541bc949b",
+          "evaluatedRevision": 4
         },
         {
           "subject": "ui-controls",
@@ -9498,7 +9510,11 @@
           "revision": 3,
           "changedAt": "2026-10-14",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:2 This context is only the app's CSS cascade (tokens, chrome, level sheets), not a repository front page; searching the style directory for README, shields.io, 'landing document' and 'front page' found nothing, and the app's landing document (examples/tidycrm/README.md) sits outside this context.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:6f6a6c4541bc949b",
+          "evaluatedRevision": 4
         },
         {
           "subject": "quality-gates",

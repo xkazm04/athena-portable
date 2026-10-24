@@ -6543,6 +6543,85 @@
       "evaluatedTs": "2026-10-24T04:00:21.115Z",
       "worker": "f78d4bc0-361d-4ce3-80b9-207544d423d0",
       "techniques": []
+    },
+    "67f42245-132f-4a4e-bef9-35f7748e9fea/repository-landing-document": {
+      "context": "tidycrm-style",
+      "subject": "repository-landing-document",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T04:32:44.962Z",
+      "worker": "91f422dc-6857-44ad-9781-f1d3d4f0d10f",
+      "techniques": [
+        {
+          "technique": "landing-document-as-router",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:2 A stylesheet manifest, not a front page that routes readers anywhere."
+        },
+        {
+          "technique": "evidence-linked-badges",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:15 Only CSS imports; there are no repository badges here."
+        }
+      ]
+    },
+    "f9349ce6-a48d-4abe-9bb1-412a99b45907/repository-landing-document": {
+      "context": "ledgerbox-style-design",
+      "subject": "repository-landing-document",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T04:32:44.962Z",
+      "worker": "91f422dc-6857-44ad-9781-f1d3d4f0d10f",
+      "techniques": [
+        {
+          "technique": "landing-document-as-router",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/index.css:2 A CSS cascade manifest, not a landing document."
+        },
+        {
+          "technique": "caption-carrying-figures",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/style/level1/l1-spread.css:139 This styles an in-app figcaption; it is not a README figure on a front page."
+        }
+      ]
+    },
+    "5f577ad0-7081-4566-be34-04f5b359bb2e/repository-landing-document": {
+      "context": "hirelane-style",
+      "subject": "repository-landing-document",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T04:32:44.962Z",
+      "worker": "91f422dc-6857-44ad-9781-f1d3d4f0d10f",
+      "techniques": [
+        {
+          "technique": "landing-document-as-router",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/style/index.css:2 A stylesheet manifest, not a front page."
+        }
+      ]
+    },
+    "52d712c5-d73a-4ce4-b53d-e581d78fbef6/repository-landing-document": {
+      "context": "atlas-shell-and-styles",
+      "subject": "repository-landing-document",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T04:32:44.962Z",
+      "worker": "91f422dc-6857-44ad-9781-f1d3d4f0d10f",
+      "techniques": [
+        {
+          "technique": "landing-document-as-router",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/chrome/Claims.tsx:27 It reads README sections as data for an app UI; it is not where the landing document is composed."
+        },
+        {
+          "technique": "visual-text-cadence",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/components/atlas/style/index.css:2 This is app CSS; the subject's cadence rule covers front-page prose, not app styling."
+        }
+      ]
     }
   }
 }
