@@ -95,6 +95,14 @@ export const athenaOpenMain = () => call<void>("athena_open_main");
 /** Put her away. Hide stops drawing, not listening (ADR 0026). */
 export const athenaHide = () => call<void>("athena_hide");
 
+/**
+ * Show her if she is put away, put her away if she is shown; resolves to whether she is visible
+ * afterwards. Main imports this: her illustration on the surface is the switch (fleet-surfaces
+ * D2). Rust's own `visible` decides, not the page's mirror of it, so a stale mirror cannot invert
+ * the press.
+ */
+export const athenaToggle = () => call<boolean>("athena_toggle");
+
 /** Always on top, or not. */
 export const athenaPin = (on: boolean) => call<void>("athena_pin", { on });
 

@@ -84,3 +84,12 @@ What the code had when this was written:
 - Monitors are counted once, at startup. A monitor plugged in later gets no halo until restart.
 - New surface: one command (`athena_halo`), two events (`halo:signal`, `athena:ptt`), one
   capability (`halo.json`), one page (`halo.html`).
+
+## Amendment, 2026-10-24: her window rests put away, and her illustration on Main is its switch
+
+The app now starts with her window put away (the shell used to show it at every start), except on
+first launch, where her `welcome` is the only window there is and Main is built hidden. The tray,
+a tap of the summon chord and a waiting card bring her out as before. Clicking her illustration on
+Main's surface toggles her window: it shows her when she is put away and puts her away when she
+is out, through one chrome-only command, `athena_toggle`, which decides on Rust's own `visible`
+and answers whether she is visible afterwards (fleet-surfaces D2).

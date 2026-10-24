@@ -70,6 +70,24 @@ describe("the surface", () => {
   });
 });
 
+describe("her illustration is the switch for her window", () => {
+  it("is a button that says it shows her window while it is put away", () => {
+    const h = html("typical");
+    expect(h).toMatch(/<button type="button" class="surface__bell focus-ring" aria-label="Show Athena&#x27;s window">/);
+    expect(h).not.toContain("Put Athena&#x27;s window away");
+  });
+
+  it("says it puts her window away while it is out", () => {
+    const h = html("window out");
+    expect(h).toContain('aria-label="Put Athena&#x27;s window away"');
+    expect(h).not.toContain("Show Athena&#x27;s window");
+  });
+
+  it("holds her drawing inside the button", () => {
+    expect(html("typical")).toMatch(/class="surface__bell focus-ring"[^>]*>\s*<svg[^>]*class="bell"/);
+  });
+});
+
 describe("the ask box is the hand-over, and says so", () => {
   it("names where the words go", () => {
     expect(html("typical")).toContain("Your words go to her own window");

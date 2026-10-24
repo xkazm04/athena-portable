@@ -9,6 +9,7 @@ import { INERT_ACTIONS, selectSurface, type SurfaceModel, type SurfaceSources } 
 
 const base: SurfaceSources = {
   athena: { state: "seal", cards: 0, line: "" },
+  windowVisible: false,
   apps: [
     { id: "ledgerbox", host: "ledgerbox.example.test", enabled: true },
     { id: "inbox", host: "mail.example.test", enabled: true },
@@ -42,6 +43,8 @@ export const fixtures: Record<string, SurfaceModel> = {
     engine: { label: "Claude Code", standing: "unknown", checkFailed: false },
   }),
   typical: make(),
+  /** Her window is out: her illustration's press puts it away. */
+  "window out": make({ windowVisible: true }),
   working: make({ athena: { state: "tape", cards: 0, line: "Reading Invoices" } }),
   hearing: make({ athena: { state: "hear", cards: 0, line: "" } }),
   /** A face chosen (the ADR on Athena's face): her Avatar stands where the Bell would. */

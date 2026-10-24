@@ -21,11 +21,18 @@ export interface SurfaceActions {
   ask: (text: string) => Promise<void>;
   /** Bring her own window forward: the cards waiting are answered there. Rejects when it cannot. */
   summon: () => Promise<void>;
+  /**
+   * Show her window if it is put away, put it away if it is shown (fleet-surfaces D2). Her
+   * illustration is the switch. Rust's own `visible` decides which, not `windowVisible` below.
+   */
+  toggle: () => void;
   dive: (root: Root) => void;
 }
 
 export interface SurfaceSources {
   athena: { state: string; cards: number; line: string };
+  /** Her window is on the screen, as `athena:status` last said (`useAthena().visible`). */
+  windowVisible: boolean;
   /** Apps she has been told about, switched on or off. */
   apps: readonly { id: string; host: string; enabled: boolean }[];
   openTabs: number;
@@ -75,6 +82,8 @@ export interface SurfaceModel {
   /** The pose in words, for a screen reader. */
   poseWord: string;
   waiting: number;
+  /** Her window is on the screen: her illustration's press puts it away, else it shows it. */
+  windowVisible: boolean;
   reach: readonly Reach[];
   lights: readonly Light[];
   canAsk: boolean;
@@ -162,6 +171,7 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
     headline: s.athena.cards > 0 || pose !== "resting" ? pillText(s.athena) : "Athena is resting",
     poseWord: POSE_WORDS[pose],
     waiting: s.athena.cards,
+    windowVisible: s.windowVisible,
     reach,
     lights: ROOTS.map((root) => ({ root, ...lights[root] })),
     canAsk: s.inShell,
@@ -173,5 +183,6 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
 export const INERT_ACTIONS: SurfaceActions = {
   ask: () => Promise.resolve(),
   summon: () => Promise.resolve(),
+  toggle: () => {},
   dive: () => {},
 };

@@ -74,6 +74,23 @@ describe("the ask row", () => {
     expect(note().dataset.tone).toBe("error");
   });
 
+  it("toggles her window when her illustration is pressed, and only then", () => {
+    const base = fixtures.typical!;
+    const toggle = vi.fn();
+    const summon = vi.fn(() => Promise.resolve());
+    act(() => root.render(<SurfaceView model={{ ...base, actions: { ...base.actions, toggle, summon } }} />));
+    const bell = host.querySelector<HTMLButtonElement>("button.surface__bell")!;
+    expect(bell.getAttribute("aria-label")).toBe("Show Athena's window");
+    act(() => bell.click());
+    expect(toggle).toHaveBeenCalledOnce();
+    expect(summon).not.toHaveBeenCalled();
+    // Rust says she is out on `athena:status`; the model follows, and so does the name.
+    act(() => root.render(<SurfaceView model={{ ...base, windowVisible: true, actions: { ...base.actions, toggle, summon } }} />));
+    expect(bell.getAttribute("aria-label")).toBe("Put Athena's window away");
+    act(() => bell.click());
+    expect(toggle).toHaveBeenCalledTimes(2);
+  });
+
   it("shows a refusal as an error, and clears it when the person types again", async () => {
     mount(() => Promise.reject(new Error("her window did not answer")));
     type("hello");

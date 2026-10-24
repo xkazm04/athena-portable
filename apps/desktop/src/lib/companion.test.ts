@@ -6,9 +6,21 @@
  */
 import { expect, test, vi } from "vitest";
 
+// The shell's one door, held so a test can stand in for Rust. Without a window carrying
+// `__TAURI_INTERNALS__` (node, the default here) `call` never reaches it, so every other test in
+// this file still sees the plain-browser refusal.
+const invoked = vi.hoisted(() => [] as { command: string; args: unknown }[]);
+vi.mock("@tauri-apps/api/core", () => ({
+  invoke: vi.fn(async (command: string, args: unknown) => {
+    invoked.push({ command, args });
+    return command === "athena_toggle" ? true : undefined;
+  }),
+}));
+
 import {
   athenaPin,
   athenaSetSize,
+  athenaToggle,
   ATHENA_STATES,
   beginDrag,
   dragged,
@@ -38,6 +50,18 @@ test("the named states and their sizes are the ADR's table", () => {
 test("a command called without a shell rejects with a sentence, never an undefined property", async () => {
   await expect(athenaSetSize("seal", "left", "down")).rejects.toThrow(/athena_set_size needs the Tauri window/);
   await expect(athenaPin(true)).rejects.toThrow(/athena_pin/);
+});
+
+test("the toggle asks Rust, with nothing on the wire, and answers whether she is visible after", async () => {
+  await expect(athenaToggle()).rejects.toThrow(/athena_toggle needs the Tauri window/);
+  const g = globalThis as { window?: unknown };
+  g.window = { __TAURI_INTERNALS__: {} };
+  try {
+    await expect(athenaToggle()).resolves.toBe(true);
+  } finally {
+    delete g.window;
+  }
+  expect(invoked).toEqual([{ command: "athena_toggle", args: {} }]);
 });
 
 test("a press is a drag only after four pixels", () => {

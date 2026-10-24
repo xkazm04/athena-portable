@@ -10,7 +10,7 @@
 import { createElement, useEffect, useMemo } from "react";
 
 import { useDepth } from "@/depth/store";
-import { athenaOffer, athenaShow } from "@/lib/companion";
+import { athenaOffer, athenaShow, athenaToggle } from "@/lib/companion";
 import { ENGINE_IDS, engineLabel } from "@/lib/engines";
 import type { Playbook } from "@/lib/playbooks";
 import { hostOf } from "@/lib/url";
@@ -43,6 +43,13 @@ const ACTIONS: SurfaceActions = {
       console.error(`[surface] summon: ${String(e)}`);
       throw e;
     }),
+  // Her illustration is the switch (fleet-surfaces D2). Rust answers with where she ended up and
+  // says it on `athena:status` too, which is what moves the label; a plain browser has no window
+  // of hers, so the press is skipped there, not failed.
+  toggle: () => {
+    if (!hasShell()) return;
+    athenaToggle().catch((e: unknown) => console.error(`[surface] toggle: ${String(e)}`));
+  },
   dive: (root) => useDepth.getState().go({ root }),
 };
 
@@ -102,6 +109,7 @@ export function useSurfaceModel(): SurfaceModel {
     const fact = engineFact(setup);
     return selectSurface({
       athena: { state: athena.state, cards: athena.cards, line: athena.line },
+      windowVisible: athena.visible,
       apps: known.flatMap((origin) => {
         const row = records[origin];
         return row ? [{ id: origin, host: hostOf(origin), enabled: row.enabled }] : [];

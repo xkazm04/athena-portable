@@ -80,6 +80,19 @@ describe("the five lights", () => {
   });
 });
 
+describe("her window", () => {
+  it("is said to be out exactly when her mirror says it is visible", () => {
+    expect(typical.windowVisible).toBe(false);
+    expect(fixtures["window out"]!.windowVisible).toBe(true);
+    expect(selectSurface({ ...src(), windowVisible: true }).windowVisible).toBe(true);
+  });
+
+  it("is toggled through the actions it was given, untouched", () => {
+    expect(selectSurface(src()).actions.toggle).toBe(INERT_ACTIONS.toggle);
+    expect(INERT_ACTIONS.toggle()).toBeUndefined();
+  });
+});
+
 describe("asking her", () => {
   it("is possible in the app and says why it is not in a plain browser", () => {
     expect(typical.canAsk).toBe(true);
@@ -92,6 +105,7 @@ describe("asking her", () => {
 function src(): SurfaceSources {
   return {
     athena: { state: "seal", cards: 0, line: "" },
+    windowVisible: false,
     apps: [],
     openTabs: 0,
     accounts: [],

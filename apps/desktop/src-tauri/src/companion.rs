@@ -678,6 +678,35 @@ pub fn show_no_activate(window: &Window) {
     let _ = window.set_focusable(true);
 }
 
+/// What a toggle does, given whether she is on the screen now: put away what is shown, show what
+/// is put away. Kept apart from the window so the rule is testable without one.
+#[derive(Clone, Copy, Debug, PartialEq, Eq)]
+pub enum Toggle {
+    Show,
+    Hide,
+}
+
+pub fn toggle_plan(visible: bool) -> Toggle {
+    if visible {
+        Toggle::Hide
+    } else {
+        Toggle::Show
+    }
+}
+
+/// Main's illustration of her was pressed (fleet-surfaces D2): show her if she is put away, put
+/// her away if she is shown. `Inner.visible` is the authority, the same fact `athena:status`
+/// mirrors to the chrome, so the label the person read is the act they get. A show is the user's
+/// own (focused), as the tray's and the pill's are. Returns whether she is visible afterwards.
+pub fn toggle(app: &AppHandle) -> bool {
+    let visible = app.state::<Companion>().lock().visible;
+    match toggle_plan(visible) {
+        Toggle::Show => show_with(app, true),
+        Toggle::Hide => hide(app),
+    }
+    app.state::<Companion>().lock().visible
+}
+
 /// Put her away. Hiding stops drawing, not listening: the webview lives on and the daemon's
 /// events still arrive, and the tray carries the dot.
 pub fn hide(app: &AppHandle) {
@@ -914,6 +943,13 @@ pub async fn athena_hide(app: AppHandle) -> Result<(), String> {
     Ok(())
 }
 
+/// Show her or put her away, whichever she is not; answers whether she is visible afterwards.
+/// The chrome's: Main's illustration of her is the switch (fleet-surfaces D2).
+#[tauri::command(rename_all = "snake_case")]
+pub async fn athena_toggle(app: AppHandle) -> Result<bool, String> {
+    Ok(toggle(&app))
+}
+
 #[tauri::command(rename_all = "snake_case")]
 pub async fn athena_pin(app: AppHandle, on: bool) -> Result<(), String> {
     pin(&app, on);
@@ -1066,6 +1102,18 @@ mod tests {
         assert_eq!(cause_of(None), Cause::User, "absent means a user's show");
         assert_eq!(cause_of(Some(true)), Cause::User);
         assert_eq!(cause_of(Some(false)), Cause::Arrival);
+    }
+
+    #[test]
+    fn a_toggle_puts_away_what_is_shown_and_shows_what_is_put_away() {
+        assert_eq!(toggle_plan(true), Toggle::Hide);
+        assert_eq!(toggle_plan(false), Toggle::Show);
+        // Two presses come back to where they started.
+        for start in [true, false] {
+            let after_one = toggle_plan(start) == Toggle::Show;
+            let after_two = toggle_plan(after_one) == Toggle::Show;
+            assert_eq!(after_two, start);
+        }
     }
 
     #[test]

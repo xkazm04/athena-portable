@@ -27,10 +27,14 @@ import { gzipSync } from "node:zlib";
  * Founded 2026-10-16 at 161,000 B: the build measured 159,082 B in 12 chunks that day, plus
  * 1,918 B (1.2 %) of margin for minifier noise. `targetBytes` is the 125 kB ADR 0095 records; the
  * gap (about 34 kB at founding) is reported on every run, and closing it is the owner's call.
+ *
+ * Raised 2026-10-24 to 165,000 B by the owner's decision (fleet-surfaces): the task routes, the
+ * task store and the tasks row beside her on the surface are first-frame code, and their stubs
+ * alone carried the build past 161,000 B.
  */
 export const FIRST_PAINT = {
   entry: "chrome.html",
-  ceilingBytes: 161_000,
+  ceilingBytes: 165_000,
   targetBytes: 125_000,
 };
 

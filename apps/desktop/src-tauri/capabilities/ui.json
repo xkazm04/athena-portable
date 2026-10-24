@@ -34,6 +34,7 @@
     "allow-hands-describe",
     "allow-athena-show",
     "allow-athena-hide",
+    "allow-athena-toggle",
     "allow-athena-open-main",
     "allow-athena-snap-to"
   ]
