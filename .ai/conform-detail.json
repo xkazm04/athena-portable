@@ -7487,6 +7487,37 @@
           "evidence": "apps/desktop/src/lib/engines.ts:21 Engine identity comes from fixed CLI ids the daemon probes. No shared-protocol endpoints are discovered here."
         }
       ]
+    },
+    "67f42245-132f-4a4e-bef9-35f7748e9fea/persistent-batch-mutation": {
+      "context": "tidycrm-style",
+      "subject": "persistent-batch-mutation",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T22:41:06.558Z",
+      "worker": "a4bceb01-7b2a-40fe-8787-c709bd000b9d",
+      "techniques": [
+        {
+          "technique": "typed-ordered-mutation-protocol",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:4 The only ordering here is the CSS cascade order of imports. There is no producer emitting a remove/add/move record to stateful consumers."
+        },
+        {
+          "technique": "compaction-in-the-protocols-own-operations",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:15 Static imports. No dense array, so no holes to compact."
+        },
+        {
+          "technique": "declared-skippability-at-batch-granularity",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:30 Reduced motion is a media-query style override, not a per-step transform that an extension declares skippable to a scheduler."
+        },
+        {
+          "technique": "identity-reference-alignment-check",
+          "verdict": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:11 No mutated batch and no parallel per-slot consumers to check against an identity shadow."
+        }
+      ]
     }
   }
 }

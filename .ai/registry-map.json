@@ -9711,7 +9711,11 @@
           "revision": 2,
           "changedAt": "2026-09-27",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/tidycrm/components/blocks/style/index.css:2 This context is only CSS: an ordered list of stylesheet imports with no runtime state, so there is no long-lived batch edited in place and no extensions holding per-slot arrays; a case-insensitive search of examples/tidycrm/components/blocks/style for batch, slot, compact, skippab, mutation, seating and reseat found nothing.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:f69a4347471944f0",
+          "evaluatedRevision": 2
         },
         {
           "subject": "motion",
