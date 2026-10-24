@@ -68,6 +68,7 @@ import {
   CARDS,
   Cards,
   LaneRail,
+  RunReadout,
   ScriptRail,
   StoryBar,
   TitleBand,
@@ -87,6 +88,7 @@ import {
   type TrailSegment,
 } from "./Scene";
 import { GRID, centreOf, planOf } from "./geometry";
+import { runKey, runReadout, selectRun } from "./inspect";
 import {
   BANDS,
   ZOOM_BOUNDS,
@@ -172,6 +174,9 @@ export default function LanesDrawing({
   const [playing, setPlaying] = useState(false);
   /* Signal's one-shot scan: finite, parks itself, never a second motion owner beside the story. */
   const [scan, setScan] = useState(preset === "signal" && !reduced);
+  /* The run the reader opened (`inspect.ts`), or none. Not a copy of the story: the story's stop
+     moves when a run is opened with the story on, and the run stays open beside it. */
+  const [run, setRun] = useState<string | null>(null);
 
   /**
    * THE FRAME IS MEASURED BEFORE THE CAMERA EXISTS, and the ordering is the whole of KIT-GAPS
@@ -418,6 +423,7 @@ export default function LanesDrawing({
     (id: string) => {
       const node = NODES.find((n) => n.id === id);
       if (!node) return;
+      setRun(null);
       const phase = phaseOfNode(id);
       if (focus.level >= 1 && focus.group === phase) {
         nav.openItem(phase, node.item);
@@ -429,6 +435,16 @@ export default function LanesDrawing({
   );
 
   const onHover = useCallback((id: string | null) => nav.hover(id), [nav]);
+
+  /* Opening a run: with the story on, the story jumps to the first stop the run carries. */
+  const onRun = useCallback(
+    (id: string) => {
+      const next = selectRun({ story, stop }, id);
+      setRun(next.run);
+      if (next.stop !== stop) setStop(next.stop);
+    },
+    [stop, story],
+  );
 
   /**
    * ROVING BY LANE AND COLUMN, not by DOM order.
@@ -443,6 +459,14 @@ export default function LanesDrawing({
       if (event.key === "Enter" || event.key === " ") {
         event.preventDefault();
         onOpen(id);
+        return;
+      }
+      /* '[' and ']' rove the runs this node touches; Escape closes the open one. */
+      const toRun = runKey(event.key, id, run);
+      if (toRun !== undefined) {
+        event.preventDefault();
+        if (toRun === null) setRun(null);
+        else onRun(toRun);
         return;
       }
       const dirs: Record<string, [number, number]> = {
@@ -474,7 +498,7 @@ export default function LanesDrawing({
       event.preventDefault();
       document.querySelector<HTMLElement>(`[data-node-id="${next.id}"]`)?.focus();
     },
-    [onOpen, plan.lanes],
+    [onOpen, onRun, plan.lanes, run],
   );
 
   /* ONE HOME. The toolbar and the canvas's Home key both land here; the rig's own Home flies to
@@ -488,6 +512,11 @@ export default function LanesDrawing({
   const onCanvasKey = useCallback(
     (event: KeyboardEvent<HTMLElement>) => {
       if (event.target !== canvasRef.current) return;
+      if (runKey(event.key, null, run) === null) {
+        event.preventDefault();
+        setRun(null);
+        return;
+      }
       if (event.key === "Home") {
         event.preventDefault();
         flyHome();
@@ -495,7 +524,7 @@ export default function LanesDrawing({
       }
       rig.bind.onKeyDown(event);
     },
-    [flyHome, rig],
+    [flyHome, rig, run],
   );
 
   /* ------------------------------------- the pane's origin box -------------------------------- */
@@ -522,6 +551,9 @@ export default function LanesDrawing({
   const copy = COPY[preset];
   const showScript = preset === "editorial";
   const showLanes = preset === "editorial";
+
+  const readout = useMemo(() => (run ? runReadout(run) : null), [run]);
+  const closeRun = useCallback(() => setRun(null), []);
 
   const pickStop = useCallback((to: number) => {
     setStory(true);
@@ -612,7 +644,13 @@ export default function LanesDrawing({
             <RunMarkers />
             <Phases phases={plan.phases} open={band > 0 ? openPhase : null} />
             <Lanes lanes={plan.lanes} />
-            <Runs runs={runs} near={near} revealed={revealed} />
+            <Runs
+              runs={runs}
+              near={near}
+              revealed={revealed}
+              selected={run}
+              onSelect={onRun}
+            />
             {story ? <Trail segments={trail} marks={marks} /> : null}
             <Legend rect={plan.legend} counts={counts} />
           </svg>
@@ -647,6 +685,8 @@ export default function LanesDrawing({
         />
       ) : null}
       </div>
+
+      <RunReadout readout={readout} onClose={closeRun} />
 
       {story ? (
         <StoryBar

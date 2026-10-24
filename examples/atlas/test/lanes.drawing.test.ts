@@ -51,3 +51,30 @@ test("Home goes to the same place from the keyboard as from the toolbar", () => 
   assert.match(callback("flyHome"), /poseFor\(\{ level: 0, group: null, item: null \}/);
   assert.match(SOURCE, /onHome=\{flyHome\}/, "the toolbar's home is a second copy of the pose");
 });
+
+const stripped = (file: string): string =>
+  readFileSync(new URL(`../components/atlas/variants/archify-lanes/${file}`, import.meta.url), "utf8")
+    .replace(/\/\*[\s\S]*?\*\//g, "")
+    .replace(/\{\/\*[\s\S]*?\*\/\}/g, "")
+    .replace(/(^|[^:])\/\/.*$/gm, "$1");
+
+test("case 8: every run is a press target, roved to from a node, and read out aloud", () => {
+  /* The pointer: each run carries a hit path that names its run and answers a press. */
+  const scene = stripped("Scene.tsx");
+  const hit = /<path\s+className="al-run-hit"[\s\S]*?\/>/.exec(scene)?.[0];
+  assert.ok(hit, "Scene.tsx draws no .al-run-hit path per run");
+  assert.match(hit, /data-run-id=\{run\.id\}/, "the hit path does not name its run");
+  assert.match(hit, /onClick=\{/, "the hit path answers no press");
+
+  /* The keyboard: '[' and ']' on a focused node rove its runs, through the pure cycle. */
+  const key = callback("onNodeKey");
+  assert.match(key, /runKey\(/, "a node's keys do not reach the runs it touches");
+  assert.match(callback("onOpen"), /setRun\(null\)/, "opening a node leaves a run open");
+
+  /* The readout: a polite live region, never hidden from assistive tech. */
+  const chrome = stripped("Chrome.tsx");
+  const region = /<div\s+className="al-readout"[^>]*>/.exec(chrome)?.[0];
+  assert.ok(region, "Chrome.tsx has no .al-readout region");
+  assert.match(region, /aria-live="polite"/, "the readout is not announced");
+  assert.doesNotMatch(region, /aria-hidden/, "the readout is hidden from assistive tech");
+});

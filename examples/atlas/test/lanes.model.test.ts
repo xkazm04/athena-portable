@@ -375,3 +375,15 @@ test("the chapter delta is a real handoff: the first chapter brings everything i
   assert.equal(beatState(3, 3), "active");
   assert.equal(beatState(4, 3), "next");
 });
+
+test("case 6: a node's accessible name also names the runs it sends and receives", () => {
+  /* The runs are aria-hidden SVG, so the name is where a screen-reader user hears the graph. */
+  const hooks = NODES.find((n) => n.id === "hooks")!;
+  const name = nodeName(hooks);
+  assert.ok(name.includes("to The catalog, The record"), `"${name}" does not name its outgoing runs`);
+  assert.ok(name.includes("from The runner, Connectors"), `"${name}" does not name its incoming runs`);
+  for (const n of NODES) {
+    const touches = EDGES.some((e) => e.from === n.id || e.to === n.id);
+    if (touches) assert.match(nodeName(n), /Runs (to|from) /, `${n.id}: no runs in its name`);
+  }
+});

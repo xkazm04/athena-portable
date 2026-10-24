@@ -29,7 +29,8 @@ import {
   resolveItem,
   zoomRoom,
 } from "../components/atlas/variants/archify-lanes/poses";
-import { NODES, PHASES } from "../components/atlas/variants/archify-lanes/workflow";
+import { READ_CAP } from "../lib/constants";
+import { EDGE_BY_ID, NODES, PHASES } from "../components/atlas/variants/archify-lanes/workflow";
 import {
   BEAT_VIEWS,
   CHAPTER_VIEWS,
@@ -230,4 +231,15 @@ test("set_turn tell=false stops the clock, and its answer is what read_turn then
     story: false,
     playing: false,
   });
+});
+
+test("case 7: read_turn's edges carry each run's note and cite beside its label", () => {
+  const answer = turnRead(0, false, false);
+  assert.ok(answer.edges.length > 0 && answer.edges.length <= READ_CAP);
+  for (const e of answer.edges) {
+    const authored = EDGE_BY_ID.get(e.edge!)!;
+    assert.equal(e.label, authored.label);
+    assert.equal(e.note, authored.note, `${e.edge}: read_turn drops the note`);
+    assert.equal(e.cite, authored.cite, `${e.edge}: read_turn drops the cite`);
+  }
 });

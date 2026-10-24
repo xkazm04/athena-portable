@@ -126,12 +126,20 @@ export function turnRead(at: number, telling: boolean, playing: boolean) {
       current: i === chapterOf(at),
     })),
     hops: TRAIL_COUNTS,
-    edges: HOPS.filter((h) => h.edge !== null).map((h) => ({
-      hop: h.index,
-      edge: h.edge,
-      role: h.role,
-      label: EDGE_BY_ID.get(h.edge!)?.label ?? null,
-    })),
+    /* A run's note and cite ride beside its label, so an agent reads what the readout shows. */
+    edges: HOPS.filter((h) => h.edge !== null)
+      .slice(0, READ_CAP)
+      .map((h) => {
+        const e = EDGE_BY_ID.get(h.edge!);
+        return {
+          hop: h.index,
+          edge: h.edge,
+          role: h.role,
+          label: e?.label ?? null,
+          note: e?.note ?? null,
+          cite: e?.cite ?? null,
+        };
+      }),
     telling,
     playing,
     note: "The drawing IS the turn: a node's lane says who owns the step and its column says when it happens, so the twelve stops read left to right down the stack with no overlay. Eight of the ten drawn hops are runs of this drawing; two are asserted by README alone and the Story Trail draws those dotted. Opening a phase (set_level group=arrive|compose|record) is the L1 move. set_turn moves the step; set_variant reads which drawing is mounted.",

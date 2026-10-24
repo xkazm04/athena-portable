@@ -353,7 +353,17 @@ export function nodeName(n: WNode): string {
       : null,
     `phase ${phaseOfCol(n.col).label}`,
   ].filter((s): s is string => s !== null);
-  return `${n.label} — ${n.sublabel}. In ${where.join(", ")}. ${n.note}`;
+  /* The runs are aria-hidden SVG too, so the name also carries the graph: where this node sends
+     and where it hears from, in edge declaration order. `EDGES` is read at call time. */
+  const labelOf = (id: string) => nodeById(id)?.label ?? id;
+  const out = EDGES.filter((e) => e.from === n.id).map((e) => labelOf(e.to));
+  const into = EDGES.filter((e) => e.to === n.id).map((e) => labelOf(e.from));
+  const runs = [
+    out.length > 0 ? `to ${out.join(", ")}` : null,
+    into.length > 0 ? `from ${into.join(", ")}` : null,
+  ].filter((s): s is string => s !== null);
+  const graph = runs.length > 0 ? ` Runs ${runs.join("; ")}.` : "";
+  return `${n.label} — ${n.sublabel}. In ${where.join(", ")}. ${n.note}${graph}`;
 }
 
 /** Every system, with the node that claims it — the coverage the test walks. */

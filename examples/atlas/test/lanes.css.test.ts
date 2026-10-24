@@ -107,3 +107,17 @@ test("a detail tier fades in as well as out: the band only sets opacity, never t
     );
   }
 });
+
+test("case 8: a run's hit stroke takes pointer events and is at least 8 screen px at every zoom", () => {
+  const hit = RULES.filter((r) => r.selectors.includes(".al-run-hit"));
+  assert.ok(hit.length > 0, "lanes.css does not style .al-run-hit");
+  const decl = (name: string) => hit.map((r) => r.decls.get(name)).find((v) => v !== undefined);
+  assert.equal(decl("vector-effect"), "non-scaling-stroke", "the hit stroke scales with the zoom");
+  assert.equal(decl("pointer-events"), "stroke", "the hit stroke takes no pointer events");
+  const width = /^var\((--[\w-]+)\)$/.exec(decl("stroke-width") ?? "")?.[1];
+  assert.ok(width, "the hit stroke width is not a token");
+  const value = RULES.map((r) => r.decls.get(width)).find((v) => v !== undefined) ?? "";
+  const rem = /^([\d.]+)rem$/.exec(value);
+  assert.ok(rem, `${width} is "${value}", not a rem length`);
+  assert.ok(Number(rem[1]) * 16 >= 8, `${width} is ${value}, under 8 screen px`);
+});

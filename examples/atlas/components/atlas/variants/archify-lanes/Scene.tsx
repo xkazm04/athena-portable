@@ -4,7 +4,9 @@
  * WHAT IS DRAWN: lane bands, phase bands, nodes, runs, the trail, the legend.
  *
  * TWO LAYERS AND ONE RULE ABOUT WHICH IS WHICH. The chrome and the runs are SVG, because they are
- * geometry the router measured and nothing operates them. The nodes are HTML on top — a focusable
+ * geometry the router measured; the one thing on the plate a reader operates is a run's hit stroke,
+ * which opens its readout, and a keyboard reaches the same runs from a node ('[' and ']'), so the
+ * plate stays aria-hidden and the graph is spoken by the nodes. The nodes are HTML on top — a focusable
  * `<div role="button">` each — because a node is focusable, has a name, opens on Enter and Space
  * and roves under the arrows, and an SVG `<g role="button">` is a worse button in every browser. Interactions read `data-node-id`,
  * `data-role`, `data-edge-from/-to` off the DOM and never a parallel graph, which is archify's §4
@@ -144,6 +146,10 @@ export interface RunsProps {
   near: ReadonlySet<string>;
   /** Run ids the story or a filter reveals; `null` is "everything at full strength". */
   revealed: ReadonlySet<string> | null;
+  /** The run the reader opened, whose readout is showing; it is never dimmed. */
+  selected: string | null;
+  /** A press on a run's hit stroke opens it (`inspect.ts` says what opening answers). */
+  onSelect: (id: string) => void;
 }
 
 /**
@@ -153,7 +159,7 @@ export interface RunsProps {
  * round-5 sheet marked none, which study Part 2 §2 lists as a named divergence. Here the emphasis
  * is not a decoration on a relationship, it is the answer to "which of these is the turn".
  */
-export const Runs = memo(function Runs({ runs, near, revealed }: RunsProps) {
+export const Runs = memo(function Runs({ runs, near, revealed, selected, onSelect }: RunsProps) {
   const ordered = [...runs].sort(
     (a, b) => ROLE_ORDER.indexOf(a.role) - ROLE_ORDER.indexOf(b.role),
   );
@@ -161,7 +167,8 @@ export const Runs = memo(function Runs({ runs, near, revealed }: RunsProps) {
     <g className="al-runs">
       {ordered.map((run) => {
         const lit = near.has(run.from) || near.has(run.to);
-        const dim = revealed !== null && !revealed.has(run.id) && !lit;
+        const open = selected === run.id;
+        const dim = revealed !== null && !revealed.has(run.id) && !lit && !open;
         return (
           <g
             key={run.id}
@@ -171,8 +178,17 @@ export const Runs = memo(function Runs({ runs, near, revealed }: RunsProps) {
             data-edge-to={run.to}
             data-near={lit ? "" : undefined}
             data-dim={dim ? "" : undefined}
+            data-selected={open ? "" : undefined}
           >
             <path className="al-run-line" d={run.d} markerEnd={`url(#al-arrow-${run.role})`} />
+            {/* The press target: a transparent stroke along the same path, fat in SCREEN px at
+                every zoom (`vector-effect`), the only part of the plate that takes the pointer. */}
+            <path
+              className="al-run-hit"
+              d={run.d}
+              data-run-id={run.id}
+              onClick={() => onSelect(run.id)}
+            />
             {run.label.shown ? (
               <g
                 className="al-run-label"

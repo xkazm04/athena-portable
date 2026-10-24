@@ -20,6 +20,7 @@ import { COPY } from "./copy";
 import { zoomRoom } from "./poses";
 import { LANES, type Role } from "./workflow";
 import { BEAT_VIEWS, type BeatView, type ChapterView } from "./story";
+import type { RunReadout as Readout } from "./inspect";
 
 export type { LanesPreset } from "./copy";
 export { COPY } from "./copy";
@@ -264,6 +265,54 @@ export const StoryBar = memo(function StoryBar({
           {`${counts.authored} of ${counts.hops} hops authored · ${counts.derived} derived · ${counts.internal} inside a node`}
         </span>
       </div>
+    </div>
+  );
+});
+
+/* ------------------------------------------ a run, opened ------------------------------------ */
+
+/** What the readout says about the stops a run carries, or that none travels it. */
+export const stopsLine = (stops: readonly number[]): string =>
+  stops.length === 0
+    ? "no stop of the turn travels this run"
+    : `carries stop${stops.length > 1 ? "s" : ""} ${stops.join(", ")}`;
+
+/**
+ * THE READOUT OF ONE OPENED RUN — compact, one card, the story bar's slot.
+ *
+ * The region is always mounted and polite, so a run opened from the keyboard is announced; the
+ * card inside it appears only while a run is open. Text stays secondary: role, ends, note, source
+ * and the stops, on two lines, with a close button that does what Escape does.
+ */
+export const RunReadout = memo(function RunReadout({
+  readout,
+  onClose,
+}: {
+  readout: Readout | null;
+  onClose: () => void;
+}) {
+  return (
+    <div className="al-readout" aria-live="polite">
+      {readout ? (
+        <div
+          className="al-readout-card"
+          role="group"
+          aria-label={`The run ${readout.label}`}
+          data-role={readout.role}
+          data-walked={readout.walked ? "" : undefined}
+        >
+          <span className="al-readout-dot" aria-hidden />
+          <span className="al-readout-role">{readout.roleLabel}</span>
+          <span className="al-readout-ends">{`${readout.from} → ${readout.to}`}</span>
+          <span className="al-readout-label">{readout.label}</span>
+          <span className="al-readout-note">{readout.note}</span>
+          <span className="al-readout-cite">{readout.cite}</span>
+          <span className="al-readout-stops">{stopsLine(readout.stops)}</span>
+          <button type="button" className="al-tool" onClick={onClose} aria-label="Close the run">
+            ×
+          </button>
+        </div>
+      ) : null}
     </div>
   );
 });
