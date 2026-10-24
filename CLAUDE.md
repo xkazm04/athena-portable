@@ -3,19 +3,19 @@
 <!-- personas:context-map:start -->
 ## Project Context Map
 
-This project is organized into **64 contexts** across **10 groups**. The full machine-readable map lives in `context-map.json` at the project root — read it at task start to scope your edits to the relevant context's files.
+This project is organized into **77 contexts** across **10 groups**. The full machine-readable map lives in `context-map.json` at the project root — read it at task start to scope your edits to the relevant context's files.
 
 Taxonomy: each context has a `category` (ui · api · lib · data · test · config); each group has a `domain` (feature · infrastructure · shared · integration · data).
 
 ### Groups
 
-- **Agent Core** _(domain: shared · 4 contexts)_
+- **Agent Core** _(domain: shared · 6 contexts)_
 - **Model Harness** _(domain: infrastructure · 2 contexts)_
-- **Daemon and Channels** _(domain: infrastructure · 3 contexts)_
+- **Daemon and Channels** _(domain: infrastructure · 5 contexts)_
 - **Connectors** _(domain: integration · 1 contexts)_
-- **Proving Ground** _(domain: feature · 5 contexts)_
+- **Proving Ground** _(domain: feature · 9 contexts)_
 - **Playbook Library** _(domain: data · 0 contexts)_
-- **Desktop Companion** _(domain: feature · 21 contexts)_
+- **Desktop Companion** _(domain: feature · 26 contexts)_
 - **Page Bridge and Demo Kit** _(domain: shared · 5 contexts)_
 - **Example Apps** _(domain: feature · 21 contexts)_
 - **Docs, UAT and Build** _(domain: infrastructure · 2 contexts)_

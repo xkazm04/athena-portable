@@ -129,7 +129,6 @@
         "examples/atlas/components/atlas/style/base/sheet.css",
         "examples/atlas/components/atlas/style/base/tokens.css",
         "examples/atlas/components/atlas/style/chrome/mast.css",
-        "examples/atlas/components/atlas/style/chrome/rails.css",
         "examples/atlas/components/atlas/style/index.css",
         "examples/atlas/components/atlas/style/level2/l2-pane.css",
         "examples/atlas/components/atlas/tools/AtlasTools.tsx",
@@ -178,6 +177,7 @@
       "file_paths": [
         "src/athena/lane/__init__.py",
         "src/athena/lane/browser_lane.py",
+        "src/athena/lane/fleet.py",
         "src/athena/lane/ports.py",
         "src/athena/lane/turn_frame.py",
         "tests/lane/__init__.py",
@@ -196,7 +196,7 @@
         "tab",
         "page state"
       ],
-      "last_written_at": "2026-10-10T00:56:06.217845200+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "browser-lane",
       "pinned": false,
       "tech_stack": [
@@ -265,6 +265,14 @@
       "file_paths": [
         "src/athena/connectors/__init__.py",
         "src/athena/connectors/addresses.py",
+        "src/athena/connectors/builtin/gmail.json",
+        "src/athena/connectors/builtin/notion.json",
+        "src/athena/connectors/health.py",
+        "src/athena/connectors/mcp/__init__.py",
+        "src/athena/connectors/mcp/annotations.py",
+        "src/athena/connectors/mcp/client.py",
+        "src/athena/connectors/mcp/config.py",
+        "src/athena/connectors/mcp/service.py",
         "src/athena/connectors/oauth.py",
         "src/athena/connectors/port.py",
         "src/athena/connectors/providers/__init__.py",
@@ -298,7 +306,7 @@
         "seal",
         "spec"
       ],
-      "last_written_at": "2026-10-14T10:47:40.800661300+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "connector-service",
       "pinned": false,
       "tech_stack": [
@@ -424,6 +432,7 @@
         "src/athena/core/fence.py",
         "src/athena/core/ledger.py",
         "src/athena/core/prompt.py",
+        "src/athena/core/setup.py",
         "src/athena/core/validators.py",
         "tests/core/test_approvals.py",
         "tests/core/test_catalog.py",
@@ -447,7 +456,7 @@
         "constitution",
         "prompt"
       ],
-      "last_written_at": "2026-10-14T10:47:40.801297900+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "core-gate-and-ledger",
       "pinned": false,
       "tech_stack": [
@@ -519,10 +528,12 @@
       ],
       "file_paths": [
         "src/athena/daemon/__init__.py",
+        "src/athena/daemon/decisions.py",
         "src/athena/daemon/ready.py",
         "src/athena/daemon/routes.py",
         "src/athena/daemon/server.py",
         "src/athena/daemon/sessions.py",
+        "src/athena/daemon/tasks.py",
         "src/athena/daemon/voice.py",
         "tests/daemon/__init__.py",
         "tests/daemon/conftest.py",
@@ -552,7 +563,7 @@
         "decisions",
         "manifest"
       ],
-      "last_written_at": "2026-10-14T10:47:16.909841600+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "daemon-service",
       "pinned": false,
       "tech_stack": [
@@ -687,6 +698,7 @@
         "examples/demo-kit/src/ui/index.ts",
         "examples/demo-kit/src/ui/theme.tsx",
         "examples/demo-kit/src/webmcp/bounded.ts",
+        "examples/demo-kit/src/webmcp/door.ts",
         "examples/demo-kit/src/webmcp/hooks.ts",
         "examples/demo-kit/src/webmcp/index.ts",
         "examples/demo-kit/src/webmcp/modelContext.ts",
@@ -704,7 +716,7 @@
         "datatable",
         "activity"
       ],
-      "last_written_at": "2026-10-10T00:56:06.222388300+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "demo-kit-ui-webmcp",
       "pinned": false,
       "tech_stack": [
@@ -731,6 +743,7 @@
         "examples/demo-kit/src/zoom/echo-rule.ts",
         "examples/demo-kit/src/zoom/escape.ts",
         "examples/demo-kit/src/zoom/flight.ts",
+        "examples/demo-kit/src/zoom/gesture.ts",
         "examples/demo-kit/src/zoom/identity.ts",
         "examples/demo-kit/src/zoom/index.ts",
         "examples/demo-kit/src/zoom/nav.ts",
@@ -761,7 +774,7 @@
         "echo",
         "tokens"
       ],
-      "last_written_at": "2026-10-10T00:56:06.222622+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "demo-kit-zoom-engine",
       "pinned": false,
       "tech_stack": [
@@ -784,23 +797,23 @@
       ],
       "file_paths": [
         "apps/desktop/src/athena.tsx",
+        "apps/desktop/src/bridge-gate.d.ts",
         "apps/desktop/src/chrome.tsx",
-        "apps/desktop/src/preview.tsx",
         "apps/desktop/src/components/Badge.tsx",
         "apps/desktop/src/components/Button.tsx",
         "apps/desktop/src/components/EmptyState.tsx",
         "apps/desktop/src/components/Facts.tsx",
-        "apps/desktop/src/components/FormField.tsx",
         "apps/desktop/src/components/FormField.test.tsx",
+        "apps/desktop/src/components/FormField.tsx",
         "apps/desktop/src/components/PillGroup.tsx",
         "apps/desktop/src/components/ProblemNote.tsx",
-        "apps/desktop/src/components/PushToTalk.tsx",
-        "apps/desktop/src/components/PushToTalk.test.tsx",
         "apps/desktop/src/components/StatusDot.tsx",
         "apps/desktop/src/components/Table.tsx",
         "apps/desktop/src/components/WindowControls.tsx",
+        "apps/desktop/src/preview.tsx",
         "apps/desktop/src/styles/app.css",
         "apps/desktop/src/styles/motion-tokens.test.ts",
+        "apps/desktop/src/styles/skins/loop-tide.css",
         "apps/desktop/src/styles/source-guards.test.ts"
       ],
       "group": "Desktop Companion",
@@ -814,7 +827,7 @@
         "motion tokens",
         "css guards"
       ],
-      "last_written_at": "2026-10-14T10:47:40.801698500+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "desktop-app-shell-ui",
       "pinned": false,
       "tech_stack": [
@@ -888,7 +901,6 @@
       "file_paths": [
         "apps/desktop/vite.config.ts",
         "apps/desktop/eslint.config.js",
-        "apps/desktop/scripts/make-icon.mjs",
         "apps/desktop/scripts/smoke.mjs",
         "apps/desktop/scripts/dev-source-loc.mjs",
         "apps/desktop/src-tauri/build.rs",
@@ -933,28 +945,34 @@
         "apps/desktop/src/lib/ipc.ts"
       ],
       "file_paths": [
-        "apps/desktop/src/lib/api.ts",
         "apps/desktop/src/lib/api.test.ts",
+        "apps/desktop/src/lib/api.ts",
         "apps/desktop/src/lib/bridge.ts",
-        "apps/desktop/src/lib/companion.ts",
+        "apps/desktop/src/lib/chores-client.ts",
         "apps/desktop/src/lib/companion.test.ts",
+        "apps/desktop/src/lib/companion.ts",
+        "apps/desktop/src/lib/contract.ts",
         "apps/desktop/src/lib/daemon.ts",
-        "apps/desktop/src/lib/engines.ts",
         "apps/desktop/src/lib/engines.test.ts",
+        "apps/desktop/src/lib/engines.ts",
         "apps/desktop/src/lib/events.ts",
-        "apps/desktop/src/lib/hands.ts",
+        "apps/desktop/src/lib/execute.ts",
+        "apps/desktop/src/lib/fleet.ts",
         "apps/desktop/src/lib/hands.test.ts",
-        "apps/desktop/src/lib/ipc.ts",
+        "apps/desktop/src/lib/hands.ts",
         "apps/desktop/src/lib/ipc.test.ts",
-        "apps/desktop/src/lib/manifest.ts",
+        "apps/desktop/src/lib/ipc.ts",
         "apps/desktop/src/lib/manifest.test.ts",
-        "apps/desktop/src/lib/motion.ts",
+        "apps/desktop/src/lib/manifest.ts",
+        "apps/desktop/src/lib/midturn.ts",
         "apps/desktop/src/lib/motion.test.ts",
+        "apps/desktop/src/lib/motion.ts",
+        "apps/desktop/src/lib/sheet.ts",
         "apps/desktop/src/lib/store.ts",
-        "apps/desktop/src/lib/time.ts",
         "apps/desktop/src/lib/time.test.ts",
-        "apps/desktop/src/lib/url.ts",
-        "apps/desktop/src/lib/url.test.ts"
+        "apps/desktop/src/lib/time.ts",
+        "apps/desktop/src/lib/url.test.ts",
+        "apps/desktop/src/lib/url.ts"
       ],
       "group": "Desktop Companion",
       "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
@@ -967,7 +985,7 @@
         "manifest",
         "motion"
       ],
-      "last_written_at": "2026-10-14T10:47:16.907781200+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "desktop-client-lib",
       "pinned": false,
       "tech_stack": [
@@ -997,7 +1015,6 @@
         "apps/desktop/src/companion/companion.css.test.ts",
         "apps/desktop/src/companion/capture.ts",
         "apps/desktop/src/companion/capture.test.ts",
-        "apps/desktop/src/companion/drawing.tsx",
         "apps/desktop/src/companion/driver.ts",
         "apps/desktop/src/companion/fixtures.ts",
         "apps/desktop/src/companion/live.tsx",
@@ -1132,12 +1149,21 @@
         "apps/desktop/e2e/run.e2e.test.ts"
       ],
       "file_paths": [
+        "apps/desktop/drive/athena-drive.mjs",
+        "apps/desktop/drive/drive.mjs",
+        "apps/desktop/drive/raw-cdp.mjs",
         "apps/desktop/e2e/client.e2e.test.ts",
         "apps/desktop/e2e/connectors.e2e.test.ts",
         "apps/desktop/e2e/run.e2e.test.ts",
+        "apps/desktop/e2e/shadowrunr/support/athena.ts",
+        "apps/desktop/e2e/shadowrunr/support/browser.ts",
+        "apps/desktop/e2e/shadowrunr/support/loop.ts",
+        "apps/desktop/e2e/shadowrunr/support/shadowrunr.ts",
         "apps/desktop/e2e/support/daemon.ts",
         "apps/desktop/e2e/support/page.ts",
+        "apps/desktop/e2e/support/pilot.ts",
         "apps/desktop/e2e/support/setup.ts",
+        "apps/desktop/e2e/support/webmcp-page.ts",
         "apps/desktop/e2e/support/wire.ts",
         "apps/desktop/e2e/vitest.e2e.config.ts",
         "apps/desktop/e2e/voice.e2e.test.ts"
@@ -1151,7 +1177,7 @@
         "daemon",
         "vitest"
       ],
-      "last_written_at": "2026-10-10T00:56:06.222054300+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "desktop-e2e",
       "pinned": false,
       "tech_stack": [
@@ -1261,14 +1287,17 @@
         "apps/desktop/scripts/perf-budgets.mjs"
       ],
       "file_paths": [
+        "apps/desktop/scripts/first-paint.mjs",
         "apps/desktop/scripts/perf-accounts.drive.mjs",
         "apps/desktop/scripts/perf-apps.drive.mjs",
+        "apps/desktop/scripts/perf-avatar.drive.mjs",
         "apps/desktop/scripts/perf-bell.drive.mjs",
         "apps/desktop/scripts/perf-budgets.mjs",
         "apps/desktop/scripts/perf-budgets.test.ts",
         "apps/desktop/scripts/perf-chores.drive.mjs",
         "apps/desktop/scripts/perf-gate.mjs",
         "apps/desktop/scripts/perf-mind.drive.mjs",
+        "apps/desktop/scripts/perf-skin.drive.mjs",
         "apps/desktop/scripts/perf-stage.drive.mjs",
         "apps/desktop/scripts/perf-surface.drive.mjs",
         "apps/desktop/scripts/perf-voice.drive.mjs"
@@ -1283,7 +1312,7 @@
         "drive",
         "first paint"
       ],
-      "last_written_at": "2026-10-14T10:47:16.804062800+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "desktop-perf-gate",
       "pinned": false,
       "tech_stack": [
@@ -1303,16 +1332,18 @@
         "apps/desktop/src/lib/playbooks.ts"
       ],
       "file_paths": [
-        "apps/desktop/src/lib/playbooks.ts",
-        "apps/desktop/src/lib/playbooks.test.ts",
+        "apps/desktop/src/lib/playbook-taxonomy.ts",
         "apps/desktop/src/lib/playbooks.shipped.ts",
+        "apps/desktop/src/lib/playbooks.test.ts",
+        "apps/desktop/src/lib/playbooks.ts",
         "apps/desktop/src/modules/playbooks/fixtures.ts",
         "apps/desktop/src/modules/playbooks/hook.test.tsx",
         "apps/desktop/src/modules/playbooks/index.ts",
-        "apps/desktop/src/modules/playbooks/model.ts",
         "apps/desktop/src/modules/playbooks/model.test.ts",
-        "apps/desktop/src/stores/playbooks.ts",
-        "apps/desktop/src/stores/playbooks.test.ts"
+        "apps/desktop/src/modules/playbooks/model.ts",
+        "apps/desktop/src/modules/playbooks/replay.ts",
+        "apps/desktop/src/stores/playbooks.test.ts",
+        "apps/desktop/src/stores/playbooks.ts"
       ],
       "group": "Desktop Companion",
       "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
@@ -1323,7 +1354,7 @@
         "launch",
         "catalog"
       ],
-      "last_written_at": "2026-10-14T10:47:16.908879500+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "desktop-playbooks-panel",
       "pinned": false,
       "tech_stack": [
@@ -1408,20 +1439,29 @@
         "apps/desktop/src/scenes/chores/view.tsx"
       ],
       "file_paths": [
-        "apps/desktop/src/scenes/chores/chore.tsx",
+        "apps/desktop/src/scenes/chores/catalogue.tsx",
         "apps/desktop/src/scenes/chores/chores.css",
         "apps/desktop/src/scenes/chores/chores.css.test.ts",
-        "apps/desktop/src/scenes/chores/field.tsx",
+        "apps/desktop/src/scenes/chores/facts.ts",
         "apps/desktop/src/scenes/chores/fixtures.ts",
+        "apps/desktop/src/scenes/chores/flow.tsx",
+        "apps/desktop/src/scenes/chores/glyphs.tsx",
         "apps/desktop/src/scenes/chores/index.tsx",
+        "apps/desktop/src/scenes/chores/lightbox.tsx",
+        "apps/desktop/src/scenes/chores/live-view.tsx",
         "apps/desktop/src/scenes/chores/live.tsx",
+        "apps/desktop/src/scenes/chores/memory.ts",
         "apps/desktop/src/scenes/chores/model.test.ts",
         "apps/desktop/src/scenes/chores/model.ts",
-        "apps/desktop/src/scenes/chores/parts.tsx",
         "apps/desktop/src/scenes/chores/replay.tsx",
+        "apps/desktop/src/scenes/chores/rich.tsx",
+        "apps/desktop/src/scenes/chores/runs.tsx",
+        "apps/desktop/src/scenes/chores/topic.tsx",
+        "apps/desktop/src/scenes/chores/turn.tsx",
         "apps/desktop/src/scenes/chores/view.test.tsx",
         "apps/desktop/src/scenes/chores/view.tsx",
-        "apps/desktop/src/scenes/chores/wired.test.tsx"
+        "apps/desktop/src/scenes/chores/wired.test.tsx",
+        "apps/desktop/src/scenes/chores/worth.ts"
       ],
       "group": "Desktop Companion",
       "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
@@ -1432,7 +1472,7 @@
         "field",
         "scene"
       ],
-      "last_written_at": "2026-10-14T10:47:16.801699500+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "desktop-scenes-chores",
       "pinned": false,
       "tech_stack": [
@@ -1566,15 +1606,16 @@
         "apps/desktop/src/modules/setup/readiness.ts"
       ],
       "file_paths": [
+        "apps/desktop/src/lib/setup.ts",
         "apps/desktop/src/modules/setup/fixtures.ts",
         "apps/desktop/src/modules/setup/index.ts",
-        "apps/desktop/src/modules/setup/model.ts",
         "apps/desktop/src/modules/setup/model.test.ts",
-        "apps/desktop/src/modules/setup/readiness.ts",
+        "apps/desktop/src/modules/setup/model.ts",
         "apps/desktop/src/modules/setup/readiness.test.ts",
-        "apps/desktop/src/stores/first-run-engine.test.ts",
+        "apps/desktop/src/modules/setup/readiness.ts",
         "apps/desktop/src/stores/first-run-engine-inflight.test.ts",
-        "apps/desktop/src/stores/first-run-engine-late-status.test.ts"
+        "apps/desktop/src/stores/first-run-engine-late-status.test.ts",
+        "apps/desktop/src/stores/first-run-engine.test.ts"
       ],
       "group": "Desktop Companion",
       "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
@@ -1585,7 +1626,7 @@
         "onboarding",
         "first launch"
       ],
-      "last_written_at": "2026-10-14T10:47:16.909079900+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "desktop-setup-module",
       "pinned": false,
       "tech_stack": [
@@ -1615,6 +1656,7 @@
         "apps/desktop/src-tauri/src/capture.rs",
         "apps/desktop/src-tauri/src/companion.rs",
         "apps/desktop/src-tauri/src/daemon.rs",
+        "apps/desktop/src-tauri/src/face.rs",
         "apps/desktop/src-tauri/src/halo.rs",
         "apps/desktop/src-tauri/src/hands.js",
         "apps/desktop/src-tauri/src/hands.rs",
@@ -1641,7 +1683,7 @@
         "sidecar",
         "halo"
       ],
-      "last_written_at": "2026-10-10T00:56:06.219967200+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "desktop-shell-rust",
       "pinned": false,
       "tech_stack": [
@@ -1671,10 +1713,12 @@
         "apps/desktop/src/depth/store.test.ts",
         "apps/desktop/src/depth/store.ts",
         "apps/desktop/src/stage/Backdrop.tsx",
+        "apps/desktop/src/stage/LoopCurrent.tsx",
         "apps/desktop/src/stage/Stage.test.tsx",
         "apps/desktop/src/stage/Stage.tsx",
         "apps/desktop/src/stage/layers.test.ts",
         "apps/desktop/src/stage/layers.ts",
+        "apps/desktop/src/stage/loop-current.ts",
         "apps/desktop/src/stage/preview.css",
         "apps/desktop/src/stage/preview.tsx",
         "apps/desktop/src/stage/stage.css",
@@ -1690,7 +1734,7 @@
         "backdrop",
         "hash"
       ],
-      "last_written_at": "2026-10-14T10:47:16.803763900+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "desktop-stage-depth",
       "pinned": false,
       "tech_stack": [
@@ -1712,20 +1756,21 @@
         "apps/desktop/src/stores/daemon.ts"
       ],
       "file_paths": [
-        "apps/desktop/src/stores/athena.ts",
         "apps/desktop/src/stores/athena.test.ts",
-        "apps/desktop/src/stores/daemon.ts",
+        "apps/desktop/src/stores/athena.ts",
         "apps/desktop/src/stores/daemon.test.ts",
+        "apps/desktop/src/stores/daemon.ts",
         "apps/desktop/src/stores/engines.ts",
         "apps/desktop/src/stores/origins.ts",
-        "apps/desktop/src/stores/run.ts",
+        "apps/desktop/src/stores/ran.ts",
         "apps/desktop/src/stores/run.test.ts",
-        "apps/desktop/src/stores/settings.ts",
+        "apps/desktop/src/stores/run.ts",
         "apps/desktop/src/stores/settings.test.ts",
+        "apps/desktop/src/stores/settings.ts",
         "apps/desktop/src/stores/shell.ts",
         "apps/desktop/src/stores/tabs.ts",
-        "apps/desktop/src/stores/tools.ts",
-        "apps/desktop/src/stores/tools.test.ts"
+        "apps/desktop/src/stores/tools.test.ts",
+        "apps/desktop/src/stores/tools.ts"
       ],
       "group": "Desktop Companion",
       "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
@@ -1739,7 +1784,7 @@
         "tools",
         "engines"
       ],
-      "last_written_at": "2026-10-14T10:47:16.909263800+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "desktop-stores",
       "pinned": false,
       "tech_stack": [
@@ -1832,6 +1877,7 @@
         "src/athena/harness/rounds.py",
         "src/athena/harness/tokenfactory.py",
         "src/athena/harness/transports.py",
+        "src/athena/harness/vision.py",
         "tests/harness/__init__.py",
         "tests/harness/conftest.py",
         "tests/harness/test_a_page_that_understates_a_write.py",
@@ -1859,7 +1905,7 @@
         "policy",
         "rounds"
       ],
-      "last_written_at": "2026-10-14T10:47:16.909703600+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "harness-engines",
       "pinned": false,
       "tech_stack": [
@@ -1938,14 +1984,17 @@
         "examples/hirelane/components/board/carousel/StageMeta.tsx",
         "examples/hirelane/components/board/carousel/pose.ts",
         "examples/hirelane/components/board/columns/facts.tsx",
+        "examples/hirelane/components/board/columns/filter.ts",
         "examples/hirelane/components/board/columns/stacking.ts",
         "examples/hirelane/components/board/dossier/Acts.tsx",
         "examples/hirelane/components/board/dossier/Bench.tsx",
         "examples/hirelane/components/board/dossier/Evidence.tsx",
         "examples/hirelane/components/board/dossier/Gate.tsx",
+        "examples/hirelane/components/board/dossier/History.tsx",
         "examples/hirelane/components/board/dossier/Verdict.tsx",
         "examples/hirelane/components/board/dossier/parts.tsx",
         "examples/hirelane/components/board/format.ts",
+        "examples/hirelane/components/board/history.ts",
         "examples/hirelane/components/board/marks/Face.tsx",
         "examples/hirelane/components/board/marks/Marks.tsx",
         "examples/hirelane/components/board/marks/Portrait.tsx",
@@ -1967,7 +2016,7 @@
         "candidate",
         "pipeline"
       ],
-      "last_written_at": "2026-10-10T00:56:06.224186300+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "hirelane-board-ui",
       "pinned": false,
       "tech_stack": [
@@ -2037,6 +2086,7 @@
         "examples/hirelane/components/board/tools/roster.ts",
         "examples/hirelane/components/board/tools/search.ts",
         "examples/hirelane/components/board/useRun.ts",
+        "examples/hirelane/lib/acts.ts",
         "examples/hirelane/lib/board/index.ts",
         "examples/hirelane/lib/board/read.ts",
         "examples/hirelane/lib/constants.ts",
@@ -2062,7 +2112,7 @@
         "seed",
         "webmcp"
       ],
-      "last_written_at": "2026-10-10T00:56:12.800733100+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "hirelane-model-and-lib",
       "pinned": false,
       "tech_stack": [
@@ -2139,6 +2189,7 @@
         "examples/journey/scripts/narrate.mjs",
         "examples/journey/scripts/placeholders.mjs",
         "examples/journey/scripts/record-desktop.mjs",
+        "examples/journey/scripts/render-docs.mjs",
         "examples/journey/scripts/serve-outside.mjs",
         "examples/journey/scripts/shoot-hirelane-r3.mjs",
         "examples/journey/scripts/shoot-hirelane.mjs",
@@ -2156,7 +2207,7 @@
         "compose",
         "screenshots"
       ],
-      "last_written_at": "2026-10-10T00:56:06.228160900+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "journey-capture",
       "pinned": false,
       "tech_stack": [
@@ -2187,6 +2238,8 @@
         "examples/journey/src/connectors/fake-notes.ts",
         "examples/journey/src/connectors/port.ts",
         "examples/journey/src/contracts.ts",
+        "examples/journey/src/daemon.ts",
+        "examples/journey/src/gravitone.ts",
         "examples/journey/src/ledger.ts",
         "examples/journey/src/onboard.ts",
         "examples/journey/src/proving.ts",
@@ -2213,7 +2266,7 @@
         "fake connectors",
         "take"
       ],
-      "last_written_at": "2026-10-10T00:56:06.227962900+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "journey-stage-src",
       "pinned": false,
       "tech_stack": [
@@ -2680,6 +2733,7 @@
         "src/athena/proving/playbooks/__main__.py",
         "src/athena/proving/playbooks/bench.py",
         "src/athena/proving/playbooks/evidence.py",
+        "src/athena/proving/playbooks/followthrough.py",
         "src/athena/proving/playbooks/page.py",
         "src/athena/proving/playbooks/rank.py",
         "src/athena/proving/playbooks/spec.py",
@@ -2699,7 +2753,7 @@
         "world",
         "spec"
       ],
-      "last_written_at": "2026-10-14T10:47:16.910260600+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "proving-playbooks-bench",
       "pinned": false,
       "tech_stack": [
@@ -2782,7 +2836,8 @@
         "examples/tidycrm/components/blocks/l0/useReduced.ts",
         "examples/tidycrm/components/blocks/sheet/Foot.tsx",
         "examples/tidycrm/components/blocks/sheet/Head.tsx",
-        "examples/tidycrm/components/shell/HostCapabilities.tsx"
+        "examples/tidycrm/components/shell/HostCapabilities.tsx",
+        "examples/tidycrm/components/shell/pairs.ts"
       ],
       "group": "Example Apps",
       "group_id": "761597ed-4b30-4aca-8723-56d045fbb507",
@@ -2795,7 +2850,7 @@
         "octants",
         "sheet"
       ],
-      "last_written_at": "2026-10-10T00:56:06.226333100+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "tidycrm-blocks-ui",
       "pinned": false,
       "tech_stack": [
@@ -3098,10 +3153,12 @@
         "src/athena/channels/voice/backends.py",
         "src/athena/channels/voice/commands.py",
         "src/athena/channels/voice/config.py",
+        "src/athena/channels/voice/ether.py",
         "src/athena/channels/voice/gateway.py",
         "src/athena/channels/voice/home.py",
         "src/athena/channels/voice/install.py",
         "src/athena/channels/voice/kokoro.py",
+        "src/athena/channels/voice/speech.py",
         "src/athena/channels/voice/tts.py",
         "src/athena/channels/voice/whisper.py",
         "src/athena/channels/voice/ws.py",
@@ -3129,7 +3186,7 @@
         "websocket",
         "commands"
       ],
-      "last_written_at": "2026-10-14T10:47:16.910108300+00:00",
+      "last_written_at": "2026-10-24T22:47:33.004Z",
       "name": "voice-channel",
       "pinned": false,
       "tech_stack": [
@@ -3172,14 +3229,608 @@
         "uv",
         "GitHub Actions"
       ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Peer Devices",
+      "category": "api",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Peer devices: identity, pairing, presence, phone companion PWA, remote calls and replication between Athena installs.",
+      "entry_points": [
+        "src/athena/peer/__init__.py",
+        "src/athena/peer/classify.py"
+      ],
+      "file_paths": [
+        "src/athena/peer/__init__.py",
+        "src/athena/peer/classify.py",
+        "src/athena/peer/client.py",
+        "src/athena/peer/devices.py",
+        "src/athena/peer/events.py",
+        "src/athena/peer/identity.py",
+        "src/athena/peer/listener.py",
+        "src/athena/peer/mobile/app.css",
+        "src/athena/peer/mobile/app.js",
+        "src/athena/peer/mobile/icon.svg",
+        "src/athena/peer/mobile/index.html",
+        "src/athena/peer/mobile/manifest.webmanifest",
+        "src/athena/peer/mobile/sw.js",
+        "src/athena/peer/overlay.py",
+        "src/athena/peer/pairing.py",
+        "src/athena/peer/phone.py",
+        "src/athena/peer/presence.py",
+        "src/athena/peer/registry.py",
+        "src/athena/peer/remote.py",
+        "src/athena/peer/replicate.py",
+        "src/athena/peer/routes.py",
+        "src/athena/peer/setup.py"
+      ],
+      "group": "Daemon and Channels",
+      "group_id": "56572968-53ad-4a18-aee8-5fe511fa9c1e",
+      "id": "d5b4781c-c114-4ddb-aadd-6d74d24b1871",
+      "keywords": [
+        "peer",
+        "pairing",
+        "devices",
+        "phone",
+        "presence",
+        "replicate"
+      ],
+      "last_written_at": "2026-10-24T22:47:33.004Z",
+      "name": "peer-devices",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Adopt Engine",
+      "category": "lib",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "The adopt loop: intake, cases, lanes, legs, research, receipts and showcase that turn a chore into an adopted playbook.",
+      "entry_points": [
+        "src/athena/adopt/__init__.py",
+        "src/athena/adopt/cadence.py"
+      ],
+      "file_paths": [
+        "src/athena/adopt/__init__.py",
+        "src/athena/adopt/cadence.py",
+        "src/athena/adopt/cases.py",
+        "src/athena/adopt/chores.py",
+        "src/athena/adopt/documents.py",
+        "src/athena/adopt/intake.py",
+        "src/athena/adopt/lanes.py",
+        "src/athena/adopt/legs.py",
+        "src/athena/adopt/loop.py",
+        "src/athena/adopt/prompts.py",
+        "src/athena/adopt/receipts.py",
+        "src/athena/adopt/research.py",
+        "src/athena/adopt/routes.py",
+        "src/athena/adopt/session.py",
+        "src/athena/adopt/showcase.py",
+        "src/athena/adopt/slots.py",
+        "src/athena/adopt/tiers.json",
+        "src/athena/contracts/adopt.py",
+        "src/athena/core/case_turns.py"
+      ],
+      "group": "Agent Core",
+      "group_id": "d5035657-33c5-441a-b405-45a2207b4ac9",
+      "id": "e60b5323-8209-4adf-8a61-20d74567048f",
+      "keywords": [
+        "adopt",
+        "intake",
+        "cases",
+        "lanes",
+        "legs",
+        "receipts",
+        "showcase"
+      ],
+      "last_written_at": "2026-10-24T22:47:33.004Z",
+      "name": "adopt-engine",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Core Sleep And Vitals",
+      "category": "lib",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "The sleep cycle (admission, book, window, proposals, legs) and host vitals (probe, sampler, gate) that decide when Athena works unattended.",
+      "entry_points": [
+        "src/athena/core/sleep/__init__.py",
+        "src/athena/core/sleep/admission.py"
+      ],
+      "file_paths": [
+        "src/athena/core/sleep/__init__.py",
+        "src/athena/core/sleep/admission.py",
+        "src/athena/core/sleep/book.py",
+        "src/athena/core/sleep/cycle.py",
+        "src/athena/core/sleep/legs.py",
+        "src/athena/core/sleep/proposals.py",
+        "src/athena/core/sleep/window.py",
+        "src/athena/daemon/sleep.py",
+        "src/athena/vitals/__init__.py",
+        "src/athena/vitals/gate.py",
+        "src/athena/vitals/probe.py",
+        "src/athena/vitals/sampler.py",
+        "src/athena/vitals/wire.py"
+      ],
+      "group": "Agent Core",
+      "group_id": "d5035657-33c5-441a-b405-45a2207b4ac9",
+      "id": "f5e70f7e-22a3-4f45-8a8b-ea7e106d9884",
+      "keywords": [
+        "sleep",
+        "cycle",
+        "window",
+        "vitals",
+        "probe",
+        "admission"
+      ],
+      "last_written_at": "2026-10-24T22:47:33.004Z",
+      "name": "core-sleep-and-vitals",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Voice Face Sidecar",
+      "category": "lib",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "The face helper sidecar: motion, visemes and probe driving the avatar from voice, plus the voice face bridge.",
+      "entry_points": [
+        "src/athena/channels/voice/face.py",
+        "src/athena/channels/voice/face_helper/__init__.py"
+      ],
+      "file_paths": [
+        "src/athena/channels/voice/face.py",
+        "src/athena/channels/voice/face_helper/__init__.py",
+        "src/athena/channels/voice/face_helper/decoder.json",
+        "src/athena/channels/voice/face_helper/main.py",
+        "src/athena/channels/voice/face_helper/motion.py",
+        "src/athena/channels/voice/face_helper/probe.py",
+        "src/athena/channels/voice/face_helper/visemes.py"
+      ],
+      "group": "Daemon and Channels",
+      "group_id": "56572968-53ad-4a18-aee8-5fe511fa9c1e",
+      "id": "cde9a5c8-4111-48b9-aa23-820345cdfa9c",
+      "keywords": [
+        "face",
+        "visemes",
+        "motion",
+        "avatar",
+        "sidecar"
+      ],
+      "last_written_at": "2026-10-24T22:47:33.004Z",
+      "name": "voice-face-sidecar",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Proving Forge",
+      "category": "test",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Forge bench: generates, validates, audits and scores candidate worlds and playbooks.",
+      "entry_points": [
+        "src/athena/proving/forge/__init__.py",
+        "src/athena/proving/forge/__main__.py"
+      ],
+      "file_paths": [
+        "src/athena/proving/forge/__init__.py",
+        "src/athena/proving/forge/__main__.py",
+        "src/athena/proving/forge/audit.py",
+        "src/athena/proving/forge/base.py",
+        "src/athena/proving/forge/dry.py",
+        "src/athena/proving/forge/forge.py",
+        "src/athena/proving/forge/pick.py",
+        "src/athena/proving/forge/report.py",
+        "src/athena/proving/forge/run.py",
+        "src/athena/proving/forge/runner.py",
+        "src/athena/proving/forge/store.py",
+        "src/athena/proving/forge/validate.py"
+      ],
+      "group": "Proving Ground",
+      "group_id": "9296a478-43a1-4d91-8d38-f66645b44010",
+      "id": "416c5dcb-4ee7-4372-9b10-ed228c8b1723",
+      "keywords": [
+        "forge",
+        "bench",
+        "audit",
+        "validate"
+      ],
+      "last_written_at": "2026-10-24T22:47:33.004Z",
+      "name": "proving-forge",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Proving Docread",
+      "category": "test",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Document-reading bench: corpus, templates, dry runs, scoring and reports.",
+      "entry_points": [
+        "src/athena/proving/docread/__init__.py",
+        "src/athena/proving/docread/__main__.py"
+      ],
+      "file_paths": [
+        "src/athena/proving/docread/__init__.py",
+        "src/athena/proving/docread/__main__.py",
+        "src/athena/proving/docread/corpus.py",
+        "src/athena/proving/docread/dry.py",
+        "src/athena/proving/docread/read.py",
+        "src/athena/proving/docread/report.py",
+        "src/athena/proving/docread/run.py",
+        "src/athena/proving/docread/score.py",
+        "src/athena/proving/docread/templates.py"
+      ],
+      "group": "Proving Ground",
+      "group_id": "9296a478-43a1-4d91-8d38-f66645b44010",
+      "id": "c2c45e5a-0b46-45e8-959a-e2d49658e633",
+      "keywords": [
+        "docread",
+        "corpus",
+        "score",
+        "templates"
+      ],
+      "last_written_at": "2026-10-24T22:47:33.004Z",
+      "name": "proving-docread",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Proving Chores Uat",
+      "category": "test",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Chores UAT bench: cast, rig, cases, judge and numbers for chore runs.",
+      "entry_points": [
+        "src/athena/proving/chores_uat/__init__.py",
+        "src/athena/proving/chores_uat/__main__.py"
+      ],
+      "file_paths": [
+        "src/athena/proving/chores_uat/__init__.py",
+        "src/athena/proving/chores_uat/__main__.py",
+        "src/athena/proving/chores_uat/cases.py",
+        "src/athena/proving/chores_uat/cast.py",
+        "src/athena/proving/chores_uat/judge.py",
+        "src/athena/proving/chores_uat/numbers.py",
+        "src/athena/proving/chores_uat/report.py",
+        "src/athena/proving/chores_uat/rig.py",
+        "src/athena/proving/chores_uat/run.py"
+      ],
+      "group": "Proving Ground",
+      "group_id": "9296a478-43a1-4d91-8d38-f66645b44010",
+      "id": "3dfcc8c4-3502-4783-a48a-82131d3537c4",
+      "keywords": [
+        "chores",
+        "uat",
+        "judge",
+        "rig",
+        "cast"
+      ],
+      "last_written_at": "2026-10-24T22:47:33.004Z",
+      "name": "proving-chores-uat",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Proving Adopt Tiers",
+      "category": "test",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Adopt tiers bench: scenario pick, simulate, score and report for the adopt loop.",
+      "entry_points": [
+        "src/athena/proving/adopt_tiers/__init__.py",
+        "src/athena/proving/adopt_tiers/__main__.py"
+      ],
+      "file_paths": [
+        "src/athena/proving/adopt_tiers/__init__.py",
+        "src/athena/proving/adopt_tiers/__main__.py",
+        "src/athena/proving/adopt_tiers/pick.py",
+        "src/athena/proving/adopt_tiers/report.py",
+        "src/athena/proving/adopt_tiers/scenarios.py",
+        "src/athena/proving/adopt_tiers/scenarios/easy-data-broker.json",
+        "src/athena/proving/adopt_tiers/scenarios/easy-lease-end.json",
+        "src/athena/proving/adopt_tiers/scenarios/easy-vehicle-recall.json",
+        "src/athena/proving/adopt_tiers/scenarios/hard-carrier.json",
+        "src/athena/proving/adopt_tiers/scenarios/hard-chargeback.json",
+        "src/athena/proving/adopt_tiers/scenarios/hard-ltc.json",
+        "src/athena/proving/adopt_tiers/scenarios/typical-baggage.json",
+        "src/athena/proving/adopt_tiers/scenarios/typical-medicaid.json",
+        "src/athena/proving/adopt_tiers/scenarios/typical-property-tax.json",
+        "src/athena/proving/adopt_tiers/score.py",
+        "src/athena/proving/adopt_tiers/simulate.py"
+      ],
+      "group": "Proving Ground",
+      "group_id": "9296a478-43a1-4d91-8d38-f66645b44010",
+      "id": "53d829a4-5bda-40b3-9639-d7ded5551131",
+      "keywords": [
+        "adopt",
+        "tiers",
+        "simulate",
+        "scenarios"
+      ],
+      "last_written_at": "2026-10-24T22:47:33.004Z",
+      "name": "proving-adopt-tiers",
+      "pinned": false,
+      "tech_stack": [
+        "Python 3.11+",
+        "pytest"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Desktop Avatar",
+      "category": "ui",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "The avatar: layers, glow, visemes, runtime driver and face signal/timeline, and the face steps in the surface, voice and waking scenes.",
+      "entry_points": [
+        "apps/desktop/src/avatar/Avatar.tsx",
+        "apps/desktop/src/avatar/driver.ts"
+      ],
+      "file_paths": [
+        "apps/desktop/src/avatar/Avatar.tsx",
+        "apps/desktop/src/avatar/driver.ts",
+        "apps/desktop/src/avatar/fixtures.ts",
+        "apps/desktop/src/avatar/glow.ts",
+        "apps/desktop/src/avatar/layers.ts",
+        "apps/desktop/src/avatar/preview.tsx",
+        "apps/desktop/src/avatar/runtime.ts",
+        "apps/desktop/src/avatar/types.ts",
+        "apps/desktop/src/avatar/visemes.ts",
+        "apps/desktop/src/lib/face-preview.ts",
+        "apps/desktop/src/lib/face-signal.ts",
+        "apps/desktop/src/lib/face-timeline.ts",
+        "apps/desktop/src/lib/face.ts",
+        "apps/desktop/src/scenes/surface/face.tsx",
+        "apps/desktop/src/scenes/voice/face.tsx",
+        "apps/desktop/src/scenes/waking/face-step.tsx",
+        "apps/desktop/src/scenes/waking/faces.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "b799ff00-4ef8-4010-9d4a-6ae934a5eddf",
+      "keywords": [
+        "avatar",
+        "face",
+        "visemes",
+        "glow",
+        "layers"
+      ],
+      "last_written_at": "2026-10-24T22:47:33.004Z",
+      "name": "desktop-avatar",
+      "pinned": false,
+      "tech_stack": [
+        "React",
+        "TypeScript",
+        "Vite"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Desktop Chores Adopt Intake",
+      "category": "ui",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Chores adopt studio and intake: conversation, case panel, cards, showcase, verdict and their sessions and clients.",
+      "entry_points": [
+        "apps/desktop/src/lib/adopt-client.ts",
+        "apps/desktop/src/lib/adopt.ts"
+      ],
+      "file_paths": [
+        "apps/desktop/src/lib/adopt-client.ts",
+        "apps/desktop/src/lib/adopt.ts",
+        "apps/desktop/src/lib/intake-client.ts",
+        "apps/desktop/src/scenes/chores/adopt/adopt.css",
+        "apps/desktop/src/scenes/chores/adopt/card.tsx",
+        "apps/desktop/src/scenes/chores/adopt/casepanel.tsx",
+        "apps/desktop/src/scenes/chores/adopt/conversation.tsx",
+        "apps/desktop/src/scenes/chores/adopt/deps.ts",
+        "apps/desktop/src/scenes/chores/adopt/fixtures.ts",
+        "apps/desktop/src/scenes/chores/adopt/live-deps.ts",
+        "apps/desktop/src/scenes/chores/adopt/session.ts",
+        "apps/desktop/src/scenes/chores/adopt/showcase.tsx",
+        "apps/desktop/src/scenes/chores/adopt/state.ts",
+        "apps/desktop/src/scenes/chores/adopt/studio.tsx",
+        "apps/desktop/src/scenes/chores/intake/fixtures.ts",
+        "apps/desktop/src/scenes/chores/intake/intake.tsx",
+        "apps/desktop/src/scenes/chores/intake/session.ts",
+        "apps/desktop/src/scenes/chores/intake/state.ts",
+        "apps/desktop/src/scenes/chores/intake/verdict.tsx"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "2eec1b9a-cba7-4ef0-91e3-f8d8cb8be22b",
+      "keywords": [
+        "adopt",
+        "intake",
+        "studio",
+        "verdict",
+        "showcase"
+      ],
+      "last_written_at": "2026-10-24T22:47:33.004Z",
+      "name": "desktop-chores-adopt-intake",
+      "pinned": false,
+      "tech_stack": [
+        "React",
+        "TypeScript",
+        "Vite"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Desktop Companion Surfaces",
+      "category": "ui",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Companion pages: welcome, tasks, ledger, seal, slip, detail and rich rendering, plus the translate layer (decision, payload, words).",
+      "entry_points": [
+        "apps/desktop/src/companion/detail.tsx",
+        "apps/desktop/src/companion/icons.tsx"
+      ],
+      "file_paths": [
+        "apps/desktop/src/companion/detail.tsx",
+        "apps/desktop/src/companion/icons.tsx",
+        "apps/desktop/src/companion/ledger.tsx",
+        "apps/desktop/src/companion/pages.tsx",
+        "apps/desktop/src/companion/preview.css",
+        "apps/desktop/src/companion/rich.tsx",
+        "apps/desktop/src/companion/seal.css",
+        "apps/desktop/src/companion/seal.tsx",
+        "apps/desktop/src/companion/slip.tsx",
+        "apps/desktop/src/companion/tasks.css",
+        "apps/desktop/src/companion/tasks.tsx",
+        "apps/desktop/src/companion/tokens.css",
+        "apps/desktop/src/companion/translate/decision.ts",
+        "apps/desktop/src/companion/translate/index.ts",
+        "apps/desktop/src/companion/translate/payload.ts",
+        "apps/desktop/src/companion/translate/sessions.fixture.json",
+        "apps/desktop/src/companion/translate/words.ts",
+        "apps/desktop/src/companion/welcome.tsx"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "c3771aa6-19f3-464e-b77c-88855af84b84",
+      "keywords": [
+        "companion",
+        "pages",
+        "ledger",
+        "seal",
+        "translate"
+      ],
+      "last_written_at": "2026-10-24T22:47:33.004Z",
+      "name": "desktop-companion-surfaces",
+      "pinned": false,
+      "tech_stack": [
+        "React",
+        "TypeScript",
+        "Vite"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Desktop Tasks And Due",
+      "category": "ui",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Tasks and due work: task runner and stores, task rows, the surface tasks list, due model, due poll and the console due notice.",
+      "entry_points": [
+        "apps/desktop/src/components/TaskRow.tsx",
+        "apps/desktop/src/components/task-row.css"
+      ],
+      "file_paths": [
+        "apps/desktop/src/components/TaskRow.tsx",
+        "apps/desktop/src/components/task-row.css",
+        "apps/desktop/src/console/due-notice.css",
+        "apps/desktop/src/console/due-notice.tsx",
+        "apps/desktop/src/lib/tasks.ts",
+        "apps/desktop/src/scenes/chores/due-model.ts",
+        "apps/desktop/src/scenes/chores/due.tsx",
+        "apps/desktop/src/scenes/surface/tasks.css",
+        "apps/desktop/src/scenes/surface/tasks.tsx",
+        "apps/desktop/src/stores/due-poll.ts",
+        "apps/desktop/src/stores/due.ts",
+        "apps/desktop/src/stores/task-runner.ts",
+        "apps/desktop/src/stores/tasks.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "18d61ada-1f6c-4a19-bdb8-c847e37bcebe",
+      "keywords": [
+        "tasks",
+        "due",
+        "runner",
+        "notice"
+      ],
+      "last_written_at": "2026-10-24T22:47:33.004Z",
+      "name": "desktop-tasks-and-due",
+      "pinned": false,
+      "tech_stack": [
+        "React",
+        "TypeScript",
+        "Vite"
+      ]
+    },
+    {
+      "api_surface": "",
+      "business_feature": "Desktop Mind Devices Sleep",
+      "category": "ui",
+      "cross_refs": [],
+      "db_tables": [],
+      "description": "Mind depth devices, pairing QR, sleep and vitals panels and the constellation, with their stores and clients.",
+      "entry_points": [
+        "apps/desktop/src/lib/sleep.ts",
+        "apps/desktop/src/lib/vitals.ts"
+      ],
+      "file_paths": [
+        "apps/desktop/src/lib/sleep.ts",
+        "apps/desktop/src/lib/vitals.ts",
+        "apps/desktop/src/scenes/mind/constellation.tsx",
+        "apps/desktop/src/scenes/mind/devices.tsx",
+        "apps/desktop/src/scenes/mind/qr-svg.tsx",
+        "apps/desktop/src/scenes/mind/qr.ts",
+        "apps/desktop/src/scenes/mind/sleep.tsx",
+        "apps/desktop/src/scenes/mind/vitals.tsx",
+        "apps/desktop/src/scenes/mind/wizard.tsx",
+        "apps/desktop/src/stores/devices.ts",
+        "apps/desktop/src/stores/sleep.ts"
+      ],
+      "group": "Desktop Companion",
+      "group_id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
+      "id": "0ad350e1-e727-4766-aae8-487901e15ed0",
+      "keywords": [
+        "devices",
+        "qr",
+        "sleep",
+        "vitals",
+        "constellation",
+        "wizard"
+      ],
+      "last_written_at": "2026-10-24T22:47:33.004Z",
+      "name": "desktop-mind-devices-sleep",
+      "pinned": false,
+      "tech_stack": [
+        "React",
+        "TypeScript",
+        "Vite"
+      ]
     }
   ],
-  "generated_at": "2026-10-14T10:47:40.941161600+00:00",
+  "generated_at": "2026-10-24T22:47:33.004Z",
   "generator": "personas-context-scan",
   "groups": [
     {
       "color": "amber",
-      "context_count": 4,
+      "context_count": 6,
       "domain": "shared",
       "id": "d5035657-33c5-441a-b405-45a2207b4ac9",
       "name": "Agent Core"
@@ -3193,7 +3844,7 @@
     },
     {
       "color": "indigo",
-      "context_count": 3,
+      "context_count": 5,
       "domain": "infrastructure",
       "id": "56572968-53ad-4a18-aee8-5fe511fa9c1e",
       "name": "Daemon and Channels"
@@ -3207,7 +3858,7 @@
     },
     {
       "color": "violet",
-      "context_count": 5,
+      "context_count": 9,
       "domain": "feature",
       "id": "9296a478-43a1-4d91-8d38-f66645b44010",
       "name": "Proving Ground"
@@ -3221,7 +3872,7 @@
     },
     {
       "color": "orange",
-      "context_count": 21,
+      "context_count": 26,
       "domain": "feature",
       "id": "07ecc792-9fbf-457f-a104-d09f3eb6b917",
       "name": "Desktop Companion"
@@ -3254,12 +3905,13 @@
     "root": "C:\\Users\\kazda\\kiro\\athena-portable"
   },
   "provenance": {
-    "git_commit": "b2e185a0068f2430c5c160e786c6289731c6ab7d",
-    "git_commit_count": 576
+    "git_commit": "a5957ef0f4a19e48769eed610fb6ab280daa2d17",
+    "git_commit_count": 1381,
+    "rescan": "scan-sweep --challenge 2026-10-25: dropped vanished paths, assigned new files by directory, added 13 contexts for modules the 2026-10-14 scan predates"
   },
   "stats": {
-    "contexts": 64,
-    "files": 974,
+    "contexts": 77,
+    "files": 1216,
     "groups": 10,
     "use_cases": 12
   },
