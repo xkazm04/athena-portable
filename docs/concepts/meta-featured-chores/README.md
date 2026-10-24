@@ -1,0 +1,116 @@
+# Featured chores on Meta's models - the spike program
+
+Status: **spikes staged, none started** (2026-10-24). Six concept folders that `/spark` takes one at a
+time. They come from the solution contest `athena-meta-solutions` (six design reports, one Opus seat
+each, owner review, no judge): the owner descoped one and fused the other five into this program.
+
+## The owner's decision
+
+Owner, 2026-10-24:
+
+> "lets abort, I will descope track A/1. I like the 3D printing but I see ideal investment is around
+> 30 000 CZK which is too much for 'fun' side hackathon. I would fuse all other, create please spikes
+> per variant into /docs/concepts in athena-portable codebase, /spark skill will take them there and
+> experiment: 1. Each variant as chore in the existing app - they will become featured chores, spikes
+> will try to overcome risks and confirm feasibility, realiability and brought value. 2. Each spike
+> will be triggered separately, but having shared know how regarding of Meta models will help,
+> include ai-registry to keep best practices after each spike, use Memory.md, or Obsidian graph
+> memory to support parallel development - all spikes will be run by claude code clis in parallel,
+> once one achieves breakthrough in using model or successful technique, other can benefit quickly
+> 3. Techstack and UI - athena-portable will stay as baseline, UI and UX because it reached high
+> quality level in both."
+
+Descoped: **A/1 Countersign** (a trust layer for lab liquid-handling robots). It needed hardware
+(a robot, or at least a printer-class machine around 30,000 CZK) for a credible demo.
+
+## The program
+
+```
+                 ┌──────────────────── 00 Meta senses ────────────────────┐
+                 │ Muse engine · SAM 3.1 · Voice · reading · prices/modes  │
+                 │ featured flag + band · media worlds · sense Gauntlet     │
+                 └───────┬──────────┬──────────┬──────────┬──────────┬─────┘
+                         ▼          ▼          ▼          ▼          ▼
+                  01 paper     02 appeal   03 roll     04 renovation 05 care
+                  flip-through   kin        call        witness       circle
+                  PAPER sense  CALL sense  OBJECT sense WALK sense    CIRCLE
+                     │  ▲         │  ▲         │            ▲  ▲          ▲
+                     └──┼─────────┘  └─────────┼────────────┘  │          │
+                        └──── read by 02, 05 ──┴── counts for 04, 05 ─────┘
+       shared know-how vault: .spark/Spark/meta/ (findings, feed)   ·   ai-registry after each spike
+```
+
+| Spike | From | The featured chore | Owns (others consume) | The riskiest assumption |
+|---|---|---|---|---|
+| [00 Meta senses](00-meta-senses/README.md) | - | none: the foundation | engine, clients, prices, featured flag, media worlds | the API is what the docs say (probe on day 1) |
+| [01 Paper flip-through](01-paper-flip/README.md) | B/1 Athena Envelope | a parent's mail filmed once -> cited cards to sign | **paper sense** | SAM separates sheets and Spark reads them well enough to sign on |
+| [02 Appeal a parent's denial](02-appeal-kin/README.md) | C/1 Athena Kin | the appeal built from letters, the phone call and the portal | **call sense**, packet binding | a call becomes cited turns; Voice Transcribe counts as Meta tooling |
+| [03 Roll Call](03-roll-call/README.md) | D/1 Roll Call | the home inventory from the household's own photos | **object sense** | a photo archive contains the home |
+| [04 Renovation witness](04-renovation-witness/README.md) | E/1 Athena Witness | promises, changes and payments of a remodel on the record | **walk sense**, vague-change validator | SAM counts installed items on a phone walk |
+| [05 Care circle](05-care-circle/README.md) | F/1 Circle | a parent's care shared by the family; the parent decides | **circle** (members, signer table) | the gate can answer "whose yes" without breaking single-user Athena |
+
+Each spike folder holds the seat's full design report (`report.html`) and a README that turns its
+risks into **proofs**: feasibility (the model does it on real inputs), reliability (it does it again,
+for other people, in bad light, at a price), value (Character-played onboarding and rehearsal through
+`proving/chores_uat`, timed, with the answer key's money) - each with a pass bar and a kill line.
+
+## What "featured" means
+
+A featured chore is a normal chore (a playbook with its world, answer key and bench) that **uses a
+Meta sense** and has **passed its spike's proofs**. Spike 00 adds the `featured` block to the playbook
+schema and a featured band to the Chores scene; a chore earns the flag the way a playbook earns its
+place on the bench (ADR 0040), never by being authored. A spike that hits a kill line ships its
+fallback as an ordinary chore, or nothing, and says which.
+
+## Order and coordination
+
+1. **Spike 00 first.** It lands the shared Meta package and the featured contract; until a key exists
+   (the hackathon opens 2026-10-26) it builds against Meta's published shapes with a fake transport.
+2. **01-05 in parallel**, each in its own Claude Code session running `/spark`. Their offline work
+   (fictional paper printed from worlds, recorded walks and calls, staged photos, answer keys) needs
+   no key and starts at once.
+3. **In the main tree, not in worktree copies** (the owner's standing rule: no full copies of a repo
+   with its own build target). Each spike confines itself to new paths and commits with exact
+   pathspecs; shared files have one owner:
+
+| Shared surface | Owner | Everyone else |
+|---|---|---|
+| `src/athena/contracts/`, engine lists (`harness/engines.py`, `src-tauri/src/daemon.rs`, `lib/engines.ts`), playbook `featured` schema, Chores featured band | 00 | request a change through a finding, never edit |
+| `src/athena/harness/meta/` (shared clients) | 00 creates | small single-file commits with a test and a `breakthrough` finding (know-how.md section 2) |
+| `src/athena/senses/<sense>/` | the spike that owns the sense | consume its public functions |
+| `playbooks/<new-id>/` | the chore's spike | - |
+| `playbooks/ranking.json`, `CHANGELOG.md`, `docs/features/*.md` | everyone | regenerate or append in a separate commit, re-read just before writing |
+| ADR numbers | 00: 0201-0205 · 01: 0206-0210 · 02: 0211-0215 · 03: 0216-0220 · 04: 0221-0225 · 05: 0226-0230 (a block clear of the sequence other sessions are still using) | never take a number outside your block |
+| media (video, audio, photo folders) | each spike, **local only** (ADR 0055) | commit the index, never the media |
+
+## Budget
+
+The hackathon gives each accepted participant **$150 of Meta Model API credits for ten days**
+(partner credits for open weights: Baseten $100, Modal $100, Fireworks $25). Suggested split, enforced
+as per-spike caps in the ledger (`proving/budget.py`): 00 probe $10 · each chore spike $20 ($100) ·
+$40 held back for recorded demo runs. A spike that needs more asks the owner with its ledger total.
+Contributor mode is never used on a person's data (Standard only - a test in spike 00).
+
+## Shared know-how
+
+[know-how.md](know-how.md) is the protocol: a live Obsidian vault in the main checkout
+(`.spark/Spark/meta/`: one finding per file, an append-only feed, `breakthrough: true` for anything
+others should change their calls for), the shared Meta package as the code layer, and the ai-registry
+after each spike (`memory/semantic/meta-model-api-for-agents.md` for measured facts, an episodic note
+per spike, technique leads in `.ai/registry-leads.jsonl`). [meta-model-facts.md](meta-model-facts.md)
+is the sourced snapshot every spike starts from.
+
+## Not in this program
+
+- **The UI theme.** A separate contest (`athena-meta-theme`, two seats, three variants each) designs a
+  Meta/Muse-derived theme on top of the current UI; spikes use the current tokens and components and
+  do not restyle anything.
+- **Where the hackathon submission lives.** athena-meta's ADR 0001 planned a fresh repository with
+  a disclosed import of athena-portable at T0. Building the featured chores here changes that
+  premise. **Open, for the owner:** submit athena-portable with the prior work disclosed, or import
+  it into athena-meta at a named SHA after the spikes.
+
+## Launching a spike
+
+Each README ends with its `/spark` line. Start 00, then 01-05 in separate sessions. Every session
+reads `know-how.md` and `tail -n 30 .spark/Spark/meta/feed.jsonl` before each phase.

@@ -1,0 +1,729 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Circle: one cited care record for the family looking after someone</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Source+Serif+4:opsz,wght@8..60,400;8..60,600;8..60,700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root{
+  --paper:#fbf8f3; --panel:#ffffff; --ink:#1f2328; --ink2:#4a5058; --muted:#6b7178; --rule:#e4ddd2;
+  --teal:#0f6e6a; --teal-soft:#e3f1ef; --amber:#a35c00; --amber-soft:#fbefd9; --red:#b3261e; --red-soft:#fbe6e4;
+  --blue:#2b5aa8; --blue-soft:#e6eefb; --code:#f4f1ea;
+  --serif:"Source Serif 4", Georgia, "Times New Roman", serif;
+  --sans:Inter, "Segoe UI", system-ui, -apple-system, Arial, sans-serif;
+  --mono:"JetBrains Mono", Consolas, "Courier New", monospace;
+}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--paper);color:var(--ink);font:17px/1.62 var(--sans)}
+a{color:var(--teal)}
+nav{position:fixed;top:0;left:0;bottom:0;width:250px;overflow-y:auto;padding:26px 18px 30px 22px;border-right:1px solid var(--rule);background:#f6f2ea;font-size:14px}
+nav .brand{font:700 20px/1.2 var(--serif);color:var(--ink);margin-bottom:4px}
+nav .sub{color:var(--muted);font-size:12.5px;margin-bottom:18px}
+nav h4{font:600 11px/1 var(--sans);letter-spacing:.12em;text-transform:uppercase;color:var(--muted);margin:20px 0 8px}
+nav a{display:block;color:var(--ink2);text-decoration:none;padding:4px 8px;border-radius:6px;border-left:3px solid transparent}
+nav a:hover{background:#ece6da}
+nav a.on{color:var(--teal);border-left-color:var(--teal);background:var(--teal-soft);font-weight:500}
+main{margin-left:250px;max-width:1010px;padding:30px 54px 90px}
+section{padding-top:26px;margin-bottom:22px;border-top:1px solid var(--rule)}
+section:first-of-type{border-top:none}
+h1{font:700 44px/1.12 var(--serif);margin:8px 0 14px;letter-spacing:-.01em}
+h2{font:700 30px/1.2 var(--serif);margin:12px 0 12px}
+h3{font:600 20px/1.3 var(--serif);margin:26px 0 8px}
+.kicker{font:600 12px/1 var(--sans);letter-spacing:.14em;text-transform:uppercase;color:var(--teal)}
+p{margin:10px 0}
+.lede{font:400 21px/1.5 var(--serif);color:var(--ink)}
+small,.note{color:var(--muted);font-size:14px}
+code{font:14px/1.4 var(--mono);background:var(--code);padding:1px 5px;border-radius:4px}
+pre{font:13.5px/1.55 var(--mono);background:#1e2329;color:#e9e4da;padding:16px 18px;border-radius:10px;overflow-x:auto;margin:14px 0}
+pre .c{color:#93a1a1}
+pre .k{color:#7fd1c7}
+pre .s{color:#f2c27b}
+/* tags */
+.t{display:inline-block;font:600 10.5px/1 var(--sans);padding:3px 5px;border-radius:4px;vertical-align:2px;margin:0 1px;text-decoration:none;letter-spacing:.03em}
+.t.S{background:var(--teal-soft);color:var(--teal);border:1px solid #b9dcd7}
+.t.R{background:var(--blue-soft);color:var(--blue);border:1px solid #c3d4f1}
+.t.A{background:var(--amber-soft);color:var(--amber);border:1px solid #efd3a3}
+.t.P{background:#efe9ff;color:#5b3fb0;border:1px solid #d6cbf5}
+.t.U{background:#f1f1f1;color:#555;border:1px solid #d8d8d8}
+/* hero */
+.hero{background:var(--panel);border:1px solid var(--rule);border-radius:16px;padding:30px 34px;margin-top:10px;box-shadow:0 1px 0 #eee}
+.nums{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin:22px 0 8px}
+.num{border-left:4px solid var(--teal);padding:4px 0 4px 14px}
+.num b{display:block;font:700 38px/1.05 var(--serif);color:var(--ink)}
+.num span{font-size:14.5px;color:var(--ink2);display:block;margin-top:4px}
+.changes{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:20px}
+.chg{background:var(--teal-soft);border-radius:10px;padding:14px 16px;font-size:15.5px}
+.chg b{display:block;font:600 16px/1.3 var(--serif);margin-bottom:4px;color:var(--teal)}
+.why{margin-top:18px;padding:14px 18px;border-radius:10px;background:var(--amber-soft);font-size:15.5px}
+.why b{color:var(--amber)}
+/* claims */
+.claim{font:600 23px/1.38 var(--serif);border-left:5px solid var(--teal);padding:6px 0 6px 20px;margin:22px 0;color:var(--ink)}
+.claim.amber{border-color:var(--amber)}
+.claim.red{border-color:var(--red)}
+.claim small{display:block;font:400 14px/1.4 var(--sans);color:var(--muted);margin-top:6px}
+/* tables */
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:14.5px;background:var(--panel);border:1px solid var(--rule);border-radius:10px;overflow:hidden}
+th{text-align:left;font:600 12px/1.3 var(--sans);letter-spacing:.05em;text-transform:uppercase;color:var(--muted);background:#f3eee5;padding:9px 11px;border-bottom:1px solid var(--rule)}
+td{padding:9px 11px;border-bottom:1px solid #efe9df;vertical-align:top}
+tr:last-child td{border-bottom:none}
+td.k{font-weight:600;white-space:nowrap}
+.kept{color:var(--teal);font-weight:600}.chgd{color:var(--amber);font-weight:600}.drop{color:var(--red);font-weight:600}.new{color:var(--blue);font-weight:600}
+/* figures */
+figure{margin:18px 0 22px;background:var(--panel);border:1px solid var(--rule);border-radius:14px;padding:18px 18px 12px}
+figure svg{width:100%;height:auto;display:block}
+figcaption{font-size:14px;color:var(--ink2);margin-top:10px;border-top:1px dashed var(--rule);padding-top:8px}
+figcaption b{color:var(--ink)}
+svg text{font-family:Inter,"Segoe UI",system-ui,Arial,sans-serif}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+.card{background:var(--panel);border:1px solid var(--rule);border-radius:12px;padding:14px 18px}
+.card h4{margin:0 0 6px;font:600 16px/1.3 var(--serif)}
+.beat{display:grid;grid-template-columns:78px 1fr 88px;gap:14px;padding:12px 0;border-bottom:1px solid #efe9df;align-items:start}
+.beat:last-child{border-bottom:none}
+.beat .tm{font:600 15px/1.2 var(--mono);color:var(--teal)}
+.beat .lv{font:600 11px/1 var(--sans);text-transform:uppercase;letter-spacing:.06em;padding:4px 6px;border-radius:4px;text-align:center}
+.lv.live{background:var(--teal-soft);color:var(--teal)}.lv.rec{background:#eee;color:#555}.lv.mix{background:var(--amber-soft);color:var(--amber)}
+.lean{background:var(--red-soft);border-radius:10px;padding:2px 14px}
+.legend{font-size:13px;color:var(--muted);margin:6px 0 0}
+ul{padding-left:22px}li{margin:4px 0}
+.src li{font-size:14px;word-break:break-word}
+@media (max-width:900px){nav{display:none}main{margin-left:0;padding:20px}.nums,.changes,.two{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+<nav id="nav">
+  <div class="brand">Circle</div>
+  <div class="sub">Solution design · round 1<br>Meta Global AI Developer Hackathon, Startup track</div>
+  <h4>Position</h4>
+  <a href="#claim">The claim</a>
+  <a href="#people">The people and the pain</a>
+  <a href="#bet">The bet, target, kill line</a>
+  <a href="#lane">Why several people change everything</a>
+  <h4>Machine</h4>
+  <a href="#overview">The whole system</a>
+  <a href="#record">1 · The circle record</a>
+  <a href="#capture">2 · Read the counter</a>
+  <a href="#voices">3 · Voices make records</a>
+  <a href="#gate">4 · The signer gate</a>
+  <a href="#views">5 · Views and the privacy line</a>
+  <a href="#load">6 · The load loop</a>
+  <a href="#model">Data model</a>
+  <a href="#meta">Meta tooling</a>
+  <a href="#reuse">Athena Portable reuse</a>
+  <h4>Argument</h4>
+  <a href="#demo">The demo</a>
+  <a href="#slice">Slice vs perfect product</a>
+  <a href="#business">Business and cost</a>
+  <a href="#risks">Pros, cons, risks</a>
+  <a href="#round2">What round 2 prototypes</a>
+  <a href="#sources">Sources and tags</a>
+</nav>
+
+<main>
+<!-- ============================ CLAIM ============================ -->
+<section id="claim">
+  <div class="kicker">The claim</div>
+  <h1>Circle: when a parent needs care, the whole family works from one record, and Dad still decides.</h1>
+  <div class="hero">
+    <p class="lede">For the families who share the care of an ageing parent. Today one person carries it all in their head and phone, the others can't help because they don't know what's going on or aren't allowed to act, and the parent slowly loses their say. Circle is one shared agent for the whole circle. Every fact in it cites who said it and where it came from, and every action names whose yes it needs.</p>
+    <div class="nums">
+      <div class="num"><b>63 M</b><span>Americans gave ongoing care to an adult or a child with complex needs in the past year: nearly 1 in 4 adults <a class="t S" href="https://www.aarp.org/press/releases/2025-07-24-new-report-reveals-crisis-point-for-americas-63-million-family-caregivers.html">S</a></span></div>
+      <div class="num"><b>3 %</b><span>of families where adult siblings split a parent's care equally. In 41%, one sibling does all or most of it <a class="t S" href="https://www.caregiver.org/print/22417">S</a> <small>(sponsored study)</small></span></div>
+      <div class="num"><b>45 %</b><span>of US hospitals asked about it told a caregiver to just use the patient's password <a class="t S" href="https://jamanetwork.com/journals/jamainternalmedicine/fullarticle/2764648">S</a>. That's what "shared access" looks like today</span></div>
+    </div>
+    <div class="changes">
+      <div class="chg"><b>The primary carer puts some of it down</b>One photo of the kitchen counter turns into a checked medication list. One recorded family call turns into tasks that other people have claimed. Target: 30% fewer coordination hours a week <span class="t A">A</span></div>
+      <div class="chg"><b>The others can actually help</b>A sibling three states away sees the same cited record and can pick up work that fits their rights. Target: the non-primary share of tasks rises to 35% or more <span class="t A">A</span></div>
+      <div class="chg"><b>The parent keeps the last word</b>Anything that shares their records or spends their money waits for their signature on their own tablet, in large type, read aloud. No shared passwords.</div>
+    </div>
+    <div class="why"><b>Why Meta's models, and why now.</b> The three hard inputs of a shared care record are <i>who said it</i>, <i>what's actually in the photo</i> and <i>keeping it at home</i>. Meta now offers all three: diarized streaming speech (<code>muse-voice-transcribe-1.0</code>, $0.18/h <a class="t S" href="https://dev.meta.ai/docs/pricing-rate-limits">S</a>), promptable segmentation of every instance in a photo or video (<code>sam-3.1</code> <a class="t S" href="https://dev.meta.ai/docs/models.md">S</a>), and an Apache-2.0 multimodal agent model that runs on one consumer GPU (Muse Glimmer <a class="t S" href="https://huggingface.co/blog/muse-glimmer">S</a>), alongside Muse Spark's 1M-token multimodal reader. Other vendors sell some of these pieces <a class="t S" href="https://runtimewire.com/article/meta-muse-voice-transcribe-real-time-diarization-price">S</a>. Having all four from one vendor, under one API and one open-weights licence family, is new in 2026 <span class="t A">A</span>.</div>
+  </div>
+  <p class="legend">Tags on every load-bearing claim: <span class="t S">S</span> sourced (click it) · <span class="t R">R</span> recalled, unverified · <span class="t A">A</span> our assumption or judgement. On Meta models: <span class="t P">press</span> = published by Meta or in press coverage, <span class="t U">unverified</span> = not published or only reported second-hand. Nobody on the team has called the Meta Model API yet, so no Meta number below is measured.</p>
+</section>
+
+<!-- ============================ PEOPLE ============================ -->
+<section id="people">
+  <div class="kicker">Position</div>
+  <h2>The people and what the pain costs</h2>
+  <p>The population is <b>US family caregivers of an adult</b> (59 M of the 63 M <a class="t S" href="https://www.aarp.org/press/releases/2025-07-24-new-report-reveals-crisis-point-for-americas-63-million-family-caregivers.html">S</a>), and within it the circles where <b>two or more people share the work</b> or should. We start in the US because the Meta Model API preview is open to US developers <a class="t S" href="https://dev.meta.ai/resources/blog/build-with-muse-spark/">S</a> and because the source data is American.</p>
+  <table>
+    <tr><th style="width:38%">What the sources say</th><th>Figure</th><th style="width:30%">What it means for Circle</th></tr>
+    <tr><td>Average weekly hours of care</td><td><b>27 h</b>; 24% give 40 h or more <a class="t S" href="https://zencaregiving.org/caregiving-statistics-us-2025/">S</a> <small>(secondary summary of AARP/NAC 2025)</small></td><td>Coordination is a large, unmeasured slice of these hours <span class="t A">A</span></td></tr>
+    <tr><td>Caregivers who also have a job</td><td><b>6 in 10</b>; half report disruption at work <a class="t S" href="https://www.aarp.org/press/releases/2025-07-24-new-report-reveals-crisis-point-for-americas-63-million-family-caregivers.html">S</a></td><td>Coordination happens in snatched minutes, on a phone</td></tr>
+    <tr><td>Out-of-pocket spending</td><td><b>≈ $7,200 a year</b> <a class="t S" href="https://www.aarp.org/press/releases/2025-07-24-new-report-reveals-crisis-point-for-americas-63-million-family-caregivers.html">S</a>; 26% of the caregiver's income (2021 study) <a class="t S" href="https://www.aarp.org/pri/topics/ltss/family-caregiving/family-caregivers-cost-survey.html">S</a></td><td>Money decisions need more than one signer</td></tr>
+    <tr><td>Manage medical or nursing tasks (injections, wound care, medication)</td><td><b>over half</b>; only ~20% have had training <a class="t S" href="https://www.aarp.org/press/releases/2025-07-24-new-report-reveals-crisis-point-for-americas-63-million-family-caregivers.html">S</a></td><td>The medication list is the highest-stakes shared fact</td></tr>
+    <tr><td>Talk directly with health-care providers</td><td><b>nearly two-thirds</b> <a class="t S" href="https://www.aging.senate.gov/download/12/04/2025/testimony_resendez-120325pdf?download=1">S</a></td><td>Appointments and calls are the main way information enters the family</td></tr>
+    <tr><td>Older adults with a medication discrepancy after leaving hospital</td><td><b>14.1%</b>; those patients were readmitted within 30 days at 14.3% against 6.1% <a class="t S" href="https://caretransitions.org/files/documents/post%20hospital%20med%20discrep%20-%20aim%20abstract.pdf">S</a> <small>(Coleman et al., 2005)</small></td><td>The discharge moment is the demo and the first measurable outcome</td></tr>
+    <tr><td>Hospitals that advised sharing the patient's login instead of proxy access</td><td><b>42 of 94 (45%)</b> <a class="t S" href="https://jamanetwork.com/journals/jamainternalmedicine/fullarticle/2764648">S</a></td><td>Shared passwords erase who did what. Circle replaces them with per-person rights</td></tr>
+    <tr><td>Families where siblings split care equally / where one does all or most</td><td><b>3% / 41%</b> <a class="t S" href="https://www.caregiver.org/print/22417">S</a> <small>(Home Instead study, sponsored, indicative)</small></td><td>The imbalance is the product's target metric</td></tr>
+    <tr><td>Caregivers who feel socially isolated</td><td><b>nearly 1 in 4</b> <a class="t S" href="https://www.aarp.org/press/releases/2025-07-24-new-report-reveals-crisis-point-for-americas-63-million-family-caregivers.html">S</a></td><td>The circle is also company</td></tr>
+  </table>
+  <h3>What they use today, and why it fails a group</h3>
+  <table>
+    <tr><th>Tool</th><th>What it does well</th><th>Where it breaks for a circle</th></tr>
+    <tr><td class="k">Family group chat</td><td>Everyone is already in it</td><td>Facts scroll away, nobody knows the current med list, commitments ("I'll call") are never tracked <span class="t A">A</span></td></tr>
+    <tr><td class="k">Patient portal</td><td>Authoritative records</td><td>Proxy access is uneven, so logins get shared <a class="t S" href="https://jamanetwork.com/journals/jamainternalmedicine/fullarticle/2764648">S</a>; each portal covers one health system only <span class="t R">R</span></td></tr>
+    <tr><td class="k">Care-calendar apps (e.g. Lotsa Helping Hands)</td><td>Volunteer sign-ups for meals and rides</td><td>A separate place to type everything in; 2.7★ from 47 App Store ratings <a class="t S" href="https://apps.apple.com/us/app/-/id606923858">S</a>; no reading of documents, no rights model <span class="t A">A</span></td></tr>
+    <tr><td class="k">A general AI assistant</td><td>Reads a letter, answers a question</td><td>Single-user: it remembers for one person, can't tell whose consent is needed, and has no shared record <span class="t A">A</span></td></tr>
+  </table>
+  <p class="note">What we did not find: a national figure for the share of caregivers who share care with another unpaid helper. The 2025 public summary doesn't give one. We assume a third or more of the 59 M <span class="t A">A</span> and the pilot measures it.</p>
+</section>
+
+<!-- ============================ BET ============================ -->
+<section id="bet">
+  <div class="kicker">Position</div>
+  <h2>The bet, the target and the kill line</h2>
+  <div class="claim">The bet: if a family's care has one record that cites its sources and one gate that knows whose yes each action needs, the work spreads out from the person carrying it, and nothing gets done to the parent without them.</div>
+  <table>
+    <tr><th style="width:22%">Measure</th><th>Target (12-week pilot, 30 circles, parent 70+, at least 2 helpers)</th><th style="width:30%">How it is read</th></tr>
+    <tr><td class="k">Primary carer's load</td><td>Self-reported weekly coordination hours fall by <b>30%</b> from baseline by week 8 <span class="t A">A</span></td><td>Weekly 3-question check-in on the phone; baseline taken in week 0</td></tr>
+    <tr><td class="k">Spread</td><td>Share of completed circle tasks done by someone other than the primary carer reaches <b>35% or more</b> <span class="t A">A</span></td><td>The load ledger (part 6), by count, from task rows, never self-reported</td></tr>
+    <tr><td class="k">Safety</td><td><b>0</b> actions executed without their required signers</td><td>Read off the approval table, as Athena Portable's Gauntlet verdicts are</td></tr>
+    <tr><td class="k">Catch</td><td>At least <b>1 real discrepancy flagged per 10 discharges</b>, confirmed by a pharmacist or clinician <span class="t A">A</span></td><td>Flag rows plus the family's resolution note</td></tr>
+  </table>
+  <div class="claim red">Kill line: if by week 8 fewer than half of the circles have two or more members active each week, it has collapsed back into one person's assistant and the "beyond one person" bet is wrong. Then we stop building circle features and ship the capture pipeline as a single-carer tool.<small>A second, narrower kill: if diarized voice notes need a manual speaker correction on more than 25% of utterances, the voice part becomes typed-only.</small></div>
+</section>
+
+<!-- ============================ LANE ============================ -->
+<section id="lane">
+  <div class="kicker">Position</div>
+  <h2>Why several people change everything: the six invariants, reread</h2>
+  <p>Athena Portable is single-user by invariant (<code>README.md</code> §2). A circle breaks that on purpose. Of its six invariants, two are kept as they are, two are extended and two have to be rethought. The rethought ones are the design.</p>
+  <table>
+    <tr><th>#</th><th style="width:28%">Athena Portable</th><th style="width:12%">In Circle</th><th>New form</th></tr>
+    <tr><td>1</td><td>Markdown on disk is truth; a brain is portable by copying the directory</td><td class="chgd">rethought</td><td>Still markdown on disk, now on the circle's <b>hub</b>. But "copy the folder" is a disclosure of someone else's health record, so export becomes a gated action that needs the <b>principal</b> (the parent) to sign.</td></tr>
+    <tr><td>2</td><td>A fact must cite live episodes, or the write is refused</td><td class="kept">extended</td><td>A fact cites episodes <i>and</i> the people behind them: author, speaker, device. A medication fact must cite a document or a clinician's speech, never just a sibling saying so.</td></tr>
+    <tr><td>3</td><td>Policy lives in the gate; a <code>GATED</code> tool never runs without a decision</td><td class="chgd">rethought</td><td>The gate now answers <b>whose</b> decision. A rule table maps action × subject to a signer set: a role, a quorum, or the principal's veto. The model never picks the signers.</td></tr>
+    <tr><td>4</td><td>Bounded and honest: <code>(showing N of M)</code></td><td class="kept">extended</td><td>Honest about what's withheld, too: <code>(showing 6 of 9 · 3 visible only to Dad and Maya)</code>. A member knows something exists without seeing it.</td></tr>
+    <tr><td>5</td><td>No provider is mandatory</td><td class="kept">kept</td><td>Kept by the open-weights route: Glimmer on the hub can run every role except speech and segmentation. Health content only ever uses Meta's Standard mode, never Contributor <a class="t S" href="https://dev.meta.ai/docs/models.md">S</a>.</td></tr>
+    <tr><td>6</td><td>Cost is visible: one ledger row per model call</td><td class="kept">extended</td><td>Model rows now carry the <code>member</code> who caused them, and a second ledger makes <b>effort</b> visible: who did which task. Cost was the single user's question. Fairness is the circle's.</td></tr>
+  </table>
+</section>
+
+<!-- ============================ OVERVIEW ============================ -->
+<section id="overview">
+  <div class="kicker">Machine</div>
+  <h2>The whole system on one page</h2>
+  <figure>
+  <svg viewBox="0 0 940 420" role="img" aria-label="System overview">
+    <defs><marker id="ar" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#4a5058"/></marker></defs>
+    <!-- members -->
+    <text x="20" y="28" font-size="13" font-weight="600" fill="#6b7178" letter-spacing="1">MEMBERS · OWN DEVICES</text>
+    <g font-size="13">
+      <rect x="20" y="42" width="190" height="56" rx="10" fill="#fbefd9" stroke="#a35c00"/><text x="34" y="64" font-weight="600">Dad · principal</text><text x="34" y="84" fill="#4a5058">tablet, voice, large type</text>
+      <rect x="20" y="110" width="190" height="56" rx="10" fill="#e3f1ef" stroke="#0f6e6a"/><text x="34" y="132" font-weight="600">Maya · primary carer</text><text x="34" y="152" fill="#4a5058">PC hub + phone</text>
+      <rect x="20" y="178" width="190" height="56" rx="10" fill="#e3f1ef" stroke="#0f6e6a"/><text x="34" y="200" font-weight="600">Dan · sibling, far away</text><text x="34" y="220" fill="#4a5058">phone (PWA)</text>
+      <rect x="20" y="246" width="190" height="56" rx="10" fill="#ffffff" stroke="#9aa"/><text x="34" y="268" font-weight="600">Rosa · paid aide</text><text x="34" y="288" fill="#4a5058">phone, narrow view</text>
+      <rect x="20" y="314" width="190" height="56" rx="10" fill="#ffffff" stroke="#9aa" stroke-dasharray="4 3"/><text x="34" y="336" font-weight="600">Family group chat</text><text x="34" y="356" fill="#4a5058">later: WhatsApp group</text>
+    </g>
+    <!-- hub -->
+    <rect x="290" y="40" width="360" height="332" rx="16" fill="#f6f2ea" stroke="#1f2328" stroke-width="1.5"/>
+    <text x="306" y="64" font-size="13" font-weight="600" letter-spacing="1" fill="#1f2328">CIRCLE HUB · the primary carer's PC</text>
+    <g font-size="13">
+      <rect x="306" y="80" width="328" height="44" rx="8" fill="#fff" stroke="#0f6e6a"/><text x="320" y="107">① Circle record: episodes, facts, tasks</text>
+      <rect x="306" y="134" width="158" height="44" rx="8" fill="#fff" stroke="#0f6e6a"/><text x="318" y="161">② Capture: photos</text>
+      <rect x="476" y="134" width="158" height="44" rx="8" fill="#fff" stroke="#0f6e6a"/><text x="488" y="161">③ Voices → records</text>
+      <rect x="306" y="188" width="328" height="44" rx="8" fill="#fbefd9" stroke="#a35c00"/><text x="320" y="215" font-weight="600">④ Signer gate: who must say yes</text>
+      <rect x="306" y="242" width="328" height="44" rx="8" fill="#fff" stroke="#0f6e6a"/><text x="320" y="269">⑤ Views: each member sees their slice</text>
+      <rect x="306" y="296" width="328" height="44" rx="8" fill="#fff" stroke="#0f6e6a"/><text x="320" y="323">⑥ Load loop + ledgers (cost, effort)</text>
+    </g>
+    <text x="306" y="362" font-size="12" fill="#6b7178">Glimmer runs here (local): routing, redaction, views</text>
+    <!-- cloud -->
+    <rect x="730" y="40" width="190" height="332" rx="16" fill="#e6eefb" stroke="#2b5aa8"/>
+    <text x="744" y="64" font-size="13" font-weight="600" letter-spacing="1" fill="#2b5aa8">META MODEL API</text>
+    <g font-size="13">
+      <text x="744" y="96" font-weight="600">sam-3.1</text><text x="744" y="114" fill="#4a5058">finds every bottle</text>
+      <text x="744" y="148" font-weight="600">muse-spark-1.3</text><text x="744" y="166" fill="#4a5058">reads labels, PDFs</text>
+      <text x="744" y="200" font-weight="600">voice-transcribe</text><text x="744" y="218" fill="#4a5058">who said what</text>
+      <text x="744" y="252" font-weight="600">muse-wonder-1.0</text><text x="744" y="270" fill="#4a5058">long tasks (later)</text>
+      <text x="744" y="314" fill="#2b5aa8" font-size="12">Standard mode only:</text><text x="744" y="330" fill="#2b5aa8" font-size="12">not used to train</text>
+    </g>
+    <!-- arrows -->
+    <path d="M210 70 L300 200" stroke="#a35c00" stroke-width="1.6" fill="none" marker-end="url(#ar)"/>
+    <path d="M210 138 L300 150" stroke="#4a5058" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+    <path d="M210 206 L300 265" stroke="#4a5058" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+    <path d="M210 274 L300 275" stroke="#4a5058" stroke-width="1.4" fill="none" marker-end="url(#ar)"/>
+    <path d="M210 342 L300 330" stroke="#4a5058" stroke-width="1.4" fill="none" stroke-dasharray="4 3" marker-end="url(#ar)"/>
+    <path d="M650 156 L726 156" stroke="#2b5aa8" stroke-width="1.6" fill="none" marker-end="url(#ar)"/>
+    <path d="M726 210 L650 210" stroke="#2b5aa8" stroke-width="1.6" fill="none" marker-end="url(#ar)"/>
+    <text x="655" y="148" font-size="11" fill="#2b5aa8">redacted</text>
+    <text x="655" y="228" font-size="11" fill="#2b5aa8">structured</text>
+  </svg>
+  <figcaption><b>Read it left to right.</b> Each member is a paired device with its own rights, never a shared login. The hub holds the one record and the one gate. Only redacted, task-scoped content goes to Meta's API, and only in Standard mode. The parent's arrow lands on the gate, because what Dad mostly does in Circle is decide. <span class="t A">A</span> Names are a simulated circle used throughout this report.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================ 1 RECORD ============================ -->
+<section id="record">
+  <div class="kicker">Machine · part 1</div>
+  <h2>The circle record: many writers, nothing ever overwritten</h2>
+  <p>The record is Athena Portable's brain with one property doing all the work: episodes, facts and procedures are <b>write-once</b>. <code>peer/replicate.py</code> already relies on this, since "a device either has a memory, byte for byte, or it does not yet". Many members writing into one record therefore never need a merge. A correction is a new fact that supersedes an old one and cites the evidence for the change.</p>
+  <figure>
+  <svg viewBox="0 0 940 250" role="img" aria-label="Record write path">
+    <defs><marker id="ar1" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#4a5058"/></marker></defs>
+    <g font-size="13">
+      <rect x="20" y="30" width="170" height="70" rx="10" fill="#fff" stroke="#9aa"/><text x="34" y="56" font-weight="600">Episode</text><text x="34" y="76" fill="#4a5058">photo, voice turn,</text><text x="34" y="92" fill="#4a5058">message, document</text>
+      <rect x="250" y="30" width="200" height="70" rx="10" fill="#e3f1ef" stroke="#0f6e6a"/><text x="264" y="56" font-weight="600">stamped with</text><text x="264" y="76" fill="#4a5058">author · speaker · device</text><text x="264" y="92" fill="#4a5058">· audience (who may see)</text>
+      <rect x="510" y="30" width="190" height="70" rx="10" fill="#fff" stroke="#0f6e6a"/><text x="524" y="56" font-weight="600">Fact proposed</text><text x="524" y="76" fill="#4a5058">"Dad stops lisinopril"</text><text x="524" y="92" fill="#4a5058">cites 2 episodes</text>
+      <rect x="760" y="20" width="160" height="90" rx="10" fill="#fbefd9" stroke="#a35c00"/><text x="774" y="46" font-weight="600">Provenance rule</text><text x="774" y="66" fill="#4a5058">med facts need a</text><text x="774" y="82" fill="#4a5058">document or a</text><text x="774" y="98" fill="#4a5058">clinician speaker</text>
+      <rect x="560" y="160" width="160" height="56" rx="10" fill="#e3f1ef" stroke="#0f6e6a"/><text x="574" y="184" font-weight="600">written once</text><text x="574" y="202" fill="#4a5058">supersedes v1</text>
+      <rect x="780" y="160" width="140" height="56" rx="10" fill="#fbe6e4" stroke="#b3261e"/><text x="794" y="184" font-weight="600">refused</text><text x="794" y="202" fill="#4a5058">"needs a source"</text>
+    </g>
+    <path d="M190 65 L246 65" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar1)"/>
+    <path d="M450 65 L506 65" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar1)"/>
+    <path d="M700 65 L756 65" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar1)"/>
+    <path d="M820 110 L660 156" stroke="#0f6e6a" stroke-width="1.5" marker-end="url(#ar1)"/><text x="690" y="134" font-size="12" fill="#0f6e6a">pass</text>
+    <path d="M850 110 L850 156" stroke="#b3261e" stroke-width="1.5" marker-end="url(#ar1)"/><text x="858" y="138" font-size="12" fill="#b3261e">fail</text>
+    <text x="20" y="160" font-size="12.5" fill="#4a5058">Annotations:</text>
+    <text x="20" y="180" font-size="12.5" fill="#4a5058">• "Dan said Dad stopped it" → an episode, not a fact.</text>
+    <text x="20" y="198" font-size="12.5" fill="#4a5058">• Discharge sheet line 14 → a fact, with page and line.</text>
+    <text x="20" y="216" font-size="12.5" fill="#4a5058">• No edit path exists; v2 cites why v1 is wrong.</text>
+  </svg>
+  <figcaption><b>The write path.</b> This is <code>Brain._require_provenance</code> (<code>core/brain/store.py:468</code>) with one more check: <i>what kind</i> of source a fact needs, by topic. Hearsay stays an episode. It's visible and attributed, but it never becomes "the med list".</figcaption>
+  </figure>
+</section>
+
+<!-- ============================ 2 CAPTURE ============================ -->
+<section id="capture">
+  <div class="kicker">Machine · part 2</div>
+  <h2>Read the counter: one photo becomes a checked medication list</h2>
+  <p>The highest-stakes moment in shared care is coming home from hospital, when the discharge sheet and the bottles in the kitchen disagree (14.1% of older adults <a class="t S" href="https://caretransitions.org/files/documents/post%20hospital%20med%20discrep%20-%20aim%20abstract.pdf">S</a>). A generic model handed one photo of eight bottles reads some labels and blurs the others together. Circle splits the job: <b>SAM 3.1 finds every instance</b> of "pill bottle" and returns a mask for each <a class="t S" href="https://dev.meta.ai/docs/models.md">S</a>, each crop goes to <b>Muse Spark</b> on its own, and the reconciliation is plain code, not a model.</p>
+  <figure>
+  <svg viewBox="0 0 940 300" role="img" aria-label="Medication capture pipeline">
+    <defs><marker id="ar2" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#4a5058"/></marker></defs>
+    <!-- photo sketch -->
+    <rect x="20" y="40" width="170" height="120" rx="10" fill="#f6f2ea" stroke="#9aa"/>
+    <g fill="#fff" stroke="#0f6e6a" stroke-width="1.5">
+      <rect x="34" y="80" width="22" height="50" rx="4"/><rect x="62" y="70" width="26" height="60" rx="4"/><rect x="94" y="86" width="20" height="44" rx="4"/><rect x="120" y="76" width="24" height="54" rx="4"/><rect x="150" y="90" width="26" height="40" rx="4"/>
+    </g>
+    <text x="24" y="182" font-size="12" fill="#6b7178">sketch: one counter photo</text>
+    <g font-size="13">
+      <rect x="230" y="40" width="150" height="120" rx="10" fill="#e6eefb" stroke="#2b5aa8"/><text x="244" y="66" font-weight="600">sam-3.1</text><text x="244" y="86" fill="#4a5058">prompt:</text><text x="244" y="104" fill="#4a5058">"pill bottle"</text><text x="244" y="124" fill="#4a5058">→ 5 masks, 5 crops</text>
+      <rect x="420" y="40" width="160" height="120" rx="10" fill="#e6eefb" stroke="#2b5aa8"/><text x="434" y="66" font-weight="600">muse-spark-1.3</text><text x="434" y="86" fill="#4a5058">per crop, structured:</text><text x="434" y="104" fill="#4a5058">drug, strength, sig,</text><text x="434" y="122" fill="#4a5058">fill date, legible?</text>
+      <rect x="620" y="40" width="140" height="120" rx="10" fill="#fff" stroke="#0f6e6a"/><text x="634" y="66" font-weight="600">reconcile</text><text x="634" y="86" fill="#4a5058">plain code vs.</text><text x="634" y="104" fill="#4a5058">discharge facts</text><text x="634" y="122" fill="#4a5058">(record, part 1)</text>
+      <rect x="795" y="30" width="138" height="58" rx="10" fill="#fbe6e4" stroke="#b3261e"/><text x="807" y="54" font-weight="600">flag</text><text x="807" y="74" fill="#4a5058">"told to stop"</text>
+      <rect x="795" y="100" width="138" height="58" rx="10" fill="#fbefd9" stroke="#a35c00"/><text x="807" y="124" font-weight="600">ask</text><text x="807" y="144" fill="#4a5058">"label unreadable"</text>
+    </g>
+    <path d="M190 100 L226 100" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar2)"/>
+    <path d="M380 100 L416 100" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar2)"/>
+    <path d="M580 100 L616 100" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar2)"/>
+    <path d="M760 90 L796 62" stroke="#b3261e" stroke-width="1.5" marker-end="url(#ar2)"/>
+    <path d="M760 110 L796 128" stroke="#a35c00" stroke-width="1.5" marker-end="url(#ar2)"/>
+    <g font-size="12.5" fill="#4a5058">
+      <text x="230" y="196">① Count first. Five masks means five bottles; a bottle Spark can't read is still on the list as "unread".</text>
+      <text x="230" y="216">② One crop per call. A label is never confused with its neighbour's; each result cites its crop id.</text>
+      <text x="230" y="236">③ Video option: a 10-second pan, tracked with identity kept across frames, so each bottle is counted once.</text>
+      <text x="230" y="256">④ The output is a flag and a question for the pharmacist. It never says to take or stop anything.</text>
+      <text x="230" y="276">⑤ Every crop and label text is fenced as evidence (core/fence.py): a label can't instruct the agent.</text>
+    </g>
+  </svg>
+  <figcaption><b>Why this needs SAM, not just a vision LLM.</b> Segmenting "all matches to a text noun phrase" and tracking "objects across video frames" are listed capabilities of <code>sam-3.1</code> on the Model API <a class="t S" href="https://dev.meta.ai/docs/models.md">S</a> <span class="t P">press</span>. The SAM 3.1 "Object Multiplex" update tracks several objects jointly with shared memory <a class="t S" href="https://digg.com/ai/icmesfai">S</a> <span class="t P">press</span>. That a single vision-LLM pass misses or merges bottles in a crowded photo is our expectation, not a measurement <span class="t A">A</span>. Day 1 of the build measures it against SAM-then-Spark on 20 staged photos.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================ 3 VOICES ============================ -->
+<section id="voices">
+  <div class="kicker">Machine · part 3</div>
+  <h2>Voices make records. Devices make decisions.</h2>
+  <p>Families decide things out loud: on speakerphone after an appointment, in the doctor's office, round the kitchen table. <code>muse-voice-transcribe-1.0</code> does streaming transcription with speaker diarization, endpointing and keyword biasing <a class="t S" href="https://dev.meta.ai/docs/models.md">S</a>, for 20+ speakers <a class="t S" href="https://runtimewire.com/article/meta-muse-voice-transcribe-real-time-diarization-price">S</a> <span class="t P">press</span>. In Circle, diarization becomes an accountability primitive: <i>"I'll call the pharmacy Thursday"</i> becomes a task claimed by the person who said it.</p>
+  <figure>
+  <svg viewBox="0 0 940 270" role="img" aria-label="Voice pipeline">
+    <defs><marker id="ar3" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#4a5058"/></marker></defs>
+    <g font-size="13">
+      <rect x="20" y="40" width="150" height="80" rx="10" fill="#fff" stroke="#9aa"/><text x="34" y="66" font-weight="600">Speakerphone</text><text x="34" y="86" fill="#4a5058">on Dad's tablet,</text><text x="34" y="104" fill="#4a5058">consent said aloud</text>
+      <rect x="210" y="40" width="170" height="80" rx="10" fill="#e6eefb" stroke="#2b5aa8"/><text x="224" y="66" font-weight="600">voice-transcribe</text><text x="224" y="86" fill="#4a5058">speaker A / B / C</text><text x="224" y="104" fill="#4a5058">biased: med names</text>
+      <rect x="420" y="40" width="170" height="80" rx="10" fill="#fbefd9" stroke="#a35c00"/><text x="434" y="66" font-weight="600">Bind speakers</text><text x="434" y="86" fill="#4a5058">"B is Dan?" on</text><text x="434" y="104" fill="#4a5058">Dan's own phone</text>
+      <rect x="630" y="40" width="140" height="80" rx="10" fill="#e6eefb" stroke="#2b5aa8"/><text x="644" y="66" font-weight="600">muse-spark</text><text x="644" y="86" fill="#4a5058">extracts claims,</text><text x="644" y="104" fill="#4a5058">dates, questions</text>
+      <rect x="810" y="40" width="115" height="80" rx="10" fill="#e3f1ef" stroke="#0f6e6a"/><text x="822" y="66" font-weight="600">Records</text><text x="822" y="86" fill="#4a5058">episodes +</text><text x="822" y="104" fill="#4a5058">claimed tasks</text>
+    </g>
+    <path d="M170 80 L206 80" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar3)"/>
+    <path d="M380 80 L416 80" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar3)"/>
+    <path d="M590 80 L626 80" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar3)"/>
+    <path d="M770 80 L806 80" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar3)"/>
+    <rect x="420" y="150" width="505" height="90" rx="10" fill="#fbe6e4" stroke="#b3261e"/>
+    <text x="436" y="174" font-size="13" font-weight="600" fill="#b3261e">What a voice can never do</text>
+    <text x="436" y="196" font-size="12.5" fill="#1f2328">"Dad said yes on the call" is recorded as an episode with speaker = Dad.</text>
+    <text x="436" y="214" font-size="12.5" fill="#1f2328">It never counts as Dad's signature. Signatures come only from a paired</text>
+    <text x="436" y="232" font-size="12.5" fill="#1f2328">device, on a card (part 4). Voice clones and mis-binding can't spend a grant.</text>
+    <text x="20" y="160" font-size="12.5" fill="#4a5058">Binding is per session: speaker labels</text>
+    <text x="20" y="178" font-size="12.5" fill="#4a5058">are treated as session-scoped (reported</text>
+    <text x="20" y="196" font-size="12.5" fill="#4a5058">in coverage, not verified by us) <tspan fill="#a35c00" font-weight="600">A</tspan>, so each</text>
+    <text x="20" y="214" font-size="12.5" fill="#4a5058">person confirms their own label once</text>
+    <text x="20" y="232" font-size="12.5" fill="#4a5058">per call, on their own device.</text>
+  </svg>
+  <figcaption><b>The hard problem named: identity in a shared conversation.</b> Diarization error is real. Meta reportedly cites about 17.5% average DER <span class="t U">unverified</span>, which is why speech produces <i>attributed records</i> and claims that the speaker confirms, never authority. Keyword biasing toward the circle's own med list, so "metoprolol" doesn't come out as "metro pole", is a documented feature <a class="t S" href="https://dev.meta.ai/docs/models.md">S</a> that a generic transcriber leaves to luck <span class="t A">A</span>. Recording a call needs everyone's consent; the tablet says so aloud before it starts, and two-party-consent states make this mandatory <span class="t R">R</span>.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================ 4 GATE ============================ -->
+<section id="gate">
+  <div class="kicker">Machine · part 4 · the core</div>
+  <h2>The signer gate: every action knows whose yes it needs</h2>
+  <p>Athena Portable's gate decides one thing: <code>AUTO</code> or <code>GATED</code>, from two flags, <code>reversible</code> and <code>side_effects</code> (<code>contracts/manifest.py:153</code>). Circle adds a third question, <b>about whom</b>, and turns the answer into a signer set. The model proposes the action. A rule table, which the principal and the primary carer edit and the model can't, decides who signs.</p>
+  <figure>
+  <svg viewBox="0 0 940 330" role="img" aria-label="Signer gate state machine">
+    <defs><marker id="ar4" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#4a5058"/></marker></defs>
+    <g font-size="13">
+      <rect x="20" y="120" width="130" height="60" rx="30" fill="#fff" stroke="#1f2328"/><text x="48" y="146" font-weight="600">proposed</text><text x="40" y="164" fill="#4a5058">by any member</text>
+      <rect x="200" y="120" width="150" height="60" rx="10" fill="#fbefd9" stroke="#a35c00"/><text x="214" y="146" font-weight="600">signers resolved</text><text x="214" y="164" fill="#4a5058">rule table, not model</text>
+      <rect x="400" y="40" width="150" height="60" rx="30" fill="#e3f1ef" stroke="#0f6e6a"/><text x="418" y="66" font-weight="600">auto</text><text x="418" y="84" fill="#4a5058">reversible, internal</text>
+      <rect x="400" y="120" width="150" height="60" rx="30" fill="#fff" stroke="#a35c00" stroke-width="1.6"/><text x="418" y="146" font-weight="600">awaiting 1 of 2</text><text x="418" y="164" fill="#4a5058">cards on devices</text>
+      <rect x="600" y="120" width="140" height="60" rx="30" fill="#fff" stroke="#0f6e6a" stroke-width="1.6"/><text x="618" y="146" font-weight="600">quorum met</text><text x="618" y="164" fill="#4a5058">grant minted</text>
+      <rect x="790" y="120" width="135" height="60" rx="30" fill="#e3f1ef" stroke="#0f6e6a"/><text x="806" y="146" font-weight="600">executed once</text><text x="806" y="164" fill="#4a5058">grant spent</text>
+      <rect x="520" y="240" width="140" height="56" rx="28" fill="#fbe6e4" stroke="#b3261e"/><text x="540" y="264" font-weight="600">vetoed</text><text x="540" y="282" fill="#4a5058">by the principal</text>
+      <rect x="700" y="240" width="160" height="56" rx="28" fill="#f1f1f1" stroke="#888"/><text x="720" y="264" font-weight="600">expired</text><text x="720" y="282" fill="#4a5058">TTL, nobody acted</text>
+    </g>
+    <path d="M150 150 L196 150" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <path d="M350 140 L398 80" stroke="#0f6e6a" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <path d="M350 150 L396 150" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <path d="M550 150 L596 150" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <path d="M740 150 L786 150" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <path d="M475 180 L560 238" stroke="#b3261e" stroke-width="1.5" marker-end="url(#ar4)"/>
+    <path d="M500 180 L740 238" stroke="#888" stroke-width="1.3" marker-end="url(#ar4)"/>
+    <path d="M670 180 L620 238" stroke="#b3261e" stroke-width="1.5" stroke-dasharray="4 3" marker-end="url(#ar4)"/>
+    <g font-size="12" fill="#4a5058">
+      <text x="20" y="34">Annotations</text>
+      <text x="20" y="52">• Each signature is its own approval row,</text>
+      <text x="20" y="68">  spent once (ADR 0038, approvals.py:526).</text>
+      <text x="20" y="84">• The grant binds action + exact params.</text>
+      <text x="20" y="230">• The principal's veto beats any quorum, even after it's met.</text>
+      <text x="20" y="248">• A proposer can never sign their own proposal</text>
+      <text x="20" y="264">  toward a quorum of two.</text>
+      <text x="20" y="290">• If the principal has lost capacity, the veto passes</text>
+      <text x="20" y="306">  to the documented proxy, itself a gated change.</text>
+    </g>
+  </svg>
+  <figcaption><b>A state machine, not a prompt.</b> Every edge is a row write. The model's only power is the first box. A sibling's message saying "Dad already agreed" goes into the record as an episode and changes no edge, which is the attack the Proving Ground will throw at it (see the reuse map).</figcaption>
+  </figure>
+  <h3>The rule table (excerpt)</h3>
+<pre><span class="c">-- signer_rule: edited only through a gated "change rules" action signed by principal + primary</span>
+<span class="k">action_class</span>             <span class="k">subject</span>   <span class="k">signers</span>                          <span class="k">notes</span>
+read.record              any       none (view filter applies)       part 5 decides visibility
+task.claim / task.done   circle    self                             effort ledger row
+book.ride / book.visit   principal any helper + notify principal    reversible within 24 h
+share.records.external   principal principal  OR  proxy_if_incapable  never a sibling alone
+spend.principal_funds    principal primary + 1 other, &gt; $100 adds principal
+change.med_schedule      principal primary, AND a cited clinician source  agent never proposes doses
+change.rights            circle    principal + primary              capacity change needs a POA document
+export.record            circle    principal                        invariant 1, rethought</pre>
+  <div class="claim amber">The same request, "send Dad's discharge summary to the new cardiologist", gets two different answers depending on who asks. From Dan it becomes a card on Dad's tablet. From Dad it simply goes. That difference is the product.</div>
+</section>
+
+<!-- ============================ 5 VIEWS ============================ -->
+<section id="views">
+  <div class="kicker">Machine · part 5</div>
+  <h2>Views and the privacy line</h2>
+  <p>Each member's agent turn is composed from <b>their view</b> of the record, never from the whole record with an instruction to "not mention" the rest. The paid aide sees today's care plan and the meds she gives, not the money or the sibling argument. Withholding happens in the composer, before any model sees anything. That matters because Glimmer's own published safety row shows a 26.4 "CI Memories violation" rate against 12.1 for Gemma 4 <a class="t S" href="https://huggingface.co/blog/muse-glimmer">S</a> <span class="t P">press</span>: a model shouldn't be trusted to keep a secret it has been shown.</p>
+  <figure>
+  <svg viewBox="0 0 940 260" role="img" aria-label="Views and routing">
+    <defs><marker id="ar5" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#4a5058"/></marker></defs>
+    <rect x="20" y="40" width="170" height="180" rx="12" fill="#f6f2ea" stroke="#1f2328"/>
+    <text x="34" y="64" font-size="13" font-weight="600">Circle record</text>
+    <g font-size="12.5" fill="#4a5058"><text x="34" y="90">meds · audience: all</text><text x="34" y="112">care plan · all</text><text x="34" y="134">bank · Dad, Maya, Dan</text><text x="34" y="156">diagnosis · Dad, Maya</text><text x="34" y="178">sibling thread · siblings</text><text x="34" y="200">rules · Dad, Maya</text></g>
+    <rect x="240" y="70" width="150" height="120" rx="10" fill="#fbefd9" stroke="#a35c00"/>
+    <text x="254" y="96" font-size="13" font-weight="600">View filter</text>
+    <g font-size="12.5" fill="#4a5058"><text x="254" y="118">plain code over</text><text x="254" y="136">audience tags;</text><text x="254" y="154">counts what it hid:</text><text x="254" y="172">"(3 withheld)"</text></g>
+    <rect x="440" y="40" width="225" height="80" rx="10" fill="#e3f1ef" stroke="#0f6e6a"/>
+    <text x="454" y="64" font-size="13" font-weight="600">Glimmer, on the hub</text>
+    <g font-size="12.5" fill="#4a5058"><text x="454" y="84">answers from the view;</text><text x="454" y="102">redacts names/IDs for cloud</text></g>
+    <rect x="440" y="140" width="225" height="80" rx="10" fill="#e6eefb" stroke="#2b5aa8"/>
+    <text x="454" y="164" font-size="13" font-weight="600">Spark / SAM / Voice (API)</text>
+    <g font-size="12.5" fill="#4a5058"><text x="454" y="184">only for what local can't do:</text><text x="454" y="202">segment, transcribe, hard reads</text></g>
+    <rect x="700" y="40" width="220" height="180" rx="12" fill="#fff" stroke="#9aa"/>
+    <text x="714" y="64" font-size="13" font-weight="600">Routing rule (A)</text>
+    <g font-size="12.5" fill="#4a5058">
+      <text x="714" y="88">1. Answer from view → Glimmer</text>
+      <text x="714" y="110">2. Pixels or audio → API, the</text><text x="714" y="126">   minimum crop or clip</text>
+      <text x="714" y="148">3. Long reasoning over the</text><text x="714" y="164">   record → Spark, redacted</text>
+      <text x="714" y="186">4. Hub has no GPU → Spark for</text><text x="714" y="202">   all, Standard mode</text>
+    </g>
+    <path d="M190 130 L236 130" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar5)"/>
+    <path d="M390 115 L436 85" stroke="#0f6e6a" stroke-width="1.5" marker-end="url(#ar5)"/>
+    <path d="M390 150 L436 175" stroke="#2b5aa8" stroke-width="1.5" marker-end="url(#ar5)"/>
+  </svg>
+  <figcaption><b>Withhold in code, route by need.</b> Glimmer is a 30B dense model, Apache 2.0, text plus image, with OpenAI-style tool calling, and an official 4-bit quant meant for one consumer GPU <a class="t S" href="https://huggingface.co/blog/muse-glimmer">S</a> <a class="t S" href="https://techcrunch.com/2026/08/10/metas-new-glimmer-ai-model-offers-a-hint-at-zuckerbergs-personal-intelligence-vision/">S</a> <span class="t P">press</span>. Most carers' PCs have no such GPU <span class="t A">A</span>, so rule 4 is the honest default and local is the upgrade, not the promise.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================ 6 LOAD ============================ -->
+<section id="load">
+  <div class="kicker">Machine · part 6</div>
+  <h2>The load loop: make the invisible work visible, then share it</h2>
+  <p>The 41% / 3% imbalance <a class="t S" href="https://www.caregiver.org/print/22417">S</a> survives because nobody sees the work. Each week Circle shows the circle what's open, who claimed what, and what fell through, then proposes a split that matches each person's declared capacity and rights. People claim tasks. The agent never assigns them.</p>
+  <figure>
+  <svg viewBox="0 0 940 280" role="img" aria-label="Weekly load loop">
+    <defs><marker id="ar6" markerWidth="9" markerHeight="9" refX="8" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#4a5058"/></marker></defs>
+    <circle cx="470" cy="140" r="96" fill="none" stroke="#e4ddd2" stroke-width="22"/>
+    <text x="470" y="134" font-size="14" font-weight="600" text-anchor="middle">one week</text>
+    <text x="470" y="154" font-size="12.5" fill="#4a5058" text-anchor="middle">Sunday to Sunday</text>
+    <g font-size="13">
+      <rect x="390" y="10" width="160" height="50" rx="10" fill="#e3f1ef" stroke="#0f6e6a"/><text x="404" y="32" font-weight="600">1 · Gather</text><text x="404" y="50" fill="#4a5058">new tasks from 2 + 3</text>
+      <rect x="640" y="110" width="180" height="60" rx="10" fill="#e3f1ef" stroke="#0f6e6a"/><text x="654" y="134" font-weight="600">2 · Propose split</text><text x="654" y="154" fill="#4a5058">by capacity and rights</text>
+      <rect x="390" y="222" width="160" height="50" rx="10" fill="#e3f1ef" stroke="#0f6e6a"/><text x="404" y="244" font-weight="600">3 · Claim</text><text x="404" y="262" fill="#4a5058">each on own phone</text>
+      <rect x="120" y="110" width="180" height="60" rx="10" fill="#fbefd9" stroke="#a35c00"/><text x="134" y="134" font-weight="600">4 · Nudge, then escalate</text><text x="134" y="154" fill="#4a5058">unclaimed at 48 h</text>
+    </g>
+    <path d="M552 40 Q640 60 700 106" fill="none" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar6)"/>
+    <path d="M720 172 Q660 240 554 248" fill="none" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar6)"/>
+    <path d="M388 248 Q260 240 220 174" fill="none" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar6)"/>
+    <path d="M220 108 Q260 50 386 36" fill="none" stroke="#4a5058" stroke-width="1.5" marker-end="url(#ar6)"/>
+    <g font-size="12" fill="#4a5058">
+      <text x="740" y="214">Dan can't drive Dad (far away),</text><text x="740" y="230">but can fight the insurance bill.</text>
+      <text x="20" y="40">Load is shown as counts and hours</text><text x="20" y="56">per person, to each member privately</text><text x="20" y="72">by default; circle-wide only if all opt in.</text>
+      <text x="20" y="230">Escalation goes to the primary,</text><text x="20" y="246">never to "the group" by name.</text>
+    </g>
+  </svg>
+  <figcaption><b>The effort ledger is a mirror, not a scoreboard.</b> Shaming a sibling in front of the family would make conflict worse, so the default view is private <span class="t A">A</span>. The split proposal is a planning turn on Muse Spark. In the perfect product it moves to Muse Wonder, whose "Active Focus" keeps a long task going and "checks in before important actions" <a class="t S" href="https://research.meta.ai/blog/muse-wonder">S</a> <span class="t P">press</span>, once the preview price ($4 / $20 per M tokens <a class="t S" href="https://dev.meta.ai/docs/pricing-rate-limits">S</a>) is worth it.</figcaption>
+  </figure>
+</section>
+
+<!-- ============================ DATA MODEL ============================ -->
+<section id="model">
+  <div class="kicker">Machine</div>
+  <h2>Data model</h2>
+  <p>New tables sit beside Athena Portable's existing <code>companion_approval</code> and ledger tables in the hub's SQLite index. The markdown files stay the truth.</p>
+<pre><span class="c">-- who is in the circle; each member is a paired device set (peer/registry.py rows)</span>
+<span class="k">CREATE TABLE</span> circle_member (
+  id            TEXT PRIMARY KEY,          <span class="c">-- mem_…</span>
+  display_name  TEXT NOT NULL,
+  role          TEXT NOT NULL CHECK (role IN (<span class="s">'principal','primary','helper','aide','proxy'</span>)),
+  devices       TEXT NOT NULL,             <span class="c">-- JSON list of peer_id; pairing = peer/pairing.py</span>
+  capacity_note TEXT,                      <span class="c">-- "weekends, no driving", self-declared</span>
+  active        INTEGER NOT NULL DEFAULT 1
+);
+
+<span class="c">-- every episode now says who, through what, and who may see it</span>
+<span class="k">ALTER TABLE</span> episode <span class="k">ADD COLUMN</span> author_id    TEXT;   <span class="c">-- member who captured it</span>
+<span class="k">ALTER TABLE</span> episode <span class="k">ADD COLUMN</span> speaker_id   TEXT;   <span class="c">-- bound diarized speaker, nullable</span>
+<span class="k">ALTER TABLE</span> episode <span class="k">ADD COLUMN</span> source_kind  TEXT;   <span class="c">-- 'document'|'photo_crop'|'speech'|'message'|'clinician_speech'</span>
+<span class="k">ALTER TABLE</span> episode <span class="k">ADD COLUMN</span> audience     TEXT;   <span class="c">-- JSON list of roles or member ids</span>
+
+<span class="c">-- a decision needing several people: one parent row, one approval row per signature</span>
+<span class="k">CREATE TABLE</span> signer_request (
+  id            TEXT PRIMARY KEY,          <span class="c">-- sig_…</span>
+  action        TEXT NOT NULL,             <span class="c">-- "share.records.external"</span>
+  params_json   TEXT NOT NULL,             <span class="c">-- canonical, as approvals._canonical</span>
+  proposer_id   TEXT NOT NULL,
+  subject_id    TEXT NOT NULL,             <span class="c">-- whose life it touches</span>
+  rule_id       TEXT NOT NULL,             <span class="c">-- which signer_rule resolved it</span>
+  quorum        INTEGER NOT NULL,
+  veto_holder   TEXT,                      <span class="c">-- principal or documented proxy</span>
+  state         TEXT NOT NULL CHECK (state IN
+                (<span class="s">'awaiting','quorum_met','executed','vetoed','declined','expired'</span>))
+);
+<span class="k">ALTER TABLE</span> companion_approval <span class="k">ADD COLUMN</span> signer_request_id TEXT;
+<span class="k">ALTER TABLE</span> companion_approval <span class="k">ADD COLUMN</span> signer_id         TEXT;  <span class="c">-- must be on a paired device of this member</span>
+
+<span class="c">-- invariant 6, extended: effort is visible too</span>
+<span class="k">CREATE TABLE</span> effort_row (
+  id            TEXT PRIMARY KEY,
+  task_id       TEXT NOT NULL,
+  member_id     TEXT NOT NULL,
+  kind          TEXT NOT NULL CHECK (kind IN (<span class="s">'claimed','done','dropped','handed_over'</span>)),
+  minutes_est   INTEGER,                   <span class="c">-- self-reported, labelled as such</span>
+  at            TEXT NOT NULL
+);
+<span class="k">ALTER TABLE</span> ledger <span class="k">ADD COLUMN</span> member_id TEXT;              <span class="c">-- who caused this model call</span></pre>
+</section>
+
+<!-- ============================ META ============================ -->
+<section id="meta">
+  <div class="kicker">Machine</div>
+  <h2>Meta tooling: what each model does here that a generic LLM couldn't</h2>
+  <p class="note">The two official pages name different lists (event page: Muse Spark series, Muse Wonder, Muse Image, SAM 3.1, Muse Code, open weights; Official Rules: Muse Spark, Glimmer, SAM 3). Circle's slice rests on models from <b>both</b> lists: Spark (both), SAM 3.1 / SAM 3 (both), Glimmer (Rules). Voice Transcribe is on the Meta Model API that the event page names, but isn't itself named on either page. That's flagged under risks.</p>
+  <table>
+    <tr><th style="width:17%">Model</th><th style="width:25%">What is published</th><th>Its job in Circle, and why a generic LLM couldn't do it</th><th style="width:10%">Tag</th></tr>
+    <tr><td class="k">Muse Spark 1.3</td><td>Text, image, video, audio, PDF in; 1,048,576-token context; tool calling, structured output, search grounding; $1.25 / $4.25 per M <a class="t S" href="https://dev.meta.ai/docs/models.md">S</a> <a class="t S" href="https://dev.meta.ai/docs/pricing-rate-limits">S</a></td><td>Reads each SAM crop and every discharge PDF into typed rows. The 1M context means a circle's whole history (years of episodes) fits in one "what changed since Mom's last visit" call without a retrieval layer <span class="t A">A</span>. Standard mode only: "your content is not used to train Meta models" <a class="t S" href="https://dev.meta.ai/docs/models.md">S</a>. Contributor mode is $0.10 / $0.20 but trains on content, and Circle forbids it in code.</td><td><span class="t P">press</span></td></tr>
+    <tr><td class="k">SAM 3.1</td><td>Segments all matches to a noun phrase; tracks objects across video; $2.50 / 1,000 images <a class="t S" href="https://dev.meta.ai/docs/models.md">S</a> <a class="t S" href="https://dev.meta.ai/docs/pricing-rate-limits">S</a></td><td><b>Counting is a safety property.</b> "How many bottles are on the counter" has to be exact before "what does each say" matters. Instance masks give the count and a clean crop per bottle. A general chat model gives a paragraph. Video tracking with identity covers the cabinet pan.</td><td><span class="t P">press</span></td></tr>
+    <tr><td class="k">Muse Voice Transcribe 1.0</td><td>Streaming diarization, endpointing, keyword biasing, 25 evaluated languages; $0.18 / audio hour <a class="t S" href="https://dev.meta.ai/docs/models.md">S</a></td><td><b>Who said it</b> is the circle's provenance. Diarization turns a family call into attributed episodes and claims made by named people, and keyword biasing with the med list protects drug names. <i>Unexpected use:</i> diarization as an accountability primitive, not just a transcript nicety.</td><td><span class="t P">press</span>; DER <span class="t U">unverified</span></td></tr>
+    <tr><td class="k">Muse Glimmer</td><td>30B dense, Apache 2.0, text + image, tool calling, one consumer GPU at 4-bit <a class="t S" href="https://huggingface.co/blog/muse-glimmer">S</a></td><td>The hub-local model: answers from a member's view, redacts before anything goes to the cloud, and keeps "no provider is mandatory" true. Its published memory-privacy score is the reason the gate, not the model, holds secrets.</td><td><span class="t P">press</span></td></tr>
+    <tr><td class="k">Muse Wonder 1.0</td><td>Preview on the API; computer use; "Active Memory", "Active Focus"; $4 / $20 per M <a class="t S" href="https://dev.meta.ai/docs/models.md">S</a> <a class="t S" href="https://about.fb.com/news/2026/10/introducing-muse-wonder-models/">S</a></td><td>Perfect product only: long tasks like an insurance appeal or a Medicaid renewal packet, run under the signer gate with proxy credentials, never a shared password. Its personal memory isn't used. The circle record is the memory, because Wonder's memory is "about you", one person <a class="t S" href="https://research.meta.ai/blog/muse-wonder">S</a>.</td><td><span class="t P">press</span></td></tr>
+    <tr><td class="k">Muse Image 1.0</td><td>Image generation and editing, layout code before rendering; $0.01 / image <a class="t S" href="https://dev.meta.ai/docs/models.md">S</a></td><td><b>Deliberately not used for pills.</b> The fridge sheet for Dad uses real SAM crops of his own bottles, because a generated pill image could mislead. Muse Image may lay out the large-type sheet around those crops (later).</td><td><span class="t P">press</span></td></tr>
+    <tr><td class="k">Muse Code</td><td>Coding agent <a class="t S" href="https://about.fb.com/news/2026/10/introducing-muse-wonder-models/">S</a></td><td>Build tool for the ten days, not part of the product.</td><td><span class="t P">press</span></td></tr>
+  </table>
+  <div class="claim">The non-obvious combination: SAM decides how many things there are, Spark decides what each one is, the voice model decides who said it, and plain code decides who may act. No single model is trusted with more than it can be checked on.</div>
+</section>
+
+<!-- ============================ REUSE ============================ -->
+<section id="reuse">
+  <div class="kicker">Machine</div>
+  <h2>Athena Portable: the reuse map</h2>
+  <p>What Circle takes is Athena Portable's <b>trust machinery</b>: the provenance-checked brain, the single-use approval, the ledger, device pairing and write-once replication. What it leaves behind is the web-app agent: tabs, the page bridge, DOM hands. Circle's work happens in kitchens and phone calls, not inside SaaS tabs. Paths are in the read-only repository; line numbers were read on 2026-10-24.</p>
+  <table>
+    <tr><th style="width:10%">Fate</th><th style="width:36%">File or module</th><th>What it does today → what it does in Circle</th></tr>
+    <tr><td class="kept">kept</td><td><code>core/brain/store.py</code> · <code>Brain.write_fact</code>, <code>_require_provenance</code> (:468)</td><td>Refuses a fact that cites no live episode → the same check, plus a source-kind rule per topic (med facts need a document or clinician speech)</td></tr>
+    <tr><td class="kept">kept</td><td><code>core/approvals.py</code> · <code>Approvals.create / resolve / consume</code> (:526)</td><td>One conditional <code>UPDATE</code> spends a grant once (ADR 0038) → one row per signature, still spent once; the quorum lives in the new <code>signer_request</code></td></tr>
+    <tr><td class="kept">kept</td><td><code>core/ledger.py</code> · <code>Ledger.record</code></td><td>One row per model call, <code>surface</code> required → plus <code>member_id</code>; the cost of the circle is split by who caused it</td></tr>
+    <tr><td class="kept">kept</td><td><code>core/fence.py</code></td><td>Nonce-fences untrusted text → label OCR, letters and group messages are evidence, never instruction</td></tr>
+    <tr><td class="kept">kept</td><td><code>peer/pairing.py</code>, <code>identity.py</code>, <code>registry.py</code> (<code>GRANTS = ("chat","approve","memory")</code>)</td><td>Pairs one person's PCs and phone over Tailscale with per-device grants → enrols <i>different people's</i> devices; the grants ladder becomes the member's role</td></tr>
+    <tr><td class="kept">kept</td><td><code>peer/replicate.py</code></td><td>Write-once pull replication, conflicts filed for a person → a second member's PC holds a replica, so the record survives the hub being off</td></tr>
+    <tr><td class="kept">kept</td><td><code>peer/phone.py</code> + <code>peer/mobile</code></td><td>The phone page: "anything waiting for your answer first" → each member's PWA; Dad's tablet gets the large-type, read-aloud skin</td></tr>
+    <tr><td class="kept">kept</td><td><code>channels/voice/kokoro.py</code>, <code>tts.py</code></td><td>Local speech out → reads cards aloud to Dad (ADR 0028)</td></tr>
+    <tr><td class="kept">kept</td><td><code>proving/</code> (Gauntlet)</td><td>Gave 0 breaches in 306 hostile turns across 3 runs, measured on Claude and Nemotron, not Meta (<code>20261007T140609Z</code>, <code>…205627Z</code>, <code>…213007Z</code>) → new attack surfaces: impersonation in a group message, "Dad already agreed" in a transcript, a label saying "ignore previous instructions"</td></tr>
+    <tr><td class="chgd">changed</td><td><code>harness/tokenfactory.py</code> · <code>TokenFactoryModel</code>, <code>estimate_cost</code> (:152)</td><td>Stdlib OpenAI-compatible client for Nemotron → pointed at <code>api.meta.ai/v1</code>, which Meta says speaks Chat Completions and Responses <a class="t S" href="https://dev.meta.ai/resources/blog/build-with-muse-spark/">S</a>; price table from Meta's page</td></tr>
+    <tr><td class="chgd">changed</td><td><code>harness/engines.py</code> (<code>ENGINES</code>), <code>harness/vision.py</code></td><td>Adds <code>muse</code> and <code>glimmer</code> engines; vision becomes the SAM → Spark crop pipeline</td></tr>
+    <tr><td class="chgd">changed</td><td><code>contracts/manifest.py</code> · <code>default_class</code> (:153)</td><td>Class from <code>reversible</code> × <code>side_effects</code> → stays as the first test; the signer rule table is consulted after it</td></tr>
+    <tr><td class="chgd">changed</td><td><code>core/prompt.py</code>, <code>core/recall.py</code></td><td>Two-output composer and capped recall → composed from a member's view; footer adds "K withheld"</td></tr>
+    <tr><td class="chgd">changed</td><td><code>channels/voice/whisper.py</code></td><td>Local push-to-talk STT → kept for short commands; calls and visits go to Voice Transcribe (diarized)</td></tr>
+    <tr><td class="drop">dropped</td><td><code>packages/athena-bridge</code> (<code>inject.js</code>, WebMCP polyfill), nine DOM hands, Tauri tab webviews, halo, face</td><td>The "agent in your web apps" form factor. Not the circle's problem; the desktop shrinks to a hub console</td></tr>
+    <tr><td class="drop">dropped</td><td><code>adopt/</code> intake and showcase legs; 92 of 97 playbooks</td><td>The onboarding direction the owner rejected. Five survive as later Wonder chores: <code>medical-bills</code>, <code>medical-records-gather</code>, <code>medicare-plan-review</code>, <code>medicaid-renewal</code>, <code>estate-settlement</code></td></tr>
+    <tr><td class="new">new</td><td><code>circle/members.py</code>, <code>circle/rules.py</code>, <code>circle/signers.py</code></td><td>Members and roles, the signer rule table, quorum and veto over <code>Approvals</code></td></tr>
+    <tr><td class="new">new</td><td><code>capture/meds.py</code>, <code>voice/diarized.py</code>, <code>circle/load.py</code></td><td>Parts 2, 3 and 6</td></tr>
+  </table>
+  <div class="claim amber">What reuse saves: the trust layer (brain, approvals, ledger, fence, peer) is about 10,300 lines of tested Python, counted from <code>core/</code>, <code>core/brain/</code> and <code>peer/</code> on 2026-10-24, inside a suite that collects 931 tests. Rebuilding it would eat the ten days. Reusing it leaves the ten days for the parts that are new.<small>The line count is measured. That it saves the ten days is our judgement <span class="t A">A</span>.</small></div>
+</section>
+
+<!-- ============================ DEMO ============================ -->
+<section id="demo">
+  <div class="kicker">Argument</div>
+  <h2>The demo: 2 minutes 40, three devices on a table</h2>
+  <p>A simulated circle, labelled as such on screen: Dad (tablet), Maya (laptop hub and phone), Dan (phone, "in Denver"). The team plays all three. Real bottles, a real printed discharge sheet with invented patient data.</p>
+  <div class="card">
+    <div class="beat"><div class="tm">0:00</div><div><b>The claim.</b> One card: "63 million Americans care for someone. In 3% of families, siblings share it equally." Maya's phone shows 14 unread messages in the family chat.</div><div class="lv rec">title</div></div>
+    <div class="beat"><div class="tm">0:15</div><div><b>Home from hospital.</b> Maya photographs the discharge sheet and the kitchen counter. Masks bloom over <b>seven</b> bottles, one by one, a count before any reading. Spark's rows fill in, each citing its crop.</div><div class="lv live">live</div></div>
+    <div class="beat"><div class="tm">0:50</div><div><b>The catch.</b> A red flag: "Discharge sheet line 14 says stop lisinopril. Bottle 4 is lisinopril, filled 3 days ago." Next to it is a question for the pharmacist, not an instruction. Bottle 6 is "label unreadable, please photograph closer".</div><div class="lv live">live</div></div>
+    <div class="beat"><div class="tm">1:10</div><div><b>The family call.</b> A 40-second speakerphone clip, three voices. The transcript streams in with speaker labels. Dan's phone buzzes: "Is speaker B you?" He taps yes, and "I'll call the pharmacy Thursday" becomes <i>Dan's</i> task.</div><div class="lv mix">live on a recorded clip</div></div>
+    <div class="beat lean"><div class="tm">1:45</div><div><b>The lean-in.</b> On his phone, Dan asks Athena to "send Dad's discharge summary to the new cardiologist." Nothing is sent. Dad's tablet lights up in large type and reads aloud: <i>"Dan asks to share your hospital papers with Dr. Reyes's office. Yes or not yet?"</i> Dad says <b>not yet</b>: he wants to talk first. Then Dan types "Dad already said yes on the call". The card stays shut, and the screen shows why: <i>a voice made a record, not a decision.</i></div><div class="lv live">live</div></div>
+    <div class="beat"><div class="tm">2:20</div><div><b>The record.</b> The hub shows the week: 9 tasks, 4 claimed by Dan and Maya's partner. Every fact cites who and where. The model cost for the whole circle so far is a few cents, from the ledger.</div><div class="lv live">live</div></div>
+    <div class="beat"><div class="tm">2:35</div><div><b>Close.</b> "One record. Everyone's yes where it's needed. Dad still decides."</div><div class="lv rec">title</div></div>
+  </div>
+  <p class="note"><b>What could fail live, and the fallback:</b> if the SAM or Spark call takes over 20 s, a recorded run of the same photo plays with a "recorded on &lt;date&gt;" label (the pattern carried over from the rejected plan's fallback, its one idea worth keeping). The call clip is pre-recorded by the team and says so on screen; the transcription of it is live. The gate beat has no model in the decision path, so it can't fail for model reasons.</p>
+</section>
+
+<!-- ============================ SLICE ============================ -->
+<section id="slice">
+  <div class="kicker">Argument</div>
+  <h2>The hackathon slice vs the perfect product</h2>
+  <figure>
+  <svg viewBox="0 0 940 240" role="img" aria-label="Roadmap timeline">
+    <line x1="30" y1="70" x2="920" y2="70" stroke="#1f2328" stroke-width="2"/>
+    <g font-size="13">
+      <circle cx="60" cy="70" r="8" fill="#0f6e6a"/><text x="40" y="44" font-weight="600">Slice · 10 days</text>
+      <circle cx="270" cy="70" r="8" fill="#2b5aa8"/><text x="240" y="44" font-weight="600">Pilot-ready · wk 3–10</text>
+      <circle cx="500" cy="70" r="8" fill="#2b5aa8"/><text x="470" y="44" font-weight="600">Pilot · months 3–6</text>
+      <circle cx="720" cy="70" r="8" fill="#a35c00"/><text x="690" y="44" font-weight="600">Long tasks · 6–12</text>
+      <circle cx="890" cy="70" r="8" fill="#888"/><text x="842" y="44" font-weight="600">Other circles</text>
+    </g>
+    <g font-size="12" fill="#4a5058">
+      <text x="30" y="100">hub + 3-role signer gate</text><text x="30" y="116">SAM → Spark meds</text><text x="30" y="132">diarized call → tasks</text><text x="30" y="148">PWA on 3 devices</text><text x="30" y="164">Glimmer: stretch (Modal)</text><text x="30" y="180">Gauntlet: 3 new surfaces</text>
+      <text x="240" y="100">Glimmer local on hub</text><text x="240" y="116">replica on 2nd PC</text><text x="240" y="132">rights-change + POA doc</text><text x="240" y="148">WhatsApp group surface,</text><text x="240" y="164">if Groups API access</text><text x="240" y="180">weekly check-in survey</text>
+      <text x="470" y="100">30 circles via caregiver</text><text x="470" y="116">support groups and Area</text><text x="470" y="132">Agencies on Aging (A)</text><text x="470" y="148">week 8: kill-line read</text><text x="470" y="164">pharmacist-confirmed</text><text x="470" y="180">catches</text>
+      <text x="690" y="100">Wonder: appeals, Medicaid</text><text x="690" y="116">renewal, using the 5 kept</text><text x="690" y="132">playbooks, proxy creds only</text><text x="690" y="148">employer-benefit channel</text>
+      <text x="842" y="100">co-parenting,</text><text x="842" y="116">disability support,</text><text x="842" y="132">shared households</text>
+    </g>
+    <rect x="22" y="196" width="196" height="30" rx="6" fill="#e3f1ef"/><text x="32" y="216" font-size="12" fill="#0f6e6a" font-weight="600">order = trust first, scale later</text>
+  </svg>
+  <figcaption><b>Why this slice wins on the four criteria.</b> <b>Impact (30)</b>: a named population of 63 M and a measured harm, the discharge discrepancy, shown on real bottles. <b>Meta tooling (25)</b>: three Meta models in one chain, each doing what only it can (count, read, attribute), plus Glimmer where the Rules list names it. <b>Technical depth (20)</b>: a quorum-and-veto gate built on a single-use approval with 300+ hostile turns of history, and new attack surfaces run on day 9. <b>Demo (25)</b>: one physical moment, masks over real bottles, and one human moment, Dad's "not yet", both live. <span class="t A">A</span></figcaption>
+  </figure>
+  <table>
+    <tr><th style="width:12%">Days</th><th>Build</th><th style="width:30%">Proof that it's done</th></tr>
+    <tr><td class="k">1–2</td><td>Meta engine via <code>tokenfactory.py</code> pattern; probe every model id; <code>docs/meta-api-facts.md</code> with each fact tagged measured / press / unverified</td><td>One ledger row per Meta call with real cost</td></tr>
+    <tr><td class="k">2–4</td><td>SAM → Spark meds pipeline; reconcile; 20 staged photos</td><td>Count exact on ≥ 18 of 20; every row cites a crop</td></tr>
+    <tr><td class="k">3–6</td><td>Members, signer rules, quorum and veto over <code>Approvals</code>; PWA cards from <code>peer/phone.py</code></td><td>Tests: proposer can't self-sign; veto beats quorum; replay is <code>approval_spent</code></td></tr>
+    <tr><td class="k">5–7</td><td>Diarized call → speaker binding → claimed tasks</td><td>Clip of 3 voices gives the right owner for each commitment</td></tr>
+    <tr><td class="k">8–9</td><td>Gauntlet: impersonation, "already agreed", hostile label text; Glimmer stretch</td><td>0 executions without signers, read off the table</td></tr>
+    <tr><td class="k">9–10</td><td>Ten full demo runs, video, README</td><td>10 of 10 runs end on the same state</td></tr>
+  </table>
+</section>
+
+<!-- ============================ BUSINESS ============================ -->
+<section id="business">
+  <div class="kicker">Argument</div>
+  <h2>Business shape and cost per circle</h2>
+  <div class="two">
+    <div class="card"><h4>Who pays</h4>
+      <p>Not the stressed carer alone. <b>Phase 1:</b> a circle subscription at about $15/month, paid by the circle and splittable across siblings <span class="t A">A</span>. That's a small slice of ≈ $7,200 a year out of pocket <a class="t S" href="https://www.aarp.org/press/releases/2025-07-24-new-report-reveals-crisis-point-for-americas-63-million-family-caregivers.html">S</a>. <b>Phase 2:</b> employers. 6 in 10 caregivers work and half report disruption <a class="t S" href="https://www.aarp.org/press/releases/2025-07-24-new-report-reveals-crisis-point-for-americas-63-million-family-caregivers.html">S</a>, and caregiving benefits are an existing employer category <span class="t R">R</span>. Health plans come after there is outcome data, not before.</p>
+      <p><b>Distribution:</b> the circle grows by invitation. One carer invites three people, so every customer is a channel <span class="t A">A</span>. The kill line measures exactly this.</p>
+    </div>
+    <div class="card"><h4>Model cost per circle per month</h4>
+<pre style="margin:6px 0"><span class="c"># our usage assumptions (A) × Meta's list prices (S)</span>
+40 label/doc reads, Spark   2.5k in / 400 out  $0.19
+20 counter photos, SAM      $2.50 per 1k img    $0.05
+4 h calls/visits, Voice     $0.18 per hour      $0.72
+400 agent turns, Spark      6k in (5k cached)
+                            / 500 out           $1.65
+<span class="k">slice stack</span>                                     <span class="k">≈ $2.61</span>
++2 long tasks, Wonder       200k in / 20k out   $2.40
+<span class="k">perfect product</span>                                 <span class="k">≈ $5.01</span></pre>
+      <p class="note">Prices from <a href="https://dev.meta.ai/docs/pricing-rate-limits">Meta's pricing page</a>; usage is our guess, and the pilot measures it. Glimmer on a hub GPU moves the agent turns to $0.</p>
+    </div>
+  </div>
+</section>
+
+<!-- ============================ RISKS ============================ -->
+<section id="risks">
+  <div class="kicker">Argument</div>
+  <h2>Pros, cons, risks</h2>
+  <table>
+    <tr><th style="width:15%">Choice</th><th style="width:17%">Pro</th><th style="width:17%">Con / risk</th><th>Mitigation</th><th style="width:19%">We change course if…</th></tr>
+    <tr><td class="k">Diarized voice as provenance</td><td>Captures decisions where they happen</td><td>Mis-attribution; DER reported ~17.5% <span class="t U">unverified</span></td><td>Speakers confirm their own label; voice never authorises</td><td>&gt; 25% of utterances need correction (kill line 2)</td></tr>
+    <tr><td class="k">Medication reconcile</td><td>The measurable harm (14.1%)</td><td>A wrong flag, or a missed one, in health</td><td>Flags only, never dosing; cites both sources; "ask the pharmacist"; unreadable means asked, not guessed</td><td>Pilot pharmacists find a false-clear (a missed discrepancy) in any circle</td></tr>
+    <tr><td class="k">Effort ledger</td><td>Makes hidden work visible</td><td>Can inflame sibling conflict</td><td>Private by default; circle-wide only on all opt-in; counts, never ranks</td><td>Exit interviews report it made things worse in ≥ 3 circles</td></tr>
+    <tr><td class="k">Principal's veto</td><td>Dignity; matches the law's default</td><td>Capacity declines; proxy disputes</td><td>Rights change needs POA document + quorum; product states it isn't legal advice</td><td>Pilot families hit a rights dispute the rule table can't express</td></tr>
+    <tr><td class="k">Hub on carer's PC</td><td>Reuses the daemon; data stays home</td><td>Many carers are phone-only <span class="t A">A</span>; the hub can be off</td><td>Replica on a 2nd PC; later a per-circle encrypted hosted hub</td><td>&gt; 40% of pilot signups have no PC</td></tr>
+    <tr><td class="k">Meta API</td><td>One vendor, all modalities</td><td>Preview, US developers only <a class="t S" href="https://dev.meta.ai/resources/blog/build-with-muse-spark/">S</a>; no key yet</td><td>Glimmer route; US-first market anyway; day-1 probe</td><td>A model id or a feature we depend on is missing on day 1</td></tr>
+    <tr><td class="k">Voice Transcribe in judging</td><td>Strongest "unexpected" use</td><td>Not named on event page or Rules</td><td>The slice's spine is Spark + SAM, which are named; voice is one beat</td><td>Kickoff says only named products count: switch the beat to Spark audio input, without diarization</td></tr>
+    <tr><td class="k">Health data in a cloud model</td><td>Best readers</td><td>Privacy, FTC Health Breach Notification Rule applies to health apps <span class="t R">R</span></td><td>Standard mode only (not used for training <a class="t S" href="https://dev.meta.ai/docs/models.md">S</a>); minimum crops; redaction by Glimmer</td><td>Legal review says the hosted path needs a BAA-grade setup we can't get</td></tr>
+    <tr><td class="k">WhatsApp group surface</td><td>Families already live there</td><td>Groups API reported capped at 8 participants, business number takes a slot <a class="t S" href="https://www.unipile.com/whatsapp-group-api/">S</a> <small>(second-hand)</small></td><td>Not in the slice; the PWA is the surface; group is read-mostly later</td><td>Meta's own docs confirm a lower cap or no access for us</td></tr>
+  </table>
+</section>
+
+<!-- ============================ ROUND 2 ============================ -->
+<section id="round2">
+  <div class="kicker">Argument</div>
+  <h2>What round 2 should prototype</h2>
+  <div class="two">
+    <div class="card"><h4>1 · Dad's card</h4><p>The principal's decision moment on a tablet: large type, read aloud, "Yes / Not yet / Ask Maya", with who asked and why. If an 80-year-old can't answer it in one go, the whole rights model fails. Test it with the <code>ana</code> UAT character (low vision) first, then with real older adults.</p></div>
+    <div class="card"><h4>2 · The counter reveal</h4><p>The photo with masks appearing, the count, then the reconcile rows with their citations, and how a red flag reads without causing panic. This is the demo's physical moment and the part where trust is won or lost.</p></div>
+    <div class="card"><h4>3 · Dan's week</h4><p>A far-away sibling's phone view: what's open, what fits his rights and capacity, a one-tap claim, and the private load mirror. It proves the spread target is reachable from a phone in two minutes a day.</p></div>
+    <div class="card" style="background:#f6f2ea"><h4>Not for round 2</h4><p>Hub console, rule-table editor, onboarding. They matter, but none of them proves the bet.</p></div>
+  </div>
+</section>
+
+<!-- ============================ SOURCES ============================ -->
+<section id="sources">
+  <div class="kicker">Argument</div>
+  <h2>Sources and how the tags were used</h2>
+  <p class="note">All fetched or searched on 2026-10-24. <b>S</b> links to the page the claim rests on; where the page is second-hand coverage, that's said next to it. <b>R</b> means recalled from background knowledge and not checked today. <b>A</b> means our judgement, and every target, usage figure and price we charge is A. Athena Portable numbers are measured on Claude and Nemotron with their run ids, never on a Meta model.</p>
+  <ul class="src">
+    <li>AARP / NAC, Caregiving in the US 2025, press release: <a href="https://www.aarp.org/press/releases/2025-07-24-new-report-reveals-crisis-point-for-americas-63-million-family-caregivers.html">aarp.org/press/releases/2025-07-24…</a></li>
+    <li>Secondary summary with 27 h/week: <a href="https://zencaregiving.org/caregiving-statistics-us-2025/">zencaregiving.org/caregiving-statistics-us-2025</a></li>
+    <li>Senate Aging Committee testimony, Dec 2025 (two-thirds talk to providers): <a href="https://www.aging.senate.gov/download/12/04/2025/testimony_resendez-120325pdf?download=1">aging.senate.gov…testimony_resendez</a></li>
+    <li>AARP family caregiver cost survey (26% of income): <a href="https://www.aarp.org/pri/topics/ltss/family-caregiving/family-caregivers-cost-survey.html">aarp.org/pri/…family-caregivers-cost-survey</a></li>
+    <li>Family Caregiver Alliance on the Home Instead sibling study (41% / 3%): <a href="https://www.caregiver.org/print/22417">caregiver.org/print/22417</a></li>
+    <li>Latulipe et al., JAMA Internal Medicine 2020, proxy access secret-shopper study: <a href="https://jamanetwork.com/journals/jamainternalmedicine/fullarticle/2764648">jamanetwork.com/…/2764648</a></li>
+    <li>Coleman et al., post-hospital medication discrepancies: <a href="https://caretransitions.org/files/documents/post%20hospital%20med%20discrep%20-%20aim%20abstract.pdf">caretransitions.org abstract (PDF)</a></li>
+    <li>Lotsa Helping Hands, App Store listing: <a href="https://apps.apple.com/us/app/-/id606923858">apps.apple.com/…/id606923858</a></li>
+    <li>Meta Model API, models: <a href="https://dev.meta.ai/docs/models.md">dev.meta.ai/docs/models.md</a> · pricing and limits: <a href="https://dev.meta.ai/docs/pricing-rate-limits">dev.meta.ai/docs/pricing-rate-limits</a> · Build with Muse Spark: <a href="https://dev.meta.ai/resources/blog/build-with-muse-spark/">dev.meta.ai/resources/blog/build-with-muse-spark</a></li>
+    <li>Muse Wonder: <a href="https://about.fb.com/news/2026/10/introducing-muse-wonder-models/">about.fb.com/news/2026/10/introducing-muse-wonder-models</a> · <a href="https://research.meta.ai/blog/muse-wonder">research.meta.ai/blog/muse-wonder</a> · <a href="https://techcrunch.com/2026/10/12/meta-releases-its-first-frontier-model-muse-wonder/">TechCrunch</a></li>
+    <li>Muse Glimmer: <a href="https://huggingface.co/blog/muse-glimmer">huggingface.co/blog/muse-glimmer</a> · <a href="https://techcrunch.com/2026/08/10/metas-new-glimmer-ai-model-offers-a-hint-at-zuckerbergs-personal-intelligence-vision/">TechCrunch</a></li>
+    <li>SAM 3.1 on the Model API (aggregated from @AIatMeta): <a href="https://digg.com/ai/icmesfai">digg.com/ai/icmesfai</a></li>
+    <li>Muse Voice Transcribe launch coverage: <a href="https://runtimewire.com/article/meta-muse-voice-transcribe-real-time-diarization-price">runtimewire.com</a></li>
+    <li>Muse Spark launch: <a href="https://www.fortune.com/2026/04/08/meta-unveils-muse-spark-mark-zuckerberg-ai-push">fortune.com</a> · Muse Image: <a href="https://about.fb.com/news/2026/07/introducing-muse-image-meta-ai/">about.fb.com/news/2026/07/introducing-muse-image-meta-ai</a></li>
+    <li>WhatsApp Groups API limits (second-hand guide): <a href="https://www.unipile.com/whatsapp-group-api/">unipile.com/whatsapp-group-api</a></li>
+    <li>Athena Portable: <code>data/athena-portable/README.md</code> §2–3, <code>submission.md</code> (run ids), <code>one-athena.md</code>; source files as named in the reuse map.</li>
+  </ul>
+</section>
+</main>
+
+<script>
+(function(){
+  var links = Array.prototype.slice.call(document.querySelectorAll('#nav a'));
+  var map = {};
+  links.forEach(function(a){ map[a.getAttribute('href').slice(1)] = a; });
+  if (!('IntersectionObserver' in window)) return;
+  var io = new IntersectionObserver(function(entries){
+    entries.forEach(function(e){
+      if (e.isIntersecting) {
+        links.forEach(function(a){ a.classList.remove('on'); });
+        var a = map[e.target.id]; if (a) a.classList.add('on');
+      }
+    });
+  }, {rootMargin: '-20% 0px -70% 0px'});
+  document.querySelectorAll('main section[id]').forEach(function(s){ io.observe(s); });
+})();
+</script>
+</body>
+</html>
