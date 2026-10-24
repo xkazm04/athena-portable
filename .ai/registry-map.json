@@ -2436,12 +2436,11 @@
           "changedAt": "2026-10-18",
           "confidence": "strong",
           "state": "deviation",
-          "evidence": "src/athena/daemon/voice.py:86 and :91 return the same 503 engine_error for not-ready and synthesis-failed (also :115/:137); portable-provider-package needs four distinct answers, so the studio cannot tell install-it from it-broke",
-          "evaluatedAt": "2026-10-14",
-          "evaluatedAgainst": "sha256-b2:fa1c8ca716f872dc",
-          "evaluatedRevision": 20,
-          "revisionsBehind": 3,
-          "stale": true
+          "evidence": "src/athena/daemon/voice.py:100 /voice/preview and /voice/transcribe answer the same 503 engine_error for engine-not-ready (lines 95, 125) and for synthesis or transcription failure or timeout (lines 100, 147). The studio cannot tell install-it from it-broke without parsing messages, and the openai-billed transcribe route has no per-caller throttle.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:29f8b158c4d44054",
+          "evaluatedRevision": 23,
+          "revisionsBehind": 3
         },
         {
           "subject": "test-harness",
@@ -5269,12 +5268,11 @@
           "changedAt": "2026-10-18",
           "confidence": "strong",
           "state": "deviation",
-          "evidence": "apps/desktop/src/modules/setup/index.ts:54 the microphone answer lives in hook-local state seeded unknown, so a denial is forgotten on the next visit and micFact reads \"not asked yet\" (readiness.ts:158), and the denied arm (apps/desktop/src/modules/setup/readiness.ts:154) carries only the raw webview error; stt-pipeline wants denial remembered with a platform re-grant path, so a person who refused once is never told how to get push-to-talk back",
-          "evaluatedAt": "2026-10-14",
-          "evaluatedAgainst": "sha256-b2:fa1c8ca716f872dc",
-          "evaluatedRevision": 20,
-          "revisionsBehind": 3,
-          "stale": true
+          "evidence": "apps/desktop/src/modules/setup/index.ts:53 The microphone answer is hook-local state seeded 'unknown', so a denial is forgotten on the next visit (micFact reads 'not asked yet'). The denied arm carries only the raw webview message, so someone who refused once is never told how to re-grant push-to-talk.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:29f8b158c4d44054",
+          "evaluatedRevision": 23,
+          "revisionsBehind": 3
         },
         {
           "subject": "quality-gates",
@@ -9736,12 +9734,11 @@
           "changedAt": "2026-10-18",
           "confidence": "strong",
           "state": "deviation",
-          "evidence": "src/athena/channels/voice/tts.py:41 speaks visible reply text with no markup door, so markdown/URLs are voiced; src/athena/channels/voice/commands.py:91 collapses every empty transcript to silent 'silence', so words-less speech is never surfaced",
-          "evaluatedAt": "2026-10-14",
-          "evaluatedAgainst": "sha256-b2:fa1c8ca716f872dc",
-          "evaluatedRevision": 20,
-          "revisionsBehind": 3,
-          "stale": true
+          "evidence": "src/athena/channels/voice/gateway.py:535 When a push-to-talk hold crosses the 2-minute MAX_UTTERANCE_BYTES cap, the gateway throws away the whole utterance and tells the person to release the key sooner; stt-pipeline says the cap closes a segment, transcribes it and keeps capturing, so up to two minutes of speech is lost instead of segmented.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:29f8b158c4d44054",
+          "evaluatedRevision": 23,
+          "revisionsBehind": 3
         },
         {
           "subject": "talking-avatar",
