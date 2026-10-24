@@ -6001,7 +6001,11 @@
           "revision": 26,
           "changedAt": "2026-10-06",
           "confidence": "strong",
-          "state": "unknown"
+          "state": "deviation",
+          "evidence": "tests/harness/test_cli_harness.py:9 The CLI transcripts this suite replays are hand-written (tests/fixtures/README.md:14 says all three are synthetic), carry no service version or capture date, and the only live lane is a provider test marked 'never run in CI', so a change in the upstream CLI format can never turn this suite red, which is the opposite of what the docstring claims.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:c96e1ee699a88119",
+          "evaluatedRevision": 27
         },
         {
           "subject": "session-continuation",

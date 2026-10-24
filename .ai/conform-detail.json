@@ -5565,6 +5565,53 @@
           "evidence": "src/athena/connectors/spec.py:263 The file enumeration loads connector specifications, not Markdown records for vault features."
         }
       ]
+    },
+    "1cd39491-5acf-4229-b227-ae8068800d9b/test-harness": {
+      "context": "harness-engines",
+      "subject": "test-harness",
+      "bundle": "software-engineering",
+      "state": "deviation",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T00:24:05.052Z",
+      "worker": "7f5966fb-5d4a-426f-88b7-ab3f2b89de34",
+      "techniques": [
+        {
+          "technique": "recorded-interaction-fixtures",
+          "verdict": "deviation",
+          "evidence": "tests/harness/test_cli_harness.py:9 The fixtures are a hand-written fake presented as a drift detector. No contract revision is recorded and no live lane runs on a schedule (pyproject marker: 'never run in CI'). The seam itself is good: a Transport protocol in production code, with ScriptedTransport replaying through it."
+        },
+        {
+          "technique": "assert-the-schedule-not-the-stopwatch",
+          "verdict": "deviation",
+          "evidence": "tests/harness/test_rounds_failures.py:325 The turn-wall cutoff is checked against total wall time. The _SlowRounds test also depends on two 0.4 s sleeps fitting inside a 1 s wall. Both turn red on a loaded runner with no defect present."
+        },
+        {
+          "technique": "suite-partitioning",
+          "verdict": "deviation",
+          "evidence": "tests/harness/test_tokenfactory.py:618 The live, money-spending test sits in the same file and configuration as the offline unit tests. It is kept out by a marker plus a runtest_setup skip, which is membership by annotation, not by location."
+        },
+        {
+          "technique": "derived-selection-must-be-measured",
+          "verdict": "conformant",
+          "evidence": "tests/harness/test_tokenfactory.py:715 The marker-driven selection is measured by running pytest itself over an inner tree and asserting the passed, skipped and deselected counts, not reasoned about."
+        },
+        {
+          "technique": "isolation-lanes",
+          "verdict": "conformant",
+          "evidence": "tests/harness/conftest.py:52 An API key in the developer's environment never decides that a test reaches a provider. Separately, test_engines and test_cli_harness assert that spawned children are stripped of API keys."
+        },
+        {
+          "technique": "fixture-economics",
+          "verdict": "conformant",
+          "evidence": "tests/harness/conftest.py:5 The fixtures are cheap in-memory fakes, and their honesty is held by a test that drives the real core classes through the same ports, so the fakes cannot drift."
+        },
+        {
+          "technique": "unreached-decisions-pin-nothing",
+          "verdict": "conformant",
+          "evidence": "tests/harness/test_policy.py:442 The tests assert which rule produced the refusal, not just that a refusal happened. A recording proxy (_Reads) also measures which inputs each rule actually read."
+        }
+      ],
+      "registryProposal": "recorded-interaction-fixtures could name a distinct failure: a fixture honestly labelled synthetic in its own header, while the suite's docstring and ADR still claim that fixture turns upstream format drift into a red test. The honesty of the label does not reach the claim, and a hand-written fixture cannot detect drift at all."
     }
   }
 }
