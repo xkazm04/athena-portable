@@ -2753,7 +2753,11 @@
           "revision": 4,
           "changedAt": "2026-09-05",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/demo-kit/test/abort.test.ts:1 The listed tests check zoom-engine mechanics, the bounded envelope and the template's navigate routing, not a fabricated world, and a search of examples/demo-kit/test for fixture, rngFor, Math.random and isDemo found nothing (the only 'fake' hits are DOM stubs in escape/tokens tests), so the subject's precondition does not hold.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:952fe6652c22027d",
+          "evaluatedRevision": 4
         },
         {
           "subject": "test-harness",
@@ -2985,7 +2989,11 @@
           "revision": 4,
           "changedAt": "2026-09-05",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/demo-kit/src/zoom/index.ts:2 The zoom engine holds only navigation, camera, flight, escape, roving-focus and token primitives with no data source, fixture or generator, and a search of src/zoom for fixture, rngFor, Math.random and isDemo found nothing, so there is no fabricated data plane here to judge.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:952fe6652c22027d",
+          "evaluatedRevision": 4
         },
         {
           "subject": "canvas-graph",

@@ -6730,6 +6730,26 @@
           "evidence": "src/athena/proving/playbooks/bench.py:94 There is no upstream suite with editions. The only revision is the local scorer, which is already in the comparability key."
         }
       ]
+    },
+    "caa9de8e-e922-457c-9839-14cf7fa6b2e2/demo-data-plane": {
+      "context": "demo-kit-zoom-engine",
+      "subject": "demo-data-plane",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T05:25:32.975Z",
+      "worker": "d04130b4-7442-4e6e-9653-3fe0abb080a4",
+      "techniques": []
+    },
+    "2ad7599e-f1ae-4aa8-ab84-ad38e38cb285/demo-data-plane": {
+      "context": "demo-kit-tests",
+      "subject": "demo-data-plane",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T05:25:32.975Z",
+      "worker": "d04130b4-7442-4e6e-9653-3fe0abb080a4",
+      "techniques": []
     }
   }
 }
