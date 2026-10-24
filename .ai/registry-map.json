@@ -6837,8 +6837,12 @@
           "revision": 19,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "unknown",
-          "priorNotApplicable": 2
+          "state": "not-applicable",
+          "priorNotApplicable": 2,
+          "evidence": "examples/hirelane/components/board/tools/search.ts:50 The only query surface is an AND-ed substring and structured-field filter over a small seeded candidate board, sorted deterministically. That is the search subject's ground, and the golden path says a corpus this small is below where retrieval applies. Grepping components/board and lib for embedding/cosine/rerank/bm25/retrieval found nothing.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:a49d27f889212d3f",
+          "evaluatedRevision": 19
         },
         {
           "subject": "quality-gates",
@@ -7600,8 +7604,12 @@
           "revision": 19,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "unknown",
-          "priorNotApplicable": 2
+          "state": "not-applicable",
+          "priorNotApplicable": 2,
+          "evidence": "examples/ledgerbox/lib/filter.ts:5 The domain lib reads invoices through enum predicates (overdue, unmatched, disputed) over a seeded SQLite fixture set, and 'lane' here means a practice area. No retrieval pipeline, index or score exists. Grepping examples/ledgerbox/lib for embedding/cosine/rerank/bm25/retrieval found nothing.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:a49d27f889212d3f",
+          "evaluatedRevision": 19
         },
         {
           "subject": "quality-gates",
@@ -7913,8 +7921,12 @@
           "revision": 19,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "unknown",
-          "priorNotApplicable": 2
+          "state": "not-applicable",
+          "priorNotApplicable": 2,
+          "evidence": "examples/ledgerbox/components/lanes/tools/search.ts:52 The WebMCP search tool is an AND-ed substring and threshold filter over the whole in-memory fixture sheet, ordered worst-first, so there are no lanes, embeddings or fused scores for this subject to govern. Grepping components/lanes/model, components/lanes/tools and test for embedding/cosine/rerank/bm25/retrieval found nothing.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:a49d27f889212d3f",
+          "evaluatedRevision": 19
         },
         {
           "subject": "agent-memory",

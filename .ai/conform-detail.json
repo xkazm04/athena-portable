@@ -2583,16 +2583,22 @@
       "context": "hirelane-model-and-lib",
       "subject": "retrieval",
       "bundle": "software-engineering",
-      "state": "unknown",
-      "evaluatedAt": "2026-10-16",
-      "evaluatedTs": "2026-10-16T02:12:10.904Z",
-      "techniques": [],
-      "withdrawn": {
-        "worker": "24cbbc56-6fcc-4aea-badc-ae91af2e21e7",
-        "state": "not-applicable",
-        "at": "2026-10-16T02:12:41.570069+00:00",
-        "reason": "reviewer (sonnet): The anchor shows search.ts is a retrieval path (text filter, rank(), bounded page of 25 with a leftover count), so it does not show retrieval is absent. The embedding/cosine/chunk/rerank/overfetch terms miss lexical filtering, ranking and paging."
-      }
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T23:38:44.294Z",
+      "worker": "4e9dc406-39a9-4b9e-ac57-c6181f0e524c",
+      "techniques": [
+        {
+          "technique": "hybrid-lane-fusion",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/tools/search.ts:69 One deterministic order by a domain score, with no matcher scores to fuse."
+        },
+        {
+          "technique": "ranking-budgets",
+          "verdict": "not-applicable",
+          "evidence": "examples/hirelane/components/board/tools/search.ts:21 A fixed result page that reports how many it left out, not a shared budget across retrieval lanes."
+        }
+      ]
     },
     "f9349ce6-a48d-4abe-9bb1-412a99b45907/retrieval": {
       "context": "ledgerbox-style-design",
@@ -7567,6 +7573,48 @@
           "technique": "entitlement-gating",
           "verdict": "not-applicable",
           "evidence": "examples/hirelane/app/actions.ts:7 Here 'gated' means agent acts that need approval because they cannot be undone, not plan or role entitlements. Searching app/, components/ and lib/ for entitle/locked/plan/featureFlag found no tier or flag that controls what the nav shows."
+        }
+      ]
+    },
+    "3c4969f8-b87d-4ccd-bcab-2ebbcf35526c/retrieval": {
+      "context": "ledgerbox-domain-lib",
+      "subject": "retrieval",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T23:38:44.294Z",
+      "worker": "4e9dc406-39a9-4b9e-ac57-c6181f0e524c",
+      "techniques": [
+        {
+          "technique": "named-period-vote",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/lib/filter-period.ts:10 The period is a user-selected enum filter on the books, not a period named in a free-text question to a retrieval ranker."
+        },
+        {
+          "technique": "relevance-floors",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/lib/filter.ts:8 Boolean domain predicates with no similarity score to put a floor under."
+        }
+      ]
+    },
+    "b2b5a52a-1543-4808-bba2-6ef1fc46740b/retrieval": {
+      "context": "ledgerbox-model-tools",
+      "subject": "retrieval",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T23:38:44.294Z",
+      "worker": "4e9dc406-39a9-4b9e-ac57-c6181f0e524c",
+      "techniques": [
+        {
+          "technique": "hybrid-lane-fusion",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/tools/search.ts:74 One deterministic domain ordering, with no matcher scores to normalise or fuse."
+        },
+        {
+          "technique": "ranking-budgets",
+          "verdict": "not-applicable",
+          "evidence": "examples/ledgerbox/components/lanes/tools/search.ts:19 A fixed page for an agent tool reply, not a relevance budget across lanes."
         }
       ]
     }
