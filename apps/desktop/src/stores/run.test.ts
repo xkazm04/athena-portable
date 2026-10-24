@@ -2148,7 +2148,7 @@ describe("Stop", () => {
 
     expect(daemon.signals[0]?.aborted).toBe(true);
     const stops = daemon.seen.filter((s) => s.path === "/run/stop");
-    expect(stops.map((s) => s.body)).toEqual([{ origin: "https://ledgerbox.local" }]);
+    expect(stops.map((s) => s.body)).toEqual([{ origin: "https://ledgerbox.local", conversation_id: null }]);
     const state = useRun.getState();
     expect(state.phase).toBe("idle");
     expect(state.error).toBeNull();
