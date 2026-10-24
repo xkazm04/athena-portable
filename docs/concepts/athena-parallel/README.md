@@ -101,6 +101,12 @@ partly read, with `from=<n>` (`:46-51`). That is the one piece of resume the com
 composer device chip and auto-routing are not built (ADR 0140,
 `docs/adr/0140-one-athena-pairs-devices-over-a-private-overlay.md:240-242`).
 
+Since device-vitals (ADR 0143), each PC already knows every paired PC's room: the authorized hello
+carries a vitals snapshot (RAM, CPU, GPU, power, disk, task slots, why work waits), `GET /devices`
+shows it for 90 s, and Athena is told it in `frame.fleet` and through `core.devices`. She advises
+where work would fit; nothing sends it there. Dispatch inherits this as its input: the receiver's
+own gate already holds a task it has no room for, with a reason the sender can show.
+
 ### What Personas does
 
 - **A persisted outbox.** A job sent to a paired device that is not connected is written as
@@ -437,7 +443,8 @@ and `approve` (`src/athena/peer/mobile/app.js:24`). It polls cards every 5 s whi
    so both must hold before Pillar 1.
 3. **v2.2 - cross-device dispatch.** The `delegate` grant, `/peer/tasks*`, the outbound table, the
    drain on the presence edge, numbered notes, forwarded stop, harvest at both ends, and remote
-   rows on all three surfaces with the unknown state.
+   rows on all three surfaces with the unknown state. Which PC to send to reads the vitals the
+   hello already carries (ADR 0143), and a held receiver keeps the job queued with its reason.
 4. **v2.3 - voice.** The speech arbiter, spoken task summaries, completion notices, halo captions
    for outcomes.
 5. **v2.4 - speed and fairness.** A warm process for the focused thread, priorities and the

@@ -1106,6 +1106,12 @@ def serve(argv: Sequence[str] | None = None, *, stream: TextIO | None = None) ->
     # The peer lifecycle (ADR 0140): binds the overlay listener only while trust needs it.
     if local.peer is not None:
         local.peer.start()
+    # This PC's room and her sleep (ADR 0143): the sampler and the check thread run in the served
+    # daemon only, so an Athena built in-process never measures or sleeps over a brain it borrowed.
+    if local.vitals is not None:
+        local.vitals.start()
+    if local.sleep is not None:
+        local.sleep.start()
     try:
         server.serve_forever()
     except KeyboardInterrupt:

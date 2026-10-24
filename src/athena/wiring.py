@@ -48,6 +48,7 @@ from athena.core.constitution import Constitution, load
 from athena.core.ledger import Ledger
 from athena.core.recall import recall, recall_whole
 from athena.daemon.server import AthenaDaemon
+from athena.daemon.sleep import SleepService, sleep_runner
 from athena.daemon.tasks import (
     Tasks,
     delegate_executor,
@@ -63,7 +64,9 @@ from athena.harness.ports import ModelFn
 from athena.harness.rounds import RoundHarness
 from athena.harness.transports import SubprocessTransport, Transport
 from athena.lane.browser_lane import BrowserLane
+from athena.lane.fleet import FleetPrompt, devices_executor
 from athena.lane.turn_frame import FrameBuilder
+from athena.vitals.wire import VitalsService
 
 if TYPE_CHECKING:
     from athena.adopt.routes import AdoptStudio
@@ -93,6 +96,10 @@ VOICE_DIRNAME = "voice"
 #: Where adopt sessions keep their temp dirs and the legs their prompt files — a sibling of the
 #: brain under ``$ATHENA_HOME``; a dead process's sessions are cleared on the next one (ADR 0097).
 ADOPT_DIRNAME = "adopt"
+
+#: Where the sleep cycle's legs write their prompt files - a sibling of the brain under
+#: ``$ATHENA_HOME``, like adopt's; the journal itself lives in the brain's ``cycles/`` (ADR 0143).
+SLEEP_DIRNAME = "sleep"
 
 TransportFactory = Callable[[CliDialect], Transport]
 """How a dialect is actually run. ``SubprocessTransport`` in production, a scripted one in a test.
@@ -205,6 +212,10 @@ class AthenaLocal:
     adopt: AdoptStudio | None = None
     #: The peer host behind ``/devices`` and the overlay listener (ADR 0140), or ``None``.
     peer: PeerHost | None = None
+    #: This PC's room - probe, gate, sampler - behind ``/vitals`` and the hello (ADR 0143).
+    vitals: VitalsService | None = None
+    #: This PC's sleep cycle behind ``/sleep*`` (ADR 0143).
+    sleep: SleepService | None = None
 
     def close(self) -> None:
         """Close the brain, cancel any consent flow, end every adopt session.
@@ -213,6 +224,10 @@ class AthenaLocal:
         reaches the caller.
         """
         try:
+            if self.sleep is not None:
+                self.sleep.stop()
+            if self.vitals is not None:
+                self.vitals.stop()
             if self.peer is not None:
                 self.peer.close()
             if self.adopt is not None:
@@ -304,6 +319,19 @@ def build_local(
         ledger = Ledger(brain)
         # The delegated tasks' table (ADR 0141), on this brain's index like the approvals.
         tasks = Tasks(brain)
+        # This PC's room (ADR 0143), built before the catalog that tells her the fleet and before
+        # the sleep cycle it gates. The gate counts a running cycle as a task and shares its
+        # summary, and the cycle asks the gate for room, so the two bind each other late.
+        sleep: SleepService | None = None
+        vitals = VitalsService(
+            brain_root=brain.root,
+            ledger=ledger,
+            tasks=tasks,
+            host=peer,
+            extra_running=lambda: 1 if sleep is not None and sleep.running() else 0,
+            sleep_summary=lambda: sleep.summary() if sleep is not None else None,
+            publish=peer.publish if peer is not None else None,
+        )
         # ``load``, never ``load_or_empty``: a turn with no law should not have started, so a
         # missing law stops the build here and ``athena serve`` says so on its failure line.
         constitution = load(constitution_dir)
@@ -318,6 +346,7 @@ def build_local(
             delegate=delegate_executor(tasks),
             tasks=tasks_executor(tasks),
             task_stop=task_stop_executor(tasks),
+            devices=devices_executor(vitals),
         )
         catalog = build_catalog(services)
         if vault is not None and policy is None:
@@ -355,6 +384,7 @@ def build_local(
             constitution=constitution,
             catalog=catalog,
             recall=lambda query: recall(brain, query),
+            fleet=FleetPrompt(vitals),
         )
         lane = BrowserLane(
             harness=harness,
@@ -377,6 +407,20 @@ def build_local(
             tasks=tasks,
         )
         _wire_tasks(daemon, tasks)
+        tasks.room = vitals.gate
+        for route in vitals.routes():
+            daemon.routes.add(route)
+        sleep = SleepService(
+            brain=brain,
+            room=vitals.gate,
+            runner=sleep_runner(brain.root.parent / SLEEP_DIRNAME, ledger),
+            threads=daemon.threads,
+            tasks=tasks,
+            device_id=lambda: brain.device_id,
+            publish=peer.publish if peer is not None else None,
+        )
+        for route in sleep.routes():
+            daemon.routes.add(route)
         studio = voice_studio or VoiceStudio(brain.root.parent / VOICE_DIRNAME)
         _wire_voice(daemon, studio, voice, voice_off)
         if vault is not None:
@@ -403,6 +447,8 @@ def build_local(
             voice=studio,
             adopt=adopt_studio,
             peer=peer,
+            vitals=vitals,
+            sleep=sleep,
         )
     except BaseException:
         brain.close()

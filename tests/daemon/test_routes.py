@@ -104,6 +104,14 @@ def test_the_table_ships_every_route_the_daemon_answers(daemon: AthenaDaemon) ->
         "GET /tasks",
         "POST /tasks/claim",
         "POST /tasks/<id>",
+        # This PC's room and her sleep, exact before each prefix (ADR 0143).
+        "GET /vitals",
+        "GET /sleep",
+        "GET /sleep/cycles",
+        "GET /sleep/proposals",
+        "POST /sleep/run",
+        "GET /sleep/cycles/<id>",
+        "POST /sleep/proposals/<id>",
         # The voice studio's, added by wiring after the base table (ADR 0028).
         "GET /voice/config",
         "PUT /voice/config",
