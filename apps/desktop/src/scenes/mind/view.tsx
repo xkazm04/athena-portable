@@ -219,7 +219,6 @@ function Level({
     <div className="mind mind--level">
       <div className="mind__art">
         <InstrumentArt item={which} size={220} />
-        <p className="mind__stylised">Stylised drawing.</p>
       </div>
       <div className="mind__body">
         <p className="mind__eyebrow">{word ?? "Mind"}</p>

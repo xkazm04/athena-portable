@@ -123,11 +123,6 @@
   gap: 6px;
   padding-top: 4vh;
 }
-.mind__stylised {
-  margin: 0;
-  font-size: 0.8125rem;
-  color: var(--muted);
-}
 .mind__body {
   display: grid;
   gap: 14px;
@@ -275,14 +270,419 @@
   background: var(--primary);
 }
 
-/* The Devices level (ADR 0140): a pending request is a card; a conversation is a recessed log. */
-.devices__cards {
-  list-style: none;
+/* The Devices level (ADR 0140, fleet-surfaces WP3): a constellation and a wizard on one stage.
+ * The stage is one grid cell that both layers share, so the wizard is as tall as it needs and the
+ * sky stays under it. Tokens only; text never under 12px; every loop stops under Calm, and a
+ * reduced-motion machine plays each once (app.css). */
+.devices {
+  display: grid;
+  gap: 12px;
+  min-width: 0;
+  container-type: inline-size;
+}
+.devices__stage {
+  display: grid;
+  min-width: 0;
+}
+.devices__stage > * {
+  grid-area: 1 / 1;
+  min-width: 0;
+}
+
+/* -- Layer 1: the sky --------------------------------------------------------------------------- */
+.sky {
+  --node: clamp(40px, 6.2cqw, 58px);
+  position: relative;
+  aspect-ratio: 1000 / 640;
+  min-height: 320px;
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-subtle);
+  background:
+    radial-gradient(closest-side at 50% 50%, color-mix(in srgb, var(--primary) 14%, transparent), transparent),
+    radial-gradient(farthest-corner at 50% 50%, var(--depth-1), var(--depth-2));
+  overflow: hidden;
+  transition:
+    opacity var(--dur-depth) var(--ease-depth),
+    transform var(--dur-depth) var(--ease-depth);
+}
+.sky[data-dim] {
+  opacity: 0.2;
+  transform: scale(0.97);
+}
+@container (max-width: 560px) {
+  .sky {
+    aspect-ratio: 1 / 1;
+  }
+}
+.sky__lines {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+}
+.sky__orbit {
+  fill: none;
+  stroke: var(--border-default);
+  stroke-width: 1;
+  stroke-dasharray: 2 7;
+}
+.sky__orbit--inner {
+  stroke: var(--border-subtle);
+}
+.sky__link line {
+  stroke: var(--border-emphasis);
+  stroke-width: 1.25;
+  stroke-linecap: round;
+}
+.sky__link[data-state="online"] line {
+  stroke: color-mix(in srgb, var(--status-success) 55%, transparent);
+  stroke-width: 1.75;
+}
+.sky__link[data-state="online"] .sky__flow {
+  stroke: var(--status-success);
+  stroke-width: 3;
+  stroke-dasharray: 2 26;
+  animation: sky-flow 2.8s linear infinite;
+}
+.sky__link[data-state="asleep"] line {
+  stroke: var(--border-default);
+}
+.sky__link[data-state="unreachable"] line {
+  stroke: color-mix(in srgb, var(--status-warning) 60%, transparent);
+  stroke-dasharray: 5 7;
+}
+.sky__link[data-state="pending"] line {
+  stroke: var(--status-pending);
+  stroke-dasharray: 1 6;
+  stroke-width: 2;
+  animation: sky-ask 2.4s ease-in-out infinite alternate;
+}
+.sky__link[data-state="joining"] line {
+  stroke: color-mix(in srgb, var(--primary) 70%, transparent);
+  stroke-dasharray: 1 6;
+  stroke-width: 2;
+}
+@keyframes sky-flow {
+  to {
+    stroke-dashoffset: -56;
+  }
+}
+@keyframes sky-ask {
+  from {
+    opacity: 0.35;
+  }
+}
+
+.sky__invite {
+  position: absolute;
+  top: 9%;
+  left: 50%;
+  width: min(30rem, 80%);
+  margin: 0;
+  transform: translateX(-50%);
+  text-align: center;
+  color: var(--muted-foreground);
+}
+
+.sky__nodes {
+  position: absolute;
+  inset: 0;
+}
+
+/* A node is a button whose disc sits on its spot; its name and caption hang under it. */
+.cnode {
+  position: absolute;
+  display: grid;
+  justify-items: center;
+  gap: 2px;
+  width: max-content;
+  max-width: 10rem;
+  padding: 0 4px 4px;
+  font: inherit;
+  color: var(--foreground);
+  text-align: center;
+  background: transparent;
+  border: 0;
+  border-radius: var(--radius-card);
+  transform: translate(-50%, calc(var(--node) / -2));
+  cursor: pointer;
+  transition:
+    transform var(--duration-fast) var(--ease-fast),
+    opacity var(--duration-fast) var(--ease-fast);
+}
+.cnode__disc {
+  display: grid;
+  place-items: center;
+  width: var(--node);
+  height: var(--node);
+  border-radius: 999px;
+  border: 1.5px solid var(--border-emphasis);
+  background: var(--card-bg);
+  color: var(--muted-foreground);
+  box-shadow: var(--shadow-elevation-1);
+  transition:
+    border-color var(--duration-fast) var(--ease-fast),
+    box-shadow var(--duration-fast) var(--ease-fast),
+    background var(--duration-fast) var(--ease-fast);
+}
+.cnode__glyph,
+.cnode__plus {
+  width: 56%;
+  height: 56%;
+  fill: color-mix(in srgb, var(--primary) 12%, transparent);
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.cnode__plus {
+  fill: none;
+  stroke-width: 2.2;
+}
+/* A halo in the sky's own colour, so a line that runs under a label does not strike it through. */
+.cnode__name,
+.cnode__caption {
+  text-shadow:
+    0 0 4px var(--background),
+    0 0 8px var(--background);
+}
+.cnode__name {
+  margin-top: 4px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  line-height: 1.2;
+  overflow-wrap: anywhere;
+}
+.cnode__caption {
+  font-size: 0.75rem;
+  line-height: 1.3;
+  color: var(--muted-foreground);
+}
+.cnode:hover .cnode__disc,
+.cnode[data-selected] .cnode__disc {
+  border-color: var(--focus);
+  box-shadow: 0 0 0 4px var(--glow);
+}
+
+.cnode--self {
+  --node: clamp(56px, 8.6cqw, 84px);
+  max-width: 16rem;
+}
+.cnode--self .cnode__disc {
+  color: var(--foreground);
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 14%, var(--card-bg));
+  box-shadow:
+    0 0 0 6px color-mix(in srgb, var(--primary) 10%, transparent),
+    0 0 32px 4px var(--glow);
+}
+.cnode--self[data-overlay="absent"] .cnode__disc,
+.cnode--self[data-overlay="logged_out"] .cnode__disc {
+  border-style: dashed;
+  border-color: var(--status-warning);
+}
+
+.cnode[data-presence="online"] .cnode__disc {
+  color: var(--foreground);
+  border-color: var(--status-success);
+  box-shadow: 0 0 0 4px color-mix(in srgb, var(--status-success) 16%, transparent);
+}
+.cnode[data-presence="asleep"] .cnode__disc {
+  opacity: 0.6;
+}
+.cnode[data-presence="unreachable"] .cnode__disc {
+  border-style: dashed;
+  border-color: var(--status-warning);
+  opacity: 0.8;
+}
+
+/* A request waits on this person: a ring breathes out of the disc until it is answered. */
+.cnode--pending .cnode__disc {
+  position: relative;
+  color: var(--foreground);
+  border-color: var(--status-pending);
+}
+.cnode--pending .cnode__disc::after {
+  content: "";
+  position: absolute;
+  inset: -2px;
+  border-radius: 999px;
+  border: 2px solid var(--status-pending);
+  animation: cnode-ask 2.2s ease-out infinite;
+}
+.cnode--pending .cnode__caption {
+  color: var(--foreground);
+}
+@keyframes cnode-ask {
+  from {
+    transform: scale(1);
+    opacity: 0.7;
+  }
+  to {
+    transform: scale(1.7);
+    opacity: 0;
+  }
+}
+
+.cnode--joining .cnode__disc {
+  border-style: dotted;
+  border-color: var(--primary);
+}
+
+.cnode--add .cnode__disc {
+  border-style: dashed;
+  border-color: color-mix(in srgb, var(--primary) 70%, transparent);
+  background: color-mix(in srgb, var(--primary) 6%, var(--card-bg));
+  color: var(--primary);
+  box-shadow: none;
+}
+.cnode--add .cnode__name {
+  color: var(--primary);
+}
+.cnode--add:hover {
+  transform: translate(-50%, calc(var(--node) / -2)) scale(1.06);
+}
+.cnode--add:hover .cnode__disc {
+  border-style: solid;
+}
+
+.sky__legend {
+  position: absolute;
+  left: 14px;
+  bottom: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px 14px;
   margin: 0;
   padding: 0;
-  display: grid;
-  gap: 10px;
+  list-style: none;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
 }
+.sky__legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.sky__legend li::before {
+  content: "";
+  width: 18px;
+  border-top: 2px solid var(--border-default);
+}
+.sky__legend li[data-state="online"]::before {
+  border-top-color: var(--status-success);
+}
+.sky__legend li[data-state="unreachable"]::before {
+  border-top-style: dashed;
+  border-top-color: var(--status-warning);
+}
+/* A narrow stage keeps the drawing and the names; how each stands moves to its drawer and the list. */
+@container (max-width: 560px) {
+  .sky__legend,
+  .cnode--peer .cnode__caption,
+  .cnode--joining .cnode__caption {
+    display: none;
+  }
+  .cnode {
+    max-width: 7rem;
+  }
+}
+
+/* What a screen reader reads instead of the drawing; clipped, never display:none. */
+.devices__sr {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}
+
+/* -- The drawer: a node's details under the stage, its caret under the node --------------------- */
+.cdrawer {
+  position: relative;
+  display: grid;
+  gap: 12px;
+  padding: var(--density-pad-sm) var(--density-pad);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-emphasis);
+  background: var(--card-bg);
+  box-shadow: var(--shadow-elevation-1);
+  animation: cdrawer-in var(--dur-depth) var(--ease-depth) both;
+}
+.cdrawer::before {
+  content: "";
+  position: absolute;
+  top: -7px;
+  left: clamp(18px, var(--caret), calc(100% - 18px));
+  width: 12px;
+  height: 12px;
+  border-top: 1px solid var(--border-emphasis);
+  border-left: 1px solid var(--border-emphasis);
+  background: var(--card-bg);
+  transform: translateX(-50%) rotate(45deg);
+}
+@keyframes cdrawer-in {
+  from {
+    opacity: 0;
+    transform: translateY(-6px);
+  }
+}
+.cdrawer__head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.cdrawer__disc {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border-emphasis);
+  color: var(--foreground);
+}
+.cdrawer__disc .cnode__glyph {
+  width: 60%;
+  height: 60%;
+}
+.cdrawer__titles {
+  flex: 1;
+  min-width: 0;
+}
+.cdrawer__titles p {
+  margin: 0;
+}
+.cdrawer__name {
+  margin: 0;
+  font-size: 1.125rem;
+  overflow-wrap: anywhere;
+}
+.cdrawer__body {
+  display: grid;
+  gap: 12px;
+}
+/* A device's facts run in columns, so the drawer stays short enough to keep the sky in view. */
+.cdrawer__body > .facts {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(11rem, 1fr));
+  gap: 10px 24px;
+}
+.cdrawer__beacon {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 16px;
+}
+.cdrawer__beacon p {
+  margin: 0;
+}
+
+/* A pending request, wherever it is answered: the wizard's Approve step or a node's drawer. */
 .devices__card {
   display: grid;
   gap: 8px;
@@ -294,22 +694,437 @@
 .devices__card p {
   margin: 0;
 }
-.devices__pairing,
-.devices__join,
-.devices__message {
-  display: grid;
-  gap: 8px;
-}
-.devices__pairing p {
-  margin: 0;
-}
 .devices__code {
   font-family: var(--font-mono);
   letter-spacing: 0.08em;
 }
-.devices__joining {
+
+/* -- Layer 2: the wizard, grown from a '+' node ---------------------------------------------------
+ * Its transform origin is the node (set inline). It grows on the depth clock and folds back the
+ * same way; under Calm the clock is 0 ms and it simply appears and goes. */
+.cwizard {
+  z-index: 1;
+  align-self: start;
+  display: grid;
+  gap: 14px;
+  margin: 12px;
+  padding: var(--density-pad) calc(var(--density-pad) + 4px);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-emphasis);
+  background: var(--card-raised);
+  box-shadow:
+    var(--shadow-elevation-1),
+    0 18px 48px -12px var(--scrim);
+  animation: cwizard-grow var(--dur-depth) var(--ease-depth) both;
+}
+.cwizard[data-closing] {
+  animation: cwizard-fold var(--dur-depth) var(--ease-depth) both;
+}
+@keyframes cwizard-grow {
+  from {
+    opacity: 0;
+    transform: scale(0.06);
+  }
+}
+@keyframes cwizard-fold {
+  to {
+    opacity: 0;
+    transform: scale(0.06);
+  }
+}
+.cwizard__head {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 12px;
+}
+.cwizard__titles {
+  display: grid;
+  gap: 4px;
+  min-width: 0;
+}
+.cwizard__title {
   margin: 0;
-  padding-left: 1.2em;
+  font-size: clamp(1.25rem, 2.6cqw, 1.625rem);
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+  overflow-wrap: anywhere;
+}
+.cwizard__title:focus {
+  outline: none;
+}
+.cwizard__close {
+  display: grid;
+  place-items: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  border-radius: 999px;
+  border: 1px solid var(--border-default);
+  background: transparent;
+  color: var(--muted-foreground);
+  cursor: pointer;
+  transition:
+    background var(--duration-fast) var(--ease-fast),
+    color var(--duration-fast) var(--ease-fast);
+}
+.cwizard__close:hover {
+  background: var(--hover-wash);
+  color: var(--foreground);
+}
+.cwizard__close svg {
+  width: 14px;
+  height: 14px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 1.8;
+  stroke-linecap: round;
+}
+
+/* The step rail: three small stars on a thread, the one now lit. */
+.rail {
+  display: grid;
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  max-width: 26rem;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.rail__step {
+  position: relative;
+  display: grid;
+  justify-items: center;
+  gap: 6px;
+}
+.rail__step + .rail__step::before {
+  content: "";
+  position: absolute;
+  top: 6px;
+  right: calc(50% + 10px);
+  width: calc(100% - 20px);
+  border-top: 1.5px solid var(--border-default);
+}
+.rail__step[data-state="done"] + .rail__step::before {
+  border-top-color: var(--primary);
+}
+.rail__dot {
+  width: 13px;
+  height: 13px;
+  border-radius: 999px;
+  border: 1.5px solid var(--border-emphasis);
+  background: var(--card-bg);
+  transition:
+    background var(--dur-depth) var(--ease-depth),
+    border-color var(--dur-depth) var(--ease-depth),
+    box-shadow var(--dur-depth) var(--ease-depth);
+}
+.rail__step[data-state="done"] .rail__dot {
+  border-color: var(--primary);
+  background: var(--primary);
+}
+.rail__step[data-state="now"] .rail__dot {
+  border-color: var(--primary);
+  background: color-mix(in srgb, var(--primary) 30%, var(--card-bg));
+  box-shadow: 0 0 0 4px var(--glow);
+}
+.rail__label {
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted-foreground);
+}
+.rail__step[data-state="now"] .rail__label {
+  color: var(--foreground);
+}
+
+.cwizard__body {
+  min-width: 0;
+}
+.cwizard__code,
+.cwizard__none {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 18px 28px;
+}
+@container (max-width: 620px) {
+  .cwizard__code,
+  .cwizard__none {
+    grid-template-columns: minmax(0, 1fr);
+    justify-items: center;
+  }
+}
+.cwizard__words {
+  display: grid;
+  gap: 10px;
+  align-content: start;
+  min-width: 0;
+}
+.cwizard__words p {
+  margin: 0;
+}
+.cwizard__words > .btn,
+.cwizard__words > span {
+  justify-self: start;
+}
+.cwizard__codeline {
+  display: flex;
+  align-items: baseline;
+  gap: 10px;
+}
+.cwizard__codeline .devices__code {
+  font-size: 1.5rem;
+}
+.cwizard__address {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.cwizard__url {
+  flex: 1;
+  min-width: 0;
+  padding: 4px 8px;
+  font-family: var(--font-mono);
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+  border-radius: var(--radius-input);
+  border: 1px solid var(--border-subtle);
+  background: var(--recessed);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* The lens: paper for the code, and the countdown ring around it. Dark ink on light paper in both
+ * themes, because a phone camera reads a light-on-dark code badly or not at all. */
+.lens {
+  --qr-paper: var(--foreground);
+  --qr-ink: var(--background);
+  position: relative;
+  width: clamp(220px, 34cqw, 300px);
+  aspect-ratio: 1;
+}
+[data-theme="light"] .lens {
+  --qr-paper: var(--card-raised);
+  --qr-ink: var(--foreground);
+}
+.lens__ring {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: rotate(-90deg);
+}
+.lens__track,
+.lens__left {
+  fill: none;
+  stroke-width: 2.4;
+}
+.lens__track {
+  stroke: var(--border-default);
+}
+.lens__left {
+  stroke: var(--primary);
+  stroke-linecap: round;
+  transition: stroke var(--dur-depth) var(--ease-depth);
+}
+.lens[data-low] .lens__left {
+  stroke: var(--status-warning);
+}
+.lens__paper {
+  position: absolute;
+  inset: 7%;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--qr-paper);
+  color: var(--qr-ink);
+  transition:
+    opacity var(--dur-depth) var(--ease-depth),
+    filter var(--dur-depth) var(--ease-depth);
+}
+.lens--empty .lens__paper {
+  background: var(--recessed);
+  border: 1px dashed var(--border-default);
+}
+.lens[data-expired] .lens__paper {
+  opacity: 0.22;
+  filter: grayscale(1);
+}
+.lens__over {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+}
+.lens__code {
+  font-family: var(--font-mono);
+  font-size: clamp(1.5rem, 4cqw, 2.125rem);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+}
+.lens__time {
+  font-variant-numeric: tabular-nums;
+}
+.qr {
+  display: block;
+  width: 74%;
+  height: auto;
+}
+.qr__paper {
+  fill: var(--qr-paper);
+}
+.qr__ink {
+  fill: var(--qr-ink);
+}
+
+/* The computer's first choice: two drawn tiles, not two radio buttons. */
+.cwizard__choices {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(14rem, 1fr));
+  gap: 12px;
+}
+.choice {
+  display: grid;
+  justify-items: start;
+  gap: 6px;
+  padding: 16px 18px 18px;
+  font: inherit;
+  text-align: left;
+  color: var(--foreground);
+  border-radius: var(--radius-card);
+  border: 1px solid var(--border-default);
+  background: color-mix(in srgb, var(--card-bg) 80%, transparent);
+  cursor: pointer;
+  transition:
+    border-color var(--duration-fast) var(--ease-fast),
+    background var(--duration-fast) var(--ease-fast),
+    transform var(--duration-fast) var(--ease-fast);
+}
+.choice:hover {
+  border-color: var(--primary);
+  background: var(--hover-wash);
+  transform: translateY(-2px);
+}
+.choice__art {
+  width: 96px;
+  height: 60px;
+  margin-bottom: 4px;
+  fill: color-mix(in srgb, var(--primary) 10%, transparent);
+  stroke: var(--muted-foreground);
+  stroke-width: 1.6;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.choice__code {
+  stroke: var(--foreground);
+  stroke-width: 2.4;
+}
+.choice__arrow {
+  fill: none;
+  stroke: var(--primary);
+  stroke-width: 2;
+}
+.choice__title {
+  font-size: 1rem;
+  font-weight: 600;
+}
+.choice__line {
+  font-size: 0.875rem;
+  color: var(--muted-foreground);
+}
+
+.cwizard__join {
+  display: grid;
+  gap: 12px;
+}
+.cwizard__picks {
+  display: grid;
+  gap: 4px;
+}
+.cwizard__picks p {
+  margin: 0;
+}
+.cwizard__join > .btn,
+.cwizard__join > span {
+  justify-self: start;
+}
+.cwizard__joining {
+  display: grid;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.cwizard__joining li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cwizard__beat {
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: var(--status-pending);
+  animation: sky-ask 1.2s ease-in-out infinite alternate;
+}
+
+.cwizard__done {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  align-items: center;
+  gap: 20px 28px;
+}
+.done__mark {
+  width: 96px;
+  height: 96px;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.done__mark circle {
+  stroke: var(--border-emphasis);
+  stroke-width: 1.5;
+}
+.cwizard__done[data-in] .done__mark circle {
+  stroke: var(--status-success);
+  fill: color-mix(in srgb, var(--status-success) 12%, transparent);
+}
+.done__tick {
+  stroke: var(--foreground);
+  stroke-width: 3;
+  stroke-dasharray: 1 1;
+  animation: done-draw var(--dur-settle) var(--ease-settle) var(--dur-depth) both;
+}
+@keyframes done-draw {
+  from {
+    stroke-dashoffset: 1;
+  }
+}
+
+:root[data-motion="calm"] .sky__flow,
+:root[data-motion="calm"] .sky__link line,
+:root[data-motion="calm"] .cnode--pending .cnode__disc::after,
+:root[data-motion="calm"] .cwizard__beat,
+:root[data-motion="calm"] .cdrawer {
+  animation: none;
+}
+:root[data-motion="calm"] .cnode--add:hover {
+  transform: translate(-50%, calc(var(--node) / -2));
+}
+:root[data-motion="calm"] .choice:hover {
+  transform: none;
+}
+
+/* A conversation with another computer is a recessed log. */
+.devices__message {
+  display: grid;
+  gap: 8px;
 }
 .devices__reply {
   display: grid;
