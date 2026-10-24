@@ -26,7 +26,10 @@ built from the approved brief, never from the playbook's example command.
 
 **Draft, preview, apply.** Every brief has a ``rev``; an answer after a brief makes it stale and
 the next brief is ``rev + 1``; approval names the rev it approves, and only the current one is
-accepted. What is approved is exactly what was shown.
+accepted. What is approved is exactly what was shown: each brief is recorded with the slots and
+answers it was drafted from (a ``Draft``, ADR 0151), and the case file and the rehearsal are built
+from the approved rev's draft. A lane or a document that lands after the draft changes the live
+slots only; the next draft carries it.
 """
 
 from __future__ import annotations
@@ -152,7 +155,8 @@ def enough(session: AdoptSession) -> None:
 
 
 def approve(session: AdoptSession, rev: int) -> str:
-    """``""`` when brief ``rev`` is approved (``on_approve`` queued), else why not."""
+    """``""`` when brief ``rev`` is approved (``on_approve`` queued), else why not. What is
+    approved is ``session.draft_of(rev)``: the brief with the slots and answers it was shown on."""
     with session.lock:
         current = session.rev if session.brief is not None else None
         if current is None:
@@ -460,9 +464,11 @@ def _emit_card(session: AdoptSession, round_no: int, questions: Sequence[Questio
 
 def _write_brief(session: AdoptSession, *, cleared: bool) -> None:
     session.emit(Progress(text="Writing your brief…"))
+    # One snapshot: the brief is drafted from these, and they are kept with it (ADR 0151).
     slots = session.slots
     with session.lock:
-        answers = [asdict(a) for a in session.answers]
+        given = tuple(session.answers)
+    answers = [asdict(a) for a in given]
     result = session.run_leg(
         "audit",
         BRIEF_SYSTEM,
@@ -512,7 +518,7 @@ def _write_brief(session: AdoptSession, *, cleared: bool) -> None:
             portals=portal_swaps(session.playbook, slots),
             open_slot_ids=open_ids,
         )
-        session.brief = brief
+        session.record_draft(brief, slots, given)
         session.brief_stale = False
         session.round = 0
     session.emit(brief)

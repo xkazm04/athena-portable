@@ -14,7 +14,7 @@ from typing import Any
 
 import pytest
 
-from athena.adopt import showcase
+from athena.adopt import loop, showcase
 from athena.adopt.legs import LegResult
 from athena.adopt.session import AdoptSession, SessionStore
 from athena.adopt.showcase import (
@@ -27,7 +27,7 @@ from athena.adopt.showcase import (
     shape_world,
 )
 from athena.adopt.slots import load_playbook_json, playbooks_root
-from athena.contracts.adopt import Brief, Progress
+from athena.contracts.adopt import Answer, Brief, Progress
 from athena.contracts.adopt import Showcase as ShowcaseEvent
 from athena.harness.ports import ModelChunk, ModelRequest
 from athena.proving.playbooks.spec import Taxonomy, load_playbook, load_taxonomy
@@ -186,7 +186,7 @@ def test_a_world_the_loader_refuses_fails_the_shape(tmp_path: Path) -> None:
 def real_session(rig: Rig, tmp_path: Path) -> Iterator[tuple[SessionStore, AdoptSession]]:
     store = SessionStore(tmp_path / "show", rig.runner, load_playbook=load_playbook_json)
     session = store.create(PID)
-    session.brief = BRIEF
+    session.record_draft(BRIEF, session.slots, ())
     try:
         yield store, session
     finally:
@@ -594,3 +594,81 @@ def test_a_playbook_with_no_money_back_target_claims_no_found_dollars(
     last = _done(rig, tmp_path, {"today": "", "rows": []})
     assert last.found_usd is None and last.found_reason == ""
     assert last.trace[-1]["cards"][0]["kind"] == "money_protected"
+
+
+# --- an approval pins the draft it was shown (ADR 0151) -------------------------------------------
+
+
+def approved_and_deferred(
+    rig: Rig, tmp_path: Path, show_bench: Any = None
+) -> tuple[SessionStore, AdoptSession, list[Any], Brief]:
+    """A real-playbook session whose brief 1 is drafted (p1 held) and approved, its rehearsal
+    queued but not yet run: answers the store, the session, the deferred jobs and brief 1."""
+    rig.model.script = {
+        "shape": [SPEC],
+        "brief": [{"lead": "I'll check the deposits of draft one."}, {"lead": "Draft two now."}],
+    }
+    store = SessionStore(tmp_path / "pinned", rig.runner, load_playbook=load_playbook_json)
+    session = store.create(PID)
+    session.apply_findings(
+        [{"slot_id": "p1", "value": "Gusto", "status": "confirmed"}], source="document"
+    )
+    loop.enough(session)
+    session.drain()
+    first = session.brief
+    assert first is not None and first.rev == 1
+    assert loop.approve(session, 1) == ""
+    session.drain()
+    deferred: list[Any] = []
+    show = Showcase(
+        bench=show_bench or (lambda *a, **k: fake_report(1)),
+        spawn=lambda fn, name: deferred.append(fn),
+    )
+    assert show.start(session, 1)
+    assert len(deferred) == 1
+    return store, session, deferred, first
+
+
+def test_case_2_a_late_document_value_does_not_reach_the_approved_rehearsal(
+    rig: Rig, tmp_path: Path
+) -> None:
+    store, session, deferred, _ = approved_and_deferred(rig, tmp_path)
+    try:
+        # A document lane reads p2 after the approval, before the rehearsal's job runs.
+        session.apply_findings(
+            [{"slot_id": "p2", "value": "Fidelity Late", "status": "confirmed"}],
+            source="document",
+        )
+        deferred[0]()
+        prompts = [c.prompt for c in rig.model.calls if c.kind == "shape"]
+        assert prompts, "the shape leg never ran"
+        assert "Gusto" in prompts[0]
+        assert "Fidelity Late" not in prompts[0]
+    finally:
+        store.close_all()
+
+
+def test_case_3_a_rev_drafted_after_approval_is_not_the_world_that_is_shaped(
+    rig: Rig, tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    handed: list[Brief] = []
+
+    def fake_shape(source: Any, brief: Brief, **kwargs: Any) -> Path:
+        handed.append(brief)
+        raise ShapeFailed("captured")
+
+    monkeypatch.setattr(showcase, "shape_world", fake_shape)
+    store, session, deferred, first = approved_and_deferred(rig, tmp_path)
+    try:
+        loop.receive_answers(session, [Answer(question_id="", text="We moved to ADP.")], "text")
+        session.drain()
+        if session.brief is not None and session.brief.rev == 1:
+            loop.enough(session)  # the round drafts on its own when its audit clears
+            session.drain()
+        assert session.brief is not None and session.brief.rev >= 2
+        assert session.brief.md != first.md
+        deferred[0]()
+        assert handed == [first]
+        assert (handed[0].command, handed[0].portals) == (first.command, first.portals)
+    finally:
+        store.close_all()

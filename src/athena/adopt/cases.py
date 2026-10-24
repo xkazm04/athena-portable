@@ -323,21 +323,25 @@ class CaseBook:
     def save(self, session: AdoptSession, rev: int) -> Case:
         """Record the approval of brief ``rev``: episode, facts, then ``goals/<proj>.md``.
 
-        The session's case id is minted on its first save and kept; a reopened session already
-        holds its case's. Raises what the brain raises (a refused fact, a disk error).
+        Everything saved beside the approval is brief ``rev``'s draft as it was shown (ADR 0151):
+        its slots and answers, never what a lane or a document set since. The session's case id
+        is minted on its first save and kept; a reopened session already holds its case's. Raises
+        ``ValueError`` for a rev never drafted, and what the brain raises (a refused fact, a disk
+        error).
         """
         with self._lock, session.case_lock:
+            draft = session.draft_of(rev)
+            if draft is None:
+                raise ValueError(f"brief {rev} was never drafted in this session")
+            brief = draft.brief
+            slots = list(draft.slots)
+            answers = list(draft.answers)
             with session.lock:
-                brief = session.brief
-                slots = session.slots
-                answers = list(session.answers)
                 prior = session.case
                 meta = dict(session.slot_meta)
                 case_id = session.case_id
                 playbook = session.playbook
                 playbook_id = session.playbook_id
-            if brief is None or brief.rev != rev:
-                raise ValueError(f"brief {rev} is not the session's current brief")
             case_id = case_id or ids.mint("project")
             now = now_iso()
             title = _s(playbook.get("short_title")) or _s(playbook.get("title")) or playbook_id

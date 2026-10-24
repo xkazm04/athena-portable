@@ -63,6 +63,7 @@ __all__ = [
     "TTL_S",
     "AdoptSession",
     "Busy",
+    "Draft",
     "Hooks",
     "IntakeSession",
     "SessionStore",
@@ -188,6 +189,20 @@ class GivenAnswer:
     via: str
 
 
+@dataclass(frozen=True)
+class Draft:
+    """A brief as it was shown, with the slots and answers it was drafted from (ADR 0151).
+
+    Recorded when the brief is written (or a reopened case's approved brief is restored) and
+    never changed after: approving ``rev`` binds this, so the case file and the rehearsal are
+    built from what the person saw, not from whatever a lane or a document set since."""
+
+    rev: int
+    brief: Brief
+    slots: tuple[Slot, ...]
+    answers: tuple[GivenAnswer, ...]
+
+
 #: The question an answer stands under when the person said it without being asked: in the
 #: first message (``POST /adopt`` ``intro``) or typed beside a card (``question_id`` ``""``).
 UP_FRONT = "(said up front, before any card)"
@@ -221,6 +236,8 @@ class AdoptSession:
         self.rounds_done = 0
         self.rev = 0
         self.brief: Brief | None = None
+        #: Every brief drafted in this session, by rev, as it was shown (ADR 0151).
+        self._drafts: dict[int, Draft] = {}
         #: An answer arrived after the brief: the brief at ``rev`` may no longer be approved.
         self.brief_stale = False
         self.approved_rev: int | None = None
@@ -301,6 +318,24 @@ class AdoptSession:
             if changed:
                 self.set_slots(updated)
             return list(self._slots)
+
+    # -- drafts ----------------------------------------------------------------------------------
+
+    def record_draft(
+        self, brief: Brief, slots: Sequence[Slot], answers: Sequence[GivenAnswer]
+    ) -> Draft:
+        """Make ``brief`` the current one and keep it with the ``slots`` and ``answers`` it was
+        drafted from, so approving its rev approves exactly this (ADR 0151)."""
+        draft = Draft(rev=brief.rev, brief=brief, slots=tuple(slots), answers=tuple(answers))
+        with self.lock:
+            self.brief = brief
+            self._drafts[brief.rev] = draft
+        return draft
+
+    def draft_of(self, rev: int) -> Draft | None:
+        """The brief drafted as ``rev``, with what it stood on; ``None`` when none was."""
+        with self.lock:
+            return self._drafts.get(rev)
 
     # -- legs ------------------------------------------------------------------------------------
 
@@ -470,7 +505,7 @@ def reopen(session: AdoptSession, case: Case) -> None:
         session.reopened = tuple(reopened)
         session._slots = slots[:MAX_SLOTS]
         session.rev = case.approved_rev
-        session.brief = case_brief(case, session._slots)
+        brief = case_brief(case, session._slots)
         for slot in session._slots:
             held = session.slot_meta.get(slot.id)
             if slot.status != "confirmed" or held is None or not held.quote:
@@ -487,6 +522,8 @@ def reopen(session: AdoptSession, case: Case) -> None:
                     via="memory",
                 )
             )
+        # The approved brief comes back as the current draft, standing on the reopened slots.
+        session.record_draft(brief, session._slots, session.answers)
 
 
 # --- the store ----------------------------------------------------------------------------------

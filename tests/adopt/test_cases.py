@@ -7,14 +7,16 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+from athena.adopt import loop
 from athena.adopt.cases import CaseBook, parse_case, perishable, render_case, reopen_slots
 from athena.adopt.routes import AdoptStudio, cases
-from athena.contracts.adopt import Case, CaseSlot, Slot
+from athena.adopt.session import AdoptSession
+from athena.contracts.adopt import Answer, Case, CaseSlot, Slot
 from athena.contracts.ids import is_id
 from athena.core.brain import Brain, frontmatter, reconcile_from_disk
 from athena.daemon.routes import Request
 
-from .conftest import PLAYBOOK_ID, Live, clear_script, make_rig
+from .conftest import PLAYBOOK_ID, Live, Rig, clear_script, make_rig
 
 
 def dated_script() -> dict[str, list[Any]]:
@@ -296,3 +298,113 @@ def test_a_reopened_playbook_rule_stays_the_playbooks() -> None:
     by_id = {s.id: s for s in slots}
     assert by_id["f1"].source == "default"
     assert by_id["f2"].source == "memory"
+
+
+# --- an approval pins the draft it was shown (ADR 0151) -------------------------------------------
+
+
+def open_deposit_script() -> dict[str, list[Any]]:
+    """A first card with fact f1 ("Deposit held") still open, so ``enough`` drafts it unknown."""
+    script = clear_script()
+    script["audit"] = [
+        {
+            "new_slots": [{"kind": "fact", "label": "Deposit held", "value": ""}],
+            "updates": [],
+            "open_slot_ids": ["p1", "p2", "f1"],
+        },
+        {
+            "updates": [
+                {"slot_id": "p1", "value": "Gusto", "status": "confirmed"},
+                {"slot_id": "p2", "value": "Retireline", "status": "confirmed"},
+            ],
+            "open_slot_ids": [],
+        },
+    ]
+    return script
+
+
+def drafted_with_f1_open(rig: Rig) -> AdoptSession:
+    rig.model.script = open_deposit_script()
+    session = rig.store.create(PLAYBOOK_ID)
+    loop.start(session)
+    session.drain()
+    loop.enough(session)
+    session.drain()
+    assert session.brief is not None and session.brief.rev == 1
+    f1 = {s.id: s for s in session.slots}["f1"]
+    assert (f1.value, f1.status) == ("", "open")
+    assert "Deposit held: not known yet" in session.brief.md
+    return session
+
+
+def test_case_1_a_late_research_finding_is_not_saved_under_the_approval_of_rev_1(
+    rig: Rig, tmp_path: Path
+) -> None:
+    session = drafted_with_f1_open(rig)
+    rev1 = session.brief
+    assert rev1 is not None
+    # A rules lane settles f1 after the draft was shown: it never marks the brief stale.
+    session.apply_findings(
+        [{"slot_id": "f1", "value": "$1,500", "status": "guessed"}], source="research"
+    )
+    assert loop.approve(session, 1) == ""
+    with Brain(tmp_path / "brain") as brain:
+        case = CaseBook(brain).save(session, 1)
+    f1 = {s.id: s for s in case.slots}["f1"]
+    assert (f1.value, f1.status) == ("", "open")
+    assert case.open_slot_ids == rev1.open_slot_ids
+    assert case.brief_md == rev1.md
+
+
+def test_case_7_a_late_finding_is_carried_by_the_next_draft(rig: Rig, tmp_path: Path) -> None:
+    session = drafted_with_f1_open(rig)
+    session.apply_findings(
+        [{"slot_id": "f1", "value": "$1,500", "status": "guessed"}], source="research"
+    )
+    assert loop.approve(session, 1) == ""
+    with Brain(tmp_path / "brain") as brain:
+        CaseBook(brain).save(session, 1)
+    loop.receive_answers(session, [Answer(question_id="", text="That is everything.")], "text")
+    session.drain()
+    assert session.brief is not None and session.brief.rev == 2
+    assert "Deposit held: $1,500 (from research)" in session.brief.md
+
+
+def test_case_4_saving_a_rev_never_drafted_is_refused_and_writes_nothing(
+    rig: Rig, tmp_path: Path
+) -> None:
+    session = drafted_with_f1_open(rig)
+    with Brain(tmp_path / "brain") as brain:
+        try:
+            CaseBook(brain).save(session, 7)
+        except ValueError:
+            pass
+        else:
+            raise AssertionError("saved a rev that was never drafted")
+        goals = brain.root / "goals"
+        assert not goals.exists() or list(goals.iterdir()) == []
+
+
+def test_case_6_a_reopened_dateless_case_reapproves_the_same_brief_with_one_more_approval(
+    live: Live, tmp_path: Path
+) -> None:
+    _, case_id = approve_one(live, clear_script())
+    saved = CaseBook(live.local.brain).load(case_id)
+    assert saved is not None
+    restart(live, tmp_path)
+    status, body = live.request(
+        "/adopt", method="POST", body={"playbook_id": PLAYBOOK_ID, "case_id": case_id}
+    )
+    assert status == 200, body
+    session = live.rig.store.get(str(body["session_id"]))
+    assert session is not None
+    session.drain()
+    status, body = live.request(
+        f"/adopt/{session.id}/approve", method="POST", body={"rev": saved.approved_rev}
+    )
+    assert status == 200 and body["case_problem"] == "", body
+    assert live.rig.model.kinds() == []
+    again = CaseBook(live.local.brain).load(case_id)
+    assert again is not None
+    assert (again.brief_md, again.command) == (saved.brief_md, saved.command)
+    assert len(again.approvals) == len(saved.approvals) + 1

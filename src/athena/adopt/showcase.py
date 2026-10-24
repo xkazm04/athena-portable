@@ -664,7 +664,7 @@ class Showcase:
     def run(self, session: AdoptSession, rev: int) -> None:
         """Shape, then rehearse; every ending is one ``adopt.showcase`` event (none if closed)."""
         try:
-            self._run(session)
+            self._run(session, rev)
         except ShowcaseCancelled:
             return
         except ShapeFailed as exc:
@@ -677,14 +677,19 @@ class Showcase:
         if not session.cancelled.is_set():
             session.emit(ShowcaseEvent(status="failed", detail=detail))
 
-    def _run(self, session: AdoptSession) -> None:
+    def _run(self, session: AdoptSession, rev: int) -> None:
         from athena.proving.playbooks.bench import trace_of
         from athena.proving.playbooks.spec import load_playbook, load_taxonomy
 
-        brief = session.brief
+        # The approved draft, never the live brief or slots: a rev drafted or a slot settled
+        # after the approval is not what she approved (ADR 0151).
+        draft = session.draft_of(rev)
+        if draft is None:
+            raise ShapeFailed(f"brief {rev} was never drafted in this session")
+        brief = draft.brief
         library = self.library()
         source = library / session.playbook_id if library is not None else None
-        if brief is None or source is None or not (source / "world.json").is_file():
+        if source is None or not (source / "world.json").is_file():
             raise ShapeFailed("this install carries no world for this playbook")
         session.emit(Progress(text="Shaping a world like yours for the rehearsal…"))
         taxonomy = load_taxonomy(source.parent)
@@ -693,7 +698,7 @@ class Showcase:
             brief,
             run_leg=session.run_leg,
             dest=session.temp_dir / "showcase",
-            slots=session.slots,
+            slots=draft.slots,
             taxonomy=taxonomy,
         )
         if session.cancelled.is_set():

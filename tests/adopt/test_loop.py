@@ -312,3 +312,16 @@ def test_what_she_says_up_front_reaches_the_first_audit_and_card(rig: Rig) -> No
     assert {c.kind for c in first} == {"audit", "interview"}
     assert all("We moved payroll to Gusto last spring." in c.prompt for c in first)
     assert session.answers[0].round == 0 and session.answers[0].question_id == ""
+
+
+def test_case_5_approving_a_brief_an_answer_made_stale_is_refused_with_no_hook(rig: Rig) -> None:
+    rig.model.script = clear_script()
+    session = started(rig)
+    answer_all(session)
+    assert last(session, "adopt.brief")["rev"] == 1
+    # The answer is recorded at once, so brief 1 is stale before its round has run.
+    loop.receive_answers(session, [Answer(question_id="", text="Actually ADP")], "voice")
+    assert loop.approve(session, 1).startswith("stale_rev:")
+    session.drain()
+    assert not any(name == "approve" for name, _ in rig.seen)
+    assert session.approved_rev is None
