@@ -18,6 +18,9 @@
  * others' places move with it (a claim moves everyone up one), so after a frame the places are
  * counted again here the way the daemon counts them: oldest queued first ({@link withPositions}).
  *
+ * `held` is the gate's sentence for why queued tasks wait (device-vitals, ADR 0142), kept from the
+ * list and from each `vitals.changed`, which carries it; an older daemon sends none, which is `null`.
+ *
  * An older daemon has no `/tasks`: its 404 is "no tasks", not a problem, so neither surface shows
  * a line about a feature the daemon does not have. A daemon that is not up yet is not a problem
  * either - the bus follower waits for it and reads on connect.
@@ -34,6 +37,8 @@ import { endpoint, useDaemon } from "@/stores/daemon";
 export interface TasksState {
   tasks: TaskView[];
   cap: number;
+  /** Why queued tasks wait for room, a sentence for a person; `null` when nothing holds them. */
+  held: string | null;
   loaded: boolean;
   problem: string | null;
 }
@@ -64,6 +69,7 @@ const LIVE: TasksDeps = {
       () => LIVE.api(),
       (event) => {
         if (event.kind === "task.changed") onTask(event.task);
+        else if (event.kind === "vitals.changed") useTasks.setState({ held: event.held });
       },
       onConnected,
     ),
@@ -75,7 +81,7 @@ export function setTasksDeps(next: TasksDeps): void {
   deps = next;
 }
 
-const EMPTY_TASKS: TasksState = { tasks: [], cap: TASKS_RUNNING_CAP, loaded: false, problem: null };
+const EMPTY_TASKS: TasksState = { tasks: [], cap: TASKS_RUNNING_CAP, held: null, loaded: false, problem: null };
 
 export const useTasks = create<TasksState>(() => ({ ...EMPTY_TASKS }));
 
@@ -177,10 +183,10 @@ async function readOnce(client: DaemonApi): Promise<void> {
   framesSinceRead = 0;
   try {
     const view = await client.tasks();
-    useTasks.setState({ tasks: view.tasks, cap: view.cap, loaded: true, problem: null });
+    useTasks.setState({ tasks: view.tasks, cap: view.cap, held: view.held ?? null, loaded: true, problem: null });
   } catch (error) {
     // No `/tasks` on this daemon: it has no tasks to show, which is not a fault to tell anyone.
-    if (error instanceof ApiError && error.status === 404) useTasks.setState({ tasks: [], loaded: true, problem: null });
+    if (error instanceof ApiError && error.status === 404) useTasks.setState({ tasks: [], held: null, loaded: true, problem: null });
     else useTasks.setState({ problem: sentenceOf("read her tasks", error) });
   }
 }

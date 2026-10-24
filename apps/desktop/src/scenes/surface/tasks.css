@@ -64,3 +64,22 @@
   font-size: 0.875rem;
   color: var(--muted-foreground);
 }
+
+/* The gate's reason queued tasks wait (device-vitals, ADR 0142): one line, a warning hue on its
+ * mark only, so the words keep the foreground's contrast. */
+.surface-tasks__held {
+  margin: 0;
+  font-size: 0.875rem;
+  color: var(--foreground);
+}
+
+.surface-tasks__held::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 8px;
+  border-radius: 999px;
+  background: var(--status-warning);
+  vertical-align: 0.1em;
+}

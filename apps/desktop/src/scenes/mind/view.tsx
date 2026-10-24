@@ -8,6 +8,9 @@
  * remedy, the failure to start, the restart notice and every sentence are the module's, verbatim;
  * nothing stores a verdict it could have read.
  *
+ * The Brain level also says how she sleeps (`sleep.tsx`, ADR 0142): the one part of this view that
+ * reads a store of its own, and only when no model is passed in, because that store is lazy too.
+ *
  * "Page" and "Voice", which were tiles of the old list, are not instruments here: the page is the
  * Apps depth and the voice is the Voice depth, and the field says so and links there.
  */
@@ -30,6 +33,7 @@ import { SKINS } from "@/stores/shell";
 
 import DevicesLevel, { type DevicesModel } from "./devices";
 import "./mind.css";
+import SleepSection, { LiveSleep, type SleepModel } from "./sleep";
 import {
   SKIN_HINTS,
   SKIN_LABELS,
@@ -80,15 +84,21 @@ export interface MindProps {
   go: (to: Path) => void;
   /** The Devices level's model (ADR 0140); `null` where nothing mirrors the devices yet. */
   devices?: DevicesModel | null;
+  /**
+   * The Brain level's sleep (ADR 0142). Absent, the section reads the live store itself: the store
+   * lives in this lazy chunk, so the first frame's `live.tsx` cannot build the model the way it
+   * builds the devices'. A preview or a test passes a fixture; `null` leaves the section out.
+   */
+  sleep?: SleepModel | null;
 }
 
 const item = (i: Instrument): Path => ({ root: "mind", item: i });
 
-export default function MindView({ model, path, go, devices = null }: MindProps) {
+export default function MindView({ model, path, go, devices = null, sleep }: MindProps) {
   const level = path.item as Instrument | undefined;
   if (level === undefined) return <Field model={model} go={go} />;
   if (!INSTRUMENTS.includes(level)) return <Missing name={level} go={go} />;
-  return <Level model={model} which={level} go={go} devices={devices} />;
+  return <Level model={model} which={level} go={go} devices={devices} sleep={sleep} />;
 }
 
 /** One line of how an instrument stands, in the module's own words. */
@@ -211,11 +221,13 @@ function Level({
   which,
   go,
   devices,
+  sleep,
 }: {
   model: SetupModel;
   which: Instrument;
   go: (to: Path) => void;
   devices: DevicesModel | null;
+  sleep: SleepModel | null | undefined;
 }) {
   const { word, line } = lineOf(model, which);
   return (
@@ -229,6 +241,7 @@ function Level({
         <p className="mind__line">{line}</p>
         {which === "engine" && <EngineSection model={model} />}
         {which === "brain" && <Brain model={model} />}
+        {which === "brain" && (sleep === undefined ? <LiveSleep /> : sleep ? <SleepSection model={sleep} /> : null)}
         {which === "look" && <Look model={model} />}
         {which === "data" && <Data model={model} />}
         {which === "mic" && <Mic model={model} />}

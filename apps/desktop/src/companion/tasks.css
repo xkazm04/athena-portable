@@ -67,3 +67,22 @@
 .aw .aw-tasks__problem {
   color: var(--muted-fg);
 }
+
+/* The gate's reason queued tasks wait (device-vitals, ADR 0142): one line, a warning hue on its
+ * mark only, so the words keep the ink's contrast. */
+.aw .aw-tasks__held {
+  margin: 0;
+  padding: 2px 0 4px;
+  color: var(--fg);
+}
+
+.aw .aw-tasks__held::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  margin-right: 8px;
+  border-radius: 999px;
+  background: var(--warn);
+  vertical-align: 0.1em;
+}

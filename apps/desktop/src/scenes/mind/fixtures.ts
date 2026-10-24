@@ -7,9 +7,13 @@ import { fixtures as setup } from "@/modules/setup/fixtures";
 import type { SetupModel } from "@/modules/setup/model";
 import type { FixtureId } from "@/modules/types";
 import type { DevicesView } from "@/lib/fleet";
+import type { CycleView, ProposalView, SleepView } from "@/lib/sleep";
+import type { Vitals } from "@/lib/vitals";
 import { EMPTY_DEVICES } from "@/stores/devices";
+import { EMPTY_SLEEP } from "@/stores/sleep";
 
 import type { DevicesModel } from "./devices";
+import type { SleepModel } from "./sleep";
 
 export const fixtures: Record<string, SetupModel> = {
   empty: setup.empty!,
@@ -51,6 +55,64 @@ const actions: DevicesModel["actions"] = {
   answer: noop,
   revoke: noop,
   send: noop,
+};
+
+// -- a computer's room (device-vitals, ADR 0142) ----------------------------------------------
+
+/** This computer, measured, with room: one GPU, on mains, three slots, slept five hours ago. */
+export const VITALS_OK: Vitals = {
+  at: "2026-10-24T11:59:55Z",
+  cpu_pct: 12,
+  cores: 16,
+  ram_total_mb: 65_536,
+  ram_free_mb: 38_666,
+  ram_pct: 41,
+  gpus: [{ name: "RTX 4090", util_pct: 30, vram_total_mb: 24_576, vram_used_mb: 1536 }],
+  power: "mains",
+  battery_pct: null,
+  disk_free_mb: 412_000,
+  room: "ok",
+  slots: 3,
+  held: null,
+  runs: { hours: 24, turns: 14, blank: 2, no_answer: 1, failed: 1, timeout: 1, usage_limit: 0, tasks_empty: 0 },
+  sleep: { state: "idle", last_at: "2026-10-24T07:00:00Z", pressure: 0.78 },
+};
+
+/** A laptop with little room: one slot, the RAM high, no GPU found, on battery, never slept. */
+export const VITALS_TIGHT: Vitals = {
+  ...VITALS_OK,
+  cpu_pct: 64,
+  cores: 8,
+  ram_total_mb: 16_384,
+  ram_free_mb: 2700,
+  ram_pct: 86,
+  gpus: [],
+  power: "battery",
+  battery_pct: 64,
+  disk_free_mb: 8200,
+  room: "tight",
+  slots: 1,
+  runs: { hours: 24, turns: 3, blank: 0, no_answer: 0, failed: 0, timeout: 0, usage_limit: 0, tasks_empty: 0 },
+  sleep: { state: "never", last_at: null, pressure: 0.12 },
+};
+
+/** A computer the gate holds: RAM over the line, and every figure it could not read left unknown. */
+export const VITALS_HELD: Vitals = {
+  at: "2026-10-24T11:59:55Z",
+  cpu_pct: null,
+  cores: null,
+  ram_total_mb: 32_768,
+  ram_free_mb: 1900,
+  ram_pct: 94,
+  gpus: null,
+  power: null,
+  battery_pct: null,
+  disk_free_mb: null,
+  room: "full",
+  slots: 0,
+  held: "Waiting for room: memory is 94% used; tasks start again under 85%.",
+  runs: null,
+  sleep: { state: "sleeping", last_at: "2026-10-23T22:00:00Z", pressure: 1.1 },
 };
 
 const view: DevicesView = {
@@ -152,6 +214,7 @@ export const deviceFixtures: Record<string, DevicesModel> = {
           memory: { last_pull_at: "2026-10-24T11:59:00Z", pulled: 42, conflicts: 0, deferred: 0, state: "ok" },
           presence: "online",
           presence_at: "2026-10-24T11:59:30Z",
+          vitals: VITALS_TIGHT,
         },
         {
           peer_id: "dev_0000000000a3",
@@ -164,6 +227,7 @@ export const deviceFixtures: Record<string, DevicesModel> = {
           memory: null,
           presence: null,
           presence_at: null,
+          vitals: null,
         },
         {
           peer_id: "dev_0000000000a4",
@@ -176,6 +240,7 @@ export const deviceFixtures: Record<string, DevicesModel> = {
           memory: { last_pull_at: "2026-10-24T09:58:00Z", pulled: 7, conflicts: 0, deferred: 0, state: "ok" },
           presence: "asleep",
           presence_at: "2026-10-24T11:59:30Z",
+          vitals: null,
         },
         {
           peer_id: "dev_0000000000a5",
@@ -190,6 +255,7 @@ export const deviceFixtures: Record<string, DevicesModel> = {
           presence_at: "2026-10-24T11:59:30Z",
         },
       ],
+      self: { ...view.self, vitals: VITALS_OK },
       listener: { up: true, address: "100.64.0.7", port: 17491, error: null },
       joining: [{ join_id: "pair_0000000000e1", address: "100.64.0.9:17491", name: "Office PC", state: "pending", expires_at: "2026-10-24T12:10:00Z" }],
     },
@@ -251,4 +317,194 @@ export const deviceFixtures: Record<string, DevicesModel> = {
     { opened: { pc: { ok: true, pairing_id: "pair_0000000000c2", code: "M7KQ2X", url: null, expires_at: "2026-10-24T12:04:00Z" } } },
     { listener: LISTENING },
   ),
+  /** The gate holds this computer, and a paired one answered but has sent no vitals yet. */
+  "vitals-held": devicesModel(
+    {},
+    {
+      self: { ...view.self, vitals: VITALS_HELD },
+      peers: [
+        {
+          peer_id: "dev_0000000000a2",
+          name: "Laptop",
+          kind: "pc",
+          grants: ["chat"],
+          created: "2026-10-20T09:00:00Z",
+          expires: null,
+          last_seen: "2026-10-24T11:59:00Z",
+          presence: "online",
+          presence_at: "2026-10-24T11:59:30Z",
+          vitals: null,
+        },
+      ],
+    },
+  ),
+};
+
+// -- her sleep, on the Brain level (ADR 0142) -------------------------------------------------
+
+const sleepActions: SleepModel["actions"] = { load: noop, readJournal: noop, sleepNow: noop, decide: noop };
+
+const STATS = {
+  episodes_in: 12,
+  episodes_available: 12,
+  chars_in: 28_400,
+  truncated: false,
+  facts_written: 4,
+  facts_dropped: 0,
+  procedurals_written: 1,
+  procedurals_dropped: 0,
+  duplicates: 2,
+  supersedes: 1,
+  contradictions: 1,
+  faded: 0,
+  forget_proposed: 1,
+};
+
+const CYCLE_DONE: CycleView = {
+  id: "cyc_00000000c001",
+  started_at: "2026-10-24T06:58:00Z",
+  finished_at: "2026-10-24T07:00:00Z",
+  status: "completed",
+  reason: "pressure",
+  stats: STATS,
+};
+
+const CYCLE_PARTIAL: CycleView = {
+  id: "cyc_00000000c002",
+  started_at: "2026-10-24T10:40:00Z",
+  finished_at: "2026-10-24T10:44:00Z",
+  status: "partial",
+  reason: "forced",
+  stats: { ...STATS, episodes_in: 120, episodes_available: 310, truncated: true, contradictions: 0, forget_proposed: 0 },
+};
+
+const CYCLE_FAILED: CycleView = {
+  id: "cyc_00000000c003",
+  started_at: "2026-10-24T11:20:00Z",
+  finished_at: "2026-10-24T11:25:00Z",
+  status: "failed",
+  reason: "the merge step timed out after 300 s",
+  stats: null,
+};
+
+const CYCLE_RUNNING: CycleView = {
+  id: "cyc_00000000c004",
+  started_at: "2026-10-24T11:58:00Z",
+  finished_at: null,
+  status: "running",
+  reason: "pressure",
+  stats: { episodes_in: 14, chars_in: 41_200 },
+};
+
+const PROPOSALS: ProposalView[] = [
+  {
+    id: "prp_00000000d001",
+    cycle_id: CYCLE_DONE.id,
+    kind: "contradiction",
+    node_ids: ["fct_00000000e001", "fct_00000000e002"],
+    summary: "One says the invoices go out on Fridays; a newer one says Mondays.",
+    status: "open",
+    created_at: "2026-10-24T07:00:00Z",
+  },
+  {
+    id: "prp_00000000d002",
+    cycle_id: CYCLE_DONE.id,
+    kind: "forget",
+    node_ids: ["fct_00000000e003"],
+    summary: "The old office's Wi-Fi name: not recalled in 34 days.",
+    status: "open",
+    created_at: "2026-10-24T07:00:00Z",
+  },
+  {
+    id: "prp_00000000d003",
+    cycle_id: CYCLE_DONE.id,
+    kind: "forget",
+    node_ids: ["fct_00000000e004"],
+    summary: "A proposal already kept, which is shown nowhere.",
+    status: "kept",
+    created_at: "2026-10-24T07:00:00Z",
+  },
+];
+
+const SLEEP_IDLE: SleepView = {
+  state: "idle",
+  phase: null,
+  pressure_chars: 31_000,
+  threshold_chars: 40_000,
+  episodes_waiting: 9,
+  verdict: { admit: false, reason: "not_yet", text: "Not yet: 31,000 of the 40,000 characters she sleeps on have piled up." },
+  last: CYCLE_DONE,
+  open_proposals: 2,
+};
+
+function sleepModel(over: Partial<SleepModel["state"]> = {}): SleepModel {
+  return {
+    state: { ...EMPTY_SLEEP, loaded: true, view: SLEEP_IDLE, cycles: [CYCLE_DONE], proposals: PROPOSALS, ...over },
+    now: DEVICES_NOW,
+    actions: sleepActions,
+  };
+}
+
+const JOURNAL = [
+  "# Sleep, 24 Oct 06:58",
+  "",
+  "Read 12 episodes (28,400 characters).",
+  "",
+  "- wrote: the invoices go out on Mondays",
+  "- confirmed fct_00000000e007",
+].join("\n");
+
+/** The Sleep section's states, by name; `opening` in the tests opens a journal or a choice. */
+export const sleepFixtures: Record<string, SleepModel> = {
+  loading: { ...sleepModel(), state: { ...EMPTY_SLEEP } },
+  unreadable: { ...sleepModel(), state: { ...EMPTY_SLEEP, problem: "Could not read her sleep: the daemon did not answer" } },
+  /** An older daemon: no `/sleep`, so no section. */
+  missing: { ...sleepModel(), state: { ...EMPTY_SLEEP, loaded: true, missing: true } },
+  never: sleepModel({
+    view: {
+      ...SLEEP_IDLE,
+      state: "never",
+      pressure_chars: 1200,
+      episodes_waiting: 2,
+      verdict: { admit: false, reason: "too_little", text: "Too little to sleep on yet: 1,200 characters, and she needs 2,000." },
+      last: null,
+      open_proposals: 0,
+    },
+    cycles: [],
+    proposals: [],
+  }),
+  typical: sleepModel({ journals: { [CYCLE_DONE.id]: { status: "completed", loading: false, text: JOURNAL, problem: null } } }),
+  sleeping: sleepModel({
+    view: {
+      ...SLEEP_IDLE,
+      state: "sleeping",
+      phase: "merge",
+      pressure_chars: 0,
+      episodes_waiting: 0,
+      verdict: { admit: false, reason: "sleeping", text: "She is asleep now." },
+      last: CYCLE_RUNNING,
+    },
+    cycles: [CYCLE_RUNNING, CYCLE_DONE],
+    journals: { [CYCLE_RUNNING.id]: { status: "running", loading: false, text: null, problem: null } },
+  }),
+  failed: sleepModel({
+    view: {
+      ...SLEEP_IDLE,
+      state: "failed",
+      verdict: { admit: false, reason: "failed_recently", text: "Her last sleep failed less than an hour ago; she tries again after that." },
+      last: CYCLE_FAILED,
+    },
+    cycles: [CYCLE_FAILED, CYCLE_DONE],
+    journals: { [CYCLE_FAILED.id]: { status: "failed", loading: false, text: null, problem: null } },
+  }),
+  partial: sleepModel({
+    view: { ...SLEEP_IDLE, last: CYCLE_PARTIAL, pressure_chars: 52_000, episodes_waiting: 190 },
+    cycles: [CYCLE_PARTIAL, CYCLE_DONE],
+    journals: { [CYCLE_PARTIAL.id]: { status: "partial", loading: false, text: null, problem: "Could not read the journal: not found" } },
+  }),
+  /** "Sleep now" refused, in the daemon's words; and a later read that failed over what is shown. */
+  refused: sleepModel({
+    answer: { admitted: false, reason: "on_battery", text: "Not on battery: she sleeps on mains power.", cycle_id: null },
+    problem: "Could not read her sleep: the daemon did not answer",
+  }),
 };

@@ -22,8 +22,12 @@
  * Pressing a node opens its details below the stage - an in-layer drawer with a caret under the
  * node, not a route: this computer's name and phone switch, a device's presence, grants, memory,
  * message box and Revoke, a request's approve card, a join's state.
+ *
+ * A computer's room (device-vitals, ADR 0142) rides on the same nodes: the gate's one word after
+ * the caption ("Online · room ok"), and in the drawer the figures behind it (`vitals.tsx`), for
+ * this computer and for each paired one. A phone is not measured, so it says nothing of room.
  */
-import { useState, type ReactNode, type Ref } from "react";
+import { useEffect, useState, type ReactNode, type Ref } from "react";
 
 import Badge from "@/components/Badge";
 import Button from "@/components/Button";
@@ -35,6 +39,7 @@ import { clockOf, whenAgo } from "@/lib/time";
 import type { Conversation } from "@/stores/devices";
 
 import type { DevicesModel } from "./devices";
+import { HeldLine, VitalsFacts, roomSaid, withRoom } from "./vitals";
 import { GRANT_WORDS, JOIN_WORDS, KIND_WORD, PendingCard, Refusal, type Answered } from "./wizard";
 
 /** The stage's coordinate space: its size, the centre, and the orbit's two radii. */
@@ -100,6 +105,9 @@ export function skyNodes(view: DevicesView): SkyNode[] {
 /** The key of the centre node in `selected`. */
 export const SELF = "self";
 
+/** How often an open computer's figures are read again: the presence probe's hello beat. */
+export const VITALS_REREAD_MS = 30_000;
+
 /** How a presence reads: one word, its hue, and the line's state. `null` is "not checked yet". */
 const PRESENCE: Readonly<Record<Presence | "none", { word: string; tone: Tone }>> = {
   online: { word: "Online", tone: "success" },
@@ -151,7 +159,7 @@ function nodeLabel(node: SkyNode, now: number): string {
   switch (node.role) {
     case "peer": {
       const { peer } = node;
-      return `${peer.name}, ${KIND_WORD[peer.kind].toLowerCase()}, ${presenceCaption(peer, now).toLowerCase()}. Show its details.`;
+      return `${peer.name}, ${KIND_WORD[peer.kind].toLowerCase()}, ${presenceSaid(peer, now)}. Show its details.`;
     }
     case "joining":
       return `${node.join.name || node.join.address}, a computer this one asked to join: ${JOIN_WORDS[node.join.state] ?? node.join.state}. Show the request.`;
@@ -288,13 +296,13 @@ export default function Constellation({ model, selected, onSelect, onAdd, dim, a
         <Node
           at={centre}
           className="cnode--self"
-          label={`${view.self.name}, this computer. Private network: ${overlayWords(view.overlay.state).toLowerCase()}. Show its details.`}
+          label={`${view.self.name}, this computer. Private network: ${overlayWords(view.overlay.state).toLowerCase()}.${selfRoom(view)} Show its details.`}
           selected={selected === SELF}
           attrs={{ "data-overlay": view.overlay.state }}
           onClick={() => toggle(SELF)}
           disc={<DeviceGlyph kind="pc" />}
           name={view.self.name}
-          caption={`This computer · network ${overlayWords(view.overlay.state).toLowerCase()}`}
+          caption={withRoom(`This computer · network ${overlayWords(view.overlay.state).toLowerCase()}`, view.self.vitals)}
         />
         {nodes.map((node) => {
           const common = { at: node.at, label: nodeLabel(node, model.now), selected: selected === node.key, onClick: () => toggle(node.key) };
@@ -307,7 +315,7 @@ export default function Constellation({ model, selected, onSelect, onAdd, dim, a
                 attrs={{ "data-presence": presenceOf(node.peer), "data-kind": node.peer.kind }}
                 disc={<DeviceGlyph kind={node.peer.kind} />}
                 name={node.peer.name}
-                caption={presenceCaption(node.peer, model.now)}
+                caption={withRoom(presenceCaption(node.peer, model.now), node.peer.vitals)}
                 extra={node.peer.kind === "pc" ? memoryCaption(node.peer, model.now) : null}
               />
             );
@@ -378,11 +386,11 @@ export function DevicesList({ model }: { model: DevicesModel }) {
   const nodes = skyNodes(view);
   return (
     <ul className="devices__sr" aria-label="Your devices as a list">
-      <li>{`${view.self.name}: this computer. Private network: ${overlayWords(view.overlay.state)}.`}</li>
+      <li>{`${view.self.name}: this computer. Private network: ${overlayWords(view.overlay.state)}.${selfRoom(view)}`}</li>
       {nodes.map((node) => (
         <li key={node.key}>
           {node.role === "peer"
-            ? `${node.peer.name}: ${KIND_WORD[node.peer.kind].toLowerCase()}, ${presenceCaption(node.peer, model.now).toLowerCase()}. May ${
+            ? `${node.peer.name}: ${KIND_WORD[node.peer.kind].toLowerCase()}, ${presenceSaid(node.peer, model.now)}. May ${
                 node.peer.grants.map((g) => GRANT_WORDS[g]).join(", ") || "do nothing"
               }.${node.peer.kind === "pc" ? ` Memory: ${memoryWords(node.peer, model.now)}.` : ""}`
             : node.role === "joining"
@@ -392,6 +400,19 @@ export function DevicesList({ model }: { model: DevicesModel }) {
       ))}
     </ul>
   );
+}
+
+/** This computer's room as a sentence of its own, " Room ok." or nothing. */
+function selfRoom(view: DevicesView): string {
+  const room = roomSaid(view.self.vitals);
+  return room ? ` ${room.charAt(0).toUpperCase()}${room.slice(1)}.` : "";
+}
+
+/** A peer's presence as read aloud, its room after it: "online, room is tight". */
+function presenceSaid(peer: PeerView, now: number): string {
+  const presence = presenceCaption(peer, now).toLowerCase();
+  const room = roomSaid(peer.vitals);
+  return room ? `${presence}, ${room}` : presence;
 }
 
 /** Where the drawer's caret points: the selected node's centre, in percent of the stage's width. */
@@ -418,6 +439,15 @@ export function Drawer({
 }) {
   const view = model.state.view!;
   const node = selected === SELF ? null : skyNodes(view).find((n) => n.key === selected);
+  const computer = selected === SELF || (node?.role === "peer" && node.peer.kind === "pc");
+  const { load } = model.actions;
+  // The bus says a room's word when it changes, not its figures (ADR 0142): while a computer's
+  // figures are open, the list is read again on the beat of the hello that carries a peer's.
+  useEffect(() => {
+    if (!computer) return;
+    const timer = setInterval(() => void load(), VITALS_REREAD_MS);
+    return () => clearInterval(timer);
+  }, [computer, load]);
   if (selected !== SELF && !node) return null;
   const caret = caretOf(view, selected);
   const head =
@@ -486,6 +516,10 @@ function ThisComputer({ model }: { model: DevicesModel }) {
         ) : null}
         {view.listener.error ? <span className="typo-caption">Athena could not listen: {view.listener.error}</span> : null}
       </div>
+      <Facts>
+        <VitalsFacts vitals={view.self.vitals} presence="online" now={model.now} />
+      </Facts>
+      <HeldLine vitals={view.self.vitals} />
       <FormField
         label="Its name"
         hint="What your other devices call this one."
@@ -554,7 +588,9 @@ function PeerDetails({ model, peer }: { model: DevicesModel; peer: PeerView }) {
         <Fact label="Last seen">{peer.last_seen ? whenAgo(peer.last_seen, model.now) : "never"}</Fact>
         <Fact label="May">{peer.grants.length ? peer.grants.map((g) => GRANT_WORDS[g]).join(", ") : "-"}</Fact>
         <Fact label="Memory">{memoryWords(peer, model.now)}</Fact>
+        {peer.kind === "pc" ? <VitalsFacts vitals={peer.vitals} presence={peer.presence ?? null} now={model.now} /> : null}
       </Facts>
+      {peer.kind === "pc" ? <HeldLine vitals={peer.vitals} /> : null}
       {peer.kind === "pc" ? <MessageBox model={model} peer={peer} /> : null}
       <div className="mind__row">
         <Button

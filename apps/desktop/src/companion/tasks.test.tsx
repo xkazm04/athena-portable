@@ -85,6 +85,17 @@ describe("the strip", () => {
     expect(out).toContain("3 running · 1 in line");
     expect(out).toContain("Could not kill the task: the door would not close");
   });
+
+  it("says why the queue waits, under the summary, closed or open, while a task is in line (ADR 0142)", () => {
+    const held = "Waiting for room: memory is 94% used; tasks start again under 85%.";
+    for (const open of [false, true]) {
+      const out = strip({ shown: SHOWN, held, open });
+      expect(out).toContain(`<p class="aw-tasks__held">${held}</p>`);
+    }
+    // Nothing in line: the gate holds nothing a person is waiting on, so nothing is said.
+    expect(strip({ shown: [task(1)], held })).not.toContain("aw-tasks__held");
+    expect(strip({ shown: SHOWN, held: null })).not.toContain("aw-tasks__held");
+  });
 });
 
 describe("Ask", () => {

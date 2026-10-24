@@ -164,6 +164,27 @@ describe("the mirror", () => {
     expect(s.problem).toBeNull();
   });
 
+  it("keeps the gate's reason the queue waits, and an older daemon's silence as none (ADR 0142)", async () => {
+    const held = "Waiting for room: memory is 94% used; tasks start again under 85%.";
+    let answer: TasksView = { ...page([task(1, { position: 1 })]), slots: 0, held };
+    wire(() => json(answer));
+    expect(useTasks.getState().held).toBeNull();
+    await loadTasks();
+    expect(useTasks.getState().held).toBe(held);
+    answer = page([task(1, { position: 1 })]); // no `slots`, no `held`: an older daemon
+    await loadTasks();
+    expect(useTasks.getState().held).toBeNull();
+  });
+
+  it("forgets the reason when the daemon turns out to have no /tasks", async () => {
+    let gone = false;
+    wire(() => (gone ? json({ ok: false, reason: "unknown_ref", detail: "/tasks" }, 404) : json({ ...page([task(1)]), held: "Waiting for room: on battery." })));
+    await loadTasks();
+    gone = true;
+    await loadTasks();
+    expect(useTasks.getState().held).toBeNull();
+  });
+
   it("reads an older daemon's 404 as no tasks, not as a problem", async () => {
     wire(() => json({ ok: false, reason: "unknown_ref", detail: "/tasks" }, 404));
     await loadTasks();

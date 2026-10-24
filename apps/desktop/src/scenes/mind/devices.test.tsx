@@ -15,10 +15,11 @@ import { createRoot, type Root } from "react-dom/client";
 import { renderToStaticMarkup } from "react-dom/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-import { ADD_SPOT, SKY, orbitSpots, skyNodes } from "./constellation";
+import { ADD_SPOT, SKY, VITALS_REREAD_MS, orbitSpots, skyNodes } from "./constellation";
 import DevicesLevel, { joinPicks, type DevicesModel, type DevicesOpening } from "./devices";
 import { DEVICES_NOW, PATHS, deviceFixtures, fixtures } from "./fixtures";
 import MindView from "./view";
+import { gbFigure, gpuWords, powerWords, runsWords, sleepWords } from "./vitals";
 import { groupCode, wizardStep } from "./wizard";
 
 vi.mock("./qr", () => ({
@@ -100,7 +101,7 @@ describe("the constellation", () => {
     expect(count(h, "sky__flow")).toBe(1);
     expect(h).toMatch(/data-state="unreachable"><line[^>]*><\/line><line/);
     // Each node says it in its accessible name, and in its caption.
-    expect(h).toContain('aria-label="Laptop, computer, online. Show its details."');
+    expect(h).toContain('aria-label="Laptop, computer, online, room is tight. Show its details."');
     expect(h).toContain("Studio PC, computer, asleep · seen 2 h ago.");
     expect(h).toContain("Attic tower, computer, out of reach · seen 2 d ago.");
     expect(h).toContain("Kitchen phone, phone, not seen yet.");
@@ -145,7 +146,7 @@ describe("the constellation", () => {
     const h = html("typical");
     const list = h.slice(h.indexOf('class="devices__sr"'), h.indexOf("</ul>", h.indexOf('class="devices__sr"')));
     expect(count(list, "<li>")).toBe(1 + 4 + 1);
-    expect(list).toContain("Laptop: computer, online. May talk to Athena here, answer approvals, share memory.");
+    expect(list).toContain("Laptop: computer, online, room is tight. May talk to Athena here, answer approvals, share memory.");
   });
 
   it("is never the phone's pairing address, even with a window open", () => {
@@ -212,6 +213,120 @@ describe("a node's drawer", () => {
 
   it("is not there for a node that went away", () => {
     expect(html("typical", { selected: "dev_gone" })).not.toContain('class="cdrawer"');
+  });
+});
+
+describe("a computer's room (ADR 0142)", () => {
+  /** The facts of one open drawer, from the drawer's start to its end. */
+  const drawer = (fixture: string, selected: string) => {
+    const h = html(fixture, { selected });
+    return h.slice(h.indexOf('class="cdrawer"'));
+  };
+
+  it("says the gate's word after each computer's caption, and nothing for one unmeasured or a phone", () => {
+    const h = html("typical");
+    expect(h).toContain('<span class="cnode__caption">This computer · network ready · room ok</span>');
+    expect(h).toContain('<span class="cnode__caption">Online · tight</span>');
+    expect(h).toContain('<span class="cnode__caption">Asleep · seen 2 h ago</span>');
+    expect(h).toContain('<span class="cnode__caption">Not seen yet</span>');
+    expect(h).toContain('aria-label="Study PC, this computer. Private network: ready. Room ok. Show its details."');
+    expect(html("vitals-held")).toContain("This computer · network ready · full");
+    expect(html("vitals-held")).toContain("Private network: ready. No room. Show its details.");
+    expect(html("empty")).toContain('<span class="cnode__caption">This computer · network not set up</span>');
+  });
+
+  it("this computer: room and slots, CPU and RAM as meters, the GPU, power, disk, runs and sleep", () => {
+    const d = drawer("typical", "self");
+    expect(d).toContain("room ok");
+    expect(d).toContain("3 task slots");
+    expect(d).toMatch(/role="meter" aria-label="CPU" aria-valuemin="0" aria-valuemax="100" aria-valuenow="12" aria-valuetext="CPU 12%"/);
+    expect(d).toMatch(/role="meter" aria-label="RAM"[^>]*aria-valuenow="41" aria-valuetext="RAM 41% of 64 GB"/);
+    expect(d).toContain(">GPU<");
+    expect(d).toContain("RTX 4090 · 1.5 of 24 GB VRAM · 30% busy");
+    expect(d).toContain("On mains");
+    expect(d).toContain("402 GB free");
+    expect(d).toContain("14 turns, 2 blank");
+    expect(d).toContain("1 with no answer · 1 timed out · 1 failed");
+    expect(d).toContain("slept 5 h ago");
+    expect(d).toContain("78% of the way to the next sleep");
+    expect(d).not.toContain("vitals__held");
+    expect(d).not.toContain("data-high");
+  });
+
+  it("a tight computer: no GPU found is 'none', battery and its level, the RAM past the line in the warning hue", () => {
+    const d = drawer("typical", "dev_0000000000a2");
+    expect(d).toContain("tight");
+    expect(d).toContain("1 task slot<");
+    expect(d).toMatch(/>GPU<\/dt><dd[^>]*>none</);
+    expect(d).toContain("On battery, 64%");
+    expect(d).toContain("8 GB free");
+    expect(d).toContain("3 turns, 0 blank");
+    expect(d).toContain("never slept");
+    expect(d).toMatch(/class="vmeter" data-high="1"><span class="vmeter__bar" role="meter" aria-label="RAM"/);
+  });
+
+  it("held: the gate's sentence under the facts; what was not measured is 'unknown' or left out, never 0", () => {
+    const d = drawer("vitals-held", "self");
+    expect(d).toContain('<p class="vitals__held typo-body">Waiting for room: memory is 94% used; tasks start again under 85%.</p>');
+    expect(d).toContain("full");
+    expect(d).toContain("0 task slots");
+    expect(d).toContain("CPU unknown");
+    expect(d).not.toContain('aria-label="CPU"');
+    expect(d).toContain('aria-label="RAM"');
+    expect(d).not.toContain(">GPU<");
+    expect(d).toMatch(/>Power<\/dt><dd[^>]*>unknown</);
+    expect(d).toMatch(/>Disk<\/dt><dd[^>]*>unknown</);
+    expect(d).toMatch(/>Runs, last 24 h<\/dt><dd[^>]*>unknown</);
+    expect(d).toContain("sleeping now");
+    expect(d).not.toContain("of the way to the next sleep");
+    expect(d).not.toMatch(/>0%|CPU 0%/);
+  });
+
+  it("a computer with no vitals: one row, none yet while it answers, not heard lately when it does not", () => {
+    const answering = drawer("vitals-held", "dev_0000000000a2");
+    expect(answering).toMatch(/>Vitals<\/dt><dd[^>]*>No vitals yet</);
+    expect(answering).not.toContain(">Load<");
+    const asleep = drawer("typical", "dev_0000000000a4");
+    expect(asleep).toMatch(/>Vitals<\/dt><dd[^>]*>Not heard lately</);
+    expect(asleep).not.toContain(">Load<");
+    // An older daemon sends no vitals at all: this computer says the same, once.
+    const older = drawer("empty", "self");
+    expect(count(older, ">Vitals<")).toBe(1);
+    expect(older).toContain("No vitals yet");
+  });
+
+  it("a phone: not measured, so no room rows at all", () => {
+    const d = drawer("typical", "dev_0000000000a3");
+    for (const label of [">Vitals<", ">Load<", ">Room<", ">Power<", ">Sleep<"]) expect(d, label).not.toContain(label);
+  });
+});
+
+describe("a computer's room, in words", () => {
+  it("reads gigabytes whole above ten and to one place below", () => {
+    expect(gbFigure(65_536)).toBe("64");
+    expect(gbFigure(1536)).toBe("1.5");
+    expect(gbFigure(8200)).toBe("8");
+    expect(gbFigure(512)).toBe("0.5");
+  });
+
+  it("says of a GPU only what was measured", () => {
+    expect(gpuWords({ name: "Arc A770", util_pct: null, vram_total_mb: null, vram_used_mb: null })).toBe("Arc A770");
+    expect(gpuWords({ name: "Arc A770", util_pct: null, vram_total_mb: 16_384, vram_used_mb: null })).toBe("Arc A770 · 16 GB VRAM");
+    expect(gpuWords({ name: "Arc A770", util_pct: 0, vram_total_mb: 16_384, vram_used_mb: 0 })).toBe("Arc A770 · 0 of 16 GB VRAM · 0% busy");
+  });
+
+  it("says power, runs and sleep in plain words", () => {
+    expect(powerWords({ power: "battery", battery_pct: null })).toBe("On battery");
+    expect(powerWords({ power: null, battery_pct: 40 })).toBe("unknown");
+    expect(runsWords({ hours: 24, turns: 1, blank: 1, no_answer: 0, failed: 0, timeout: 0, usage_limit: 1, tasks_empty: 1 })).toEqual({
+      line: "1 turn, 1 blank",
+      detail: "1 hit the usage limit · 1 task ended empty",
+    });
+    expect(sleepWords({ state: "failed", last_at: null, pressure: 1.4 }, DEVICES_NOW)).toEqual({
+      line: "last sleep failed",
+      detail: "enough waits for the next sleep",
+    });
+    expect(sleepWords({ state: "idle", last_at: null, pressure: 0 }, DEVICES_NOW).line).toBe("never slept");
   });
 });
 
@@ -423,6 +538,28 @@ describe("driven", () => {
     expect(host.querySelector('[role="dialog"]')).toBeNull();
     expect(host.querySelector(".sky")!.hasAttribute("inert")).toBe(false);
     expect(document.activeElement).toBe(byLabel("Add a phone"));
+  });
+
+  it("reads a computer's figures again on the hello's beat while its drawer is open, and a phone's never (ADR 0142)", () => {
+    vi.useFakeTimers();
+    try {
+      const base = deviceFixtures.typical!;
+      const load = vi.fn(async () => {});
+      show({ ...base, actions: { ...base.actions, load } });
+      act(() => vi.advanceTimersByTime(VITALS_REREAD_MS));
+      expect(load).not.toHaveBeenCalled();
+      press(byLabel("Study PC, this computer"));
+      act(() => vi.advanceTimersByTime(VITALS_REREAD_MS));
+      expect(load).toHaveBeenCalledTimes(1);
+      press(byLabel("Kitchen phone, phone"));
+      act(() => vi.advanceTimersByTime(VITALS_REREAD_MS * 2));
+      expect(load).toHaveBeenCalledTimes(1);
+      press(byLabel("Laptop, computer"));
+      act(() => vi.advanceTimersByTime(VITALS_REREAD_MS));
+      expect(load).toHaveBeenCalledTimes(2);
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("does not mint a second window while the first is live", () => {

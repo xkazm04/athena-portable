@@ -7,7 +7,7 @@ import { createElement } from "react";
 
 import type { DepthScene } from "@/scenes/types";
 
-import { deviceFixtures, fixtureIds, fixtures } from "./fixtures";
+import { deviceFixtures, fixtureIds, fixtures, sleepFixtures } from "./fixtures";
 import { labeller, live } from "./live";
 import MindView from "./view";
 
@@ -21,6 +21,7 @@ export const entry: DepthScene = {
       go: props.go,
       // The Devices level has its own states; the preview shows each under the same fixture name.
       devices: deviceFixtures[fixture] ?? deviceFixtures.typical!,
+      sleep: sleepFixtures[fixture] ?? sleepFixtures.typical!,
     }),
   previewLabeller: () => labeller,
 };

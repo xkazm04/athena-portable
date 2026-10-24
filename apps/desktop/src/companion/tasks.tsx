@@ -30,6 +30,8 @@ export function askHer(task: Pick<TaskView, "title">): void {
 export interface TaskStripProps {
   shown: readonly TaskView[];
   problem: string | null;
+  /** The gate's sentence for why queued tasks wait for room (ADR 0142), said only while one waits. */
+  held?: string | null;
   now: number;
   open: boolean;
   onToggle: () => void;
@@ -38,7 +40,7 @@ export interface TaskStripProps {
 }
 
 /** The strip as a function of what it shows: the testable half. */
-export function TaskStripView({ shown, problem, now, open, onToggle, onStop, onAsk }: TaskStripProps) {
+export function TaskStripView({ shown, problem, held, now, open, onToggle, onStop, onAsk }: TaskStripProps) {
   const list = useId();
   if (shown.length === 0) {
     return problem ? (
@@ -54,6 +56,7 @@ export function TaskStripView({ shown, problem, now, open, onToggle, onStop, onA
         <span className="aw-tasks__count">{summaryOf(shown)}</span>
         <span className="aw-tasks__hint">{open ? "Hide" : "Show"}</span>
       </button>
+      {held && shown.some((t) => t.status === "queued") ? <p className="aw-tasks__held">{held}</p> : null}
       {open ? (
         <ul id={list} className="aw-tasks__list">
           {shown.map((task) => (
@@ -77,7 +80,7 @@ export function TaskStripView({ shown, problem, now, open, onToggle, onStop, onA
 }
 
 export function TaskStrip() {
-  const { tasks, problem } = useTasks();
+  const { tasks, problem, held } = useTasks();
   const [open, setOpen] = useState(false);
   const now = useTasksNow(tasks.some((t) => t.status === "running"));
   useEffect(() => startTasks(), []);
@@ -85,6 +88,7 @@ export function TaskStrip() {
     <TaskStripView
       shown={shownTasks(tasks, now)}
       problem={problem}
+      held={held}
       now={now}
       open={open}
       onToggle={() => setOpen((o) => !o)}

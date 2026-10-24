@@ -29,6 +29,8 @@ export const SURFACE_ROWS = 4;
 export interface SurfaceTasksProps {
   shown: readonly TaskView[];
   problem: string | null;
+  /** The gate's sentence for why queued tasks wait for room (ADR 0142), said only while one waits. */
+  held?: string | null;
   now: number;
   all: boolean;
   onMore: () => void;
@@ -37,7 +39,7 @@ export interface SurfaceTasksProps {
 }
 
 /** The rows as a function of what they show: the testable half. */
-export function SurfaceTasksView({ shown, problem, now, all, onMore, onStop, onAsk }: SurfaceTasksProps) {
+export function SurfaceTasksView({ shown, problem, held, now, all, onMore, onStop, onAsk }: SurfaceTasksProps) {
   const list = useId();
   if (shown.length === 0) {
     return problem ? (
@@ -54,6 +56,7 @@ export function SurfaceTasksView({ shown, problem, now, all, onMore, onStop, onA
         <span className="surface-tasks__label">Her tasks</span>
         <span className="surface-tasks__count">{summaryOf(shown)}</span>
       </p>
+      {held && shown.some((t) => t.status === "queued") ? <p className="surface-tasks__held">{held}</p> : null}
       <ul id={list} className="surface-tasks__list">
         {rows.map((task) => (
           <TaskRow
@@ -80,7 +83,7 @@ export function SurfaceTasksView({ shown, problem, now, all, onMore, onStop, onA
 }
 
 export function SurfaceTasks() {
-  const { tasks, problem } = useTasks();
+  const { tasks, problem, held } = useTasks();
   const [all, setAll] = useState(false);
   const [refused, setRefused] = useState<string | null>(null);
   const now = useTasksNow(tasks.some((t) => t.status === "running"));
@@ -95,6 +98,7 @@ export function SurfaceTasks() {
     <SurfaceTasksView
       shown={shownTasks(tasks, now)}
       problem={refused ?? problem}
+      held={held}
       now={now}
       all={all}
       onMore={() => setAll((a) => !a)}
