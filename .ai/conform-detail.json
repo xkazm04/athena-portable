@@ -7346,6 +7346,31 @@
           "reason": "replaced by conform-core-brain-memory"
         }
       ]
+    },
+    "045f6ffb-7c64-4cbd-8925-89d25221d459/engine-host-contract": {
+      "context": "core-brain-memory",
+      "subject": "engine-host-contract",
+      "bundle": "software-engineering",
+      "state": "unknown",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T21:05:24.042Z",
+      "techniques": [],
+      "withdrawn": {
+        "worker": "bc4c5add-06c7-40fd-9444-362bf4833a30",
+        "state": "not-applicable",
+        "at": "2026-10-24T21:05:50.034869+00:00",
+        "reason": "reviewer (sonnet): The anchor store.py:1 is only the module docstring and does not show the imports or the absence of an engine. The imports are at lines 49-67, and they include math, secrets, dataclasses and contextlib, so the evidence's 'only os, re, json, sqlite3, threading, hashlib, datetime and pathlib' list is w"
+      }
+    },
+    "b772acf0-36d8-42d5-9d91-32df4c35ea84/engine-host-contract": {
+      "context": "journey-capture",
+      "subject": "engine-host-contract",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T21:05:24.042Z",
+      "worker": "bc4c5add-06c7-40fd-9444-362bf4833a30",
+      "techniques": []
     }
   }
 }

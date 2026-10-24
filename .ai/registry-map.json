@@ -7157,7 +7157,11 @@
           "revision": 2,
           "changedAt": "2026-09-04",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "examples/journey/scripts/capture-playbook.mjs:62 The journey scripts are Node CLI tools. They drive an out-of-process Chromium through Playwright and run ffmpeg and other tools through child_process. They embed no language engine. A search of the context's scripts, config and CSS for HostHooks, JobExecutor, ModuleLoader, enqueue_job and quickjs found nothing (also checked: vm.Script, isolated-vm, boa_engine), so there is no host-hook surface, job executor or engine-owned loader to judge.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:dcbd96d1274205ef",
+          "evaluatedRevision": 3
         }
       ],
       "governance": "governed"

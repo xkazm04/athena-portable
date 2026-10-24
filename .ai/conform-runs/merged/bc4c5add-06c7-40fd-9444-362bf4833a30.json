@@ -1,0 +1,58 @@
+{
+  "schema": "conform-run/1",
+  "worker": "bc4c5add-06c7-40fd-9444-362bf4833a30",
+  "subject": "engine-host-contract",
+  "evaluatedAt": "2026-10-24T21:05:24.042943+00:00",
+  "provider": "claude",
+  "model": "claude-opus-5-5",
+  "pairs": [
+    {
+      "context": "journey-capture",
+      "subject": "engine-host-contract",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evidence": "examples/journey/scripts/capture-playbook.mjs:62 The journey scripts are Node CLI tools. They drive an out-of-process Chromium through Playwright and run ffmpeg and other tools through child_process. They embed no language engine. A search of the context's scripts, config and CSS for HostHooks, JobExecutor, ModuleLoader, enqueue_job and quickjs found nothing (also checked: vm.Script, isolated-vm, boa_engine), so there is no host-hook surface, job executor or engine-owned loader to judge.",
+      "techniques": [],
+      "absenceTerms": [
+        "HostHooks",
+        "JobExecutor",
+        "ModuleLoader",
+        "enqueue_job",
+        "quickjs"
+      ]
+    }
+  ],
+  "declined": [
+    {
+      "subject": "engine-host-contract",
+      "context": "core-brain-memory",
+      "reason": "withdrawn after review: reviewer (sonnet): The anchor store.py:1 is only the module docstring and does not show the imports or the absence of an engine. The imports are at lines 49-67, and they include math, secrets, dataclasses and contextlib, so the evidence's 'only os, re, json, sqlite3, threading, hashlib, datetime and pathlib' list is w"
+    }
+  ],
+  "consults": [
+    {
+      "ts": "2026-10-24T21:05:24.042943+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "engine-host-contract"
+      ],
+      "techniques": [],
+      "deviations": 0,
+      "context": "core-brain-memory",
+      "via": "curator-multi:claude",
+      "model": "claude-opus-5-5"
+    },
+    {
+      "ts": "2026-10-24T21:05:24.042943+00:00",
+      "bundle": "software-engineering",
+      "subjects": [
+        "engine-host-contract"
+      ],
+      "techniques": [],
+      "deviations": 0,
+      "context": "journey-capture",
+      "via": "curator-multi:claude",
+      "model": "claude-opus-5-5"
+    }
+  ]
+}
