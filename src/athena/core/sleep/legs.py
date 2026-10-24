@@ -95,7 +95,9 @@ Distil what is worth believing durably:
 
 Be strict. Do not write claims at transcript altitude ("the user said ..."): state the fact itself.
 Do not write one-off circumstances with no forward relevance, secrets, passwords, tokens or
-anything sensitive, or anything about the assistant's own identity or standing rules. Write each
+anything sensitive, or anything about the assistant's own identity or standing rules. Do not write
+a computer's current load or room (RAM or CPU in use, free task slots, what is waiting): it is
+measured afresh every turn and is stale by morning. Write each
 belief once, even if many episodes repeat it. A failed approach worth remembering is a fact: what
 was tried and the symptom that ruled it out.
 
