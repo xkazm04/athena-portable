@@ -39,6 +39,8 @@ describe("classifyMidTurn", () => {
     "   ",
     "and then email the summary",
     "what about the paid ones?",
+    "How is Cancel going?",
+    "How is Stop the sync going?",
     "no problem, also check March",
     "now the overdue list",
     "stopwatch app next",

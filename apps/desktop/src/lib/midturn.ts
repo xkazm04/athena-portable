@@ -59,6 +59,9 @@ export function classifyMidTurn(text: string): MidTurn {
   if (leadsWithCue(rest)) return "interrupt";
   const bare = words.map((w) => w.replace(/[,.!?]+$/, ""));
   if (bare[bare.length - 1] === "instead") return "interrupt";
+  // A question that does not lead with a cue asks and adds; a cue word inside it is a name, as in
+  // "How is Cancel going?" asked about a task titled "Cancel".
+  if (plain.endsWith("?")) return "queue";
   if (bare.length <= SHORT_WORDS && bare.some((_, i) => isCueAt(bare, i))) return "interrupt";
   return "queue";
 }
