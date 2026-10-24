@@ -7517,6 +7517,27 @@
           "evidence": "examples/tidycrm/components/blocks/style/index.css:11 No mutated batch and no parallel per-slot consumers to check against an identity shadow."
         }
       ]
+    },
+    "645f955f-74d6-44ae-a966-70f6ed2ece17/workflow-property-contracts": {
+      "context": "contracts-seam",
+      "subject": "workflow-property-contracts",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-24",
+      "evaluatedTs": "2026-10-24T23:14:03.736Z",
+      "worker": "14f9a81f-8222-404e-baf9-138493f255d1",
+      "techniques": [
+        {
+          "technique": "mid-iteration-event-seams",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/harness.py:193 The harness here is an LLM turn engine. It has no training loop with forward/loss/backward stages to publish events between."
+        },
+        {
+          "technique": "required-and-optional-property-sets",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/contracts/manifest.py:220 A host-manifest check returns a list of problems, which looks like the property-check pattern, but what it checks is a tool catalog. It has no required or optional workflow property table."
+        }
+      ]
     }
   }
 }

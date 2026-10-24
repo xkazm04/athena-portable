@@ -1,0 +1,59 @@
+{
+ "schema": "conform-run/1",
+ "worker": "14f9a81f-8222-404e-baf9-138493f255d1",
+ "subject": "workflow-property-contracts",
+ "evaluatedAt": "2026-10-24T23:14:03.736007+00:00",
+ "provider": "claude",
+ "model": "claude-opus-5-5",
+ "pairs": [
+  {
+   "context": "contracts-seam",
+   "subject": "workflow-property-contracts",
+   "bundle": "software-engineering",
+   "state": "not-applicable",
+   "evidence": "src/athena/contracts/harness.py:1 This package holds the seam types for an LLM companion (a harness that turns one prompt turn into channel events, tool manifests, ids, registry), not a training or inference workflow a third-party host drives by property name; a case-insensitive grep of src/athena/contracts and tests/contracts for epoch, trainer, inferer and decollate (and also evaluator, training, workflow) found no hits, and a repo-wide grep over git-tracked files for max_epochs, trainer, inferer and decollate found none either.",
+   "techniques": [
+    {
+     "technique": "mid-iteration-event-seams",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/contracts/harness.py:193 The harness here is an LLM turn engine. It has no training loop with forward/loss/backward stages to publish events between."
+    },
+    {
+     "technique": "required-and-optional-property-sets",
+     "verdict": "not-applicable",
+     "evidence": "src/athena/contracts/manifest.py:220 A host-manifest check returns a list of problems, which looks like the property-check pattern, but what it checks is a tool catalog. It has no required or optional workflow property table."
+    }
+   ],
+   "absenceTerms": [
+    "epoch",
+    "trainer",
+    "inferer",
+    "decollate"
+   ]
+  }
+ ],
+ "declined": [
+  {
+   "subject": "workflow-property-contracts",
+   "context": "tidycrm-blocks-ui",
+   "reason": "evidence leans on React/three.js, which is not a tracked file"
+  }
+ ],
+ "consults": [
+  {
+   "ts": "2026-10-24T23:14:03.736007+00:00",
+   "bundle": "software-engineering",
+   "subjects": [
+    "workflow-property-contracts"
+   ],
+   "techniques": [
+    "mid-iteration-event-seams",
+    "required-and-optional-property-sets"
+   ],
+   "deviations": 0,
+   "context": "contracts-seam",
+   "via": "curator-multi:claude",
+   "model": "claude-opus-5-5"
+  }
+ ]
+}

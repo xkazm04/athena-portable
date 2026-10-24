@@ -1895,7 +1895,11 @@
           "revision": 1,
           "changedAt": "2026-09-03",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "src/athena/contracts/harness.py:1 This package holds the seam types for an LLM companion (a harness that turns one prompt turn into channel events, tool manifests, ids, registry), not a training or inference workflow a third-party host drives by property name; a case-insensitive grep of src/athena/contracts and tests/contracts for epoch, trainer, inferer and decollate (and also evaluator, training, workflow) found no hits, and a repo-wide grep over git-tracked files for max_epochs, trainer, inferer and decollate found none either.",
+          "evaluatedAt": "2026-10-24",
+          "evaluatedAgainst": "sha256-b2:c9f25f65f6b94068",
+          "evaluatedRevision": 2
         },
         {
           "subject": "ipc-contract",
