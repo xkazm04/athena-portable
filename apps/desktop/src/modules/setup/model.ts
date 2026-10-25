@@ -108,6 +108,8 @@ export interface SetupModel {
   mic: MicStanding;
   /** The browser's own words: the device's label, or the refusal. */
   micDetail: string;
+  /** How a refusal is undone on this platform, in plain words; empty unless refused. */
+  micRemedy: string;
   /** `/voice` is listed by the daemon. */
   voiceAvailable: boolean;
   /** Why the key does nothing, in the app's own words. Empty when it works. */
@@ -153,6 +155,7 @@ export interface SetupSources {
   tabs: readonly { id: number; title: string; url: string }[];
   mic?: MicStanding;
   micDetail?: string;
+  micRemedy?: string;
   voiceAvailable?: boolean;
   voiceReason?: string;
   storePath: string | null;
@@ -219,6 +222,7 @@ export function selectSetup(source: SetupSources): SetupModel {
     })),
     mic: source.mic ?? "unknown",
     micDetail: source.micDetail ?? "",
+    micRemedy: source.micRemedy ?? "",
     voiceAvailable: source.voiceAvailable ?? false,
     voiceReason: source.voiceReason ?? "",
     storePath: source.storePath,

@@ -65,7 +65,7 @@ export function micFact(model: SetupModel): Fact {
     case "granted":
       return fact("mic", "done", model.micDetail || "granted");
     case "denied":
-      return fact("mic", "missing", model.micDetail || "refused by the webview");
+      return fact("mic", "missing", model.micRemedy || model.micDetail || "refused by the webview");
     case "unsupported":
       return fact("mic", "missing", model.micDetail || "none on this machine");
     default:

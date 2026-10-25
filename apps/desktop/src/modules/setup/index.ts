@@ -9,12 +9,14 @@
  * Some facts are React state rather than stored rows, because they are facts about *this* visit:
  * the microphone's answer (a permission is the browser's fact, not the store's), whether the
  * welcome was reopened, and which writes the store refused (each shown beside its own control).
+ * The microphone's answer is seeded on arrival from what the platform remembers and followed while
+ * the hook lives (`mic.ts`, loaded with `import()`: ADR 0221), so a refusal is not forgotten.
  */
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 import { ENGINE_IDS, isEngineId } from "@/lib/engines";
 import type { MotionChoice } from "@/lib/motion";
-import { checkMicrophone, type MicStanding } from "@/lib/voice";
+import { checkMicrophone } from "@/lib/voice";
 import { useDaemon } from "@/stores/daemon";
 import { useEngines } from "@/stores/engines";
 import { chooseSetupEngine, readRows, useSettings, type ThemeChoice, type TypeScale } from "@/stores/settings";
@@ -22,6 +24,7 @@ import type { Skin } from "@/stores/shell";
 import { useTabs } from "@/stores/tabs";
 import { useVoice } from "@/stores/voice";
 
+import type { MicAnswer } from "./mic";
 import { selectSetup, type SetupActions, type SetupModel, type SetupRefusals, type SetupWrite } from "./model";
 
 /**
@@ -52,10 +55,20 @@ export function useSetupModel(
   const voiceAvailable = useVoice((s) => s.available);
   const voiceReason = useVoice((s) => s.reason);
 
-  const [mic, setMic] = useState<{ standing: MicStanding; detail: string }>({
-    standing: "unknown",
-    detail: "",
-  });
+  const [mic, setMic] = useState<MicAnswer>({ standing: "unknown", detail: "" });
+  useEffect(() => {
+    let stop: (() => void) | undefined;
+    let live = true;
+    void import("./mic").then(async (m) => {
+      const s = await m.followMic(setMic);
+      if (live) stop = s;
+      else s();
+    });
+    return () => {
+      live = false;
+      stop?.();
+    };
+  }, []);
   const [reopened, setReopened] = useState(false);
   const [refusals, setRefusals] = useState<SetupRefusals>({});
   const [waking, setWaking] = useState(false);
@@ -96,7 +109,9 @@ export function useSetupModel(
       openPage: (url) => void useTabs.getState().create(url).catch(report("open")),
       checkMic: () => {
         const media = typeof navigator === "undefined" ? undefined : navigator.mediaDevices;
-        void checkMicrophone(media ? (c) => media.getUserMedia(c) : undefined).then(setMic);
+        void checkMicrophone(media ? (c) => media.getUserMedia(c) : undefined).then(async (a) =>
+          setMic((await import("./mic")).answerOf(a)),
+        );
       },
       finish: () => {
         // The act closes only once the row is stored: a refused wake keeps the act, its reason
@@ -135,6 +150,7 @@ export function useSetupModel(
         tabs,
         mic: mic.standing,
         micDetail: mic.detail,
+        micRemedy: mic.remedy,
         voiceAvailable,
         voiceReason,
         storePath,
