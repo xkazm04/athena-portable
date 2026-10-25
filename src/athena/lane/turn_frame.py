@@ -29,6 +29,7 @@ from dataclasses import dataclass, field
 from typing import Any
 
 from athena.contracts.channel import ToolResult, cut_text
+from athena.contracts.reasons import ERROR_DETAIL_CAP
 from athena.contracts.registry import Lane
 from athena.core.constitution import Constitution
 from athena.core.prompt import Composed, TurnFrame, compose
@@ -74,7 +75,10 @@ def tool_results_from(payloads: Sequence[Mapping[str, Any]]) -> tuple[ToolResult
     An absent ``ok`` is read as a success and an absent ``tier`` as tier 0, because the surface
     that omitted them is this repository's own panel and a missing flag there is a bug to find in
     a fixture, not a refusal to build a frame. An oversized ``output``, on the other hand, is
-    routine — it is a page read — and is capped here rather than anywhere later.
+    routine — it is a page read — and is capped here rather than anywhere later. The ``error``
+    detail is page-written too, so it is cut to :data:`ERROR_DETAIL_CAP` with the same footer,
+    and the surface's closed ``reason`` rides beside it (the contract normalizes it, or derives
+    it from a legacy prefixed error when the surface sent none).
     """
     results: list[ToolResult] = []
     for payload in payloads:
@@ -82,6 +86,7 @@ def tool_results_from(payloads: Sequence[Mapping[str, Any]]) -> tuple[ToolResult
         truncated = len(output) > RESULT_CAP
         output = cut_text(output, RESULT_CAP)
         error = payload.get("error")
+        reason = payload.get("reason")
         results.append(
             ToolResult(
                 call_id=str(payload.get("call_id", "")),
@@ -89,10 +94,11 @@ def tool_results_from(payloads: Sequence[Mapping[str, Any]]) -> tuple[ToolResult
                 ok=bool(payload.get("ok", True)),
                 output=output,
                 truncated=truncated,
-                error=str(error) if error else None,
+                error=cut_text(str(error), ERROR_DETAIL_CAP) if error else None,
                 tier=_int(payload.get("tier")),
                 ms=_int(payload.get("ms")),
                 source=_source(payload.get("source")),
+                reason=reason if isinstance(reason, str) else None,
             )
         )
     return tuple(results)

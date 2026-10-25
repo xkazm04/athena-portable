@@ -191,3 +191,10 @@ def test_a_turn_context_names_no_case_and_no_lookback_by_default() -> None:
     assert (bare.case_id, bare.spent_since) == (None, None)
     told = TurnContext(conversation_id="conv_invoices", turn_id="t", case_id="proj_0123456789ab")
     assert told.case_id == "proj_0123456789ab" and told.project_id is None
+
+
+def test_an_exec_results_reason_is_read_from_its_failure_and_is_none_on_success() -> None:
+    """A core executor's failure names a closed reason; a sentence collapses to ``unknown``."""
+    assert ExecResult(ok=True).reason is None
+    assert ExecResult.failure("validator_failed").reason == "validator_failed"
+    assert ExecResult.failure("amount over the cap").reason == "unknown"

@@ -329,6 +329,27 @@ def test_a_write_whose_answer_never_came_is_recorded_as_may_have_completed(
     assert "failed (timeout: slow)" in read
 
 
+def test_a_result_whose_reason_is_outcome_unknown_is_recorded_as_may_have_completed(
+    tmp_path: Path,
+) -> None:
+    """The record reads the reason field, not a prefix of the error text: a page that sends
+    ``outcome_unknown`` beside a plain sentence is still a call that may have run (ADR 0101)."""
+    built = build_lane([claude_round("Nothing to do.")], tmp_path)
+    unsure = ToolResult(
+        name="host.invoices.send",
+        ok=False,
+        reason="outcome_unknown",
+        error="the page did not answer before the deadline",
+        tier=1,
+    )
+
+    drain(built.lane, built, tool_results=(unsure,))
+
+    sent = next(b for b in built.brain.bodies("system") if "host.invoices.send" in b)
+    assert "may have completed" in sent
+    assert "failed" not in sent
+
+
 def test_the_turn_writes_the_message_and_the_answer_with_their_markers(tmp_path: Path) -> None:
     built = build_lane([claude_round("Two are overdue.")], tmp_path)
 

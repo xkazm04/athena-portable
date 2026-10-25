@@ -53,6 +53,8 @@ export interface ToolResult {
   ms: number;
   /** `host:<app_id>` of the other tab a `tabs_read` read; absent for everything else (ADR 0105). */
   source?: string | null;
+  /** A member of `ERROR_REASONS` on a failure, `null` on success; `error` is the bounded detail beside it. Absent from a daemon older than the field. */
+  reason?: string | null;
 }
 
 export interface TurnFinished {

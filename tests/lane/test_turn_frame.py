@@ -239,3 +239,19 @@ def test_the_capability_block_is_in_the_static_half(tmp_path: Path) -> None:
     assert "capabilities" in composed.static.names
     assert "host.invoices.pay" in composed.static.text
     assert "host.invoices.chase" in composed.static.text
+
+
+def test_a_surfaces_reason_rides_through_and_its_error_detail_is_capped() -> None:
+    """A page's error is page-written text like its output: it is cut to the contract's cap with
+    the announced footer, and the closed reason the surface sent travels beside it."""
+    from athena.contracts.reasons import ERROR_DETAIL_CAP
+
+    (result,) = tool_results_from(
+        [{"name": "host.a.b", "ok": False, "reason": "timeout", "error": "x" * 10000}]
+    )
+
+    assert result.reason == "timeout"
+    assert result.error is not None
+    body, footer = result.error.rsplit("\n", 1)
+    assert body == "x" * ERROR_DETAIL_CAP
+    assert footer == f"(showing {ERROR_DETAIL_CAP} of 10000)" == "(showing 240 of 10000)"

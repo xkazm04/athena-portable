@@ -59,6 +59,7 @@ from athena.contracts.manifest import (
     SideEffects,
     StateReadable,
 )
+from athena.contracts.reasons import ERROR_DETAIL_CAP, reason_of_error
 from athena.contracts.registry import (
     ALL_LANES,
     ExecResult,
@@ -80,6 +81,7 @@ from athena.contracts.registry import (
 
 __all__ = [
     "ALL_LANES",
+    "ERROR_DETAIL_CAP",
     "ERROR_REASONS",
     "EVENT_KINDS",
     "FAMILIES",
@@ -140,4 +142,5 @@ __all__ = [
     "now_iso",
     "parse_origin",
     "prefix_of",
+    "reason_of_error",
 ]

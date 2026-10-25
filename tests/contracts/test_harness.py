@@ -119,3 +119,34 @@ def test_a_blank_run_has_reasons_of_its_own() -> None:
         assert ERROR_REASONS.index(reason) < ERROR_REASONS.index("unknown")
     assert ERROR_REASONS.index("cancelled") < ERROR_REASONS.index("no_answer")
     assert ERROR_REASONS.index("usage_limit") < ERROR_REASONS.index("outcome_unknown")
+
+
+def test_the_vocabulary_is_one_object_wherever_it_is_imported() -> None:
+    """GUARD: the vocabulary moved to ``contracts/reasons.py`` so ``channel.py`` can read it;
+    ``harness`` and the package re-export the same objects, in the same order."""
+    import athena.contracts as package
+    import athena.contracts.harness as harness
+    import athena.contracts.reasons as reasons
+
+    assert harness.ERROR_REASONS is reasons.ERROR_REASONS is package.ERROR_REASONS
+    assert harness.normalize_reason is reasons.normalize_reason is package.normalize_reason
+    assert ERROR_REASONS == (
+        "user_denied",
+        "expired",
+        "pending_approval",
+        "foreign_origin",
+        "foreign_token",
+        "unknown_ref",
+        "validator_failed",
+        "manifest_invalid",
+        "approval_spent",
+        "budget_exhausted",
+        "engine_error",
+        "timeout",
+        "parse_error",
+        "cancelled",
+        "no_answer",
+        "usage_limit",
+        "outcome_unknown",
+        "unknown",
+    )

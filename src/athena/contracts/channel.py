@@ -18,6 +18,8 @@ from dataclasses import asdict, dataclass, field, fields
 from datetime import UTC, datetime
 from typing import Any, ClassVar, Literal, cast
 
+from athena.contracts.reasons import normalize_reason, reason_of_error
+
 
 def iso(moment: datetime) -> str:
     """UTC with an explicit offset, so the strings sort the way the instants do and parse back."""
@@ -88,7 +90,8 @@ class ToolCall(ChannelEvent):
 @dataclass(frozen=True)
 class ToolResult(ChannelEvent):
     """What came back. ``truncated`` is derived from ``shown``/``total`` by the producer, and the
-    ``(showing N of M)`` footer is inside ``output`` — never only in this flag."""
+    ``(showing N of M)`` footer is inside ``output`` — never only in this flag. A failure says why
+    in ``reason`` (the closed vocabulary) and which instance in ``error`` (free text)."""
 
     kind: ClassVar[str] = "tool.result"
     call_id: str = ""
@@ -103,6 +106,20 @@ class ToolResult(ChannelEvent):
     #: (``host:<app_id>``) of the other tab a ``tabs_read`` read. Set by the surface from the tab
     #: it read, never by a model; the record groups the episode under it (ADR 0105).
     source: str | None = None
+    #: Why a failure failed: a member of ``ERROR_REASONS``, decided at construction and ``None``
+    #: on success. ``error`` is the bounded free-text detail beside it, never parsed for meaning.
+    #: A writer that sends no reason (one from before this field) has it derived from a legacy
+    #: ``<reason>`` or ``<reason>: detail`` error, and any other text reads as ``unknown``.
+    reason: str | None = None
+
+    def __post_init__(self) -> None:
+        if self.ok:
+            reason = None
+        elif isinstance(self.reason, str) and self.reason.strip():
+            reason = normalize_reason(self.reason)
+        else:
+            reason = reason_of_error(self.error)
+        object.__setattr__(self, "reason", reason)
 
 
 @dataclass(frozen=True)

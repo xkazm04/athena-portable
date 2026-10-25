@@ -224,3 +224,38 @@ def test_the_desktops_voice_transcript_names_every_field_the_contract_does() -> 
     assert match is not None
     declared = set(re.findall(r"^\s*(\w+)\??:", match.group(1), re.MULTILINE))
     assert declared == {"kind"} | {f.name for f in dataclasses.fields(VoiceTranscript)}
+
+
+# -- a tool's failure carries a closed reason beside its detail (ADR 0204) ---------------------
+
+
+def test_a_legacy_prefixed_error_names_its_reason_and_keeps_its_text() -> None:
+    result = ToolResult(ok=False, error="outcome_unknown: send did not answer within 30000 ms")
+    assert result.reason == "outcome_unknown"
+    assert result.error == "outcome_unknown: send did not answer within 30000 ms"
+
+
+def test_a_pages_free_sentence_is_reason_unknown_never_a_member() -> None:
+    result = ToolResult(ok=False, error="No tool named frob")
+    assert result.reason == "unknown"
+    assert result.error == "No tool named frob"
+
+
+def test_a_given_reason_is_normalized_and_rides_beside_the_error_on_the_wire() -> None:
+    result = ToolResult(ok=False, reason="  Timeout ", error="the page took 30 s")
+    assert result.reason == "timeout"
+    wire = json.loads(result.to_json())
+    assert (wire["reason"], wire["error"]) == ("timeout", "the page took 30 s")
+    assert event_from_json(result.to_json()) == result
+
+
+def test_a_success_carries_no_reason() -> None:
+    assert ToolResult(ok=True, reason="timeout").reason is None
+
+
+def test_a_tool_result_from_before_the_reason_reads_its_reason_from_its_error() -> None:
+    """GUARD: an older writer sent no ``reason`` key; the reader derives it, never drops it."""
+    old = {"kind": "tool.result", "name": "host.a.b", "ok": False, "error": "unknown_ref"}
+    back = event_from_json(json.dumps(old))
+    assert isinstance(back, ToolResult)
+    assert (back.reason, back.error) == ("unknown_ref", "unknown_ref")

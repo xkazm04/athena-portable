@@ -379,6 +379,7 @@ class BrowserLane:
             output=outcome.result.output,
             truncated=outcome.result.truncated,
             error=outcome.result.error,
+            reason=outcome.result.reason,
             tier=outcome.result.tier or entry.tier,
             ms=outcome.result.ms,
         )
@@ -406,9 +407,10 @@ class BrowserLane:
         origin = self._origin(ctx)
         for result in results:
             verb = "returned" if result.ok else f"failed ({result.error or 'unknown'})"
-            if not result.ok and (result.error or "").startswith("outcome_unknown"):
+            if not result.ok and result.reason == "outcome_unknown":
                 # Not "failed": the call was sent and its answer never came, so it may have run
                 # (ADR 0101). A record that said "failed" would invite the retry that sends twice.
+                # The reason field decides it, never a prefix of the error text.
                 verb = MAY_HAVE_COMPLETED
             self._append(
                 f"{result.name} {verb}: {result.output}".strip(),

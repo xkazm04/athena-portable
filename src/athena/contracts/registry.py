@@ -25,6 +25,8 @@ from dataclasses import dataclass, field
 from enum import StrEnum
 from typing import Any, Literal, Protocol, runtime_checkable
 
+from athena.contracts.reasons import reason_of_error
+
 
 class ToolClass(StrEnum):
     """What the gate does with a call. The catalog decides this; a model never does."""
@@ -125,6 +127,16 @@ class ExecResult:
     error: str | None = None
     tier: Tier = 0
     ms: int = 0
+
+    @property
+    def reason(self) -> str | None:
+        """Why it failed, as a member of ``ERROR_REASONS``; ``None`` on success.
+
+        :meth:`failure` writes its reason into ``error``, so this reads it back by the contract's
+        one rule (:func:`athena.contracts.reasons.reason_of_error`): a member, or a member before
+        a colon, is the reason, and an executor's free sentence is ``unknown``.
+        """
+        return None if self.ok else reason_of_error(self.error)
 
     @property
     def truncated(self) -> bool:

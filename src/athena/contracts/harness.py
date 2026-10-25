@@ -3,7 +3,7 @@
 ``Harness`` is a Protocol so the lane can be written against it before any engine exists, and so
 a scripted transport in a test is a harness by structure and not by inheritance. ``PromptBlock`` is
 one composed section of the prompt; ``ERROR_REASONS`` is the closed vocabulary every refusal in
-this repository collapses into.
+this repository collapses into, re-exported from :mod:`athena.contracts.reasons`.
 """
 
 from __future__ import annotations
@@ -13,7 +13,12 @@ from dataclasses import dataclass, field
 from typing import Any, Protocol, runtime_checkable
 
 from athena.contracts.channel import ChannelEvent
+from athena.contracts.reasons import ERROR_REASONS, normalize_reason
 from athena.contracts.registry import ToolEntry, TurnContext
+
+#: Re-exported: the vocabulary lives in :mod:`athena.contracts.reasons` so ``channel.py`` can read
+#: it without importing this module (ADR 0204). Same objects, same order.
+__all__ = ["ERROR_REASONS", "Harness", "PromptBlock", "TurnResult", "fnv1a_64", "normalize_reason"]
 
 
 def fnv1a_64(data: str) -> str:
@@ -108,55 +113,6 @@ class PromptBlock:
             total=total,
             untrusted=untrusted,
         )
-
-
-#: The one closed vocabulary for ``TurnResult.error_reason``, the ledger's ``error_reason``
-#: column, ``turn.error``'s ``reason`` and the bridge's refusals. It lives in ``contracts``
-#: because it is a seam: ``core`` stores it, ``harness`` and the bridge produce it, and neither
-#: imports the other. Low cardinality is the design — a reason you cannot group by is a log line,
-#: not a column — so a new member is a deliberate change with a test, not a new string at a
-#: call site.
-ERROR_REASONS: tuple[str, ...] = (
-    # the user, at the gate
-    "user_denied",
-    "expired",
-    "pending_approval",
-    # policy refused the call before anything ran
-    "foreign_origin",
-    "foreign_token",
-    "unknown_ref",
-    "validator_failed",
-    "manifest_invalid",
-    "approval_spent",
-    # the turn could not finish
-    "budget_exhausted",
-    "engine_error",
-    "timeout",
-    "parse_error",
-    "cancelled",
-    # the turn ran and came back blank (ADR 0143): the engine said nothing and called nothing, or
-    # the plan's usage limit stopped it - counted apart from engine_error, as runs that cost a turn
-    # and left nothing behind
-    "no_answer",
-    "usage_limit",
-    # the call was sent and its answer never came: it may have run (ADR 0101)
-    "outcome_unknown",
-    # the catch-all; anything unrecognised collapses here rather than inventing a column value
-    "unknown",
-)
-
-
-def normalize_reason(reason: str | None) -> str | None:
-    """Map any string onto :data:`ERROR_REASONS`; ``None`` stays ``None``.
-
-    ``None`` is the successful row and must survive, which is why this is not ``-> str``. Anything
-    else that is not a member becomes ``"unknown"``: a reason invented at a call site would be a
-    ledger column with unbounded cardinality, and the row would still not say why.
-    """
-    if reason is None:
-        return None
-    lowered = reason.strip().lower()
-    return lowered if lowered in ERROR_REASONS else "unknown"
 
 
 @dataclass
