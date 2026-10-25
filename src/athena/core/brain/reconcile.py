@@ -20,6 +20,7 @@ from __future__ import annotations
 
 import math
 import sqlite3
+from collections.abc import Iterator
 from dataclasses import dataclass, field
 from datetime import UTC, datetime
 from pathlib import Path
@@ -37,6 +38,7 @@ from athena.core.brain.store import (
     SUPERSEDABLE_KINDS,
     SUPERSEDES_KEY,
     Brain,
+    sha256,
 )
 
 #: Which directory yields which kind, walked in this order. A directory absent from this table is
@@ -110,50 +112,113 @@ def reconcile_from_disk(brain: Brain) -> ReconcileStats:
     with brain.write_txn() as con:
         for table in INDEX_TABLES:
             con.execute(f"DELETE FROM {table}")
-        seen: set[str] = set()
-        for subdir, kind in WALK:
-            base = brain.root / subdir
-            if not base.is_dir():
-                continue
-            for path in sorted(base.rglob("*.md")):
-                rel = path.relative_to(brain.root).as_posix()
-                try:
-                    file_text = path.read_text(encoding="utf-8")
-                except OSError as exc:
-                    stats.skipped.append(f"{rel}: unreadable ({exc.strerror or exc})")
-                    continue
-                except UnicodeDecodeError:
-                    stats.skipped.append(f"{rel}: not UTF-8")
-                    continue
-                meta, body = frontmatter.parse(file_text)
-                node_id = str(meta.get("id") or "")
-                if not node_id:
-                    stats.skipped.append(f"{rel}: no id in frontmatter")
-                    continue
-                if node_id in seen:
-                    # A brain is portable by copying, so two files can claim one id — a restored
-                    # backup, a merge of two trees, an injected frontmatter key. INSERT OR
-                    # REPLACE would let the later file silently displace the earlier and report
-                    # a clean rebuild that had lost a memory. Name the collision instead.
-                    stats.skipped.append(f"{rel}: duplicate id {node_id}")
-                    continue
-                confidence = DEFAULT_CONFIDENCE
-                if kind in ("fact", "procedural"):
-                    checked = confidence_of(meta)
-                    if checked is None:
-                        # Refused before any insert, so the file leaves no row behind.
-                        stats.skipped.append(
-                            f"{rel}: confidence {_show(meta.get('confidence'))} is not a number"
-                        )
-                        continue
-                    confidence = checked
-                    if not isinstance(meta.get("sources"), list):
-                        stats.unsourced.append(rel)
-                seen.add(node_id)
-                index_file(brain, con, node_id, kind, rel, file_text, body, meta, confidence)
-                stats.files += 1
-                stats.by_kind[kind] = stats.by_kind.get(kind, 0) + 1
+        for entry in _walk(brain, stats.skipped):
+            if entry.kind in ("fact", "procedural") and not isinstance(
+                entry.meta.get("sources"), list
+            ):
+                stats.unsourced.append(entry.rel)
+            _index_entry(brain, con, entry)
+            stats.files += 1
+            stats.by_kind[entry.kind] = stats.by_kind.get(entry.kind, 0) + 1
     return stats
+
+
+@dataclass(frozen=True)
+class _Entry:
+    """One file as the rebuild reads it: the id it claims and everything ``index_file`` needs."""
+
+    node_id: str
+    kind: str
+    rel: str
+    file_text: str
+    body: str
+    meta: dict[str, Any]
+    confidence: float
+
+
+def _read(brain: Brain, path: Path, kind: str, skipped: list[str]) -> _Entry | None:
+    """Parse one file by the rebuild's rules, or name why it is skipped and return ``None``."""
+    rel = path.relative_to(brain.root).as_posix()
+    try:
+        file_text = path.read_text(encoding="utf-8")
+    except OSError as exc:
+        skipped.append(f"{rel}: unreadable ({exc.strerror or exc})")
+        return None
+    except UnicodeDecodeError:
+        skipped.append(f"{rel}: not UTF-8")
+        return None
+    meta, body = frontmatter.parse(file_text)
+    node_id = str(meta.get("id") or "")
+    if not node_id:
+        skipped.append(f"{rel}: no id in frontmatter")
+        return None
+    confidence = DEFAULT_CONFIDENCE
+    if kind in ("fact", "procedural"):
+        checked = confidence_of(meta)
+        if checked is None:
+            # Refused before any insert, so the file leaves no row behind.
+            skipped.append(f"{rel}: confidence {_show(meta.get('confidence'))} is not a number")
+            return None
+        confidence = checked
+    return _Entry(node_id, kind, rel, file_text, body, meta, confidence)
+
+
+@dataclass
+class _Budget:
+    """How many more files a walk may read; ``hit`` once it stopped short of the tree's end."""
+
+    left: int
+    hit: bool = False
+
+
+def _walk(
+    brain: Brain,
+    skipped: list[str],
+    duplicates: list[str] | None = None,
+    budget: _Budget | None = None,
+) -> Iterator[_Entry]:
+    """Every indexable file in ``WALK`` order, first claim of an id wins - the rebuild's walk.
+
+    A brain is portable by copying, so two files can claim one id - a restored backup, a merge
+    of two trees, an injected frontmatter key. INSERT OR REPLACE would let the later file
+    silently displace the earlier and report a clean rebuild that had lost a memory, so the later
+    one is named in ``skipped`` (and its path in ``duplicates`` when the caller asks).
+    """
+    seen: set[str] = set()
+    for subdir, kind in WALK:
+        base = brain.root / subdir
+        if not base.is_dir():
+            continue
+        for path in sorted(base.rglob("*.md")):
+            if budget is not None:
+                if budget.left <= 0:
+                    budget.hit = True
+                    return
+                budget.left -= 1
+            entry = _read(brain, path, kind, skipped)
+            if entry is None:
+                continue
+            if entry.node_id in seen:
+                skipped.append(f"{entry.rel}: duplicate id {entry.node_id}")
+                if duplicates is not None:
+                    duplicates.append(entry.rel)
+                continue
+            seen.add(entry.node_id)
+            yield entry
+
+
+def _index_entry(brain: Brain, con: sqlite3.Connection, entry: _Entry) -> None:
+    index_file(
+        brain,
+        con,
+        entry.node_id,
+        entry.kind,
+        entry.rel,
+        entry.file_text,
+        entry.body,
+        entry.meta,
+        entry.confidence,
+    )
 
 
 def confidence_of(meta: dict[str, Any]) -> float | None:
@@ -326,3 +391,217 @@ def missing_files(brain: Brain) -> list[str]:
     finally:
         con.close()
     return out
+
+
+# -- drift: disk against index, both directions and by content ------------------------------------
+
+#: Files a drift walk reads before it stops and says "not computed" instead of a number. Far above
+#: any brain a person keeps; it exists so the doctor never hangs on a tree somebody pointed it at.
+DRIFT_FILE_BUDGET = 100_000
+
+#: The column that names a memory in each table the disk owns. Checked against ``INDEX_TABLES``
+#: at import, so a new derivable table cannot be added without saying how a repair clears it.
+_ROW_KEYS: dict[str, str] = {
+    "companion_node": "id",
+    "companion_fts": "node_id",
+    "companion_provenance": "node_id",
+    "companion_fact": "id",
+    "companion_procedural": "id",
+    "companion_supersede": "node_id",
+}
+if set(_ROW_KEYS) != set(INDEX_TABLES):  # pragma: no cover - a schema change without this table
+    raise RuntimeError(f"reconcile._ROW_KEYS {sorted(_ROW_KEYS)} != INDEX_TABLES")
+
+
+@dataclass
+class Drift:
+    """Where the index and the tree disagree, by class (ADR 0003: disk is truth).
+
+    ``unindexed`` and ``duplicates`` are paths (a file the index never saw has no row to name);
+    ``edited``, ``moved`` and ``orphaned`` are ids. ``None`` is "not computed": a walk that ran
+    out of budget cannot say a file is absent or unchanged, so it says nothing rather than zero.
+    ``skipped`` is what the rebuild would skip too; it is reported, not drift a repair can fix.
+    """
+
+    unindexed: list[str] | None
+    edited: list[str] | None
+    moved: list[str] | None
+    orphaned: list[str]
+    duplicates: list[str] | None
+    skipped: list[str] = field(default_factory=list)
+    budget_hit: bool = False
+    files: int = 0
+    #: Each path a repair re-indexes, and the kind its directory yields.
+    reindex: dict[str, str] = field(default_factory=dict, repr=False)
+
+    @property
+    def clean(self) -> bool:
+        """No drift in any class, and every class computed: "not computed" is never clean."""
+        if self.budget_hit:
+            return False
+        classes = (self.unindexed, self.edited, self.moved, self.orphaned, self.duplicates)
+        return all(found is not None and not found for found in classes)
+
+    def as_dict(self) -> dict[str, Any]:
+        def copy(found: list[str] | None) -> list[str] | None:
+            return None if found is None else list(found)
+
+        return {
+            "clean": self.clean,
+            "unindexed": copy(self.unindexed),
+            "edited": copy(self.edited),
+            "moved": copy(self.moved),
+            "orphaned": list(self.orphaned),
+            "duplicates": copy(self.duplicates),
+            "skipped": list(self.skipped),
+            "budget_hit": self.budget_hit,
+            "files": self.files,
+        }
+
+    def sentences(self) -> list[str]:
+        """One sentence per drift class present, for a person reading the doctor."""
+
+        def count(found: list[str] | None, one: str, many: str) -> list[str]:
+            if not found:
+                return []
+            return [one if len(found) == 1 else many.format(n=len(found))]
+
+        out: list[str] = []
+        if self.budget_hit:
+            out.append(f"drift not computed: the walk stopped after {self.files} files")
+        out += count(
+            self.unindexed,
+            "1 memory on disk is not indexed",
+            "{n} memories on disk are not indexed",
+        )
+        out += count(
+            self.edited,
+            "1 memory was edited on disk since it was indexed",
+            "{n} memories were edited on disk since they were indexed",
+        )
+        out += count(self.moved, "1 memory moved on disk", "{n} memories moved on disk")
+        out += count(self.orphaned, "1 indexed row has no file", "{n} indexed rows have no file")
+        out += count(
+            self.duplicates,
+            "1 file claims an id another file holds",
+            "{n} files claim ids other files hold",
+        )
+        return out
+
+
+def drift(brain: Brain, *, max_files: int = DRIFT_FILE_BUDGET) -> Drift:
+    """Compare the tree to the index without writing: the preview of a repair.
+
+    The walk is the rebuild's own (:func:`_walk`), so a file is drift exactly when the rebuild
+    would index it differently: absent from the index (``unindexed``), at another path
+    (``moved``), with a ``content_hash`` that is not the sha256 of the text as read (``edited``),
+    or an indexed id no file claims (``orphaned``). The index is read once.
+    """
+    con = brain.read_connection()
+    try:
+        indexed = {
+            str(node_id): (str(rel), str(content_hash))
+            for node_id, rel, content_hash in con.execute(
+                "SELECT id, file_path, content_hash FROM companion_node"
+            )
+        }
+    finally:
+        con.close()
+    skipped: list[str] = []
+    duplicates: list[str] = []
+    budget = _Budget(max_files)
+    on_disk = {entry.node_id: entry for entry in _walk(brain, skipped, duplicates, budget)}
+    files = max_files - budget.left
+    if budget.hit:
+        # Absence and sameness need the whole tree; a gone file at its indexed path does not.
+        orphaned = sorted(
+            node_id for node_id, (rel, _) in indexed.items() if not (brain.root / rel).exists()
+        )
+        return Drift(None, None, None, orphaned, None, skipped, budget_hit=True, files=files)
+    unindexed: list[str] = []
+    edited: list[str] = []
+    moved: list[str] = []
+    reindex: dict[str, str] = {}
+    for node_id, entry in on_disk.items():
+        row = indexed.get(node_id)
+        if row is None:
+            unindexed.append(entry.rel)
+        elif row[0] != entry.rel:
+            moved.append(node_id)
+        elif row[1] != sha256(entry.file_text):
+            edited.append(node_id)
+        else:
+            continue
+        reindex[entry.rel] = entry.kind
+    orphaned = sorted(node_id for node_id in indexed if node_id not in on_disk)
+    return Drift(
+        sorted(unindexed),
+        sorted(edited),
+        sorted(moved),
+        orphaned,
+        duplicates,
+        skipped,
+        files=files,
+        reindex=reindex,
+    )
+
+
+@dataclass
+class Repaired:
+    """What a targeted repair touched: paths it indexed, ids it dropped, files it could not read."""
+
+    indexed: list[str] = field(default_factory=list)
+    dropped: list[str] = field(default_factory=list)
+    skipped: list[str] = field(default_factory=list)
+
+    def as_dict(self) -> dict[str, Any]:
+        return {
+            "indexed": list(self.indexed),
+            "dropped": list(self.dropped),
+            "skipped": list(self.skipped),
+        }
+
+
+def repair(brain: Brain, found: Drift) -> Repaired:
+    """Apply ``found`` and nothing else, in one writer transaction.
+
+    An orphaned id loses its rows in every ``INDEX_TABLES`` table; an unindexed, moved or edited
+    file is re-read and indexed through :func:`index_file`, the rebuild's per-file step, after its
+    sidecar rows are cleared (its node row is upserted, so it keeps its rowid). Every memory not
+    in the drift keeps its rows as they are - including index-only columns such as a demotion,
+    which a full rebuild resets. A drift that was not computed is refused: repairing half a
+    picture would call the rest clean. Duplicates are left for a person, as the rebuild leaves
+    them.
+    """
+    if found.budget_hit:
+        raise ValueError(
+            "the drift was not computed (its walk ran out of budget); nothing repaired"
+        )
+    done = Repaired()
+    with brain.write_txn() as con:
+        for node_id in found.orphaned:
+            _drop_rows(con, node_id, keep_node=False)
+            done.dropped.append(node_id)
+        for rel, kind in sorted(found.reindex.items()):
+            entry = _read(brain, brain.root / rel, kind, done.skipped)
+            if entry is None:
+                continue
+            _drop_rows(con, entry.node_id, keep_node=True)
+            _index_entry(brain, con, entry)
+            done.indexed.append(rel)
+    return done
+
+
+def _drop_rows(con: sqlite3.Connection, node_id: str, *, keep_node: bool) -> None:
+    """Delete one memory's derivable rows. ``keep_node`` spares its node and FTS rows, which
+    :meth:`Brain.index_node` upserts in place, so the memory keeps its rowid (ADR 0077)."""
+    if not keep_node:
+        for (rowid,) in con.execute(
+            "SELECT rowid FROM companion_node WHERE id = ?", (node_id,)
+        ).fetchall():
+            # By rowid: ``node_id`` is UNINDEXED in the FTS table, so a lookup by it scans.
+            con.execute("DELETE FROM companion_fts WHERE rowid = ?", (rowid,))
+    for table, column in _ROW_KEYS.items():
+        if table == "companion_fts" or (keep_node and table == "companion_node"):
+            continue
+        con.execute(f"DELETE FROM {table} WHERE {column} = ?", (node_id,))

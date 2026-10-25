@@ -16,6 +16,7 @@ import pytest
 
 from athena.cli import cmd_reconcile
 from athena.core.brain import Brain, index_fingerprint, reconcile_from_disk
+from athena.core.brain.reconcile import drift, missing_files, repair
 from athena.core.brain.store import (
     DEFAULT_CONFIDENCE,
     DEFAULT_IMPORTANCE,
@@ -23,7 +24,7 @@ from athena.core.brain.store import (
     PROCEDURAL_SCOPES,
     sha256,
 )
-from athena.core.recall import ALWAYS_BLOCK, recall
+from athena.core.recall import ALWAYS_BLOCK, KEYWORD_BLOCK, recall
 
 
 def _populate(brain: Brain) -> None:
@@ -528,3 +529,177 @@ def test_every_scope_a_writer_accepts_is_in_the_tree_and_survives_a_rebuild(tmp_
 
         assert stats.skipped == []
         assert [ref.id for ref in written if brain.node(ref.id) is None] == []
+
+
+# -- drift and targeted repair (both directions, by content) ------------------------------------
+
+
+def _drop_index_rows(brain: Brain, node_id: str) -> None:
+    """The crash between ``_write_file`` and ``write_txn``: the file is there, no row is."""
+    with brain.write_txn() as con:
+        ((rowid,),) = con.execute(
+            "SELECT rowid FROM companion_node WHERE id = ?", (node_id,)
+        ).fetchall()
+        con.execute("DELETE FROM companion_fts WHERE rowid = ?", (rowid,))
+        con.execute("DELETE FROM companion_node WHERE id = ?", (node_id,))
+        con.execute("DELETE FROM companion_fact WHERE id = ?", (node_id,))
+        con.execute("DELETE FROM companion_provenance WHERE node_id = ?", (node_id,))
+
+
+def _edit_by_hand(brain: Brain, rel: str, old: str, new: str) -> None:
+    path = brain.root / rel
+    file_text = path.read_text(encoding="utf-8")
+    assert old in file_text
+    path.write_text(file_text.replace(old, new), encoding="utf-8", newline="\n")
+
+
+def _keyword_ids(brain: Brain, query: str) -> set[str]:
+    return {memory.id for memory in recall(brain, query).block(KEYWORD_BLOCK).items}
+
+
+def _rowids(brain: Brain) -> dict[str, tuple[int, str]]:
+    with brain.read_connection() as con:
+        return {
+            str(node_id): (int(rowid), str(updated))
+            for rowid, node_id, updated in con.execute(
+                "SELECT rowid, id, updated_at FROM companion_node"
+            )
+        }
+
+
+def test_drift_names_a_file_on_disk_the_index_never_saw(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        _populate(brain)
+        episode = brain.append_episode("Globex asked for a discount", role="user")
+        lost = brain.write_fact(
+            "globex wants discount", "Globex asked for 5% off", sources=[episode.id]
+        )
+        _drop_index_rows(brain, lost.id)
+
+        found = drift(brain)
+
+        assert found.unindexed == [lost.path]
+        assert found.edited == [] and found.moved == [] and found.orphaned == []
+        assert found.budget_hit is False
+        assert not found.clean
+
+
+def test_drift_names_a_hand_edited_memory_and_repair_serves_the_new_words(
+    tmp_path: Path,
+) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        _populate(brain)
+        episode = brain.append_episode("Initech moved to net 60", role="user")
+        fact = brain.write_fact(
+            "initech terms", "Initech pays on net thirty terms", sources=[episode.id]
+        )
+        _edit_by_hand(brain, fact.path, "net thirty terms", "quarterly retainer billing")
+
+        found = drift(brain)
+        assert found.edited == [fact.id]
+        assert found.unindexed == [] and found.orphaned == [] and found.moved == []
+        assert fact.id not in _keyword_ids(brain, "retainer")
+
+        repair(brain, found)
+
+        assert fact.id in _keyword_ids(brain, "retainer")
+        assert fact.id not in _keyword_ids(brain, "thirty")
+        assert drift(brain).clean
+
+
+def test_drift_names_a_row_whose_file_is_gone_and_repair_drops_only_its_rows(
+    tmp_path: Path,
+) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        _populate(brain)
+        episode = brain.append_episode("Umbrella closed the account", role="user")
+        doomed = brain.write_fact("umbrella closed", "Umbrella left", sources=[episode.id])
+        (brain.root / doomed.path).unlink()
+        before = index_fingerprint(brain)
+
+        found = drift(brain)
+        assert found.orphaned == [doomed.id]
+        assert found.orphaned == missing_files(brain)
+
+        repair(brain, found)
+
+        assert _tables_holding(brain, doomed.id) == []
+        after = index_fingerprint(brain)
+        removed = [row for row in before if row not in after]
+        assert removed and all(doomed.id in row for row in removed)
+        assert all(row in before for row in after)
+
+
+def test_repair_of_every_drift_class_equals_a_full_rebuild(tmp_path: Path) -> None:
+    root = tmp_path / "brain"
+    with Brain(root) as brain:
+        _populate(brain)
+        episode = brain.append_episode("four drifts in one tree", role="user")
+        lost = brain.write_fact("lost one", "never indexed", sources=[episode.id])
+        edited = brain.write_fact("edited one", "the old wording", sources=[episode.id])
+        gone = brain.write_fact("gone one", "file deleted", sources=[episode.id])
+        moved = brain.write_fact("moved one", "file moved", scope="user", sources=[episode.id])
+        _drop_index_rows(brain, lost.id)
+        _edit_by_hand(brain, edited.path, "the old wording", "the new wording")
+        (brain.root / gone.path).unlink()
+        source = brain.root / moved.path
+        target = brain.root / "semantic" / "world" / source.name
+        target.parent.mkdir(parents=True, exist_ok=True)
+        source.rename(target)
+
+        found = drift(brain)
+        assert found.unindexed == [lost.path]
+        assert found.edited == [edited.id]
+        assert found.orphaned == [gone.id]
+        assert found.moved == [moved.id]
+
+        repair(brain, found)
+        repaired = index_fingerprint(brain)
+        assert drift(brain).clean
+
+    copied = tmp_path / "copied"
+    _copy_tree_without_the_index(root, copied)
+    with Brain(copied) as rebuilt:
+        reconcile_from_disk(rebuilt)
+        assert repaired == index_fingerprint(rebuilt)
+
+
+def test_repair_leaves_every_memory_outside_the_drift_untouched(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        _populate(brain)
+        episode = brain.append_episode("one drifted memory", role="user")
+        edited = brain.write_fact("edited one", "the old wording", sources=[episode.id])
+        _edit_by_hand(brain, edited.path, "the old wording", "the new wording")
+        before = _rowids(brain)
+
+        repair(brain, drift(brain))
+
+        after = _rowids(brain)
+        for node_id, kept in before.items():
+            if node_id != edited.id:
+                assert after[node_id] == kept, node_id
+        # The full rebuild re-inserts every row, so this is what targeted means.
+        reconcile_from_disk(brain)
+        assert _rowids(brain) != before
+
+
+def test_a_drift_walk_out_of_budget_is_not_computed_never_clean(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        _populate(brain)
+
+        found = drift(brain, max_files=2)
+
+        assert found.budget_hit is True
+        assert found.unindexed is None
+        assert found.edited is None
+        assert not found.clean
+        with pytest.raises(ValueError, match="not computed"):
+            repair(brain, found)
+
+
+def test_a_clean_brain_has_no_drift(tmp_path: Path) -> None:
+    with Brain(tmp_path / "brain") as brain:
+        _populate(brain)
+        found = drift(brain)
+        assert found.clean
+        assert found.as_dict()["unindexed"] == []
