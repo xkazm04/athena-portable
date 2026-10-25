@@ -4,6 +4,12 @@ Computed from the run directory's files alone, so it can be regenerated after an
 conventions as every Proving Ground report: an absent value is omitted, never written as 0; every
 rate carries its n; costs are per engine. The proof lines of the design brief are computed here, in
 code, and printed PASS / FAIL / n-a.
+
+A variant is compared with its base's comparable runs under the bench instrument the variants were
+benched with (ADR 0128, :func:`~athena.proving.forge.base.baseline`), never with one draw: a flip
+needs a base that held over that set, a recall drop is measured from the base's lowest comparable
+recall, and every row carries the baseline (its n) it was judged against. A variant whose base has
+no comparable run is reported but counts towards no flip, drop or proof.
 """
 
 from __future__ import annotations
@@ -11,12 +17,14 @@ from __future__ import annotations
 import json
 from collections import Counter
 from collections.abc import Mapping, Sequence
+from dataclasses import dataclass
 from pathlib import Path
 from typing import Any
 
-from athena.proving.forge.base import Base
+from athena.proving.forge.base import Base, Baseline, baseline, instrument
 from athena.proving.forge.store import ForgeDir, VariantRecord
 from athena.proving.forge.validate import code_of
+from athena.proving.playbooks.bench import BenchConfig
 from athena.proving.report import announce, write_report
 
 __all__ = ["PROOF_RATIO", "PROOF_RECALL_DROP", "build_report", "render_markdown", "write"]
@@ -87,7 +95,9 @@ def build_report(
     picks: Mapping[str, Any],
     models: Mapping[str, Any],
     bench_note: str = "",
+    config: BenchConfig | None = None,
 ) -> dict[str, Any]:
+    cfg = config or BenchConfig()
     nem = store.load_variants("nemotron")
     hai = store.load_variants("haiku")
     gen_n, gen_h = _generator(nem), _generator(hai)
@@ -97,11 +107,15 @@ def build_report(
 
     rows: list[dict[str, Any]] = []
     audited_flips = raw_flips = drops = benched = 0
+    comparable_benched = comparable_audited = 0
+    not_comparable: set[str] = set()
+    stands_on: list[int] = []
     audit_items = holds = errors = unaudited = audited_variants = 0
     forge_errors: list[dict[str, Any]] = []
     findings: list[dict[str, Any]] = []
     for pid in picks.get("ids", []):
         base = bases[pid]
+        bl: Baseline = baseline(base, cfg)
         out_variants: list[dict[str, Any]] = []
         for v in sorted((x for x in nem if x.playbook == pid), key=lambda x: x.k):
             row: dict[str, Any] = {
@@ -121,9 +135,14 @@ def build_report(
                     cost_usd=bench.get("cost_usd"),
                     n_eligible=(bench.get("score") or {}).get("eligible"),
                 )
-                flipped = base.verdict_word in ("exceeds", "meets") and word == "short"
-                row["raw_flip"] = flipped
-                raw_flips += flipped
+                row["baseline"] = bl.as_dict()
+                if bl.comparable:
+                    comparable_benched += 1
+                    flipped = bl.held and word == "short"
+                    row["raw_flip"] = flipped
+                    raw_flips += flipped
+                else:
+                    not_comparable.add(pid)
                 if store.audit_path(v).is_file():
                     audit = ForgeDir.read(store.audit_path(v))
                     audited_variants += 1
@@ -145,23 +164,29 @@ def build_report(
                             findings.append({**entry, "why": i.get("why")})
                     fixed = audit.get("corrected", {})
                     c_word, c_recall = fixed.get("word"), fixed.get("recall_value")
-                    a_flip = base.verdict_word in ("exceeds", "meets") and c_word == "short"
-                    drop = (
-                        round(base.recall_value - float(c_recall), 3)
-                        if base.recall_value is not None and isinstance(c_recall, int | float)
-                        else None
-                    )
-                    row["audited"] = {
+                    audited_row: dict[str, Any] = {
                         "items": len(items),
                         "label_holds": sum(1 for i in items if i.get("label_holds") is True),
                         "forge_errors": sum(1 for i in items if i.get("label_holds") is False),
                         "verdict": c_word,
                         "recall_value": c_recall,
-                        "flip": a_flip,
-                        "recall_drop": drop,
                     }
-                    audited_flips += a_flip
-                    drops += drop is not None and drop >= PROOF_RECALL_DROP
+                    if bl.comparable:
+                        comparable_audited += 1
+                        a_flip = bl.held and c_word == "short"
+                        # From the base's minimum: a drop must leave the base's observed range.
+                        drop = (
+                            round(bl.recall_min - float(c_recall), 3)
+                            if bl.recall_min is not None and isinstance(c_recall, int | float)
+                            else None
+                        )
+                        audited_row.update(flip=a_flip, recall_drop=drop)
+                        dropped = drop is not None and drop >= PROOF_RECALL_DROP
+                        audited_flips += a_flip
+                        drops += dropped
+                        if a_flip or dropped:
+                            stands_on.append(bl.n)
+                    row["audited"] = audited_row
             elif store.void_path(v).is_file():
                 row["bench"] = "void (the run ended on an error)"
             out_variants.append(row)
@@ -169,13 +194,31 @@ def build_report(
             {
                 "playbook": pid,
                 "category": base.category,
-                "base": {"verdict": base.verdict_word or None, "recall_value": base.recall_value},
+                "base": {
+                    "verdict": base.verdict_word or None,
+                    "recall_value": base.recall_value,
+                    "baseline": bl.as_dict(),
+                },
                 "variants": out_variants,
             }
         )
 
     planned = sum(1 for v in nem if v.valid)
-    proof = _proof(ratio, gen_n, gen_h, benched, audited_variants, audited_flips, drops)
+    proof = _proof(
+        ratio,
+        gen_n,
+        gen_h,
+        Counts(
+            benched=benched,
+            comparable=comparable_benched,
+            audited=comparable_audited,
+            flips=audited_flips,
+            drops=drops,
+            bases_not_comparable=len(not_comparable),
+            smallest_n=min(stands_on) if stands_on else None,
+            instrument=instrument(cfg),
+        ),
+    )
     report: dict[str, Any] = {
         "run_id": run_id,
         "dry": dry or None,
@@ -206,6 +249,8 @@ def build_report(
             "audited_exceeds_to_short": audited_flips,
             "recall_drops_ge_0_2": drops,
             "n_variants_benched": benched,
+            "n_variants_comparable": comparable_benched,
+            "bases_not_comparable": sorted(not_comparable) or None,
         },
         "athena_findings": findings,
         "forge_errors": forge_errors,
@@ -215,14 +260,25 @@ def build_report(
     return report
 
 
+@dataclass(frozen=True)
+class Counts:
+    """What proof-2 is computed from: only variants whose base has a comparable run count."""
+
+    benched: int
+    comparable: int
+    audited: int
+    flips: int
+    drops: int
+    bases_not_comparable: int
+    smallest_n: int | None
+    instrument: str
+
+
 def _proof(
     ratio: float | None,
     gen_n: Mapping[str, Any] | None,
     gen_h: Mapping[str, Any] | None,
-    benched: int,
-    audited: int,
-    flips: int,
-    drops: int,
+    c: Counts,
 ) -> list[dict[str, Any]]:
     if ratio is None:
         p1 = {"status": "n-a", "detail": "no Haiku control (or it produced no valid variant)"}
@@ -241,21 +297,40 @@ def _proof(
                 + ("" if status == "PASS" else "; kill: revise the prompt twice, then Haiku forges")
             ),
         }
-    if not benched:
+    aside = (
+        f"; {c.bases_not_comparable} base(s) had no comparable run under {c.instrument}, "
+        "their variants not counted"
+        if c.bases_not_comparable
+        else ""
+    )
+    if not c.benched:
         p2 = {"status": "n-a", "detail": "no variant benched"}
-    elif not audited:
-        p2 = {"status": "n-a", "detail": f"{benched} benched, none audited: no verdict flip counts"}
-    elif flips or drops:
+    elif not c.comparable:
+        p2 = {
+            "status": "n-a",
+            "detail": f"{c.benched} benched, but none of their {c.bases_not_comparable} base(s) "
+            f"has a comparable run under {c.instrument}: no flip or drop can be measured",
+        }
+    elif not c.audited:
+        p2 = {
+            "status": "n-a",
+            "detail": f"{c.comparable} benched against a comparable base, none audited: "
+            f"no verdict flip counts{aside}",
+        }
+    elif c.flips or c.drops:
         p2 = {
             "status": "PASS",
-            "detail": f"{flips} audited flip(s), {drops} recall drop(s) >= {PROOF_RECALL_DROP} "
-            f"over {benched} benched variants ({audited} audited)",
+            "detail": f"{c.flips} audited flip(s), {c.drops} recall drop(s) >= "
+            f"{PROOF_RECALL_DROP} over {c.comparable} variants benched against a comparable "
+            f"base ({c.audited} audited); the smallest baseline it stands on is "
+            f"n={c.smallest_n}{aside}",
         }
     else:
         p2 = {
             "status": "FAIL",
-            "detail": f"bench robust on {benched} variants ({audited} audited): zero audited "
-            "flips and no recall drop >= 0.2; reported as a result, not a defect",
+            "detail": f"bench robust on {c.comparable} variants ({c.audited} audited) against "
+            "their bases' comparable runs: zero audited flips and no recall drop >= 0.2 below "
+            f"a base's lowest comparable recall; reported as a result, not a defect{aside}",
         }
     return [
         {"id": "proof-1", "claim": "Nemotron valid rate >= 50% of Haiku's", **p1},
@@ -309,7 +384,7 @@ def render_markdown(report: Mapping[str, Any]) -> str:
     ]
     for pb in report["playbooks"]:
         base = pb["base"]
-        b = f"{base.get('verdict', '?')} {_pct(base.get('recall_value'))}"
+        b = _baseline_cell(base)
         for v in pb["variants"]:
             a = v.get("audited", {})
             lines.append(
@@ -339,6 +414,15 @@ def render_markdown(report: Mapping[str, Any]) -> str:
         cost = f"${c['cost_usd']:.4f}" if c.get("cost_usd") is not None else "unreported"
         lines.append(f"- {engine}: {cost} over {c['calls']} calls")
     return "\n".join(lines)
+
+
+def _baseline_cell(base: Mapping[str, Any]) -> str:
+    bl = base.get("baseline") or {}
+    if not bl.get("comparable"):
+        return f"{base.get('verdict', '?')} {_pct(base.get('recall_value'))} (no comparable run)"
+    low = bl.get("recall_min")
+    spread = f", min {_pct(low)}" if low is not None else ""
+    return f"{bl['word']} {_pct(bl.get('recall_median'))}{spread} (n={bl['n']})"
 
 
 def _pct(value: Any) -> str:

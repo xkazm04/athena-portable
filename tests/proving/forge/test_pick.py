@@ -49,3 +49,19 @@ def test_the_real_library_picks_eight(library: Path) -> None:
     picks = pick_detail(library)
     assert len(picks.ids) == 8
     assert set(picks.shorts) <= set(picks.ids)
+
+
+def test_pick_draws_by_the_pooled_word_and_leaves_out_bases_with_no_comparable_run(
+    tmp_path: Path,
+) -> None:
+    from .test_baseline import keyed_playbook
+
+    root = make_library(tmp_path, shorts=0, exceeds=10)
+    runs = [("exceeds", 0.9), ("short", 0.7), ("exceeds", 1.0), ("short", 0.7)]
+    keyed_playbook(root, "noisy", runs)
+    keyed_playbook(root, "stale", [("short", 0.1)], key="sha256:0000000000000000")
+    picks = pick_detail(root)
+    assert "noisy" in picks.shorts
+    assert "stale" not in picks.ids
+    left_out = [n for n in picks.notes if "no comparable run" in n]
+    assert left_out and "1 playbook" in left_out[0] and "claude_code/sonnet/none" in left_out[0]

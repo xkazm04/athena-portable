@@ -14,7 +14,7 @@ from __future__ import annotations
 
 import json
 from collections.abc import Callable, Mapping
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 from pathlib import Path
 from typing import Any
 
@@ -82,14 +82,19 @@ def bench_variants(
     log: RunLog,
     *,
     run: BenchRunner = default_runner,
-    engine: str = "claude_code",
-    model: str = "sonnet",
+    config: BenchConfig | None = None,
     per_run_cap: float = 5.0,
     reserve: float = 0.0,
     charge: bool = True,
     echo: Callable[[str], None] = print,
 ) -> BenchOutcome:
-    """Bench every valid Nemotron variant not yet benched; stop when the Claude purse is dry."""
+    """Bench every valid Nemotron variant not yet benched; stop when the Claude purse is dry.
+
+    ``config`` is the instrument (engine, model, approval mode): the same one the report reads the
+    bases' comparable runs under, so a variant and its baseline are measured alike (ADR 0128).
+    """
+    instrument = config or BenchConfig()
+    engine, model = instrument.engine, instrument.model
     todo = [v for v in variants if v.valid and v.generator == "nemotron"]
     out = BenchOutcome(total=len(todo))
     for v in todo:
@@ -109,7 +114,7 @@ def bench_variants(
             out.failed += 1
             out.lines.append(f"{name}: the spec refused it at bench time: {exc}")
             continue
-        config = BenchConfig(engine=engine, model=model, cap_usd=min(per_run_cap, left))
+        config = replace(instrument, cap_usd=min(per_run_cap, left))
         echo(f"bench {name} on {engine}/{model} (cap ${config.cap_usd:.2f})")
         try:
             report = run(book, config)

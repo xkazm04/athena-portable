@@ -1,10 +1,12 @@
 """Which playbooks the forge works on (README §14; spark nvidia-revisit, WP-F ``pick``).
 
 Eight by rule: four whose committed bench is ``short`` and four ``exceeds``, one per area where the
-library allows. Deterministic: candidates are sorted, then shuffled by a seeded generator, so the
-same library and seed pick the same eight. Short is scarce (3 of 100 at the time of writing); when
-fewer than four exist, all are taken and the rest of the eight is filled with ``exceeds``, and the
-result says so.
+library allows. Each word is pooled over the base's comparable runs under the forge's own bench
+instrument (ADR 0128, :func:`~athena.proving.forge.base.baseline`), not read off its latest draw;
+a base with no comparable run is left out and the result says how many. Deterministic: candidates
+are sorted, then shuffled by a seeded generator, so the same library and seed pick the same eight.
+Short is scarce (3 of 100 at the time of writing); when fewer than four exist, all are taken and
+the rest of the eight is filled with ``exceeds``, and the result says so.
 """
 
 from __future__ import annotations
@@ -13,7 +15,8 @@ import random
 from dataclasses import dataclass, field
 from pathlib import Path
 
-from athena.proving.forge.base import Base, read_json
+from athena.proving.forge.base import Base, baseline, instrument, read_bench, read_json
+from athena.proving.playbooks.bench import BenchConfig
 
 __all__ = ["Picks", "pick", "pick_detail"]
 
@@ -27,13 +30,18 @@ class Picks:
     notes: list[str] = field(default_factory=list)
 
 
-def pick_detail(library: str | Path, seed: int = 11, per_side: int = PER_SIDE) -> Picks:
+def pick_detail(
+    library: str | Path,
+    seed: int = 11,
+    per_side: int = PER_SIDE,
+    config: BenchConfig | None = None,
+) -> Picks:
+    cfg = config or BenchConfig()
     root = Path(library)
     bases: list[Base] = []
     for d in sorted(root.iterdir()):
         if (d / "playbook.json").is_file() and (d / "bench.json").is_file():
             # Only the showcase and the bench are read: the world and truth are not needed to pick.
-            bench = read_json(d / "bench.json")
             bases.append(
                 Base(
                     id=d.name,
@@ -41,15 +49,28 @@ def pick_detail(library: str | Path, seed: int = 11, per_side: int = PER_SIDE) -
                     showcase=dict(read_json(d / "playbook.json")),
                     world={},
                     truth={},
-                    bench=dict(bench) if isinstance(bench, dict) else {},
+                    bench=read_bench(d),
                 )
             )
-    shorts = [b for b in bases if b.verdict_word == "short"]
-    exceeds = [b for b in bases if b.verdict_word == "exceeds"]
+    words: dict[str, str] = {}
+    left_out = 0
+    for b in bases:
+        bl = baseline(b, cfg)
+        if bl.comparable:
+            words[b.id] = bl.word
+        else:
+            left_out += 1
+    shorts = [b for b in bases if words.get(b.id) == "short"]
+    exceeds = [b for b in bases if words.get(b.id) == "exceeds"]
     rng = random.Random(seed)
     rng.shuffle(shorts)
     rng.shuffle(exceeds)
     notes: list[str] = []
+    if left_out:
+        notes.append(
+            f"{left_out} playbook(s) left out: no comparable run under {instrument(cfg)} "
+            "(their files, scorer or instrument changed since they were benched)"
+        )
     chosen: list[Base] = []
     areas: set[str] = set()
 
@@ -87,6 +108,6 @@ def pick_detail(library: str | Path, seed: int = 11, per_side: int = PER_SIDE) -
     )
 
 
-def pick(library: str | Path, seed: int = 11) -> list[str]:
+def pick(library: str | Path, seed: int = 11, config: BenchConfig | None = None) -> list[str]:
     """The eight playbook ids, sorted."""
-    return pick_detail(library, seed).ids
+    return pick_detail(library, seed, config=config).ids

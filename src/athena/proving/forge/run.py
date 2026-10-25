@@ -15,11 +15,12 @@ from typing import Any
 from athena.proving.budget import CLAUDE, NEMOTRON, Budget
 from athena.proving.forge import report as reporting
 from athena.proving.forge.audit import audit_items, rescore_corrected, run_audit
-from athena.proving.forge.base import Base, load_base, materialize
+from athena.proving.forge.base import Base, instrument, load_base, materialize
 from athena.proving.forge.forge import forge_one
 from athena.proving.forge.pick import Picks, pick_detail
 from athena.proving.forge.runner import BenchRunner, bench_variants, default_runner
 from athena.proving.forge.store import ForgeDir
+from athena.proving.playbooks.bench import BenchConfig
 from athena.proving.playbooks.spec import PlaybookError
 from athena.proving.report import announce
 from athena.proving.roles import RoleCaller, RoleClient
@@ -45,6 +46,9 @@ class Forge:
     bench_runner: BenchRunner = default_runner
     bench_cap: float = 5.0
     audit_reserve: float = 5.0
+    #: The bench instrument (engine, model, approval mode). One config for the pick, the bench and
+    #: the report, so a variant is compared with base runs measured the same way (ADR 0128).
+    bench_config: BenchConfig = field(default_factory=BenchConfig)
     echo: Callable[[str], None] = print
     bases: dict[str, Base] = field(default_factory=dict)
     notes: list[str] = field(default_factory=list)
@@ -52,7 +56,7 @@ class Forge:
     # --- pick -------------------------------------------------------------------------------
 
     def stage_pick(self) -> Picks:
-        picks = pick_detail(self.library, self.seed)
+        picks = pick_detail(self.library, self.seed, config=self.bench_config)
         ForgeDir.write(
             self.store.picks, {"ids": picks.ids, "shorts": picks.shorts, "notes": picks.notes}
         )
@@ -118,6 +122,7 @@ class Forge:
             self.budget,
             self.caller.log,
             run=self.bench_runner,
+            config=self.bench_config,
             per_run_cap=self.bench_cap,
             reserve=self.audit_reserve,
             charge=not self.dry,
@@ -197,7 +202,7 @@ class Forge:
         models: dict[str, Any] = {
             "nemotron_generator": self.nemotron.model,
             "claude_control": self.control.model if self.control else None,
-            "bench": "claude_code/sonnet",
+            "bench": instrument(self.bench_config),
             "audit": self.control.model if self.control else None,
         }
         report = reporting.build_report(
@@ -211,6 +216,7 @@ class Forge:
             picks=picks,
             models=models,
             bench_note="; ".join(self.notes),
+            config=self.bench_config,
         )
         json_path, md_path = reporting.write(self.store, report)
         self.echo(f"report: {json_path.as_posix()} and {md_path.as_posix()}")
