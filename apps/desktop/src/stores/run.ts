@@ -25,7 +25,7 @@ import { create } from "zustand";
 
 import { ApiError, DaemonApi, type ExecuteRow, type ToolRow, type TurnBody } from "@/lib/api";
 import { onLate, type BridgeTool, type LateAnswer } from "@/lib/bridge";
-import { driftOf, type ContractDrift, type ContractTable } from "@/lib/contract";
+import { driftOf, type ContractDrift } from "@/lib/contract";
 import {
   clearUnsureForTests,
   forgetUnsure,
@@ -56,12 +56,14 @@ import { SETUP_ORIGIN, SETUP_TOOLS_ORIGIN, type SetupSession } from "@/lib/setup
 import { hasShell, type StorePage, type Tab } from "@/lib/ipc";
 import { storeList, storeSet, type ActivityRow, type OriginRow } from "@/lib/store";
 import { endpoint, useDaemon } from "@/stores/daemon";
-import { useOrigins, type OriginsState } from "@/stores/origins";
+import { useOrigins } from "@/stores/origins";
 import { originOf } from "@/modules/browser/model";
 import { useTabs } from "@/stores/tabs";
 import { useTools, type TabTools } from "@/stores/tools";
 import { sheetOf, slotFor, type SheetSlot } from "@/lib/sheet";
+import { firstSightFold, offRowsOf, readFold, rowOf, trustFold, trustOf, type TrustTable } from "@/stores/trust";
 
+export type { TrustTable } from "@/stores/trust";
 export { SHEET_CAP, sheetKeyOf, sheetOf, slotFor, type SheetOf, type SheetSlot } from "@/lib/sheet";
 // The host-call rules of ADR 0101 are the window's and live in `lib/execute.ts`, which the voice
 // store drives too. Their old names stay importable from here.
@@ -291,14 +293,15 @@ export interface OpenTab {
   origin: string;
   /** The catalog id its page claimed or derives, so the record can group the text under it. */
   appId: string | null;
-  /** An enabled row of the origins table. First sight and switched off are both `false`. */
+  /** An enabled web-origin row, no row of the app switched off. First sight and off are both `false`. */
   trusted: boolean;
 }
 
 /**
  * The open tab at `url`, or `null` (ADR 0105). Matched as the shell matches it: the url as
  * `tabs_list` reports it, a trailing slash ignored. Trusted only when the web origin has an
- * enabled row in a table that loaded: an unread table trusts nothing, which fails closed.
+ * enabled row in a table that loaded and no row of the app is switched off ({@link readFold}): an
+ * unread table trusts nothing, which fails closed.
  */
 export function openTabOf(
   url: string,
@@ -310,21 +313,8 @@ export function openTabOf(
   const wanted = bare(url);
   const tab = tabs.find((t) => bare(t.url) === wanted);
   if (!tab) return null;
-  const origin = originOf(tab.url);
-  const trusted =
-    origin !== "" &&
-    origins.loaded &&
-    origins.problem === null &&
-    origins.known.includes(origin) &&
-    origins.records[origin]?.enabled === true;
-  return {
-    tabId: tab.id,
-    url: tab.url,
-    title: tab.title,
-    origin,
-    appId: catalogIdOf(origin, byTab[tab.id]?.appId ?? null),
-    trusted,
-  };
+  const trust = trustOf(origins, tab, byTab);
+  return { tabId: tab.id, url: tab.url, title: tab.title, origin: trust.origin, appId: trust.app, trusted: readFold(trust) };
 }
 
 /**
@@ -614,8 +604,7 @@ export function disabledOriginsOf(
   byTab: Readonly<Record<number, TabTools>>,
 ): string[] {
   const out = new Set<string>();
-  for (const [key, record] of Object.entries(records)) {
-    if (record.enabled) continue;
+  for (const key of offRowsOf(records)) {
     if (key.startsWith("host:")) {
       out.add(key);
       continue;
@@ -744,14 +733,8 @@ export function trustedAppOf(
   tab: Tab,
   byTab: Readonly<Record<number, TabTools>>,
 ): string | null {
-  if (!origins.loaded || origins.problem !== null) return null;
-  const origin = originOf(tab.url);
-  const app = catalogIdOf(origin, byTab[tab.id]?.appId ?? null);
-  if (!app) return null;
-  const row = (key: string) => (origins.known.includes(key) ? origins.records[key] : undefined);
-  const keys = [origin, ...(app === derivedIdOf(origin) ? [`host:${app}`] : [])];
-  if ([origin, `host:${app}`].some((k) => row(k)?.enabled === false)) return null;
-  return keys.some((k) => row(k)?.enabled === true) ? app : null;
+  const trust = trustOf(origins, tab, byTab);
+  return trustFold(trust) ? trust.app : null;
 }
 
 /**
@@ -862,17 +845,11 @@ export function contractDriftsOf(
   byTab: Readonly<Record<number, TabTools>>,
 ): Record<string, ContractDrift> {
   const out: Record<string, ContractDrift> = {};
-  if (!origins.loaded || origins.problem !== null) return out;
-  const enabled = (key: string) => origins.known.includes(key) && origins.records[key]?.enabled === true;
   for (const tab of tabs) {
-    const origin = originOf(tab.url);
     const found = byTab[tab.id];
-    const app = catalogIdOf(origin, found?.appId ?? null);
-    if (!app || !found) continue;
-    const trusted = enabled(origin) || (app === derivedIdOf(origin) && enabled(`host:${app}`));
+    const { app, origin, state } = trustOf(origins, tab, byTab);
     // A row present and switched off refuses the app; no row is first sight. Either way, not here.
-    const off = [origin, `host:${app}`].some((k) => origins.known.includes(k) && origins.records[k]?.enabled === false);
-    if (!trusted || off) continue;
+    if (!app || !found || state !== "trusted") continue;
     const accepted = origins.contracts?.[origin] ?? {};
     for (const tool of found.tools) {
       const drift = driftOf(accepted[tool.name], tool);
@@ -983,11 +960,6 @@ export function isOtherTab(origin: string, focused: TabRef | null): boolean {
   return origin.startsWith("host:") && !!focused?.appId && origin !== `host:${focused.appId}`;
 }
 
-/** What the gate's lists are read from: the origins table and, beside it, the accepted contracts. */
-export type TrustTable = Pick<OriginsState, "records" | "known" | "loaded" | "problem"> & {
-  /** Absent reads as nothing accepted: every tool of an enabled origin is a changed contract. */
-  contracts?: ContractTable;
-};
 
 /**
  * The first-sight apps and the user's `GATED` pins, for the daemon's gate (README section 3.3,
@@ -1010,9 +982,6 @@ export function gatedListsOf(
 ): GatedLists {
   const firstSight = new Set<string>();
   const pinned = new Set<string>(Object.keys(contractDriftsOf(origins, tabs, byTab)));
-  const trusted = !origins.loaded || origins.problem !== null ? null : origins;
-  const rowOf = (key: string): OriginRow | undefined =>
-    trusted !== null && trusted.known.includes(key) ? trusted.records[key] : undefined;
   const pin = (app: string, row: OriginRow) => {
     if (!row.enabled) return;
     for (const [tool, cls] of Object.entries(row.overrides ?? {})) {
@@ -1021,21 +990,16 @@ export function gatedListsOf(
   };
 
   for (const tab of tabs) {
-    const origin = originOf(tab.url);
-    const app = catalogIdOf(origin, byTab[tab.id]?.appId ?? null);
-    if (!app) continue;
-    // A catalog-form row applies to a tab only when the app is the tab's own derived id: a page
-    // that claims a slug inherits nothing from that slug's row (ADR 0065, robustness-3). The web
-    // origin's own row always applies.
-    const rows = [rowOf(origin), app === derivedIdOf(origin) ? rowOf(`host:${app}`) : undefined].filter(
-      (row): row is OriginRow => row !== undefined,
-    );
-    if (rows.length === 0) firstSight.add(`host:${app}`);
-    for (const row of rows) pin(app, row);
+    // Only the rows that apply to the tab (`rowKeysOf`): a page that claims a slug inherits nothing
+    // from that slug's row (ADR 0065, robustness-3).
+    const trust = trustOf(origins, tab, byTab);
+    if (!trust.app) continue;
+    if (firstSightFold(trust)) firstSight.add(`host:${trust.app}`);
+    for (const row of trust.rows) pin(trust.app, row);
   }
   // A row kept in catalog form names its app without a tab, so its pins can be sent as they are.
-  for (const key of trusted?.known ?? []) {
-    const row = rowOf(key);
+  for (const key of origins.known) {
+    const row = rowOf(origins, key);
     if (key.startsWith("host:") && row) pin(key.slice("host:".length), row);
   }
   return { gated_origins: [...firstSight].sort(), gated_tools: [...pinned].sort() };

@@ -409,6 +409,19 @@ describe("tabs_read refused", () => {
     expect(handsLog[2]).toBeUndefined();
   });
 
+  it("a bank tab whose catalog-form row is switched off is refused, though its web row is enabled", async () => {
+    const host = `host:${openTabOf(BANK_URL, TABS, {}, { records, known: [BANK], loaded: true, problem: null })!.appId}`;
+    records[host] = trust(false);
+    expect(openTabOf(BANK_URL, TABS, {}, { records, known: [BANK, host], loaded: true, problem: null })?.trusted).toBe(false);
+    const { daemon, result } = await refusedRead({ url: BANK_URL, query: "Closing balance" });
+    expect(result.ok).toBe(false);
+    expect(result.output).toBe("");
+    expect(String(result.error)).toMatch(/^foreign_origin: /);
+    expect(handsLog[2]).toBeUndefined();
+    expect(commands.some((c) => c.command === "hands_call")).toBe(false);
+    expect(daemon.runs()[1].tainted_by).toBeUndefined();
+  });
+
   it("a url no tab is at is unknown_ref, and the focused tab is validator_failed", async () => {
     const gone = await refusedRead({ url: `${BANK}/statements/2026-08` });
     expect(String(gone.result.error)).toMatch(/^unknown_ref: /);

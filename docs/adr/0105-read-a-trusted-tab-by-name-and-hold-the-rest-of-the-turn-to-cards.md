@@ -71,3 +71,16 @@ tab B would ride into an action on tab A with no card in front of anyone.
 - The policy's refusal for another tab's tools now names `tabs_read` beside `core.recall`.
 - Unmeasured: whether the scoped read plus the taint removes the bench's "not on any page I read"
   misses. The benches are the measure.
+
+## Amendment, 2026-10-25: a switched-off catalog-form row also refuses a `tabs_read`
+
+Section 3 said only the web-origin row counts. That stays true for trust - a catalog-form row
+still does not trust a tab to be read - but it was also read as the only row that could refuse,
+so a tab whose web row was enabled and whose `host:<app>` row was switched off had its text read,
+while `open_apps` (ADR 0106), the contract check (ADR 0100) and the gate's `disabled_origins` all
+refused that app. Now any row of the app held and switched off - the web origin's, or the
+catalog-form row of the app the tab claims or derives - is `foreign_origin` for `tabs_read` too,
+exactly as ADR 0106 refuses it for `open_apps`. The rule is written once (`stores/trust.ts`
+`trustOf`), and each reader folds that one verdict in its own direction: `tabs_read` refuses
+everything `open_apps` refuses, and never trusts what `open_apps` does not. Only the panel's check
+moved; the shell's own check (`hands.rs`) still reads the web row alone, and the panel asks first.

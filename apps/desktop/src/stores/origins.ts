@@ -34,7 +34,7 @@ import { create } from "zustand";
 import type { BridgeTool } from "@/lib/bridge";
 import { contractOf, type ContractTable, type ToolContract } from "@/lib/contract";
 import { hasShell, onStoreChanged, type Wire } from "@/lib/ipc";
-import { catalogIdOf, derivedIdOf } from "@/lib/manifest";
+import { catalogIdOf } from "@/lib/manifest";
 import {
   blankOrigin,
   originForget,
@@ -49,6 +49,7 @@ import {
 } from "@/lib/store";
 import { useTabs } from "@/stores/tabs";
 import { useTools } from "@/stores/tools";
+import { rowKeysOf } from "@/stores/trust";
 
 /** The fields one save owns, or a function that derives them from the freshest record. */
 export type OriginPatch =
@@ -233,8 +234,8 @@ async function writeContracts(change: (table: ContractTable) => ContractTable): 
 
 /**
  * The open tabs an origin key names, as web origin to the tools each listed. A web origin names
- * its own tabs; a catalog-form key (`host:<app>`) names the tabs whose derived id it is, the same
- * rule `gatedListsOf` applies a catalog-form row by.
+ * its own tabs; a catalog-form key (`host:<app>`) names the tabs whose derived id it is: the keys
+ * `rowKeysOf` says apply to a tab, the one rule every trust reader uses (`stores/trust.ts`).
  */
 function listedAt(key: string): Map<string, BridgeTool[]> {
   const out = new Map<string, BridgeTool[]>();
@@ -243,9 +244,7 @@ function listedAt(key: string): Map<string, BridgeTool[]> {
     const origin = webOriginOf(tab.url);
     const found = byTab[tab.id];
     if (!origin || !found || found.tools.length === 0) continue;
-    const app = catalogIdOf(origin, found.appId);
-    const named = key === origin || (key.startsWith("host:") && app !== null && key === `host:${app}` && app === derivedIdOf(origin));
-    if (named) out.set(origin, [...(out.get(origin) ?? []), ...found.tools]);
+    if (rowKeysOf(origin, catalogIdOf(origin, found.appId)).includes(key)) out.set(origin, [...(out.get(origin) ?? []), ...found.tools]);
   }
   return out;
 }
