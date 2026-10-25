@@ -5132,72 +5132,72 @@
       "context": "atlas-data-and-app",
       "subject": "client-fetch-cache",
       "bundle": "software-engineering",
-      "state": "unknown",
-      "evaluatedAt": "2026-10-19",
-      "evaluatedTs": "2026-10-19T10:53:50.400Z",
+      "state": "conformant",
+      "evaluatedAt": "2026-10-25",
+      "evaluatedTs": "2026-10-25T00:02:35.443Z",
+      "worker": "2ee2c3e3-4296-47fb-91b0-f831ac2ed8c2",
       "techniques": [
         {
-          "technique": "admission-hypothesis",
+          "technique": "parse-and-derive-caches",
           "verdict": "conformant",
-          "evidence": "examples/atlas/data/index.ts:94 The memoization site explicitly identifies repeated rendering as its reuse hypothesis."
+          "evidence": "examples/atlas/data/index.ts:97 lensFor is the only way in, and LENS_CACHE (line 89) is not exported. The derivation is pure over immutable bundle data. It caches no failures: unknown ids return NO_LENS without being stored. The mutation assumption is stated at the module head (line 4, 'PURE'), not at the cache line."
         },
         {
           "technique": "cache-key-discipline",
-          "verdict": "deviation",
-          "evidence": "examples/atlas/data/index.ts:115 The cache key is the bare concept identifier, with no key-namespace version for changes to the derived value."
+          "verdict": "conformant",
+          "evidence": "examples/atlas/data/index.ts:99 The key is conceptId, the only thing that changes the answer. The model is compiled into the bundle and never changes at runtime, so there is no hidden input. Every bundle starts with an empty module cache, so changing the logic leaves no old entries to serve."
         },
         {
-          "technique": "in-flight-dedup",
-          "verdict": "not-applicable",
-          "evidence": "examples/atlas/data/types.ts:4 These modules use bundled data and synchronous derivations, without concurrent requests to join."
-        },
-        {
-          "technique": "parse-and-derive-caches",
-          "verdict": "deviation",
-          "evidence": "examples/atlas/data/index.ts:99 Lookup uses entity identity rather than the content identity of the model inputs, and includes no derivation version."
-        },
-        {
-          "technique": "plural-policy-claims",
-          "verdict": "not-applicable",
-          "evidence": "examples/atlas/data/index.ts:97 The synchronous memoized function accepts no consumer cache policies, so competing lifetime claims do not arise."
-        },
-        {
-          "technique": "portable-read-definitions",
-          "verdict": "not-applicable",
-          "evidence": "examples/atlas/app/page.tsx:5 The model is bundled directly; there is no shared fetched read whose key, fetcher and policies need a portable definition."
-        },
-        {
-          "technique": "prefetch-and-defer",
-          "verdict": "not-applicable",
-          "evidence": "examples/atlas/README.md:99 The context has no data-fetch launches to prioritize through intent prefetch or idle deferral."
-        },
-        {
-          "technique": "sibling-entry-warmth",
-          "verdict": "not-applicable",
-          "evidence": "examples/atlas/data/index.ts:44 Component details come directly from the complete bundled model, without a summary cache and subsequent detail request."
-        },
-        {
-          "technique": "similarity-keyed-admission",
-          "verdict": "not-applicable",
-          "evidence": "examples/atlas/data/index.ts:101 Admission resolves an exact concept identifier; no resemblance metric or similarity threshold is involved."
+          "technique": "admission-hypothesis",
+          "verdict": "conformant",
+          "evidence": "examples/atlas/data/index.ts:94 The reason for reuse is written at the construction site: it is read on every render and needs stable set identity. Line 102 refuses to admit unknown ids, so the number of entries is capped by the static concept list."
         },
         {
           "technique": "swr-design",
           "verdict": "not-applicable",
-          "evidence": "examples/atlas/data/index.ts:16 The cached derivation reads bundled module data rather than server-owned responses requiring freshness and background revalidation."
+          "evidence": "examples/atlas/app/page.tsx:4 There is no server-owned data, so nothing can go stale and there is no freshness window to design."
+        },
+        {
+          "technique": "in-flight-dedup",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/lib/constants.ts:4 No request is ever in flight, so there is nothing to deduplicate."
         },
         {
           "technique": "warm-remount-caches",
           "verdict": "not-applicable",
-          "evidence": "examples/atlas/lib/constants.ts:5 The model already lives in the bundle; there are no fetched view results to preserve and revalidate across remounts."
+          "evidence": "examples/atlas/lib/constants.ts:5 The data lives at module scope by construction, so a remount is always warm without any fetched-result cache."
+        },
+        {
+          "technique": "prefetch-and-defer",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/app/page.tsx:5 The page is static and has no loads to prefetch or defer."
+        },
+        {
+          "technique": "plural-policy-claims",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/data/index.ts:97 The synchronous memoized function accepts no consumer cache policies, so competing lifetime claims do not arise.",
+          "carriedFrom": "2026-10-19"
+        },
+        {
+          "technique": "portable-read-definitions",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/app/page.tsx:5 The model is bundled directly; there is no shared fetched read whose key, fetcher and policies need a portable definition.",
+          "carriedFrom": "2026-10-19"
+        },
+        {
+          "technique": "sibling-entry-warmth",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/data/index.ts:44 Component details come directly from the complete bundled model, without a summary cache and subsequent detail request.",
+          "carriedFrom": "2026-10-19"
+        },
+        {
+          "technique": "similarity-keyed-admission",
+          "verdict": "not-applicable",
+          "evidence": "examples/atlas/data/index.ts:101 Admission resolves an exact concept identifier; no resemblance metric or similarity threshold is involved.",
+          "carriedFrom": "2026-10-19"
         }
       ],
-      "withdrawn": {
-        "worker": "15f48f22-8bc9-46de-bbd3-917b2c5557de",
-        "state": "deviation",
-        "at": "2026-10-19T10:54:08.718006+00:00",
-        "reason": "reviewer (sonnet): The code supports the cache-key facts, but not the deviation. `LENS_CACHE` at index.ts:89-115 is an in-process memo of a pure derivation over immutable bundled constants, and types.ts:4 says nothing is fetched. The inputs cannot change within a process, so a bare concept id cannot go stale. I did no"
-      }
+      "registryProposal": "The golden path's precondition ('a client that talks to an authority') does not cover a client whose only cache is a pure derive cache over data compiled into the bundle. A context-level not-applicable is impossible here because the word 'cache' appears, yet 8 of the 11 techniques cannot apply. The standard could state that a bundle-static client is judged on parse-and-derive-caches, cache-key-discipline and admission-hypothesis only."
     },
     "1aff3b77-8fa5-45ac-93ae-941206f3ed16/connector-catalog": {
       "context": "connector-service",

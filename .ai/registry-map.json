@@ -823,7 +823,11 @@
           "revision": 15,
           "changedAt": "2026-09-25",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "conformant",
+          "evidence": "examples/atlas/data/index.ts:97 The only cache in this context is LENS_CACHE, a module-private derive cache behind the single public door lensFor, keyed by concept id over static compiled data. It admits only known concepts and holds at most one entry per concept, so the parse-and-derive obligations hold. The network techniques have no fetch layer to apply to: a search of all of examples/atlas for fetch(, useSWR, useQuery and staleTime found nothing.",
+          "evaluatedAt": "2026-10-25",
+          "evaluatedAgainst": "sha256-b2:20824426732ffb6a",
+          "evaluatedRevision": 15
         }
       ],
       "governance": "governed"
