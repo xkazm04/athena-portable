@@ -36,6 +36,8 @@ export const ADRS: Adr[] = [
   { n: 24, title: "The shell's second pass: apps as a ledger, the panel as a conversation, setup as one module", file: "docs/adr/0024-the-shells-second-pass-apps-as-a-ledger-the-panel-as-a-conversation-setup-as-one-module.md" },
   { n: 25, title: "The screenshot is a hand the shell answers, and it is of the window cropped to the page", file: "docs/adr/0025-the-screenshot-is-a-hand-the-shell-answers-and-it-is-of-the-window-cropped-to-the-page.md" },
   { n: 26, title: "Athena is her own window, and Main is the workhorse beside her", file: "docs/adr/0026-athena-is-her-own-window-and-main-is-the-workhorse.md" },
+  { n: 27, title: "Athena is ambient: a halo on every screen, and the summon chord held is push-to-talk", file: "docs/adr/0027-athena-is-ambient-a-halo-on-every-screen-and-the-summon-chord-held-is-push-to-talk.md" },
+  { n: 31, title: "A Token Factory ModelFn is a third engine behind the same gate", file: "docs/adr/0031-a-token-factory-modelfn-is-a-third-engine-behind-the-same-gate.md" },
   { n: 87, title: "Main is one scene with depths, and Fathom is the chosen design", file: "docs/adr/0087-the-main-window-is-one-scene-with-depths-and-fathom-is-the-chosen-design.md" },
   { n: 88, title: "Depth has two shapes, because the page webview is native", file: "docs/adr/0088-depth-has-two-shapes-because-the-page-webview-is-native.md" },
   { n: 90, title: "Depths are ported one at a time behind a bridge, and the console is opt-in", file: "docs/adr/0090-depths-are-ported-one-at-a-time-behind-a-bridge-and-the-console-is-opt-in.md" },

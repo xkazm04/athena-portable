@@ -57,7 +57,7 @@ click empty paper) and `←↑→↓` pan; with a node focused they step to the 
 ## The abstraction, and where it came from
 
 Nineteen systems become **twelve nodes** by four authored merges, each with its reason in
-`variants/archify-lanes/workflow.ts`; the sixty-eight components become the nodes' sublabels.
+`variants/archify-lanes/workflow.ts`; the seventy components become the nodes' sublabels.
 `test/lanes.model.test.ts` asserts that every system of the model lives in exactly one node — a
 system added to `data/systems.ts` with no home here fails the build rather than silently vanishing
 from the drawing.
@@ -84,17 +84,19 @@ work.
 ## The model
 
 Hand-extracted into `data/`, by reading `README.md`, `docs/adr/*`, `AGENTS.md`, the package READMEs
-and the first docstring line of each module (README §7 guarantees every module has one). **`data/`
-is unchanged since round 3** — the drawing has changed four times, the argument has not.
+and the first docstring line of each module (README §7 guarantees every module has one). The
+drawing has changed four times since round 3; the argument changed once, when the coverage ledger
+(below) added the two parts README §3.1 had come to name — the halo and the API engine.
 
 | | |
 |---|---|
 | concepts | 17 — six invariants (README §2), four ladder tiers and four demo acts (README §1), three standing decisions |
 | layers | 6 — README §3.1, surfaces at the top and contracts at the bottom |
 | systems | 19, drawn as 12 nodes |
-| components | 68, of which 1 is `planned` |
-| edges | 120, component to component |
-| ADRs cited | 25 |
+| components | 70, of which 1 is `planned` |
+| edges | 123, component to component |
+| ADRs listed | 33 |
+| `src/athena` modules | 182: 43 drawn, 139 declared out of scope in `data/omissions.ts`, 0 unaccounted |
 
 **Nothing is fetched.** No database, no network, no server action, no runtime font request. The
 model is a TypeScript module compiled into the bundle, and `test/model.test.ts` pins its integrity:
@@ -106,6 +108,14 @@ does not show its source is decoration.
 
 `planned` is not a hedge. README §3.1 and §6 both list an `mcp` channel and there is no
 `src/athena/channels/mcp.py`; Atlas draws it dashed and says so.
+
+**Sparse, not silent.** The model draws a third of `src/athena` on purpose — a drawing of every
+module buries the argument — and `data/omissions.ts` says why each of the rest is out: four whole
+packages README §3.1 does not name (adopt, peer, proving, vitals), the sleep cycle, and modules
+that serve a drawn component. `test/coverage.test.ts` walks the tree: a module that is neither
+drawn nor omitted, an omission whose path is gone or that names a drawn module, and a layer blurb
+that is no longer README §3.1's row each fail the build. `COVERAGE` in `data/index.ts` states the
+split for a reader or a tool.
 
 ## What an agent gets
 

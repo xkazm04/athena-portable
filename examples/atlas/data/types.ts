@@ -121,3 +121,32 @@ export interface Adr {
   title: string;
   file: string;
 }
+
+/**
+ * A module of `src/athena` that the model deliberately does not draw, and why.
+ *
+ * `Status` keeps the model honest about parts designed and not built; this keeps it honest about
+ * the other gap — parts BUILT and not drawn. An atlas that maps a third of a tree and says nothing
+ * about the rest reports its membership as if it were its coverage. `path` is a file, or a
+ * directory ending in `/` that covers every module under it; `test/coverage.test.ts` walks the
+ * tree and fails on a module that is neither drawn nor omitted, on an omission whose path is gone,
+ * and on one that names a module a component draws.
+ */
+export interface Omission {
+  /** A repository path: a `.py` file, or a directory ending in `/`. */
+  path: string;
+  /** Why it is out of the drawing, in a clause — a scope decision, not an apology. */
+  reason: string;
+  /** The document section (or the module's own first docstring line) the reason was read from. */
+  source: string;
+  /** How many modules (`.py`, `__init__`/`__main__` excepted) the path covers, held to the tree. */
+  modules: number;
+}
+
+/** The three-way split of `src/athena`'s modules: drawn, declared out of scope, unaccounted. */
+export interface Coverage {
+  drawn: number;
+  omitted: number;
+  uncovered: number;
+  total: number;
+}

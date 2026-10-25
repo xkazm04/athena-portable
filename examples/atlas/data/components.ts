@@ -125,6 +125,18 @@ export const COMPONENTS: Component[] = [
     adrs: [16],
     status: "built",
   },
+  {
+    id: "cmp-halo",
+    part: "C-069",
+    system: "sys-shell",
+    name: "halo.rs",
+    enforces:
+      "One click-through overlay per monitor whose edges show what she is doing, fed by one producer and holding no store, so being ambient never puts a window in the way.",
+    file: "apps/desktop/src-tauri/src/halo.rs",
+    concepts: [],
+    adrs: [27],
+    status: "built",
+  },
 
   /* ============================ surfaces / the console ========================== */
   {
@@ -561,6 +573,18 @@ export const COMPONENTS: Component[] = [
     file: "src/athena/harness/transports.py",
     concepts: ["inv-noprovider"],
     adrs: [7],
+    status: "built",
+  },
+  {
+    id: "cmp-api-harness",
+    part: "C-070",
+    system: "sys-runner",
+    name: "api_harness.py",
+    enforces:
+      "An engine that is a function, behind the same round loop: an HTTP model such as nebius runs the same gate, grammar, fence and ledger row as a CLI, not a second copy of them.",
+    file: "src/athena/harness/api_harness.py",
+    concepts: ["inv-noprovider", "dec-onegate"],
+    adrs: [7, 31],
     status: "built",
   },
 

@@ -16,11 +16,22 @@ import { ADRS } from "./adrs";
 import { COMPONENTS } from "./components";
 import { CONCEPTS } from "./concepts";
 import { EDGES } from "./edges";
+import { OMISSIONS } from "./omissions";
 import { LAYERS, SYSTEMS } from "./systems";
-import type { Adr, Component, Concept, Edge, Layer, LayerId, System } from "./types";
+import type {
+  Adr,
+  Component,
+  Concept,
+  Coverage,
+  Edge,
+  Layer,
+  LayerId,
+  Omission,
+  System,
+} from "./types";
 
 export * from "./types";
-export { ADRS, COMPONENTS, CONCEPTS, EDGES, LAYERS, SYSTEMS };
+export { ADRS, COMPONENTS, CONCEPTS, EDGES, LAYERS, OMISSIONS, SYSTEMS };
 
 const index = <T extends { id: string }>(rows: readonly T[]): ReadonlyMap<string, T> =>
   new Map(rows.map((r) => [r.id, r]));
@@ -222,3 +233,87 @@ export const COUNTS: ModelCounts = {
   adrs: ADRS.length,
   planned: COMPONENTS.filter((c) => c.status !== "built").length,
 };
+
+/* ------------------------------------- coverage -------------------------------------- */
+
+/** The tree the coverage ledger accounts for. */
+export const COVERED_ROOT = "src/athena/";
+
+/**
+ * Whether a citation covers a module: the same path, or a directory the module sits under. A
+ * component's `file` may be a directory without a trailing slash; an omission's directory ends in
+ * one. Both read the same way here.
+ */
+export const covers = (cite: string, module: string): boolean => {
+  if (module === cite) return true;
+  const dir = cite.endsWith("/") ? cite : `${cite}/`;
+  return module.startsWith(dir);
+};
+
+export type ModuleState = "drawn" | "omitted" | "uncovered";
+
+/** Drawn if a component that is in the tree cites it, omitted if the ledger does, else neither. */
+export function classifyModule(
+  module: string,
+  components: readonly Component[] = COMPONENTS,
+  omissions: readonly Omission[] = OMISSIONS,
+): ModuleState {
+  if (components.some((c) => c.status !== "planned" && covers(c.file, module))) return "drawn";
+  if (omissions.some((o) => covers(o.path, module))) return "omitted";
+  return "uncovered";
+}
+
+/** The three-way split of a module list. The bundle never reads the tree; a test hands it one. */
+export function coverageOf(modules: readonly string[]): Coverage {
+  const out: Coverage = { drawn: 0, omitted: 0, uncovered: 0, total: modules.length };
+  for (const m of modules) out[classifyModule(m)] += 1;
+  return out;
+}
+
+/**
+ * What is wrong with an omission ledger, one line per fault: an empty reason or source, a path
+ * that is gone, a path that covers (or sits under) a drawn component's file, two entries that
+ * overlap, or a stated module count below one. `inTree` is injected so the check stays pure.
+ */
+export function omissionFaults(
+  omissions: readonly Omission[],
+  components: readonly Component[],
+  inTree: (path: string) => boolean,
+): string[] {
+  const faults: string[] = [];
+  for (const o of omissions) {
+    if (!o.path.startsWith(COVERED_ROOT)) faults.push(`${o.path}: is outside ${COVERED_ROOT}`);
+    if (o.reason.trim() === "") faults.push(`${o.path}: has no reason`);
+    if (o.source.trim() === "") faults.push(`${o.path}: cites no source`);
+    if (!(o.modules >= 1)) faults.push(`${o.path}: covers no module`);
+    if (!inTree(o.path)) faults.push(`${o.path}: is not in the tree`);
+    for (const c of components) {
+      if (c.status === "planned") continue;
+      if (covers(o.path, c.file) || covers(c.file, o.path)) {
+        faults.push(`${o.path}: omits a drawn component (${c.part} ${c.id} -> ${c.file})`);
+      }
+    }
+  }
+  for (const [i, a] of omissions.entries()) {
+    for (const b of omissions.slice(i + 1)) {
+      if (covers(a.path, b.path) || covers(b.path, a.path)) {
+        faults.push(`${b.path}: overlaps ${a.path}`);
+      }
+    }
+  }
+  return faults;
+}
+
+/**
+ * The split as the model states it, so a reader or a tool can say "N modules drawn, M declared
+ * out of scope" without the tree. Drawn is every built component that cites a `src/athena` module;
+ * omitted is the ledger's own counts; uncovered is zero because the model claims it is, and
+ * `test/coverage.test.ts` holds all three figures to the tree.
+ */
+export const COVERAGE: Coverage = (() => {
+  const drawn = COMPONENTS.filter(
+    (c) => c.status !== "planned" && c.file.startsWith(COVERED_ROOT) && c.file.endsWith(".py"),
+  ).length;
+  const omitted = OMISSIONS.reduce((n, o) => n + o.modules, 0);
+  return { drawn, omitted, uncovered: 0, total: drawn + omitted };
+})();

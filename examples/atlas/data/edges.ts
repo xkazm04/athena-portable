@@ -26,6 +26,8 @@ export const EDGES: Edge[] = [
   { from: "cmp-shell-capture", to: "cmp-shell-store", kind: "calls", note: "captures in a table with a size cap and an LRU sweep" },
   { from: "cmp-shell-daemon", to: "cmp-daemon-server", kind: "calls", note: "the sidecar is the daemon, in a job object" },
   { from: "cmp-shell-daemon", to: "cmp-daemon-ready", kind: "reads", note: "the ready line is how the shell learns the port" },
+  { from: "cmp-shell-lib", to: "cmp-halo", kind: "calls", note: "one overlay per monitor, created with the windows" },
+  { from: "cmp-mod-panel", to: "cmp-halo", kind: "streams", note: "her window reduces the voice and the run to one signal; the overlays only listen" },
   { from: "cmp-inject", to: "cmp-kit-webmcp", kind: "reads", note: "a page's own registrations are what tier 1 reads" },
 
   /* --- the depths are the front of the window, each over a module's model --- */
@@ -108,6 +110,8 @@ export const EDGES: Edge[] = [
   { from: "cmp-cli-harness", to: "cmp-engines", kind: "reads", note: "an engine is configuration: a dialect, not a class" },
   { from: "cmp-cli-harness", to: "cmp-transports", kind: "calls", note: "how a CLI is actually run, behind one port" },
   { from: "cmp-cli-harness", to: "cmp-op-grammar", kind: "calls", note: "the OP: line a CLI engine calls tools through" },
+  { from: "cmp-engines", to: "cmp-api-harness", kind: "calls", note: "an API engine is one more row of the engine table" },
+  { from: "cmp-api-harness", to: "cmp-c-harness", kind: "implements", note: "the same TurnResult a CLI turn returns" },
   { from: "cmp-op-grammar", to: "cmp-c-registry", kind: "reads", note: "a call arrives only in a shape the registry declares" },
   { from: "cmp-hooks", to: "cmp-catalog", kind: "gates", note: "the class, derived in one module and nowhere else" },
   { from: "cmp-hooks", to: "cmp-policy", kind: "gates", note: "four structural rules, before the gate" },

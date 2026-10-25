@@ -1,8 +1,8 @@
 /**
  * The six layers of README §3.1 and the nineteen systems that realise them.
  *
- * The layer blurbs are README §3.1's own words for each line of its stack diagram, kept verbatim
- * where they fit on one line, because the whole value of an atlas is that it does not paraphrase
+ * The layer blurbs are README §3.1's own words for each row of its stack diagram, verbatim with
+ * continuation lines joined (`test/coverage.test.ts` holds each to its row), because the whole value of an atlas is that it does not paraphrase
  * the thing it maps. The stack is printed top-down in the order the README prints it: surfaces at
  * the top, contracts at the bottom, and "packages depend on ports, never on concrete classes".
  *
@@ -19,7 +19,7 @@ export const LAYERS: Layer[] = [
     part: "L-1",
     name: "surfaces",
     blurb:
-      "the Tauri desktop shell (chrome, page webviews, the panel), the bridge in the page, other agents over MCP, a voice client",
+      "the Tauri desktop shell (chrome, page webviews, the panel), the bridge in the page, other agents over MCP, a voice client, the halo (screen-edge light, ADR 0027)",
     source: "README §3.1",
     file: "README.md",
   },
@@ -44,7 +44,7 @@ export const LAYERS: Layer[] = [
     part: "L-4",
     name: "harness",
     blurb:
-      "CLI harness in two dialects (claude, codex), hooks (gate, ledger, truncation), structural policy, the OP grammar, engine probes",
+      "CLI harness in two dialects (claude, codex), hooks (gate, ledger, truncation), structural policy, the OP grammar, engine probes; an API engine (`nebius`, Nemotron on Token Factory) behind the `ModelFn` port (ADR 0031)",
     source: "README §3.1",
     file: "README.md",
   },
