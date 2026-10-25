@@ -18,8 +18,8 @@
     "./webmcp": "./src/webmcp/index.ts"
   },
   "scripts": {
-    "typecheck": "tsc --noEmit && node --test test/*.test.ts",
-    "test": "node --test test/*.test.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "node --test --experimental-test-coverage --test-coverage-include=\"src/**\" --test-coverage-include=\"template/lib/**\" --test-coverage-include=\"*.ts\" --test-coverage-exclude=\"**/*.test.ts\" --test-coverage-exclude=\"scripts/**\" --test-reporter=spec --test-reporter-destination=stdout --test-reporter=lcov --test-reporter-destination=node_modules/.demo-kit-coverage.lcov test/*.test.ts && node scripts/coverage.ts",
     "lint": "echo \"@athena/demo-kit is linted by the apps that consume it\"",
     "build": "echo \"@athena/demo-kit ships TypeScript source; consumers use transpilePackages\""
   },

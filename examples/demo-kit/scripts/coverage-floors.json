@@ -1,0 +1,69 @@
+{
+  "$comment": "Written by `node scripts/coverage.ts --update`, which only ever raises a floor. Percent, floored. The gated set is the kit's pure modules (ADR 0184); add a path by hand, never lower a number.",
+  "floors": {
+    "src/webmcp/bounded.ts": {
+      "lines": 100,
+      "branches": 85
+    },
+    "src/webmcp/door.ts": {
+      "lines": 99,
+      "branches": 92
+    },
+    "src/zoom/camera.ts": {
+      "lines": 100,
+      "branches": 92
+    },
+    "src/zoom/echo-rule.ts": {
+      "lines": 100,
+      "branches": 93
+    },
+    "src/zoom/escape.ts": {
+      "lines": 100,
+      "branches": 100
+    },
+    "src/zoom/flight.ts": {
+      "lines": 100,
+      "branches": 100
+    },
+    "src/zoom/gesture.ts": {
+      "lines": 100,
+      "branches": 88
+    },
+    "src/zoom/identity.ts": {
+      "lines": 100,
+      "branches": 100
+    },
+    "src/zoom/overlay.ts": {
+      "lines": 100,
+      "branches": 100
+    },
+    "src/zoom/presence.ts": {
+      "lines": 98,
+      "branches": 86
+    },
+    "src/zoom/roving.ts": {
+      "lines": 98,
+      "branches": 94
+    },
+    "src/zoom/semantic.ts": {
+      "lines": 100,
+      "branches": 85
+    },
+    "src/zoom/state.ts": {
+      "lines": 96,
+      "branches": 80
+    },
+    "src/zoom/tokens.ts": {
+      "lines": 100,
+      "branches": 89
+    },
+    "template/lib/acts.ts": {
+      "lines": 95,
+      "branches": 90
+    },
+    "template/lib/constants.ts": {
+      "lines": 100,
+      "branches": 100
+    }
+  }
+}

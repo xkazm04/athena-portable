@@ -10,7 +10,8 @@ means the apps differ in domain, not plumbing, and one seed registry means they 
 The package ships **TypeScript source**. Each app sets `transpilePackages: ["@athena/demo-kit"]` in
 `next.config.ts` and Next compiles the kit alongside the app. There is no `dist/` and an edit to a
 kit file hot-reloads in a running app. `pnpm --filter @athena/demo-kit typecheck` runs
-`tsc --noEmit` over the source and the kit's own `node --test` suite as a standalone gate.
+`tsc --noEmit` over the source; `pnpm --filter @athena/demo-kit test` runs the kit's own
+`node --test` suite once, measured (see Coverage).
 
 ## Import paths
 
@@ -239,3 +240,24 @@ useEcho(nav, flight, { measure, stages?, container?, origin? })
 5. **The database is resolved from `process.cwd()/data`.** A test that wants a fresh seed changes
    directory to a scratch folder before importing `lib/db`; the journey runner boots each app in a
    scratch cwd for the same reason.
+
+## Coverage
+
+`pnpm --filter @athena/demo-kit test` runs the suite once under Node's built-in coverage and then
+`node scripts/coverage.ts`, which prints two things that never share a population:
+
+- **The report is the whole kit tree.** Its file list comes from the filesystem (`src/**/*.ts(x)`,
+  `template/lib/*.ts`, the root `*.ts`), not from what the run imported, so a file no test loads is
+  listed at 0% with its line count, biggest first. The headline is the whole-tree figure, with
+  the reached-only figure printed beside it, each naming how many files it is over. On
+  2026-10-25 (Node 24.14, 221 tests): 55.4% of lines over 49 of 49 files, against 93.1% over the
+  27 files the run reached. The 22 unreached files are the hooks and components (`useCameraRig.ts`
+  alone is 658 lines): `node --test` cannot load a module with an extensionless value import, so
+  they are absent from Node's own report rather than low in it.
+- **The gate is the pure modules.** `scripts/coverage-floors.json` holds a line and a branch floor
+  per pure module (the zoom rules, `webmcp/bounded.ts` and `door.ts`, `template/lib/acts.ts` and
+  `constants.ts`). The test step fails when a floored file drops below a floor, when the run no
+  longer reaches a floored file, and when a floor names a file that left the tree, so the gated
+  set cannot shrink without an edit someone reviews. `node scripts/coverage.ts --update` raises
+  floors to the measured figure (rounded down) and never lowers one; add a new pure module by
+  hand. Why two scopes: ADR 0184.
