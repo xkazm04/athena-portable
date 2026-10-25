@@ -46,6 +46,26 @@ export class Ledger {
     return written;
   }
 
+  /** The record as plain data, for a checkpoint (`src/checkpoint.ts`). */
+  snapshot(): LedgerRow[] {
+    return this.rows.map((r) => ({ ...r }));
+  }
+
+  /**
+   * Put a checkpoint's rows back, every one through `write()`.
+   *
+   * A restore is a write, not a bypass: a row whose reason the live ledger would refuse is refused
+   * here too, and a row whose `seq` is not its position is refused, so a hand-edited checkpoint can
+   * neither smuggle a reason nor renumber the record. Only an empty ledger takes a restore.
+   */
+  restore(rows: readonly LedgerRow[]): void {
+    if (this.rows.length > 0) throw new Error(`ledger: restore into a ledger that already has ${this.rows.length} rows`);
+    for (const [index, { seq, ...rest }] of rows.entries()) {
+      if (seq !== index + 1) throw new Error(`ledger: checkpoint row ${index + 1} carries seq ${seq}`);
+      this.write(rest);
+    }
+  }
+
   byApp(app: string): LedgerRow[] {
     return this.rows.filter((r) => r.app === app);
   }

@@ -27,10 +27,32 @@ export class Brain {
 
   /** Write a fact, citing live ledger rows. No citation, no write — not even for a test. */
   writeFact(claim: string, cites: readonly LedgerRow[], learnedIn: string): Fact {
+    return this.admit(claim, cites.map((c) => c.seq), learnedIn);
+  }
+
+  /** The one door every fact comes through, live or restored: no citation, no fact. */
+  private admit(claim: string, cites: readonly number[], learnedIn: string): Fact {
     if (cites.length === 0) throw new Error(`write_fact refused: "${claim}" cites no episode`);
-    const fact: Fact = { id: `fct_${this.facts.length + 1}`, claim, cites: cites.map((c) => c.seq), learnedIn };
+    const fact: Fact = { id: `fct_${this.facts.length + 1}`, claim, cites: [...cites], learnedIn };
     this.facts.push(fact);
     return fact;
+  }
+
+  /** The facts as plain data, for a checkpoint (`src/checkpoint.ts`). */
+  snapshot(): Fact[] {
+    return this.facts.map((f) => ({ ...f, cites: [...f.cites] }));
+  }
+
+  /**
+   * Put a checkpoint's facts back through the same door as `writeFact`, so a hand-edited checkpoint
+   * cannot carry a fact that cites nothing, and the ids are re-derived rather than trusted.
+   */
+  restore(facts: readonly Fact[]): void {
+    if (this.facts.length > 0) throw new Error(`brain: restore into a brain that already holds ${this.facts.length} facts`);
+    for (const fact of facts) {
+      const admitted = this.admit(fact.claim, fact.cites, fact.learnedIn);
+      if (admitted.id !== fact.id) throw new Error(`brain: checkpoint fact ${fact.id} restores as ${admitted.id}`);
+    }
   }
 
   /** The act 4 view: every fact with the rows it cites. */

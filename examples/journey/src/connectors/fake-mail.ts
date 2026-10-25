@@ -29,6 +29,15 @@ export interface SentMail {
   readonly body: string;
 }
 
+/** What a checkpoint keeps of the mailbox: everything a later act or the record reads. */
+export interface MailSnapshot {
+  readonly from: string;
+  readonly allowed: readonly string[];
+  readonly inbox: readonly Mail[];
+  readonly sent: readonly SentMail[];
+  readonly calls: ReadonlyArray<{ name: string; params: Record<string, unknown> }>;
+}
+
 export class FakeMail implements ConnectorPort {
   readonly id = "mail";
   readonly allowed = new Set<string>();
@@ -88,6 +97,29 @@ export class FakeMail implements ConnectorPort {
       return `Sent to ${mail.to}.`;
     }
     throw new Error(`connector:mail has no tool named ${name}`);
+  }
+
+  /** The mailbox as plain data, for a checkpoint (`src/checkpoint.ts`). */
+  snapshot(): MailSnapshot {
+    return {
+      from: this.from,
+      allowed: [...this.allowed],
+      inbox: this.inbox.map((m) => ({ ...m })),
+      sent: this.sent.map((m) => ({ ...m })),
+      calls: this.calls.map((c) => ({ name: c.name, params: { ...c.params } })),
+    };
+  }
+
+  /** Put a checkpoint's mailbox back into an unused one that sends from the same inbox. */
+  restore(snapshot: MailSnapshot): void {
+    if (snapshot.from !== this.from) throw new Error(`connector:mail: checkpoint sends from ${snapshot.from}, not ${this.from}`);
+    if (this.inbox.length + this.sent.length + this.calls.length + this.allowed.size > 0) {
+      throw new Error("connector:mail: restore into a mailbox that has already been used");
+    }
+    this.allow(...snapshot.allowed);
+    this.inbox.push(...snapshot.inbox.map((m) => ({ ...m })));
+    this.sent.push(...snapshot.sent.map((m) => ({ ...m })));
+    this.calls.push(...snapshot.calls.map((c) => ({ name: c.name, params: { ...c.params } })));
   }
 
   sentTo(address: string): SentMail[] {

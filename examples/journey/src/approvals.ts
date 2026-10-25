@@ -82,6 +82,33 @@ export class Approvals {
     return [...this.cards.values()];
   }
 
+  /** The table as plain data, for a checkpoint (`src/checkpoint.ts`); spent cards stay spent. */
+  snapshot(): Card[] {
+    return this.all().map((card) => ({ ...card }));
+  }
+
+  /**
+   * Put a checkpoint's cards back. Each must be a card this table could have produced: a known
+   * status, a `describe` that names its own origin and tool, a `consumedAt` only on a granted card,
+   * and an id not already here. A restored grant that was spent is still spent.
+   */
+  restore(cards: readonly Card[]): void {
+    if (this.cards.size > 0) throw new Error(`approvals: restore into a table that already holds ${this.cards.size} cards`);
+    for (const card of cards) {
+      if (!["pending", "granted", "denied"].includes(card.status)) {
+        throw new Error(`approvals: checkpoint card ${card.id} has status ${String(card.status)}`);
+      }
+      if (!card.describe.startsWith(`${card.origin}/${card.tool}(`)) {
+        throw new Error(`approvals: checkpoint card ${card.id} describes ${card.describe}, not ${card.origin}/${card.tool}`);
+      }
+      if (card.consumedAt !== null && card.status !== "granted") {
+        throw new Error(`approvals: checkpoint card ${card.id} was spent without being granted`);
+      }
+      if (this.cards.has(card.id)) throw new Error(`approvals: checkpoint card ${card.id} appears twice`);
+      this.cards.set(card.id, { ...card });
+    }
+  }
+
   /**
    * Prove the approval was granted for *this* action and *these* parameters, and spend it. Throws
    * otherwise - a GATED tool never executes without a resolved, matching, unspent decision

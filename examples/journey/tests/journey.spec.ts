@@ -20,6 +20,11 @@
  *
  * The acts are ordinary tests in one worker, in file order, rather than a serial group: a beat
  * that fails because an app moved should not hide the state of the other two acts.
+ *
+ * `JOURNEY_FROM=<n>` resumes at act n (`src/checkpoint.ts`): a full run writes
+ * `shots/checkpoint-act{1,2,3}.json` after each act that passes with every earlier act passing,
+ * and a resumed run restores the one before act n, boots only the apps acts n..4 drive, and heads
+ * its printed record with the act it resumed from.
  */
 import { mkdirSync } from "node:fs";
 import { dirname, join } from "node:path";
@@ -30,6 +35,16 @@ import { HIRELANE, LEDGERBOX, OUTSIDE, TIDYCRM, urlOf, type AppSpec } from "../s
 import { Approvals } from "../src/approvals.ts";
 import { boot, shutdown, type Booted } from "../src/boot.ts";
 import { Brain } from "../src/brain.ts";
+import {
+  capture,
+  fromEnv,
+  planRun,
+  readCheckpoint,
+  restoreState,
+  writeCheckpoint,
+  type ActNumber,
+  type Checkpoint,
+} from "../src/checkpoint.ts";
 import { ConnectorSurface } from "../src/connector-surface.ts";
 import { FakeMail } from "../src/connectors/fake-mail.ts";
 import { FakeNotes } from "../src/connectors/fake-notes.ts";
@@ -81,6 +96,11 @@ const notes = new FakeNotes();
 const mailer = new ConnectorSurface(mail, approvals, ledger);
 const notebook = new ConnectorSurface(notes, approvals, ledger);
 
+/** Which acts this run plays and which apps it boots: all four, or from `JOURNEY_FROM` on. */
+const plan = planRun({ from: fromEnv(process.env.JOURNEY_FROM), dir: SHOTS });
+/** The checkpoint a resumed run restored, `null` on a full run. */
+let resumed: Checkpoint | null = null;
+
 const booted: Booted[] = [];
 let context: BrowserContext;
 let page: Page;
@@ -112,9 +132,15 @@ async function openBeside(app: AppSpec, path = "/"): Promise<{ surface: Surface;
 }
 
 test.beforeAll(async ({ browser }) => {
-  notes.seed([{ id: STUDIO_NOTES, parent: null, title: "Halden Studio — weekly record" }]);
-  notes.allow(STUDIO_NOTES);
-  for (const app of [LEDGERBOX, HIRELANE, TIDYCRM, OUTSIDE]) {
+  if (plan.checkpoint) {
+    // The studio's page, the allow-lists and every earlier act's rows come back with the state.
+    resumed = readCheckpoint(plan.checkpoint);
+    restoreState({ ledger, approvals, brain, mail, notes }, resumed);
+  } else {
+    notes.seed([{ id: STUDIO_NOTES, parent: null, title: "Halden Studio — weekly record" }]);
+    notes.allow(STUDIO_NOTES);
+  }
+  for (const app of plan.apps) {
     booted.push(await boot(app, (line) => console.log(`[boot] ${line}`)));
   }
   // JOURNEY_VIDEO=1 records the whole run as one .webm next to the screenshots: a demo asset
@@ -142,11 +168,21 @@ test.afterAll(async () => {
  */
 test("the demo journey: four acts, one studio, one record", async () => {
   const failures: string[] = [];
+  // A resumed run's checkpoints carry the act its chain of resumes began at, never `null`.
+  const resumedFrom = plan.from === 1 ? null : (resumed?.resumedFrom ?? plan.from);
   const act = async (name: string, run: () => Promise<void>): Promise<void> => {
+    const label = name.slice(0, name.indexOf(":"));
+    if (!plan.acts.includes(label)) return;
     try {
       await test.step(name, run);
     } catch (error) {
       failures.push(name + ": " + (error as Error).message);
+      return;
+    }
+    // Only a state every act so far passed on is worth resuming from.
+    const n = Number(label.slice("act ".length)) as ActNumber;
+    if (n < 4 && failures.length === 0) {
+      writeCheckpoint(SHOTS, capture({ ledger, approvals, brain, mail, notes }, n, { resumedFrom }));
     }
   };
 
@@ -641,7 +677,8 @@ test("the demo journey: four acts, one studio, one record", async () => {
 
   });
 
+  if (resumed) console.log(`\nresumed from act ${plan.from} (checkpoint written ${resumed.writtenAt})`);
   console.log(`\n${ledger.table()}\n`);
   console.log(`${brain.table()}\n`);
-  expect(failures.join(`\n\n`), `${failures.length} of four acts failed`).toBe("");
+  expect(failures.join(`\n\n`), `${failures.length} of ${plan.acts.length} acts failed`).toBe("");
 });

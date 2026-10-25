@@ -30,12 +30,35 @@ Headless by default, one worker, no retries, and CI needs nothing but the two co
 | `JOURNEY_KEEP_APPS=1` | do not boot anything; drive whatever is already listening on 3001/3002/3004 |
 | `JOURNEY_PORT_OFFSET=100` | boot on 3101/3102/3104 instead — for a second journey, or beside a dev server somebody else is running |
 | `JOURNEY_CALL_BUDGET=250` | the per-origin ceiling the gate enforces for this window |
+| `JOURNEY_FROM=3` | resume at act 3 from the checkpoint a full run wrote: boot only the apps acts 3 and 4 drive (see below) |
 
 A port that is already held is an error, not something the runner quietly adopts: driving a server
 nobody asked for means asserting against whatever code that process happens to be running, which
 is a green run that proves nothing. The message names both ways out.
 
 Screenshots of each act land in `shots/`, which is gitignored.
+
+### Resuming at one act
+
+A fix to act 3 should not cost four cold `next dev` boots and a replay of acts 1 and 2. After each
+act that passes with every earlier act passing, the run writes `shots/checkpoint-act<n>.json`: the
+ledger, the approval table, the brain and both connector fakes as plain JSON, with no database copy.
+None is needed: each app's database is touched only by its own act, in its own scratch directory,
+so an app a remaining act drives boots fresh and an app none drives does not boot at all.
+
+```bash
+pnpm --filter @athena/journey test                 # full run; writes checkpoint-act1..3
+JOURNEY_FROM=3 pnpm --filter @athena/journey test  # boots TidyCRM only, restores act 2, plays acts 3 and 4
+JOURNEY_FROM=4 pnpm --filter @athena/journey test  # boots nothing, re-asserts the record from act 3
+```
+
+A restore is a write (`src/checkpoint.ts`): rows go back through `Ledger.write`, facts through the
+same door as `Brain.writeFact`, so a hand-edited checkpoint cannot put a reason or a citation in the
+record the live run would refuse. A checkpoint written against another demo-kit seed or format is
+refused with both fingerprints named, and a missing one is refused with the command that writes it.
+A resumed run is never a gate run: it prints `resumed from act N (checkpoint written <time>)` above
+the record, and the checkpoints it writes carry that act forward. The offline spec
+`tests/checkpoint.spec.ts` pins all of this without booting anything.
 
 ## What it boots
 
@@ -179,6 +202,7 @@ is why Solstice Partners cannot receive mail even by accident.
 | `src/connectors/` | the seam, `FakeMail` and `FakeNotes` |
 | `src/ledger.ts` | one row per call and the act 4 table |
 | `src/brain.ts` | facts, each citing the ledger rows it was learned from |
+| `src/checkpoint.ts` | `JOURNEY_FROM`: the run plan, and checkpoints that restore through the same invariants |
 | `src/contracts.ts` | **every** field the apps answer with, behind one adapter each |
 
 The four acts are four `test.step`s of one test, not four tests: Playwright starts a fresh worker

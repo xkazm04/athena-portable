@@ -16,6 +16,13 @@ export interface NotePage {
   blocks: string[];
 }
 
+/** What a checkpoint keeps of the workspace. */
+export interface NotesSnapshot {
+  readonly allowed: readonly string[];
+  readonly pages: readonly NotePage[];
+  readonly calls: ReadonlyArray<{ name: string; params: Record<string, unknown> }>;
+}
+
 export class FakeNotes implements ConnectorPort {
   readonly id = "notes";
   readonly allowed = new Set<string>();
@@ -81,6 +88,28 @@ export class FakeNotes implements ConnectorPort {
       return JSON.stringify({ id, title: page.title });
     }
     throw new Error(`connector:notes has no tool named ${name}`);
+  }
+
+  /** The workspace as plain data, for a checkpoint (`src/checkpoint.ts`). */
+  snapshot(): NotesSnapshot {
+    return {
+      allowed: [...this.allowed],
+      pages: [...this.pages.values()].map((p) => ({ ...p, blocks: [...p.blocks] })),
+      calls: this.calls.map((c) => ({ name: c.name, params: { ...c.params } })),
+    };
+  }
+
+  /** Put a checkpoint's workspace back into an unused one. */
+  restore(snapshot: NotesSnapshot): void {
+    if (this.pages.size + this.calls.length + this.allowed.size > 0) {
+      throw new Error("connector:notes: restore into a workspace that has already been used");
+    }
+    this.allow(...snapshot.allowed);
+    for (const page of snapshot.pages) {
+      if (this.pages.has(page.id)) throw new Error(`connector:notes: checkpoint page ${page.id} appears twice`);
+      this.pages.set(page.id, { ...page, blocks: [...page.blocks] });
+    }
+    this.calls.push(...snapshot.calls.map((c) => ({ name: c.name, params: { ...c.params } })));
   }
 
   childrenOf(parent: string): NotePage[] {
