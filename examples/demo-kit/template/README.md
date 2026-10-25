@@ -17,33 +17,41 @@ copy. Run it after any change to the kit or to this scaffold:
 node scripts/check-template.mjs
 ```
 
-## Copy and rename
+## Adopt it
 
-From the repository root, with `<app>` a new name alongside the four that exist - `ledgerbox`,
-`hirelane`, `tidycrm`, `clonedeck`:
+From the repository root, with `<app>` a new name for the next sibling under `examples/`:
 
 ```bash
-cp -r examples/demo-kit/template examples/<app>          # Windows: robocopy /E, or use git bash
+node examples/demo-kit/adopt.ts <app> --port <N> --design <name> --dry-run   # the edits, nothing written
+node examples/demo-kit/adopt.ts <app> --port <N> --design <name>             # optional: --title, --tagline
 ```
 
-Then edit, in this order:
+It refuses before writing anything, naming the prerequisite and the remedy, when the name is not a
+package name, `examples/<app>` exists, a sibling's `package.json` dev script already holds the port
+(it names the sibling and the first free port), the design cannot name a `[data-variant]` block, or
+Node is older than 22.5. Otherwise it copies every file of this directory into a staging folder
+beside the target, writes the identity - the package name and port, `APP_ID`, `APP_NAME`, `TAGLINE`
+and `VARIANT` in `lib/constants.ts`, the `[data-variant]` block in `app/globals.css` - and renames
+the folder into place only when every file landed. The instance's `.template.json` records this
+template's digest and the answers: where the app came from, not a link back to it. The app's name
+lives only in `lib/constants.ts`; `components/Shell.tsx` and `app/layout.tsx` read it from there.
 
-1. `package.json` - `"name": "<app>"`.
-2. `lib/constants.ts` - `APP_ID = "<app>"`, `VARIANT` (the name of your design), and the `VIEWS`
-   enum (every view your `navigate` tool can open). The SQLite file is named from `APP_ID`, so this
-   one change moves the database to `examples/<app>/data/<app>.sqlite`.
-3. `lib/types.ts` and `lib/db.ts` - replace `Record_` and the `records` table with your domain's
+Then the domain work, which no command can do for you:
+
+1. `lib/constants.ts` - the `VIEWS` enum (every view your `navigate` tool can open). The SQLite
+   file is named from `APP_ID`, so the database is already `examples/<app>/data/<app>.sqlite`.
+2. `lib/types.ts` and `lib/db.ts` - replace `Record_` and the `records` table with your domain's
    tables and its deterministic seed. Keep `createActivityTable(db)` in the seed.
-4. `app/layout.tsx`, `components/Shell.tsx` - app name, tagline, nav.
-5. `app/globals.css` - give the design a name, set `VARIANT` to it, and re-point the `--dk-*` hooks
-   under `[data-variant="<name>"]` so the shared toasts, activity log and badges follow your
-   palette. One design, not three: every shipped app ships one and none mounts the switcher.
-6. `components/HostCapabilities.tsx` - register **every** action from your section of design 4.6,
+3. `components/Shell.tsx` - the nav.
+4. `app/globals.css` - re-point the `--dk-*` hooks under your design's `[data-variant]` block so
+   the shared toasts, activity log and badges follow your palette. One design, not three: every
+   shipped app ships one and none mounts the switcher.
+5. `components/HostCapabilities.tsx` - register **every** action from your section of design 4.6,
    with the right `reversible` and `sideEffects` flags.
-7. `app/actions.ts` - one server action per mutating capability; each logs to `activity` and stores
+6. `app/actions.ts` - one server action per mutating capability; each logs to `activity` and stores
    an `undo` payload whenever it is reversible.
 
-Then, from the repository root:
+Then, from the repository root (the command prints these too):
 
 ```bash
 pnpm install
@@ -51,9 +59,8 @@ pnpm --filter <app> typecheck && pnpm --filter <app> lint && pnpm --filter <app>
 pnpm --filter <app> dev
 ```
 
-Add `"dev:<app>": "pnpm --filter <app> dev"` to the root `package.json` if it is not there already,
-and give each app a distinct port in its own `package.json` (`next dev --port 300x`) so all four can
-run at once.
+and add `"dev:<app>": "pnpm --filter <app> dev"` to the root `package.json`; the command leaves
+every shared file alone.
 
 ## What is already wired
 
@@ -68,6 +75,7 @@ run at once.
 | `app/activity/page.tsx` | the shared activity log, with Undo bound to a server action |
 | `app/actions.ts` | `setStatusAction` and `undoAction` - the server half of the act and of `undoActivity` |
 | `lib/acts.ts`, `components/StatusAction.tsx` | the reversible act to copy: `planStatusChange` refuses a no-op or more than 50 ids, `setRecordStatus` (`lib/db.ts`) logs one row and returns `undoId`, the toast offers Undo, `applyUndo` restores only records no later act moved and names the rest, and `set_record_status` offers the same act to an agent as an AUTO tool |
+| `../adopt.ts` (in the kit, not copied) | adopts this directory in one command: a readiness gate with named refusals, a dry-run preview, a staged copy renamed into place, the identity written into `package.json`, `lib/constants.ts` and `app/globals.css`, and `.template.json` stamping the template digest and the answers (ADR 0170) |
 
 The agent seam is WebMCP: `useWebMCPTool` registers each capability on `document.modelContext`,
 where any browser agent that speaks the standard - Athena through `packages/athena-bridge`
