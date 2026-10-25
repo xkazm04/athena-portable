@@ -1537,7 +1537,11 @@
           "revision": 19,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "conformant",
+          "evidence": "src/athena/wiring.py:157 The composition root and its tool executors reach the brain only through the store's named operations (write_fact, append_episode, live_episode_ids, counts), so this context issues no query against the store and can add no writer to it.",
+          "evaluatedAt": "2026-10-25",
+          "evaluatedAgainst": "sha256-b2:2dba94be6400dea1",
+          "evaluatedRevision": 19
         }
       ],
       "governance": "governed"

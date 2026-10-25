@@ -7643,6 +7643,52 @@
           "evidence": "apps/desktop/src/stores/voice.ts:2 No commits are built here (GIT_INDEX_FILE: 0 hits)."
         }
       ]
+    },
+    "5059ed32-0465-4c97-bf66-5d4c9442e96f/data-access": {
+      "context": "cli-and-wiring",
+      "subject": "data-access",
+      "bundle": "software-engineering",
+      "state": "conformant",
+      "evaluatedAt": "2026-10-25",
+      "evaluatedTs": "2026-10-25T00:36:38.197Z",
+      "worker": "88886034-bc54-407b-8a31-a4c6f07a679e",
+      "techniques": [
+        {
+          "technique": "layering-rules",
+          "verdict": "conformant",
+          "evidence": "src/athena/wiring.py:157 The write_fact executor calls a named store operation with plain values and does not re-state the provenance rule; it turns the store's ProvenanceError into validator_failed."
+        },
+        {
+          "technique": "batching-and-n-plus-one",
+          "verdict": "conformant",
+          "evidence": "src/athena/wiring.py:352 Checking many cited episode ids is one batched set call (the store answers an empty list without querying), not a lookup per id."
+        },
+        {
+          "technique": "repo-testing",
+          "verdict": "conformant",
+          "evidence": "tests/test_cli.py:212 CLI tests run against a real Brain/SQLite on a per-test tmp_path and check the rebuilt store, with no mocked store."
+        },
+        {
+          "technique": "existence-authority-written-last",
+          "verdict": "conformant",
+          "evidence": "src/athena/cli.py:133 The markdown tree is named as the authority and the index as derived. reconcile rebuilds the index from disk, and doctor reports orphan index rows as a warning."
+        },
+        {
+          "technique": "query-construction",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/cli.py:104 The only statement in this context is a fixed capability probe on a throwaway :memory: connection. It has no values or identifiers to bind and never touches the store."
+        },
+        {
+          "technique": "row-mapping",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/wiring.py:167 This context only consumes typed refs that the store has already decoded. Row decoding happens in core.brain.store, outside this context."
+        },
+        {
+          "technique": "cross-driver-invariant-parity",
+          "verdict": "not-applicable",
+          "evidence": "src/athena/wiring.py:323 The root builds one concrete store class. No second backend sits behind an interface here, so there is no parity to keep."
+        }
+      ]
     }
   }
 }
