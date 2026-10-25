@@ -8,6 +8,11 @@
  *   pnpm perf:all                                 the self-test, then every scene with a drive
  *                                                 from one build, each judged even when one fails
  *
+ * Each scene is read beside a still control, measured in the same browser right after it: a scene
+ * that misses only wall-clock budgets while the still page misses one too is INCONCLUSIVE (the
+ * machine), not green and not the scene's fault; the run still exits 1 (ADR 0216). Every line shows
+ * the headroom left under each budget, and a scene run writes dist-perf/perf-report.json.
+ *
  * A scenario module's default export is `async (page) => void`: it performs the one fixed path
  * (dive, rise, interrupt) and returns when the motion has finished. The gate watches the page
  * through it: frame intervals, long tasks, how many frame callbacks run in one frame, and how many
@@ -18,14 +23,14 @@
  * still not the shipped shell, so the cutover phase adds a hand pass in the real window.
  */
 import { spawn, spawnSync } from "node:child_process";
-import { readdirSync } from "node:fs";
+import { mkdirSync, readdirSync, writeFileSync } from "node:fs";
 import { createServer } from "node:net";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import path from "node:path";
 
 import { chromium } from "playwright-core";
 
-import { judge } from "./perf-budgets.mjs";
+import { BUDGETS, judge, verdict } from "./perf-budgets.mjs";
 import { attributeTasks, recordingPage } from "./perf-trace.mjs";
 
 const IDLE_MS = 1000;
@@ -118,8 +123,41 @@ export async function runPage(browser, open, drive) {
   return result;
 }
 
-const show = (label, r) =>
-  console.log(`${r.ok ? "pass" : "FAIL"}  ${label}  ${JSON.stringify(r.metrics)}${r.failures.map((f) => `\n        - ${f}`).join("")}`);
+const stateOf = (r) => r.state ?? (r.ok ? "pass" : "fail");
+const LABEL = { pass: "pass", fail: "FAIL", inconclusive: "INCONCLUSIVE" };
+
+/**
+ * One scene's line: its state, the numbers, the headroom left under each budget (when it was read
+ * beside a control), then each failure and, for an inconclusive scene, what the control missed.
+ */
+export function formatLine(label, r) {
+  const room = r.headroom ? `  headroom ${JSON.stringify(r.headroom)}` : "";
+  const notes = [...r.failures, ...(r.reason ? [r.reason] : [])];
+  return `${LABEL[stateOf(r)]}  ${label}  ${JSON.stringify(r.metrics)}${room}${notes.map((f) => `\n        - ${f}`).join("")}`;
+}
+
+const show = (label, r) => console.log(formatLine(label, r));
+
+/** The run in one line: how many scenes passed, failed and were inconclusive. */
+export function summarize(results) {
+  const n = (state) => results.filter((r) => stateOf(r) === state).length;
+  const inconclusive = n("inconclusive");
+  return `${n("pass")} passed, ${n("fail")} failed, ${inconclusive} inconclusive${inconclusive ? " (the machine: re-run)" : ""}`;
+}
+
+/** The record a scene run leaves: the budgets, then each scene with its state, numbers, headroom and control. */
+export function report(results, budgets = BUDGETS) {
+  return {
+    budgets,
+    scenes: results.map((r) => ({
+      name: r.name,
+      state: stateOf(r),
+      metrics: r.metrics,
+      headroom: r.headroom ?? null,
+      control: r.control ?? null,
+    })),
+  };
+}
 
 // The self-test: a still page must pass and a deliberately janky one must fail, or the gate is a
 // rubber stamp. Both are inline pages, so it needs no dev server.
@@ -184,22 +222,25 @@ export function drivesIn(dir) {
 /**
  * Judge each scene in turn. A scene that fails, or whose drive throws (a control it presses is
  * gone), is shown as a failure and the next scene still runs, so one red never hides the verdicts
- * after it. Returns whether any failed.
+ * after it. A scene may answer with a `verdict` (pass, fail or inconclusive); anything that is not
+ * a pass fails the run, so an inconclusive scene never exits green. `done` gets the summary line and
+ * every result. Returns whether any did not pass.
  */
-export async function runScenes(scenes, runOne, report) {
-  let failed = false;
+export async function runScenes(scenes, runOne, show, done = () => {}) {
+  const results = [];
   for (const name of scenes) {
     let r;
     try {
       r = await runOne(name);
     } catch (error) {
       const line = String(error instanceof Error ? error.message : error).split("\n")[0];
-      r = { ok: false, metrics: {}, failures: [`the drive did not finish: ${line}`] };
+      r = { state: "fail", ok: false, metrics: {}, failures: [`the drive did not finish: ${line}`] };
     }
-    report(name, r);
-    if (!r.ok) failed = true;
+    show(name, r);
+    results.push({ name, ...r });
   }
-  return failed;
+  done(summarize(results), results);
+  return results.some((r) => stateOf(r) !== "pass");
 }
 
 async function main() {
@@ -224,9 +265,17 @@ async function main() {
             const drive = (await import(pathToFileURL(path.resolve(`scripts/perf-${name}.drive.mjs`)).href)).default;
             titles.set(name, drive.title ?? "scenario");
             // A drive may open another scene than its name (a skin is measured on the stage's scene).
-            return runPage(browser, (page) => page.goto(`${base}/preview.html?scene=${drive.scene ?? name}${drive.query ?? ""}`), drive);
+            const scene = await runPage(browser, (page) => page.goto(`${base}/preview.html?scene=${drive.scene ?? name}${drive.query ?? ""}`), drive);
+            // The still control, in the same browser, right after: the machine's reading this minute.
+            const control = await runPage(browser, (p) => p.setContent(STILL), wait(800));
+            return verdict(scene, control);
           },
           (name, r) => show(`${name} (${titles.get(name) ?? "scenario"})`, r),
+          (line, results) => {
+            console.log(line);
+            mkdirSync(path.resolve("dist-perf"), { recursive: true });
+            writeFileSync(path.resolve("dist-perf/perf-report.json"), `${JSON.stringify(report(results), null, 2)}\n`);
+          },
         );
       } finally {
         stop();
@@ -242,12 +291,14 @@ async function main() {
       const still = await runPage(browser, (p) => p.setContent(STILL), wait(800));
       const janky = await runPage(browser, (p) => p.setContent(JANKY), wait(800));
       show("self-test: a still page", still);
-      show("self-test: a janky page", janky);
+      // The janky page is read the way a scene is, beside the still control: it must still fail.
+      const jankyVerdict = verdict(janky, still);
+      show("self-test: a janky page", jankyVerdict);
       if (!still.ok) {
         console.error("the gate fails a page that does nothing; its thresholds are wrong for this machine");
         failed = true;
       }
-      if (janky.ok) {
+      if (jankyVerdict.state !== "fail") {
         console.error("the gate passes a page that blocks the main thread; it cannot fail");
         failed = true;
       }

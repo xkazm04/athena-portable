@@ -2,7 +2,7 @@
 import { describe, expect, it } from "vitest";
 
 // @ts-expect-error a plain .mjs helper shared with the Node runner, no declarations
-import { BUDGETS, judge, percentile } from "./perf-budgets.mjs";
+import { BUDGETS, headroom, judge, percentile, verdict } from "./perf-budgets.mjs";
 
 const smooth = {
   frames: Array.from({ length: 60 }, () => 16.7),
@@ -88,6 +88,51 @@ describe("judge names the step a long task ran under", () => {
       metrics: { frames: 60, frameP95Ms: 16.7, droppedShare: 0, longTaskMs: 0, loopsPerFrame: 1, idleFrameRequests: 0 },
       failures: [],
     });
+    expect(BUDGETS).toEqual({ frameP95Ms: 20, droppedShare: 0.05, longTaskMs: 50, loopsPerFrame: 1, idleFrameRequests: 2 });
+  });
+});
+
+describe("verdict: a scene is read beside its still control", () => {
+  const noisy = judge({ ...smooth, longTasks: [61] });
+  const clean = judge(smooth);
+
+  it("a wall-clock red beside a noisy control is inconclusive: the machine, with the scene's own failure kept", () => {
+    const v = verdict(judge({ ...smooth, longTasks: [54] }), noisy);
+    expect(v.state).toBe("inconclusive");
+    expect(v.ok).toBe(false);
+    expect(v.reason).toMatch(/61 ms task/);
+    expect(v.reason).toMatch(/the machine/);
+    expect(v.failures).toEqual(["a 54 ms task is over the 50 ms budget"]);
+  });
+
+  it("a count of work is never excused by the machine: idle frame requests beside a noisy control fail", () => {
+    expect(verdict(judge({ ...smooth, idleFrameRequests: 60 }), noisy).state).toBe("fail");
+    expect(verdict(judge({ ...smooth, loopsPerFrame: 2, longTasks: [54] }), noisy).state).toBe("fail");
+  });
+
+  it("a wall-clock red beside a clean control fails", () => {
+    expect(verdict(judge({ ...smooth, longTasks: [54] }), clean).state).toBe("fail");
+  });
+
+  it("a green scene passes with its headroom against every budget", () => {
+    const v = verdict(judge({ ...smooth, frames: Array.from({ length: 60 }, () => 14) }), clean);
+    expect(v.state).toBe("pass");
+    expect(v.ok).toBe(true);
+    expect(v.headroom).toEqual({ frameP95Ms: 6, longTaskMs: 50, loopsPerFrame: 0, idleFrameRequests: 2, droppedShare: 0.05 });
+    expect(v.control).toEqual(clean.metrics);
+  });
+
+  it("headroom is the budget minus the measure, negative when over", () => {
+    expect(headroom(judge({ ...smooth, longTasks: [54] }).metrics).longTaskMs).toBe(-4);
+  });
+
+  it("a scene with no control reading fails rather than passing as the machine", () => {
+    expect(verdict(judge({ ...smooth, longTasks: [54] }), null).state).toBe("fail");
+  });
+
+  it("guard: the self-test's janky page judged against a clean still control fails", () => {
+    const janky = judge({ ...smooth, longTasks: [70, 70], loopsPerFrame: 3, idleFrameRequests: 60, idleLongTasks: [70] });
+    expect(verdict(janky, clean).state).toBe("fail");
     expect(BUDGETS).toEqual({ frameP95Ms: 20, droppedShare: 0.05, longTaskMs: 50, loopsPerFrame: 1, idleFrameRequests: 2 });
   });
 });

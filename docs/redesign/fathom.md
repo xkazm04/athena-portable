@@ -154,11 +154,16 @@ Phases 5 to 8 are independent once 1 to 4 are in and can run in parallel branche
 - `src/depth/*.test.ts`: the reducer, exhaustively.
 - Per scene: the existing model tests move with the model; new `view.test.tsx` renders every
   fixture and asserts the capabilities in the parity matrix are present and wired to their actions.
-- `scripts/perf-gate.mjs` (Playwright, run from the shell's own dev server): drives the same path
-  every time (D0, dive, D2, D3, Escape, Escape, plus one interrupted dive), samples frame times
-  with `requestAnimationFrame`, collects `longtask` entries, counts rAF callbacks and checks the
-  idle window. It fails the run when a budget in section 5 is missed and writes the numbers next to
-  the screenshots, the way `layered-ui-formula.md` scores its rounds.
+- `scripts/perf-gate.mjs` (Playwright over a production `vite build`, served by `vite preview`):
+  `pnpm perf` proves it can pass a still page and fail a janky one; `pnpm perf:<scene>` and
+  `pnpm perf:all` run each `scripts/perf-<scene>.drive.mjs`, a fixed path through one preview
+  scene. It samples frame times with `requestAnimationFrame`, collects `longtask` entries tied to
+  the drive step they ran under, counts frame callbacks per frame and checks an idle second, then
+  judges the five budgets of ADR 0089 (`scripts/perf-budgets.mjs`). Each scene is read beside a
+  still control measured right after it (ADR 0216): pass, fail, or inconclusive when only
+  wall-clock budgets were missed and the still page missed one too (the machine; the run still
+  exits 1). Each line shows the headroom left under every budget, and a scene run writes
+  `dist-perf/perf-report.json`. It takes no screenshots.
 - `docs/redesign/parity.md`: the matrix. A phase is not done until its rows say how each was
   proven (test name or the hand check performed). A row without proof is a regression.
 - The dev inspector (ADR 0086) is the tool for pointing at a component while iterating.
