@@ -184,7 +184,7 @@ const SurfaceView: View<SurfaceModel> = ({ model }) => {
               onBlur={() => setFocused((f) => (f === l.root ? null : f))}
               onClick={() => model.actions.dive(l.to)}
             >
-              <Glyph root={l.root} size={108} />
+              <Glyph root={l.root} size={108} facts={l.art} />
               <span className="surface__light-name">{l.label}</span>
               <span className="surface__light-stat">{l.stat}</span>
             </button>

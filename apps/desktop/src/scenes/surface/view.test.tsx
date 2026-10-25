@@ -135,3 +135,15 @@ describe("what needs you is a short list of dives", () => {
     expect(fixtures.asking!.needs.some((n) => /waiting|answer/i.test(n.line + n.word))).toBe(false);
   });
 });
+
+describe("the lights' glyphs", () => {
+  it("case 7: the view passes each light's facts to its glyph", () => {
+    const lights = fixtures.typical!.lights.map((l) =>
+      l.root === "chores" ? { ...l, art: { attention: false, filled: 0, of: 12 } } : l.root === "accounts" ? { ...l, attention: false, art: { attention: false, filled: 1, of: 3 } } : l,
+    );
+    const quiet = renderToStaticMarkup(<SurfaceView model={{ ...fixtures.typical!, lights }} />);
+    expect(quiet).not.toContain("var(--status-success)");
+    expect(quiet).not.toContain("var(--status-warning)");
+    expect(html("typical")).toContain("var(--status-warning)");
+  });
+});

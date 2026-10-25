@@ -14,57 +14,90 @@ import type { Root } from "@/depth/model";
 import "./glyphs.css";
 
 const STROKE = "var(--muted-foreground)";
+const ACCENT = "var(--accent)";
+const WARN = "var(--status-warning)";
 
-const ART: Record<Root, ReactElement> = {
-  apps: (
+/**
+ * What a light's drawing shows of its depth: `filled` of `of` are on (apps on, accounts connected,
+ * chores tested, a voice that is ready, an engine that is), and `attention` is a need. `of: null`
+ * is a count not known (still counting, could not count): the plain drawing, no status mark,
+ * because a mark the data cannot back is a decoration pretending to be a status. No facts at all
+ * draws as a count not known.
+ */
+export interface GlyphFacts {
+  attention: boolean;
+  filled: number;
+  of: number | null;
+}
+/** Facts with a known count; a count not known arrives as none (`Glyph`). */
+type Facts = GlyphFacts | undefined;
+
+/** The stroke of the k-th of a set of parts: inked while more than k are on, else the muted outline. */
+const ink = (f: Facts, k: number) => (f && k < f.filled ? ACCENT : STROKE);
+/** A need, drawn as a shape (a dot in a ring) and not by hue alone. */
+const warn = (x: number, y: number) => (
+  <>
+    <circle cx={x} cy={y} r="4.5" fill={WARN} />
+    <circle cx={x} cy={y} r="8" fill="none" stroke={WARN} strokeWidth="1.5" />
+  </>
+);
+
+const ART: Record<Root, (f: Facts) => ReactElement> = {
+  apps: (f) => (
     <g className="glyph__float">
-      <rect x="16" y="14" width="56" height="40" rx="6" fill="color-mix(in srgb, var(--accent) 6%, transparent)" stroke="var(--muted)" strokeWidth="1.5" />
-      <rect x="32" y="24" width="56" height="40" rx="6" fill="color-mix(in srgb, var(--accent) 9%, transparent)" stroke={STROKE} strokeWidth="1.5" />
-      <rect x="48" y="34" width="56" height="40" rx="6" fill="var(--card-bg)" stroke="var(--accent)" strokeWidth="2" />
-      <path d="M48 43h56" stroke="var(--accent)" strokeOpacity=".6" />
-      <circle cx="54" cy="38.5" r="1.6" fill="var(--accent)" />
-      <circle cx="59" cy="38.5" r="1.6" fill="var(--accent)" fillOpacity=".6" />
+      <rect x="16" y="14" width="56" height="40" rx="6" fill="color-mix(in srgb, var(--accent) 6%, transparent)" stroke={ink(f, 2)} strokeWidth="1.5" />
+      <rect x="32" y="24" width="56" height="40" rx="6" fill="color-mix(in srgb, var(--accent) 9%, transparent)" stroke={ink(f, 1)} strokeWidth="1.5" />
+      <rect x="48" y="34" width="56" height="40" rx="6" fill="var(--card-bg)" stroke={ink(f, 0)} strokeWidth="2" />
+      <path d="M48 43h56" stroke={ACCENT} strokeOpacity=".6" />
+      <circle cx="54" cy="38.5" r="1.6" fill={ACCENT} />
+      <circle cx="59" cy="38.5" r="1.6" fill={ACCENT} fillOpacity=".6" />
       <path d="M56 52h28M56 58h38M56 64h20" stroke="var(--foreground)" strokeWidth="2" strokeLinecap="round" strokeOpacity=".75" />
     </g>
   ),
-  chores: (
+  chores: (f) => (
     <g className="glyph__float">
-      <path d="M16 68 L40 46 L62 54 L90 22" fill="none" stroke="var(--accent)" strokeOpacity=".45" strokeDasharray="2 4" />
-      <circle cx="16" cy="68" r="5" fill="var(--btn-primary)" stroke="var(--accent)" />
+      <path d="M16 68 L40 46 L62 54 L90 22" fill="none" stroke={ACCENT} strokeOpacity=".45" strokeDasharray="2 4" />
+      <circle cx="16" cy="68" r="5" fill="var(--btn-primary)" stroke={ACCENT} />
       <circle cx="40" cy="46" r="8" fill="color-mix(in srgb, var(--role-agent) 25%, transparent)" stroke="var(--role-agent)" strokeWidth="1.5" />
       <circle cx="62" cy="54" r="6" fill="color-mix(in srgb, var(--role-external) 20%, transparent)" stroke="var(--role-external)" strokeWidth="1.5" />
       <circle cx="90" cy="22" r="15" fill="color-mix(in srgb, var(--accent) 18%, transparent)" stroke="var(--focus)" strokeWidth="2" />
       <circle cx="90" cy="22" r="6" fill="var(--foreground)" />
-      <circle cx="102" cy="60" r="4" fill="color-mix(in srgb, var(--status-success) 30%, transparent)" stroke="var(--status-success)" />
+      {!!f?.filled && <circle cx="102" cy="60" r="4" fill="color-mix(in srgb, var(--status-success) 30%, transparent)" stroke="var(--status-success)" />}
     </g>
   ),
-  accounts: (
+  accounts: (f) => (
     <g className="glyph__float">
-      <circle cx="46" cy="42" r="20" fill="none" stroke={STROKE} strokeWidth="3" />
-      <circle cx="72" cy="42" r="20" fill="none" stroke="var(--accent)" strokeWidth="3" />
-      <path d="M80 60 l10 16 M86 70 l6-4 M90 76 l6-4" stroke="var(--accent)" strokeWidth="3" strokeLinecap="round" />
-      <circle cx="38" cy="26" r="4.5" fill="var(--status-warning)" />
+      <circle cx="46" cy="42" r="20" fill="none" stroke={ink(f, 1)} strokeWidth="3" />
+      <circle cx="72" cy="42" r="20" fill="none" stroke={ink(f, 0)} strokeWidth="3" />
+      <path d="M80 60 l10 16 M86 70 l6-4 M90 76 l6-4" stroke={ACCENT} strokeWidth="3" strokeLinecap="round" />
+      {f?.attention && warn(38, 26)}
     </g>
   ),
-  voice: (
-    <g className="glyph__float" fill="none" strokeLinecap="round">
-      <path d="M44 30 C44 22 54 18 60 18 C66 18 76 22 76 30 L76 40 C76 44 74 46 70 46 L50 46 C46 46 44 44 44 40 Z" fill="color-mix(in srgb, var(--accent) 18%, transparent)" stroke="var(--focus)" strokeWidth="2" />
-      <path d="M52 46 C50 56 54 62 52 72 M60 46 C62 58 58 64 60 76 M68 46 C66 56 70 62 68 72" stroke="var(--accent)" strokeOpacity=".7" strokeWidth="1.6" />
-      <path d="M86 22 C92 28 92 38 86 44 M94 16 C104 26 104 40 94 50" stroke="var(--accent)" strokeWidth="2" />
-      <path d="M34 22 C28 28 28 38 34 44 M26 16 C16 26 16 40 26 50" stroke="var(--accent)" strokeWidth="2" strokeOpacity=".5" />
-    </g>
-  ),
-  mind: (
+  voice: (f) => {
+    // Her voice ready: solid accent waves; not set up, or not known yet: dashed and muted, no status.
+    const lit = f?.filled;
+    const wave = { stroke: lit ? ACCENT : STROKE, strokeDasharray: lit ? undefined : "3 4" };
+    return (
+      <g className="glyph__float" fill="none" strokeLinecap="round">
+        <path d="M44 30 C44 22 54 18 60 18 C66 18 76 22 76 30 L76 40 C76 44 74 46 70 46 L50 46 C46 46 44 44 44 40 Z" fill="color-mix(in srgb, var(--accent) 18%, transparent)" stroke="var(--focus)" strokeWidth="2" />
+        <path d="M52 46 C50 56 54 62 52 72 M60 46 C62 58 58 64 60 76 M68 46 C66 56 70 62 68 72" stroke={ACCENT} strokeOpacity=".7" strokeWidth="1.6" />
+        <path d="M86 22 C92 28 92 38 86 44 M94 16 C104 26 104 40 94 50" {...wave} strokeWidth="2" />
+        <path d="M34 22 C28 28 28 38 34 44 M26 16 C16 26 16 40 26 50" {...wave} strokeWidth="2" strokeOpacity=".5" />
+      </g>
+    );
+  },
+  // The Engine instrument one dive below draws the same facet (`mind.tsx`), with no facts.
+  mind: (f) => (
     <g className="glyph__float">
       <path d="M60 8 L86 26 L80 62 L60 78 L40 62 L34 26 Z" fill="color-mix(in srgb, var(--accent) 10%, transparent)" stroke="var(--focus)" strokeWidth="2" />
-      <path d="M60 8 L60 78 M34 26 L86 26 M40 62 L80 62 M34 26 L60 46 L86 26 M40 62 L60 46 L80 62" stroke="var(--accent)" strokeOpacity=".45" fill="none" />
-      <circle cx="60" cy="46" r="6" fill="var(--foreground)" />
+      <path d="M60 8 L60 78 M34 26 L86 26 M40 62 L80 62 M34 26 L60 46 L86 26 M40 62 L60 46 L80 62" stroke={ACCENT} strokeOpacity=".45" fill="none" />
+      {f?.attention ? warn(60, 46) : <circle cx="60" cy="46" r="6" fill="var(--foreground)" />}
     </g>
   ),
 };
 
 /** The drawing for a depth. Decorative: the label next to it is the accessible name. */
-export default function Glyph({ root, size = 120 }: { root: Root; size?: number }) {
+export default function Glyph({ root, size = 120, facts }: { root: Root; size?: number; facts?: GlyphFacts }) {
   return (
     <svg
       className="glyph"
@@ -74,7 +107,7 @@ export default function Glyph({ root, size = 120 }: { root: Root; size?: number 
       aria-hidden="true"
       focusable="false"
     >
-      {ART[root]}
+      {ART[root](facts?.of != null ? facts : undefined)}
     </svg>
   );
 }

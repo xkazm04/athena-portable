@@ -14,6 +14,7 @@
  * Pure, as every module model is: `selectSurface` takes plain facts and returns what to draw, and
  * the selector's caller (`index.tsx`) is the only file that knows a store exists.
  */
+import type { GlyphFacts } from "@/art/glyphs";
 import type { AvatarId } from "@/avatar/types";
 import type { Reach } from "@/bell/Bell";
 import { POSE_WORDS, poseOf, type Pose } from "@/bell/pose";
@@ -94,6 +95,8 @@ export interface Light {
   hint: string;
   /** True when it needs the person: an account that wants reconnecting, an engine that is not ready. */
   attention: boolean;
+  /** What its glyph draws of it: the same numbers as `stat`, with `of: null` for a count not known. */
+  art: GlyphFacts;
 }
 
 /** One thing that needs the person, named with why, and the place it is answered. */
@@ -189,7 +192,8 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
   ];
 
   const needs = needsOf(s);
-  const lights: Record<Root, Omit<Light, "root" | "to">> = {
+  // Each light's glyph facts take its own attention; the rest is the light's numbers.
+  const lights: Record<Root, Omit<Light, "root" | "to" | "art"> & { art: Omit<GlyphFacts, "attention"> }> = {
     apps: {
       label: ROOT_LABEL.apps,
       stat:
@@ -200,6 +204,7 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
           : `${onApps.length} of ${s.apps.length} on` + (s.openTabs > 0 ? ` · ${s.openTabs} open` : ""),
       hint: "The web apps she works in: open one, switch one on or off.",
       attention: false,
+      art: { filled: onApps.length, of: s.apps.length },
     },
     chores: {
       label: ROOT_LABEL.chores,
@@ -212,6 +217,7 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
           : `${s.chores.benched} of ${s.chores.total} tested · ${usd(s.chores.foundUsd)} back found`,
       hint: "Chores worth starting, with what they save and the proof.",
       attention: false,
+      art: { filled: s.chores.benched, of: s.chores.loaded ? s.chores.total : null },
     },
     accounts: {
       label: ROOT_LABEL.accounts,
@@ -221,18 +227,25 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
           : `${connected.length} of ${s.accounts.length} connected`,
       hint: "The accounts she can reach, and what she may do in them.",
       attention: s.accounts.some((a) => a.attention),
+      art: { filled: connected.length, of: s.accounts.length },
     },
     voice: {
       label: ROOT_LABEL.voice,
       stat: s.voiceAvailable ? "ready to talk" : s.voiceKnown ? "not set up" : "not known yet",
       hint: "Her voice and how she hears you.",
       attention: false,
+      art: { filled: +s.voiceAvailable, of: s.voiceAvailable || s.voiceKnown ? 1 : null },
     },
     mind: {
       label: ROOT_LABEL.mind,
       stat: engineStat(s.engine),
       hint: "The engine she thinks with, and how she looks.",
       attention: engineNeedsYou(s.engine),
+      // A check still in flight is not known; one that could not run is a need, and drawn as one.
+      art: {
+        filled: +(s.engine.standing === "done"),
+        of: s.engine.standing === "unknown" && !s.engine.checkFailed ? null : 1,
+      },
     },
   };
 
@@ -248,7 +261,7 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
     lights: ROOTS.map((root) => {
       const l = lights[root];
       const first = l.attention ? needs.find((n) => n.to.root === root) : undefined;
-      return { root, to: first?.to ?? { root }, ...l };
+      return { root, to: first?.to ?? { root }, ...l, art: { attention: l.attention, ...l.art } };
     }),
     needs,
     canAsk: s.inShell,

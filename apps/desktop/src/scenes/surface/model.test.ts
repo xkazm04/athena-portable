@@ -153,6 +153,31 @@ describe("what needs you is named, and one press from its item", () => {
   });
 });
 
+describe("each light carries the facts its glyph draws", () => {
+  it("case 7: accounts carry attention and the connected count, apps the count on, chores not loaded draw no count", () => {
+    const m = selectSurface({
+      ...src(),
+      apps: ["a", "b", "c", "d", "e"].map((id, i) => ({ id, host: `${id}.test`, enabled: i < 2 })),
+      accounts: [
+        { id: "gmail", label: "Gmail", connected: true, attention: true, word: "wants reconnecting", line: "Its grant lapsed." },
+        { id: "notion", label: "Notion", connected: true, attention: false, word: "connected", line: "" },
+        { id: "calendar", label: "Calendar", connected: false, attention: false, word: "not connected", line: "" },
+      ],
+      chores: { total: 0, benched: 0, foundUsd: 0, loaded: false, failed: false },
+    });
+    const by = Object.fromEntries(m.lights.map((l) => [l.root, l]));
+    expect(by.accounts!.art).toEqual({ attention: true, filled: 2, of: 3 });
+    expect(by.apps!.art).toEqual({ attention: false, filled: 2, of: 5 });
+    expect(by.chores!.art.of).toBeNull();
+    expect(by.voice!.art).toEqual({ attention: false, filled: 0, of: 1 });
+    expect(by.mind!.art).toEqual({ attention: false, filled: 1, of: 1 });
+    const unknown = selectSurface({ ...src(), voiceKnown: false, engine: { label: "X", standing: "unknown", checkFailed: false, summary: "" } });
+    const u = Object.fromEntries(unknown.lights.map((l) => [l.root, l]));
+    expect(u.voice!.art.of).toBeNull();
+    expect(u.mind!.art.of).toBeNull();
+  });
+});
+
 function src(): SurfaceSources {
   return {
     athena: { state: "seal", cards: 0, line: "" },
