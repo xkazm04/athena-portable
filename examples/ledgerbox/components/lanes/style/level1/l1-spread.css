@@ -169,7 +169,7 @@
   text-transform: uppercase;
   letter-spacing: -0.01em;
   line-height: 0.9;
-  color: #fff;
+  color: var(--ln-ink-max);
 }
 
 .ln-spread-blurb {

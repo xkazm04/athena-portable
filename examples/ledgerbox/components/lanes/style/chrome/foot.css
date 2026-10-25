@@ -117,7 +117,7 @@
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
   line-height: 0.86;
-  color: #fff;
+  color: var(--ln-ink-max);
 }
 
 .ln-readout div[data-tone="alert"] b {
@@ -219,7 +219,7 @@
  */
 .ln-legend-chip[aria-pressed="true"] {
   color: var(--ln-ink);
-  background: rgb(255 255 255 / 7%);
+  background: var(--ln-light-4);
   border-color: var(--tone, var(--ln-ink));
 }
 
@@ -239,7 +239,7 @@
   block-size: 8px;
   border-radius: 2px;
   background: var(--tone);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 30%);
+  box-shadow: inset 0 1px 0 var(--ln-light-7);
 }
 
 .ln-legend em {

@@ -29,7 +29,7 @@
      poster line that wraps is two lines of a different design. */
   white-space: nowrap;
   /* The headline is the one place white goes fully opaque. */
-  color: #fff;
+  color: var(--ln-ink-max);
   /* Shrinking toward the start edge, so it settles into the crumb's own
      alignment rather than toward the middle of a line it no longer fills. */
   transform-origin: 0 50%;
@@ -109,13 +109,13 @@
   margin-block-start: 5px;
   border-radius: 999px;
   background: var(--ln-faint);
-  box-shadow: 0 0 0 3px rgb(155 178 185 / 14%);
+  box-shadow: 0 0 0 3px var(--ln-halo-faint);
   transition: background var(--ln-dur-2) var(--ln-ease), box-shadow var(--ln-dur-2) var(--ln-ease);
 }
 
 .ln-presence[data-on="true"] .ln-presence-dot {
   background: var(--ln-auto);
-  box-shadow: 0 0 0 3px rgb(69 211 162 / 22%);
+  box-shadow: 0 0 0 3px var(--ln-halo-auto);
 }
 
 .ln-presence-lines {

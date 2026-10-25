@@ -14,7 +14,7 @@
   display: grid;
   place-items: center;
   padding: var(--ln-s4);
-  background: rgb(4 7 8 / 84%);
+  background: var(--ln-scrim);
   backdrop-filter: blur(7px);
   perspective: 1500px;
 }
@@ -26,12 +26,12 @@
   flex-direction: column;
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgb(255 255 255 / 8%), transparent 26%),
+    linear-gradient(180deg, var(--ln-light-5), transparent 26%),
     var(--ln-raise);
   border: 1px solid var(--ln-rule);
   border-block-start: 3px solid var(--tone);
   border-radius: var(--ln-radius-card);
-  box-shadow: 0 40px 90px -40px rgb(0 0 0 / 90%);
+  box-shadow: 0 40px 90px -40px var(--ln-shadow-card);
 }
 
 /* The lean lives on an inner wrapper, because motion owns the transform of the
@@ -71,7 +71,7 @@
   text-transform: uppercase;
   letter-spacing: -0.01em;
   line-height: 0.92;
-  color: #fff;
+  color: var(--ln-ink-max);
 }
 
 /* The stat row. The reference's device: poster figures, tiny caps beneath. */
@@ -95,7 +95,7 @@
   font-variant-numeric: tabular-nums;
   letter-spacing: -0.01em;
   line-height: 1;
-  color: #fff;
+  color: var(--ln-ink-max);
 }
 
 .ln-figure[data-lead="true"] b {
@@ -112,9 +112,11 @@
   color: var(--ln-faint);
 }
 
+/* The ink at full strength: it was dimmed to 0.85, which on the card's raise
+   ground put the settled state's caps label at 3.9:1 - under the floor the
+   ink exists to clear. */
 .ln-figure[data-lead="true"] span {
   color: var(--tone-ink);
-  opacity: 0.85;
 }
 
 /* Two columns: the evidence scrolls, the invoice's own facts stay put. */

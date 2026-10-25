@@ -1,6 +1,6 @@
 .ln-track:hover {
   background:
-    linear-gradient(180deg, rgb(255 255 255 / 8%), transparent 42%),
+    linear-gradient(180deg, var(--ln-light-5), transparent 42%),
     var(--ln-raise);
 }
 
@@ -50,7 +50,7 @@
   border: 0;
   padding: 0;
   background: var(--tone);
-  box-shadow: inset 0 1px 0 rgb(255 255 255 / 30%);
+  box-shadow: inset 0 1px 0 var(--ln-light-7);
   transform: translateZ(2px);
   cursor: pointer;
   transition:
@@ -77,7 +77,7 @@
 .ln-mark:hover,
 .ln-mark[data-open="true"] {
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 45%),
+    inset 0 1px 0 var(--ln-light-8),
     0 0 0 2px var(--ln-ink);
   z-index: 4;
 }
@@ -94,7 +94,7 @@
   font-weight: 500;
   font-variant-numeric: tabular-nums;
   letter-spacing: 0.01em;
-  color: #fff;
+  color: var(--ln-ink-max);
   white-space: nowrap;
   pointer-events: none;
   transition: opacity var(--ln-dur-2) var(--ln-ease);
@@ -174,11 +174,11 @@
   min-inline-size: 210px;
   max-inline-size: 300px;
   padding: var(--ln-s3);
-  background: rgb(9 16 18 / 96%);
+  background: var(--ln-tip-ground);
   border: 1px solid var(--ln-rule);
   border-block-start: 2px solid var(--tone);
   border-radius: var(--ln-radius-card);
-  box-shadow: 0 18px 40px -18px rgb(0 0 0 / 80%);
+  box-shadow: 0 18px 40px -18px var(--ln-shadow-lift);
   pointer-events: none;
   display: grid;
   gap: var(--ln-s2);
@@ -207,7 +207,7 @@
 
 .ln-tip-client {
   font-size: var(--ln-text-sm);
-  color: #fff;
+  color: var(--ln-ink-max);
 }
 
 .ln-tip-stats {

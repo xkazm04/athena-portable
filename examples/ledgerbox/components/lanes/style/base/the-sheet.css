@@ -61,14 +61,14 @@
 
 .ln-bath {
   background:
-    radial-gradient(78% 58% at 22% -6%, #1d4a56 0%, #12303a 34%, transparent 72%),
-    radial-gradient(60% 48% at 88% 8%, #123c46 0%, transparent 66%),
-    radial-gradient(120% 90% at 50% 120%, #0d2029 0%, transparent 70%);
+    radial-gradient(78% 58% at 22% -6%, var(--ln-bath-1) 0%, var(--ln-bath-2) 34%, transparent 72%),
+    radial-gradient(60% 48% at 88% 8%, var(--ln-bath-3) 0%, transparent 66%),
+    radial-gradient(120% 90% at 50% 120%, var(--ln-bath-4) 0%, transparent 70%);
   opacity: 0.9;
 }
 
 .ln-vignette {
-  background: radial-gradient(120% 85% at 50% 42%, transparent 42%, rgb(4 7 8 / 72%) 100%);
+  background: radial-gradient(120% 85% at 50% 42%, transparent 42%, var(--ln-scrim-vignette) 100%);
 }
 
 /* Grain via inline SVG turbulence, so there is no image request. */

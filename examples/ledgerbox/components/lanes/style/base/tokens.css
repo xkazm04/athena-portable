@@ -95,6 +95,63 @@
      heat ramp gave up. */
   --ln-auto: #45d3a2;
 
+  /* --- Roles. THIS BLOCK IS THE ONLY PLACE ON THE SHEET A COLOUR IS DECIDED;
+         every other part names one of these (test/ledgerbox-style-design.test.ts
+         bans a literal anywhere else). A copy of a token at an alpha is written
+         as a color-mix() OF that token, so retuning the token moves the copy. --- */
+
+  /* The light. Rule 3's one source, and the shade it casts. White and black are
+     not surfaces on this sheet: they arrive only as these roles. */
+  --ln-light: #ffffff;
+  --ln-shade: #000000;
+
+  /* Ink at the top of the ramp, above `--ln-ink`: the name of the thing a level
+     is about (the masthead, a lane's name, the client on a node, card and tip,
+     the figures). The only place white goes fully opaque. */
+  --ln-ink-max: var(--ln-light);
+  /* White held back: body copy that is read, not scanned - the card's note,
+     evidence and draft, a node's standing, the tip's status. One intent that
+     was spelled at 78, 80 and 82%. */
+  --ln-ink-held: color-mix(in srgb, var(--ln-light) 80%, transparent);
+  /* A settled or out-of-play node's standing: present, and a rank quieter. */
+  --ln-ink-settled: color-mix(in srgb, var(--ln-light) 62%, transparent);
+
+  /* The top-light ladder, faintest to brightest: an inset sheen on the top edge
+     of a raised surface, or the wash a surface takes on hover. */
+  --ln-light-1: color-mix(in srgb, var(--ln-light) 2%, transparent); /* once: the talk panel, a surface barely raised off the card */
+  --ln-light-2: color-mix(in srgb, var(--ln-light) 3%, transparent); /* once: the settled node's sheen, one step under the live node's */
+  --ln-light-3: color-mix(in srgb, var(--ln-light) 5%, transparent);
+  --ln-light-4: color-mix(in srgb, var(--ln-light) 7%, transparent);
+  --ln-light-5: color-mix(in srgb, var(--ln-light) 8%, transparent);
+  --ln-light-6: color-mix(in srgb, var(--ln-light) 11%, transparent); /* once: the hovered node, the one surface lit above its resting sheen */
+  --ln-light-7: color-mix(in srgb, var(--ln-light) 30%, transparent);
+  --ln-light-8: color-mix(in srgb, var(--ln-light) 45%, transparent);
+
+  /* The shade. Lift is a floating tip or toast; card is a dialog off the sheet. */
+  --ln-shadow-lift: color-mix(in srgb, var(--ln-shade) 80%, transparent);
+  --ln-shadow-card: color-mix(in srgb, var(--ln-shade) 90%, transparent);
+  --ln-shadow-meter: color-mix(in srgb, var(--ln-shade) 45%, transparent); /* once: the raised node's meter, shaded toward its foot */
+
+  /* Scrims: the void, laid over what sits behind a lifted layer. */
+  --ln-scrim: color-mix(in srgb, var(--ln-void) 84%, transparent);
+  --ln-scrim-light: color-mix(in srgb, var(--ln-void) 58%, transparent);
+  --ln-scrim-foot: color-mix(in srgb, var(--ln-void) 55%, transparent);
+  --ln-scrim-vignette: color-mix(in srgb, var(--ln-void) 72%, transparent);
+  /* The hover tip: the ground, just short of opaque. */
+  --ln-tip-ground: color-mix(in srgb, var(--ln-ground) 96%, transparent);
+  /* Presence halos: the dot's own hue, thrown as a ring. */
+  --ln-halo-faint: color-mix(in srgb, var(--ln-faint) 14%, transparent);
+  --ln-halo-auto: color-mix(in srgb, var(--ln-auto) 22%, transparent);
+  /* A gated action's row, tinted in the gate's hue. */
+  --ln-gate-tint: color-mix(in srgb, var(--ln-gate) 6%, transparent);
+
+  /* The bath (rule 1): the one hue as light across the ground, brightest
+     off-centre. Four stops of one picture, each spent once on purpose. */
+  --ln-bath-1: #1d4a56;
+  --ln-bath-2: #12303a;
+  --ln-bath-3: #123c46;
+  --ln-bath-4: #0d2029;
+
   /* --- Scale. Eight steps; adjacent ranks differ by two or more. --- */
   --ln-s1: 4px;
   --ln-s2: 8px;

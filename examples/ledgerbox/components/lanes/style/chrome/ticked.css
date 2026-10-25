@@ -15,7 +15,7 @@
  */
 .ln-mark[data-picked="true"] {
   box-shadow:
-    inset 0 1px 0 rgb(255 255 255 / 45%),
+    inset 0 1px 0 var(--ln-light-8),
     0 0 0 2px var(--ln-ground),
     0 0 0 4px var(--ln-accent);
   z-index: 5;

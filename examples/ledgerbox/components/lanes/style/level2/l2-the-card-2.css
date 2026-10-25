@@ -18,7 +18,7 @@
 .ln-meta dd {
   margin: 0;
   font-size: var(--ln-text-md);
-  color: #fff;
+  color: var(--ln-ink-max);
   overflow-wrap: anywhere;
 }
 
@@ -67,7 +67,7 @@
   margin: 0;
   font-size: var(--ln-text-sm);
   line-height: 1.65;
-  color: rgb(255 255 255 / 82%);
+  color: var(--ln-ink-held);
   max-inline-size: 62ch;
 }
 
@@ -125,7 +125,7 @@
   display: grid;
   gap: 3px;
   font-size: var(--ln-text-xs);
-  color: rgb(255 255 255 / 78%);
+  color: var(--ln-ink-held);
 }
 
 .ln-draft {
@@ -138,7 +138,7 @@
   line-height: 1.65;
   white-space: pre-wrap;
   overflow-wrap: anywhere;
-  color: rgb(255 255 255 / 82%);
+  color: var(--ln-ink-held);
   max-block-size: 15em;
   overflow-y: auto;
 }
@@ -147,7 +147,7 @@
 .ln-card-foot {
   padding: var(--ln-s3) var(--ln-s5) var(--ln-s4);
   border-block-start: 1px solid var(--ln-rule);
-  background: linear-gradient(180deg, transparent, rgb(4 7 8 / 55%));
+  background: linear-gradient(180deg, transparent, var(--ln-scrim-foot));
   display: grid;
   gap: var(--ln-s2);
   flex: none;
@@ -156,7 +156,7 @@
 .ln-btn {
   min-block-size: 44px;
   padding: var(--ln-s2) var(--ln-s4);
-  background: rgb(255 255 255 / 5%);
+  background: var(--ln-light-3);
   border: 1px solid var(--ln-rule);
   border-radius: var(--ln-radius);
   color: var(--ln-ink);

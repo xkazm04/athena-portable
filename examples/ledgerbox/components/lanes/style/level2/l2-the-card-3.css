@@ -61,7 +61,7 @@
 
 .ln-close {
   margin-inline-start: auto;
-  background: rgb(255 255 255 / 5%);
+  background: var(--ln-light-3);
   border: 1px solid var(--ln-rule);
   border-radius: var(--ln-radius);
   color: var(--ln-mute);
@@ -100,7 +100,7 @@
   padding: var(--ln-s4);
   /* Lighter than the card's own scrim: this is a dialog over a dialog, and
      the invoice it belongs to should stay visible behind it. */
-  background: rgb(4 7 8 / 58%);
+  background: var(--ln-scrim-light);
   backdrop-filter: blur(4px);
 }
 
@@ -114,11 +114,11 @@
   align-content: start;
   padding: var(--ln-s5);
   background:
-    linear-gradient(180deg, rgb(255 255 255 / 8%), transparent 22%),
+    linear-gradient(180deg, var(--ln-light-5), transparent 22%),
     var(--ln-raise);
   border: 1px solid var(--ln-rule);
   border-radius: var(--ln-radius-card);
-  box-shadow: 0 40px 90px -40px rgb(0 0 0 / 90%);
+  box-shadow: 0 40px 90px -40px var(--ln-shadow-card);
 }
 
 .ln-decide-head {
@@ -136,7 +136,7 @@
   text-transform: uppercase;
   letter-spacing: -0.005em;
   line-height: 1;
-  color: #fff;
+  color: var(--ln-ink-max);
 }
 
 /* The heading takes focus on open, so it needs a ring of its own — a
@@ -177,7 +177,7 @@
   padding: var(--ln-s4);
   border: 1px dashed var(--ln-rule);
   border-radius: var(--ln-radius-card);
-  background: rgb(255 255 255 / 2%);
+  background: var(--ln-light-1);
 }
 
 .ln-talk-say {
@@ -231,7 +231,7 @@
 
 .ln-act[data-class="gated"] {
   border-inline-start-color: var(--ln-gate);
-  background: rgb(255 143 77 / 6%);
+  background: var(--ln-gate-tint);
 }
 
 .ln-act-class {
@@ -261,7 +261,7 @@
 .ln-act-said b {
   font-size: var(--ln-text-sm);
   font-weight: 500;
-  color: #fff;
+  color: var(--ln-ink-max);
 }
 
 /* What it reaches. The clause that used to be hidden inside the armed state of
@@ -317,7 +317,7 @@
   min-block-size: 44px;
   padding-block: var(--ln-s2);
   padding-inline: var(--ln-s3) var(--ln-s6);
-  background-color: rgb(255 255 255 / 5%);
+  background-color: var(--ln-light-3);
   /* The chevron, drawn in ink rather than left to the platform. Two strokes on
      a 45° grid, which is the one geometry rule the direction's bespoke marks
      already keep. */

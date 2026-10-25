@@ -17,7 +17,7 @@
   border-color: var(--ln-rule);
   color: var(--ln-ink);
   border-radius: var(--ln-radius-card);
-  box-shadow: 0 18px 40px -20px rgb(0 0 0 / 80%);
+  box-shadow: 0 18px 40px -20px var(--ln-shadow-lift);
   font-family: var(--ln-font, ui-sans-serif), system-ui, sans-serif;
 }
 

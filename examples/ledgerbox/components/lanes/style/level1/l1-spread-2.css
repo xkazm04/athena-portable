@@ -16,7 +16,7 @@
   text-align: start;
   overflow: hidden;
   background:
-    linear-gradient(180deg, rgb(255 255 255 / 7%), transparent 46%),
+    linear-gradient(180deg, var(--ln-light-4), transparent 46%),
     var(--ln-surface);
   border: 1px solid var(--ln-rule);
   border-block-start: 2px solid var(--tone);
@@ -42,7 +42,7 @@
 .ln-node[data-heat="good"],
 .ln-node[data-heat="inert"] {
   background:
-    linear-gradient(180deg, rgb(255 255 255 / 3%), transparent 46%),
+    linear-gradient(180deg, var(--ln-light-2), transparent 46%),
     var(--ln-deep);
   border-color: var(--ln-rule-soft);
   border-block-start-color: color-mix(in srgb, var(--tone) 50%, transparent);
@@ -50,20 +50,20 @@
 
 .ln-node[data-heat="good"] .ln-node-status,
 .ln-node[data-heat="inert"] .ln-node-status {
-  color: rgb(255 255 255 / 62%);
+  color: var(--ln-ink-settled);
 }
 
 /* Hover is a surface change, never a transform: motion owns the transform of
    every node, so a CSS one here would either be ignored or fight it. */
 .ln-node:hover {
   background:
-    linear-gradient(180deg, rgb(255 255 255 / 11%), transparent 46%),
+    linear-gradient(180deg, var(--ln-light-6), transparent 46%),
     var(--ln-raise);
   border-color: var(--tone);
 }
 
 .ln-node:hover .ln-node-status {
-  color: rgb(255 255 255 / 80%);
+  color: var(--ln-ink-held);
 }
 
 /*
@@ -100,7 +100,7 @@
   inset-inline: -1px;
   inset-block-end: -1px;
   block-size: calc(var(--lift) * 12px + 2px);
-  background: linear-gradient(180deg, var(--tone), rgb(0 0 0 / 45%));
+  background: linear-gradient(180deg, var(--tone), var(--ln-shadow-meter));
   opacity: 0.7;
 }
 
@@ -192,7 +192,7 @@
   font-size: var(--ln-text-md);
   font-weight: 500;
   letter-spacing: -0.01em;
-  color: #fff;
+  color: var(--ln-ink-max);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -201,7 +201,7 @@
 .ln-node-status {
   font-size: var(--ln-text-sm);
   line-height: 1.45;
-  color: rgb(255 255 255 / 80%);
+  color: var(--ln-ink-held);
   display: -webkit-box;
   -webkit-box-orient: vertical;
   -webkit-line-clamp: 3;
