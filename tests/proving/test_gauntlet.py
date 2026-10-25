@@ -417,3 +417,198 @@ def test_guard_the_three_base_surfaces_deliver_exactly_as_before(surface: str, t
         separators=(",", ":"),
     )
     assert hashlib.sha256(blob.encode()).hexdigest() == _BASE_DELIVERY[(surface, target)]
+
+
+# --- replay: a saved corpus re-driven, and what changed against it (ADR 0177) -------------------
+
+
+def _refuses(system: str, prompt: str) -> str:
+    raise AssertionError("a replay asked a generator or the judge")
+
+
+def _replay_engines(world: Any = None) -> Engines:
+    """Engines whose attacker and judge raise if asked: a replay must ask neither."""
+    engines, _ = _engines(
+        nemotron={
+            model: FakeRole(_refuses, model=model) for model in (LIGHTNING_MODEL, DEFAULT_MODEL)
+        },
+        control=FakeRole(_refuses, model="fake-haiku"),
+    )
+    if world is not None:
+        engines.world = world
+    return engines
+
+
+def _source_run(tmp_path: Path, **overrides: Any) -> tuple[Path, dict[str, Any]]:
+    """An honest offline run written to disk: the corpus a replay re-drives."""
+    engines, _ = _engines()
+    run_dir = new_run_dir(tmp_path / "source")
+    settings: dict[str, Any] = {"surfaces": ("page_state", "memory"), "n": 2, **overrides}
+    return run_dir, run_gauntlet(_small(**settings), engines, run_dir=run_dir)
+
+
+def _runs(report: Mapping[str, Any], row: str) -> list[str]:
+    return sorted(
+        attack["id"]
+        for attack in report["attacks"]
+        for run in attack.get("runs") or []
+        if run["row"] == row and not run.get("skipped")
+    )
+
+
+def test_replay_drives_the_saved_corpus_with_no_attacker_or_judge_call(tmp_path: Path) -> None:
+    source_dir, source = _source_run(tmp_path)
+    run_dir = new_run_dir(tmp_path / "replay")
+    report = run_gauntlet(_small(corpus=source_dir), _replay_engines(), run_dir=run_dir)
+
+    ledger = [
+        json.loads(line) for line in (run_dir / "ledger.jsonl").read_text("utf-8").splitlines()
+    ]
+    roles = {row["role"] for row in ledger}
+    assert not any(role.startswith(("attacker:", "judge:")) for role in roles)
+    assert any(role.startswith("athena:") for role in roles)
+
+    def content(r: Mapping[str, Any]) -> list[tuple[str, str, str, str]]:
+        return [(a["id"], a["surface"], a["target_tool"], a["payload"]) for a in r["attacks"]]
+
+    assert content(report) == content(source)
+    assert report["surfaces"] == source["surfaces"]
+    assert report["replay"]["source"] == source_dir.name == source["run_id"]
+    assert "attacker:nemotron" not in report["roles"] and "judge:control" not in report["roles"]
+
+
+def test_replay_against_a_gate_that_waves_through_lists_every_held_to_breached(
+    tmp_path: Path,
+) -> None:
+    source_dir, source = _source_run(tmp_path, surfaces=("page_state",))
+    assert all(
+        run["verdict"] == HELD for attack in source["attacks"] for run in attack["runs"] or []
+    )
+    run_dir = new_run_dir(tmp_path / "replay")
+    report = run_gauntlet(
+        _small(corpus=source_dir), _replay_engines(_waved_through), run_dir=run_dir
+    )
+
+    pairs = sorted(
+        (attack["id"], run["row"]) for attack in source["attacks"] for run in attack["runs"] or []
+    )
+    changed = report["replay"]["changed"]
+    assert sorted((c["attack"], c["row"]) for c in changed) == pairs
+    assert all(c["from"] == HELD and c["to"] == BREACHED for c in changed)
+    assert report["replay"]["regressions"] == len(pairs) > 0
+    md = (run_dir / "report.md").read_text("utf-8")
+    assert f"## Against {source_dir.name}" in md
+    assert md.count("held -> breached") == len(pairs)
+
+
+def test_replay_cli_exits_one_when_a_held_attack_now_breaches(
+    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    from athena.proving import __main__ as cli
+
+    source_dir, _ = _source_run(tmp_path, surfaces=("page_state",))
+    real = cli.run_gauntlet
+    seen: list[GauntletConfig] = []
+
+    def run(config: GauntletConfig, *args: Any, **kwargs: Any) -> dict[str, Any]:
+        seen.append(config)
+        return real(config, _replay_engines(_waved_through), **kwargs)
+
+    monkeypatch.setenv("NEBIUS_API_KEY", "nb-test-key-0123456789")
+    monkeypatch.setattr(cli, "claude_available", lambda *a, **k: True)
+    monkeypatch.setattr(cli, "run_gauntlet", run)
+    code = cli.main(
+        [
+            "gauntlet",
+            "--corpus",
+            str(source_dir),
+            "--seed",
+            "3",
+            "--sample",
+            "1",
+            "--out",
+            str(tmp_path / "runs"),
+            "--env-file",
+            str(tmp_path / "none"),
+        ]
+    )
+    assert code == 1
+    assert [Path(str(c.corpus)) for c in seen] == [source_dir]
+
+
+def test_replay_on_the_same_honest_world_changes_nothing(tmp_path: Path) -> None:
+    source_dir, source = _source_run(tmp_path)
+    report = run_gauntlet(_small(corpus=source_dir), _replay_engines())
+
+    assert report["replay"]["changed"] == []
+    assert report["replay"]["regressions"] == 0
+    assert {r["key"]: r["verdicts"] for r in report["rows"]} == {
+        r["key"]: r["verdicts"] for r in source["rows"]
+    }
+
+
+def test_replay_does_not_remeasure_proof_two_and_carries_grades_as_judged_in(
+    tmp_path: Path,
+) -> None:
+    source_dir, source = _source_run(tmp_path)
+    run_dir = new_run_dir(tmp_path / "replay")
+    report = run_gauntlet(_small(corpus=source_dir), _replay_engines(), run_dir=run_dir)
+
+    valid = report["proof"]["valid_rate"]
+    assert valid["pass"] is None
+    assert source_dir.name in valid["na"]
+    written = json.loads((run_dir / "report.json").read_text("utf-8"))
+    assert not _has_none(written)
+    assert "nemotron" not in written["proof"]["valid_rate"]
+    assert "control" not in written["proof"]["valid_rate"]
+    graded = {a["id"]: a for a in source["attacks"] if a.get("valid") is not None}
+    assert graded
+    for attack in written["attacks"]:
+        if attack["id"] in graded:
+            assert attack["judged_in"] == source_dir.name
+            assert attack["valid"] == graded[attack["id"]]["valid"]
+    md = (run_dir / "report.md").read_text("utf-8")
+    assert f"judged in {source_dir.name}" in md
+
+
+def test_replay_only_drives_the_named_attack_and_refuses_an_absent_id(tmp_path: Path) -> None:
+    source_dir, _ = _source_run(tmp_path)
+    report = run_gauntlet(_small(corpus=source_dir, only=("ctl-page_state-00",)), _replay_engines())
+    assert [a["id"] for a in report["attacks"]] == ["ctl-page_state-00"]
+    assert {r["key"]: r["planned"] for r in report["rows"]} == {
+        "athena-claude": 1,
+        "athena-nemotron": 1,
+    }
+
+    def no_world(*args: Any, **kwargs: Any) -> World:
+        raise AssertionError("a world was built before the corpus was checked")
+
+    with pytest.raises(ValueError, match="ctl-page_state-99"):
+        run_gauntlet(
+            _small(corpus=source_dir, only=("ctl-page_state-99",)), _replay_engines(no_world)
+        )
+
+
+def test_replay_lists_stale_attacks_refuses_an_empty_corpus_and_reproduces_the_sample(
+    tmp_path: Path,
+) -> None:
+    source_dir, source = _source_run(tmp_path)
+    replayed = run_gauntlet(_small(corpus=source_dir), _replay_engines())
+    assert _runs(replayed, "athena-nemotron") == _runs(source, "athena-nemotron")
+
+    saved = json.loads((source_dir / "report.json").read_text("utf-8"))
+    saved["attacks"][0]["target_tool"] = "host.ledgerbox.retired_tool"
+    stale_id = saved["attacks"][0]["id"]
+    (source_dir / "report.json").write_text(json.dumps(saved), encoding="utf-8")
+    report = run_gauntlet(_small(corpus=source_dir), _replay_engines())
+    [stale] = report["replay"]["stale"]
+    assert stale["attack"] == stale_id and "retired_tool" in stale["reason"]
+    assert stale_id not in {a["id"] for a in report["attacks"]}
+
+    empty = tmp_path / "empty"
+    empty.mkdir()
+    (empty / "report.json").write_text(
+        json.dumps({"run_id": "empty", "attacks": []}), encoding="utf-8"
+    )
+    with pytest.raises(ValueError, match="empty"):
+        run_gauntlet(_small(corpus=empty), _replay_engines())

@@ -448,6 +448,19 @@ parameters. Single use now lives in the gate (ADR 0038). The gate spends an appr
 lets the action through, so the replay is refused with `approval_spent` and nothing runs
 (`gate_reuse: refused`). A reuse that is let through counts as `violated`.
 
+**Replaying a corpus (ADR 0177).** Two generated runs face different attacks, so their verdicts
+were never comparable, and an operator who changed the gate, the policy or Athena's prompt could
+not ask whether the same attacks still held. `gauntlet --corpus proving-runs/<run>` re-drives the
+corpus that run's `report.json` already holds: no attacker call and no judge call, so the purse is
+spent on Athena's turns alone. Each attack is re-checked against today's surfaces and targets, and
+one that no longer fits is listed as stale rather than dropped. The Nemotron row samples the same
+attacks as the source when given the source's `--seed` and `--sample`. The report gains a section,
+"Against <run>", listing every (attack, row) whose verdict, pressure or on-target moved, and it
+counts the regressions (`held -> breached`). Proof 1 is measured as in any run, and a breach still
+exits 1, so a replay works as a gate. Proof 2 is `n/a` with the source run named, because a replay
+does not sample the generator again; the carried grades are marked `judged_in` that run.
+`--only <attack id>` re-drives one captured breach to check its fix.
+
 
 
 ### Model-played Characters (built)

@@ -6,6 +6,7 @@ Two verbs: ``gauntlet`` (ADR 0032) and ``characters`` (ADR 0034)::
         [--n 15] [--rung lightning|super] [--claude/--no-claude] [--nemotron/--no-nemotron]
         [--nemotron-cap 1.0] [--claude-cap 10.0] [--seed 7] [--out proving-runs]
         [--approve-probe/--no-approve-probe] [--control/--no-control]
+        [--corpus proving-runs/<run> [--only <attack id>...]]
     uv run python -m athena.proving characters [--characters mira jonas] [--journeys J3]
         [--repeats 2] [--rung lightning|super] [--claude/--no-claude] [--nemotron/--no-nemotron]
         [--nemotron-cap 1.0] [--claude-cap 10.0] [--seed 7] [--out proving-runs]
@@ -36,6 +37,7 @@ from athena.proving.characters.run import (
     run_characters,
 )
 from athena.proving.gauntlet.attacks import SURFACES
+from athena.proving.gauntlet.replay import load_corpus
 from athena.proving.gauntlet.run import GauntletConfig, run_gauntlet
 from athena.proving.report import RUNS_DIRNAME, new_run_dir
 from athena.proving.roles import HOSTED_ENV, RUNGS, claude_available, load_env_file
@@ -111,6 +113,13 @@ def build_parser() -> argparse.ArgumentParser:
         help="the Haiku control generates comparison attacks and judges validity (off when no "
         "claude CLI is found: hosted mode, proof 2 n/a)",
     )
+    g.add_argument(
+        "--corpus",
+        default=None,
+        help="replay this run's corpus (its directory): no attacker, no judge, and the report "
+        "says what changed against it (ADR 0177)",
+    )
+    g.add_argument("--only", nargs="+", default=[], help="with --corpus: drive only these ids")
     g.add_argument("--out", default=RUNS_DIRNAME, help="where run directories are created")
     g.add_argument("--env-file", default=".env", help="read NEBIUS_API_KEY from here if unset")
 
@@ -188,6 +197,15 @@ def main(argv: Sequence[str] | None = None) -> int:
             "control, no Athena-on-Claude row; verdicts still come from the gate",
             flush=True,
         )
+    if config.only and config.corpus is None:
+        print("--only needs --corpus", file=sys.stderr)
+        return 2
+    if config.corpus is not None:
+        try:  # a mistyped path or id is refused before a run directory exists
+            load_corpus(config.corpus, config.only)
+        except ValueError as exc:
+            print(str(exc), file=sys.stderr)
+            return 2
     run_dir = new_run_dir(Path(args.out))
     print(f"gauntlet run -> {run_dir.as_posix()}", flush=True)
     report = run_gauntlet(config, run_dir=run_dir, echo=lambda line: print(line, flush=True))
@@ -207,6 +225,13 @@ def main(argv: Sequence[str] | None = None) -> int:
         print(
             f"approve path ({row_key}): {cell['ok']} ok, {cell['violated']} violated, "
             f"{cell['inconclusive']} inconclusive of {cell['cards_probed']} cards",
+            flush=True,
+        )
+    replay = report.get("replay")
+    if replay:
+        print(
+            f"against {replay['source']}: {len(replay['changed'])} changed, "
+            f"{replay['regressions']} regressions, {len(replay['stale'])} stale",
             flush=True,
         )
     print(f"cost: {report['cost_usd']}; wall {report['wall_s']} s", flush=True)
@@ -236,6 +261,8 @@ def gauntlet_config(args: argparse.Namespace, *, claude_ok: bool) -> GauntletCon
         escalate=args.escalate,
         approve_probe=args.approve_probe,
         control=args.control and claude_ok,
+        corpus=args.corpus,
+        only=tuple(args.only),
     )
 
 

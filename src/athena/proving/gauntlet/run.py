@@ -56,6 +56,7 @@ from athena.proving.gauntlet.attacks import (
     judge_system,
 )
 from athena.proving.gauntlet.delivery import deliver
+from athena.proving.gauntlet.replay import Corpus, diff, load_corpus, proof_two_na
 from athena.proving.gauntlet.surfaces import surface as surface_entry
 from athena.proving.gauntlet.verdict import BREACHED, ERROR, HELD, verdict_for
 from athena.proving.report import announce, prune, write_report
@@ -135,6 +136,11 @@ class GauntletConfig:
     #: The Haiku control generates and judges. ``False`` is the hosted run (ADR 0039): no control
     #: call is made at all, and proof 2 is ``n/a``.
     control: bool = True
+    #: A prior run (its directory or ``report.json``) whose corpus is re-driven instead of
+    #: generating one (ADR 0177): no attacker, no judge, and the report says what changed.
+    corpus: str | Path | None = None
+    #: With ``corpus``: drive only these attack ids (a captured breach, to check its fix).
+    only: tuple[str, ...] = ()
 
     @property
     def mode(self) -> str:
@@ -158,6 +164,8 @@ class GauntletConfig:
             "approve_probe": self.approve_probe,
             "control": self.control,
             "mode": self.mode,
+            "corpus": str(self.corpus) if self.corpus is not None else None,
+            "only": list(self.only) or None,
         }
 
 
@@ -555,7 +563,10 @@ def evaluate_proof(
     control_rate: float | None,
     *,
     control: bool = True,
+    na: str | None = None,
 ) -> dict[str, Any]:
+    """The three proofs. ``na`` names why proof 2 has no value (a replay); without it, a run with
+    no control says so."""
     driven = [r for r in results if not r.get("skipped")]
     breached = [r for r in driven if r.get("verdict") == BREACHED]
     held = sum(1 for r in driven if r.get("verdict") == HELD)
@@ -578,7 +589,7 @@ def evaluate_proof(
         "ratio": round(ratio, 4) if ratio is not None else None,
         "threshold": VALID_RATIO,
         "pass": ratio >= VALID_RATIO if ratio is not None else None,
-        "na": None if control else NO_CONTROL_REASON,
+        "na": na or (None if control else NO_CONTROL_REASON),
     }
     pressure: dict[str, dict[str, Any]] = {}
     for result in driven:
@@ -602,21 +613,22 @@ def evaluate_proof(
 # --- the run -------------------------------------------------------------------------------------
 
 
-def run_gauntlet(
-    config: GauntletConfig,
-    engines: Engines | None = None,
-    *,
-    run_dir: Path | None = None,
-    echo: Callable[[str], None] = lambda line: None,
-) -> dict[str, Any]:
-    """The whole run. Returns the report (unpruned); writes it when ``run_dir`` is given."""
-    engines = engines or default_engines()
-    started = time.monotonic()
-    started_at = now_iso()
-    budget = Budget({NEMOTRON: config.nemotron_cap, CLAUDE: config.claude_cap})
-    log = RunLog(run_dir / "ledger.jsonl" if run_dir is not None else None)
-    caller = RoleCaller(budget, log)
+@dataclass
+class _Sourced:
+    """Where a run's corpus came from: generated and judged here, or carried from a replay."""
 
+    corpus: list[Attack]
+    grades: dict[str, dict[str, Any]]
+    generators: list[dict[str, Any]] = field(default_factory=list)
+    escalation: dict[str, Any] | None = None
+    nemotron_rate: float | None = None
+    control_rate: float | None = None
+
+
+def _generate_corpus(
+    config: GauntletConfig, engines: Engines, caller: RoleCaller, echo: Callable[[str], None]
+) -> _Sourced:
+    """Stages 1-3: generate, judge, escalate once. The corpus and every line the report shows."""
     # 1. generate
     nemotron = engines.nemotron(RUNGS[config.rung])
     if config.control:
@@ -666,7 +678,46 @@ def run_gauntlet(
         }
         nem, nem_line = nem_super, super_line
 
-    corpus = [*nem.attacks, *ctl.attacks]
+    return _Sourced(
+        corpus=[*nem.attacks, *ctl.attacks],
+        grades=grades,
+        generators=generators,
+        escalation=escalation,
+        nemotron_rate=nem_line.get("valid_rate"),
+        control_rate=ctl_line.get("valid_rate"),
+    )
+
+
+def run_gauntlet(
+    config: GauntletConfig,
+    engines: Engines | None = None,
+    *,
+    run_dir: Path | None = None,
+    echo: Callable[[str], None] = lambda line: None,
+) -> dict[str, Any]:
+    """The whole run. Returns the report (unpruned); writes it when ``run_dir`` is given."""
+    engines = engines or default_engines()
+    started = time.monotonic()
+    started_at = now_iso()
+    budget = Budget({NEMOTRON: config.nemotron_cap, CLAUDE: config.claude_cap})
+    log = RunLog(run_dir / "ledger.jsonl" if run_dir is not None else None)
+    caller = RoleCaller(budget, log)
+
+    replay: Corpus | None = None
+    if config.corpus is not None:
+        replay = load_corpus(config.corpus, config.only)
+    elif config.only:
+        raise ValueError("only names attacks of a saved corpus: give corpus too")
+
+    if replay is None:
+        sourced = _generate_corpus(config, engines, caller, echo)
+    else:
+        echo(
+            f"replaying {len(replay.attacks)} attacks from {replay.source} (no attacker, no "
+            f"judge; {len(replay.stale)} stale)"
+        )
+        sourced = _Sourced(list(replay.attacks), {k: dict(v) for k, v in replay.grades.items()})
+    corpus, grades = sourced.corpus, sourced.grades
     by_id = {attack.id: attack for attack in corpus}
 
     # 4. drive
@@ -712,9 +763,10 @@ def run_gauntlet(
     proof = evaluate_proof(
         results,
         by_id,
-        nem_line.get("valid_rate"),
-        ctl_line.get("valid_rate"),
+        sourced.nemotron_rate,
+        sourced.control_rate,
         control=config.control,
+        na=proof_two_na(replay.source) if replay is not None else None,
     )
     if config.approve_probe:
         proof["approve_path"] = {
@@ -731,6 +783,7 @@ def run_gauntlet(
             **attack.to_dict(),
             "valid": (grades.get(attack.id) or {}).get("valid"),
             "judge_reason": (grades.get(attack.id) or {}).get("reason"),
+            "judged_in": replay.source if replay is not None and attack.id in grades else None,
             "runs": runs_by_attack.get(attack.id) or None,
         }
         for attack in corpus
@@ -744,26 +797,33 @@ def run_gauntlet(
             "escalated, and proof 2 is n/a. Proof 1 and pressure are read off the gate, as in a "
             "full run."
         )
+    if replay is not None:
+        notes.append(
+            f"Replay (ADR 0177): the corpus is {replay.source}'s, re-driven with no attacker and "
+            "no judge call. Its grades are carried as judged there; proof 2 is not re-measured. "
+            "Proof 1 and pressure are read off the gate, as in any run."
+        )
     report: dict[str, Any] = {
         "run_id": run_dir.name if run_dir is not None else started_at,
         "prototype": "gauntlet",
         "mode": config.mode,
-        "roles": roles_ran(config, plan),
+        "roles": roles_ran(config, plan, replay=replay is not None),
         "claim": CLAIM,
         "started_at": started_at,
         "wall_s": round(time.monotonic() - started, 1),
-        "surfaces": list(config.surfaces),
+        "surfaces": list(replay.surfaces if replay is not None else config.surfaces),
         "deferred": DEFERRED_SURFACES,
         "notes": notes,
         "config": config.to_dict(),
         "rows": rows,
-        "generators": generators,
+        "generators": sourced.generators or None,
         "judge": (
             {"model": engines.control.model, "role": "judge", "blind": True}
-            if config.control
+            if config.control and replay is None
             else None
         ),
-        "escalation": escalation,
+        "escalation": sourced.escalation,
+        "replay": diff(replay, results) if replay is not None else None,
         "attacks": attacks_out,
         "proof": proof,
         "cost_usd": {
@@ -791,10 +851,16 @@ _NOTES: tuple[str, ...] = (
 )
 
 
-def roles_ran(config: GauntletConfig, plan: Sequence[tuple[Row, Sequence[Attack]]]) -> list[str]:
-    """The roles this run gave a model, in the ledger's own role names, plus the probe."""
-    roles = [f"attacker:{NEMOTRON_GEN}"]
-    if config.control:
+def roles_ran(
+    config: GauntletConfig,
+    plan: Sequence[tuple[Row, Sequence[Attack]]],
+    *,
+    replay: bool = False,
+) -> list[str]:
+    """The roles this run gave a model, in the ledger's own role names, plus the probe. A replay
+    gave none to an attacker or a judge."""
+    roles = [] if replay else [f"attacker:{NEMOTRON_GEN}"]
+    if config.control and not replay:
         roles += [f"attacker:{CONTROL_GEN}", "judge:control"]
     roles += [f"athena:{row.key}" for row, _ in plan]
     if config.approve_probe:
@@ -893,14 +959,16 @@ def render_markdown(report: Mapping[str, Any]) -> str:
             f"**Escalated** {esc.get('from')} -> {esc.get('to')}: {esc.get('why')}; "
             f"ratio after: {esc.get('ratio_after', 'n/a')}.",
         ]
-    lines += [
-        "",
-        "## Generators",
-        "",
-        "| generator | rung | model | requested | returned | schema valid | schema invalid | "
-        "call errors | unusable answers | judged valid | valid rate |",
-        "|---|---|---|---|---|---|---|---|---|---|---|",
-    ]
+    lines += _against(report.get("replay"))
+    if report.get("generators"):
+        lines += [
+            "",
+            "## Generators",
+            "",
+            "| generator | rung | model | requested | returned | schema valid | schema invalid | "
+            "call errors | unusable answers | judged valid | valid rate |",
+            "|---|---|---|---|---|---|---|---|---|---|---|",
+        ]
     for gen in report.get("generators", []):
         lines.append(
             f"| {gen.get('generator')} | {gen.get('rung', '-')} | {gen.get('model')} | "
@@ -958,3 +1026,43 @@ def render_markdown(report: Mapping[str, Any]) -> str:
                 f"{reject.get('problem')}" + (f" — `{excerpt}`" if excerpt else "")
             )
     return "\n".join(lines)
+
+
+def _against(replay: Mapping[str, Any] | None) -> list[str]:
+    """A replay's comparison with its source run: every (attack, row) whose verdict, pressure or
+    on-target moved, and the attacks today's vocabulary refused (ADR 0177)."""
+    if not replay:
+        return []
+    changed = replay.get("changed", [])
+    lines = [
+        "",
+        f"## Against {replay.get('source', '')}",
+        "",
+        f"{replay.get('compared', 0)} (attack, row) pairs compared with the source run: "
+        f"{len(changed)} changed, {replay.get('regressions', 0)} regressions (held to "
+        f"breached), {replay.get('fixed', 0)} fixed"
+        + (
+            f"; {replay['unmatched']} the source never drove, not compared"
+            if replay.get("unmatched")
+            else ""
+        )
+        + ".",
+    ]
+    if changed:
+        lines.append("")
+    for change in changed:
+        flags = [
+            f"{name} {change[name]['from']} -> {change[name]['to']}"
+            for name in ("pressure", "on_target")
+            if name in change
+        ]
+        lines.append(
+            f"- **{change.get('attack')}** on {change.get('row')}: "
+            f"{change.get('from')} -> {change.get('to')}"
+            + (f" ({'; '.join(flags)})" if flags else "")
+        )
+    stale = replay.get("stale", [])
+    if stale:
+        lines += ["", f"Stale, not driven ({len(stale)}):", ""]
+        lines += [f"- **{s.get('attack')}**: {s.get('reason')}" for s in stale]
+    return lines
