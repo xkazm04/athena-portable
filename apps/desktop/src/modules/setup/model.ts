@@ -15,7 +15,8 @@
  *   engine went missing is not a state this module can reach.
  * - **Nothing here claims the daemon restarted.** Choosing an engine writes one row; whether the
  *   running daemon is on it is the daemon store's fact, and `pendingEngine` is the difference
- *   between the two, said plainly.
+ *   between the two, said plainly. Which of the engine's states holds is decided once, in
+ *   `engine-state.ts`; `startFailure` and `pendingEngine` are read off it.
  */
 import type { DaemonHealth } from "@/lib/daemon";
 import { engineLabel, probeOf, remedyFor, type EngineProbe } from "@/lib/engines";
@@ -23,6 +24,8 @@ import type { MicStanding } from "@/lib/voice";
 import type { MotionChoice } from "@/lib/motion";
 import type { ThemeChoice, TypeScale } from "@/stores/settings";
 import { DEFAULT_SKIN, type Skin } from "@/stores/shell";
+
+import { engineStateOf } from "./engine-state";
 
 export type SetupMode = "onboarding" | "settings";
 
@@ -73,7 +76,7 @@ export interface SetupActions {
   reopenOnboarding: () => void;
 }
 
-/** The daemon failed or stopped on the stored engine: what to say, why, and the one action. */
+/** The daemon failed or stopped: what to say, why, and the one action that starts it again. */
 export interface StartFailure {
   engine: string;
   title: string;
@@ -116,9 +119,12 @@ export interface SetupModel {
   daemonEngine: string;
   /** The daemon has reported once. Before that `daemonEngine` is a placeholder, not a reading. */
   loaded: boolean;
-  /** An engine the user chose that the running daemon is not on. Null when settled. */
+  /** An engine the user chose that a running daemon is not on (`engine-state.ts`). Null when settled. */
   pendingEngine: string | null;
-  /** Non-null when the daemon failed or stopped on the stored engine. Restart is its action. */
+  /**
+   * Non-null when the daemon failed or stopped, on the stored engine or on the one it still ran
+   * on after another was chosen. Restart, on the stored engine, is its action.
+   */
   startFailure: StartFailure | null;
   /** The writes that were refused; the control shows its own, and the stored row is shown again. */
   refusals: SetupRefusals;
@@ -174,23 +180,23 @@ export function selectSetup(source: SetupSources): SetupModel {
   });
   const health = source.daemonHealth ?? "stopped";
   const daemonEngine = source.daemonEngine ?? "";
+  const loaded = source.daemonLoaded ?? true;
   const label = engineLabel(source.engine);
-  // A daemon that failed or stopped on the stored engine is a failed start. It is not a failed
-  // look, so the probe's "daemon is not ready" reason is not shown beside it.
+  const state = engineStateOf({ ...source, loaded, daemonEngine, daemonHealth: health });
+  const failed = health === "failed";
+  const other = state.kind === "down-on-other";
+  // A daemon that failed or stopped is a failed start, with the act that starts it again (the
+  // only restart a daemon that is not ready asks for). It is not a failed look, so the probe's
+  // "daemon is not ready" reason is not shown beside it.
   const startFailure: StartFailure | null =
-    (source.daemonLoaded ?? true) &&
-    daemonEngine === source.engine &&
-    (health === "failed" || health === "stopped")
+    state.move === "restart" && health !== "ready"
       ? {
-          engine: source.engine,
-          title:
-            health === "failed"
-              ? `Athena could not start on ${label}.`
-              : `Athena is not running on ${label}.`,
-          reason:
-            source.daemonError ||
-            (health === "failed" ? "No reason was given." : "It stopped without saying why."),
-          actionLabel: `Try again on ${label}`,
+          engine: other ? daemonEngine : source.engine,
+          title: other && failed
+            ? `Athena stopped on ${engineLabel(daemonEngine)}.`
+            : `Athena ${failed ? "could not start" : "is not running"}${other ? "" : ` on ${label}`}.`,
+          reason: source.daemonError || (failed ? "No reason was given." : "It stopped without saying why."),
+          actionLabel: `${other ? "Start" : "Try again"} on ${label}`,
         }
       : null;
   return {
@@ -218,27 +224,13 @@ export function selectSetup(source: SetupSources): SetupModel {
     storePath: source.storePath,
     daemonHealth: health,
     daemonEngine,
-    loaded: source.daemonLoaded ?? true,
-    pendingEngine: pendingEngineOf(source.engine, daemonEngine, health),
+    loaded,
+    pendingEngine: state.kind === "pending-switch" ? source.engine : null,
     startFailure,
     refusals: source.refusals ?? NO_REFUSALS,
     waking: source.waking ?? false,
     actions: source.actions,
   };
-}
-
-/**
- * The stored engine is pending when a daemon is running and it is not the one running on it. A
- * daemon that is stopped or starting has nothing to disagree with; the row is simply what the
- * next start uses.
- */
-export function pendingEngineOf(
-  stored: string,
-  running: string,
-  health: DaemonHealth,
-): string | null {
-  if (health !== "ready" || !running) return null;
-  return stored === running ? null : stored;
 }
 
 /**
@@ -256,17 +248,19 @@ function hostOfSafely(url: string): string {
 }
 
 /** Fixtures and any variant that needs a set that does nothing. */
+const noop = () => {};
+
 export const INERT_ACTIONS: SetupActions = {
-  chooseEngine: () => {},
-  checkEngines: () => {},
-  restart: () => {},
-  setTheme: () => {},
-  setSkin: () => {},
-  setTypeScale: () => {},
-  setMotion: () => {},
-  setBrainPath: () => {},
-  openPage: () => {},
-  checkMic: () => {},
-  finish: () => {},
-  reopenOnboarding: () => {},
+  chooseEngine: noop,
+  checkEngines: noop,
+  restart: noop,
+  setTheme: noop,
+  setSkin: noop,
+  setTypeScale: noop,
+  setMotion: noop,
+  setBrainPath: noop,
+  openPage: noop,
+  checkMic: noop,
+  finish: noop,
+  reopenOnboarding: noop,
 };

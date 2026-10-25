@@ -10,9 +10,10 @@
  * that says the machine is ready after the engine has been uninstalled. Here, a standing that
  * disagreed with the fields under it is not a state this module can reach.
  */
-import { engineLabel, probeOf, usable, type EngineProbe } from "@/lib/engines";
+import { engineLabel } from "@/lib/engines";
 import type { Tone } from "@/components/StatusDot";
 
+import { engineStateOf } from "./engine-state";
 import type { SetupModel } from "./model";
 
 /**
@@ -29,6 +30,8 @@ export interface Fact {
 }
 
 /** Which hue a standing takes. `unknown` is not a warning; it is early. */
+const fact = (key: Fact["key"], standing: Standing, summary: string): Fact => ({ key, standing, summary });
+
 export const STANDING_TONE: Record<Standing, Tone> = {
   done: "success",
   todo: "neutral",
@@ -36,139 +39,43 @@ export const STANDING_TONE: Record<Standing, Tone> = {
   unknown: "pending",
 };
 
+/** The engine's fact is its state's words (`engine-state.ts`), decided once with the state's move. */
 export function engineFact(model: SetupModel): Fact {
-  const base = { key: "engine" as const };
-  if (model.probes === null) {
-    if (model.startFailure) {
-      return { ...base, standing: "missing", summary: model.startFailure.title.replace(/\.$/, "") };
-    }
-    return {
-      ...base,
-      standing: "unknown",
-      summary: model.checking
-        ? "checking the engine…"
-        : model.problem
-          ? `Athena could not check the engine (${model.problem})`
-          : "Athena has not heard back about the engine yet",
-    };
-  }
-  const chosen: EngineProbe | null = probeOf(model.probes, model.engine);
-  if (chosen?.state === "found") {
-    // Found is the probe's word; running is the daemon's. A turn goes to the engine the daemon
-    // is on, so the fact is done only when both name the chosen one.
-    if (!model.loaded) {
-      return {
-        ...base,
-        standing: "unknown",
-        summary: `${engineLabel(chosen.id)} is chosen, but Athena has not yet said which engine she is on`,
-      };
-    }
-    if (model.daemonEngine !== model.engine) {
-      const label = engineLabel(chosen.id);
-      return {
-        ...base,
-        standing: "todo",
-        summary: model.daemonEngine
-          ? `${label} is chosen, but Athena is still running on ${engineLabel(model.daemonEngine)}`
-          : `${label} is chosen, and Athena is still starting up on it`,
-      };
-    }
-    if (model.daemonHealth === "failed") {
-      return {
-        ...base,
-        standing: "missing",
-        summary: `${engineLabel(chosen.id)} is chosen, but Athena could not start on it`,
-      };
-    }
-    if (model.daemonHealth === "stopped") {
-      return {
-        ...base,
-        standing: "todo",
-        summary: `${engineLabel(chosen.id)} is chosen, but Athena is not running`,
-      };
-    }
-    if (model.daemonHealth !== "ready") {
-      return {
-        ...base,
-        standing: "todo",
-        summary: `${engineLabel(chosen.id)} is chosen, and Athena is still starting up on it`,
-      };
-    }
-    return { ...base, standing: "done", summary: `${engineLabel(chosen.id)} is ready` };
-  }
-  const found = usable(model.probes);
-  if (chosen && chosen.state === "not_logged_in") {
-    return {
-      ...base,
-      standing: "missing",
-      summary: `${engineLabel(chosen.id)} is installed but not signed in`,
-    };
-  }
-  if (found.length > 0) {
-    return {
-      ...base,
-      standing: "todo",
-      summary: `${found.length} of ${model.probes.length} ready, but another is chosen`,
-    };
-  }
-  return {
-    ...base,
-    standing: "missing",
-    summary:
-      model.probes.length === 0
-        ? "Athena was told of no engines at all"
-        : `none of the ${model.probes.length} can be used yet`,
-  };
+  const { standing, summary } = engineStateOf(model);
+  return fact("engine", standing, summary);
 }
 
 export function pageFact(model: SetupModel): Fact {
-  const base = { key: "page" as const };
-  if (model.tabs.length === 0) {
-    return { ...base, standing: "todo", summary: "none open yet" };
-  }
-  const first = model.tabs[0].host;
-  return {
-    ...base,
-    standing: "done",
-    summary: model.tabs.length === 1 ? `open on ${first}` : `${model.tabs.length} open`,
-  };
+  const n = model.tabs.length;
+  if (n === 0) return fact("page", "todo", "none open yet");
+  return fact("page", "done", n === 1 ? `open on ${model.tabs[0].host}` : `${n} open`);
 }
 
 export function brainFact(model: SetupModel): Fact {
-  const base = { key: "brain" as const };
-  if (model.brainPath.trim().length > 0) {
-    return { ...base, standing: "done", summary: "a directory of its own" };
-  }
-  // Not `missing`: the daemon has a default and it works. It is `todo` because a person who
-  // cares where their episodes are written has not yet said.
-  return { ...base, standing: "todo", summary: "the daemon's default directory" };
+  // Not `missing` when empty: the daemon has a default and it works. It is `todo` because a person
+  // who cares where their episodes are written has not yet said.
+  return model.brainPath.trim().length > 0
+    ? fact("brain", "done", "a directory of its own")
+    : fact("brain", "todo", "the daemon's default directory");
 }
 
 /** Never required: a machine with no microphone runs every act but the spoken one. */
 export function micFact(model: SetupModel): Fact {
-  const base = { key: "mic" as const };
   switch (model.mic) {
     case "granted":
-      return { ...base, standing: "done", summary: model.micDetail || "granted" };
+      return fact("mic", "done", model.micDetail || "granted");
     case "denied":
-      return { ...base, standing: "missing", summary: model.micDetail || "refused by the webview" };
+      return fact("mic", "missing", model.micDetail || "refused by the webview");
     case "unsupported":
-      return { ...base, standing: "missing", summary: model.micDetail || "none on this machine" };
+      return fact("mic", "missing", model.micDetail || "none on this machine");
     default:
-      return { ...base, standing: "unknown", summary: "not asked yet" };
+      return fact("mic", "unknown", "not asked yet");
   }
 }
 
 export function voiceFact(model: SetupModel): Fact {
-  const base = { key: "voice" as const };
-  if (model.voiceAvailable) {
-    return { ...base, standing: "done", summary: "ready to listen" };
-  }
-  return {
-    ...base,
-    standing: model.daemonHealth === "ready" ? "missing" : "unknown",
-    summary: model.voiceReason || "not known yet",
-  };
+  if (model.voiceAvailable) return fact("voice", "done", "ready to listen");
+  return fact("voice", model.daemonHealth === "ready" ? "missing" : "unknown", model.voiceReason || "not known yet");
 }
 
 /**
@@ -184,20 +91,18 @@ export function isReady(model: SetupModel): boolean {
 /** Why the machine is not ready, as the sentence on the disabled button. Empty when it is. */
 export function notReadyBecause(model: SetupModel): string {
   const engine = engineFact(model);
-  const page = pageFact(model);
-  if (engine.standing !== "done" && page.standing !== "done") {
-    return "Get an engine ready and open a page first.";
-  }
+  const page = pageFact(model).standing === "done";
+  if (engine.standing !== "done" && !page) return "Get an engine ready and open a page first.";
   if (engine.standing === "unknown") {
     // "Still checking" only while a check runs: a check that failed, or one nobody has answered,
     // would leave the person waiting on a button nothing is going to enable.
-    if (model.probes === null && model.checking) return "Athena is still checking the engine.";
-    if (model.probes === null && model.problem) return "Athena could not check the engine. Check again under Mind.";
+    const kind = engineStateOf(model).kind;
+    if (kind === "checking") return "Athena is still checking the engine.";
+    if (kind === "check-failed") return "Athena could not check the engine. Check again under Mind.";
     return `${engine.summary}.`;
   }
   if (engine.standing !== "done") return `The engine cannot run a turn yet: ${engine.summary}.`;
-  if (page.standing !== "done") return "Open a page first — Athena works inside one.";
-  return "";
+  return page ? "" : "Open a page first — Athena works inside one.";
 }
 
 /** The engine passage's opening sentence, composed from the figures. */

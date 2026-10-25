@@ -9,7 +9,7 @@ import { expect, test, vi } from "vitest";
 
 import type { EngineProbe } from "@/lib/engines";
 
-import { INERT_ACTIONS, pendingEngineOf, selectSetup, type SetupSources } from "./model";
+import { INERT_ACTIONS, selectSetup, type SetupSources } from "./model";
 
 function sources(over: Partial<SetupSources> = {}): SetupSources {
   return {
@@ -63,12 +63,12 @@ test("no probe at all is not the same fact as no engine installed", () => {
 });
 
 test("a pending engine is the stored one when a running daemon is on another", () => {
-  expect(pendingEngineOf("codex", "claude_code", "ready")).toBe("codex");
-  expect(pendingEngineOf("claude_code", "claude_code", "ready")).toBeNull();
+  const pending = (over: Partial<SetupSources>) => selectSetup(sources({ engine: "codex", ...over })).pendingEngine;
+  expect(pending({})).toBe("codex");
+  expect(pending({ engine: "claude_code" })).toBeNull();
   // A daemon that is not running has nothing to disagree with.
-  expect(pendingEngineOf("codex", "claude_code", "starting")).toBeNull();
-  expect(pendingEngineOf("codex", "", "stopped")).toBeNull();
-  expect(selectSetup(sources({ engine: "codex" })).pendingEngine).toBe("codex");
+  expect(pending({ daemonHealth: "starting" })).toBeNull();
+  expect(pending({ daemonHealth: "stopped", daemonEngine: "" })).toBeNull();
 });
 
 test("a tab with no title is called by its address, and a non-URL is its own host", () => {
@@ -127,12 +127,21 @@ test("U: a daemon that failed on the stored engine is a start failure with the r
   expect(restart).toHaveBeenCalledOnce();
 });
 
-test("U: a stopped daemon on the stored engine is one too; a failure on another engine, or before the first reading, is not", () => {
+test("U: a stopped daemon on the stored engine is one too; before the first reading, or running, it is not", () => {
   expect(selectSetup(sources({ daemonHealth: "stopped" })).startFailure?.title).toBe(
     "Athena is not running on Claude Code.",
   );
-  expect(selectSetup(sources({ daemonHealth: "failed", daemonEngine: "codex" })).startFailure).toBeNull();
   expect(selectSetup(sources({ daemonHealth: "failed", daemonLoaded: false })).startFailure).toBeNull();
   expect(selectSetup(sources({ daemonHealth: "ready" })).startFailure).toBeNull();
   expect(selectSetup(sources({ daemonHealth: "starting" })).startFailure).toBeNull();
+});
+
+test("FLIPPED (ADR 0214): a failure on the engine the daemon was still on is a start failure, offering the chosen engine", () => {
+  // Was pinned null: Claude Code chosen, the daemon failed on Codex, and no surface offered an act.
+  expect(selectSetup(sources({ daemonHealth: "failed", daemonEngine: "codex" })).startFailure).toEqual({
+    engine: "codex",
+    title: "Athena stopped on Codex.",
+    reason: "No reason was given.",
+    actionLabel: "Start on Claude Code",
+  });
 });
