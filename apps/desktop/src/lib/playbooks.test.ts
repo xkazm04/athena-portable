@@ -14,6 +14,7 @@ import {
   parseEvidence,
   minutes,
   parsePlaybook,
+  parseRanking,
   speedup,
   usd,
 } from "./playbooks";
@@ -245,4 +246,68 @@ test("a film's length reads as a clock", () => {
   expect(clock(71.4)).toBe("1:11");
   expect(clock(59.6)).toBe("1:00");
   expect(clock(5)).toBe("0:05");
+});
+
+describe("the ranking the bench commits (ADR 0056, 0128)", () => {
+  const RANKING = {
+    schema: 1,
+    ranked: [
+      {
+        rank: 1,
+        playbook: "a",
+        score: 10.45,
+        money: { annual_usd: 10000 },
+        minutes: { times_per_year: 12, saved_per_year: 2806.3 },
+        bench: { run_at: "T1", runs: { n: 3, exceeds: 3 } },
+      },
+    ],
+    unranked: [{ playbook: "b", why: "short in 2 of 4 comparable runs" }],
+  };
+
+  test("parseRanking: a ranked row's place, year and pool, an unranked row's why, and garbage as an empty map", () => {
+    const m = parseRanking(RANKING);
+    expect(m.get("a")).toEqual({
+      position: 1,
+      score: 10.45,
+      annualUsd: 10000,
+      savedMinutesYear: 2806.3,
+      runAt: "T1",
+      runs: { n: 3, exceeds: 3 },
+      unranked: null,
+    });
+    expect(m.get("b")).toMatchObject({ position: null, unranked: "short in 2 of 4 comparable runs" });
+    expect(m.size).toBe(2);
+    for (const raw of [null, "x", 3, [], { ranked: "nope" }]) expect(parseRanking(raw).size).toBe(0);
+    const nameless = parseRanking({ ranked: [{ rank: 1, playbook: 7 }, "row", { rank: 2 }], unranked: [{ why: "w" }] });
+    expect(nameless.size).toBe(0);
+  });
+
+  test("loadPlaybooks attaches each rank by id, null where the ranking says nothing or ranks an older run", () => {
+    const dir = (id: string) => `../../../../playbooks/${id}/`;
+    const show = (id: string) => ({ [`${dir(id)}playbook.json`]: { id, title: id } });
+    const bench = (id: string, runAt: string) => ({ [`${dir(id)}bench.json`]: { run_at: runAt, verdict: { word: "exceeds" } } });
+    const stale = { ...RANKING, ranked: [...RANKING.ranked, { ...RANKING.ranked[0], playbook: "c", bench: { run_at: "T0" } }] };
+    const list = loadPlaybooks(
+      { ...show("a"), ...show("b"), ...show("c"), ...show("d") },
+      { ...bench("a", "T1"), ...bench("b", "T1"), ...bench("c", "T2"), ...bench("d", "T1") },
+      {},
+      false,
+      {},
+      { default: stale },
+    );
+    const rank = (id: string) => list.find((p) => p.id === id)!.rank;
+    expect(rank("a")?.position).toBe(1);
+    expect(rank("b")?.unranked).toBe("short in 2 of 4 comparable runs");
+    // c's row ranks the run of T0; its bench.json holds the run of T2: an older ranking is not borrowed.
+    expect(rank("c")).toBeNull();
+    expect(rank("d")).toBeNull();
+    // Without a ranking every rank is null, as before the desktop read one.
+    expect(loadPlaybooks(show("a"), bench("a", "T1"))[0].rank).toBeNull();
+  });
+
+  test("shipped (guard): every ranked playbook's pool is the one the desktop works out from its bench.json", () => {
+    const ranked = PLAYBOOKS.filter((p) => p.rank?.position != null);
+    expect(ranked.length).toBeGreaterThan(80);
+    for (const p of ranked) expect(p.rank!.runs, p.id).toEqual(p.bench!.runs);
+  });
 });

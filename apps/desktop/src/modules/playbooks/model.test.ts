@@ -4,11 +4,12 @@
  */
 import { expect, test } from "vitest";
 
-import { edgeRank, kindOf, parsePlaybook, type TraceTurn } from "@/lib/playbooks";
+import { edgeRank, kindOf, parsePlaybook, type Rank, type TraceTurn } from "@/lib/playbooks";
 import { CATEGORIES } from "@/lib/playbook-taxonomy";
 
 import { fixtures } from "./fixtures";
 import {
+  annualValue,
   categoryCounts,
   filterLedger,
   selectPlaybooks,
@@ -149,7 +150,9 @@ test("reads are named in words, each once with its count", () => {
 
 test("the totals are the catalogue line's and the surface's: how many, benched, over the bar, found", () => {
   // Three playbooks, the flights one unbenched: what the two benched runs found, and one beat its bar.
-  expect(fixtures.typical.totals).toEqual({ count: 3, benched: 2, exceeds: 1, foundUsd: 551.4 });
+  // Guard: the invented fixtures carry no rank, so the four figures stay as they were and none is ranked.
+  expect(fixtures.typical.totals).toEqual({ count: 3, benched: 2, exceeds: 1, foundUsd: 551.4, ranked: 0 });
+  expect(fixtures.typical.items.every((v) => v.playbook.rank === null)).toBe(true);
 });
 
 test("a film is current while it films the bench's run, stale once the bench moved on", () => {
@@ -319,4 +322,95 @@ test("unbenched claims nothing: no runs, no sample", () => {
   const v = verdictOf(null);
   expect(v.runs).toBe("");
   expect(v.sample).toBe("");
+});
+
+// -- the ranking's standing and year (ADR 0056, 0128) ------------------------------------------------
+
+const UNRANKED: Rank = {
+  position: null,
+  score: null,
+  annualUsd: null,
+  savedMinutesYear: null,
+  runAt: "",
+  runs: null,
+  unranked: "short in 2 of 4 comparable runs",
+};
+const RANKED: Rank = {
+  position: 3,
+  score: 9.1,
+  annualUsd: 10000,
+  savedMinutesYear: 600,
+  runAt: "2026-10-22T00:00:00Z",
+  runs: { n: 1, exceeds: 1 },
+  unranked: null,
+};
+
+/** Latest exceeds, keyed, with three more lines under its key: 2 of 4 exceeded. */
+const twoOfFour = () =>
+  benched("exceeds", [
+    { run_at: "2026-10-19T00:00:00Z", comparable: "sha256:aaaa", verdict: "short" },
+    { run_at: "2026-10-20T00:00:00Z", comparable: "sha256:aaaa", verdict: "exceeds" },
+    { run_at: "2026-10-21T00:00:00Z", comparable: "sha256:aaaa", verdict: "short" },
+  ]);
+
+test("verdictOf: a chore the ranking leaves out reads Not ranked with its why, never Beats its bar", () => {
+  const bench = twoOfFour();
+  expect(bench.runs).toEqual({ n: 4, exceeds: 2 });
+  const v = verdictOf(bench, null, UNRANKED);
+  expect(v.label).toBe("Not ranked");
+  expect(v.tone).toBe("warning");
+  expect(v.sentence).toContain("short in 2 of 4 comparable runs");
+  // No rank: exactly today's verdict.
+  const today = verdictOf(bench, null, null);
+  expect(today.label).toBe("Beats its bar");
+  expect(today.tone).toBe("success");
+  expect(today.sentence).toBe("Beat its bar in 2 of 4 test runs: 3 of 3 found, no false claims.");
+  expect(verdictOf(bench)).toEqual(today);
+});
+
+test("selectPlaybooks: only a chore the ranking does not leave out counts as over the bar, and the ranked are counted", () => {
+  const book = (id: string, bench: unknown, rank: Rank | null) => ({ ...parsePlaybook({ id }, bench)!, rank });
+  const exceeds = { run_at: "2026-10-22T00:00:00Z", verdict: { word: "exceeds" }, score: { found: 1, eligible: 1 } };
+  const books = [book("left-out", exceeds, UNRANKED), book("ranked", exceeds, RANKED), book("untested", null, null)];
+  const t = selectPlaybooks(books, NOOP).totals;
+  expect(t.exceeds).toBe(1);
+  expect(t.ranked).toBe(1);
+  // With every rank null, every latest-exceeds counts, as before.
+  const bare = selectPlaybooks(books.map((p) => ({ ...p, rank: null })), NOOP).totals;
+  expect(bare.exceeds).toBe(2);
+  expect(bare.ranked).toBe(0);
+});
+
+test("annualValue: the ranking's year where there is a rank, ADR 0056's period table where not", () => {
+  const per = (p: string, rank: Rank | null = null) => ({
+    ...parsePlaybook({ id: p, economics: { value_usd: 2500, per: p } })!,
+    rank,
+  });
+  expect(annualValue(per("quarter"))).toBe(10000);
+  expect(annualValue(per("year"))).toBe(2500);
+  expect(annualValue(per("month"))).toBe(30000);
+  expect(annualValue(per("week"))).toBe(130000);
+  expect(annualValue(per("estate"))).toBe(2500);
+  expect(annualValue(per("episode"))).toBe(2500);
+  expect(annualValue(per("year", { ...RANKED, annualUsd: 7777 }))).toBe(7777);
+});
+
+test("shipped: the ledger's year is the ranking's for every ranked playbook", () => {
+  const ranked = PLAYBOOKS.filter((p) => p.rank?.position != null);
+  expect(ranked.length).toBeGreaterThan(80);
+  for (const p of ranked) expect(annualValue(p), p.id).toBe(p.rank!.annualUsd);
+});
+
+test("shipped: the chores the ranking leaves out say so, and a ranked one still beats its bar", () => {
+  const verdict = (id: string) => {
+    const p = PLAYBOOKS.find((b) => b.id === id)!;
+    return verdictOf(p.bench, tallyOf(p), p.rank);
+  };
+  const cpg = verdict("cpg-deductions");
+  expect(cpg.label).toBe("Not ranked");
+  expect(cpg.sentence).toContain("false claims 1, traps filed 1 (the worst of 3 comparable runs)");
+  const clinic = verdict("clinic-denials");
+  expect(clinic.label).toBe("Not ranked");
+  expect(clinic.sentence).toContain("short in 2 of 4 comparable runs");
+  expect(verdict("change-order-notices").label).toBe("Beats its bar");
 });

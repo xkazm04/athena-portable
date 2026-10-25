@@ -11,6 +11,7 @@ import { loadPlaybooks, type Playbook } from "./playbooks";
 const SHOWCASES = import.meta.glob("../../../../playbooks/*/playbook.json", { eager: true });
 const BENCHES = import.meta.glob("../../../../playbooks/*/bench.json", { eager: true });
 const EVIDENCES = import.meta.glob("../../../../playbooks/*/evidence.json", { eager: true });
+const RANKING = import.meta.glob("../../../../playbooks/ranking.json", { eager: true });
 const STORIES = import.meta.glob<string>("../../../../playbooks/*/story/*.webp", {
   eager: true,
   query: "?url",
@@ -23,4 +24,5 @@ export const PLAYBOOKS: readonly Playbook[] = loadPlaybooks(
   EVIDENCES,
   import.meta.env.DEV,
   STORIES,
+  Object.values(RANKING)[0],
 );

@@ -30,6 +30,7 @@ import {
   type Bench,
   type CardOutcome,
   type Playbook,
+  type Rank,
   type ValueKind,
   type VerdictWord,
 } from "@/lib/playbooks";
@@ -106,11 +107,14 @@ export interface PlaybookView {
 
 export interface PlaybooksModel {
   items: readonly PlaybookView[];
-  /** What the catalogue's line and the surface say: how many, how many benched and beat the bar. */
+  /** What the catalogue's line and the surface say: how many, how many benched and beat the bar (a
+   *  chore the ranking leaves out does not, whatever its latest run said; ADR 0213). */
   totals: {
     count: number;
     benched: number;
     exceeds: number;
+    /** How many the bench's ranking places (ADR 0056). */
+    ranked: number;
     /** Money back the test runs found across every tested playbook: `money_back` cards only. */
     foundUsd: number;
   };
@@ -187,7 +191,12 @@ const LOOK = {
   short: ["Falls short", "warning"],
 } as const;
 
-export function verdictOf(bench: Bench | null, tally: Tally | null = null): Verdict {
+/**
+ * The badge and its sentence. `rank` is the ranking's row (ADR 0056, 0213): its pool is the runs counted
+ * where it has one, and a chore the method leaves out reads "Not ranked" with the ranking's why unless
+ * its latest run fell short, which already says as much. `rank` null is the bench.json's word alone.
+ */
+export function verdictOf(bench: Bench | null, tally: Tally | null = null, rank: Rank | null = null): Verdict {
   if (bench === null) {
     return {
       word: "unbenched",
@@ -207,20 +216,22 @@ export function verdictOf(bench: Bench | null, tally: Tally | null = null): Verd
     .filter(Boolean)
     .join(", ");
   // ADR 0128: the latest run is one draw; say how many comparable runs stand behind it.
-  const { n, exceeds } = bench.runs;
+  const { n, exceeds } = rank?.runs ?? bench.runs;
   const one = n === 1;
   const beat = `${exceeds} of ${n} test runs`;
   const word = bench.verdict.word;
-  const sentence =
-    word === "exceeds"
+  const out = rank?.unranked != null && word !== "short";
+  const sentence = out
+    ? `Not ranked: ${rank.unranked}. The latest test run ${word === "exceeds" ? "beat" : "met"} its bar: ${body}.`
+    : word === "exceeds"
       ? `Beat its bar in ${one ? "its one test run" : beat}: ${body}.`
       : word === "meets"
         ? `Met its bar in the latest test run: ${body}. ${one ? "One test run so far." : `It beat the bar in ${beat}.`}`
         : `Fell short: ${body}, ${one ? "one test run" : `latest of ${n} test runs`}. ${bench.verdict.reasons[0] ?? ""}`.trim();
   return {
     word,
-    label: LOOK[word][0],
-    tone: LOOK[word][1],
+    label: out ? "Not ranked" : LOOK[word][0],
+    tone: out ? "warning" : LOOK[word][1],
     sentence,
     runs: one ? "one test run" : `beat its bar in ${beat}`,
     sample: one ? "n=1" : "",
@@ -263,10 +274,12 @@ export function evidenceOf(p: Playbook): EvidenceView | null {
   };
 }
 
-/** The `per` values that are spans of time, so a value in them can be put on the year's scale. */
-const YEARLY = ["year", "month", "week"];
+/** ADR 0056's period table: how many times a year a value per each span comes round. A `per` it does
+ *  not list (an episode, an estate, a run) counts once. */
+const PERIODS: Record<string, number> = { year: 1, quarter: 4, month: 12, week: 52 };
+const YEARLY = Object.keys(PERIODS);
 
-/** True when the estimate is per a span of time (a year, a month, a week), not per an episode. */
+/** True when the estimate is per a span of time (a year, a quarter, a month, a week), not per an episode. */
 export function isYearly(p: Playbook): boolean {
   return YEARLY.includes(p.economics.per);
 }
@@ -276,17 +289,10 @@ export function withReviewMinutes(b: Bench): number {
   return (b.wallS + b.yourTimeS) / 60;
 }
 
-/** A playbook's value on one scale, so rows compare: a month is twelve of a year. */
+/** A playbook's value on one scale, so rows compare: the ranking's year where it ranks the chore
+ *  (ADR 0213), else the period table's (a quarter is four of a year, a month twelve). */
 export function annualValue(p: Playbook): number {
-  const v = p.economics.valueUsd;
-  switch (p.economics.per) {
-    case "month":
-      return v * 12;
-    case "week":
-      return v * 52;
-    default:
-      return v;
-  }
+  return p.rank?.annualUsd ?? p.economics.valueUsd * (PERIODS[p.economics.per] ?? 1);
 }
 
 export function selectPlaybooks(
@@ -305,7 +311,7 @@ export function selectPlaybooks(
       per: PER[p.economics.per] ?? `per ${p.economics.per}`,
       speed: p.bench ? speedup(p.economics.manualMinutes, withReviewMinutes(p.bench)) : "",
       tally,
-      verdict: verdictOf(p.bench, tally),
+      verdict: verdictOf(p.bench, tally, p.rank),
       evidence: evidenceOf(p),
     };
   });
@@ -315,7 +321,8 @@ export function selectPlaybooks(
     totals: {
       count: items.length,
       benched: benched.length,
-      exceeds: items.filter((v) => v.verdict.word === "exceeds").length,
+      exceeds: items.filter((v) => v.verdict.word === "exceeds" && v.playbook.rank?.unranked == null).length,
+      ranked: items.filter((v) => v.playbook.rank?.position != null).length,
       foundUsd: Math.round(benched.reduce((s, v) => s + (v.tally?.money_back?.found ?? 0), 0) * 100) / 100,
     },
     loading,

@@ -163,7 +163,8 @@ export interface Bench {
   comparable: string;
   /** The runs this bench.json holds under the latest run's key, the latest counted (ADR 0128):
    *  how many, and how many of them exceeded. An unkeyed run is a set of one. The ranking also
-   *  checks the key against today's files; the desktop cannot, so this is what the file says. */
+   *  checks the key against today's files and pools the whole run ledger; the desktop cannot, so
+   *  this is what the file says, and `Playbook.rank.runs` is the ranking's word where it has one. */
   runs: { n: number; exceeds: number };
   cards: readonly BenchCard[];
   missed: readonly { action: string; key: string; valueUsd: number | null }[];
@@ -267,6 +268,28 @@ export interface Playbook {
   bench: Bench | null;
   /** The run filmed and narrated (ADR 0055); `null` until `evidence <id>` ran. */
   evidence: Evidence | null;
+  /** Where the bench's committed ranking puts it (ADR 0056); `null` when the ranking does not name
+   *  it, or ranks a run other than the one `bench` holds (ADR 0213). */
+  rank: Rank | null;
+}
+
+/**
+ * One playbook's row in `playbooks/ranking.json` (ADR 0056, 0128, 0213): the bench's own word on its
+ * year, its run pool and its standing, held to the bench files by `rank --check`. A ranked row has a
+ * place and `unranked: null`; a row the method leaves out has no place and says why.
+ */
+export interface Rank {
+  position: number | null;
+  score: number | null;
+  /** The estimate on the year's scale, by the ranking's period table. */
+  annualUsd: number | null;
+  savedMinutesYear: number | null;
+  /** The `run_at` of the bench run it ranked; "" for a row left out. */
+  runAt: string;
+  /** The comparable runs it stands on; `null` for a row left out. */
+  runs: { n: number; exceeds: number } | null;
+  /** Why the method leaves it out, in the ranking's words; `null` when ranked. */
+  unranked: string | null;
 }
 
 /** One still of the run's storyboard (ADR 0096, 0137): the drawing or a turn (schema 2: the abstract,
@@ -319,6 +342,39 @@ const OUTCOMES: readonly CardOutcome[] = [
   "proposed",
 ];
 const VERDICTS: readonly VerdictWord[] = ["exceeds", "meets", "short"];
+
+/** `ranking.json` into a map by playbook id. Lenient like `parseBench`: garbage is an empty map, and
+ *  a row without a playbook id is dropped. */
+export function parseRanking(raw: unknown): Map<string, Rank> {
+  const out = new Map<string, Rank>();
+  if (!isRaw(raw)) return out;
+  for (const r of list(raw.ranked).filter(isRaw)) {
+    const b = isRaw(r.bench) ? r.bench : {};
+    const runs = isRaw(b.runs) ? b.runs : null;
+    if (typeof r.playbook === "string")
+      out.set(r.playbook, {
+        position: numOrNull(r.rank),
+        score: numOrNull(r.score),
+        annualUsd: isRaw(r.money) ? numOrNull(r.money.annual_usd) : null,
+        savedMinutesYear: isRaw(r.minutes) ? numOrNull(r.minutes.saved_per_year) : null,
+        runAt: str(b.run_at),
+        runs: runs && { n: num(runs.n), exceeds: num(runs.exceeds) },
+        unranked: null,
+      });
+  }
+  for (const r of list(raw.unranked).filter(isRaw))
+    if (typeof r.playbook === "string")
+      out.set(r.playbook, {
+        position: null,
+        score: null,
+        annualUsd: null,
+        savedMinutesYear: null,
+        runAt: "",
+        runs: null,
+        unranked: str(r.why),
+      });
+  return out;
+}
 
 const outcome = (v: unknown): CardOutcome =>
   (OUTCOMES as readonly string[]).includes(str(v)) ? (str(v) as CardOutcome) : "other";
@@ -590,6 +646,7 @@ export function parsePlaybook(
     fit: parseFit(raw.fit),
     bench: parseBench(bench),
     evidence,
+    rank: null,
   };
 }
 
@@ -597,14 +654,23 @@ function clampScore(n: number): number {
   return Math.min(5, Math.max(1, n));
 }
 
-/** Every shipped playbook, ordered by where it sits on the edge: hardest-and-most-useful first. */
+/** Every shipped playbook, ordered by where it sits on the edge: hardest-and-most-useful first. Each
+ *  carries its row of `ranking` (`ranking.json`), when that row ranks the run its bench holds. */
 export function loadPlaybooks(
   showcases: Record<string, unknown>,
   benches: Record<string, unknown>,
   evidences: Record<string, unknown> = {},
   serve = false,
   stories: Record<string, unknown> = {},
+  ranking: unknown = null,
 ): Playbook[] {
+  const ranks = parseRanking(unwrap(ranking));
+  // A row ranks one run: a bench.json that has moved on since is not that run, so it borrows nothing.
+  // A row left out names no run; `rank --check` holds the committed file to the committed benches.
+  const rankOf = (p: Playbook): Rank | null => {
+    const r = ranks.get(p.id) ?? null;
+    return r && (r.unranked !== null || r.runAt === p.bench?.runAt) ? r : null;
+  };
   const beside = (path: string, name: string) => path.replace(/playbook\.json$/, name);
   const benchFor = (path: string) => benches[beside(path, "bench.json")] ?? null;
   const urlOf = (value: unknown) => {
@@ -622,6 +688,7 @@ export function loadPlaybooks(
   return Object.entries(showcases)
     .map(([path, raw]) => parsePlaybook(unwrap(raw), unwrap(benchFor(path)), evidenceFor(path)))
     .filter((p): p is Playbook => p !== null)
+    .map((p) => ({ ...p, rank: rankOf(p) }))
     .sort((a, b) => edgeRank(b) - edgeRank(a) || a.title.localeCompare(b.title));
 }
 
@@ -669,9 +736,15 @@ export function speedup(manual: number, measured: number): string {
 const SHOWCASES = import.meta.glob("../../../../playbooks/*/playbook.json");
 const BENCHES = import.meta.glob("../../../../playbooks/*/bench.json");
 const EVIDENCES = import.meta.glob("../../../../playbooks/*/evidence.json");
-// The storyboard stills (ADR 0096, 0137): five small WebPs a playbook, as URLs, fetched with the
-// rest. No thumbnail is globbed: it is retired, so a build does not carry it. A build with none — the stills not yet captured — is an empty glob, and every story reads [].
+// The bench's ranking (ADR 0056, 0213): one file, fetched with the rest.
+const RANKING = import.meta.glob("../../../../playbooks/ranking.json");
+// The storyboard stills (ADR 0096, 0137): five small WebPs a playbook, as URLs. Eager on purpose
+// (ADR 0213): a still's URL is a string, so there is nothing to fetch for it; a lazy entry put a loader
+// and a chunk per still into the first frame to fetch that string, and the image itself is only fetched
+// where a story draws it. No thumbnail is globbed: it is retired, so a build does not carry it. A
+// build with none — the stills not yet captured — is an empty glob, and every story reads [].
 const STORIES = import.meta.glob<string>("../../../../playbooks/*/story/*.webp", {
+  eager: true,
   query: "?url",
   import: "default",
 });
@@ -684,13 +757,13 @@ async function resolved(glob: Record<string, () => Promise<unknown>>): Promise<R
 
 /** What this build ships, fetched on demand. The film plays only where the dev server serves `evidence/`. */
 export async function loadShipped(): Promise<readonly Playbook[]> {
-  const [showcases, benches, evidences, stories] = await Promise.all([
+  const [showcases, benches, evidences, ranking] = await Promise.all([
     resolved(SHOWCASES),
     resolved(BENCHES),
     resolved(EVIDENCES),
-    resolved(STORIES),
+    resolved(RANKING),
   ]);
-  return loadPlaybooks(showcases, benches, evidences, import.meta.env.DEV, stories);
+  return loadPlaybooks(showcases, benches, evidences, import.meta.env.DEV, STORIES, Object.values(ranking)[0]);
 }
 
 /** Whether the evidence films the bench run it is filed against, or an earlier one. */

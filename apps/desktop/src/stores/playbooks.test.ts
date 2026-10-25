@@ -39,6 +39,14 @@ describe("loading", () => {
     expect(items[0]!.bench?.runAt).toBe(PLAYBOOKS[0]!.bench?.runAt);
   }, 30_000);
 
+  it("carries the ranking's places, the same as the eager copy's (guard)", async () => {
+    await usePlaybooks.getState().load();
+    const places = (list: readonly Playbook[]) => list.map((p) => [p.id, p.rank?.position ?? null, p.rank?.unranked ?? null]);
+    const items = usePlaybooks.getState().items!;
+    expect(items.some((p) => p.rank?.position === 1)).toBe(true);
+    expect(places(items)).toEqual(places(PLAYBOOKS));
+  }, 30_000);
+
   it("fetches once however many ask at the same time, and not again once it is here", async () => {
     const a = usePlaybooks.getState().load();
     const b = usePlaybooks.getState().load();
