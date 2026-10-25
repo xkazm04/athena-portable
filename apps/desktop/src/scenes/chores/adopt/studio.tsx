@@ -8,7 +8,9 @@
  * it on a world shaped like their case; "Start for real" hands the brief's command to her. Two
  * columns when the frame is wide (the conversation, then "Your case", sticky), stacked below. The
  * showcase plays in the conversation's column, under her last line, where a turn has the width it
- * needs; the brief stays on the right beside the case it was drawn from.
+ * needs; the brief stays on the right beside the case it was drawn from. What the studio says about
+ * the brief (approvable, approved, rehearsed, handed) is read from one rev-keyed `phase`, so it is
+ * always about the draft on show.
  *
  * Escape and Close go back to the topic page; Escape asks first when something typed or picked was
  * not sent. Leaving closes the session.
@@ -24,7 +26,7 @@ import Conversation from "./conversation";
 import type { AdoptDeps } from "./deps";
 import { useAdoptSession } from "./session";
 import Showcase from "./showcase";
-import { approval, dayOf } from "./state";
+import { approval, dayOf, phase } from "./state";
 import "./adopt.css";
 
 export default function Studio({
@@ -53,7 +55,6 @@ export default function Studio({
   const [speakWhy, setSpeakWhy] = useState<string | null>(
     "Voice is not set up here",
   );
-  const [handed, setHanded] = useState(false);
   const root = useRef<HTMLDivElement>(null);
 
   const onDraft = useCallback((key: string, unsent: boolean) => {
@@ -105,7 +106,8 @@ export default function Studio({
   }, [back]);
 
   const gate = approval(s);
-  const approved = s.brief !== null && s.approvedRev === s.brief.rev;
+  const now = phase(s);
+  const approved = now.kind === "approved";
   const trace = p.bench?.trace ?? [];
 
   const head = (
@@ -240,13 +242,14 @@ export default function Studio({
             onEnough={act.enough}
             onDraft={onDraft}
             stage={
-              approved && s.brief ? (
+              now.kind === "approved" && s.brief ? (
                 <Showcase
                   recorded={trace}
                   kinds={p.economics.kinds}
                   portals={s.brief.portals}
-                  showcase={s.showcase}
-                  handed={handed}
+                  rehearsal={now.rehearsal}
+                  rev={now.rev}
+                  handed={now.handed}
                   onStart={() => {
                     // The saved case rides the hand-off, so every turn of the run is filed under it
                     // and its receipt comes back to the chore (ADR 0124).
@@ -255,7 +258,7 @@ export default function Studio({
                       title: view.title,
                       ...(s.caseId ? { caseId: s.caseId } : {}),
                     });
-                    setHanded(true);
+                    act.handed(now.rev);
                   }}
                 />
               ) : null

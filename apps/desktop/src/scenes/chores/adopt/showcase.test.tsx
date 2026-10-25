@@ -93,7 +93,8 @@ function render(showcase: ShowcaseEvent | null) {
       <Showcase
         recorded={RECORDED}
         portals={{}}
-        showcase={showcase}
+        rehearsal={showcase && { rev: 1, event: showcase }}
+        rev={1}
         onStart={() => {}}
       />,
     ),
@@ -252,11 +253,35 @@ describe("the pure readers", () => {
   });
 
   it("plays a shaped run as plain cards with no value", () => {
-    const shown = shownRun(RECORDED, {}, done({ found_reason: "shaped" }));
+    const shown = shownRun(RECORDED, {}, { rev: 1, event: done({ found_reason: "shaped" }) }, 1);
     expect(shown.shaped).toBe(true);
     expect(shown.trace[1].cards.map((c) => [c.outcome, c.valueUsd])).toEqual([
       ["other", null],
       ["other", null],
     ]);
+  });
+});
+
+describe("a rehearsal belongs to the draft it followed", () => {
+  it("case 4: draft 3 approved after draft 2 was rehearsed plays the recorded run and says it was draft 2's", () => {
+    const shown = shownRun(RECORDED, {}, { rev: 2, event: done({ found_usd: 252 }) }, 3);
+    expect(shown.tailored).toBe(false);
+    expect(shown.rehearsedOn).toBe(2);
+    act(() =>
+      root.render(
+        <Showcase
+          recorded={RECORDED}
+          portals={{}}
+          rehearsal={{ rev: 2, event: done({ found_usd: 252 }) }}
+          rev={3}
+          onStart={() => {}}
+        />,
+      ),
+    );
+    expect(text(".ad-show__tag")).toBe("Recorded run");
+    expect(host.textContent).not.toContain("Your practice run");
+    expect(host.textContent).not.toContain("$252");
+    expect(text(".ad-show__line")).toContain("rehearsed on draft 2");
+    expect(text(".ad-show__line")).toContain("one rehearsal per conversation");
   });
 });

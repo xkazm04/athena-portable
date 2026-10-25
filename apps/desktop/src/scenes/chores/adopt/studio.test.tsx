@@ -731,6 +731,52 @@ describe("the brief and the showcase", () => {
   });
 });
 
+describe("the brief's lifecycle, keyed by rev", () => {
+  const answerCard = async () => {
+    await feed(CARD);
+    await click(button("Gmail"));
+    await click(button("Send"));
+  };
+
+  it("case 5: a hand-off for draft 2 does not claim draft 3 was handed", async () => {
+    await show();
+    await feed(BRIEF(2), { kind: "adopt.clear", rev: 2 });
+    await click(button("Approve"));
+    await click(button("Start for real"));
+    expect(text(".ad-said")).toContain("Handed to her with your case");
+    await answerCard();
+    await feed(BRIEF(3), { kind: "adopt.clear", rev: 3 });
+    await click(button("Approve"));
+    expect(client.routes("approve")).toEqual([
+      { sid: "s1", rev: 2 },
+      { sid: "s1", rev: 3 },
+    ]);
+    expect(text(".ad-show")).toContain("Hands the brief's command to Athena");
+    expect(text(".ad-show")).not.toContain("Handed to her with your case");
+  });
+
+  it("case 6: a brief answered past cannot be approved, so no stage flashes for a stale rev", async () => {
+    client.approve = () =>
+      Promise.reject(
+        new ApiError(409, "conflict", "stale_rev: brief 2 was answered past; a new one is being written"),
+      );
+    await show();
+    await feed(BRIEF(2), { kind: "adopt.clear", rev: 2 });
+    let drawn = false;
+    const watch = new MutationObserver(() => {
+      if (host.querySelector(".ad-show")) drawn = true;
+    });
+    watch.observe(host, { childList: true, subtree: true });
+    await answerCard();
+    expect(button("Approve")!.hasAttribute("disabled")).toBe(true);
+    await click(button("Approve"));
+    watch.disconnect();
+    expect(client.routes("approve")).toEqual([]);
+    expect(drawn).toBe(false);
+    expect(button("Approve")!.parentElement!.getAttribute("title")).toMatch(/redraft/);
+  });
+});
+
 describe("leaving, and the voice", () => {
   it("goes back on Close, and deletes the session when the studio goes", async () => {
     await show();

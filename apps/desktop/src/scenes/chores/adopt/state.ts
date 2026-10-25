@@ -23,6 +23,34 @@ type Of<K extends AdoptEvent["kind"]> = Extract<AdoptEvent, { kind: K }>;
 export type BriefEvent = Of<"adopt.brief">;
 export type ShowcaseEvent = Of<"adopt.showcase">;
 
+/**
+ * The session's one rehearsal, stamped with the approved draft it followed. The daemon rehearses
+ * once per conversation, so a later approval never gets its own: the stamp is what lets the studio
+ * say whose run it is showing.
+ */
+export interface Rehearsal {
+  rev: number;
+  event: ShowcaseEvent;
+}
+
+/**
+ * Where the brief on show stands, as one value: every claim the studio draws about the brief is
+ * read from this, so none of them can be about another draft.
+ * - `interview`: no brief yet.
+ * - `drafted`: she is still checking it.
+ * - `cleared`: approvable, by the auditor's clear or the person's "Good enough".
+ * - `stale`: the person answered or said something after it, so the daemon refuses to approve it
+ *   until the next draft arrives.
+ * - `approved`: done; `rehearsal` is the session's one rehearsal, whichever draft it followed, and
+ *   `handed` says whether this draft (not an earlier one) went to Athena.
+ */
+export type Phase =
+  | { kind: "interview" }
+  | { kind: "drafted"; rev: number }
+  | { kind: "cleared"; rev: number; by: "auditor" | "enough" }
+  | { kind: "stale"; rev: number }
+  | { kind: "approved"; rev: number; rehearsal: Rehearsal | null; handed: boolean };
+
 export type FeedItem =
   | { kind: "say"; key: string; text: string }
   | {
@@ -64,8 +92,12 @@ export interface StudioState {
   brief: BriefEvent | null;
   clearRev: number | null;
   enough: boolean;
+  /** The person answered or said something after the brief on show; the next brief clears it. */
+  briefStale: boolean;
   approvedRev: number | null;
-  showcase: ShowcaseEvent | null;
+  rehearsal: Rehearsal | null;
+  /** The draft whose command went to Athena on "Start for real"; `null` before one. */
+  handedRev: number | null;
   usage: { calls: number; ms: number };
   /** The saved case this session reopened (ADR 0123); `null` for a fresh conversation. */
   reopened: CaseSummary | null;
@@ -88,8 +120,10 @@ export const INITIAL: StudioState = {
   brief: null,
   clearRev: null,
   enough: false,
+  briefStale: false,
   approvedRev: null,
-  showcase: null,
+  rehearsal: null,
+  handedRev: null,
   usage: { calls: 0, ms: 0 },
   reopened: null,
   caseId: "",
@@ -115,6 +149,7 @@ export type Action =
   | { t: "error"; key: string; reason: string; detail: string }
   | { t: "enough" }
   | { t: "approved"; rev: number | null }
+  | { t: "handed"; rev: number }
   | { t: "saved"; caseId: string; problem: string };
 
 export function reduce(s: StudioState, a: Action): StudioState {
@@ -150,6 +185,7 @@ export function reduce(s: StudioState, a: Action): StudioState {
     case "answered":
       return {
         ...s,
+        briefStale: s.briefStale || s.brief !== null,
         feed: s.feed.map((f) =>
           f.kind === "card" && f.key === a.key
             ? { ...f, answers: a.answers }
@@ -166,6 +202,7 @@ export function reduce(s: StudioState, a: Action): StudioState {
     case "said":
       return {
         ...s,
+        briefStale: s.briefStale || s.brief !== null,
         feed: [
           ...s.feed,
           { kind: "you", key: a.key, text: a.text, via: a.via },
@@ -200,6 +237,8 @@ export function reduce(s: StudioState, a: Action): StudioState {
       return { ...s, enough: true };
     case "approved":
       return { ...s, approvedRev: a.rev };
+    case "handed":
+      return { ...s, handedRev: a.rev };
     case "saved":
       return { ...s, caseId: a.caseId || s.caseId, caseProblem: a.problem };
     case "event":
@@ -250,11 +289,18 @@ function onEvent(prev: StudioState, e: AdoptEvent): StudioState {
       };
     }
     case "adopt.brief":
-      return { ...s, progress: "", brief: e };
+      return { ...s, progress: "", brief: e, briefStale: false };
     case "adopt.clear":
       return { ...s, clearRev: e.rev };
     case "adopt.showcase":
-      return { ...s, showcase: e };
+      // Every showcase event is the one rehearsal: it keeps the draft its first event followed.
+      return {
+        ...s,
+        rehearsal: {
+          rev: s.rehearsal?.rev ?? s.approvedRev ?? s.brief?.rev ?? 0,
+          event: e,
+        },
+      };
     case "adopt.usage":
       return {
         ...s,
@@ -280,21 +326,48 @@ function onEvent(prev: StudioState, e: AdoptEvent): StudioState {
 export const dayOf = (iso: string): string =>
   /^\d{4}-\d{2}-\d{2}/.test(iso) ? iso.slice(0, 10) : iso || "an earlier day";
 
+/** Where the brief on show stands (see `Phase`). An approved draft stays approved past an answer. */
+export function phase(s: StudioState): Phase {
+  const b = s.brief;
+  if (b === null) return { kind: "interview" };
+  const rev = b.rev;
+  if (s.approvedRev === rev)
+    return {
+      kind: "approved",
+      rev,
+      rehearsal: s.rehearsal,
+      handed: s.handedRev === rev,
+    };
+  if (s.briefStale) return { kind: "stale", rev };
+  if (s.clearRev === rev) return { kind: "cleared", rev, by: "auditor" };
+  if (s.enough) return { kind: "cleared", rev, by: "enough" };
+  return { kind: "drafted", rev };
+}
+
 /**
  * Whether the brief on show can be approved, and if not, why. Approve opens for the revision the
- * auditor cleared, or for any revision once the person said "Good enough"; once a revision is
- * approved it is done.
+ * auditor cleared, or for any revision once the person said "Good enough", unless the person spoke
+ * after it (the daemon refuses a brief answered past); once a revision is approved it is done.
  */
 export function approval(s: StudioState): { can: boolean; why: string } {
-  const b = s.brief;
-  if (b === null) return { can: false, why: "There is no brief yet." };
-  if (s.approvedRev === b.rev)
-    return { can: false, why: "Approved: the rehearsal is under way." };
-  if (s.clearRev === b.rev || s.enough) return { can: true, why: "" };
-  return {
-    can: false,
-    why: "She is still checking this brief. Say “Good enough” to approve it as it is.",
-  };
+  switch (phase(s).kind) {
+    case "interview":
+      return { can: false, why: "There is no brief yet." };
+    case "approved":
+      return { can: false, why: "Approved: the rehearsal is under way." };
+    case "stale":
+      return {
+        can: false,
+        why: "She is redrafting the brief after your answer. Approve the new draft when it arrives.",
+      };
+    case "cleared":
+      return { can: true, why: "" };
+    case "drafted":
+      return {
+        can: false,
+        why: "She is still checking this brief. Say “Good enough” to approve it as it is.",
+      };
+  }
 }
 
 /** One answer, read back: the chosen labels, then the words. */

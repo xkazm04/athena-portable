@@ -61,6 +61,8 @@ export interface StudioActions {
   drop: (file: File) => void;
   enough: () => void;
   approve: (rev: number) => void;
+  /** Record that draft `rev`'s command went to Athena ("Start for real"). */
+  handed: (rev: number) => void;
   /** Follow the stream again after it was given up, or start again after a failed start. */
   retry: () => void;
 }
@@ -250,6 +252,7 @@ export function useAdoptSession(
         },
       );
     },
+    handed: (rev) => dispatch({ t: "handed", rev }),
     retry: () => {
       if (!deps) return;
       if (state.conn === "lost" && sid.current && life.current) {

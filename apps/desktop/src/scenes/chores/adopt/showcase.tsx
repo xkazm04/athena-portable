@@ -17,8 +17,11 @@
  * - The bench never approves a card (`approve: "none"`), so every card is one she would propose
  *   for an OK nobody gave: nothing was sent, and the words say "would propose", never "filed".
  *
- * A rehearsal that failed leaves the recorded run and says why. Then "Start for real" hands the
- * brief's command to Athena.
+ * A rehearsal that failed leaves the recorded run and says why. The daemon rehearses once per
+ * conversation: a draft approved after an earlier one was rehearsed plays the recorded run, with a
+ * line saying which draft the practice run was on, never that run under this draft's name. Then
+ * "Start for real" hands the brief's command to Athena; the line under it says so only for the
+ * draft that was handed.
  */
 import { useEffect, useMemo, useState } from "react";
 
@@ -29,7 +32,7 @@ import { MONEY_KINDS, kindAmount } from "@/modules/playbooks/model";
 
 import { REPLAY_STEP_MS } from "../replay";
 import TurnView from "../turn";
-import { withPortals, type ShowcaseEvent } from "./state";
+import { withPortals, type Rehearsal } from "./state";
 
 export interface Shown {
   trace: TraceTurn[];
@@ -37,6 +40,8 @@ export interface Shown {
   /** The practice run's world was shaped beyond the app names: nothing in it is graded. */
   shaped: boolean;
   label: string;
+  /** The draft the session's one rehearsal followed, when that is not the draft on show. */
+  rehearsedOn: number | null;
 }
 
 const VALUE_KINDS: readonly ValueKind[] = ["money_back", "money_protected", "penalty_avoided", "count"];
@@ -67,12 +72,18 @@ export function adjustedIn(raw: readonly RawTraceTurn[]): number | null {
 
 const things = (n: number) => `${n} ${n === 1 ? "thing" : "things"}`;
 
-/** Which run the showcase plays: the practice run once it is done with turns, the recorded one otherwise. */
+/**
+ * Which run the showcase plays for approved draft `rev`: its practice run once that is done with
+ * turns, the recorded one otherwise — including when the rehearsal followed another draft.
+ */
 export function shownRun(
   recorded: readonly TraceTurn[],
   portals: Readonly<Record<string, string>>,
-  showcase: ShowcaseEvent | null,
+  rehearsal: Rehearsal | null,
+  rev: number,
 ): Shown {
+  const rehearsedOn = rehearsal && rehearsal.rev !== rev ? rehearsal.rev : null;
+  const showcase = rehearsedOn === null ? (rehearsal?.event ?? null) : null;
   if (showcase?.status === "done") {
     const tailored = parseTrace(showcase.trace);
     if (tailored.length) {
@@ -82,6 +93,7 @@ export function shownRun(
           trace: tailored,
           tailored: true,
           shaped: false,
+          rehearsedOn,
           label:
             "Practice run on the example's data, with your app names — nothing was sent",
         };
@@ -95,6 +107,7 @@ export function shownRun(
         })),
         tailored: true,
         shaped: true,
+        rehearsedOn,
         label: `Practice run adjusted to ${
           n != null ? things(n) : "what"
         } you told her — nothing was sent`,
@@ -105,6 +118,7 @@ export function shownRun(
     trace: withPortals(recorded, portals),
     tailored: false,
     shaped: false,
+    rehearsedOn,
     label: "The benched run, shown with your portals",
   };
 }
@@ -140,23 +154,30 @@ const cards = (n: number) => `${n} ${n === 1 ? "card" : "cards"}`;
 export default function Showcase({
   recorded,
   portals,
-  showcase,
+  rehearsal,
+  rev,
   kinds = {},
   handed = false,
   onStart,
 }: {
   recorded: readonly TraceTurn[];
   portals: Readonly<Record<string, string>>;
-  showcase: ShowcaseEvent | null;
+  /** The session's one rehearsal, stamped with the draft it followed. */
+  rehearsal: Rehearsal | null;
+  /** The approved draft on show. */
+  rev: number;
   /** The playbook's `economics.kinds`; the practice run's own labels win over them. */
   kinds?: Readonly<Record<string, ValueKind>>;
+  /** This draft's command went to Athena (not an earlier draft's). */
   handed?: boolean;
   onStart: () => void;
 }) {
   const shown = useMemo(
-    () => shownRun(recorded, portals, showcase),
-    [recorded, portals, showcase],
+    () => shownRun(recorded, portals, rehearsal, rev),
+    [recorded, portals, rehearsal, rev],
   );
+  // This draft's own rehearsal; another draft's is never read for its status, figure or labels.
+  const showcase = shown.rehearsedOn === null ? (rehearsal?.event ?? null) : null;
   const kindOf = useMemo(() => {
     const labelled = { ...kinds, ...kindsIn(showcase?.trace ?? []) };
     return (tool: string): ValueKind => labelled[tool] ?? "money_back";
@@ -178,7 +199,9 @@ export default function Showcase({
         </span>
         {shown.label}
       </p>
-      {status === "queued" || status === "running" ? (
+      {shown.rehearsedOn !== null ? (
+        <p className="ad-note ad-show__line">{`The practice run was rehearsed on draft ${shown.rehearsedOn}, and she makes one rehearsal per conversation, so this draft plays the recorded run.`}</p>
+      ) : status === "queued" || status === "running" ? (
         <p className="ad-progress ad-show__line" role="status">
           <span className="ad-progress__dots" aria-hidden="true">
             <i />

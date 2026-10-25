@@ -9,6 +9,7 @@ import {
   INITIAL,
   approval,
   harvestLine,
+  phase,
   receipt,
   reduce,
   slotGroups,
@@ -120,7 +121,7 @@ describe("the fold over the events", () => {
     ]);
     expect(s.usage).toEqual({ calls: 2, ms: 2000 });
     expect(s.clearRev).toBe(4);
-    expect(s.showcase?.status).toBe("running");
+    expect(s.rehearsal?.event.status).toBe("running");
     expect(s.feed.at(-1)).toMatchObject({
       kind: "error",
       reason: "engine_error",
@@ -145,6 +146,100 @@ describe("approval", () => {
       can: false,
       why: "There is no brief yet.",
     });
+  });
+});
+
+const clear = (seq: number, rev: number): AdoptEvent => ({
+  kind: "adopt.clear",
+  seq,
+  rev,
+});
+
+const SHOWN_DONE: AdoptEvent = {
+  kind: "adopt.showcase",
+  seq: 0,
+  status: "done",
+  turn: 1,
+  total: 1,
+  trace: [{ portal: "Gmail", said: "Found it.", said_chars: 9 }],
+  found_usd: 12,
+  found_reason: "",
+  detail: "",
+};
+
+const answered = (s: StudioState, key = "e1") =>
+  reduce(s, {
+    t: "answered",
+    key,
+    answers: [{ question_id: "q", choice_ids: [], text: "Delta too" }],
+  });
+
+describe("the brief's lifecycle, keyed by rev", () => {
+  it("case 1: an answer past a cleared brief makes it stale, and Approve says she is redrafting", () => {
+    let s = play([brief(1, 2), clear(2, 2)]);
+    expect(approval(s).can).toBe(true);
+    s = answered(s);
+    expect(phase(s)).toEqual({ kind: "stale", rev: 2 });
+    const gate = approval(s);
+    expect(gate.can).toBe(false);
+    expect(gate.why).toMatch(/redraft/);
+    expect(gate.why).toMatch(/answer/);
+  });
+
+  it("case 2: composer words past a cleared brief make it stale too", () => {
+    let s = play([brief(1, 2), clear(2, 2)]);
+    s = reduce(s, { t: "said", key: "l1", text: "We also flew Delta.", via: "text" });
+    expect(approval(s).can).toBe(false);
+    expect(phase(s).kind).toBe("stale");
+  });
+
+  it("case 3: the next brief clears the stale mark, and its own clear opens Approve", () => {
+    let s = answered(play([brief(1, 2), clear(2, 2)]));
+    s = play([brief(3, 3)], s);
+    expect(phase(s)).toEqual({ kind: "drafted", rev: 3 });
+    expect(approval(s).can).toBe(false);
+    s = play([clear(4, 3)], s);
+    expect(approval(s).can).toBe(true);
+    expect(phase(s)).toEqual({ kind: "cleared", rev: 3, by: "auditor" });
+  });
+
+  it("case 4: the one rehearsal is stamped with the draft it followed, and a later approval does not take it", () => {
+    let s = play([brief(1, 2), clear(2, 2)]);
+    s = reduce(s, { t: "approved", rev: 2 });
+    s = play([{ ...SHOWN_DONE, seq: 3 } as AdoptEvent], s);
+    expect(s.rehearsal).toMatchObject({ rev: 2, event: { status: "done" } });
+    s = answered(s);
+    s = play([brief(4, 3), clear(5, 3)], s);
+    s = reduce(s, { t: "approved", rev: 3 });
+    expect(s.rehearsal).toMatchObject({ rev: 2, event: { status: "done" } });
+    expect(phase(s)).toMatchObject({ kind: "approved", rev: 3, handed: false });
+    const shown = shownRun([], {}, s.rehearsal, 3);
+    expect(shown.tailored).toBe(false);
+    expect(shown.rehearsedOn).toBe(2);
+  });
+
+  it("case 5: a hand-off belongs to the draft it handed, so a new approval starts unhanded", () => {
+    let s = play([brief(1, 2), clear(2, 2)]);
+    s = reduce(s, { t: "approved", rev: 2 });
+    s = reduce(s, { t: "handed", rev: 2 });
+    expect(phase(s)).toMatchObject({ kind: "approved", rev: 2, handed: true });
+    s = answered(s);
+    s = play([brief(3, 3), clear(4, 3)], s);
+    s = reduce(s, { t: "approved", rev: 3 });
+    expect(s.handedRev).not.toBe(3);
+    expect(phase(s)).toMatchObject({ kind: "approved", rev: 3, handed: false });
+  });
+
+  it("guard (case 7): a cleared rev with no answer after it is approvable", () => {
+    const s = play([brief(1, 4), clear(2, 4)]);
+    expect(approval(s).can).toBe(true);
+  });
+
+  it("guard (case 8): Good enough with no answer after the latest brief opens any rev", () => {
+    let s = reduce(play([brief(1, 1)]), { t: "enough" });
+    expect(approval(s).can).toBe(true);
+    s = play([brief(2, 5)], s);
+    expect(approval(s).can).toBe(true);
   });
 });
 
@@ -285,17 +380,19 @@ describe("the recorded run with the person's portals", () => {
       found_usd: 12,
       detail: "",
     });
-    expect(shownRun(trace, { Postwren: "Gmail" }, null)).toMatchObject({
+    const own = (e: ReturnType<typeof showcase>) => ({ rev: 1, event: e });
+    expect(shownRun(trace, { Postwren: "Gmail" }, null, 1)).toMatchObject({
       tailored: false,
       label: "The benched run, shown with your portals",
     });
-    expect(shownRun(trace, {}, showcase("running")).tailored).toBe(false);
-    expect(shownRun(trace, {}, showcase("failed")).tailored).toBe(false);
-    expect(shownRun(trace, {}, showcase("done", [])).tailored).toBe(false);
+    expect(shownRun(trace, {}, own(showcase("running")), 1).tailored).toBe(false);
+    expect(shownRun(trace, {}, own(showcase("failed")), 1).tailored).toBe(false);
+    expect(shownRun(trace, {}, own(showcase("done", [])), 1).tailored).toBe(false);
     const done = shownRun(
       trace,
       {},
-      showcase("done", [{ portal: "Gmail", said: "Found it.", said_chars: 9 }]),
+      own(showcase("done", [{ portal: "Gmail", said: "Found it.", said_chars: 9 }])),
+      1,
     );
     expect(done.tailored).toBe(true);
     expect(done.trace[0]).toMatchObject({ portal: "Gmail", said: "Found it." });
