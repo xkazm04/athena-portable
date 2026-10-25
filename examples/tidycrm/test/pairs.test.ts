@@ -13,6 +13,7 @@ tempHome("tidycrm-test-");
 const { countOpenPairs, db, getPair, listOpenPairs } = await import("../lib/db");
 const { mergeContacts } = await import("../lib/mutations");
 const { buildSheet } = await import("../lib/blocks");
+const { insertExtraPair } = await import("./model/ops");
 
 /** Open pairs the sheet managed to attach to a block, which is what the blocks can show. */
 function attached(): number {
@@ -28,11 +29,7 @@ test("a merge closes the other open pairs its dropped record stood in", () => {
 
   // The seed gives each contact exactly one pair, so the case has to be built: a second
   // proposal between the two records the first two pairs are about to fold away.
-  db().run(
-    `INSERT INTO merge_pairs (id, keep_id, drop_id, confidence, evidence_json, status)
-     VALUES ('pair_extra', ?, ?, 0.5, '[]', 'open')`,
-    [first.drop_id, second.drop_id],
-  );
+  insertExtraPair(db(), "pair_extra", first.drop_id, second.drop_id);
   assert.equal(countOpenPairs(), attached(), "and still consistent with the extra pair open");
 
   assert.equal(mergeContacts(first.keep_id, first.drop_id).ok, true);

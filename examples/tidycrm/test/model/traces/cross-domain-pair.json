@@ -1,0 +1,6 @@
+{
+  "todo": "lib/blocks/index.ts counts a block's duplicate deviation in records when no open pair is attached to it, so an open pair across two domains is counted once as a pair on the keeper's block and again as a record on the drop's: the sheet head (countOpenPairs) says one fewer than the blocks. Filed to tidycrm-domain-lib.",
+  "ops": [
+    { "op": "insertExtraPair", "args": ["pair_x001", "ct_0571", "ct_0542"] }
+  ]
+}
