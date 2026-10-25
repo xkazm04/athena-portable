@@ -64,7 +64,7 @@ done only after `recertify` re-runs the touched pairs.
 | B-C5 | high | Rehearsal honesty: true label, no stale grading, not the example's script, "would propose" for list-only | housing-02, consumer-10, public-03/05, family-09 | an unshaped rehearsal never says "shaped like your case"; a shaped one shows no outcome words | WP-R |
 | B-C6 | high | Time saved with review; verdict and runs shown | employment-02, public-02, health-04 | the ratio on screen equals manual / (bench + review); "fell short" is visible where it is true | WP-N |
 | B-C7 | high | Fit stated (where, not for, asks for, costs) and answered in the interview | housing-04, commerce-06, benefits-04 | a person outside `fit.where` is told on the first card | WP-K, WP-N, WP-B |
-| B-C8 | medium | Due cadence anchored to the chore's window for yearly chores | housing (Due) | a property-tax chore adopted in October comes due before the protest window | backlog |
+| B-C8 | medium | Due cadence anchored to the chore's window for yearly chores | housing (Due) | a property-tax chore adopted in October comes due before the protest window | backlog; shipped 2026-10-25 (ADR 0131 amended: the suggestion is anchored to a dated brief line or confirmed date fact), done after recertify |
 
 | B-C9 | high | Re-film or crop the topic stills so no picture shows a figure the page does not (R-1) | recertify R-1 | no still contradicts the tiles | evidence films predate ADR 0136 |
 | B-C10 | high | The interviewer asks for the person's own anchor dates so "Dates that matter" carries dates (R-3) | recertify R-3, lien-desk--gina | re-run: >= 80% of dated rules carry a calendar date when the person has the document | WP-B follow-up |

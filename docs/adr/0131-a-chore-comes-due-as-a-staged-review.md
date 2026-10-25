@@ -156,3 +156,21 @@ sends a turn without the person there, and no authority or gate changes.
   mark, and makes no `/run` request; the review lists expired and may-have-completed first; the
   pause-or-slow prompt at three and not at two; one dock notice per case and due date),
   `stores/run.test.ts` (the first send carries `trigger: "schedule"`, the next does not).
+
+## Amended 2026-10-25
+
+Decision 4's suggestion, for a chore that comes round once or twice a year (n of 182 days or
+more), is anchored to the approved case (backlog B-C8, UAT 2026-10-23 finding 10). A yearly
+chore suggested "every 365 days, first a year from today" came due wherever the year happened to
+fall: a property-tax protest adopted in October came due the next October, months after the May
+window closed. `cadence.suggest_for_case` reads the calendar dates in the brief's "Dates that
+matter" lines (the "when" before ". If missed:"; "May 15", "15 May", "May 15, 2026", ISO) and in
+her confirmed date facts; a date that names only a rule ("30 days after the notice") is not an
+anchor. The first month and day that comes round after today sets the start, 14 days before it,
+or tomorrow when it is closer than that; the interval stays n. The basis says which line or fact
+it came from. Every other count, and a yearly chore whose case names no calendar date, gets the
+times-per-year rule unchanged, and the yearly one's basis says no date was named. Still a
+suggestion, written nowhere until she presses "Use the suggestion". An every-365-days rule drifts
+a day per leap year; the 14-day lead absorbs that for over a decade, and a true yearly rule kind
+would change the contract, so it is left out. Tests: `tests/adopt/test_chores.py` case_1 to
+case_8.

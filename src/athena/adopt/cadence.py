@@ -42,7 +42,7 @@ import json
 import re
 import threading
 import time
-from collections.abc import Mapping
+from collections.abc import Mapping, Sequence
 from dataclasses import asdict, dataclass, replace
 from datetime import UTC, date, datetime, timedelta, tzinfo
 from pathlib import Path
@@ -57,6 +57,7 @@ from athena.contracts.adopt import (
     CadenceKind,
     CadenceLine,
     CadenceRule,
+    CaseSlot,
     ChoreReview,
     ReviewAnswer,
 )
@@ -72,6 +73,8 @@ __all__ = [
     "CadenceBook",
     "CadenceUnreadable",
     "QuietWindow",
+    "brief_dates",
+    "calendar_date",
     "next_after",
     "occurrences",
     "parse_cadence",
@@ -81,6 +84,7 @@ __all__ = [
     "rule_from",
     "rule_text",
     "suggest",
+    "suggest_for_case",
     "with_line",
     "zone",
 ]
@@ -285,6 +289,128 @@ def suggest(times_per_year: Any, today: date) -> tuple[CadenceRule | None, str]:
     return (
         CadenceRule(kind="every_days", every_days=every, start=start, at="09:00"),
         f"the playbook says {said}",
+    )
+
+
+#: How far ahead of her dated deadline a yearly chore comes due.
+LEAD_DAYS = 14
+_MONTH_NAMES = (
+    r"jan(?:uary)?|feb(?:ruary)?|mar(?:ch)?|apr(?:il)?|may|june?|july?|aug(?:ust)?|"
+    r"sep(?:t(?:ember)?)?|oct(?:ober)?|nov(?:ember)?|dec(?:ember)?"
+)
+_ORD = r"(?:st|nd|rd|th)?"
+#: "may 30 days after ..." is a verb before a rule, not 30 May.
+_NOT_A_SPAN = r"(?!\s+(?:business\s+|calendar\s+|working\s+)?(?:days?|weeks?|months?|years?)\b)"
+#: "May 15", "May 15, 2026", "15 May", "2026-05-15": a calendar date, never a rule.
+_CAL = (
+    re.compile(
+        rf"\b(?P<mon>{_MONTH_NAMES})\.?\s+(?P<day>\d{{1,2}}){_ORD}\b(?!:){_NOT_A_SPAN}", re.I
+    ),
+    re.compile(rf"\b(?P<day>\d{{1,2}}){_ORD}\s+(?:of\s+)?(?P<mon>{_MONTH_NAMES})\b", re.I),
+    re.compile(r"\b\d{4}-(?P<mon>\d{1,2})-(?P<day>\d{1,2})\b"),
+)
+_DATES_HEADING = re.compile(r"^\*\*Dates that matter:\*\*\s*$", re.I)
+
+
+def _month(token: str) -> int:
+    if token.isdigit():
+        return int(token)
+    return next(
+        (i for i in range(1, 13) if calendar.month_name[i].lower().startswith(token[:3].lower())),
+        0,
+    )
+
+
+def calendar_date(text: str) -> tuple[int, int] | None:
+    """The first calendar month and day ``text`` names, or ``None``. "30 days after the notice"
+    names a rule, not a date. The year, when one is written, is not kept: a yearly chore comes
+    round on the month and day."""
+    found: list[tuple[int, int, int]] = []
+    for pattern in _CAL:
+        for match in pattern.finditer(text):
+            month, day = _month(match["mon"]), int(match["day"])
+            if 1 <= month <= 12 and 1 <= day <= calendar.monthrange(2000, month)[1]:
+                found.append((match.start(), month, day))
+                break
+    if not found:
+        return None
+    _, month, day = min(found)
+    return month, day
+
+
+def brief_dates(brief_md: str) -> list[tuple[str, tuple[int, int]]]:
+    """``(what, (month, day))`` for each line of the brief's "Dates that matter" that names a
+    calendar date in its "when" (the text after "what:" and before ". If missed:")."""
+    out: list[tuple[str, tuple[int, int]]] = []
+    inside = False
+    for raw in brief_md.splitlines():
+        line = raw.strip()
+        if _DATES_HEADING.match(line):
+            inside = True
+            continue
+        if not inside:
+            continue
+        if not line.startswith("- "):
+            if line:
+                break
+            continue
+        body = line[2:].split(". If missed:", 1)[0]
+        what, sep, when = body.partition(":")
+        if not sep:
+            what, when = "date", body
+        when_md = calendar_date(when)
+        if when_md is not None:
+            out.append((what.strip().strip("*").strip() or "date", when_md))
+    return out
+
+
+def _next_on(month: int, day: int, today: date) -> date:
+    """The first ``month``/``day`` after ``today`` (a 29 February is the 28th in a common year)."""
+    for year in (today.year, today.year + 1, today.year + 2):
+        moment = date(year, month, min(day, calendar.monthrange(year, month)[1]))
+        if moment > today:
+            return moment
+    raise ValueError("unreachable")  # pragma: no cover
+
+
+def suggest_for_case(
+    times_per_year: Any, brief_md: str, slots: Sequence[CaseSlot], today: date
+) -> tuple[CadenceRule | None, str]:
+    """:func:`suggest`, anchored to her own case for a chore that comes round once or twice a
+    year (B-C8, ADR 0131 decision 4).
+
+    The anchors are the calendar dates in the approved brief's "Dates that matter" lines and in
+    her confirmed date facts. The first that comes round after ``today`` sets the start:
+    :data:`LEAD_DAYS` before it, or tomorrow when it is closer than that. Every other chore, and
+    a yearly one with no calendar date, gets exactly :func:`suggest`'s rule; the yearly one's
+    basis says the case names no date.
+    """
+    rule, basis = suggest(times_per_year, today)
+    if rule is None or rule.kind != "every_days" or rule.every_days < 182:
+        return rule, basis
+    anchors: list[tuple[date, str]] = []
+    for what, (month, day) in brief_dates(brief_md):
+        anchors.append((_next_on(month, day, today), f"your brief's {what}"))
+    for slot in slots:
+        if slot.kind != "fact" or slot.status != "confirmed":
+            continue
+        found = calendar_date(slot.value)
+        if found is not None:
+            label = slot.label.strip().rstrip(":") or "date"
+            anchors.append((_next_on(*found, today), f"the {label} in your case"))
+    if not anchors:
+        return rule, f"{basis}, and your brief names no calendar date to count from"
+    when, name = min(anchors, key=lambda a: a[0])
+    named = f"{calendar.month_name[when.month]} {when.day}"
+    start = when - timedelta(days=LEAD_DAYS)
+    if start <= today:
+        start = today + timedelta(days=1)
+        why = f"so it comes due tomorrow, still before {named}"
+    else:
+        why = f"so it comes due two weeks before {named}"
+    return (
+        replace(rule, start=start.isoformat()),
+        f"{basis} and {name} falls on {named}, {why}",
     )
 
 

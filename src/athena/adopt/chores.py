@@ -548,7 +548,9 @@ def _cadence_reply(clock: ChoreClock, case: Case) -> dict[str, Any]:
     economics = playbook.get("economics")
     times = economics.get("times_per_year") if isinstance(economics, Mapping) else None
     tz, note = cad.zone(held.timezone if held is not None else "")
-    suggested, basis = cad.suggest(times, now.astimezone(tz).date())
+    suggested, basis = cad.suggest_for_case(
+        times, case.brief_md, case.slots, now.astimezone(tz).date()
+    )
     upcoming: list[str] = []
     if held is not None and held.enabled:
         moment = now

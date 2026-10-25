@@ -500,3 +500,90 @@ def test_open_and_prepare_addresses_are_the_playbooks_or_the_cases_never_a_name(
         ("Calcwren", "", ""),
     ]
     assert assemble(case, None, [], playbook).portals == portals
+
+
+# --- the suggestion anchored to her case (B-C8) --------------------------------------------------
+
+PROTEST = (
+    "Your property-tax protest.\n\n"
+    "**Dates that matter:**\n"
+    "- Protest deadline: May 15, 2026 (Texas Tax Code). If missed: the value stands for a year."
+)
+TWO_DATES = (
+    "Two dates.\n\n"
+    "**Dates that matter:**\n"
+    "- Exemption filing: June 30 (county rule). If missed: no exemption this year.\n"
+    "- Protest deadline: 15 May. If missed: the value stands for a year."
+)
+RULE_ONLY = (
+    "A rule, no date.\n\n"
+    "**Dates that matter:**\n"
+    "- Protest deadline: 30 days after the notice arrives. If missed: the value stands."
+)
+
+
+def _yearly(start: str) -> CadenceRule:
+    return CadenceRule(kind="every_days", every_days=365, start=start, at="09:00")
+
+
+def test_case_1_a_yearly_chore_comes_due_two_weeks_before_her_brief_deadline() -> None:
+    rule, basis = cad.suggest_for_case(1, PROTEST, (), date(2026, 10, 25))
+    assert rule == _yearly("2027-05-01")
+    assert "Protest deadline" in basis and "May 15" in basis and "two weeks before" in basis
+
+
+def test_case_2_this_years_date_still_ahead_is_the_anchor() -> None:
+    rule, _ = cad.suggest_for_case(1, PROTEST, (), date(2026, 3, 1))
+    assert rule == _yearly("2026-05-01")
+
+
+def test_case_3_inside_the_two_weeks_it_comes_due_tomorrow_still_before_the_date() -> None:
+    rule, basis = cad.suggest_for_case(1, PROTEST, (), date(2026, 5, 10))
+    assert rule == _yearly("2026-05-11")
+    assert "before May 15" in basis
+
+
+def test_case_4_of_two_dated_lines_the_first_to_come_round_anchors() -> None:
+    rule, basis = cad.suggest_for_case(1, TWO_DATES, (), date(2026, 10, 25))
+    assert rule == _yearly("2027-05-01")
+    assert "May 15" in basis and "June 30" not in basis
+
+
+def test_case_5_a_date_that_names_only_a_rule_is_not_an_anchor() -> None:
+    today = date(2026, 10, 25)
+    rule, basis = cad.suggest_for_case(1, RULE_ONLY, (), today)
+    plain, plain_basis = cad.suggest(1, today)
+    assert rule == plain
+    assert basis.startswith(plain_basis) and "no calendar date" in basis
+    # "may 30 days after" is a verb before a rule, never 30 May.
+    assert cad.calendar_date("the county may 30 days after the notice") is None
+
+
+def test_case_6_other_counts_get_exactly_todays_suggestion() -> None:
+    today = date(2026, 10, 25)
+    for times in (12, 52, None):
+        assert cad.suggest_for_case(times, PROTEST, (), today) == cad.suggest(times, today)
+
+
+def test_case_7_a_confirmed_date_fact_anchors_when_the_brief_has_no_date() -> None:
+    notice = CaseSlot(
+        id="f1", kind="fact", label="Notice date", status="confirmed", value="2026-04-20"
+    )
+    rule, basis = cad.suggest_for_case(1, RULE_ONLY, (notice,), date(2026, 10, 25))
+    assert rule == _yearly("2027-04-06")
+    assert "Notice date" in basis and "your case" in basis
+
+
+def test_case_8_the_cadence_route_suggests_from_the_saved_case(brain: Brain) -> None:
+    from athena.adopt.chores import case_route
+    from athena.daemon.routes import Request
+
+    case = _case(brain, brief_md=PROTEST)
+    clock = _clock(brain, {"economics": {"times_per_year": 1}, "apps": []})
+    clock.clock = lambda: datetime(2026, 10, 25, 9, 0, tzinfo=UTC)
+    status, reply = case_route(
+        clock, Request("GET", f"/adopt/cases/{case.id}/cadence"), case.id, "cadence"
+    )
+    assert status == 200 and reply["cadence"] is None
+    assert reply["suggested"]["start"] == "2027-05-01"
+    assert "Protest deadline" in reply["suggested_basis"]
