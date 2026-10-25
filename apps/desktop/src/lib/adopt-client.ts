@@ -223,6 +223,7 @@ export function caseOf(raw: unknown): CaseSummary {
     created: str(r.created),
     confirmed: num(r.confirmed),
     slots: num(r.slots),
+    space_id: str(r.space_id),
   };
 }
 

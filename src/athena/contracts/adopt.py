@@ -327,6 +327,8 @@ class CaseSummary:
     created: str
     confirmed: int = 0
     slots: int = 0
+    #: The project (space, ADR 0225) the chore belongs to; "" is Athena's core.
+    space_id: str = ""
 
 
 # ------------------------------------------------------------------------------------------

@@ -147,6 +147,7 @@ describe("the routes", () => {
       created: "2026-10-01T09:00:00+00:00",
       confirmed: 7,
       slots: 9,
+      space_id: "spc_0123456789ab",
     };
     const { calls, f } = fake((url) =>
       url.includes("/adopt/cases")

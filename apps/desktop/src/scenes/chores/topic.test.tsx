@@ -35,6 +35,7 @@ const CASE: CaseSummary = {
   created: "2026-10-01T09:00:00+00:00",
   confirmed: 7,
   slots: 9,
+  space_id: "",
 };
 
 class FakeClient implements AdoptClient {

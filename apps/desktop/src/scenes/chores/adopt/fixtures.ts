@@ -393,6 +393,7 @@ export const PREVIEW_CASE: CaseSummary = {
   created: "2026-10-08T17:42:00+00:00",
   confirmed: 8,
   slots: 10,
+  space_id: "",
 };
 
 /** A closed run of the preview case (ADR 0124): what its cards and the ledger came to. */

@@ -192,6 +192,8 @@ export interface CaseSummary {
   /** Slots confirmed, of `slots`. */
   confirmed: number;
   slots: number;
+  /** The project (space, ADR 0225) the chore belongs to; "" when it is Athena's core. */
+  space_id: string;
 }
 
 export interface CasesReply {
