@@ -5,3 +5,6 @@ REGISTRY: hitl-approval deviation for core-gate-and-ledger likely resolved by 8d
 OWNER LOOK: f871909a (r2 app-shell/B) adds a +476 B gz inline boot script per HTML that the first-paint gauge does not count (ADR 0165)
 SIBLING-RED: r2 hirelane-model-and-lib/A root typecheck/lint red only in examples/tidycrm (tidycrm-domain-lib/B in flight)
 LANE C: r2 voice-waking/B demoted - first-paint ceiling overshoot 140 B gz; tested patch r2/builds/desktop-scenes-voice-waking-B.patch; owner raise needed
+FOLLOW-UP: a4d4e129 (r4 voice-ui/B) - 'Pick another input above' copy is wrong in the voice studio, which has no picker (studio.tsx outside write set; ADR 0196)
+FOLLOW-UP: dca80c20 (r4 ledgerbox-domain-lib/B) - card UI still offers Draft on the 14 invoices the chase now refuses (actRefusal follow-up, pinned in ledgerbox-lanes-ui.test.ts)
+FOLLOW-UP: 67909b9f (r4 stage-depth/B) - a move before the lazy rise module loads (incl. reload at depth) no longer focuses the layer

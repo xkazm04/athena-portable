@@ -1,0 +1,18 @@
+{"card":"core-sleep-and-vitals/A","status":"landed","shas":["6a614816"],
+ "tests_added":[
+  "tests/core/sleep/test_sleep_failures.py::test_two_failures_in_a_row_back_off_two_hours_and_say_so",
+  "tests/core/sleep/test_sleep_failures.py::test_four_failures_back_off_eight_hours_and_ten_are_capped",
+  "tests/core/sleep/test_sleep_failures.py::test_a_content_failure_halves_the_next_take[parse_error,timeout]",
+  "tests/core/sleep/test_sleep_failures.py::test_an_engine_error_backs_off_but_never_shrinks_the_take",
+  "tests/core/sleep/test_sleep_failures.py::test_a_single_episode_that_fails_alone_twice_is_walked_past_not_deleted",
+  "tests/core/sleep/test_sleep_failures.py::test_a_settled_cycle_resets_the_count",
+  "tests/core/sleep/test_sleep_failures.py::test_guard_a_single_failure_holds_exactly_one_hour",
+  "tests/core/sleep/test_sleep_failures.py::test_guard_a_crashed_running_row_is_no_failure_and_force_skips_the_backoff"],
+ "guard_cases":[6,7],
+ "cases_total":8,"cases_red_before":6,"cases_green_after":8,
+ "gates":{"uv run ruff check .":0,"uv run ruff format --check .":0,"uv run mypy":0,
+  "uv run pytest tests/core/sleep tests/daemon/test_sleep.py -m \"not provider and not eval\"":0},
+ "files_changed":10,"lines_changed":517,
+ "touched_python":true,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"ADR is 0190 (0149 in the card; 0189 was taken by a sibling at lock time). failures_since_settled takes no boundary argument: the boundary only moves on settle, so 'failed rows since the newest settled one' is the same set, and the first window's boundary is a moving instant (now - 7 d) that could never match a stored string. The halved take is half the newest content failure's recorded take (actual episodes sent, floor 1), so an interleaved engine_error neither shrinks nor resets it. 'A forced cycle uses the shrunken take' is asserted inside case 3 (that cycle runs with reason 'forced') rather than in guard 8, so the guard stays green-before. Added 'skipped' to STATS_KEYS and FAILED_RUN_ROWS=64 (a declared read ceiling) to sleep/__init__. One coupled doc: ADR 0143's failed_recently line points at 0190. Shrank the write set: conftest.py, test_sleep_cycle.py and test_sleep_admission.py unchanged. Single commit.",
+ "notes":"Premise re-verified on the current tree (all six lines held). r3 brain recall changes checked: quarantine never touches importance or the file, and the quarantine test asserts the episode is still counted and found by recall_whole after the skip. Desktop does not render the new 'skipped' stat (apps/desktop/src/scenes/mind/sleep.tsx belongs to another context); the journal shows it. SleepBook.last_failed is now unused by admission but kept (public read). Full pytest not run, per brief."}

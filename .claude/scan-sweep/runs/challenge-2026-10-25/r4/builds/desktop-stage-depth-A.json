@@ -1,0 +1,28 @@
+{"card":"desktop-stage-depth/A","status":"landed","shas":["8a795a469580aa690b4f84840c3aea1e16575261"],
+ "tests_added":[
+  "apps/desktop/src/stage/Stage.dom.test.tsx::one live scene at any moment > a move unmounts the left scene at once: its cleanup has run and one scene is mounted, before any animationend",
+  "apps/desktop/src/stage/Stage.dom.test.tsx::one live scene at any moment > the leaving layer holds a static copy of the left scene until its animationend, then it is gone",
+  "apps/desktop/src/stage/Stage.dom.test.tsx::one live scene at any moment > a key pressed after a move reaches only the arriving scene's document listener, never the leaving one",
+  "apps/desktop/src/stage/Stage.dom.test.tsx::one live scene at any moment > moves during moves keep at most one live scene and at most two stills plus the arriving layer",
+  "apps/desktop/src/stage/Stage.dom.test.tsx::one live scene at any moment > a left scene's canvas is drawn into its still, so a waveform or a sky does not blank in the leave",
+  "apps/desktop/src/stage/Stage.dom.test.tsx::one live scene at any moment > guard: under calm a move is one layer at rest, the new scene live, and no still is taken",
+  "apps/desktop/src/stage/layers.test.ts::which layer is live > only the arriving or resting layer is live; a leaving one is a still",
+  "apps/desktop/src/stage/still.dom.test.ts::copies the markup and leaves the source untouched",
+  "apps/desktop/src/stage/still.dom.test.ts::strips HTML ids, autofocus and autoplay, so the copy cannot collide with the arriving scene",
+  "apps/desktop/src/stage/still.dom.test.ts::carries no listener: a click on the copy reaches nothing the scene registered",
+  "apps/desktop/src/stage/still.dom.test.ts::keeps what a field holds and where a scroller was",
+  "apps/desktop/src/stage/still.dom.test.ts::draws each canvas into its copy, and a canvas that cannot be drawn leaves a blank copy"
+ ],
+ "guard_cases":[5,6,7],
+ "cases_total":8,"cases_red_before":5,"cases_green_after":8,
+ "gates":{
+  "cd apps/desktop && pnpm typecheck":2,
+  "cd apps/desktop && pnpm lint":0,
+  "cd apps/desktop && pnpm test":1,
+  "cd apps/desktop && npx vitest run src/stage":0,
+  "first-paint measured on a clean HEAD worktree (vite build + measureFirstPaint)":0
+ },
+ "files_changed":8,"lines_changed":449,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"1) No `live` field on Layer: `isLive(layer)` is derived from the phase in layers.ts (one source of truth, cannot disagree with phase). 2) The still is captured in SceneLayer's getSnapshotBeforeUpdate (SceneLayer became a class) instead of during Stage's render: reading the DOM ref in render failed the react-hooks/refs lint, and getSnapshotBeforeUpdate is React's own before-mutation hook. 3) still.ts is loaded by import() after the first frame, not statically: static cost +506 B gzipped (over the ceiling by 30 B at HEAD), lazy +245 B. A move before the module lands leaves its layer empty for that leave. 4) stage.css untouched (not needed). 5) SVG elements keep their ids in the still (gradients/masks reference them); HTML ids are stripped.",
+ "notes":"MOTION CHANGED (the leave now plays a cloned still; clone cost at move start) - coordinator please run pnpm perf:stage / perf:all. First paint: measured in a scratch worktree of HEAD 2a3530d9 with my files only: 164,936 -> 165,181 B (ceiling 165,412, 231 B left). In the shared tree the first-paint test fails at 165.9 kB because desktop-voice-ui/B's in-flight voice changes add ~600 B on their own (shared tree without my change measured 165,425-165,531 B, already over); combined with mine it is over the ceiling - the coordinator must sequence or trim. pnpm typecheck exit 2: only src/lib/voice*.ts, src/modules/voice/*, (desktop-voice-ui/B in flight), none of mine. pnpm test exit 1: only scripts/first-paint.test.ts (see above); earlier run also had voice test reds from the same sibling, which cleared. The six scene closest('[inert]') guards are now dead code, untouched per card. Slot B: record the outgoing layer's scroll in SceneLayer.getSnapshotBeforeUpdate (same moment the still is taken) or before; the still keeps scroll offsets itself."}

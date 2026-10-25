@@ -1,0 +1,15 @@
+{"card":"atlas-data-and-app/B","status":"landed","shas":["ad161af8"],
+ "tests_added":[
+  "examples/atlas/test/coverage.test.ts::every src/athena module is drawn by a component or declared in the omission ledger",
+  "examples/atlas/test/coverage.test.ts::every omission is in the tree, says why and where from, and omits no drawn component",
+  "examples/atlas/test/coverage.test.ts::a seeded omission of a drawn component, or of a deleted path, is a fault",
+  "examples/atlas/test/coverage.test.ts::each layer blurb is README §3.1's row for that layer, word for word",
+  "examples/atlas/test/coverage.test.ts::every part README §3.1 names that is in the tree is a component, citing its ADR",
+  "examples/atlas/test/coverage.test.ts::the coverage split is drawn / omitted / uncovered of the tree, and COVERAGE states it"],
+ "guard_cases":[5,6],
+ "cases_total":7,"cases_red_before":5,"cases_green_after":7,
+ "gates":{"pnpm --filter atlas typecheck":0,"pnpm --filter atlas lint":0,"pnpm --filter atlas test":0,"pnpm typecheck":0,"pnpm lint":0},
+ "files_changed":10,"lines_changed":525,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Tree is 182 modules now, not 184 (140 uncovered before, not 141). Omission carries a fourth field `modules` (the count its path covers, held to the tree) so COVERAGE can be stated bundle-side without reading fs: drawn = built components citing a src/athena .py, omitted = sum of ledger counts, uncovered = 0 by claim; the test asserts COVERAGE equals the tree's split. Acceptance case 2 is split into two tests (real ledger; seeded drawn/deleted/blank faults). One commit instead of the card's two: commit 1 alone would be red (blurb and named-part cases need commit 2's data). Two halo edges (shell-lib->halo calls, mod-panel->halo streams; companion imports lib/halo) and two API-engine edges (engines->api-harness calls, api-harness->c-harness implements), all import-backed or Rust-module-backed for slot A's later check. README counts corrected to the model's real figures (edges 123, it said 120 before; ADRs listed 33, it said 25). data.test.ts unchanged (not needed).",
+ "notes":"Red-before: on the run base all six tests fail to load (OMISSIONS/COVERAGE/omissionFaults not exported); with the checker in data/index.ts and an empty ledger and no new data, 5 of 6 tests red (140 of 182 uncovered, empty ledger, 2 blurbs, no halo/API-engine component, COVERAGE != tree); the seeded-fault test passes then by design since it exercises the checker itself. Guards (model.test, lanes.model KIND_COUNTS/SYSTEM_KIND, tools, levels) green: SYSTEMS stays 19. Any NEW src/athena .py committed by a later card turns coverage.test red until it is drawn or added to data/omissions.ts (a directory entry also needs its `modules` count bumped) - intended signal; core-sleep-and-vitals cards add no new .py. Prose counts in other contexts now stale as words: Claims.tsx:18, read.ts:289, variants/archify-lanes/workflow.ts:16, DESIGN.md, Drawing.tsx:14 ('120 model edges') - not edited. Root pnpm test not run (journey e2e boots servers; atlas has no workspace dependents). No sibling reds seen."}

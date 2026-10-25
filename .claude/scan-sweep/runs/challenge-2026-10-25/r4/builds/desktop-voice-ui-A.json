@@ -1,0 +1,19 @@
+{"card":"desktop-voice-ui/A","status":"landed","shas":["2a3530d9"],
+ "tests_added":[
+  "apps/desktop/src/lib/voice.test.ts::case 1: a line that arrives during the tail of a finished one starts where that one ends, not over it",
+  "apps/desktop/src/lib/voice.test.ts::case 2: silence() stops every source of every line, and a late chunk of a silenced line is ignored",
+  "apps/desktop/src/lib/voice.test.ts::onQuiet fires once the last source of any line has ended, and on silence()",
+  "apps/desktop/src/lib/voice.test.ts::guard (case 7): a line queued behind another reads 0 until its first chunk starts, then follows its own samples",
+  "apps/desktop/src/stores/voice.test.ts::case 3: a press during the tail of a finished line stops it before the start frame is sent",
+  "apps/desktop/src/stores/voice.test.ts::case 4: phase and caption stay 'speaking' through the tail, and go idle when her last word ends",
+  "apps/desktop/src/stores/voice.test.ts::case 5: say() during the tail of a finished line stops it before the text frame is sent",
+  "apps/desktop/src/stores/voice.test.ts::a second line queued behind the tail keeps 'speaking' until both have played",
+  "apps/desktop/src/stores/voice.test.ts::guard (case 6): voice.stopped barge_in drops the line at once and phase leaves 'speaking' at once"
+ ],
+ "guard_cases":[5,6,7],
+ "cases_total":8,"cases_red_before":5,"cases_green_after":8,
+ "gates":{"cd apps/desktop && pnpm typecheck":0,"cd apps/desktop && pnpm lint":0,"cd apps/desktop && pnpm test":0},
+ "files_changed":9,"lines_changed":761,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"FIRST PAINT: the card's code kept in lib/voice.ts measured 165,671 B gz against a 165,410 B run base (with siblings' in-flight edits) and a 165,412 B ceiling, so it was 259 B over. Remedy per the brief: Player moved to a NEW file apps/desktop/src/lib/voice-player.ts, loaded with import() in ensureSocket (VoiceDeps.player may return a promise). The module has NO runtime imports: lib/voice.ts exports PLAYER_KIT {follow, pcm16ToFloat32, rms}, passed as the Player's second constructor arg. A first try that imported lib/voice from the lazy module made rolldown split lib/voice and lib/events into their own chunks (net +80 B). Final first paint is 164,936 B (474 B under the run base, 476 B headroom). Write set grew by that one source file plus test-only edits: lib/face-signal.test.ts (Player import and kit; the acceptance pinned the old early idle after voice.stopped done and now expects 'speaking' through the tail and idle on quiet), e2e/voice.e2e.test.ts (type import moved, fake player gains silence()). Guard case 8 is the existing stores/voice.test.ts test 'a line the daemon began speaking as the key went down...', which still passes. Two extra tests beyond the cases: onQuiet, and a queued second line.",
+ "notes":"Slot B (next wave) edits lib/voice.ts openMicrophone: Player no longer lives in lib/voice.ts; anything that builds a Player must pass PLAYER_KIT, and stores/voice.ts now calls hush(), with tailing state, in press/say. Typecheck was briefly red on src/companion/* (sibling desktop-companion-surfaces) and translate.test.ts failed once (also theirs); both green on the final run. Full desktop suite 180 files / 2501 tests green. Coordinator: I touched first paint (it went down); please run perf:* if wanted. ADR 0192, CHANGELOG line appended under the lock."}

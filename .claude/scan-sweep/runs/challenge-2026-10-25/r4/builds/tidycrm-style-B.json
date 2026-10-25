@@ -1,0 +1,15 @@
+{"card":"tidycrm-style/B","status":"landed","shas":["6f3fbd2d"],
+ "tests_added":[
+  "examples/tidycrm/test/tidycrm-style.test.ts::forced colors: index.css imports base/forced-colors.css last, as one @media (forced-colors: active) block",
+  "examples/tidycrm/test/tidycrm-style.test.ts::forced colors: every state the sheet draws by colour alone has a structural counterpart",
+  "examples/tidycrm/test/tidycrm-style.test.ts::forced colors: a key in fault and a quiet key are told apart by their edge, not its colour",
+  "examples/tidycrm/test/tidycrm-style.test.ts::forced colors: the differing field and the deviant spelling carry the bad cell's wavy underline",
+  "examples/tidycrm/test/tidycrm-style.test.ts::forced colors: the gate stays a separate place, drawn in system colours only",
+  "examples/tidycrm/test/tidycrm-style.test.ts::forced colors: every colour in the block is a system colour keyword, never a --bk-* token"],
+ "guard_cases":[6],
+ "cases_total":7,"cases_red_before":6,"cases_green_after":7,
+ "gates":{"pnpm --filter tidycrm typecheck":0,"pnpm --filter tidycrm lint":0,"pnpm --filter tidycrm test":0,"pnpm typecheck":0,"pnpm lint":0},
+ "files_changed":6,"lines_changed":427,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"(1) No .bk-spelling[data-differs] exists on the current tree (body.css:129 is now a comment): the deviant spelling is a .bk-chip button whose count is b[data-tone=\"redline\"], so case 4 pins '.bk-spellings .bk-chip > b[data-tone=\"redline\"]' to the wavy underline instead. (2) The derived gate found 13 colour-only state parts, not the card's 10: it also caught .bk-presence[data-on] (the text, given font-weight 600), .bk-db-key[data-on] (its far edge goes 3px Highlight, leaving the verdict edge alone) and .bk-db-key[data-on] .bk-db-index-on (forced-color-adjust none, Highlight). foot.css:126 is now foot.css:67 after slot A. Parts with :hover are exempt from the derived gate (feedback over a state drawn at rest); the forced block holds no :hover rule. (3) The gate is done through slot A's scope: the forced title-block rule ([data-variant=\"blocks\"] .bk-title-block, to match tokens.css specificity) sets forced-color-adjust none, CanvasText/Canvas and rebinds all 12 roles plus --bk-redline (to Highlight) to system colours, so btn, hover, armed confirm, fire hover, ring, band and scrollbar resolve to system keywords with no per-component rule; the test resolves those paints through the forced bindings and asserts each is a system keyword. The armed confirm also gets a double 3px edge. (4) Added ADR 0201 (repo law: one decision, one ADR) as the one coupled doc; card listed only CHANGELOG as shared.",
+ "notes":"No sibling reds seen. Static gate only: nothing was rendered in a real Windows contrast theme; a manual or Playwright (emulateMedia forcedColors) check is the remaining evidence. Under forced colors the fault edge is 6px and the armed confirm border 3px (layout shift in that mode only). Test helper: RULES now filters out the forced block, FORCED holds it; a nested-paren-aware tokensOf() was added."}

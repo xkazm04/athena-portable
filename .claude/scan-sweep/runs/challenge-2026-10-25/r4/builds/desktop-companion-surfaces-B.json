@@ -1,0 +1,18 @@
+{"card":"desktop-companion-surfaces/B","status":"landed","shas":["9ec55f9e"],
+ "tests_added":[
+  "apps/desktop/src/companion/translate/translate.test.ts::standing case 0: a card about a record the turn read carries the record's note",
+  "apps/desktop/src/companion/translate/translate.test.ts::standing case 1: the record's age reads as the table reads it",
+  "apps/desktop/src/companion/translate/translate.test.ts::standing case 2: the standing says which step read it, and at what clock",
+  "apps/desktop/src/companion/translate/translate.test.ts::standing case 3: a card about a record the turn never read has no standing",
+  "apps/desktop/src/companion/translate/translate.test.ts::standing case 4: of two reads of one record, the latest is the one it stands on",
+  "apps/desktop/src/companion/slip.test.tsx::standing case 5: the front of a card about a disputed invoice shows the dispute and when she read it",
+  "apps/desktop/src/companion/slip.test.tsx::standing: a record read without a note shows only the quiet as-of line, and an unread one nothing",
+  "apps/desktop/src/companion/ledger.test.tsx::standing case 6: the Gate and a sheet row each show the note; a card with no standing shows none",
+  "apps/desktop/src/companion/translate/translate.test.ts::standing guard 7: every fixture message reads byte for byte as it did (provenance is context, never text)"],
+ "guard_cases":[7],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{"cd apps/desktop && pnpm typecheck":0,"cd apps/desktop && pnpm lint":1,"cd apps/desktop && npx eslint <my 9 files>":0,"cd apps/desktop && pnpm test (run 1, my change in tree)":1,"cd apps/desktop && pnpm test (run 2)":1,"cd apps/desktop && npx vitest run src/companion":0},
+ "files_changed":11,"lines_changed":281,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"memo.ts (outside write_set) got a 4-line coupled edit: the transcript cache folds TurnContext maps by key list, and memo.test.ts holds its result equal to buildContext, so the new seen map must be folded there or the live path loses provenance. ADR is 0199 (next free), not a number from the card. The guard-7 test pins the 31 messages by an FNV digest computed on the pre-change tree. The as-of line also shows (as data-standing-asof, no notice) for a read record with no note.",
+ "notes":"All reds are sibling desktop-stage-depth/B in-flight (uncommitted src/stage/Stage.tsx, Stage.dom.test.tsx, places.ts): pnpm lint fails on Stage.tsx:102 react-hooks/refs; pnpm test run 1 failed 4 Stage.dom tests (green on re-run alone), run 2 failed 11 Stage.dom tests plus scripts/first-paint.test.ts (165.4 kB over the 165.4 kB ceiling). First paint run 1 with my change in the tree passed; a production build shows none of my code in the first-paint root/skins chunks (it lands in views, view-* and athena chunks), so the overshoot is the stage work. Every non-stage desktop test passed in both runs."}

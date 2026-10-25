@@ -1,0 +1,28 @@
+{"card":"core-sleep-and-vitals/B","status":"landed","shas":["0d5e36e3","14f7c06a"],
+ "tests_added":[
+  "tests/core/sleep/test_sleep_proposals.py::test_a_contradiction_carries_both_memories_words_in_node_order",
+  "tests/core/sleep/test_sleep_proposals.py::test_a_forget_proposal_says_how_far_it_faded_and_when_it_was_last_used",
+  "tests/core/sleep/test_sleep_proposals.py::test_the_quote_is_the_first_live_source_in_one_line",
+  "tests/core/sleep/test_sleep_proposals.py::test_a_decided_proposal_over_a_superseded_memory_reads_not_live",
+  "tests/daemon/test_sleep.py::test_a_proposal_shows_both_memories_words_and_their_source",
+  "tests/daemon/test_sleep.py::test_the_proposals_answer_is_bounded_and_read_on_one_connection",
+  "tests/daemon/test_sleep.py::test_a_proposal_is_decided_and_said_on_the_bus (guard, key set rewritten to pin every existing key+value)",
+  "apps/desktop/src/scenes/mind/sleep.test.tsx::a contradiction shows both memories' words and source side by side, a forget under each, no id on a button",
+  "apps/desktop/src/scenes/mind/sleep.test.tsx::a forget card shows the memory's words and source above Keep and Forget",
+  "apps/desktop/src/scenes/mind/sleep.test.tsx::forgets the side whose 'Forget this one' was pressed, in one press"
+ ],
+ "guard_cases":[4],
+ "cases_total":7,"cases_red_before":6,"cases_green_after":7,
+ "gates":{
+  "uv run ruff check .":0,
+  "uv run ruff format --check .":0,
+  "uv run mypy":0,
+  "uv run pytest tests/core/sleep tests/daemon -m \"not provider and not eval\"":0,
+  "apps/desktop: pnpm typecheck":0,
+  "apps/desktop: pnpm lint":0,
+  "apps/desktop: pnpm test (181 files, 2529 tests)":0
+ },
+ "files_changed":9,"lines_changed":592,
+ "touched_python":true,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"(1) The quote is read for OPEN proposals' memories only (null on decided ones): with every quote the 20 open + 20 decided worst case measured 70,537 B, over the 64 KB bound; open-only measures 62,417 B. The card renders open proposals only, so nothing shown is lost. (2) ProposalView.memories is optional in lib/sleep.ts (an older daemon omits it, and fixtures.ts / stores/sleep.test.ts, outside the write set, build ProposalViews without it); the card falls back to the ids line and a choose step whose buttons now read 'Forget the first' / 'Forget the second' (two existing sleep.test.tsx cases updated for that). (3) Write set grew by apps/desktop/src/scenes/mind/mind.css (+29 lines: .sleep__pair/.sleep__side/.sleep__quote, tokens only, no motion) - the side-by-side layout needs a rule; same owning context. No ADR: an additive view field under ADR 0143; the open-only quote choice is recorded in the proposal_memories docstring and the commit body. (4) The POST decision answer also carries memories so a card rendering it shows the same.",
+ "notes":"sleep.tsx is in the Mind depth's lazy chunk and lib/sleep.ts is types only: no first-paint bytes added (mind.css is a stylesheet; first-paint.mjs reports CSS, does not judge it). pnpm perf:* not run. No sibling reds seen. CHANGELOG line appended at the end of [Unreleased] under the lock, in 14f7c06a."}

@@ -1,0 +1,17 @@
+{"card":"ledgerbox-model-tools/A","status":"landed","shas":["fd84ee01"],
+ "tests_added":[
+  "examples/ledgerbox/test/ledgerbox-invoice-read.test.ts::both pipelines give the core the same facts for every seeded invoice",
+  "examples/ledgerbox/test/ledgerbox-invoice-read.test.ts::guard: the picture's reads carry no layout fact, and money is in units",
+  "examples/ledgerbox/test/ledgerbox-invoice-read.test.ts::guard: mostly_paid is isMostlyPaid's in every projection - 0.69 false, 0.70 true",
+  "examples/ledgerbox/test/tool-handlers.test.ts::search_invoices for overdue says the mostly-paid late invoice is mostly paid",
+  "examples/ledgerbox/test/tool-handlers.test.ts::every invoice-returning tool carries the same core for one invoice",
+  "examples/ledgerbox/test/tool-handlers.test.ts::read_inbox carries the cross-app key on every row",
+  "examples/ledgerbox/test/tool-handlers.test.ts::guard: read_inbox keeps its envelope and order, search_invoices its area and its refusals"
+ ],
+ "guard_cases":[4,5,6],
+ "cases_total":7,"cases_red_before":5,"cases_green_after":7,
+ "gates":{"pnpm --filter ledgerbox test (from examples/ledgerbox: pnpm test, 142 pass)":0,"examples/ledgerbox pnpm typecheck":0,"examples/ledgerbox pnpm lint":0,"pnpm typecheck (root)":0,"pnpm lint (root)":1},
+ "files_changed":8,"lines_changed":569,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"(1) Guard case 7 (mostly_paid at 0.69/0.70) was red before, not green: search_invoices and rowRead could not carry mostly_paid on the old tree, so it pins the change too. (2) search_invoices' unknown-state refusal comes from the kit's door (schema enum) before the handler runs, so the handler-driven guard asserts {ok:false, error naming the value and the enum}; searchLanes' own 'No state called' refusal stays pinned in tools.test.ts. (3) markRead keeps a one-argument signature (LanesTools maps lane.marks through it, so a second parameter would receive the index); a mark with no card (settled/void - buildSheet builds details only for actionable invoices) takes its contact from the registry (companyByName), which is the seed's verbatim source and no action edits; the 125-invoice parity test holds it. LanesTools.tsx unchanged. (4) search.ts only got a comment. (5) The card's own LnDetail.mostlyPaid flag is no longer read by the tool layer; the core decides by isMostlyPaid.",
+ "notes":"Root pnpm typecheck exited 0. Root pnpm lint exited 1 twice (~60 s apart) on apps/desktop/src/stage/Stage.tsx:102 react-hooks/refs - a sibling's in-flight file (desktop-stage-depth/B), not touched here; examples/ledgerbox lint is 0. No importer of ledgerbox outside the package (hirelane/tidycrm presence.ts mention it only in comments). examples/journey contracts.ts' `contact_email ?? email` fallback is now dead but harmless; not edited (outside write set). ADR 0200 claimed under the lock."}

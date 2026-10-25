@@ -1,0 +1,6 @@
+W1: contracts-seam/A, desktop-art-bell/A, ledgerbox-app-shell/A (rev), tidycrm-tests/A
+W2: contracts-seam/B (rev), desktop-shell-rust/A, desktop-stores/A, hirelane-app-and-tests/A
+W3: proving-forge/A, desktop-avatar/A, ledgerbox-app-shell/B, desktop-shell-rust/B
+W4: desktop-avatar/B (rev), desktop-stores/B, tidycrm-tests/B (rev), proving-forge/B
+W5: desktop-art-bell/B, hirelane-app-and-tests/B
+Coordinator override: contract cards share waves with disjoint non-callers; art-bell/A (Pose gains `speaking`) precedes avatar/B.

@@ -1,0 +1,18 @@
+{"card":"ledgerbox-domain-lib/A","status":"landed","shas":["86c1a279"],
+ "tests_added":[
+  "examples/ledgerbox/test/ledgerbox-reconcile.test.ts::case 1 - a credit that clearly fits A is offered to A, and only marked against B",
+  "examples/ledgerbox/test/ledgerbox-reconcile.test.ts::case 2 - a real contender (inside AMBIGUOUS_GAP) is contested on both sides, and both count it",
+  "examples/ledgerbox/test/ledgerbox-reconcile.test.ts::case 3 - LB-2026-0057 no longer advertises Ironwood's $43,650 credit that is plainly LB-2026-0115's",
+  "examples/ledgerbox/test/ledgerbox-reconcile.test.ts::case 4 - LB-2026-0047 no longer offers Copperline's credit that scores 99 for LB-2026-0015",
+  "examples/ledgerbox/test/ledgerbox-reconcile.test.ts::case 5 (guard) - the two Kestrel retainers each still carry the ambiguous credit",
+  "examples/ledgerbox/test/ledgerbox-reconcile.test.ts::case 6 - on every seeded invoice the row, the credits and the card agree on one count",
+  "examples/ledgerbox/test/ledgerbox-reconcile.test.ts::case 7 - Copperline's runner-up stays visible on the credit side, marked as claimed by LB-2026-0015",
+  "examples/ledgerbox/test/ledgerbox-reconcile.test.ts::case 8 - read_invoice agrees with the row, and db.ts scores nothing itself"
+ ],
+ "guard_cases":[4],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{"pnpm --filter ledgerbox typecheck":0,"pnpm --filter ledgerbox lint":0,"pnpm --filter ledgerbox test (128 tests)":0,"pnpm typecheck (root)":0,"pnpm lint (root)":0},
+ "files_changed":9,"lines_changed":619,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Case 7 (card guard index 6) is red before, not a guard: its new clause (standing claimed_elsewhere naming LB-2026-0015) cannot hold on the old tree; its guard clause (order, length 2, not ambiguous) is still pinned unchanged by journey.test.ts:74-75, which stays green. Case 6 asserts every suggestion carries a standing so it can go red (parity alone held by accident before). One commit, not two. Added ADR 0194 (one coupled doc; repo law). Removed match.ts candidatesFor (no reader left; the export scan would fail). ledgerbox-domain-lib.test.ts: export scan count 18->19 (new lib/reconcile.ts) and the glyph test's seed floor of long-overdue-with-a-credit 3->2 (LB-2026-0057 was the third, only through the misattributed bl_00072). LineSuggestion stays in lib/db.ts (where it already lived) and gains required standing + optional claimed_by; MatchCandidate (types.ts) gains both optional; new types Standing/ClaimedBy in types.ts. db.ts exports a new request-cached reconciliation(). lineSuggestions cut is max(LINE_SUGGESTIONS, offered count) so no offered pair is invisible from the credit side.",
+ "notes":"Root pnpm test not run: no other workspace package imports ledgerbox; the ledgerbox suite (128) is green. Shapes for later cards are additive: lineSuggestions/unappliedCredits/candidate_count keep their fields; unappliedCredits().ambiguous now comes from reconcile (same isAmbiguous rule). ledgerbox-model-tools/B (7ea3b76, ActionResult.undoId) re-verified present and untouched. Follow-up for ledgerbox-model-tools/A: read_credits' offer()/could_be and candidate_invoice_ids still list a claimed_elsewhere runner-up without its standing - projecting standing/claimed_by there closes the agent-side misapply path. getInvoice now reads the request-cached whole-table reconciliation (cheap; un-memoised under node --test). The lock was briefly held by a sibling; waited, took it, released after commit."}

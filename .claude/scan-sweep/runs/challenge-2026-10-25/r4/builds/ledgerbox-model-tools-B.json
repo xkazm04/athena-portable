@@ -1,0 +1,18 @@
+{"card":"ledgerbox-model-tools/B","status":"landed","shas":["7ea3b762"],
+ "tests_added":[
+  "examples/ledgerbox/test/ledgerbox-tools-undo.test.ts::case 1: categorize toasts Undo, and the press undoes its own row and refreshes the tree",
+  "examples/ledgerbox/test/ledgerbox-tools-undo.test.ts::case 2: match_bank_line toasts Undo, and the press lifts the match and its payment",
+  "examples/ledgerbox/test/ledgerbox-tools-undo.test.ts::case 3: every AUTO write answers its undoId, the activity row it logged; the gated acts none",
+  "examples/ledgerbox/test/ledgerbox-tools-undo.test.ts::case 4: the undo of a draft since sent refuses, writes nothing, and the press toasts the reason",
+  "examples/ledgerbox/test/ledgerbox-tools-undo.test.ts::case 5: toastFor is decided by the class table, not by the presence of an id",
+  "examples/ledgerbox/test/ledgerbox-tools-undo.test.ts::case 6 (guard): a refused write toasts an error with no action",
+  "examples/ledgerbox/test/ledgerbox-tools-undo.test.ts::case 7 (guard): the agent's answers carry no undo id, and the model gains no undo verb",
+  "examples/ledgerbox/test/ledgerbox-tools-undo.test.ts::case 8 (guard): an undo of a row already undone refuses"
+ ],
+ "guard_cases":[5,6,7],
+ "cases_total":8,"cases_red_before":5,"cases_green_after":8,
+ "gates":{"pnpm --filter ledgerbox typecheck":0,"pnpm --filter ledgerbox lint":0,"pnpm --filter ledgerbox test":0,"pnpm lint":0,"pnpm typecheck":2},
+ "files_changed":7,"lines_changed":575,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"All eight cases sit in the new ledgerbox-tools-undo.test.ts (own stand-in harness whose toaster keeps the action); tool-handlers.test.ts and ledgerbox-domain-lib.test.ts were not edited. The sent-draft refusal uses the kit's ADR 0156 verdict ({ refused }) instead of a thrown UndoRefused, as the r1 kit change asked; the unmatch case's two throws moved to the same verdict with the same reasons, and UndoRefused is gone. undoAction now returns the kit's UndoAnswer (ok, reason?, partial?) and refreshes only on ok. The kit ui index does not export ToastAction, so undo.ts declares the same structural type locally. ADR number is 0191 (0189/0190 taken by siblings).",
+ "notes":"Root pnpm typecheck exit 2 twice (~60 s apart) only in apps/desktop: TS2459 'Player' not exported from @/lib/voice (e2e/voice.e2e.test.ts, src/stores/voice.ts and tests) - the desktop-voice-ui sibling's in-flight work, no path of mine; every examples/* and packages/* typecheck in the same run was Done. ActionResult.undoId is in place for ledgerbox-domain-lib/B and ledgerbox-app-shell/A (r5); card/Decide.tsx does not read it yet. BooksTools.tsx settle now takes (tool, work) - slot A's edits to BooksTools must keep the tool-name argument."}

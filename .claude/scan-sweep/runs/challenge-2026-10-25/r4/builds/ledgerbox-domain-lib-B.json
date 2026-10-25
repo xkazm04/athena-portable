@@ -1,0 +1,23 @@
+{"card":"ledgerbox-domain-lib/B","status":"landed","shas":["dca80c20"],
+ "tests_added":[
+  "examples/ledgerbox/test/ledgerbox-chase-paid.test.ts::case 1 - a firm chase of LB-2026-0104 is refused and names the Ironwood credit to apply",
+  "examples/ledgerbox/test/ledgerbox-chase-paid.test.ts::case 2 - 'every invoice over 30 days, draft a chase for each': exactly the six paid ones are refused",
+  "examples/ledgerbox/test/ledgerbox-chase-paid.test.ts::case 3 - Quarry House: refused naming the $3,090.00 credit and its $35.00 gap, then the remainder chases",
+  "examples/ledgerbox/test/ledgerbox-chase-paid.test.ts::case 4 - a letter drafted before the statement import is not sent after it",
+  "examples/ledgerbox/test/ledgerbox-chase-paid.test.ts::case 5 - Kestrel's ambiguous credit does not block, it warns and names both invoices",
+  "examples/ledgerbox/test/ledgerbox-chase-paid.test.ts::case 6 (guard) - a weak, likely or elsewhere-best credit does not block the chase",
+  "examples/ledgerbox/test/ledgerbox-chase-paid.test.ts::case 7 - LB-2026-0104's status leads with lateness and ends 'Looks paid', not 'could belong here'"
+ ],
+ "guard_cases":[6],
+ "cases_total":7,"cases_red_before":7,"cases_green_after":7,
+ "gates":{
+  "cd examples/ledgerbox && node --import ./test/register.mjs --test \"test/**/*.test.ts\" (135 tests)":0,
+  "pnpm --filter ledgerbox typecheck":0,
+  "pnpm --filter ledgerbox lint":0,
+  "pnpm typecheck (root)":0,
+  "pnpm lint (root)":0
+ },
+ "files_changed":12,"lines_changed":431,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"ADR is 0197 (next free number under the lock), not 0149. One commit instead of two. Guard case 6 was red before only because lib/chase.ts did not exist; it carries a positive control so it cannot pass on a verdict that never blocks. Verdict input is chaseCredits(id) (the credit's full reading from the reconciliation table) rather than a (settling, contested) pair; settlingCredits() Map exists for the sheet. The block also covers LB-2026-0930 (open, within terms, $7,425 credit on the statement): 14 refused across the seed, 13 of them overdue as the card measured. Four existing tests needed fixture/expectation updates (tests only): send-superseded-draft swaps inv_0910 (now refused) for inv_0029; lanes-tray chaseable() skips settled invoices; domain-lib accepts the 'Looks paid' clause and counts 20 lib files; lanes-ui's offer-equals-act test pins the known gap (card actRefusal does not yet predict the refusal) to exactly the settling invoices instead of tolerating it.",
+ "notes":"Follow-up (already rehomed on the card): components/lanes/card/read.ts actRefusal should predict the statement refusal so the card/tray hold those 14 invoices back; when it does, the awaitingCard list in test/ledgerbox-lanes-ui.test.ts must become empty and its assertion be dropped. ActionResult.undoId from 7ea3b76 kept on the draft. No sibling reds seen."}

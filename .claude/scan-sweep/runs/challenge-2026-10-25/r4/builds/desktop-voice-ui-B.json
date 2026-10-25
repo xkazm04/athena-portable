@@ -1,0 +1,23 @@
+{"card":"desktop-voice-ui/B","status":"landed","shas":["a4d4e129"],
+ "tests_added":[
+  "apps/desktop/src/modules/voice/live.test.ts::case 1: inputs only, a blank label named by its position, never dropped",
+  "apps/desktop/src/lib/voice.test.ts::case 2: a chosen device is asked for by its exact id, with the same processing as the default",
+  "apps/desktop/src/lib/voice.test.ts::case 3: a chosen device that is gone falls back to the default and says so",
+  "apps/desktop/src/lib/voice.test.ts::a default that refuses too is the refusal thrown, and nothing is asked a third time",
+  "apps/desktop/src/modules/voice/model.test.ts::case 4: a chosen device that is not connected reads as the system default, and says so",
+  "apps/desktop/src/modules/voice/model.test.ts::nothing chosen is the system default with no note",
+  "apps/desktop/src/modules/voice/live.test.ts::case 5: choosing a microphone writes the row once, and the next take opens that device",
+  "apps/desktop/src/modules/voice/live.test.ts::case 6: a silent take is caught here, names the microphone, and reaches no engine",
+  "apps/desktop/src/stores/voice.test.ts::case 7: a press opens the stored device, and a silent utterance names it and points at the picker",
+  "apps/desktop/src/lib/voice.test.ts::guard (case 8): with no device chosen the constraints are exactly today's",
+  "apps/desktop/src/stores/voice.test.ts::guard (case 8): with no row stored the press opens the default and sends the same start frame",
+  "apps/desktop/src/modules/voice/pieces.test.tsx::lists the system default and every input, and one tap chooses and stores one",
+  "apps/desktop/src/modules/voice/pieces.test.tsx::an unplugged choice reads as the default and says why"
+ ],
+ "guard_cases":[7],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{"cd apps/desktop && pnpm typecheck":0,"cd apps/desktop && pnpm lint":0,"cd apps/desktop && pnpm test":0},
+ "files_changed":15,"lines_changed":598,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"FIRST PAINT drove the shape. modules/voice/live.ts, model.ts and audio.ts are in Main's first-paint root chunk (shared by the voice depth and chores/adopt), so the card's code as written (listMicrophones in lib/voice, micView/chooseMic/state in model+live) measured +704 B over HEAD+stage (165,181 B) against ~230 B headroom. Remedy: a NEW file apps/desktop/src/modules/voice/mic.ts (listMicrophones, micView, peakDb/silentTake, the LIVE_MIC row/list seam, and a tiny choice store: micChoice/refreshMics/chooseMic/subscribeMics/micState). live.ts loads it with import(), and only pieces.tsx imports it statically. It imports neither lib/voice (the level floor is passed in; that import re-split lib/voice, +550 B) nor React (the useSyncExternalStore hook lives in pieces.tsx; importing React re-split the React chunks, +242 B). So chooseMic is mic.ts's chooseMic, not useVoiceSetup.actions.chooseMic, and the choice is not in HearState/VoiceModel. Case 5 asserts the seam's write instead of settingWrite (LIVE_MIC.write calls settingWrite(SETTING_KEYS.voiceInput, id ?? '') under a shell). micView, listMicrophones and silentTake live in mic.ts, not lib/voice.ts or model.ts. openMicrophone falls back on any failure of the exact device, not only OverconstrainedError (bytes); the default's refusal is what's thrown. Push-to-talk reads the row just before openMic, not alongside the capture (bytes). TakeRecorder.start takes a device or a promise of one, so a stop before the read still waits for the open. Final first paint is 165,402 B, 10 B under the 165,412 B ceiling (+221 B over HEAD+stage). Guard case 8 was red before only on the new API (session.fellBack, openMic receiving null); its constraint/start-frame half passed before.",
+ "notes":"The silent-take sentence says 'Pick another input above', per the card. That's right in Voice settings (the picker sits above Test take) but wrong in the studio's hear step, which has no picker. studio.tsx is outside the write set, so this is recorded in ADR 0196, not fixed. First-paint headroom is now 10 B; the next first-frame addition needs the owner or another move out. Coordinator: I touched first paint and may want perf:*. The 'M' entries on scenes/voice interact.test.tsx/keys.test.ts/studio.tsx/view.test.tsx in git status were there before I started, with an empty content diff (line endings or stat). They are not mine and I didn't commit them. No sibling reds: full desktop suite 181 files / 2526 tests green."}
