@@ -35,3 +35,24 @@ What is left for a person after the build. Each item names its evidence; nothing
 ## Flakes seen (attributed to no builder)
 
 - `tests/peer/test_listener.py::test_a_listener_without_the_flag_refuses_a_real_loopback_socket` - WinError 10053; HEAD 1/10; untouched this run. The base control could not run (the scratch worktree would not import `athena`).
+
+## Triage with the owner - 2026-10-25
+
+| # | Decision | Work it implies |
+| - | -------- | --------------- |
+| C1 | Ratify the 165,412 B ceiling | note owner approval in `first-paint.mjs` header |
+| C2 | Land voice-waking/B only if it fits under today's ceiling | re-apply `r2/builds/desktop-scenes-voice-waking-B.patch`, measure, land or report the overshoot |
+| C3 | Land art-bell/A with a raise | re-apply `r5/builds/desktop-art-bell-A.patch`, raise the ceiling by the measured overshoot (owner-approved) |
+| C4 | Raise ADR 0027's mirror cap to 40 Hz | amend ADR 0027, mirror every shape change, flip avatar/A's case-6 todo to a real test |
+| C5 | Count inline HTML scripts in the first-paint gauge | `first-paint.mjs` adds inline `<script>` bytes per entry; ceiling set to the measured total |
+| C6 | Accept the eager stills glob (ADR 0213) | none |
+| D1 | Fix the tidycrm cross-domain double count now | `lib/blocks/index.ts`; flip the todo trace; widen the walk generator |
+| D2 | Profile and fix the chores "press Enter" long task | M card until `perf:chores` is green |
+| F1 | Context-aware mic hint in the studio | "Pick another microphone in Voice settings" + dive link |
+| F2 | The ledgerbox card asks the chase verdict | Draft becomes "Apply the credit first"; flip the pinned test |
+| F3 | Queue the focus until the lazy rise module loads | Stage remembers the pending focus; reload-at-depth test |
+| F4 | Fix the Gauntlet "three surfaces" copy | derive from the surface registry |
+| F5 | One scripted UAT pass over the desktop live paths | crash-respawn, restart tab return, High Contrast; paid journey/TTS runs stay with the owner |
+| F6 | `/conform` the core-gate-and-ledger x hitl-approval pair | re-judge stale pairs the run touched |
+| Flake | Harden the peer listener test | accept a connection abort as the refusal; 20 green runs |
+| Old | Drain 10-16's Lane B with `--ab-only`; close 10-13 | carry still-true 10-13 items into the 10-16 register |
