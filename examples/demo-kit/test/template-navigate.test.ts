@@ -13,14 +13,10 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { VIEWS, routeFor } from "../template/lib/constants.ts";
-
-/** `viewFor()` in components/HostCapabilities.tsx, kept in step. */
-function viewFor(pathname: string): string {
-  if (pathname.startsWith("/activity")) return "activity";
-  if (pathname === "/") return "list";
-  return "detail";
-}
+// `viewFor` is the shipped one HostCapabilities imports, never a copy kept "in step" here: a copy
+// had drifted to the prefix rule constants.ts rejects. oracle-reach.test.ts refuses a test-local
+// declaration that shadows a shipped export.
+import { VIEWS, routeFor, viewFor } from "../template/lib/constants.ts";
 
 test("every enum member the manifest advertises is reachable", () => {
   const ids: Record<string, string | undefined> = { detail: "rec-0001" };
@@ -62,5 +58,13 @@ test("a record id is escaped into the path rather than pasted into it", () => {
   const decision = routeFor("detail", "rec 1/../secrets");
   assert.ok(decision.ok);
   assert.equal(decision.href, "/rec%201%2F..%2Fsecrets");
+  assert.equal(viewFor(decision.href), "detail");
+});
+
+test("a record whose id starts with 'activity' is a record page, read back through the shipped viewFor", () => {
+  assert.equal(viewFor("/activity-log"), "detail");
+  const decision = routeFor("detail", "activity-log");
+  assert.ok(decision.ok);
+  assert.equal(decision.href, "/activity-log");
   assert.equal(viewFor(decision.href), "detail");
 });

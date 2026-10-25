@@ -16,7 +16,7 @@
 
 import { useCallback, useEffect, useMemo, useReducer, useRef } from "react";
 
-import { escapeAbortsFlight, escapeLeavesLevel } from "./escape";
+import { escapeIntent } from "./escape";
 import { initialNavState, navReducer, type Focus, type NavState } from "./state";
 
 export { emphasis } from "./presence";
@@ -101,15 +101,15 @@ export function useWorldNav(): Nav {
 
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
-      // `escapeLeavesLevel` is the whole OWNERSHIP rule, and it is asked BEFORE preventDefault:
-      // calling preventDefault on a key the page has not decided about is what made this
-      // listener impossible to compose with. See ./escape.ts.
-      if (!escapeLeavesLevel(e, level.current, holds.current)) return;
+      // `escapeIntent` asks OWNERSHIP first, BEFORE preventDefault: calling preventDefault on a
+      // key the page has not decided about is what made this listener impossible to compose
+      // with. Then what the key MEANS, which depends on whether the move the reader is watching
+      // has landed: mid-flight it is "not that one after all", the focus they were standing on.
+      // See ./escape.ts; the answer is dispatched as-is so its tests are this listener's tests.
+      const intent = escapeIntent(e, level.current, moving.current, holds.current);
+      if (!intent) return;
       e.preventDefault();
-      // ...and then what the key MEANS, which depends on whether the move the reader is watching
-      // has landed. Mid-flight it is "not that one after all", which is the focus they were
-      // standing on — never the level above a place they never arrived at.
-      dispatch({ type: escapeAbortsFlight(e, moving.current, level.current) ? "abort" : "up" });
+      dispatch({ type: intent });
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);

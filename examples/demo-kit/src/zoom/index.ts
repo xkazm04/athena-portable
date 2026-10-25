@@ -28,7 +28,14 @@
  */
 
 /* The model: state, actions, reducer — and the hook that owns the Escape key. */
-export { escapeAbortsFlight, escapeLeavesLevel, MODAL_SELECTOR, type EscapeEvent } from "./escape";
+export {
+  escapeAbortsFlight,
+  escapeIntent,
+  escapeLeavesLevel,
+  MODAL_SELECTOR,
+  type EscapeEvent,
+  type EscapeIntent,
+} from "./escape";
 export {
   HOME,
   initialNavState,

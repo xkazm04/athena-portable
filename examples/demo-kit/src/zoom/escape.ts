@@ -65,13 +65,8 @@ export function escapeLeavesLevel(event: EscapeEvent, level: number, holds = 0):
  *
  * ASK IT AFTER `escapeLeavesLevel`, not instead of it. Ownership first (a modal, a hold, a
  * consumer that already called `preventDefault` all keep the key), then this to choose between
- * `nav.abort()` and `nav.up()`. `nav.ts` does exactly that, and an app with its own listener
- * should too:
- *
- *     if (!escapeLeavesLevel(e, level, holds)) return;
- *     e.preventDefault();
- *     if (escapeAbortsFlight(e, moving, level)) nav.abort();
- *     else nav.up();
+ * `nav.abort()` and `nav.up()`. `escapeIntent` below is that composition, and it is what `nav.ts`
+ * calls; an app with its own listener should call it too rather than re-deriving the order.
  *
  * @param moving whether a level change is in flight (`useLevelFlight`'s `moving`)
  * @param level the level the nav is on now — L0 has no arrival to abandon
@@ -81,4 +76,34 @@ export function escapeAbortsFlight(event: EscapeEvent, moving: boolean, level: n
   if (event.defaultPrevented) return false;
   if (!moving) return false;
   return level >= 1;
+}
+
+/** What an Escape means to the nav: abandon the move in flight, leave the level, or nothing. */
+export type EscapeIntent = "abort" | "up";
+
+/**
+ * The whole Escape decision, in the one order that is right: ownership first
+ * (`escapeLeavesLevel`), then what the key means (`escapeAbortsFlight`). `null` means the key is
+ * not the nav's — leave it alone, and do not call `preventDefault`.
+ *
+ *     const intent = escapeIntent(e, level, moving, holds);
+ *     if (!intent) return;
+ *     e.preventDefault();
+ *     intent === "abort" ? nav.abort() : nav.up();
+ *
+ * This is what `nav.ts`'s listener runs and dispatches, so a test of this function is a test of
+ * the listener (test/oracle-reach.test.ts pins that at call level).
+ *
+ * @param level the level the nav is on now
+ * @param moving whether a level change is in flight
+ * @param holds how many consumers are currently holding Escape
+ */
+export function escapeIntent(
+  event: EscapeEvent,
+  level: number,
+  moving: boolean,
+  holds = 0,
+): EscapeIntent | null {
+  if (!escapeLeavesLevel(event, level, holds)) return null;
+  return escapeAbortsFlight(event, moving, level) ? "abort" : "up";
 }

@@ -10,7 +10,7 @@ means the apps differ in domain, not plumbing, and one seed registry means they 
 The package ships **TypeScript source**. Each app sets `transpilePackages: ["@athena/demo-kit"]` in
 `next.config.ts` and Next compiles the kit alongside the app. There is no `dist/` and an edit to a
 kit file hot-reloads in a running app. `pnpm --filter @athena/demo-kit typecheck` runs
-`tsc --noEmit` over the source; `pnpm --filter @athena/demo-kit test` runs the kit's own
+`tsc --noEmit` over the source and the tests; `pnpm --filter @athena/demo-kit test` runs the kit's own
 `node --test` suite once, measured (see Coverage).
 
 ## Import paths
@@ -23,7 +23,7 @@ kit file hot-reloads in a running app. `pnpm --filter @athena/demo-kit typecheck
 | `@athena/demo-kit/webmcp` | client | `useWebMCPTool`, `annotationsFor`, `useZoomTools`, `bounded`, `boundedPage`, `PAGE`, `ensureModelContext`, `detectModelContext`, and the types |
 | `@athena/demo-kit/ui` | client | `AppShell`, `DataTable`, `DetailPane`, `EmptyState`, `ToastProvider`, `useToast`, `ThemeVariantSwitcher`, `useThemeVariant` |
 | `@athena/demo-kit/ui/demo-kit.css` | css | the `--dk-*` themed stylesheet; `@import` it once from the app's globals.css |
-| `@athena/demo-kit/zoom` | client | the model: `useZoomNav`, `useStaticNav`, `navReducer`, `initialNavState`, `HOME`, `nodeId`, `sameFocus`, `escapeLeavesLevel`, `escapeAbortsFlight`, `MODAL_SELECTOR`, types `ZoomNav`, `Focus`, `Level`, `NavState`, `NavAction`, `EscapeEvent` |
+| `@athena/demo-kit/zoom` | client | the model: `useZoomNav`, `useStaticNav`, `navReducer`, `initialNavState`, `HOME`, `nodeId`, `sameFocus`, `escapeIntent`, `escapeLeavesLevel`, `escapeAbortsFlight`, `MODAL_SELECTOR`, types `ZoomNav`, `Focus`, `Level`, `NavState`, `NavAction`, `EscapeEvent`, `EscapeIntent` |
 | | | the formula: `useLevelFlight` (+ `advanceFlight`, `settleFlight`, `isMoving`, `initialFlight`, `FLIGHT_FALLBACK_MS`, `ARMING_FLIGHT`), `emphasis`, `presenceOf`, `presenceStyle`, `PRESENCE_DEPTH`, `useSharedIdentity`, `sharedIdentity`, `UNCLAIMED`, `useTokens`, `cssMs`, `cssEase`, `parseMs`, `parseEase`, `parseBezier`, `readTokens`, `styleOf`, `tokenValue`, `secs`, `useOverlayEscape`, `escapeClosesOverlay`, `focusReturnTarget`, `isOpener`, `useRoving`, `rovingIndex`, `isRovingKey`, `ROVING_KEYS`, types `LevelFlight`, `FlightState`, `Presence`, `PresenceOpacity`, `SharedIdentity`, `TokenValue`, `StyleSource`, `OverlayEscape`, `FocusPreference`, `Roving`, `RovingOptions` |
 | | | the camera (round 3): `useCameraRig`, `REST_POSE`, `clampPose`, `zoomAt`, `stepInertia`, `nearestSnap`, `orbitDelta`, `panDelta`, `poseToTransform`, `mergePose`, `lerpPose`, `samePose`, `poseDistance`, `angleDelta`, `isNegligible`, `easeFromCss`, `FLY_MS`, `FLY_EASE`, `FRAME_MS`, `NEGLIGIBLE`, `ORBIT_SENSITIVITY`, `SNAP_WEIGHTS`, `ZERO_VELOCITY`, `WHEEL_SENSITIVITY`, `KEY_ORBIT`, `KEY_PAN`, `KEY_ZOOM`, `SNAP_IDLE_MS`, types `CameraPose`, `CameraBounds`, `CameraVelocity`, `CameraFrame`, `CameraRig`, `CameraRigOptions`, `CameraBind` |
 | | | the rig's pointer: `gestureStep`, `initialGesture`, `swallowsClick`, `DRAG_SLOP`, types `GestureState`, `GestureInput`, `GestureEffect`, `GestureOptions`, `GestureStep`, `GesturePoint`, `GesturePointer` |
@@ -161,7 +161,7 @@ surface draws, and the kit deliberately ships no chrome.
 | 3. Box, then ink | App-side. Staging is a design decision about what the surface is made of; the kit gives it the clock (`useTokens`), the completion signal (`settle`), and — round 3 — `liveProps`' `[data-arriving]` on the layer that is arriving, which is the selector the second beat waits on. |
 | 4. One clock per level change, in one module | `useTokens` / `cssMs` / `cssEase` / `parseMs` / `parseBezier` / `secs` — JS reads the `--*` tokens and never types a millisecond. |
 | 5. An overlay owns its own Escape and returns focus to its opener | `useOverlayEscape` — `onKeyDown` for the dialog root (Escape → `preventDefault` + close, which is what keeps the kit's window rule out, see `zoom/escape.ts` rule 1) and focus back to the opener, or to `returnFocusTo()`, on unmount. `prefer: "origin"` flips the two for a pane that grew out of a card. Arrow keys within a level are `useRoving(ref, { selector, columns? })`. |
-| 6. A move in flight is abortable | `escapeAbortsFlight` + `nav.abort()` + `nav.setMoving` — the nav's own listener aborts to the focus the move left instead of stepping up out of a level nobody arrived at. `useLevelFlight` keeps `setMoving` current, so an app that uses it gets this for nothing. |
+| 6. A move in flight is abortable | `escapeIntent` (ownership by `escapeLeavesLevel`, then `escapeAbortsFlight`) + `nav.abort()` + `nav.setMoving` — the nav's own listener aborts to the focus the move left instead of stepping up out of a level nobody arrived at. `useLevelFlight` keeps `setMoving` current, so an app that uses it gets this for nothing. |
 | 7. Presence comes from the model | `emphasis` (the model's answer) and `presenceOf` / `presenceStyle` (the one mapping to opacity and scale: `opacity = e`, `scale = 1 − (1 − e)·0.06`). |
 | 8. Reduced motion lands on the final state at frame zero | App-side, but cheap: an unreadable or zero token reads as `0`, which is the final state — never a `0.01ms` animation. |
 | 9. What is no longer seen stops costing | App-side, and now cheaper to obey: the kit is renderer-free by design (no `three` import anywhere under `zoom/`), and `useCameraRig` renders nothing at all — the pose is a ref, inertia stops the moment a frame would move nothing visible (`isNegligible`), and `subscribe` is what a renderer invalidates on. A settled scene draws zero frames. |
@@ -204,6 +204,7 @@ cssMs(name, el?, fallback = 0): number        // "260ms" | "0.26s" -> 260
 cssEase(name, el?, fallback = ""): string
 useOverlayEscape({ onClose, returnFocusTo?, prefer? }): { onKeyDown }
 escapeAbortsFlight(event, moving: boolean, level: number): boolean   // ask AFTER escapeLeavesLevel
+escapeIntent(event, level: number, moving: boolean, holds = 0): "abort" | "up" | null   // both, in order
 useRoving(ref, { selector: string; columns?: number | (() => number) }): { onKeyDown }
 
 useCameraRig({ bounds, initial?, drag?, wheel?, inertia?, snap?, keyboard?, reducedMotion?,
@@ -261,3 +262,15 @@ useEcho(nav, flight, { measure, stages?, container?, origin? })
   set cannot shrink without an edit someone reviews. `node scripts/coverage.ts --update` raises
   floors to the measured figure (rounded down) and never lowers one; add a new pure module by
   hand. Why two scopes: ADR 0184.
+
+## Tests pin the shipped rule
+
+A test that re-implements the rule it claims to pin is green whatever the shipped code does.
+`test/oracle-reach.test.ts` keeps that out of the suite with the TypeScript compiler API: no file
+under `test/` may declare, at top level, a name that a module under `src/` or `template/lib/`
+exports (import it instead; `const { f } = await import(...)` is an import), and `nav.ts`'s
+`window` keydown handler must call `escapeIntent` once and dispatch its answer, so the Escape
+tests are the listener's tests. Each check carries a negative control that proves it can fail.
+Shared test helpers live in `test/support/` (outside the `*.test.ts` glob). The kit's
+`tsconfig.json` includes `test/**`, so `typecheck` checks the suite's own code; its `paths` entry
+resolves the template's `@athena/demo-kit/*` imports to this source.

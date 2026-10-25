@@ -13,7 +13,11 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "allowJs": false,
+    "allowImportingTsExtensions": true,
+    "paths": {
+      "@athena/demo-kit/*": ["./src/*/index.ts"]
+    },
     "types": ["node"]
   },
-  "include": ["src/**/*.ts", "src/**/*.tsx"]
+  "include": ["src/**/*.ts", "src/**/*.tsx", "test/**/*.ts"]
 }

@@ -34,10 +34,13 @@ function descriptor(handler: Handler, options?: { ceilingMs?: number }) {
   return toolDescriptorFor(spec, { current: handler }, undefined, options);
 }
 
+// The descriptor's `execute` is typed by the WebMCP shape (`string | Promise<string>`); the kit's
+// is async, and `Promise.resolve` lets the tests chain on it without a cast.
+
 test("a refused argument rejects a ToolRefusal listing every mismatch by path, and the handler never runs", async () => {
   let ran = 0;
   const d = descriptor(() => (ran++, "ran"));
-  const error = await d.execute({ stage: "gone", extra: 1 }, {}).then(
+  const error = await Promise.resolve(d.execute({ stage: "gone", extra: 1 }, {})).then(
     () => assert.fail("a refused call must reject"),
     (e: unknown) => e,
   );
@@ -58,8 +61,8 @@ test("a handler throw rejects 'tool failed: <message>' carrying no reason", asyn
   const d = descriptor(() => {
     throw new Error("boom");
   });
-  const error = await d.execute({ stage: "new" }, {}).then(
-    (out) => assert.fail(`resolved ${String(out)}`),
+  const error = await Promise.resolve(d.execute({ stage: "new" }, {})).then(
+    (out: unknown) => assert.fail(`resolved ${String(out)}`),
     (e: unknown) => e,
   );
   assert.ok(error instanceof Error);
@@ -70,8 +73,8 @@ test("a handler throw rejects 'tool failed: <message>' carrying no reason", asyn
 test("with no caller signal, a handler that never settles is refused 'timeout' at the door's ceiling", async () => {
   const d = descriptor(() => new Promise(() => {}), { ceilingMs: 50 });
   const started = Date.now();
-  const error = await d.execute({ stage: "new" }, {}).then(
-    (out) => assert.fail(`resolved ${String(out)}`),
+  const error = await Promise.resolve(d.execute({ stage: "new" }, {})).then(
+    (out: unknown) => assert.fail(`resolved ${String(out)}`),
     (e: unknown) => e,
   );
   assert.ok(error instanceof ToolRefusal);
@@ -82,10 +85,10 @@ test("with no caller signal, a handler that never settles is refused 'timeout' a
 test("the caller's abort mid-run rejects 'cancelled', not resolved 'aborted' text", async () => {
   const controller = new AbortController();
   const d = descriptor(() => new Promise(() => {}));
-  const pending = d.execute({ stage: "new" }, { signal: controller.signal });
+  const pending = Promise.resolve(d.execute({ stage: "new" }, { signal: controller.signal }));
   controller.abort();
   const error = await pending.then(
-    (out) => assert.fail(`resolved ${String(out)}`),
+    (out: unknown) => assert.fail(`resolved ${String(out)}`),
     (e: unknown) => e,
   );
   assert.ok(error instanceof ToolRefusal);

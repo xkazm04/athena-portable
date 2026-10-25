@@ -9,27 +9,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { MODAL_SELECTOR, escapeAbortsFlight, escapeLeavesLevel } from "../src/zoom/escape.ts";
+import { escapeAbortsFlight, escapeIntent } from "../src/zoom/escape.ts";
 import { HOME, initialNavState, navReducer, sameFocus, type NavState } from "../src/zoom/state.ts";
+import { keydown } from "./support/keys.ts";
 
-function keydown(key: string, { prevented = false, modal = false } = {}) {
-  return {
-    key,
-    defaultPrevented: prevented,
-    target: { closest: (selector: string) => (modal && selector === MODAL_SELECTOR ? {} : null) },
-  };
-}
-
-/** What `nav.ts`'s listener does, so the composition is pinned and not just described. */
-function escapeMeans(
-  event: ReturnType<typeof keydown>,
-  level: number,
-  moving: boolean,
-  holds = 0,
-): "abort" | "up" | null {
-  if (!escapeLeavesLevel(event, level, holds)) return null;
-  return escapeAbortsFlight(event, moving, level) ? "abort" : "up";
-}
+// The composition is `escapeIntent`, the function `nav.ts`'s listener calls and dispatches the
+// answer of (pinned at call level by oracle-reach.test.ts), so these cases reach the shipped rule
+// and not a copy of it.
 
 test("Escape mid-flight abandons the move; Escape once it has landed leaves the level", () => {
   assert.equal(escapeAbortsFlight(keydown("Escape"), true, 1), true);
@@ -45,12 +31,13 @@ test("a decided event is left alone here too", () => {
   assert.equal(escapeAbortsFlight(keydown("Escape", { prevented: true }), true, 2), false);
 });
 
-test("ownership is asked FIRST: a modal or a hold keeps the key even mid-flight", () => {
-  assert.equal(escapeMeans(keydown("Escape", { modal: true }), 2, true), null);
-  assert.equal(escapeMeans(keydown("Escape"), 2, true, 1), null);
-  assert.equal(escapeMeans(keydown("Escape"), 0, true), null);
-  assert.equal(escapeMeans(keydown("Escape"), 1, true), "abort");
-  assert.equal(escapeMeans(keydown("Escape"), 1, false), "up");
+test("ownership is asked FIRST: a modal, a hold, L0 or a decided event keeps the key even mid-flight", () => {
+  assert.equal(escapeIntent(keydown("Escape", { modal: true }), 2, true), null);
+  assert.equal(escapeIntent(keydown("Escape"), 2, true, 1), null);
+  assert.equal(escapeIntent(keydown("Escape"), 0, true), null);
+  assert.equal(escapeIntent(keydown("Escape", { prevented: true }), 2, true), null);
+  assert.equal(escapeIntent(keydown("Escape"), 1, true), "abort");
+  assert.equal(escapeIntent(keydown("Escape"), 1, false), "up");
 });
 
 test("abort puts the reader back where they were standing, not one level above it", () => {

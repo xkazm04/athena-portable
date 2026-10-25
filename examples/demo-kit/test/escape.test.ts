@@ -1,22 +1,14 @@
 // The zoom nav's Escape rule, pinned.
 //
-// Run by `pnpm --filter @athena/demo-kit typecheck`, which CI reaches through `pnpm typecheck`
-// over `./examples/*`. Node strips the types; the module under test imports nothing, which is why
-// it is a module of its own rather than a branch inside the React hook in `zoom/nav.ts`.
+// Run by `pnpm --filter @athena/demo-kit test` and type-checked by its `typecheck` (the kit's
+// tsconfig includes test/**). Node strips the types; the module under test imports nothing, which
+// is why it is a module of its own rather than a branch inside the React hook in `zoom/nav.ts`.
 
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { MODAL_SELECTOR, escapeLeavesLevel } from "../src/zoom/escape.ts";
-
-/** A keydown, with an optional ancestor chain the fake `closest` answers from. */
-function keydown(key: string, { prevented = false, modal = false } = {}) {
-  return {
-    key,
-    defaultPrevented: prevented,
-    target: { closest: (selector: string) => (modal && selector === MODAL_SELECTOR ? {} : null) },
-  };
-}
+import { MODAL_SELECTOR, escapeIntent, escapeLeavesLevel } from "../src/zoom/escape.ts";
+import { keydown } from "./support/keys.ts";
 
 test("Escape on a level above L0 leaves the level", () => {
   assert.equal(escapeLeavesLevel(keydown("Escape"), 1), true);
@@ -57,4 +49,11 @@ test("a target with no closest() is not treated as a modal", () => {
   // `window` and `document` are legitimate targets and answer no selector query.
   assert.equal(escapeLeavesLevel({ key: "Escape", defaultPrevented: false, target: null }, 1), true);
   assert.equal(escapeLeavesLevel({ key: "Escape", defaultPrevented: false }, 1), true);
+});
+
+test("escapeIntent is the listener's whole decision: mid-flight Escape aborts, a landed one goes up", () => {
+  assert.equal(escapeIntent(keydown("Escape"), 1, true, 0), "abort");
+  assert.equal(escapeIntent(keydown("Escape"), 1, false, 0), "up");
+  assert.equal(escapeIntent(keydown("Escape"), 2, false), "up", "holds defaults to none");
+  assert.equal(escapeIntent(keydown("Enter"), 2, true), null, "other keys are not ours");
 });
