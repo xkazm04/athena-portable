@@ -6,7 +6,9 @@ clears, repeats, judge, p50/p95, first text, usage), the pick and why, and the d
 their reasons. A number that was not measured is "-", never 0. A Comparability block (ADR 0145)
 names the bench digest, the stale records left out, and per role the paired and conditioned cells
 the pick was read over; each pick shows the conditioned p50 that ranked it beside the p50 over
-every paired cell.
+every paired cell. Each pick block names the incumbent in ``tiers.json`` and, when the pick
+changes it, a table of the incumbent row, the proposed row and their delta; :func:`pick_line` is the
+same comparison as the one line ``pick`` prints per role.
 """
 
 from __future__ import annotations
@@ -32,7 +34,7 @@ from athena.proving.adopt_tiers.simulate import (
     Plan,
 )
 
-__all__ = ["dry_text", "report_md", "write_report"]
+__all__ = ["dry_text", "pick_line", "report_md", "write_report"]
 
 
 def _n(value: int) -> str:
@@ -107,6 +109,112 @@ def _role_usage(role: str, s: ConfigStats) -> float | None:
     return s.usage_interview if role == "interview" else s.usage_audit
 
 
+_SPEED_LABEL = {"interview": "first text", "audit": "round", "shape": "wall"}
+
+
+def _signed_usage(value: float, unit: str) -> str:
+    sign = "-" if value < 0 else "+"
+    return f"{sign}${abs(value):.4f}" if unit == "usd" else f"{value:+,.0f} tok"
+
+
+def _deltas(pick: Pick) -> str:
+    d = pick.delta
+    parts: list[str] = []
+    if d.get("speed_ms") is not None:
+        parts.append(f"{_SPEED_LABEL.get(pick.role, 'p50')} {float(d['speed_ms'] or 0):+,.0f} ms")
+    if d.get("accuracy") is not None:
+        parts.append(f"accuracy {float(d['accuracy'] or 0):+.1f} pt")
+    if d.get("judge") is not None:
+        parts.append(f"judge {format(round(float(d['judge'] or 0), 2), '+g')}")
+    if d.get("usage") is not None:
+        parts.append(f"usage {_signed_usage(float(d['usage'] or 0), pick.usage_unit)}")
+    text = ", ".join(parts) or "nothing measured to compare"
+    if pick.runs:
+        text += f" (n {pick.runs.get('incumbent', 0)}/{pick.runs.get('proposed', 0)})"
+    return text
+
+
+def pick_line(pick: Pick) -> str:
+    """The line ``pick`` prints for a role: what tiers.json holds now, what the bench proposes,
+    by how much and over how many runs, and why the incumbent is out if it is."""
+    mark = " (fallback)" if pick.fallback else ""
+    if not pick.compared:
+        return f"{pick.role}: {pick.config or 'none'}{mark} — {pick.why}"
+    held = pick.incumbent or pick.incumbent_note
+    if pick.config is None:
+        return f"{pick.role}: none, tiers.json keeps {held} — {pick.why}"
+    if pick.unchanged:
+        return f"{pick.role}: {pick.config} (unchanged){mark} — {pick.why}"
+    line = f"{pick.role}: {held} -> {pick.config}{mark}: {_deltas(pick)}"
+    if pick.incumbent and pick.incumbent_out:
+        line += f"; {pick.incumbent} is out: {'; '.join(pick.incumbent_out)}"
+    return f"{line} — {pick.why}"
+
+
+def _incumbent_lines(
+    pick: Pick, stats: Mapping[str, ConfigStats], shape: Mapping[str, ShapeStats]
+) -> list[str]:
+    if not pick.compared:
+        return []
+    held = pick.incumbent or pick.incumbent_note
+    if pick.unchanged:
+        return ["", f"Incumbent in tiers.json: {held} (unchanged)."]
+    lines = ["", f"Incumbent in tiers.json: {held}."]
+    if pick.incumbent and pick.incumbent_out:
+        lines[-1] += f" {pick.incumbent} is out of this run: {'; '.join(pick.incumbent_out)}."
+    if pick.config is None or pick.incumbent is None:
+        return lines
+    label = _SPEED_LABEL.get(pick.role, "p50")
+    d = pick.delta
+    if pick.role == "shape":
+        a, b = shape.get(pick.incumbent), shape.get(pick.config)
+        if a is None or b is None:
+            return lines
+        lines += [
+            "",
+            f"| | config | runs | valid | {label} p50 | usage/run |",
+            "|---|---|---|---|---|---|",
+        ]
+        for side, s in (("incumbent", a), ("proposed", b)):
+            lines.append(
+                f"| {side} | {s.config} | {s.runs} | {s.valid} | {_f(s.ms_p50, 0, ' ms')} | "
+                f"{_usage(s.usage, s.usage_unit)} |"
+            )
+        lines.append(
+            f"| delta | | | | {_signed(d.get('speed_ms'), ' ms')} | "
+            f"{_signed_u(d.get('usage'), pick.usage_unit)} |"
+        )
+        return lines
+    x, y = stats.get(pick.incumbent), stats.get(pick.config)
+    if x is None or y is None:
+        return lines
+    lines += [
+        "",
+        f"| | config | runs | accuracy % | judge | {label} p50 | usage/run |",
+        "|---|---|---|---|---|---|---|",
+    ]
+    for side, c in (("incumbent", x), ("proposed", y)):
+        speed = c.first_text_p50 if pick.role == "interview" else c.round_p50
+        lines.append(
+            f"| {side} | {c.config} | {c.runs} | {_f(c.accuracy, 1)} | {_f(c.judge, 2)} | "
+            f"{_f(speed, 0, ' ms')} | {_usage(_role_usage(pick.role, c), c.usage_unit)} |"
+        )
+    lines.append(
+        f"| delta | | | {_signed(d.get('accuracy'), ' pt', 1)} | "
+        f"{_signed(d.get('judge'), '', 2)} | "
+        f"{_signed(d.get('speed_ms'), ' ms')} | {_signed_u(d.get('usage'), pick.usage_unit)} |"
+    )
+    return lines
+
+
+def _signed(value: float | None, unit: str, digits: int = 0) -> str:
+    return "-" if value is None else f"{value:+,.{digits}f}{unit}"
+
+
+def _signed_u(value: float | None, unit: str) -> str:
+    return "-" if value is None else _signed_usage(value, unit)
+
+
 def _role_table(role: str, stats: Mapping[str, ConfigStats]) -> list[str]:
     lines = [
         "| config | runs | accuracy % | right/wrong/missed | false clears | repeats | judge | "
@@ -125,7 +233,11 @@ def _role_table(role: str, stats: Mapping[str, ConfigStats]) -> list[str]:
     return lines
 
 
-def _pick_lines(pick: Pick) -> list[str]:
+def _pick_lines(
+    pick: Pick,
+    stats: Mapping[str, ConfigStats] | None = None,
+    shape: Mapping[str, ShapeStats] | None = None,
+) -> list[str]:
     head = f"**Pick: {pick.config or 'none'}**"
     if pick.config:
         tier = CONFIGS[pick.config]
@@ -134,6 +246,7 @@ def _pick_lines(pick: Pick) -> list[str]:
     if pick.fallback:
         lines.append("")
         lines.append("> Every config was disqualified; this is the best-accuracy fallback.")
+    lines += _incumbent_lines(pick, stats or {}, shape or {})
     if pick.speed:
         lines += [
             "",
@@ -200,7 +313,7 @@ def report_md(
     for role in ("interview", "audit"):
         lines += ["", f"## {role}", "", *_role_table(role, stats), ""]
         if role in by_role:
-            lines += _pick_lines(by_role[role])
+            lines += _pick_lines(by_role[role], stats, shape)
     lines += ["", "## shape", ""]
     pick = by_role.get("shape")
     if pick is None or (pick.config is None and not any(s.runs for s in shape.values())):
@@ -216,7 +329,7 @@ def report_md(
                 f"{_f(s.ms_p95, 0, ' ms')} | {_usage(s.usage, s.usage_unit)} |"
             )
         lines.append("")
-        lines += _pick_lines(pick)
+        lines += _pick_lines(pick, stats, shape)
     return "\n".join(lines) + "\n"
 
 

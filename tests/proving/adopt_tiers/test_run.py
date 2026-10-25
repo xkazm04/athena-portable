@@ -244,3 +244,74 @@ def test_a_relative_run_dir_becomes_absolute_so_legs_in_temp_dirs_find_their_pro
     monkeypatch.chdir(tmp_path)
     rig = make_rig(Path("proving-runs/x"), FakeModel(clearing_script()))
     assert rig.run_dir.is_absolute() and rig.prompt_dir.is_absolute()
+
+
+# --- pick against tiers.json, and --write ---------------------------------------------------------
+
+
+def _bench(tmp_path: Path, script: dict[str, list[Any]]) -> tuple[Path, list[str]]:
+    from athena.proving.adopt_tiers.simulate import run_dir_for
+
+    run_dir = run_dir_for(tmp_path, date="2026-10-14")
+    rig = make_rig(run_dir, FakeModel(script))
+    plan = make_plan([LEASE], ["sonnet-low", "opus-medium"], 1, run_dir, shape=False)
+    assert run_jobs(rig, plan, parallel=1, echo=lambda _line: None) == []
+    return run_dir, ["--out", str(tmp_path), "--scenarios", LEASE.id]
+
+
+def _tiers(tmp_path: Path, **roles: str) -> Path:
+    from athena.adopt.legs import TIERS_PATH
+
+    path = tmp_path / "tiers.json"
+    raw = json.loads(TIERS_PATH.read_text(encoding="utf-8"))
+    for role, name in roles.items():
+        raw[role] = {"model": CONFIGS[name].model, "effort": CONFIGS[name].effort}
+    path.write_text(json.dumps(raw, indent=2) + "\n", encoding="utf-8")
+    return path
+
+
+def test_pick_prints_incumbent_to_proposed_and_picks_json_carries_the_delta(
+    tmp_path: Path,
+) -> None:
+    run_dir, args = _bench(tmp_path, clearing_script())
+    tiers = _tiers(tmp_path, interview="haiku-low", audit="haiku-low")
+    out: list[str] = []
+    assert main(["pick", *args], echo=out.append, tiers=tiers) == 0
+    picks = {p["role"]: p for p in json.loads((run_dir / "picks.json").read_text("utf-8"))}
+    proposed = picks["interview"]["proposed"]
+    assert proposed in ("sonnet-low", "opus-medium")
+    assert picks["interview"]["incumbent"] == "haiku-low"
+    assert set(picks["interview"]["delta"]) >= {"speed_ms", "accuracy", "judge", "usage"}
+    assert any(line.startswith(f"interview: haiku-low -> {proposed}") for line in out), out
+
+
+def test_pick_write_with_every_role_unchanged_leaves_tiers_json_as_it_is(tmp_path: Path) -> None:
+    run_dir, args = _bench(tmp_path, clearing_script())
+    assert main(["pick", *args], echo=lambda _line: None, tiers=_tiers(tmp_path)) == 0
+    picks = {p["role"]: p for p in json.loads((run_dir / "picks.json").read_text("utf-8"))}
+    tiers = _tiers(tmp_path, interview=picks["interview"]["config"], audit=picks["audit"]["config"])
+    before = tiers.read_bytes()
+    out: list[str] = []
+    assert main(["pick", "--write", *args], echo=out.append, tiers=tiers) == 0
+    assert tiers.read_bytes() == before
+    assert "tiers.json unchanged" in out
+    held = f"interview: {picks['interview']['config']} (unchanged)"
+    assert any(line.startswith(held) for line in out), out
+
+
+def test_pick_write_refuses_a_fallback_unless_accepted(tmp_path: Path) -> None:
+    # The scripted bench clears no config's floor (a repeat; the other's accuracy), so the
+    # interview and audit picks are fallbacks.
+    run_dir, args = _bench(tmp_path, clearing_script())
+    tiers = _tiers(tmp_path, interview="opus-low", audit="opus-low")
+    before = tiers.read_bytes()
+    out: list[str] = []
+    assert main(["pick", "--write", *args], echo=out.append, tiers=tiers) == 2
+    assert tiers.read_bytes() == before
+    refusal = [line for line in out if "--accept-fallback" in line]
+    assert refusal and "interview" in refusal[0], out
+    picks = json.loads((run_dir / "picks.json").read_text("utf-8"))
+    assert picks[0]["fallback"] and picks[0]["proposed"] != "opus-low"
+    assert main(["pick", "--write", "--accept-fallback", *args], echo=out.append, tiers=tiers) == 0
+    assert tiers.read_bytes() != before
+    assert json.loads(tiers.read_text("utf-8"))["interview"]["model"] != "claude-opus-5-5"

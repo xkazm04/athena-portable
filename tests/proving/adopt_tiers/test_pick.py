@@ -5,6 +5,7 @@ from __future__ import annotations
 import json
 import shutil
 from pathlib import Path
+from typing import Any
 
 import pytest
 
@@ -13,10 +14,13 @@ from athena.proving.adopt_tiers.pick import (
     ConfigStats,
     Pick,
     ShapeStats,
+    against,
+    incumbent,
     pick_role,
     pick_shape,
     write_tiers,
 )
+from athena.proving.adopt_tiers.report import pick_line, report_md
 from athena.proving.adopt_tiers.simulate import CONFIGS
 
 
@@ -158,3 +162,88 @@ def test_write_tiers_never_touches_research_persona_judge(tmp_path: Path) -> Non
 @pytest.mark.parametrize("role", ["interview", "audit"])
 def test_no_runs_no_pick(role: str) -> None:
     assert pick_role(role, _all()).config is None
+
+
+# --- the decision preview: the incumbent in tiers.json against the proposal ---------------------
+
+
+def _held(interview: str, audit: str = "opus-low", shape: str = "haiku-low") -> dict[str, Any]:
+    def entry(name: str) -> dict[str, str]:
+        return {"model": CONFIGS[name].model, "effort": CONFIGS[name].effort}
+
+    return {"interview": entry(interview), "audit": entry(audit), "shape": entry(shape)}
+
+
+def test_incumbent_reverse_maps_tiers_json_to_a_config() -> None:
+    held = incumbent(
+        {
+            "interview": {"model": "claude-opus-5-5", "effort": "low"},
+            "audit": {"model": "claude-x", "effort": "high"},
+        }
+    )
+    assert held["interview"].config == "opus-low"
+    assert held["interview"].note == ""
+    assert held["audit"].config is None
+    assert held["audit"].note == "hand-set (claude-x, effort high), not benched"
+
+
+def test_the_pick_line_reads_incumbent_to_proposed_with_deltas_and_n() -> None:
+    stats = _all(
+        opus_low=_good("opus-low", first=1500, rounds=9000, usage=0.012),
+        haiku_medium=_good("haiku-medium", first=880, rounds=6000, usage=0.008),
+    )
+    stats["haiku-medium"].accuracy = 88.5
+    stats["haiku-medium"].judge = 4.4
+    picks = against(
+        [Pick("interview", "haiku-medium", "fastest p50 (880 ms)")], stats, {}, _held("opus-low")
+    )
+    pick = picks[0]
+    assert (pick.incumbent, pick.proposed) == ("opus-low", "haiku-medium")
+    assert pick.delta["speed_ms"] == -620
+    line = pick_line(pick)
+    assert line.startswith("interview: opus-low -> haiku-medium: ")
+    for part in ("first text -620 ms", "accuracy -1.5 pt", "judge -0.1", "usage -$0.0040"):
+        assert part in line, line
+    assert "(n 18/18)" in line
+    assert line.endswith("— fastest p50 (880 ms)")
+
+
+def test_a_proposal_equal_to_the_incumbent_reads_unchanged() -> None:
+    stats = _all(opus_low=_good("opus-low", first=1500, rounds=9000))
+    pick = against([Pick("interview", "opus-low", "fastest")], stats, {}, _held("opus-low"))[0]
+    assert pick_line(pick) == "interview: opus-low (unchanged) — fastest"
+    assert pick.delta == {}
+
+
+def test_a_disqualified_incumbent_says_why_it_is_replaced() -> None:
+    stats = _all(
+        opus_low=_good("opus-low", first=1500, rounds=9000),
+        sonnet_low=_good("sonnet-low", first=900, rounds=6000),
+    )
+    stats["opus-low"].false_clears = 1
+    pick = pick_role("interview", stats)
+    assert pick.config == "sonnet-low"
+    line = pick_line(against([pick], stats, {}, _held("opus-low"))[0])
+    assert "opus-low -> sonnet-low" in line
+    assert "opus-low is out: 1 false clear(s)" in line
+
+
+def test_report_pick_block_names_the_incumbent_and_the_delta_table(tmp_path: Path) -> None:
+    stats = _all(
+        opus_low=_good("opus-low", first=1500, rounds=9000, usage=0.012),
+        haiku_medium=_good("haiku-medium", first=880, rounds=6000, usage=0.008),
+    )
+    picks = against(
+        [Pick("interview", "haiku-medium", "fastest"), Pick("audit", "opus-low", "fastest")],
+        stats,
+        {},
+        _held("opus-low"),
+    )
+    text = report_md(stats, {}, picks, run_dir=tmp_path, scenarios=9, shape_note="")
+    interview = text.split("## interview")[1].split("## audit")[0]
+    assert "Incumbent in tiers.json: opus-low" in interview
+    assert "| incumbent | opus-low | 18 |" in interview
+    assert "| proposed | haiku-medium | 18 |" in interview
+    assert "| delta |" in interview and "-620 ms" in interview
+    audit = text.split("## audit")[1].split("## shape")[0]
+    assert "Incumbent in tiers.json: opus-low (unchanged)" in audit

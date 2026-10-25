@@ -4,13 +4,16 @@
     uv run python -m athena.proving.adopt_tiers run [--scenarios ...] [--configs ...] [--reps 2]
         [--parallel 3] [--date YYYY-MM-DD] [--out proving-runs]
     uv run python -m athena.proving.adopt_tiers report [--date YYYY-MM-DD]
-    uv run python -m athena.proving.adopt_tiers pick [--write] [--date YYYY-MM-DD]
+    uv run python -m athena.proving.adopt_tiers pick [--write [--accept-fallback]] [--date ...]
 
 ``--dry`` prints the plan and the estimated leg count and spends nothing. ``run`` spends
 subscription usage through the ``claude`` CLI (never the API, ADR 0007) and is resumable: what is
 on disk under ``proving-runs/adopt-tiers/<date>/`` is skipped. ``report`` and ``pick`` read the
-latest date unless ``--date`` names one. Exit codes: 0 done, 1 some jobs failed (named), 2 nothing
-could run.
+latest date unless ``--date`` names one. ``pick`` prints each role as a diff of ``tiers.json``
+(``opus-low -> haiku-medium: first text -620 ms, ... (n 18/18)``, or ``(unchanged)``);
+``--write`` writes only the roles that change, and refuses (exit 2) a fallback pick, one no
+config cleared the floor for, unless ``--accept-fallback`` is passed. Exit codes: 0 done, 1 some
+jobs failed (named), 2 nothing could run.
 """
 
 from __future__ import annotations
@@ -22,14 +25,18 @@ from collections.abc import Callable, Sequence
 from dataclasses import asdict
 from pathlib import Path
 
+from athena.adopt.legs import TIERS_PATH
 from athena.proving.adopt_tiers.pick import (
+    against,
     aggregate,
     aggregate_shape,
+    changes,
     load_results,
     pick_bench,
+    read_tiers,
     write_tiers,
 )
-from athena.proving.adopt_tiers.report import dry_text, report_md, write_report
+from athena.proving.adopt_tiers.report import dry_text, pick_line, report_md, write_report
 from athena.proving.adopt_tiers.scenarios import ScenarioError, load_scenarios
 from athena.proving.adopt_tiers.simulate import (
     BENCH_DIRNAME,
@@ -59,6 +66,11 @@ def build_parser() -> argparse.ArgumentParser:
     pick = verbs.add_parser("pick", help="print the picks; --write updates tiers.json")
     _common(pick)
     pick.add_argument("--write", action="store_true")
+    pick.add_argument(
+        "--accept-fallback",
+        action="store_true",
+        help="with --write, also write a pick no config cleared the floor for",
+    )
     return parser
 
 
@@ -76,7 +88,12 @@ def _latest(base: Path) -> str:
     return days[-1] if days else ""
 
 
-def main(argv: Sequence[str] | None = None, *, echo: Callable[[str], None] = print) -> int:
+def main(
+    argv: Sequence[str] | None = None,
+    *,
+    echo: Callable[[str], None] = print,
+    tiers: Path = TIERS_PATH,
+) -> int:
     args = build_parser().parse_args(argv)
     say = echo
     scenario_ids: list[str] = getattr(args, "scenarios", [])
@@ -118,6 +135,7 @@ def main(argv: Sequence[str] | None = None, *, echo: Callable[[str], None] = pri
     _, note = shape_function()
     measured = bool(results.shapes)
     picks = pick_bench(interviews, scenarios, shape_stats, shape_measured=measured, shape_note=note)
+    picks = against(picks, stats, shape_stats, read_tiers(tiers))
     if verb == "report":
         text = report_md(
             stats,
@@ -136,8 +154,7 @@ def main(argv: Sequence[str] | None = None, *, echo: Callable[[str], None] = pri
     if results.stale:
         say(f"excluded {results.stale} stale record(s) from another bench digest")
     for p in picks:
-        mark = " (fallback)" if p.fallback else ""
-        say(f"{p.role}: {p.config or 'none'}{mark} — {p.why}")
+        say(pick_line(p))
     if run_dir.is_dir():
         (run_dir / "picks.json").write_text(
             json.dumps([asdict(p) for p in picks], indent=2) + "\n", encoding="utf-8"
@@ -146,7 +163,18 @@ def main(argv: Sequence[str] | None = None, *, echo: Callable[[str], None] = pri
         if not interviews:
             say("no results: tiers.json left as it is")
             return 2
-        written = write_tiers(picks)
+        changed = changes(picks)
+        if not changed:
+            say("tiers.json unchanged")
+            return 0
+        blind = [p.role for p in changed if p.fallback]
+        if blind and not getattr(args, "accept_fallback", False):
+            say(
+                f"not written: {', '.join(blind)} is a fallback (no config cleared the floor); "
+                "read report.md, then pass --accept-fallback to write it anyway"
+            )
+            return 2
+        written = write_tiers(changed, tiers)
         say("tiers.json: " + ", ".join(f"{k} {v}" for k, v in written.items() if k != "_note"))
     return 0 if interviews else 2
 

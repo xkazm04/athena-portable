@@ -29,6 +29,12 @@ tiebreak; if all are out, the best pass rate is kept and said so.
 
 ``--write`` writes the picks into ``src/athena/adopt/tiers.json`` — ``interview``, ``audit``,
 ``shape`` only; ``_note`` and every other kind are kept as they are.
+
+**Against the incumbent**: :func:`incumbent` reverse-maps what ``tiers.json`` holds now to a bench
+config (or says it is hand-set and not benched), and :func:`against` stamps each pick with it, the
+proposal, and the deltas between the two configs' stats with their runs, so ``pick`` reads as a
+diff of ``tiers.json``. ``--write`` writes only the roles that change, and refuses a fallback
+change unless the operator passes ``--accept-fallback``.
 """
 
 from __future__ import annotations
@@ -40,6 +46,7 @@ from pathlib import Path
 from typing import Any
 
 from athena.adopt.legs import TIERS_PATH, load_tiers
+from athena.contracts.adopt import Tier
 from athena.proving.adopt_tiers.cells import (
     bench_digest,
     cell_digest,
@@ -52,23 +59,28 @@ from athena.proving.adopt_tiers.cells import (
 )
 from athena.proving.adopt_tiers.scenarios import Scenario
 from athena.proving.adopt_tiers.score import percentile, score_interview
-from athena.proving.adopt_tiers.simulate import CONFIGS, read_record
+from athena.proving.adopt_tiers.simulate import CONFIGS, ROLES, read_record
 
 __all__ = [
     "ACCURACY_MARGIN",
     "JUDGE_FLOOR",
     "TIE_BAND",
     "ConfigStats",
+    "Incumbent",
     "Pick",
     "Results",
     "ShapeStats",
+    "against",
     "aggregate",
     "aggregate_shape",
+    "changes",
+    "incumbent",
     "load_results",
     "pick_all",
     "pick_bench",
     "pick_role",
     "pick_shape",
+    "read_tiers",
     "write_tiers",
 ]
 
@@ -129,6 +141,21 @@ class Pick:
     #: paired cell, published beside it.
     speed: dict[str, float | None] = field(default_factory=dict)
     pooled: dict[str, float | None] = field(default_factory=dict)
+    #: Against ``tiers.json`` (:func:`against`): the config it holds now (None when hand-set or
+    #: unset, and then ``incumbent_note`` says what it is), the proposal, why the incumbent is out
+    #: of this run if it is, the proposed-minus-incumbent deltas, and the runs behind each side.
+    incumbent: str | None = None
+    incumbent_note: str = ""
+    proposed: str | None = None
+    incumbent_out: list[str] = field(default_factory=list)
+    delta: dict[str, float | None] = field(default_factory=dict)
+    runs: dict[str, int] = field(default_factory=dict)
+    usage_unit: str = "usd"
+    compared: bool = False
+
+    @property
+    def unchanged(self) -> bool:
+        return self.config is not None and self.config == self.incumbent
 
 
 @dataclass
@@ -471,6 +498,104 @@ def pick_bench(
         _pick_cells("audit", interviews, scenarios),
         pick_shape(shape, measured=shape_measured, note=shape_note),
     ]
+
+
+# --- against the incumbent -----------------------------------------------------------------
+
+
+@dataclass(frozen=True)
+class Incumbent:
+    """What ``tiers.json`` holds for one role: a bench config, or ``None`` and what it is."""
+
+    config: str | None
+    note: str = ""
+
+
+def read_tiers(path: Path = TIERS_PATH) -> dict[str, Any]:
+    """``tiers.json`` as it is on disk (unvalidated: a hand-set value must still be shown)."""
+    try:
+        raw = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, ValueError):
+        return {}
+    return raw if isinstance(raw, dict) else {}
+
+
+def incumbent(tiers: Mapping[str, Any]) -> dict[str, Incumbent]:
+    """Per written role, the bench config whose model and effort ``tiers`` holds."""
+    by_pair: dict[tuple[str, str], str] = {(t.model, t.effort): name for name, t in CONFIGS.items()}
+    out: dict[str, Incumbent] = {}
+    for role in ROLES:
+        entry = tiers.get(role)
+        model: str
+        effort: str
+        if isinstance(entry, Tier):
+            model, effort = entry.model, entry.effort
+        elif isinstance(entry, Mapping):
+            model, effort = str(entry.get("model", "")), str(entry.get("effort", ""))
+        else:
+            out[role] = Incumbent(None, "not set in tiers.json")
+            continue
+        name = by_pair.get((model, effort))
+        out[role] = (
+            Incumbent(name)
+            if name
+            else Incumbent(None, f"hand-set ({model}, effort {effort}), not benched")
+        )
+    return out
+
+
+def _diff(old: float | None, new: float | None, digits: int) -> float | None:
+    return None if old is None or new is None else round(new - old, digits)
+
+
+def against(
+    picks: Sequence[Pick],
+    stats: Mapping[str, ConfigStats],
+    shape: Mapping[str, ShapeStats],
+    tiers: Mapping[str, Any],
+) -> list[Pick]:
+    """Stamp each written role's pick with the incumbent in ``tiers``, the proposal, why the
+    incumbent is out of this run (if it is), and proposed-minus-incumbent deltas over the stats
+    the report tables show, with the runs behind each side. Answers the same picks."""
+    held = incumbent(tiers)
+    for pick in picks:
+        if pick.role not in held:
+            continue
+        inc = held[pick.role]
+        pick.compared = True
+        pick.incumbent, pick.incumbent_note, pick.proposed = inc.config, inc.note, pick.config
+        if inc.config is not None:
+            pick.incumbent_out = list(pick.disqualified.get(inc.config, []))
+        if pick.config is None or inc.config is None or pick.unchanged:
+            continue
+        if pick.role == "shape":
+            a, b = shape.get(inc.config), shape.get(pick.config)
+            if a is None or b is None:
+                continue
+            pick.delta = {
+                "speed_ms": _diff(a.ms_p50, b.ms_p50, 0),
+                "usage": _diff(a.usage, b.usage, 4),
+            }
+            pick.runs = {"incumbent": a.runs, "proposed": b.runs}
+            pick.usage_unit = b.usage_unit
+            continue
+        x, y = stats.get(inc.config), stats.get(pick.config)
+        if x is None or y is None:
+            continue
+        pick.delta = {
+            "speed_ms": _diff(_speed(pick.role, x), _speed(pick.role, y), 0),
+            "accuracy": _diff(x.accuracy, y.accuracy, 1),
+            "judge": _diff(x.judge, y.judge, 2),
+            "usage": _diff(_usage(pick.role, x), _usage(pick.role, y), 4),
+        }
+        pick.runs = {"incumbent": x.runs, "proposed": y.runs}
+        pick.usage_unit = y.usage_unit
+    return list(picks)
+
+
+def changes(picks: Sequence[Pick]) -> list[Pick]:
+    """The written roles whose pick differs from what ``tiers.json`` holds now."""
+    return [p for p in picks if p.role in ROLES and p.config is not None and not p.unchanged]
 
 
 # --- writing tiers.json ---------------------------------------------------------------------
