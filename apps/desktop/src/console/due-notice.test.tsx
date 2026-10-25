@@ -6,7 +6,7 @@
  */
 import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { DueNotice } from "@/lib/adopt";
 
@@ -133,6 +133,15 @@ async function press(el: HTMLElement | null | undefined) {
 const dock = async () => (await import("@/stores/due")).useDue.getState();
 const requests = () => daemon.seen.map((s) => `${s.method} ${s.path}`);
 const posts = () => daemon.seen.filter((s) => s.method === "POST" && !(s.body as { answer?: string })?.answer?.startsWith("seen"));
+
+// Transform the dock's module graph once, before any case: under the whole workspace suite at once
+// the first case otherwise paid the cold transform and timed out. Later imports (after
+// resetModules) re-evaluate the cached transforms.
+beforeAll(async () => {
+  await import("@/stores/daemon");
+  await import("@/stores/due");
+  await import("./due-notice");
+}, 120_000);
 
 beforeEach(() => {
   vi.resetModules();
