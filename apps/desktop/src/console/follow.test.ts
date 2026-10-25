@@ -1,34 +1,14 @@
-/** Tests for the depth following Rust and the tabs — README section 3.5, ADR 0088. */
+/**
+ * Tests for the depth following the tabs — README section 3.5, ADR 0088. Rust's layout announcement
+ * no longer moves the depth (ADR 0215); `shell-sync.test.tsx` pins how it is reconciled instead.
+ */
 import { describe, expect, it } from "vitest";
 
-import { followFocus, followLayout } from "./follow";
+import { followFocus } from "./follow";
 
 const scene = { root: "mind" as const, item: "engine" };
 const page = { root: "apps" as const, item: "https://a.example.test", sub: { kind: "page" as const } };
 const tab = (id: number, url: string) => ({ id, url });
-
-describe("followLayout: Rust selected a shape", () => {
-  it("goes to the focused tab's page when Rust asks for a page and the depth is a scene", () => {
-    expect(followLayout(scene, "page", tab(4, "https://a.example.test/x"))).toEqual({
-      root: "apps",
-      item: "https://a.example.test",
-      sub: { kind: "page" },
-    });
-  });
-
-  it("goes to the apps when Rust asks for a page and there is no tab to show", () => {
-    expect(followLayout(scene, "page", null)).toEqual({ root: "apps" });
-  });
-
-  it("rises out of a page when Rust asks for a scene, onto that app's own layer", () => {
-    expect(followLayout(page, "scene", null)).toEqual({ root: "apps", item: "https://a.example.test" });
-  });
-
-  it("does nothing when the depth already agrees, which is how its own round trip is ignored", () => {
-    expect(followLayout(page, "page", tab(1, "https://a.example.test"))).toBeNull();
-    expect(followLayout(scene, "scene", null)).toBeNull();
-  });
-});
 
 describe("followFocus: the focused tab changed under a page", () => {
   it("names the page now on screen when another tab takes focus", () => {
