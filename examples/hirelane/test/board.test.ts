@@ -84,3 +84,57 @@ test("a person's sent letters stay on their card after fifty newer sends to some
     raw.exec("RELEASE sends");
   }
 });
+
+/*
+ * The evidence facets are a claim that somebody read the application against the rubric.
+ *
+ * An unscored applicant used to get a fabricated row of zero scores, and a count, a band and a
+ * list of "uncertain because" criteria derived from it: "0 of 5 evidenced, thinly evidenced,
+ * nothing quoted for all five". Nobody had read them. `evidence` is now null for exactly them.
+ */
+const { latestScorecards } = await import("../lib/queries");
+
+/** The base tree's arithmetic over a STORED scorecard, re-derived here rather than imported. */
+function baseFacets(stored: { name: string; evidence: string[] }[]) {
+  const evidenced = stored.filter((s) => s.evidence.length > 0).length;
+  const share = stored.length === 0 ? 0 : evidenced / stored.length;
+  const band = share >= 0.8 ? "tight" : share >= 0.5 ? "moderate" : "wide";
+  return { evidenced, band, drivers: stored.filter((s) => s.evidence.length === 0).map((s) => s.name) };
+}
+
+test("evidence case 1: no unscored candidate carries an evidence count, band or drivers", () => {
+  const board = buildBoard();
+  const unscored = board.roles.flatMap((r) => r.columns.flatMap((c) => c.candidates)).filter((c) => !c.scored);
+  assert.ok(unscored.length > 0, "the seed leaves some applications unread, or this asserts nothing");
+  for (const candidate of unscored) {
+    assert.strictEqual(candidate.evidence, null, `${candidate.name}: unread, so no evidence facts`);
+    assert.equal("band" in candidate, false, `${candidate.name}: no flat band`);
+    assert.equal("bandDrivers" in candidate, false, `${candidate.name}: no flat drivers`);
+    assert.equal("evidenced" in candidate.meta, false, `${candidate.name}: no flat evidenced count`);
+  }
+});
+
+test("evidence case 2: a scored candidate's evidence is its stored scorecard's, as the base tree printed it", () => {
+  const board = buildBoard();
+  let seen = 0;
+  for (const role of board.roles) {
+    const cards = latestScorecards(role.id);
+    for (const candidate of role.columns.flatMap((c) => c.candidates).filter((c) => c.scored)) {
+      const stored = cards[candidate.id];
+      assert.ok(stored, `${candidate.name}: scored means a stored scorecard`);
+      const want = baseFacets(stored);
+      assert.ok(candidate.evidence, `${candidate.name}: scored, so evidence is present`);
+      assert.equal(candidate.evidence.evidenced, want.evidenced, `${candidate.name}: evidenced`);
+      assert.equal(
+        candidate.evidence.evidenced,
+        candidate.scores.filter((s) => s.evidence.length > 0).length,
+        `${candidate.name}: evidenced counts the scores with a quote`,
+      );
+      assert.equal(candidate.evidence.criteriaCount, role.criteria.length, `${candidate.name}: criteriaCount`);
+      assert.equal(candidate.evidence.band, want.band, `${candidate.name}: band`);
+      assert.deepEqual(candidate.evidence.drivers, want.drivers, `${candidate.name}: drivers`);
+      seen++;
+    }
+  }
+  assert.ok(seen > 0, "some candidates are scored");
+});

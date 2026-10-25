@@ -37,7 +37,7 @@ import {
   type BdRole,
 } from "@/components/board/model";
 import { HISTORY_SHOWN, historyRow } from "@/components/board/history";
-import { MS_DAY, bandOf, initialsOf, shorten } from "./read";
+import { MS_DAY, evidenceOf, initialsOf, shorten } from "./read";
 
 export function buildBoard(): BdBoard {
   const roles = listRoles();
@@ -84,7 +84,8 @@ export function buildBoard(): BdBoard {
 
     /** An unscored candidate still gets a full-length row of zeroes, so the
      *  shape is the same for everyone and the absence reads as an absence
-     *  rather than as a hole in the layout. */
+     *  rather than as a hole in the layout. Nothing is DERIVED from that row:
+     *  the evidence facets come from `stored` alone (`evidenceOf`). */
     const blank = (): CriterionScore[] =>
       criteria.map((c) => ({
         criterion_id: c.id,
@@ -103,7 +104,6 @@ export function buildBoard(): BdBoard {
       const scored = Boolean(stored);
       // `insight.overall` is the same overallScore(stored) call, already made.
       const overall = insight?.overall ?? 0;
-      const { band, drivers } = bandOf(scores);
 
       return {
         id: a.id,
@@ -120,8 +120,7 @@ export function buildBoard(): BdBoard {
         scored,
         overall,
         fit: fitOf(scored, overall),
-        band,
-        bandDrivers: drivers,
+        evidence: evidenceOf(stored, criteria.length),
         scores: criteria.map((c) => {
           const s = scores.find((x) => x.criterion_id === c.id);
           return {
@@ -142,8 +141,6 @@ export function buildBoard(): BdBoard {
             0,
             Math.floor((Date.parse(TODAY) - Date.parse(a.applied_at)) / MS_DAY),
           ),
-          evidenced: scores.filter((s) => s.evidence.length > 0).length,
-          criteriaCount: criteria.length,
           held: heldBy.get(a.id) ?? [],
           sent: sentBy.get(a.id) ?? [],
           history: (history[a.id]?.rows ?? []).map(historyRow),

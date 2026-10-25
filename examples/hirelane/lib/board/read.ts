@@ -10,7 +10,7 @@ import "server-only";
  * nothing.
  */
 import type { CriterionScore } from "../types";
-import type { Band } from "@/components/board/model";
+import type { Band, BdEvidence } from "@/components/board/model";
 
 
 export const MS_DAY = 86_400_000;
@@ -47,4 +47,21 @@ export function bandOf(scores: CriterionScore[]): { band: Band; drivers: string[
   const share = evidenced.length / total;
   const band: Band = share >= 0.8 ? "tight" : share >= 0.5 ? "moderate" : "wide";
   return { band, drivers: missing };
+}
+
+/**
+ * The evidence facets of a STORED scorecard, or null when there is none.
+ *
+ * The only door to `BdCandidate.evidence`. It takes the stored rows, not the zero row the board
+ * draws an unscored candidate with, so an unread application cannot come out "thinly evidenced".
+ */
+export function evidenceOf(stored: CriterionScore[] | undefined, criteriaCount: number): BdEvidence | null {
+  if (!stored) return null;
+  const { band, drivers } = bandOf(stored);
+  return {
+    evidenced: stored.filter((s) => s.evidence.length > 0).length,
+    criteriaCount,
+    band,
+    drivers,
+  };
 }

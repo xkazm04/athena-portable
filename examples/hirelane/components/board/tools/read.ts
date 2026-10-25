@@ -48,8 +48,13 @@ export function candidateRead(candidate: BdCandidate) {
       ? {
           overall: candidate.overall,
           fit: FIT_LABEL[candidate.fit],
-          confidence: BAND_LABEL[candidate.band],
-          uncertain_because: candidate.bandDrivers,
+        }
+      : {}),
+    // Null for the unread, so the keys go with `overall`: an unread application evidences nothing.
+    ...(candidate.evidence
+      ? {
+          confidence: BAND_LABEL[candidate.evidence.band],
+          uncertain_because: candidate.evidence.drivers,
         }
       : {}),
     arguable: candidate.borderline,
@@ -110,7 +115,9 @@ export function dossierRead(role: BdRole, candidate: BdCandidate, slots: readonl
       evidence: s.evidence,
     })),
     waiting_days: candidate.meta.waitingDays,
-    criteria_evidenced: `${candidate.meta.evidenced} of ${candidate.meta.criteriaCount}`,
+    ...(candidate.evidence
+      ? { criteria_evidenced: `${candidate.evidence.evidenced} of ${candidate.evidence.criteriaCount}` }
+      : {}),
     // A booked interview has been emailed about; a held slot has not. Both are this person's, and
     // an agent deciding whether to propose or to write needs to know which it is looking at.
     slots_held: candidate.meta.held.map((h) => ({

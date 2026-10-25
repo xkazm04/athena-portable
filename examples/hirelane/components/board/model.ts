@@ -22,9 +22,11 @@
  *   candidates  a person, a criterion, a score, and the stage-specific facts
  *   groups      the (stage, role) pair the board opens, encoded and decoded
  *   order       finding one, and the order they compare in
+ *   evidence    what a column says about how much of the rubric its read applications speak to
  */
 export * from "./model/stages";
 export * from "./model/fit";
 export * from "./model/candidates";
 export * from "./model/groups";
 export * from "./model/order";
+export * from "./model/evidence";

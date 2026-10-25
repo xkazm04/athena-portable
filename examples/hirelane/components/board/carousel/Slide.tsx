@@ -177,7 +177,7 @@ export function Slide({
           <span className="bd-fit" data-fit={candidate.fit}>
             {FIT_LABEL[candidate.fit]}
           </span>
-          {candidate.scored ? <span className="bd-band">{BAND_LABEL[candidate.band]}</span> : null}
+          {candidate.evidence ? <span className="bd-band">{BAND_LABEL[candidate.evidence.band]}</span> : null}
         </span>
 
         <span className="bd-led-rows">

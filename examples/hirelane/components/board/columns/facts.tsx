@@ -11,7 +11,7 @@
  * Both obey the same rule: when there is nothing to say they draw nothing. A
  * group nobody has scored has no line, not an empty one.
  */
-import type { BdCandidate, StageRole } from "../model";
+import { screeningFact, type BdCandidate, type StageRole } from "../model";
 
 /**
  * The one fact that is true in this stage and in no other, aggregated over the
@@ -31,11 +31,8 @@ export function stageFact(role: StageRole, candidates: BdCandidate[]): string | 
     return `${longest} days is the longest wait`;
   }
 
-  if (role === "screening") {
-    const evidenced = candidates.reduce((n, c) => n + c.meta.evidenced, 0);
-    const total = candidates.reduce((n, c) => n + c.meta.criteriaCount, 0);
-    return `${evidenced} of ${total} criteria evidenced`;
-  }
+  // Counts only the read: an unread application has no evidence facts to add (model/evidence.ts).
+  if (role === "screening") return screeningFact(candidates);
 
   if (role === "interview") {
     const held = candidates.filter((c) => c.meta.held.length > 0).length;

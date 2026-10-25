@@ -5,6 +5,10 @@
  * them, and `overall` is meaningless unless it is true. The design law puts it
  * as "the unscored are expressed by absence" — a zero is a score, and treating
  * an unread application as one is the worst thing this domain can do.
+ *
+ * The evidence facets hold the same rule by type rather than by a flag: `evidence`
+ * is null until there is a stored scorecard to count, so no reader can print an
+ * evidence count, a band or an "uncertain because" for an application nobody read.
  */
 
 import type { ActSlot } from "@/lib/acts";
@@ -44,9 +48,6 @@ export interface BdScore {
 export interface BdStageMeta {
   /** entry: whole days between the application and the frozen today. */
   waitingDays: number;
-  /** screening: criteria carrying at least one quoted sentence, out of all. */
-  evidenced: number;
-  criteriaCount: number;
   /**
    * interview: every slot that is this candidate's, held or booked. `booked` is an interview they
    * have been emailed about; `held` is time Propose slots is keeping for them and nobody has sent.
@@ -77,6 +78,20 @@ export interface BdHistoryRow {
   why?: string;
 }
 
+/**
+ * How much of the rubric a STORED scorecard speaks to. Built only from a scorecard somebody wrote
+ * (`lib/board/read.ts` `evidenceOf`), never from the zero row an unscored candidate is drawn with.
+ */
+export interface BdEvidence {
+  /** Criteria carrying at least one quoted sentence. */
+  evidenced: number;
+  /** Criteria in the role's rubric. */
+  criteriaCount: number;
+  band: Band;
+  /** Why the band is as wide as it is: the criteria with nothing quoted. */
+  drivers: string[];
+}
+
 export interface BdCandidate {
   id: string;
   name: string;
@@ -96,9 +111,8 @@ export interface BdCandidate {
   /** Weighted 0-4, meaningless unless `scored`. */
   overall: number;
   fit: Fit;
-  band: Band;
-  /** Why the band is as wide as it is: the criteria with nothing quoted. */
-  bandDrivers: string[];
+  /** Null exactly when `scored` is false: an unread application evidences nothing, not zero. */
+  evidence: BdEvidence | null;
   scores: BdScore[];
   /** The one criterion with no evidence, when there is exactly one. */
   gap: string | null;

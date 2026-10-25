@@ -21,6 +21,10 @@ export function StageMeta({ column, candidate }: { column: BdColumn; candidate: 
   }
 
   if (column.role === "screening") {
+    // No pips and no count for an unread application: five dark pips would say "read, and empty".
+    if (!candidate.evidence) {
+      return <span className="bd-slide-meta">not read against the rubric yet</span>;
+    }
     return (
       <span className="bd-slide-meta">
         <span className="bd-pips" aria-hidden>
@@ -28,7 +32,7 @@ export function StageMeta({ column, candidate }: { column: BdColumn; candidate: 
             <i key={s.criterionId} data-on={s.evidence.length > 0} />
           ))}
         </span>
-        {meta.evidenced} of {meta.criteriaCount} criteria evidenced
+        {candidate.evidence.evidenced} of {candidate.evidence.criteriaCount} criteria evidenced
       </span>
     );
   }

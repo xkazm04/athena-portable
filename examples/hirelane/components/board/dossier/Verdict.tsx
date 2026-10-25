@@ -53,10 +53,10 @@ export function DossierVerdict({
            * looked like a caption ON the figures; read here it is what it is,
            * a remark about the person — and it costs no row of its own.
            */}
-          {candidate.scored ? (
+          {candidate.evidence ? (
             <p className="bd-hand">
-              {candidate.bandDrivers.length > 0
-                ? `read it as ${BAND_LABEL[candidate.band]} — nothing quoted for ${candidate.bandDrivers.join(", ")}`
+              {candidate.evidence.drivers.length > 0
+                ? `read it as ${BAND_LABEL[candidate.evidence.band]} — nothing quoted for ${candidate.evidence.drivers.join(", ")}`
                 : `every criterion has a quote behind it`}
             </p>
           ) : (
@@ -89,12 +89,15 @@ export function DossierVerdict({
             <b>{FIT_LABEL[candidate.fit]}</b>
             <span>fit</span>
           </div>
-          <div>
-            <b>
-              {candidate.meta.evidenced}/{candidate.meta.criteriaCount}
-            </b>
-            <span>evidenced</span>
-          </div>
+          {/* Absent for an unread application: "0/5 evidenced" beside "not scored" claims a reading. */}
+          {candidate.evidence ? (
+            <div>
+              <b>
+                {candidate.evidence.evidenced}/{candidate.evidence.criteriaCount}
+              </b>
+              <span>evidenced</span>
+            </div>
+          ) : null}
           <div>
             <b>{candidate.years}</b>
             <span>years</span>
