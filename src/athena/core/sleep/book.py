@@ -30,10 +30,14 @@ from athena.contracts import ids
 from athena.contracts.channel import iso
 from athena.core.brain.store import DEFAULT_IMPORTANCE, Brain
 from athena.core.sleep import (
+    COMPRESS_EPISODES,
     EXCERPT_CHARS,
     FADE_AFTER_D,
     FADE_BATCH,
     FADE_MAX,
+    FAILED_BACKOFF_CAP_H,
+    FAILED_BACKOFF_H,
+    FAILED_RUN_ROWS,
     FORGOTTEN_PREFIX,
     OPEN_PROPOSALS_CAP,
     PROPOSAL_EXPIRE_D,
@@ -68,7 +72,12 @@ STATS_KEYS: tuple[str, ...] = (
     "faded",
     "forget_proposed",
     "barred",
+    "skipped",
 )
+
+#: The failure classes that say the material is bad, not the engine: they halve the next take.
+#: ``engine_error`` (the model could not be run) backs off and never shrinks (ADR 0190).
+CONTENT_FAILURES: tuple[str, ...] = ("parse_error", "timeout")
 
 
 def empty_stats() -> dict[str, Any]:
@@ -123,6 +132,54 @@ class ProposalRow:
             "status": self.status,
             "created_at": self.created_at,
         }
+
+
+@dataclass(frozen=True)
+class FailureRun:
+    """The failed cycles in a row since the newest settled one, newest first (ADR 0190).
+
+    The boundary moves only when a cycle settles, so every row here failed over the same window.
+    A ``running`` row is never one of them: a crash is evidence, not a failure.
+    """
+
+    rows: tuple[CycleRow, ...] = ()
+
+    @property
+    def count(self) -> int:
+        return len(self.rows)
+
+    @property
+    def last(self) -> CycleRow | None:
+        return self.rows[0] if self.rows else None
+
+    @property
+    def backoff_h(self) -> int:
+        """:data:`FAILED_BACKOFF_H` doubled per further failure, at most the cap."""
+        if not self.rows:
+            return 0
+        doubled: int = FAILED_BACKOFF_H << min(self.count - 1, 16)
+        return min(FAILED_BACKOFF_CAP_H, doubled)
+
+    def _content(self) -> list[int]:
+        """The takes of the content-shaped failures, newest first."""
+        takes: list[int] = []
+        for row in self.rows:
+            take = row.stats.get("take")
+            if row.stats.get("failure") in CONTENT_FAILURES and isinstance(take, int) and take > 0:
+                takes.append(take)
+        return takes
+
+    @property
+    def take_limit(self) -> int:
+        """Half the newest content failure's take (at least one), else the full
+        :data:`COMPRESS_EPISODES`: an engine that could not run says nothing of the material."""
+        takes = self._content()
+        return max(1, takes[0] // 2) if takes else COMPRESS_EPISODES
+
+    @property
+    def quarantine(self) -> bool:
+        """A one-episode take failed on its content twice: that episode is the poison."""
+        return sum(1 for take in self._content() if take == 1) >= 2
 
 
 @dataclass(frozen=True)
@@ -289,6 +346,26 @@ class SleepBook:
                 ORDER BY finished_at DESC, rowid DESC LIMIT 1"""
         )
         return None if row is None else _cycle(row)
+
+    def failures_since_settled(self) -> FailureRun:
+        """The failed cycles since the newest settled one (all of them when none settled), newest
+        first, at most :data:`FAILED_RUN_ROWS`. Settled or failed rows only: never ``running``."""
+        settled = self.last_settled()
+        if settled is None:
+            rows = self._all(
+                f"""SELECT {_CYCLE_COLUMNS} FROM companion_cycle
+                    WHERE status = 'failed' AND finished_at IS NOT NULL
+                    ORDER BY finished_at DESC, rowid DESC LIMIT ?""",
+                (FAILED_RUN_ROWS,),
+            )
+        else:
+            rows = self._all(
+                f"""SELECT {_CYCLE_COLUMNS} FROM companion_cycle
+                    WHERE status = 'failed' AND finished_at IS NOT NULL AND finished_at > ?
+                    ORDER BY finished_at DESC, rowid DESC LIMIT ?""",
+                (settled.finished_at, FAILED_RUN_ROWS),
+            )
+        return FailureRun(tuple(_cycle(row) for row in rows))
 
     # -- proposals ----------------------------------------------------------------------------
 

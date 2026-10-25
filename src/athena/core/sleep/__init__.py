@@ -17,6 +17,10 @@ four rules from the registry's *autonomous-cycle-hosting* and *consolidation* te
   What a cap dropped is counted against the whole window, never against the capped fetch.
 - **Every ceiling is declared here**, not configured: how much a cycle reads, how many memories it
   writes, how many links it may close, how long a leg may take, how many proposals may wait.
+- **Repeated failure is a state** (ADR 0190). Failures in a row over one boundary double the
+  backoff up to a cap; a content-shaped one (``parse_error``, ``timeout``) halves the next take to
+  isolate the bad material, and a single episode that fails alone twice is walked past - parked,
+  never deleted: it stays indexed and recallable, and only goes undistilled.
 - **Structural output is proposed, never applied.** A cycle writes new facts and procedures
   (additive, each through the brain's own provenance gate) and records supersedence the merge leg
   judged. Forgetting and contradictions wait as proposals a person keeps or forgets.
@@ -47,7 +51,9 @@ __all__ = [
     "FADE_AFTER_D",
     "FADE_BATCH",
     "FADE_MAX",
+    "FAILED_BACKOFF_CAP_H",
     "FAILED_BACKOFF_H",
+    "FAILED_RUN_ROWS",
     "FIRST_WINDOW_D",
     "FLOOR_H",
     "FORGOTTEN_PREFIX",
@@ -75,7 +81,12 @@ FLOOR_H = 6
 #: Hours after which a cycle runs on whatever has piled up, if it is at least :data:`MIN_CHARS`.
 STALE_H = 72
 #: Hours a failed cycle holds the next one back, so a leg that keeps failing is not retried hot.
+#: Each further failure in a row over the same boundary doubles it, up to
+#: :data:`FAILED_BACKOFF_CAP_H` (ADR 0190); a settled cycle starts the count again.
 FAILED_BACKOFF_H = 1
+FAILED_BACKOFF_CAP_H = 24
+#: Failed rows one count of "failures in a row" reads, newest first: past the cap's doubling.
+FAILED_RUN_ROWS = 64
 #: How often the daemon's check thread asks admission.
 CHECK_EVERY_S = 600
 #: Seconds after the last turn on this PC ended before a cycle may start.

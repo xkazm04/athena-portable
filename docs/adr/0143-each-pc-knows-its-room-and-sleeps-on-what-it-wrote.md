@@ -171,7 +171,7 @@ thresholds. It adapts the cycle to markdown-is-truth and to write-once replicati
    ceiling never claims `too_little`, so a backlog of a peer's episodes cannot starve the cycle.
 2. **One owner admits** (`core/sleep/admission.py`). The ladder runs in this order:
    `sleeping`, `turn_live`, `recent_turn` (120 s), `no_room` (RAM alone), `floor`
-   (6 h), `failed_recently` (1 h), `too_little` (2,000 characters). It admits on `pressure`
+   (6 h), `failed_recently` (1 h, doubled per failure in a row up to 24 h: ADR 0190), `too_little` (2,000 characters). It admits on `pressure`
    (40,000), then `first`, then `stale` (72 h); otherwise the answer is `not_yet`. A person's force
    skips the floor, the failure backoff and the minimum, and nothing else. The claim lives in
    process memory and is taken as the first step: acquire-or-refuse is one act, and the claim is

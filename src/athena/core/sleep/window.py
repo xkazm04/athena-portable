@@ -134,8 +134,12 @@ class Window:
     def episodes_available(self) -> int:
         return sum(1 for row in self.rows if row.own)
 
-    def take(self) -> Take:
-        """The oldest of this PC's episodes the caps allow, and the boundary after them."""
+    def take(self, limit: int = COMPRESS_EPISODES) -> Take:
+        """The oldest of this PC's episodes the caps allow, and the boundary after them.
+
+        ``limit`` lowers the episode cap (never raises it): a window whose leg kept failing on its
+        content is taken in halves until the bad material is isolated (ADR 0190)."""
+        cap = max(1, min(limit, COMPRESS_EPISODES))
         reads: list[Read] = []
         chars = 0
         stop: int | None = None
@@ -143,7 +147,7 @@ class Window:
             if not row.own:
                 continue
             body = self.bodies.get(row.id)
-            if body is None or len(reads) >= COMPRESS_EPISODES:
+            if body is None or len(reads) >= cap:
                 stop = index
                 break
             cut = len(body) > EPISODE_CHARS

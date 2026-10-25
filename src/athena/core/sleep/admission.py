@@ -10,7 +10,9 @@ answers wins:
 4. ``no_room`` - RAM is past the gate's hold line (its own sentence). RAM alone: a busy CPU, a
    battery or a fullish disk never holds a cycle, whose heavy work is a model leg elsewhere;
 5. ``floor`` - the last completed or partial cycle finished under :data:`FLOOR_H` hours ago;
-6. ``failed_recently`` - a cycle failed under :data:`FAILED_BACKOFF_H` hours ago;
+6. ``failed_recently`` - a cycle failed under its backoff ago: :data:`FAILED_BACKOFF_H` for one
+   failure, doubled for each further failure in a row since the last settled cycle, at most
+   :data:`FAILED_BACKOFF_CAP_H` (ADR 0190). A ``running`` row is never counted;
 7. ``too_little`` - under :data:`MIN_CHARS` characters wait;
 8. admit ``pressure`` - :data:`PRESSURE_CHARS` or more wait;
 9. admit ``first`` - no cycle has ever completed;
@@ -44,7 +46,6 @@ from datetime import UTC, datetime, timedelta
 from typing import Any, Protocol
 
 from athena.core.sleep import (
-    FAILED_BACKOFF_H,
     FLOOR_H,
     MIN_CHARS,
     PRESSURE_CHARS,
@@ -220,15 +221,23 @@ class SleepAdmission:
                 "floor",
                 f"Slept {_ago(since)} ago; the next cycle is not before {FLOOR_H} h after one.",
             )
-        failed = self.book.last_failed()
+        failures = self.book.failures_since_settled()
+        failed = failures.last
         failed_since = _hours_since(failed.finished_at if failed else None, now)
-        if failed_since is not None and failed_since < FAILED_BACKOFF_H:
-            return Verdict(
-                False,
-                "failed_recently",
-                f"The last cycle failed {_ago(failed_since)} ago; trying again after "
-                f"{FAILED_BACKOFF_H} h.",
-            )
+        backoff = failures.backoff_h
+        if failed is not None and failed_since is not None and failed_since < backoff:
+            if failures.count == 1:
+                text = (
+                    f"The last cycle failed {_ago(failed_since)} ago; trying again after "
+                    f"{backoff} h."
+                )
+            else:
+                cause = _CAUSES.get(str(failed.stats.get("failure") or ""), "it kept failing")
+                text = (
+                    f"The last cycle failed {_ago(failed_since)} ago, {failures.count} cycles in "
+                    f"a row ({cause}); trying again after {backoff} h."
+                )
+            return Verdict(False, "failed_recently", text)
         measured = window()
         chars = measured.pressure_chars
         # A walk that stopped at its ceiling has not seen the whole window, so it cannot say
@@ -297,6 +306,14 @@ def boundary_after(settled: CycleRow | None, now: datetime) -> Boundary:
             return Boundary.decode(settled.consumed_through)
         return Boundary(settled.started_at)
     return Boundary.first(now)
+
+
+#: Why cycles kept failing, by the leg's failure class, for the sentence of a run of them.
+_CAUSES = {
+    "timeout": "the step took too long",
+    "parse_error": "its answer could not be read",
+    "engine_error": "the model could not be run",
+}
 
 
 def _sleeping() -> Verdict:

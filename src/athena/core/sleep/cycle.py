@@ -4,7 +4,11 @@ The cycle is handed the window admission measured and runs four phases:
 
 1. **compress** - one leg over the oldest of this PC's episodes the caps allow
    (:meth:`~athena.core.sleep.window.Window.take`). A failed leg fails the cycle: nothing is
-   written and the boundary stays where it was, so the same episodes are the next cycle's.
+   written and the boundary stays where it was, so the same episodes are the next cycle's. The
+   row records the failure's class and the take (ADR 0190): after a ``parse_error`` or
+   ``timeout`` the next cycle takes half as many, and a single episode that failed alone twice is
+   **skipped** - no leg call, the cycle settles ``partial`` past it and the journal names it. The
+   episode is not deleted or hidden: it stays indexed and recallable, it is only not distilled.
 2. **merge** - each candidate is shortlisted against the live memories of its kind (FTS, any
    device) and one leg judges them all. Every candidate is then written through the brain's own
    writers - the provenance gate included - as new, as superseding what the leg named, or as new
@@ -48,6 +52,7 @@ from athena.core.sleep.book import (
     CycleRow,
     CycleStatus,
     Existing,
+    FailureRun,
     SleepBook,
     empty_stats,
     norm_key,
@@ -68,6 +73,7 @@ class _Journal:
     refused: list[str] = field(default_factory=list)
     proposals: list[str] = field(default_factory=list)
     barred: list[str] = field(default_factory=list)
+    skipped: list[str] = field(default_factory=list)
     notes: list[str] = field(default_factory=list)
 
 
@@ -93,7 +99,8 @@ class SleepCycle:
         """Run every phase and settle the row. Never raises for a leg or a write that failed: the
         row says ``failed`` with a sentence for a person."""
         stats = empty_stats()
-        take = window.take()
+        failures = self.book.failures_since_settled()
+        take = window.take(failures.take_limit)
         stats.update(
             episodes_in=len(take.reads),
             episodes_available=window.episodes_available,
@@ -101,8 +108,9 @@ class SleepCycle:
             truncated=take.truncated,
         )
         try:
-            return self._run(cycle_id, window, take, reason, stats)
+            return self._run(cycle_id, window, take, reason, stats, failures)
         except Exception as exc:
+            stats.update(failure="error", take=len(take.reads))
             self._finish(
                 cycle_id,
                 "failed",
@@ -118,17 +126,37 @@ class SleepCycle:
     # -- the phases -----------------------------------------------------------------------------
 
     def _run(
-        self, cycle_id: str, window: Window, take: Take, reason: str, stats: dict[str, Any]
+        self,
+        cycle_id: str,
+        window: Window,
+        take: Take,
+        reason: str,
+        stats: dict[str, Any],
+        failures: FailureRun,
     ) -> CycleRow:
         journal = _Journal()
         self.book.progress(cycle_id, stats)
 
         self._phase("compress")
         candidates: list[Candidate] = []
-        if take.reads:
+        skipped = failures.quarantine and len(take.reads) == 1
+        if skipped:
+            # The one episode the halving isolated failed alone twice: walk past it, no leg call.
+            # It is parked, not removed - still indexed and recallable, only not distilled.
+            (read,) = take.reads
+            stats.update(skipped=1, episodes_in=0, chars_in=0)
+            journal.skipped.append(
+                f"episode {read.row.id} ({read.row.created_at}): the compress step failed on it "
+                f"alone {failures.count} time(s) in a row; it was not distilled. It is still in "
+                "memory and recall still finds it."
+            )
+            self.book.progress(cycle_id, stats)
+        elif take.reads:
             compressed = compress(self.door, take.reads)
             if compressed.error is not None:
                 # Nothing written, the boundary where it was: these episodes are the next cycle's.
+                # The class and the take say whether the next cycle halves it (ADR 0190).
+                stats.update(failure=compressed.error_reason or "failed", take=len(take.reads))
                 self._finish(cycle_id, "failed", stats, reason=compressed.error)
                 row = self.book.get(cycle_id)
                 assert row is not None
@@ -170,7 +198,7 @@ class SleepCycle:
         self._propose_forgetting(cycle_id, stats, journal)
         self.book.progress(cycle_id, stats)
 
-        status: CycleStatus = "partial" if take.truncated or degraded else "completed"
+        status: CycleStatus = "partial" if take.truncated or degraded or skipped else "completed"
         stats["merge_degraded"] = degraded
         finished = iso(self.clock())
         try:
@@ -390,7 +418,7 @@ def _render(
         "",
         "## What was read",
         "",
-        f"- {len(take.reads)} of {of} episodes this PC wrote since {window.boundary.at} "
+        f"- {stats['episodes_in']} of {of} episodes this PC wrote since {window.boundary.at} "
         f"({stats['chars_in']:,} characters).",
     ]
     cut = sum(1 for read in take.reads if read.cut)
@@ -411,6 +439,9 @@ def _render(
     if journal.barred:
         lines += ["", "## Not learned again", ""]
         lines += [f"- {line}" for line in journal.barred]
+    if journal.skipped:
+        lines += ["", "## Skipped", ""]
+        lines += [f"- {line}" for line in journal.skipped]
     lines += [
         "",
         "## Fading",

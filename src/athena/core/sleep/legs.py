@@ -189,6 +189,9 @@ class Compressed:
     #: Candidates dropped for no valid source, an empty or reserved key, or a repeat in the batch.
     rejected: int = 0
     error: str | None = None
+    #: The door's class of the failure (``timeout``, ``parse_error``, ``engine_error``), kept for
+    #: the cycle row so repeated failure can be told apart by cause (ADR 0190).
+    error_reason: str | None = None
 
 
 def compress_prompt(reads: Sequence[Read]) -> str:
@@ -215,7 +218,9 @@ def compress(door: LegDoor, reads: Sequence[Read]) -> Compressed:
         timeout_s=LEG_TIMEOUT_S,
     )
     if not answer.ok or answer.value is None:
-        return Compressed(error=_failure("compress", answer))
+        return Compressed(
+            error=_failure("compress", answer), error_reason=answer.error_reason or "failed"
+        )
     return checked_compress(answer.value, frozenset(read.row.id for read in reads))
 
 
