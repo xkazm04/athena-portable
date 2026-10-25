@@ -48,26 +48,17 @@ interface Spec {
 }
 
 /**
- * Every `useWebMCPTool({ ... })` in a source file, read for the three fields the gate uses.
+ * The shell's registrations as the page hands them to the kit, read for the three fields the gate uses.
  *
- * Source text rather than a render: the registrations are React hooks in a client component, and
- * what is being asserted is the declaration, which is exactly what the text carries. Each call is
- * taken as the span up to the next one, and the FIRST match of each field inside it is the tool's
- * own - a `parameters` entry also has a `name`, and a prose comment may quote a flag.
+ * Captured, not parsed: `support/capture-tools.ts` renders HostCapabilities with a recording
+ * `useWebMCPTool`, so a parameter's `name`, a comment quoting a flag, or a field written in another
+ * order cannot be read as the tool's own. (This used to split the source on `useWebMCPTool({` and
+ * take the first regex match of each field in each chunk.) `tool-ledger.test.ts` runs the same
+ * captured handlers and holds these fields to what they write.
  */
-function specs(file: string): Spec[] {
-  const chunks = read(file).split("useWebMCPTool({").slice(1);
-  return chunks.map((chunk, i) => {
-    const name = /name: "([a-z_]+)"/.exec(chunk)?.[1];
-    const reversible = /reversible: (true|false)/.exec(chunk)?.[1];
-    const sideEffects = /sideEffects: "(none|data|external)"/.exec(chunk)?.[1];
-    assert.ok(name && reversible && sideEffects, `${file}: registration #${i + 1} is missing a field`);
-    return {
-      name,
-      reversible: reversible === "true",
-      sideEffects: sideEffects as Spec["sideEffects"],
-    } satisfies Spec;
-  });
+async function specs(): Promise<Spec[]> {
+  const { captureTools } = await import("./support/capture-tools");
+  return (await captureTools()).specs.map(({ name, reversible, sideEffects }) => ({ name, reversible, sideEffects }));
 }
 
 /**
@@ -86,7 +77,7 @@ function classOf(spec: Spec): "AUTO" | "GATED" {
   return "GATED";
 }
 
-const shell = specs(SHELL);
+const shell = await specs();
 
 test("every server action is reachable from exactly one tool module", () => {
   const exported = [...read(ACTIONS).matchAll(/export async function (\w+)/g)].map((m) => m[1]!);
