@@ -9,6 +9,7 @@
 import { lazy, Suspense, useCallback, useEffect, useState } from "react";
 
 import { poseOf, POSE_WORDS } from "@/bell/pose";
+import { useVoicePhase } from "@/bell/voice-phase";
 import WindowControls from "@/components/WindowControls";
 import { samePath, shapeOf, type Labeller, type Path } from "@/depth/model";
 import { useDepth } from "@/depth/store";
@@ -98,6 +99,7 @@ export default function Console() {
   const settle = useDepth((s) => s.settle);
 
   const athena = useAthena();
+  const voice = useVoicePhase();
   const hydrated = useSettings((s) => s.hydrated);
   const onboarded = useSettings((s) => s.onboarded);
   const problem = useSettings((s) => s.problem);
@@ -106,7 +108,7 @@ export default function Console() {
   const label = useLabeller();
   useFollowShell();
 
-  const pose = poseOf(athena);
+  const pose = poseOf({ ...athena, voice });
   // A chore that came due (ADR 0131): its notice rides the dock, a lazy chunk off the first frame.
   const notice = (
     <Suspense fallback={null}>
@@ -128,7 +130,7 @@ export default function Console() {
       band={Band ? <Band /> : undefined}
       presence={{
         pose,
-        text: athena.cards > 0 || pose !== "resting" ? pillText(athena) : POSE_WORDS.resting,
+        text: pose === "resting" || pose === "speaking" ? POSE_WORDS[pose] : pillText(athena),
         waiting: athena.cards,
         notice,
       }}

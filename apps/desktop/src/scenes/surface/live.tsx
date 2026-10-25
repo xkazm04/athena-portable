@@ -2,13 +2,14 @@
  * The surface, as the running app uses it — the one file here that knows a store exists.
  *
  * It reads and starts nothing: the app root starts the stores (README 3.5). Nine are read here:
- * her status (the mirror), the origins, the tabs, the connectors, the voice's availability, the
- * engine's probe, the daemon (which engine it runs, and whether it started), the shipped playbooks
- * and the settings. `useSurfaceModel` is a hook so the console can compose the same
- * model into other views.
+ * her status (the mirror, with her face's phase beside it), the origins, the tabs, the connectors,
+ * the voice's availability, the engine's probe, the daemon (which engine it runs, and whether it
+ * started), the shipped playbooks and the settings. `useSurfaceModel` is a hook so the console can
+ * compose the same model into other views.
  */
 import { createElement, useEffect, useMemo } from "react";
 
+import { useVoicePhase } from "@/bell/voice-phase";
 import { useDepth } from "@/depth/store";
 import { athenaOffer, athenaShow, athenaToggle } from "@/lib/companion";
 import { ENGINE_IDS, engineLabel } from "@/lib/engines";
@@ -61,6 +62,7 @@ function totalsOf(items: readonly Playbook[] | null) {
 
 export function useSurfaceModel(): SurfaceModel {
   const athena = useAthena();
+  const voice = useVoicePhase();
   const records = useOrigins((s) => s.records);
   const known = useOrigins((s) => s.known);
   const tabs = useTabs((s) => s.tabs);
@@ -108,7 +110,7 @@ export function useSurfaceModel(): SurfaceModel {
     });
     const fact = engineFact(setup);
     return selectSurface({
-      athena: { state: athena.state, cards: athena.cards, line: athena.line },
+      athena: { state: athena.state, cards: athena.cards, line: athena.line, voice },
       windowVisible: athena.visible,
       apps: known.flatMap((origin) => {
         const row = records[origin];
@@ -145,6 +147,7 @@ export function useSurfaceModel(): SurfaceModel {
     });
   }, [
     athena,
+    voice,
     avatar,
     records,
     known,

@@ -2,9 +2,10 @@
  * The surface's view-model — README section 3.1 and 3.5, ADR 0026, 0087.
  *
  * The surface is Athena and the five lights beneath her. It is a **mirror** (decision D1, ADR 0087):
- * Main holds no run and no microphone, so what it shows of her is what `athena:status` reports,
- * and talking to her is handing text to her own window. Nothing here pretends otherwise: the ask
- * box says it hands the words over, and the cards waiting are answered in her window.
+ * Main holds no run and no microphone, so what it shows of her is what `athena:status` reports
+ * and the phase her face mirrors on `athena:face` (ADR 0222), and talking to her is handing text to
+ * her own window. Nothing here pretends otherwise: the ask box says it hands the words over, and the
+ * cards waiting are answered in her window.
  *
  * What needs the person is named on the surface, each one press from its item (`needs`): an
  * account to reconnect, an engine that cannot run, a restart that is pending. Every need is a dive,
@@ -17,7 +18,7 @@
 import type { GlyphFacts } from "@/art/glyphs";
 import type { AvatarId } from "@/avatar/types";
 import type { Reach } from "@/bell/Bell";
-import { POSE_WORDS, poseOf, type Pose } from "@/bell/pose";
+import { POSE_WORDS, poseOf, type Pose, type PoseInput } from "@/bell/pose";
 import { ROOTS, ROOT_LABEL, type Path, type Root } from "@/depth/model";
 import type { Standing } from "@/modules/setup/readiness";
 import { pillText } from "@/stores/athena";
@@ -37,7 +38,8 @@ export interface SurfaceActions {
 }
 
 export interface SurfaceSources {
-  athena: { state: string; cards: number; line: string };
+  /** Her status mirror, and her face's phase when `athena:face` has said one. */
+  athena: PoseInput;
   /** Her window is on the screen, as `athena:status` last said (`useAthena().visible`). */
   windowVisible: boolean;
   /** Apps she has been told about, switched on or off. */
@@ -253,7 +255,8 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
   return {
     pose,
     avatar: s.avatar ?? "halo",
-    headline: s.athena.cards > 0 || pose !== "resting" ? pillText(s.athena) : "Athena is resting",
+    // `pillText` already says "Athena is resting" for the resting pose; only her voice is not its to say.
+    headline: pose === "speaking" ? "Athena is speaking" : pillText(s.athena),
     poseWord: POSE_WORDS[pose],
     waiting: s.athena.cards,
     windowVisible: s.windowVisible,

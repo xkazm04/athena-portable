@@ -16,6 +16,8 @@
 .bell[data-pose="working"] { --bell-core: var(--role-agent); --pulse: 1.6s; --sway: 2.2; }
 .bell[data-pose="hearing"] { --bell-core: var(--role-external); --pulse: 1.2s; --sway: 1.6; --ripple-on: 1; }
 .bell[data-pose="asking"] { --bell-core: var(--role-human); --pulse: 2.2s; --sway: 1.3; --ripple-on: 1; }
+/* Speaking: the house glow, a quicker breath, and ripples going out as her voice does. */
+.bell[data-pose="speaking"] { --bell-core: var(--accent); --pulse: 1.4s; --sway: 1.8; --ripple-on: 1; }
 
 /* The body breathes: a slow squash in the pose's own tempo. Rooted at the top of the dome so the
  * skirt swells, as a bell does. */
@@ -40,7 +42,8 @@
 .bell__core { opacity: 0.7; }
 .bell[data-pose="working"] .bell__core,
 .bell[data-pose="hearing"] .bell__core,
-.bell[data-pose="asking"] .bell__core {
+.bell[data-pose="asking"] .bell__core,
+.bell[data-pose="speaking"] .bell__core {
   opacity: 1;
   animation: bell-glow calc(var(--pulse) * 0.5) ease-in-out infinite alternate;
 }
@@ -49,7 +52,7 @@
   to { opacity: 1; }
 }
 
-/* Ripples leave the bell only while she is listening or asking. */
+/* Ripples leave the bell only while she is listening, speaking or asking. */
 .bell__ripple {
   fill: none;
   stroke: var(--bell-core);
@@ -59,7 +62,8 @@
   transform-origin: 50% 50%;
 }
 .bell[data-pose="hearing"] .bell__ripple,
-.bell[data-pose="asking"] .bell__ripple {
+.bell[data-pose="asking"] .bell__ripple,
+.bell[data-pose="speaking"] .bell__ripple {
   animation: bell-ripple 2.6s ease-out infinite;
 }
 .bell__ripple--late { animation-delay: 1.3s !important; }

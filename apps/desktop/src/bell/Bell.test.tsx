@@ -3,6 +3,9 @@ import { readFileSync } from "node:fs";
 import { renderToStaticMarkup } from "react-dom/server";
 import { describe, expect, it } from "vitest";
 
+import { INERT_ACTIONS, selectSurface } from "@/scenes/surface/model";
+import { POSE_SPEED } from "@/stage/loop-current";
+
 import Bell, { rootX, type Reach } from "./Bell";
 import { POSES } from "./pose";
 
@@ -88,5 +91,34 @@ describe("the animation rule (ADR 0089)", () => {
 
   it("turns every animation off under Calm", () => {
     expect(css).toMatch(/\[data-motion="calm"\] \.bell[\s\S]*animation: none/);
+  });
+});
+
+describe("the speaking pose", () => {
+  const css = readFileSync(new URL("./bell.css", import.meta.url), "utf8").replace(/\/\*[\s\S]*?\*\//g, "");
+
+  it("case 8: the Bell wears it, bell.css draws it, the current runs for it and the surface reaches it", () => {
+    expect(renderToStaticMarkup(<Bell pose="speaking" reach={[]} />)).toContain('data-pose="speaking"');
+    const rule = css.match(/\.bell\[data-pose="speaking"\]\s*\{([^}]*)\}/);
+    expect(rule?.[1]).toMatch(/--pulse:/);
+    expect(rule?.[1]).toMatch(/--ripple-on:\s*1/);
+    expect(css).toMatch(/\.bell\[data-pose="speaking"\] \.bell__ripple/);
+    expect(POSE_SPEED.speaking).toBeGreaterThan(0);
+    const surface = selectSurface({
+      athena: { state: "seal", cards: 0, line: "", voice: "speaking" },
+      windowVisible: true,
+      apps: [],
+      openTabs: 0,
+      accounts: [],
+      chores: { total: 0, benched: 0, foundUsd: 0, loaded: true, failed: false },
+      voiceAvailable: true,
+      voiceKnown: true,
+      engine: { label: "Claude Code", standing: "done", checkFailed: false, summary: "Claude Code is ready" },
+      pendingRestart: null,
+      inShell: true,
+      actions: INERT_ACTIONS,
+    });
+    expect(surface.pose).toBe("speaking");
+    expect(surface.poseWord).toBe("speaking");
   });
 });

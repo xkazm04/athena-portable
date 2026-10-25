@@ -31,7 +31,7 @@ export const LOOPS: readonly Loop[] = [
 ];
 
 /** How fast the current runs in each pose: the bell's own sway numbers. Resting flows only after a move. */
-export const POSE_SPEED: Readonly<Record<Pose, number>> = { resting: 1, working: 2.2, hearing: 1.6, asking: 1.3 };
+export const POSE_SPEED: Readonly<Record<Pose, number>> = { resting: 1, working: 2.2, hearing: 1.6, asking: 1.3, speaking: 1.8 };
 
 /** A pose in which the current keeps flowing with nothing moving on screen: she is busy. */
 export function flowsAtRest(pose: Pose): boolean {

@@ -36,10 +36,14 @@ import { gzipSync } from "node:zlib";
  * tree stood at 164,982 B, and the "what needs you" list and its model on the surface are
  * first-frame code (+430 B after trimming). Ratified by the owner in triage 2026-10-25: the raise
  * landed inside the scan-sweep run, and the owner approved it after the fact.
+ *
+ * Raised 2026-10-25 to 165,426 B, the measured figure, owner-approved in triage 2026-10-25 (art-bell,
+ * the Bell's speaking pose, ADR 0222): the tree stood at 165,247 B, and the Bell's mirror of her
+ * face phase is first-frame code because both Bells read it (+179 B, 14 B over the ceiling).
  */
 export const FIRST_PAINT = {
   entry: "chrome.html",
-  ceilingBytes: 165_412,
+  ceilingBytes: 165_426,
   targetBytes: 125_000,
 };
 
