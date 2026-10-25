@@ -44,7 +44,7 @@ export interface PlaybookActions {
   open: (url: string) => void;
   /** Put the command in Athena's composer and make the playbook her active project; the person
    *  presses send (ADR 0044). */
-  hand: (text: string, playbook: { id: string; title: string; caseId?: string; scheduled?: boolean }) => void;
+  hand: (text: string, playbook: { id: string; title: string; caseId?: string; scheduled?: boolean; spaceId?: string }) => void;
 }
 
 export interface Verdict {

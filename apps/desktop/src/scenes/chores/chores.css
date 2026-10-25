@@ -1064,6 +1064,22 @@
   color: var(--foreground);
   font-weight: 600;
 }
+/* A case's Project (ADR 0225): its chip, the link control and the short list, on one wrapping line. */
+.pa-case__project {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.pa-case__projects {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
 .pa-case__when {
   flex: 1 1 auto;
   color: var(--muted-foreground);

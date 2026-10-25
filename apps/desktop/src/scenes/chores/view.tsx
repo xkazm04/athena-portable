@@ -29,7 +29,7 @@ import "./chores.css";
 import { NEW_ITEM, adoptPath, choreAt, chorePath, newChorePath, runPath, turnAt } from "./model";
 import { rememberCatalogue, rememberIntro, scrolls, useChoresMemory } from "./memory";
 import Replay from "./replay";
-import Topic from "./topic";
+import Topic, { type ChoreSpaces } from "./topic";
 
 export interface ChoresViewProps {
   model: PlaybooksModel;
@@ -39,9 +39,11 @@ export interface ChoresViewProps {
   adopt?: AdoptDeps;
   /** Athena's composer (`athenaOffer`), for a custom verdict; without it the front door offers Copy. */
   offer?: (text: string) => Promise<void>;
+  /** The Projects, for a case's chip and its link (ADR 0225); absent, no case shows one. */
+  spaces?: ChoreSpaces;
 }
 
-export default function ChoresView({ model, path, go, adopt, offer }: ChoresViewProps) {
+export default function ChoresView({ model, path, go, adopt, offer, spaces }: ChoresViewProps) {
   // The stage mounts a fresh view at every move, so what must outlive one lives in `memory.ts`.
   const { catalogue: state, intro } = useChoresMemory();
   const back = useCallback(() => go({ root: "chores" }), [go]);
@@ -193,7 +195,7 @@ export default function ChoresView({ model, path, go, adopt, offer }: ChoresView
     return <Replay view={view} turn={turn} go={go} />;
   }
 
-  return <Topic key={view.id} view={view} model={model} go={go} back={back} deps={adopt} />;
+  return <Topic key={view.id} view={view} model={model} go={go} back={back} deps={adopt} spaces={spaces} />;
 }
 
 function Centre({ children }: { children: React.ReactNode }) {

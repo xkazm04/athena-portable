@@ -272,6 +272,15 @@
 .apps__section > .btn {
   justify-self: start;
 }
+/* "In projects" (ADR 0225): the project chips wrap on one line under the heading. */
+.apps__projects {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
 .apps__row {
   display: flex;
   flex-wrap: wrap;

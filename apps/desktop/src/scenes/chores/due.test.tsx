@@ -123,12 +123,21 @@ describe("Open and prepare", () => {
       title: "Chase the invoices",
       caseId: CASE,
       scheduled: true,
+      spaceId: "",
     });
 
     // The one request is the review's answer; no /run until she presses send.
     expect(daemon.seen.map((s) => `${s.method} ${s.path}`)).toEqual([`POST /adopt/cases/${CASE}/review`]);
     expect(daemon.seen[0]!.body).toEqual({ due_at: DUE, answer: "prepare" });
     expect(daemon.seen.some((s) => s.path.startsWith("/run"))).toBe(false);
+  });
+
+  it("hands over the Project a linked case runs in, so her window enters it first (ADR 0225)", async () => {
+    const daemon = fakeDaemon();
+    const { actions } = model();
+    await openAndPrepare(review(), { open: actions.open, hand: actions.hand, answer: daemon.client.answer.bind(daemon.client) }, "spc_0123456789ab");
+    await vi.waitFor(() => expect(athenaOffer).toHaveBeenCalledTimes(1));
+    expect(athenaOffer.mock.calls[0]![1]).toMatchObject({ caseId: CASE, scheduled: true, spaceId: "spc_0123456789ab" });
   });
 });
 

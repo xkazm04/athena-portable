@@ -16,9 +16,10 @@ import { useDepth } from "@/depth/store";
 import { useBrowserModel } from "@/modules/browser";
 import type { LiveScene, SceneProps } from "@/scenes/types";
 import { useOrigins } from "@/stores/origins";
+import { useSpaces } from "@/stores/spaces";
 import { useTools } from "@/stores/tools";
 
-import { itemLabel, itemOfTab, pagePath, selectApps, type AppsModel } from "./model";
+import { itemLabel, itemOfTab, pagePath, selectApps, type AppSpaces, type AppsModel } from "./model";
 import { StripView } from "./strip";
 
 const AppsView = lazy(() => import("./view"));
@@ -28,10 +29,25 @@ function useAppsModel(go: SceneProps["go"]): AppsModel {
   const browser = useBrowserModel({ onShown: (origin) => go(pagePath(origin)) });
   const byTab = useTools((s) => s.byTab);
   const records = useOrigins((s) => s.records);
+  // The Projects an app's layer lists and adds to (ADR 0225): the store's list, and `update` with
+  // the whole new set of origins, as the daemon's patch takes it.
+  const list = useSpaces((s) => s.spaces);
+  const update = useSpaces((s) => s.update);
+  const spaces = useMemo<AppSpaces>(
+    () => ({
+      list,
+      addApp: async (spaceId, origin) => {
+        const space = list.find((s) => s.id === spaceId);
+        if (!space || space.apps.includes(origin)) return;
+        await update(spaceId, { apps: [...space.apps, origin] });
+      },
+    }),
+    [list, update],
+  );
   return useMemo(() => {
     const pins = Object.fromEntries(Object.entries(records).map(([origin, row]) => [origin, row.overrides]));
-    return selectApps(browser, { byTab, pins });
-  }, [browser, byTab, records]);
+    return selectApps(browser, { byTab, pins }, spaces);
+  }, [browser, byTab, records, spaces]);
 }
 
 function Live({ path, go }: SceneProps) {

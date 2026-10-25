@@ -53,9 +53,11 @@ test("a card a task filed says so above its title", () => {
 
 test("the task strip is mounted above the composer, and draws nothing while no task is shown", () => {
   const out = html(working());
-  // No tasks in the store: the strip renders nothing, and the foot still opens with the composer.
+  // No tasks in the store: the strip renders nothing, and the foot opens with where she works
+  // (the project pill, ADR 0225) right above the composer.
   expect(out).not.toContain("aw-tasks");
-  expect(out).toMatch(/<div class="lg-foot"><form class="lg-compose"/);
+  expect(out).toMatch(/<div class="lg-foot"><div class="lg-space">.*?<\/div><\/div><form class="lg-compose"/);
+  expect(out).toContain('aria-label="Project: Core"');
 });
 
 // A card shows what the turn already read about its target, on the rail's Gate and on a sheet row.

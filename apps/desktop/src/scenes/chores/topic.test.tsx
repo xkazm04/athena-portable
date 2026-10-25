@@ -393,3 +393,69 @@ describe("the runs behind the verdict (ADR 0128)", () => {
     expect(left.some((li) => li.textContent?.includes("traps –"))).toBe(true);
   });
 });
+
+describe("a case's Project (ADR 0225)", () => {
+  const space = (id: string, name: string, hue: number) => ({
+    id,
+    name,
+    brief: "",
+    apps: [],
+    hue,
+    created: "",
+    updated: "",
+    counts: { episodes: 0, facts: 0, procedurals: 0, chores: 0 },
+  });
+  const TRAVEL = space("spc_0123456789ab", "Travel", 30);
+  const TAXES = space("spc_ba9876543210", "Taxes", 200);
+
+  async function showWith(cases: () => CaseSummary[], link = vi.fn(async () => {})) {
+    const client = new FakeClient(() => found(cases())());
+    await act(async () => {
+      root.render(
+        <ChoresView
+          model={model()}
+          path={chorePath(ADOPT_PLAYBOOK)}
+          go={go}
+          adopt={deps(client)}
+          spaces={{ list: [TRAVEL, TAXES], link }}
+        />,
+      );
+    });
+    await act(async () => {
+      for (let i = 0; i < 5; i++) await Promise.resolve();
+    });
+    return { client, link };
+  }
+
+  it("shows the linked case's chip, which opens its Project", async () => {
+    await showWith(() => [{ ...CASE, space_id: TRAVEL.id }]);
+    const chip = host.querySelector<HTMLButtonElement>('[aria-label="Open the project Travel"]');
+    expect(chip?.textContent).toBe("Travel");
+    act(() => chip!.click());
+    expect(go).toHaveBeenLastCalledWith({ root: "projects", item: TRAVEL.id });
+    expect(buttons()).toContain("Change project");
+  });
+
+  it("shows no chip for a case in core, and links it, then asks for the cases again", async () => {
+    let linked = "";
+    const { client, link } = await showWith(() => [{ ...CASE, space_id: linked }]);
+    expect(host.querySelector(".project-chip")).toBeNull();
+    press("Link to a project");
+    const pick = host.querySelector<HTMLButtonElement>(`[aria-label="Link ${CASE.title} to Taxes"]`)!;
+    linked = TAXES.id;
+    await act(async () => {
+      pick.click();
+      for (let i = 0; i < 5; i++) await Promise.resolve();
+    });
+    expect(link).toHaveBeenCalledWith(CASE.case_id, TAXES.id);
+    expect(client.asked).toHaveLength(2);
+    expect(host.querySelector('[aria-label="Open the project Taxes"]')).not.toBeNull();
+  });
+
+  it("returns a linked case to core", async () => {
+    const { link } = await showWith(() => [{ ...CASE, space_id: TRAVEL.id }]);
+    press("Change project");
+    press("Back to core");
+    expect(link).toHaveBeenCalledWith(CASE.case_id, "");
+  });
+});

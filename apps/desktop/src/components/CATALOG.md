@@ -19,6 +19,7 @@ and each file's header carries the argument for its own shape.
 | `StatusDot` | The hue of a state, beside the word that says the same thing. A graphic needs 3:1, not 4.5:1. |
 | `EmptyState` | "Nothing here yet": glyph, title, one line saying what would put something here, optional action. Not the same fact as "could not be read". |
 | `TaskRow` | One delegated task as an `<li>` (ADR 0141): status `Badge` ("#2 in line" while queued), title, app, time running or since it ended, the result's first line, and Kill (two presses, armed 3 s) and an optional Ask. Her strip and Main draw the same row; `now` is the caller's clock. Its rules are `task-row.css` beside it. |
+| `ProjectPill` | Where she works (ADR 0225): a hue dot and the Project's name, or "Core", as a button that opens a menu of the Projects, "Back to core" and (where the caller can go there) "All projects". A switch held for the running turn says "switches after this turn". Escape closes the menu and is claimed. `ProjectChip` beside it is the same dot and name for a list of memberships (an app's projects, a chore's case). Main's bar and her composer draw the same pill. Its rules are `project-pill.css` beside it. |
 
 ## Adding one
 

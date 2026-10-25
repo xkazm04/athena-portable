@@ -391,6 +391,8 @@ export default function Live() {
           goal: text,
           ...(playbook.caseId ? { caseId: playbook.caseId } : {}),
           ...(playbook.caseId && playbook.scheduled ? { scheduled: true } : {}),
+          // A case's run happens in its space, core included (ADR 0225): `setProject` enters it first.
+          ...(playbook.caseId ? { spaceId: playbook.spaceId ?? "" } : {}),
         });
       // `expand`, not `open`: `open` only leaves the first-launch welcome, so after onboarding the
       // hand-over left her collapsed to her seal and the press on Main looked like nothing.

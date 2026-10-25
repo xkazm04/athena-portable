@@ -274,6 +274,11 @@ export interface TurnBody {
   /** The saved case this turn is a run of (ADR 0127); routes nothing. */
   case_id?: string;
   /**
+   * The Project (wire: space, ADR 0225) the turn is filed under; `""` is core. A turn with a case
+   * linked to a space is filed under the case's space whatever this says.
+   */
+  space_id?: string;
+  /**
    * `schedule` on the first send after "Open and prepare" on a due chore's review (ADR 0131). The
    * daemon records it only when its chores clock agrees; otherwise the turn is an ordinary one.
    */

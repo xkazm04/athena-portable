@@ -19,6 +19,7 @@ import Badge from "@/components/Badge";
 import Button from "@/components/Button";
 import Facts, { Fact } from "@/components/Facts";
 import PillGroup from "@/components/PillGroup";
+import { ProjectChip } from "@/components/ProjectPill";
 import ProblemNote from "@/components/ProblemNote";
 import StatusDot, { type Tone } from "@/components/StatusDot";
 import type { Path } from "@/depth/model";
@@ -26,8 +27,8 @@ import { whenAgo } from "@/lib/time";
 import { normaliseUrl } from "@/lib/url";
 import { originOf, type AppStanding, type RegisteredApp } from "@/modules/browser/model";
 
-import type { AppsModel, PageEntry, ToolView } from "./model";
-import { appFor, appPath, pageFor, pagePath, toolPath } from "./model";
+import type { AppSpaces, AppsModel, PageEntry, ToolView } from "./model";
+import { appFor, appPath, pageFor, pagePath, spacesOf, toolPath } from "./model";
 import AppOrb from "./orb";
 import "./apps.css";
 
@@ -361,6 +362,8 @@ function AppLevel({ model, item, go }: { model: AppsModel; item: string; go: (to
               />
             </section>
 
+            <InProjects origin={app.origin} host={app.host} spaces={model.spaces} go={go} />
+
             <Forget app={app} onForget={() => { actions.forget(app.origin); go({ root: "apps" }); }} />
           </>
         )}
@@ -368,6 +371,79 @@ function AppLevel({ model, item, go }: { model: AppsModel; item: string; go: (to
         <ToolList item={item} tools={tools} go={go} open={open} />
       </div>
     </div>
+  );
+}
+
+/**
+ * "In projects" (ADR 0225): the Projects that pair this app, each a chip into its level, and "Add to
+ * project", a short list of the others. Adding sends the Project's whole new set of origins; the
+ * daemon's refusal (24 apps is its cap) is said under the list, verbatim.
+ */
+function InProjects({ origin, host, spaces, go }: { origin: string; host: string; spaces: AppSpaces; go: (to: Path) => void }) {
+  const [adding, setAdding] = useState(false);
+  const [said, setSaid] = useState("");
+  const section = useRef<HTMLElement>(null);
+  const { in: within, others } = spacesOf(spaces, origin);
+  const close = () => {
+    setAdding(false);
+    // The list goes; the button that opened it takes the focus back.
+    section.current?.querySelector<HTMLButtonElement>("button[aria-expanded]")?.focus();
+  };
+  return (
+    <section ref={section} className="apps__section" aria-labelledby="apps-projects">
+      <h2 id="apps-projects" className="apps__section-title">
+        In projects
+      </h2>
+      {within.length ? (
+        <ul className="apps__projects" aria-label={`Projects with ${host}`}>
+          {within.map((s) => (
+            <li key={s.id}>
+              <ProjectChip space={s} label={`Open the project ${s.name}`} onClick={() => go({ root: "projects", item: s.id })} />
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="typo-caption">In no project. Add it to one, and Athena reads it with that project&apos;s brief.</p>
+      )}
+      {others.length ? (
+        <>
+          <Button size="sm" variant="ghost" aria-expanded={adding} onClick={() => setAdding((a) => !a)}>
+            Add to project
+          </Button>
+          {adding ? (
+            <ul
+              className="apps__projects"
+              aria-label={`Add ${host} to a project`}
+              onKeyDown={(e) => {
+                if (e.key !== "Escape") return;
+                // Claimed: an unclaimed Escape rises the stage out of this app.
+                e.preventDefault();
+                e.stopPropagation();
+                close();
+              }}
+            >
+              {others.map((s) => (
+                <li key={s.id}>
+                  <ProjectChip
+                    space={s}
+                    label={`Add ${host} to ${s.name}`}
+                    onClick={() => {
+                      setSaid("");
+                      spaces.addApp(s.id, origin).then(close, (error: unknown) =>
+                        setSaid(`That was not saved: ${error instanceof Error ? error.message : String(error)}`),
+                      );
+                    }}
+                  />
+                </li>
+              ))}
+            </ul>
+          ) : null}
+        </>
+      ) : null}
+      <p className="typo-caption" role="status">
+        {said}
+      </p>
+    </section>
   );
 }
 

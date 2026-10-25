@@ -9,6 +9,9 @@
  */
 import { useEffect, useRef, type FormEvent } from "react";
 
+import ProjectPill from "@/components/ProjectPill";
+import { useSpaces } from "@/stores/spaces";
+
 import { fadeOnScroll } from "./detail";
 import { Icon } from "./icons";
 import type { CompanionModel, ProjectView } from "./model";
@@ -274,6 +277,24 @@ function Queued({ model }: { model: CompanionModel }) {
   );
 }
 
+/**
+ * Where she works, by the composer (ADR 0225): the person sees which Project a message is filed
+ * under before sending it. Read from the store, as the task strip is. No "All projects" here: her
+ * window cannot move Main's depth, so the list is the bar's pill's to open.
+ */
+function ComposerPill() {
+  const spaces = useSpaces((s) => s.spaces);
+  const activeId = useSpaces((s) => s.activeId);
+  const pending = useSpaces((s) => s.pending);
+  const setActive = useSpaces((s) => s.setActive);
+  return (
+    <div className="lg-space">
+      <ProjectPill spaces={spaces} activeId={activeId} pending={pending} onPick={setActive} compact />
+      {pending !== null ? <span className="lg-space__note">switches after this turn</span> : null}
+    </div>
+  );
+}
+
 function Compose({ model }: { model: CompanionModel }) {
   const { talk, actions } = model;
   const submit = (e: FormEvent<HTMLFormElement>) => {
@@ -305,6 +326,7 @@ function Compose({ model }: { model: CompanionModel }) {
           </button>
         </p>
       ) : null}
+      <ComposerPill />
       <form className="lg-compose" onSubmit={submit}>
         {/* Keyed by the offer, so a command Main hands over (ADR 0040) lands as the draft and the
             person's own typing is never overwritten by a re-render. */}

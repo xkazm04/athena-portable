@@ -46,6 +46,11 @@ export const SETTING_KEYS = {
   motion: "motion",
   /** The project every turn is filed under, or `null` for none (c25). */
   activeProjectId: "active_project_id",
+  /**
+   * The Project (wire: space, ADR 0225) every turn is filed under; `""` for Athena's core. Not the
+   * c25 row above: `active_project_id` names a chore case's word, and a space is not one.
+   */
+  activeSpaceId: "active_space_id",
   /** The brain directory. Empty means "the daemon's own default". */
   brainPath: "brain_path",
   /** Has the Setup wizard been finished once? It stays reachable from the bar afterwards. */

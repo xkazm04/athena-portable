@@ -71,7 +71,7 @@ export interface PrepareDeps {
   /** Make a Browser tab for `url` (`PlaybookActions.open`, which calls `tabsCreate`). */
   open: (url: string) => void;
   /** Athena's composer (`PlaybookActions.hand`): the text goes in, nothing is sent. */
-  hand: (text: string, playbook: { id: string; title: string; caseId?: string; scheduled?: boolean }) => void;
+  hand: (text: string, playbook: { id: string; title: string; caseId?: string; scheduled?: boolean; spaceId?: string }) => void;
   /** Answer the review `prepare`, so her first send is recognised as this run's. */
   answer: (caseId: string, dueAt: string, answer: "prepare") => Promise<unknown>;
 }
@@ -82,7 +82,12 @@ export interface PrepareDeps {
  * run's first send. The command only: nothing of the last run goes with it (ADR 0130). Answers the
  * apps whose address is not known, for the page to say.
  */
-export async function openAndPrepare(review: DueReview, deps: PrepareDeps): Promise<{ opened: string[]; unknown: string[] }> {
+export async function openAndPrepare(
+  review: DueReview,
+  deps: PrepareDeps,
+  /** The Project the case is linked to (`CaseSummary.space_id`, ADR 0225); `""` is core. */
+  spaceId = "",
+): Promise<{ opened: string[]; unknown: string[] }> {
   const r = review.review;
   if (r && !r.answer) await deps.answer(review.case_id, r.due_at, "prepare");
   const { open, unknown } = portalsOf(review);
@@ -92,6 +97,8 @@ export async function openAndPrepare(review: DueReview, deps: PrepareDeps): Prom
     title: review.title,
     caseId: review.case_id,
     scheduled: true,
+    // Core ("") included: the run is filed where the case is (ADR 0225).
+    spaceId,
   });
   return { opened: open.map((p) => p.url), unknown };
 }

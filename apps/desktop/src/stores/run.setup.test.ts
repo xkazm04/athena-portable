@@ -13,6 +13,7 @@ import type { RemoteMessage } from "@/lib/fleet";
 import { SETUP_ORIGIN } from "@/lib/setup";
 
 import { resetRunForTests, setRunDeps, useRun } from "./run";
+import { resetSpacesForTests, useSpaces } from "./spaces";
 
 type Event = Record<string, unknown>;
 
@@ -99,6 +100,32 @@ const setupCard = (id: string): Event => ({
 beforeEach(() => resetRunForTests());
 
 describe("the setup conversation", () => {
+  it("files every setup turn under core, whatever Project is active (ADR 0225)", async () => {
+    resetSpacesForTests();
+    useSpaces.setState({
+      loaded: true,
+      spaces: [
+        {
+          id: "spc_0123456789ab",
+          name: "Taxes",
+          brief: "",
+          apps: [],
+          hue: 200,
+          created: "",
+          updated: "",
+          counts: { episodes: 0, facts: 0, procedurals: 0, chores: 0 },
+        },
+      ],
+    });
+    useSpaces.getState().setActive("spc_0123456789ab");
+    const daemon = fakeDaemon([[finished()]]);
+    wire(daemon);
+    useRun.getState().enterSetup(SESSION);
+    await useRun.getState().send("set this computer up");
+    expect(daemon.runs()[0]!.body).toMatchObject({ origin: SETUP_ORIGIN, space_id: "" });
+    resetSpacesForTests();
+  });
+
   it("sends the person's turns to the setup session with no page in them", async () => {
     const daemon = fakeDaemon([[said("Let me check."), finished()]]);
     const captures: number[] = [];

@@ -247,3 +247,35 @@ describe("the field", () => {
     expect(a.close).toHaveBeenCalledExactlyOnceWith(1);
   });
 });
+
+describe("adding an app to a project (ADR 0225)", () => {
+  it("a chip goes to its project's level; Add to project pairs it with the one picked", async () => {
+    const addApp = vi.fn(async () => {});
+    const go = vi.fn();
+    const source = fixtures.typical!;
+    const model: AppsModel = { ...source, browser: { ...source.browser, actions: spies() }, spaces: { ...source.spaces, addApp } };
+    act(() => root.render(<AppsView model={model} path={PATHS.app!} go={go} />));
+
+    click(host.querySelector('[aria-label="Open the project Month-end close"]'));
+    expect(go).toHaveBeenCalledWith({ root: "projects", item: "spc_0123456789ab" });
+
+    click(button("Add to project"));
+    click(host.querySelector('[aria-label="Add localhost:3004 to Client outreach"]'));
+    expect(addApp).toHaveBeenCalledWith("spc_ba9876543210", "http://localhost:3004");
+    await act(async () => {});
+    expect(host.querySelector('[aria-label="Add localhost:3004 to Client outreach"]')).toBeNull();
+  });
+
+  it("says the daemon's refusal verbatim", async () => {
+    const addApp = vi.fn(async () => {
+      throw new Error("apps: at most 24");
+    });
+    const source = fixtures.typical!;
+    const model: AppsModel = { ...source, spaces: { ...source.spaces, addApp } };
+    act(() => root.render(<AppsView model={model} path={PATHS.app!} go={() => {}} />));
+    click(button("Add to project"));
+    click(host.querySelector('[aria-label="Add localhost:3004 to Client outreach"]'));
+    await act(async () => {});
+    expect(host.textContent).toContain("That was not saved: apps: at most 24");
+  });
+});

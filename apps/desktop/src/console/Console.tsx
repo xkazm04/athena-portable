@@ -25,8 +25,11 @@ import { LIVE_SCENES, sceneFor } from "./scenes";
 const SCENES = Object.values(LIVE_SCENES);
 const DueNotice = lazy(() => import("./due-notice"));
 const Finder = lazy(() => import("./finder"));
+// Where she works (ADR 0225): the project pill, off the first frame like the notice.
+const BarPill = lazy(() => import("./bar-pill"));
 
 const retryRead = () => void readRows();
+
 
 /**
  * Every scene's crumb names, in one labeller. The hooks are called for every scene on every render
@@ -140,6 +143,9 @@ export default function Console() {
       onSettle={settle}
       trailing={
         <>
+          <Suspense fallback={null}>
+            <BarPill go={go} />
+          </Suspense>
           {/* A page owns the window below the band (ADR 0088), so the finder is summoned over a scene. */}
           {shapeOf(path) === "scene" && <Summon go={go} label={label} here={path} />}
           <WindowControls waiting={athena.cards > 0} />

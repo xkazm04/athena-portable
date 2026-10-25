@@ -6,17 +6,25 @@
  * Athena's composer for a custom verdict. Kept out of `live.tsx` so neither the clients nor the
  * voice module join the first paint.
  */
+import { useMemo } from "react";
+
 import { athenaOffer } from "@/lib/companion";
 import { IntakeApi } from "@/lib/intake-client";
 import { endpoint, useDaemon } from "@/stores/daemon";
+import { useSpaces } from "@/stores/spaces";
 
 import { liveAdoptDeps } from "./adopt/live-deps";
+import type { ChoreSpaces } from "./topic";
 import ChoresView, { type ChoresViewProps } from "./view";
 
 const deps = { ...liveAdoptDeps(), intake: new IntakeApi(() => endpoint(useDaemon.getState())) };
 
 const offer = (text: string) => athenaOffer(text);
 
-export default function LiveChoresView(props: Omit<ChoresViewProps, "adopt" | "offer">) {
-  return <ChoresView {...props} adopt={deps} offer={offer} />;
+export default function LiveChoresView(props: Omit<ChoresViewProps, "adopt" | "offer" | "spaces">) {
+  // The Projects, for each case's chip and link (ADR 0225): the store's list and its `linkCase`.
+  const list = useSpaces((s) => s.spaces);
+  const link = useSpaces((s) => s.linkCase);
+  const spaces = useMemo<ChoreSpaces>(() => ({ list, link }), [list, link]);
+  return <ChoresView {...props} adopt={deps} offer={offer} spaces={spaces} />;
 }

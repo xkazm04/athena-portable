@@ -13,6 +13,9 @@
  *
  * "Your runs" (ADR 0124): under each case, the receipts of its runs (`./runs.tsx`).
  *
+ * "Project" (ADR 0225): a case linked to a Project carries its chip (nothing for core), and a small
+ * list links it to another or returns it to core; the cases are asked again once the daemon took it.
+ *
  * "When it comes due" (ADR 0131): under each case, the cadence she set and the review a due
  * occurrence opened, with "Open and prepare" (`./due.tsx`).
  *
@@ -28,9 +31,11 @@
 import { useEffect, useLayoutEffect, useRef, useState } from "react";
 
 import Button from "@/components/Button";
+import { ProjectChip } from "@/components/ProjectPill";
 import StatusDot from "@/components/StatusDot";
 import type { Path } from "@/depth/model";
 import type { CaseSummary, CasesReply } from "@/lib/adopt";
+import type { SpaceSummary } from "@/lib/spaces";
 import { categoryLabel, jobLabel } from "@/lib/playbook-taxonomy";
 import type { Bench } from "@/lib/playbooks";
 import type { PlaybookView, PlaybooksModel } from "@/modules/playbooks/model";
@@ -48,7 +53,7 @@ import Flow from "./flow";
 import Glyph from "./glyphs";
 import Due from "./due";
 import Runs, { failureOf, staleLine, type Failure } from "./runs";
-import { readKey, useRead } from "./reads";
+import { read, readKey, useRead } from "./reads";
 
 /** Where the two times come from: the hand figure is typed by the author, hers is measured (spark chores-uat recertify). */
 const TIME_SOURCE = "by hand is the author's estimate, hers is from the test run";
@@ -61,14 +66,29 @@ export type CasesState =
   | ({ kind: "failed" } & Failure);
 
 /**
- * The saved cases of `playbookId`. Without deps, it says there is no daemon. The last answer
- * outlives a move and is drawn at once, then asked again behind it (`reads.ts`, ADR 0159).
+ * The person's Projects, as a chore's cases need them (ADR 0225): to name a case's Project, and to
+ * link it to one. Handed in by the scene's live layer; the page reads no store.
  */
-export function useCases(deps: AdoptDeps | undefined, playbookId: string): CasesState {
+export interface ChoreSpaces {
+  list: readonly SpaceSummary[];
+  /** Link a case to a Project, or `""` (core) to unlink it. Rejects with the daemon's reason. */
+  link: (caseId: string, spaceId: string) => Promise<void>;
+}
+
+/**
+ * The saved cases of `playbookId`. Without deps, it says there is no daemon. The last answer
+ * outlives a move and is drawn at once, then asked again behind it (`reads.ts`, ADR 0159), and
+ * again whenever `asked` moves (a link changed a case, ADR 0225).
+ */
+export function useCases(deps: AdoptDeps | undefined, playbookId: string, asked = 0): CasesState {
   const client = deps?.client;
-  const state = useRead<CasesReply>(client ? readKey(client, `cases|${playbookId}`) : null, () =>
-    client!.cases(playbookId),
-  );
+  const key = client ? readKey(client, `cases|${playbookId}`) : null;
+  const state = useRead<CasesReply>(key, () => client!.cases(playbookId));
+  // A link moved a case to or from a Project (ADR 0225): ask again behind the answer on show.
+  useEffect(() => {
+    if (key === null || asked === 0) return;
+    read(key, () => client!.cases(playbookId)).catch(() => undefined);
+  }, [key, asked, client, playbookId]);
   if (!deps) return { kind: "no-daemon" };
   switch (state.kind) {
     case "looking":
@@ -178,6 +198,7 @@ export default function Topic({
   go,
   back,
   deps,
+  spaces,
 }: {
   view: PlaybookView;
   model: PlaybooksModel;
@@ -185,9 +206,13 @@ export default function Topic({
   back: () => void;
   /** The studio's client; the page asks it only for the saved cases (ADR 0123). */
   deps?: AdoptDeps;
+  /** The Projects, to name and link each case's (ADR 0225); absent, no case shows one. */
+  spaces?: ChoreSpaces;
 }) {
   const p = view.playbook;
-  const saved = useCases(deps, p.id);
+  // Moved by a link the daemon took, so the cases are asked again and the chip follows it.
+  const [asked, setAsked] = useState(0);
+  const saved = useCases(deps, p.id, asked);
   const cases = saved.kind === "found" ? saved.cases : [];
   const latest = cases[0];
   const stills = stillsOf(view);
@@ -408,12 +433,22 @@ export default function Topic({
                   <li key={c.case_id} className="pa-case">
                     <span className="pa-case__title">{c.title || p.shortTitle}</span>
                     <span className="pa-case__when">{`Last approved ${dayOf(c.approved_at)} · draft ${c.approved_rev} · ${c.confirmed} of ${c.slots} confirmed`}</span>
+                    {spaces ? (
+                      <CaseProject
+                        caseId={c.case_id}
+                        title={c.title || p.shortTitle}
+                        spaceId={c.space_id}
+                        spaces={spaces}
+                        go={go}
+                        linked={() => setAsked((n) => n + 1)}
+                      />
+                    ) : null}
                     {cases.length > 1 ? (
                       <Button variant="ghost" size="sm" onClick={() => go(casePath(p.id, c.case_id))}>
                         Open this case
                       </Button>
                     ) : null}
-                    {deps?.chores ? <Due chores={deps.chores} caseId={c.case_id} actions={model.actions} /> : null}
+                    {deps?.chores ? <Due chores={deps.chores} caseId={c.case_id} spaceId={c.space_id} actions={model.actions} /> : null}
                     {deps ? <Runs deps={deps} caseId={c.case_id} /> : null}
                   </li>
                 ))}
@@ -474,5 +509,87 @@ export default function Topic({
 
       <Lightbox stills={stills} at={at} onAt={setAt} onClose={() => setAt(null)} />
     </div>
+  );
+}
+
+/**
+ * A case's Project (ADR 0225): its chip into the Project's level, nothing for core, and a short
+ * list to link it to another Project or return it to core. Escape closes the list and is claimed,
+ * so the page does not go back to the catalogue under it.
+ */
+function CaseProject({
+  caseId,
+  title,
+  spaceId,
+  spaces,
+  go,
+  linked,
+}: {
+  caseId: string;
+  title: string;
+  spaceId: string;
+  spaces: ChoreSpaces;
+  go: (to: Path) => void;
+  linked: () => void;
+}) {
+  const [open, setOpen] = useState(false);
+  const [said, setSaid] = useState("");
+  const box = useRef<HTMLSpanElement>(null);
+  const space = spaceId ? (spaces.list.find((s) => s.id === spaceId) ?? null) : null;
+  const others = spaces.list.filter((s) => s.id !== spaceId);
+  const close = () => {
+    setOpen(false);
+    box.current?.querySelector<HTMLButtonElement>("button[aria-expanded]")?.focus();
+  };
+  const link = (to: string) => {
+    setSaid("");
+    spaces.link(caseId, to).then(
+      () => {
+        close();
+        linked();
+      },
+      (error: unknown) => setSaid(`That was not saved: ${error instanceof Error ? error.message : String(error)}`),
+    );
+  };
+  if (!space && others.length === 0) return null;
+  return (
+    <span className="pa-case__project" ref={box}>
+      {space ? (
+        <ProjectChip space={space} label={`Open the project ${space.name}`} onClick={() => go({ root: "projects", item: space.id })} />
+      ) : null}
+      <Button size="sm" variant="ghost" aria-expanded={open} aria-label={`Project of ${title}`} onClick={() => setOpen((o) => !o)}>
+        {space ? "Change project" : "Link to a project"}
+      </Button>
+      {open ? (
+        <ul
+          className="pa-case__projects"
+          aria-label={`Link ${title} to a project`}
+          onKeyDown={(e) => {
+            if (e.key !== "Escape") return;
+            e.preventDefault();
+            e.stopPropagation();
+            close();
+          }}
+        >
+          {others.map((s) => (
+            <li key={s.id}>
+              <ProjectChip space={s} label={`Link ${title} to ${s.name}`} onClick={() => link(s.id)} />
+            </li>
+          ))}
+          {space ? (
+            <li>
+              <Button size="sm" variant="ghost" onClick={() => link("")}>
+                Back to core
+              </Button>
+            </li>
+          ) : null}
+        </ul>
+      ) : null}
+      {said ? (
+        <span className="pa-muted" role="status">
+          {said}
+        </span>
+      ) : null}
+    </span>
   );
 }

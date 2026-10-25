@@ -4,7 +4,7 @@ import { describe, expect, it, test } from "vitest";
 
 import type { Path } from "@/depth/model";
 
-import { PATHS, fixtureIds, fixtures } from "./fixtures";
+import { PATHS, SPACES, fixtureIds, fixtures } from "./fixtures";
 import AppsView from "./view";
 
 const go = () => {};
@@ -158,4 +158,21 @@ test("a place that names nothing says so, with a way back", () => {
   const h = html("typical", PATHS.missing);
   expect(h).toContain("No such app");
   expect(h).toContain("Back to the apps");
+});
+
+describe("an app's projects (ADR 0225)", () => {
+  it("lists the projects that pair it as chips into their level, and offers the others", () => {
+    const h = html("typical", PATHS.app);
+    expect(h).toContain("In projects");
+    expect(h).toContain('aria-label="Open the project Month-end close"');
+    expect(h).not.toContain('aria-label="Open the project Client outreach"');
+    expect(h).toContain("Add to project");
+  });
+
+  it("says when it is in no project, and offers no adding when there is no other project", () => {
+    const none = { ...fixtures.typical!, spaces: { ...SPACES, list: [] } };
+    const h = renderToStaticMarkup(<AppsView model={none} path={PATHS.app!} go={go} />);
+    expect(h).toContain("In no project.");
+    expect(h).not.toContain("Add to project");
+  });
 });

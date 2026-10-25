@@ -1,0 +1,176 @@
+/* ProjectPill and ProjectChip (ADR 0225) - where she works, in Main's bar and by her composer.
+ * Tokens only. A Project's hue is the person's choice of 0..359; its lightness and saturation are
+ * the status palette's on each theme (light ~38%, dark ~64%), so a project dot sits beside a status
+ * dot at the same weight and holds 3:1 as a graphic. Its word stays `--foreground`, as a badge's. */
+
+:root,
+[data-theme="dark"] {
+  --project-dot-s: 70%;
+  --project-dot-l: 64%;
+}
+
+[data-theme="light"] {
+  --project-dot-s: 72%;
+  --project-dot-l: 38%;
+}
+
+.project-dot {
+  display: inline-block;
+  width: 8px;
+  height: 8px;
+  flex: none;
+  border-radius: 999px;
+  background: hsl(var(--project-hue, 200) var(--project-dot-s) var(--project-dot-l));
+}
+
+/* Core is no hue: a ring in the neutral status colour. */
+.project-dot--core {
+  background: transparent;
+  box-shadow: inset 0 0 0 1.5px var(--status-neutral);
+}
+
+.project-chip {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 16rem;
+  align-items: center;
+  gap: 6px;
+  padding: 1px 8px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 999px;
+  background: var(--recessed);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 12px;
+  line-height: 18px;
+}
+
+.project-chip__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-chip--button {
+  cursor: pointer;
+}
+
+.project-chip--button:hover {
+  border-color: var(--border-emphasis);
+  background: var(--hover-wash);
+}
+
+.project-pill {
+  position: relative;
+  display: inline-flex;
+  min-width: 0;
+}
+
+.project-pill__button {
+  display: inline-flex;
+  min-width: 0;
+  max-width: 18rem;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 10px;
+  border: 1px solid var(--border-default);
+  border-radius: 999px;
+  background: var(--recessed);
+  color: var(--foreground);
+  font: inherit;
+  font-size: 12px;
+  line-height: 20px;
+  cursor: pointer;
+}
+
+.project-pill__button:hover {
+  border-color: var(--border-emphasis);
+  background: var(--hover-wash);
+}
+
+.project-pill__name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-pill__pending {
+  color: var(--muted-foreground);
+  white-space: nowrap;
+}
+
+.project-pill__caret {
+  color: var(--muted-foreground);
+}
+
+.project-pill__menu {
+  position: absolute;
+  z-index: 40;
+  top: calc(100% + 4px);
+  right: 0;
+  display: grid;
+  min-width: 12rem;
+  max-width: 20rem;
+  max-height: 18rem;
+  overflow-y: auto;
+  padding: 4px;
+  border: 1px solid var(--border-default);
+  border-radius: var(--radius-card);
+  background: var(--card-raised);
+  box-shadow: var(--shadow-elevation-1);
+}
+
+/* By the composer the menu opens upward: the composer sits at the window's foot. */
+.project-pill--compact .project-pill__menu {
+  top: auto;
+  bottom: calc(100% + 4px);
+  left: 0;
+  right: auto;
+}
+
+.project-pill__note {
+  margin: 0;
+  padding: 4px 8px 6px;
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
+
+.project-pill__item {
+  display: flex;
+  min-width: 0;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: var(--radius-interactive);
+  background: transparent;
+  color: var(--foreground);
+  font: inherit;
+  font-size: 13px;
+  text-align: left;
+  cursor: pointer;
+}
+
+.project-pill__item:hover,
+.project-pill__item:focus-visible {
+  background: var(--hover-wash);
+  outline: none;
+  box-shadow: inset 0 0 0 1px var(--focus);
+}
+
+.project-pill__item[aria-checked="true"] {
+  font-weight: 600;
+}
+
+.project-pill__item-name {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.project-pill__item--all {
+  margin-top: 2px;
+  border-top: 1px solid var(--border-subtle);
+  border-radius: 0 0 var(--radius-interactive) var(--radius-interactive);
+  color: var(--muted-foreground);
+}

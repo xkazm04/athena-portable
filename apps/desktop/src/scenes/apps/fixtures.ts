@@ -7,7 +7,9 @@ import type { Path } from "@/depth/model";
 import { fixtures as browser } from "@/modules/browser/fixtures";
 import type { FixtureId } from "@/modules/types";
 
-import { selectApps, type AppsModel, type RawTool, type ToolSources } from "./model";
+import type { SpaceSummary } from "@/lib/spaces";
+
+import { selectApps, type AppSpaces, type AppsModel, type RawTool, type ToolSources } from "./model";
 
 const NONE: ToolSources = { byTab: {}, pins: {} };
 
@@ -41,12 +43,33 @@ const typicalSources: ToolSources = {
   pins: { "http://localhost:3004": { send_reminder: "GATED" } },
 };
 
-const make = (name: string, sources: ToolSources = NONE): AppsModel => selectApps(browser[name]!, sources);
+const project = (id: string, name: string, hue: number, apps: string[]): SpaceSummary => ({
+  id,
+  name,
+  brief: "",
+  apps,
+  hue,
+  created: "2026-10-20T09:00:00Z",
+  updated: "2026-10-24T09:00:00Z",
+  counts: { episodes: 4, facts: 2, procedurals: 1, chores: 1 },
+});
+
+/** Two Projects, one of which pairs the invoicing app; the other could take it (ADR 0225). */
+export const SPACES: AppSpaces = {
+  list: [
+    project("spc_0123456789ab", "Month-end close", 200, ["http://localhost:3004"]),
+    project("spc_ba9876543210", "Client outreach", 320, ["https://crm.example.test"]),
+  ],
+  addApp: () => Promise.resolve(),
+};
+
+const make = (name: string, sources: ToolSources = NONE, spaces?: AppSpaces): AppsModel =>
+  selectApps(browser[name]!, sources, spaces);
 
 export const fixtures: Record<string, AppsModel> = {
   empty: make("empty"),
   "first-run": make("first-run"),
-  typical: make("typical", typicalSources),
+  typical: make("typical", typicalSources, SPACES),
   heavy: make("heavy"),
   degraded: make("degraded"),
   // The ordinary case for a real site: the page is open and offers nothing of its own.

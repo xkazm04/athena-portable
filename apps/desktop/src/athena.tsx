@@ -24,8 +24,9 @@ import { followCards, startConnectors } from "@/stores/connectors";
 import { startDaemon } from "@/stores/daemon";
 import { startEngines } from "@/stores/engines";
 import { startOrigins } from "@/stores/origins";
-import { startRun, useRun } from "@/stores/run";
+import { startRun, useRun, type RunPhase } from "@/stores/run";
 import { startSettings } from "@/stores/settings";
+import { startSpaces, type TurnSignal } from "@/stores/spaces";
 import { startTabs } from "@/stores/tabs";
 import { startTools } from "@/stores/tools";
 import { startVoice } from "@/stores/voice";
@@ -33,6 +34,20 @@ import { startVoice } from "@/stores/voice";
 import "@/styles/app.css";
 import "@/companion/companion.css";
 import "@/styles/skins";
+
+/**
+ * The turn, as the spaces store needs it (ADR 0225): a Project switch never lands mid-turn, because
+ * every request of an exchange is filed under the space it started in. The run store is the one
+ * that knows, and it lives here.
+ */
+const working = (phase: RunPhase) => phase === "running" || phase === "acting";
+const theTurn: TurnSignal = {
+  busy: () => working(useRun.getState().phase),
+  onIdle: (f) =>
+    useRun.subscribe((s, prev) => {
+      if (!working(s.phase) && working(prev.phase)) f();
+    }),
+};
 
 // The dev inspector (ADR 0086): dropped from a build with the rest of the DEV branch.
 const Inspector = import.meta.env.DEV ? lazy(() => import("@/lib/dev/inspector")) : null;
@@ -49,6 +64,9 @@ function Root() {
     // The cards are the daemon's too: ask what it holds at start, when it is ready, and every 30 s
     // while a card is on screen (UAT backlog B1). The engine probe feeds the welcome's engine line.
     const stopRun = startRun();
+    // Which Project every `/run` is filed under: read when the daemon is up, and again whenever
+    // Main's pill writes the row (ADR 0225).
+    void startSpaces(theTurn);
     startEngines();
     // A connector card names the account it acts as: the mirror reads when one arrives (ADR 0116).
     void startConnectors();

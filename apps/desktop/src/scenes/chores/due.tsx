@@ -198,10 +198,13 @@ const DEFAULT_RULE: CadenceRule = { kind: "weekly", weekday: 0, day: 1, every_da
 export default function Due({
   chores,
   caseId,
+  spaceId = "",
   actions,
 }: {
   chores: ChoresClient;
   caseId: string;
+  /** The Project the case is linked to (ADR 0225): "Open and prepare" enters it. */
+  spaceId?: string;
   actions: Pick<PlaybookActions, "open" | "hand">;
 }) {
   const [state, setState] = useState<Loaded>({ kind: "looking" });
@@ -293,7 +296,7 @@ export default function Due({
             )
           }
           onPrepare={() =>
-            void openAndPrepare(open, { open: actions.open, hand: actions.hand, answer: chores.answer.bind(chores) }).then(
+            void openAndPrepare(open, { open: actions.open, hand: actions.hand, answer: chores.answer.bind(chores) }, spaceId).then(
               ({ unknown }) => {
                 setSaid(
                   `Her composer holds the case's command. Nothing is sent until you press send.${unknown.length ? ` Open ${unknown.join(", ")} yourself.` : ""}`,

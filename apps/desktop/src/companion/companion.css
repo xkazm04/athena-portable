@@ -1353,6 +1353,17 @@ body.athena {
   border-top: 1px solid var(--line);
   background: color-mix(in srgb, var(--glass-solid) 70%, transparent);
 }
+/* Where she works (ADR 0225): the project pill, its held switch said beside it. */
+.aw .lg-space {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+.aw .lg-space__note {
+  color: var(--muted-foreground);
+  font-size: 12px;
+}
 .aw .lg-project {
   display: flex;
   align-items: baseline;

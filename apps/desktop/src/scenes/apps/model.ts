@@ -12,6 +12,7 @@
  * on no origin (a blank page) is `apps/tab-<id>`. `apps/<item>/page` is the page shape (ADR 0088).
  */
 import type { Path } from "@/depth/model";
+import type { SpaceSummary } from "@/lib/spaces";
 import type { ToolClass } from "@/lib/store";
 
 import type { BrowserModel, BrowserTab, RegisteredApp } from "@/modules/browser/model";
@@ -51,8 +52,29 @@ export interface AppTools {
   tools: readonly ToolView[];
 }
 
+/**
+ * The person's Projects, as an app's layer needs them (ADR 0225): which ones pair it, and the one
+ * act of pairing it with another. The list is the spaces store's; the scene never reads a store.
+ */
+export interface AppSpaces {
+  list: readonly SpaceSummary[];
+  /** Pair `origin` into a Project. Rejects with the daemon's reason (a cap, a gone Project). */
+  addApp: (spaceId: string, origin: string) => Promise<void>;
+}
+
+/** No Projects: the preview's default and a fixture that is not about them. */
+export const NO_SPACES: AppSpaces = { list: [], addApp: () => Promise.resolve() };
+
+/** The Projects that pair `origin`, and the others it could be added to, in the list's order. */
+export function spacesOf(spaces: AppSpaces, origin: string): { in: SpaceSummary[]; others: SpaceSummary[] } {
+  const has = (s: SpaceSummary) => s.apps.includes(origin);
+  return { in: spaces.list.filter(has), others: spaces.list.filter((s) => !has(s)) };
+}
+
 export interface AppsModel {
   browser: BrowserModel;
+  /** The Projects (ADR 0225), for an app's "In projects". */
+  spaces: AppSpaces;
   /** Every open tab as a page entry, in tab order. */
   pages: readonly PageEntry[];
   /** Per path item: the tools its open page registered. Only apps with an open tab have an entry. */
@@ -111,7 +133,7 @@ export function toolView(raw: RawTool, pin: ToolClass | undefined): ToolView {
   };
 }
 
-export function selectApps(browser: BrowserModel, sources: ToolSources): AppsModel {
+export function selectApps(browser: BrowserModel, sources: ToolSources, spaces: AppSpaces = NO_SPACES): AppsModel {
   const pages: PageEntry[] = browser.tabs.map((t) => ({
     tabId: t.id,
     title: t.title,
@@ -132,7 +154,7 @@ export function selectApps(browser: BrowserModel, sources: ToolSources): AppsMod
     const pins = sources.pins[page.item] ?? {};
     tools[page.item] = { answered: true, tools: entry.tools.map((t) => toolView(t, pins[t.name])) };
   }
-  return { browser, pages, tools };
+  return { browser, spaces, pages, tools };
 }
 
 /** The registered app a path item names, or null. */

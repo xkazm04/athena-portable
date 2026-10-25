@@ -37,6 +37,7 @@ import {
   type ActivityWrite,
   type RunDeps,
 } from "./run";
+import { resetSpacesForTests, useSpaces } from "./spaces";
 
 // -- the fakes -----------------------------------------------------------------------------------
 
@@ -1331,6 +1332,71 @@ describe("the active playbook", () => {
     expect(useRun.getState().project).toEqual(playbook);
     useRun.getState().setProject(null);
   });
+});
+
+// -- the active Project (spark projects-layer, ADR 0225) -------------------------------------------
+
+describe("the active Project", () => {
+  const TAXES = {
+    id: "spc_0123456789ab",
+    name: "Taxes",
+    brief: "",
+    apps: [],
+    hue: 200,
+    created: "",
+    updated: "",
+    counts: { episodes: 0, facts: 0, procedurals: 0, chores: 0 },
+  };
+  const playbook = { id: "fba-reimbursements", title: "Amazon FBA reimbursements", goal: "File what Amazon owes." };
+
+  beforeEach(() => {
+    resetSpacesForTests();
+    useSpaces.setState({ spaces: [TAXES], loaded: true });
+  });
+
+  it("sends space_id on every /run body: the active id, and \"\" for core", async () => {
+    const daemon = fakeDaemon({ runs: [[finished()], [finished()]] });
+    wire(daemon, fakePage());
+
+    await useRun.getState().send("in core");
+    useSpaces.getState().setActive(TAXES.id);
+    await useRun.getState().send("in taxes");
+
+    const [first, second] = daemon.runs();
+    expect(first.body!.space_id).toBe("");
+    expect(second.body!.space_id).toBe(TAXES.id);
+  });
+
+  it("enters a linked chore's Project before its first send", async () => {
+    const daemon = fakeDaemon({ runs: [[finished()]] });
+    wire(daemon, fakePage());
+
+    useRun.getState().setProject({ ...playbook, caseId: "proj_0123456789ab", spaceId: TAXES.id });
+    expect(useSpaces.getState().activeId).toBe(TAXES.id);
+    await useRun.getState().send("start");
+    expect(daemon.runs()[0].body!.space_id).toBe(TAXES.id);
+    expect(daemon.runs()[0].body!.case_id).toBe("proj_0123456789ab");
+    useRun.getState().setProject(null);
+  });
+
+  it("returns to core for a core chore's run, so its memory is not filed into the Project", () => {
+    useSpaces.getState().setActive(TAXES.id);
+    useRun.getState().setProject({ ...playbook, caseId: "proj_0123456789ab", spaceId: "" });
+    expect(useSpaces.getState().activeId).toBe("");
+    // A case handed over with no space said is core too.
+    useSpaces.getState().setActive(TAXES.id);
+    useRun.getState().setProject({ ...playbook, caseId: "proj_0123456789ab" });
+    expect(useSpaces.getState().activeId).toBe("");
+    useRun.getState().setProject(null);
+  });
+
+  it("leaves the person where she is for a playbook with no case", () => {
+    useSpaces.getState().setActive(TAXES.id);
+    useRun.getState().setProject(playbook);
+    expect(useSpaces.getState().activeId).toBe(TAXES.id);
+    useRun.getState().setProject(null);
+  });
+
 });
 
 // -- the capture before a request (ADR 0066) -----------------------------------------------------

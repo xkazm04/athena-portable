@@ -56,7 +56,9 @@ import { SETUP_ORIGIN, SETUP_TOOLS_ORIGIN, type SetupSession } from "@/lib/setup
 import { hasShell, type StorePage, type Tab } from "@/lib/ipc";
 import { storeList, storeSet, type ActivityRow, type OriginRow } from "@/lib/store";
 import { endpoint, useDaemon } from "@/stores/daemon";
-import { useOrigins } from "@/stores/origins";
+import { useOrigins, type OriginsState } from "@/stores/origins";
+import { CORE } from "@/lib/spaces";
+import { useSpaces } from "@/stores/spaces";
 import { originOf } from "@/modules/browser/model";
 import { useTabs } from "@/stores/tabs";
 import { useTools, type TabTools } from "@/stores/tools";
@@ -361,6 +363,12 @@ export interface ActivePlaybook {
    * `trigger: "schedule"` and the mark is spent, so only that first send is the scheduled run's.
    */
   scheduled?: boolean;
+  /**
+   * The Project (wire: space, ADR 0225) the case is linked to, `""` for core. Handing a case's run
+   * over enters it first, core included, so the pill says where she works and her first send is
+   * filed there. Absent reads as core whenever there is a case.
+   */
+  spaceId?: string;
 }
 
 /** A minted project id (`contracts/ids.py`: `proj_` and twelve hex digits). Anything else is not sent. */
@@ -1038,6 +1046,9 @@ export function scheduleMark(project: ActivePlaybook | null): { trigger?: "sched
   return project?.scheduled && caseOf(project).case_id ? { trigger: "schedule" } : {};
 }
 
+/** The `space_id` every `/run` body carries (ADR 0225): the active Project's id, `""` for core. */
+export const spaceOf = (): string => useSpaces.getState().activeId;
+
 export function stampOf(date: Date): string {
   return date.toISOString().slice(0, 19).replace("T", " ");
 }
@@ -1401,7 +1412,8 @@ export const useRun = create<RunState>((set, get) => {
     const scheduled = focused ? scheduleMark(get().project) : {};
     if (scheduled.trigger) set((s) => ({ project: s.project && { ...s.project, scheduled: false } }));
     const body: TurnBody = !focused
-      ? setupBody(origin, message, carried, taking)
+      ? // The setup conversation is about this computer, not a Project: always core (ADR 0225).
+        { ...setupBody(origin, message, carried, taking), space_id: CORE }
       : {
         origin,
         message,
@@ -1430,6 +1442,9 @@ export const useRun = create<RunState>((set, get) => {
         ...(via ? { via: { peer_id: via.peer_id, request_id: via.request_id } } : {}),
         // The main thread's turn, not a delegated task's (fleet-surfaces, ADR 0141).
         task_id: null,
+        // The Project the turn is filed under, read per request: a switch is only ever applied
+        // between turns (`stores/spaces.ts`), so every request of one exchange says the same.
+        space_id: spaceOf(),
       };
     let opened = false;
     let errored = false;
@@ -2229,6 +2244,11 @@ export const useRun = create<RunState>((set, get) => {
     },
 
     setProject(project) {
+      // A case's run happens in the case's space (ADR 0225), core included: a core chore run while
+      // a Project is active would otherwise file its memory into that Project. Entered before the
+      // first send (held until the turn ends if one is running). A playbook with no case leaves the
+      // person where she is.
+      if (project?.caseId) useSpaces.getState().setActive(project.spaceId ?? CORE);
       set({ project });
     },
 
