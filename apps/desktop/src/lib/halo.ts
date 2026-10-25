@@ -19,26 +19,39 @@
  * playback, so `voice.stopped` can land while the end of her line is still sounding, and the edges
  * stay on `speaking`, following her real level, until the player has played its last sample.
  *
+ * A turn the person started that ends without an answer (an utterance too short, silent or
+ * wordless; a turn error; the voice socket closing; a run that fails) shows `trouble` for
+ * `TROUBLE_MS`: a still amber edge with her plain reason as the caption, because with her window
+ * put away the halo is the only surface on screen (ADR 0027, amendment 2026-10-25). The reason is
+ * always a sentence of hers (`troubleLine`), never the raw detail, which can carry a URL or a key.
+ *
  * Every frame identical to the last one sent is dropped, so a silent microphone sends nothing.
  * The level never goes into a store: 30 re-renders a second of a window that shows nothing of it
  * would be the cost of putting it there.
  */
 import { create } from "zustand";
 
+import { plainFailure } from "@/companion/plain";
+import { engineLabel } from "@/lib/engines";
 import {
   HALO_COMMAND,
   haloPhase,
   type HaloCaption,
   type HaloPhase,
   type HaloSignal,
+  type StorePhase,
 } from "@/lib/halo-signal";
 import { call, hasShell, type Wire } from "@/lib/ipc";
 import { currentLevel, playbackSounding } from "@/lib/voice";
-import { useRun, type RunPhase } from "@/stores/run";
+import { useRun, type RunFailure, type RunPhase } from "@/stores/run";
+import { useSettings } from "@/stores/settings";
 import { useVoice, type VoicePhase } from "@/stores/voice";
 
 /** The level frame period: 34 ms is 29.4 frames a second, under ADR 0027's cap of 30. */
 export const LEVEL_FRAME_MS = 34;
+
+/** How long a failed turn's amber edge and reason stay before the halo returns to the stores. */
+export const TROUBLE_MS = 2500;
 
 /** What the producer reads from the stores. Everything but the level. */
 export interface HaloInputs {
@@ -53,6 +66,12 @@ export interface HaloInputs {
   heard: string;
   /** The line playing, as the voice store says (`null` once its `voice.stopped` arrived). */
   generation?: number | null;
+  /** The voice store's reason: an ended utterance's sentence, or why a turn failed. */
+  voiceReason?: string;
+  /** Why the last run stopped, or `null`. */
+  runError?: RunFailure | null;
+  /** The engine's name for a person ("Claude Code"), for `plainFailure`. */
+  engine?: string;
 }
 
 /** What her presence reads: the store phases and the line the voice store says is playing. */
@@ -60,7 +79,7 @@ export type PresenceInputs = Pick<HaloInputs, "voice" | "run" | "cards" | "gener
 
 export interface Presence {
   /** Her phase now: `haloPhase`, held on `speaking` while the last line seen playing sounds. */
-  phase: (inputs: PresenceInputs) => HaloPhase;
+  phase: (inputs: PresenceInputs) => StorePhase;
   /** The last line seen playing, or `null` before any. */
   spoken: () => number | null;
 }
@@ -84,6 +103,47 @@ export function createPresence(deps: { sounding: (generation: number) => boolean
     },
     spoken: () => spoken,
   };
+}
+
+const VOICE_TURN: readonly VoicePhase[] = ["listening", "thinking", "speaking"];
+const RUN_TURN: readonly RunPhase[] = ["running", "acting"];
+
+/** The fixed sentences for the voice store's own failures; anything unknown falls to the default. */
+const VOICE_CLOSED = "Her voice connection dropped before she answered. Try again.";
+const MIC_FAILED = "Athena could not open your microphone. Check the input in Voice settings.";
+const VOICE_LOAD_FAILED = "Her voice could not load. Check Voice settings.";
+
+/** A store sentence as a caption: first letter up, one full stop. */
+function sentence(text: string): string {
+  const t = text.trim();
+  const up = t.charAt(0).toUpperCase() + t.slice(1);
+  return /[.!?]$/.test(up) ? up : `${up}.`;
+}
+
+/**
+ * Her plain reason for a turn that just ended without an answer, or `null` when nothing failed.
+ * Only an edge counts: a turn the person started (`prev` active) that is over now with a reason.
+ * A reason set with no turn before it (the daemon still starting) never lights the halo. The raw
+ * detail never reaches the screen: a run's reason and a turn error's code go through
+ * `plainFailure`, and every other voice failure is one fixed sentence.
+ */
+export function troubleLine(prev: HaloInputs, next: HaloInputs): string | null {
+  const engine = next.engine ?? "the engine";
+  if (RUN_TURN.includes(prev.run) && !RUN_TURN.includes(next.run) && next.run === "error" && next.runError) {
+    return plainFailure(next.runError.reason, engine);
+  }
+  const reason = next.voiceReason?.trim() ?? "";
+  if (!VOICE_TURN.includes(prev.voice) || !reason) return null;
+  if (next.voice === "idle") {
+    // An utterance's own ending (ADR 0110), already a sentence for a person; or the socket closed.
+    return reason.startsWith("voice closed") ? VOICE_CLOSED : sentence(reason);
+  }
+  if (next.voice !== "error") return null;
+  if (reason.startsWith("microphone")) return MIC_FAILED;
+  if (reason.startsWith("her voice could not load")) return VOICE_LOAD_FAILED;
+  if (reason.startsWith("open a page first")) return plainFailure("no_page", engine);
+  // A daemon `turn.error` is "code: detail": the code alone picks the sentence.
+  return plainFailure(/^[a-z_]+(?=:)/.exec(reason)?.[0] ?? "", engine);
 }
 
 /**
@@ -185,6 +245,9 @@ export function liveHaloDeps(): HaloDeps {
         speakingText: voice.speakingText,
         heard: voice.heard,
         generation: voice.generation,
+        voiceReason: voice.reason,
+        runError: run.error,
+        engine: engineLabel(useSettings.getState().engine),
       };
     },
     override: () => useHaloOverride.getState().override,
@@ -215,15 +278,37 @@ export function startHalo(deps: HaloDeps = liveHaloDeps()): () => void {
   let failing = false;
   let stopLoop: (() => void) | null = null;
   const presence = createPresence({ sounding: deps.sounding ?? (() => false) });
+  let prev: HaloInputs | null = null;
+  let trouble: string | null = null;
+  let stopTrouble: (() => void) | null = null;
+  const clearTrouble = () => {
+    stopTrouble?.();
+    stopTrouble = null;
+    trouble = null;
+  };
 
   const emit = () => {
     const override = deps.override();
     const inputs = deps.inputs();
     // Read on every frame, override or not, so the line playing is remembered for its tail.
     const own = presence.phase(inputs);
-    const phase = override?.phase ?? own;
+    const failed = prev === null ? null : troubleLine(prev, inputs);
+    prev = inputs;
+    if (failed !== null) {
+      clearTrouble();
+      trouble = failed;
+      stopTrouble = deps.every(TROUBLE_MS, () => {
+        clearTrouble();
+        emit();
+      });
+    } else if (trouble !== null && own !== "gate" && own !== "idle") {
+      // Any newer turn wins over the amber moment, and its timer must not land over it later.
+      clearTrouble();
+    }
+    const phase = override?.phase ?? (trouble !== null ? "trouble" : own);
     const level = levelled(phase) ? (override?.level ?? deps.level)() : 0;
     const signal = signalOf(inputs, override, level, phase);
+    if (!override && phase === "trouble" && trouble !== null) signal.caption = { who: "athena", text: trouble };
     const key = JSON.stringify(signal);
     if (key !== last) {
       last = key;
@@ -256,6 +341,7 @@ export function startHalo(deps: HaloDeps = liveHaloDeps()): () => void {
     unsubscribe();
     stopLoop?.();
     stopLoop = null;
+    clearTrouble();
     if (stopActive === stop) stopActive = null;
   };
   stopActive = stop;

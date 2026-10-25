@@ -39,6 +39,13 @@ describe("the Rust mirror (src-tauri/src/halo.rs)", () => {
     expect(arms).toEqual([...HALO_PHASES]);
   });
 
+  it("[7] ends with trouble, the sixth phase, on both sides", () => {
+    const rust = readFileSync(new URL("../../src-tauri/src/halo.rs", import.meta.url), "utf8");
+    expect(HALO_PHASES.at(-1)).toBe("trouble");
+    expect(rust).toContain('"trouble" => Phase::Trouble');
+    expect(isHaloPhase("trouble")).toBe(true);
+  });
+
   it("names the same event", () => {
     const rust = readFileSync(new URL("../../src-tauri/src/halo.rs", import.meta.url), "utf8");
     expect(rust).toContain(`pub const HALO_EVENT: &str = "${HALO_EVENT}";`);
@@ -46,7 +53,7 @@ describe("the Rust mirror (src-tauri/src/halo.rs)", () => {
 });
 
 describe("isHaloPhase", () => {
-  it("accepts the five names and nothing else", () => {
+  it("accepts the six names and nothing else", () => {
     expect(isHaloPhase("gate")).toBe(true);
     expect(isHaloPhase("hear")).toBe(false);
     expect(isHaloPhase(1)).toBe(false);

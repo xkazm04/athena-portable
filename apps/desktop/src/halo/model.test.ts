@@ -52,6 +52,15 @@ describe("parseSignal", () => {
     );
   });
 
+  it("[7] accepts the trouble phase", () => {
+    expect(parseSignal({ phase: "trouble", level: 0, cards: 1, caption: { who: "athena", text: "Hold the key." } })).toEqual({
+      phase: "trouble",
+      level: 0,
+      cards: 1,
+      caption: { who: "athena", text: "Hold the key." },
+    });
+  });
+
   it("drops an unknown phase and an ill-formed caption", () => {
     expect(parseSignal({ phase: "dancing", level: 0 })).toBeNull();
     expect(parseSignal(null)).toBeNull();
@@ -124,6 +133,19 @@ describe("the caption", () => {
       [12_000, sig("thinking", null)],
     ]);
     expect(captionView(s, 60_000)).toEqual({ who: "athena", text: her.text, visible: true });
+  });
+
+  it("[7] holds her plain reason through trouble and lets it linger after", () => {
+    const why: HaloCaption = { who: "athena", text: "Hold the key while you speak." };
+    const held = run([
+      [0, sig("thinking", null)],
+      [1000, sig("trouble", why)],
+      [3000, sig("trouble", why)],
+    ]);
+    expect(captionHideAt(held)).toBeNull();
+    expect(captionView(held, 60_000)).toEqual({ who: "athena", text: why.text, visible: true });
+    const after = stepCaption(held, sig("idle", null), 3500);
+    expect(captionHideAt(after)).toBe(3500 + CAPTION_LINGER_MS);
   });
 
   it("is empty before anyone has said anything", () => {

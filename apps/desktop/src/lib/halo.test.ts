@@ -8,11 +8,13 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import type { FaceSignal } from "@/avatar/types";
+import { plainFailure } from "@/companion/plain";
 import { startFace, type FaceDeps, type FaceInputs } from "@/lib/face-signal";
 import type { HaloSignal } from "@/lib/halo-signal";
 
 import {
   LEVEL_FRAME_MS,
+  TROUBLE_MS,
   captionOf,
   signalOf,
   startHalo,
@@ -367,5 +369,117 @@ describe("the tail of her line: the halo follows her audible voice, as her face 
     const halo = collapse(haloSent.map((s) => s.phase));
     expect(face).toEqual(["idle", "speaking", "gate", "listening", "thinking", "idle"]);
     expect(halo).toEqual(face);
+  });
+});
+
+describe("a turn that fails says so: the trouble phase with her plain reason", () => {
+  const ENGINE = "Claude Code";
+  const trouble = () => {
+    const f = fake();
+    f.set({ engine: ENGINE });
+    return f;
+  };
+
+  it("[0] an utterance that ends without a turn sends trouble at once, with the sentence as her caption", () => {
+    const f = trouble();
+    stop = startHalo(f.deps);
+    f.set({ voice: "listening" });
+    f.set({ voice: "thinking" });
+    f.set({ voice: "idle", voiceReason: "hold the key while you speak" });
+    expect(f.sent.at(-1)).toEqual({
+      phase: "trouble",
+      level: 0,
+      cards: 0,
+      caption: { who: "athena", text: "Hold the key while you speak." },
+    });
+  });
+
+  it("[1] TROUBLE_MS later, with no other change, it rests at idle and holds no timer", () => {
+    const f = trouble();
+    stop = startHalo(f.deps);
+    f.set({ voice: "listening" });
+    f.set({ voice: "thinking" });
+    f.set({ voice: "idle", voiceReason: "hold the key while you speak" });
+    vi.advanceTimersByTime(TROUBLE_MS - 1);
+    expect(f.sent.at(-1)?.phase).toBe("trouble");
+    vi.advanceTimersByTime(1);
+    expect(f.sent.at(-1)).toEqual({ phase: "idle", level: 0, cards: 0, caption: null });
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("[2] guard: a reason with no turn before it (the daemon not running at startup) sends no trouble", () => {
+    const f = trouble();
+    f.set({ voice: "off" });
+    stop = startHalo(f.deps);
+    f.set({ voice: "off", voiceReason: "the daemon is not running yet" });
+    f.set({ voice: "idle", voiceReason: "the daemon is not running yet" });
+    expect(f.sent.some((s) => s.phase === "trouble")).toBe(false);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("[3] a run's failure, a voice turn.error and a socket closing mid-turn each become a plain sentence, never the raw detail", () => {
+    const f = trouble();
+    stop = startHalo(f.deps);
+    f.set({ run: "running" });
+    f.set({ run: "error", runError: { reason: "timeout", detail: "deadline 120s token=abc" } });
+    expect(f.sent.at(-1)).toMatchObject({
+      phase: "trouble",
+      caption: { who: "athena", text: plainFailure("timeout", ENGINE) },
+    });
+    expect(f.sent.at(-1)?.caption?.text).toBe("That took too long, so Athena stopped it.");
+
+    f.set({ run: "idle", runError: null, voice: "thinking" });
+    f.set({ voice: "error", voiceReason: "timeout: the model sk-secret did not answer" });
+    expect(f.sent.at(-1)).toMatchObject({ phase: "trouble", caption: { text: plainFailure("timeout", ENGINE) } });
+
+    f.set({ voice: "listening", voiceReason: "" });
+    f.set({ voice: "idle", voiceReason: "voice closed: 1006 ws://127.0.0.1:7777/?token=abc" });
+    const closed = f.sent.at(-1);
+    expect(closed?.phase).toBe("trouble");
+    for (const s of f.sent.filter((x) => x.phase === "trouble")) {
+      expect(s.caption?.text).not.toMatch(/token|sk-secret|deadline|ws:|1006|:\s/);
+    }
+  });
+
+  it("[4] a press during trouble sends listening at once, and no idle lands later over the live turn", () => {
+    const f = trouble();
+    stop = startHalo(f.deps);
+    f.set({ voice: "listening" });
+    f.set({ voice: "thinking" });
+    f.set({ voice: "idle", voiceReason: "hold the key while you speak" });
+    expect(f.sent.at(-1)?.phase).toBe("trouble");
+    f.set({ voice: "listening", voiceReason: "", partial: "" });
+    expect(f.sent.at(-1)?.phase).toBe("listening");
+    const from = f.sent.length;
+    vi.advanceTimersByTime(TROUBLE_MS * 2);
+    expect(f.sent.slice(from).every((s) => s.phase === "listening")).toBe(true);
+    // only the level loop is left
+    expect(vi.getTimerCount()).toBe(1);
+  });
+
+  it("[5] a failed run with a card waiting shows trouble with the card, then gate, not idle", () => {
+    const f = trouble();
+    stop = startHalo(f.deps);
+    f.set({ run: "running", cards: 1 });
+    f.set({ run: "error", runError: { reason: "timeout", detail: "" } });
+    expect(f.sent.at(-1)).toMatchObject({ phase: "trouble", cards: 1 });
+    vi.advanceTimersByTime(TROUBLE_MS);
+    expect(f.sent.at(-1)).toEqual({ phase: "gate", level: 0, cards: 1, caption: null });
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("[6] guard: the stop outcome and a turn that finishes cleanly send no trouble", () => {
+    const f = trouble();
+    stop = startHalo(f.deps);
+    f.set({ voice: "listening" });
+    f.set({ voice: "thinking" });
+    f.set({ voice: "idle", voiceReason: "" });
+    f.set({ voice: "thinking" });
+    f.set({ voice: "speaking", speakingText: "Done." });
+    f.set({ voice: "idle", speakingText: "" });
+    f.set({ run: "running" });
+    f.set({ run: "idle" });
+    expect(f.sent.some((s) => s.phase === "trouble")).toBe(false);
+    expect(vi.getTimerCount()).toBe(0);
   });
 });

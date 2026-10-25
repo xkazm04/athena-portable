@@ -38,6 +38,8 @@ test("the hues spelled here are the house's dark-theme roles they name, not copi
     ["--halo-speak", "--accent"],
     ["--halo-think", "--role-agent"],
     ["--halo-gate", "--role-human"],
+    // [7] trouble: the warning amber, the one state the person must act on differently
+    ["--halo-trouble", "--status-warning"],
   ];
   for (const [halo, token] of copies) {
     expect(value(dark, token), token).toMatch(/^#[0-9a-f]{6}$/i);
@@ -68,4 +70,12 @@ test("idle fades the edges, not the page: the caption lives inside the root and 
   expect(rule(".edge")).toContain("* var(--live)");
   expect(rule('.halo[data-phase="thinking"] .edge')).toContain("var(--live)");
   expect(css.slice(css.indexOf("prefers-reduced-motion"))).toContain("opacity: calc(0.8 * var(--live))");
+});
+
+test("[7] trouble is a still amber edge: no travel, no breathe, so reduced motion loses nothing it says", () => {
+  const trouble = rule('.halo[data-phase="trouble"]');
+  expect(trouble).toContain("--hue: var(--halo-trouble)");
+  const edge = rule('.halo[data-phase="trouble"] .edge');
+  expect(edge).not.toMatch(/animation/);
+  expect(edge).toContain("var(--live)");
 });

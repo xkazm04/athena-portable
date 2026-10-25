@@ -8,7 +8,7 @@
  *
  * The hues are the house's roles (`styles/app.css`): her voice is the house glow, the person's
  * turn is a paler cyan, work in flight is the agent violet, and a card waiting on the person is
- * the human pink. They are spelled here rather than imported, because this page runs once per
+ * the human pink, and a turn that failed is the warning amber. They are spelled here rather than imported, because this page runs once per
  * monitor and does not load the app's sheet.
  */
 
@@ -17,6 +17,7 @@
   --halo-listen: #a5f3fc;
   --halo-think: #a78bfa;
   --halo-gate: #f472b6;
+  --halo-trouble: #fbbf24;
 
   /* the bloom at level 1; a phase at rest shows `--rest` of it (~3px) */
   --halo-deep: 40px;
@@ -70,6 +71,10 @@ html.halo-demo {
 }
 .halo[data-phase="gate"] {
   --hue: var(--halo-gate);
+}
+.halo[data-phase="trouble"] {
+  --hue: var(--halo-trouble);
+  --rest: 0.12;
 }
 .halo[data-phase="speaking"] {
   --rest: 0.1;
@@ -244,6 +249,12 @@ html.halo-demo {
   50% {
     opacity: 1;
   }
+}
+
+/* trouble: a still amber edge for a moment, her reason in the caption. No travel and no breathe, so
+ * reduced motion and Calm lose nothing it says: the hue and the words carry it. */
+.halo[data-phase="trouble"] .edge {
+  opacity: calc(0.85 * var(--live));
 }
 
 /* -- the caption ----------------------------------------------------------------------------- */

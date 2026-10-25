@@ -9,10 +9,16 @@
 import type { RunPhase } from "@/stores/run";
 import type { VoicePhase } from "@/stores/voice";
 
-/** What the edges show, in precedence order (see `haloPhase`). */
-export const HALO_PHASES = ["idle", "listening", "thinking", "speaking", "gate"] as const;
+/**
+ * What the edges show. Precedence: listening > speaking > thinking > trouble > gate > idle.
+ * `trouble` is the producer's (a turn the person started ended without an answer), never a store's.
+ */
+export const HALO_PHASES = ["idle", "listening", "thinking", "speaking", "gate", "trouble"] as const;
 
 export type HaloPhase = (typeof HALO_PHASES)[number];
+
+/** The phases the stores alone can name (`haloPhase`); her face draws exactly these. */
+export type StorePhase = Exclude<HaloPhase, "trouble">;
 
 export function isHaloPhase(value: unknown): value is HaloPhase {
   return typeof value === "string" && (HALO_PHASES as readonly string[]).includes(value);
@@ -50,7 +56,7 @@ export interface PttPayload {
  * her voice, then any work in flight, then a waiting card; a card under a turn shows again the
  * moment the turn ends.
  */
-export function haloPhase(voice: VoicePhase, run: RunPhase, cards: number): HaloPhase {
+export function haloPhase(voice: VoicePhase, run: RunPhase, cards: number): StorePhase {
   if (voice === "listening") return "listening";
   if (voice === "speaking") return "speaking";
   if (voice === "thinking" || run === "running" || run === "acting") return "thinking";

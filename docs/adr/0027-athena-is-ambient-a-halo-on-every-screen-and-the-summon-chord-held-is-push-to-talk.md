@@ -93,3 +93,28 @@ a tap of the summon chord and a waiting card bring her out as before. Clicking h
 Main's surface toggles her window: it shows her when she is put away and puts her away when she
 is out, through one chrome-only command, `athena_toggle`, which decides on Rust's own `visible`
 and answers whether she is visible afterwards (fleet-surfaces D2).
+
+## Amendment, 2026-10-25: a turn that fails says so, as a sixth phase, `trouble`
+
+With her window put away (amendment above), the halo is the only surface on screen during a turn
+started with the chord, and a failed turn used to fade to idle exactly as a good answer does: the
+person could not tell "she is done" from "she never heard me". The halo gains a sixth phase,
+`trouble`, on every layer: the page's `HALO_PHASES` (last), the shell's `Phase` (which shows it,
+as it shows every phase but idle), the caption (which holds through it and lingers
+`CAPTION_LINGER_MS` after it) and the look, a still edge in the house's warning amber
+(`--halo-trouble`, the dark theme's `--status-warning`). It has no travel and no breathe, so
+reduced motion and Calm lose nothing it says.
+
+- **When.** Only on an edge: a turn the person started (voice listening, thinking or speaking, or a
+  run running or acting) that is over now with a reason: an utterance that ended without a turn
+  (ADR 0110's sentences), a turn error, the voice socket closing mid-turn, or a failed run. A
+  reason with no turn before it, such as the daemon still starting, never lights every monitor.
+  The `stop` outcome and a clean finish carry no reason and show nothing.
+- **How long.** `TROUBLE_MS` (2.5 s), then the stores' phase again (idle, or gate when a card
+  waits). Any newer turn cancels it at once, timer and all.
+- **Precedence.** listening > speaking > thinking > trouble > gate > idle; the cards ride every
+  frame. The stores alone never name `trouble` (`haloPhase` returns the five, typed
+  `StorePhase`), so her face's vocabulary is unchanged.
+- **What it says.** Always a sentence of hers, never the raw detail, which can carry a URL, a
+  socket address or a key: ended-utterance sentences as they are, a run failure and a daemon turn
+  error's code through `plainFailure`, and every other voice failure one fixed sentence.

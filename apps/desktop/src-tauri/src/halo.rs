@@ -43,6 +43,8 @@ pub enum Phase {
     Thinking,
     Speaking,
     Gate,
+    /// A turn the person started ended without an answer; the caption says why.
+    Trouble,
 }
 
 impl Phase {
@@ -54,6 +56,7 @@ impl Phase {
             "thinking" => Phase::Thinking,
             "speaking" => Phase::Speaking,
             "gate" => Phase::Gate,
+            "trouble" => Phase::Trouble,
             _ => return Err(format!("unknown halo phase \"{s}\"")),
         })
     }
@@ -305,7 +308,7 @@ mod tests {
 
     #[test]
     fn every_phase_the_page_names_parses_and_an_unknown_one_is_an_error_string() {
-        for p in ["idle", "listening", "thinking", "speaking", "gate"] {
+        for p in ["idle", "listening", "thinking", "speaking", "gate", "trouble"] {
             let s = Signal::parse(raw(p, 0.0, 0)).expect("a known phase");
             assert_eq!(serde_json::to_value(s.phase).unwrap(), serde_json::json!(p));
         }
@@ -341,7 +344,7 @@ mod tests {
 
     #[test]
     fn anything_happening_or_a_waiting_card_shows_the_halo_and_idle_with_none_does_not() {
-        for p in ["listening", "thinking", "speaking", "gate"] {
+        for p in ["listening", "thinking", "speaking", "gate", "trouble"] {
             assert!(wants_visible(&Signal::parse(raw(p, 0.0, 0)).unwrap()), "{p} shows");
         }
         assert!(wants_visible(&Signal::parse(raw("idle", 0.0, 1)).unwrap()), "a waiting card shows");

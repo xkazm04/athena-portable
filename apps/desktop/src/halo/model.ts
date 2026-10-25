@@ -57,8 +57,11 @@ export function parseSignal(raw: unknown): HaloSignal | null {
 /** How long the last words stay up once the conversation has moved off them. */
 export const CAPTION_LINGER_MS = 4000;
 
-/** The phases a caption belongs to: someone is talking, or she is answering what was said. */
-const HOLDS: readonly HaloPhase[] = ["listening", "thinking", "speaking"];
+/**
+ * The phases a caption belongs to: someone is talking, she is answering what was said, or she is
+ * saying why a turn failed (`trouble`, whose reason then lingers like any last line).
+ */
+const HOLDS: readonly HaloPhase[] = ["listening", "thinking", "speaking", "trouble"];
 
 export interface CaptionState {
   caption: HaloCaption | null;
