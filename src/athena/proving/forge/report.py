@@ -22,10 +22,11 @@ from pathlib import Path
 from typing import Any
 
 from athena.proving.forge.base import Base, Baseline, baseline, instrument
+from athena.proving.forge.dossier import dossier
 from athena.proving.forge.store import ForgeDir, VariantRecord
 from athena.proving.forge.validate import code_of
 from athena.proving.playbooks.bench import BenchConfig
-from athena.proving.report import announce, write_report
+from athena.proving.report import announce, prune, write_report
 
 __all__ = ["PROOF_RATIO", "PROOF_RECALL_DROP", "build_report", "render_markdown", "write"]
 
@@ -151,17 +152,27 @@ def build_report(
                     holds += sum(1 for i in items if i.get("label_holds") is True)
                     errors += sum(1 for i in items if i.get("label_holds") is False)
                     unaudited += sum(1 for i in items if i.get("label_holds") is None)
-                    for i in items:
-                        entry = {
-                            "playbook": pid,
-                            "k": v.k,
-                            "kind": i.get("kind"),
-                            "id": i.get("key"),
-                        }
-                        if i.get("label_holds") is False:
-                            forge_errors.append({**entry, "why": i.get("why")})
-                        elif i.get("label_holds") is True:
-                            findings.append({**entry, "why": i.get("why")})
+                    # Each finding carries what judging it needs: its row and the rerun line.
+                    review = dossier(store, base, v)
+                    for e in review.entries:
+                        if e.state not in ("finding", "forge-error"):
+                            continue
+                        entry = prune(
+                            {
+                                "playbook": pid,
+                                "k": v.k,
+                                "kind": e.kind,
+                                "id": e.key,
+                                "label": e.label,
+                                "why": e.why,
+                                "table": e.table or None,
+                                "row": e.row or None,
+                                "filed": [c.get("params", {}) for c in e.filed] or None,
+                                "cards_on_tool": e.cards_on_tool,
+                                "rerun": review.rerun,
+                            }
+                        )
+                        (findings if e.state == "finding" else forge_errors).append(entry)
                     fixed = audit.get("corrected", {})
                     c_word, c_recall = fixed.get("word"), fixed.get("recall_value")
                     audited_row: dict[str, Any] = {
@@ -409,11 +420,47 @@ def render_markdown(report: Mapping[str, Any]) -> str:
     ]
     if bench.get("note"):
         lines.append(f"- {bench['note']}")
+    review = [("finding", f) for f in report.get("athena_findings", [])] + [
+        ("forge error", f) for f in report.get("forge_errors", [])
+    ]
+    if review:
+        lines += ["", "## Review", ""]
+        lines.append(
+            "Each audited item to attribute: Athena defect (the label holds) or a bad generated "
+            "label (a forge error). `python -m athena.proving.forge show --run-dir <run> "
+            "<playbook>-v<k>` prints one variant's whole dossier."
+        )
+        for state, f in review:
+            lines += _review_block(state, f)
     lines += ["", "## Cost", ""]
     for engine, c in report["cost_usd"].items():
         cost = f"${c['cost_usd']:.4f}" if c.get("cost_usd") is not None else "unreported"
         lines.append(f"- {engine}: {cost} over {c['calls']} calls")
     return "\n".join(lines)
+
+
+def _review_block(state: str, f: Mapping[str, Any]) -> list[str]:
+    row = f.get("row")
+    out = [
+        "",
+        f"### {f['playbook']}-v{f['k']}: {state}, {f.get('kind', '?')} {f.get('id', '?')}",
+        "",
+        f"- row: `{f['table']}` `{json.dumps(row, ensure_ascii=False)}`"
+        if row
+        else "- row: (the id has no row in the variant's tables)",
+        f"- label: {f.get('label') or '-'}",
+        f"- auditor: {f.get('why') or '-'}",
+    ]
+    if f.get("filed"):
+        out.append(
+            f"- filed: {len(f['filed'])} card(s), "
+            + "; ".join(f"`{json.dumps(p, ensure_ascii=False)}`" for p in f["filed"])
+        )
+    elif f.get("cards_on_tool") is not None:
+        out.append(f"- filed: nothing on it; {f['cards_on_tool']} card(s) on that tool")
+    if f.get("rerun"):
+        out.append(f"- rerun: `{f['rerun']}`")
+    return out
 
 
 def _baseline_cell(base: Mapping[str, Any]) -> str:

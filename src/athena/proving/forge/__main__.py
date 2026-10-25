@@ -8,12 +8,15 @@
     uv run python -m athena.proving.forge bench  --run-dir proving-runs/<ts> [--claude-cap 60]
     uv run python -m athena.proving.forge audit  --run-dir proving-runs/<ts> [--claude-cap 60]
     uv run python -m athena.proving.forge all    [--dry] ...
+    uv run python -m athena.proving.forge show   --run-dir proving-runs/<ts> <playbook>-v<k>
 
 Everything is written under ``proving-runs/<ts>/forge/`` (gitignored); ``playbooks/`` is never
-touched. A stage skips work that already exists in ``--run-dir``, so a killed run is resumed by
-running the same command again. ``--dry`` swaps every model for a recorded fixture and the Sonnet
-bench for a scripted one: no network, no ``claude``, no key; it checks plumbing and
-measures nothing.
+touched. ``show`` prints one variant's dossier (``forge/dossier.py``): each audited item, or each
+bench miss and filed trap before the audit, with its row, label, auditor's why, what was filed and
+the command that benches the variant's work copy again. A stage skips work that already exists
+in ``--run-dir``, so a killed run is resumed by running the same command again. ``--dry`` swaps
+every model for a recorded fixture and the Sonnet bench for a scripted one: no network, no
+``claude``, no key; it checks plumbing and measures nothing.
 Live: Nemotron needs ``NEBIUS_API_KEY`` (read from ``.env``, never printed); the control, the bench
 and the audit need the ``claude`` CLI. Exit 0, or 2 when a stage cannot start.
 """
@@ -28,6 +31,7 @@ from pathlib import Path
 from athena.harness.tokenfactory import API_KEY_ENV
 from athena.proving.budget import CLAUDE, NEMOTRON
 from athena.proving.forge.base import load_base
+from athena.proving.forge.dossier import dossier, render
 from athena.proving.forge.dry import DryRole, dry_bench
 from athena.proving.forge.run import Forge, purse
 from athena.proving.forge.runner import BenchRunner, default_runner
@@ -45,7 +49,7 @@ from athena.proving.roles import (
 )
 from athena.proving.runlog import RunLog
 
-STAGES = ("pick", "forge", "bench", "audit", "report", "all")
+STAGES = ("pick", "forge", "bench", "audit", "report", "all", "show")
 
 #: Output budget of a generator call: a world is ~10k tokens and the answer is a whole world.
 FORGE_MAX_TOKENS = 32768
@@ -54,6 +58,7 @@ FORGE_MAX_TOKENS = 32768
 def build_parser() -> argparse.ArgumentParser:
     p = argparse.ArgumentParser(prog="python -m athena.proving.forge")
     p.add_argument("stage", choices=STAGES, nargs="?", default="all")
+    p.add_argument("variant", nargs="?", default=None, help="show: <playbook>-v<k>")
     p.add_argument("--n", type=int, default=3, help="variants per playbook")
     p.add_argument("--seed", type=int, default=11)
     p.add_argument("--rung", choices=sorted(RUNGS), default="lightning")
@@ -78,6 +83,8 @@ def main(argv: Sequence[str] | None = None) -> int:
     if not (library / "taxonomy.json").is_file():
         print(f"refused: {library.as_posix()} is not a playbook library", file=sys.stderr)
         return 2
+    if args.stage == "show":
+        return show(library, args.run_dir, args.variant)
     run_dir = Path(args.run_dir) if args.run_dir else new_run_dir(Path(args.out))
     run_dir.mkdir(parents=True, exist_ok=True)
     store = ForgeDir(run_dir)
@@ -161,6 +168,21 @@ def main(argv: Sequence[str] | None = None) -> int:
         "spent: "
         + ", ".join(f"{e} ${s['spent_usd']:.4f} of ${s['cap_usd']:.2f}" for e, s in summary.items())
     )
+    return 0
+
+
+def show(library: Path, run_dir: str | None, name: str | None) -> int:
+    """Print one variant's dossier. Exit 0, or 2 when the run or the variant is not there."""
+    if run_dir is None or not (Path(run_dir) / "forge").is_dir():
+        print("refused: show needs --run-dir of an existing forge run", file=sys.stderr)
+        return 2
+    store = ForgeDir(Path(run_dir))
+    variants = {f"{v.playbook}-v{v.k}": v for v in store.load_variants("nemotron")}
+    v = variants.get(name or "")
+    if v is None:
+        print(f"no variant {name}; known: {', '.join(variants) or '(none)'}", file=sys.stderr)
+        return 2
+    print(render(dossier(store, load_base(library, v.playbook), v)))
     return 0
 
 
