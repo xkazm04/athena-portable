@@ -1,0 +1,20 @@
+{
+  "name": "p2-before",
+  "ms": 3315,
+  "code": 0,
+  "checks": [
+    {
+      "label": "three tabs opened, tidycrm closed, hirelane focused",
+      "ok": true,
+      "ids": {
+        "lb": 1,
+        "hl": 2,
+        "tc": 3
+      }
+    }
+  ],
+  "notes": [
+    "tabs before exit [{\"id\":1,\"url\":\"http://127.0.0.1:3001/\",\"focused\":false},{\"id\":2,\"url\":\"http://127.0.0.1:3002/\",\"focused\":true}]",
+    "shell.session {\"tabs\":[{\"focused\":false,\"url\":\"http://127.0.0.1:3001/\"},{\"focused\":true,\"url\":\"http://127.0.0.1:3002/\"}]}"
+  ]
+}

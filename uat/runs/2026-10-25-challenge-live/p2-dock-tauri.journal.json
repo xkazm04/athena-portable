@@ -1,0 +1,16 @@
+{
+  "name": "p2-dock-tauri",
+  "ms": 56,
+  "code": 2,
+  "checks": [
+    {
+      "label": "her window's OS position is the saved dock (400,300)",
+      "ok": false,
+      "x": 392,
+      "y": 292
+    }
+  ],
+  "notes": [
+    "tauri outer {\"x\":392,\"y\":292} inner {\"x\":392,\"y\":292} scale 1"
+  ]
+}

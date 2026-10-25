@@ -1,0 +1,17 @@
+{
+  "name": "p2-dock-after",
+  "ms": 538,
+  "code": 2,
+  "checks": [
+    {
+      "label": "her dock returns to where she was put (400,300), not the default (1674,298)",
+      "ok": false,
+      "x": 1674,
+      "y": 298,
+      "w": 92
+    }
+  ],
+  "notes": [
+    "athena window after restart {\"x\":1674,\"y\":298,\"w\":92}"
+  ]
+}

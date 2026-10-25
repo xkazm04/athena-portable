@@ -1,0 +1,9 @@
+{
+  "name": "p2-dock-set",
+  "ms": 64,
+  "code": 0,
+  "checks": [],
+  "notes": [
+    "dock row {\"snap\":\"free\",\"x\":400,\"y\":300}"
+  ]
+}

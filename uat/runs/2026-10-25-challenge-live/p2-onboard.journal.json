@@ -1,0 +1,9 @@
+{
+  "name": "p2-onboard",
+  "ms": 83,
+  "code": 0,
+  "checks": [],
+  "notes": [
+    "onboarded=true dock={\"snap\":\"free\",\"x\":400,\"y\":300}"
+  ]
+}

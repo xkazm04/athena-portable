@@ -56,3 +56,9 @@ What is left for a person after the build. Each item names its evidence; nothing
 | F6 | `/conform` the core-gate-and-ledger x hitl-approval pair | re-judge stale pairs the run touched |
 | Flake | Harden the peer listener test | accept a connection abort as the refusal; 20 green runs |
 | Old | Drain 10-16's Lane B with `--ab-only`; close 10-13 | carry still-true 10-13 items into the 10-16 register |
+
+## Found by the F5 UAT pass (uat/runs/2026-10-25-challenge-live)
+
+| # | Finding | Evidence |
+| - | ------- | -------- |
+| U1 | Tidycrm's volume legend loses its four keys under forced colours (all one white-fill, black-border style); 6f3fbd2d covered the sheet's cues, not the volume legend | UAT-CL-1, `shots/tidycrm-legend-forced.png` (gitignored; the computed values are in the finding) |

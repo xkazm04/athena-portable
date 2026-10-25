@@ -1,0 +1,24 @@
+{
+  "name": "p2-dock-after2",
+  "ms": 543,
+  "code": 2,
+  "checks": [
+    {
+      "label": "her dock returns to where she was put (400,300)",
+      "ok": false,
+      "x": 392,
+      "y": 292,
+      "w": 92
+    },
+    {
+      "label": "tabs still restore on an onboarded launch",
+      "ok": true,
+      "tabs": [
+        "http://127.0.0.1:3002/"
+      ]
+    }
+  ],
+  "notes": [
+    "athena window after onboarded restart {\"x\":392,\"y\":292,\"w\":92}"
+  ]
+}

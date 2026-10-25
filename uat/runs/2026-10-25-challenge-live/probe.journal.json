@@ -1,0 +1,9 @@
+{
+  "name": "probe",
+  "ms": 59,
+  "code": 0,
+  "checks": [],
+  "notes": [
+    "{\"health\":\"ready\",\"engine\":\"claude_code\",\"source\":\"uv\",\"attempt\":0,\"url\":\"http://127.0.0.1:53321\",\"error\":\"\"}"
+  ]
+}

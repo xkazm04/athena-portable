@@ -1,0 +1,26 @@
+{
+  "name": "p1-bounded",
+  "ms": 38780,
+  "code": 0,
+  "checks": [
+    {
+      "label": "repeated deaths end in a stop, not an endless loop",
+      "ok": true,
+      "end": {
+        "k": 5,
+        "health": "failed",
+        "attempt": 5,
+        "at": 38034,
+        "error": "the daemon exited 5 times in a row; restart it from Settings"
+      }
+    },
+    {
+      "label": "the stop says why, as a sentence",
+      "ok": true,
+      "error": "the daemon exited 5 times in a row; restart it from Settings"
+    }
+  ],
+  "notes": [
+    "ladder [{\"k\":0,\"health\":\"ready\",\"attempt\":1,\"at\":9,\"error\":\"\"},{\"k\":1,\"health\":\"ready\",\"attempt\":2,\"at\":3490,\"error\":\"\"},{\"k\":2,\"health\":\"ready\",\"attempt\":3,\"at\":8999,\"error\":\"\"},{\"k\":3,\"health\":\"ready\",\"attempt\":4,\"at\":19157,\"error\":\"\"},{\"k\":4,\"health\":\"ready\",\"attempt\":5,\"at\":37299,\"error\":\"\"},{\"k\":5,\"health\":\"failed\",\"attempt\":5,\"at\":38034,\"error\":\"the daemon exited 5 times in a row; restart it from Settings\"}]"
+  ]
+}

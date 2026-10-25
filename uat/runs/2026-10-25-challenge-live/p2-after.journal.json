@@ -1,0 +1,34 @@
+{
+  "name": "p2-after",
+  "ms": 514,
+  "code": 0,
+  "checks": [
+    {
+      "label": "the focused page returns, focused",
+      "ok": true
+    },
+    {
+      "label": "the closed tab (tidycrm) does not come back",
+      "ok": true
+    },
+    {
+      "label": "the since-disallowed origin (ledgerbox) does not come back",
+      "ok": true
+    },
+    {
+      "label": "tab ids are not reissued (new ids above last launch's 3)",
+      "ok": true,
+      "ids": [
+        4
+      ]
+    },
+    {
+      "label": "a restart begins a fresh ladder (attempt 0, ready)",
+      "ok": true
+    }
+  ],
+  "notes": [
+    "tabs after restart [{\"id\":4,\"url\":\"http://127.0.0.1:3002/\",\"focused\":true}]",
+    "daemon after restart {\"health\":\"ready\",\"attempt\":0}"
+  ]
+}

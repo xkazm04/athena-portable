@@ -1,0 +1,10 @@
+{
+  "name": "p2-dock-rect",
+  "ms": 596,
+  "code": 0,
+  "checks": [],
+  "notes": [
+    "os windows [{\"rect\":[1000,246,2456,1155],\"w\":1456,\"h\":909}]",
+    "athena devicePixelRatio 1"
+  ]
+}

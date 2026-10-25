@@ -1,0 +1,48 @@
+{
+  "name": "p1-respawn",
+  "ms": 3247,
+  "code": 0,
+  "checks": [
+    {
+      "label": "the shell noticed the death and reported a respawn attempt",
+      "ok": true,
+      "seen": [
+        {
+          "key": "ready/0",
+          "at": 236,
+          "error": ""
+        },
+        {
+          "key": "starting/1",
+          "at": 456,
+          "error": "the daemon exited; starting it again in 1s (attempt 1 of 5)"
+        },
+        {
+          "key": "ready/1",
+          "at": 2403,
+          "error": ""
+        }
+      ]
+    },
+    {
+      "label": "the daemon came back ready on its own",
+      "ok": true
+    },
+    {
+      "label": "the status names the attempt rung it recovered on",
+      "ok": true,
+      "attempt": 1
+    },
+    {
+      "label": "the respawned daemon answers HTTP",
+      "ok": true,
+      "status": 200
+    }
+  ],
+  "notes": [
+    "before {\"health\":\"ready\",\"attempt\":0,\"url\":\"http://127.0.0.1:53321\"}",
+    "killed pid 57556",
+    "states [{\"key\":\"ready/0\",\"at\":236,\"error\":\"\"},{\"key\":\"starting/1\",\"at\":456,\"error\":\"the daemon exited; starting it again in 1s (attempt 1 of 5)\"},{\"key\":\"ready/1\",\"at\":2403,\"error\":\"\"}]",
+    "after {\"health\":\"ready\",\"attempt\":1,\"url\":\"http://127.0.0.1:50958\",\"ms\":2403}"
+  ]
+}
