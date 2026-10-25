@@ -85,6 +85,64 @@
   min-height: 3em;
 }
 
+/* What needs the person: a short list of dives, each naming the thing and why before the press. */
+.surface__needs {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 6px;
+}
+.surface__need {
+  width: 100%;
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 2px 8px;
+  align-items: baseline;
+  padding: 8px 14px;
+  font: inherit;
+  text-align: left;
+  color: var(--foreground);
+  background: color-mix(in srgb, var(--status-warning) 6%, transparent);
+  border: 1px solid color-mix(in srgb, var(--status-warning) 35%, transparent);
+  border-radius: var(--radius-card);
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-fast), border-color var(--duration-fast) var(--ease-fast);
+}
+.surface__need:hover {
+  background: color-mix(in srgb, var(--status-warning) 12%, transparent);
+  border-color: var(--status-warning);
+}
+.surface__need-label {
+  font-weight: 600;
+}
+.surface__need-word {
+  font-size: 0.8125rem;
+  color: var(--muted-foreground);
+}
+.surface__need-line {
+  grid-column: 1 / -1;
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--muted-foreground);
+}
+.surface__needs-more {
+  justify-self: start;
+  padding: 4px 14px;
+  font: inherit;
+  font-size: 0.8125rem;
+  color: var(--foreground);
+  background: transparent;
+  border: 1px solid var(--line-strong);
+  border-radius: 999px;
+  cursor: pointer;
+  transition: background var(--duration-fast) var(--ease-fast), border-color var(--duration-fast) var(--ease-fast);
+}
+.surface__needs-more:hover {
+  background: var(--wash);
+  border-color: var(--foreground);
+}
+
 .surface__summon {
   justify-self: start;
   font: inherit;

@@ -12,6 +12,9 @@
  * Her illustration is the switch for her own window (fleet-surfaces D2): a press shows it when it
  * is put away and puts it away when it is out, and the button's name says which it will do. The
  * tasks she has delegated sit under her, in the same column.
+ *
+ * What needs the person is a short list under the line: each entry names the thing and why, and
+ * its press lands on that item. At most three are drawn; the rest are one press to their depth.
  */
 import { lazy, Suspense, useState, type FormEvent } from "react";
 
@@ -25,6 +28,9 @@ import { SurfaceTasks } from "./tasks";
 import "./surface.css";
 
 type Sent = "idle" | "sending" | "sent" | { problem: string };
+
+/** How many needs the list draws before it says how many more there are. */
+const NEEDS_SHOWN = 3;
 
 /** Her face, in its own chunk: fetched only when a face is chosen (`./face`). */
 const SurfaceFace = lazy(() => import("./face"));
@@ -60,6 +66,9 @@ const SurfaceView: View<SurfaceModel> = ({ model }) => {
     );
   };
 
+  const shown = model.needs.slice(0, NEEDS_SHOWN);
+  const rest = model.needs.slice(NEEDS_SHOWN);
+
   const bell = <Bell pose={model.pose} reach={model.reach} lean={lean} size={420} label="Athena" />;
 
   return (
@@ -88,6 +97,31 @@ const SurfaceView: View<SurfaceModel> = ({ model }) => {
         <p className="surface__line" aria-live="polite">
           {light ? light.hint : model.waiting > 0 ? "A decision is waiting for you in her window." : "Ask her for a chore, or dive into a depth below."}
         </p>
+
+        {shown.length > 0 && (
+          <ul className="surface__needs" aria-label="What needs you now">
+            {shown.map((n) => (
+              <li key={n.key}>
+                <button type="button" className="surface__need focus-ring" onClick={() => model.actions.dive(n.to)}>
+                  <span className="surface__need-label">{n.label}</span>
+                  <span className="surface__need-word">{n.word}</span>
+                  <span className="surface__need-line">{n.line}</span>
+                </button>
+              </li>
+            ))}
+            {rest.length > 0 && (
+              <li>
+                <button
+                  type="button"
+                  className="surface__needs-more focus-ring"
+                  onClick={() => model.actions.dive({ root: rest[0]!.to.root })}
+                >
+                  +{rest.length} more
+                </button>
+              </li>
+            )}
+          </ul>
+        )}
 
         {model.waiting > 0 && (
           <button type="button" className="surface__summon focus-ring" onClick={summon}>
@@ -148,7 +182,7 @@ const SurfaceView: View<SurfaceModel> = ({ model }) => {
               onMouseLeave={() => setFocused((f) => (f === l.root ? null : f))}
               onFocus={() => setFocused(l.root)}
               onBlur={() => setFocused((f) => (f === l.root ? null : f))}
-              onClick={() => model.actions.dive(l.root)}
+              onClick={() => model.actions.dive(l.to)}
             >
               <Glyph root={l.root} size={108} />
               <span className="surface__light-name">{l.label}</span>

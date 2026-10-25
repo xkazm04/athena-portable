@@ -23,7 +23,7 @@ test("every control the pointer can press eases its hover on the fast duration, 
   expect(blocks.length).toBeGreaterThan(0);
   for (const b of blocks) expect(b, b.trim().split("{")[0]).toMatch(/transition:[^;]*var\(--duration-fast\)/);
   // A hover rule with a declaration in it, not the selector's name somewhere in the file.
-  for (const sel of [".surface__bell:hover", ".surface__summon:hover", ".surface__send:hover:not(:disabled)", ".surface__input:hover:not(:disabled)"]) {
+  for (const sel of [".surface__bell:hover", ".surface__summon:hover", ".surface__need:hover", ".surface__needs-more:hover", ".surface__send:hover:not(:disabled)", ".surface__input:hover:not(:disabled)"]) {
     expect(rule(sel), sel).toMatch(/(background|border-color|filter):\s*[^;]+;/);
   }
 });
@@ -37,4 +37,13 @@ test("her illustration lifts under the pointer, and under calm it brightens with
   expect(rule(".surface__bell:hover")).toMatch(/transform:\s*translateY\(-?\d+px\)/);
   expect(rule(".surface__bell")).toMatch(/transition:[^;]*transform var\(--duration-fast\) var\(--ease-fast\)/);
   expect(rule(':root[data-motion="calm"] .surface__bell:hover')).toMatch(/transform:\s*none/);
+});
+
+test("what needs you is marked in the warning hue, and none of its text is under 12px", () => {
+  expect(rule(".surface__need")).toMatch(/border:[^;]*var\(--status-warning\)/);
+  for (const sel of [".surface__need-word", ".surface__need-line", ".surface__needs-more"]) {
+    const size = /font-size:\s*([\d.]+)rem/.exec(rule(sel));
+    expect(size, sel).not.toBeNull();
+    expect(Number(size![1]) * 16, sel).toBeGreaterThanOrEqual(12);
+  }
 });

@@ -108,3 +108,30 @@ describe("a light that needs the person says so in its name, not only in a dot",
     expect(h.match(/data-attention="true"/g)!.length).toBeGreaterThan(0);
   });
 });
+
+describe("what needs you is a short list of dives", () => {
+  it("case 6: draws no list when nothing needs you, and three plus a '+N more' when four or more do", () => {
+    expect(fixtures["all well"]!.needs).toEqual([]);
+    expect(html("all well")).not.toContain("surface__needs");
+    const many = fixtures["many needs"]!;
+    expect(many.needs.length).toBeGreaterThanOrEqual(4);
+    const h = html("many needs");
+    expect(h.match(/class="surface__need focus-ring"/g)).toHaveLength(3);
+    expect(h).toContain(`>+${many.needs.length - 3} more<`);
+  });
+
+  it("names each need with its word and its reason, before the press", () => {
+    const h = html("typical");
+    expect(h).toContain('aria-label="What needs you now"');
+    expect(h).toContain('surface__need-label">Gmail<');
+    expect(h).toContain('surface__need-word">needs reconnecting<');
+    expect(h).toContain("Gmail let the grant go; connect again to continue.");
+  });
+
+  it("case 7 (guard): a card waiting stays the summon and is never a need", () => {
+    const h = html("asking");
+    expect(h).toContain("Open her window to answer (2)");
+    expect(fixtures.asking!.needs.every((n) => n.to.root !== null)).toBe(true);
+    expect(fixtures.asking!.needs.some((n) => /waiting|answer/i.test(n.line + n.word))).toBe(false);
+  });
+});

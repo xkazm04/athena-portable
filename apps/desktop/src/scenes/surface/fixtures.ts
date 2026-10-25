@@ -19,14 +19,29 @@ const base: SurfaceSources = {
   ],
   openTabs: 3,
   accounts: [
-    { id: "gmail", label: "Gmail", connected: false, attention: true },
-    { id: "notion", label: "Notion", connected: true, attention: false },
-    { id: "calendar", label: "Google Calendar", connected: false, attention: false },
+    {
+      id: "gmail",
+      label: "Gmail",
+      connected: false,
+      attention: true,
+      word: "needs reconnecting",
+      line: "Gmail let the grant go; connect again to continue.",
+    },
+    { id: "notion", label: "Notion", connected: true, attention: false, word: "connected", line: "Connected as Test User." },
+    {
+      id: "calendar",
+      label: "Google Calendar",
+      connected: false,
+      attention: false,
+      word: "not connected",
+      line: "Nothing is stored for Google Calendar.",
+    },
   ],
   chores: { total: 16, benched: 12, foundUsd: 551, loaded: true, failed: false },
   voiceAvailable: true,
   voiceKnown: true,
-  engine: { label: "Claude Code", standing: "done", checkFailed: false },
+  engine: { label: "Claude Code", standing: "done", checkFailed: false, summary: "Claude Code is ready" },
+  pendingRestart: null,
   inShell: true,
   actions: INERT_ACTIONS,
 };
@@ -40,7 +55,7 @@ export const fixtures: Record<string, SurfaceModel> = {
     accounts: [],
     chores: { total: 0, benched: 0, foundUsd: 0, loaded: true, failed: false },
     voiceAvailable: false,
-    engine: { label: "Claude Code", standing: "unknown", checkFailed: false },
+    engine: { label: "Claude Code", standing: "unknown", checkFailed: false, summary: "checking the engine…" },
   }),
   typical: make(),
   /** Her window is out: her illustration's press puts it away. */
@@ -63,9 +78,46 @@ export const fixtures: Record<string, SurfaceModel> = {
   counting: make({ chores: { total: 0, benched: 0, foundUsd: 0, loaded: false, failed: false } }),
   degraded: make({
     inShell: false,
-    engine: { label: "Claude Code", standing: "missing", checkFailed: false },
+    engine: {
+      label: "Claude Code",
+      standing: "missing",
+      checkFailed: false,
+      summary: "Claude Code is installed but not signed in",
+    },
     voiceAvailable: false,
   }),
 };
+
+/** Every account connected and the engine ready: nothing needs the person, so no list is drawn. */
+fixtures["all well"] = make({
+  accounts: base.accounts.map((a) => ({ ...a, connected: true, attention: false, word: "connected", line: "Connected." })),
+});
+
+/**
+ * More needs than the list shows: Codex is chosen but not found (so it cannot run, and she still
+ * runs on Claude Code until a restart) and two accounts want the person. Three are drawn and the
+ * rest are one press away.
+ */
+fixtures["many needs"] = make({
+  engine: {
+    label: "Codex",
+    standing: "missing",
+    checkFailed: false,
+    summary: "Codex is chosen, but it was not found on this computer",
+  },
+  pendingRestart: { label: "Codex", running: "Claude Code" },
+  accounts: [
+    base.accounts[0]!,
+    {
+      id: "notion",
+      label: "Notion",
+      connected: true,
+      attention: true,
+      word: "broken (3 min ago)",
+      line: "Notion did not answer the last probe.",
+    },
+    base.accounts[2]!,
+  ],
+});
 
 export const fixtureIds: readonly FixtureId[] = Object.keys(fixtures);

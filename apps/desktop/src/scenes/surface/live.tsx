@@ -50,7 +50,7 @@ const ACTIONS: SurfaceActions = {
     if (!hasShell()) return;
     athenaToggle().catch((e: unknown) => console.error(`[surface] toggle: ${String(e)}`));
   },
-  dive: (root) => useDepth.getState().go({ root }),
+  dive: (to) => useDepth.getState().go(to),
 };
 
 export /** The chores line of the surface: counted from the shipped set once it has arrived. */
@@ -116,12 +116,15 @@ export function useSurfaceModel(): SurfaceModel {
       }),
       openTabs: tabs.length,
       accounts: connectors.map((c) => {
-        const s = standingOf(c, undefined, notice).standing;
+        // The connectors module's standing, word and sentence: the need says it as the level does.
+        const { standing: s, word, sentence } = standingOf(c, undefined, notice);
         return {
           id: c.id,
           label: c.label,
           connected: s === "connected",
           attention: s === "needs-reauth" || s === "broken" || s === "unconfirmed",
+          word,
+          line: sentence,
         };
       }),
       chores: { ...totalsOf(playbooks), loaded: playbooks !== null, failed: playbooks === null && playbooksProblem !== null },
@@ -131,7 +134,11 @@ export function useSurfaceModel(): SurfaceModel {
         label: engineLabel(engine),
         standing: fact.standing,
         checkFailed: !setup.checking && setup.problem !== null,
+        summary: fact.summary,
       },
+      pendingRestart: setup.pendingEngine
+        ? { label: engineLabel(setup.pendingEngine), running: engineLabel(setup.daemonEngine) }
+        : null,
       inShell: hasShell(),
       avatar,
       actions: ACTIONS,

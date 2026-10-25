@@ -12,6 +12,9 @@ import { act } from "react";
 import { createRoot, type Root } from "react-dom/client";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 
+import { connection, gmail } from "@/modules/connectors/fixtures";
+import { standingOf } from "@/modules/connectors/model";
+import { useConnectors } from "@/stores/connectors";
 import { useDaemon } from "@/stores/daemon";
 import { useEngines } from "@/stores/engines";
 import { usePlaybooks } from "@/stores/playbooks";
@@ -49,6 +52,7 @@ beforeEach(() => {
     problem: null,
   });
   useDaemon.setState({ engine: "claude_code", health: "ready", loaded: true, lastError: "", url: "http://x", token: "t" });
+  useConnectors.setState({ items: [], recordsNotice: "" });
 });
 afterEach(() => {
   act(() => root.unmount());
@@ -110,5 +114,50 @@ describe("the Voice light", () => {
   it("says not set up once the daemon is up and voice is not available", () => {
     useVoice.setState({ available: false, reason: "voice is not set up yet" });
     expect(lightOf("voice").stat).toBe("not set up");
+  });
+});
+
+/** The live model's needs, written where the test can read them. */
+function NeedsProbe() {
+  return (
+    <>
+      {useSurfaceModel().needs.map((n) => (
+        <p key={n.key} data-key={n.key} data-word={n.word} data-line={n.line} data-to={JSON.stringify(n.to)} />
+      ))}
+    </>
+  );
+}
+function needsOf() {
+  act(() => root.render(<NeedsProbe />));
+  return [...host.querySelectorAll<HTMLElement>("p[data-key]")].map((p) => ({
+    key: p.dataset.key,
+    word: p.dataset.word,
+    line: p.dataset.line,
+    to: JSON.parse(p.dataset.to!) as unknown,
+  }));
+}
+
+describe("what needs you, read from the stores", () => {
+  it("case 8: a connector that needs reauth is a need in the connectors module's own sentence, landing on its id", () => {
+    const row = gmail({ connection: connection("gmail", { status: "needs_reauth" }) });
+    useConnectors.setState({ items: [row], recordsNotice: "" });
+    const said = standingOf(row, undefined, "");
+    expect(needsOf()).toEqual([
+      { key: "account:gmail", word: said.word, line: said.sentence, to: { root: "accounts", item: "gmail" } },
+    ]);
+  });
+
+  it("a restart that is pending is a need in the Setup module's own words", () => {
+    useSettings.setState({ engine: "codex" });
+    useEngines.setState({
+      probes: [
+        { id: "claude_code", state: "found", detail: "2.1.268" },
+        { id: "codex", state: "found", detail: "0.9" },
+      ],
+      checking: false,
+      problem: null,
+    });
+    const restart = needsOf().find((n) => n.key === "restart");
+    expect(restart).toMatchObject({ line: "Codex is chosen. Athena is still running on Claude Code.", to: { root: "mind", item: "engine" } });
   });
 });

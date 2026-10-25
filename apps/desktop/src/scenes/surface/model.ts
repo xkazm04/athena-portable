@@ -6,13 +6,18 @@
  * and talking to her is handing text to her own window. Nothing here pretends otherwise: the ask
  * box says it hands the words over, and the cards waiting are answered in her window.
  *
+ * What needs the person is named on the surface, each one press from its item (`needs`): an
+ * account to reconnect, an engine that cannot run, a restart that is pending. Every need is a dive,
+ * never an answer, so the mirror stays a mirror; the cards waiting are not needs, they are answered
+ * in her window (the summon).
+ *
  * Pure, as every module model is: `selectSurface` takes plain facts and returns what to draw, and
  * the selector's caller (`index.tsx`) is the only file that knows a store exists.
  */
 import type { AvatarId } from "@/avatar/types";
 import type { Reach } from "@/bell/Bell";
 import { POSE_WORDS, poseOf, type Pose } from "@/bell/pose";
-import { ROOTS, ROOT_LABEL, type Root } from "@/depth/model";
+import { ROOTS, ROOT_LABEL, type Path, type Root } from "@/depth/model";
 import type { Standing } from "@/modules/setup/readiness";
 import { pillText } from "@/stores/athena";
 
@@ -26,7 +31,8 @@ export interface SurfaceActions {
    * illustration is the switch. Rust's own `visible` decides which, not `windowVisible` below.
    */
   toggle: () => void;
-  dive: (root: Root) => void;
+  /** Go to a place below the surface: a depth's field, or straight to the item that needs you. */
+  dive: (to: Path) => void;
 }
 
 export interface SurfaceSources {
@@ -36,7 +42,11 @@ export interface SurfaceSources {
   /** Apps she has been told about, switched on or off. */
   apps: readonly { id: string; host: string; enabled: boolean }[];
   openTabs: number;
-  accounts: readonly { id: string; label: string; connected: boolean; attention: boolean }[];
+  /**
+   * `word` and `line` are the connectors module's own standing for the account (`standingOf`):
+   * the surface names why an account needs the person in the words its level uses.
+   */
+  accounts: readonly { id: string; label: string; connected: boolean; attention: boolean; word: string; line: string }[];
   /**
    * `loaded` is false while the shipped playbooks are still being fetched (they load lazily);
    * `failed` is true when that fetch failed, which is not the same fact as one still on its way.
@@ -54,7 +64,18 @@ export interface SurfaceSources {
    * depth one dive below cannot disagree. `checkFailed`: the probe could not run at all, which is
    * not the same fact as a check still in flight.
    */
-  engine: { label: string; standing: Standing; checkFailed: boolean };
+  engine: {
+    label: string;
+    standing: Standing;
+    checkFailed: boolean;
+    /** The engine fact's own summary (`engineFact`): the need's reason, as the Mind depth says it. */
+    summary: string;
+  };
+  /**
+   * An engine chosen that the daemon is not yet running on (`pendingEngine`): the chosen engine's
+   * label and the one she runs on, or null when there is none.
+   */
+  pendingRestart: { label: string; running: string } | null;
   /** False in a plain browser, where there is no window of hers to hand anything to. */
   inShell: boolean;
   /** How she appears (the `avatar` setting); the halo when not given. */
@@ -64,6 +85,8 @@ export interface SurfaceSources {
 
 export interface Light {
   root: Root;
+  /** Where its press goes: its first need when it is under attention, else its depth's field. */
+  to: Path;
   label: string;
   /** One short line of what is live in it: a count, a standing. */
   stat: string;
@@ -71,6 +94,17 @@ export interface Light {
   hint: string;
   /** True when it needs the person: an account that wants reconnecting, an engine that is not ready. */
   attention: boolean;
+}
+
+/** One thing that needs the person, named with why, and the place it is answered. */
+export interface Need {
+  key: string;
+  label: string;
+  /** Its standing in a few words. */
+  word: string;
+  /** Why, in a sentence, read before the press. */
+  line: string;
+  to: Path;
 }
 
 export interface SurfaceModel {
@@ -86,6 +120,8 @@ export interface SurfaceModel {
   windowVisible: boolean;
   reach: readonly Reach[];
   lights: readonly Light[];
+  /** In order: the engine, a pending restart, then the accounts. The view shows the first three. */
+  needs: readonly Need[];
   canAsk: boolean;
   /** Why the ask box is off, or null. */
   askReason: string | null;
@@ -109,6 +145,41 @@ function engineStat(engine: SurfaceSources["engine"]): string {
   }
 }
 
+/** The engine needs the person: it cannot run, or the check of it could not go through. */
+const engineNeedsYou = (e: SurfaceSources["engine"]) => e.standing === "missing" || (e.standing === "unknown" && e.checkFailed);
+
+const ENGINE: Path = { root: "mind", item: "engine" };
+
+/** What needs the person, in the order they are told: the engine, a pending restart, the accounts. */
+function needsOf(s: SurfaceSources): Need[] {
+  const needs: Need[] = [];
+  if (engineNeedsYou(s.engine)) {
+    needs.push({
+      key: "engine",
+      label: s.engine.label,
+      word: engineStat(s.engine),
+      line: `${s.engine.summary.replace(/^./, (c) => c.toUpperCase())}.`,
+      to: ENGINE,
+    });
+  }
+  if (s.pendingRestart) {
+    const { label, running } = s.pendingRestart;
+    needs.push({
+      key: "restart",
+      label,
+      word: "waits for a restart",
+      // The Setup module's restart notice, word for word (`restartNotice`).
+      line: `${label} is chosen. Athena is still running on ${running}.`,
+      to: ENGINE,
+    });
+  }
+  for (const a of s.accounts) {
+    if (!a.attention) continue;
+    needs.push({ key: `account:${a.id}`, label: a.label, word: a.word, line: a.line, to: { root: "accounts", item: a.id } });
+  }
+  return needs;
+}
+
 export function selectSurface(s: SurfaceSources): SurfaceModel {
   const onApps = s.apps.filter((a) => a.enabled);
   const connected = s.accounts.filter((a) => a.connected);
@@ -117,7 +188,8 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
     ...s.accounts.map((a) => ({ id: `account:${a.id}`, lit: a.connected })),
   ];
 
-  const lights: Record<Root, Omit<Light, "root">> = {
+  const needs = needsOf(s);
+  const lights: Record<Root, Omit<Light, "root" | "to">> = {
     apps: {
       label: ROOT_LABEL.apps,
       stat:
@@ -160,7 +232,7 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
       label: ROOT_LABEL.mind,
       stat: engineStat(s.engine),
       hint: "The engine she thinks with, and how she looks.",
-      attention: s.engine.standing === "missing" || (s.engine.standing === "unknown" && s.engine.checkFailed),
+      attention: engineNeedsYou(s.engine),
     },
   };
 
@@ -173,7 +245,12 @@ export function selectSurface(s: SurfaceSources): SurfaceModel {
     waiting: s.athena.cards,
     windowVisible: s.windowVisible,
     reach,
-    lights: ROOTS.map((root) => ({ root, ...lights[root] })),
+    lights: ROOTS.map((root) => {
+      const l = lights[root];
+      const first = l.attention ? needs.find((n) => n.to.root === root) : undefined;
+      return { root, to: first?.to ?? { root }, ...l };
+    }),
+    needs,
     canAsk: s.inShell,
     askReason: s.inShell ? null : "Her window is only there in the app, so there is no one to hand this to here.",
     actions: s.actions,

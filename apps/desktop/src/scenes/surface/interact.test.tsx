@@ -102,3 +102,34 @@ describe("the ask row", () => {
     expect(note().textContent).toContain("Your words go to her own window");
   });
 });
+
+describe("what needs you", () => {
+  it("case 5: pressing the Gmail need dives to Gmail once, and so does pressing the Accounts light", () => {
+    const base = fixtures.typical!;
+    const dive = vi.fn();
+    act(() => root.render(<SurfaceView model={{ ...base, actions: { ...base.actions, dive } }} />));
+    const need = [...host.querySelectorAll<HTMLButtonElement>("button.surface__need")].find(
+      (b) => b.querySelector(".surface__need-label")?.textContent === "Gmail",
+    )!;
+    act(() => need.click());
+    expect(dive).toHaveBeenCalledOnce();
+    expect(dive).toHaveBeenLastCalledWith({ root: "accounts", item: "gmail" });
+    const light = [...host.querySelectorAll<HTMLButtonElement>("button.surface__light")].find((b) =>
+      b.getAttribute("aria-label")?.startsWith("Accounts,"),
+    )!;
+    act(() => light.click());
+    expect(dive).toHaveBeenCalledTimes(2);
+    expect(dive).toHaveBeenLastCalledWith({ root: "accounts", item: "gmail" });
+  });
+
+  it("case 6: the '+N more' button dives to the first remaining need's depth", () => {
+    const base = fixtures["many needs"]!;
+    const dive = vi.fn();
+    act(() => root.render(<SurfaceView model={{ ...base, actions: { ...base.actions, dive } }} />));
+    const more = host.querySelector<HTMLButtonElement>("button.surface__needs-more")!;
+    expect(more.textContent).toBe(`+${base.needs.length - 3} more`);
+    act(() => more.click());
+    expect(dive).toHaveBeenCalledOnce();
+    expect(dive).toHaveBeenCalledWith({ root: base.needs[3]!.to.root });
+  });
+});

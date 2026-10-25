@@ -102,6 +102,57 @@ describe("asking her", () => {
   });
 });
 
+describe("what needs you is named, and one press from its item", () => {
+  it("case 1: an account that let its grant go is a need that lands on that account", () => {
+    expect(typical.needs).toEqual([
+      {
+        key: "account:gmail",
+        label: "Gmail",
+        word: "needs reconnecting",
+        line: "Gmail let the grant go; connect again to continue.",
+        to: { root: "accounts", item: "gmail" },
+      },
+    ]);
+  });
+
+  it("case 2: an engine that cannot run is a need on Mind > Engine, before any account", () => {
+    const needs = fixtures.degraded!.needs;
+    expect(needs[0]).toMatchObject({
+      key: "engine",
+      label: "Claude Code",
+      word: "Claude Code is not ready",
+      line: "Claude Code is installed but not signed in.",
+      to: { root: "mind", item: "engine" },
+    });
+    expect(needs.map((n) => n.key)).toEqual(["engine", "account:gmail"]);
+  });
+
+  it("case 3: a restart that is pending is a need on Mind > Engine, and none without one", () => {
+    const m = selectSurface({ ...src(), pendingRestart: { label: "Codex", running: "Claude Code" } });
+    expect(m.needs).toHaveLength(1);
+    expect(m.needs[0]!.line).toBe("Codex is chosen. Athena is still running on Claude Code.");
+    expect(m.needs[0]!.to).toEqual({ root: "mind", item: "engine" });
+    expect(selectSurface({ ...src(), pendingRestart: null }).needs).toEqual([]);
+  });
+
+  it("case 4: a light under attention dives to its first need, and the rest to their root as before", () => {
+    const by = Object.fromEntries(typical.lights.map((l) => [l.root, l]));
+    expect(by.accounts!.to).toEqual({ root: "accounts", item: "gmail" });
+    expect(by.apps!.to).toEqual({ root: "apps" });
+    expect(by.chores!.to).toEqual({ root: "chores" });
+    expect(by.voice!.to).toEqual({ root: "voice" });
+    expect(by.mind!.to).toEqual({ root: "mind" });
+    const down = Object.fromEntries(fixtures.degraded!.lights.map((l) => [l.root, l]));
+    expect(down.mind!.to).toEqual({ root: "mind", item: "engine" });
+  });
+
+  it("case 7 (guard): cards waiting are the summon, never a need", () => {
+    const asking = selectSurface({ ...src(), athena: { state: "slip", cards: 2, line: "" } });
+    expect(asking.waiting).toBe(2);
+    expect(asking.needs).toEqual([]);
+  });
+});
+
 function src(): SurfaceSources {
   return {
     athena: { state: "seal", cards: 0, line: "" },
@@ -112,7 +163,8 @@ function src(): SurfaceSources {
     chores: { total: 0, benched: 0, foundUsd: 0, loaded: true, failed: false },
     voiceAvailable: false,
     voiceKnown: true,
-    engine: { label: "Claude Code", standing: "done", checkFailed: false },
+    engine: { label: "Claude Code", standing: "done", checkFailed: false, summary: "Claude Code is ready" },
+    pendingRestart: null,
     inShell: true,
     actions: INERT_ACTIONS,
   };
