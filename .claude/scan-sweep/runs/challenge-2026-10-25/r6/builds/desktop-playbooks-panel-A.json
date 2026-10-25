@@ -1,0 +1,26 @@
+{"card":"desktop-playbooks-panel/A","status":"landed","shas":["b4f979f2"],
+ "tests_added":[
+  "apps/desktop/src/lib/playbooks.test.ts::parseRanking: a ranked row's place, year and pool, an unranked row's why, and garbage as an empty map",
+  "apps/desktop/src/lib/playbooks.test.ts::loadPlaybooks attaches each rank by id, null where the ranking says nothing or ranks an older run",
+  "apps/desktop/src/modules/playbooks/model.test.ts::verdictOf: a chore the ranking leaves out reads Not ranked with its why, never Beats its bar",
+  "apps/desktop/src/modules/playbooks/model.test.ts::selectPlaybooks: only a chore the ranking does not leave out counts as over the bar, and the ranked are counted",
+  "apps/desktop/src/modules/playbooks/model.test.ts::annualValue: the ranking's year where there is a rank, ADR 0056's period table where not",
+  "apps/desktop/src/modules/playbooks/model.test.ts::shipped: the ledger's year is the ranking's for every ranked playbook",
+  "apps/desktop/src/lib/playbooks.test.ts::shipped (guard): every ranked playbook's pool is the one the desktop works out from its bench.json",
+  "apps/desktop/src/modules/playbooks/model.test.ts::shipped: the chores the ranking leaves out say so, and a ranked one still beats its bar",
+  "apps/desktop/src/modules/playbooks/model.test.ts::the totals are the catalogue line's and the surface's (extended guard)",
+  "apps/desktop/src/stores/playbooks.test.ts::carries the ranking's places, the same as the eager copy's (guard)"
+ ],
+ "guard_cases":[6,8],
+ "cases_total":9,"cases_red_before":9,"cases_green_after":9,
+ "gates":{
+  "cd apps/desktop && pnpm typecheck":0,
+  "cd apps/desktop && pnpm lint":0,
+  "cd apps/desktop && pnpm test (191 files, 2670 tests, incl. first-paint)":0,
+  "uv run pytest -m \"not provider and not eval\" tests/proving/test_playbooks_rank.py":0,
+  "uv run python -m athena.proving.playbooks rank --check":0
+ },
+ "files_changed":8,"lines_changed":371,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"(1) First paint: the reader and standing alone cost +389 B gz on HEAD (skins +268, root +121), over the ~14 B headroom. Offset inside the write set by making the storyboard stills glob in lib/playbooks.ts eager (?url strings, nothing to fetch): first paint on a HEAD export plus only this change = 163,563 B vs HEAD 165,398 B (-1,835 B; ~475 lazy loader entries and their chunks left the first frame; the 475 webp files are still only fetched when drawn; cost is ~475 new URL() calls at module load). Recorded in ADR 0213 decision 6. (2) isYearly now includes 'quarter' so the value cell reads '$10,000 a year', not '$10,000 a quarter', and the 'Most value' sort groups quarter with the yearly estimates. (3) verdictOf also counts rank.runs (else bench.runs) - the 'one run pool' of the title; parity guard shows they agree on all ranked. (4) An unranked chore whose latest run is 'short' keeps 'Falls short' (already the warning verdict); 'Not ranked' replaces 'Beats/Meets its bar'. (5) Guard 8 split across model.test (fixture totals, now toEqual with ranked:0) and stores test. Cases 6 and 8 are guards but were red before only because rank did not exist.",
+ "notes":"Coordinator: first paint changed (net -1,835 B gz) - run perf:* at integration if wanted; the freed bytes are shared headroom for siblings. Sibling reds seen: transient tsc error in src/modules/setup/model.test.ts (pendingEngineOf, desktop-setup-module in flight), green on re-run. HEAD export used for measurement lives in my scratch dir with junctions to node_modules/packages; no git metadata touched. No committed bench.json carries the r4 pool block yet and no bench.runs.json exists; reading ranking.json means the desktop inherits the ledger pool when it lands. Slot B: verdictOf(bench, tally, rank) is the signature; Rank is exported from lib/playbooks."}

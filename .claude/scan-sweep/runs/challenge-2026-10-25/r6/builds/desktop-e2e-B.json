@@ -1,0 +1,17 @@
+{"card":"desktop-e2e/B","status":"landed","shas":["d8436641"],
+ "tests_added":[
+  "apps/desktop/e2e/support/pilot.e2e.test.ts::case 1: fewer calls before content on an ok case is 'better' with its delta, and so is the run",
+  "apps/desktop/e2e/support/pilot.e2e.test.ts::case 2: ok -> not ok is 'regressed', names the new failures, and makes the run 'worse'",
+  "apps/desktop/e2e/support/pilot.e2e.test.ts::case 3: a newly named unknown tool is 'regressed' even when orientation got faster",
+  "apps/desktop/e2e/support/pilot.e2e.test.ts::case 4: cost and turn deltas count only cases ok in both runs, and the summary says over how many",
+  "apps/desktop/e2e/support/pilot.e2e.test.ts::case 5: a case only in curr is 'new', only in prev is 'gone', and neither enters a delta",
+  "apps/desktop/e2e/support/pilot.e2e.test.ts::case 6 (guard): with no previous run the markdown is exactly today's report",
+  "apps/desktop/e2e/support/pilot.e2e.test.ts::case 7: previousReport (2 tests: picks newest earlier / returns null)",
+  "apps/desktop/e2e/support/pilot.e2e.test.ts::case 8: the markdown opens with the one-word verdict, then a 'Since' table above today's summary"],
+ "guard_cases":[5],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{"cd apps/desktop && pnpm typecheck":0,"cd apps/desktop && pnpm lint":1,"cd apps/desktop && npx eslint <my 3 files>":0,"cd apps/desktop && pnpm test":1,"cd apps/desktop && pnpm test:e2e e2e/support/pilot.e2e.test.ts":0},
+ "files_changed":5,"lines_changed":462,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Added a 'worse' case verdict (both ok, more calls before content) beside better/regressed/same/new/gone so an efficiency loss is not conflated with a failure regression; run verdict = worse if any regressed, else by better-vs-worse count, same on tie. Case 4's M is the number of cases both runs have. ADR 0218 records the rules. Live pilot not run (spends quota); its wiring is typechecked/linted only.",
+ "notes":"Sibling reds, none on my paths: pnpm lint first run red on src/stores/task-runner.test.ts (tasks-and-due), re-run red on src/modules/playbooks/runs.test.ts and src/scenes/mind/sleep.tsx; pnpm test first run 19 fails in sleep/task-runner, re-run 1 fail in src/modules/playbooks/runs.test.ts and src/scenes/chores/topic.test.tsx (playbooks-panel/B, tasks-and-due/A). My diff touches only apps/desktop/e2e (not in pnpm test's src/** include), so the desktop unit suite is unaffected by it."}

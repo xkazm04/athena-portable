@@ -12,3 +12,7 @@ DEFECT FOUND: 0cddf5af (r5 tidycrm-tests/A harness) - an open pair spanning two 
 LANE C: r5 art-bell/A demoted - first-paint overshoot 178 B gz (lazy split costs ~430 B: a new import() splits the preload helper); patch r5/builds/desktop-art-bell-A.patch; owner raise needed
 FLAKE: tests/daemon/test_sleep failed once when a random id contained '0.93' (seen by r5 contracts-seam/B; passed alone)
 LANE C: r5 avatar/A partial (9f8a932b) - case 6 (segment midpoints agree within 0.05) needs mirroring every shape change at ~33 signals/s, loosening ADR 0027's 30 Hz cap; owner call; todo test committed
+OWNER LOOK: b4f979f2 (r6 playbooks-panel/A) made the storyboard stills glob eager (ADR 0213) to offset +389 B; first paint -1,835 B net (the preload-helper split goes away); graph test green
+DEFECT FOUND: 28770f2e (r6 perf-gate/B still control) - perf:chores red is the scene's, not the machine's: a 76-80 ms long task at 'press Enter' with a clean still control; red at run base d13abf7a too, so pre-existing
+FLAKE: tests/peer/test_listener.py::test_a_listener_without_the_flag_refuses_a_real_loopback_socket - WinError 10053 ConnectionAbortedError; HEAD 1/10; test and listener.py untouched this run, in no write set; base control could not run (scratch worktree env would not import athena) - attributed to no builder
+INCIDENT: r6 tasks-and-due/A builder's worktree removal emptied root node_modules ~14:50-14:54; refilled; verified by coordinator

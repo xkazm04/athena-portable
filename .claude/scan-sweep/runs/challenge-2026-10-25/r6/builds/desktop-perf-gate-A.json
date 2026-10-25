@@ -1,0 +1,21 @@
+{"card":"desktop-perf-gate/A","status":"landed","shas":["85ad9b3a"],
+ "tests_added":[
+  "apps/desktop/scripts/perf-trace.test.ts::attributeTasks > ties a task to the last step at or before its start, with the offset",
+  "apps/desktop/scripts/perf-trace.test.ts::attributeTasks > names page load before the first step, and the idle second after the drive",
+  "apps/desktop/scripts/perf-trace.test.ts::attributeTasks > adds the page's time origin to a start on the page's own clock",
+  "apps/desktop/scripts/perf-trace.test.ts::recordingPage > records the stage drive's steps in order, each with a monotonic time",
+  "apps/desktop/scripts/perf-trace.test.ts::recordingPage > records an element found by a query and a locator found by role under their selector",
+  "apps/desktop/scripts/perf-budgets.test.ts::judge names the step a long task ran under > reads the step and its offset from an attributed task",
+  "apps/desktop/scripts/perf-budgets.test.ts::judge names the step a long task ran under > names the longest task's step, wherever it ran",
+  "apps/desktop/scripts/perf-budgets.test.ts::judge names the step a long task ran under > guard: plain-number tasks read as before, and the budgets are unchanged",
+  "apps/desktop/scripts/perf-drives.test.ts::holds every drive on disk, not a hand-picked few",
+  "apps/desktop/scripts/perf-drives.test.ts::the stand-in's fill honours a missing input: accounts without its allow-list input rejects",
+  "apps/desktop/scripts/perf-drives.test.ts::<scene>: every selector it touches is required (x10, derived from drivesIn)"
+ ],
+ "guard_cases":[6,7],
+ "cases_total":8,"cases_red_before":6,"cases_green_after":8,
+ "gates":{"apps/desktop: pnpm typecheck":2,"apps/desktop: pnpm lint":0,"apps/desktop: pnpm test":1,"apps/desktop: pnpm exec vitest run scripts/":0,"apps/desktop: node scripts/perf-gate.mjs (self-test, Chrome, by hand)":0},
+ "files_changed":7,"lines_changed":394,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"none. perf-gate.test.ts left unchanged (guard case 7 passes as-is). No ADR: the card lists none and no budget or policy changes (ADR 0089 covers it). Failure wording for unoffset steps: 'a N ms task before the first step (page load)' / 'a N ms task in the idle second'. Case 6 red-before was via the missing perf-trace import in the rewritten perf-drives.test.ts (the old stand-in's fill always resolved, so the assertion would also have been red).",
+ "notes":"typecheck (exit 2, 5 errors) and pnpm test (exit 1, 10 failures in 3 files) are red ONLY in sibling desktop-playbooks-panel paths: src/lib/playbooks.test.ts (parseRanking, rank), src/stores/playbooks.test.ts, src/modules/playbooks/model.test.ts; re-run after a wait, still red, none mine. All 187 other files green incl. scripts/ (46/46). judge(samples, budgets) signature unchanged for slot B; longTasks/idleLongTasks now accept numbers or {duration, step, offset}. measure() now passes the drive a recording Proxy page and returns judge over attributed tasks. Did not run perf:* (coordinator); hand checks: self-test pass/fail correct, and a data: page drive attributed a 60 ms task to 'click #b +140 ms'."}

@@ -1,0 +1,14 @@
+{"card":"desktop-console/A","status":"landed","shas":["11dd253d"],
+ "tests_added":[
+  "apps/desktop/src/console/shell-sync.test.tsx::ignores its own echoes: a page opened and left in one tick ends where the depth ended",
+  "apps/desktop/src/console/shell-sync.test.tsx::answers an unsolicited disagreement by re-sending the depth's shape, not by moving the depth",
+  "apps/desktop/src/depth/shape.test.ts::keeps one select in flight: a second shape waits for the first to be delivered",
+  "apps/desktop/src/depth/shape.test.ts::coalesces the shapes wanted while a select is in flight to the latest one",
+  "apps/desktop/src/depth/shape.test.ts::re-sends a refused shape on the next move, even to the same shape"],
+ "guard_cases":[5,6,7],
+ "cases_total":8,"cases_red_before":5,"cases_green_after":8,
+ "gates":{"apps/desktop pnpm typecheck":2,"apps/desktop pnpm lint":0,"apps/desktop pnpm test":1,"apps/desktop vitest src/depth src/console/shell-sync src/console/follow src/console/graph.test.ts (after final edits)":0},
+ "files_changed":7,"lines_changed":417,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"root.tsx not edited (startShapeSync keeps its signature, nothing to change there). followLayout's four unit tests deleted with the function. The existing shape.test case 'tells Rust the scene at the start...' now flushes between moves, since a second shape waits for the first select by design (card case 1). ADR is 0215 (0214 taken by desktop-setup-module/A). Guards 5-7 are the existing followFocus, follow.hook and SHAPE_ID tests, unchanged and green before and after.",
+ "notes":"typecheck exit 2 and pnpm test exit 1 are only sibling desktop-console/B in-flight files (places.test.ts, model.test.ts itemsOf, finder.dom.test.tsx, graph.test finder case); no failing path is mine, and scripts/first-paint.test.ts passed in the full run with my change in the tree. First paint: shape.ts+follow.ts estimated +~0.26 kB gz (comment-stripped, unminified: 1058 B -> 1323 B gz), shape.ts was already in the first-paint graph via root.tsx; coordinator should run perf/first-paint for the exact figure. No Rust touched."}

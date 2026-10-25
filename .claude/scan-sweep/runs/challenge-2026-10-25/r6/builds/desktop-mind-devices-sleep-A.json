@@ -1,0 +1,18 @@
+{"card":"desktop-mind-devices-sleep/A","status":"landed","shas":["bb31dd70"],
+ "tests_added":[
+  "apps/desktop/src/lib/mirror.test.ts::applies the newest issued read's answer, and drops an older one that lands after it",
+  "apps/desktop/src/lib/mirror.test.ts::leaves no joinable flight after a read that rejects: the next load reads afresh, and its success clears the problem",
+  "apps/desktop/src/lib/mirror.test.ts::joins the read that is out, and reads once more after it for any number of nudges",
+  "apps/desktop/src/lib/mirror.test.ts::reads on a reconnect only once rereadMinMs has passed since the last read was issued",
+  "apps/desktop/src/lib/mirror.test.ts::counts its holders: follows once, and lets go with the last",
+  "apps/desktop/src/stores/devices.test.ts::an answered request does not come back from a read issued before the answer and landing after it",
+  "apps/desktop/src/stores/devices.test.ts::three bus frames while one read is out cost one read after it, not three",
+  "apps/desktop/src/stores/devices.test.ts::a bus reconnect reads again only once REREAD_MIN_MS has passed since the last read",
+  "apps/desktop/src/stores/devices.test.ts::follows the bus once for two holders, and stops only with the last"],
+ "guard_cases":[6,7],
+ "cases_total":8,"cases_red_before":6,"cases_green_after":8,
+ "gates":{"pnpm typecheck (apps/desktop)":0,"pnpm lint (apps/desktop)":1,"npx eslint <my 5 files> (apps/desktop)":0,"pnpm test (apps/desktop, 196 files, 2721 passed)":0},
+ "files_changed":7,"lines_changed":637,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Acceptance case 1 says 'a nudge issues read B'; a bus nudge during a flight coalesces (case 3 requires it), so the superseding read is refresh(), which every act calls after its request - the test drives load() then refresh(). Options named maxReads (not maxRepeats); follow is passed as a getter so the store's swappable deps stay live. One commit instead of three (all green together). Sleep's acts now supersede the read out instead of awaiting it and reading again (ADR 0217 consequences); its 2 guard tests and all other sleep tests pass unchanged. Case 4 was red before via TypeError (old follow had no onConnected), not a count mismatch. Case 6 red-before is module-missing (mirror.ts absent).",
+ "notes":"Whole-tree pnpm lint red only on apps/desktop/e2e/support/shell.ts:131 ('_tab' unused) - an untracked file of sibling desktop-e2e/A, not mine; eslint on my files exit 0. First paint: devices/sleep stores and lib/mirror.ts are reached only from the lazy Mind depth chunk; the full desktop suite (first-paint ratchet and console/graph.test.ts included) passed. sleep.test.ts was not edited. Slot B builds on the new sleep.ts: decide()/sleepNow() end with `await reader.refresh()`, resetSleepForTests calls reader.reset()."}

@@ -1,0 +1,18 @@
+{"card":"desktop-halo/A","status":"landed","shas":["1286b0ba"],
+ "tests_added":[
+  "apps/desktop/src/lib/halo-signal.test.ts::[0] reads speaking after voice.stopped while the last line seen playing still sounds, idle once it does not",
+  "apps/desktop/src/lib/halo-signal.test.ts::lets listening win over the tail, and never invents a tail for a line it never saw",
+  "apps/desktop/src/lib/halo.test.ts::[1] sends no idle frame at voice.stopped while the line still sounds: the last frame is speaking at the player's level",
+  "apps/desktop/src/lib/halo.test.ts::[2] keeps the level loop through the tail, and rests (no timer) the tick the line falls silent",
+  "apps/desktop/src/lib/halo.test.ts::[3] a card landing in the tail rides the speaking frame, and the frame after the tail is gate",
+  "apps/desktop/src/lib/halo.test.ts::[4] a press in the tail sends listening at once: listening still wins",
+  "apps/desktop/src/lib/halo.test.ts::[5] parity: one script of store inputs and playback fed to the halo and the face yields one phase sequence",
+  "apps/desktop/src/lib/halo.test.ts::[6] guard: a typed turn with no line ever played sends exactly the frames it always has"
+ ],
+ "guard_cases":[6,7],
+ "cases_total":8,"cases_red_before":6,"cases_green_after":8,
+ "gates":{"cd apps/desktop && pnpm typecheck":2,"cd apps/desktop && pnpm lint":0,"cd apps/desktop && pnpm test":1,"vitest src/lib/halo.test.ts src/lib/halo-signal.test.ts src/lib/face-signal.test.ts":0,"production build first-paint measure (chrome.html)":0},
+ "files_changed":5,"lines_changed":262,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"createPresence lives in lib/halo.ts, not lib/halo-signal.ts: halo-signal.ts is in Main's (chrome.html) first-paint graph (chunk halo-signal-*.js, 1,945 B gz) and adding the reducer there would grow the first frame; halo.ts is only in the athena window's chunk. Measured on a production build: first-frame 165,398 B before and after, every chunk hash identical (delta 0). HaloInputs.generation and HaloDeps.sounding are optional so the existing producer cases (guard [6]) and their fake stay unedited; signalOf gained an optional 4th 'phase' arg (defaults to today's). [4] was strengthened to assert speaking->listening with no idle between, because a bare 'listening at once' passes on today's tree. No ADR (the rule already existed in the face; no new decision beyond its location, documented in the code comment).",
+ "notes":"typecheck red only in src/lib/playbooks.test.ts then src/modules/playbooks/model.test.ts (sibling desktop-playbooks-panel in flight, 'rank' on Playbook), re-run once still red, none mine. pnpm test: 10 failures, all in playbooks test files (src/lib/playbooks.test.ts, src/stores/playbooks.test.ts, src/modules/playbooks/model.test.ts); first-paint and graph tests green; 2651 passed. Slot B: HaloInputs now has optional generation and HaloDeps optional sounding; the producer computes phase via presence and passes it to signalOf(inputs, override, level, phase). No motion/CSS change; first paint unchanged."}

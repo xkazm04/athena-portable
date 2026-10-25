@@ -1,0 +1,19 @@
+{"card":"desktop-mind-devices-sleep/B","status":"landed","shas":["838efb74"],
+ "tests_added":[
+  "apps/desktop/src/stores/sleep.test.ts::stage(forget): no POST before COMMIT_MS, staged and left out of the open list; after it exactly one POST",
+  "apps/desktop/src/stores/sleep.test.ts::stage then undo inside the window: no POST is ever sent, and the proposal is drawn open again with no error",
+  "apps/desktop/src/stores/sleep.test.ts::stageAll(keep) stages the open forgets as one batch, never the contradiction, and commits them 2 at a time",
+  "apps/desktop/src/stores/sleep.test.ts::a sleep.changed re-read mid-window that still lists the staged ids keeps them out of the drawn list",
+  "apps/desktop/src/stores/sleep.test.ts::the last holder stopping while a batch is staged commits it at once, not dropped",
+  "apps/desktop/src/stores/sleep.test.ts::a second stage while a batch is pending commits the pending one first, then opens its own window",
+  "apps/desktop/src/stores/sleep.test.ts::1 of 3 committed POSTs refused (409): that one comes back open with its refusal, the other 2 are gone",
+  "apps/desktop/src/scenes/mind/sleep.test.tsx::with a batch staged, Waiting for you shows 'Keeping 3 · Undo' with the seconds left, and Undo calls actions.undo()",
+  "apps/desktop/src/scenes/mind/sleep.test.tsx::a row's Keep and Forget stage their answer, and Keep all stages every open forget at once"
+ ],
+ "guard_cases":[],
+ "cases_total":9,"cases_red_before":9,"cases_green_after":9,
+ "gates":{"pnpm typecheck (apps/desktop)":0,"pnpm lint (apps/desktop)":1,"npx eslint <my 5 files>":0,"pnpm test (apps/desktop)":1},
+ "files_changed":7,"lines_changed":490,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Revision applied: stageAll takes 'keep' only (keeps every open forget offer, never a contradiction); no bulk forget; each row's Keep/Forget/Forget-this-one is staged behind its own 6 s window. Section case 8 therefore reads 'Keeping 3 · Undo' for the bulk batch and 'Forgetting 1 · Undo' for a row forget. Added a 9th case (row presses and Keep all stage). decide() removed from the store (replaced by stage/stageAll/undo/commitNow); its two existing tests now go through stage + commitNow. Write set grew by one coupled line in scenes/mind/fixtures.ts (the SleepModel actions fixture) plus ADR 0219. StagedBatch carries `at` (staged-at on the store clock) so the Undo countdown is not tied to the section's 30 s `now`. No CSS added: the bar reuses mind__row and typo classes; no motion.",
+ "notes":"Lint and full desktop test reds are sibling desktop-playbooks-panel/B only: src/modules/playbooks/runs.test.ts (2 unused-var lint errors; case 7 guard failing) and src/scenes/chores/topic.test.tsx case 8. Typecheck was red on runs.test.ts and stores/task-runner.test.ts at first, green on re-run. First-paint tests passed in the full run (sleep store/section stay in the lazy Mind chunk). An app quit (not a section close) inside the 6 s window drops the staged batch; the proposals stay open (ADR 0219 consequences)."}

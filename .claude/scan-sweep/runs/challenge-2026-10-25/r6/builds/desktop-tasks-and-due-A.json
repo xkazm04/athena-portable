@@ -1,0 +1,17 @@
+{"card":"desktop-tasks-and-due/A","status":"landed","shas":["bc2cb26e"],
+ "tests_added":[
+  "apps/desktop/src/stores/task-runner.test.ts::case 1: her window starts the strip and the runner, and the bus is followed exactly once",
+  "apps/desktop/src/stores/task-runner.test.ts::case 2: a bus refused at once that reconnects 10 times in 1 s reads GET /tasks at most once per beat in total",
+  "apps/desktop/src/stores/task-runner.test.ts::case 3: an orphan is finished failed exactly once, before the first claim, after exactly one GET /tasks",
+  "apps/desktop/src/stores/task-runner.test.ts::case 4: one killed frame aborts its request, posts no finish, withdraws and declines its cards, and the strip shows it killed",
+  "apps/desktop/src/stores/task-runner.test.ts::case 5: a list read that no longer holds a task the runner runs kills it, with no finish",
+  "apps/desktop/src/stores/task-runner.test.ts::case 6: a queued frame claims at once, without waiting for any poll",
+  "apps/desktop/src/stores/task-runner.test.ts::case 7: holders are counted over one follower - the strip outlives the runner, and the runner outlives the strip",
+  "apps/desktop/src/stores/tasks.test.ts::(existing suite, unchanged) - acceptance case 8"],
+ "guard_cases":[3,4,5,7],
+ "cases_total":8,"cases_red_before":4,"cases_green_after":8,
+ "gates":{"cd apps/desktop && pnpm typecheck":0,"cd apps/desktop && pnpm lint":0,"cd apps/desktop && pnpm test":0},
+ "files_changed":5,"lines_changed":434,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"(1) Instead of a counted listener list (onTasks), tasks.ts takes one ear through startTasks(ear): one runner per window, and a listener Set plus new exports cost first-paint bytes (an exported subscribe shifted rollup's cross-chunk export names). (2) Every new holder of the store now has the list read for it (joined when a read is out), so the runner's first list is read after it began even if the strip loaded earlier. (3) Frames and lists are not acted on until the orphan sweep settles (before: a bus frame could claim during the sweep). (4) Small no-behaviour trims in tasks.ts (framed boolean, async loadTasks, upsertTask via filter, hoisted liveApi, Date.now, sentenceOf for the not-running line, await reading) pay for the ear. (5) Added ADR 0220 (one coupled doc); did not adopt lib/mirror.ts - frames are rows put in place, not nudges, and its body would land in Main's first frame (reason recorded in the ADR).",
+ "notes":"FIRST PAINT measured on a clean HEAD worktree + only this change: HEAD 165,106 B -> 165,103 B gzip (-3 B raw; -1 B with chunk hashes normalized, i.e. real code delta). The runner is not in chrome.html's first frame (athena chunk); tasks.ts is (skins chunk). Coordinator may run perf:all. INCIDENT: removing my measurement worktree with `git worktree remove --force` followed the node_modules junction I had made and emptied the main checkout's root node_modules (around 14:50-14:54). It was repopulated by 14:54 (pnpm install --frozen-lockfile --offline now says up to date, 573 packages in .pnpm) and the full desktop suite passed afterwards, but any sibling gate run in that window that failed with ERR_MODULE_NOT_FOUND is a false red from this - re-run it. No sibling reds otherwise; full desktop suite green twice (197 files, 2745 tests)."}

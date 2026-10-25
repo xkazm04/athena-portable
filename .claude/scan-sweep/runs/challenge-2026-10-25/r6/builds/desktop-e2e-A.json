@@ -1,0 +1,17 @@
+{"card":"desktop-e2e/A","status":"landed","shas":["865d44e3"],
+ "tests_added":[
+  "apps/desktop/e2e/trust.e2e.test.ts::first sight: a tab with no origins row sends its app as gated, and the AUTO call becomes a card",
+  "apps/desktop/e2e/trust.e2e.test.ts::registered and accepted: an enabled row with its contracts accepted gates nothing, and the AUTO call runs",
+  "apps/desktop/e2e/trust.e2e.test.ts::pinned: a GATED override on an enabled row gates that tool, and its call becomes a card",
+  "apps/desktop/e2e/trust.e2e.test.ts::contract drift (ADR 0100): a tool whose published contract is not the accepted one is gated",
+  "apps/desktop/e2e/trust.e2e.test.ts::switched off: a disabled row is sent as disabled, and the gate refuses the call foreign_origin",
+  "apps/desktop/e2e/trust.e2e.test.ts::guard: a gated approval through the shell answers with the panel's own lists and runs the page once",
+  "apps/desktop/e2e/trust.e2e.test.ts::spoken first sight: a voice turn on a tab with no origins row files a voice card and the page is not asked"],
+ "guard_cases":[1,6,7],
+ "cases_total":8,"cases_red_before":5,"cases_green_after":7,
+ "gates":{"cd apps/desktop && pnpm typecheck":0,"cd apps/desktop && pnpm lint":0,"cd apps/desktop && pnpm test":0,
+  "cd apps/desktop && vitest --config e2e/vitest.e2e.config.ts e2e/run.e2e.test.ts e2e/voice.e2e.test.ts e2e/trust.e2e.test.ts":0},
+ "files_changed":8,"lines_changed":518,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"(1) Drift case runs the loosening direction: the accepted contract says list_overdue is irreversible/external, the page now says reversible/internal. In the card's direction the page's own flags already make it GATED, so the card assertion could not catch a missing drift check; this way both the body and the card assertions are discriminating. (2) Switched-off asserts disabled_origins == ['host:ledgerbox', 'host:<derivedIdOf(PAGE_ORIGIN)>'] (sorted): the real shell also sends the origin's derived id (ADR 0065), so the card's single-element list was wrong. The foreign_origin refusal is read from the panel transcript's tool line (the store's rendering of the stream's tool.result), since support/wire.ts records requests, not frames. (3) One commit instead of three. (4) Case 8 (shadowrunr guard) is typecheck-only: shadowrunr e2e needs a real Chromium and the Shadowrunr dev server; wireLoop now builds its deps via shellDeps, registeredTable/gatedFor delegate to shell.ts, shadowrunr.e2e.test.ts unchanged. Hence green_after 7 run + 1 typechecked. (5) The run.e2e 'not the focused page' test also wires through shellDeps (a crm tab at another origin) and still passes. No ADR: test wiring only, no product decision.",
+ "notes":"Red-before measured by temporarily wiring shell.ts the way the suites did (focused/manifest/hostState/call only, no snapshot/gated/disabledOrigins): first sight, pinned, drift, switched off, spoken first sight red; registered and the gated-approval guard green. Full pnpm test:e2e not run (includes browser/desktop suites); ran run, voice and trust e2e files, which are offline (local scripted daemon). No sibling reds seen in typecheck/lint/test."}

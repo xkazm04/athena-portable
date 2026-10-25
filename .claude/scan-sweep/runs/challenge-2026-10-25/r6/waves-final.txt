@@ -1,5 +1,5 @@
-W1: desktop-playbooks-panel/A, desktop-perf-gate/A, desktop-setup-module/A, desktop-halo/A
-W2: desktop-console/B (direction, in scope), desktop-tasks-and-due/B (rev), desktop-console/A, desktop-e2e/A
-W3: desktop-e2e/B, desktop-halo/B (rev), desktop-mind-devices-sleep/A, desktop-perf-gate/B
-W4: desktop-mind-devices-sleep/B (rev), desktop-tasks-and-due/A, desktop-playbooks-panel/B (rev), desktop-setup-module/B (rev)
-Coordinator override: halo/A (HaloInputs) and perf-gate/A (judge) precede their B cards.
+W1: desktop-playbooks-panel/A, desktop-perf-gate/A, desktop-setup-module/A (demoted on stale first paint), desktop-halo/A
+W2: desktop-console/B, desktop-tasks-and-due/B (rev), desktop-console/A, desktop-setup-module/A (retry: b4f979f freed ~1.8 kB of first paint)
+W3: desktop-e2e/A, desktop-halo/B (rev), desktop-mind-devices-sleep/A, desktop-perf-gate/B
+W4: desktop-e2e/B, desktop-mind-devices-sleep/B (rev), desktop-tasks-and-due/A, desktop-playbooks-panel/B (rev)
+W5: desktop-setup-module/B (rev)

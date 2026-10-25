@@ -1,0 +1,19 @@
+{"card":"desktop-tasks-and-due/B","status":"landed","shas":["6b2fa657"],
+ "tests_added":[
+  "apps/desktop/src/console/due-notice.test.tsx::pressed: reads the review once, draws it with its lines in reading order, and posts nothing",
+  "apps/desktop/src/console/due-notice.test.tsx::Open and prepare: answers prepare once, opens each web portal, hands the command over, no /run, next notice takes the dock",
+  "apps/desktop/src/console/due-notice.test.tsx::Skip this one: answers skip, and the next notice takes the dock",
+  "apps/desktop/src/console/due-notice.test.tsx::Later: posts no answer, the next notice takes the dock, and the same one is not shown again",
+  "apps/desktop/src/console/due-notice.test.tsx::a queued notice answered elsewhere meanwhile is dropped before it is drawn, never stamped, and the next takes its place",
+  "apps/desktop/src/console/due-notice.test.tsx::says how many more are due, and the count falls as each is handled",
+  "apps/desktop/src/console/due-notice.test.tsx::a review that cannot be read: one sentence, the notice stays, and Open the chore still goes to the chore's page",
+  "apps/desktop/src/console/due-notice.test.tsx::stamps a notice seen once per case and due date, and only after the dock drew it",
+  "apps/desktop/src/console/due-notice.test.tsx::an ask-slow notice keeps its 'is due again: pause or slow it?' line and still reaches the pause or slow choice"
+ ],
+ "guard_cases":[7,8],
+ "cases_total":9,"cases_red_before":7,"cases_green_after":9,
+ "gates":{"cd apps/desktop && pnpm typecheck":0,"cd apps/desktop && pnpm lint":0,"cd apps/desktop && pnpm test":0},
+ "files_changed":8,"lines_changed":663,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"Card guard indexes 3 and 7 could not both be green before: 'Later' has no button on the old tree, so it is red-before. The actual guards (green before by design) are case 7 (seen stamp, 0-based) and the revision's ask-slow case (8). Pause in place POSTs /cadence {enabled:false} (as the topic page's Pause does); Slow it dismisses and opens the chore's page (the rule form lives there). After Open and prepare the dock does not navigate to the opened tab's page (the chores scene's afterOpen does); the tabs are made and the command is in her composer, and the next notice takes the dock. scenes/chores/due-model.ts, due.test.tsx left unchanged (shrunk write set). ADR 0131 amended in place, no new ADR number.",
+ "notes":"First paint, HEAD + only this change (vite build into scratchpad, measureFirstPaint): 164,757 -> 164,804 B gzip (+47 B, all in root: the preload map entries for the new dynamic imports), ceiling 165,412. A first draft dynamically imported @/lib/ipc and @/lib/companion and cost +569 B (namespace imports defeat tree-shaking in the first-paint chunks); they are static imports in the lazy due-poll chunk now. The dock panel animates transform+opacity on --dur-depth/--ease-depth, none under Calm and prefers-reduced-motion; perf:* not run (coordinator). Whole-tree pnpm test was green with siblings' in-flight edits present (Console.tsx, follow.ts, depth/shape.ts, model.ts)."}

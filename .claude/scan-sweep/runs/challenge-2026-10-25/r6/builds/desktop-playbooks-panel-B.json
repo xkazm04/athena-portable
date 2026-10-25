@@ -1,0 +1,24 @@
+{"card":"desktop-playbooks-panel/B","status":"landed","shas":["f5da2791"],
+ "tests_added":[
+  "apps/desktop/src/modules/playbooks/runs.test.ts::case 1: every run newest first, the latest and the runs under its key counted, the rest with why",
+  "apps/desktop/src/modules/playbooks/runs.test.ts::case 2: a line a rescore replaced is not counted and says so; the rescored run's own line has no row",
+  "apps/desktop/src/modules/playbooks/runs.test.ts::case 3: an unkeyed latest stands alone, and every earlier line was benched before runs were keyed",
+  "apps/desktop/src/modules/playbooks/runs.test.ts::case 4: the counted runs that fell short, and what the worst of them filed",
+  "apps/desktop/src/modules/playbooks/runs.test.ts::case 5: a history line's traps filed and wall time are read, and a line without them is unmeasured",
+  "apps/desktop/src/modules/playbooks/runs.test.ts::case 6: shipped, the counted rows reconcile with the n and the exceeds every verdict states",
+  "apps/desktop/src/modules/playbooks/runs.test.ts::case 7 (guard): this change leaves verdictOf's output as it was, for the fixtures and the shipped set",
+  "apps/desktop/src/scenes/chores/topic.test.tsx::case 8: the open-short topic page opens the verdict on its counted run and the lines left out, each with why"
+ ],
+ "guard_cases":[6],
+ "cases_total":8,"cases_red_before":8,"cases_green_after":8,
+ "gates":{
+  "cd apps/desktop && pnpm typecheck":0,
+  "cd apps/desktop && pnpm lint":0,
+  "cd apps/desktop && pnpm test (197 files, 2746 tests)":1,
+  "cd apps/desktop && npx vitest run src/console/due-notice.test.tsx (re-run of the only red file, not mine)":0,
+  "cd apps/desktop && pnpm test (earlier full run, same diff)":0
+ },
+ "files_changed":8,"lines_changed":422,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"(1) Revision applied: guard case (index 6, my case 7) pins verdictOf unchanged by this card - fixture words captured on the pre-change tree, and for every shipped playbook verdictOf with the new RunLine fields equals verdictOf with them stripped and the pool recomputed; by hand, every fixture item's verdict (shipped included) dumped before and after was byte-identical. (2) Card case 5 (parseBench reads traps_filed/wall_s) lives in runs.test.ts, not lib/playbooks.test.ts (write set shrunk). (3) The guard was red before only because runs.ts did not exist (import fails), not by its assertion. (4) No ADR: the card names none; the rule is ADR 0128's made visible. The latest row's traps come from score.traps_filed, which parseBench reads with a 0 default (unchanged; out of scope).",
+ "notes":"FIRST PAINT: measured on a HEAD export (base 838efb74's parent at export time) 165,114 B -> 165,124 B gz with only this change (+10 B: two RunLine fields in lib/playbooks.ts; runs.ts and the disclosure ride the lazy topic chunk). INCIDENT: at ~14:51 the repo's root node_modules and apps/desktop/node_modules were emptied (only those two; examples/packages intact). I had just created junctions to exactly those two from my HEAD export in my scratch dir, but nothing I ran deletes; tasks-and-due-A's scratch also holds a HEAD export and an install.txt at 14:55, so a sibling's rm -rf of an export through junctions is possible. I cannot rule out my own part. Restored with `pnpm install --frozen-lockfile --offline` from the root (exit 0, lockfile unchanged); my junctions were removed with cmd rmdir (link only). Coordinator: a sibling gate that failed around 14:51-14:55 with missing modules should be re-run, and HEAD exports should never be deleted with rm -rf while junctioned. Sibling red seen: src/console/due-notice.test.tsx (2 cases, 'reading' vs 'reviewing') under load in the full run, green on re-run."}

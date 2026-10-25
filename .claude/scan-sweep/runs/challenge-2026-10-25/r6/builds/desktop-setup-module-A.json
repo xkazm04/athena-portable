@@ -1,0 +1,22 @@
+{"card":"desktop-setup-module/A","status":"landed","shas":["65424863"],
+ "tests_added":[
+  "apps/desktop/src/modules/setup/engine-state.test.ts::case 0: Codex chosen, the Claude Code daemon failed - down on the other engine, with Start on Codex",
+  "apps/desktop/src/modules/setup/engine-state.test.ts::case 1: the same with the daemon stopped - 'Athena is not running.', and never 'still running' off ready",
+  "apps/desktop/src/modules/setup/engine-state.test.ts::case 2: a daemon that failed before naming an engine failed, it is not starting up",
+  "apps/desktop/src/modules/setup/engine-state.test.ts::case 3: every state that is not done carries a move, and no failed or stopped daemon reads as alive",
+  "apps/desktop/src/modules/setup/engine-state.test.ts::case 4: readiness, the not-ready sentence, the restart notice and the start failure are projections of the state",
+  "apps/desktop/src/modules/setup/engine-state.test.ts::guard case 6: before the first daemon reading there is no start failure, and the engine fact is unknown",
+  "apps/desktop/src/modules/setup/engine-state.test.ts::guard case 7: every fixture reads as it did before the union",
+  "apps/desktop/src/modules/setup/model.test.ts::FLIPPED (ADR 0214): a failure on the engine the daemon was still on is a start failure, offering the chosen engine"],
+ "guard_cases":[5,6,7],
+ "cases_total":8,"cases_red_before":5,"cases_green_after":8,
+ "gates":{
+  "first-paint, clean HEAD export vs HEAD + this change (vite build + scripts/first-paint.mjs measureFirstPaint)":0,
+  "cd apps/desktop && pnpm lint":0,
+  "cd apps/desktop && pnpm typecheck":2,
+  "cd apps/desktop && pnpm test":1,
+  "cd apps/desktop && npx vitest run src/modules/setup scripts/first-paint.test.ts (scoped, shared tree)":0},
+ "files_changed":7,"lines_changed":621,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"Started from the attempt-1 patch (applied cleanly). Dropped its unwired 'respawning' state and daemonAttempt field (DaemonView carries no attempt and index.ts is outside the write set; dead code and bytes) - the ADR names it as the next leaf. Words sit at the union's leaves in engine-state.ts rather than a switch in readiness.ts, to keep first paint small. fixtures.ts and readiness.test.ts unchanged (guard 7 snapshots fixtures in engine-state.test.ts; existing readiness tests pass byte-identical). One commit instead of the card's three. ADR is 0214 (0213 was taken by playbooks-panel/A).",
+ "notes":"FIRST PAINT: clean HEAD export 163,563 B gz, HEAD + this change 163,819 B (+256 B), ceiling 165,412 B, headroom left 1,593 B for siblings; the shared-tree first-paint test also passed. Coordinator may run perf. RED-BEFORE: run in a HEAD export with the new tests and a scratch-only shim engine-state.ts that maps HEAD's own exports (isReady, pendingEngine, startFailure inputs) to the card's kinds; cases 0,1,2 and the model.test FLIPPED case fail on HEAD behaviour alone (startFailure null, 'still running' over a failed daemon, 'still starting up'); case 3 fails on HEAD rows (moveless unchecked/down rows, alive claims over failed daemons); case 4 fails on down-on-other rows where HEAD has no startFailure. Guards 6, 7 and the existing readiness/model sentences (5) pass before by design. SIBLING REDS (not mine, re-run once after waiting, still red): pnpm typecheck exit 2 only in src/console/finder.dom.test.tsx and src/depth/model.test.ts; pnpm test exit 1 only in src/console/places.test.ts, src/console/finder.dom.test.tsx, src/console/graph.test.ts (finder case), src/depth/model.test.ts (itemsOf). No tsc error and no test failure in modules/setup or first-paint."}

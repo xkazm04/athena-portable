@@ -1,0 +1,753 @@
+diff --git a/apps/desktop/src/modules/setup/engine-state.test.ts b/apps/desktop/src/modules/setup/engine-state.test.ts
+new file mode 100644
+index 00000000..86d64bbe
+--- /dev/null
++++ b/apps/desktop/src/modules/setup/engine-state.test.ts
+@@ -0,0 +1,184 @@
++/**
++ * The engine state union — ADR 0213.
++ *
++ * The claim is a class, not two patches: every engine state that is not ready carries the move
++ * that gets the person out of it, no failed or stopped daemon is described as running or starting,
++ * and the four things the surfaces read (readiness, the not-ready sentence, the restart notice,
++ * the start failure) are projections of the one state. The table walks every combination of the
++ * inputs that decide it.
++ */
++import { describe, expect, test } from "vitest";
++
++import type { DaemonHealth } from "@/lib/daemon";
++import type { EngineProbe } from "@/lib/engines";
++
++import { engineStateOf } from "./engine-state";
++import { fixtures } from "./fixtures";
++import { INERT_ACTIONS, selectSetup, type SetupSources } from "./model";
++import { engineFact, isReady, notReadyBecause, restartNotice } from "./readiness";
++
++const BOTH_FOUND: EngineProbe[] = [
++  { id: "claude_code", state: "found", detail: "2.1.268" },
++  { id: "codex", state: "found", detail: "0.40" },
++];
++
++function sources(over: Partial<SetupSources> = {}): SetupSources {
++  return {
++    onboarded: true,
++    hydrated: true,
++    engine: "claude_code",
++    engineIds: ["claude_code", "codex"],
++    probes: BOTH_FOUND,
++    problem: null,
++    theme: "system",
++    brainPath: "",
++    tabs: [{ id: 1, title: "Invoices", url: "https://a.test/x" }],
++    storePath: "athena.sqlite",
++    daemonHealth: "ready",
++    daemonEngine: "claude_code",
++    daemonLoaded: true,
++    actions: INERT_ACTIONS,
++    ...over,
++  };
++}
++
++const NOT_DONE_MOVES = ["check", "restart", "choose", "sign-in", "install"];
++/** An affirmative claim that she runs or is starting; "is not running" is the honest negative. */
++const CLAIMS_ALIVE = /(?<!not )running|starting/;
++
++describe("acceptance", () => {
++  test("case 0: Codex chosen, the Claude Code daemon failed - down on the other engine, with Start on Codex", () => {
++    const over = { engine: "codex", daemonEngine: "claude_code", daemonHealth: "failed" as const };
++    const model = selectSetup(sources({ ...over, daemonError: "spawn exited with code 1" }));
++    expect(engineStateOf(model)).toMatchObject({ kind: "down-on-other", move: "restart" });
++    expect(model.startFailure).toEqual({
++      engine: "claude_code",
++      title: "Athena stopped on Claude Code.",
++      reason: "spawn exited with code 1",
++      actionLabel: "Start on Codex",
++    });
++    expect(selectSetup(sources(over)).startFailure?.reason).toBe("No reason was given.");
++    expect(engineFact(model).summary).not.toContain("still running");
++  });
++
++  test("case 1: the same with the daemon stopped - 'Athena is not running.', and never 'still running' off ready", () => {
++    const model = selectSetup(sources({ engine: "codex", daemonEngine: "claude_code", daemonHealth: "stopped" }));
++    expect(engineStateOf(model).kind).toBe("down-on-other");
++    expect(model.startFailure?.title).toBe("Athena is not running.");
++    expect(model.startFailure?.actionLabel).toBe("Start on Codex");
++    for (const daemonHealth of ["starting", "failed", "stopped"] as const) {
++      const m = selectSetup(sources({ engine: "codex", daemonEngine: "claude_code", daemonHealth }));
++      expect(engineFact(m).summary, daemonHealth).not.toContain("still running");
++    }
++  });
++
++  test("case 2: a daemon that failed before naming an engine failed, it is not starting up", () => {
++    const model = selectSetup(sources({ daemonEngine: "", daemonHealth: "failed" }));
++    expect(engineStateOf(model)).toMatchObject({ kind: "failed", move: "restart" });
++    expect(engineFact(model).summary).toBe("Claude Code is chosen, but Athena could not start");
++  });
++});
++
++/** Every combination of the inputs that decide the engine's standing: 960 rows. */
++function table(): { label: string; over: Partial<SetupSources> }[] {
++  const rows: { label: string; over: Partial<SetupSources> }[] = [];
++  for (const engine of ["claude_code", "codex"]) {
++    const other = engine === "codex" ? "claude_code" : "codex";
++    const probeSets: Record<string, EngineProbe[] | null> = {
++      null: null,
++      empty: [],
++      found: BOTH_FOUND,
++      signedOut: [
++        { id: engine, state: "not_logged_in", detail: "no session" },
++        { id: other, state: "found", detail: "1" },
++      ],
++      notFoundOtherFound: [
++        { id: engine, state: "not_found", detail: "absent" },
++        { id: other, state: "found", detail: "1" },
++      ],
++    };
++    for (const [probeName, probes] of Object.entries(probeSets))
++      for (const checking of [true, false])
++        for (const problem of [null, "boom"])
++          for (const daemonLoaded of [true, false])
++            for (const daemonEngine of [engine, other, ""])
++              for (const daemonHealth of ["ready", "starting", "failed", "stopped"] as DaemonHealth[])
++                rows.push({
++                  label: JSON.stringify({ engine, probeName, checking, problem, daemonLoaded, daemonEngine, daemonHealth }),
++                  over: { engine, probes, checking, problem, daemonLoaded, daemonEngine, daemonHealth },
++                });
++  }
++  return rows;
++}
++
++test("case 3: every state that is not done carries a move, and no failed or stopped daemon reads as alive", () => {
++  const rows = table();
++  expect(rows).toHaveLength(960);
++  for (const { label, over } of rows) {
++    const model = selectSetup(sources(over));
++    const state = engineStateOf(model);
++    const fact = engineFact(model);
++    if (fact.standing !== "done") {
++      const waiting =
++        state.move === "wait" && (model.checking || model.daemonHealth === "starting" || !model.loaded);
++      expect(waiting || NOT_DONE_MOVES.includes(state.move ?? ""), label).toBe(true);
++    }
++    if (model.daemonHealth === "failed" || model.daemonHealth === "stopped") {
++      expect(fact.summary, label).not.toMatch(CLAIMS_ALIVE);
++    }
++  }
++});
++
++test("case 4: readiness, the not-ready sentence, the restart notice and the start failure are projections of the state", () => {
++  for (const { label, over } of table()) {
++    const model = selectSetup(sources(over));
++    const state = engineStateOf(model);
++    expect(isReady(model), label).toBe(state.kind === "running");
++    expect(notReadyBecause(model) === "", label).toBe(isReady(model));
++    expect(restartNotice(model) !== null, label).toBe(state.kind === "pending-switch");
++    const down = state.kind === "failed" || state.kind === "stopped" || state.kind === "down-on-other";
++    expect(model.startFailure !== null, label).toBe(state.move === "restart" && down);
++  }
++});
++
++test("guard case 6: before the first daemon reading there is no start failure, and the engine fact is unknown", () => {
++  for (const probes of [null, BOTH_FOUND])
++    for (const daemonHealth of ["ready", "starting", "failed", "stopped"] as DaemonHealth[])
++      for (const daemonEngine of ["claude_code", "codex", ""]) {
++        const model = selectSetup(sources({ probes, daemonHealth, daemonEngine, daemonLoaded: false }));
++        const label = JSON.stringify({ probes: !!probes, daemonHealth, daemonEngine });
++        expect(model.startFailure, label).toBeNull();
++        expect(engineFact(model).standing, label).toBe("unknown");
++      }
++});
++
++test("guard case 7: every fixture reads as it did before the union", () => {
++  const read = Object.fromEntries(
++    Object.entries(fixtures).map(([name, m]) => [
++      name,
++      [engineFact(m).standing, engineFact(m).summary, m.startFailure?.title ?? null, restartNotice(m)?.title ?? null],
++    ]),
++  );
++  expect(read).toEqual({
++    empty: ["unknown", "Athena has not heard back about the engine yet", null, null],
++    typical: ["done", "Claude Code is ready", null, null],
++    heavy: [
++      "todo",
++      "Codex is chosen, but Athena is still running on Claude Code",
++      null,
++      "Codex is chosen. Athena is still running on Claude Code.",
++    ],
++    degraded: ["unknown", "Athena could not check the engine (daemon_offline)", null, null],
++    notFound: ["missing", "none of the 2 can be used yet", null, null],
++    checking: ["unknown", "checking the engine…", null, null],
++    onboarding: ["done", "Claude Code is ready", null, null],
++    settings: ["done", "Claude Code is ready", null, null],
++  });
++});
++
++test("a daemon the shell is healing after it died is respawning: a wait, said as one", () => {
++  const model = selectSetup(sources({ daemonHealth: "starting", daemonAttempt: 2 }));
++  expect(engineStateOf(model)).toMatchObject({ kind: "respawning", move: "wait" });
++  expect(engineFact(model).summary).toBe("Claude Code is chosen, and Athena is starting again after she stopped");
++  expect(engineStateOf(selectSetup(sources({ daemonHealth: "starting" }))).kind).toBe("starting");
++});
+diff --git a/apps/desktop/src/modules/setup/engine-state.ts b/apps/desktop/src/modules/setup/engine-state.ts
+new file mode 100644
+index 00000000..c2e5189d
+--- /dev/null
++++ b/apps/desktop/src/modules/setup/engine-state.ts
+@@ -0,0 +1,132 @@
++/**
++ * The engine's standing as one union — README section 3.5, ADR 0213.
++ *
++ * Eight inputs decide whether a turn can run: what the probe said, whether a check is in flight
++ * or failed, whether the daemon has reported, the stored engine, the engine the daemon is on, its
++ * health and its respawn rung. They used to be read by four parallel if-chains (the start failure,
++ * the pending engine, the engine fact, the not-ready sentence), each over a different subset in a
++ * different order, and two of the combinations they missed were dead ends: a daemon that failed
++ * on the engine it was still running on after the person chose another read as running, with no
++ * button; and a daemon that failed before naming an engine read as "still starting up".
++ *
++ * Here the combination is decided once, and every state that is not `running` names its move:
++ * the one act that gets the person out of it. `wait` is a move only while something is genuinely
++ * in flight (a check, a start, the first daemon reading). `readiness.ts`'s engine fact, the
++ * view-model's `startFailure` and `pendingEngine` are projections of this.
++ */
++import type { DaemonHealth } from "@/lib/daemon";
++import { engineLabel, probeOf, usable, type EngineProbe } from "@/lib/engines";
++
++import type { Standing } from "./readiness";
++
++/** The one act a state asks for. `null` only for `running`, which asks for nothing. */
++export type EngineMove = "check" | "restart" | "choose" | "sign-in" | "install" | "wait" | null;
++
++export type EngineStateKind =
++  | "unchecked"
++  | "checking"
++  | "check-failed"
++  | "not-installed"
++  | "signed-out"
++  | "other-chosen"
++  | "awaiting-daemon"
++  | "starting"
++  | "respawning"
++  | "pending-switch"
++  | "down-on-other"
++  | "failed"
++  | "stopped"
++  | "running";
++
++/**
++ * One state, its move, and the engine fact's words for it. The words sit at the leaf that decides
++ * the state, so a state cannot be reached without its sentence, and the first frame carries one
++ * decision tree rather than a tree and a switch over it.
++ */
++export interface EngineState {
++  kind: EngineStateKind;
++  move: EngineMove;
++  standing: Standing;
++  summary: string;
++}
++
++/** What the decision reads. `SetupModel` is one; so is a store snapshot. */
++export interface EngineInputs {
++  probes: readonly EngineProbe[] | null;
++  checking?: boolean;
++  problem: string | null;
++  /** The daemon has reported once; before that its fields are placeholders. */
++  loaded: boolean;
++  engine: string;
++  daemonEngine: string;
++  daemonHealth: DaemonHealth;
++  /** The respawn rung (ADR 0206): above 0 while the shell heals a daemon that died after ready. */
++  daemonAttempt?: number;
++}
++
++export function engineStateOf(m: EngineInputs): EngineState {
++  const { engine, daemonEngine: running, daemonHealth: health, loaded, probes } = m;
++  const at = (kind: EngineStateKind, move: EngineMove, standing: Standing, summary: string): EngineState => ({
++    kind,
++    move,
++    standing,
++    summary,
++  });
++  const label = engineLabel(engine);
++  const chosen = `${label} is chosen, `;
++  const failed = health === "failed";
++  const down = failed || health === "stopped";
++  // The daemon names an engine and it is not the chosen one.
++  const other = running && running !== engine;
++  const pending = loaded && health === "ready" && other;
++  const choice = probeOf(probes, engine);
++  if (probes && choice?.state !== "found") {
++    // The choice itself is the problem: the words are the probe's, whatever the daemon is doing.
++    const found = usable(probes).length;
++    const state =
++      choice?.state === "not_logged_in"
++        ? at("signed-out", "sign-in", "missing", `${label} is installed but not signed in`)
++        : found > 0
++          ? at("other-chosen", "choose", "todo", `${found} of ${probes.length} ready, but another is chosen`)
++          : at(
++              "not-installed",
++              "install",
++              "missing",
++              probes.length === 0 ? "Athena was told of no engines at all" : `none of the ${probes.length} can be used yet`,
++            );
++    // A running daemon on another engine is the restart notice, whatever the probe says of the choice.
++    return pending ? { ...state, kind: "pending-switch", move: "restart" } : state;
++  }
++  if (pending) return at("pending-switch", "restart", "todo", `${chosen}but Athena is still running on ${engineLabel(running)}`);
++  if (!probes) {
++    // A start that failed on the chosen engine outranks the look it prevented.
++    return loaded && down && running === engine
++      ? at(health, "restart", "missing", `Athena ${failed ? "could not start" : "is not running"} on ${label}`)
++      : m.checking
++        ? at("checking", "wait", "unknown", "checking the engine…")
++        : m.problem
++          ? at("check-failed", "check", "unknown", `Athena could not check the engine (${m.problem})`)
++          : at("unchecked", loaded && health !== "starting" ? "check" : "wait", "unknown", "Athena has not heard back about the engine yet");
++  }
++  // Found is the probe's word; running is the daemon's. A turn goes to the engine the daemon is on,
++  // so the fact is done only when both name the chosen one.
++  if (!loaded) return at("awaiting-daemon", "wait", "unknown", `${chosen}but Athena has not yet said which engine she is on`);
++  if (down) {
++    // Failed or stopped on the chosen engine, on the one she was still on after another was chosen,
++    // or before she named one: a stop, never "still running" or "starting up". The restart is on
++    // the chosen engine.
++    return at(
++      other ? "down-on-other" : health,
++      "restart",
++      failed ? "missing" : "todo",
++      `${chosen}but Athena ${failed ? (other ? `stopped on ${engineLabel(running)}` : `could not start${running ? " on it" : ""}`) : "is not running"}`,
++    );
++  }
++  if (health === "starting") {
++    return m.daemonAttempt
++      ? at("respawning", "wait", "todo", `${chosen}and Athena is starting again after she stopped`)
++      : at("starting", "wait", "todo", `${chosen}and Athena is still starting up on ${other ? engineLabel(running) : "it"}`);
++  }
++  // Ready: on the chosen engine, or ready without naming one — a start nobody will finish.
++  return running ? at("running", null, "done", `${label} is ready`) : at("starting", "restart", "todo", `${chosen}and Athena is still starting up on it`);
++}
+diff --git a/apps/desktop/src/modules/setup/model.test.ts b/apps/desktop/src/modules/setup/model.test.ts
+index 29ddbb59..0e68ddfe 100644
+--- a/apps/desktop/src/modules/setup/model.test.ts
++++ b/apps/desktop/src/modules/setup/model.test.ts
+@@ -9,7 +9,7 @@ import { expect, test, vi } from "vitest";
+ 
+ import type { EngineProbe } from "@/lib/engines";
+ 
+-import { INERT_ACTIONS, pendingEngineOf, selectSetup, type SetupSources } from "./model";
++import { INERT_ACTIONS, selectSetup, type SetupSources } from "./model";
+ 
+ function sources(over: Partial<SetupSources> = {}): SetupSources {
+   return {
+@@ -63,12 +63,12 @@ test("no probe at all is not the same fact as no engine installed", () => {
+ });
+ 
+ test("a pending engine is the stored one when a running daemon is on another", () => {
+-  expect(pendingEngineOf("codex", "claude_code", "ready")).toBe("codex");
+-  expect(pendingEngineOf("claude_code", "claude_code", "ready")).toBeNull();
++  const pending = (over: Partial<SetupSources>) => selectSetup(sources({ engine: "codex", ...over })).pendingEngine;
++  expect(pending({})).toBe("codex");
++  expect(pending({ engine: "claude_code" })).toBeNull();
+   // A daemon that is not running has nothing to disagree with.
+-  expect(pendingEngineOf("codex", "claude_code", "starting")).toBeNull();
+-  expect(pendingEngineOf("codex", "", "stopped")).toBeNull();
+-  expect(selectSetup(sources({ engine: "codex" })).pendingEngine).toBe("codex");
++  expect(pending({ daemonHealth: "starting" })).toBeNull();
++  expect(pending({ daemonHealth: "stopped", daemonEngine: "" })).toBeNull();
+ });
+ 
+ test("a tab with no title is called by its address, and a non-URL is its own host", () => {
+@@ -127,12 +127,21 @@ test("U: a daemon that failed on the stored engine is a start failure with the r
+   expect(restart).toHaveBeenCalledOnce();
+ });
+ 
+-test("U: a stopped daemon on the stored engine is one too; a failure on another engine, or before the first reading, is not", () => {
++test("U: a stopped daemon on the stored engine is one too; before the first reading, or running, it is not", () => {
+   expect(selectSetup(sources({ daemonHealth: "stopped" })).startFailure?.title).toBe(
+     "Athena is not running on Claude Code.",
+   );
+-  expect(selectSetup(sources({ daemonHealth: "failed", daemonEngine: "codex" })).startFailure).toBeNull();
+   expect(selectSetup(sources({ daemonHealth: "failed", daemonLoaded: false })).startFailure).toBeNull();
+   expect(selectSetup(sources({ daemonHealth: "ready" })).startFailure).toBeNull();
+   expect(selectSetup(sources({ daemonHealth: "starting" })).startFailure).toBeNull();
+ });
++
++test("FLIPPED (ADR 0213): a failure on the engine the daemon was still on is a start failure, offering the chosen engine", () => {
++  // Was pinned null: Claude Code chosen, the daemon failed on Codex, and no surface offered an act.
++  expect(selectSetup(sources({ daemonHealth: "failed", daemonEngine: "codex" })).startFailure).toEqual({
++    engine: "codex",
++    title: "Athena stopped on Codex.",
++    reason: "No reason was given.",
++    actionLabel: "Start on Claude Code",
++  });
++});
+diff --git a/apps/desktop/src/modules/setup/model.ts b/apps/desktop/src/modules/setup/model.ts
+index 0fef6401..cb93a5e0 100644
+--- a/apps/desktop/src/modules/setup/model.ts
++++ b/apps/desktop/src/modules/setup/model.ts
+@@ -15,7 +15,8 @@
+  *   engine went missing is not a state this module can reach.
+  * - **Nothing here claims the daemon restarted.** Choosing an engine writes one row; whether the
+  *   running daemon is on it is the daemon store's fact, and `pendingEngine` is the difference
+- *   between the two, said plainly.
++ *   between the two, said plainly. Which of the engine's states holds is decided once, in
++ *   `engine-state.ts`; `startFailure` and `pendingEngine` are read off it.
+  */
+ import type { DaemonHealth } from "@/lib/daemon";
+ import { engineLabel, probeOf, remedyFor, type EngineProbe } from "@/lib/engines";
+@@ -24,6 +25,8 @@ import type { MotionChoice } from "@/lib/motion";
+ import type { ThemeChoice, TypeScale } from "@/stores/settings";
+ import { DEFAULT_SKIN, type Skin } from "@/stores/shell";
+ 
++import { engineStateOf } from "./engine-state";
++
+ export type SetupMode = "onboarding" | "settings";
+ 
+ /** The setting writes a person makes here whose refusal is shown where the choice was made. */
+@@ -73,7 +76,7 @@ export interface SetupActions {
+   reopenOnboarding: () => void;
+ }
+ 
+-/** The daemon failed or stopped on the stored engine: what to say, why, and the one action. */
++/** The daemon failed or stopped: what to say, why, and the one action that starts it again. */
+ export interface StartFailure {
+   engine: string;
+   title: string;
+@@ -116,9 +119,14 @@ export interface SetupModel {
+   daemonEngine: string;
+   /** The daemon has reported once. Before that `daemonEngine` is a placeholder, not a reading. */
+   loaded: boolean;
+-  /** An engine the user chose that the running daemon is not on. Null when settled. */
++  /** The respawn rung (ADR 0206): above 0 while the shell heals a daemon that died after ready. */
++  daemonAttempt?: number;
++  /** An engine the user chose that a running daemon is not on (`engine-state.ts`). Null when settled. */
+   pendingEngine: string | null;
+-  /** Non-null when the daemon failed or stopped on the stored engine. Restart is its action. */
++  /**
++   * Non-null when the daemon failed or stopped, on the stored engine or on the one it still ran
++   * on after another was chosen. Restart, on the stored engine, is its action.
++   */
+   startFailure: StartFailure | null;
+   /** The writes that were refused; the control shows its own, and the stored row is shown again. */
+   refusals: SetupRefusals;
+@@ -156,6 +164,8 @@ export interface SetupSources {
+   daemonError?: string;
+   /** The daemon store has heard from Rust. Defaults to true, so a fixture is unchanged. */
+   daemonLoaded?: boolean;
++  /** The respawn rung the daemon status carries (ADR 0206). */
++  daemonAttempt?: number;
+   /** `true` for one visit after "Show the welcome again", whatever the stored row says. */
+   reopened?: boolean;
+   /** None where a fixture does not say. */
+@@ -174,23 +184,23 @@ export function selectSetup(source: SetupSources): SetupModel {
+   });
+   const health = source.daemonHealth ?? "stopped";
+   const daemonEngine = source.daemonEngine ?? "";
++  const loaded = source.daemonLoaded ?? true;
+   const label = engineLabel(source.engine);
+-  // A daemon that failed or stopped on the stored engine is a failed start. It is not a failed
+-  // look, so the probe's "daemon is not ready" reason is not shown beside it.
++  const state = engineStateOf({ ...source, loaded, daemonEngine, daemonHealth: health });
++  const failed = health === "failed";
++  const other = state.kind === "down-on-other";
++  // A daemon that failed or stopped is a failed start, with the act that starts it again (the
++  // only restart a daemon that is not ready asks for). It is not a failed look, so the probe's
++  // "daemon is not ready" reason is not shown beside it.
+   const startFailure: StartFailure | null =
+-    (source.daemonLoaded ?? true) &&
+-    daemonEngine === source.engine &&
+-    (health === "failed" || health === "stopped")
++    state.move === "restart" && health !== "ready"
+       ? {
+-          engine: source.engine,
+-          title:
+-            health === "failed"
+-              ? `Athena could not start on ${label}.`
+-              : `Athena is not running on ${label}.`,
+-          reason:
+-            source.daemonError ||
+-            (health === "failed" ? "No reason was given." : "It stopped without saying why."),
+-          actionLabel: `Try again on ${label}`,
++          engine: other ? daemonEngine : source.engine,
++          title: other && failed
++            ? `Athena stopped on ${engineLabel(daemonEngine)}.`
++            : `Athena ${failed ? "could not start" : "is not running"}${other ? "" : ` on ${label}`}.`,
++          reason: source.daemonError || (failed ? "No reason was given." : "It stopped without saying why."),
++          actionLabel: `${other ? "Start" : "Try again"} on ${label}`,
+         }
+       : null;
+   return {
+@@ -218,8 +228,9 @@ export function selectSetup(source: SetupSources): SetupModel {
+     storePath: source.storePath,
+     daemonHealth: health,
+     daemonEngine,
+-    loaded: source.daemonLoaded ?? true,
+-    pendingEngine: pendingEngineOf(source.engine, daemonEngine, health),
++    loaded,
++    daemonAttempt: source.daemonAttempt,
++    pendingEngine: state.kind === "pending-switch" ? source.engine : null,
+     startFailure,
+     refusals: source.refusals ?? NO_REFUSALS,
+     waking: source.waking ?? false,
+@@ -227,20 +238,6 @@ export function selectSetup(source: SetupSources): SetupModel {
+   };
+ }
+ 
+-/**
+- * The stored engine is pending when a daemon is running and it is not the one running on it. A
+- * daemon that is stopped or starting has nothing to disagree with; the row is simply what the
+- * next start uses.
+- */
+-export function pendingEngineOf(
+-  stored: string,
+-  running: string,
+-  health: DaemonHealth,
+-): string | null {
+-  if (health !== "ready" || !running) return null;
+-  return stored === running ? null : stored;
+-}
+-
+ /**
+  * The host, or the raw string when it is not a URL at all.
+  *
+@@ -256,17 +253,19 @@ function hostOfSafely(url: string): string {
+ }
+ 
+ /** Fixtures and any variant that needs a set that does nothing. */
++const noop = () => {};
++
+ export const INERT_ACTIONS: SetupActions = {
+-  chooseEngine: () => {},
+-  checkEngines: () => {},
+-  restart: () => {},
+-  setTheme: () => {},
+-  setSkin: () => {},
+-  setTypeScale: () => {},
+-  setMotion: () => {},
+-  setBrainPath: () => {},
+-  openPage: () => {},
+-  checkMic: () => {},
+-  finish: () => {},
+-  reopenOnboarding: () => {},
++  chooseEngine: noop,
++  checkEngines: noop,
++  restart: noop,
++  setTheme: noop,
++  setSkin: noop,
++  setTypeScale: noop,
++  setMotion: noop,
++  setBrainPath: noop,
++  openPage: noop,
++  checkMic: noop,
++  finish: noop,
++  reopenOnboarding: noop,
+ };
+diff --git a/apps/desktop/src/modules/setup/readiness.ts b/apps/desktop/src/modules/setup/readiness.ts
+index 1a83ee71..2462eb9d 100644
+--- a/apps/desktop/src/modules/setup/readiness.ts
++++ b/apps/desktop/src/modules/setup/readiness.ts
+@@ -10,9 +10,10 @@
+  * that says the machine is ready after the engine has been uninstalled. Here, a standing that
+  * disagreed with the fields under it is not a state this module can reach.
+  */
+-import { engineLabel, probeOf, usable, type EngineProbe } from "@/lib/engines";
++import { engineLabel } from "@/lib/engines";
+ import type { Tone } from "@/components/StatusDot";
+ 
++import { engineStateOf } from "./engine-state";
+ import type { SetupModel } from "./model";
+ 
+ /**
+@@ -29,6 +30,8 @@ export interface Fact {
+ }
+ 
+ /** Which hue a standing takes. `unknown` is not a warning; it is early. */
++const fact = (key: Fact["key"], standing: Standing, summary: string): Fact => ({ key, standing, summary });
++
+ export const STANDING_TONE: Record<Standing, Tone> = {
+   done: "success",
+   todo: "neutral",
+@@ -36,139 +39,43 @@ export const STANDING_TONE: Record<Standing, Tone> = {
+   unknown: "pending",
+ };
+ 
++/** The engine's fact is its state's words (`engine-state.ts`), decided once with the state's move. */
+ export function engineFact(model: SetupModel): Fact {
+-  const base = { key: "engine" as const };
+-  if (model.probes === null) {
+-    if (model.startFailure) {
+-      return { ...base, standing: "missing", summary: model.startFailure.title.replace(/\.$/, "") };
+-    }
+-    return {
+-      ...base,
+-      standing: "unknown",
+-      summary: model.checking
+-        ? "checking the engine…"
+-        : model.problem
+-          ? `Athena could not check the engine (${model.problem})`
+-          : "Athena has not heard back about the engine yet",
+-    };
+-  }
+-  const chosen: EngineProbe | null = probeOf(model.probes, model.engine);
+-  if (chosen?.state === "found") {
+-    // Found is the probe's word; running is the daemon's. A turn goes to the engine the daemon
+-    // is on, so the fact is done only when both name the chosen one.
+-    if (!model.loaded) {
+-      return {
+-        ...base,
+-        standing: "unknown",
+-        summary: `${engineLabel(chosen.id)} is chosen, but Athena has not yet said which engine she is on`,
+-      };
+-    }
+-    if (model.daemonEngine !== model.engine) {
+-      const label = engineLabel(chosen.id);
+-      return {
+-        ...base,
+-        standing: "todo",
+-        summary: model.daemonEngine
+-          ? `${label} is chosen, but Athena is still running on ${engineLabel(model.daemonEngine)}`
+-          : `${label} is chosen, and Athena is still starting up on it`,
+-      };
+-    }
+-    if (model.daemonHealth === "failed") {
+-      return {
+-        ...base,
+-        standing: "missing",
+-        summary: `${engineLabel(chosen.id)} is chosen, but Athena could not start on it`,
+-      };
+-    }
+-    if (model.daemonHealth === "stopped") {
+-      return {
+-        ...base,
+-        standing: "todo",
+-        summary: `${engineLabel(chosen.id)} is chosen, but Athena is not running`,
+-      };
+-    }
+-    if (model.daemonHealth !== "ready") {
+-      return {
+-        ...base,
+-        standing: "todo",
+-        summary: `${engineLabel(chosen.id)} is chosen, and Athena is still starting up on it`,
+-      };
+-    }
+-    return { ...base, standing: "done", summary: `${engineLabel(chosen.id)} is ready` };
+-  }
+-  const found = usable(model.probes);
+-  if (chosen && chosen.state === "not_logged_in") {
+-    return {
+-      ...base,
+-      standing: "missing",
+-      summary: `${engineLabel(chosen.id)} is installed but not signed in`,
+-    };
+-  }
+-  if (found.length > 0) {
+-    return {
+-      ...base,
+-      standing: "todo",
+-      summary: `${found.length} of ${model.probes.length} ready, but another is chosen`,
+-    };
+-  }
+-  return {
+-    ...base,
+-    standing: "missing",
+-    summary:
+-      model.probes.length === 0
+-        ? "Athena was told of no engines at all"
+-        : `none of the ${model.probes.length} can be used yet`,
+-  };
++  const { standing, summary } = engineStateOf(model);
++  return fact("engine", standing, summary);
+ }
+ 
+ export function pageFact(model: SetupModel): Fact {
+-  const base = { key: "page" as const };
+-  if (model.tabs.length === 0) {
+-    return { ...base, standing: "todo", summary: "none open yet" };
+-  }
+-  const first = model.tabs[0].host;
+-  return {
+-    ...base,
+-    standing: "done",
+-    summary: model.tabs.length === 1 ? `open on ${first}` : `${model.tabs.length} open`,
+-  };
++  const n = model.tabs.length;
++  if (n === 0) return fact("page", "todo", "none open yet");
++  return fact("page", "done", n === 1 ? `open on ${model.tabs[0].host}` : `${n} open`);
+ }
+ 
+ export function brainFact(model: SetupModel): Fact {
+-  const base = { key: "brain" as const };
+-  if (model.brainPath.trim().length > 0) {
+-    return { ...base, standing: "done", summary: "a directory of its own" };
+-  }
+-  // Not `missing`: the daemon has a default and it works. It is `todo` because a person who
+-  // cares where their episodes are written has not yet said.
+-  return { ...base, standing: "todo", summary: "the daemon's default directory" };
++  // Not `missing` when empty: the daemon has a default and it works. It is `todo` because a person
++  // who cares where their episodes are written has not yet said.
++  return model.brainPath.trim().length > 0
++    ? fact("brain", "done", "a directory of its own")
++    : fact("brain", "todo", "the daemon's default directory");
+ }
+ 
+ /** Never required: a machine with no microphone runs every act but the spoken one. */
+ export function micFact(model: SetupModel): Fact {
+-  const base = { key: "mic" as const };
+   switch (model.mic) {
+     case "granted":
+-      return { ...base, standing: "done", summary: model.micDetail || "granted" };
++      return fact("mic", "done", model.micDetail || "granted");
+     case "denied":
+-      return { ...base, standing: "missing", summary: model.micDetail || "refused by the webview" };
++      return fact("mic", "missing", model.micDetail || "refused by the webview");
+     case "unsupported":
+-      return { ...base, standing: "missing", summary: model.micDetail || "none on this machine" };
++      return fact("mic", "missing", model.micDetail || "none on this machine");
+     default:
+-      return { ...base, standing: "unknown", summary: "not asked yet" };
++      return fact("mic", "unknown", "not asked yet");
+   }
+ }
+ 
+ export function voiceFact(model: SetupModel): Fact {
+-  const base = { key: "voice" as const };
+-  if (model.voiceAvailable) {
+-    return { ...base, standing: "done", summary: "ready to listen" };
+-  }
+-  return {
+-    ...base,
+-    standing: model.daemonHealth === "ready" ? "missing" : "unknown",
+-    summary: model.voiceReason || "not known yet",
+-  };
++  if (model.voiceAvailable) return fact("voice", "done", "ready to listen");
++  return fact("voice", model.daemonHealth === "ready" ? "missing" : "unknown", model.voiceReason || "not known yet");
+ }
+ 
+ /**
+@@ -184,20 +91,18 @@ export function isReady(model: SetupModel): boolean {
+ /** Why the machine is not ready, as the sentence on the disabled button. Empty when it is. */
+ export function notReadyBecause(model: SetupModel): string {
+   const engine = engineFact(model);
+-  const page = pageFact(model);
+-  if (engine.standing !== "done" && page.standing !== "done") {
+-    return "Get an engine ready and open a page first.";
+-  }
++  const page = pageFact(model).standing === "done";
++  if (engine.standing !== "done" && !page) return "Get an engine ready and open a page first.";
+   if (engine.standing === "unknown") {
+     // "Still checking" only while a check runs: a check that failed, or one nobody has answered,
+     // would leave the person waiting on a button nothing is going to enable.
+-    if (model.probes === null && model.checking) return "Athena is still checking the engine.";
+-    if (model.probes === null && model.problem) return "Athena could not check the engine. Check again under Mind.";
++    const kind = engineStateOf(model).kind;
++    if (kind === "checking") return "Athena is still checking the engine.";
++    if (kind === "check-failed") return "Athena could not check the engine. Check again under Mind.";
+     return `${engine.summary}.`;
+   }
+   if (engine.standing !== "done") return `The engine cannot run a turn yet: ${engine.summary}.`;
+-  if (page.standing !== "done") return "Open a page first — Athena works inside one.";
+-  return "";
++  return page ? "" : "Open a page first — Athena works inside one.";
+ }
+ 
+ /** The engine passage's opening sentence, composed from the figures. */
