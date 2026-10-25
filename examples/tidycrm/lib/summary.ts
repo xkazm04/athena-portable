@@ -17,7 +17,7 @@ import "server-only";
  */
 import { MAX_COMPANIES, SEGMENT_LABELS, type Segment } from "./constants";
 import { countSegment, companyTotals, db } from "./db";
-import { COMPANY_RULE } from "./mutations";
+import { COMPANY_RULE, MERGE_RULE } from "./mutations";
 
 export interface ExportSummary {
   segment: Segment;
@@ -56,10 +56,11 @@ function one<T extends Record<string, number>>(sql: string, params: string[] = [
 export function exportSummary(segment: Segment): ExportSummary {
   const contacts = countSegment(segment);
 
+  // A company settlement and a merge adoption also leave revisions; neither is a normalisation.
   const normalized = one<{ contacts: number; fields: number }>(
     `SELECT COUNT(DISTINCT contact_id) AS contacts, COUNT(*) AS fields FROM revisions
-     WHERE reverted = 0 AND rules <> ?`,
-    [COMPANY_RULE],
+     WHERE reverted = 0 AND rules NOT IN (?, ?)`,
+    [COMPANY_RULE, MERGE_RULE],
   );
   const company = one<{ domains: number; contacts: number }>(
     `SELECT COUNT(DISTINCT c.domain) AS domains, COUNT(DISTINCT r.contact_id) AS contacts

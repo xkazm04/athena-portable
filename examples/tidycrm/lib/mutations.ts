@@ -11,12 +11,10 @@ import {
   getContact,
   getContacts,
   getPair,
-  isStaleAt,
-  WORKING,
 } from "./db";
+import { restamp, setField, writeField } from "./flags";
 import {
   fieldLabel,
-  isE164,
   NORMALIZABLE_FIELDS,
   planChanges,
   RULES,
@@ -73,29 +71,12 @@ function live(c: Contact): boolean {
   return c.deleted_at === null && c.merged_into === null;
 }
 
-function refreshPairFlag(tx: Db, contactId: string): void {
-  const row = tx.get<{ n: number }>(
-    "SELECT COUNT(*) AS n FROM merge_pairs WHERE status = 'open' AND (keep_id = ? OR drop_id = ?)",
-    [contactId, contactId],
-  );
-  tx.run("UPDATE contacts SET in_open_pair = ? WHERE id = ?", [(row?.n ?? 0) > 0 ? 1 : 0, contactId]);
-}
-
-/**
- * Restamp `conflict` for every row on a domain.
- *
- * `conflict` is a stored, indexed flag (lib/db.ts), which makes every write that changes a
- * domain's spelling set responsible for it - the same contract `phone_ok` gets after a phone
- * write. The count deliberately mirrors `domainSpellings`' own predicate, because that is the
- * figure the sheet's clause is built from and the two must not be able to disagree.
+/*
+ * Every stored flag (`phone_ok`, `is_stale`, `conflict`, `in_open_pair`) is written by lib/flags.ts
+ * and nowhere else. A field write goes through `writeField`, which records the revision and
+ * restamps what the field feeds; a write that moves a row out of the list or changes a pair's
+ * status names the rows and domains it could have moved to `restamp`.
  */
-function refreshConflict(tx: Db, domain: string): void {
-  const row = tx.get<{ n: number }>(
-    `SELECT COUNT(DISTINCT TRIM(company)) AS n FROM contacts WHERE domain = ? AND ${WORKING}`,
-    [domain],
-  );
-  tx.run("UPDATE contacts SET conflict = ? WHERE domain = ?", [(row?.n ?? 0) > 1 ? 1 : 0, domain]);
-}
 
 /**
  * Removing a contact from the working list closes the open pairs that depend on it.
@@ -111,12 +92,8 @@ function closeDependentPairs(tx: Db, contactId: string): void {
   );
   for (const p of pairs) {
     tx.run("UPDATE merge_pairs SET status = 'skipped' WHERE id = ?", [p.id]);
-    refreshPairFlag(tx, p.keep_id === contactId ? p.drop_id : p.keep_id);
   }
-}
-
-function domainOf(tx: Db, contactId: string): string | undefined {
-  return tx.get<{ domain: string }>("SELECT domain FROM contacts WHERE id = ?", [contactId])?.domain;
+  restamp(tx, { ids: [contactId, ...pairs.map((p) => (p.keep_id === contactId ? p.drop_id : p.keep_id))] });
 }
 
 /* ------------------------------------------------------------- normalize */
@@ -145,29 +122,20 @@ export function normalizeFields(ids: string[], rules: NormalizeRule[]): Mutation
   const ts = new Date().toISOString();
   const revisionIds = db().withTx((tx) => {
     const written: number[] = [];
-    const respelled = new Set<string>();
     for (const plan of plans) {
       for (const change of plan.changes) {
-        const { lastInsertRowid } = tx.run(
-          `INSERT INTO revisions (contact_id, field, old_value, new_value, rules, ts)
-           VALUES (?, ?, ?, ?, ?, ?)`,
-          [plan.contact_id, change.field, change.from, change.to, change.rules.join(","), ts],
+        written.push(
+          writeField(tx, {
+            contact_id: plan.contact_id,
+            field: change.field,
+            from: change.from,
+            to: change.to,
+            rules: change.rules.join(","),
+            ts,
+          }),
         );
-        written.push(lastInsertRowid);
-        tx.run(`UPDATE contacts SET ${change.field} = ? WHERE id = ?`, [change.to, plan.contact_id]);
-        if (change.field === "phone") {
-          tx.run("UPDATE contacts SET phone_ok = ? WHERE id = ?", [
-            isE164(change.to) ? 1 : 0,
-            plan.contact_id,
-          ]);
-        }
-        if (change.field === "company") {
-          const domain = domainOf(tx, plan.contact_id);
-          if (domain) respelled.add(domain);
-        }
       }
     }
-    for (const domain of respelled) refreshConflict(tx, domain);
     return written;
   });
 
@@ -304,15 +272,17 @@ export function resolveCompany(domain: string, canonicalName: string): MutationR
   const revisionIds = db().withTx((tx) => {
     const written: number[] = [];
     for (const row of rows) {
-      const { lastInsertRowid } = tx.run(
-        `INSERT INTO revisions (contact_id, field, old_value, new_value, rules, ts)
-         VALUES (?, 'company', ?, ?, ?, ?)`,
-        [row.id, row.company, plan.canonical_name, COMPANY_RULE, ts],
+      written.push(
+        writeField(tx, {
+          contact_id: row.id,
+          field: "company",
+          from: row.company,
+          to: plan.canonical_name,
+          rules: COMPANY_RULE,
+          ts,
+        }),
       );
-      written.push(lastInsertRowid);
-      tx.run("UPDATE contacts SET company = ? WHERE id = ?", [plan.canonical_name, row.id]);
     }
-    refreshConflict(tx, plan.domain);
     return written;
   });
 
@@ -336,6 +306,12 @@ export function resolveCompany(domain: string, canonicalName: string): MutationR
 }
 
 /* ----------------------------------------------------------------- merge */
+
+/**
+ * The tag a merge adoption writes into `revisions.rules`. The survivor's history says why its phone
+ * or date changed, and the export tells an adoption apart from a normalisation by this tag.
+ */
+export const MERGE_RULE = "merge_contacts";
 
 function adoptions(keep: Contact, drop: Contact): { field: "phone" | "last_activity_at"; value: string }[] {
   const out: { field: "phone" | "last_activity_at"; value: string }[] = [];
@@ -380,24 +356,20 @@ export function mergeContacts(keepId: string, dropId: string): MutationResult {
     };
   }
   const taken = adoptions(keep, drop);
+  const ts = new Date().toISOString();
 
   db().withTx((tx) => {
-    for (const a of taken) tx.run(`UPDATE contacts SET ${a.field} = ? WHERE id = ?`, [a.value, keep.id]);
-    if (taken.some((a) => a.field === "phone")) {
-      tx.run("UPDATE contacts SET phone_ok = 1 WHERE id = ?", [keep.id]);
+    // Through the door, so each adoption leaves a revision on the survivor and restamps the flag
+    // its field feeds (`phone_ok` for a phone, `is_stale` for a date).
+    for (const a of taken) {
+      writeField(tx, { contact_id: keep.id, field: a.field, from: keep[a.field], to: a.value, rules: MERGE_RULE, ts });
     }
-    // `is_stale` is stored too, so carrying a newer activity date over restamps it.
-    const activity = taken.find((a) => a.field === "last_activity_at");
-    if (activity) {
-      tx.run("UPDATE contacts SET is_stale = ? WHERE id = ?", [isStaleAt(activity.value) ? 1 : 0, keep.id]);
-    }
-    tx.run("UPDATE contacts SET merged_into = ?, in_open_pair = 0 WHERE id = ?", [keep.id, drop.id]);
+    tx.run("UPDATE contacts SET merged_into = ? WHERE id = ?", [keep.id, drop.id]);
     tx.run("UPDATE merge_pairs SET status = 'merged' WHERE id = ?", [pair.id]);
     // The settled pair is already 'merged', so this closes only the others the drop stood in.
     closeDependentPairs(tx, drop.id);
-    refreshPairFlag(tx, keep.id);
     // The dropped record leaves the working list, and with it possibly its domain's last odd spelling.
-    refreshConflict(tx, drop.domain);
+    restamp(tx, { ids: [keep.id, drop.id], domains: [drop.domain] });
   });
 
   const carried = taken.length === 0 ? "nothing carried over" : `carried over ${taken.map((a) => a.field).join(" and ")}`;
@@ -410,6 +382,7 @@ export function mergeContacts(keepId: string, dropId: string): MutationResult {
       `Merged ${displayName(drop)} (${drop.id}) into ${displayName(keep)} (${keep.id}); ` +
       `${carried} (${pair.id}, ${Math.round(pair.confidence * 100)}% confidence).`,
     reversible: false,
+    ts,
   });
   return { ok: true, summary: `Merged ${drop.id} into ${keep.id}.` };
 }
@@ -426,11 +399,11 @@ export function deleteContacts(ids: string[]): MutationResult {
     const emptied = new Set<string>();
     for (const row of rows) {
       emptied.add(row.domain);
-      tx.run("UPDATE contacts SET deleted_at = ?, in_open_pair = 0 WHERE id = ?", [ts, row.id]);
+      tx.run("UPDATE contacts SET deleted_at = ? WHERE id = ?", [ts, row.id]);
       closeDependentPairs(tx, row.id);
     }
     // Removing rows can collapse a domain's spelling set, which is what `conflict` summarises.
-    for (const domain of emptied) refreshConflict(tx, domain);
+    restamp(tx, { domains: emptied });
   });
 
   logActivity(db(), {
@@ -463,8 +436,7 @@ export function resolvePair(pairId: string, status: Exclude<PairStatus, "open" |
 
   db().withTx((tx) => {
     tx.run("UPDATE merge_pairs SET status = ? WHERE id = ?", [status, pairId]);
-    refreshPairFlag(tx, pair.keep_id);
-    refreshPairFlag(tx, pair.drop_id);
+    restamp(tx, { ids: [pair.keep_id, pair.drop_id] });
   });
 
   const verdict = status === "kept_both" ? "Kept both records" : "Skipped";
@@ -535,17 +507,8 @@ export function applyUndo(tx: Db, entry: ActivityEntry): void {
               `was changed again after it. Undo the later change first.`,
           );
         }
-        tx.run(`UPDATE contacts SET ${rev.field} = ? WHERE id = ?`, [rev.old_value, rev.contact_id]);
-        if (rev.field === "phone") {
-          tx.run("UPDATE contacts SET phone_ok = ? WHERE id = ?", [
-            isE164(rev.old_value) ? 1 : 0,
-            rev.contact_id,
-          ]);
-        }
-        if (rev.field === "company") {
-          const domain = domainOf(tx, rev.contact_id);
-          if (domain) refreshConflict(tx, domain);
-        }
+        // Back through the door's second half: the old value, and the flags it feeds restamped.
+        setField(tx, rev.contact_id, rev.field, rev.old_value);
         tx.run("UPDATE revisions SET reverted = 1 WHERE id = ?", [id]);
       }
       return;
@@ -577,10 +540,7 @@ export function applyUndo(tx: Db, entry: ActivityEntry): void {
         );
       }
       tx.run("UPDATE merge_pairs SET status = 'open' WHERE id = ?", [undo.pair_id]);
-      if (pair) {
-        refreshPairFlag(tx, pair.keep_id);
-        refreshPairFlag(tx, pair.drop_id);
-      }
+      if (pair) restamp(tx, { ids: [pair.keep_id, pair.drop_id] });
       return;
     }
     default:

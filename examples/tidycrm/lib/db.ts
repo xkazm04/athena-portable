@@ -9,10 +9,9 @@ import {
   MAX_DOMAINS,
   NOW_ISO,
   PAGE_SIZE,
-  STALE_MONTHS,
   type Segment,
 } from "./constants";
-import { isE164 } from "./normalize";
+import { restamp, WORKING } from "./flags";
 import { buildSeed } from "./seed-data";
 import type {
   Contact,
@@ -26,6 +25,8 @@ import type {
 } from "./types";
 
 export { APP_ID };
+/** The flags' rules live with their only writer (lib/flags.ts); the reads keep their old import. */
+export { isStaleAt, WORKING } from "./flags";
 
 /**
  * Defect flags are stored, not computed at read time, and every one of them is indexed. 800 rows is
@@ -85,43 +86,23 @@ CREATE TABLE IF NOT EXISTS revisions (
 CREATE INDEX IF NOT EXISTS revisions_contact ON revisions (contact_id, id DESC);
 `;
 
-function staleCutoff(): string {
-  const d = new Date(NOW_ISO);
-  d.setUTCMonth(d.getUTCMonth() - STALE_MONTHS);
-  return d.toISOString();
-}
-
-const STALE_CUTOFF = staleCutoff();
-
-/**
- * The one rule `is_stale` is stamped from. The flag is stored, so every write that moves
- * `last_activity_at` restamps it through here, as a phone write restamps `phone_ok` via `isE164`.
- */
-export function isStaleAt(lastActivityAt: string): boolean {
-  return lastActivityAt < STALE_CUTOFF;
-}
-
 function seed(db: Db): void {
   db.exec(SCHEMA);
   createActivityTable(db);
 
-  const { contacts, pairs, conflictDomains } = buildSeed();
-  const conflicted = new Set(conflictDomains);
-  const inPair = new Set(pairs.flatMap((p) => [p.keep_id, p.drop_id]));
+  const { contacts, pairs } = buildSeed();
 
+  // The rows go in with the schema's default flags; `restamp` below stamps them from the same
+  // rules every later write restamps through, so the seed cannot disagree with a write.
   for (const c of contacts) {
     db.run(
       `INSERT INTO contacts
          (id, first_name, last_name, email, phone, company, domain, title, city,
-          last_activity_at, created_at, phone_ok, is_stale, conflict, in_open_pair)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          last_activity_at, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       [
         c.id, c.first_name, c.last_name, c.email, c.phone, c.company, c.domain, c.title, c.city,
         c.last_activity_at, c.created_at,
-        isE164(c.phone) ? 1 : 0,
-        isStaleAt(c.last_activity_at) ? 1 : 0,
-        conflicted.has(c.domain) ? 1 : 0,
-        inPair.has(c.id) ? 1 : 0,
       ],
     );
   }
@@ -133,6 +114,7 @@ function seed(db: Db): void {
       [p.id, p.keep_id, p.drop_id, p.confidence, JSON.stringify(p.evidence)],
     );
   }
+  restamp(db, "all");
 
   const confident = pairs.filter((p) => p.confidence >= CONFIDENT_AT).length;
   logActivity(db, {
@@ -154,14 +136,6 @@ export function db(): Db {
 /* ---------------------------------------------------------------- reads */
 
 const LIVE = "deleted_at IS NULL";
-
-/**
- * The working list: live and not merged away. A company spelling is counted over this set and
- * nothing wider, because it is the set `resolve_company` rewrites - a merged-away record keeps its
- * old spelling forever, and counting it would hold its domain in conflict after every survivor
- * agrees (lib/mutations.ts `refreshConflict` uses the same predicate).
- */
-export const WORKING = `${LIVE} AND merged_into IS NULL`;
 
 /**
  * The studio's fifteen client domains, as a SQL list.
