@@ -49,7 +49,7 @@ export const OMISSIONS: Omission[] = [
     reason:
       "the Proving Ground: Nemotron tested beside a Claude control, an evaluation bench outside the product's runtime",
     source: "src/athena/proving/__init__.py; README §9; ADR 0030",
-    modules: 61,
+    modules: 62,
   },
   {
     path: "src/athena/vitals/",
