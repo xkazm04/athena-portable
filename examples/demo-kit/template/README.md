@@ -1,8 +1,8 @@
 # Template host app
 
 A working skeleton of the shared scaffold from design 4.6: auth-less, SQLite seed, a list view, a
-detail view, an activity log, and one registered action plus one readable. It ships **without**
-Athena. Copy it, rename it, give it a domain.
+detail view, an activity log, read-only tools for the view and the selection, and one reversible
+act (archive or reopen records, with Undo). It ships **without** Athena. Copy it, rename it, give it a domain.
 
 This directory is deliberately **not** a workspace package (`pnpm-workspace.yaml` matches
 `examples/*`, and this lives one level deeper), so `pnpm install` ignores it until you copy it out.
@@ -66,7 +66,8 @@ run at once.
 | `components/Levels.tsx` | the three-depth read (L0 owners → L1 records → L2 one record) on the layered-UI formula: `useLevelFlight`, `presenceOf`, `sharedIdentity`/`useSharedIdentity`, `useOverlayEscape`, `useTokens` |
 | `app/[id]/page.tsx` | detail view |
 | `app/activity/page.tsx` | the shared activity log, with Undo bound to a server action |
-| `app/actions.ts` | `undoAction` - the app-specific half of `undoActivity` |
+| `app/actions.ts` | `setStatusAction` and `undoAction` - the server half of the act and of `undoActivity` |
+| `lib/acts.ts`, `components/StatusAction.tsx` | the reversible act to copy: `planStatusChange` refuses a no-op or more than 50 ids, `setRecordStatus` (`lib/db.ts`) logs one row and returns `undoId`, the toast offers Undo, `applyUndo` restores only records no later act moved and names the rest, and `set_record_status` offers the same act to an agent as an AUTO tool |
 
 The agent seam is WebMCP: `useWebMCPTool` registers each capability on `document.modelContext`,
 where any browser agent that speaks the standard - Athena through `packages/athena-bridge`

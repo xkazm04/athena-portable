@@ -11,8 +11,9 @@ export default function ActivityPage() {
     <>
       <h1 className="dk-page-title">Activity</h1>
       <p className="dk-page-lede">
-        Every mutating action lands here, whoever took it. Athena is not onboarded yet, so every row
-        below says <code>You</code> or <code>System</code>.
+        Every mutating action lands here, whoever took it. Archiving or reopening records logs one row
+        with its Undo; an undo puts back only the records no later act has moved since, and names any
+        it left alone.
       </p>
       <ActivityLog entries={entries} onUndo={undoAction} />
     </>

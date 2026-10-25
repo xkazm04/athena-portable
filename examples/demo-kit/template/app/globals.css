@@ -179,3 +179,21 @@ body {
   background: var(--dk-surface);
   box-shadow: var(--dk-shadow);
 }
+
+/*
+ * The act bar: what the reader can do with what they selected (the list) or are reading (a
+ * record). It appears with a selection and offers only the moves the plan says would change
+ * something, so it never shows a button that does nothing. Spacing is the kit's scale.
+ */
+.dk-act-bar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--dk-space-3);
+  margin-bottom: var(--dk-space-6);
+}
+
+.dk-act-count {
+  color: var(--dk-ink-soft);
+  font-size: var(--dk-text-sm);
+}
