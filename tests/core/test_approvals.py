@@ -7,6 +7,7 @@ morning, and an answer the card never offered.
 
 from __future__ import annotations
 
+import random
 import re
 import sqlite3
 import threading
@@ -544,3 +545,252 @@ def test_the_cards_of_some_turns_are_counted_by_state_whatever_their_conversatio
 def test_a_card_names_only_a_minted_turn(approvals: Approvals) -> None:
     with pytest.raises(ApprovalError, match="not a turn id"):
         _create(approvals, turn_id="t1")
+
+
+# -- one declared lifecycle, every verdict an append-only event (ADR 0164) ----------------------
+
+
+def _fold(events: Any) -> tuple[str | None, str | None, str | None]:
+    """The row a history says, ``(status, choice, consumed_at)``, replayed oldest first."""
+    status: str | None = None
+    choice: str | None = None
+    consumed_at: str | None = None
+    for event in events:
+        if event.kind == "consumed":
+            consumed_at = event.at
+            continue
+        status = event.status_after
+        if event.kind in ("approved", "declined"):
+            choice = event.choice
+    return status, choice, consumed_at
+
+
+class _Refusals:
+    """A context that eats an :class:`ApprovalError`, the refusals a random walk provokes."""
+
+    def __enter__(self) -> None:
+        return None
+
+    def __exit__(self, kind: Any, value: Any, tb: Any) -> bool:
+        return kind is not None and issubclass(kind, ApprovalError)
+
+
+def test_a_filed_card_has_exactly_one_filed_event(approvals: Approvals) -> None:
+    row = _create(approvals)
+
+    (event,) = approvals.history(row.id).events
+    assert (event.kind, event.status_after, event.at) == ("filed", "pending", row.created_at)
+    assert event.approval_id == row.id and not event.backfilled
+
+
+def test_declining_an_approval_supersedes_it_and_the_yes_stays_readable(
+    approvals: Approvals,
+) -> None:
+    row = _create(approvals)
+    t1, t2 = T0 + timedelta(minutes=1), T0 + timedelta(minutes=9)
+    approvals.resolve(row.id, "approve", now=t1)
+    assert approvals.decline_approved(row.id, "decline", now=t2) is True
+
+    stored = approvals.get(row.id)
+    assert stored is not None and stored.status == "declined"
+    filed, approved, declined = approvals.history(row.id).events
+    assert [e.kind for e in (filed, approved, declined)] == ["filed", "approved", "declined"]
+    assert (approved.choice, approved.at) == ("approve", iso(t1))
+    assert (declined.choice, declined.at) == ("decline", iso(t2))
+    assert declined.supersedes == approved.seq
+    assert approved.supersedes is None
+
+
+def test_consume_writes_one_consumed_event_and_a_refused_spend_writes_none(
+    approvals: Approvals,
+) -> None:
+    row = _create(approvals)
+    approvals.resolve(row.id, APPROVE_TOKEN, now=T0 + timedelta(minutes=1))
+
+    results = [approvals.consume(row.id, now=T0 + timedelta(minutes=m)) for m in (2, 3)]
+    assert sorted(results) == [False, True]
+    kinds = [e.kind for e in approvals.history(row.id).events]
+    assert kinds.count("consumed") == 1
+
+    for setup in ("pending", "decline", "expire"):
+        other = _create(approvals, params={"n": setup})
+        if setup == "decline":
+            approvals.resolve(other.id, "decline", now=T0 + timedelta(minutes=1))
+        elif setup == "expire":
+            approvals.expire_due(T0 + timedelta(days=2))
+        before = approvals.history(other.id).events
+        assert approvals.consume(other.id, now=T0 + timedelta(days=3)) is False
+        assert approvals.history(other.id).events == before
+
+
+def test_every_expired_row_has_exactly_one_expired_event(approvals: Approvals) -> None:
+    due = [_create(approvals, params={"n": n}, ttl=timedelta(hours=1)) for n in range(3)]
+    sweep = T0 + timedelta(hours=2)
+    assert sorted(approvals.expire_due(sweep)) == sorted(r.id for r in due)
+    assert approvals.expire_due(sweep + timedelta(hours=1)) == []
+    for row in due:
+        expired = [e for e in approvals.history(row.id).events if e.kind == "expired"]
+        assert len(expired) == 1
+        assert (expired[0].reason, expired[0].at) == ("expired", iso(sweep))
+
+    late = _create(approvals, params={"n": "late"}, ttl=timedelta(hours=1), now=sweep)
+    for _ in range(2):
+        with pytest.raises(ApprovalError):
+            approvals.resolve(late.id, APPROVE_TOKEN, now=sweep + timedelta(hours=5))
+    assert [e.kind for e in approvals.history(late.id).events] == ["filed", "expired"]
+
+
+def test_a_refused_resolve_writes_no_event(approvals: Approvals) -> None:
+    row = _create(approvals)
+    before = approvals.history(row.id).events
+    with pytest.raises(ApprovalError):
+        approvals.resolve(row.id, "sure", now=T0 + timedelta(minutes=1))
+    assert approvals.history(row.id).events == before
+
+    approvals.resolve(row.id, "decline", now=T0 + timedelta(minutes=1))
+    answered = approvals.history(row.id).events
+    with pytest.raises(ApprovalError):
+        approvals.resolve(row.id, APPROVE_TOKEN, now=T0 + timedelta(minutes=2))
+    assert approvals.history(row.id).events == answered
+
+    with pytest.raises(ApprovalError):
+        approvals.resolve("apr_000000000000", APPROVE_TOKEN, now=T0)
+    assert approvals.history("apr_000000000000").events == ()
+
+
+def test_the_lifecycle_is_one_table_and_every_history_folds_to_its_row(
+    approvals: Approvals,
+) -> None:
+    from athena.core import approvals as module
+
+    assert module.APPROVAL_TRANSITIONS == {
+        ("pending", "approved"): "approved",
+        ("pending", "declined"): "declined",
+        ("pending", "expired"): "expired",
+        ("approved", "consumed"): "approved",
+        ("approved", "declined"): "declined",
+    }
+    edges = re.findall(
+        r"^\s+(\w+)(?:, unspent)? --.*?-+> (\w+)", module.__doc__ or "", flags=re.MULTILINE
+    )
+    declared = [(src, dst) for (src, _), dst in module.APPROVAL_TRANSITIONS.items()]
+    assert sorted(edges) == sorted(declared)
+
+    rng = random.Random(20261025)
+    rows: list[str] = []
+    clock = T0
+    for _ in range(200):
+        clock += timedelta(minutes=rng.randint(1, 20))
+        op = rng.choice(["create", "resolve", "resolve", "expire", "consume", "decline"])
+        if op == "create" or not rows:
+            if len(rows) < 10:
+                ttl = timedelta(minutes=rng.choice([30, 90, 600]))
+                rows.append(_create(approvals, params={"n": len(rows)}, ttl=ttl, now=clock).id)
+            continue
+        target = rng.choice(rows)
+        token = rng.choice(["approve", "approve", "decline", "sure"])
+        if op == "resolve":
+            with _Refusals():
+                approvals.resolve(target, token, now=clock)
+        elif op == "expire":
+            approvals.expire_due(clock)
+        elif op == "consume":
+            approvals.consume(target, now=clock)
+        else:
+            approvals.decline_approved(target, token, now=clock)
+
+    assert len(rows) == 10
+    trail: list[Any] = []
+    for approval_id in rows:
+        stored = approvals.get(approval_id)
+        assert stored is not None
+        trail.extend(approvals.history(approval_id).events)
+        assert _fold(approvals.history(approval_id).events) == (
+            stored.status,
+            stored.choice,
+            stored.consumed_at,
+        )
+    kinds = {e.kind for e in trail}
+    assert kinds == {"filed", "approved", "declined", "expired", "consumed"}, kinds
+    assert any(e.supersedes is not None for e in trail), "the walk declines a yes"
+
+
+def test_a_brain_from_before_the_event_table_is_backfilled_once_on_open(tmp_path: Path) -> None:
+    brain = Brain(tmp_path / "brain")
+    later = (T0 + timedelta(minutes=5)).isoformat()
+    spent = (T0 + timedelta(minutes=6)).isoformat()
+    legacy = [
+        ("apr_00000000000a", "pending", None, None, None, None),
+        ("apr_00000000000b", "approved", "approve", None, later, spent),
+        ("apr_00000000000c", "declined", "decline", None, later, None),
+        ("apr_00000000000d", "expired", None, "expired", later, None),
+    ]
+    with brain.write_txn() as con:
+        con.execute(APPROVAL_SCHEMA[0])
+        for approval_id, status, choice, reason, resolved, consumed in legacy:
+            con.execute(
+                """INSERT INTO companion_approval
+                   (id, action, params_json, origin, conversation_id, surface, options_json,
+                    status, choice, reason, created_at, expires_at, resolved_at, consumed_at)
+                   VALUES (?, 'host.invoices.fill', '{}', 'host:invoices', ?, 'panel',
+                           '["approve","decline"]', ?, ?, ?, ?, ?, ?, ?)""",
+                (
+                    approval_id,
+                    CONVERSATION,
+                    status,
+                    choice,
+                    reason,
+                    T0.isoformat(),
+                    (T0 + timedelta(days=1)).isoformat(),
+                    resolved,
+                    consumed,
+                ),
+            )
+
+    approvals = Approvals(brain)
+    counts = {a: len(approvals.history(a).events) for a, *_ in legacy}
+    Approvals(brain)  # a second open backfills nothing twice
+
+    for approval_id, *_ in legacy:
+        stored = approvals.get(approval_id)
+        assert stored is not None
+        events = approvals.history(approval_id).events
+        assert len(events) == counts[approval_id]
+        assert events and all(e.backfilled for e in events)
+        assert [e.kind for e in events].count("filed") == 1
+        assert _fold(events) == (stored.status, stored.choice, stored.consumed_at)
+
+
+def test_the_readers_answer_exactly_as_before_for_the_same_ops(approvals: Approvals) -> None:
+    turn = ids.mint("turn")
+    a = _create(approvals, turn_id=turn, params={"n": 1})
+    b = _create(approvals, turn_id=turn, params={"n": 2}, now=T0 + timedelta(minutes=1))
+    c = _create(approvals, turn_id=turn, params={"n": 3}, now=T0 + timedelta(minutes=2))
+    d = _create(approvals, params={"n": 4}, ttl=timedelta(minutes=30))
+    _create(approvals, params={"n": 5}, now=T0 + timedelta(minutes=3))
+    approvals.resolve(a.id, APPROVE_TOKEN, now=T0 + timedelta(minutes=4))
+    assert approvals.consume(a.id, now=T0 + timedelta(minutes=5))
+    approvals.resolve(b.id, APPROVE_TOKEN, now=T0 + timedelta(minutes=4))
+    assert approvals.decline_approved(b.id, "decline", now=T0 + timedelta(minutes=6))
+    assert approvals.expire_due(T0 + timedelta(hours=1)) == [d.id]
+
+    page = approvals.pending(1, now=T0 + timedelta(hours=1))
+    assert ([r.id for r in page.rows], page.total, page.footer()) == ([c.id], 2, "(showing 1 of 2)")
+    cards = approvals.of_turns([turn])
+    assert (cards.total, cards.by_status, cards.consumed) == (
+        3,
+        {"approved": 1, "declined": 1, "pending": 1},
+        1,
+    )
+    within = T0 + timedelta(hours=1)
+    assert approvals.spent_recently("host.invoices.fill", {"n": 1}, now=within) == iso(
+        T0 + timedelta(minutes=4)
+    )
+    assert approvals.spent_recently("host.invoices.fill", {"n": 2}, now=within) is None
+    grant = approvals.describe(b.id)
+    assert (grant.status, grant.choice, grant.consumed_at) == ("declined", "decline", None)
+    closed = approvals.get(b.id)
+    assert closed is not None and closed.resolved_at == iso(T0 + timedelta(minutes=6))
+    expired = approvals.get(d.id)
+    assert expired is not None
+    assert (expired.reason, expired.resolved_at) == ("expired", iso(T0 + timedelta(hours=1)))

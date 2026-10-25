@@ -1,6 +1,6 @@
 """The approval table — the gate's durable half (README §3.2 steps 4 and 6, §3.3; ADR 0005).
 
-Lifecycle, and there is no other edge::
+Lifecycle, and there is no other edge (:data:`APPROVAL_TRANSITIONS` is this diagram as code)::
 
     pending --resolve("approve")---------------> approved
     pending --resolve(another offered token)---> declined
@@ -8,7 +8,7 @@ Lifecycle, and there is no other edge::
     approved --consume (the gate lets it through)--> approved, consumed_at set   (once, ever)
     approved, unspent --decline_approved(another offered token)--> declined   (ADR 0060)
 
-Four rules hold the module together.
+Five rules hold the module together.
 
 **The row is the grant.** :meth:`Approvals.describe` returns the action and the parameters the row
 was created for, canonicalised. README §3.2 step 6 replays the gate with an approval id once the
@@ -35,6 +35,16 @@ does not depend on the route being the only caller that holds an approval id.
 a resolve that arrives after ``expires_at`` expires the row itself and refuses. A stale card in a
 panel that has been open all night can never be clicked into an approval.
 
+**A verdict is superseded, never rewritten.** Every change of a row goes through one chokepoint,
+``_transition``: it looks the edge up in :data:`APPROVAL_TRANSITIONS`, applies the conditional
+``UPDATE`` the table implies, and only when that write landed (``rowcount == 1``) appends an
+immutable event to ``companion_approval_event`` in the same transaction. The row stays the
+projection every reader uses (its ``choice`` and ``resolved_at`` are the effective verdict, the
+head of the chain); :meth:`Approvals.history` is the trail. An approval declined after the fact
+(ADR 0060) therefore reads "approved at T1, declined at T2", the decline naming the yes it
+``supersedes`` (ADR 0164). A row from before the event table gains its trail on open, rebuilt
+from its own columns and marked ``backfilled``.
+
 The rows live in the brain's ``index.sqlite`` because an approval is state about this brain, and a
 brain is portable by copying one directory (README §2 invariant 1). They are created here with the
 same ``CREATE TABLE IF NOT EXISTS`` idiom ``core/brain/schema.py`` uses, and their names are
@@ -52,11 +62,13 @@ exactly the two handles this table needs.
 from __future__ import annotations
 
 import json
+import sqlite3
 from collections.abc import Mapping, Sequence
 from contextlib import closing
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
 from enum import StrEnum
+from types import MappingProxyType
 from typing import Any
 
 from athena.contracts import ids
@@ -65,13 +77,16 @@ from athena.contracts.registry import is_origin
 from athena.core.brain.store import Brain
 
 __all__ = [
+    "APPROVAL_TRANSITIONS",
     "APPROVE_TOKEN",
     "DEFAULT_OPTIONS",
     "DEFAULT_TTL",
     "EXPIRED_REASON",
     "SPENT_LOOKBACK",
     "ApprovalError",
+    "ApprovalEvent",
     "ApprovalGrant",
+    "ApprovalHistory",
     "ApprovalRow",
     "ApprovalStatus",
     "Approvals",
@@ -107,6 +122,24 @@ class ApprovalStatus(StrEnum):
     EXPIRED = "expired"
 
 
+#: The lifecycle, as ``(from status, event kind) -> status after``. The docstring's five edges and
+#: nothing else: ``_transition`` refuses an edge this table does not name, and derives the
+#: ``WHERE`` of its conditional write from the key. No edge leaves a spent row (``consumed_at``
+#: set), which is what makes a spend single and a spent grant undeclinable.
+APPROVAL_TRANSITIONS: Mapping[tuple[str, str], str] = MappingProxyType(
+    {
+        ("pending", "approved"): "approved",
+        ("pending", "declined"): "declined",
+        ("pending", "expired"): "expired",
+        ("approved", "consumed"): "approved",
+        ("approved", "declined"): "declined",
+    }
+)
+
+#: The kinds that record a verdict (the user's, or the clock's), as opposed to the gate's spend.
+_VERDICTS = frozenset({"approved", "declined", "expired"})
+
+
 class ApprovalError(ValueError):
     """A rule the table refuses: an unknown row, a stale one, or an answer it never offered."""
 
@@ -138,6 +171,21 @@ APPROVAL_SCHEMA: tuple[str, ...] = (
     )""",
     "CREATE INDEX IF NOT EXISTS idx_approval_live ON companion_approval(status, expires_at)",
     "CREATE INDEX IF NOT EXISTS idx_approval_created ON companion_approval(created_at)",
+    # Append-only: a line here is written once, by ``create`` or ``_transition``, never updated.
+    """CREATE TABLE IF NOT EXISTS companion_approval_event (
+        seq INTEGER PRIMARY KEY AUTOINCREMENT,
+        approval_id TEXT NOT NULL,
+        kind TEXT NOT NULL,
+        status_after TEXT NOT NULL,
+        choice TEXT,
+        answer TEXT,
+        reason TEXT,
+        supersedes INTEGER,
+        backfilled INTEGER NOT NULL DEFAULT 0,
+        at TEXT NOT NULL
+    )""",
+    "CREATE INDEX IF NOT EXISTS idx_approval_event_id "
+    "ON companion_approval_event(approval_id, seq)",
 )
 
 
@@ -313,6 +361,195 @@ class TurnCards:
     last_at: str = ""
 
 
+@dataclass(frozen=True)
+class ApprovalEvent:
+    """One immutable line of a row's trail (``companion_approval_event``).
+
+    ``kind`` is ``filed`` or the kind of the edge that landed; ``supersedes`` is the ``seq`` of
+    the verdict this one replaced, ``None`` when it replaced none; ``backfilled`` marks a line
+    rebuilt on open from a row older than the trail.
+    """
+
+    seq: int
+    approval_id: str
+    kind: str
+    status_after: str
+    at: str
+    choice: str | None = None
+    answer: str | None = None
+    reason: str | None = None
+    supersedes: int | None = None
+    backfilled: bool = False
+
+
+@dataclass(frozen=True)
+class ApprovalHistory:
+    """A bounded read of one row's trail, oldest first, that says what it left out."""
+
+    events: tuple[ApprovalEvent, ...]
+    total: int
+
+    @property
+    def shown(self) -> int:
+        return len(self.events)
+
+    @property
+    def truncated(self) -> bool:
+        return self.shown < self.total
+
+    def footer(self) -> str:
+        """``(showing N of M)``, or ``""`` when the page is the whole trail."""
+        if not self.truncated:
+            return ""
+        return f"(showing {self.shown} of {self.total})"
+
+
+_EVENT_COLUMNS = (
+    "seq, approval_id, kind, status_after, at, choice, answer, reason, supersedes, backfilled"
+)
+
+
+def _event(raw: Sequence[Any]) -> ApprovalEvent:
+    return ApprovalEvent(
+        seq=int(raw[0]),
+        approval_id=str(raw[1]),
+        kind=str(raw[2]),
+        status_after=str(raw[3]),
+        at=str(raw[4]),
+        choice=None if raw[5] is None else str(raw[5]),
+        answer=None if raw[6] is None else str(raw[6]),
+        reason=None if raw[7] is None else str(raw[7]),
+        supersedes=None if raw[8] is None else int(raw[8]),
+        backfilled=bool(raw[9]),
+    )
+
+
+def _append(
+    con: sqlite3.Connection,
+    approval_id: str,
+    kind: str,
+    status_after: str,
+    at: str,
+    *,
+    choice: str | None = None,
+    answer: str | None = None,
+    reason: str | None = None,
+    supersedes: int | None = None,
+    backfilled: bool = False,
+) -> None:
+    con.execute(
+        """INSERT INTO companion_approval_event
+           (approval_id, kind, status_after, choice, answer, reason, supersedes, backfilled, at)
+           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)""",
+        (
+            approval_id,
+            kind,
+            str(status_after),
+            choice,
+            answer,
+            reason,
+            supersedes,
+            int(backfilled),
+            at,
+        ),
+    )
+
+
+def _transition(
+    con: sqlite3.Connection,
+    approval_id: str,
+    edge: tuple[str, str],
+    at: str,
+    *,
+    choice: str | None = None,
+    answer: str | None = None,
+    reason: str | None = None,
+) -> bool:
+    """The one writer of a row's state: apply ``edge`` if the row is still on its from side.
+
+    The ``WHERE`` comes from the edge: the row is on the from status and unspent, and an expiry
+    is also due at ``at``. ``True`` only when this write moved the row, and only then is an event
+    appended, inside the caller's transaction, so racing writers still split into one winner
+    (ADR 0038) and a refused write leaves no trace. A verdict that replaces an earlier one names
+    it in ``supersedes``.
+    """
+    if edge not in APPROVAL_TRANSITIONS:
+        raise ApprovalError(f"no such approval transition: {edge!r}")
+    source, kind = edge
+    target = APPROVAL_TRANSITIONS[edge]
+    sets: dict[str, Any] = {"status": target}
+    if kind == "consumed":
+        sets["consumed_at"] = at
+    elif kind == "expired":
+        sets.update(reason=reason, resolved_at=at)
+    else:
+        sets.update(choice=choice, resolved_at=at)
+        if source == ApprovalStatus.PENDING:
+            sets["answer"] = answer
+    where = "id = ? AND status = ? AND consumed_at IS NULL"
+    args: list[Any] = [approval_id, source]
+    if kind == "expired":
+        where += " AND expires_at <= ?"
+        args.append(at)
+    assignments = ", ".join(f"{column} = ?" for column in sets)
+    cursor = con.execute(
+        f"UPDATE companion_approval SET {assignments} WHERE {where}", [*sets.values(), *args]
+    )
+    if cursor.rowcount != 1:
+        return False
+    supersedes = None
+    if kind in _VERDICTS and source != ApprovalStatus.PENDING:
+        head = con.execute(
+            """SELECT seq FROM companion_approval_event
+               WHERE approval_id = ? AND kind IN ('approved', 'declined', 'expired')
+               ORDER BY seq DESC LIMIT 1""",
+            (approval_id,),
+        ).fetchone()
+        supersedes = None if head is None else int(head[0])
+    verdict = kind in ("approved", "declined")
+    _append(
+        con,
+        approval_id,
+        kind,
+        target,
+        at,
+        choice=choice if verdict else None,
+        answer=answer if verdict else None,
+        reason=reason if kind == "expired" else None,
+        supersedes=supersedes,
+    )
+    return True
+
+
+def _backfill(con: sqlite3.Connection) -> None:
+    """Give every row with no trail one, rebuilt from its own columns and marked ``backfilled``.
+
+    Only rows from before the event table have none (``create`` files a row and its event in one
+    transaction), so after the first open this selects nothing. What the columns cannot say, such
+    as a yes a later decline replaced, is not invented: the rebuilt trail is the row's last word.
+    """
+    raws = con.execute(
+        """SELECT id, status, choice, answer, reason, created_at, resolved_at, consumed_at
+           FROM companion_approval AS a
+           WHERE NOT EXISTS (
+               SELECT 1 FROM companion_approval_event AS e WHERE e.approval_id = a.id
+           )
+           ORDER BY created_at ASC, rowid ASC"""
+    ).fetchall()
+    for approval_id, status, choice, answer, reason, created, resolved, consumed in raws:
+        ident, state = str(approval_id), str(status)
+        _append(con, ident, "filed", ApprovalStatus.PENDING, str(created), backfilled=True)
+        if state == ApprovalStatus.PENDING:
+            continue
+        at = str(resolved or created)
+        if state == ApprovalStatus.EXPIRED:
+            _append(con, ident, "expired", state, at, reason=reason, backfilled=True)
+        else:
+            _append(con, ident, state, state, at, choice=choice, answer=answer, backfilled=True)
+        if consumed is not None:
+            _append(con, ident, "consumed", state, str(consumed), backfilled=True)
+
+
 #: The projection :func:`_row` reads, in order. One string, so every SELECT agrees with it.
 _COLUMNS = (
     "id, action, params_json, origin, conversation_id, surface, options_json, status, "
@@ -362,6 +599,7 @@ class Approvals:
             con.execute(
                 "CREATE INDEX IF NOT EXISTS idx_approval_turn ON companion_approval(turn_id)"
             )
+            _backfill(con)
 
     # -- writing -------------------------------------------------------------------------------
 
@@ -455,6 +693,7 @@ class Approvals:
                     row.turn_id,
                 ),
             )
+            _append(con, row.id, "filed", ApprovalStatus.PENDING, row.created_at)
         return row
 
     def resolve(
@@ -486,18 +725,19 @@ class Approvals:
                 f"{choice!r} is not one of the answers approval {approval_id} offered: "
                 f"{list(row.options)}"
             )
-        status = ApprovalStatus.APPROVED if choice == APPROVE_TOKEN else ApprovalStatus.DECLINED
+        kind = "approved" if choice == APPROVE_TOKEN else "declined"
         with self.brain.write_txn() as con:
             # Conditional on ``pending``: two processes that both read the card race here and
             # exactly one of them changes a row. The loser is refused below exactly as a second
             # click is, never handed the winner's row as though its own answer had landed.
-            cursor = con.execute(
-                """UPDATE companion_approval
-                   SET status = ?, choice = ?, answer = ?, resolved_at = ?
-                   WHERE id = ? AND status = 'pending'""",
-                (str(status), choice, answer, iso(moment), approval_id),
+            landed = _transition(
+                con,
+                approval_id,
+                (ApprovalStatus.PENDING, kind),
+                iso(moment),
+                choice=choice,
+                answer=answer,
             )
-            landed = cursor.rowcount == 1
         resolved = self.get(approval_id)
         if resolved is None:  # pragma: no cover - the row cannot vanish under its own writer
             raise ApprovalError(f"unknown approval {approval_id}")
@@ -513,14 +753,12 @@ class Approvals:
                 "SELECT id FROM companion_approval WHERE status = 'pending' AND expires_at <= ?",
                 (moment,),
             ).fetchall()
-            expired = [str(raw[0]) for raw in raws]
-            if expired:
-                con.execute(
-                    """UPDATE companion_approval
-                       SET status = 'expired', reason = ?, resolved_at = ?
-                       WHERE status = 'pending' AND expires_at <= ?""",
-                    (EXPIRED_REASON, moment, moment),
-                )
+            edge = (ApprovalStatus.PENDING, "expired")
+            expired = [
+                str(raw[0])
+                for raw in raws
+                if _transition(con, str(raw[0]), edge, moment, reason=EXPIRED_REASON)
+            ]
         return expired
 
     def consume(self, approval_id: str, *, now: datetime | None = None) -> bool:
@@ -534,12 +772,8 @@ class Approvals:
         ``False`` and is left exactly as it was — spending never moves a row's status.
         """
         with self.brain.write_txn() as con:
-            cursor = con.execute(
-                """UPDATE companion_approval SET consumed_at = ?
-                   WHERE id = ? AND status = 'approved' AND consumed_at IS NULL""",
-                (iso(now or _now()), approval_id),
-            )
-            return cursor.rowcount == 1
+            edge = (ApprovalStatus.APPROVED, "consumed")
+            return _transition(con, approval_id, edge, iso(now or _now()))
 
     def decline_approved(
         self,
@@ -559,13 +793,10 @@ class Approvals:
         if row is None or choice == APPROVE_TOKEN or choice not in row.options:
             return False
         with self.brain.write_txn() as con:
-            cursor = con.execute(
-                """UPDATE companion_approval
-                   SET status = 'declined', choice = ?, resolved_at = ?
-                   WHERE id = ? AND status = 'approved' AND consumed_at IS NULL""",
-                (choice, iso(now or _now()), approval_id),
-            )
-            return cursor.rowcount == 1
+            # The 'declined' event names the 'approved' one it supersedes: the yes and its moment
+            # stay in the trail (ADR 0164); only the row's effective verdict moves.
+            edge = (ApprovalStatus.APPROVED, "declined")
+            return _transition(con, approval_id, edge, iso(now or _now()), choice=choice)
 
     # -- reading -------------------------------------------------------------------------------
 
@@ -575,6 +806,26 @@ class Approvals:
                 f"SELECT {_COLUMNS} FROM companion_approval WHERE id = ?", (approval_id,)
             ).fetchone()
         return None if raw is None else _row(raw)
+
+    def history(self, approval_id: str, limit: int = 50) -> ApprovalHistory:
+        """The row's trail, oldest first, at most ``limit`` events, ``total`` counting them all.
+
+        Every verdict the row ever carried is here, a superseded one included, which the row
+        alone cannot say. An unknown id has an empty trail. Read-only.
+        """
+        with closing(self.brain.read_connection()) as con:
+            total = int(
+                con.execute(
+                    "SELECT COUNT(*) FROM companion_approval_event WHERE approval_id = ?",
+                    (approval_id,),
+                ).fetchone()[0]
+            )
+            raws = con.execute(
+                f"""SELECT {_EVENT_COLUMNS} FROM companion_approval_event
+                    WHERE approval_id = ? ORDER BY seq ASC LIMIT ?""",
+                (approval_id, max(limit, 0)),
+            ).fetchall()
+        return ApprovalHistory(events=tuple(_event(raw) for raw in raws), total=total)
 
     def describe(self, approval_id: str) -> ApprovalGrant:
         """The action and parameters this row was created for, so the gate can be replayed.
