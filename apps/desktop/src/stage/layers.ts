@@ -69,6 +69,14 @@ export function reduceLayers(layers: Layer[], action: LayerAction): Layer[] {
   }
 }
 
+/**
+ * True for the one layer whose scene is live: the arriving or resting one. A leaving layer is a
+ * still of the place it was (ADR 0193), so at most one scene runs at any moment.
+ */
+export function isLive(layer: Layer): boolean {
+  return !isLeave(layer.phase);
+}
+
 /** True when nothing is playing: one layer, at rest. */
 export function isSettled(layers: Layer[]): boolean {
   return layers.length === 1 && layers[0]!.phase === "rest";

@@ -8,7 +8,7 @@
  */
 import { act, useEffect } from "react";
 import { createRoot, type Root } from "react-dom/client";
-import { afterEach, beforeEach, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { INITIAL, formatHash, type Path } from "@/depth/model";
 import { startDepth, useDepth } from "@/depth/store";
@@ -271,4 +271,144 @@ it("still rises on an Escape no scene claimed", () => {
   });
   expect(onRise).toHaveBeenCalledTimes(1);
   expect(press.defaultPrevented).toBe(true);
+});
+
+/**
+ * A leaving layer is a still, not a live scene (ADR 0193). Each scene here says when it is live (its
+ * effect ran and has not been cleaned up), so the count of live scenes is read directly.
+ */
+describe("one live scene at any moment", () => {
+  const live = new Set<string>();
+  const cleaned: string[] = [];
+  const heard: string[] = [];
+
+  beforeEach(() => {
+    live.clear();
+    cleaned.length = 0;
+    heard.length = 0;
+  });
+
+  function Counted({ name }: { name: string }) {
+    useEffect(() => {
+      live.add(name);
+      // A document listener with no inert guard: a leaving copy that still ran would hear the key.
+      const onKey = () => heard.push(name);
+      document.addEventListener("keydown", onKey);
+      return () => {
+        live.delete(name);
+        cleaned.push(name);
+        document.removeEventListener("keydown", onKey);
+      };
+    }, [name]);
+    return (
+      <div data-scene={name}>
+        <h2>scene {name}</h2>
+        <canvas data-wave="" width={8} height={8} />
+      </div>
+    );
+  }
+
+  function Counting({ calm = false }: { calm?: boolean }) {
+    const s = useDepth();
+    return (
+      <Stage
+        state={{ path: s.path, from: s.from, move: s.move, seq: s.seq }}
+        calm={calm}
+        renderScene={(p) => <Counted name={formatHash(p)} />}
+        presence={{ pose: "resting", text: "resting", waiting: 0 }}
+        onGo={s.go}
+        onRise={s.rise}
+        onSurface={s.surface}
+        onSettle={s.settle}
+      />
+    );
+  }
+
+  async function mountCounting(calm = false): Promise<HTMLElement> {
+    host = document.createElement("div");
+    document.body.append(host);
+    root = createRoot(host);
+    act(() => root!.render(<Counting calm={calm} />));
+    act(() => {
+      stopDepth = startDepth();
+    });
+    // The still is not first-frame code: the stage fetches it once drawn. Let that land.
+    await act(async () => {
+      await import("./still");
+    });
+    return host;
+  }
+
+  const go = (to: Path) => act(() => useDepth.getState().go(to));
+  const leavingOf = (h: HTMLElement) => [...h.querySelectorAll<HTMLElement>(".stage__scenes > section[data-phase^='leave-']")];
+
+  it("a move unmounts the left scene at once: its cleanup has run and one scene is mounted, before any animationend", async () => {
+    const h = await mountCounting();
+    expect([...live]).toEqual(["#/"]);
+    go({ root: "apps" });
+    expect(h.querySelectorAll(".stage__layer")).toHaveLength(2);
+    expect(cleaned).toEqual(["#/"]);
+    expect([...live]).toEqual(["#/apps"]);
+  });
+
+  it("the leaving layer holds a static copy of the left scene until its animationend, then it is gone", async () => {
+    const h = await mountCounting();
+    go({ root: "apps" });
+    const [leaving] = leavingOf(h);
+    expect(leaving).toBeDefined();
+    expect(leaving!.hasAttribute("data-still")).toBe(true);
+    expect(leaving!.querySelector("h2")!.textContent).toBe("scene #/");
+    expect(leaving!.querySelector("[data-scene='#/'] canvas")).not.toBeNull();
+    expect([...live]).toEqual(["#/apps"]); // the copy is not a mounted scene
+    act(() => {
+      leaving!.dispatchEvent(new Event("animationend", { bubbles: true }));
+    });
+    expect(leavingOf(h)).toHaveLength(0);
+    expect(h.querySelector("[data-still]")).toBeNull();
+    expect(scenes(h)).toEqual(["#/apps"]);
+  });
+
+  it("a key pressed after a move reaches only the arriving scene's document listener, never the leaving one", async () => {
+    await mountCounting();
+    go({ root: "apps" });
+    act(() => {
+      document.dispatchEvent(new KeyboardEvent("keydown", { key: "j", bubbles: true }));
+    });
+    expect(heard).toEqual(["#/apps"]);
+  });
+
+  it("moves during moves keep at most one live scene and at most two stills plus the arriving layer", async () => {
+    const h = await mountCounting();
+    for (const to of [{ root: "apps" }, { root: "mind" }, { root: "chores" }, { root: "voice" }] as Path[]) {
+      go(to);
+      expect(live.size).toBe(1);
+      expect([...live]).toEqual([formatHash(to)]);
+      expect(h.querySelectorAll(".stage__scenes > section[data-still]").length).toBeLessThanOrEqual(2);
+      expect(h.querySelectorAll(".stage__scenes > section").length).toBeLessThanOrEqual(3);
+    }
+    // Every still is one of the places left, never a live copy.
+    for (const s of h.querySelectorAll(".stage__scenes > section[data-still]")) expect(s.getAttribute("data-phase")).toMatch(/^leave-/);
+  });
+
+  it("a left scene's canvas is drawn into its still, so a waveform or a sky does not blank in the leave", async () => {
+    const drawImage = vi.fn();
+    vi.spyOn(HTMLCanvasElement.prototype, "getContext").mockImplementation(function (this: HTMLCanvasElement) {
+      return this.hasAttribute("data-wave") ? ({ drawImage } as unknown as CanvasRenderingContext2D) : null;
+    } as typeof HTMLCanvasElement.prototype.getContext);
+    const h = await mountCounting();
+    const source = h.querySelector("[data-scene='#/'] canvas")!;
+    go({ root: "apps" });
+    const copy = leavingOf(h)[0]!.querySelector("canvas")!;
+    expect(copy).not.toBe(source);
+    expect(drawImage).toHaveBeenCalledWith(source, 0, 0);
+  });
+
+  it("guard: under calm a move is one layer at rest, the new scene live, and no still is taken", async () => {
+    const h = await mountCounting(true);
+    go({ root: "apps" });
+    expect(h.querySelectorAll(".stage__layer")).toHaveLength(1);
+    expect(h.querySelector(".stage__layer")!.getAttribute("data-phase")).toBe("rest");
+    expect(h.querySelector("[data-still]")).toBeNull();
+    expect([...live]).toEqual(["#/apps"]);
+  });
 });

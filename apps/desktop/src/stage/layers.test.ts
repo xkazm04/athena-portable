@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 
 import type { Path } from "@/depth/model";
 
-import { initLayers, isSettled, reduceLayers, type Layer } from "./layers";
+import { initLayers, isLive, isSettled, reduceLayers, type Layer } from "./layers";
 
 const surface: Path = { root: null };
 const apps: Path = { root: "apps" };
@@ -75,5 +75,17 @@ describe("flush", () => {
     l = reduceLayers(l, { type: "flush" });
     expect(l).toEqual([{ key: 2, path: mind, phase: "rest" }]);
     expect(isSettled(l)).toBe(true);
+  });
+});
+
+describe("which layer is live", () => {
+  it("only the arriving or resting layer is live; a leaving one is a still", () => {
+    expect(initLayers(surface).map(isLive)).toEqual([true]);
+    let l = move(initLayers(surface), 1, apps, "down");
+    l = move(l, 2, mind, "across");
+    l = move(l, 3, surface, "up");
+    expect(l.map(isLive)).toEqual([false, false, true]);
+    expect(l.filter(isLive)).toHaveLength(1);
+    expect(reduceLayers(l, { type: "flush" }).map(isLive)).toEqual([true]);
   });
 });

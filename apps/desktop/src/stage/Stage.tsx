@@ -14,7 +14,7 @@
  * Escape is the one way back. It rises a level, it is never a way to close the window, and it
  * leaves a text field to the field's own Escape.
  */
-import { memo, useEffect, useReducer, useRef, useState, type ReactNode } from "react";
+import { Component, createRef, memo, useEffect, useReducer, useRef, useState, type ReactNode } from "react";
 
 import {
   ROOT_LABEL,
@@ -33,7 +33,8 @@ import Bell from "@/bell/Bell";
 import type { Pose } from "@/bell/pose";
 
 import Backdrop from "./Backdrop";
-import { initLayers, isSettled, reduceLayers, type Layer } from "./layers";
+import { initLayers, isLive, isSettled, reduceLayers, type Layer } from "./layers";
+import type { Still } from "./still";
 import "./stage.css";
 
 export interface Presence {
@@ -65,6 +66,12 @@ export interface StageProps {
   trailing?: ReactNode;
 }
 
+/**
+ * How a leaving layer's still is taken (ADR 0193). Not first-frame code: it is fetched once the stage
+ * has drawn, long before a person's first move. A move before it lands leaves its layer empty.
+ */
+let stills: typeof import("./still") | null = null;
+
 /** A move that never ends (a hidden window plays no animation events) is settled after this. */
 const SAFETY_MS = 900;
 
@@ -92,6 +99,9 @@ export default function Stage(props: StageProps) {
   }
 
   const settled = isSettled(layers);
+  useEffect(() => {
+    void import("./still").then((m) => (stills = m));
+  }, []);
   useEffect(() => {
     if (settled && state.from !== null) onSettle(state.seq);
   }, [settled, state.from, state.seq, onSettle]);
@@ -213,7 +223,7 @@ export default function Stage(props: StageProps) {
                 topRef={top}
                 onEnded={() => dispatch({ type: "ended", key: l.key })}
               >
-                <SceneOf path={l.path} render={renderScene} />
+                {isLive(l) && <SceneOf path={l.path} render={renderScene} />}
               </SceneLayer>
             ))}
           </main>
@@ -261,35 +271,61 @@ const SceneOf = memo(function SceneOf({ path, render }: { path: Path; render: (p
   return <>{render(path)}</>;
 });
 
-function SceneLayer({
-  layer,
-  isTop,
-  topRef,
-  onEnded,
-  children,
-}: {
+interface LayerProps {
   layer: Layer;
   isTop: boolean;
   topRef: React.RefObject<HTMLElement | null>;
   onEnded: () => void;
   children: ReactNode;
-}) {
-  const leaving = layer.phase.startsWith("leave-");
-  const onAnimationEnd = (e: React.AnimationEvent) => {
-    if (e.target === e.currentTarget) onEnded(); // not a child's own animation
+}
+
+/**
+ * One layer of a move. Only a live layer (arriving or at rest) holds its scene. When a move turns it
+ * into a leaving layer, its scene is unmounted in that same commit, so its effects, listeners and
+ * loops end at the move's start, not at its animationend (ADR 0193). What plays out instead is a
+ * still: `getSnapshotBeforeUpdate` copies the layer's DOM before React removes the scene, and the
+ * copy is put back before the frame is painted. A class, because that hook is the one moment React
+ * offers between a render that drops the scene and the DOM losing it.
+ */
+class SceneLayer extends Component<LayerProps> {
+  private readonly self = createRef<HTMLElement>();
+
+  override getSnapshotBeforeUpdate(prev: LayerProps): Still | null {
+    const el = this.self.current;
+    return stills && el && isLive(prev.layer) && !isLive(this.props.layer) ? stills.captureStill(el) : null;
+  }
+
+  override componentDidUpdate(_prev: LayerProps, _state: unknown, still: Still | null) {
+    const el = this.self.current;
+    if (!still || !el || !stills) return;
+    stills.showStill(el, still);
+  }
+
+  private readonly attach = (el: HTMLElement | null) => {
+    this.self.current = el;
+    if (this.props.isTop) this.props.topRef.current = el;
   };
-  return (
-    <section
-      ref={isTop ? (topRef as React.RefObject<HTMLElement>) : undefined}
-      className="stage__layer"
-      data-phase={layer.phase}
-      data-depth={depthOf(layer.path)}
-      tabIndex={isTop ? -1 : undefined}
-      aria-hidden={leaving || undefined}
-      inert={leaving || undefined}
-      onAnimationEnd={onAnimationEnd}
-    >
-      {children}
-    </section>
-  );
+
+  private readonly onAnimationEnd = (e: React.AnimationEvent) => {
+    if (e.target === e.currentTarget) this.props.onEnded(); // not a child's own animation
+  };
+
+  override render() {
+    const { layer, isTop, children } = this.props;
+    const leaving = !isLive(layer);
+    return (
+      <section
+        ref={this.attach}
+        className="stage__layer"
+        data-phase={layer.phase}
+        data-depth={depthOf(layer.path)}
+        tabIndex={isTop ? -1 : undefined}
+        aria-hidden={leaving || undefined}
+        inert={leaving || undefined}
+        onAnimationEnd={this.onAnimationEnd}
+      >
+        {children}
+      </section>
+    );
+  }
 }
