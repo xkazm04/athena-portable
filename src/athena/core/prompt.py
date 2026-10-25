@@ -6,9 +6,10 @@ One composition produces two things that go to two different places:
   catalog, and the always-include memory tier. These become the **system prompt**, and a CLI
   engine keeps the system prompt it was opened with for the life of a resumed conversation.
 - :class:`TurnFrame` — the host-state delta since the last frame, last turn's tool results, the
-  active project, the room each of the user's PCs has now (``frame.fleet``, ADR 0143), the memory
-  recalled for *this* message and the pending-decisions digest. These ride in the **user
-  message**, every turn, each untrusted part inside a nonce-tagged fence.
+  active project, the person's project the turn runs in (``frame.space``, ADR 0225), the room
+  each of the user's PCs has now (``frame.fleet``, ADR 0143), the memory recalled for *this*
+  message and the pending-decisions digest. These ride in the **user message**, every turn, each
+  untrusted part inside a nonce-tagged fence.
 
 The split is the fix for the finding in README §3.5: the first build composed one prompt, put
 ``host_state`` in it, and a resumed session then saw the tabs the user had open on turn one
@@ -39,10 +40,12 @@ import json
 from collections.abc import Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any, Protocol, runtime_checkable
+from urllib.parse import urlsplit
 
 from athena.contracts.channel import ToolResult
 from athena.contracts.harness import PromptBlock, fnv1a_64
 from athena.contracts.registry import Lane
+from athena.contracts.spaces import SpaceFrame
 from athena.core.constitution import SECTIONS as CONSTITUTION_SECTIONS
 from athena.core.constitution import Constitution
 from athena.core.fence import fresh_nonce, wrap_untrusted
@@ -137,6 +140,7 @@ BUDGETS: Mapping[str, int] = {
     "capabilities": 12_000,
     "memory.always": 12_000,
     "frame.project": 2_000,
+    "frame.space": 6_000,
     "frame.fleet": 1_200,
     "frame.host_state": 8_000,
     "frame.tools": 12_000,
@@ -390,6 +394,33 @@ def _project_block(project: Mapping[str, Any] | None) -> PromptBlock:
     return PromptBlock(name="frame.project", text=f"## Active project\n\n{body}\n")
 
 
+def _space_block(frame: SpaceFrame) -> PromptBlock:
+    """The project this turn runs in (ADR 0225): its name, the person's brief, its apps, and what
+    Athena keeps for it.
+
+    The name and the brief are the person's own words about what she is for here, so like
+    ``frame.project`` they are not fenced. The apps are origins the space file holds, normalised
+    when they were saved, and render as hosts. The kept lines are the space's always-tier facts and
+    procedurals, each already quoted and neutralised by ``core.recall.memory_line`` - the rendering
+    ``memory.always`` gives core's - so none can open a heading or an ``OP:`` line. Core has no
+    block at all: the caller composes this only for a space it found on disk.
+    """
+    space = frame.space
+    hosts = [urlsplit(origin).netloc or origin for origin in space.apps]
+    apps = ", ".join(hosts) if hosts else "(none paired yet)"
+    kept = list(frame.kept)
+    total = max(frame.kept_total, len(kept))
+    lines = "\n".join(f"- {line}" for line in kept) or "(nothing kept for this project yet)"
+    footer = f"\n\n(showing {len(kept)} of {total})" if len(kept) < total else ""
+    text = (
+        f"## Project: {space.name}\n\n"
+        f"{space.brief.strip() or '(no brief yet)'}\n\n"
+        f"Apps in this project: {apps}\n\n"
+        f"### Kept for this project\n\n{lines}{footer}\n"
+    )
+    return PromptBlock(name="frame.space", text=text, shown=len(kept), total=total)
+
+
 def _decisions_block(
     lines: Sequence[str], nonce: str | None = None, limit: int = DECISION_LIMIT
 ) -> PromptBlock:
@@ -485,6 +516,7 @@ def compose(
     host_state_chars: int = HOST_STATE_CHARS,
     setup: bool = False,
     fleet: str | None = None,
+    space: SpaceFrame | None = None,
 ) -> Composed:
     """Compose one turn into a system prompt and a user-message frame.
 
@@ -499,6 +531,11 @@ def compose(
     ``fleet`` is the room each PC has now (ADR 0143), rendered by the daemon's
     :class:`~athena.lane.ports.FleetPort`; ``None`` or blank omits ``frame.fleet``, which is what a
     daemon with no vitals composes. Like ``setup``, it is the daemon's, never a request body's.
+
+    ``space`` is the project the turn runs in (ADR 0225), read from its file by the daemon after
+    it validated the turn's ``space_id``; ``None`` is core and composes no ``frame.space``. The
+    block sits beside ``frame.project`` and never replaces it: a chore's case and a person's
+    project are two different things that one turn may have both of.
     """
     tag = nonce or fresh_nonce()
     recalled = _recall_blocks(recall, tag)
@@ -515,6 +552,8 @@ def compose(
     delta = _delta(current, previous_host_state)
     frame_blocks: list[PromptBlock] = [_setup_block()] if setup else []
     frame_blocks.append(_project_block(active_project))
+    if space is not None:
+        frame_blocks.append(_space_block(space))
     if fleet and fleet.strip():
         frame_blocks.append(_fleet_block(fleet))
     frame_blocks += [

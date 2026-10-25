@@ -312,6 +312,9 @@ class Case:
     open_slot_ids: tuple[str, ...] = ()
     slots: tuple[CaseSlot, ...] = ()
     approvals: tuple[CaseApproval, ...] = ()
+    #: The project (a ``spc_`` id, ADR 0225) the chore belongs to; ``""`` is Athena's core. A file
+    #: written before projects has no key and reads as core, so the schema stays 1.
+    space_id: str = ""
     schema: int = CASE_SCHEMA
 
 

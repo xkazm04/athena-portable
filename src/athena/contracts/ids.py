@@ -47,6 +47,10 @@ import secrets
 #: ``cycle`` is one pass of the sleep cycle (ADR 0143): its row in ``companion_cycle`` and the
 #: journal it leaves under ``cycles/``. ``proposal`` is one thing that pass offers a person to keep
 #: or forget, rather than deciding it (``companion_proposal``).
+#:
+#: ``space`` is one project the person made (ADR 0225): ``spaces/<spc_id>.md``, a brief and the
+#: apps it pairs, and the wall around the memory written inside it. The UI word is "project"; the
+#: wire word is ``space``, because ``proj_`` already names a chore's case and is never reused.
 ID_PREFIXES: dict[str, str] = {
     "episode": "ep_",
     "fact": "fact_",
@@ -64,6 +68,7 @@ ID_PREFIXES: dict[str, str] = {
     "task": "task_",
     "cycle": "cyc_",
     "proposal": "prp_",
+    "space": "spc_",
 }
 
 #: kind → how many hex digits ``mint`` puts after the prefix.

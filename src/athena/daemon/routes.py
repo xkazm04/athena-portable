@@ -21,7 +21,10 @@ Three routes write, one stops and six read; the delegated tasks' routes are
     request, on the session for the request's origin, in the conversation the session or the
     active project names - or, with ``task_id``, in that running task's own (ADR 0141). One turn
     per conversation: a second into a conversation whose turn is running is refused 409
-    ``thread_busy`` before any SSE header; another conversation runs beside it.
+    ``thread_busy`` before any SSE header; another conversation runs beside it. ``space_id`` is the
+    person's project the turn runs in (ADR 0225), ``""`` or none for core; one that is not a space
+    id, or names no project on disk, is 400 ``unknown_ref``. A turn under a saved case runs where
+    the case is filed - its project, or core - whatever ``space_id`` said.
 
 ``POST /run/stop``
     End the turn running for one origin (ADR 0115), or with ``conversation_id`` the one running in
@@ -143,6 +146,7 @@ __all__ = [
     "task_of",
     "turn_context",
     "turn_events",
+    "turn_space",
 ]
 
 #: How many pending approvals ``/health`` counts before it stops counting. The number it reports
@@ -305,6 +309,8 @@ REFUSAL_REASONS: dict[str, str] = {
     "queue_full": "budget_exhausted",
     "nested_delegate": "validator_failed",
     "bad_request": "validator_failed",
+    # A project a turn is running in cannot be erased under it (ADR 0225).
+    "space_busy": "validator_failed",
 }
 
 
@@ -661,6 +667,12 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
     case_id = str(body.get("case_id", "") or "")
     if case_id and not ids.is_id("project", case_id):
         return error(400, "unknown_ref", f"not a case id: {case_id!r}")
+    asked_space = body.get("space_id")
+    space_id = "" if asked_space is None else asked_space
+    if not isinstance(space_id, str) or (space_id and not ids.is_id("space", space_id)):
+        return error(400, "unknown_ref", f"not a space id: {asked_space!r}")
+    if space_id and not daemon.space_open(space_id):
+        return error(400, "unknown_ref", f"no such space: {space_id!r}")
 
     try:
         if session is None:
@@ -685,6 +697,7 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
         return error(400, "validator_failed", str(exc))
     if task is not None:
         ctx = replace(ctx, conversation_id=task.conversation_id)
+    ctx = replace(ctx, space_id=turn_space(daemon, ctx.case_id, space_id))
     # "Set up with Athena" (ADR 0140, WP4): the setup conversation's first turn is hers to open. A
     # window sends ``start`` and no message; the daemon writes what she is told (SETUP_OPENING), so
     # no window can put words in that turn, and no other session can start one on its own.
@@ -750,6 +763,27 @@ def run(daemon: AthenaDaemon, request: Request) -> Reply | EventStream:
         ),
         release=lease.release,
     )
+
+
+def turn_space(daemon: AthenaDaemon, case_id: str | None, asked: str) -> str:
+    """The project a turn runs in (ADR 0225): its case's, always, when the turn names a saved
+    case - core (``""``) included; else ``asked``, the request's already-checked ``space_id``.
+
+    The case wins because a chore is filed where it was adopted or linked, and its run is that
+    place's work wherever the person happened to be standing: a core chore run from inside
+    project A writes to core, never into A's wall. A case filed under a project whose file is
+    gone runs in core (fail closed: a project that does not exist is never active). A turn whose
+    case cannot be read - no such case, or a file that does not parse - runs where it was asked to.
+    """
+    if not case_id or daemon.case_space is None:
+        return asked
+    try:
+        held = daemon.case_space(case_id)
+    except Exception:  # an unreadable case file leaves the turn where it was asked to run
+        return asked
+    if held is None:
+        return asked
+    return held if daemon.space_open(held) else ""
 
 
 def task_of(daemon: AthenaDaemon, raw: Any) -> Task | Reply:
@@ -1069,7 +1103,13 @@ def turn_events(
     with (
         _holding(daemon, ctx.conversation_id, lease),
         daemon.turn_door(ctx.page_origin or ctx.session_id or "", ctx.conversation_id) as door,
+        daemon.in_space(ctx.space_id) as entered,
     ):
+        if not entered:
+            # The project was erased between the request and the turn (ADR 0225): nothing runs in
+            # a project that is going, and the stream says so in the one error vocabulary.
+            yield TurnError(reason="unknown_ref", detail="no such space: it is being erased")
+            return
         if scheduled:
             ctx = schedule_trigger(daemon, ctx)
         stamped = stamp_case_turn(daemon, ctx)

@@ -15,6 +15,7 @@ from athena.contracts.adopt import Answer, Case, CaseSlot, Slot
 from athena.contracts.ids import is_id
 from athena.core.brain import Brain, frontmatter, reconcile_from_disk
 from athena.daemon.routes import Request
+from athena.spaces.book import check_input
 
 from .conftest import PLAYBOOK_ID, Live, Rig, clear_script, make_rig
 
@@ -36,10 +37,13 @@ def dated_script() -> dict[str, list[Any]]:
     return script
 
 
-def approve_one(live: Live, script: dict[str, list[Any]], said: str = "yes") -> tuple[str, str]:
-    """Start, answer the first card, approve rev 1: answers ``(session_id, case_id)``."""
+def approve_one(
+    live: Live, script: dict[str, list[Any]], said: str = "yes", **start: Any
+) -> tuple[str, str]:
+    """Start, answer the first card, approve rev 1: answers ``(session_id, case_id)``. ``start``
+    is merged into the ``POST /adopt`` body (``case_id``, ``space_id``)."""
     live.rig.model.script = json.loads(json.dumps(script))
-    status, body = live.request("/adopt", method="POST", body={"playbook_id": PLAYBOOK_ID})
+    status, body = live.request("/adopt", method="POST", body={"playbook_id": PLAYBOOK_ID, **start})
     assert status == 200, body
     sid = str(body["session_id"])
     session = live.rig.store.get(sid)
@@ -408,3 +412,77 @@ def test_case_6_a_reopened_dateless_case_reapproves_the_same_brief_with_one_more
     assert again is not None
     assert (again.brief_md, again.command) == (saved.brief_md, saved.command)
     assert len(again.approvals) == len(saved.approvals) + 1
+
+
+# --- the project a chore is adopted in (ADR 0225) ------------------------------------------------
+
+
+def make_space(live: Live, name: str = "Retirement plan") -> str:
+    book = live.local.daemon.spaces
+    assert book is not None
+    return book.create(check_input({"name": name}, partial=False)).id
+
+
+def test_a_chore_adopted_in_a_project_is_filed_there_and_says_so(live: Live) -> None:
+    space_id = make_space(live)
+    _, case_id = approve_one(live, clear_script(), space_id=space_id)
+
+    saved = CaseBook(live.local.brain).load(case_id)
+    assert saved is not None and saved.space_id == space_id
+    status, body = live.request("/adopt/cases")
+    assert status == 200
+    (row,) = [r for r in body["cases"] if r["case_id"] == case_id]
+    assert row["space_id"] == space_id
+
+
+def test_a_reopen_that_names_no_project_keeps_the_cases_own(live: Live) -> None:
+    space_id = make_space(live)
+    sid, case_id = approve_one(live, clear_script(), space_id=space_id)
+    live.rig.store.delete(sid)
+    # Reopened with no space_id: the approved brief is the draft at once, approved again as is.
+    status, body = live.request(
+        "/adopt", method="POST", body={"playbook_id": PLAYBOOK_ID, "case_id": case_id}
+    )
+    assert status == 200, body
+    again = str(body["session_id"])
+    approved = live.request(f"/adopt/{again}/approve", method="POST", body={"rev": 1})
+    assert approved[0] == 200 and approved[1]["case_id"] == case_id, approved
+    saved = CaseBook(live.local.brain).load(case_id)
+    assert saved is not None and saved.space_id == space_id and len(saved.approvals) == 2
+
+
+def test_a_chore_adopted_in_no_project_is_cores(live: Live) -> None:
+    _, case_id = approve_one(live, clear_script())
+    saved = CaseBook(live.local.brain).load(case_id)
+    assert saved is not None and saved.space_id == ""
+
+
+def test_post_adopt_refuses_a_space_that_is_not_one(live: Live) -> None:
+    for space_id, detail in (("spc_0123456789ab", "no such space"), ("spc_x", "not a space id")):
+        status, body = live.request(
+            "/adopt", method="POST", body={"playbook_id": PLAYBOOK_ID, "space_id": space_id}
+        )
+        assert (status, body["reason"]) == (400, "unknown_ref") and detail in body["detail"]
+    status, _ = live.request(
+        "/adopt", method="POST", body={"playbook_id": PLAYBOOK_ID, "space_id": 3}
+    )
+    assert status == 400
+
+
+def test_a_case_written_before_projects_reads_as_core_and_keeps_schema_one() -> None:
+    case = Case(
+        id="proj_0123456789ab",
+        playbook_id="p",
+        title="T",
+        approved_rev=1,
+        approved_at="2026-01-01T00:00:00+00:00",
+        episode_id="",
+        created="2026-01-01T00:00:00+00:00",
+    )
+    old = render_case(case).replace('  "space_id": "",\n', "")
+    assert '"space_id"' not in old and '"schema": 1' in old
+    read, extra = parse_case(old)
+    assert read.space_id == "" and extra == {}
+    # A malformed value is core, never a guess.
+    junk = render_case(case).replace('"space_id": ""', '"space_id": "proj_0123456789ab"')
+    assert parse_case(junk)[0].space_id == ""

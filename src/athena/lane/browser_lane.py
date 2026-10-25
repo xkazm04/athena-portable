@@ -240,6 +240,7 @@ class BrowserLane:
             pending_decisions=tuple(pending_decisions),
             disabled_origins=ctx.disabled_origins,
             setup=ctx.extra.get(SETUP_TURN_KEY) is True,
+            space_id=ctx.space_id,
         )
         self._record_results(turn.tool_results, ctx)
         composed = self.frames.build(ctx.conversation_id, turn)

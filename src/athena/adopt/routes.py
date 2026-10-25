@@ -13,7 +13,9 @@ waits for one (``tests/adopt/test_routes.py`` holds the writer lock and is still
     ``case_id`` (a ``proj_`` id, ADR 0123) reopens that saved case of this playbook: ``case`` is
     its summary (``null`` without one), and the stream starts with its slots and its approved
     brief. An unknown case is 404 ``unknown_ref``; another playbook's is 400; no brain wired is
-    503 ``engine_error``.
+    503 ``engine_error``. ``space_id`` (a ``spc_`` id, ADR 0225) is the project the chore is
+    adopted in: the approve writes it into the case. ``""`` or none keeps the reopened case's own
+    project (core for a new case); a space that is not on disk is 400 ``unknown_ref``.
 ``GET /adopt/cases?playbook_id=`` (ADR 0123)
     The saved cases, latest approval first, read from the brain's ``goals/``:
     ``{ok, cases: [CaseSummary], showing, total, footer}`` (at most ``cases.MAX_CASES``).
@@ -29,6 +31,9 @@ waits for one (``tests/adopt/test_routes.py`` holds the writer lock and is still
     appended to the case file's block -> ``{ok, receipt, saved, problem}``. ``receipt`` is
     ``null`` and ``saved`` false when nothing ran since the last receipt; ``problem`` is ``""``
     or why the file was not written. It takes the brain's write lock, never the turn lock.
+``POST /adopt/cases/<proj>/space`` ``{space_id}`` (ADR 0225)
+    Link the case to a project, or with ``""`` return it to core -> the case's ``CaseSummary``.
+    An unknown or ill-formed space is 400 ``unknown_ref``, an unknown case 404 ``unknown_ref``.
 ``GET``/``POST /adopt/cases/<proj>/cadence``, ``GET``/``POST /adopt/cases/<proj>/review``,
 ``GET /adopt/chores/due``, ``GET``/``POST /adopt/chores/quiet`` (ADR 0131)
     When a case comes due: the cadence the person sets (``{rule?, timezone?, enabled?}``), the
@@ -91,6 +96,7 @@ from athena.contracts import ids
 from athena.contracts.adopt import AdoptEvent, Answer
 from athena.contracts.channel import now_iso
 from athena.daemon.routes import EventStream, Reply, Request, Route, announced, error
+from athena.spaces.book import SpaceBook
 
 if TYPE_CHECKING:
     from athena.daemon.server import AthenaDaemon
@@ -144,6 +150,9 @@ class AdoptStudio:
     #: When the cases come due (ADR 0131): their cadences and the loop over them; ``None``
     #: until wiring binds one, and the cadence, review and due routes say so.
     chores: ChoreClock | None = None
+    #: The projects (ADR 0225), over the same brain; ``None`` until wiring binds one, and a
+    #: ``space_id`` then names no project that exists.
+    spaces: SpaceBook | None = None
 
     def close(self) -> None:
         if self.chores is not None:
@@ -196,12 +205,20 @@ def start(studio: AdoptStudio, request: Request) -> Reply:
             return error(
                 400, "validator_failed", f"case {case_id} is a case of {case.playbook_id!r}"
             )
+    space_id = request.body.get("space_id", "")
+    if not isinstance(space_id, str):
+        return error(400, "validator_failed", "space_id must be a string")
+    if space_id and (studio.spaces is None or not studio.spaces.exists(space_id)):
+        return error(400, "unknown_ref", _no_space(space_id))
     try:
         session = studio.store.create(playbook_id, intro, case)
     except PlaybookMissing as exc:
         return error(404, "unknown_ref", str(exc))
     except Busy as exc:
         return error(429, "budget_exhausted", f"busy: {exc}")
+    if space_id:
+        with session.lock:
+            session.space_id = space_id
     loop.start(session)
     return 200, {
         "ok": True,
@@ -229,6 +246,8 @@ def case_runs(daemon: AthenaDaemon, studio: AdoptStudio, request: Request, tail:
         if studio.chores is None:
             return error(503, "engine_error", "no brain is wired, so no chore can come due")
         return case_route(studio.chores, request, case_id, verb)
+    if verb == "space" and request.method == "POST":
+        return case_space(studio, request, case_id)
     want = "runs" if request.method == "GET" else "done"
     if verb != want:
         return error(404, "unknown", f"no route for {request.method} {CASES_PREFIX}{tail}")
@@ -274,6 +293,32 @@ def case_runs(daemon: AthenaDaemon, studio: AdoptStudio, request: Request, tail:
             "problem": f"the receipt was not saved: {type(exc).__name__}: {exc}",
         }
     return 200, {"ok": True, "receipt": runs.as_dict(closed), "saved": True, "problem": ""}
+
+
+def case_space(studio: AdoptStudio, request: Request, case_id: str) -> Reply:
+    """``POST /adopt/cases/<proj>/space`` ``{space_id}`` (ADR 0225): link the case to a project,
+    or with ``""`` return it to core, and answer its summary. The chore and its runs are untouched;
+    only the block's ``space_id`` moves."""
+    if not ids.is_id("project", case_id):
+        return error(400, "validator_failed", f"not a case id: {case_id!r}")
+    space_id = request.body.get("space_id")
+    if not isinstance(space_id, str):
+        return error(400, "validator_failed", 'space_id is a string; "" is core')
+    if space_id and (studio.spaces is None or not studio.spaces.exists(space_id)):
+        return error(400, "unknown_ref", _no_space(space_id))
+    book = studio.cases
+    if book is None:
+        return error(503, "engine_error", "no brain is wired, so no case can be read")
+    try:
+        case = book.set_space(case_id, space_id)
+    except CaseUnreadable:
+        return error(404, "unknown_ref", f"no saved case {case_id!r}")
+    return 200, asdict(summary(case))
+
+
+def _no_space(space_id: str) -> str:
+    """The detail of a ``space_id`` that names no project: ill-formed, or not on disk."""
+    return "not a space id" if not ids.is_id("space", space_id) else "no such space"
 
 
 def chores(

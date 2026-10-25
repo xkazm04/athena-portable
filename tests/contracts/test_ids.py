@@ -40,6 +40,7 @@ EXPECTED_PREFIXES = {
     "task": "task_",
     "cycle": "cyc_",
     "proposal": "prp_",
+    "space": "spc_",
 }
 
 

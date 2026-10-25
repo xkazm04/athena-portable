@@ -34,6 +34,12 @@ source ``memory`` and their date; a confirmed one stays confirmed, except a ``fa
 a date or an amount (:func:`perishable`), which reopens as ``guessed`` so the auditor asks again
 from her words. The brief at the approved rev is the session's current draft, so it is shown at
 once with no interview.
+
+**The project.** A case may belong to a project (ADR 0225): its block's ``space_id`` is a ``spc_``
+id, or ``""`` for Athena's core. The key is new and the schema is not: a file written before
+projects has no key and reads as core, and a rewrite keeps whatever the block held. It is set when
+the approval is written (``POST /adopt``'s ``space_id``) and moved by :meth:`CaseBook.set_space`;
+a reopen keeps the case's own unless the reopening names another.
 """
 
 from __future__ import annotations
@@ -42,7 +48,7 @@ import json
 import re
 import threading
 from collections.abc import Mapping, Sequence
-from dataclasses import asdict, dataclass, fields
+from dataclasses import asdict, dataclass, fields, replace
 from typing import TYPE_CHECKING, Any
 
 from athena.adopt import receipts as runs
@@ -212,6 +218,7 @@ def parse_case(body: str) -> tuple[Case, dict[str, Any]]:
             for x in _l(raw.get("approvals"))
             if isinstance(x, dict)
         ),
+        space_id=_space(raw.get("space_id")),
     )
     if not case.playbook_id or case.approved_rev < 1:
         raise CaseUnreadable("the case names no playbook or no approved rev")
@@ -342,6 +349,7 @@ class CaseBook:
                 case_id = session.case_id
                 playbook = session.playbook
                 playbook_id = session.playbook_id
+                asked_space = session.space_id
             case_id = case_id or ids.mint("project")
             now = now_iso()
             title = _s(playbook.get("short_title")) or _s(playbook.get("title")) or playbook_id
@@ -412,6 +420,8 @@ class CaseBook:
                 open_slot_ids=brief.open_slot_ids,
                 slots=tuple(kept),
                 approvals=(*(prior.approvals if prior is not None else ()), approval),
+                # The project the session was opened in, else the one the case already had.
+                space_id=asked_space or (prior.space_id if prior is not None else ""),
             )
             extra = self._extra(case_id)
             self.brain.write_goal(
@@ -462,6 +472,33 @@ class CaseBook:
             )
             return case
 
+    def set_space(self, case_id: str, space_id: str) -> Case:
+        """Link the case to project ``space_id``, or with ``""`` return it to core (ADR 0225), and
+        rewrite ``goals/<proj>.md`` with nothing else changed. The caller has checked that the
+        space exists. Raises :class:`CaseUnreadable` for no case, and what the brain raises."""
+        with self._lock:
+            path = self.brain.root / "goals" / f"{case_id}.md"
+            if not ids.is_id("project", case_id) or not path.is_file():
+                raise CaseUnreadable(f"no saved case {case_id!r}")
+            _, body = frontmatter.parse(path.read_text(encoding="utf-8"))
+            case, extra = parse_case(body)
+            if case.space_id == space_id:
+                return case
+            moved = replace(case, space_id=space_id)
+            self.brain.write_goal(
+                case_id,
+                moved.title or moved.playbook_id,
+                render_case(moved, extra),
+                session_id=ids.conversation_for_project(case_id),
+                created=moved.created,
+            )
+            return moved
+
+    def space_of(self, case_id: str) -> str | None:
+        """The project case ``case_id`` is filed under, ``""`` for core, ``None`` for no case."""
+        case = self.load(case_id)
+        return case.space_id if case is not None else None
+
     def _extra(self, case_id: str) -> dict[str, Any]:
         """The keys a later writer added to this case's block, so a rewrite keeps them."""
         path = self.brain.root / "goals" / f"{case_id}.md"
@@ -484,6 +521,7 @@ def summary(case: Case) -> CaseSummary:
         created=case.created,
         confirmed=sum(1 for s in case.slots if s.status == "confirmed"),
         slots=len(case.slots),
+        space_id=case.space_id,
     )
 
 
@@ -508,6 +546,11 @@ def _bare(label: str) -> str:
 
 def _s(value: Any) -> str:
     return value if isinstance(value, str) else ""
+
+
+def _space(value: Any) -> str:
+    """A block's ``space_id``: a space id, else core. A malformed one is core, never a guess."""
+    return value if isinstance(value, str) and ids.is_id("space", value) else ""
 
 
 def _i(value: Any) -> int:

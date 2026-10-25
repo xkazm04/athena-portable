@@ -446,6 +446,7 @@ def build_local(
         adopt_studio = _wire_adopt(
             daemon, adopt, brain.root.parent / ADOPT_DIRNAME, ledger, brain=brain, vault=vault
         )
+        _wire_spaces(daemon, frames, adopt_studio, brain)
         if peer is not None:
             _wire_peer(daemon, peer)
         return AthenaLocal(
@@ -614,6 +615,29 @@ def _wire_adopt(
         daemon.routes.add(route)
     daemon.body_caps.append(BodyCap(ADOPT_PREFIX, DOCUMENT_SUFFIX, DOCUMENT_BODY_BYTES))
     return chosen
+
+
+def _wire_spaces(
+    daemon: AthenaDaemon, frames: FrameBuilder, studio: AdoptStudio, brain: Brain
+) -> None:
+    """The person's projects (ADR 0225): one book over this brain's ``spaces/``, shared by the
+    ``/spaces`` routes, ``POST /run``'s check of ``space_id``, the adopt studio's link of a case
+    and the frame builder's ``frame.space``. The case book is the studio's own, so a link and a
+    receipt are written under one lock, and the daemon asks it a case's project without reading
+    a case file itself."""
+    from athena.spaces.book import SpaceBook
+    from athena.spaces.frame import space_frame
+    from athena.spaces.routes import space_routes
+
+    book = SpaceBook(brain)
+    daemon.spaces = book
+    studio.spaces = book
+    frames.spaces = lambda space_id: space_frame(book, space_id)
+    cases = studio.cases
+    if cases is not None:
+        daemon.case_space = cases.space_of
+    for route in space_routes(daemon, book, cases):
+        daemon.routes.add(route)
 
 
 def _wire_peer(daemon: AthenaDaemon, host: PeerHost) -> None:

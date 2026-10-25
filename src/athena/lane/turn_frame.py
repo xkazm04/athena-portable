@@ -24,13 +24,14 @@ land in, and a page that can write its own tool's result can write anything into
 from __future__ import annotations
 
 import re
-from collections.abc import Mapping, Sequence
+from collections.abc import Callable, Mapping, Sequence
 from dataclasses import dataclass, field
 from typing import Any
 
 from athena.contracts.channel import ToolResult, cut_text
 from athena.contracts.reasons import ERROR_DETAIL_CAP
 from athena.contracts.registry import Lane
+from athena.contracts.spaces import CORE, SpaceFrame
 from athena.core.constitution import Constitution
 from athena.core.prompt import Composed, TurnFrame, compose
 from athena.lane.ports import CatalogPort, FleetPort, HostState, RecallFn
@@ -67,6 +68,9 @@ class SurfaceTurn:
     #: A turn of the setup conversation (ADR 0140, WP4): the frame carries the setup steps. Set
     #: from the daemon's turn context, never from a request body.
     setup: bool = False
+    #: The project the turn runs in (ADR 0225), ``""`` for core. Set from the daemon's turn
+    #: context after it found the space on disk, never from a request body directly.
+    space_id: str = CORE
 
 
 def tool_results_from(payloads: Sequence[Mapping[str, Any]]) -> tuple[ToolResult, ...]:
@@ -139,6 +143,10 @@ class FrameBuilder:
     #: it is short and rendered whole, so it has no delta to keep. ``None`` composes no
     #: ``frame.fleet``, which is a daemon with no vitals.
     fleet: FleetPort | None = None
+    #: The project a turn runs in, by its id (ADR 0225): read afresh for every frame, so a brief
+    #: edited between two turns is the brief the next one reads. ``None`` composes no
+    #: ``frame.space``, which is a daemon with no projects; so is an answer of ``None``.
+    spaces: Callable[[str], SpaceFrame | None] | None = None
 
     def __post_init__(self) -> None:
         #: conversation id → the ``host_state`` of the last frame that was actually run.
@@ -172,6 +180,11 @@ class FrameBuilder:
             disabled_origins=turn.disabled_origins,
             setup=turn.setup,
             fleet=self.fleet.prompt_text() if self.fleet is not None else None,
+            space=(
+                self.spaces(turn.space_id)
+                if self.spaces is not None and turn.space_id != CORE
+                else None
+            ),
         )
 
     def remember(self, conversation_id: str, frame: TurnFrame) -> None:

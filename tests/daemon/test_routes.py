@@ -11,11 +11,16 @@ from pathlib import Path
 
 import pytest
 
+from athena.adopt.cases import render_case
+from athena.contracts import ids
+from athena.contracts.adopt import Case
+from athena.contracts.channel import now_iso
 from athena.core.approvals import Approvals
 from athena.daemon.routes import Route, RouteTable, base_routes, error, health
 from athena.daemon.server import AthenaDaemon
+from athena.spaces.book import check_input
 
-from .conftest import ENGINE, Live
+from .conftest import ENGINE, Live, claude_round
 
 
 def _card(approvals: Approvals, summary: str) -> None:
@@ -138,6 +143,12 @@ def test_the_table_ships_every_route_the_daemon_answers(daemon: AthenaDaemon) ->
         "GET /intake/<id>",
         "POST /intake/<id>",
         "DELETE /intake/<id>",
+        # The person's projects, after the studio whose case book they share (ADR 0225).
+        "GET /spaces",
+        "POST /spaces",
+        "GET /spaces/<id>",
+        "POST /spaces/<id>",
+        "DELETE /spaces/<id>",
     ]
 
 
@@ -218,3 +229,102 @@ def test_the_package_docstring_names_every_module_in_the_package() -> None:
     here = Path(package.__file__).parent
     modules = sorted(p.stem for p in here.glob("*.py") if p.stem != "__init__")
     assert [m for m in modules if f":mod:`athena.daemon.{m}`" not in doc] == []
+
+
+# -- the project a turn runs in (ADR 0225) ---------------------------------------------------------
+
+
+def _space(daemon: AthenaDaemon, name: str, brief: str = "", apps: list[str] | None = None) -> str:
+    """A project on disk, made as ``POST /spaces`` makes one."""
+    assert daemon.spaces is not None
+    body: dict[str, object] = {"name": name, "brief": brief, "apps": apps or []}
+    return daemon.spaces.create(check_input(body, partial=False)).id
+
+
+def _case_in(daemon: AthenaDaemon, space_id: str) -> str:
+    """A saved case filed under ``space_id`` (``""`` is core), as an approve writes it."""
+    case_id = ids.mint("project")
+    stamp = now_iso()
+    case = Case(
+        id=case_id,
+        playbook_id="invoice-chase",
+        title="Chase the invoices",
+        approved_rev=1,
+        approved_at=stamp,
+        episode_id="",
+        created=stamp,
+        space_id=space_id,
+    )
+    daemon.brain.write_goal(
+        case_id,
+        case.title,
+        render_case(case),
+        session_id=ids.conversation_for_project(case_id),
+        created=stamp,
+    )
+    return case_id
+
+
+def _told(live: Live) -> str:
+    return live.transport.requests[-1].stdin
+
+
+def test_a_run_with_a_space_id_that_is_no_space_is_refused_before_the_stream(live: Live) -> None:
+    assert live.register().status == 200
+    for space_id, detail in (
+        ("spc_nothex", "not a space id"),
+        ("proj_0123456789ab", "not a space id"),
+        (7, "not a space id"),
+        ("spc_0123456789ab", "no such space"),
+    ):
+        reply = live.run("hello", space_id=space_id)
+        assert reply.status == 400, space_id
+        assert reply.body["reason"] == "unknown_ref" and detail in reply.body["detail"]
+    assert live.transport.requests == []
+
+
+def test_a_turn_in_a_project_is_told_its_name_brief_and_apps_and_a_core_turn_is_not(
+    live: Live, daemon: AthenaDaemon
+) -> None:
+    space_id = _space(
+        daemon, "Taxes 2026", "File the return by April.", ["https://tax.example:8443"]
+    )
+    assert live.register().status == 200
+    live.script(claude_round("In the project."), claude_round("In core."), claude_round("Core."))
+
+    inside = live.run("what now?", space_id=space_id)
+    assert inside.status == 200 and inside.frames()[-1][0] == "turn.finished"
+    told = _told(live)
+    assert "## Project: Taxes 2026\n\nFile the return by April.\n" in told
+    assert "Apps in this project: tax.example:8443" in told
+    assert "### Kept for this project" in told
+    # The chore's frame.project is untouched beside it.
+    assert "## Active project" in told
+
+    for body in ({}, {"space_id": ""}):
+        assert live.run("and now?", **body).status == 200
+        assert "## Project:" not in _told(live)
+        assert "Kept for this project" not in _told(live)
+
+
+def test_a_turn_under_a_case_runs_where_the_case_is_filed_whatever_the_body_says(
+    live: Live, daemon: AthenaDaemon
+) -> None:
+    asked = _space(daemon, "Garden", "Plant the beds.")
+    filed = _space(daemon, "Taxes 2026", "File the return.")
+    in_filed = _case_in(daemon, filed)
+    in_core = _case_in(daemon, "")
+    assert live.register().status == 200
+    live.script(*(claude_round("ok") for _ in range(3)))
+
+    # The case's project wins over the one the body names.
+    assert live.run("go", case_id=in_filed, space_id=asked).status == 200
+    assert "## Project: Taxes 2026" in _told(live) and "Garden" not in _told(live)
+
+    # A core chore run from inside a project is core's work: no project in the frame.
+    assert live.run("go", case_id=in_core, space_id=asked).status == 200
+    assert "## Project:" not in _told(live)
+
+    # A case id that names no saved case leaves the turn where it was asked to run.
+    assert live.run("go", case_id="proj_0123456789ab", space_id=asked).status == 200
+    assert "## Project: Garden" in _told(live)

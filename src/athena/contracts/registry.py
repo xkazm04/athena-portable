@@ -232,6 +232,11 @@ class TurnContext:
     #: surface's ``case_id``, else its ``project_id``. It names the case and routes nothing: the
     #: conversation is decided by ``project_id`` alone (ADR 0126).
     case_id: str | None = None
+    #: The project (a ``spc_`` id, ADR 0225) this turn runs in, or ``""`` for Athena's core. Set by
+    #: the daemon from the request's ``space_id`` after it found the space on disk, and overruled by
+    #: the space of the case the turn names. The frame's ``frame.space`` reads it, and every memory
+    #: the turn writes is stamped with it; it never reaches the gate (a project is not a trust key).
+    space_id: str = ""
     #: Where the last run of this case's chore began (an ISO stamp), from its last receipt, or
     #: ``None`` (ADR 0126). Set by the daemon, never by a model. A card's "you approved this
     #: exact call" looks back to it instead of a day; it only informs.

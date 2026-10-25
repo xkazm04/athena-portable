@@ -114,6 +114,7 @@ from athena.lane.browser_lane import BrowserLane
 
 if TYPE_CHECKING:
     from athena.daemon.tasks import Tasks
+    from athena.spaces.book import SpaceBook
 
 __all__ = [
     "ALLOWED_METHODS",
@@ -450,6 +451,20 @@ class AthenaDaemon:
     #: Run as each turn starts, inside the writer lock and before the turn is composed: an MCP
     #: server that listed no tools is listed again here (ADR 0123).
     turn_hooks: list[Callable[[], None]] = field(default_factory=list)
+    #: The person's projects (ADR 0225), over this brain; bound by wiring. ``None`` here, every
+    #: ``space_id`` names no project and a turn runs in core.
+    spaces: SpaceBook | None = None
+    #: The project a case belongs to, by its ``proj_`` id: a ``spc_`` id, ``""`` for core, or
+    #: ``None`` for no saved case (ADR 0225). Bound by wiring to the adopt package's case book, so
+    #: the daemon never reads a case file; a turn under a saved case runs where the case is filed,
+    #: core included, whatever the request said.
+    case_space: Callable[[str], str | None] | None = None
+    #: How many turns run in each project now, and the projects being erased (ADR 0225), under one
+    #: small lock: an erase is refused while a turn runs in its project, and no turn starts in a
+    #: project while it is erased. Never a turn's lock and never the writer.
+    space_lock: threading.Lock = field(default_factory=threading.Lock, repr=False)
+    _space_turns: dict[str, int] = field(default_factory=dict, repr=False)
+    _erasing: set[str] = field(default_factory=set, repr=False)
 
     def __post_init__(self) -> None:
         self.routes = RouteTable(base_routes(self))
@@ -549,6 +564,54 @@ class AthenaDaemon:
             return False
         door.stop()
         return True
+
+    def space_open(self, space_id: str) -> bool:
+        """Whether a turn may run in ``space_id`` now: the project is on disk and not being erased.
+        Core (``""``) is always open."""
+        if not space_id:
+            return True
+        if self.spaces is None or not self.spaces.exists(space_id):
+            return False
+        with self.space_lock:
+            return space_id not in self._erasing
+
+    @contextmanager
+    def in_space(self, space_id: str) -> Iterator[bool]:
+        """Count a turn as running in ``space_id`` for the block; yields ``False``, counting
+        nothing, when the project is being erased. Core is not counted and always yields ``True``.
+        """
+        if not space_id:
+            yield True
+            return
+        with self.space_lock:
+            if space_id in self._erasing:
+                entered = False
+            else:
+                self._space_turns[space_id] = self._space_turns.get(space_id, 0) + 1
+                entered = True
+        try:
+            yield entered
+        finally:
+            if entered:
+                with self.space_lock:
+                    left = self._space_turns.get(space_id, 1) - 1
+                    if left > 0:
+                        self._space_turns[space_id] = left
+                    else:
+                        self._space_turns.pop(space_id, None)
+
+    def begin_erase(self, space_id: str) -> bool:
+        """Mark ``space_id`` as being erased; ``False``, marking nothing, while a turn runs in it
+        or another erase of it is under way (``DELETE /spaces/<id>`` answers 409 ``space_busy``)."""
+        with self.space_lock:
+            if self._space_turns.get(space_id, 0) > 0 or space_id in self._erasing:
+                return False
+            self._erasing.add(space_id)
+            return True
+
+    def end_erase(self, space_id: str) -> None:
+        with self.space_lock:
+            self._erasing.discard(space_id)
 
     @contextmanager
     def thread(self, conversation: str) -> Iterator[ThreadLease]:

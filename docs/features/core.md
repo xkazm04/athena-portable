@@ -97,6 +97,20 @@ never written.
   fence tagged with a fresh nonce (`core/fence.py`); text inside a fence is evidence, never
   instruction.
 
+## Spaces (projects)
+
+A project is a **space** on the wire (ADR 0225; `proj_` stays a chore's case): a person-written
+brief, the apps it pairs, and a wall around the memory written inside it. `contracts/spaces.py`
+holds the shapes, the caps (name 60, brief 1,600, apps 24) and `visible_spaces`, the one
+visibility predicate: core (`""`) sees core, a space sees core and itself, and a stamp naming a
+space whose file is gone is never visible. Each space is `<brain>/spaces/<spc_id>.md`, written
+whole, outside the index (`src/athena/spaces/book.py`); the daemon serves it under `/spaces`.
+`POST /run` takes `space_id` (an unknown one is 400 `unknown_ref`), a saved case's own space wins
+over it - core included - and a turn in a space gets `frame.space`: the name, the brief, the apps'
+hosts and what Athena keeps for that project. A chore's case carries `space_id` and is linked with
+`POST /adopt/cases/<proj>/space`. Erasing a space takes its memory and returns its chores to core;
+spaces are not replicated and never touch the gate.
+
 ## Not done
 
 The sleep cycle (distilling episodes into facts on a schedule) is a non-goal for this build.

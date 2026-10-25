@@ -11,6 +11,7 @@ from typing import Any
 import pytest
 
 from athena.contracts import HostManifest, Lane, PromptBlock, ToolResult
+from athena.contracts.spaces import BRIEF_CAP, Space, SpaceFrame
 from athena.core import recall as recall_module
 from athena.core.catalog import Catalog, CoreServices, build_catalog
 from athena.core.constitution import Constitution, Source
@@ -475,3 +476,86 @@ def test_the_fleet_rides_in_the_frame_after_the_project_and_never_in_the_static_
     assert "room ok" not in result.static.text
     assert stable(without.static.hashes(), result.static.hashes())
     assert result.warnings == ()
+
+
+# --- frame.space: the project a turn runs in (ADR 0225) ------------------------------------------
+
+SPACE = Space(
+    id="spc_0123456789ab",
+    name="Taxes 2026",
+    brief="File the return by April.\nAsk before paying anything.",
+    apps=("https://tax.example", "http://localhost:5173"),
+    hue=40,
+)
+KEPT = ('"The accountant is Dana."', '"When a form asks for the year, use 2025."')
+
+
+def test_core_composes_no_space_block() -> None:
+    result = composed()
+    assert "frame.space" not in result.frame.names
+    assert "frame.space" not in result.static.names
+    assert "## Project:" not in result.frame.text
+
+
+def test_a_space_rides_in_the_frame_after_the_project_unfenced_and_never_static() -> None:
+    without = composed(nonce="0123456789abcdef")
+    result = composed(space=SpaceFrame(SPACE, KEPT, 2), nonce="0123456789abcdef")
+
+    assert result.frame.names[:2] == ["frame.project", "frame.space"]
+    block = result.frame.block("frame.space")
+    assert block is not None
+    assert block.text == (
+        "## Project: Taxes 2026\n\n"
+        "File the return by April.\nAsk before paying anything.\n\n"
+        "Apps in this project: tax.example, localhost:5173\n\n"
+        "### Kept for this project\n\n"
+        '- "The accountant is Dana."\n'
+        '- "When a form asks for the year, use 2025."\n'
+    )
+    # The person's own words, like frame.project: not fenced, not untrusted.
+    assert not block.untrusted and not is_fenced(block.text)
+    # frame.project is untouched beside it.
+    assert result.frame.block("frame.project") == without.frame.block("frame.project")
+    assert_split(result.static.blocks, result.frame.blocks)
+    assert stable(without.static.hashes(), result.static.hashes())
+    assert result.warnings == ()
+
+
+def test_an_empty_space_says_so_and_a_capped_kept_list_announces_itself() -> None:
+    bare = composed(space=SpaceFrame(Space(id=SPACE.id, name="Garden")))
+    block = bare.frame.block("frame.space")
+    assert block is not None
+    assert "(no brief yet)" in block.text
+    assert "Apps in this project: (none paired yet)" in block.text
+    assert "(nothing kept for this project yet)" in block.text
+
+    capped = composed(space=SpaceFrame(SPACE, KEPT, 9))
+    block = capped.frame.block("frame.space")
+    assert block is not None
+    assert block.text.rstrip().endswith("(showing 2 of 9)")
+    assert block.announces_truncation() and capped.warnings == ()
+
+
+def test_the_space_budget_is_a_tripwire_that_a_full_brief_fits_under() -> None:
+    """6,000 characters. A brief at its cap, 24 apps and a full always tier (eight facts, six
+    procedurals) of half-cap lines fit; a full tier at the 400-character line cap does not, and
+    then the block is a warning on the composition, never a cut (budgets are tripwires)."""
+    assert BUDGETS["frame.space"] == 6_000
+    longest = Space(
+        id=SPACE.id,
+        name="x" * 60,
+        brief="b" * BRIEF_CAP,
+        apps=tuple(f"https://app{n}.example" for n in range(24)),
+    )
+    count = recall_module.ALWAYS_FACTS + recall_module.ALWAYS_PROCEDURALS
+    half = '"' + "k" * (recall_module.ALWAYS_LINE_CAP // 2) + '"'
+    result = composed(space=SpaceFrame(longest, (half,) * count, count))
+    block = result.frame.block("frame.space")
+    assert block is not None and block.size <= BUDGETS["frame.space"]
+    assert result.warnings == ()
+
+    full = '"' + "k" * recall_module.ALWAYS_LINE_CAP + '"'
+    over = composed(space=SpaceFrame(longest, (full,) * count, count))
+    block = over.frame.block("frame.space")
+    assert block is not None and block.text.count(full) == count
+    assert any("frame.space" in warning for warning in over.warnings)

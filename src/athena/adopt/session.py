@@ -259,6 +259,9 @@ class AdoptSession:
         self.slot_meta: dict[str, CaseSlot] = {}
         #: The slots a reopen turned back into guesses: dates and amounts (ADR 0123).
         self.reopened: tuple[str, ...] = ()
+        #: The project (ADR 0225) ``POST /adopt`` was opened in, written into the case on approve;
+        #: ``""`` keeps the case's own (or core, for a new one).
+        self.space_id = ""
         #: Held by a save, so two approvals of one session never mint two cases.
         self.case_lock = threading.Lock()
         self._actor = ThreadPoolExecutor(max_workers=1, thread_name_prefix=f"adopt-{self.id}")
