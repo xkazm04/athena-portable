@@ -4,7 +4,13 @@
  * with every clip's duration measured so the recorder can pace the video to the voice.
  *
  * Usage:
- *   node scripts/narrate.mjs [--dry] [--force] [--yes] [--only 1.3,1.4]
+ *   node scripts/narrate.mjs [--plan] [--dry] [--force] [--yes] [--only 1.3,1.4]
+ *
+ * A plain run plans first (`scripts/lib/narration-plan.mjs`): every manifest beat carries a sha of
+ * its line, role, voice id, settings and model, and exactly the beats whose sha changed (or whose
+ * mp3 is missing) are voiced. The plan is printed before anything is spent; `--plan` stops there
+ * (no key, no network). `--dry` estimates only the beats with no current clip. `--force`
+ * re-voices every beat in scope; `--only` narrows the scope and names the stale beats it left out.
  *
  * Environment:
  *   ELEVENLABS_API_KEY          required unless --dry (read from the environment, or a .env
@@ -29,17 +35,32 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 
+import {
+  CHAR_BUDGET,
+  DEFAULT_MODEL,
+  castFromEnv,
+  dryDurations,
+  durationsAfterRun,
+  envName,
+  estimateMs,
+  formatPlan,
+  nextManifestBeats,
+  overBudget,
+  planNarration,
+  settingsOf,
+} from './lib/narration-plan.mjs';
+
 const execFileAsync = promisify(execFile);
 
 const HERE = path.dirname(fileURLToPath(import.meta.url));
 const JOURNEY = path.resolve(HERE, '..');
 const REPO = path.resolve(JOURNEY, '..', '..');
 const SCRIPT_PATH = process.env.JOURNEY_SCRIPT ? path.resolve(JOURNEY, process.env.JOURNEY_SCRIPT) : path.join(JOURNEY, 'script', 'journey.en.json');
-const AUDIO_DIR = path.join(JOURNEY, 'take', 'audio');
+const AUDIO_DIR = process.env.JOURNEY_AUDIO_DIR
+  ? path.resolve(JOURNEY, process.env.JOURNEY_AUDIO_DIR)
+  : path.join(JOURNEY, 'take', 'audio');
 
 const API = 'https://api.elevenlabs.io/v1';
-const DEFAULT_MODEL = 'eleven_multilingual_v2';
-const CHAR_BUDGET = 20_000;
 const CONCURRENCY = 3;
 
 /** The journey's three roles, most constrained first: narrator takes whatever is left. */
@@ -56,23 +77,14 @@ function rolesOf(script, beats) {
   return [...known, ...others, ...(named.has('narrator') ? ['narrator'] : [])];
 }
 
-function envName(role) {
-  return `ELEVENLABS_VOICE_${String(role).toUpperCase().replace(/[^A-Z0-9]/g, '_')}`;
-}
-
-const VOICE_SETTINGS = {
-  narrator: { stability: 0.6, similarity_boost: 0.75, style: 0.0, use_speaker_boost: true },
-  mira: { stability: 0.4, similarity_boost: 0.8, style: 0.15, use_speaker_boost: true },
-  athena: { stability: 0.55, similarity_boost: 0.75, style: 0.05, use_speaker_boost: true },
-};
-
 // ---------------------------------------------------------------- arguments
 
 function parseArgs(argv) {
-  const args = { dry: false, force: false, yes: false, only: null };
+  const args = { plan: false, dry: false, force: false, yes: false, only: null };
   for (let i = 0; i < argv.length; i += 1) {
     const a = argv[i];
-    if (a === '--dry') args.dry = true;
+    if (a === '--plan') args.plan = true;
+    else if (a === '--dry') args.dry = true;
     else if (a === '--force') args.force = true;
     else if (a === '--yes' || a === '-y') args.yes = true;
     else if (a === '--only') {
@@ -83,7 +95,7 @@ function parseArgs(argv) {
     } else if (a.startsWith('--only=')) {
       args.only = new Set(a.slice('--only='.length).split(',').map((s) => s.trim()).filter(Boolean));
     } else if (a === '--help' || a === '-h') {
-      console.log('node scripts/narrate.mjs [--dry] [--force] [--yes] [--only 1.3,1.4]');
+      console.log('node scripts/narrate.mjs [--plan] [--dry] [--force] [--yes] [--only 1.3,1.4]');
       process.exit(0);
     } else fail(1, `unknown argument: ${a}`);
   }
@@ -336,6 +348,20 @@ function formatMs(ms) {
 
 // ---------------------------------------------------------------- main
 
+async function readJsonOr(file, fallback) {
+  if (!existsSync(file)) return fallback;
+  try {
+    return JSON.parse(await readFile(file, 'utf8'));
+  } catch {
+    return fallback;
+  }
+}
+
+function printPlan(plan) {
+  for (const line of formatPlan(plan)) console.log(line);
+  console.log('');
+}
+
 async function main() {
   const args = parseArgs(process.argv.slice(2));
 
@@ -350,75 +376,92 @@ async function main() {
   const cps = Number(script.chars_per_second) || 0;
   const specs = script.voices ?? {};
   const roles = rolesOf(script, allBeats);
-  const settingsOf = (role) => specs[role]?.settings ?? VOICE_SETTINGS[role] ?? VOICE_SETTINGS.narrator;
 
-  await mkdir(AUDIO_DIR, { recursive: true });
   const durationsPath = path.join(AUDIO_DIR, 'durations.json');
   const manifestPath = path.join(AUDIO_DIR, 'manifest.json');
+  const onDisk = (id) => existsSync(path.join(AUDIO_DIR, `${id}.mp3`));
 
   /** Durations are merged, so --only never drops the beats it did not touch. */
-  let durations = {};
-  if (existsSync(durationsPath)) {
-    try {
-      durations = JSON.parse(await readFile(durationsPath, 'utf8'));
-    } catch {
-      durations = {};
-    }
+  const durations = await readJsonOr(durationsPath, {});
+  const manifest = await readJsonOr(manifestPath, undefined);
+  const previousBeats = Array.isArray(manifest?.beats) ? manifest.beats : [];
+
+  const env = { ...process.env };
+  if (!env.ELEVENLABS_API_KEY && !args.dry && !args.plan) await loadDotEnvInto(env);
+  const model = env.ELEVENLABS_MODEL ?? DEFAULT_MODEL;
+
+  // Phase 1, offline: the cast as far as the environment and the manifest tell it.
+  const recordedVoices = manifest?.dry === false ? manifest.voices : {};
+  const offline = planNarration({
+    script,
+    beats: allBeats,
+    only: args.only,
+    force: args.force && !args.dry,
+    manifest,
+    onDisk,
+    cast: castFromEnv(env, roles, recordedVoices),
+    model,
+  });
+
+  if (args.plan) {
+    printPlan(offline);
+    console.log('--plan: nothing spent, nothing written (voices from the environment and the manifest).');
+    return;
   }
 
-  const totalChars = beats.reduce((sum, b) => sum + b.line.length, 0);
-
   if (args.dry) {
-    const entries = [];
-    for (const beat of beats) {
-      const words = beat.line.trim().split(/\s+/).filter(Boolean).length;
-      const ms = cps > 0 ? Math.round((beat.line.length / cps) * 1000) : Math.round((words / wps) * 1000);
-      durations[beat.id] = ms;
-      entries.push({
-        id: beat.id,
-        voice: beat.voice,
-        voice_id: null,
-        chars: beat.line.length,
-        ms,
-        file: `audio/${beat.id}.mp3`,
-      });
+    await mkdir(AUDIO_DIR, { recursive: true });
+    const next = dryDurations(offline, allBeats, script, durations);
+    const byId = new Map(allBeats.map((b) => [b.id, b]));
+    const estimated = offline.synthesize.filter((s) => s.reason !== 'forced');
+    const entries = estimated.map((s) => ({
+      id: s.id,
+      voice: s.voice,
+      voice_id: null,
+      estimate: true,
+      chars: s.chars,
+      ms: estimateMs(byId.get(s.id), script),
+      file: `audio/${s.id}.mp3`,
+    }));
+    await writeFile(durationsPath, `${JSON.stringify(next, null, 2)}\n`);
+    // A real run's manifest records the voices and the clips' keys; a rehearsal leaves it alone.
+    if (manifest?.dry !== false) {
+      await writeFile(
+        manifestPath,
+        `${JSON.stringify(
+          {
+            dry: true,
+            generated_at: new Date().toISOString(),
+            model,
+            words_per_second: wps,
+            chars_per_second: cps || null,
+            voices: Object.fromEntries(roles.map((r) => [r, null])),
+            beats: nextManifestBeats(previousBeats, entries),
+          },
+          null,
+          2,
+        )}\n`,
+      );
     }
-    await writeFile(durationsPath, `${JSON.stringify(durations, null, 2)}\n`);
-    await writeFile(
-      manifestPath,
-      `${JSON.stringify(
-        {
-          dry: true,
-          generated_at: new Date().toISOString(),
-          model: process.env.ELEVENLABS_MODEL ?? DEFAULT_MODEL,
-          words_per_second: wps,
-          chars_per_second: cps || null,
-          voices: Object.fromEntries(roles.map((r) => [r, null])),
-          beats: await mergedBeats(manifestPath, entries),
-        },
-        null,
-        2,
-      )}\n`,
-    );
+    printPlan(offline);
     report(
       entries,
-      durations,
+      next,
       allBeats,
-      `dry run: ${beats.length} beats estimated at ${cps > 0 ? `${cps} characters` : `${wps} words`}/second`,
+      `dry run: ${entries.length} of ${beats.length} beats estimated at ${cps > 0 ? `${cps} characters` : `${wps} words`}/second, ` +
+        `${offline.reuse.length} keep their measured clip`,
     );
     const held = beats.reduce(
-      (sum, b) => sum + Math.max(durations[b.id] ?? 0, Number(b.settle_ms) || 0) + (Number(script.breath_ms) || 0),
+      (sum, b) => sum + Math.max(next[b.id] ?? 0, Number(b.settle_ms) || 0) + (Number(script.breath_ms) || 0),
       0,
     );
     console.log(
-      `ElevenLabs characters this would spend: ${totalChars} (${roles.join(', ')}); ` +
+      `ElevenLabs characters a real run would spend: ${offline.spend} (${roles.join(', ')}); ` +
         `held on screen with settles and breaths: ${formatMs(held)} (${held} ms) before any live wait.`,
     );
     return;
   }
 
-  const env = { ...process.env };
-  if (!env.ELEVENLABS_API_KEY) await loadDotEnvInto(env);
   const apiKey = env.ELEVENLABS_API_KEY;
   if (!apiKey) {
     fail(
@@ -426,8 +469,15 @@ async function main() {
       'ELEVENLABS_API_KEY is not set (environment, examples/journey/.env or the repository root .env).',
     );
   }
-  const model = env.ELEVENLABS_MODEL ?? DEFAULT_MODEL;
 
+  // The guard runs before any request: the offline plan is the bill's lower bound.
+  const early = overBudget(offline, { yes: args.yes });
+  if (early) {
+    printPlan(offline);
+    fail(4, early);
+  }
+
+  // Phase 2: the library's real cast, which may recast a role the environment did not name.
   const voices = await listVoices(apiKey);
   const cast = chooseVoices(voices, env, roles, specs);
   console.log('Voices');
@@ -437,62 +487,78 @@ async function main() {
   console.log(`  model: ${model}`);
   console.log('');
 
-  const todo = beats.filter(
-    (b) => args.force || !existsSync(path.join(AUDIO_DIR, `${b.id}.mp3`)),
-  );
-  const spend = todo.reduce((sum, b) => sum + b.line.length, 0);
-  console.log(
-    `${beats.length} beats, ${totalChars} characters in scope; ${todo.length} to synthesize, ${spend} characters to spend.`,
-  );
-  if (spend > CHAR_BUDGET && !args.yes) {
-    fail(
-      4,
-      `that is over the ${CHAR_BUDGET} character guard. Re-run with --yes to spend it.`,
-    );
-  }
-  if (todo.length === 0) console.log('Nothing to synthesize; measuring what is on disk.');
-  console.log('');
+  const plan = planNarration({
+    script,
+    beats: allBeats,
+    only: args.only,
+    force: args.force,
+    manifest,
+    onDisk,
+    cast: Object.fromEntries(roles.map((r) => [r, cast[r].voice_id])),
+    model,
+  });
+  printPlan(plan);
+  const refusal = overBudget(plan, { yes: args.yes, budget: CHAR_BUDGET });
+  if (refusal) fail(4, refusal);
+  if (plan.synthesize.length === 0) console.log('Nothing to synthesize; measuring what is on disk.');
 
+  await mkdir(AUDIO_DIR, { recursive: true });
+  const byId = new Map(allBeats.map((b) => [b.id, b]));
   const failures = [];
-  await pool(todo, CONCURRENCY, async (beat) => {
+  const made = [];
+  await pool(plan.synthesize, CONCURRENCY, async (s) => {
+    const beat = byId.get(s.id);
     const file = path.join(AUDIO_DIR, `${beat.id}.mp3`);
     try {
       await synthesise({
         apiKey,
-        voiceId: cast[beat.voice].voice_id,
-        settings: settingsOf(beat.voice),
+        voiceId: s.voice_id,
+        settings: settingsOf(script, beat.voice),
         text: beat.line,
         model,
         file,
       });
+      made.push(s);
       console.log(`  ok   ${pad(beat.id, 6)} ${pad(beat.voice, 9)} ${beat.line.length} chars`);
     } catch (err) {
       failures.push({ id: beat.id, message: String(err?.message ?? err) });
       console.error(`  FAIL ${pad(beat.id, 6)} ${String(err?.message ?? err)}`);
     }
   });
-  if (todo.length > 0) console.log('');
+  if (plan.synthesize.length > 0) console.log('');
 
-  const entries = [];
+  const measured = {};
   for (const beat of beats) {
+    if (failures.some((f) => f.id === beat.id)) continue;
     const file = path.join(AUDIO_DIR, `${beat.id}.mp3`);
     if (!existsSync(file)) {
       console.error(`  warn ${beat.id}: no mp3 on disk, skipping`);
       continue;
     }
-    const ms = await measureMs(file);
-    durations[beat.id] = ms;
-    entries.push({
-      id: beat.id,
-      voice: beat.voice,
-      voice_id: cast[beat.voice].voice_id,
-      chars: beat.line.length,
-      ms,
-      file: `audio/${beat.id}.mp3`,
-    });
+    measured[beat.id] = await measureMs(file);
   }
+  // Only a clip made this run gets a new entry, keyed and counted on the line it was read from.
+  const entries = made
+    .filter((s) => measured[s.id] !== undefined)
+    .map((s) => ({
+      id: s.id,
+      voice: s.voice,
+      voice_id: s.voice_id,
+      model,
+      chars: s.chars,
+      sha: s.sha,
+      line_sha: s.line_sha,
+      ms: measured[s.id],
+      file: `audio/${s.id}.mp3`,
+    }));
+  const next = durationsAfterRun(
+    durations,
+    plan,
+    measured,
+    failures.map((f) => f.id),
+  );
 
-  await writeFile(durationsPath, `${JSON.stringify(durations, null, 2)}\n`);
+  await writeFile(durationsPath, `${JSON.stringify(next, null, 2)}\n`);
   await writeFile(
     manifestPath,
     `${JSON.stringify(
@@ -507,39 +573,19 @@ async function main() {
             { name: cast[r].name, voice_id: cast[r].voice_id },
           ]),
         ),
-        beats: await mergedBeats(manifestPath, entries),
+        beats: nextManifestBeats(previousBeats, entries, measured),
       },
       null,
       2,
     )}\n`,
   );
 
-  report(entries, durations, allBeats, `${entries.length} clips measured`);
+  report(entries, next, allBeats, `${entries.length} clips voiced, ${Object.keys(measured).length} measured`);
   if (failures.length > 0) {
     console.error(`\n${failures.length} beat(s) failed: ${failures.map((f) => f.id).join(', ')}`);
+    console.error('their old clips (if any) keep their old manifest entries, so the recorder still sees them as stale.');
     process.exit(5);
   }
-}
-
-/**
- * The manifest's beats, merged the way durations.json is: this run's entries replace their own ids
- * and every other beat keeps the entry it had. A manifest that only listed the --only beats would
- * stop src/script.ts noticing that one of the others was rewritten after its clip was recorded:
- * isStale is silent about a beat the manifest never mentions, so the take would trust the old
- * clip's length for the new line.
- */
-async function mergedBeats(manifestPath, entries) {
-  let previous = [];
-  if (existsSync(manifestPath)) {
-    try {
-      const held = JSON.parse(await readFile(manifestPath, 'utf8')).beats;
-      if (Array.isArray(held)) previous = held;
-    } catch {
-      previous = [];
-    }
-  }
-  const fresh = new Set(entries.map((e) => e.id));
-  return [...previous.filter((b) => b && typeof b.id === 'string' && !fresh.has(b.id)), ...entries];
 }
 
 function report(entries, durations, allBeats, headline) {

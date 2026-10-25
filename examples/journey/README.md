@@ -260,9 +260,9 @@ ffmpeg lays one back on the other. Three commands, in order, from this directory
 
 ```bash
 # 1. narrate — one ElevenLabs mp3 per beat of script/journey.en.json, durations measured
-pnpm narrate                       # needs ELEVENLABS_API_KEY
-pnpm narrate -- --dry              # no network: estimated durations only, so the recorder can run
-pnpm narrate -- --only 1.3,1.4 --force   # re-cut two beats after a script edit
+pnpm narrate                       # needs ELEVENLABS_API_KEY; voices exactly the beats that changed
+pnpm narrate -- --plan             # no key, no network: which beats would be voiced, why, and the bill
+pnpm narrate -- --dry              # no network: estimates for beats with no current clip, so the recorder can run
 
 # 2. record — the journey in recording mode, one beat at a time, held for max(clip, settle)
 #    (a bare `pnpm test` ignores the take; name its file. JOURNEY_VIDEO=1 only films the journey test)
@@ -282,7 +282,7 @@ Everything the three write lands in `take/`, which is not committed:
 |---|---|---|
 | `take/audio/<beat id>.mp3` | narrate | one clip per beat, e.g. `take/audio/1.3.mp3` |
 | `take/audio/durations.json` | narrate | `{ "<beat id>": <ms> }` — what the recorder paces to |
-| `take/audio/manifest.json` | narrate | the three voice choices, the model, and per-beat chars and ms |
+| `take/audio/manifest.json` | narrate | the voice choices, the model, and per beat the `sha` of what its clip was read from, its chars and ms |
 | `take/take.json` | the recorder | the video path, its size, and each beat's `start_ms`/`end_ms`/`caption` |
 | `take/journey.mp4` | compose | the cut: H.264 yuv420p, AAC 48 kHz, faststart |
 | `take/journey.srt` | compose | the caption strip, with `--captions` |
@@ -292,11 +292,19 @@ here or at the repository root; both are ignored by git and the key is never pri
 the script exits 2 naming the variable — only `--dry` runs without one. `ELEVENLABS_VOICE_NARRATOR`,
 `ELEVENLABS_VOICE_MIRA` and `ELEVENLABS_VOICE_ATHENA` (a voice id or a name) override the three
 voices it would otherwise pick from the account library by the hints in the script's `voices`
-block; `ELEVENLABS_MODEL` overrides `eleven_multilingual_v2`. Synthesis skips a beat whose mp3 is
-already on disk unless `--force`, and refuses to spend more than 20,000 characters without `--yes`.
+block; `ELEVENLABS_MODEL` overrides `eleven_multilingual_v2`. Synthesis reuses a clip whose `sha`
+(line, role, voice id, settings, model) still matches and whose mp3 is on disk, re-voices every other
+beat (`--force` re-voices them all), and refuses to spend more than 20,000 characters without `--yes`
+- checked before any request is made. A manifest written before `sha` is trusted by line length, so
+upgrading sends no surprise bill.
 
-**Re-takes.** A script edit is `pnpm narrate -- --only <ids> --force`, then the recorder, then
-compose: no editing session. `pnpm compose -- --dry` prints the ffmpeg command without running it.
+**Re-takes.** A script edit or a recast is a plain `pnpm narrate`, then the recorder, then compose:
+no editing session and no ids to hunt. narrate prints its plan first (each beat it will voice and
+why: `line`, `voice`, `settings`, `model`, `new` or `missing`; the clips it reuses; the characters it
+will spend), and `scripts/lib/narration-plan.mjs` is that plan, tested by `pnpm test:unit`. A beat
+whose synthesis fails keeps the manifest entry of the line its old clip was read from, so the
+recorder still sees that clip as stale. `--only <ids>` narrows a run and names the changed beats it
+left out. `pnpm compose -- --dry` prints the ffmpeg command without running it.
 A beat whose mp3 is missing is skipped with a warning rather than failing the cut, and a clip
 longer than its room (its beat's end or the next voiced beat's start, whichever is first, a
 crossfaded seam included) is trimmed with a 200 ms fade so two clips can never overlap.
