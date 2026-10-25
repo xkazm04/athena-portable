@@ -6044,7 +6044,11 @@
           "revision": 9,
           "changedAt": "2026-10-15",
           "confidence": "probable",
-          "state": "unknown"
+          "state": "not-applicable",
+          "evidence": "apps/desktop/src/stores/voice.ts:2 This context is push-to-talk and voice-setup UI code (microphone capture, socket start/stop, model install progress) and does no version-control work. I searched the voice module, lib and stores directories for worktree, stash, GIT_INDEX_FILE, 'git add' and 'git commit' and got 0 hits each, so none of the subject's preconditions (sessions sharing a checkout, an index, commits or claims) apply to it.",
+          "evaluatedAt": "2026-10-25",
+          "evaluatedAgainst": "sha256-b2:de557423d4cf3016",
+          "evaluatedRevision": 9
         }
       ],
       "governance": "governed"

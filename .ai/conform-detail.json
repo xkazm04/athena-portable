@@ -7617,6 +7617,32 @@
           "evidence": "examples/ledgerbox/components/lanes/tools/search.ts:19 A fixed page for an agent tool reply, not a relevance budget across lanes."
         }
       ]
+    },
+    "0bc9110e-4cfa-484e-a71a-1adfa3f013be/concurrent-vcs": {
+      "context": "desktop-voice-ui",
+      "subject": "concurrent-vcs",
+      "bundle": "software-engineering",
+      "state": "not-applicable",
+      "evaluatedAt": "2026-10-25",
+      "evaluatedTs": "2026-10-25T00:30:29.346Z",
+      "worker": "52aa8d40-43d4-468a-af91-55f1e5d5ff87",
+      "techniques": [
+        {
+          "technique": "intent-ledgers",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stores/voice.ts:2 No session ledger in voice code. Search found 0 hits for worktree/stash/git commit."
+        },
+        {
+          "technique": "physical-isolation",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/modules/voice/index.ts:2 A UI model hook; it creates no worktrees."
+        },
+        {
+          "technique": "isolated-index-commits",
+          "verdict": "not-applicable",
+          "evidence": "apps/desktop/src/stores/voice.ts:2 No commits are built here (GIT_INDEX_FILE: 0 hits)."
+        }
+      ]
     }
   }
 }
