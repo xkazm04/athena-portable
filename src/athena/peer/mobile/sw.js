@@ -3,8 +3,9 @@
 // the page is served over HTTPS. It caches the shell - never an API answer - so a phone that
 // cannot reach the beacon still opens the page, which then says the beacon is asleep.
 
-const SHELL = "athena-shell-v1";
-const FILES = ["./", "index.html", "app.js", "app.css", "manifest.webmanifest", "icon.svg"];
+const SHELL = "athena-shell-v2";
+// Every name phone.py FILES serves but this worker itself (tests/peer/test_phone.py holds it).
+const FILES = ["./", "index.html", "app.js", "turn.js", "app.css", "manifest.webmanifest", "icon.svg"];
 
 self.addEventListener("install", (event) => {
   event.waitUntil(caches.open(SHELL).then((cache) => cache.addAll(FILES)));

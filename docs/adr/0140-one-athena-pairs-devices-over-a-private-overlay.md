@@ -244,11 +244,11 @@ at worst, by the 10-minute expiry. The composer device chip and auto-routing are
 ### Phone and setup (WP4)
 
 **The phone page.** The beacon's peer listener serves a small web app at `/m/` (`athena.peer.phone`,
-files in `src/athena/peer/mobile/`): hand-written HTML, CSS and one ES module, no build step, no
+files in `src/athena/peer/mobile/`): hand-written HTML, CSS and two ES modules, no build step, no
 framework, no dependency, shipped in the wheel and in the frozen sidecar (`scripts/build-sidecar.py`
 `PHONE_PAGE`; `tests/test_sidecar_data.py` holds it). The `/m`, `/m/` and `/m/<file>` routes are
 `open` - the page loads before the phone has a token - but still behind the address-class gate. Only
-the six names in `FILES` are served, each with its own content type, `nosniff`, `no-referrer`, a
+the seven names in `FILES` are served, each with its own content type, `nosniff`, `no-referrer`, a
 self-only CSP with no inline script or style, and `no-cache`; any other name, `..` and its encodings
 included, is a 404. The page reads `#claim=<pairing_id>.<nonce>` once and wipes it from the address
 bar (`history.replaceState`) before its first request; it asks to pair as `kind: "phone"`,
@@ -272,6 +272,16 @@ not the listener's own, so the Origin fence would have to widen; and the HTTPS c
 machine name in public Certificate Transparency logs. That is a security decision for the owner,
 not a setup verb. Today a phone page that is open reports an unreachable beacon itself; a page
 opened afresh while the beacon is off gets the browser's own error.
+
+**The phone follows a turn to its end.** `mobile/turn.js` (no DOM; `tests/peer/phone/turn.test.mjs`
+drives it with a fake beacon) reads `GET /peer/turns/<id>?from=<n>` and, whenever a stream ends
+without `remote.closed` - the beacon's 15 s quiet, which is the normal case while a card waits on the
+person - comes back with `from` set to the next `id:` it has not seen, so each event is shown once and
+the continuation a signature starts reaches the same conversation. A drop retries on the same `from`
+at 1, 2, 4 and then every 15 s, and is "lost" after `TURN_TTL_S` (600 s) without an answer; a 404 is
+"that conversation ended on <beacon> before it finished", a 401 forgets the token. The open turn's
+`{request_id, next}` is kept in `sessionStorage` as it advances, so a reload re-attaches at
+`from=<next>`. `sw.js` precaches every name `FILES` serves but itself (`tests/peer/test_phone.py`).
 
 **The setup names are `connector.setup.*`, scoped to one session.** The brief called them
 `core.setup.*`. Core entries are in every prompt and cannot be switched off per turn, so seven

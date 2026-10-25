@@ -1,7 +1,7 @@
 """The phone page, served by the beacon on its overlay address: ``GET /m/*`` (ADR 0140, WP4).
 
 A phone has no Athena of its own. It reaches the beacon PC's peer listener over the private
-overlay and is handed a small web app - hand-written HTML, CSS and one ES module, no build step,
+overlay and is handed a small web app - hand-written HTML, CSS and two ES modules, no build step,
 no framework, no dependency - from :data:`MOBILE_DIR`, which ships inside the package and inside
 the frozen sidecar (``scripts/build-sidecar.py``). The app does the rest against the peer routes
 with its own bearer token: the claim (``/peer/pair/*``), ``/peer/hello``, and WP3's
@@ -48,6 +48,7 @@ MOBILE_PREFIX = "/m/"
 FILES: dict[str, str] = {
     "index.html": "text/html; charset=utf-8",
     "app.js": "text/javascript; charset=utf-8",
+    "turn.js": "text/javascript; charset=utf-8",
     "app.css": "text/css; charset=utf-8",
     "sw.js": "text/javascript; charset=utf-8",
     "manifest.webmanifest": "application/manifest+json",

@@ -13,6 +13,11 @@
 // request line; it is read once and wiped from the address bar before anything else happens.
 //
 // Nothing here writes HTML from a string: every word reaches the page through textContent.
+//
+// A turn is followed by turn.js: it resumes with `from=<n>` whenever the beacon's stream ends open
+// (its 15 s quiet, a card waiting on the person, a dropped network) and re-attaches after a reload.
+
+import { TURN_KEY, createTurnReader, followTurn, pendingTurn, plainAction, turnMessage } from "./turn.js";
 
 const TOKEN_KEY = "athena.peer.v1"; // localStorage: {token, peer_id, device_id, beacon_name}
 const CLAIM_KEY = "athena.claim.v1"; // sessionStorage: the claim in flight
@@ -71,21 +76,6 @@ function setStatus(text, off = false) {
   statusLine.classList.toggle("off", off);
 }
 
-/** `connector.setup.install_overlay` -> "install overlay": a tool's own verb, in plain words. */
-function plainAction(name) {
-  const last = String(name || "").split(".").pop() || "do something";
-  return last.replace(/[_-]+/g, " ").trim();
-}
-
-/** Her text without the machine lines a turn can carry (`OP: {...}`, `TTS: "..."`). */
-function plainText(text) {
-  return String(text || "")
-    .split("\n")
-    .filter((line) => !/^\s*(OP|TTS):/.test(line))
-    .join("\n")
-    .trim();
-}
-
 function timeOf(iso) {
   const when = new Date(iso);
   return Number.isNaN(when.getTime()) ? "" : when.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
@@ -120,37 +110,6 @@ async function api(method, path, body, token) {
     payload = {};
   }
   return { status: response.status, body: payload && typeof payload === "object" ? payload : {} };
-}
-
-/** Server-Sent Events off a fetch body: each frame's `event:` and parsed `data:`. */
-async function* sse(response) {
-  const reader = response.body.getReader();
-  const decoder = new TextDecoder();
-  let buffer = "";
-  for (;;) {
-    const { value, done } = await reader.read();
-    if (done) break;
-    buffer += decoder.decode(value, { stream: true }).replace(/\r\n/g, "\n");
-    let cut;
-    while ((cut = buffer.indexOf("\n\n")) >= 0) {
-      const frame = buffer.slice(0, cut);
-      buffer = buffer.slice(cut + 2);
-      let kind = "";
-      const data = [];
-      for (const line of frame.split("\n")) {
-        if (line.startsWith("event:")) kind = line.slice(6).trim();
-        else if (line.startsWith("data:")) data.push(line.slice(5).replace(/^ /, ""));
-      }
-      if (!data.length) continue;
-      try {
-        const event = JSON.parse(data.join("\n"));
-        if (!event.kind) event.kind = kind;
-        yield event;
-      } catch {
-        // A frame that is not JSON is not an event; skip it.
-      }
-    }
-  }
 }
 
 // --- pairing --------------------------------------------------------------------------------
@@ -312,6 +271,7 @@ const chat = {
 function forget() {
   write(localStorage, TOKEN_KEY, null);
   write(sessionStorage, LOG_KEY, null);
+  write(sessionStorage, TURN_KEY, null);
   for (const timer of chat.timers) clearInterval(timer);
   chat.timers = [];
 }
@@ -376,6 +336,9 @@ async function ready() {
   chat.log = read(sessionStorage, LOG_KEY) || [];
   renderChat();
   await hello();
+  // A reload mid-answer: pick the open turn up where it stopped instead of dropping it.
+  const open = pendingTurn(sessionStorage);
+  if (open && chat.saved) resume(open);
   await loadCards();
   chat.timers.push(setInterval(() => document.visibilityState === "visible" && loadCards(), CARDS_POLL_MS));
   chat.timers.push(setInterval(() => document.visibilityState === "visible" && hello(), HELLO_POLL_MS));
@@ -495,57 +458,62 @@ async function sendMessage(text) {
   }
 }
 
-/** One turn on the beacon, as it happens. */
-async function follow(requestId) {
-  let response;
-  try {
-    response = await fetch(`/peer/turns/${encodeURIComponent(requestId)}`, {
-      headers: { Authorization: `Bearer ${chat.saved.token}`, Accept: "text/event-stream" },
-      cache: "no-store",
-      credentials: "omit",
-      referrerPolicy: "no-referrer",
-    });
-  } catch {
-    unreachable();
-    say("trouble", "Lost the answer: the computer stopped answering.");
-    return;
-  }
-  if (response.status === 401) return revoked();
-  if (!response.ok || !response.body) {
-    say("trouble", "Athena could not start on that.");
-    return;
-  }
-  let her = null;
-  let text = "";
-  let ended = false;
-  try {
-    for await (const event of sse(response)) {
-      if (event.kind === "text.delta") {
-        text += event.text || "";
-        const shown = plainText(text);
-        if (shown) {
-          if (her) settle(her, shown);
-          else her = say("her", shown);
-        }
-      } else if (event.kind === "tool.result") {
-        say("step", `${event.ok ? "Done" : "Could not"}: ${plainAction(event.name)}`);
-      } else if (event.kind === "decision.requested" || event.kind === "decision.resolved") {
-        if (event.kind === "decision.requested") say("step", `She needs your OK to ${plainAction(event.action)}. It is above.`);
-        loadCards();
-      } else if (event.kind === "turn.finished") {
-        ended = true;
-        const final = plainText(event.text);
-        if (final && !her) her = say("her", final);
-        else if (final && her && final.length > her.entry.text.length) settle(her, final);
-      } else if (event.kind === "turn.error") {
-        ended = true;
-        say("trouble", event.detail ? `That did not work: ${event.detail}` : "That did not work.");
+/** The `her` message a re-attached turn was writing: the last one in the conversation. */
+function lastHer() {
+  if (!chat.nodes) return null;
+  let index = chat.log.length - 1;
+  while (index >= 0 && chat.log[index].who !== "her") index -= 1;
+  const nodes = chat.nodes.log.querySelectorAll(".msg.her");
+  return index >= 0 && nodes.length ? { entry: chat.log[index], node: nodes[nodes.length - 1] } : null;
+}
+
+/**
+ * One turn on the beacon, as it happens, to its end - through the beacon's quiet windows, a card
+ * signed here or on the computer, a dropped network and a reload (turn.js). `open` is a stored turn
+ * to re-attach to: `{next, text}`.
+ */
+async function follow(requestId, open = null) {
+  const reader = createTurnReader({ text: open ? open.text || "" : "" });
+  let her = open && open.text ? lastHer() : null;
+  let refused = null;
+  const final = await followTurn({
+    token: chat.saved.token,
+    requestId,
+    from: open ? open.next : 0,
+    store: sessionStorage,
+    memo: () => ({ text: reader.text }),
+    onEvent: (event) => {
+      for (const op of reader.apply(event)) {
+        if (op.op === "say" && op.who === "her") her = say("her", op.text);
+        else if (op.op === "say") say(op.who, op.text);
+        else if (op.op === "settle") {
+          if (her) settle(her, op.text);
+          else her = say("her", op.text);
+        } else if (op.op === "cards") loadCards();
       }
-    }
-  } catch {
-    unreachable();
+      if (event.kind === "turn.finished") her = null;
+      // A card now waits on the person: the composer is theirs again while the turn waits.
+      if (event.kind === "decision.requested") busy(false);
+    },
+    onState: (state, info) => {
+      if (state === "reconnecting") unreachable();
+      else if (state === "streaming") awake();
+      refused = info && typeof info.status === "number" ? info.status : null;
+    },
+  });
+  if (final === "revoked") return revoked();
+  const words = turnMessage(final, { beacon: chat.beacon, status: final === "error" ? refused : null });
+  if (words) say("trouble", words);
+}
+
+/** Re-attach to the turn a reload interrupted. */
+async function resume(open) {
+  busy(true);
+  try {
+    await follow(open.request_id, open);
+  } finally {
+    busy(false);
   }
-  if (!ended) say("trouble", "The answer stopped before it finished.");
 }
 
 // --- what waits on you ----------------------------------------------------------------------

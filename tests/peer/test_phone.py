@@ -6,6 +6,7 @@ it, with the beacon on so the listener is bound.
 
 from __future__ import annotations
 
+import re
 from pathlib import Path
 
 import pytest
@@ -99,3 +100,14 @@ def test_serve_reads_only_from_its_own_directory(tmp_path: Path) -> None:
     assert serve("index.html", tmp_path).body == b"<p>elsewhere</p>"
     assert serve("secret.txt", tmp_path).status == 404
     assert serve("app.js", tmp_path).status == 404  # listed, but not there: still a 404
+
+
+def test_the_offline_shell_precaches_every_served_file() -> None:
+    # sw.js caches the shell for a page opened offline; a module the page imports but the cache
+    # lacks would leave that page broken. "./" is the shell's own URL; sw.js is the worker itself.
+    script = (MOBILE_DIR / "sw.js").read_text(encoding="utf-8")
+    match = re.search(r"const FILES = \[([^\]]*)\];", script)
+    assert match is not None
+    cached = set(re.findall(r'"([^"]+)"', match.group(1)))
+    assert cached - {"./"} == set(FILES) - {"sw.js"}
+    assert "./" in cached
