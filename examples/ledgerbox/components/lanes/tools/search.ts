@@ -101,8 +101,10 @@ export function searchLanes(sheet: LnSheet, q: LanesQuery) {
     .sort((a, b) => worstFirst(a.mark, b.mark));
 
   return {
-    // `markRead` already names the area; the label is what a person would call
-    // it, and it saves the caller a second lookup before it opens anything.
+    // `markRead` is the one invoice core every books tool answers with (so a
+    // result says `mostly_paid` before anyone drafts a chase) and already names
+    // the area; the label is what a person would call it, and it saves the
+    // caller a second lookup before it opens anything.
     ...bounded(found, SEARCH_PAGE, ({ lane, mark }) => ({
       ...markRead(mark),
       area_label: lane.label,

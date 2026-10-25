@@ -54,6 +54,8 @@ type Class = { reversible: boolean; sideEffects: string };
 let reached: string[] = [];
 const registered = new Map<string, WebMCPToolSpec>();
 let zoomVerbsMounted = 0;
+/** What `useZoomTools` was handed, so `read_view` can be read the way the kit's verb reads it. */
+let zoomSpec: { detail: () => unknown } | null = null;
 /** The one server action that throws instead of answering, when a test asks for it. */
 let breaks: string | null = null;
 
@@ -63,8 +65,9 @@ const RECORDER = Symbol.for("ledgerbox.test.recorder");
     assert.ok(!registered.has(spec.name), `${spec.name} is registered twice`);
     registered.set(spec.name, spec);
   },
-  zoom() {
+  zoom(spec: { detail: () => unknown }) {
     zoomVerbsMounted += 1;
+    zoomSpec = spec;
   },
   router: { refresh: () => reached.push("router.refresh") },
   toaster: { toast: (_text: string, tone: string) => reached.push(`toast:${tone}`) },
@@ -336,4 +339,107 @@ test("an act that throws still tells the person watching the page, not only the 
   } finally {
     breaks = null;
   }
+});
+
+/* ------------------------------------------------- one invoice, one reading (ADR) */
+
+const { companyDomain } = await import("@athena/demo-kit/seed");
+
+/** The demo's one late invoice that is mostly paid: chasing it is the wrong move. */
+const QUIET = "LB-2026-0920";
+
+/** The keys every invoice-returning tool carries, with one value per invoice whichever tool says it. */
+const CORE = [
+  "id", "number", "client", "client_domain", "category", "state", "due_at", "days_overdue",
+  "amount", "paid", "balance", "paid_ratio", "mostly_paid", "candidates", "reminders_sent",
+  "has_draft_reminder", "contact_name", "contact_email",
+] as const;
+
+type Item = Record<string, unknown>;
+const json = async (name: string, args: Record<string, unknown>) => JSON.parse((await drive(name, args)).answer);
+const coreOf = (item: Item) => Object.fromEntries(CORE.map((k) => [k, item[k]]));
+
+/** Every row read_inbox answers for a filter, page by page, as an agent would walk it. */
+async function inbox(filter: string): Promise<{ pages: Item[]; items: Item[] }> {
+  const pages: Item[] = [];
+  const items: Item[] = [];
+  for (let page = 0; page < 20; page += 1) {
+    const env = await json("read_inbox", { filter, page });
+    pages.push(env);
+    items.push(...(env.items as Item[]));
+    if (items.length >= env.of) break;
+  }
+  return { pages, items };
+}
+
+/** What the kit's `read_view` verb would answer at a focus. */
+function readView(focus: { level: number; group: string | null; item: string | null }): Item {
+  (nav.state as { focus: unknown }).focus = focus;
+  try {
+    return zoomSpec!.detail() as Item;
+  } finally {
+    (nav.state as { focus: unknown }).focus = { level: 0, group: null, item: null };
+  }
+}
+
+test("search_invoices for overdue says the mostly-paid late invoice is mostly paid", async () => {
+  const found = await json("search_invoices", { state: "overdue", text: QUIET });
+  const quiet = (found.items as Item[]).find((i) => i.number === QUIET);
+  assert.ok(quiet, `${QUIET} is overdue and found`);
+  assert.equal(quiet.mostly_paid, true);
+  assert.equal(quiet.paid_ratio, 0.8);
+});
+
+test("every invoice-returning tool carries the same core for one invoice", async () => {
+  const id = rows.find((r) => r.number === QUIET)!.id;
+  const lane = sheet.lanes.find((l) => l.marks.some((m) => m.id === id))!.id;
+
+  const fromInbox = (await inbox("overdue")).items.find((i) => i.id === id)!;
+  const fromInvoice = (await json("read_invoice", { id: QUIET })).invoice as Item;
+  const fromSearch = ((await json("search_invoices", { state: "overdue", text: QUIET })).items as Item[]).find(
+    (i) => i.id === id,
+  )!;
+  const fromL1 = (readView({ level: 1, group: lane, item: null }).invoices as Item[]).find((i) => i.id === id)!;
+  const fromL2 = readView({ level: 2, group: lane, item: id });
+
+  const projections = { read_inbox: fromInbox, read_invoice: fromInvoice, search_invoices: fromSearch, read_view_L1: fromL1, read_view_L2: fromL2 };
+  for (const [name, item] of Object.entries(projections)) {
+    assert.ok(item, `${name} lists ${QUIET}`);
+    const missing = CORE.filter((k) => !(k in item));
+    assert.deepEqual(missing, [], `${name} carries every core key`);
+    assert.deepStrictEqual(coreOf(item), coreOf(fromInbox), `${name} says what read_inbox says`);
+  }
+  assert.equal(fromInbox.client_domain, "solstice-partners.example");
+});
+
+test("read_inbox carries the cross-app key on every row", async () => {
+  const { items } = await inbox("overdue");
+  assert.ok(items.length > 0);
+  const wrong = items.filter((i) => i.client_domain !== companyDomain(String(i.client))).map((i) => i.number);
+  assert.deepEqual(wrong, [], "client_domain is companyDomain(client) on every row");
+});
+
+test("guard: read_inbox keeps its envelope and order, search_invoices its area and its refusals", async () => {
+  const { pages, items } = await inbox("overdue");
+  for (const env of pages) {
+    for (const key of ["showing", "of", "page", "filter"]) assert.ok(key in env, `the envelope keeps ${key}`);
+  }
+  const days = items.map((i) => Number(i.days_overdue));
+  assert.deepEqual(days, [...days].sort((a, b) => b - a), "worst first");
+
+  const all = await json("search_invoices", { state: "overdue" });
+  for (const item of all.items as Item[]) {
+    assert.equal(typeof item.area, "string", `${item.number} names its area`);
+    assert.equal(typeof item.area_label, "string", `${item.number} names its area's label`);
+  }
+  const noState = await json("search_invoices", { state: "settled" });
+  assert.equal(noState.ok, false);
+  // The enum is in the schema, so the kit's door refuses it before the handler runs, naming the
+  // states it would have taken; `searchLanes`' own refusal is pinned in tools.test.ts.
+  assert.match(String(noState.error), /settled/);
+  assert.match(String(noState.error), /overdue/);
+  const noArea = await json("search_invoices", { area: "nowhere" });
+  assert.equal(noArea.ok, false);
+  assert.match(String(noArea.error), /No area called nowhere/);
+  assert.ok(Array.isArray(noArea.areas));
 });

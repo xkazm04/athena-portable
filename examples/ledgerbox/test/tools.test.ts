@@ -174,7 +174,7 @@ test("a mark reads as money in units and never as layout", () => {
   assert.equal(read.amount, 2_500);
   assert.equal(read.days_overdue, 61);
   assert.equal(read.heat, "long overdue");
-  assert.equal(read.due, "2026-07-31", "a date, not a timestamp");
+  assert.equal(read.due_at, "2026-07-31", "a date, not a timestamp");
   // The cross-app key, so a fact filed in TidyCRM can find this invoice.
   assert.equal(read.client_domain, "pinegrove-collective.example");
   for (const forbidden of ["x", "weight", "row"]) {

@@ -60,12 +60,12 @@ import {
   type View,
 } from "@/lib/constants";
 import type { CreditView, LineSuggestion } from "@/lib/db";
-import { isMostlyPaid, matchesFilterClient } from "@/lib/filter";
+import { matchesFilterClient } from "@/lib/filter";
 import { parseDollars } from "@/lib/format";
 import { REF_HINT, resolveInvoiceRef } from "@/lib/invoice-ref";
 import { registration } from "@/lib/manifest";
 import type { ToolName } from "@/lib/tool-classes";
-import type { ActionResult, InvoiceRow } from "@/lib/types";
+import type { ActionResult } from "@/lib/types";
 
 import {
   STATE_FILTER_LABEL,
@@ -75,6 +75,7 @@ import {
   type LnSheet,
   type StateFilter,
 } from "../model";
+import { rowRead } from "./read";
 import { agentCopy, toastFor, undoControl } from "./undo";
 
 /**
@@ -105,39 +106,6 @@ const refused = (error: string) => ({ ok: false as const, error });
 function asIds(value: unknown): string[] {
   if (!Array.isArray(value)) return [];
   return value.map(String).slice(0, MAX_IDS);
-}
-
-/** One invoice as an agent reads it: the money and the state, not the layout. */
-function row(r: InvoiceRow) {
-  return {
-    id: r.id,
-    number: r.number,
-    client: r.client_name,
-    // Who a reminder would be addressed to, on this row, so chasing never needs a second read.
-    // It is the registry contact - the same person and the same address in the studio's other two
-    // apps - not a name this app made up.
-    contact_name: r.client_contact,
-    contact_email: r.client_email,
-    state: r.state,
-    category: r.category,
-    due_at: r.due_at.slice(0, 10),
-    days_overdue: r.days_overdue,
-    amount: r.amount_cents / 100,
-    paid: r.paid_cents / 100,
-    balance: r.balance_cents / 100,
-    // The two facts behind "paid most of it and went quiet". They are stated for EVERY row, not
-    // only the one they happen to describe, so the caller applies its own judgement to the books
-    // rather than trusting this app to have flagged the right client.
-    paid_ratio: r.paid_ratio,
-    last_payment_at: r.last_payment_at ? r.last_payment_at.slice(0, 10) : null,
-    candidates: r.candidate_count,
-    has_draft_reminder: r.has_draft_reminder,
-    reminders_sent: r.reminders_sent,
-    ...(r.dispute_note ? { dispute: r.dispute_note } : {}),
-    // Conditional like `dispute` above: the field appears only when it is true. It is the app's
-    // own reading of `paid_ratio`, offered beside the ratio, never instead of it.
-    ...(isMostlyPaid(r) ? { mostly_paid: true } : {}),
-  };
 }
 
 /** One candidate invoice for a credit, with both structured facts beside the English. */
@@ -307,7 +275,7 @@ export function BooksTools({
       // the kit's one truncation shape - `showing` and `of` as numbers, never a sentence an agent
       // has to parse - so this answers "how many did I not see" the way every other tool in every
       // other app does.
-      return { ...boundedPage(hits, Number(page), INBOX_PAGE, row), filter: which };
+      return { ...boundedPage(hits, Number(page), INBOX_PAGE, rowRead), filter: which };
     },
   });
 
@@ -329,7 +297,7 @@ export function BooksTools({
         )
         .sort((a, b) => b.score - a.score);
       return {
-        invoice: row(r),
+        invoice: rowRead(r),
         note: r.note,
         // `at most N per credit` is a second, upstream bound, so it is its own field rather than
         // folded into the envelope's counts.
