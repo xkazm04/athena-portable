@@ -7,10 +7,10 @@
  * to `localFaceSource` (her own window draws from it) and mirrors it to Main through `athenaFace`
  * at most `FACE_MIRROR_HZ` times a second. At rest it sends once per change and runs no loop.
  *
- * - **Phase** is the halo's (`haloPhase`, not a fork of it), with one addition: synthesis runs
- *   ahead of playback, so `voice.stopped` can arrive while the end of her line is still sounding.
- *   The face keeps `speaking` until the player has played that line's last sample, because a
- *   mouth that shuts while her voice goes on reads as a recording.
+ * - **Phase** is her presence's (`createPresence` in `lib/halo.ts`, the one reducer the halo reads
+ *   too): synthesis runs ahead of playback, so `voice.stopped` can arrive while the end of her line
+ *   is still sounding, and she keeps `speaking` until the player has played that line's last
+ *   sample, because a mouth that shuts while her voice goes on reads as a recording.
  * - **Viseme** is the segment covering the playback sample (`lib/voice.ts`'s `playbackSample`),
  *   looked up `VISEME_LEAD_S` ahead: the mouth leads the sound slightly, as a face does.
  * - **Open** follows the shape, scaled by the level; without a timeline, the level alone. This is
@@ -25,8 +25,7 @@ import type { FacePhase, FaceSignal } from "@/avatar/types";
 import { CLOSURES, mouthTarget, smoothOpen } from "@/avatar/visemes";
 import { FACE_MIRROR_HZ, athenaFace, publishLocalFace } from "@/lib/face";
 import { FACE_LINE_SINK, clearLine, faceTimeline, motionAt, visemeAt, type FaceTimeline } from "@/lib/face-timeline";
-import { LEVEL_FRAME_MS } from "@/lib/halo";
-import { haloPhase } from "@/lib/halo-signal";
+import { LEVEL_FRAME_MS, createPresence } from "@/lib/halo";
 import { frames } from "@/lib/motion";
 import { currentLevel, playbackSample, playbackSounding } from "@/lib/voice";
 import { useRun, type RunPhase } from "@/stores/run";
@@ -148,8 +147,8 @@ export function startFace(deps: FaceDeps = liveFaceDeps()): () => void {
   if (stopActive) return stopActive;
   setFaceLineSink(FACE_LINE_SINK);
 
-  /** The last line seen playing: its tail may still sound after the store has let it go. */
-  let spoken: number | null = null;
+  /** Her phase, and the last line seen playing: its tail may still sound after the store let it go. */
+  const presence = createPresence({ sounding: deps.sounding });
   let open = 0;
   let lastAt: number | null = null;
   let lastPhase: FacePhase | null = null;
@@ -158,17 +157,12 @@ export function startFace(deps: FaceDeps = liveFaceDeps()): () => void {
   let due = Number.NEGATIVE_INFINITY;
   let stopLoop: (() => void) | null = null;
 
-  const phaseOf = (inputs: FaceInputs): FacePhase => {
-    if (inputs.generation !== null) spoken = inputs.generation;
-    const phase = haloPhase(inputs.voice, inputs.run, inputs.cards);
-    if (phase !== "listening" && phase !== "speaking" && spoken !== null && deps.sounding(spoken)) return "speaking";
-    return phase;
-  };
+  const phaseOf = (inputs: FaceInputs): FacePhase => presence.phase(inputs);
 
   const build = (now: number): FaceSignal => {
     const inputs = deps.inputs();
     const phase = phaseOf(inputs);
-    const generation = inputs.generation ?? spoken ?? 0;
+    const generation = inputs.generation ?? presence.spoken() ?? 0;
     const level = levelled(phase) ? clamp01(deps.level()) : 0;
     let line = deps.timeline();
     if (line?.finished && !deps.sounding(line.generation)) {

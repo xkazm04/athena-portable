@@ -7,6 +7,8 @@
  */
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+import type { FaceSignal } from "@/avatar/types";
+import { startFace, type FaceDeps, type FaceInputs } from "@/lib/face-signal";
 import type { HaloSignal } from "@/lib/halo-signal";
 
 import {
@@ -213,5 +215,157 @@ describe("the producer", () => {
     stop();
     expect(f.listeners.size).toBe(0);
     expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
+describe("the tail of her line: the halo follows her audible voice, as her face does", () => {
+  /** A fake whose player still sounds the generations in `playing`. */
+  function tail() {
+    const playing = new Set<number>();
+    const f = fake({ sounding: (generation: number) => playing.has(generation) });
+    return { ...f, playing };
+  }
+
+  /** Speak line 7, then let the store hear `voice.stopped` while the player still sounds it. */
+  function speakThenStop(f: ReturnType<typeof tail>) {
+    f.level(0.4);
+    f.playing.add(7);
+    f.set({ voice: "speaking", generation: 7, speakingText: "Two are late." });
+    f.set({ voice: "idle", generation: null, speakingText: "" });
+  }
+
+  it("[1] sends no idle frame at voice.stopped while the line still sounds: the last frame is speaking at the player's level", () => {
+    const f = tail();
+    stop = startHalo(f.deps);
+    speakThenStop(f);
+    const sinceSpeaking = f.sent.slice(f.sent.findIndex((s) => s.phase === "speaking"));
+    expect(sinceSpeaking.some((s) => s.phase === "idle")).toBe(false);
+    f.level(0.6);
+    vi.advanceTimersByTime(LEVEL_FRAME_MS);
+    expect(f.sent.at(-1)).toMatchObject({ phase: "speaking", level: 0.6 });
+  });
+
+  it("[2] keeps the level loop through the tail, and rests (no timer) the tick the line falls silent", () => {
+    const f = tail();
+    stop = startHalo(f.deps);
+    speakThenStop(f);
+    vi.advanceTimersByTime(LEVEL_FRAME_MS * 3);
+    expect(vi.getTimerCount()).toBe(1);
+    f.playing.delete(7);
+    vi.advanceTimersByTime(LEVEL_FRAME_MS);
+    expect(f.sent.at(-1)).toEqual({ phase: "idle", level: 0, cards: 0, caption: null });
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("[3] a card landing in the tail rides the speaking frame, and the frame after the tail is gate", () => {
+    const f = tail();
+    stop = startHalo(f.deps);
+    speakThenStop(f);
+    f.set({ cards: 1 });
+    expect(f.sent.at(-1)).toMatchObject({ phase: "speaking", cards: 1 });
+    f.playing.delete(7);
+    vi.advanceTimersByTime(LEVEL_FRAME_MS);
+    expect(f.sent.at(-1)).toEqual({ phase: "gate", level: 0, cards: 1, caption: null });
+  });
+
+  it("[4] a press in the tail sends listening at once: listening still wins", () => {
+    const f = tail();
+    stop = startHalo(f.deps);
+    speakThenStop(f);
+    const from = f.sent.length - 1;
+    f.set({ voice: "listening", partial: "and" });
+    // Straight from the tail's speaking to listening, with no idle frame between them.
+    expect(f.sent.slice(from).map((s) => s.phase)).toEqual(["speaking", "listening"]);
+    expect(f.sent.at(-1)).toMatchObject({ phase: "listening", caption: { who: "you", text: "and" } });
+  });
+
+  it("[6] guard: a typed turn with no line ever played sends exactly the frames it always has", () => {
+    const f = tail();
+    f.playing.add(1);
+    stop = startHalo(f.deps);
+    f.set({ run: "running" });
+    f.set({ run: "idle" });
+    expect(f.sent).toEqual([
+      { phase: "idle", level: 0, cards: 0, caption: null },
+      { phase: "thinking", level: 0, cards: 0, caption: null },
+      { phase: "idle", level: 0, cards: 0, caption: null },
+    ]);
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
+  it("[5] parity: one script of store inputs and playback fed to the halo and the face yields one phase sequence", () => {
+    let inputs: FaceInputs = { voice: "idle", run: "idle", cards: 0, generation: null };
+    const playing = new Set<number>();
+    const listeners = new Set<() => void>();
+    const subscribe = (f: () => void) => {
+      listeners.add(f);
+      return () => void listeners.delete(f);
+    };
+    // The face: a stepped frame loop, no timeline.
+    let faceFrame: ((now: number) => boolean | void) | null = null;
+    const faceSeen: FaceSignal[] = [];
+    const faceDeps: FaceDeps = {
+      inputs: () => inputs,
+      subscribe,
+      level: () => 0.5,
+      sample: () => null,
+      sounding: (generation) => playing.has(generation),
+      timeline: () => null,
+      forget: () => {},
+      loop: (fn) => {
+        faceFrame = fn;
+        return () => {
+          faceFrame = null;
+        };
+      },
+      now: () => 0,
+      local: (signal) => void faceSeen.push(signal),
+      mirror: () => {},
+    };
+    // The halo: the same inputs, its own level timer under the fake clock.
+    const haloSent: HaloSignal[] = [];
+    const haloDeps: HaloDeps = {
+      shell: () => true,
+      invoke: async (signal) => void haloSent.push(signal),
+      inputs: () => ({ ...inputs, partial: "", speakingText: "", heard: "" }),
+      override: () => null,
+      subscribe,
+      level: () => 0.5,
+      sounding: (generation) => playing.has(generation),
+      every: (ms, f) => {
+        const timer = setInterval(f, ms);
+        return () => clearInterval(timer);
+      },
+    };
+    stop = startHalo(haloDeps);
+    const stopFace = startFace(faceDeps);
+    const tick = () => {
+      vi.advanceTimersByTime(LEVEL_FRAME_MS);
+      if (faceFrame && faceFrame(0) === false) faceFrame = null;
+    };
+    const step = (next: Partial<FaceInputs>) => {
+      inputs = { ...inputs, ...next };
+      listeners.forEach((f) => f());
+      tick();
+    };
+    try {
+      playing.add(7);
+      step({ voice: "speaking", generation: 7 });
+      step({ voice: "idle", generation: null }); // voice.stopped, the line still sounding
+      tick();
+      step({ cards: 1 });
+      playing.delete(7);
+      tick();
+      step({ voice: "listening" });
+      step({ voice: "thinking" });
+      step({ voice: "idle", cards: 0 });
+    } finally {
+      stopFace();
+    }
+    const collapse = (phases: string[]) => phases.filter((p, i) => i === 0 || p !== phases[i - 1]);
+    const face = collapse(faceSeen.map((s) => s.phase));
+    const halo = collapse(haloSent.map((s) => s.phase));
+    expect(face).toEqual(["idle", "speaking", "gate", "listening", "thinking", "idle"]);
+    expect(halo).toEqual(face);
   });
 });

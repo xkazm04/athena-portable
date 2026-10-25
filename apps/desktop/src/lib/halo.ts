@@ -15,6 +15,10 @@
  *   and only while she is listening or speaking. The loop stops the moment she is not, so rest
  *   costs no timer at all.
  *
+ * Her phase is `createPresence`'s, the one reducer her face reads too: synthesis runs ahead of
+ * playback, so `voice.stopped` can land while the end of her line is still sounding, and the edges
+ * stay on `speaking`, following her real level, until the player has played its last sample.
+ *
  * Every frame identical to the last one sent is dropped, so a silent microphone sends nothing.
  * The level never goes into a store: 30 re-renders a second of a window that shows nothing of it
  * would be the cost of putting it there.
@@ -29,7 +33,7 @@ import {
   type HaloSignal,
 } from "@/lib/halo-signal";
 import { call, hasShell, type Wire } from "@/lib/ipc";
-import { currentLevel } from "@/lib/voice";
+import { currentLevel, playbackSounding } from "@/lib/voice";
 import { useRun, type RunPhase } from "@/stores/run";
 import { useVoice, type VoicePhase } from "@/stores/voice";
 
@@ -47,6 +51,39 @@ export interface HaloInputs {
   speakingText: string;
   /** The last final transcript, until she answers. */
   heard: string;
+  /** The line playing, as the voice store says (`null` once its `voice.stopped` arrived). */
+  generation?: number | null;
+}
+
+/** What her presence reads: the store phases and the line the voice store says is playing. */
+export type PresenceInputs = Pick<HaloInputs, "voice" | "run" | "cards" | "generation">;
+
+export interface Presence {
+  /** Her phase now: `haloPhase`, held on `speaking` while the last line seen playing sounds. */
+  phase: (inputs: PresenceInputs) => HaloPhase;
+  /** The last line seen playing, or `null` before any. */
+  spoken: () => number | null;
+}
+
+/**
+ * Her phase, once, for every mirror of her (the halo here, her face in `lib/face-signal.ts`).
+ * Synthesis runs ahead of playback, so the store lets a line go (`voice.stopped`) while its end
+ * may still be sounding; until the player has played that line's last sample she is still
+ * speaking. Listening and her own speaking win as they always do; a turn or a card that arrives in
+ * the tail waits for it. It lives here, not beside `haloPhase`, because that module is in Main's
+ * first frame and only the `athena` window reduces her voice.
+ */
+export function createPresence(deps: { sounding: (generation: number) => boolean }): Presence {
+  let spoken: number | null = null;
+  return {
+    phase: (inputs) => {
+      if (inputs.generation != null) spoken = inputs.generation;
+      const phase = haloPhase(inputs.voice, inputs.run, inputs.cards);
+      if (phase !== "listening" && phase !== "speaking" && spoken !== null && deps.sounding(spoken)) return "speaking";
+      return phase;
+    },
+    spoken: () => spoken,
+  };
 }
 
 /**
@@ -84,9 +121,16 @@ export function captionOf(phase: HaloPhase, inputs: HaloInputs): HaloCaption | n
   return null;
 }
 
-/** One frame, pure: the stores, the override and a level in; the signal out. */
-export function signalOf(inputs: HaloInputs, override: HaloOverride | null, level: number): HaloSignal {
-  const phase = override?.phase ?? haloPhase(inputs.voice, inputs.run, inputs.cards);
+/**
+ * One frame, pure: the stores, the override and a level in; the signal out. `phase` is her
+ * presence's when the producer has one; omitted, the stores' own.
+ */
+export function signalOf(
+  inputs: HaloInputs,
+  override: HaloOverride | null,
+  level: number,
+  phase: HaloPhase = override?.phase ?? haloPhase(inputs.voice, inputs.run, inputs.cards),
+): HaloSignal {
   const caption = override ? override.caption : captionOf(phase, inputs);
   // Two decimals: the edge cannot show a finer step, and a coarser number dedupes more frames.
   const clamped = Math.max(0, Math.min(1, Number.isFinite(level) ? level : 0));
@@ -119,6 +163,8 @@ export interface HaloDeps {
   /** Called on every store change that might change a frame. Returns its unsubscribe. */
   subscribe: (onChange: () => void) => () => void;
   level: () => number;
+  /** Is `generation` still sounding? Omitted, nothing ever is (no tail). */
+  sounding?: (generation: number) => boolean;
   /** A repeating timer. Returns its cancel. */
   every: (ms: number, f: () => void) => () => void;
 }
@@ -138,6 +184,7 @@ export function liveHaloDeps(): HaloDeps {
         partial: voice.partial,
         speakingText: voice.speakingText,
         heard: voice.heard,
+        generation: voice.generation,
       };
     },
     override: () => useHaloOverride.getState().override,
@@ -146,6 +193,7 @@ export function liveHaloDeps(): HaloDeps {
       return () => off.forEach((f) => f());
     },
     level: currentLevel,
+    sounding: playbackSounding,
     every: (ms, f) => {
       const timer = setInterval(f, ms);
       return () => clearInterval(timer);
@@ -166,13 +214,16 @@ export function startHalo(deps: HaloDeps = liveHaloDeps()): () => void {
   let last = "";
   let failing = false;
   let stopLoop: (() => void) | null = null;
+  const presence = createPresence({ sounding: deps.sounding ?? (() => false) });
 
   const emit = () => {
     const override = deps.override();
     const inputs = deps.inputs();
-    const phase = override?.phase ?? haloPhase(inputs.voice, inputs.run, inputs.cards);
+    // Read on every frame, override or not, so the line playing is remembered for its tail.
+    const own = presence.phase(inputs);
+    const phase = override?.phase ?? own;
     const level = levelled(phase) ? (override?.level ?? deps.level)() : 0;
-    const signal = signalOf(inputs, override, level);
+    const signal = signalOf(inputs, override, level, phase);
     const key = JSON.stringify(signal);
     if (key !== last) {
       last = key;

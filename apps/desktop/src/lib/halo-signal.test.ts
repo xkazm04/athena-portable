@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
+import { createPresence } from "@/lib/halo";
 import { HALO_EVENT, HALO_PHASES, haloPhase, isHaloPhase } from "@/lib/halo-signal";
 
 describe("haloPhase", () => {
@@ -49,5 +50,24 @@ describe("isHaloPhase", () => {
     expect(isHaloPhase("gate")).toBe(true);
     expect(isHaloPhase("hear")).toBe(false);
     expect(isHaloPhase(1)).toBe(false);
+  });
+});
+
+describe("createPresence: her phase with the tail of a line still sounding", () => {
+  it("[0] reads speaking after voice.stopped while the last line seen playing still sounds, idle once it does not", () => {
+    let sounding = true;
+    const presence = createPresence({ sounding: (generation) => generation === 7 && sounding });
+    expect(presence.phase({ voice: "speaking", run: "idle", cards: 0, generation: 7 })).toBe("speaking");
+    expect(presence.phase({ voice: "idle", run: "idle", cards: 0, generation: null })).toBe("speaking");
+    expect(presence.spoken()).toBe(7);
+    sounding = false;
+    expect(presence.phase({ voice: "idle", run: "idle", cards: 0, generation: null })).toBe("idle");
+  });
+
+  it("lets listening win over the tail, and never invents a tail for a line it never saw", () => {
+    const presence = createPresence({ sounding: () => true });
+    expect(presence.phase({ voice: "idle", run: "running", cards: 0, generation: null })).toBe("thinking");
+    expect(presence.phase({ voice: "speaking", run: "idle", cards: 0, generation: 3 })).toBe("speaking");
+    expect(presence.phase({ voice: "listening", run: "idle", cards: 0, generation: null })).toBe("listening");
   });
 });
