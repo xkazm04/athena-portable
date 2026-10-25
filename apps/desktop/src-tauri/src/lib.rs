@@ -26,6 +26,7 @@ mod bridge;
 mod capture;
 mod daemon;
 mod hands;
+mod ladder;
 mod store;
 // ──────────────────────────────────────────────────────────────────────────────────────────────
 

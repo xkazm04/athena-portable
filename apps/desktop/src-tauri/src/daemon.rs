@@ -25,6 +25,10 @@
 //! The token never rides on the command line. `athena serve --token-file <path>` reads the token
 //! back out of a file this module writes first (see `daemon/server.py::resolve_token`), and a
 //! path on an inherited, logged, screenshotted argv is not a secret. See ADR 0015.
+//!
+//! A daemon that dies on its own is started again on a bounded ladder (`ladder.rs`, ADR 0206):
+//! never after a declared refusal, never after a person's shutdown, and never two at once,
+//! because every start, shutdown and respawn is serialised under one lock and a generation.
 
 use std::io::{BufRead, BufReader, Read, Write};
 use std::net::{TcpStream, ToSocketAddrs};
@@ -37,6 +41,7 @@ use std::time::{Duration, Instant};
 use serde::Serialize;
 use tauri::{AppHandle, Manager};
 
+use crate::ladder::{Ending, Ladder, Plan};
 use crate::store;
 
 /// The origins the daemon must accept from the browser's side of the fence: the dev server in
@@ -70,6 +75,9 @@ const SHUTDOWN_GRACE: Duration = Duration::from_millis(150);
 /// The largest `/health` body the probe will read before it stops caring. The answer is a few
 /// hundred bytes; this is a cap on nonsense.
 const HEALTH_BODY_CAP: u64 = 64 * 1024;
+/// How often a pending respawn looks at the generation while it waits out its rung, so a
+/// person's restart or an app exit cancels it within this much time.
+const RESPAWN_TICK: Duration = Duration::from_millis(50);
 
 /// Where the token is written and where `--token-file` is pointed. The daemon reads it back.
 const TOKEN_FILENAME: &str = "daemon.json";
@@ -633,6 +641,9 @@ pub struct DaemonStatus {
     pub source: String,
     /// The brain directory the daemon opened, off the ready line.
     pub brain: String,
+    /// Which respawn this run is (ADR 0206): 0 for a person's start or the launch, 1 to 5 while
+    /// the shell is healing a daemon that died. Additive; `health` keeps its four values.
+    pub attempt: u32,
 }
 
 impl Default for DaemonStatus {
@@ -645,70 +656,32 @@ impl Default for DaemonStatus {
             error: String::new(),
             source: "none".to_string(),
             brain: String::new(),
+            attempt: 0,
         }
     }
 }
 
-/// The one daemon this shell owns.
-#[derive(Default)]
-pub struct Daemon {
-    status: Mutex<DaemonStatus>,
-    child: Mutex<Option<Child>>,
-    /// Bumped by every start and every shutdown. A supervisor thread whose generation is stale
-    /// belongs to a process that has been replaced, and everything it would say is a lie.
-    generation: Mutex<u64>,
+/// One spawned daemon process, as the shell needs to end it. The seam that lets a test stand in
+/// for a real child: starts are serialised, and the race that closes is a unit test.
+pub trait Process: Send {
+    /// The staged shutdown: close stdin, a short grace, kill the tree, reap.
+    fn stop(self: Box<Self>);
+    /// Reap a process whose stdout has already closed.
+    fn reap(self: Box<Self>);
 }
 
-impl Daemon {
-    pub fn status(&self) -> DaemonStatus {
-        self.locked_status().clone()
-    }
+/// The real child.
+struct Spawned(Child);
 
-    fn locked_status(&self) -> std::sync::MutexGuard<'_, DaemonStatus> {
-        self.status.lock().unwrap_or_else(|e| e.into_inner())
-    }
-
-    fn locked_child(&self) -> std::sync::MutexGuard<'_, Option<Child>> {
-        self.child.lock().unwrap_or_else(|e| e.into_inner())
-    }
-
-    fn locked_generation(&self) -> std::sync::MutexGuard<'_, u64> {
-        self.generation.lock().unwrap_or_else(|e| e.into_inner())
-    }
-
-    fn current_generation(&self) -> u64 {
-        *self.locked_generation()
-    }
-
-    /// Change the status and tell the chrome webview, in that order and under no lock.
-    fn edit(&self, app: &AppHandle, f: impl FnOnce(&mut DaemonStatus)) {
-        let snapshot = {
-            let mut status = self.locked_status();
-            f(&mut status);
-            status.clone()
-        };
-        crate::ui_emit(app, "daemon:status", snapshot);
-    }
-
-    /// The staged shutdown. Idempotent, because window close, app exit and a respawn can all
-    /// happen in a row.
-    ///
+impl Process for Spawned {
     /// 1. **Close stdin.** The daemon has no shutdown request today (`routes.py` has no route for
     ///    one), so EOF on stdin is the politest signal there is. A daemon that learns to watch it
     ///    needs no change here.
     /// 2. **A short grace period**, so a daemon that *did* leave on its own is reaped rather than
     ///    force-killed.
     /// 3. **Kill the tree**, because killing the head leaves the interpreter running.
-    ///
-    /// The job object is not a stage: it is what happens when none of these three runs at all.
-    pub fn shutdown(&self) {
-        *self.locked_generation() += 1;
-        let Some(mut child) = self.locked_child().take() else {
-            let mut status = self.locked_status();
-            status.health = Health::Stopped;
-            status.url = None;
-            return;
-        };
+    fn stop(self: Box<Self>) {
+        let mut child = self.0;
         let pid = child.id();
         drop(child.stdin.take());
         let deadline = Instant::now() + SHUTDOWN_GRACE;
@@ -726,9 +699,162 @@ impl Daemon {
         }
         // Reap either way: an unwaited child is a zombie on unix and a live handle on Windows.
         let _ = child.wait();
+    }
+
+    fn reap(self: Box<Self>) {
+        let mut child = self.0;
+        let _ = child.wait();
+    }
+}
+
+/// What a spawn hands back: the process, and whatever the caller reads from it.
+type SpawnResult<T> = Result<(Box<dyn Process>, T), String>;
+
+/// The one daemon this shell owns.
+#[derive(Default)]
+pub struct Daemon {
+    status: Mutex<DaemonStatus>,
+    child: Mutex<Option<Box<dyn Process>>>,
+    /// Bumped by every start and every shutdown. A supervisor thread whose generation is stale
+    /// belongs to a process that has been replaced, and everything it would say is a lie; a
+    /// pending respawn whose generation is stale was cancelled by a person or by the exit.
+    generation: Mutex<u64>,
+    /// Held across shutdown, spawn and store, and by every shutdown, so two starts never both
+    /// see an empty slot and a shutdown never returns while a spawn is half done.
+    starting: Mutex<()>,
+    /// The respawn rung (`ladder.rs`, ADR 0206).
+    ladder: Mutex<Ladder>,
+}
+
+impl Daemon {
+    pub fn status(&self) -> DaemonStatus {
+        self.locked_status().clone()
+    }
+
+    fn locked_status(&self) -> std::sync::MutexGuard<'_, DaemonStatus> {
+        self.status.lock().unwrap_or_else(|e| e.into_inner())
+    }
+
+    fn locked_child(&self) -> std::sync::MutexGuard<'_, Option<Box<dyn Process>>> {
+        self.child.lock().unwrap_or_else(|e| e.into_inner())
+    }
+
+    fn locked_generation(&self) -> std::sync::MutexGuard<'_, u64> {
+        self.generation.lock().unwrap_or_else(|e| e.into_inner())
+    }
+
+    fn locked_starting(&self) -> std::sync::MutexGuard<'_, ()> {
+        self.starting.lock().unwrap_or_else(|e| e.into_inner())
+    }
+
+    fn locked_ladder(&self) -> std::sync::MutexGuard<'_, Ladder> {
+        self.ladder.lock().unwrap_or_else(|e| e.into_inner())
+    }
+
+    fn current_generation(&self) -> u64 {
+        *self.locked_generation()
+    }
+
+    /// Change the status and tell the chrome webview, in that order and under no lock.
+    fn edit(&self, app: &AppHandle, f: impl FnOnce(&mut DaemonStatus)) {
+        let snapshot = {
+            let mut status = self.locked_status();
+            f(&mut status);
+            status.clone()
+        };
+        crate::ui_emit(app, "daemon:status", snapshot);
+    }
+
+    /// The staged shutdown ([`Process::stop`]). Idempotent, because window close, app exit and a
+    /// respawn can all happen in a row. It bumps the generation under the start lock, so a
+    /// respawn still waiting out its rung is cancelled and none can spawn after this returns.
+    ///
+    /// The job object is not a stage: it is what happens when none of the stages runs at all.
+    pub fn shutdown(&self) {
+        let _serial = self.locked_starting();
+        self.shutdown_locked();
+    }
+
+    fn shutdown_locked(&self) {
+        *self.locked_generation() += 1;
+        let child = self.locked_child().take();
+        if let Some(child) = child {
+            child.stop();
+        }
         let mut status = self.locked_status();
         status.health = Health::Stopped;
         status.url = None;
+    }
+
+    /// Replace whatever runs with what `spawn` makes, serialised: shutdown, a new generation, the
+    /// spawn and the store happen under one lock. With `expect`, nothing happens unless the
+    /// generation is still that one (a respawn that a person or the exit has since overtaken).
+    ///
+    /// `Ok(None)` is that cancellation; `Ok(Some((generation, extra)))` is a stored child.
+    fn replace_child<T>(
+        &self,
+        expect: Option<u64>,
+        spawn: impl FnOnce() -> SpawnResult<T>,
+    ) -> Result<Option<(u64, T)>, String> {
+        let _serial = self.locked_starting();
+        if expect.is_some_and(|g| g != self.current_generation()) {
+            return Ok(None);
+        }
+        self.shutdown_locked();
+        let generation = {
+            let mut g = self.locked_generation();
+            *g += 1;
+            *g
+        };
+        let (child, extra) = spawn()?;
+        *self.locked_child() = Some(child);
+        Ok(Some((generation, extra)))
+    }
+
+    /// A person's start (the launch, or Restart): the ladder goes back to its first rung, and
+    /// the spawn's generation bump cancels any respawn still waiting.
+    fn start_fresh<T>(
+        &self,
+        spawn: impl FnOnce() -> SpawnResult<T>,
+    ) -> Result<Option<(u64, T)>, String> {
+        self.locked_ladder().reset();
+        self.replace_child(None, spawn)
+    }
+
+    /// Take and reap the child of `generation` once its stdout closed. `false` when that
+    /// generation is no longer current (a start or a shutdown already owns the slot).
+    fn reap_if_current(&self, generation: u64) -> bool {
+        let _serial = self.locked_starting();
+        if self.current_generation() != generation {
+            return false;
+        }
+        let child = self.locked_child().take();
+        if let Some(child) = child {
+            child.reap();
+        }
+        true
+    }
+
+    /// Wait out one rung, then respawn unless the generation moved. Synchronous; the supervisor
+    /// runs it on a thread of its own.
+    fn wait_then_respawn<T>(
+        &self,
+        generation: u64,
+        after: Duration,
+        spawn: impl FnOnce() -> SpawnResult<T>,
+    ) -> Result<Option<(u64, T)>, String> {
+        let deadline = Instant::now() + after;
+        loop {
+            if self.current_generation() != generation {
+                return Ok(None);
+            }
+            let left = deadline.saturating_duration_since(Instant::now());
+            if left.is_zero() {
+                break;
+            }
+            std::thread::sleep(left.min(RESPAWN_TICK));
+        }
+        self.replace_child(Some(generation), spawn)
     }
 }
 
@@ -765,17 +891,26 @@ fn pump_stderr(stderr: std::process::ChildStderr) {
     });
 }
 
-/// Spawn (or respawn) the daemon. Returns as soon as the process exists; readiness arrives later
-/// on `daemon:status`.
+/// A person's start of the daemon (the launch, or Restart): the ladder resets, then a serialised
+/// spawn. Returns as soon as the process exists; readiness arrives later on `daemon:status`.
 pub fn start(app: &AppHandle, engine: &str) -> Result<(), String> {
     let state = app.state::<Daemon>();
-    state.shutdown();
-    let generation = {
-        let mut g = state.locked_generation();
-        *g += 1;
-        *g
-    };
+    if let Some((generation, rx)) = state.start_fresh(|| spawn_daemon(app, engine, 0))? {
+        supervise_on_thread(app, generation, engine, rx);
+    }
+    Ok(())
+}
 
+fn supervise_on_thread(app: &AppHandle, generation: u64, engine: &str, rx: Receiver<String>) {
+    let app = app.clone();
+    let engine = engine.to_string();
+    std::thread::spawn(move || supervise(app, generation, engine, rx));
+}
+
+/// Build and spawn one daemon process. Called under the start lock by [`Daemon::replace_child`];
+/// `attempt` is the rung this spawn is (0 for a person's start).
+fn spawn_daemon(app: &AppHandle, engine: &str, attempt: u32) -> SpawnResult<Receiver<String>> {
+    let state = app.state::<Daemon>();
     let token = mint_token();
     let token_file = app_data(app).join(TOKEN_FILENAME);
     write_token_file(&token_file, &token)
@@ -829,9 +964,13 @@ pub fn start(app: &AppHandle, engine: &str) -> Result<(), String> {
         s.token = token.clone();
         s.engine = engine.to_string();
         s.health = Health::Starting;
-        s.error = String::new();
+        // A respawn keeps saying why it is starting again until it is ready.
+        if attempt == 0 {
+            s.error = String::new();
+        }
         s.source = source.to_string();
         s.brain = brain.to_string_lossy().to_string();
+        s.attempt = attempt;
     });
 
     command
@@ -859,16 +998,12 @@ pub fn start(app: &AppHandle, engine: &str) -> Result<(), String> {
     if let Some(stderr) = child.stderr.take() {
         pump_stderr(stderr);
     }
-    *state.locked_child() = Some(child);
-
-    let app = app.clone();
-    std::thread::spawn(move || supervise(app, generation, rx));
-    Ok(())
+    Ok((Box::new(Spawned(child)), rx))
 }
 
 /// Watch one spawn from its first stdout line to its last: the ready line, the health poll, and
-/// then the closed pipe that means the process is gone.
-fn supervise(app: AppHandle, generation: u64, lines: Receiver<String>) {
+/// then the closed pipe that means the process is gone; then ask the ladder what follows.
+fn supervise(app: AppHandle, generation: u64, engine: String, lines: Receiver<String>) {
     let stale = |app: &AppHandle| app.state::<Daemon>().current_generation() != generation;
 
     let waited = wait_for_ready(&lines, READY_LINE_BUDGET, |e| {
@@ -887,6 +1022,7 @@ fn supervise(app: AppHandle, generation: u64, lines: Receiver<String>) {
         Err(e) => (None, Some(e)),
     };
 
+    let mut health = Healthy::Never;
     if let Some(ready) = ready {
         if stale(&app) {
             return;
@@ -895,7 +1031,9 @@ fn supervise(app: AppHandle, generation: u64, lines: Receiver<String>) {
         app.state::<Daemon>().edit(&app, |s| {
             s.url = Some(ready.url.clone());
             s.health = Health::Starting;
-            s.error = String::new();
+            if s.attempt == 0 {
+                s.error = String::new();
+            }
             if !ready.engine.is_empty() {
                 s.engine = ready.engine.clone();
             }
@@ -903,7 +1041,7 @@ fn supervise(app: AppHandle, generation: u64, lines: Receiver<String>) {
                 s.brain = ready.brain.clone();
             }
         });
-        poll_health(&app, generation, &ready.url, &token);
+        health = poll_health(&app, generation, &ready.url, &token);
     }
 
     // Whatever happened above, this thread now outlives the daemon by exactly one pipe: when
@@ -911,18 +1049,65 @@ fn supervise(app: AppHandle, generation: u64, lines: Receiver<String>) {
     // honest — Windows recycles pids inside a session, and `taskkill /T /F` against a recycled
     // one is a force-kill of a stranger.
     while lines.recv().is_ok() {}
-    if stale(&app) {
+    let state = app.state::<Daemon>();
+    if !state.reap_if_current(generation) {
         return;
     }
-    let state = app.state::<Daemon>();
-    if let Some(mut child) = state.locked_child().take() {
-        let _ = child.wait();
+    let kept = match &health {
+        Healthy::Unauthorized(sentence) => sentence.clone(),
+        _ => exit_error(ended.as_ref()),
+    };
+    let plan = state
+        .locked_ladder()
+        .on_exit(ending_of(ended.as_ref(), &health));
+    state.edit(&app, |s| mark_exit(s, &plan, &kept));
+    if let Plan::Respawn { attempt, after } = plan {
+        eprintln!("[daemon] exited; respawn {attempt} in {}s", after.as_secs());
+        std::thread::spawn(move || respawn(app, generation, engine, attempt, after));
     }
-    state.edit(&app, |s| {
-        s.url = None;
-        s.health = Health::Failed;
-        s.error = exit_error(ended.as_ref());
+}
+
+/// One rung: wait, then start the daemon again with a fresh token (as `daemon_restart` does),
+/// unless a person's restart or the exit moved the generation first.
+fn respawn(app: AppHandle, generation: u64, engine: String, attempt: u32, after: Duration) {
+    let state = app.state::<Daemon>();
+    let respawned = state.wait_then_respawn(generation, after, || {
+        // Under the start lock, so a failure is written before anything can overtake it.
+        spawn_daemon(&app, &engine, attempt)
+            .inspect_err(|e| record_start_failure(&app, &engine, e.clone()))
     });
+    match respawned {
+        Ok(Some((next, rx))) => supervise_on_thread(&app, next, &engine, rx),
+        Ok(None) => {}
+        Err(e) => eprintln!("[daemon] respawn {attempt} failed: {e}"),
+    }
+}
+
+/// How a run ended, from the ready wait's own ending and the health poll's: typed, never
+/// re-inferred from the wreckage.
+fn ending_of(ended: Option<&SidecarError>, health: &Healthy) -> Ending {
+    match (ended, health) {
+        (Some(SidecarError::Refused { .. }), _) => Ending::Refused,
+        (_, Healthy::Unauthorized(_)) => Ending::Unauthorized,
+        (_, Healthy::Since(at)) => Ending::AfterReady {
+            ready_for: at.elapsed(),
+        },
+        _ => Ending::BeforeReady,
+    }
+}
+
+/// What the status says once the daemon's stdout has closed and the ladder has decided. `kept`
+/// is the run's own ending sentence, which a declared verdict keeps.
+fn mark_exit(status: &mut DaemonStatus, plan: &Plan, kept: &str) {
+    status.url = None;
+    status.error = plan.sentence(kept);
+    match plan {
+        Plan::Respawn { attempt, .. } => {
+            status.health = Health::Starting;
+            status.attempt = *attempt;
+        }
+        Plan::GiveUp(_) => status.health = Health::Failed,
+    }
 }
 
 /// Wait for the ready line the way the supervisor does, telling `report` about every failure on
@@ -961,12 +1146,22 @@ fn exit_error(ended: Option<&SidecarError>) -> String {
     }
 }
 
+/// How the health poll ended.
+enum Healthy {
+    /// It answered 200 at this instant.
+    Since(Instant),
+    /// It answered 401: the daemon refused this shell's token, and this is the sentence.
+    Unauthorized(String),
+    /// Out of budget, overtaken by another generation, or never polled.
+    Never,
+}
+
 /// Poll `GET /health` with the token until it answers 200, or give up and say so.
-fn poll_health(app: &AppHandle, generation: u64, url: &str, token: &str) {
+fn poll_health(app: &AppHandle, generation: u64, url: &str, token: &str) -> Healthy {
     let deadline = Instant::now() + HEALTH_BUDGET;
     loop {
         if app.state::<Daemon>().current_generation() != generation {
-            return;
+            return Healthy::Never;
         }
         let why = match health_once(url, token, HEALTH_REQUEST_TIMEOUT) {
             Ok(200) => {
@@ -975,16 +1170,17 @@ fn poll_health(app: &AppHandle, generation: u64, url: &str, token: &str) {
                     s.health = Health::Ready;
                     s.error = String::new();
                 });
-                return;
+                return Healthy::Since(Instant::now());
             }
             // A 401 is not a slow start: the daemon is up and does not accept this token, which
             // no amount of waiting fixes. Anything else is worth retrying inside the budget.
             Ok(401) => {
+                let sentence = "the daemon refused this shell's token".to_string();
                 app.state::<Daemon>().edit(app, |s| {
                     s.health = Health::Failed;
-                    s.error = "the daemon refused this shell's token".to_string();
+                    s.error = sentence.clone();
                 });
-                return;
+                return Healthy::Unauthorized(sentence);
             }
             Ok(code) => format!("{url}/health answered {code}"),
             Err(e) => format!("{url}/health did not answer: {e}"),
@@ -994,7 +1190,7 @@ fn poll_health(app: &AppHandle, generation: u64, url: &str, token: &str) {
                 s.health = Health::Failed;
                 s.error = format!("{why} within {}s", HEALTH_BUDGET.as_secs());
             });
-            return;
+            return Healthy::Never;
         }
         std::thread::sleep(HEALTH_INTERVAL);
     }
@@ -1112,6 +1308,7 @@ mod tests {
             error: String::new(),
             source: "sidecar".to_string(),
             brain: "b".to_string(),
+            attempt: 0,
         };
         mark_start_failed(
             &mut status,
@@ -1123,6 +1320,200 @@ mod tests {
         assert_eq!(status.url, None);
         assert_eq!(status.engine, "codex");
         assert_eq!(status.source, "sidecar");
+    }
+
+    // -- the respawn ladder on the status (ADR 0206) --------------------------------------------
+
+    #[test]
+    fn a_death_after_ready_says_starting_again_with_its_attempt() {
+        let mut status = DaemonStatus {
+            url: Some("http://127.0.0.1:51057".to_string()),
+            health: Health::Ready,
+            ..DaemonStatus::default()
+        };
+        let mut ladder = Ladder::default();
+        let ending = ending_of(
+            None,
+            &Healthy::Since(Instant::now() - Duration::from_secs(3)),
+        );
+        let plan = ladder.on_exit(ending);
+        assert_eq!(
+            plan,
+            Plan::Respawn {
+                attempt: 1,
+                after: Duration::from_secs(1)
+            }
+        );
+        mark_exit(&mut status, &plan, &exit_error(None));
+        assert_eq!(status.health, Health::Starting);
+        assert_eq!(status.url, None);
+        assert_eq!(
+            status.error,
+            "the daemon exited; starting it again in 1s (attempt 1 of 5)"
+        );
+        assert_eq!(status.attempt, 1);
+        let wire = serde_json::to_value(&status).expect("json");
+        assert_eq!(wire["attempt"], 1);
+        assert_eq!(wire["health"], "starting");
+    }
+
+    #[test]
+    fn an_exhausted_ladder_says_failed_and_how_many_times() {
+        let mut status = DaemonStatus::default();
+        let mut ladder = Ladder::default();
+        let brief = Healthy::Since(Instant::now());
+        for _ in 0..5 {
+            let plan = ladder.on_exit(ending_of(None, &brief));
+            assert!(matches!(plan, Plan::Respawn { .. }), "{plan:?}");
+            mark_exit(&mut status, &plan, &exit_error(None));
+        }
+        let plan = ladder.on_exit(ending_of(None, &brief));
+        mark_exit(&mut status, &plan, &exit_error(None));
+        assert_eq!(status.health, Health::Failed);
+        assert_eq!(
+            status.error,
+            "the daemon exited 5 times in a row; restart it from Settings"
+        );
+    }
+
+    #[test]
+    fn a_refusal_or_a_401_is_failed_with_its_own_sentence_and_no_respawn() {
+        let refused = SidecarError::Refused {
+            reason: "engine_unavailable".to_string(),
+            detail: "no claude on PATH".to_string(),
+        };
+        let mut ladder = Ladder::default();
+        let plan = ladder.on_exit(ending_of(Some(&refused), &Healthy::Never));
+        let mut status = DaemonStatus::default();
+        mark_exit(&mut status, &plan, &exit_error(Some(&refused)));
+        assert_eq!(status.health, Health::Failed);
+        assert_eq!(status.error, refused.to_string());
+
+        let token = "the daemon refused this shell's token".to_string();
+        let plan = ladder.on_exit(ending_of(None, &Healthy::Unauthorized(token.clone())));
+        assert!(matches!(plan, Plan::GiveUp(_)), "{plan:?}");
+        mark_exit(&mut status, &plan, &token);
+        assert_eq!(status.error, token);
+    }
+
+    /// A stand-in child: counts spawns, stops and reaps across every fake of one test.
+    #[derive(Clone, Default)]
+    struct Tally(std::sync::Arc<Mutex<(u32, u32, u32)>>);
+
+    impl Tally {
+        fn spawned(&self) -> u32 {
+            self.0.lock().unwrap().0
+        }
+        fn killed(&self) -> u32 {
+            self.0.lock().unwrap().1
+        }
+        fn live(&self) -> u32 {
+            let t = self.0.lock().unwrap();
+            t.0 - t.1 - t.2
+        }
+        /// A spawn that takes `took` between the shutdown and the store, as a real one does.
+        fn spawn(&self, took: Duration) -> SpawnResult<()> {
+            std::thread::sleep(took);
+            self.0.lock().unwrap().0 += 1;
+            Ok((Box::new(Fake(self.clone())), ()))
+        }
+    }
+
+    struct Fake(Tally);
+
+    impl Process for Fake {
+        fn stop(self: Box<Self>) {
+            self.0 .0.lock().unwrap().1 += 1;
+        }
+        fn reap(self: Box<Self>) {
+            self.0 .0.lock().unwrap().2 += 1;
+        }
+    }
+
+    #[test]
+    fn two_racing_starts_leave_one_live_child() {
+        let daemon = std::sync::Arc::new(Daemon::default());
+        let tally = Tally::default();
+        let racers: Vec<_> = (0..2)
+            .map(|_| {
+                let (daemon, tally) = (daemon.clone(), tally.clone());
+                std::thread::spawn(move || {
+                    daemon
+                        .start_fresh(|| tally.spawn(Duration::from_millis(50)))
+                        .expect("start")
+                })
+            })
+            .collect();
+        for racer in racers {
+            racer.join().expect("racer");
+        }
+        assert_eq!(tally.spawned(), 2);
+        assert_eq!(tally.killed(), 1);
+        assert_eq!(tally.live(), 1);
+    }
+
+    #[test]
+    fn a_persons_restart_cancels_a_pending_respawn_and_resets_the_ladder() {
+        let daemon = std::sync::Arc::new(Daemon::default());
+        let tally = Tally::default();
+        let (generation, ()) = daemon
+            .start_fresh(|| tally.spawn(Duration::ZERO))
+            .expect("start")
+            .expect("stored");
+        // The daemon dies after ready: reaped, and the ladder schedules rung 1.
+        assert!(daemon.reap_if_current(generation));
+        let plan = daemon.locked_ladder().on_exit(Ending::AfterReady {
+            ready_for: Duration::from_secs(2),
+        });
+        let Plan::Respawn { after, .. } = plan else {
+            panic!("expected a respawn, got {plan:?}");
+        };
+        let pending = {
+            let (daemon, tally) = (daemon.clone(), tally.clone());
+            let after = after.min(Duration::from_millis(300));
+            std::thread::spawn(move || {
+                daemon
+                    .wait_then_respawn(generation, after, || tally.spawn(Duration::ZERO))
+                    .expect("respawn")
+            })
+        };
+        std::thread::sleep(Duration::from_millis(30));
+        let before = tally.spawned();
+        daemon
+            .start_fresh(|| tally.spawn(Duration::ZERO))
+            .expect("restart");
+        assert!(pending.join().expect("pending").is_none(), "the rung must be cancelled");
+        assert_eq!(tally.spawned() - before, 1, "exactly one child after the restart");
+        assert_eq!(daemon.locked_ladder().attempt(), 0);
+        assert_eq!(tally.live(), 1);
+    }
+
+    #[test]
+    fn no_respawn_happens_after_shutdown_returns() {
+        let daemon = std::sync::Arc::new(Daemon::default());
+        let tally = Tally::default();
+        let (generation, ()) = daemon
+            .start_fresh(|| tally.spawn(Duration::ZERO))
+            .expect("start")
+            .expect("stored");
+        assert!(daemon.reap_if_current(generation));
+        let pending = {
+            let (daemon, tally) = (daemon.clone(), tally.clone());
+            std::thread::spawn(move || {
+                daemon
+                    .wait_then_respawn(generation, Duration::from_millis(150), || {
+                        tally.spawn(Duration::ZERO)
+                    })
+                    .expect("respawn")
+            })
+        };
+        std::thread::sleep(Duration::from_millis(20));
+        daemon.shutdown();
+        let at_shutdown = tally.spawned();
+        assert!(pending.join().expect("pending").is_none());
+        std::thread::sleep(Duration::from_millis(200));
+        assert_eq!(tally.spawned(), at_shutdown, "a spawn after shutdown returned");
+        assert_eq!(tally.live(), 0);
     }
 
     // -- the launch engine ---------------------------------------------------------------------
