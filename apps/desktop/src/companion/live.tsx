@@ -469,6 +469,7 @@ export default function Live() {
     },
     goToTab: (tabId) => void useTabs.getState().focus(tabId).catch(report("tabs_focus")),
     tick: (id) => useRun.getState().tick(id),
+    reask: (id) => void useRun.getState().reask(id).catch(report("reask")),
     descend: (id) => rt.dispatch({ t: "descend", id }),
     rise: () => rt.dispatch({ t: "rise" }),
   };

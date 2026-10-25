@@ -500,6 +500,15 @@ export interface RunState {
    * the stack and a reconcile does not bring it back. The task runner declines it at the daemon.
    */
   withdrawTaskCard: (id: string) => void;
+  /**
+   * "Ask again here" on a card whose bound tab moved or closed (ADR 0103): decline it - and every
+   * stale row of its sheet - at the daemon, then start one exchange with a fixed line asking her to
+   * propose them again on the page as it is now, so the new cards are bound to the current document
+   * and shown again. Nothing is re-targeted, no grant is spent. A delegated task's card hands its
+   * decline to the task and starts nothing here. `false`, with nothing sent, when the card can still
+   * run where it was proposed, or while she is working (stop her first).
+   */
+  reask: (id: string) => Promise<boolean>;
 }
 
 export const EMPTY = {
@@ -1049,88 +1058,6 @@ export const answeredElsewhere = (
   via,
 });
 
-/**
- * A card from a `GET /decisions` row. A pending row may lack what the stream carried (the rationale,
- * the capture), so the card is built from what the row has: its action and parameters at minimum.
- */
-export function cardFromRow(row: Record<string, unknown>): DecisionRequested | null {
-  if (typeof row.id !== "string" || row.id === "") return null;
-  const options = Array.isArray(row.options)
-    ? row.options.flatMap((o: unknown) => {
-        if (typeof o === "string") return [{ id: o, label: o }];
-        if (typeof o === "object" && o !== null && typeof (o as { id?: unknown }).id === "string") {
-          const { id, label } = o as { id: string; label?: unknown };
-          return [{ id, label: typeof label === "string" ? label : id }];
-        }
-        return [];
-      })
-    : [];
-  const text = (v: unknown) => (typeof v === "string" ? v : "");
-  return {
-    kind: "decision.requested",
-    id: row.id,
-    decision_kind: text(row.decision_kind) || "approve",
-    action: text(row.action) || "a request from an app",
-    params:
-      typeof row.params === "object" && row.params !== null && !Array.isArray(row.params)
-        ? (row.params as Record<string, unknown>)
-        : {},
-    rationale: text(row.rationale) || text(row.summary),
-    options: options.length
-      ? options
-      : [
-          { id: "approve", label: "approve" },
-          { id: "decline", label: "decline" },
-        ],
-    expires_at: text(row.expires_at),
-    origin: text(row.origin),
-    surface: text(row.surface),
-    capture_id: typeof row.capture_id === "string" ? row.capture_id : null,
-    tab_id: countOf(row.tab_id),
-    tab_nav: countOf(row.tab_id) === null ? null : countOf(row.tab_nav),
-  };
-}
-
-/** A tab id or a navigation count off a wire row: a non-negative integer, else `null`. */
-function countOf(value: unknown): number | null {
-  return typeof value === "number" && Number.isInteger(value) && value >= 0 ? value : null;
-}
-
-/**
- * The union of the stream's cards and the daemon's pending rows. A card the stream gave is kept
- * as it is, with only its empty fields filled from the row; a pending row with no card gets one,
- * unless `skip` says it has already been answered or is being answered.
- */
-export function mergeCards(
-  current: readonly DecisionRequested[],
-  pending: ReadonlyArray<Record<string, unknown>>,
-  skip: (id: string) => boolean,
-): DecisionRequested[] {
-  const rows = new Map<string, DecisionRequested>();
-  for (const row of pending) {
-    const card = cardFromRow(row);
-    if (card) rows.set(card.id, card);
-  }
-  const have = new Set(current.map((c) => c.id));
-  const kept = current.map((card) => {
-    const row = rows.get(card.id);
-    if (!row) return card;
-    return {
-      ...card,
-      rationale: card.rationale || row.rationale,
-      origin: card.origin || row.origin,
-      surface: card.surface || row.surface,
-      expires_at: card.expires_at || row.expires_at,
-      params: Object.keys(card.params).length ? card.params : row.params,
-      // The binding is the row's: a card from the stream that lacks it takes the row's.
-      tab_id: card.tab_id ?? row.tab_id,
-      tab_nav: card.tab_id != null ? card.tab_nav : row.tab_nav,
-    };
-  });
-  const added = [...rows.values()].filter((card) => !have.has(card.id) && !skip(card.id));
-  return added.length ? [...kept, ...added] : kept;
-}
-
 /** What one released call came to on the page: `ok`, or the reason it did not run or failed. */
 export interface Ran {
   ok: boolean;
@@ -1608,11 +1535,14 @@ export const useRun = create<RunState>((set, get) => {
    */
   let exchanging = 0;
 
-  /** Continue with what is outstanding, unless an exchange already in progress will carry it. */
-  async function carryOn(): Promise<void> {
-    if (outstanding.length === 0 || exchanging > 0) return;
+  /**
+   * Continue with what is outstanding, unless an exchange already in progress will carry it. `first`
+   * is a fixed line to send even with nothing outstanding (a re-ask), in place of the continuation.
+   */
+  async function carryOn(first?: string): Promise<void> {
+    if ((!first && outstanding.length === 0) || exchanging > 0) return;
     set({ phase: "running" });
-    await exchange(CONTINUE);
+    await exchange(first ?? CONTINUE);
   }
 
   async function exchange(first: string): Promise<void> {
@@ -1745,7 +1675,7 @@ export const useRun = create<RunState>((set, get) => {
     // filed on. Checked before the daemon is asked, so the grant is not spent on a call that
     // would be refused on the page; a decline needs no tab and is never stopped here.
     if (card && choice === "approve") {
-      const refused = bindingRefusal(card, card.tab_id != null ? boundTab(card.tab_id, deps.focused()) : null);
+      const refused = refusalNow(card);
       if (refused) return refuse(refused.reason, boundTabSentence(refused.why));
     }
     const api = deps.api();
@@ -1830,11 +1760,11 @@ export const useRun = create<RunState>((set, get) => {
    * Continue an exchange under `under` (ADR 0140): a card of a remote exchange, answered here or
    * by a peer, continues that exchange, with `via` on its requests.
    */
-  async function carryOnUnder(under: Via | null): Promise<void> {
+  async function carryOnUnder(under: Via | null, first?: string): Promise<void> {
     const before = via;
     via = under ?? via;
     try {
-      await carryOn();
+      await carryOn(first);
     } finally {
       via = before;
     }
@@ -2077,6 +2007,27 @@ export const useRun = create<RunState>((set, get) => {
       }));
     },
 
+    async reask(id) {
+      if (mainBusy() || via) return false;
+      const { cards, slots } = get();
+      const { reaskLine, staleOf } = await import("./ran");
+      // Every stale row of the card's sheet, in proposal order; none when the card itself can run.
+      const stale = staleOf(sheetOf(cards, slots, id)?.rows ?? cards.filter((c) => c.id === id), refusalNow);
+      const rows = stale[id] ? cards.filter((c) => stale[c.id]) : [];
+      const task = owners.has(id);
+      const under = viaOf.get(id) ?? null;
+      const mine = generation;
+      let taken = false;
+      for (const row of rows) taken = (await answerOne(row.id, optionOf(row, "decline"), undefined, true))?.taken || taken;
+      if (!taken) return false;
+      // A task's card continues the task, not this window; a Stop meanwhile continues nothing.
+      if (task || mine !== generation) return true;
+      await carryOnUnder(under, reaskLine(rows.map((row) => row.action)));
+      await settle(under, mine !== generation);
+      await drainRemote();
+      return true;
+    },
+
     enterSetup(session) {
       // Another window handed this over: only the setup session itself is taken (no page's origin).
       if (session?.origin !== SETUP_ORIGIN || typeof session.conversation_id !== "string") return;
@@ -2210,6 +2161,8 @@ export const useRun = create<RunState>((set, get) => {
         // The daemon did not answer; the cards on screen are all there is to go on.
         return;
       }
+      // The merge is a lazy module's (`ran.ts`): it runs after the daemon answered, never in the first frame.
+      const { mergeCards } = await import("./ran");
       set((s) => ({
         cards: mergeCards(
           s.cards,
@@ -2421,6 +2374,11 @@ function optionOf(card: DecisionRequested, kind: "approve" | "decline"): string 
 export function bareName(name: string): string {
   const parts = name.split(".");
   return parts.length > 2 ? parts.slice(2).join(".") : name;
+}
+
+/** Why a card bound to a tab may not run on what that tab holds now, as an approval checks it (ADR 0103). */
+function refusalNow(card: TabBinding): BindingRefusal | null {
+  return bindingRefusal(card, card.tab_id != null ? boundTab(card.tab_id, deps.focused()) : null);
 }
 
 /** The tab a bound row names, read now; the focused tab answers for itself without `deps.tab`. */

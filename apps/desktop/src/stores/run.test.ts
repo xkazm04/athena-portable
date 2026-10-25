@@ -20,14 +20,13 @@ import { catalogIdOf, derivedIdOf } from "@/lib/manifest";
 import type { OriginRow } from "@/lib/store";
 import type { TabTools } from "@/stores/tools";
 
+import { cardFromRow, mergeCards } from "./ran";
 import {
   MAX_CONTINUATIONS,
   RECONCILE_MS,
   SHEET_CAP,
-  cardFromRow,
   disabledOriginsOf,
   gatedListsOf,
-  mergeCards,
   resetRunForTests,
   snapshotOf,
   setRunDeps,

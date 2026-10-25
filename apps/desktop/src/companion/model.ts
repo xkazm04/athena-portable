@@ -85,6 +85,8 @@ export interface CompanionActions {
   retryEngine: (id: string) => void;
   /** Focus a tab: the way back to the tab a card was proposed on (ADR 0103). */
   goToTab: (tabId: number) => void;
+  /** "Ask again here": decline a card whose tab moved or closed and have her propose it again (ADR 0103). */
+  reask: (id: string) => void;
   /** Tick or untick one row of a sheet (ADR 0104). */
   tick: (id: string) => void;
   /** Open one message as its own level below the conversation, and rise back from it. */
@@ -116,6 +118,7 @@ export const NO_ACTIONS: CompanionActions = {
   useEngine: () => {},
   retryEngine: () => {},
   goToTab: () => {},
+  reask: () => {},
   tick: () => {},
   descend: () => {},
   rise: () => {},

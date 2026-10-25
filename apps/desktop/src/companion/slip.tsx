@@ -18,6 +18,9 @@ import type { Standing } from "./translate/decision";
 type Actions = CompanionModel["actions"];
 
 /** The answer is on its way for this card, by this choice. */
+/** The tab a card was proposed on reloaded, moved or closed (ADR 0103): it can no longer run there. */
+const deadOf = ({ bound }: CardView) => bound && (bound.moved || !bound.open);
+
 function sendingOf(model: CompanionModel, card: CardView) {
   return (kind: "approve" | "decline") => card.sending && (model.decision === null || model.decision.kind === kind);
 }
@@ -204,13 +207,20 @@ export function Sign({ model, card, label, decline, disabled, small }: {
   const sending = sendingOf(model, card);
   const off = decision !== null || card.sending;
   const sm = small ? " aw-btn-sm" : "";
+  // Its tab moved or closed (ADR 0103): it cannot run, so the primary press asks her again instead.
   return (
     <>
-      <button type="button" className={`aw-btn aw-btn-approve${sm}`} data-act="approve" aria-keyshortcuts="A" aria-busy={sending("approve") || undefined} disabled={off || disabled} onClick={() => actions.approve("click")}>
-        <span className="fill" aria-hidden="true" />
-        <span className="lbl">{sending("approve") ? "Signing…" : label}</span>
-        {sending("approve") ? null : <kbd>A</kbd>}
-      </button>
+      {deadOf(card) ? (
+        <button type="button" className={`aw-btn aw-btn-approve${sm}`} data-act="reask" disabled={off} onClick={() => actions.reask(card.id)}>
+          Ask again here
+        </button>
+      ) : (
+        <button type="button" className={`aw-btn aw-btn-approve${sm}`} data-act="approve" aria-keyshortcuts="A" aria-busy={sending("approve") || undefined} disabled={off || disabled} onClick={() => actions.approve("click")}>
+          <span className="fill" aria-hidden="true" />
+          <span className="lbl">{sending("approve") ? "Signing…" : label}</span>
+          {sending("approve") ? null : <kbd>A</kbd>}
+        </button>
+      )}
       <button type="button" className={`aw-btn aw-btn-decl${sm}`} data-act="decline" aria-keyshortcuts="D" aria-busy={sending("decline") || undefined} disabled={off} onClick={() => actions.decline("click")}>
         {sending("decline") ? "Declining…" : decline}
         {sending("decline") ? null : <kbd>D</kbd>}
@@ -359,7 +369,7 @@ function Front({ card, actions, mic }: { card: CardView; actions: Actions; mic: 
         </div>
       ) : null}
       <p className="sl-sign-note">{mic ? "Nothing runs until you sign. Or say “approve”." : "Nothing runs until you sign."}</p>
-      {card.connector?.warning || card.bound?.moved || (card.bound && !card.bound.open) ? <Where card={card} actions={actions} /> : null}
+      {card.connector?.warning || deadOf(card) ? <Where card={card} actions={actions} /> : null}
       {card.drift ? (
         <p className="sl-notice" role="note">
           <Icon name="warn" className="warn" />
