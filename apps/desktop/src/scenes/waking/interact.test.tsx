@@ -14,6 +14,7 @@ vi.mock("@/avatar/support", () => ({ canDrawFace: () => true }));
 
 import type { AvatarId } from "@/avatar/types";
 import { INERT_ACTIONS, type SetupModel } from "@/modules/setup/model";
+import { isReady, notReadyBecause } from "@/modules/setup/readiness";
 
 import { fixtures } from "./fixtures";
 import WakingView from "./view";
@@ -146,5 +147,67 @@ describe("the face step", () => {
     expect(host.textContent).toContain("How will she appear?");
     expect(host.textContent).toContain("Owl of light");
     expect(host.textContent).toContain("Wake her");
+  });
+});
+
+describe("the Voice step's door to the studio", () => {
+  it("'Set up her voice in the studio' calls onVoice once", () => {
+    const onVoice = vi.fn();
+    const model: SetupModel = { ...fixtures.ready!, voiceAvailable: false, actions: INERT_ACTIONS };
+    act(() => root.render(<WakingView model={model} onLater={() => {}} initialStep={2} onVoice={onVoice} />));
+    const door = [...host.querySelectorAll("button")].find((b) => b.textContent === "Set up her voice in the studio")!;
+    act(() => void door.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    expect(onVoice).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("Wake her is reached by Next from any step, and stays gated (guard)", () => {
+  for (const fixture of ["no-page", "ready", "engine-missing"]) {
+    for (const from of [0, 1, 2] as const) {
+      it(`${fixture}, from step ${from + 1}`, () => {
+        mount(fixture, from);
+        for (let i = from; i < 3; i++) {
+          const next = [...host.querySelectorAll("button")].find((b) => b.textContent?.startsWith("Next:"))!;
+          act(() => void next.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+        }
+        const wake = [...host.querySelectorAll("button")].find((b) => b.textContent === "Wake her")!;
+        expect(wake).toBeDefined();
+        expect(wake.disabled).toBe(!isReady(fixtures[fixture]!));
+        if (!isReady(fixtures[fixture]!)) expect(host.textContent).toContain(notReadyBecause(fixtures[fixture]!));
+      });
+    }
+  }
+});
+
+describe("the act tells its keeper where the person is", () => {
+  it("a step click and Next each report the step", () => {
+    const onStep = vi.fn();
+    act(() =>
+      root.render(<WakingView model={fixtures.ready!} onLater={() => {}} initialStep={0} onStep={onStep} />),
+    );
+    const voice = [...host.querySelectorAll(".waking__step")].find((b) => b.textContent?.includes("Voice"))!;
+    act(() => void voice.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    const next = [...host.querySelectorAll("button")].find((b) => b.textContent?.startsWith("Next:"))!;
+    act(() => void next.dispatchEvent(new MouseEvent("click", { bubbles: true })));
+    expect(onStep.mock.calls).toEqual([[2], [3]]);
+  });
+});
+
+describe("the frontier holds once the engine has answered", () => {
+  const draw = (model: SetupModel) => act(() => root.render(<WakingView model={model} onLater={() => {}} />));
+  const ask = () => host.querySelector("#waking-ask")!.textContent;
+
+  it("opening a page on Reach does not move the act out from under the person", () => {
+    draw(fixtures["no-page"]!);
+    expect(ask()).toBe("Where will she work?");
+    draw(fixtures.ready!);
+    expect(ask()).toBe("Where will she work?");
+  });
+
+  it("while the engine is still being looked for, the act follows it to the step still owed", () => {
+    draw({ ...fixtures["no-page"]!, probes: null });
+    expect(ask()).toBe("What will she think with?");
+    draw(fixtures["no-page"]!);
+    expect(ask()).toBe("Where will she work?");
   });
 });

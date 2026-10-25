@@ -6,7 +6,8 @@ import { beforeAll, describe, expect, it, vi } from "vitest";
 vi.mock("@/avatar/support", () => ({ canDrawFace: () => true }));
 
 import type { AvatarId } from "@/avatar/types";
-import { INERT_ACTIONS } from "@/modules/setup/model";
+import { INERT_ACTIONS, type SetupModel } from "@/modules/setup/model";
+import { isReady, notReadyBecause } from "@/modules/setup/readiness";
 import { fixtures as setup } from "@/modules/setup/fixtures";
 
 import { INITIAL_STEPS, fixtureIds, fixtures } from "./fixtures";
@@ -168,5 +169,31 @@ describe("the face", () => {
     expect(owl).toMatch(/aria-checked="false"[^>]*data-avatar-choice="halo"/);
     expect(owl.match(/data-lit="true"/g)!.length).toBe(fresh.match(/data-lit="true"/g)!.length + 1);
     expect(owl).toContain('aria-label="Face, done"');
+  });
+});
+
+describe("the Voice step is a door to the studio", () => {
+  const voice = (over: Partial<SetupModel>, onVoice?: () => void) =>
+    renderToStaticMarkup(
+      <WakingView model={{ ...fixtures.ready!, ...over }} onLater={vi.fn()} initialStep={2} onVoice={onVoice} />,
+    );
+  it("offers 'Set up her voice in the studio' while her voice is not available", () => {
+    expect(voice({ voiceAvailable: false }, vi.fn())).toContain("Set up her voice in the studio");
+  });
+  it("offers nothing once her voice is available, or where no studio is wired (the preview)", () => {
+    expect(voice({ voiceAvailable: true }, vi.fn())).not.toContain("Set up her voice in the studio");
+    expect(voice({ voiceAvailable: false })).not.toContain("Set up her voice in the studio");
+  });
+});
+
+describe("no opening step bypasses the gate (guard)", () => {
+  it("with no initialStep, a model that is not ready never opens on an ungated Wake her", () => {
+    for (const id of fixtureIds) {
+      const h = renderToStaticMarkup(<WakingView model={fixtures[id]!} onLater={vi.fn()} />);
+      if (h.includes(">Wake her<") && !isReady(fixtures[id]!)) {
+        expect(h).toContain('disabled=""');
+        expect(h).toContain(notReadyBecause(fixtures[id]!));
+      }
+    }
   });
 });

@@ -20,29 +20,12 @@ import ProblemNote from "@/components/ProblemNote";
 import { engineLabel } from "@/lib/engines";
 import { normaliseUrl } from "@/lib/url";
 import { originOf } from "@/modules/browser/model";
-import {
-  engineFact,
-  isReady,
-  micFact,
-  notReadyBecause,
-  pageFact,
-  voiceFact,
-  type Fact,
-} from "@/modules/setup/readiness";
+import { engineFact, isReady, micFact, notReadyBecause, pageFact, voiceFact } from "@/modules/setup/readiness";
 import type { SetupModel } from "@/modules/setup/model";
 import EngineSection from "@/scenes/shared/EngineSection";
 
+import { LAST, STEPS, factLine, litSteps, openingStep, type Step } from "./steps";
 import "./waking.css";
-
-const STEPS = [
-  { key: "mind", name: "Mind", ask: "What will she think with?" },
-  { key: "reach", name: "Reach", ask: "Where will she work?" },
-  { key: "voice", name: "Voice", ask: "Do you want to talk to her?" },
-  { key: "face", name: "Face", ask: "How will she appear?" },
-] as const;
-
-type Step = 0 | 1 | 2 | 3;
-const LAST: Step = 3;
 
 /** The Face step, in its own chunk: fetched when the step is first drawn (first paint, ADR 0095). */
 const FaceStep = lazy(() => import("./face-step"));
@@ -51,30 +34,43 @@ export interface WakingProps {
   model: SetupModel;
   /** Leave the first act for now and look around; the letter is still there from the surface. */
   onLater: () => void;
-  /** Open at a step, for the preview and for tests. */
+  /** Open at a step, for the preview and for tests; overrides `kept` and the frontier. */
   initialStep?: Step;
+  /** The step the person was on this session (ADR 0223); without one the act opens on its frontier. */
+  kept?: Step | null;
+  /** The person moved to a step: the keeper remembers it for the session. */
+  onStep?: (step: Step) => void;
+  /** Leave for the voice studio from the Voice step, while her voice is not available. */
+  onVoice?: () => void;
   /** How she appears now (the `avatar` setting); the halo when not given. */
   avatar?: AvatarId;
   /** Choose how she appears: writes the `avatar` setting. */
   onAvatar?: (avatar: AvatarId) => void;
 }
 
-const BADGE: Record<Exclude<Fact["standing"], "unknown">, string> = {
-  done: "ready",
-  todo: "not yet",
-  missing: "not ready",
-};
-
-/**
- * A fact as one line. An unknown fact has no badge: on this act it is a microphone nobody has asked
- * about ("not asked yet"), and a "checking" badge in front of that said something was running.
- */
-function factLine(fact: Fact): string {
-  return fact.standing === "unknown" ? fact.summary : `${BADGE[fact.standing]} · ${fact.summary}`;
-}
-
-export default function WakingView({ model, onLater, initialStep = 0, avatar = "halo", onAvatar }: WakingProps) {
-  const [step, setStep] = useState<Step>(initialStep);
+export default function WakingView({
+  model,
+  onLater,
+  initialStep,
+  kept = null,
+  onStep,
+  onVoice,
+  avatar = "halo",
+  onAvatar,
+}: WakingProps) {
+  // Where the act is: a step given or kept, else the first one still owed (ADR 0223). The frontier
+  // follows the model only until the engine has answered; then it holds, so opening a page on Reach
+  // does not move the act out from under the person.
+  const [chosen, setChosen] = useState<Step | null>(initialStep ?? kept);
+  const opening = openingStep(model, avatar, null);
+  const settled = engineFact(model).standing !== "unknown";
+  const step = chosen ?? opening;
+  // Adjusted while rendering, not in an effect: the value drawn does not change, it only stops moving.
+  if (chosen === null && settled) setChosen(opening);
+  const moveTo = (to: Step) => {
+    setChosen(to);
+    onStep?.(to);
+  };
   const [url, setUrl] = useState("");
   // Next on the second step turns into Wake her. When she is not ready that button is a different
   // element (the reason's focusable wrapper around a disabled button), so the one that was pressed
@@ -100,18 +96,12 @@ export default function WakingView({ model, onLater, initialStep = 0, avatar = "
       ? undefined
       : "That is not an address an app can live at.";
 
-  const engine = engineFact(model);
   const page = pageFact(model);
   const mic = micFact(model);
   const voice = voiceFact(model);
   const ready = isReady(model);
 
-  const lit = [
-    engine.standing === "done",
-    page.standing === "done",
-    mic.standing === "done" || voice.standing === "done",
-    avatar !== "halo",
-  ];
+  const lit = litSteps(model, avatar);
   const reach = STEPS.map((s, i) => ({ id: s.key, lit: lit[i]! }));
   const caption = !lit[0]
     ? "She has no mind yet."
@@ -139,7 +129,7 @@ export default function WakingView({ model, onLater, initialStep = 0, avatar = "
                 aria-current={step === i ? "step" : undefined}
                 aria-label={lit[i] ? `${s.name}, done` : s.name}
                 data-done={lit[i]}
-                onClick={() => setStep(i as Step)}
+                onClick={() => moveTo(i as Step)}
               >
                 <span className="waking__step-n" aria-hidden="true">
                   {lit[i] ? "✓" : i + 1}
@@ -219,6 +209,11 @@ export default function WakingView({ model, onLater, initialStep = 0, avatar = "
             <p className="waking__fact" data-standing={voice.standing}>
               Her voice: {voice.summary}
             </p>
+            {onVoice && !model.voiceAvailable && (
+              <Button size="sm" onClick={onVoice}>
+                Set up her voice in the studio
+              </Button>
+            )}
           </>
         )}
 
@@ -234,7 +229,7 @@ export default function WakingView({ model, onLater, initialStep = 0, avatar = "
               variant="primary"
               onClick={() => {
                 forward.current = true;
-                setStep((step + 1) as Step);
+                moveTo((step + 1) as Step);
               }}
             >
               Next: {STEPS[step + 1].name}

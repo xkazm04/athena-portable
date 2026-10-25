@@ -13,13 +13,18 @@ import { afterEach, beforeEach, expect, test, vi } from "vitest";
 // The face cards are offered only where WebGL2 can draw; this suite is about the act, not the machine.
 vi.mock("@/avatar/support", () => ({ canDrawFace: () => true }));
 
+import type { SetupModel } from "@/modules/setup/model";
+
 import { fixtures } from "./fixtures";
 
-vi.mock("@/modules/setup/index", () => ({ useSetupModel: () => fixtures.ready }));
+const current = vi.hoisted(() => ({ model: null as SetupModel | null }));
+vi.mock("@/modules/setup/index", () => ({ useSetupModel: () => current.model ?? fixtures.ready }));
 
 const { Live } = await import("./live");
 const { useReopened } = await import("./reopen");
 const { useSettings } = await import("@/stores/settings");
+const { useDepth } = await import("@/depth/store");
+const { INITIAL } = await import("@/depth/model");
 
 Object.assign(globalThis, { IS_REACT_ACT_ENVIRONMENT: true });
 
@@ -30,6 +35,9 @@ beforeEach(() => {
   host = document.createElement("div");
   document.body.append(host);
   root = createRoot(host);
+  current.model = null;
+  useReopened.setState({ on: false, step: null });
+  useDepth.setState({ ...INITIAL });
   // No shell here, so the row write rejects; the choice is still shown and the refusal is logged.
   vi.spyOn(console, "warn").mockImplementation(() => {});
 });
@@ -60,4 +68,42 @@ test("a reshown act shows the face already chosen, and a new choice is stored wi
   expect(host.querySelector('[data-avatar-choice="d08-origami"]')!.getAttribute("aria-checked")).toBe("true");
   expect(useReopened.getState().on).toBe(true);
   expect(useSettings.getState().onboarded).toBe(true);
+});
+
+const ask = () => host.querySelector("#waking-ask")!.textContent;
+const stepNamed = (name: string) =>
+  [...host.querySelectorAll(".waking__step")].find((b) => b.textContent?.includes(name))!;
+const remount = () => {
+  act(() => root.unmount());
+  root = createRoot(host);
+  act(() => root.render(<Live />));
+};
+
+test("the act opens on the step still owed, and keeps the step the person was on across Later", () => {
+  useSettings.setState({ hydrated: true, onboarded: false, avatar: "halo" });
+  current.model = fixtures["no-page"]!;
+  act(() => root.render(<Live />));
+  expect(ask()).toBe("Where will she work?");
+
+  click(stepNamed("Voice"));
+  expect(ask()).toBe("Do you want to talk to her?");
+  click([...host.querySelectorAll("button")].find((b) => b.textContent === "Later")!);
+  expect(useDepth.getState().path).toEqual({ root: "apps" });
+
+  remount();
+  expect(ask()).toBe("Do you want to talk to her?");
+});
+
+test("the Voice step's door to the studio keeps the step and goes to the voice studio; coming back lands on Voice", () => {
+  useSettings.setState({ hydrated: true, onboarded: false, avatar: "halo" });
+  current.model = { ...fixtures.ready!, voiceAvailable: false };
+  act(() => root.render(<Live />));
+  click(stepNamed("Voice"));
+  useReopened.setState({ step: null }); // the door, not the step click, must keep the place
+  click([...host.querySelectorAll("button")].find((b) => b.textContent === "Set up her voice in the studio")!);
+  expect(useReopened.getState().step).toBe(2);
+  expect(useDepth.getState().path).toEqual({ root: "voice", item: "studio" });
+
+  remount();
+  expect(ask()).toBe("Do you want to talk to her?");
 });
