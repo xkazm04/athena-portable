@@ -78,3 +78,26 @@ test("case 8: every run is a press target, roved to from a node, and read out al
   assert.match(region, /aria-live="polite"/, "the readout is not announced");
   assert.doesNotMatch(region, /aria-hidden/, "the readout is hidden from assistive tech");
 });
+
+test("case 7 (story reducer): the story's state has one writer, and set_turn is one dispatch", () => {
+  /* Drawing.tsx: no useState holds story, stop or playing, and no door calls their setters; every
+     door is an action of `turnReduce` in turn.ts. */
+  for (const name of ["story", "stop", "playing"]) {
+    assert.doesNotMatch(
+      SOURCE,
+      new RegExp(`\[\s*${name}\s*,\s*set\w+\s*\]\s*=\s*useState`),
+      `Drawing.tsx keeps ${name} in its own useState`,
+    );
+  }
+  assert.doesNotMatch(SOURCE, /\b(setStop|setStory|setPlaying)\b/, "a door still writes the story by hand");
+  assert.match(SOURCE, /useReducer\(/, "Drawing.tsx does not reduce the story");
+
+  /* Tools.tsx: set_turn's handler dispatches once and answers the reduced state. */
+  const tools = stripped("Tools.tsx");
+  const at = tools.indexOf('name: "set_turn"');
+  assert.ok(at !== -1, "no set_turn tool in Tools.tsx");
+  const handler = tools.slice(tools.indexOf("handler:", at), tools.indexOf("deps:", at));
+  assert.equal((handler.match(/\bdispatch\(/g) ?? []).length, 1, "set_turn does not make exactly one dispatch");
+  assert.match(handler, /turnRead\(\s*next\.stop,\s*next\.story,\s*playingNow\(next/, "set_turn's answer is not the reduced state");
+  assert.doesNotMatch(tools, /\b(setStop|setStory|setPlaying)\b/, "Tools.tsx still writes the story by hand");
+});

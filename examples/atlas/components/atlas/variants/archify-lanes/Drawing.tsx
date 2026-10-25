@@ -44,6 +44,7 @@ import {
   useCallback,
   useEffect,
   useMemo,
+  useReducer,
   useRef,
   useState,
   type CSSProperties,
@@ -88,7 +89,7 @@ import {
   type TrailSegment,
 } from "./Scene";
 import { GRID, centreOf, planOf } from "./geometry";
-import { runKey, runReadout, selectRun } from "./inspect";
+import { runKey, runReadout } from "./inspect";
 import {
   BANDS,
   ZOOM_BOUNDS,
@@ -111,6 +112,7 @@ import {
   nodeAt,
 } from "./story";
 import { LanesTools } from "./Tools";
+import { STORY_START, playingNow, turnReduce, type StoryAction, type StoryState } from "./turn";
 import { EDGE_BY_ID, NODES, ON_MAIN, PHASES, roleCounts } from "./workflow";
 
 export { VIEWS };
@@ -169,9 +171,16 @@ export default function LanesDrawing({
   /* Editorial is a paper sheet, so it opens in light; the other two open in dark. The toggle
      still works in every preset — it is a reader's preference, not a property of the drawing. */
   const [theme, setTheme] = useState<"dark" | "light">(preset === "editorial" ? "light" : "dark");
-  const [story, setStory] = useState(false);
-  const [stop, setStop] = useState(0);
-  const [playing, setPlaying] = useState(false);
+  /* The story — stop, story, playing and the clock's epoch — has ONE writer: `turnReduce` in
+     turn.ts. Every door below is an action, so the rules (wrap, playing implies story, reduced
+     motion steps) are stated once and a tick from before a manual move is dropped (ADR 0160). */
+  const storyReducer = useCallback(
+    (s: StoryState, a: StoryAction) => turnReduce(s, a, { reduced }),
+    [reduced],
+  );
+  const [turn, dispatch] = useReducer(storyReducer, STORY_START);
+  const { story, stop, epoch } = turn;
+  const clockRuns = playingNow(turn, { reduced });
   /* Signal's one-shot scan: finite, parks itself, never a second motion owner beside the story. */
   const [scan, setScan] = useState(preset === "signal" && !reduced);
   /* The run the reader opened (`inspect.ts`), or none. Not a copy of the story: the story's stop
@@ -268,10 +277,7 @@ export default function LanesDrawing({
       [],
     ),
     current: view,
-    onSet: useCallback((id: string) => {
-      setStory(id === "turn");
-      if (id !== "turn") setPlaying(false);
-    }, []),
+    onSet: useCallback((id: string) => dispatch({ type: "view", id }), []),
   });
 
   /* ------------------------------------------ the story --------------------------------------- */
@@ -290,11 +296,13 @@ export default function LanesDrawing({
   const beat = BEAT_VIEWS[Math.min(BEAT_VIEWS.length - 1, Math.max(0, stop))]!;
   const chapter = chapterOf(stop);
 
+  /* One timeout per beat, re-armed on every stop and every hand move, so the stop a reader picked
+     gets a full beat; the tick carries its epoch and the reducer drops it if a door moved since. */
   useEffect(() => {
-    if (!playing || reduced || beatMs <= 0) return;
-    const id = setInterval(() => setStop((s) => (s + 1) % BEAT_VIEWS.length), beatMs);
-    return () => clearInterval(id);
-  }, [beatMs, playing, reduced]);
+    if (!clockRuns || beatMs <= 0) return;
+    const id = setTimeout(() => dispatch({ type: "tick", epoch }), beatMs);
+    return () => clearTimeout(id);
+  }, [beatMs, clockRuns, epoch, stop]);
 
   /* The follow camera, with a dwell: the story moves the NAV and the nav moves the camera through
      `useSemanticZoom`, so a guided view and a reader's own click take exactly the same path. */
@@ -439,11 +447,10 @@ export default function LanesDrawing({
   /* Opening a run: with the story on, the story jumps to the first stop the run carries. */
   const onRun = useCallback(
     (id: string) => {
-      const next = selectRun({ story, stop }, id);
-      setRun(next.run);
-      if (next.stop !== stop) setStop(next.stop);
+      setRun(id);
+      dispatch({ type: "run", id });
     },
-    [stop, story],
+    [],
   );
 
   /**
@@ -546,8 +553,7 @@ export default function LanesDrawing({
   const world = plan.world;
   const counts = useMemo(() => roleCounts(), []);
   const crossings = useMemo(() => mainErrorCrossings(runs), [runs]);
-  const motionOwner =
-    story && playing && !reduced ? "story" : scan && !reduced ? "scan" : undefined;
+  const motionOwner = clockRuns ? "story" : scan && !reduced ? "scan" : undefined;
   const copy = COPY[preset];
   const showScript = preset === "editorial";
   const showLanes = preset === "editorial";
@@ -555,10 +561,7 @@ export default function LanesDrawing({
   const readout = useMemo(() => (run ? runReadout(run) : null), [run]);
   const closeRun = useCallback(() => setRun(null), []);
 
-  const pickStop = useCallback((to: number) => {
-    setStory(true);
-    setStop(((to % BEAT_VIEWS.length) + BEAT_VIEWS.length) % BEAT_VIEWS.length);
-  }, []);
+  const pickStop = useCallback((to: number) => dispatch({ type: "pick", index: to }), []);
 
   return (
     <div
@@ -588,10 +591,7 @@ export default function LanesDrawing({
         theme={theme}
         onTheme={() => setTheme((was) => (was === "dark" ? "light" : "dark"))}
         story={story}
-        onStory={() => {
-          setStory((was) => !was);
-          setPlaying(false);
-        }}
+        onStory={() => dispatch({ type: "toggle" })}
         zoom={zoomRead}
         onZoom={(by) => rig.flyTo({ zoom: zoomRead * (by > 0 ? 1.25 : 0.8) })}
         onHome={flyHome}
@@ -694,28 +694,19 @@ export default function LanesDrawing({
           beat={beat}
           chapters={CHAPTER_VIEWS}
           chapter={chapter}
-          playing={playing}
+          playing={clockRuns}
           reduced={reduced}
           counts={TRAIL_COUNTS}
-          onPlay={() =>
-            reduced ? setStop((s) => (s + 1) % BEAT_VIEWS.length) : setPlaying((p) => !p)
-          }
-          onStep={(to) => setStop(((to % BEAT_VIEWS.length) + BEAT_VIEWS.length) % BEAT_VIEWS.length)}
-          onChapter={(i) => setStop(CHAPTER_VIEWS[i]?.from ?? 0)}
+          onPlay={() => dispatch({ type: "play" })}
+          onStep={(to) => dispatch({ type: "step", to })}
+          onChapter={(i) => dispatch({ type: "chapter", index: i })}
         />
       ) : showScript ? null : (
         <Cards cards={CARDS} />
       )}
 
       {/* `read_turn` / `set_turn` — they mount and unmount with this drawing. */}
-      <LanesTools
-        stop={stop}
-        setStop={setStop}
-        story={story}
-        setStory={setStory}
-        playing={playing}
-        setPlaying={setPlaying}
-      />
+      <LanesTools turn={turn} dispatch={dispatch} reduced={reduced} />
 
       {/* The shell's pane, rendered LAST so it sits over the world (contract, rule 3, rule 11). */}
       {pane}

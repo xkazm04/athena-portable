@@ -24,24 +24,18 @@
 import { useWebMCPTool } from "@athena/demo-kit/webmcp";
 
 import { BEAT_VIEWS } from "./story";
-import { askStop, turnAfter, turnRead } from "./turn";
+import { playingNow, turnRead, turnTool, type StoryAction, type StoryState } from "./turn";
 
 export { turnRead };
 
 export function LanesTools({
-  stop,
-  setStop,
-  story,
-  setStory,
-  playing,
-  setPlaying,
+  turn,
+  dispatch,
+  reduced,
 }: {
-  stop: number;
-  setStop: (index: number) => void;
-  story: boolean;
-  setStory: (on: boolean) => void;
-  playing: boolean;
-  setPlaying: (on: boolean) => void;
+  turn: StoryState;
+  dispatch: (action: StoryAction) => void;
+  reduced: boolean;
 }) {
   useWebMCPTool({
     name: "read_turn",
@@ -50,8 +44,9 @@ export function LanesTools({
     parameters: [],
     reversible: true,
     sideEffects: "none",
-    handler: () => turnRead(stop, story, playing),
-    deps: [stop, story, playing],
+    /* `playing` is whether the clock RUNS: reduced motion stops it, so it reads false then. */
+    handler: () => turnRead(turn.stop, turn.story, playingNow(turn, { reduced })),
+    deps: [turn, reduced],
   });
 
   useWebMCPTool({
@@ -75,18 +70,17 @@ export function LanesTools({
     reversible: true,
     sideEffects: "none",
     handler: ({ stop: raw, tell }) => {
-      const asked = askStop(raw);
-      if (!asked.ok) return asked;
-      /* The answer names the state the tool LEAVES the surface in — React has not re-rendered
-         inside this handler, so reading the props back here would answer the previous one. And
-         the state IS that answer: putting the trail away stops the clock, as the toggle does. */
-      const next = turnAfter(asked.stop, tell, { story, playing });
-      setStop(next.stop);
-      setStory(next.story);
-      setPlaying(next.playing);
-      return turnRead(next.stop, next.story, next.playing);
+      /* One action through the story's reducer (turn.ts). The answer names the state the tool
+         LEAVES the surface in — React has not re-rendered inside this handler, so reading the
+         props back here would answer the previous one — and `turnTool` is the reducer's own
+         `tool` transition, so the answer and the next read_turn cannot disagree. */
+      const out = turnTool(turn, raw, tell);
+      if (!out.ok) return out;
+      const next = out.state;
+      dispatch({ type: "tool", stop: raw, tell });
+      return turnRead(next.stop, next.story, playingNow(next, { reduced }));
     },
-    deps: [setStop, setStory, setPlaying, story, playing],
+    deps: [dispatch, turn, reduced],
   });
 
   return null;

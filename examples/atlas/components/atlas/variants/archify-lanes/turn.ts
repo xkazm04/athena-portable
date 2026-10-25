@@ -18,6 +18,7 @@ import { componentById } from "@/data";
 import { READ_CAP } from "@/lib/constants";
 
 import { planOf } from "./geometry";
+import { selectRun } from "./inspect";
 import { BEAT_VIEWS, CHAPTER_VIEWS, HOPS, TRAIL_COUNTS, beatState, chapterOf } from "./story";
 import { EDGE_BY_ID, LANES, PHASES } from "./workflow";
 
@@ -65,6 +66,102 @@ export function turnAfter(
 ): TurnState {
   const story = tell === true ? true : tell === false ? false : now.story;
   return { stop, story, playing: story ? now.playing : false };
+}
+
+/**
+ * THE STORY IS ONE REDUCER WITH EIGHT DOORS. The TURN toggle, the view bus, `set_turn`, the story
+ * bar's play / step / chapter, the editorial script rail, an opened run and the clock's tick each
+ * used to write three `useState`s by hand and re-state the rules at the write site. Here the rules
+ * are stated once, so they cannot drift door by door (ADR 0160; client-state/status-fsms):
+ *
+ *   - `0 <= stop < BEAT_VIEWS.length`, always: every door wraps or refuses.
+ *   - `playing` implies `story`: putting the trail away stops the clock.
+ *   - every hand action bumps `epoch`, and a tick carries the epoch it was armed under, so a tick
+ *     from before a manual move is dropped (client-state/async-race-guards). The drawing arms one
+ *     timeout per `[epoch, stop]`, so the stop a reader picked gets a full beat.
+ *   - under reduced motion the clock does not run: play steps once instead, and `playingNow` reads
+ *     false, so `read_turn` never reports a clock that nothing moves.
+ */
+export interface StoryState extends TurnState {
+  epoch: number;
+}
+
+export interface StoryEnv {
+  reduced: boolean;
+}
+
+export type StoryAction =
+  | { type: "toggle" }
+  | { type: "view"; id: string }
+  | { type: "tool"; stop: unknown; tell?: unknown }
+  | { type: "play" }
+  | { type: "step"; to: number }
+  | { type: "chapter"; index: number }
+  | { type: "pick"; index: number }
+  | { type: "run"; id: string }
+  | { type: "tick"; epoch: number };
+
+export const STORY_START: StoryState = { stop: 0, story: false, playing: false, epoch: 0 };
+
+const wrap = (to: number): number => {
+  const n = Number.isFinite(to) ? Math.trunc(to) : 0;
+  return ((n % BEAT_VIEWS.length) + BEAT_VIEWS.length) % BEAT_VIEWS.length;
+};
+
+/** Whether the clock is actually running: the state says playing AND motion is allowed. */
+export const playingNow = (s: TurnState, env: StoryEnv): boolean =>
+  s.playing && s.story && !env.reduced;
+
+/**
+ * What `set_turn` makes of the state: the refusal `askStop` gives, or the state it leaves. The
+ * tool answers from this, and dispatches the same action, so its answer IS the next state.
+ */
+export function turnTool(
+  s: StoryState,
+  stop: unknown,
+  tell: unknown,
+): { ok: true; state: StoryState } | { ok: false; error: string } {
+  const asked = askStop(stop);
+  if (!asked.ok) return asked;
+  return { ok: true, state: { ...turnAfter(asked.stop, tell, s), epoch: s.epoch + 1 } };
+}
+
+/** The story's one transition authority. Pure; a refused or stale action returns `s` itself. */
+export function turnReduce(s: StoryState, a: StoryAction, env: StoryEnv): StoryState {
+  const hand = (next: TurnState): StoryState => ({
+    stop: wrap(next.stop),
+    story: next.story,
+    playing: next.story && next.playing,
+    epoch: s.epoch + 1,
+  });
+  switch (a.type) {
+    case "toggle":
+      return hand({ stop: s.stop, story: !s.story, playing: false });
+    case "view": {
+      const story = a.id === "turn";
+      return hand({ stop: s.stop, story, playing: story && s.playing });
+    }
+    case "tool": {
+      const out = turnTool(s, a.stop, a.tell);
+      return out.ok ? out.state : s;
+    }
+    case "play":
+      if (env.reduced) return hand({ stop: s.stop + 1, story: true, playing: false });
+      return hand({ stop: s.stop, story: true, playing: !s.playing });
+    case "step":
+      return hand({ ...s, stop: a.to });
+    case "chapter":
+      return hand({ ...s, stop: CHAPTER_VIEWS[a.index]?.from ?? 0 });
+    case "pick":
+      return hand({ ...s, story: true, stop: a.index });
+    case "run": {
+      if (!EDGE_BY_ID.has(a.id)) return s;
+      return hand({ ...s, stop: selectRun(s, a.id).stop });
+    }
+    case "tick":
+      if (a.epoch !== s.epoch || !playingNow(s, env)) return s;
+      return { ...s, stop: wrap(s.stop + 1) };
+  }
 }
 
 /** The turn, as an agent reads it. Bounded like every list in this repository, and it says so. */
