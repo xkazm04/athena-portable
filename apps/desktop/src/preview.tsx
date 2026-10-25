@@ -36,7 +36,7 @@ import { DEFAULT_SKIN, applySkin, isSkin, useShell } from "@/stores/shell";
 
 import "@/styles/app.css";
 import "@/companion/companion.css";
-import "@/styles/skins/loop-tide.css";
+import "@/styles/skins";
 
 const params = new URLSearchParams(window.location.search);
 const surface = params.get("surface");

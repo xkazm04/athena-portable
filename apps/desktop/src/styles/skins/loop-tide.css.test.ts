@@ -87,46 +87,5 @@ test("the person's colour and the status colours are never re-declared", () => {
   expect(css).not.toMatch(/--status-(success|warning|error)\s*:/);
 });
 
-function channel(v: number): number {
-  const c = v / 255;
-  return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-}
-function luminance(hex: string): number {
-  const n = parseInt(hex.slice(1), 16);
-  return 0.2126 * channel((n >> 16) & 255) + 0.7152 * channel((n >> 8) & 255) + 0.0722 * channel(n & 255);
-}
-function ratio(a: string, b: string): number {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-  return (hi! + 0.05) / (lo! + 0.05);
-}
-function tokens(selector: string): Record<string, string> {
-  const r = styled.find((x) => selectors(x)[0] === selector);
-  if (!r) throw new Error(`no rule ${selector}`);
-  const out: Record<string, string> = {};
-  for (const m of r.body.matchAll(/(--[a-z-]+):\s*(#[0-9a-f]{6})\b/gi)) out[m[1]!] = m[2]!;
-  return out;
-}
-
-test("the text the skin recolours reads at 4.5:1 or better in both themes (ADR 0023)", () => {
-  const dark = tokens(':root[data-skin="loop-tide"]');
-  const light = tokens(':root[data-skin="loop-tide"][data-theme="light"]');
-  const pairs: [Record<string, string>, string, string][] = [
-    [dark, "--foreground", "--background"],
-    [dark, "--muted-foreground", "--card-bg"],
-    [dark, "--muted", "--background"],
-    [dark, "--accent", "--background"],
-    [dark, "--primary-fg", "--primary"],
-    [dark, "--on-primary", "--btn-primary"],
-    [light, "--foreground", "--background"],
-    [light, "--muted-foreground", "--card-bg"],
-    [light, "--primary-fg", "--primary"],
-    [light, "--on-primary", "--btn-primary"],
-    [light, "--accent-text", "--background"],
-    [light, "--accent-text", "--card-bg"],
-    [light, "--accent-text", "--recessed"],
-    [light, "--primary", "--recessed"],
-  ];
-  for (const [set, ink, ground] of pairs) {
-    expect(ratio(set[ink]!, set[ground]!), `${ink} on ${ground}`).toBeGreaterThanOrEqual(4.5);
-  }
-});
+// The skin's contrast in both themes, and that it binds every role in both, is held with the base
+// themes' by styles/theme-contract.test.ts, from one pair list.

@@ -9,7 +9,7 @@ import ReactDOM from "react-dom/client";
 
 import ConsoleRoot from "@/console/root";
 import "@/styles/app.css";
-import "@/styles/skins/loop-tide.css";
+import "@/styles/skins";
 
 const Inspector = import.meta.env.DEV ? lazy(() => import("@/lib/dev/inspector")) : null;
 

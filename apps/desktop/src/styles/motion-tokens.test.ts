@@ -52,30 +52,9 @@ test("a reduced-motion machine plays every animation once, so an infinite loop c
   expect(block).toMatch(/\*::after/);
 });
 
-function channel(v: number): number {
-  const c = v / 255;
-  return c <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
-}
-function luminance(hex: string): number {
-  const n = parseInt(hex.slice(1), 16);
-  return 0.2126 * channel((n >> 16) & 255) + 0.7152 * channel((n >> 8) & 255) + 0.0722 * channel(n & 255);
-}
-function ratio(a: string, b: string): number {
-  const [hi, lo] = [luminance(a), luminance(b)].sort((x, y) => y - x);
-  return (hi! + 0.05) / (lo! + 0.05);
-}
-function token(block: string, name: string): string {
-  const m = new RegExp(`${name}: *(#[0-9a-f]{6})`, "i").exec(block);
-  if (!m) throw new Error(`no ${name}`);
-  return m[1]!;
-}
-
-test("--accent-text is the accent as ink: 4.5:1 on all three light surfaces, and the dark theme keeps --accent", () => {
-  const light = rule('[data-theme="light"]');
-  const ink = token(light, "--accent-text");
-  for (const surface of ["--background", "--card-bg", "--recessed"]) {
-    expect(ratio(ink, token(light, surface)), surface).toBeGreaterThanOrEqual(4.5);
-  }
+// The contrast of every theme and skin, --accent-text on the three light surfaces among it, is held
+// by styles/theme-contract.test.ts; what stays here is the alias the dark theme keeps.
+test("the dark theme's ink is the accent itself", () => {
   expect(rule(':root,\n[data-theme="dark"]').replace(/\s+/g, " ")).toMatch(/--accent-text:\s*var\(--accent\)/);
 });
 

@@ -22,10 +22,13 @@ test("the sweep sees the stylesheets", () => {
 });
 
 test("text is never coloured with --accent, which is 3.2:1 on the light theme; --accent-text is the ink", () => {
+  const swept: string[] = [];
   for (const { path, text } of all) {
-    if (path.endsWith("app.css")) continue;
+    swept.push(path);
     expect(text, path).not.toMatch(/(^|[\s;{])color:\s*var\(--accent\)/);
   }
+  // app.css is swept like every other sheet: it defines --accent-text, so it is where ink is chosen.
+  expect(swept.some((p) => p.endsWith("app.css"))).toBe(true);
 });
 
 test("every use of --duration-fast names --ease-fast beside it", () => {

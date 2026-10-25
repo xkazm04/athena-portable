@@ -32,7 +32,7 @@ import { startVoice } from "@/stores/voice";
 
 import "@/styles/app.css";
 import "@/companion/companion.css";
-import "@/styles/skins/loop-tide.css";
+import "@/styles/skins";
 
 // The dev inspector (ADR 0086): dropped from a build with the rest of the DEV branch.
 const Inspector = import.meta.env.DEV ? lazy(() => import("@/lib/dev/inspector")) : null;
