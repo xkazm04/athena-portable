@@ -38,11 +38,13 @@ test("a second Send does not dispatch the draft the first one replaced", async (
 });
 
 test("a send leaves another invoice's drafts alone", async () => {
-  const other = await draftReminderAction("inv_0910", "gentle");
+  // Any chaseable invoice other than the one sent - not one the statement looks to have paid,
+  // which the chase now refuses (lib/chase.ts).
+  const other = await draftReminderAction("inv_0029", "gentle");
   assert.equal(other.ok, true, other.message);
   await sleep(5);
   await draftReminderAction("inv_0002", "gentle");
   const sent = await sendReminderAction("inv_0002");
   assert.equal(sent.ok, true, sent.message);
-  assert.equal(unsent("inv_0910"), 1);
+  assert.equal(unsent("inv_0029"), 1);
 });

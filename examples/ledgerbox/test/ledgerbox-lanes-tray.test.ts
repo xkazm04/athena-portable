@@ -23,7 +23,7 @@ const home = tempHome("ledgerbox-lanes-tray-");
  */
 const { buildSheet } = await import("../lib/lanes");
 const actions = await import("../app/actions");
-const { db } = await import("../lib/db");
+const { db, settlingCredits } = await import("../lib/db");
 const { SELECT_MAX } = await import("../lib/constants");
 const { TOOL_CLASSES } = await import("../lib/tool-classes");
 const { isAuto } = await import("../lib/manifest");
@@ -45,10 +45,15 @@ const markIn = (sheet: Sheet, id: string) => marksOf(sheet).find((m) => m.id ===
 const unsentDrafts = (id: string) =>
   db().get<{ n: number }>("SELECT COUNT(*) AS n FROM reminders WHERE invoice_id = ? AND sent_at IS NULL", [id])!.n;
 
-/** Open invoices the books would draft for, with nothing paid (so they can also be voided). */
+/**
+ * Open invoices the books would draft for, with nothing paid (so they can also be voided). Not one
+ * the statement looks to have paid: the books refuse that chase (lib/chase.ts) and the card does
+ * not predict it yet, so it is held out here rather than read as a press that failed.
+ */
 function chaseable(sheet: Sheet): Mark[] {
+  const settled = settlingCredits();
   return marksOf(sheet).filter(
-    (m) => m.paidCents === 0 && actRefusal("draft_reminder", m, sheet.details[m.id]) === null,
+    (m) => m.paidCents === 0 && !settled.has(m.id) && actRefusal("draft_reminder", m, sheet.details[m.id]) === null,
   );
 }
 

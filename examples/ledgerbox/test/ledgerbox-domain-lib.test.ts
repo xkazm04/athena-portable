@@ -195,6 +195,8 @@ test("one of something is said in the singular, on the sheet and in the close", 
   }
 });
 
+const CREDIT_CLAUSE = /(could belong here|apply it before chasing)\.$/;
+
 test("the sentence under a card's standing glyph leads with the same fact the glyph shows", () => {
   // The card prints the standing (`statusOf` in components/lanes/model/status.ts: disputed, then 45+ days late,
   // then a credit) beside `mark.status` from lib/lanes/read.ts, which put the credit first: three
@@ -210,10 +212,12 @@ test("the sentence under a card's standing glyph leads with the same fact the gl
   );
   for (const m of shouting) {
     assert.match(m.status, new RegExp(`^${m.daysOverdue} days past due`), `${m.number}: lateness first`);
-    if (m.candidateCount > 0) assert.match(m.status, /could belong here\.$/, `${m.number}: and the credit`);
+    // A credit the statement plainly holds for it reads "Looks paid ..." (lib/chase.ts); either way
+    // the sentence still ends on the credit.
+    if (m.candidateCount > 0) assert.match(m.status, CREDIT_CLAUSE, `${m.number}: and the credit`);
   }
   for (const m of marks.filter((x) => standingOf(x) === "credit")) {
-    assert.match(m.status, /could belong here\.$/, `${m.number}: a credit standing names the credit`);
+    assert.match(m.status, CREDIT_CLAUSE, `${m.number}: a credit standing names the credit`);
   }
 });
 
@@ -347,6 +351,6 @@ function unreadExports(): { scanned: string[]; dead: string[] } {
 
 test("every export of the domain lib has a reader besides its own declaration", () => {
   const { scanned, dead } = unreadExports();
-  assert.equal(scanned.length, 19, `the scan reaches the context's 19 files: ${scanned.join(", ")}`);
+  assert.equal(scanned.length, 20, `the scan reaches the context's 20 files: ${scanned.join(", ")}`);
   assert.deepEqual(dead, []);
 });

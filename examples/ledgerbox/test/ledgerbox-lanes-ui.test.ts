@@ -62,7 +62,7 @@ const moduleOf = (source: string) => `data:text/javascript,${encodeURIComponent(
 const { ACT_THREW, useRun: cardRun } = await import("../components/lanes/useRun");
 const { buildSheet } = await import("../lib/lanes");
 const actions = await import("../app/actions");
-const { db, COUNTED_OUT } = await import("../lib/db");
+const { db, COUNTED_OUT, settlingCredits } = await import("../lib/db");
 const { CATEGORIES } = await import("../lib/constants");
 const { actRefusal, gateSubject, stillArmed, NOT_A_DEBT } = await import("../components/lanes/card/read");
 const { tabStop } = await import("../components/lanes/swarm/marks");
@@ -168,6 +168,10 @@ test("every act the decision list offers on an open invoice is one the books tak
   assert.ok(open.length > 50, "the seed's open invoices");
   const newest = () => db().get<{ n: number }>("SELECT COALESCE(MAX(id), 0) AS n FROM activity")!.n;
   const disagree: string[] = [];
+  // One known gap, pinned exactly rather than tolerated: the books refuse to chase an invoice the
+  // statement looks to have paid (lib/chase.ts, ADR 0197) and the card does not predict it yet -
+  // the press comes back naming the credit to apply. When `actRefusal` learns it, this list empties.
+  const awaitingCard: string[] = [];
   for (const mark of open) {
     const detail = sheet.details[mark.id];
     const acts = {
@@ -190,12 +194,18 @@ test("every act the decision list offers on an open invoice is one the books tak
       const result = await answer!;
       assert.equal(newest(), before, `${act} on ${mark.number} was rolled back`);
       const offered = actRefusal(act as keyof typeof acts, mark, detail) === null;
+      if (act === "draft_reminder" && offered && !result.ok && "settling_credit" in result) {
+        awaitingCard.push(mark.id);
+        continue;
+      }
       if (offered !== result.ok) {
         disagree.push(`${mark.number} (${mark.state}) ${act}: card ${offered ? "offers" : "holds back"}, books ${result.ok ? "take it" : `refuse: ${result.message}`}`);
       }
     }
   }
   assert.deepEqual(disagree, []);
+  const settled = settlingCredits();
+  assert.deepEqual(awaitingCard.sort(), open.filter((m) => settled.has(m.id)).map((m) => m.id).sort());
 });
 
 /* ------------------------------ one act machine per card: one armed gate, one write in flight, one door */

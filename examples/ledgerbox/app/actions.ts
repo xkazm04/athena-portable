@@ -9,8 +9,10 @@ import { revalidatePath } from "next/cache";
 import { logActivity, undoActivity, type ActivityEntry, type UndoAnswer, type UndoVerdict } from "@athena/demo-kit/activity";
 import type { Db } from "@athena/demo-kit/db";
 
+import { chaseVerdict, type ChaseVerdict, type SettlingCredit } from "@/lib/chase";
 import { CATEGORIES, MAX_IDS, PERIODS, TONES, type Category, type Period, type Tone } from "@/lib/constants";
 import {
+  chaseCredits,
   COUNTED_OUT,
   db,
   findInvoiceId,
@@ -39,12 +41,17 @@ export interface MatchResult extends ActionResult {
  */
 export interface DraftResult extends ActionResult {
   draft?: ReminderDraft & { reminder_id: string; invoice_id: string; tone: Tone };
+  /** Set when the chase was refused because the statement already holds the money: the credit
+   *  to apply with `match_bank_line` instead (ADR 0197). */
+  settling_credit?: SettlingCredit;
 }
 
 /** `send_reminder`'s answer: who it reached, so the gate's record and the books agree. */
 export interface SendResult extends ActionResult {
   to?: string;
   subject?: string;
+  /** As on `DraftResult`: the credit that arrived while the letter waited for its gate. */
+  settling_credit?: SettlingCredit;
 }
 
 /** `export_summary`'s answer: a page, not a paragraph. */
@@ -420,6 +427,15 @@ function whyNotChase(invoice: InvoiceRow): string | null {
   return null;
 }
 
+/**
+ * Whether the statement already holds what a chase of this invoice would ask for (`lib/chase.ts`,
+ * ADR 0197). Asked after `whyNotChase`, at the draft and again at the send: a letter drafted before
+ * the statement was imported is not sent after it.
+ */
+function statementVerdict(invoice: InvoiceRow): ChaseVerdict | null {
+  return chaseVerdict(invoice, chaseCredits(invoice.id));
+}
+
 /** The letter the books stand behind today. `send_reminder` compares the stored draft with it. */
 function letterFor(invoice: InvoiceRow, tone: Tone): ReminderDraft {
   return composeReminder({
@@ -444,6 +460,11 @@ export async function draftReminderAction(ref: string, tone: Tone, actor: Actor 
   const invoice = getInvoice(invoiceId)!;
   const why = whyNotChase(invoice);
   if (why) return fail(why);
+  const verdict = statementVerdict(invoice);
+  if (verdict?.block) {
+    return { ...fail(`${verdict.message} No reminder was drafted.`), settling_credit: verdict.settling_credit };
+  }
+  const warning = verdict ? ` ${verdict.warning}` : "";
 
   const id = `rem_${invoiceId}_${Date.now()}`;
   const draft = letterFor(invoice, tone);
@@ -471,12 +492,17 @@ export async function draftReminderAction(ref: string, tone: Tone, actor: Actor 
     const share = Math.round(invoice.paid_ratio * 100);
     return {
       ok: true,
-      message: `${invoice.client_name} has already paid ${share}% of ${invoice.number} - the draft is saved, read the balance before sending.`,
+      message: `${invoice.client_name} has already paid ${share}% of ${invoice.number} - the draft is saved, read the balance before sending.${warning}`,
       draft: whole,
       undoId,
     };
   }
-  return { ok: true, message: `Drafted a ${tone} reminder for ${draft.to}. Nothing has been sent.`, draft: whole, undoId };
+  return {
+    ok: true,
+    message: `Drafted a ${tone} reminder for ${draft.to}. Nothing has been sent.${warning}`,
+    draft: whole,
+    undoId,
+  };
 }
 
 /**
@@ -504,6 +530,10 @@ export async function sendReminderAction(ref: string, actor: Actor = "user"): Pr
   // payment since the draft would otherwise ask the client for money already received.
   const why = whyNotChase(invoice);
   if (why) return fail(`${why} The reminder was not sent.`);
+  const verdict = statementVerdict(invoice);
+  if (verdict?.block) {
+    return { ...fail(`${verdict.message} The reminder was not sent.`), settling_credit: verdict.settling_credit };
+  }
   const today = letterFor(invoice, draft.tone);
   if (today.subject !== draft.subject || today.body !== draft.body) {
     return fail(

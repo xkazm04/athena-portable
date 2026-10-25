@@ -2,10 +2,17 @@ import "server-only";
 import { cache } from "react";
 import { openDb, type Db } from "@athena/demo-kit/db";
 
+import { settlingCredit, type SettlingCredit } from "./chase";
 import { APP_ID, DETAIL_CANDIDATES, LINE_SUGGESTIONS, TODAY, type Period } from "./constants";
 import { inPeriodClient as inPeriod } from "./filter-period";
 import { resolveInvoiceRef, type Resolved } from "./invoice-ref";
-import { reconcile, type Offer, type ReconcileInvoice, type Reconciliation } from "./reconcile";
+import {
+  reconcile,
+  type CreditReading,
+  type Offer,
+  type ReconcileInvoice,
+  type Reconciliation,
+} from "./reconcile";
 import { seed } from "./seed";
 import type {
   BankLine,
@@ -137,6 +144,36 @@ function scoreInput(row: BaseRow): ReconcileInvoice {
 export const reconciliation = cache((): Reconciliation =>
   reconcile(baseRows().filter(takesCredit).map(scoreInput), unappliedLines()),
 );
+
+/**
+ * Every credit the table offers this invoice, each as the credit's whole reading - its other
+ * contenders included - best first. What the chase verdict (`lib/chase.ts`) is asked against.
+ */
+export function chaseCredits(invoiceId: string): CreditReading[] {
+  const table = reconciliation();
+  return table.byInvoice(invoiceId).flatMap((o) => table.byCredit(o.line.id) ?? []);
+}
+
+/**
+ * The invoices the statement looks to have paid: invoice id -> the strong, unambiguous credit whose
+ * best fit it is. One pass over the table, for the sheet's status sentences; the actions ask
+ * `chaseCredits` for the one invoice they act on, through the same `settlingCredit` rule.
+ */
+export const settlingCredits = cache((): Map<string, SettlingCredit> => {
+  const byTop = new Map<string, CreditReading[]>();
+  for (const reading of reconciliation().credits) {
+    const top = reading.offers[0];
+    if (!top) continue;
+    byTop.set(top.invoice_id, [...(byTop.get(top.invoice_id) ?? []), reading]);
+  }
+  const out = new Map<string, SettlingCredit>();
+  for (const [invoiceId, readings] of byTop) {
+    const best = [...readings].sort((a, b) => (b.offers[0]?.score ?? 0) - (a.offers[0]?.score ?? 0));
+    const credit = settlingCredit({ id: invoiceId }, best);
+    if (credit) out.set(invoiceId, credit);
+  }
+  return out;
+});
 
 /** How many credits the table offers this invoice: its best fit, or a real contender, for each. */
 function withCount(row: BaseRow): InvoiceRow {

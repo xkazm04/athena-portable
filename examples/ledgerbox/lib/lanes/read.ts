@@ -9,6 +9,7 @@ import "server-only";
  * shows, assembled from stored columns only — no figure here is estimated.
  */
 import { MS_DAY } from "./constants";
+import { looksPaid, type SettlingCredit } from "../chase";
 import { TODAY } from "../constants";
 import type { InvoiceRow } from "../types";
 import { SHOUT_AT, type LnAxis, type LnLane, type LnMark } from "@/components/lanes/model";
@@ -28,8 +29,13 @@ export function weightOf(cents: number, max: number): number {
  * Composed from the stored columns only. It is the line the mark cannot show at
  * L0 and the first thing the spread at L1 adds, which is most of why opening a
  * lane is worth doing.
+ *
+ * `settling` is the credit the statement holds for this invoice, when it holds one
+ * (`settlingCredits` in lib/db.ts). Then the invoice looks paid, not merely offered
+ * a credit that "could belong here", and the sentence says so - the chase it would
+ * otherwise invite is refused (lib/chase.ts).
  */
-export function statusOf(row: InvoiceRow): string {
+export function statusOf(row: InvoiceRow, settling?: SettlingCredit): string {
   if (row.state === "void") return "Voided. Nothing owed and nothing to do.";
   if (row.state === "draft") return "Draft. Not sent, so the clock has not started.";
   if (row.state === "disputed") {
@@ -37,7 +43,11 @@ export function statusOf(row: InvoiceRow): string {
   }
   if (row.balance_cents <= 0) return "Settled in full.";
   const n = row.candidate_count;
-  const credit = n > 0 ? `${n} unapplied ${n === 1 ? "credit" : "credits"} could belong here.` : null;
+  const credit = settling
+    ? looksPaid(settling)
+    : n > 0
+      ? `${n} unapplied ${n === 1 ? "credit" : "credits"} could belong here.`
+      : null;
   const chased = `${row.days_overdue} days past due${row.reminders_sent > 0 ? `, ${row.reminders_sent} chased` : ", never chased"}.`;
   // The standing glyph beside this sentence ranks 45+ days late above a credit that fits
   // (`statusOf` in components/lanes/model/status.ts), so the sentence leads with the same fact

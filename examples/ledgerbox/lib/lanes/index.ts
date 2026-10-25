@@ -19,6 +19,7 @@ import {
   lineSuggestions,
   listClients,
   listInvoices,
+  settlingCredits,
   summarize,
   unappliedCredits,
   unappliedLines,
@@ -48,6 +49,7 @@ export function buildSheet(): LnSheet {
 
   const maxBalance = rows.reduce((m, r) => Math.max(m, r.balance_cents), 0);
   const maxAmount = rows.reduce((m, r) => Math.max(m, r.amount_cents), 0);
+  const settling = settlingCredits();
 
   const toMark = (r: InvoiceRow): LnMark => ({
     id: r.id,
@@ -75,7 +77,7 @@ export function buildSheet(): LnSheet {
         ? weightOf(r.balance_cents, maxBalance)
         : weightOf(r.amount_cents, maxAmount) * 0.3,
     row: 0,
-    status: statusOf(r),
+    status: statusOf(r, settling.get(r.id)),
   });
 
   const byCategory = new Map<Category, LnMark[]>();
