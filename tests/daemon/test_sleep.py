@@ -433,4 +433,6 @@ def test_the_proposals_answer_is_bounded_and_read_on_one_connection(
     for p in listing["proposals"]:
         for memory in p["memories"]:
             assert "confidence" not in memory
-            assert "0.93" not in json.dumps(memory)
+            # The confidence value under no other key either. A value check, not a substring:
+            # a timestamp such as "00.938861" contains the text "0.93".
+            assert 0.93 not in memory.values()
