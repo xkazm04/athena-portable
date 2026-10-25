@@ -1,0 +1,17 @@
+{"card":"desktop-companion-pane/B","status":"landed","shas":["34a3f3b5"],
+ "tests_added":[
+  "apps/desktop/src/companion/machine.test.ts::resolved by voice on an open slip: the stamp plays with nothing sent, tears and settles home, and says so",
+  "apps/desktop/src/companion/machine.test.ts::resolved on a peer while the slip is put away or she is hidden: no slip opens, one sentence names the device",
+  "apps/desktop/src/companion/machine.test.ts::guard: a click answer in flight and then a resolved event for the same card: one stamp, the click's, no second say",
+  "apps/desktop/src/companion/runtime.test.ts::the head card leaves answered on a peer: it is held and stamped by the peer until settle, then the next card heads",
+  "apps/desktop/src/companion/runtime.test.ts::the head card leaves with no answer anywhere (expired, reconciled away): no stamp, one sentence, the next slip as today",
+  "apps/desktop/src/stores/voice.test.ts::a spoken turn > a spoken approve writes an answered row via voice in the same write that drops the card",
+  "apps/desktop/src/companion/model.test.ts::a decision answered elsewhere says how on its Record row: by voice, on a peer; one with no via reads as today"
+ ],
+ "guard_cases":[2,7],
+ "cases_total":8,"cases_red_before":6,"cases_green_after":8,
+ "gates":{"cd apps/desktop && pnpm typecheck":0,"cd apps/desktop && pnpm lint":0,"cd apps/desktop && pnpm test":0},
+ "files_changed":13,"lines_changed":305,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":true,
+ "deviations_from_card":"Revision applied: ADR 0188 and the commit body cite docs/BACKLOG.md:43 ('Voice-answered cards get a stamp'), and that line is marked 'Taken up (ADR 0188)'. Case 3 (the machine guard: a click in flight wins) passes before by design, because the old machine ignores an unknown event, so it counts with case 8 as a guard: 6 of 8 were red before. Added a machine 'gone' event for the 'no longer waiting' sentence, said only over a drawn slip. departed is an optional runtime dep so existing harnesses stay unchanged. voice.ts writes the row whenever the card is present and by=user, with no check for an answer in flight: the gateway sends decision.resolved only for an answer it made itself, so a click that raced it was refused. The row builder answeredElsewhere(card, approved, via='voice', at: Date) is shared with remoteDecided, which now passes deps.now?.() to it. The row was reshaped several times to stay under the first-paint ceiling (see notes). Only the head card's departure is stamped.",
+ "notes":"FIRST PAINT: the store half ships in the first frame (skins chunk). Measured against a HEAD worktree: base 165,356 B, after 165,410 B, ceiling 165,412 (2 B headroom left, ceiling not raised). The coordinator should run perf if motion matters: the stamp reuses the existing tear/settle timings, and no new animation was added. FOLLOW-UP: pages.tsx (outside the write set) uses row.result as a class suffix (rec-${row.result}), so 'approved by voice' adds stray class tokens; rec-approved still matches. A separate via field on RecordRow is a job for desktop-companion-surfaces. The apps/desktop/src/scenes/voice/* modifications in the tree are not mine (they were present at the start) and were in the tree during the full desktop test run. No sibling reds."}

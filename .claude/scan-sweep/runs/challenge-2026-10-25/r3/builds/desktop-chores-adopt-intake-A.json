@@ -1,0 +1,20 @@
+{"card":"desktop-chores-adopt-intake/A","status":"landed","shas":["f996a082","c400285d"],
+ "tests_added":[
+  "apps/desktop/src/scenes/chores/adopt/state.test.ts::case 1: an answer past a cleared brief makes it stale, and Approve says she is redrafting",
+  "apps/desktop/src/scenes/chores/adopt/state.test.ts::case 2: composer words past a cleared brief make it stale too",
+  "apps/desktop/src/scenes/chores/adopt/state.test.ts::case 3: the next brief clears the stale mark, and its own clear opens Approve",
+  "apps/desktop/src/scenes/chores/adopt/state.test.ts::case 4: the one rehearsal is stamped with the draft it followed, and a later approval does not take it",
+  "apps/desktop/src/scenes/chores/adopt/state.test.ts::case 5: a hand-off belongs to the draft it handed, so a new approval starts unhanded",
+  "apps/desktop/src/scenes/chores/adopt/state.test.ts::guard (case 7): a cleared rev with no answer after it is approvable",
+  "apps/desktop/src/scenes/chores/adopt/state.test.ts::guard (case 8): Good enough with no answer after the latest brief opens any rev",
+  "apps/desktop/src/scenes/chores/adopt/showcase.test.tsx::case 4: draft 3 approved after draft 2 was rehearsed plays the recorded run and says it was draft 2's",
+  "apps/desktop/src/scenes/chores/adopt/studio.test.tsx::case 5: a hand-off for draft 2 does not claim draft 3 was handed",
+  "apps/desktop/src/scenes/chores/adopt/studio.test.tsx::case 6: a brief answered past cannot be approved, so no stage flashes for a stale rev"
+ ],
+ "guard_cases":[6,7],
+ "cases_total":8,"cases_red_before":6,"cases_green_after":8,
+ "gates":{"cd apps/desktop && pnpm typecheck":0,"cd apps/desktop && pnpm lint":0,"cd apps/desktop && pnpm test":0},
+ "files_changed":8,"lines_changed":353,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Acceptance wording rehearsal(s)/handedRev(s) realised as state fields s.rehearsal and s.handedRev plus phase(s) (approved phase carries rehearsal and handed). Case 6 written as: brief 2 cleared, answer, press Approve with a client that would refuse stale_rev -> Approve disabled, approve never sent, no .ad-show ever drawn (MutationObserver). shownRun signature is now (recorded, portals, rehearsal, rev) and returns rehearsedOn. CHANGELOG line landed as a separate docs commit (c400285d) because the first insert missed on CRLF line endings; it was taken under the lock. No ADR: the card names none (ADR 0097 cited).",
+ "notes":"Desktop full suite 178 files / 2458 tests green including first-paint ratchet; adopt/state.ts is not in the first-paint graph. A refused card answer (unanswered) does not clear briefStale (conservative: Approve stays disabled until the next brief or Good enough produces one). Slot B builds on: StudioState now has briefStale, rehearsal {rev,event} (replaces showcase), handedRev; StudioActions has handed(rev). No sibling reds seen."}

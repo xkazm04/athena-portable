@@ -1,0 +1,16 @@
+{"card":"daemon-e2e-tests/B","status":"landed","shas":["d546a67e"],
+ "tests_added":[
+  "tests/e2e/test_forensics.py::test_a_chatty_daemon_keeps_answering_because_its_stderr_is_drained_into_a_bounded_tail",
+  "tests/e2e/test_forensics.py::test_forensics_of_a_turn_that_overdrew_its_script_names_the_engine_error",
+  "tests/e2e/test_forensics.py::test_forensics_of_a_fake_providers_daemon_tails_the_far_side_log_without_a_credential",
+  "tests/e2e/test_forensics.py::test_a_failing_test_carries_one_daemon_section_collected_before_teardown",
+  "tests/e2e/test_forensics.py::test_a_passing_test_collects_nothing_and_asks_the_daemon_nothing_more",
+  "tests/e2e/test_forensics.py::test_a_daemon_with_no_ready_line_still_fails_with_its_exit_code_and_stderr_tail"],
+ "guard_cases":[4],
+ "cases_total":6,"cases_red_before":5,"cases_green_after":6,
+ "gates":{"uv run ruff check .":0,"uv run ruff format --check .":0,"uv run mypy":0,
+  "uv run pytest tests/e2e -m \"not provider and not eval\"":0},
+ "files_changed":5,"lines_changed":532,
+ "touched_python":true,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Card guard case 5 (ready-line failure 'exactly as today') was RED before, not a guard: a child that exits at once was reported as 'exit code None; stderr: \"\"' because stdout EOF beat the exit code. The message format is unchanged; _first_line now waits up to 5 s for the exit code on EOF and reads stderr from the drained tail. Single commit instead of two (ADR + changelog ride with the code under the lock). Forensics also includes the ADR 0178 transcript audit line. Hook proved by a real inner pytest subprocess (tmp conftest re-exporting spawn and the hook), and zero-cost-on-green measured as zero forensics() calls (hence zero /ledger requests). Redaction: athena.connectors.vault.redact with the daemon token plus '--token <v>' masked in argv; fake log rendered from a field whitelist.",
+ "notes":"tests/e2e: 46 passed (40 before + 6). No sibling reds seen. ADR 0182 claimed under the lock. Report sections include machine paths (argv, home) but only in local pytest output, never committed. stdout is still not drained after the ready line (daemon writes nothing there by design), recorded in the ADR."}

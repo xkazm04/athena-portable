@@ -1,0 +1,17 @@
+{"card":"desktop-companion-pane/A","status":"landed","shas":["3fdd1055"],
+ "tests_added":[
+  "apps/desktop/src/companion/memo.test.ts::transcript cache: one assistant delta folds exactly one new entry, and the context equals buildContext",
+  "apps/desktop/src/companion/memo.test.ts::transcript cache: after a delta the messages equal plainMessages, and only the last merged message is new",
+  "apps/desktop/src/companion/memo.test.ts::transcript cache: a tool entry naming a new contact re-translates, and still equals the plain functions",
+  "apps/desktop/src/companion/memo.test.ts::transcript cache: a transcript that does not extend the cached one is rebuilt whole",
+  "apps/desktop/src/companion/memo.test.ts::memoized selector: one appended delta with no proposal keeps record, origins, welcome and cards",
+  "apps/desktop/src/companion/memo.test.ts::run slice picker used by Live: a write to a field the model never reads keeps the pick",
+  "apps/desktop/src/companion/memo.test.ts::guard: on every fixture's inputs the memoized selector equals selectCompanion",
+  "apps/desktop/src/companion/memo.test.ts::guard: through a 60-step scripted session the memoized selector equals selectCompanion at every step"],
+ "guard_cases":[6,7],
+ "cases_total":8,"cases_red_before":6,"cases_green_after":8,
+ "gates":{"cd apps/desktop && pnpm typecheck":0,"cd apps/desktop && pnpm lint":0,"cd apps/desktop && pnpm test (180 files, 2477 tests)":0},
+ "files_changed":6,"lines_changed":791,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"One commit instead of the three the rollback names. Case 7 (guard) is two tests: fixtures, and the 60-step session. Case 8 (existing suites) is covered by the full desktop suite, not a new test. Red-before was measured against a plain stand-in memo.ts that delegated to the plain functions, since memo.ts did not exist. tapeOf now takes the turn and the last user entry as arguments instead of re-deriving them (internal, same output).",
+ "notes":"Public shape for slot B: selectCompanion(i: CompanionInputs) => CompanionModel is unchanged and stays the oracle. Live now calls createCompanionSelector()(inputs), which has the same signature. If B adds an input (e.g. `via` on SessionDecision, read by recordView), it rides inside `decisions`, which is already a key of the record part, so no memo change is needed. A NEW top-level input read by a part must be added to that part's key list in memo.ts; the guard tests catch a missing key (checked by mutation). pickRun in memo.ts lists the run fields Live reads, so a new run field Live or the model reads must be added there too. No first-paint impact: live.tsx is the companion entry, not chrome.html; no zustand helper was imported. The scan of transcript identity and stepsOfTurn are still O(n) pointer scans per delta (no parsing). ADR 0185. No sibling reds seen."}

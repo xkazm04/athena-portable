@@ -1,0 +1,18 @@
+{"card":"tidycrm-spatial-model-tools/B","status":"landed","shas":["a36cf264"],
+ "tests_added":[
+  "examples/tidycrm/test/worklist.test.ts::worklistOf holds every table with work and nothing else, worst first as search_blocks ranks it",
+  "examples/tidycrm/test/worklist.test.ts::worklistOf order is total: attention first, then most deviations, then ident",
+  "examples/tidycrm/test/worklist.test.ts::stepWorklist from nowhere opens the head of the list",
+  "examples/tidycrm/test/worklist.test.ts::stepWorklist crosses into another database",
+  "examples/tidycrm/test/worklist.test.ts::stepWorklist does not wrap at either end",
+  "examples/tidycrm/test/worklist.test.ts::stepWorklist continues from the slot a cleared table held, not from the head",
+  "examples/tidycrm/test/worklist.test.ts::guard: search_blocks ranks every table where it did before the comparator moved into the model",
+  "examples/tidycrm/test/spatial-model-tools.test.ts::next_table walks the worklist from the open table, and from L0 opens its head"
+ ],
+ "guard_cases":[7],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{"pnpm --filter tidycrm typecheck (examples/tidycrm pnpm typecheck)":0,"examples/tidycrm pnpm lint":0,"examples/tidycrm pnpm test (170/170)":0,"pnpm typecheck (root)":0,"pnpm lint (root)":0},
+ "files_changed":11,"lines_changed":591,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Guard 7 rewritten: the card's literal 'search_blocks returns the same ids in the same order' conflicts on this seed with case 1 (worklist[0] == search_blocks[0]) plus case 2 (ident tie-break) because the top ranks are ties (BLK-34/16/02 equal). search_blocks adopts the total comparator; the guard now pins that every place keeps its rank and every complete equal-rank run keeps its members (green before and after); recorded in ADR 0187. arrives_in_ms is ARRIVAL_MS on a database change (and from L0/L1), 0 for a step inside the open database. The walk line and two buttons render in a third .bk-foot-bar under the gate using existing classes (no CSS file touched). The head's 'first step from L0' was not built (sheet/Head.tsx outside write set); next_table from L0 covers the agent side. README (coupled doc) and ADR 0187 added.",
+ "notes":"No sibling reds seen. Dossier's useOverlayEscape returnFocusTo now prefers an open .bk-dossier so a re-keyed step does not pull focus back to the old cell. No motion tokens or first-paint touched (examples/tidycrm only). Verified by hand: none."}

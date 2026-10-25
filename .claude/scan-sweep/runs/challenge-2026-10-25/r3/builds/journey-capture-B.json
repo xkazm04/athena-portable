@@ -1,0 +1,18 @@
+{"card":"journey-capture/B","status":"landed","shas":["5f378bad"],
+ "tests_added":[
+  "examples/journey/scripts/test/narration-plan.test.mjs::case 0: a same-length line edit with the old mp3 on disk is re-voiced",
+  "examples/journey/scripts/test/narration-plan.test.mjs::case 1: a changed beat that was not re-voiced keeps its old sha and chars in the manifest",
+  "examples/journey/scripts/test/narration-plan.test.mjs::case 2: every beat unchanged reuses every clip and spends nothing",
+  "examples/journey/scripts/test/narration-plan.test.mjs::case 3: --dry keeps the measured length of a current clip and estimates only the rest",
+  "examples/journey/scripts/test/narration-plan.test.mjs::case 3 (pure): dryDurations writes estimates for synthesize beats only",
+  "examples/journey/scripts/test/narration-plan.test.mjs::case 4: ELEVENLABS_VOICE_MIRA recast re-voices every mira beat for the voice and reuses the rest",
+  "examples/journey/scripts/test/narration-plan.test.mjs::case 5: a legacy entry with no sha and the same length is reused and marked legacy",
+  "examples/journey/scripts/test/narration-plan.test.mjs::case 6: --only 1.3 voices 1.3 and names 2.1 as stale outside the scope",
+  "examples/journey/scripts/test/narration-plan.test.mjs::case 7: a plan over 20,000 characters without --yes exits 4 before any fetch"],
+ "guard_cases":[2,5,6,7],
+ "cases_total":8,"cases_red_before":8,"cases_green_after":8,
+ "gates":{"pnpm --filter @athena/journey typecheck":0,"pnpm --filter @athena/journey lint":0,"pnpm --filter @athena/journey run test:unit (17/17)":0,"node examples/journey/scripts/narrate.mjs --plan":0,"node examples/journey/scripts/narrate.mjs --dry (no network)":0,"pnpm typecheck":0,"pnpm lint":0},
+ "files_changed":6,"lines_changed":863,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"One commit instead of two (allowed by the brief). package.json not changed: slot A's test:unit glob already picks up the new test file. Added JOURNEY_AUDIO_DIR so the CLI cases (3, 7) run narrate.mjs in a temp dir, never take/. Beyond the card: a failed re-voice also drops that beat's durations.json length (so the recorder estimates it instead of pacing to the old line's clip), a dry run leaves a real manifest untouched, and the budget guard runs twice (offline plan before any request, then on the library's real cast). Lines changed (~863 incl. 257 test + 51 ADR) is slightly past the ~800 guide, mostly tests.",
+ "notes":"Red-before is module-absent for all 8 (the whole file fails to import); the old narrate.mjs was not run against the CLI cases because it ignores JOURNEY_AUDIO_DIR and would write into take/. Guard cases 2/5/6/7 are red only because the module was absent. The --dry gate wrote take/audio/{durations,manifest}.json (gitignored), and they were removed afterwards; take/ was empty before. Needs a live run: a real ElevenLabs synthesis + ffprobe pass (manifest sha writing, phase-2 recast from the library's auto-pick, failure path exit 5). Sibling modified files left unstaged (apps/desktop/src/companion/model.ts, examples/demo-kit/package.json, voice scene files)."}

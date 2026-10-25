@@ -1,0 +1,17 @@
+{"card":"hirelane-style/B","status":"landed","shas":["13674655"],
+ "tests_added":[
+  "examples/hirelane/test/modes.test.ts::forced colours: each of the six background-borne marks has a structural carrier",
+  "examples/hirelane/test/modes.test.ts::forced colours: the armed fire button is told apart from Cancel, and the GATED zone keeps its heavy edge",
+  "examples/hirelane/test/modes.test.ts::forced colours: every colour set is a system colour keyword - no token hue, no literal",
+  "examples/hirelane/test/modes.test.ts::prefers-contrast: more re-points the quiet rungs one up on both scopes and every ink clears 7:1",
+  "examples/hirelane/test/modes.test.ts::index.css imports base/contrast-modes.css last, after reduced-motion and the toast",
+  "examples/hirelane/test/modes.test.ts::guard: check-law exits 0 on the real tree",
+  "examples/hirelane/test/modes.test.ts::guard: check-contrast exits 0 with the default tier's ratios, and the modes sheet declares no token outside its tier",
+  "examples/hirelane/test/modes.test.ts::guard: the room's focus-visible outline and the gated zone's ink ring are untouched"],
+ "guard_cases":[5,6,7],
+ "cases_total":8,"cases_red_before":5,"cases_green_after":8,
+ "gates":{"pnpm --filter hirelane typecheck":0,"pnpm --filter hirelane lint":0,"pnpm --filter hirelane test":0,"pnpm typecheck":0,"pnpm lint":0},
+ "files_changed":5,"lines_changed":603,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Case 4: the card's literal CSS (--bd-ink-3: var(--bd-ink-2) and --bd-ink-4: var(--bd-ink-3) on the same element) resolves ink-4 to ink-2, because var() resolves on the same element - three rungs collapse into one. Built instead: root scope re-points ink-4 -> its unmoved ink-3 and rule -> rule-2; the wrapper re-points ink-3 -> ink-2 and rule -> rule-2 and takes ink-4 by `inherit` from root, so inside the board the ladder is ink, ink-2, ink-2, ink-3 as the card intends. Root keeps its own ink-3 (already 7.81:1; nothing at root scope sets a quiet rung). The test resolves both scopes with same-element var() semantics and was confirmed to go red on the card's literal version. Also beyond the card's six marks: rest carousel dots become ButtonText rings (they were fill-only, border 0, and vanished), the score axis gets a CanvasText outline, the fire button's hover and disabled states are answered (the coral hover rule outranks the base one and would survive forced-color-adjust: none), and the two focusable opt-outs name outline-color: CanvasText. The hover override sets only background/border-color to satisfy hover.test.ts's transition rule.",
+ "notes":"Not rendered on a real Windows High Contrast desktop; all cases are static sheet reads plus the two checkers. No sibling reds seen. ADR 0180 taken under the lock; lock released."}

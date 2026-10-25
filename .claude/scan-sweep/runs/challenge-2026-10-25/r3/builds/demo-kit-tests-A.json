@@ -1,0 +1,17 @@
+{"card":"demo-kit-tests/A","status":"landed","shas":["86dc6cd2"],
+ "tests_added":[
+  "examples/demo-kit/test/escape.test.ts::escapeIntent is the listener's whole decision: mid-flight Escape aborts, a landed one goes up",
+  "examples/demo-kit/test/abort.test.ts::ownership is asked FIRST: a modal, a hold, L0 or a decided event keeps the key even mid-flight",
+  "examples/demo-kit/test/oracle-reach.test.ts::nav.ts's keydown handler calls escapeIntent once, neither predicate, and dispatches its answer",
+  "examples/demo-kit/test/oracle-reach.test.ts::negative control: the two-predicate listener shape is reported",
+  "examples/demo-kit/test/oracle-reach.test.ts::no test file declares a top-level name a shipped module under src/ or template/lib/ exports",
+  "examples/demo-kit/test/oracle-reach.test.ts::negative control: the scanner reports a declared copy and not an import",
+  "examples/demo-kit/test/template-navigate.test.ts::a record whose id starts with 'activity' is a record page, read back through the shipped viewFor",
+  "examples/demo-kit/test/oracle-reach.test.ts::the kit's tsconfig includes every test file, so typecheck checks the suite's own code"],
+ "guard_cases":[7],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{"pnpm --filter @athena/demo-kit typecheck":0,"pnpm --filter @athena/demo-kit test":0,"pnpm typecheck":0,"pnpm lint":0,"pnpm --filter ./examples/hirelane test":0,"pnpm --filter ./examples/ledgerbox test":0,"tidycrm blocks-ui + motion-tokens tests (the kit-zoom importers)":0},
+ "files_changed":13,"lines_changed":492,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"(1) Write set grew by door-outcome.test.ts (per revision: 7 tsc errors - TS2339 x4, TS7006 x3 - fixed with Promise.resolve around execute, whose WebMCP type is string|Promise<string>), ADR 0186 and the CHANGELOG line. (2) tsconfig also needs a `paths` entry @athena/demo-kit/* -> ./src/*/index.ts: template-acts.test.ts pulls template/lib/{acts,db}.ts, which import the kit by name from under the template's own package.json, so they did not resolve (and cascaded into template-acts type errors). (3) The shadow scanner treats `const { f } = await import(...)` as an import, not a declaration (the suite uses dynamic imports after registerHooks in 5 files; ~30 false positives otherwise); negative control covers that form. (4) Red-before for the viewFor scan and the /activity-log case was shown by running the HEAD template-navigate copy (scratch file, deleted) against the new tests, since the copy was removed in the same edit; the scanner's sanity assert also failed before (no escapeIntent). (5) One commit instead of three. (6) Root `pnpm test` not run (includes journey e2e); consumer suites that import demo-kit zoom run instead.",
+ "notes":"Reach probe: swapping abort/up in escapeIntent turns abort.test.ts red (restored). Coverage gate green, escape.ts still 100/100; demo-kit 228/228 tests; whole tree 55.5% over 49 of 49 files. Did not run tidycrm's full suite: spatial-model-tools.test.ts is the tidycrm-spatial-model-tools/B sibling's in-flight file. scripts/** not added to tsconfig include (out of card scope; B noted it type-checks clean)."}

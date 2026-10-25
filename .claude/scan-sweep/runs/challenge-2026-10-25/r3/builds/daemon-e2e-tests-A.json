@@ -1,0 +1,17 @@
+{"card":"daemon-e2e-tests/A","status":"landed","shas":["ac65427f78bfd18f5fd66acd3842dd118ee2f7c7"],
+ "tests_added":[
+  "tests/e2e/test_transcript_accounting.py::test_a_round_the_turn_never_asked_for_fails_teardown_by_name",
+  "tests/e2e/test_transcript_accounting.py::test_a_refused_op_overdraws_a_one_round_script_even_when_its_frame_looks_right",
+  "tests/e2e/test_transcript_accounting.py::test_run_with_rounds_checks_what_that_one_turn_spent",
+  "tests/e2e/test_transcript_accounting.py::test_every_invocation_is_recorded_and_an_overdraft_agrees_with_the_ledger",
+  "tests/e2e/test_transcript_accounting.py::test_exact_false_is_the_explicit_opt_out_for_a_deliberate_over_supply",
+  "tests/e2e/test_connectors.py::test_with_the_vault_on_and_nothing_connected_each_connector_reports_its_health_honestly (is_error/error_reason assertion + rounds=2)",
+  "tests/e2e/test_connectors_journey.py::test_a_grant_revoked_mid_run_shows_needs_reauth_and_the_next_call_is_refused (turn rows not errors + rounds=2 per turn)"
+ ],
+ "guard_cases":[7],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{"uv run ruff check .":0,"uv run ruff format --check .":0,"uv run mypy":0,"uv run pytest tests/e2e -m \"not provider and not eval\"":0},
+ "files_changed":9,"lines_changed":339,
+ "touched_python":true,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Guard case 7 ('every other scripted test still green unchanged') did not hold: the new audit caught two more tests that scripted a round nothing could reach (test_turn.py refused-origin turn 'never reached'; test_reads.py playbooks read-only claim). Both now script zero rounds (stronger than exact=False: an accidental turn would overdraw and fail). Write set grew by those two test files plus ADR 0178. One commit instead of the card's three (brief allows). Premise line numbers in test_connectors.py were stale (file is 118 lines); facts verified: vault-on test at ~:66 and revoke test at journey :250-275 both ended engine_error (red-before shows (True, 'engine_error')). asked.ndjson index is 0-based (invocation index); the failure messages count rounds 1-based.",
+ "notes":"tests/e2e: 40 passed (35 before + 5 new). mypy's gate covers src only; tests/e2e/serve_scripted.py has 6 pre-existing attr-defined errors when checked directly (same count at HEAD), none added. No sibling reds seen. Slot B (forensics, conftest.py) builds on top: stop_all now audits then stops then raises; a test failing mid-way will also report a teardown error for its unreached rounds."}

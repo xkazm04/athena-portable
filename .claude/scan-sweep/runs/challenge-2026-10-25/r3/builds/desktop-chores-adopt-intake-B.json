@@ -1,0 +1,17 @@
+{"card":"desktop-chores-adopt-intake/B","status":"landed","shas":["943120b6"],
+ "tests_added":[
+  "apps/desktop/src/scenes/chores/adopt/studio.test.tsx::case 1: leaving after something was said parks the conversation instead of closing it",
+  "apps/desktop/src/scenes/chores/adopt/studio.test.tsx::case 2: coming back offers Continue, which follows the same session from where it stopped",
+  "apps/desktop/src/scenes/chores/adopt/studio.test.tsx::case 3: Start over closes the parked session and starts one fresh",
+  "apps/desktop/src/scenes/chores/adopt/studio.test.tsx::case 4: opening another chore's studio closes the parked one before it starts",
+  "apps/desktop/src/scenes/chores/adopt/studio.test.tsx::case 5: Continue on a session the daemon no longer knows starts fresh with the intro, and says so",
+  "apps/desktop/src/scenes/chores/adopt/studio.test.tsx::case 6: a conversation parked past the local limit is closed on return, with no offer",
+  "apps/desktop/src/scenes/chores/adopt/park.test.ts::the parked studio (5 unit tests: key, one slot with displacement, limit under the TTL, worthParking, resume line)"
+ ],
+ "guard_cases":[6,7],
+ "cases_total":8,"cases_red_before":6,"cases_green_after":8,
+ "gates":{"cd apps/desktop && pnpm typecheck":0,"cd apps/desktop && pnpm lint":0,"cd apps/desktop && pnpm test":0},
+ "files_changed":9,"lines_changed":578,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"Guards 7 and 8 are the existing studio.test.tsx tests ('goes back on Close, and deletes the session when the studio goes', now also asserting nothing is parked; 'closes a session whose start was still in flight'). park.ts is a plain module value read once on mount, not a useSyncExternalStore store (nothing renders from it). Case 4 asserts no close at unmount before the order check, so it is red on the old close-on-unmount tree. A 404 unknown_ref outside a resume stops the reconnect loop and shows the conversation as ended (no five-try Retry dead end). No CSS added: the offer reuses ad-problem/ad-banner/ad-head__acts. Local limit 90 min. ADR 0179 taken under the lock.",
+ "notes":"Desktop full suite 179 files / 2469 tests green (first-paint ratchet included; park.ts is imported only by adopt/session.ts, off the first-paint graph). CHANGELOG.md has mixed endings: the top is CRLF but the end of the Unreleased list is LF, so the line was inserted with LF to match its neighbours. No sibling reds seen."}

@@ -1,0 +1,17 @@
+{"card":"proving-characters-gauntlet/B","status":"landed","shas":["74761373"],
+ "tests_added":[
+  "tests/proving/test_gauntlet.py::test_replay_drives_the_saved_corpus_with_no_attacker_or_judge_call",
+  "tests/proving/test_gauntlet.py::test_replay_against_a_gate_that_waves_through_lists_every_held_to_breached",
+  "tests/proving/test_gauntlet.py::test_replay_cli_exits_one_when_a_held_attack_now_breaches",
+  "tests/proving/test_gauntlet.py::test_replay_on_the_same_honest_world_changes_nothing",
+  "tests/proving/test_gauntlet.py::test_replay_does_not_remeasure_proof_two_and_carries_grades_as_judged_in",
+  "tests/proving/test_gauntlet.py::test_replay_only_drives_the_named_attack_and_refuses_an_absent_id",
+  "tests/proving/test_gauntlet.py::test_replay_lists_stale_attacks_refuses_an_empty_corpus_and_reproduces_the_sample"],
+ "guard_cases":[0],
+ "cases_total":7,"cases_red_before":6,"cases_green_after":7,
+ "gates":{"uv run ruff check .":0,"uv run ruff format --check .":0,"uv run mypy":0,
+  "uv run pytest tests/proving -m \"not provider and not eval\"":0},
+ "files_changed":7,"lines_changed":651,
+ "touched_python":true,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"ADR is 0177, not 0146 (0175 and 0176 were taken by siblings when the lock was held). attacks.py left untouched (replay.py rebuilds Attack itself). Case 2's CLI exit-1 half is its own test, so 7 new tests cover 6 non-guard cases. The generate/judge/escalate block moved unchanged into a _generate_corpus helper so the replay branch is one if; the guard tests pin it. The Nemotron sample reproduces the source's only with the source's --seed/--sample: the CLI does not read them from the source config (recorded in ADR 0177 consequences).",
+ "notes":"Full pytest suite not run (per brief). Sibling uncommitted e2e test edits (tests/e2e/*) and desktop voice files present in the tree; not touched."}

@@ -1,0 +1,17 @@
+{"card":"atlas-shell-and-styles/B","status":"landed","shas":["c2503e64"],
+ "tests_added":[
+  "examples/atlas/test/evidence.test.ts::case 1: carriersOf lists a lens's carriers in model order, and nothing without a lens",
+  "examples/atlas/test/evidence.test.ts::case 2: stepCarrier starts at the first carrier and wraps both ways",
+  "examples/atlas/test/evidence.test.ts::case 3: stepping from a non-carrier goes to the first carrier after it in model order",
+  "examples/atlas/test/evidence.test.ts::case 4: whyLit names the systems whose carriers lit a part, and says a carrier carries",
+  "examples/atlas/test/evidence.test.ts::case 5: stepLensRead refuses without a lens, and names the part it leaves open",
+  "examples/atlas/test/evidence.test.ts::case 6: read_view at L2 says where the open part sits in the walk, or why it is lit",
+  "examples/atlas/test/evidence.test.ts::case 7 (guard): lensRead and read_view at L0/L1 light exactly what the lens lights",
+  "examples/atlas/test/evidence.test.ts::case 8: with no lens, the mast and the pane render no stepper"],
+ "guard_cases":[6],
+ "cases_total":8,"cases_red_before":7,"cases_green_after":8,
+ "gates":{"pnpm --filter atlas typecheck":0,"pnpm --filter atlas lint":0,"pnpm --filter atlas test":0,"pnpm typecheck":0,"pnpm lint":0},
+ "files_changed":10,"lines_changed":643,
+ "touched_python":false,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"All eight cases live in test/evidence.test.ts (case 8's source check included) rather than spread into tools.test.ts/shell.test.ts; Shell.tsx needed no change (Mast, Pane and AtlasTools already receive lens and levels). whyLit takes the systems the drawing draws a part with (systemsDrawnWith: the lanes node's systems under LANES_LEVELS, else the component's own system), because the record node is lit by sys-brain, a system its item component is not in - own-system-only would leave that case unexplained. Red-before was measured against a throwing stub of evidence.ts. Pane carrier/step buttons use a new .at-lens-go class, not .at-chip, so shell.test.ts's aria-pressed check on the lens-toggle chip still finds the toggle. ADR 0176 added.",
+ "notes":"Root `pnpm test` not run: it recurses into examples/journey (e2e, forbidden by the brief) and no workspace package imports atlas; the atlas suite (140 tests) is green. No sibling reds seen. Mast stepper/pane use colour-only hover transitions, no motion added."}

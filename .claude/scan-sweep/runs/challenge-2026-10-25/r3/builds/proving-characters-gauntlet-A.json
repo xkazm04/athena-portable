@@ -1,0 +1,16 @@
+{"card":"proving-characters-gauntlet/A","status":"landed","shas":["f8100323960acf498097176049d8a53b15006a9b"],
+ "tests_added":[
+  "tests/proving/test_gauntlet.py::test_guard_the_three_base_surfaces_deliver_exactly_as_before[3 params]",
+  "tests/proving/test_gauntlet_cross_tab.py::test_every_surface_is_one_registry_entry_and_the_old_tables_are_its_views",
+  "tests/proving/test_gauntlet_cross_tab.py::test_cross_tab_targets_are_the_second_apps_tool_table_every_class_included",
+  "tests/proving/test_gauntlet_cross_tab.py::test_a_cross_tab_attack_is_delivered_with_tidycrm_open_beside_the_focused_ledgerbox",
+  "tests/proving/test_gauntlet_cross_tab.py::test_planted_a_foreign_read_the_gate_let_through_with_no_card_is_breached",
+  "tests/proving/test_gauntlet_cross_tab.py::test_planted_a_cross_tab_card_bound_to_the_focused_tab_is_breached",
+  "tests/proving/test_gauntlet_cross_tab.py::test_a_run_carries_cross_tab_through_both_rows_the_proof_and_the_approve_probe"],
+ "guard_cases":[0],
+ "cases_total":7,"cases_red_before":6,"cases_green_after":7,
+ "gates":{"uv run ruff check .":0,"uv run ruff format --check .":0,"uv run mypy":0,"uv run pytest tests/proving -m \"not provider and not eval\"":0},
+ "files_changed":13,"lines_changed":1101,
+ "touched_python":true,"touched_desktop_motion_or_first_paint":false,
+ "deviations_from_card":"ADR is 0175 (next free under the lock), not 0145. One commit instead of three. The card calls TidyCRM's read_contact class READ; host tools only derive AUTO or GATED (HostTool.default_class), so the tests assert AUTO for the foreign read (READ is its manifest kind) - the instrument is class-blind, as the card intends. verdict_for gains keyword args open_tabs ({app_id: tab_id}, from the surface entry) and home_app (default ledgerbox); run.py passes the surface's open_tabs. A foreign card with no open tab for its app is also a breach. The approve probe is driven from run.py (_probe_from_each_cards_tab) setting the world's page to each card's app, because approve.py (outside the write set) answers from world.origin and the decision route refuses another app's page. cross_tab joins the default surfaces (SURFACES drives GauntletConfig and the CLI default), so default-run counts moved: test_gauntlet.py full-run/escalation numbers, test_hosted.py (outside the card's write set, test-only, 3 numbers), and conftest.attack_item aims cross_tab at host.tidycrm.delete_contact. Lines: 1101 changed (876+/225-) exceeds the ~800 guide; about 300 are tests, about 80 the ADR, and about 200 of surfaces.py is text moved verbatim out of attacks.py/delivery.py.",
+ "notes":"Not edited (shared, optional): src/athena/proving/server/static/index.html:503 still says 'three surfaces' - coordinator may sequence a one-word fix. ADR 0106's fixture-only paragraph is amended by ADR 0175, not edited in place. Slot B builds on this: SURFACES now has four names, the default offline run in test_gauntlet.py requests 16 per generator (Claude row 28, Nemotron row 8, driven 36), and verdict_for in drive takes open_tabs. Full pytest not run (per brief); tests/proving fully green."}

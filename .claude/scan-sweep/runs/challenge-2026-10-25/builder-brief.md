@@ -86,6 +86,8 @@ verbatim: `acceptance`, `guard_cases`, `write_set`, `new_files`, `premise`, `bod
 
 ## Your temp files are yours alone
 
+In bash, discard output to `/dev/null`, never `nul` (that creates a file named `nul` in the tree).
+
 Siblings share the session scratchpad directory. Keep every temp file you write (commit
 message files, ADR drafts, gate output) in a subdirectory named for your card, e.g.
 `<scratchpad>/<RUN>-<host>-<slot>/`, and never read, write or delete a file outside it.
