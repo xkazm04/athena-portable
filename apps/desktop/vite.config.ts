@@ -31,6 +31,9 @@ import type { Plugin } from "vite";
 import { devSourceLocPlugin } from "./scripts/dev-source-loc.mjs";
 import { defineConfig } from "vitest/config";
 
+// @ts-expect-error the config loader wants the extension; this tsconfig does not allow it (TS5097)
+import { injectBoot } from "./src/appearance-boot.ts";
+
 const root = path.dirname(fileURLToPath(import.meta.url));
 const EVIDENCE = path.resolve(root, "../../evidence");
 
@@ -92,9 +95,24 @@ function evidenceFilms(): Plugin {
   };
 }
 
+/**
+ * The appearance boot (ADR 0165): `chrome.html` and `athena.html` get `bootAppearance` inlined as
+ * the first script in their head, so the person's theme, skin, text size and motion are on the
+ * root before the first stylesheet paints. `pre`, so it runs before Vite adds its own tags.
+ */
+export function appearanceBoot(): Plugin {
+  return {
+    name: "athena-appearance-boot",
+    transformIndexHtml: {
+      order: "pre",
+      handler: (html, ctx) => injectBoot(html, path.basename(ctx.filename)),
+    },
+  };
+}
+
 export default defineConfig({
   base: "./",
-  plugins: [devSourceLocPlugin(), react(), evidenceFilms()],
+  plugins: [appearanceBoot(), devSourceLocPlugin(), react(), evidenceFilms()],
   resolve: {
     alias: { "@": path.resolve(root, "src") },
   },

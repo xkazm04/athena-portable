@@ -16,6 +16,7 @@
 import React, { lazy, Suspense, useEffect } from "react";
 import ReactDOM from "react-dom/client";
 
+import { followAppearance } from "@/appearance-follow";
 import Live from "@/companion/live";
 import { startFace } from "@/lib/face-signal";
 import { startHalo } from "@/lib/halo";
@@ -42,6 +43,8 @@ function Root() {
     void startTools();
     void startDaemon();
     void startSettings();
+    // The next launch's first frame, in both windows, reads what the store says now (ADR 0165).
+    const stopAppearance = followAppearance();
     void startOrigins();
     // The cards are the daemon's too: ask what it holds at start, when it is ready, and every 30 s
     // while a card is on screen (UAT backlog B1). The engine probe feeds the welcome's engine line.
@@ -63,6 +66,7 @@ function Root() {
     // Her face has one producer too, for the same reason; it mirrors to Main (ADR on Athena's face).
     const stopFace = startFace();
     return () => {
+      stopAppearance();
       stopMirror();
       stopHalo();
       stopFace();
