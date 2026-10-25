@@ -20,7 +20,7 @@
  * `reversible && sideEffects !== "external"` rule decides which those are, and
  * this file only renders the answer.
  */
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { motion, useReducedMotion } from "motion/react";
 import { useOverlayEscape } from "@athena/demo-kit/zoom";
 
@@ -33,8 +33,26 @@ import { CardAside } from "./card/Aside";
 import { CardEvidence } from "./card/Evidence";
 import { CardHead } from "./card/Head";
 import { figuresFor, hasEvidenceFor } from "./card/read";
+import { actSpecs, createActDoor, IDLE_ACTS, type ActSpec, type ActState } from "./card/acts";
 import { CardFoot } from "./card/Foot";
 import { usePointerTilt } from "./card/tilt";
+
+/**
+ * THE CARD'S ONE ACT MACHINE (`card/acts.ts`, ADR 0155): one armed gate, one write in flight and
+ * one door for every write the card issues - the decision list's five acts and Evidence's apply
+ * and unapply. `useRun` is the door's transport (the toast, the refresh, the throw path); the door
+ * holds the state ahead of any render, so a second press in the same tick is refused, not sent.
+ */
+function useActs(specs: readonly ActSpec[]) {
+  const { run } = useRun();
+  const [state, setState] = useState<ActState>(IDLE_ACTS);
+  const [door] = useState(() => createActDoor({ publish: setState, transport: run }));
+  useEffect(() => door.setTransport(run), [door, run]);
+  // Each new reading of the invoice is checked against what is armed: a subject that moved, or
+  // an act the books now refuse, closes the gate (`observe`).
+  useEffect(() => door.observe(specs), [door, specs]);
+  return { acts: state, door };
+}
 
 export function Card({
   mark,
@@ -50,9 +68,10 @@ export function Card({
   const reduced = useReducedMotion();
   const tiltRef = useRef<HTMLDivElement | null>(null);
   const tilt = usePointerTilt(tiltRef, !reduced);
-  const { pending, run } = useRun();
   const [tone, setTone] = useState<Tone>("gentle");
   const [category, setCategory] = useState<Category>(mark.category);
+  const specs = useMemo(() => actSpecs(mark, detail, tone, category), [mark, detail, tone, category]);
+  const { acts, door } = useActs(specs);
   const closeRef = useRef<HTMLButtonElement>(null);
   const cardRef = useRef<HTMLDivElement | null>(null);
 
@@ -162,9 +181,9 @@ export function Card({
               detail={detail}
               owed={owed}
               hasEvidence={hasEvidence}
-              pending={pending}
-              onMatch={(lineId) => run(() => matchAction(mark.id, lineId))}
-              onUnmatch={(lineId) => run(() => unmatchAction(mark.id, lineId))}
+              pending={acts.issuing !== null}
+              onMatch={(lineId) => door.take("match_bank_line", () => matchAction(mark.id, lineId))}
+              onUnmatch={(lineId) => door.take("unmatch", () => unmatchAction(mark.id, lineId))}
             />
 
             {/* The invoice's own facts, in a lean panel rather than in the
@@ -182,14 +201,14 @@ export function Card({
 
           <CardFoot
             mark={mark}
-            detail={detail}
             actionable={actionable}
             tone={tone}
             setTone={setTone}
             category={category}
             setCategory={setCategory}
-            pending={pending}
-            run={run}
+            specs={specs}
+            acts={acts}
+            door={door}
           />
         </div>
       </motion.div>

@@ -18,38 +18,36 @@
  * what a reader is at this level for.
  *
  * NOTHING ABOUT THE ACTS THEMSELVES MOVED. Same five server actions, same three
- * gates, same classes read from `lib/tool-classes.ts`. This file got smaller;
- * the contract did not change.
+ * gates, same classes read from `lib/tool-classes.ts`. The list and the card's one
+ * act machine (`card/acts.ts`) are the card's, and pass through here untouched.
  */
 import { useState } from "react";
 
 import { type Category, type Tone } from "@/lib/constants";
 import { Decide } from "./Decide";
-import type { LnDetail, LnMark } from "../model";
-import type { useRun } from "../useRun";
-
-type Run = ReturnType<typeof useRun>;
+import type { LnMark } from "../model";
+import type { ActDoor, ActSpec, ActState } from "./acts";
 
 export function CardFoot({
   mark,
-  detail,
   actionable,
   tone,
   setTone,
   category,
   setCategory,
-  pending,
-  run,
+  specs,
+  acts,
+  door,
 }: {
   mark: LnMark;
-  detail: LnDetail | undefined;
   actionable: boolean;
   tone: Tone;
   setTone: (next: Tone) => void;
   category: Category;
   setCategory: (next: Category) => void;
-  pending: Run["pending"];
-  run: Run["run"];
+  specs: readonly ActSpec[];
+  acts: ActState;
+  door: ActDoor;
 }) {
   const [deciding, setDeciding] = useState(false);
 
@@ -74,13 +72,13 @@ export function CardFoot({
           {deciding ? (
             <Decide
               mark={mark}
-              detail={detail}
               tone={tone}
               setTone={setTone}
               category={category}
               setCategory={setCategory}
-              pending={pending}
-              run={run}
+              specs={specs}
+              acts={acts}
+              door={door}
               /* Just the state. Focus back to this button is the dialog's, and
                  the dialog gets it from the kit's overlay hook — which records
                  whatever held focus when it mounted, i.e. the CTA the reader

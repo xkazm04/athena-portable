@@ -50,60 +50,50 @@ import {
 } from "@/app/actions";
 import { CATEGORIES, TONES, type Category, type Tone } from "@/lib/constants";
 import type { ActionResult } from "@/lib/types";
-import { formatMoney } from "@/lib/format";
-import { isAuto } from "@/lib/manifest";
-import { TOOL_CLASSES, type ToolName } from "@/lib/tool-classes";
 import { Gate } from "../Gate";
-import type { LnDetail, LnMark } from "../model";
+import type { LnMark } from "../model";
 import { useAthenaPresence } from "../presence";
-import { actRefusal, gateSubject, talkSay } from "./read";
+import type { ActDoor, ActIssue, ActSpec, ActState, ListTool } from "./acts";
+import { talkSay } from "./read";
 import { fade, instant } from "../motion";
-import type { useRun } from "../useRun";
 
-type Run = ReturnType<typeof useRun>;
-
-/** One row of the list: a named capability, what it reaches, and how to take it. */
-interface Act {
-  /** The tool's real name, as registered. The badge's class is read from it —
-   *  the row cannot claim a class the manifest does not give it, because there
-   *  is nowhere to type one. */
-  tool: ToolName;
-  label: string;
-  /** One line: what this act reaches, and whether it can be taken back. */
-  reaches: string;
-  /** The parameters this act needs, drawn inside its own row. */
-  params?: ReactNode;
-  /** The words on the control that takes it. */
-  takeLabel: string;
-  /** The server action the control issues. */
-  issue: () => Promise<ActionResult>;
-  /** Why it cannot be taken now, if it cannot - the row is disabled. */
-  blocked: boolean;
-  /** For a GATED act: the second question, and what an armed gate is armed on.
-   *  A row the class gates and that names neither asks its own `reaches` line. */
-  question?: string;
-  subject?: string;
+/** The server action an act's issue descriptor names. */
+function perform(issue: ActIssue): Promise<ActionResult> {
+  switch (issue.tool) {
+    case "draft_reminder":
+      return draftReminderAction(issue.ref, issue.tone);
+    case "categorize":
+      return categorizeAction(issue.ids, issue.category);
+    case "mark_paid":
+      return markPaidAction(issue.ref, issue.amountCents);
+    case "send_reminder":
+      return sendReminderAction(issue.ref);
+    case "void_invoice":
+      return voidInvoiceAction(issue.ref);
+  }
 }
 
 export function Decide({
   mark,
-  detail,
   tone,
   setTone,
   category,
   setCategory,
-  pending,
-  run,
+  specs,
+  acts,
+  door,
   onClose,
 }: {
   mark: LnMark;
-  detail: LnDetail | undefined;
   tone: Tone;
   setTone: (next: Tone) => void;
   category: Category;
   setCategory: (next: Category) => void;
-  pending: Run["pending"];
-  run: Run["run"];
+  /** The list, as data (`card/acts.ts` actSpecs), built once by the card. */
+  specs: readonly ActSpec[];
+  /** The card's one act machine: what is armed, what is in flight, where focus goes. */
+  acts: ActState;
+  door: ActDoor;
   onClose: () => void;
 }) {
   const reduced = useReducedMotion();
@@ -170,7 +160,31 @@ export function Decide({
    */
   useEffect(() => {
     headingRef.current?.focus();
-  }, []);
+    // A focus the machine asked for before this list opened is not this list's to honour.
+    door.focused();
+    // Leaving the list leaves nothing armed for its next opening.
+    return () => door.close();
+  }, [door]);
+
+  /*
+   * WHERE FOCUS GOES WHEN AN ACT CLOSES is the machine's answer (`card/acts.ts`): back to the row
+   * whose gate was cancelled or whose act answered, or - when that row is now disabled and cannot
+   * hold focus - to this heading. Without it, a confirm that unmounts or disables under the
+   * keyboard leaves focus on the body.
+   */
+  useEffect(() => {
+    if (acts.focus !== "heading") return;
+    headingRef.current?.focus();
+    door.focused();
+  }, [acts.focus, door]);
+  /** A row's take control, which takes focus when the machine names its row. A callback ref runs
+   *  as the control mounts, so a gate's idle button that returns after its exit fade is reached. */
+  const focusRow = (tool: ListTool) => (el: HTMLButtonElement | null) => {
+    if (el && !el.disabled && acts.focus === `row:${tool}`) {
+      el.focus();
+      door.focused();
+    }
+  };
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     overlay.onKeyDown(event);
@@ -191,115 +205,38 @@ export function Decide({
     }
   };
 
-  const to = detail?.contact ?? mark.clientName;
-  const email = detail?.email;
-
   /*
-   * What the books would refuse right now, act by act - `card/read.ts` actRefusal,
-   * held equal to `app/actions.ts` by a test that presses every act on every open
-   * invoice. A refused row is disabled and says why in place of what it reaches,
-   * so the list never offers a press that can only come back as an error.
+   * THE PARAMETERS, the only part of a row that is JSX. Everything else about each act - its
+   * label, what it reaches, why it is refused, whether it arms, what it is armed on - is
+   * `card/acts.ts` actSpecs, built from the books and pinned there as behaviour.
    */
-  const refused = {
-    draft: actRefusal("draft_reminder", mark, detail),
-    paid: actRefusal("mark_paid", mark, detail),
-    send: actRefusal("send_reminder", mark, detail),
-    void: actRefusal("void_invoice", mark, detail),
+  const params: Partial<Record<ListTool, ReactNode>> = {
+    draft_reminder: (
+      <label className="ln-field-select">
+        <span className="ln-field-label">Tone</span>
+        <select value={tone} onChange={(e) => setTone(e.target.value as Tone)}>
+          {TONES.map((t) => (
+            <option key={t} value={t}>
+              {t}
+            </option>
+          ))}
+        </select>
+      </label>
+    ),
+    categorize: (
+      <label className="ln-field-select">
+        <span className="ln-field-label">File under</span>
+        <select value={category} onChange={(e) => setCategory(e.target.value as Category)}>
+          {CATEGORIES.map((c) => (
+            <option key={c} value={c}>
+              {c}
+            </option>
+          ))}
+        </select>
+      </label>
+    ),
   };
-
-  /*
-   * THE LIST. Every act the card could take, in the order a bookkeeper would
-   * consider them: ask first, then file, then the three that cannot be undone.
-   * The consequence clause is built from the books — the contact's real name and
-   * address, the exact balance to the cent — because "reaches a person" is a
-   * claim, and a claim about who should name them.
-   */
-  const acts: Act[] = [
-    {
-      tool: "draft_reminder",
-      label: `Draft a ${tone} reminder`,
-      reaches:
-        refused.draft ?? "Nobody. It writes a draft on this invoice and replaces any draft already there.",
-      params: (
-        <label className="ln-field-select">
-          <span className="ln-field-label">Tone</span>
-          <select value={tone} onChange={(e) => setTone(e.target.value as Tone)}>
-            {TONES.map((t) => (
-              <option key={t} value={t}>
-                {t}
-              </option>
-            ))}
-          </select>
-        </label>
-      ),
-      takeLabel: "Draft it",
-      issue: () => draftReminderAction(mark.id, tone),
-      blocked: refused.draft !== null,
-    },
-    {
-      tool: "categorize",
-      label: "Refile this invoice",
-      reaches: "Moves it to another area of the books. Reversible: it writes an undo row.",
-      params: (
-        <label className="ln-field-select">
-          <span className="ln-field-label">File under</span>
-          <select value={category} onChange={(e) => setCategory(e.target.value as Category)}>
-            {CATEGORIES.map((c) => (
-              <option key={c} value={c}>
-                {c}
-              </option>
-            ))}
-          </select>
-        </label>
-      ),
-      takeLabel: "Refile",
-      issue: () => categorizeAction([mark.id], category),
-      blocked: category === mark.category,
-    },
-    {
-      tool: "mark_paid",
-      // Exact, not `formatMoneyShort`: the short formatter rounds to whole
-      // units, which is right for a headline figure and wrong on the one control
-      // that moves money.
-      label: `Record ${formatMoney(mark.balanceCents)} received`,
-      reaches:
-        refused.paid ??
-        `Writes ${formatMoney(mark.balanceCents)} against the books. There is no undo row for this one.`,
-      takeLabel: "Record it",
-      issue: () => markPaidAction(mark.id, mark.balanceCents),
-      blocked: refused.paid !== null,
-      question: `This writes ${formatMoney(mark.balanceCents)} against the books and cannot be replayed backwards.`,
-      subject: gateSubject("mark_paid", mark, detail),
-    },
-    {
-      tool: "send_reminder",
-      label: detail?.draft ? "Send the drafted reminder" : "Send a reminder",
-      reaches:
-        refused.send ??
-        (email
-          ? `Reaches ${to} at ${email} by email. You cannot un-send it.`
-          : `Reaches ${to} by email. You cannot un-send it.`),
-      takeLabel: "Send it",
-      issue: () => sendReminderAction(mark.id),
-      blocked: refused.send !== null,
-      question: `This reaches ${email ?? "the client"}. You cannot un-send it.`,
-      subject: gateSubject("send_reminder", mark, detail),
-    },
-    {
-      tool: "void_invoice",
-      label: "Void this invoice",
-      /* `voidInvoiceAction` refuses any invoice with payments applied, so the row
-         has to say so before it is pressed rather than after. No "unapply first"
-         question: a blocked gate cannot be armed, and an armed one closes the
-         moment a credit lands (`stillArmed`). */
-      reaches: refused.void ?? "Writes the balance off permanently. There is no undo.",
-      takeLabel: "Void it",
-      issue: () => voidInvoiceAction(mark.id),
-      blocked: refused.void !== null,
-      question: "Voiding writes off the balance. There is no undo.",
-      subject: gateSubject("void_invoice", mark, detail),
-    },
-  ];
+  const busy = acts.issuing !== null;
 
   if (!host) return null;
 
@@ -352,42 +289,46 @@ export function Decide({
         </div>
 
         <ul className="ln-acts">
-          {acts.map((act) => {
-            const auto = isAuto(TOOL_CLASSES[act.tool]);
+          {specs.map((act) => {
             /*
-             * THE CONTROL FOLLOWS THE CLASS, as the badge does. Which acts arm
-             * before they issue is `lib/tool-classes.ts`'s answer and nobody
-             * else's: a row cannot wear the Gated badge over a button that fires
-             * on the first press, because there is no per-row choice to make.
+             * THE CONTROL FOLLOWS THE CLASS, as the badge does: `act.gated` is
+             * `lib/tool-classes.ts`'s answer and nobody else's. Every press goes through the
+             * card's one door, which refuses a second write while one is in flight.
              */
-            const take = auto ? (
-              <button
-                type="button"
-                className="ln-btn"
-                disabled={pending || act.blocked}
-                onClick={() => run(act.issue)}
-              >
-                {act.takeLabel}
-              </button>
-            ) : (
+            const take = act.gated ? (
               <Gate
                 label={act.takeLabel}
                 confirmLabel={act.takeLabel}
                 question={act.question ?? act.reaches}
-                onConfirm={act.issue}
-                subject={act.subject ?? act.reaches}
-                disabled={act.blocked}
+                armed={acts.armed?.tool === act.tool}
+                busy={busy}
+                disabled={act.blocked !== null}
+                onArm={() => door.arm(act.tool, act.subject ?? act.reaches)}
+                onCancel={() => door.disarm()}
+                onConfirm={() => door.confirm(act.tool, () => perform(act.issue))}
+                idleRef={focusRow(act.tool)}
               />
+            ) : (
+              <button
+                type="button"
+                className="ln-btn"
+                ref={focusRow(act.tool)}
+                disabled={busy || act.blocked !== null}
+                onClick={() => door.take(act.tool, () => perform(act.issue))}
+              >
+                {act.takeLabel}
+              </button>
             );
+            const param = params[act.tool];
             return (
-              <li className="ln-act" key={act.tool} data-class={auto ? "auto" : "gated"}>
-                <span className="ln-act-class">{auto ? "Auto" : "Gated"}</span>
+              <li className="ln-act" key={act.tool} data-class={act.gated ? "gated" : "auto"}>
+                <span className="ln-act-class">{act.gated ? "Gated" : "Auto"}</span>
                 <span className="ln-act-said">
                   <b>{act.label}</b>
                   <i>{act.reaches}</i>
                   <code className="num">{act.tool}</code>
                 </span>
-                {act.params ? <span className="ln-act-params">{act.params}</span> : null}
+                {param ? <span className="ln-act-params">{param}</span> : null}
                 <span className="ln-act-take">{take}</span>
               </li>
             );

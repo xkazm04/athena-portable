@@ -68,6 +68,7 @@ const { actRefusal, gateSubject, stillArmed, NOT_A_DEBT } = await import("../com
 const { tabStop } = await import("../components/lanes/swarm/marks");
 const { TOOL_CLASSES } = await import("../lib/tool-classes");
 const { isAuto } = await import("../lib/manifest");
+const machine = await import("../components/lanes/card/acts");
 
 /** The scratch books, or a failed test - never the app's own database. */
 function books(): ReturnType<typeof buildSheet> {
@@ -153,30 +154,6 @@ test("an armed gate closes when what it disclosed changes under it, and when its
   assert.equal(stillArmed(null, paidOn, false), false, "unarmed is unarmed");
 });
 
-test("every gate on the card is armed through stillArmed, on the subject of its own act", () => {
-  const gate = source("Gate.tsx");
-  assert.match(gate, /stillArmed\(/, "Gate derives `armed` from what it was armed on");
-  // Every act on the list that the class table gates names its own subject and question; the
-  // set is read off TOOL_CLASSES, so reclassifying an act makes this ask for them.
-  const decide = source("card/Decide.tsx");
-  const listed = [...decide.matchAll(/tool: "(\w+)"/g)].map((m) => m[1] as keyof typeof TOOL_CLASSES);
-  const gated = listed.filter((t) => !isAuto(TOOL_CLASSES[t])).sort();
-  const bound = [...decide.matchAll(/subject: gateSubject\("(\w+)"/g)].map((m) => m[1]).sort();
-  assert.deepEqual(gated, ["mark_paid", "send_reminder", "void_invoice"], "the three gated acts on the list");
-  assert.deepEqual(bound, gated, "each gated act is armed on its own subject");
-});
-
-test("the decision list draws a Gate exactly where the class table says GATED, and nowhere else", () => {
-  // The badge on each row was read from lib/tool-classes.ts, but the control beside it was typed
-  // by hand per row - three <Gate>s and two <button>s - so a reclassified act would wear the Gated
-  // badge over a button that fires on the first press (hitl-approval: the trigger predicate lives
-  // in one place). One render branch, keyed on the same `isAuto` the badge reads.
-  const decide = source("card/Decide.tsx");
-  assert.equal(decide.match(/<Gate\b/g)?.length ?? 0, 1, "one Gate, in the render, not one per row");
-  assert.match(decide, /const auto = isAuto\(TOOL_CLASSES\[act\.tool\]\);/);
-  assert.match(decide, /const take = auto \?/, "the control is chosen by the class");
-});
-
 /* ------------------------------------------- the card offers what the books will take, and only that */
 
 test("every act the decision list offers on an open invoice is one the books take, and every one it holds back they refuse", async () => {
@@ -221,10 +198,159 @@ test("every act the decision list offers on an open invoice is one the books tak
   assert.deepEqual(disagree, []);
 });
 
-test("the decision list takes each row's enabled state and its blocked line from actRefusal", () => {
-  const decide = source("card/Decide.tsx");
-  const asked = [...decide.matchAll(/actRefusal\("(\w+)"/g)].map((m) => m[1]).sort();
-  assert.deepEqual(asked, ["draft_reminder", "mark_paid", "send_reminder", "void_invoice"]);
+/* ------------------------------ one act machine per card: one armed gate, one write in flight, one door */
+
+type Spec = ReturnType<typeof machine.actSpecs>[number];
+type CardTool = import("../components/lanes/card/acts").CardTool;
+const LISTED = ["draft_reminder", "mark_paid", "send_reminder", "void_invoice"] as const;
+const armedOn = (tool: CardTool, subject: string) => ({ ...machine.IDLE_ACTS, armed: { tool, subject } });
+const issuingOf = (tool: CardTool, ticket = 1) => ({ ...machine.IDLE_ACTS, issuing: { tool, ticket }, ticket });
+/** One invoice's specs with one act's fields replaced, as a re-render would bring them. */
+const withAct = (specs: Spec[], tool: Spec["tool"], patch: Partial<Spec>): Spec[] =>
+  specs.map((s) => (s.tool === tool ? { ...s, ...patch } : s));
+const openMarks = (sheet: Sheet) =>
+  sheet.lanes.flatMap((l) => l.marks).filter((m) => m.balanceCents > 0 || m.state === "disputed");
+
+test("case 1: actSpecs gates exactly what the class table gates, and every listed act's blocked line is actRefusal's", () => {
+  // Replaces three source regexes over Decide.tsx (one Gate where GATED, a subject per gated act,
+  // an actRefusal per listed act): the list is data now, so its rules are pinned as behaviour.
+  const sheet = books();
+  const open = openMarks(sheet);
+  assert.ok(open.length > 50, "the seed's open invoices");
+  for (const mark of open) {
+    const detail = sheet.details[mark.id];
+    const specs = machine.actSpecs(mark, detail, "gentle", mark.category);
+    assert.deepEqual(
+      specs.map((s) => s.tool),
+      ["draft_reminder", "categorize", "mark_paid", "send_reminder", "void_invoice"],
+    );
+    for (const spec of specs) {
+      assert.equal(spec.gated, !isAuto(TOOL_CLASSES[spec.tool]), `${mark.number} ${spec.tool} gated`);
+      assert.equal(spec.question !== null && spec.subject !== null, spec.gated, `${mark.number} ${spec.tool} asks only if gated`);
+    }
+    for (const tool of LISTED) {
+      const spec = specs.find((s) => s.tool === tool)!;
+      assert.equal(spec.blocked, actRefusal(tool, mark, detail), `${mark.number} ${tool} blocked line`);
+      if (spec.blocked) assert.equal(spec.reaches, spec.blocked, "a refused row says why in place of what it reaches");
+      if (tool !== "draft_reminder") assert.equal(spec.subject, gateSubject(tool, mark, detail), `${tool} subject`);
+    }
+    assert.ok(specs.find((s) => s.tool === "categorize")!.blocked, "refiling to where it already is is blocked");
+  }
+  const first = open[0]!;
+  assert.deepEqual(
+    machine.actSpecs(first, sheet.details[first.id], "gentle", first.category).filter((s) => s.gated).map((s) => s.tool),
+    ["mark_paid", "send_reminder", "void_invoice"],
+    "the three gated acts on the list",
+  );
+});
+
+test("case 2: arming one act disarms any other, so the card never holds two armed confirms", () => {
+  const { state, refused } = machine.reduceActs(armedOn("mark_paid", "S1"), {
+    type: "arm",
+    tool: "void_invoice",
+    subject: "S2",
+  });
+  assert.equal(refused, null);
+  assert.deepEqual(state.armed, { tool: "void_invoice", subject: "S2" });
+});
+
+test("case 3: nothing confirms or arms while another act on the invoice is in flight", () => {
+  // The send over an unsettled redraft: the letter at the server may not be the one on screen.
+  const busy = { ...issuingOf("draft_reminder"), armed: { tool: "send_reminder" as const, subject: "S" } };
+  const confirm = machine.reduceActs(busy, { type: "confirm", tool: "send_reminder" });
+  assert.equal(confirm.state, busy, "state unchanged");
+  assert.match(confirm.refused ?? "", /an act on this invoice is still in flight/i);
+  const idleBusy = issuingOf("draft_reminder");
+  const arm = machine.reduceActs(idleBusy, { type: "arm", tool: "send_reminder", subject: "S" });
+  assert.equal(arm.state, idleBusy, "state unchanged");
+  assert.match(arm.refused ?? "", /an act on this invoice is still in flight/i);
+});
+
+test("case 4: a double click on the door issues once - the second press is refused before any render", () => {
+  let issued = 0;
+  const settles: ((result: { ok: boolean; message: string } | null) => void)[] = [];
+  const published: unknown[] = [];
+  const door = machine.createActDoor({
+    // Recorded, never fed back: no render happens between the two presses.
+    publish: (s) => published.push(s),
+    transport: (issue, after) => {
+      void issue();
+      settles.push(after);
+    },
+  });
+  const issue = async () => {
+    issued += 1;
+    return { ok: true, message: "Done." };
+  };
+  assert.equal(door.take("draft_reminder", issue), null);
+  assert.match(door.take("draft_reminder", issue) ?? "", /still in flight/i);
+  assert.equal(issued, 1, "take: issued exactly once");
+  settles[0]!({ ok: true, message: "Done." });
+  assert.equal(door.current().issuing, null, "the answer settles the door");
+
+  assert.equal(door.arm("void_invoice", "S"), null);
+  assert.equal(door.confirm("void_invoice", issue), null);
+  assert.match(door.confirm("void_invoice", issue) ?? "", /still in flight/i);
+  assert.equal(issued, 2, "confirm: issued exactly once more");
+  assert.ok(published.length > 0, "the view is told");
+});
+
+test("case 5: an armed send closes when the letter under it changes, and focus goes back to its row", () => {
+  const sheet = books();
+  const mark = openMarks(sheet).find((m) => m.state === "overdue")!;
+  const specs = machine.actSpecs(mark, sheet.details[mark.id], "gentle", mark.category);
+  const moved = withAct(specs, "send_reminder", { subject: "S-prime", blocked: null });
+  const { state } = machine.reduceActs(armedOn("send_reminder", "S"), { type: "observe", specs: moved });
+  assert.equal(state.armed, null);
+  assert.equal(state.focus, "row:send_reminder");
+  // Nothing moved: it stays armed, and the step is a no-op.
+  const still = armedOn("send_reminder", "S-prime");
+  assert.equal(machine.reduceActs(still, { type: "observe", specs: moved }).state, still);
+});
+
+test("case 6: a stale answer is ignored, and a thrown act closes its gate and hands focus to its row", () => {
+  const confirmed = machine.reduceActs(armedOn("mark_paid", "S"), { type: "confirm", tool: "mark_paid" }).state;
+  const old = confirmed.issuing!.ticket;
+  const settled = machine.reduceActs(confirmed, { type: "settle", ticket: old, result: { ok: true, message: "" } }).state;
+  assert.equal(settled.armed, null);
+  const newer = machine.reduceActs(settled, { type: "take", tool: "draft_reminder" }).state;
+  assert.equal(machine.reduceActs(newer, { type: "settle", ticket: old, result: null }).state, newer, "stale: ignored");
+  const threw = machine.reduceActs(newer, { type: "settle", ticket: newer.issuing!.ticket, result: null }).state;
+  assert.equal(threw.issuing, null);
+  assert.equal(threw.armed, null);
+  assert.equal(threw.focus, "row:draft_reminder");
+});
+
+test("case 7: an armed void whose act becomes refused closes, and focus goes to the heading, not the disabled row", () => {
+  const sheet = books();
+  const mark = openMarks(sheet).find((m) => m.balanceCents > 0 && m.paidCents === 0)!;
+  const specs = machine.actSpecs(mark, sheet.details[mark.id], "gentle", mark.category);
+  const subject = specs.find((s) => s.tool === "void_invoice")!.subject!;
+  const refused = withAct(specs, "void_invoice", {
+    blocked: "Blocked: there are credits applied to this invoice. Unapply them first.",
+  });
+  const { state } = machine.reduceActs(armedOn("void_invoice", subject), { type: "observe", specs: refused });
+  assert.equal(state.armed, null);
+  assert.equal(state.focus, "heading");
+});
+
+test("case 8 (guard): stillArmed's truth table and the send subject's dependence on the draft body are unchanged", () => {
+  for (const [armed, subject, disabled, expected] of [
+    [null, "a", false, false],
+    ["a", "a", false, true],
+    ["a", "b", false, false],
+    ["a", "a", true, false],
+    ["a", "b", true, false],
+  ] as const) {
+    assert.equal(stillArmed(armed, subject, disabled), expected, `stillArmed(${armed}, ${subject}, ${disabled})`);
+  }
+  const sheet = books();
+  const mark = openMarks(sheet).find((m) => m.state === "overdue" && sheet.details[m.id])!;
+  const withDraft = (body: string) => ({ ...sheet.details[mark.id]!, draft: { tone: "gentle", body } });
+  const one = gateSubject("send_reminder", mark, withDraft("one") as Sheet["details"][string]);
+  const two = gateSubject("send_reminder", mark, withDraft("two") as Sheet["details"][string]);
+  assert.notEqual(one, two, "a redrafted body is a new subject");
+  assert.equal(one, gateSubject("send_reminder", mark, withDraft("one") as Sheet["details"][string]));
 });
 
 /* --------------------------------------------- a row of peers keeps one tab stop as it shrinks */

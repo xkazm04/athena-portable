@@ -9,46 +9,49 @@
  * the `reversible && sideEffects !== "external"` rule on the manifest, and the
  * card passes the answer in.
  *
- * ARMED ON A SUBJECT, NOT ON A ROW. Arming records `subject` - what the confirm is
- * a decision about (`card/read.ts` gateSubject) - and the confirm is offered only
- * while the subject is unchanged and the act is not disabled. A letter redrafted,
- * a balance moved or a credit applied under an armed gate closes it, and the
- * person arms again on what is now there.
+ * A CONTROLLED VIEW OF THE CARD'S ACT MACHINE (`card/acts.ts`, ADR 0155). It holds no armed
+ * state and runs no write of its own: whether it is armed, whether a write is in flight anywhere on
+ * the card, and where focus goes when it closes are all the card's, so two gates cannot be armed at
+ * once and none can be confirmed over another act still in flight. Arming records the act's
+ * subject (`card/read.ts` gateSubject) in the machine, and a subject that moves under an armed gate
+ * - a letter redrafted, a balance moved, a credit applied - closes it there.
  */
-import { useId, useState, type ReactNode } from "react";
+import { useId, type ReactNode, type Ref } from "react";
 import { AnimatePresence, motion } from "motion/react";
 
-import type { ActionResult } from "@/lib/types";
-import { stillArmed } from "./card/read";
 import { fade } from "./motion";
-import { useRun } from "./useRun";
 
 export function Gate({
   label,
   confirmLabel,
   question,
-  onConfirm,
-  subject,
+  armed,
+  busy,
   disabled = false,
+  onArm,
+  onCancel,
+  onConfirm,
+  idleRef,
 }: {
   label: ReactNode;
   confirmLabel: string;
   question: string;
-  onConfirm: () => Promise<ActionResult>;
-  /** What the confirm is a decision about; arming holds it, and a new one closes the gate. */
-  subject: string;
+  /** This act is the card's one armed act. */
+  armed: boolean;
+  /** A write is in flight on this card - this act's confirm, or any other. */
+  busy: boolean;
+  /** The books would refuse the act now. */
   disabled?: boolean;
+  onArm: () => void;
+  onCancel: () => void;
+  onConfirm: () => void;
+  /** Where the card hands focus back to this row after a cancel or an answer. */
+  idleRef?: Ref<HTMLButtonElement>;
 }) {
-  const [armedOn, setArmedOn] = useState<string | null>(null);
   /* The confirm takes focus as the gate arms, so the question is its description:
      otherwise a screen reader says "Record it, button" and never the sentence that
      says what the yes writes. */
   const questionId = useId();
-  const { pending, run } = useRun();
-  const armed = stillArmed(armedOn, subject, disabled);
-  // Forget a subject that has moved on, so the same text coming back later (an undo)
-  // does not re-open a confirm nobody pressed. React's adjust-state-during-render form.
-  if (armedOn !== null && !armed) setArmedOn(null);
 
   return (
     <AnimatePresence mode="wait" initial={false}>
@@ -71,12 +74,12 @@ export function Gate({
             data-kind="danger"
             aria-describedby={questionId}
             autoFocus
-            disabled={pending}
-            onClick={() => run(onConfirm, () => setArmedOn(null))}
+            disabled={busy}
+            onClick={onConfirm}
           >
-            {pending ? "Working…" : confirmLabel}
+            {busy ? "Working…" : confirmLabel}
           </button>
-          <button type="button" className="ln-btn" data-kind="ghost" onClick={() => setArmedOn(null)}>
+          <button type="button" className="ln-btn" data-kind="ghost" disabled={busy} onClick={onCancel}>
             Cancel
           </button>
         </motion.span>
@@ -86,8 +89,9 @@ export function Gate({
           type="button"
           className="ln-btn"
           data-kind="gate"
-          disabled={disabled || pending}
-          onClick={() => setArmedOn(subject)}
+          ref={idleRef}
+          disabled={disabled || busy}
+          onClick={onArm}
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
