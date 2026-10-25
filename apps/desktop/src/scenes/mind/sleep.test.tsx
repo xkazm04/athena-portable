@@ -270,7 +270,9 @@ describe("pressing", () => {
       load: vi.fn(async () => {}),
       readJournal: vi.fn(async () => {}),
       sleepNow: vi.fn(async () => {}),
-      decide: vi.fn(async () => {}),
+      stage: vi.fn(() => {}),
+      stageAll: vi.fn(() => {}),
+      undo: vi.fn(() => {}),
     };
     act(() => root.render(<SleepSection model={{ ...base, actions }} />));
     return actions;
@@ -292,16 +294,16 @@ describe("pressing", () => {
   it("keeps a contradiction whole, or asks which one goes and forgets only that one", () => {
     const actions = spied("typical");
     act(() => button("Keep both").click());
-    expect(actions.decide).toHaveBeenLastCalledWith("prp_00000000d001", "keep", null);
+    expect(actions.stage).toHaveBeenLastCalledWith("prp_00000000d001", "keep", null);
     act(() => button("Forget one…").click());
     expect(host.textContent).toContain("Which one goes?");
     act(() => button("Cancel").click());
     expect(host.textContent).not.toContain("Which one goes?");
     act(() => button("Forget one…").click());
     act(() => button("Forget the second").click());
-    expect(actions.decide).toHaveBeenLastCalledWith("prp_00000000d001", "forget", "fct_00000000e002");
+    expect(actions.stage).toHaveBeenLastCalledWith("prp_00000000d001", "forget", "fct_00000000e002");
     act(() => button("Forget").click());
-    expect(actions.decide).toHaveBeenLastCalledWith("prp_00000000d002", "forget", null);
+    expect(actions.stage).toHaveBeenLastCalledWith("prp_00000000d002", "forget", null);
   });
 
   it("forgets the side whose 'Forget this one' was pressed, in one press", () => {
@@ -309,16 +311,54 @@ describe("pressing", () => {
       load: vi.fn(async () => {}),
       readJournal: vi.fn(async () => {}),
       sleepNow: vi.fn(async () => {}),
-      decide: vi.fn(async () => {}),
+      stage: vi.fn(() => {}),
+      stageAll: vi.fn(() => {}),
+      undo: vi.fn(() => {}),
     };
     act(() => root.render(<SleepSection model={{ ...withMemories(), actions }} />));
     const forgets = [...host.querySelectorAll("button")].filter((b) => b.textContent === "Forget this one");
     expect(forgets).toHaveLength(2);
     act(() => forgets[1]!.click());
-    expect(actions.decide).toHaveBeenLastCalledWith("prp_00000000d001", "forget", "fct_00000000e002");
+    expect(actions.stage).toHaveBeenLastCalledWith("prp_00000000d001", "forget", "fct_00000000e002");
     // Each button is described by the words it would forget, so two of the same name are told apart.
     const described = forgets[1]!.getAttribute("aria-describedby");
     expect(described && host.querySelector(`[id="${described}"]`)?.textContent).toBe("Invoices go out on Mondays now.");
+  });
+
+  it("with a batch staged, Waiting for you shows 'Keeping 3 · Undo' with the seconds left, and Undo calls actions.undo()", () => {
+    const base = sleepFixtures.typical!;
+    const offers = ["prp_00000000f001", "prp_00000000f002", "prp_00000000f003"];
+    const proposals: ProposalView[] = [
+      ...base.state.proposals,
+      ...offers.map((id) => ({ ...base.state.proposals[1]!, id, summary: `Staged ${id}.` })),
+    ];
+    const staged = { ids: offers, action: "keep" as const, nodeIds: {}, at: base.now, until: base.now + 6000 };
+    const actions = { ...base.actions, undo: vi.fn(() => {}) };
+    act(() => root.render(<SleepSection model={{ ...base, state: { ...base.state, proposals, staged }, actions }} />));
+    const bar = host.querySelector(".sleep__undo")!;
+    expect(bar.textContent).toBe("Keeping 3 · Undo6 s left");
+    expect(host.textContent).not.toContain("Staged prp_00000000f001.");
+    act(() => button("Undo").click());
+    expect(actions.undo).toHaveBeenCalledTimes(1);
+    const forgetting = { ...staged, ids: [offers[0]!], action: "forget" as const, until: base.now + 2400 };
+    act(() => root.render(<SleepSection model={{ ...base, state: { ...base.state, proposals, staged: forgetting }, actions }} />));
+    expect(host.querySelector(".sleep__undo")!.textContent).toBe("Forgetting 1 · Undo3 s left");
+  });
+
+  it("a row's Keep and Forget stage their answer, and Keep all stages every open forget at once", () => {
+    const base = sleepFixtures.typical!;
+    const proposals: ProposalView[] = [...base.state.proposals, { ...base.state.proposals[1]!, id: "prp_00000000f001", summary: "Another." }];
+    const actions = { ...base.actions, stage: vi.fn(() => {}), stageAll: vi.fn(() => {}) };
+    act(() => root.render(<SleepSection model={{ ...base, state: { ...base.state, proposals }, actions }} />));
+    act(() => button("Keep all 2").click());
+    expect(actions.stageAll).toHaveBeenCalledWith("keep");
+    act(() => button("Keep both").click());
+    expect(actions.stage).toHaveBeenLastCalledWith("prp_00000000d001", "keep", null);
+    act(() => [...host.querySelectorAll("button")].filter((b) => b.textContent === "Forget")[0]!.click());
+    expect(actions.stage).toHaveBeenLastCalledWith("prp_00000000d002", "forget", null);
+    // One forget offer alone has no Keep all: the row's own Keep is the same press.
+    act(() => root.render(<SleepSection model={{ ...base, actions }} />));
+    expect(button("Keep all 1")).toBeUndefined();
   });
 
   it("Sleep now asks; Read again reads", () => {

@@ -13,7 +13,10 @@
  * - the proposals a cycle left - forget a memory gone unused, or settle two that disagree - each
  *   kept or forgotten here. Each shows the memory's words, the sentence it was learned from and how
  *   it was used; a contradiction sets its two side by side with "Forget this one" under each, so the
- *   choice is made on what they say, never on an id;
+ *   choice is made on what they say, never on an id. An answer is staged, not sent: the rows it
+ *   covers leave the list and a bar says what will happen, with an Undo and the seconds left, until
+ *   the store sends it. Keep all, shown once two or more forget offers wait, keeps them all in one
+ *   press; a forget is only ever one row's;
  * - "Sleep now", whose refusal is the daemon's sentence, shown as it came.
  *
  * {@link SleepSection} is a pure function of a {@link SleepModel} (the store's mirror plus `now`)
@@ -30,20 +33,36 @@ import ProblemNote from "@/components/ProblemNote";
 import type { Tone } from "@/components/StatusDot";
 import type { CycleStats, CycleStatus, CycleView, ProposalMemory, ProposalView, SleepPhase, SleepView } from "@/lib/sleep";
 import { clockOf, parseStamp, whenAgo } from "@/lib/time";
-import { decide, readJournal, sleepNow, startSleep, loadSleep, useSleep, type SleepState } from "@/stores/sleep";
+import {
+  loadSleep,
+  openProposals,
+  readJournal,
+  sleepNow,
+  stage,
+  stageAll,
+  startSleep,
+  undo,
+  useSleep,
+  type SleepState,
+  type StagedBatch,
+} from "@/stores/sleep";
 
 import { Meter } from "./vitals";
 import { Refusal } from "./wizard";
 
 /** What the section reads: the store's mirror, the clock, and the acts. */
 export interface SleepModel {
-  state: Pick<SleepState, "view" | "cycles" | "proposals" | "loaded" | "missing" | "problem" | "journals" | "busy" | "errors" | "answer">;
+  state: Pick<SleepState, "view" | "cycles" | "proposals" | "loaded" | "missing" | "problem" | "journals" | "busy" | "errors" | "answer" | "staged" | "committing">;
   now: number;
   actions: {
     load: () => Promise<void>;
     readJournal: (cycleId: string) => Promise<void>;
     sleepNow: () => Promise<void>;
-    decide: (proposalId: string, action: "keep" | "forget", nodeId?: string | null) => Promise<void>;
+    /** Answer one proposal, behind the Undo window. */
+    stage: (proposalId: string, action: "keep" | "forget", nodeId?: string | null) => void;
+    /** Keep every open forget offer, behind one Undo. */
+    stageAll: (action: "keep") => void;
+    undo: () => void;
   };
 }
 
@@ -176,7 +195,7 @@ function useSleepModel(): SleepModel {
     const timer = setInterval(() => setNow(Date.now()), 30_000);
     return () => clearInterval(timer);
   }, []);
-  return { state, now, actions: { load: loadSleep, readJournal, sleepNow, decide } };
+  return { state, now, actions: { load: loadSleep, readJournal, sleepNow, stage, stageAll, undo } };
 }
 
 /** The section on the live store. */
@@ -215,7 +234,7 @@ function Sleep({ model, view, opening }: { model: SleepModel; view: SleepView; o
   const sleeping = view.state === "sleeping";
   const pressure = view.threshold_chars > 0 ? view.pressure_chars / view.threshold_chars : null;
   const answer = state.answer;
-  const open = state.proposals.filter((p) => p.status === "open");
+  const open = openProposals(state);
   return (
     <>
       {state.problem ? (
@@ -295,14 +314,27 @@ function Phases({ phase }: { phase: SleepPhase | null }) {
 
 function Proposals({ model, open, opening }: { model: SleepModel; open: readonly ProposalView[]; opening: SleepOpening }) {
   const [choosing, setChoosing] = useState<string | null>(opening.choosing ?? null);
+  const staged = model.state.staged;
+  const offers = open.filter((p) => p.kind === "forget").length;
   return (
     <div className="sleep__block">
       <h3 className="sleep__title">Waiting for you</h3>
+      {staged ? <UndoBar key={staged.until} staged={staged} onUndo={model.actions.undo} /> : null}
+      {offers >= 2 ? (
+        <div className="mind__row">
+          <Button size="sm" variant="secondary" onClick={() => model.actions.stageAll("keep")}>
+            {`Keep all ${offers}`}
+          </Button>
+          <span className="typo-caption">Every memory offered to forget stays; the disagreements still ask.</span>
+        </div>
+      ) : null}
       {open.length === 0 ? (
+        staged ? null : (
         <p className="typo-caption">
           Nothing waits for you. When a sleep finds a memory she has not used in a long time, or two that disagree, it asks here
           before anything is forgotten.
         </p>
+        )
       ) : (
         <ul className="sleep__proposals">
           {open.map((p) => (
@@ -337,7 +369,7 @@ function Proposal({
   const memories = proposal.memories && proposal.memories.length === proposal.node_ids.length ? proposal.memories : null;
   const answer = (action: "keep" | "forget", nodeId: string | null = null) => {
     onChoose(false);
-    void model.actions.decide(proposal.id, action, nodeId);
+    model.actions.stage(proposal.id, action, nodeId);
   };
   return (
     <li className="sleep__proposal" data-kind={proposal.kind}>
@@ -403,6 +435,33 @@ function Proposal({
       )}
       <Refusal text={model.state.errors[proposal.id]} />
     </li>
+  );
+}
+
+/**
+ * What a staged batch will do, with its Undo and the seconds left, counted from when it was staged
+ * on the store's clock. The count is the live region; the seconds tick beside it, outside it, so a
+ * screen reader hears the decision once, not each second.
+ */
+function UndoBar({ staged, onUndo }: { staged: StagedBatch; onUndo: () => void }) {
+  const [ticked, setTicked] = useState<number | null>(null);
+  useEffect(() => {
+    const beat = setInterval(() => setTicked(Date.now()), 1000);
+    return () => clearInterval(beat);
+  }, []);
+  const clock = ticked !== null && ticked > staged.at ? ticked : staged.at;
+  const left = Math.max(0, Math.ceil((staged.until - clock) / 1000));
+  const n = staged.ids.length;
+  return (
+    <div className="sleep__undo mind__row">
+      <span className="typo-body" role="status">
+        {`${staged.action === "forget" ? "Forgetting" : "Keeping"} ${figure(n)} · `}
+      </span>
+      <Button size="sm" variant="secondary" onClick={onUndo}>
+        Undo
+      </Button>
+      <span className="typo-caption">{`${left} s left`}</span>
+    </div>
   );
 }
 

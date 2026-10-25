@@ -1,20 +1,25 @@
 /** Her sleep's mirror against a fake daemon - device-vitals, ADR 0143 (`src/athena/core/sleep/`). */
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import { DaemonApi } from "@/lib/api";
 import type { CycleView, ProposalView, SleepView } from "@/lib/sleep";
 
 import {
+  COMMIT_MS,
   REREAD_MIN_MS,
-  decide,
+  commitNow,
   keptJournals,
   loadSleep,
   nudged,
+  openProposals,
   readJournal,
   resetSleepForTests,
   setSleepDeps,
   sleepNow,
+  stage,
+  stageAll,
   startSleep,
+  undo,
   useSleep,
 } from "./sleep";
 
@@ -69,7 +74,8 @@ interface Routes {
   cycles: () => CycleView[];
   journal: (id: string) => Response;
   run: () => Response;
-  decide: (id: string, body: unknown) => Response;
+  decide: (id: string, body: unknown) => Response | Promise<Response>;
+  proposals: () => ProposalView[];
 }
 
 let clock = T0;
@@ -81,6 +87,7 @@ function wire(over: Partial<Routes> = {}) {
     journal: (id) => json({ cycle: cycle(1, { id }), journal: "# Sleep\n\nRead 12 episodes." }),
     run: () => json({ admitted: true, reason: "forced", text: "She is falling asleep.", cycle_id: "cyc_00000000c009" }),
     decide: () => json({ proposal: { ...PROPOSAL, status: "kept" } }),
+    proposals: () => [PROPOSAL],
     ...over,
   };
   const seen: Seen[] = [];
@@ -91,10 +98,10 @@ function wire(over: Partial<Routes> = {}) {
     if (method === "GET" && path === "/sleep") return routes.sleep();
     if (method === "GET" && path.startsWith("/sleep/cycles?")) return json({ cycles: routes.cycles() });
     if (method === "GET" && path.startsWith("/sleep/cycles/")) return routes.journal(decodeURIComponent(path.slice("/sleep/cycles/".length)));
-    if (method === "GET" && path === "/sleep/proposals") return json({ proposals: [PROPOSAL] });
+    if (method === "GET" && path === "/sleep/proposals") return json({ proposals: routes.proposals() });
     if (method === "POST" && path === "/sleep/run") return routes.run();
     if (method === "POST" && path.startsWith("/sleep/proposals/")) {
-      return routes.decide(decodeURIComponent(path.slice("/sleep/proposals/".length)), JSON.parse(String(init.body)));
+      return await routes.decide(decodeURIComponent(path.slice("/sleep/proposals/".length)), JSON.parse(String(init.body)));
     }
     return json({ ok: false, reason: "unknown_ref", detail: path }, 404);
   };
@@ -264,8 +271,10 @@ describe("the acts", () => {
 
   it("keeps a contradiction whole, or forgets the one memory named, then reads again", async () => {
     const daemon = wire();
-    await decide(PROPOSAL.id, "keep");
-    await decide(PROPOSAL.id, "forget", "fct_00000000e002");
+    stage(PROPOSAL.id, "keep");
+    await commitNow();
+    stage(PROPOSAL.id, "forget", "fct_00000000e002");
+    await commitNow();
     const posts = daemon.seen.filter((s) => s.method === "POST");
     expect(posts.map((p) => [p.path, p.body])).toEqual([
       [`/sleep/proposals/${PROPOSAL.id}`, { action: "keep", node_id: null }],
@@ -276,10 +285,161 @@ describe("the acts", () => {
 
   it("puts a refused answer under its proposal, after the read that follows it", async () => {
     wire({ decide: () => json({ ok: false, reason: "bad_request", detail: "name the memory to forget" }, 400) });
-    await decide(PROPOSAL.id, "forget");
+    stage(PROPOSAL.id, "forget");
+    await commitNow();
     const s = useSleep.getState();
     expect(s.errors[PROPOSAL.id]).toBe("Could not forget it: name the memory to forget");
-    expect(s.busy[PROPOSAL.id]).toBeUndefined();
+    expect(s.committing[PROPOSAL.id]).toBeUndefined();
     expect(s.loaded).toBe(true);
+  });
+});
+
+describe("answering in one pass: staged, Keep all, and a 6 s Undo", () => {
+  /** An open forget proposal, numbered. */
+  const offer = (n: number): ProposalView => ({
+    ...PROPOSAL,
+    id: `prp_00000000f00${n}`,
+    kind: "forget",
+    node_ids: [`fct_00000000f00${n}`],
+    summary: `Memory ${n}, unused.`,
+  });
+  /** The daemon's proposals as a list a decision takes a row out of, unless the route refuses it. */
+  const queue = (rows: ProposalView[], refuse: ReadonlySet<string> = new Set()) => {
+    let list = [...rows];
+    let inFlight = 0;
+    let peak = 0;
+    const routes: Partial<Routes> = {
+      proposals: () => list,
+      decide: async (id) => {
+        inFlight += 1;
+        peak = Math.max(peak, inFlight);
+        await new Promise((resolve) => setImmediate(resolve));
+        inFlight -= 1;
+        if (refuse.has(id)) return json({ ok: false, reason: "conflict", detail: "it was already answered elsewhere" }, 409);
+        list = list.filter((p) => p.id !== id);
+        return json({ proposal: { ...PROPOSAL, id, status: "kept" } });
+      },
+    };
+    return { routes, peak: () => peak };
+  };
+  const posts = (seen: Seen[]) => seen.filter((s) => s.method === "POST");
+  /** Let fetches, response bodies and the read after a commit all settle. */
+  const drain = async () => {
+    for (let i = 0; i < 30; i += 1) await new Promise((resolve) => setImmediate(resolve));
+  };
+  const drawn = () => openProposals(useSleep.getState()).map((p) => p.id);
+
+  beforeEach(() => {
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+  });
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("stage(forget): no POST before COMMIT_MS, staged and left out of the open list; after it exactly one POST", async () => {
+    const q = queue([offer(1)]);
+    const daemon = wire(q.routes);
+    await loadSleep();
+    stage(offer(1).id, "forget");
+    expect(useSleep.getState().staged?.ids).toEqual([offer(1).id]);
+    expect(drawn()).toEqual([]);
+    await vi.advanceTimersByTimeAsync(COMMIT_MS - 1);
+    await drain();
+    expect(posts(daemon.seen)).toHaveLength(0);
+    await vi.advanceTimersByTimeAsync(1);
+    await drain();
+    expect(posts(daemon.seen).map((p) => [p.path, p.body])).toEqual([[`/sleep/proposals/${offer(1).id}`, { action: "forget", node_id: null }]]);
+    expect(useSleep.getState().staged).toBeNull();
+  });
+
+  it("stage then undo inside the window: no POST is ever sent, and the proposal is drawn open again with no error", async () => {
+    const q = queue([offer(1)]);
+    const daemon = wire(q.routes);
+    await loadSleep();
+    stage(offer(1).id, "forget");
+    await vi.advanceTimersByTimeAsync(COMMIT_MS / 2);
+    undo();
+    await vi.advanceTimersByTimeAsync(COMMIT_MS * 2);
+    await drain();
+    expect(posts(daemon.seen)).toHaveLength(0);
+    expect(drawn()).toEqual([offer(1).id]);
+    expect(useSleep.getState().errors[offer(1).id]).toBeUndefined();
+    expect(useSleep.getState().staged).toBeNull();
+  });
+
+  it("stageAll(keep) stages the open forgets as one batch, never the contradiction, and commits them 2 at a time", async () => {
+    const q = queue([offer(1), offer(2), offer(3), PROPOSAL]);
+    const daemon = wire(q.routes);
+    await loadSleep();
+    stageAll("keep");
+    const staged = useSleep.getState().staged;
+    expect(staged).toMatchObject({ action: "keep", ids: [offer(1).id, offer(2).id, offer(3).id] });
+    expect(drawn()).toEqual([PROPOSAL.id]);
+    await vi.advanceTimersByTimeAsync(COMMIT_MS);
+    await drain();
+    expect(posts(daemon.seen).map((p) => p.body)).toEqual([
+      { action: "keep", node_id: null },
+      { action: "keep", node_id: null },
+      { action: "keep", node_id: null },
+    ]);
+    expect(q.peak()).toBe(2);
+    expect(drawn()).toEqual([PROPOSAL.id]);
+  });
+
+  it("a sleep.changed re-read mid-window that still lists the staged ids keeps them out of the drawn list", async () => {
+    const q = queue([offer(1), offer(2)]);
+    const daemon = wire(q.routes);
+    const stop = startSleep();
+    await drain();
+    stage(offer(1).id, "forget");
+    daemon.bus.onChange!();
+    await drain();
+    expect(daemon.reads()).toBe(2);
+    expect(useSleep.getState().proposals.map((p) => p.id)).toContain(offer(1).id);
+    expect(drawn()).toEqual([offer(2).id]);
+    stop();
+  });
+
+  it("the last holder stopping while a batch is staged commits it at once, not dropped", async () => {
+    const q = queue([offer(1)]);
+    const daemon = wire(q.routes);
+    const a = startSleep();
+    const b = startSleep();
+    await drain();
+    stage(offer(1).id, "forget");
+    a();
+    await drain();
+    expect(posts(daemon.seen)).toHaveLength(0);
+    b();
+    await drain();
+    expect(posts(daemon.seen)).toHaveLength(1);
+    expect(useSleep.getState().staged).toBeNull();
+  });
+
+  it("a second stage while a batch is pending commits the pending one first, then opens its own window", async () => {
+    const q = queue([offer(1), offer(2)]);
+    const daemon = wire(q.routes);
+    await loadSleep();
+    stage(offer(1).id, "forget");
+    await vi.advanceTimersByTimeAsync(1000);
+    stage(offer(2).id, "keep");
+    await drain();
+    expect(posts(daemon.seen).map((p) => p.path)).toEqual([`/sleep/proposals/${offer(1).id}`]);
+    expect(useSleep.getState().staged).toMatchObject({ action: "keep", ids: [offer(2).id] });
+    undo();
+    await vi.advanceTimersByTimeAsync(COMMIT_MS * 2);
+    await drain();
+    expect(posts(daemon.seen)).toHaveLength(1);
+  });
+
+  it("1 of 3 committed POSTs refused (409): that one comes back open with its refusal, the other 2 are gone", async () => {
+    const q = queue([offer(1), offer(2), offer(3)], new Set([offer(2).id]));
+    wire(q.routes);
+    await loadSleep();
+    stageAll("keep");
+    await commitNow();
+    expect(drawn()).toEqual([offer(2).id]);
+    expect(useSleep.getState().errors[offer(2).id]).toBe("Could not keep it: it was already answered elsewhere");
+    expect(useSleep.getState().errors[offer(1).id]).toBeUndefined();
   });
 });

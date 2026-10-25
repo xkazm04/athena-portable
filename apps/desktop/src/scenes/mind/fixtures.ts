@@ -342,7 +342,7 @@ export const deviceFixtures: Record<string, DevicesModel> = {
 
 // -- her sleep, on the Brain level (ADR 0143) -------------------------------------------------
 
-const sleepActions: SleepModel["actions"] = { load: noop, readJournal: noop, sleepNow: noop, decide: noop };
+const sleepActions: SleepModel["actions"] = { load: noop, readJournal: noop, sleepNow: noop, stage: () => {}, stageAll: () => {}, undo: () => {} };
 
 const STATS = {
   episodes_in: 12,

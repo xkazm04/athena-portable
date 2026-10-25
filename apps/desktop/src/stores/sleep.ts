@@ -15,6 +15,14 @@
  * mirror reader's (`lib/mirror.ts`, which the devices store reads through too); an act's read
  * supersedes the one out, and an answer older than one already issued is never applied.
  *
+ * A person's answers are staged, not sent ({@link stage}, {@link stageAll}): a forget retires the
+ * memory and closes the proposal in one call with no way back, so each answer waits
+ * {@link COMMIT_MS} behind one Undo before it goes. One batch is pending at a time (a second answer
+ * sends the first), the rows it holds stay out of the drawn list whatever a re-read says
+ * ({@link openProposals}), it is sent 2 at a time with one read after, and the last holder letting
+ * go sends it rather than dropping it: leaving the section is not a cancel. Keep all keeps every
+ * open forget offer; a forget is never staged in bulk, and a contradiction always asks which goes.
+ *
  * A cycle's journal is read when a person opens its row and kept by id; a cycle whose status moved
  * since its journal was read (it was running, now it is done) is read again on the next opening.
  *
@@ -31,6 +39,10 @@ import { endpoint, useDaemon } from "@/stores/daemon";
 
 /** The least time between two reads a bus (re)connect asks for. */
 export const REREAD_MIN_MS = 5000;
+/** How long a staged answer waits behind its Undo before it is sent. */
+export const COMMIT_MS = 6000;
+/** The most answers a batch has in flight at once. */
+export const COMMIT_FANOUT = 2;
 /** How many cycles the journal list reads. */
 export const CYCLES_SHOWN = 20;
 
@@ -41,6 +53,17 @@ export interface Journal {
   loading: boolean;
   text: string | null;
   problem: string | null;
+}
+
+/** Answers a person gave that wait behind one Undo: one action, for one or more proposals. */
+export interface StagedBatch {
+  ids: readonly string[];
+  action: "keep" | "forget";
+  /** The memory a contradiction's forget names, per proposal; absent or `null` for any other. */
+  nodeIds: Readonly<Record<string, string | null>>;
+  /** When it was staged, and when it is sent, on the store's clock. */
+  at: number;
+  until: number;
 }
 
 export interface SleepState {
@@ -54,12 +77,16 @@ export interface SleepState {
   /** Why the last read failed, in one sentence; `null` when it did not. */
   problem: string | null;
   journals: Readonly<Record<string, Journal>>;
-  /** What is in flight: `run`, or a proposal id. */
+  /** What is in flight: `run` (a staged answer being sent is in `committing`). */
   busy: Readonly<Record<string, true>>;
   /** The last refusal per act (`run` or a proposal id), in one sentence. */
   errors: Readonly<Record<string, string>>;
   /** The daemon's answer to the last "Sleep now"; `null` before one. */
   answer: SleepRunAnswer | null;
+  /** The answers waiting behind the Undo; `null` when none are. */
+  staged: StagedBatch | null;
+  /** The proposals whose staged answer is being sent: drawn nowhere until the read after it. */
+  committing: Readonly<Record<string, true>>;
 }
 
 export interface SleepDeps {
@@ -102,6 +129,8 @@ export const EMPTY_SLEEP: SleepState = {
   busy: {},
   errors: {},
   answer: null,
+  staged: null,
+  committing: {},
 };
 
 export const useSleep = create<SleepState>(() => ({ ...EMPTY_SLEEP }));
@@ -176,9 +205,16 @@ export function nudged(): void {
 
 // -- the count of who is showing it --------------------------------------------------------------
 
-/** Read her sleep and follow the bus until the returned stop is called. Counted, as the tasks are. */
+/**
+ * Read her sleep and follow the bus until the returned stop is called. Counted, as the tasks are;
+ * the last stop sends a staged batch at once.
+ */
 export function startSleep(): () => void {
-  return reader.hold();
+  const stop = reader.hold();
+  return () => {
+    stop();
+    if (reader.holders() === 0) void commitNow();
+  };
 }
 
 // -- the acts ------------------------------------------------------------------------------------
@@ -242,32 +278,96 @@ export async function sleepNow(): Promise<void> {
   await reader.refresh();
 }
 
+/** The open proposals a person is asked about: the staged and the sending ones left out. */
+export function openProposals(state: Pick<SleepState, "proposals" | "staged" | "committing">): ProposalView[] {
+  const held = new Set(state.staged?.ids ?? []);
+  return state.proposals.filter((p) => p.status === "open" && !held.has(p.id) && !state.committing[p.id]);
+}
+
+let timer: ReturnType<typeof setTimeout> | null = null;
+
+function disarm(): void {
+  if (timer !== null) clearTimeout(timer);
+  timer = null;
+}
+
+function open(ids: readonly string[], action: "keep" | "forget", nodeIds: Record<string, string | null>): void {
+  void commitNow();
+  useSleep.setState((s) => {
+    const errors = { ...s.errors };
+    for (const id of ids) delete errors[id];
+    const at = deps.now();
+    return { errors, staged: { ids, action, nodeIds, at, until: at + COMMIT_MS } };
+  });
+  timer = setTimeout(() => void commitNow(), COMMIT_MS);
+}
+
 /**
- * Keep or forget what a proposal offers. A contradiction's forget names the one of its two
- * memories that goes (`nodeId`); keep closes it with both kept.
+ * Keep or forget what a proposal offers, after the Undo window. A contradiction's forget names the
+ * one of its two memories that goes (`nodeId`); keep closes it with both kept. A batch already
+ * staged is sent first, so one Undo never covers two decisions.
  */
-export async function decide(proposalId: string, action: "keep" | "forget", nodeId: string | null = null): Promise<void> {
+export function stage(proposalId: string, action: "keep" | "forget", nodeId: string | null = null): void {
+  open([proposalId], action, { [proposalId]: nodeId });
+}
+
+/** Keep every open forget offer, as one batch behind one Undo. A contradiction is left to ask. */
+export function stageAll(action: "keep"): void {
+  const ids = openProposals(useSleep.getState())
+    .filter((p) => p.kind === "forget")
+    .map((p) => p.id);
+  if (ids.length > 0) open(ids, action, {});
+}
+
+/** Take the staged batch back: nothing of it is sent. */
+export function undo(): void {
+  disarm();
+  useSleep.setState({ staged: null });
+}
+
+/**
+ * Send the staged batch now, {@link COMMIT_FANOUT} at a time, then read once. A refused answer comes
+ * back under its proposal, which the read shows open again.
+ */
+export async function commitNow(): Promise<void> {
+  disarm();
+  const batch = useSleep.getState().staged;
+  if (!batch) return;
+  const { ids, action, nodeIds } = batch;
+  useSleep.setState((s) => {
+    const committing = { ...s.committing };
+    for (const id of ids) committing[id] = true;
+    return { staged: null, committing };
+  });
+  const refused: Record<string, string> = {};
   const client = deps.api();
-  if (!client) {
-    say(proposalId, "Could not answer it: Athena is not running here yet.");
-    return;
+  if (client) {
+    let next = 0;
+    const lane = async () => {
+      while (next < ids.length) {
+        const id = ids[next++]!;
+        try {
+          await client.sleepDecide(id, action, nodeIds[id] ?? null);
+        } catch (error) {
+          refused[id] = sentenceOf(action === "keep" ? "keep it" : "forget it", error);
+        }
+      }
+    };
+    await Promise.all(Array.from({ length: Math.min(COMMIT_FANOUT, ids.length) }, lane));
+    await reader.refresh();
+  } else {
+    for (const id of ids) refused[id] = "Could not answer it: Athena is not running here yet.";
   }
-  mark(proposalId, true);
-  say(proposalId, null);
-  let refused: string | null = null;
-  try {
-    await client.sleepDecide(proposalId, action, nodeId);
-  } catch (error) {
-    refused = sentenceOf(action === "keep" ? "keep it" : "forget it", error);
-  } finally {
-    mark(proposalId, false);
-  }
-  await reader.refresh();
-  if (refused) say(proposalId, refused);
+  useSleep.setState((s) => {
+    const committing = { ...s.committing };
+    for (const id of ids) delete committing[id];
+    return { committing, errors: { ...s.errors, ...refused } };
+  });
 }
 
 export function resetSleepForTests(): void {
   reader.reset();
+  disarm();
   deps = LIVE;
   useSleep.setState({ ...EMPTY_SLEEP });
 }
